@@ -32,9 +32,13 @@
   </tr>
   <tr> 
     <td><font size="-3"><strong>Assumptions/Pre-conditions</strong></font></td>
-    <td><font size="-3">The BSML_repository and FASTA_repository for the project 
-      must be generated via <strong>chado2bsml</strong>. <br>
-	  The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.</strong></font></td>
+    <td><p><font size="-3">The BSML_repository and FASTA_repository for the project 
+        must be generated via <strong>chado2bsml</strong>. <br>
+        The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.<br>
+        </strong></font><font size="-3">The project repository must have sufficient 
+        space available to store results.<BR>
+        The user must have permission to write to the project area.</font></p>
+      </td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Post-condition</strong></font></td>
@@ -69,9 +73,7 @@
   </tr>
   <tr> 
     <td><font size="-3"><strong>Non-Functional (optional)</strong></font></td>
-    <td><font size="-3">The project repository must have sufficient space available 
-      to store results.<BR>
-      The user must have permission to write to the project area.</font></td>
+    <td>&nbsp;</td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Issues</strong></font></td>
@@ -96,8 +98,11 @@
     <td><font size="-3"><strong>Assumptions/Pre-conditions</strong></font></td>
     <td><font size="-3">The BSML_repository and FASTA_repository for the project 
       must be generated via <strong>chado2bsml</strong>.<br>
-	  The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.</strong><br>
-	  The input sequence identifier must be a valid sequence identifier for the project corresponding to a genomic sequence record stored in the data repository.</font></td>
+      The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.</strong><br>
+      The input sequence identifier must be a valid sequence identifier for the 
+      project corresponding to a genomic sequence record stored in the data repository.<br>
+      The project repository must have sufficient space available to store results.<BR>
+      The user must have permission to write to the project area. </font></td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Post-condition</strong></font></td>
@@ -136,9 +141,7 @@
   </tr>
   <tr> 
     <td><font size="-3"><strong>Non-Functional (optional)</strong></font></td>
-    <td><font size="-3">The project repository must have sufficient space available 
-      to store results.<BR>
-      The user must have permission to write to the project area.</font></td>
+    <td>&nbsp;</td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Issues</strong></font></td>
@@ -149,8 +152,7 @@
 <table width="75%" border="1">
   <tr> 
     <td width="18%"><font size="-3"><strong>Use case</strong></font></td>
-    <td width="82%"><font size="-3">run_promer on all sequences using a custom 
-      configuration </font></td>
+    <td width="82%"><font size="-3">run_promer using a custom configuration </font></td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Description</strong></font></td>
@@ -166,7 +168,10 @@
     <td><font size="-3"><strong>Assumptions/Pre-conditions</strong></font></td>
     <td><font size="-3">The BSML_repository and FASTA_repository for the project 
       must be generated via <strong>chado2bsml</strong>.<br>
-      The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.</strong></font></td>
+      The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.<br>
+      </strong>The project repository must have sufficient space available to 
+      store results.<BR>
+      The user must have permission to write to the project area.<strong> </strong></font></td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Post-condition</strong></font></td>
@@ -183,7 +188,7 @@
         </li>
         <li><font size="-3">Edit <strong>myconf</strong> to set configuration 
           settings</font></li>
-        <li><font size="-3">Execute <strong>run_promer -d [project_name] -c myconf</strong></font></li>
+        <li><font size="-3">Execute <strong>run_promer -d [project_name] -c [myconf]</strong></font></li>
         <li><font size="-3">Execute workflow monitor, <strong>run_wf_monitor -i 
           [instance file],</strong> using the instance filename reported by <em>Step 
           2. </em></font></li>
@@ -206,14 +211,13 @@
     <td><font size="-3"><strong>Variations (optional)</strong></font></td>
     <td><font size=-3>If the execution is not successfull, execute <strong>'rerun_wf 
       -i [instance file]'</strong> and continue with <em>Step 4</em><br>
-	  The <strong>project_name</strong> can also be specified in the config file.  run_promer can be invoked without the -d parameter: <strong>run_promer -c myfile</strong>.
-	  </font>&nbsp;</td>
+      The <strong>project_name</strong> can also be specified in the config file. 
+      run_promer can then be invoked without the -d parameter: <strong>run_promer 
+      -c myfile</strong>. </font>&nbsp;</td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Non-Functional (optional)</strong></font></td>
-    <td><font size="-3">The project repository must have sufficient space available 
-      to store results.<BR>
-      The user must have permission to write to the project area.</font></td>
+    <td>&nbsp;</td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Issues</strong></font></td>
