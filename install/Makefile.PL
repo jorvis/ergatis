@@ -152,56 +152,22 @@ legacy2chado  :
 	@install workflow/legacy2chado_template.xml $(WORKFLOW_DOCS_DIR)  
 
 chado2bsml  :
-<<<<<<< Makefile.PL
-	@echo "Installing chado2bsml workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/chado2bsml.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/chado2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
-=======
 	@echo "Installing chado2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/chado2bsml/chado2bsml-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/chado2bsml/chado2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/chado2bsml/chado2bsml.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/chado2bsml/chado2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/chado2bsml/chado2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
->>>>>>> 1.6.2.22
 
 bsml2chado  :
-<<<<<<< Makefile.PL
-	@echo "Installing bsml2chado workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/bsml2chado.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/bsml2chado_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install workflow/bsml2chado-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/bsml2chado-master_template.xml $(WORKFLOW_DOCS_DIR)  
-=======
 	@echo "Installing bmsl2chado workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/bsml2chado/bsml2chado.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/bsml2chado/bsml2chado_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/bsml2chado/bsml2chado-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/bsml2chado/bsml2chado-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/bsml2chado/bsml2chadoconf.ini $(WORKFLOW_DOCS_DIR)  
->>>>>>> 1.6.2.22
 
 jaccard  :
-<<<<<<< Makefile.PL
-	@echo "Installing bsml2chado workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/jaccard_cluster.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/jaccard_cluster_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install workflow/jaccard_cluster-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/jaccard_cluster-master_template.xml $(WORKFLOW_DOCS_DIR)  
-
-bsmlscaffold2chado:
-	@echo "Installing bsmlscaffold2chado workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/bsmlscaffold2chado.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/bsmlscaffold2chado_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install workflow/bsmlscaffold2chado-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/bsmlscaffold2chado-master_template.xml $(WORKFLOW_DOCS_DIR)  
-
-delete_analysis:
-	@echo "Installing delete_analysis workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/delete_analysis-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/delete_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
-
-=======
 	@echo "Installing jaccard workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/jaccard/jaccard.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/jaccard/jaccard_template.xml $(WORKFLOW_DOCS_DIR)  
@@ -230,7 +196,6 @@ delete_analysis  :
 	@install workflow/delete_analysis/delete_analysis-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/delete_analysis/delete_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/delete_analysis/delete_analysisconf.ini $(WORKFLOW_DOCS_DIR)  
->>>>>>> 1.6.2.22
 
 END
 
