@@ -78,7 +78,7 @@ my $file_found = 0;
 opendir(DIR, $ali_dir) or die "Unable to access $ali_dir due to $!";
 while( my $file = readdir(DIR)) {
     next if ($file =~ /^\.{1,2}$/);  #skip  "." ,  ".."
-    if($file =~ /^(.+)\.$msf_suffix$/) {
+    if($file =~ /^(.+)\.$msf_suffix$/o) {
 	$file_found++;
 	my $fam_name = $1;
 	my $MSF_alignments = process_MSF_file("$ali_dir/$file");
