@@ -452,7 +452,7 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     $conf->{';CONFIRM_LOAD_LOGFILE;'}  = $workflow_instance_dir ."/". $bsml_basename ."/confirm_load.log";
     $conf->{';CONFIRM_LOAD_OUTDIR;'}   = $workflow_instance_dir ."/". $bsml_basename;
     $conf->{';LOG_DIRECTORY;'}         = $workflow_instance_dir ."/". $bsml_basename;
-
+    $conf->{';VALIDATIONPATH;'}        = $WorkflowExecDir;
     
     #
     # Store the configuration for this specific bsml
