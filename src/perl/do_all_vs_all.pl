@@ -48,7 +48,7 @@ sub execute_allvsall {
     my $query_fasta = "${asmbl_id}.pep";
 
     my $fastafile = "$query_dir/$query_fasta";
-    my $seqdir    = "$seq_dir/${asmbl_id}";
+    my $seqdir    = "$seq_dir";
     my $pepdir    = "$pep_dir";
     my $outputdir = "$output_dir/${asmbl_id}";
 	 
