@@ -126,7 +126,6 @@ while(<F_IN>) {
 	$seq .= $_;
     }
 }
-add_stuff($doc, $uid, $seq, $fasta_file);
 
 $doc->write("$output_file");
 
