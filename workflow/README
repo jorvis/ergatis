@@ -57,6 +57,10 @@ RunWorkflow -t bit_score_template.xml -c bit_score.ini -i bitscore.xml -l bitsco
 
 replace -i and -l arugment with appropriate file name
 
+#set environment
+setenv PERL5LIB ${PERL5LIB}:/usr/local/annotation/PNEUMO/clu_dir/papyrus/src/perl
+setenv WF_ROOT /usr/local/devel/ANNOTATION/workflow
+setenv PATH ${PATH}:/usr/local/devel/ANNOTATION/workflow
 
 ntsp01_1_assembly IN PROGRESS                                                           
 ntsp02_2_assembly                                                               
