@@ -3,18 +3,23 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>bsml2chado workflow</name>
+        <name>initdbo workflow</name>
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
           <type>RunUnixCommand</type>
           <name>Create scratch space</name>
-         <configMapId>create_compute_scratch</configMapId>
+         <configMapId>create_scratch</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>Create output repository</name>
-          <configMapId>create_compute_output</configMapId>
+          <name>create_component_scratch</name>
+          <configMapId>create_component_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>create_output_scratch</name>
+          <configMapId>create_output_scratch</configMapId>
         </command>
 <!--Preprocess permissions-->
         <command>
@@ -23,6 +28,11 @@
           <configMapId>set_workflowdocs_permissions</configMapId>
         </command>
 <!--Preprocessing-->
+       <command>    
+            <type>RunUnixCommand</type>
+            <name>revoke_public</name>
+            <configMapId>revoke_public</configMapId>
+        </command>
         <commandSet type="parallel">
                 <name>Backup all tables</name>
                 <configMapId>empty</configMapId>
@@ -192,137 +202,55 @@
                       <configMapId>backup_tableinfo</configMapId>
                 </command>
        </commandSet>
-       <command>    
-            <type>RunUnixCommand</type>
-            <name>revoke_public</name>
-            <configMapId>revoke_public</configMapId>
-        </command>
         <command>    
             <type>RunUnixCommand</type>
             <name>truncate_all</name>
             <configMapId>truncate_all</configMapId>
         </command>
-<!--Iterator steps-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create iterator list</name>
-          <configMapId>create_iterator_list_subflow1</configMapId>
-        </command>
-      	<command>
-          <type>RunUnixCommand</type>
-          <name>Create groups</name>
-          <configMapId>create_groups_subflow1</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create iterative subflow</name>
-          <configMapId>create_iterative_subflow1</configMapId>
-        </command>
-        <commandSet type="parallel">
-          <name>Iterated subflow</name>
-          <configMapId>subflow1</configMapId>
-        </commandSet>
-<!--Postprocessing-->
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>Generate output list</name>
-            <configMapId>generate_directory_list</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>Replace placeholders</name>
-            <configMapId>replace_placeholders</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>validate_out_files</configMapId>
-             <name>validate_out_files</name>
-       </command>
-        <command>    
+       <command>    
             <type>RunUnixCommand</type>
             <name>drop_indexes</name>
             <configMapId>drop_indexes</configMapId>
         </command>
-        <commandSet type="parallel">
-                <name>Load Ontology, contact and pub records</name>
-                <configMapId>empty</configMapId>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_cv</name>
-                     <configMapId>load_cv</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_cvterm</name>
-                     <configMapId>load_cvterm</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_cvterm_relationship</name>
-                     <configMapId>load_cvterm_relationship</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_cvtermpath</name>
-                     <configMapId>load_cvtermpath</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_cvtermsynonym</name>
-                     <configMapId>load_cvtermsynonym</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_cvterm_dbxref</name>
-                     <configMapId>load_cvterm_dbxref</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_dbxrefprop</name>
-                     <configMapId>load_dbxrefprop</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_db</name>
-                     <configMapId>load_db</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_dbxref</name>
-                     <configMapId>load_dbxref</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_pub</name>
-                     <configMapId>load_pub</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_contact</name>
-                     <configMapId>load_contact</configMapId>
-                </command>
-       </commandSet>
-        <command>    
+<!--Iterator steps-->
+<!--Processing steps-->
+       <command>    
+            <type>RunUnixCommand</type>
+            <name>load_stable_tables</name>
+            <configMapId>load_stable_tabless</configMapId>
+        </command>
+       <command>    
             <type>RunUnixCommand</type>
             <name>rebuild_indexes</name>
             <configMapId>rebuild_indexes</configMapId>
         </command>
-        <command>    
+       <command>    
             <type>RunUnixCommand</type>
-            <configMapId>confirm_database_loaded</configMapId>
-            <name>confirm_database_loaded</name>
+            <name>parse_component</name>
+            <configMapId>parse_component</configMapId>
         </command>
+       <command>    
+            <type>RunUnixCommand</type>
+            <name>load_component</name>
+            <configMapId>load_component</configMapId>
+        </command>
+       <command>    
+            <type>RunUnixCommand</type>
+            <name>parse_output</name>
+            <configMapId>parse_output</configMapId>
+        </command>
+       <command>    
+            <type>RunUnixCommand</type>
+            <name>load_output</name>
+            <configMapId>load_output</configMapId>
+        </command>
+<!--Postprocessing-->
 <!--Checksum creation-->
 <!--Postprocess permissions-->
         <command>    
             <type>RunUnixCommand</type>
             <name>grant_public</name>
             <configMapId>grant_public</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>grant_cas_permissions</name>
-            <configMapId>grant_cas_permissions</configMapId>
         </command>
         <command>        
           <type>RunUnixCommand</type>
