@@ -66,13 +66,18 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
+            <configMapId>drop_indexes</configMapId>
+            <name>drop_indexes</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
             <configMapId>load_tables</configMapId>
             <name>load_tables</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>confirm_database_loaded</configMapId>
-            <name>confirm_database_loaded</name>
+            <configMapId>rebuild_indexes</configMapId>
+            <name>rebuild_indexes</name>
         </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->

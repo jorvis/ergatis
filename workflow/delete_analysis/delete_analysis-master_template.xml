@@ -18,40 +18,6 @@
           <configMapId>set_workflowdocs_permissions</configMapId>
         </command> 
 <!--Preprocessing-->
-       <commandSet type="parallel">
-                <name>Backup analysis tables</name>
-                <configMapId>empty</configMapId>
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>backup_analysis</name>
-                    <configMapId>backup_analysis</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>backup_analysisprop</name>
-                    <configMapId>backup_analysisprop</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>backup_analysisfeature</name>
-                    <configMapId>backup_analysisfeature</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>backup_feature</name>
-                    <configMapId>backup_feature</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>backup_featureprop</name>
-                    <configMapId>backup_featureprop</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>backup_featureloc</name>
-                    <configMapId>backup_featureloc</configMapId>
-                </command>   
-       </commandSet>
 <!--Processing-->
       <command>    
             <type>RunUnixCommand</type>
@@ -96,6 +62,11 @@
             <type>RunUnixCommand</type>
             <name>drop_filters</name>
             <configMapId>drop_filters</configMapId>
+        </command>
+       <command>    
+            <type>RunUnixCommand</type>
+            <name>drop_indexes</name>
+            <configMapId>drop_indexes</configMapId>
         </command>
        <command>    
             <type>RunUnixCommand</type>

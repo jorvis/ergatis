@@ -201,7 +201,13 @@ sub multipleAlignmentHandler
 	    my $name = $alnSeq->{'name'};
 	    $name =~ s/:[\d]*//;
 
+	    # Associate a SeqId with a Jaccard Cluster ID
 	    $jaccardClusterHash->{$name} = $jaccardClusterCount;
+
+	    # If this is the first sequence observed in the Jaccard Cluster
+	    # identify it as the representative sequence and set it as the 
+	    # representative sequence for the Jaccard Cluster ID.
+ 
 	    if( $seqCount == 0 )
 	    {
 		$jaccardRepSeqHash->{$jaccardClusterCount} = $name;
@@ -269,7 +275,7 @@ sub alignmentHandler
 
     my $runscore = $bestSeqPairRun->returnattr( 'runscore' );
     
-    # If compseq is defined in a Jaccard equivalence class identify the class by
+    # If compseq (or refseq) is defined in a Jaccard equivalence class identify the class by
     # its reference sequence. 
 
     if( defined( my $jId = $jaccardClusterHash->{$compseq} ) )

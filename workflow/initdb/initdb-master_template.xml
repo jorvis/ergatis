@@ -33,216 +33,47 @@
             <name>revoke_public</name>
             <configMapId>revoke_public</configMapId>
         </command>
-        <commandSet type="parallel">
-                <name>Backup all tables</name>
-                <configMapId>empty</configMapId>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_analysis</name>
-                      <configMapId>backup_analysis</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_analysisfeature</name>
-                      <configMapId>backup_analysisfeature</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_analysisprop</name>
-                      <configMapId>backup_analysisprop</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_author</name>
-                      <configMapId>backup_author</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_contact</name>
-                      <configMapId>backup_contact</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_cv</name>
-                      <configMapId>backup_cv</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_cvterm</name>
-                      <configMapId>backup_cvterm</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_cvterm_dbxref</name>
-                      <configMapId>backup_cvterm_dbxref</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_cvterm_relationship</name>
-                      <configMapId>backup_cvterm_relationship</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_cvtermpath</name>
-                      <configMapId>backup_cvtermpath</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_cvtermsynonym</name>
-                      <configMapId>backup_cvtermsynonym</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_db</name>
-                      <configMapId>backup_db</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_dbxref</name>
-                      <configMapId>backup_dbxref</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_feature</name>
-                      <configMapId>backup_feature</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_feature_cvterm</name>
-                      <configMapId>backup_feature_cvterm</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_feature_dbxref</name>
-                      <configMapId>backup_feature_dbxref</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_feature_pub</name>
-                      <configMapId>backup_feature_pub</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_feature_relationship</name>
-                      <configMapId>backup_feature_relationship</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_feature_synonym</name>
-                      <configMapId>backup_feature_synonym</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_featureloc</name>
-                      <configMapId>backup_featureloc</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_featureprop</name>
-                      <configMapId>backup_featureprop</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_featureprop_pub</name>
-                      <configMapId>backup_featureprop_pub</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_organism</name>
-                      <configMapId>backup_organism</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_organism_dbxref</name>
-                      <configMapId>backup_organism_dbxref</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_organismprop</name>
-                      <configMapId>backup_organismprop</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_project</name>
-                      <configMapId>backup_project</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_pub</name>
-                      <configMapId>backup_pub</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_pub_author</name>
-                      <configMapId>backup_pub_author</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_pub_dbxref</name>
-                      <configMapId>backup_pub_dbxref</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_pub_relationship</name>
-                      <configMapId>backup_pub_relationship</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_pubprop</name>
-                      <configMapId>backup_pubprop</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_synonym</name>
-                      <configMapId>backup_synonym</configMapId>
-                </command>
-                <command>    
-                      <type>RunUnixCommand</type>
-                      <name>backup_tableinfo</name>
-                      <configMapId>backup_tableinfo</configMapId>
-                </command>
-       </commandSet>
         <command>    
             <type>RunUnixCommand</type>
             <name>truncate_all</name>
             <configMapId>truncate_all</configMapId>
         </command>
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
             <name>drop_indexes</name>
             <configMapId>drop_indexes</configMapId>
         </command>
 <!--Iterator steps-->
 <!--Processing steps-->
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
             <name>load_stable_tables</name>
-            <configMapId>load_stable_tabless</configMapId>
+            <configMapId>load_stable_tables</configMapId>
         </command>
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
             <name>rebuild_indexes</name>
             <configMapId>rebuild_indexes</configMapId>
         </command>
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
-            <name>parse_component</name>
-            <configMapId>parse_component</configMapId>
+            <name>parse_component_onto</name>
+            <configMapId>parse_component_onto</configMapId>
         </command>
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
-            <name>load_component</name>
-            <configMapId>load_component</configMapId>
+            <name>load_component_onto</name>
+            <configMapId>load_component_onto</configMapId>
         </command>
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
-            <name>parse_output</name>
-            <configMapId>parse_output</configMapId>
+            <name>parse_output_onto</name>
+            <configMapId>parse_output_onto</configMapId>
         </command>
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
-            <name>load_output</name>
-            <configMapId>load_output</configMapId>
+            <name>load_output_onto</name>
+            <configMapId>load_output_onto</configMapId>
         </command>
 <!--Postprocessing-->
 <!--Checksum creation-->
@@ -261,11 +92,6 @@
           <type>RunUnixCommand</type>
           <name>Set permissions for scratch area</name>
           <configMapId>set_scratch_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for output</name>
-          <configMapId>set_output_permissions</configMapId>
        </command>
      </commandSet>
 </commandSetRoot>

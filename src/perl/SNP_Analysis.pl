@@ -1,58 +1,263 @@
 #! /usr/local/bin/perl
 
+# use lib "/export/CVS/bsml/src";
 use strict;
 use warnings;
 use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
-my $results = GetOptions( \%options, 'mumsAlignFile|m=s', 'coverageFilePath|c=s', 'outFile|o=s', 'repository|r=s', 'help|h', 'man' );
-
+my $results = GetOptions( \%options, 'mumsAlignFile|m=s', 'outFile|o=s', 'ref_assmbl|r=s', 'help|h', 'man' );
 
 my $mumsAlignFile = $options{'mumsAlignFile'};
-my $coverageFilePath = $options{'coverageFilePath'};
-my $outputBsmlFile = $options{'outFile'};
-my $bsmlrepository = $options{'repository'};
-
-# open the mummer alignment file (*.align)
-# This file should be generated using the -D option
-# which outputs only the difference positions and
-# characters.
-
-open( ALIGN, $mumsAlignFile ) or die "Unable to open $mumsAlignFile\n" ;
-
-# create a Bsml document object to populate
+my $refAssmbl = $options{'ref_assmbl'};
+my $outputName = $options{'outFile'};
 
 my $bsmlDoc = new BSML::BsmlBuilder();
 
-# Counters for Assembly and Reference sequence ids
+open( ALIGN, $mumsAlignFile ) or die "Unable to open $mumsAlignFile\n" ;
 
-my $assemblyId = 0;
-my $assemblySNPCount = 0;
-my $refSNPCount = 0;
-my $asbllengthlookup = {};
+my $assembly_mums = []; 
+my $assemblyId = '';
+my $revcom = 0;
+my $revLength;
 
 while( my $line = <ALIGN> )
 {
+
     if( $line =~ /^> ([\S]*)/ )
     {
+	if( $assemblyId && $assembly_mums->[0])
+	{
+
+	    my $arr_length = @{$assembly_mums};
+
+	    for( my $i=0; $i<$arr_length; $i++ ) 
+	    {
+		my $mumline = $assembly_mums->[$i];
+
+		### (INSERTION/DELETION)
+       
+		if ($mumline->[4] =~ /-/ )
+		{
+		    my $ref_del_start = $mumline->[2];
+		    my $query_del_start = $mumline->[3];
+		    my $insertion = $mumline->[5];
+
+
+		    LINE: while( ++$i < $arr_length )
+		    {
+			$mumline = $assembly_mums->[$i];
+
+			if( !($mumline->[2] == $ref_del_start))
+			{
+			    $mumline = $assembly_mums->[--$i];
+
+			    last LINE;
+			}
+		    
+			$insertion .= $mumline->[5];
+		    }
+
+		    my $ref_del_end = $mumline->[2];
+		    my $query_del_end = $mumline->[3];
+
+
+		    # Space Based coordinate transformation
+
+		    my $refpos_space_coord;
+		    my $querypos_start_space_coord;
+		    my $query_length_space_coord;
+
+		    if( $revcom == 1 )
+		    {
+			$refpos_space_coord = $ref_del_start - 1;
+			$querypos_start_space_coord = $revLength - $query_del_end;
+			$query_length_space_coord = ( $query_del_end - $query_del_start ) + 1;
+		    }
+		    else
+		    {
+			$refpos_space_coord = $ref_del_start - 1;
+			$querypos_start_space_coord = $query_del_start - 1;
+			$query_length_space_coord = ( $query_del_end - $query_del_start ) + 1;
+		    }
+
+
+		    my $aln = $bsmlDoc->createAndAddSequencePairAlignment(
+									  refseq => $refAssmbl,
+									  compseq => $assemblyId,
+									  class => 'refdel',
+									  force => 1 );
+
+		    my $run = $bsmlDoc->createAndAddSequencePairRun(
+								    alignment_pair => $aln,
+								    refpos => $refpos_space_coord,
+								    runlength => 0,
+								    refcomplement => 0,
+								    comppos => $querypos_start_space_coord,
+								    comprunlength => $query_length_space_coord,
+								    compcomplement => $revcom );
+
+
+		    my $refseq = BSML::BsmlDoc::BsmlReturnDocumentLookup( $refAssmbl );
+		    $refseq->addattr( 'class', 'assembly' );
+		    $refseq->addattr( 'molecule', 'dna' );
+
+		    my $compseq = BSML::BsmlDoc::BsmlReturnDocumentLookup( $assemblyId );
+		    $compseq->addattr( 'class', 'assembly' );
+		    $compseq->addattr( 'molecule', 'dna' );
+		    
+
+		    $aln->addattr( 'class', 'deletion' );
+		    $run->addattr( 'alignment', "-..$insertion" );
+		}
+       
+		if ($mumline->[5] =~ /-/ )
+		{
+		    my $ref_ins_start = $mumline->[2];
+		    my $query_ins_start = $mumline->[3];
+
+		    my $insertion = $mumline->[4];
+
+		    LINE: while( ++$i < $arr_length )
+		    {
+			$mumline = $assembly_mums->[$i];
+
+			if( !($mumline->[3] == $query_ins_start))
+			{
+			    $mumline = $assembly_mums->[--$i];
+
+			    last LINE;
+			}
+		    
+			$insertion .= $mumline->[4];
+		    }
+
+		    my $ref_ins_end = $mumline->[2];
+		    my $query_ins_end = $mumline->[3];
+
+
+
+		    my $refpos_space_coord;
+		    my $querypos_start_space_coord;
+		    my $ref_length_space_coord;
+
+		    if( $revcom == 1 )
+		    {
+			$refpos_space_coord = $ref_ins_start - 1;
+			$ref_length_space_coord = ( $ref_ins_end - $ref_ins_start ) + 1;
+			$querypos_start_space_coord = $revLength - $query_ins_end + 1;
+		    }
+		    else
+		    {
+			$refpos_space_coord = $ref_ins_start - 1;
+			$querypos_start_space_coord = $query_ins_end - 1;
+			$ref_length_space_coord = ( $ref_ins_end - $ref_ins_start ) + 1;
+		    }
+
+
+		    my $aln = $bsmlDoc->createAndAddSequencePairAlignment(
+									  refseq => $refAssmbl,
+									  compseq => $assemblyId,
+									  class => 'refins',
+									  force => 1 );
+
+		    my $run = $bsmlDoc->createAndAddSequencePairRun(
+								    alignment_pair => $aln,
+								    refpos => $refpos_space_coord,
+								    refcomplement => 0,
+								    runlength => $ref_length_space_coord,
+								    comppos => $querypos_start_space_coord,
+								    comprunlength => 0,
+								    compcomplement => $revcom );
+
+		    my $refseq = BSML::BsmlDoc::BsmlReturnDocumentLookup( $refAssmbl );
+		    $refseq->addattr( 'class', 'assembly' );
+		    $refseq->addattr( 'molecule', 'dna' );
+		    
+		    my $compseq = BSML::BsmlDoc::BsmlReturnDocumentLookup( $assemblyId );
+		    $compseq->addattr( 'class', 'assembly' );
+		    $compseq->addattr( 'molecule', 'dna' );
+
+		    $aln->addattr( 'class', 'insertion' );
+		    $run->addattr( 'alignment', "$insertion..-" );
+		}
+		
+		if ($mumline->[4] =~ /[agct]/ && $mumline->[5] =~ /[agct]/ )
+		{	
+		    my $refPos = $mumline->[2];
+		    my $asblPos = $mumline->[3];
+
+		    my $refBase = $mumline->[4];
+		    my $asblBase = $mumline->[5];
+
+
+		    my $refpos_space_coord;
+		    my $querypos_space_coord;
+
+		    if( $revcom == 1 )
+		    {
+			$refpos_space_coord = $refPos - 1;
+			$querypos_space_coord = $revLength - $asblPos;
+		    }
+		    else
+		    {
+			$refpos_space_coord = $refPos - 1;
+			$querypos_space_coord = $asblPos - 1;
+		    }
+
+		    my $aln = $bsmlDoc->createAndAddSequencePairAlignment(
+									  refseq => $refAssmbl,
+									  compseq => $assemblyId,
+									  class => 'snp',
+									  force => 1 );
+
+		    my $run = $bsmlDoc->createAndAddSequencePairRun(
+								    alignment_pair => $aln,
+								    refpos => $refpos_space_coord,
+								    runlength => 1,
+								    refcomplement => 0,
+								    comppos => $querypos_space_coord,
+								    comprunlength => 1,
+								    compcomplement => $revcom );
+
+
+		    my $refseq = BSML::BsmlDoc::BsmlReturnDocumentLookup( $refAssmbl );
+		    $refseq->addattr( 'class', 'assembly' );
+		    $refseq->addattr( 'molecule', 'dna' );
+		    
+		    my $compseq = BSML::BsmlDoc::BsmlReturnDocumentLookup( $assemblyId );
+		    $compseq->addattr( 'class', 'assembly' );
+		    $compseq->addattr( 'molecule', 'dna' );
+
+		    $aln->addattr( 'class', 'SNP' );
+		    $run->addattr( 'alignment', "$refBase..$asblBase" );
+		} 
+	    }
+
+	    $assembly_mums = [];
+	}
+
 	$assemblyId = $1;
-	$assemblySNPCount = 0;
 
-	
-	# difficulties using the 'forward direction only' version of mummer
-	# forces the use of bidirectional alignments. This filters the reverse
-	# compliment alignments generated by mummer. Note a downstream process
-	# has already reverse complimented sequences based on the tiling path
-	# so Mummer's extra step is not necessary.
+	if( $assemblyId =~ /revcom:([\d]*)/ )
+	{
+	    $revcom = 1;
+	    $revLength = $1;
+	    $assemblyId =~ s/revcom:([\d]*)//;
+	}
+	else
+	{
+	    $revcom = 0;
+	}
 
-	if( $line =~ /^> $assemblyId Reverse/ )
+	$assemblyId =~ s/ID//;
+
+	if( $line =~ /Reverse/ )
 	{
 	    $assemblyId = 'SKIP';
 	}
-
+	
 	next;
     }
 
@@ -60,204 +265,20 @@ while( my $line = <ALIGN> )
     {
 	chomp( $line );
 	my @mum = split( " ", $line );
-    
+	my $mumref = \@mum;
+
 	# Verify that the six columns have been populated 
-
-	if( !( $mum[0] && $mum[1] && $mum[2] && $mum[3] && $mum[4] && $mum[5] ))
-	    {
-		next();
-	    }
-
-	### DOES NOT PROCESS GAPS (INSERTION/DELETION)
-       
-	if ($mum[4] =~ /-/ || $mum[5] =~ /-/){next;}
-
-	### DOES NOT PROCESS AMBIGUOUS BP
-
-	if ($mum[4] =~/[mrwsykn]/ || $mum[5] =~ /[mrwsykn]/) {next;}
-
-	my $ref = $mum[0];
-	$ref =~ s/Ref$//;
-
-	my $refPos = $mum[2];
-	my $asblPos = $mum[3];
-
-	my $refBase = $mum[4];
-	my $asblBase = $mum[5];
-
-	my $revCom = 0;
-
-
-	# Upstream process has tagged 'revcom' on assembly sequences whose tiling path
-	# is on the reverse compliment. 
-
-	if( $assemblyId =~ /revcom/ )
-	{
-	    $revCom = 1;
-	}
-
-	my $tmpAssemblyId = $assemblyId;
-
-	# remove 'revcom' and 'ID' tags from assembly ids. The 'ID" substitution should 
-	# be removed. Incoming fasta/BSML should encode the assembly identifiers necessary
-	# to retrieve contigs and coverage data. 
-
-	$tmpAssemblyId =~ s/revcom//;
-	$tmpAssemblyId =~ s/ID//;
-
-	# retrieve the coverage data associated with the SNP position. Should coverage on the 
-	# reference also be looked up?
-
-	my @cov = ( 'UNKNOWN', 'UNKNOWN', 'UNKNOWN' );
-
-	if( $tmpAssemblyId && $coverageFilePath )
-	{
-	    @cov = getCoverage( $tmpAssemblyId, $coverageFilePath, $asblPos, $revCom );
-	}
-
-	# This will be removed after QC phase...
-
-	# encode the SNP in BSML.
-
-	my $refSeq;
-	my $assemblySeq;
-
-	if( !( $refSeq = $bsmlDoc->returnBsmlSequenceByIDR( "$ref" ) ) )
-	    {
-		$refSeq = $bsmlDoc->createAndAddSequence( "$ref", '', '', '' );
-		$bsmlDoc->createAndAddFeatureTable( $refSeq );
-
-		$refSeq->addBsmlAttr( 'snp_sequence_type', 'reference' );
-	    }
-
-	if( !( $assemblySeq = $bsmlDoc->returnBsmlSequenceByIDR( "$tmpAssemblyId" ) ) )
-	    {
-		$assemblySeq = $bsmlDoc->createAndAddSequence( "$tmpAssemblyId", '', '', '' );
-		$bsmlDoc->createAndAddFeatureTable( $assemblySeq );
-
-		$assemblySeq->addBsmlAttr( 'snp_sequence_type', 'query' );
-	    }
-
-	my $refFTable = $refSeq->returnBsmlFeatureTableR( 0 );
-	my $assemblyFTable = $assemblySeq->returnBsmlFeatureTableR( 0 );
-
-	my $refFeat = $bsmlDoc->createAndAddFeatureWithLocN( 'FTable' => $refFTable,
-							    'id' => "SNP:$ref:$refSNPCount",
-							    'class' => 'SNP',
-							    'start' => $refPos-1,
-							    'end' => $refPos,
-							    'complement' => 0
-							    );
 	
-	# Reference sequence coverage and consensus scores are not calculated in the current
-        # pipeline.
-
-	$refFeat->addBsmlAttr( "COVERAGE", $cov[2] );
-        $refFeat->addBsmlAttr( "CONSENSUS_SCORE", $cov[1] );
-
-	$refFeat->addBsmlAttr( "SNP", "$refBase..$asblBase" );
-
-	$refFeat->addBsmlLink( 'SNP', "SNP:$tmpAssemblyId:$assemblySNPCount" );
-
-	my $asbllength = &getAsmblLength($tmpAssemblyId,$asbllengthlookup);
-	$bsmlDoc->makeCurrentDocument();
-
-
-	if($revCom == 1){
-	    #Pipeline reports base-based coordinates
-            #Must +1 to keep base-based when subtracting coords.
-	    $asblPos = $asbllength-$asblPos+1;
-	}
-	print "$ref $assemblyId $refPos $asblPos $refBase $asblBase | $cov[0] $cov[1] $cov[2]\n";
-
-
-	my $assemblyFeat = $bsmlDoc->createAndAddFeatureWithLocN( 'FTable' => $assemblyFTable,
-							    'id' => "SNP:$tmpAssemblyId:$assemblySNPCount",
-							    'class' => 'SNP',
-							    'start' => $asblPos-1,
-							    'end' => $asblPos,
-							    'complement' => $revCom
-							    );
-	
-	$assemblyFeat->addBsmlAttr( "COVERAGE", $cov[2] );
-	$assemblyFeat->addBsmlAttr( "CONSENSUS_SCORE", $cov[1] );
-	$assemblyFeat->addBsmlAttr( "SNP", "$asblBase..$refBase"  );
-
-	$assemblyFeat->addBsmlLink( 'SNP', "SNP:$ref:$refSNPCount" );
-
-	$assemblySNPCount++;
-	$refSNPCount++;
-    }
-}
-
-$bsmlDoc->createAndAddAnalysis( 'sourcename' => $outputBsmlFile,
-				'programversion' => '1.0',
-				'program' => 'TIGR SNP Analysis Pipeline' );
-
-$bsmlDoc->write( $outputBsmlFile );
-
-sub getAsmblLength{
-    my ($asmbl,$lengthlookup) = @_;
-    if(exists $lengthlookup->{$asmbl}){
-	return $lengthlookup->{$asmbl};
-    }
-    else{
-	my $reader = new BSML::BsmlReader;
-	my $parser = new BSML::BsmlParserTwig;
-
-	$parser->parse( \$reader, "$bsmlrepository/$asmbl.bsml" );
-
-	my $seqobj = BSML::BsmlDoc::BsmlReturnDocumentLookup( $asmbl );
-	if($seqobj){
-	    my $seqlen = $seqobj->returnattr('length');
-	    
-	    $lengthlookup->{$asmbl} = $seqlen;
-	    return $lengthlookup->{$asmbl};
-	}
-	else{
-	    print STDERR "$seqobj is null\n";
-	}
-    }
-}
-
-sub getCoverage
-{
-    my $assemblyId = shift;
-    my $coverAgePrefix = shift;
-    my $pos = shift;
-    my $revCom = shift;
-
-    open( TCOV, "$coverAgePrefix/$assemblyId.tcov" ) or die "Could not open $coverAgePrefix/$assemblyId\n";
-
-
-    my $count = 0;
-    my @tcov;
-
-    while( my $line = <TCOV> )
-    {
-	if( $line =~ /([\d]*) ([\S]) ([\d]*) ([\S]*) ([\d:]*) ([\d:]*)/ )
+	if( ( $mum[0] && $mum[1] && $mum[2] && $mum[3] && $mum[4] && $mum[5] ))
 	{
-	    chomp $line;
-	    $tcov[$count] = $line;
-	    $count++;
+	   push( @{$assembly_mums}, $mumref );
 	}
+	      
+	
     }
 
-    if( $revCom == 1 )
-    {
-	$pos = @tcov - $pos + 1; 
-    }
+	
 
-    my @coverageDat = split( ' ', $tcov[$pos-1] );
-
-    my $snpPos = $coverageDat[0];
-    my $qual = $coverageDat[2];
-    
-    my @seqIdList = split( ':', $coverageDat[5] );
-
-    my $coverage = @seqIdList;
-
-    close( TCOV );
-
-    return ($snpPos, $qual, $coverage );
 }
+
+$bsmlDoc->write( $outputName );

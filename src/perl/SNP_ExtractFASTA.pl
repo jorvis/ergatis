@@ -37,7 +37,8 @@ while( my $line = <TILINGS> )
     if( $revCom eq '-' )
     {
 	$seqDat = reverse_complement( $seqDat );
-	$id .= 'revcom';
+	my $length = length($seqDat);
+	$id .= "revcom:$length" ;
     }
 
     #Check for duplicates, output sequence data only once 

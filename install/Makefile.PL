@@ -56,7 +56,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-workflow_install	: dirs shellwrappers promer nucmer blastp wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb
+workflow_install	: dirs shellwrappers promer nucmer blastp wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb backupdb snps
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-paralleliterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -141,8 +141,9 @@ cogs	:
 
 snps	:
 	@echo "Installing snps workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/snps-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/snps-master_template.xml $(WORKFLOW_DOCS_DIR) 
+	@install workflow/snp/snp-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/snp/snp-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/snp/snpconf.ini $(WORKFLOW_DOCS_DIR)
 
 legacy2chado  :
 	@echo "Installing legacy2chado workflows in $(WORKFLOW_DOCS_DIR)"
@@ -202,6 +203,12 @@ initdb  :
 	@install workflow/initdb/initdb-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/initdb/initdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/initdb/initdbconf.ini $(WORKFLOW_DOCS_DIR)  
+
+backupdb  :
+	@echo "Installing backupdb workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/backupdb/backupdb-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/backupdb/backupdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/backupdb/backupdbconf.ini $(WORKFLOW_DOCS_DIR)  
 
 
 END
