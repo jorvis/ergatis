@@ -104,7 +104,7 @@ while( my $line = <ALIGN> )
 
 	# This will be removed after QC phase...
 
-	#print "$ref $assemblyId $refPos $asblPos $refBase $asblBase | $cov[0] $cov[1] $cov[2]\n";
+	print "$ref $assemblyId $refPos $asblPos $refBase $asblBase | $cov[0] $cov[1] $cov[2]\n";
 
 	# encode the SNP in BSML.
 

@@ -4,6 +4,7 @@ use lib '/export/CVS/bsml/src';
 use strict;
 use warnings;
 use BSML::BsmlParserSerialSearch;
+use BSML::BsmlReader;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 # Preprosess data stored in BSML pairwise alignment documents into BTAB
@@ -25,20 +26,14 @@ my $bsmlSearchDir = $options{'bsmlSearchDir'};
 my $bsmlModelDir = $options{'bsmlModelDir'};
 my $outFile = $options{'outFile'};
 
+# associative array to translate cds identifiers to protein ids.
 my $cds2Prot = {};
 
-# determine if CDS to PROTEIN identifier translation needs to be performed. This
-# feels like a hack. All_vs_all have CDS refseq identifiers. 
+# The alignment parser handles the pairwise alignments encoded in the search directory. The feature parser
+# creates a lookup table mapping protein sequence identifiers to their genome. 
 
-my $CDS2PROT_TRANS = 0;
-$CDS2PROT_TRANS = 1 if( $bsmlSearchDir =~ /all_vs_all/ );
-
-# Usage of two parsers is less efficient, but insures that the sequence objects are 
-# parsed before the alignments.
-
-my $seqParser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&createGeneGenomeMap );
 my $alnParser = new BSML::BsmlParserSerialSearch( AlignmentCallBack => \&alignmentHandler );
-my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureHandler );
+my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureHandler, GenomeCallBack => \&genomeHandler );
 
 $bsmlSearchDir =~ s/\/+$//; #remove trailing slash if present
 $bsmlModelDir =~ s/\/+$//; 
@@ -55,9 +50,16 @@ else
     }
 }
 
+# protein sequence identifer to genome mapping 
+my $geneGenomeMap = {};
+my $genome = '';
+
+# loop through the documents in the model directory to create the protein genome map
+
 foreach my $bsmlFile (<$bsmlModelDir/*.bsml>)
 {
     $featParser->parse( $bsmlFile );
+    $genome = '';
 }
 
 
@@ -67,15 +69,40 @@ if(! $outFile )
 }
 
 open( OUTFILE, ">$outFile" );
+
+#####################################
+
+# structure for building the COGS input. For each query gene, the COGS analysis expects
+# the single best scoring alignment for each reference genome. In BSML terms, COGS expects the
+# highest scoring seqpair for each refseq compseq combination where all compseqs 
+# are contained in the same genome. 
+
+
+#  Genome A           Genome B            Genome C
+#  compseqA1          compseqB1           compseqC1
+#  compseqA2          compseqB2           compseqC2
+#  compseqA3                              compseqC3
+
+
+# If the above represent the sets of reference genes by genome. The following would 
+# correspond to the expected output if A1, B2, and C1 were the best hits by genome. 
+
+# refseq -> compseqA1
+# refseq -> compseqB2
+# refseq -> compseqC1
+
+####################################
     
-my $geneGenomeMap = {};
 my $COGInput = {};
 
 foreach my $bsmlFile (<$bsmlSearchDir/*.bsml>)
 {
-    $geneGenomeMap = {};
-    $seqParser->parse( $bsmlFile );
+    
+    # builds the COGS input data structure
+
     $alnParser->parse( $bsmlFile );
+
+    # print the results
 
     foreach my $k1 ( keys( %{$COGInput} ) )
     {
@@ -89,27 +116,27 @@ foreach my $bsmlFile (<$bsmlSearchDir/*.bsml>)
     $COGInput = {};
 }
 
-sub createGeneGenomeMap
-{
-    my $seqRef = shift;
-    my $gene = $seqRef->returnattr( 'id' );
-    my $genome = $seqRef->returnBsmlAttr( 'ASSEMBLY' );
-    
-    $geneGenomeMap->{$gene} = $genome;
-}
-
 sub alignmentHandler
 {
     my $aln = shift;
     my $refseq = $aln->returnattr( 'refseq' );
     my $compseq = $aln->returnattr( 'compseq' );
 
-    $refseq = $cds2Prot->{$refseq} if( $CDS2PROT_TRANS );
+    # if refseq is a CDS identifier, translate it to a protein id. 
+
+    if( my $Trefseq = $cds2Prot->{$refseq} )
+    {
+	$refseq = $Trefseq;
+    }
     
     my $bestRunScore = 0;
     my $bestSeqPairRun = undef;
 
+    # self-self alignments are not included 
     return if( $compseq eq $refseq );
+
+
+    # find the highest scoring run for each pairwise alignment
 
     foreach my $seqPairRun ( @{$aln->returnBsmlSeqPairRunListR} )
     {
@@ -122,6 +149,7 @@ sub alignmentHandler
 	}
     }
 
+    # 
     return if( !($bestSeqPairRun) );
 
     my $runscore = $bestSeqPairRun->returnattr( 'runscore' );
@@ -129,7 +157,7 @@ sub alignmentHandler
 
     if( !( $compGenome )) 
     {
-	die "compseq not found in gene genome map\n";
+	die "$compseq: compseq not found in gene genome map\n";
     }
 
     my $lref = [];
@@ -168,6 +196,16 @@ sub alignmentHandler
 	$COGInput->{$refseq}->{$compGenome} = $lref;
     }
 }
+
+sub genomeHandler
+{
+    my $bsmlGenome = shift;
+    my $reader = new BSML::BsmlReader;
+    
+    my $rhash = $reader->readGenome( $bsmlGenome );
+
+    $genome = $rhash->{'source_database'};    
+}
 	
 sub featureHandler
 {
@@ -185,6 +223,8 @@ sub featureHandler
 		$protId =~ s/#//;
 
 		$cds2Prot->{$cdsId} = $protId;
+		$geneGenomeMap->{$protId} = $genome;
+
 		return;
 	    }
 	}
