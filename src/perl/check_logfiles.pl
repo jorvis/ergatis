@@ -175,16 +175,17 @@ foreach my $file (sort @{$list}){
 
 
     open (INFILE, "<$file") or $logger->logdie("Could not open file '$file'");
-    my @contents = <INFILE>;
-    chomp @contents;
+
 
     my $linectr=0;
     my $fatalctr=0;
     my $errorctr=0;
     my $warnctr=0;
 
-    foreach my $line (@contents){
+    while ( my $line = <INFILE> ){
 	
+	chomp $line;
+
 	$linectr++;
 
 	if ($line =~ / FATAL /){
@@ -267,7 +268,7 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
 
     $body .= "Workflow link http://xmen:8080/tigr-scripts/papyrus/cgi-bin/show_pipeline.cgi?xmltemplate=" . $workflow_id . "\n\n" if (defined($workflow_id));
 
-    $body  .= "The following command log4perl logfiles were scanned:\n\n@$list\n\nTotal fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'.\n\nThe unique log messages reported and their number of occurrences are listed below\n\n";
+    $body  .= "The following log4perl logfiles were scanned:\n\n@$list\n\nTotal fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'.\n\nThe unique log messages reported and their number of occurrences are listed below\n\n";
 
     foreach my $file (sort keys %{$filehash}){
 
@@ -290,6 +291,10 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
 
     my $from     = $username;
     &send_notification($username, $subject, $body, $from);
+
+
+    &write_report($subject,$body, $repository);
+
     
     $logger->fatal("Total fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'. Please review $log4perl");
 }
@@ -304,6 +309,24 @@ $logger->info("Number of log4perl logfiles processed was '$filectr'. Please revi
 #------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
+#------------------------------------------------------
+# write_report()
+#
+#------------------------------------------------------
+sub write_report {
+
+    my ($subject, $body, $rep) = @_;
+
+    my $reportfile = $rep . '/check_logfiles.report.txt';
+    if (-e $reportfile){
+	rename($reportfile, "$reportfile.bak");
+    }
+    open (REPORTFILE, ">$reportfile") or $logger->logdie("Could not open report file '$reportfile'");
+    print REPORTFILE $subject . "\n\n" . $body . "\n";
+    close REPORTFILE;
+
+}
 
 #------------------------------------------------------
 # send_notification()
