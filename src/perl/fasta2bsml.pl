@@ -74,7 +74,7 @@ my $xref = $doc->createAndAddCrossReference(
 					    'parent'          => $genome,
 					    'id'              => ++$crossrefctr,
 					    'database'        => $database,
-					    'identifier'      => $option{'species'},
+					    'identifier'      => $options{'species'},
 					    'identifier-type' => 'current'
 					    );
 
