@@ -18,7 +18,7 @@
             <configMapId>create_scratch2</configMapId>
         </command>
 
-        <commandSet type="serial">
+        <commandSet type="parallel">
             <name>Run bsml to chado subflow</name>
                 <configMapId>empty</configMapId>
                    <commandSet type="serial">
