@@ -118,7 +118,11 @@ sub parse_promer_coords {
 	my $frame_ref = $promer[13];
         my $frame_qry = $promer[14];
 	
+	$qry_name =~ s/^\w+\_//; #strip leading database name for now
+
 	next if($ref_name eq $qry_name);
+
+	
 
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
