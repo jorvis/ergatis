@@ -4,7 +4,7 @@
 use strict;
 use PEffect::PEffectXML;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlReader;
+use BsmlCGCReader;
 use BSML::BsmlParserTwig;
 use File::Basename;
 
@@ -68,7 +68,7 @@ sub addGenes {
     my $geneID_protID={};
     my $bsml_file = "$BSML_dir/${asmbl_id}.bsml";
     if (-s $bsml_file) {
-	my $reader = BSML::BsmlReader->new();
+	my $reader = BsmlCGCReader->new();
 	$parser->parse( \$reader, $bsml_file );
 	my $rhash = $reader->returnAllIdentifiers();
 	$geneID_protID = build_geneID_protID_mapping($rhash);
