@@ -1,0 +1,1206 @@
+#!/usr/local/bin/perl 
+# $Id$
+#
+# pull_contig - Tool to pull contigs and sequences from the database 
+#               in preparation for genomic assembly.
+# History -     Replaces pull_contig.sp v2.x 
+# Written by -  Hanif Khalak, Mihai Pop, Martin Shumway
+#
+my $MY_HELPTEXT = qq~
+  pull_contig pulls assemblies and their associated sequences, as well
+  as free sequences, from the database in preparation for genomic assembly.  
+
+  pull_contig  -D <database> [flags] [options]
+  
+    -D <database>  The three letter database code
+    flags:
+      -A|asmlist  Contig include list
+      -a|asmsql   Contig include query
+      -B|bacasm   Jump start from bac_id
+      -b|bacseq   Scratch assembly from bac_id
+      -N|seqlist  Sequence include list
+      -n|seqsql   Sequence include query
+      -X|xlist    Sequence exclude list
+      -x|xsql     Sequence exlude query
+      -o|dir      Prefix of all result files (default = tmp)
+    options:
+      -[no]report  Produce a summary of the pull (default report file
+             is called <dir>.report)
+      -list  Write out the include, duplicate, and exclude seq/contigs
+             to list files (one record per line) suitable for further
+             processing.  The output files include:
+               <dir>.contig.broken
+               <dir>.contig.duplicate
+               <dir>.contig.inconsistent
+               <dir>.contig.omitted
+               <dir>.contig.shared
+               <dir>.seq.duplicate
+               <dir>.seq.misaligned
+               <dir>.seq.omitted
+               <dir>.seq.seqs
+               <dir>.seq.short
+             By default listing is off.
+      -S  Select a different database server [SYBTIGR is default]
+      -U  Select a different database username [access is default]
+          The -U option prompts for a password.
+      -silent  Do not print progress messages to stdout
+      -h|help  Help (this page)
+      -V|version  Version
+      -depend  Print the program and database dependency list
+      -debug <level>  Set the debug <level> (0 by default)
+
+  pull_contig is typically used to create the input data for scratch or 
+  jump-start assembly. pull_contig creates a .contig, .seq, .qual files 
+  if any assemblies are included in the pull, or .seq, .qual files otherwise.   
+  For BAC projects, specify the starting bac_id using the -B or -b options,
+  depending on whether jump start or scratch assembly is desired.  
+
+  pull_contig exits non-0 if a program or database access error.  Data
+  warnings and errors encountered during pull do not result in exit.
+  Users should inspect the <dir>.warnings file for important warnings and
+  messages pertaining to the integrity of the pulled data.  If the pull was
+  successful, a summary report is created in the <dir>.report file.  This 
+  can be used to direct data cleanup efforts.
+  
+~;
+#
+# (C) Copyright 2001  The Institute for Genomic Research (TIGR)
+#     All rights reserved.     
+#
+# Test and Debug Features:
+#   Debug level 0 - All errors
+#   Debug level 4 - Application errors and warnings also go to log file
+#   Debug level 9 - Application progress messages also go to log file
+#   -S - Select test database server, SYBIL
+#   -U - Select test database username; a password is prompted
+#   -list - Print specific sets of contigs and seqs in list form. 
+#
+
+# =============================== Pragmas and imports ======================
+use strict;
+use IO::File;
+use File::Basename;
+use Sys::Hostname;
+use DBI;
+use Term::ReadKey;
+use TIGR::Foundation::Executable;
+
+# Normally used only in testing     
+# use warnings;
+
+$| = 1;
+
+# ============================  Global Declarations ========================
+my $MY_APP = basename($0);
+my $MY_LOG = "$MY_APP.log";
+my $MY_REVISION = " Version 3.3 (Build " . (qw/$Revision$/ )[1] . ")";
+my @MY_DEPENDS = 
+(
+  "TIGR::Foundation::Executable",
+  "closure..asmbl_link",
+  "closure..assembly",
+  "closure..feature",
+  "closure..bases",
+  "closure..sequence",
+  "track..library",
+); 
+
+my $dbserver = "SYBTIGR";            # Database server
+my $dbtype = "Sybase";               # Database type
+my $dbuser = "access";               # Database read-only user 
+my $dbpasswd = "access";             # Database read-only password
+my $outprefix = "tmp";               # what pull_contig calls the project unless -o
+my $WarnFile = "$outprefix.warnings";  # data integrity warnings go here 
+my $db = undef;                      # database name
+my $dbh = undef;                     # DBI handle
+
+my $MINBASES = 32;           # minimum length of clear range
+my $MINSEQS = 2;             # minimum number of sequences in contig
+my $MAX_QUALITY = 99;        # max quality value that isn't reset to 0
+my $MAXASMSIZE = 50000000;   # assemblies truncated to this size if bigger
+my $DOTFREQ = 1000;          # number of objects to pull before progress . appears
+my $REPORT_COLUMNS = 4;      # Number of contig/seq columns in the report
+my $SEQUENCE_PATTERN = '^[A-Z][A-Z][A-Z][A-Z0-9][A-Z0-9][A-Z0-9]*';    # validate sequence name
+my $CONTIG_PATTERN   = '^[1-9][0-9]*';                                 # validate contig name
+
+# Reporting values
+my $who = getlogin();                   # login name
+my $host = hostname();                  # hostname
+my $now = scalar localtime();           # time stamp
+my $here = getProgramInfo('env_path');  # canonical path
+my $REPORT_HEADER = qq~
+pull_contig Report
+Generated by $who on $host at $now. 
+Working directory $here .
+~;
+
+# Operating modes          
+my $debug = 0;               # Debug level
+my $silent = 0;              # Do not print progress messages
+my $list = 0;                # Produce list files of various sets
+my $report = 1;              # Produce a report of the pull
+
+# ================================ Procedures ==============================
+# logmsg - Print a progress message to stdout 
+#       unless run with the -silent option. A copy is written to the 
+#       log file at the trace level (debug level 9)
+# $_[0] The message
+#
+sub logmsg($)
+{
+  my $msg = shift;
+  if (! defined $msg)
+  {
+    return;
+  } 
+  if (! $silent)
+  {
+    # No newlines for contig, seq and .'s.
+    if ($msg eq '.' || $msg =~ m/^\[\w+$\]/)
+    {
+      print STDOUT "$msg";
+    } 
+    else
+    {
+      print STDOUT "$msg\n";
+    }
+  }
+  # No logging of contig, seq, .'s
+  if (! ($msg eq '.' || $msg =~ m/^\[\w+$\]/))
+  {
+    logLocal($msg, 9);  
+  } 
+}
+
+# logwarning - Print a data warning or error message to stdout 
+#       unless run with the -silent option, and record the message 
+#       to the application warnings file.
+#       A copy is written to the log file under debug level 0.
+# $_[0] The message
+#
+sub logwarning($)
+{
+  my $msg = shift;
+  if (! defined $msg)
+  {
+    return;
+  } 
+
+  # Report to the terminal  
+  if (! $silent)
+  {
+    print STDOUT "$msg\n";
+  }
+
+  # Messages (without logging info) go to errors file
+  my $fh = new IO::File(">> $WarnFile") or bail("Failed to open $WarnFile ($!)"); 
+  $fh->print("$msg\n"); 
+  $fh->close();
+
+  # Log it at debug level 4
+  logLocal($msg, 4);  
+}
+
+# printList - Print a list of items to the specified filename
+# $_[0] - filename
+# $_[1] - reference to list 
+#
+sub printList($$)
+{
+  my $filename = shift;
+  return if (! defined $filename);
+  my $rl_items = shift;
+
+  my $fh = new IO::File "> $filename" or bail("Failed to open $filename ($!)"); 
+  foreach my $i (@$rl_items)
+  {
+    $fh->print("$i\n") or bail("Failed to write to $filename ($!)");
+  }
+  $fh->close() or bail("Failed to close $filename ($!)");
+}
+
+# printSet - Print a set of object identifiers in a report, 
+# at REPORT_COLUMNS columns per line.
+# $_[0] - Report file handle
+# $_[1] - Title                
+# $_[2] - Indent string      
+# $_[3] - Reference to list 
+#
+sub printSet($$$$)
+{
+  my $fh = shift;
+  my $title = shift;
+  my $indent = shift;
+  my $rl = shift;
+  my $nels = $#$rl + 1;
+  return if ($nels == 0);
+
+  $fh->print("$title ($nels found):\n");
+  for (my $i = 0; $i < $nels; $i += $REPORT_COLUMNS)
+  {
+    $fh->print("$indent");
+    my $j = 0;
+    while ($j < $REPORT_COLUMNS  &&  $i+$j < $nels)
+    {
+      $fh->print(sprintf("%-20s ", $$rl[$i+$j]));
+      $j++;
+    }
+    $fh->print("\n");
+  }
+  $fh->print("\n");
+}
+
+# getList - Read in the list of input records from the specified input file 
+#           and return a reference to it.  Blank lines, commented lines, and
+#           leading and trailing whitespace are ignored.
+# $_[0] filename 
+# $_[1] regex pattern grammar
+#
+sub getList($$)
+{
+  my $filename = shift;
+  my $grammar = shift;
+  my @list = ();
+  return \@list if (! defined $filename);
+  
+  my $fh = new IO::File "< $filename" or bail("Failed to open $filename ($!)"); 
+  while (defined (my $line = $fh->getline()))
+  {
+    chomp $line;
+    next if ($line =~ m/^#/o);
+    next if ($line eq "");
+    $line =~ s/^\s+//g;  # remove leading whitespace
+    my $field = (split /\s+/,$line)[0]; 
+    next if ($field eq "");
+    # User could have specified a sql file as a list, warn about this.
+    $_ = $field;
+    if (/$grammar/)
+    {
+      push @list, $field;
+    }
+    else
+    {
+      logwarning("Invalid input detected in \'$filename\' ($field), ignoring.") 
+    }
+  } 
+  $fh->close() or bail("Failed to close $filename ($!)");
+  return \@list;
+}
+
+# getSQL  - Read in the SQL statements from the specified input file 
+#           and return it as a string.  Blank lines and commented lines
+#           are ignored.
+# $_[0] filename 
+#
+sub getSQL($)
+{
+  my $filename = shift;
+  my $query = ""; 
+  return $query if (! defined $filename);
+  
+  my $fh = new IO::File "< $filename" or bail("Failed to open $filename ($!)"); 
+  while (defined (my $line = $fh->getline()))
+  {
+    next if ($line =~ m/^#/o);
+    next if ($line eq "");
+    $query .= $line;
+  } 
+  $fh->close() or bail("Failed to close $filename ($!)");
+  return $query;
+}
+
+
+# Main entry point
+#
+MAIN:
+{
+  my ($seqsql, $seqlist, $contigsql, $contiglist, $exclsql, $excllist);
+  my $bacasm            = undef;
+  my $bacseq            = undef;
+  my $count_contigs = 0;
+  my $count_contig_seqs = 0;
+  my $count_contigs_broken = 0;
+  my $count_contigs_duplicate = 0;
+  my $count_contigs_omitted = 0;
+  my $count_contigs_shared = 0;
+  my $count_contigs_inconsistent = 0;
+  my $count_total_seqs = 0;
+  my $count_seqs_omitted = 0;
+  my $count_seqs_duplicate = 0;
+  my $count_seqs_short = 0;
+  my $count_seqs_misaligned = 0;
+  my $dbuser_supplied = undef;                # db user supplied via -U
+  my $P_option_deprecated = 0;
+  my $p_option_deprecated = 0;
+  my $C_option_deprecated = 0;
+  my $c_option_deprecated = 0;
+  my $T_option_deprecated = 0;
+  my $t_option_deprecated = 0;
+
+  # Prepare logs
+  addDependInfo(@MY_DEPENDS);
+  setHelpInfo($MY_HELPTEXT);
+  setVersionInfo($MY_REVISION);
+
+  # now we handle the input options
+  my $result  = TIGR_GetOptions
+                (
+		  'D=s',         \$db,
+                  'B|bacasm=i',  \$bacasm,
+                  'b|bacseq=i',  \$bacseq,
+		  'n|seqsql=s',  \$seqsql,
+		  'N|seqlist=s', \$seqlist,
+		  'a|asmsql=s',  \$contigsql,
+		  'A|asmlist=s', \$contiglist,
+		  'x|xsql=s',    \$exclsql,
+		  'X|xlist=s',   \$excllist,
+		  'o|dir=s',     \$outprefix,
+                  'report!',     \$report,
+                  'silent',      \$silent,
+                  'list',        \$list,
+                  'S|server=s',  \$dbserver,
+                  'U|user=s',    \$dbuser_supplied,
+
+                  # Handle deprecated features
+                  'P=s',         \$P_option_deprecated,
+                  'p=s',         \$p_option_deprecated,
+                  'c=s',         \$c_option_deprecated,
+                  'C=s',         \$C_option_deprecated,
+                  't=s',         \$t_option_deprecated,
+                  'T=s',         \$T_option_deprecated,
+                );
+
+  bail("Command line parsing failed") if ($result == 0);
+  # Update debug level if it's specified by the user
+  if (! defined getDebugLevel())
+  {
+    setDebugLevel($debug);
+  }
+  $debug = getDebugLevel();
+
+  # Warn about deprecated parameters 
+  logwarning("-P option deprecated") if ($P_option_deprecated);
+  logwarning("-p option deprecated") if ($p_option_deprecated);
+  logwarning("-c option deprecated") if ($c_option_deprecated);
+  logwarning("-C option deprecated") if ($C_option_deprecated);
+  logwarning("-t option deprecated") if ($t_option_deprecated);
+  logwarning("-T option deprecated") if ($T_option_deprecated);
+
+  # Required parameter
+  bail("Must specify database with -D option.") if (! defined $db);
+
+  # if the -U option is supplied, set $dbuser
+  if ( defined ( $dbuser_supplied ) ) {
+     logLocal("setting dbuser = \'$dbuser_supplied\'", 4);
+     $dbuser = $dbuser_supplied;
+     # prompt user for password, to stdout
+     print STDOUT "Password: " or
+        bail("cannot prompt for password for database user");
+     chomp $dbpasswd;
+     ReadMode 'noecho';        # turn off command line echo-ing
+     $dbpasswd = ReadLine 0;   # read the password
+     chomp $dbpasswd;
+     print STDOUT "\n" or
+        bail("cannot prompt for password for database user");
+     ReadMode 'normal';        # turn on command line echo-ing
+     if ( ! defined ($dbpasswd) ) {
+        logwarning("database password not set for user \'$dbuser\'");
+     }
+  }
+
+  # Try to connect to the database server
+  $dbh = DBI->connect("dbi:$dbtype:server=$dbserver;packetSize=8092", $dbuser, $dbpasswd);
+  bail("Connection to server failed to \'$dbserver\'") if (!defined $dbh);
+
+  # Rebind application error file to the prefix if selected
+  unlink($WarnFile);               # truncate existing copy, if it exists
+  $WarnFile = "$outprefix.warnings";  # where data integrity warnings and errors are written 
+  $dbh->{PrintError} = 0;   # Supress warnings to stderr, trap instead to logging.
+
+  # Set database modes
+  $dbh->do("use $db") or bail("Failed to open database \'$db\'");
+  my $max_mb = $MAXASMSIZE / 1000000;
+  logwarning("Warning: Maximum assembly size is $max_mb MB. Larger assemblies will be truncated.");
+  $dbh->do("set textsize $MAXASMSIZE") 
+    or bail("Failed to set database textsize to \'$MAXASMSIZE\': " . $dbh->errstr);
+  
+  # Tables to hold sets of contigs and sequences
+  my %inclseqs          = ();
+  my %exclseqs          = ();
+  my %contigTable       = ();
+  my @contigs           = ();
+  my @contigseqs        = ();
+  my @contigoffs        = ();
+  my %duplicate_contigs = ();
+  my %omitted_contigs   = ();
+  my %broken_contigs    = ();
+  my %shared_contigs    = ();
+  my %inconsistent_contigs = ();
+  my %duplicate_seqs    = ();
+  my %omitted_seqs      = ();
+  my %misaligned_seqs   = ();
+  my %short_seqs        = ();
+
+  logmsg("Getting seqs...");
+  if (defined $seqlist)
+  {
+    my $rl = getList($seqlist, $SEQUENCE_PATTERN);
+    logwarning("Sequence include list in $seqlist has no elements.") if ($#$rl < 0);
+    map { $inclseqs{$_} = 0; } @$rl
+  }
+  if (defined $seqsql)
+  {
+    my $query = getSQL($seqsql);
+    logLocal("Query sequence includes...", 9);
+    my $qh = $dbh->prepare($query) or bail("Cannot prepare $query: " . $dbh->errstr);
+    if (! defined $qh->execute())
+    {
+      logError("Database query \'$query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed sequence include query from \'$seqsql\', see $ef for details.  Exiting...");
+    }
+    my $nfetched = 0;
+    while (my @row = $qh->fetchrow())
+    {
+      $inclseqs{$row[0]} = 0;
+      $nfetched++;
+    }
+    logwarning("Failed to find any sequences in include query $seqsql") if ($nfetched == 0);
+    logLocal("done.", 9);
+  }
+  if (defined $bacseq)
+  {
+    logLocal("Query sequence includes by bac_id...", 9);
+    my $query = qq~
+                  select s.seq_name from sequence s, track..library l
+		    where l.lib_id=substring(s.seq_name,1,4)
+		      and s.trash=NULL 
+                      and s.ed_ln>0
+		      and l.bac_id=$bacseq
+                  ~; 
+    my $qh = $dbh->prepare($query) or bail("Cannot prepare $query: " . $dbh->errstr);
+    if (! defined $qh->execute())
+    {
+      logError("Database query \'$query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed bac sequence query, see $ef for details. Exiting...");
+    }
+    my $nfetched = 0;
+    while (my @row = $qh->fetchrow())
+    {
+      $inclseqs{$row[0]} = 0;
+      $nfetched++;
+    }
+    logwarning("Failed to find any sequences for bac_id = $bacseq") if ($nfetched == 0);
+    logLocal("done.", 9);
+  }
+  logmsg("Getting seqs, done.");
+
+  logmsg("Getting exclude seqs...");
+  if (defined $excllist)
+  {
+    my $rl = getList($excllist, $SEQUENCE_PATTERN);
+    logwarning("Sequence exclude list in $excllist has no elements.") if ($#$rl < 0);
+    map { $exclseqs{$_} = 0; } @$rl;
+  }
+  if (defined $exclsql)
+  {
+    my $query = getSQL($exclsql);
+    logLocal("Query sequence excludes...", 9);
+    my $qh = $dbh->prepare($query) or bail("Cannot prepare $query: " . $dbh->errstr);
+    if (! defined $qh->execute())
+    {
+      logError("Database query \'$query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed sequence exclude query from \'$exclsql\', see $ef for details.  Exiting...");
+    }
+    my $nfetched = 0;
+    while (my @row = $qh->fetchrow())
+    {
+      $exclseqs{$row[0]} = 0;
+      $nfetched++;
+    }
+    logwarning("Failed to find any sequences in exclude query $exclsql") if ($nfetched == 0);
+    logLocal("done.", 9);
+  }
+  logmsg("Getting exclude seqs, done.");
+
+  logmsg("Getting contigs...");
+  if (defined $contiglist)
+  {
+    my $rl = getList($contiglist, $CONTIG_PATTERN);
+    logwarning("Contig include list in $contiglist has no elements.") if ($#$rl < 0);
+    map 
+    {
+      if (defined $contigTable{$_})
+      {
+        logwarning("Warning: Duplicate contig $_ ignored.");
+        $duplicate_contigs{$_} = 1;
+      }
+      else
+      {
+        $contigTable{$_} = 1;
+      }
+    } @$rl;
+  }
+  if (defined $contigsql)
+  {
+    my $query = getSQL($contigsql); 
+    logLocal("Query contig includes...", 9);
+    my $qh = $dbh->prepare($query) or bail("Cannot prepare $query: " . $dbh->errstr);
+    if (! defined $qh->execute())
+    {
+      logError("Database query \'$query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed assembly query from \'$contigsql\', see $ef for details.  Exiting...");
+    }
+    my $nfetched = 0;
+    while (1)
+    {
+      my @row = $qh->fetchrow() or last;
+      logmsg("[$row[0]]");
+      if (defined $contigTable{$row[0]})
+      {
+        logwarning("Warning: Duplicate contig $row[0] ignored.");
+        $duplicate_contigs{$row[0]} = 1;
+      }
+      else
+      {
+        $contigTable{$row[0]} = 1;
+      }
+      $nfetched++;
+    }
+    logwarning("Failed to find any contigs in include query $contigsql") if ($nfetched == 0); 
+    logLocal("done.", 9);
+  }
+  if (defined $bacasm)
+  {
+    logLocal("Query contigs by bac_id...", 9);
+    $_ = $bacasm;
+    if (! /\d+/)
+    {
+      ; 
+    }
+    my $query = qq~
+                  select asmbl_id from assembly
+		    where bac_id=$bacasm and seq#>2
+                  ~;
+    my $qh = $dbh->prepare($query) or bail("Cannot prepare $query: " . $dbh->errstr);
+    if (! defined $qh->execute())
+    {
+      logError("Database query \'$query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed bac assembly query, see $ef for details. Exiting...");
+    }
+    my $nfetched = 0;
+    while (1)
+    {
+      my @row = $qh->fetchrow() or last;
+      logmsg("[$row[0]]");
+      if (defined $contigTable{$row[0]})
+      {
+        logwarning("Warning: Duplicate contig $row[0] ignored.");
+        $duplicate_contigs{$row[0]} = 1;
+      }
+      else
+      {
+        $contigTable{$row[0]} = 1;
+      }
+      $nfetched++;
+    }
+    logwarning("Failed to find any contigs for bac_id = $bacasm") if ($nfetched == 0); 
+    logLocal("done.", 9);
+  }
+
+  # Transfer the contigs to a list
+  @contigs = sort keys %contigTable; 
+  logmsg("Getting contigs, done.");
+
+  logmsg("Getting contig seqs...");
+  for (my $i = 0; $i <= $#contigs; $i++)
+  {
+    logmsg("[$contigs[$i]]");
+    # this query does a lot of stuff
+    # figures out the minimum size of a sequence and also checks
+    # the clear range requirement.
+    # You must compare all four coordinates.
+    my $query = qq~
+	select l.seq_name, l.offset
+	from asmbl_link l, feature f
+        where l.asmbl_id = $contigs[$i]
+          and f.seq_name = l.seq_name
+          and f.feat_type = "CLR"
+	  and l.seq_rend <= f.end3
+          and l.seq_lend >= f.end5
+          and l.seq_rend >= f.end5
+          and l.seq_lend <= f.end3
+          and f.end3 - f.end5 > $MINBASES
+        at isolation read uncommitted
+	~;
+
+    # Query to find the sequences excluded due to invalid clear range. 
+    my $invalid_clearrange_query = qq~
+	select distinct l.seq_name
+	from asmbl_link l, feature f
+        where l.asmbl_id = $contigs[$i]
+	and f.seq_name = l.seq_name
+        and f.feat_type = "CLR"
+        and( 
+	     not (    l.seq_rend <= f.end3
+                  and l.seq_lend >= f.end5
+                  and l.seq_rend >= f.end5
+                  and l.seq_lend <= f.end3
+                 )
+           )
+        at isolation read uncommitted
+        ~;
+
+    # Query to find the sequences excluded due to insufficient base length. 
+    my $insufficient_baselength_query = qq~
+	select distinct l.seq_name
+	from asmbl_link l, feature f
+        where l.asmbl_id = $contigs[$i]
+	and f.seq_name = l.seq_name
+        and f.feat_type = "CLR"
+        and( 
+             f.end3 - f.end5 <= $MINBASES
+           )
+        at isolation read uncommitted
+	~;
+
+    # now we get to use these cool queries
+
+    # Fetch the bad sequences and report them
+    logLocal("Query sequences in contig $contigs[$i] with invalid clear range...", 9);
+    my $rh = $dbh->prepare($invalid_clearrange_query)
+      or bail("Cannot prepare $invalid_clearrange_query: " . $dbh->errstr);
+    if (! defined $rh->execute())
+    {
+      logError("Database query \'$invalid_clearrange_query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed invalid clear range query, see $ef for details.  Exiting...");
+    }
+    while (my @row = $rh->fetchrow())
+    {
+      my $name = $row[0];
+      $misaligned_seqs{$name} = 0;
+      $inconsistent_contigs{$contigs[$i]}{$name} = 0; 
+      logwarning("Warning: Sequence $name has invalid clear range, omitting from contig $contigs[$i].");
+    }
+    logLocal("done", 9);
+
+    # Fetch the bad sequences and report them
+    logLocal("Query sequences in contig $contigs[$i] with insufficient base length...", 9);
+    $rh = $dbh->prepare($insufficient_baselength_query)
+      or bail("Cannot prepare $insufficient_baselength_query: " . $dbh->errstr);
+    if (! defined $rh->execute())
+    {
+      logError("Database query \'$insufficient_baselength_query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed insufficient baselength query, see $ef for details.  Exiting...");
+    }
+    while (my @row = $rh->fetchrow())
+    {
+      $short_seqs{$row[0]} = 0;
+      logwarning("Warning: Sequence $row[0] has insufficient base length, omitting from contig $contigs[$i].");
+    }
+    logLocal("done", 9);
+
+    # Fetch the good sequences and store them
+    logLocal("Query good sequences in contig $contigs[$i] ...", 9);
+    $rh = $dbh->prepare($query) or bail("Cannot prepare $query: " . $dbh->errstr);
+    if (! defined $rh->execute())
+    {
+      logError("Database query \'$query\' failed: " . $dbh->errstr);
+      my $ef = (defined getErrorFile())? getErrorFile() : "";
+      bail("Error: Failed contig sequences query, see $ef for details.  Exiting...");
+    }
+    while (my @row = $rh->fetchrow())
+    {
+      my $name = $row[0];
+      my $offset = $row[1];
+      $contigseqs[$i]{$name} = 0;
+      $contigoffs[$i]{$name} = $offset;            # store offsets for sorting
+    }
+    logLocal("done", 9);
+  }
+  logmsg("done.");
+
+  # by now we filled all the hashes that we need.
+  # next step is to remove all sequences that are found in more than one contig.
+  # However, still include them as sequences to pull.
+  logmsg("Finding duplicate sequences...");
+  # first do all pairs of contigs
+  for (my $i = 0; $i < $#contigs; $i++)
+  {
+    for (my $j = $i + 1; $j <= $#contigs; $j++)
+    {
+	foreach my $key (keys %{$contigseqs[$i]})
+        {
+	    if (defined $contigseqs[$j]{$key})
+            {
+              # Update list of contigs this duplicate sequence occurs in
+              $duplicate_seqs{$key}{$contigs[$i]} = 0;
+              $duplicate_seqs{$key}{$contigs[$j]} = 0;
+                
+              # mark both sequences to omit from the contig
+              $contigseqs[$i]{$key} = 1;
+              $contigseqs[$j]{$key} = 1;
+
+              # Merge any contigs found to contain duplicate seqs into a contigs list
+              $shared_contigs{$contigs[$i]}{$key} = 0; 
+              $shared_contigs{$contigs[$j]}{$key} = 0; 
+	    }
+	}
+    }
+  } 
+  logmsg("done.");
+
+  # Merge the duplicate seqs into the inclseqs list, since we still want to pull those
+  logmsg("Merging duplicate sequences into include sequence list...");
+  map { $inclseqs{$_} = 0; } keys %duplicate_seqs;
+  foreach my $seq (keys %duplicate_seqs)
+  {
+    my $rh = $duplicate_seqs{$seq};
+    my @contiglist = sort keys %$rh;
+    logwarning("Warning: Sequence $seq duplicated in contigs @contiglist: omitting from .contig");
+  }
+
+  # Merge the misaligned seqs into the include seq list as we still want to pull those
+  logmsg("Merging misaligned sequences into include sequence list...");
+  map { $inclseqs{$_} = 0; } keys %misaligned_seqs;
+
+  # Merge the short seqs into the exclude seq list as these will never be used.
+  # Also merge this list in the list of omitted sequences.
+  logmsg("Merging short sequences into exclude and omitted sequence lists...");
+  map { $exclseqs{$_} = 0;     } keys %short_seqs;
+  map { $omitted_seqs{$_} = 1; } keys %short_seqs;
+                
+  logmsg("Marking excludes in contigs...");
+  for (my $i = 0; $i <= $#contigs; $i++)
+  {
+    foreach my $key (keys %{$contigseqs[$i]})
+    {
+      if (defined $exclseqs{$key})
+      {
+	$contigseqs[$i]{$key} = 1; 
+        $omitted_seqs{$key} = 1;      # This seq would have been included otherwise
+        delete $shared_contigs{$contigs[$i]}{$key} 
+          if (exists $shared_contigs{$contigs[$i]}{$key}); 
+        delete $inconsistent_contigs{$contigs[$i]}{$key} 
+          if (exists $inconsistent_contigs{$contigs[$i]}{$key}); 
+      }
+    }
+  }
+  logmsg("done.");
+
+  logmsg("Removing duplicates...");
+  for (my $i = 0; $i <= $#contigs; $i++)
+  {
+    foreach my $key (keys %{$contigseqs[$i]})
+    {
+	if ($contigseqs[$i]{$key} == 1)
+        {
+	    delete $contigseqs[$i]{$key}; # actually remove entries
+	    delete $contigoffs[$i]{$key};
+	}
+    }
+  }
+  logmsg("done.");
+
+  logmsg("Removing sequences in excludes...");
+  foreach my $key (keys %inclseqs) 
+  {
+    if (defined $exclseqs{$key})
+    {
+        $omitted_seqs{$key} = 1; # This seq would have been included otherwise
+	delete $inclseqs{$key};  # actually remove entries
+    }
+  }
+  logmsg("done.");
+
+  # now we get to pull all the contigs
+  if ($#contigs >= 0)
+  {
+    logmsg("Writing out contigs...");
+    my $contigname  = $outprefix . ".contig";
+    my $fh_contig = new IO::File("> $contigname") or bail("Cannot open $contigname ($!)\n");
+    for (my $i = 0; $i <= $#contigs; $i++)
+    {
+      my $nseqs = 0;
+      my $nbases = 0;
+      my $end = 0;
+      my $first_seq = 1;
+
+      logmsg("[$contigs[$i]]");
+  
+      # Following the process of sequence exclusion, there may remain
+      # at this point too few sequences to pull the contig.  However, still 
+      # add the remaining sequences of thusly excluded contigs into the .seq file.
+      # 
+      $nseqs = keys %{$contigseqs[$i]};
+      if ($nseqs < $MINSEQS)
+      {
+	logwarning("Warning: Contig $contigs[$i] has insufficient remaining sequences ($nseqs), omitting.");
+        $omitted_contigs{$contigs[$i]} = 1;
+        foreach my $key (keys %{$contigseqs[$i]})
+        {
+          $inclseqs{$key} = 0;
+          logwarning("Warning: Sequence $key from omitted contig $contigs[$i] will be included anyway.");
+        }
+	next;
+      }
+
+      logLocal("Query for contig $contigs[$i] consensus sequence...", 9);
+      my $cquery = qq~
+  	select asmbl_id, lsequence
+          from assembly
+          where asmbl_id = $contigs[$i]
+          at isolation read uncommitted
+    	~;
+      my $qh = $dbh->prepare($cquery) or bail("Cannot prepare $cquery: " . $dbh->errstr);
+      if (! defined $qh->execute())
+      {
+	logError("Database query \'$cquery\' failed: " . $dbh->errstr);  
+        my $ef = (defined getErrorFile())? getErrorFile() : "";
+	bail("Error: Failed consensus sequence query, see $ef for details.  Exiting...");
+      }
+      logLocal("done.", 9);
+  
+      my $first = 0; 
+      while(my @row = $qh->fetchrow())
+      {
+        if ($first > 1)
+        {
+          # There must be only one row returned, something is wrong.
+          logError("Warning: Duplicate consensus sequence found for contig $contigs[$i], ignoring.");
+          last;
+        }
+	$fh_contig->print(sprintf("##%s %d %d bases, 00000000 checksum.\n",
+			     $row[0], $nseqs, length($row[1]))
+                         ) or bail("Could not write to $contigname ($!)");
+	for (my $j = 0; $j < length($row[1]); $j += 60)
+        {
+	  $fh_contig->print(substr($row[1], $j, 60), "\n") or bail("Could not write to $contigname ($!)");
+	}
+        $nbases = length($row[1]);
+        $first++;
+      }
+      $count_contigs++;    # Count successful contig pull
+
+      # Iterate through the contigs that remain in the pull
+      foreach my $key ( sort {$contigoffs[$i]{$a} <=> $contigoffs[$i]{$b}} (keys %{$contigseqs[$i]}) )
+      {
+	# push the current sequence into the .seq list
+	$inclseqs{$key} = 0;
+
+	# run the queries
+        logLocal("Query contig $contigs[$i] for sequence $key...", 9);
+	my $squery = qq~
+	    select seq_name, offset, seq_lend, seq_rend, asm_lend, asm_rend, lsequence
+	    from asmbl_link
+	    where asmbl_id = $contigs[$i]
+              and seq_name = \"$key\"
+            at isolation read uncommitted
+            ~;
+	my $qh = $dbh->prepare($squery) or bail("Cannot prepare $squery: " . $dbh->errstr);
+        if (! defined $qh->execute())
+        {
+          logError("Database query \'$squery\' failed: " . $dbh->errstr);
+	  my $ef = (defined getErrorFile())? getErrorFile() : "";
+          bail("Error: Failed contig sequence record query, see $ef for details.  Exiting...");
+        }
+        logLocal("done.", 9);
+	
+	while (my @row = $qh->fetchrow())
+        {
+	    $fh_contig->print(
+		               sprintf("#%s(%d) [%s] %d bases, 00000000 checksum. {%d %d} <%d %d>\n", 
+			               $row[0], $row[1], ($row[2] < $row[3])?"":"RC", 
+			               length($row[6]), $row[2], $row[3], $row[4], $row[5])
+                             ) 
+                             or bail("Could not write to $contigname ($!)");
+	    for (my $j = 0; $j < length($row[6]); $j += 60)
+            {
+	      $fh_contig->print(substr($row[6], $j, 60), "\n") 
+                 or bail("Could not write to $contigname ($!)");
+	    }
+            # Check for lack of sequence coverage in the assembly.  This is reported
+            # but does not prevent the contig from getting pulled.  Check for missing
+            # in the middle and at each end.
+            my $start = $row[1];
+            my $length = length($row[6]);
+            if ($first_seq)
+            { 
+              if ($start != 0)
+              {
+                $broken_contigs{$contigs[$i]} = 1;
+                logwarning("Warning: Contig $contigs[$i] first $start positions ".
+                       "not supported by any underlying sequence.");
+              }
+              $first_seq = 0;
+            }
+            else
+            {
+              if ($start - $end > 1)
+              {
+                my $mark = $start-1;
+                $broken_contigs{$contigs[$i]} = 1;
+                logwarning("Warning: Contig $contigs[$i] positions $end-$mark (from 0) ".
+                       "not supported by any underlying sequence.");
+              }
+            }
+            # Update the endpoint only if it extends the coverage segment
+            if ($start + $length > $end)
+            {
+              $end = $start + $length;
+            }
+            logmsg('.') if ($count_contig_seqs != 0  &&  $count_contig_seqs % $DOTFREQ == 0);
+            $count_contig_seqs++;  # Count successful pull of a contig sequence
+	}
+      }
+    
+      # Another check for underlying sequence not present, at the end of the contig.
+      if ($end != $nbases)
+      {
+        $broken_contigs{$contigs[$i]} = 1;
+        my $nmissing = $nbases - $end;
+        logwarning("Warning: Contig $contigs[$i] last $nmissing positions at $end ".
+               "not supported by any underlying sequence.");
+      }
+    }
+    $fh_contig->close() or bail("Could not close $contigname ($!)");
+    logmsg("done.");
+  }
+
+  # Print out .seq and .qual files
+  my @allseqs = keys %inclseqs; 
+  if ($#allseqs >= 0)
+  { 
+    logmsg("Writing .seq and .qual files...");
+    my $fh_seq  = new IO::File("> $outprefix.seq")  or bail("Cannot open $outprefix.seq ($!)");
+    my $fh_qual = new IO::File("> $outprefix.qual") or bail("Cannot open $outprefix.qual ($!)");
+
+    foreach my $key (@allseqs)
+    {
+      logLocal("Query sequence data for $key...", 9);
+      my $query = qq~
+	select s.seq_name, b.sequence, b.quality, f.end5, f.end3, 
+               l.min_clone_len, l.max_clone_len, l.med_clone_len
+        from sequence s, bases b, feature f, track..library l
+        where s.seq_name = \"$key\"
+          and s.latest_bases_id = b.id
+          and f.seq_name = s.seq_name
+          and f.feat_type = "CLR"
+          and f.end3 - f.end5 > $MINBASES
+          and l.lib_id = substring(s.seq_name, 1, 4)
+        at isolation read uncommitted
+	~;
+      my $qh = $dbh->prepare($query) or bail("Cannot prepare $query: " . $dbh->errstr);
+      if (! defined $qh->execute())
+      {
+        logError("Database query \'$query\' failed: " . $dbh->errstr);
+	my $ef = (defined getErrorFile())? getErrorFile() : "";
+        bail("Error: Failed sequence record query, see $ef for details.  Exiting...");
+      }
+      logLocal("done.", 9);
+      my $nrows = 0;
+      while (my @row = $qh->fetchrow())
+      {
+        $nrows++;
+        $fh_seq->print(">$row[0] $row[5] $row[6] $row[7] $row[3] $row[4]\n") 
+           or bail("Cannot write to $outprefix.seq ($!)");
+        for (my $j = 0; $j < length($row[1]); $j += 60)
+        {
+    	  $fh_seq->print(substr($row[1], $j, 60), "\n")  
+            or bail("Cannot write to $outprefix.seq ($!)");
+        }
+  
+        my @quality_values = ();
+        for (my $i=0; $i < length($row[2])/4; $i++)
+        {
+          my $value = hex(substr($row[2], $i*4, 4));
+          # Must be within range
+          if ($value > $MAX_QUALITY  || $value < 0)
+          {  
+            logwarning("Warning: Bad quality value ($value) for sequence $row[0] at position $i (from 0).");
+            $value = 0;
+          } 
+          push @quality_values, sprintf("%02d", $value); 
+        }
+
+        # print 17 values two decimal characters each , one space, per line.
+        if (length($row[2]) == 4 * length($row[1]))
+        {
+          $fh_qual->print(">$row[0]\n") 
+             or bail("Cannot write to $outprefix.qual ($!)");
+          for (my $j = 0; $j <= $#quality_values; $j += 17)
+          {
+            $fh_qual->print(join(" ", @quality_values[$j .. $j + 16]), "\n")
+               or bail("Cannot write to $outprefix.qual ($!)");
+          }
+        } 
+        else 
+        {
+          my $actual = length($row[2]) / 4;
+          my $desired = length($row[1]);
+          my $msg = "Warning: $row[0] has an incorrect number of quality values: is " . 
+                    "$actual, should be $desired.";
+          logwarning($msg);
+        }
+        logmsg('.') if ($count_total_seqs != 0 && $count_total_seqs % $DOTFREQ == 0);
+        $count_total_seqs++;  # Count the sequences successfully pulled to the seq file
+      }
+      logwarning("Warning: no data pulled for sequence record.  Query = \'$query\'") if ($nrows == 0);
+    }
+    $fh_qual->close() or bail("Cannot close $outprefix.qual ($!)");
+    $fh_seq->close()  or bail("Cannot close $outprefix.seq  ($!)");
+    logmsg("done.");
+  }
+
+  # Print the output list
+  if ($report || $list || $debug > 0)
+  {
+    logmsg("Generating listings and reports...");
+
+    my @sorted_duplicate_contigs = sort keys %duplicate_contigs; 
+    undef %duplicate_contigs;         # release memory
+    $count_contigs_duplicate = $#sorted_duplicate_contigs;
+
+    my @sorted_omitted_contigs = sort keys %omitted_contigs;
+    undef %omitted_contigs;     # release memory
+    $count_contigs_omitted = $#sorted_omitted_contigs;
+
+    my @sorted_broken_contigs = sort keys %broken_contigs;
+    undef %broken_contigs;     # release memory
+    $count_contigs_broken = $#sorted_broken_contigs;
+
+    my @sorted_shared_contigs = sort keys %shared_contigs;
+    # don't release this structure
+    $count_contigs_shared = $#sorted_shared_contigs;
+
+    my @sorted_inconsistent_contigs = sort keys %inconsistent_contigs;
+    # don't release this structure
+    $count_contigs_shared = $#sorted_inconsistent_contigs;
+
+    my @sorted_duplicate_seqs = sort keys %duplicate_seqs; 
+    undef %duplicate_seqs;     #release memory
+    $count_seqs_duplicate = $#sorted_duplicate_seqs;
+
+    my @sorted_misaligned_seqs = sort keys %misaligned_seqs;
+    undef %misaligned_seqs;    # release memory
+    $count_seqs_misaligned = $#sorted_misaligned_seqs;
+
+    my @sorted_short_seqs = sort keys %short_seqs;
+    undef %short_seqs;      # release memory
+    $count_seqs_short = $#sorted_short_seqs;
+
+    my @sorted_omitted_seqs = sort keys %omitted_seqs;
+    undef %omitted_seqs;    #release memory
+    $count_seqs_omitted = $#sorted_omitted_seqs;
+
+    if ($list || $debug > 0)
+    { 
+      printList("$outprefix.contig.duplicate", \@sorted_duplicate_contigs); 
+      printList("$outprefix.contig.omitted",   \@sorted_omitted_contigs); 
+      printList("$outprefix.contig.broken",   \@sorted_broken_contigs); 
+      printList("$outprefix.contig.shared",   \@sorted_shared_contigs); 
+      printList("$outprefix.contig.inconsistent",   \@sorted_inconsistent_contigs); 
+      printList("$outprefix.seq.duplicate",    \@sorted_duplicate_seqs); 
+      printList("$outprefix.seq.misaligned",   \@sorted_misaligned_seqs);
+      printList("$outprefix.seq.short",        \@sorted_short_seqs); 
+      printList("$outprefix.seq.omitted",      \@sorted_omitted_seqs);
+    }
+
+    if ($report || $debug > 0)  
+    {
+      my $fh_report = new IO::File("> $outprefix.report") 
+                      or bail("Could not open $outprefix ($!)"); 
+      $fh_report->print($REPORT_HEADER);
+      $fh_report->print("Please consult $WarnFile for warnings and errors.\n");
+      $fh_report->print("Print this report using \'enscript -r -fCourier9 $outprefix.report\'\n"); 
+
+      # Number of free seqs is the difference from what was pulled with contigs and total pulled.
+      my $nfree_seqs = $count_total_seqs - $count_contig_seqs;
+      $fh_report->print(
+        qq~
+
+        ======================================== Summary  ======================================= 
+        Number of contigs pulled = $count_contigs 
+        Number of contig sequences pulled = $count_contig_seqs
+        Number of free sequences pulled = $nfree_seqs
+        ~);
+
+      $fh_report->print(
+        qq~
+
+        ====================================== Assemblies =======================================
+        ~);
+      $fh_report->print("\n");
+      printSet($fh_report, "\tContigs omitted", "\t\t", \@sorted_omitted_contigs); 
+      printSet($fh_report, "\tContigs broken",  "\t\t", \@sorted_broken_contigs); 
+
+      $fh_report->print("\tContigs sharing sequences: \n") 
+        if ($#sorted_shared_contigs >= 0);
+      foreach my $contig (@sorted_shared_contigs)
+      {
+        my @sorted_seqs = sort keys %{$shared_contigs{$contig}};
+        my $nels = $#sorted_seqs;
+        if ($nels >= 0)
+        {
+          printSet($fh_report, "\t    [$contig]",   "\t\t", \@sorted_seqs);
+        }
+        else
+        {
+          $fh_report->print("\n");
+        }
+      }
+      
+      $fh_report->print("\tContigs having misaligned sequences: \n") 
+        if ($#sorted_inconsistent_contigs >= 0);
+      foreach my $contig (@sorted_inconsistent_contigs)
+      {
+        my @sorted_seqs = sort keys %{$inconsistent_contigs{$contig}};
+	my $nels = $#sorted_seqs;
+	if ($nels >= 0)
+	{
+          printSet($fh_report, "\t    [$contig]",   "\t\t", \@sorted_seqs);
+	}
+        else
+        {
+          $fh_report->print("\n");
+        }
+      }
+
+      $fh_report->print(
+        qq~
+
+        ======================================= Sequences =======================================
+        ~);
+      $fh_report->print("\n");
+      printSet($fh_report, "\tSequences duplicated", "\t\t", \@sorted_duplicate_seqs); 
+      printSet($fh_report, "\tSequences misaligned", "\t\t", \@sorted_misaligned_seqs); 
+      printSet($fh_report, "\tSequences omitted",    "\t\t", \@sorted_omitted_seqs); 
+      printSet($fh_report, "\tSequences short",      "\t\t", \@sorted_short_seqs); 
+
+      # Footer info
+      my $invocation = getProgramInfo('invocation'); 
+      $fh_report->print("\nProgram invocation: \'$0 $invocation\'\n");
+      $fh_report->print("\nEnd of report.\n");
+      $fh_report->close();
+    }
+    logmsg("done.");
+  }
+  
+  exit(0);
+}
+
+####################################################################
+END 
+{
+  if (defined $dbh)
+  {
+    $dbh->disconnect;
+  }
+}
+

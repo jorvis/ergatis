@@ -1,0 +1,215 @@
+ORFE00002::462::551::hypothetical protein
+ORFE00003::1109::999::hypothetical protein
+ORFE00004::1765::1130::hypothetical protein, (pXO1-01)
+ORFE00005::2165::1785::hypothetical protein
+ORFE00006::2291::2872::hypothetical protein
+ORFE00007::2895::3470::hypothetical protein, (pXO1-02)
+ORFE00008::4111::3527::hypothetical protein, (pXO1-03)
+ORFE00009::4788::4162::hypothetical protein, (pXO1-04)
+ORFE00010::5837::5127::hypothetical protein, (pXO1-05)
+ORFE00011::6561::5857::hypothetical protein, (pXO1-06)
+ORFE00012::8486::6681::reverse transcriptase/endonuclease protein, (pXO1-07)
+ORFE00013::9083::8994::hypothetical protein
+ORFE00014::11675::9093::hypothetical protein, (pXO1-08)
+ORFE00015::11974::11750::hypothetical protein, (pXO1-09)
+ORFE00016::13081::11993::hypothetical protein, (pXO1-10)
+ORFE00017::13327::13187::hypothetical protein
+ORFE00018::13756::13346::hypothetical protein, (pXO1-11)
+ORFE00019::14371::15060::hypothetical protein, (pXO1-12)
+ORFE00021::19136::15177::hypothetical protein, (pXO1-13)
+ORFE00022::20894::19203::conserved hypothetical protein, (pXO1-14)
+ORFE00024::21172::21056::hypothetical protein
+ORFE00025::21279::21710::hypothetical protein, (pXO1-15)
+ORFE00026::22322::24028::conserved hypothetical protein, (pXO1-16)
+ORFE00027::24168::24377::hypothetical protein
+ORFE00029::25258::26202::conserved hypothetical protein, (pXO1-18)
+ORFE00030::26410::26294::hypothetical protein, (pXO1-19)
+ORFE00031::26622::26410::hypothetical protein
+ORFE00032::26800::28293::hypothetical protein, (pXO1-20)
+ORFE00033::28657::28493::hypothetical protein
+ORFE00034::29301::28780::hypothetical protein, (pXO1-21)
+ORFE00035::30065::29313::conserved domain protein
+ORFE00036::30442::30140::hypothetical protein, (pXO1-22)
+ORFE00037::30979::30539::conserved hypothetical protein
+ORFE00038::33056::31128::group II intron reverse transcriptase/maturase, (pXO1-23)
+ORFE00039::33256::33056::hypothetical protein
+ORFE00040::34213::33818::nucleotidyltransferase domain protein, (pXO1-24)
+ORFE00041::34583::34413::hypothetical protein, (pXO1-25)
+ORFE00042::34873::34682::hypothetical protein, (pXO1-26)
+ORFE00043::35520::35239::hypothetical protein, (pXO1-27)
+ORFE00044::35927::36040::hypothetical protein
+ORFE00046::36484::36224::hypothetical protein, (pXO1-28)
+ORFE00047::36825::37646::hypothetical protein, (pXO1-29)
+ORFE00048::37649::38215::hypothetical protein, (pXO1-30)
+ORFE00049::39216::38287::hypothetical protein, (pXO1-31)
+ORFE00050::40203::39223::hypothetical protein, (pXO1-32)
+ORFE00051::41338::40562::nucleotidyltransferase domain protein, (pXO1-33)
+ORFE00052::41938::41357::transcriptional regulator, TetR family, (pXO1-34)
+ORFE00055::43390::43587::IS231-related, transposase, authentic point mutation, (pXO1-35)
+ORFE00056::44115::43936::hypothetical protein
+ORFE00057::44698::44459::hypothetical protein
+ORFE00058::45546::44719::hypothetical protein, (pXO1-38)
+ORFE00059::45808::45542::hypothetical protein
+ORFE00060::46266::46844::acetyltransferase, GNAT family, (pXO1-37)
+ORFE00061::47135::48460::IS231-related, transposase, (pXO1-36)
+ORFE00062::50168::48735::IS231-related, transposase, (pXO1-35)
+ORFE00063::50472::50293::hypothetical protein
+ORFE00064::50683::50567::hypothetical protein
+ORFE00065::50781::50882::hypothetical protein
+ORFE00066::51037::51231::DNA-binding protein, (pXO1-40)
+ORFE00067::51261::51584::hypothetical protein, (pXO1-41)
+ORFE00068::51710::51895::hypothetical protein
+ORFE00069::52025::51915::hypothetical protein
+ORFE00070::55392::52066::conjugation protein, TraG/TraD family, (pXO1-42)
+ORFE00071::55796::55413::hypothetical protein, (pXO1-43)
+ORFE00072::57273::55990::hypothetical protein, (pXO1-44 )
+ORFE00073::59017::57713::hypothetical protein, (pXO1-45)
+ORFE00074::59380::59048::hypothetical protein, (pXO1-46)
+ORFE00075::59981::60583::hypothetical protein, (pXO1-47)
+ORFE00076::60778::61002::hypothetical protein, (pXO1-48)
+ORFE00077::61499::61407::hypothetical protein
+ORFE00078::62059::61949::hypothetical protein
+ORFE00080::62244::63377::hypothetical protein, (pXO1-49)
+ORFE00081::63396::63515::hypothetical protein
+ORFE00082::64090::65040::hypothetical protein, (pXO1-50)
+ORFE00083::65063::66538::hypothetical protein, (pXO1-51)
+ORFE00084::66558::67004::hypothetical protein, (pXO1-52)
+ORFE00085::67033::67425::hypothetical protein, (pXO1-53)
+ORFE00087::67685::68863::surface layer protein, (pXO1-54)
+ORFE00088::69021::71369::hypothetical protein, (pXO1-55)
+ORFE00089::71504::71662::hypothetical protein, (pXO1-56)
+ORFE00090::72078::71851::hypothetical protein
+ORFE00091::72408::73010::hypothetical protein, (pXO1-57)
+ORFE00092::73284::74099::hypothetical protein, (pXO1-58)
+ORFE00093::74119::75549::bacterial type II/IV secretion system protein, (pXO1-59)
+ORFE00094::75545::76474::membrane protein, putative, (pXO1-60)
+ORFE00095::76515::77186::conserved hypothetical protein, (pXO1-61)
+ORFE00096::77173::77343::hypothetical protein, (pXO1-62)
+ORFE00097::77389::77589::hypothetical protein, (pXO1-63)
+ORFE00098::77665::77868::hypothetical protein, (pXO1-64)
+ORFE00099::77943::78545::hypothetical protein, (pXO1-65)
+ORFE00100::78619::79701::conserved hypothetical protein, (pXO1-66)
+ORFE00101::79765::81480::hypothetical protein, (pXO1-67)
+ORFE00102::81380::81661::hypothetical protein
+ORFE00104::81703::82245::hypothetical protein, (pXO1-68)
+ORFE00105::82326::82730::hypothetical protein, (pXO1-69)
+ORFE00106::82760::82864::hypothetical protein
+ORFE00108::83606::84067::hypothetical protein
+ORFE00109::84349::85659::hypothetical protein, (pXO1-70)
+ORFE00110::85702::85797::hypothetical protein
+ORFE00112::87051::86785::hypothetical protein, (pXO1-73)
+ORFE00113::87297::87491::hypothetical protein
+ORFE00115::87695::88027::hypothetical protein, (pXO1-74)
+ORFE00116::88097::88444::hypothetical protein, (pXO1-75)
+ORFE00118::88508::89359::conserved hypothetical protein, (pXO1-76)
+ORFE00120::89365::91461::conserved hypothetical protein, (pXO1-78), authentic frameshift
+ORFE00121::91495::95160::membrane protein, putative, (pXO1-79)
+ORFE00122::95212::95508::conserved domain protein
+ORFE00123::95508::95960::hypothetical protein, (pXO1-80)
+ORFE00125::96030::97709::peptidase, M23/M37 family, (pXO1-81)
+ORFE00126::97729::98307::hypothetical protein, (pXO1-82)
+ORFE00127::98467::98847::hypothetical protein, (pXO1-83)
+ORFE00129::98847::99143::conserved hypothetical protein, (pXO1-84)
+ORFE00130::99276::99560::hypothetical protein
+ORFE00131::99687::100367::CAAX amino terminal protease family protein, (pXO1-85)
+ORFE00132::101973::100831::membrane protein, putative, (pXO1-86)
+ORFE00133::102495::102016::hypothetical protein, (pXO1-87)
+ORFE00134::103654::103379::hypothetical protein, (pXO1-88)
+ORFE00135::103802::103707::hypothetical protein
+ORFE00137::104681::104370::hypothetical protein
+ORFE00138::105298::104825::hypothetical protein, (pXO1-89)
+ORFE00140::106350::106451::hypothetical protein
+ORFE00141::106823::108778::S-layer protein, (pXO1-90)
+ORFE00142::109084::109890::phosphatase, PAP2 family, (pXO1-91)
+ORFE00143::110385::110161::hypothetical protein
+ORFE00144::111123::111010::hypothetical protein
+ORFE00145::111129::111425::hyaluronate synthase, (pXO1-93), authentic frameshift
+ORFE00147::112567::113451::UTP-glucose-1-phosphate uridylyltransferase, (pXO1-94)
+ORFE00148::113481::114809::UDP-glucose 6-dehydrogenase, (pXO1-95)
+ORFE00150::116170::116334::IS1627s1, transposase, degenerate
+ORFE00152::117023::117178::IS1627, transposase, authentic frameshift, (pXO1-96)
+ORFE00153::117193::117288::hypothetical protein
+ORFE00154::117377::117484::hypothetical protein
+ORFE00157::117687::117896::IS1627, transposase, degenerate
+ORFE00161::118796::118482::conserved hypothetical protein, authentic frameshift
+ORFE00162::119348::118896::hypothetical protein, (pXO1-126)
+ORFE00163::120549::120175::hypothetical protein, (pXO1-125)
+ORFE00164::121298::121188::hypothetical protein, (pXO1-123)
+ORFE00165::121131::120682::hypothetical protein, (pXO1-124)
+ORFE00166::121786::121977::transposase, degenerate
+ORFE00167::122608::125007::calmodulin-sensitive adenylate cyclase
+ORFE00168::125103::125273::adenine phosphoribosyltransferase, authentic frameshift
+ORFE00171::126212::126012::transposase, degenerate, (pXO1-120)
+ORFE00174::127456::127202::conserved domain protein
+ORFE00175::129192::127768::transcriptional activator AtxA, (pXO1-119)
+ORFE00176::129459::129310::hypothetical protein
+ORFE00177::129550::129999::conserved hypothetical protein, (pXO2-61)
+ORFE00178::130649::130176::hypothetical protein, (pXO1-117)
+ORFE00180::131058::131174::hypothetical protein
+ORFE00181::131787::131918::hypothetical protein
+ORFE00182::131911::132042::hypothetical protein
+ORFE00183::132248::132475::hypothetical protein
+ORFE00184::136141::133127::transposase X
+ORFE00185::136243::136821::resolvase X
+ORFE00186::137165::138229::spore germination protein XB
+ORFE00187::138276::139751::spore germination protein XA
+ORFE00188::139741::140691::spore germination protein XC, (pXO1-112)
+ORFE00189::140697::140801::hypothetical protein
+ORFE00190::140777::140905::hypothetical protein
+ORFE00192::141445::141299::hypothetical protein
+ORFE00193::141436::141582::hypothetical protein
+ORFE00195::142328::143002::protective antigen-related protein, (pXO1-111)
+ORFE00196::143779::146070::protective antigen
+ORFE00197::146573::146674::hypothetical protein
+ORFE00198::146996::147292::transcriptional repressor PagR, (pXO1-109)
+ORFE00201::147989::147687::hypothetical protein, (pXO1-108)
+ORFE00202::148363::148455::hypothetical protein
+ORFE00203::148430::148639::hypothetical protein
+ORFE00204::148660::148929::hypothetical protein
+ORFE00205::149218::149015::ribonuclease domain protein
+ORFE00206::151786::149360::lethal factor
+ORFE00207::152345::152722::hypothetical protein, (pXO1-106)
+ORFE00208::152709::152867::hypothetical protein
+ORFE00209::152854::153075::hypothetical protein, (pXO1-71)
+ORFE00210::153457::153804::conserved hypothetical protein
+ORFE00211::153835::154014::hypothetical protein
+ORFE00212::154014::154214::transition state regulator, putative, (pXO1-105)
+ORFE00214::154900::154721::hypothetical protein, (pXO1-104)
+ORFE00215::155044::154934::conserved hypothetical protein
+ORFE00216::155165::155257::hypothetical protein
+ORFE00217::156300::155260::integrase/recombinase, putative, (pXO1-103)
+ORFE00218::156466::156876::hypothetical protein
+ORFE00219::156901::157410::hypothetical protein, (pXO1-101)
+ORFE00220::157772::157662::hypothetical protein
+ORFE00221::158208::158357::hypothetical protein
+ORFE00222::158589::158810::hypothetical protein, (pXO1-100)
+ORFE00223::159102::159395::hypothetical protein
+ORFE00224::159657::160142::hypothetical protein, (pXO1-99)
+ORFE00225::160278::161507::hypothetical protein, (pXO1-98)
+ORFE00226::161523::161972::conserved hypothetical protein, (pXO1-97)
+ORFE00230::162920::162279::IS1627, transposase, authentic frameshift, (pXO1-96)
+ORFE00231::163261::162944::IS1627s1, transposase
+ORFE00232::163312::163671::IS1627s1-related, transposase, (pXO1-128)
+ORFE00233::163641::164279::IS1627-related, transposase, authentic point mutation, (pXO1-129)
+ORFE00237::164531::164704::IS231-related, transposase, truncation
+ORFE00239::165360::166070::zinc-binding lipoprotein AdcA domain protein, (pXO1-130)
+ORFE00240::166340::166429::hypothetical protein
+ORFE00241::166698::167744::conserved hypothetical protein, (pXO1-131)
+ORFE00242::167991::169073::integrase/recombinase, phage integrase family, (pXO1-132)
+ORFE00243::170756::169302::conserved hypothetical protein, (pXO1-133)
+ORFE00244::171275::170901::hypothetical protein, (pXO1-134)
+ORFE00245::171588::171268::hypothetical protein
+ORFE00246::172068::171622::hypothetical protein, (pXO1-135)
+ORFE00247::172308::173399::response regulator, putative
+ORFE00248::173732::173914::conserved hypothetical protein, (pXO1-137)
+ORFE00249::174516::174226::transcriptional regulator, ArsR family, (pXO1-138)
+ORFE00251::175026::174607::disulfide bond formation protein, DsbB family, (pXO1-139)
+ORFE00252::175360::175073::hypothetical protein, (pXO1-140)
+ORFE00253::175634::175437::hypothetical protein
+ORFE00254::176330::175689::thermonuclease family protein, (pXO1-141)
+ORFE00255::176584::176378::hypothetical protein
+ORFE00256::179371::176762::DNA topoisomerase I
+ORFE00257::179493::179371::hypothetical protein
+ORFE00258::179645::179544::hypothetical protein
+ORFE00259::180393::179992::conserved domain protein
+ORFE00260::181274::180537::hypothetical protein, (pXO1-143)

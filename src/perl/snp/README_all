@@ -1,0 +1,95 @@
+
+
+makedir5.pl
+
+Create all necessary folder and populate them
+
+USAGE -F folder tag -D Database -Q multifasta -C filename .1con
+
+Dependent files:  
+
+-C genome.1con  (reference genome consensus sequence
+- fasta)
+
+-Q all assemblies of query in multifasta
+
+Program/Script used:
+
+nucmer .1con multifasta 
+
+show-tiling -c out.delta > tile.doc
+
+fetchasmblseq_to_fasta.pl -D Database
+
+revcom_tiling2.pl -F fasta of one assembly
+
+  Mummy.pl
+
+	Mummy.pl -F $filename -C $con
+
+	pull_contig.pl -D $database
+
+	     pull_contig -D Database -A assembly -o tag
+
+	get_tcov2.pl -F $filename
+
+	     getTotalCoverage ../Directory/contig
+
+
+
+analysis4.pl
+
+USAGE -F folderTag  -C filename.1con
+
+Dependent files: 
+
+.1con
+
+
+      Daddy.pl
+      
+      USAGE -F input filename tag -C filename.1con
+
+      quality_SNP7.pl
+
+      USAGE quality_SNP7.pl -G ~/src/SNP/$con -F $directory/$file -I $directory2/$file.align -C $directory3/$file3.contig -T $filename -D $file3 -V $directory4/$file3.tcov -O $output     
+
+
+
+	    read_mummer_align2.perl .align
+
+	    generates: SNP_align.txt, SNP_quality.txt, SNP_Header.txt,
+	    refins.txt, queryins.txt, snpqual.txt, SNP_fasta.txt
+
+
+post_analysis.pl
+
+
+	SNP_loc.pl -F $SNPfile1 -C $coords -P 2 -O SNP
+
+	SNP_loc.pl -F $INDELfile -C $coords -P 1 -O INDEL
+
+	SNP_distances.pl -F $SNPfile1
+
+	trans_align2.pl -F SNP_align.txt
+
+	trans_quality.pl -F SNP_quality.txt
+
+	index_get_qual.pl -F SNP_quality2.txt
+	
+	syn_nonsyn2.pl -F SNP_final.txt -T $tag
+	
+	index_get_qual_pXO1.pl -F SNP_quality2.txt
+
+	syn_nonsyn_pXO1.pl -F SNP_final.txt -T $tag
+
+	index_get_qual_pXO1.pl -F SNP_quality2.txt
+
+	syn_nonsyn_pXO2.pl -F SNP_final.txt -T $tag
+
+	SNP_parser3.pl -F output.final
+
+	final_parse.pl -F SNPs2.txt
+
+	stats.pl -F HH.snp -T $tag
+

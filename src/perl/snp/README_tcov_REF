@@ -1,0 +1,29 @@
+
+
+The .tcov files for the reference genome and plasmids are at:
+
+genome
+
+
+/usr/local/projects/anthrax/jravel/GBA_cov.dir/6609.tcov
+/usr/local/projects/anthrax/jravel/GBA_cov.dir/6609.idTbl
+/usr/local/projects/anthrax/jravel/GBA_cov.dir/ungapped.tcov
+
+pXO1
+/usr/local/projects/anthrax/jravel/pXO1_cov.dir/14033.idTbl  
+/usr/local/projects/anthrax/jravel/pXO1_cov.dir/14033.tcov 
+/usr/local/projects/anthrax/jravel/pXO1_cov.dir/ungapped_pXO1.tcov
+
+
+pXO2
+/usr/local/projects/anthrax/jravel/pXO2_cov.dir/14036.idTbl  
+/usr/local/projects/anthrax/jravel/pXO2_cov.dir/14036.tcov 
+/usr/local/projects/anthrax/jravel/pXO2_cov.dir/ungapped_pXO2.tcov
+
+
+Index file (offset to access the information)
+
+/usr/local/projects/anthrax/jravel/index.tcov
+/usr/local/projects/anthrax/jravel/index_pXO1.tcov
+/usr/local/projects/anthrax/jravel/index_pX21.tcov
+

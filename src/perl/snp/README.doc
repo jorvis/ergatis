@@ -1,0 +1,498 @@
+README FILE FOR THE SNP PIPELINE
+
+
+
+Last update: 10/29/02
+
+To install: 
+
+Create a directory in your home directory: ~/src/SNP/
+
+copy the follwing file to the directory:
+
+
+getTotalCoverage           parsebm.pl              quality_SNP5.pl
+Daddy2.pl                  Mummy.pl                coverage_stat.pl                
+pull_contig                read_mumer_align2.perl  get_tcov2.pl
+fetchasmblseq_to_fasta.pl  pull_contig.pl          fetchseq.pl
+
+SNP_to_gene2.pl            SNP_intergenic2.pl      SNP_distance.pl
+
+
+makedir5.pl and analysis2.pl are the script that run the pipeline.
+
+post_analysis.pl is run afterwards to get information on SNP genetic
+location on the REF genome. 
+
+1. Run makedir5.pl
+
+   makedir5.pl -F folder tag -D database -Q multifasta file
+   -C filename.1con
+
+   -F folder tag: This will be used to create the following folder:
+      tag_asmbl_seq.dir : fasta file of the assembly will be put there
+      tag_contig.dir : .contig and .qual file will be put there
+      tag_mum_align.dir : MumMer files will be put there
+      tag_cov.dir : .tcov and .idx files will be put there
+
+   -D database used ( all lower case ) 
+
+   -Q a multifasta files of all the assemblies (run fetchseq.pl to get
+    it)
+
+    -C The reference molecule in fasta format (the 1.con)
+    IMPORTANT: This file should be placed in the ~/src/SNP/ folder
+
+    This script is going to, in order:
+
+    A. run nucmer between the query and the .1con
+    B. run show-tiling to obtain the tiling path (basically the list
+    of assemblies that map to the .1con
+    C. rename the file tile.doc and delete the out.cluster and
+    out.delta from nucmer output.
+
+    a. create the four folders with the tag unless already there
+    b. create a reverse.dir folder in the tag_asmbl_seq.dir/ folder
+    c. create a file "list.doc" by parsing the tile.doc file
+    d. fetch the sequence of each assembly and store them into the
+       tag_asmbl_seq.dir folder with the file name IDasmbl_id by
+    parsing the list.doc file
+    c. run parsebm.pl: a script wich determine the orientation of the
+    asmbl compare to the reference. If in reverse orientation will
+    create a file IDasmbl_idrevcom and mv the forward file to the
+    reverse.dir folder.
+    d. run Mummy.pl: a script that run each assembly with Mummer and
+    store the results in the folder tag_mum_align.dir/. These files
+    will be parse later in the analysis part of the script
+    e. move the list.doc file to the tag_contig.dir/ folder
+    f. go to the tag_contig.dir folder
+    g. run pull_contig.pl: This script call pull_contig and for each
+    element of the list.doc store the .contig and .qual files in this
+    folder.
+    h. go to the tag_cov.dir/ folder
+    i. run get_cov2.pl: This script call getTotalCoverage, which
+    create for each assembly two files: .tcov and .idTbl. This files
+    will be used to retreive quality values
+    j. exit 
+
+NOTE: At this stage all folders are ready for the analysis.
+If the folder already exists, makedir won't create a new one, but will
+populate the folder with new files, overwriting them.
+
+NOTE2: The tag name is also used in analysis and should be the same.
+
+
+2. analysis2.pl
+
+   analysis2.pl -F folder tag -C filename.1con
+
+   -F and -C are same as makedir
+
+   analysis2.pl will do:
+
+   a. run Daddy.pl: a script which call the major analysis script:
+   quality_SNP4.pl
+
+   b. quality_SNP5.pl 
+      
+      This script will create 6 files as output:
+
+      SNP_Header.txt
+      >ID104revcom-1 (5022bp) 162086 g-->a 4908 --- 4408 to 5022 (SNP: 501/615) COV: 3 CB_QVal: 77
+      >ID105-1 (76695bp) 154365 t-->a 29 --- 1 to 529 (SNP: 29/529)OV: 1 CB_QVal: 15
+      
+      A list of all the SNPs found with the following information:
+      >ID104revcom-1 : SNP ID reflecting the asmbl it was found in. A
+      number is given for each SNP from the same asmbl.
+      (5022bp) : The lenght of the assembly where the SNP was found
+      162086 : position of the SNP on the reference genome
+      g-->a : The SNP: g on the reference and a on the asmbl
+      4908 : positin of the SNP on the asmbl
+      4408 to 5022 : position of the 1000 bp cut-out contained in the
+	   associated file SNP_tag.txt
+      (SNP: 501/615) : position of the SNP in the SNP_tag.txt
+            cut-out. position 501 out of 615 bp total. If the second number
+	    is less than 1001 it means that the asmbl was smaller than 1000
+	    or that the SNP was located more than 500 from the end.
+      COV: 3 : sequence coverage for the SNP 
+      CB_QVal: 77 : Consensus Based Quality value. A representation of
+	    the quality of the SNP. Take into account the consensus,
+	    the environment...
+
+
+      SNP_align.txt
+      >ID104revcom-1 (5022bp) 162086 g-->a 4908 --- 4888 to 4928 COV: 3 CB_QVal: 77
+      REF : GACCCACGAATTTGGTACATGAAAAAAACACCTATGCTACC 162106
+	    |||||||||||||||||||| ||||||||||||||||||||
+      ASM : GACCCACGAATTTGGTACATAAAAAAAACACCTATGCTACC 4928
+
+      >ID105-1 (76695bp) 154365 t-->a 29 --- 9 to 49 COV: 1 CB_QVal: 15
+      REF : GCTAATTACATTAATGGTTTTATTTAACCTAAACCACCATA 154385
+            |||||||||||||||||||| ||||||||||||||||||||
+      ASM : GCTAATTACATTAATGGTTTATTTTAACCTAAACCACCATA 49
+ 
+      This file contain a list of the SNPs with a 40 bp alignment of
+      the region surrounding the SNP between the reference and the
+      asmbl. The information above is identical to SNP_Header.txt
+
+      SNP_quality.txt
+      >ID104revcom-1 162086 g-->a 4908
+      110     T       114     TTT     36:41:37
+      111     T       114     TTT     36:41:37
+      112     T       118     TTT     40:41:37
+      113     T       101     TTT     33:36:32
+      114     T       100     TTT     36:32:32
+     *115     T       77      TTT     31:27:19
+      116     A       74      AAA     35:29:10
+      117     T       88      TTT     36:29:23
+      118     G       98      GGG     36:31:31
+      119     T       101     TTT     36:36:29
+      120     A       89      AAA     31:31:27
+
+      >ID105-1 154365 t-->a 29
+      24      G       29      G       29
+      25      G       16      G       16
+      26      T       17      T       17
+      27      T       9       T       9
+      28      T       9       T       9
+     *29      A       15      A       15
+      30      T       13      T       13
+      31      T       30      TT      20:10
+      32      T       31      TT      18:13
+      33      T       32      TT      19:13
+      34      A       53      AA      28:25
+
+      This file contain the quality values and coverage data for the
+      region surrounding the SNP. The * indicate the position of the
+      SNP.
+      The first column is the position of the SNP on the asmbl
+      The second column is the consensus base
+      The third column is the CB_Qval
+      The fourth column is the read
+      The five column is the QVal for each read
+
+      SNP_tag.fasta
+      >ID104revcom-1 (5022bp) 162086 g-->a 4908 --- 4408 to 5022 (SNP: 501/615) COV: 3 CB_QVal: 77
+      TGCCACTTCAAATTGGCATTCTAATTGATGCGAAACTAGAACAGGTTCCATATCTTAATTTATATCTAAAACAGACCTTCTCTTCTGTATCGTCTTTAGG
+      ACGTTCTGTTGTCTGTAACCAACGATAAAATGTGGAACGTGGTAATTCTAATATTTTACTCAGTTCTTGTATGGTTAATTTTGTTATTTAGCGCTTATTT
+      TCTAATCATAACTGTTCCAATTCACTTAGCTCTTTTGGCTTTTCCCATAAAAGTATTGTTTTCCTACAGTTTGTTGAAGACGGTACGTTTAATCTATTCA
+      GCACCATTTCATTCATGGTTTAATTTGGGGAACATTTTTAATTCTGTTTTTTCTAAAATAAGGAAATTATAATGACCATCCTGTTTCATTTTCATCGCTT
+      TTCACTTTATTTCTTCTAGATAATGCACCCTTGTCTTCAAACGAAAAACACCTCCATTAAATCCACATACTAAGTGAACTGACCCACGAATTTGGTACAT
+      AAAAAAAACACCTATGCTACCTGTTTCTTGTATTCTATAGGAGACAGGTAGTTTAACTTTTCTTGAATACGTTCCGTATTATAATACTCAATGTAATCGT
+      GAATGAGTTGTTTGA
+      >ID105-1 (76695bp) 154365 t-->a 29 --- 1 to 529 (SNP: 29/529) COV: 1 CB_QVal: 15
+      GTGATATAGCTAATTACATTAATGGTTTATTTTAACCTAAACCACCATAATTCTACTAACACTACTTTCACAAGAGAAAATATATCACATTCGTTCTAAC
+      CCTTTAAAATATATCATCATGAAAAACAAAGGTATTTTAGTAAAATAGGAACACTAAAAATCAGGGTACTAATATTAAGCTATCAACTGATTTTCAATTT
+      TTAATTTGGTTTGCATTAAATTCAATTGTGTTCTTACGTAAGGTAGCTGGACTTTCTTAGTTTTTTAATACTTCCCAAAAATTTATCATAACTTTAGCAT
+      AAAATTTAAGAATTTCAACTACTACAAATGGTCGTTTTACTGCCCTATAGCAGAAAAGGTATTATTTACATTCTTTAAATTTTATTTGATAAAATGTTTT
+      TTAATGAAATATGTATAATCAATAAGAACAACTAACACTTCTTGTTGTTTTTCATCAGATAAATCTGCAAGTGCTACCTTAATGCATTCCAATTTTCTTT
+      CCAGTGTACTATCTCTTCCAAACAATTCA
+      
+      This file is a multifasta of the cut-out of 500 bp on either
+      side of the SNP. This is intended for primer design.
+
+      SNP_cov.quality
+      Same as SP_Header.txt except that only the high quality SNP are present.
+
+
+   c. sort the SNP_Header.txt by COVERAGE and creat a file call
+      SNP_sort_Header.txt
+
+   d. run coverage_stat.pl; give information on the number of SNP per
+   COVERAGE values. Also create a list with high quality SNPs
+   (SNP_cov.quality)
+
+
+
+3 . post_analysis.pl
+
+This script ties together three scripts 
+SNP_to_gene2.pl  SNP_intergenic2.pl and SNP_distance.pl
+
+
+These scripts compute the genetic location of the SNP on the
+reference genome.
+
+They require the _com.coords file for the REF genome(s) or plasmid(s)
+The files for GBA, pXO1 (GEN, GBX) and pXO2 (GEN, GBX) are located in
+the ~/src/SNP folder for now.
+
+
+SNP_to_gene2.pl will list the SNP and the gene they are located in
+
+USAGE: SNP_to_gene2.pl -F _com.coords -R SNP_sort_Header.txt -T Tag
+       outputfile: Tag_to_gene.txt
+
+	>ID265-1	1013520	t-->c	2016	ORF00559	DNA-binding protein
+	>ID265-2	1013527	c-->g	2023	ORF00559	DNA-binding protein
+	>ID319-1	973705	a-->c	23603	ORF00614	hypothetical protein
+	>ID267-3	4212740	a-->g	6551	ORF03026	GTP pyrophosphokinase
+	>ID310-1	3129878	g-->a	2080	ORF04450	hypothetical protein
+	>ID310-2	3129880	a-->t	2082	ORF04450	hypothetical protein
+	>ID404-1	3127291	c-->a	99894	ORF04454	membrane protein, putative
+	>ID424-1	2882204	t-->c	2567	ORF04760	aspartate ammonia-lyase
+
+
+
+SNP_intergenic2.pl will list the SNP in intergenic region and show a
+snapshot of that region
+
+USAGE: SNP_intergenic2.pl -P SNP_Header.txt -O _com.coords -T Tag (for outpt)
+       Outputfiles Tag_inter.txt
+		   Tag.reject
+		   Tag.ingene
+
+    LIST OF SNP LOCATED IN INTERGENIC REGION
+
+    SNP : >ID182-1  1375465 c-->t 843 :
+    This SNP is 87 bp in front of ORF00058
+    |---ORF00059---> SNP 87 bp |---ORF00058---> |---ORF00057--->
+    |---ORF00059--->  325 bp |---ORF00058---> 232 bp |---ORF00057--->
+    ORF00059 (515 bp): conserved hypothetical protein
+    ORF00058 (1313 bp) : Na+/H+ antiporter family protein
+    ORF00057 (353 bp): conserved hypothetical protein
+
+    SNP : >ID182-2  1375466 t-->c 844 :
+    This SNP is 86 bp in front of ORF00058
+    |---ORF00059---> SNP 86 bp |---ORF00058---> |---ORF00057--->
+    |---ORF00059--->  325 bp |---ORF00058---> 232 bp |---ORF00057--->
+    ORF00059 (515 bp): conserved hypothetical protein
+    ORF00058 (1313 bp) : Na+/H+ antiporter family protein
+    ORF00057 (353 bp): conserved hypothetical protein
+
+
+
+SNP_distances.pl will list the SNPs and the distance separating two
+consecutive SNPs on one assmbly
+
+USAGE : SNP_distances.pl -F SNP_Header.txt
+        Outputfile : SNP_distance.txt
+
+
+   >ID389revcom-1 (7531bp) 59871 a-->t 71 --- 1 to 571 (SNP: 71/571) COV: 1 CB_QVal: 7	-
+   >ID389revcom-2 (7531bp) 59872 c-->t 72 --- 1 to 572 (SNP: 72/572) COV: 1 CB_QVal: 7	1
+   >ID389revcom-3 (7531bp) 61549 a-->g 1749 --- 1249 to 2249 (SNP: 501/1001) COV: 10 CB_QVal: 334	1677
+
+   >ID266-1 (76841bp) 164239 t-->c 678 --- 178 to 1178 (SNP: 501/1001) COV: 5 CB_QVal: 160	-
+   >ID266-2 (76841bp) 164925 t-->a 1364 --- 864 to 1864 (SNP: 501/1001) COV: 8 CB_QVal: 263	686
+   >ID266-3 (76841bp) 172486 g-->a 7795 --- 7295 to 8295 (SNP: 501/1001) COV: 1 CB_QVal: 27	6431
+   >ID266-4 (76841bp) 175073 a-->g 10382 --- 9882 to 10882 (SNP: 501/1001) COV: 10 CB_QVal: 347	2587
+   >ID266-5 (76841bp) 176038 g-->a 11347 --- 10847 to 11847 (SNP: 501/1001) COV: 7 CB_QVal: 227	965
+
+
+
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
+##########################################################################
+
+OLD VERSION###############################################################
+To install: 
+
+Create a directory in your home directory: ~/src/SNP/
+
+copy the follwing file to the directory:
+
+If you want to use cutAsm to retrieve the quality values for each SNPs
+copy:
+
+Daddy.pl       parsebm.pl         quality_SNP3.pl
+Mummy.pl       coverage_stat.pl   pull_contig.pl
+cutAsm         pull_contig        read_mumer_align2.perl
+fetchasmblseq_to_fasta.pl    
+
+If you want to use geTotalCoverage copy:
+
+getTotalCoverage           parsebm.pl              quality_SNP4.pl
+Daddy2.pl                  Mummy.pl                coverage_stat.pl                
+pull_contig                read_mumer_align2.perl  get_tcov2.pl
+fetchasmblseq_to_fasta.pl  pull_contig.pl
+
+
+In the folder pipeline_script.dir:
+
+analysis.pl   makedir.pl  : For cutAsm
+analysis2.pl  makedir2.pl : For getTotalCoverage
+
+
+To run the pipeline: go to the directory you want the analysis to take
+place. (Files necessary for the analysis will be copied there.
+I suggest it to be an new and empty directory.
+
+Copy the makedir and analysis script to this folder 
+
+
+1. Run makedir2.pl
+
+   makedir2.pl -F folder tag -D database -S asmbl_id start -E asmbl_id
+   end -C filename.1con
+
+   -F folder tag: This will be used to create the following folder:
+      tag_asmbl_seq.dir : fasta file of the assembly will be put there
+      tag_contig.dir : .contig and .qual file will be put there
+      tag_mum_align.dir : MumMer files will be put there
+      tag_cov.dir : .tcov and .idx files will be put there
+
+   -D database used ( all lower case ) 
+
+   -S/-E This correspond the asmbl_id of the first assembly and the
+    last one, this assumes that they are consecutive. Ex. -S 103 -D
+    120 means assembly 103 to 120
+
+    -C The reference molecule in fasta format (the 1.con)
+    IMPORTANT: This file shoudl be placed in the ~/src/SNP/ folder
+
+    This script is going to, in order:
+
+    a. create the four folders with the tag
+    b. create a reverse.dir folder in the tag_asmbl_seq.dir/ folder
+    c. create a file "list.doc" with the list of the asmbl_id
+    d. fetch the sequence of each assembly and store them into the
+       tag_asmbl_seq.dir folder qith the file name IDasmbl_id
+    c. run parsebm.pl: a script wich determine the orientation of the
+    asmbl compare to the reference. If in reverse orientation will
+    create a file IDasmbl_idrevcom and mv the forward file to the
+    reverse.dir folder.
+    d. run Mummy.pl: a script that run each assembly with Mummer and
+    store the results in the folder tag_mum_align.dir/. These files
+    will be parse later in the analysis part of the script
+    e. move the list.doc file to the tag_contig.dir/ folder
+    f. go to the tag_contig.dir folder
+    g. run pull_contig.pl: This script call pull_contig and for each
+    element of the list.doc store the .contig and .qual files in this
+    folder.
+    h. go to the tag_cov.dir/ folder
+    i. run get_cov2.pl: This script call getTotalCoverage, which
+    create for each assembly two files: .tcov and .idTbl. This files
+    will be used to retreive quality values
+    j. exit 
+
+NOTE: At this stage all folders are ready for the analysis.
+If the folder already exists, makedir won't create a new one, but will
+populate the folder with new files, overwriting them.
+
+NOTE2: The tag name is also used in analysis and should be the same.
+
+2. analysis2.pl
+
+   analysis2.pl -F folder tag -C filename.1con
+
+   -F and -C are same as makedir
+
+   analysis2.pl will do:
+
+   a. run Daddy.pl: a script which call the major analysis script:
+   quality_SNP4.pl
+
+   b. quality_SNP4.pl 
+      
+      This script will create 4 files as output:
+
+      SNP_Header.txt
+      >ID104revcom-1 (5022bp) 162086 g-->a 4908 --- 4408 to 5022 (SNP: 501/615) COV: 3 CB_QVal: 77
+      >ID105-1 (76695bp) 154365 t-->a 29 --- 1 to 529 (SNP: 29/529)OV: 1 CB_QVal: 15
+      
+      A list of all the SNPs found with the following information:
+      >ID104revcom-1 : SNP ID reflecting the asmbl it was found in. A
+      number is given for each SNP from the same asmbl.
+      (5022bp) : The lenght of the assembly where the SNP was found
+      162086 : position of the SNP on the reference genome
+      g-->a : The SNP: g on the reference and a on the asmbl
+      4908 : positin of the SNP on the asmbl
+      4408 to 5022 : position of the 1000 bp cut-out contained in the
+	   associated file SNP_tag.txt
+      (SNP: 501/615) : position of the SNP in the SNP_tag.txt
+            cut-out. position 501 out of 615 bp total. If the second number
+	    is less than 1001 it means that the asmbl was smaller than 1000
+	    or that the SNP was located more than 500 from the end.
+      COV: 3 : sequence coverage for the SNP 
+      CB_QVal: 77 : Consensus Based Quality value. A representation of
+	    the quality of the SNP. Take into account the consensus,
+	    the environment...
+
+
+      SNP_align.txt
+      >ID104revcom-1 (5022bp) 162086 g-->a 4908 --- 4888 to 4928 COV: 3 CB_QVal: 77
+      REF : GACCCACGAATTTGGTACATGAAAAAAACACCTATGCTACC 162106
+	    |||||||||||||||||||| ||||||||||||||||||||
+      ASM : GACCCACGAATTTGGTACATAAAAAAAACACCTATGCTACC 4928
+
+      >ID105-1 (76695bp) 154365 t-->a 29 --- 9 to 49 COV: 1 CB_QVal: 15
+      REF : GCTAATTACATTAATGGTTTTATTTAACCTAAACCACCATA 154385
+            |||||||||||||||||||| ||||||||||||||||||||
+      ASM : GCTAATTACATTAATGGTTTATTTTAACCTAAACCACCATA 49
+ 
+      This file contain a list of the SNPs with a 40 bp alignment of
+      the region surrounding the SNP between the reference and the
+      asmbl. The information above is identical to SNP_Header.txt
+
+      SNP_quality.txt
+      >ID104revcom-1 162086 g-->a 4908
+      110     T       114     TTT     36:41:37
+      111     T       114     TTT     36:41:37
+      112     T       118     TTT     40:41:37
+      113     T       101     TTT     33:36:32
+      114     T       100     TTT     36:32:32
+     *115     T       77      TTT     31:27:19
+      116     A       74      AAA     35:29:10
+      117     T       88      TTT     36:29:23
+      118     G       98      GGG     36:31:31
+      119     T       101     TTT     36:36:29
+      120     A       89      AAA     31:31:27
+
+      >ID105-1 154365 t-->a 29
+      24      G       29      G       29
+      25      G       16      G       16
+      26      T       17      T       17
+      27      T       9       T       9
+      28      T       9       T       9
+     *29      A       15      A       15
+      30      T       13      T       13
+      31      T       30      TT      20:10
+      32      T       31      TT      18:13
+      33      T       32      TT      19:13
+      34      A       53      AA      28:25
+
+      This file contain the quality values and coverage data for the
+      region surrounding the SNP. The * indicate the position of the
+      SNP.
+      The first column is the position of the SNP on the asmbl
+      The second column is the consensus base
+      The third column is the CB_Qval
+      The fourth column is the read
+      The five column is the QVal for each read
+
+      SNP_tag.txt
+      >ID104revcom-1 (5022bp) 162086 g-->a 4908 --- 4408 to 5022 (SNP: 501/615) COV: 3 CB_QVal: 77
+      TGCCACTTCAAATTGGCATTCTAATTGATGCGAAACTAGAACAGGTTCCATATCTTAATTTATATCTAAAACAGACCTTCTCTTCTGTATCGTCTTTAGG
+      ACGTTCTGTTGTCTGTAACCAACGATAAAATGTGGAACGTGGTAATTCTAATATTTTACTCAGTTCTTGTATGGTTAATTTTGTTATTTAGCGCTTATTT
+      TCTAATCATAACTGTTCCAATTCACTTAGCTCTTTTGGCTTTTCCCATAAAAGTATTGTTTTCCTACAGTTTGTTGAAGACGGTACGTTTAATCTATTCA
+      GCACCATTTCATTCATGGTTTAATTTGGGGAACATTTTTAATTCTGTTTTTTCTAAAATAAGGAAATTATAATGACCATCCTGTTTCATTTTCATCGCTT
+      TTCACTTTATTTCTTCTAGATAATGCACCCTTGTCTTCAAACGAAAAACACCTCCATTAAATCCACATACTAAGTGAACTGACCCACGAATTTGGTACAT
+      AAAAAAAACACCTATGCTACCTGTTTCTTGTATTCTATAGGAGACAGGTAGTTTAACTTTTCTTGAATACGTTCCGTATTATAATACTCAATGTAATCGT
+      GAATGAGTTGTTTGA
+      >ID105-1 (76695bp) 154365 t-->a 29 --- 1 to 529 (SNP: 29/529) COV: 1 CB_QVal: 15
+      GTGATATAGCTAATTACATTAATGGTTTATTTTAACCTAAACCACCATAATTCTACTAACACTACTTTCACAAGAGAAAATATATCACATTCGTTCTAAC
+      CCTTTAAAATATATCATCATGAAAAACAAAGGTATTTTAGTAAAATAGGAACACTAAAAATCAGGGTACTAATATTAAGCTATCAACTGATTTTCAATTT
+      TTAATTTGGTTTGCATTAAATTCAATTGTGTTCTTACGTAAGGTAGCTGGACTTTCTTAGTTTTTTAATACTTCCCAAAAATTTATCATAACTTTAGCAT
+      AAAATTTAAGAATTTCAACTACTACAAATGGTCGTTTTACTGCCCTATAGCAGAAAAGGTATTATTTACATTCTTTAAATTTTATTTGATAAAATGTTTT
+      TTAATGAAATATGTATAATCAATAAGAACAACTAACACTTCTTGTTGTTTTTCATCAGATAAATCTGCAAGTGCTACCTTAATGCATTCCAATTTTCTTT
+      CCAGTGTACTATCTCTTCCAAACAATTCA
+      
+      This file is a multifasta of the cut-out of 500 bp on either
+      side of the SNP. This is intended for primer design.
+
+      SNP_cov.quality
+      Same as SP_Header.txt except that only the high quality SNP are present.
+
+c. sort the SNP_Header.txt by COVERAGE and creat a file call
+   SNP_sort_Header.txt
+
+   d. run coverage_stat.pl; give information on the number of SNP per
+   COVERAGE values. Also create a list with high quality SNPs
+   (SNP_cov.quality)
+
+
+
+For question and comment, please contact jravel@tigr.org
