@@ -99,6 +99,11 @@ sub readiteratorconf{
 	    my($key,$value)=split(/=/,$line);
 	    my @elts = split(/,/,$value);
 	    
+	    if(scalar(@elts) == 0){
+		$logger->get_logger()->logdie("Invalid value '$value' for key $key");
+	    }
+		
+
 	    my $numelts;
 	    if((scalar(@elts) % $options{'groupsize'})==0){
 		$numelts = int(scalar(@elts)/$options{'groupsize'});
