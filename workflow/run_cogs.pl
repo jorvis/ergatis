@@ -45,8 +45,6 @@ my $WorkflowSchemaDir = $ENV{'SCHEMA_DOCS_DIR'};
 my $WorkflowExecDir = $ENV{'WORKFLOW_WRAPPERS_DIR'};
 
 my $conf = {
-    ';DATABASE;' => ' ',
-    ';DATABASE_LC;' => ' ',
     ';TMP_DIR;' => '/usr/local/scratch',
     ';REPOSITORY_ROOT;' => '/usr/local/annotation',
     ';INSTALLATION_DIR;' => $WorkflowExecDir,
@@ -54,7 +52,8 @@ my $conf = {
     ';WORKFLOW_SCHEMA_DIR;' => $WorkflowSchemaDir,
     ';MASTER_CONF;' => "$WorkflowConfigFileDir/cogs-master.ini",
     ';MASTER_TEMPLATE;' => "$WorkflowConfigFileDir/cogs-master_template.xml",
-    ';BSML_SEARCH;' => 'blastp'
+    ';BSML_SEARCH;' => 'blastp',
+    ';PVALCUT;' => '1e-5'
     };
 
 # Override the defaults if the user has specified a config file

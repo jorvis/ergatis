@@ -7,10 +7,10 @@
 # Source this file before using any workflow tools. 
 
 # Set WF_ROOT to the installation directory of workflow.
-WF_ROOT=/usr/local/devel/ANNOTATION/workflow
+WF_ROOT=/usr/local/devel/ANNOTATION/workflow-2.1
 export WF_ROOT
 
-WF_TEMPLATE=/usr/local/devel/ANNOTATION/workflow/templates
+WF_TEMPLATE=/usr/local/devel/ANNOTATION/workflow-2.1/templates
 export WF_TEMPLATE
 
 #Set PATH
