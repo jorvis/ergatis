@@ -1,22 +1,78 @@
 #! /local/perl/bin/perl
 
+
+=head1  NAME 
+
+MSF_domain2bsml.pl  - convert MSF format alignment files into BSML documents
+
+=head1 SYNOPSIS
+
+USAGE:  MSF_domain2bsml.pl -a ali_dir -o msf.bsml
+
+=head1 OPTIONS
+
+=over 4
+
+=item *
+
+B<--ali_dir,-a>   [REQUIRED] Dir containing MSF format alignment files that ends in *.msf
+
+=item *
+
+B<--output,-o> [REQUIRED] output BSML file
+
+=item *
+
+B<--suffix,-s> suffix of the multiple sequence alignment file. Default(msf)
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+MSF_domain2bsml.pl is designed to convert multiple sequence alignments in MSF format
+into BSML documents.  More specifically this script is equippd to parse the multiple 
+sequence alignments of domains.  This requires the capture of the start and end 
+coordinates of each "subsequence" in the alignment.  As an option, the user can
+specify the suffix of the alignment files that the script should parse in the 
+directory specified by --ali-dir.  The default suffix is "msf" i.e. family.msf.
+
+Samples:
+
+1. Convert all MFS formatted files that end in "aln" in ali_dir
+   MSF_domain2bsml.pl -a ali_dir -o alignment.bsml -s aln
+
+
+NOTE:  
+
+Calling the script name with NO flags/options or --help will display the syntax requirement.
+
+
+=cut
+
+
 use strict;
-use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlBuilder;
 use Data::Dumper;
 use File::Basename;
+use Pod::Usage;
+
 
 my %options = ();
-my $results = GetOptions (\%options, 'ali_dir|a=s', 'output|o=s', 'verbose|v', 'help|h');
+my $results = GetOptions (\%options, 'ali_dir|a=s', 'output|o=s', 'verbose|v', 'suffix|s=s', 'help|h', 'man') || pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my $output    = $options{'output'};
 my $ali_dir   = $options{'ali_dir'};
 $ali_dir =~ s/\/+$//;
-my $molecule_type = $options{'mol_type'} || 'protein';
+my $msf_suffix = $options{'suffix'} || "msf";  #default suffix pattern of alignment files
 
+&cmd_check();
 ###-------------------------------------------------------###
 
 my $builder = new BSML::BsmlBuilder;
@@ -24,7 +80,7 @@ my $builder = new BSML::BsmlBuilder;
 opendir(DIR, $ali_dir) or die "Unable to access $ali_dir due to $!";
 while( my $file = readdir(DIR)) {
     next if ($file =~ /^\.{1,2}$/);  #skip  "." ,  ".."
-    if($file =~ /^(.+?)(\.msf\.dtab)?\.msf$/) {
+    if($file =~ /^(.+?)(\.msf\.dtab)?\.$msf_suffix$/) {
 	my $fam_name = $1;
 	my $MSF_alignments = process_MSF_file("$ali_dir/$file");
 	next if(keys %$MSF_alignments < 1);   #skip empty msf files
@@ -129,4 +185,25 @@ sub process_MSF_file {
 }
 	
 	
-	    
+sub cmd_check {
+#quality check
+
+    if( exists($options{'man'})) {
+	pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+    }   
+
+    if( exists($options{'help'})) {
+	pod2usage({-exitval => 1, -verbose => 1, -output => \*STDOUT});
+    }
+
+    if(!$output or !$ali_dir) {
+	pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});
+    }
+    
+    #checking BSML repository directory
+    if(! -d $ali_dir) {
+	print STDERR "$ali_dir NOT found.  Aborting...\n";
+	exit 5;
+    }
+
+}	    
