@@ -46,7 +46,7 @@ USAGE:  run_bsml2chado.pl -U username -P password -D target_database [-t target_
 
 =item B<--bsml_type,-b>
 
-    One of three: 1=pairwise alignment 2=multiple alignment 3=SNP 4=custom searches 5=sub-assembly
+    One of three: 1=pairwise alignment 2=multiple alignment 3=SNP 4=custom searches 5=sub-assembly 6=scaffold and contig mapping
 
 =item B<--config,-c>
 
@@ -662,7 +662,7 @@ sub determine_bsml2chado_program {
 
     my $script = shift;
     $logger->logdie("script was not defined") if (!defined($script));
-    $logger->logdie("Invalid bsml_type option: $script\nPlease see the man pages for the utility") if ($script !~ /^[1|2|3|4|5]$/);
+    $logger->logdie("Invalid bsml_type option: $script\nPlease see the man pages for the utility") if ($script !~ /^[1|2|3|4|5|6]$/);
 	
     my $program;
 
@@ -680,6 +680,9 @@ sub determine_bsml2chado_program {
     }
     elsif ($script eq '5'){
 	$program = 'bsmlSubAssembly2Chado';
+    }
+    elsif ($script eq '6'){
+	$program = 'bsmlSuperContig2Chado';
     }
     else{
 	$logger->logdie("Unrecognized option: $script");
@@ -926,6 +929,7 @@ sub sample_bsml_batch_file {
     print STDERR "c)\t3=SNP\n";
     print STDERR "d)\t4=customer searches\n";
     print STDERR "e)\t5=sub-assembly\n";
+    print STDERR "e)\t6=scaffold and contig mapping\n";
     print STDERR "\nUse-case 1: bsml_type specified in the bsml_batch_file\n";
     print STDERR "This is an example of how the bsml_batch_file would be formatted:\n";
     print STDERR "-----------------------------------------------------------------------------------------------\n";
@@ -966,7 +970,7 @@ sub print_usage {
     print STDERR "  -t|--target_server     = target server\n";
     print STDERR "  -D|--target_database   = name of target_database to load analysis into\n";
     print STDERR "  -l|--log4perl          = log4perl log file\n";
-    print STDERR "  -b|--bsml_type         = 1=pairwise alignment, 2=multiple alignment, 3=SNP, 4=custom searches, 5=sub-assembly\n";
+    print STDERR "  -b|--bsml_type         = 1=pairwise alignment, 2=multiple alignment, 3=SNP, 4=custom searches, 5=sub-assembly, 6=scaffold and contig mapping\n";
     print STDERR "  -f|--bsml_batch_file   = file containing list of similar type BSML documents to be processed\n";
     print STDERR "  -d|--bsml_directory    = directory containing similar type BSML documents to be processed\n";
     print STDERR "  -c|--config_file       = configuration file\n";
