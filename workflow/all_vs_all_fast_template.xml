@@ -31,7 +31,11 @@
                     <name>RunUnixCommand</name>
                     <configMapId>3.3</configMapId>
                 </command>
-            </commandSet> <!-- End Pre-filter -->
+                 <command>
+                    <name>RunUnixCommand</name>
+                    <configMapId>3.4</configMapId>
+                </command>          
+           </commandSet> <!-- End Pre-filter -->
         </commandSet>
         <command>    
             <name>RunUnixCommand</name>
