@@ -76,12 +76,12 @@ print "</body></html>";
 sub get_workflow_docs{
     my($file) = @_;
     my $cfg = new Config::IniFiles(-file => $file);
-    return $cfg->val("init","$;WORKFLOWDOCS_DIR$;");
+    return $cfg->val("init",'$;WORKFLOWDOCS_DIR$;');
 }
 sub get_workflow_bin{
     my($file) = @_;
     my $cfg = new Config::IniFiles(-file => $file);
-    return $cfg->val("init","$;BIN_DIR$;");
+    return $cfg->val("init",'$;BIN_DIR$;');
 }
 
 sub get_pipeline_blds{

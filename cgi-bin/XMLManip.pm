@@ -351,13 +351,13 @@ sub _check_conf{
 sub _get_workflow_bin{
     my($file) = @_;
     my $cfg = new Config::IniFiles(-file => $file);
-    return $cfg->val("init","$;BIN_DIR$;");
+    return $cfg->val("init",'$;BIN_DIR$;');
 }
 
 sub _get_workflow_docs{
     my($file) = @_;
     my $cfg = new Config::IniFiles(-file => $file);
-    return $cfg->val("init","$;WORKFLOWDOCS_DIR$;");
+    return $cfg->val("init",'$;WORKFLOWDOCS_DIR$;');
 }
 
 1;
