@@ -1,19 +1,86 @@
 #!/usr/local/bin/perl
 
 
+
+=head1  NAME 
+
+make_each_seq_bsml.pl  - Generates DNA sequences in FASTA format
+
+=head1 SYNOPSIS
+
+USAGE:  make_each_seq_bsml.pl -b bsml_dir -o output_dir -a bsp_3839_assembly
+
+=head1 OPTIONS
+
+=over 4
+
+=item
+
+B<--bsml_dir,-b>   [REQUIRED] Dir containing BSML documents (repository)
+
+=item *
+
+B<--output_dir,-o> [REQUIRED] dir to save output to
+
+=item *
+
+B<--asmbl_ids,-a> Build sequences from this asmbl_id.  Multiple values can be comma separated
+
+=item *
+
+B<--asmbl_file>  name of the file containing a list of asmbl_ids
+
+=item * 
+
+B<--project,-p> save all sequences in this subdirectory (default in each asmbl_id's dir)
+
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+make_each_seq_bsml.pl is designed to generate multi-fasta files of DNA sequences
+for each gene given a list of assembly IDs.  The data is obtained through existing
+BSML files in some central repository.  The output files are 1 gene per fasta file.
+If -p flag is not used, the output files will be stored in the asmbl_id sub_dir under
+the output_dir.  If -p is specified, all the fasta files will be stored in the directory
+specified by -p which sits in the directory specified by -o.  You can pass a single
+asmbl_id  to -a flag or a list of asmbl_ids separated by comma.  In addition, you can use
+the --asmbl_file flag to specify a external file containing a list of asmbl_ids (1 per line)
+to genrate sequences from.
+
+IMPORTANT:
+
+You must specify EITHER --asmbl_ids OR --asmbl_file flag. Not BOTH.
+
+NOTE:  
+
+Calling the script name with NO flags/options or --help will display the syntax requirement.
+
+
+=cut
+
+
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Log::Log4perl qw(get_logger :levels :easy);
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
 use File::Basename;
+use Pod::Usage;
+
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'project|p=s', 'asmbl_ids|a=s', 'asmbl_file=s', 'help|h' );
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'project|p=s', 
+                                     'asmbl_ids|a=s', 'asmbl_file=s', 'help|h' ) || pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
-my $ASMBL_IDS = $options{'asmbl_ids'};
+my $ASMBL_IDS  = $options{'asmbl_ids'};
 my $output_dir = $options{'output_dir'};
 $output_dir =~ s/\/+$//;       #remove terminating '/'s
 my $BSML_dir = $options{'bsml_dir'};
@@ -23,17 +90,21 @@ my $DEBUG = $options{'DEBUG'} || 0;
 my $project = $options{'project'};
 my $asmbl_file      = $options{'asmbl_file'};
 
-if(!$BSML_dir or !$output_dir or exists($options{'help'})) {
-    &print_usage();
+if( exists($options{'help'})) {
+    pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+}
+
+
+if(!$BSML_dir or !$output_dir) {
+    pod2usage({-exitval => 1,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});
+
 }
 if(!$asmbl_file and ! $ASMBL_IDS) {
-    print STDERR "Either --asmbl_ids  OR --asmbl_file option is needed\n";
-    &print_usage();
+    pod2usage(-verbose => 1, -message => "$0: Must specify either --asmbl_ids OR --asmbl_file.", -output => \*STDERR)
 }
 
 if($asmbl_file and $ASMBL_IDS) {
-    print STDERR " Specify either --asmbl_ids OR --asmbl_file\n"; 
-    &print_usage();
+    pod2usage(-verbose => 1, -message => "$0: Must specify either --asmbl_ids OR --asmbl_file. NOT BOTH.", -output => \*STDERR) 
 }
 
 ###-------------------------------------------------------###
@@ -186,21 +257,6 @@ sub read_asmbl_file {
 
 }
 
-
-sub print_usage {
-
-
-    print STDERR "SAMPLE USAGE:  make_each_seq_bsml.pl -b bsml_dir -o output_dir -a bsp_3839_assembly\n";
-    print STDERR "  --bsml_dir    = dir containing BSML doc\n";
-    print STDERR "  --output_dir  = dir to save output to\n";
-    print STDERR "  --asmbl_ids  (multiple values can be comma separated)\n";
-    print STDERR "               (-a all  grabs all asmbl_ids)\n";    
-    print STDERR "  --asmbl_file  = name of the file containing a list of asmbl_ids\n";
-    print STDERR "  --project     = save all sequences in this subdirectory (default in each asmbl_id's dir)\n";
-    print STDERR "  --help = This help message.\n";
-    exit 1;
-
-}
 
 
 
