@@ -6,7 +6,7 @@ run_pe.pl - Run position effect program
 
 =head1 SYNOPSIS
 
-USAGE:  run_pe.pl -g genefile -p matchfile [-c] [-b pe_binary] [-l log] [-d debug] [-o output]
+USAGE:  run_pe.pl -g genefile -p matchfile [-c] [-g gap penalty] [-b pe_binary] [-l log] [-d debug] [-o output]
 
 =head1 OPTIONS
 
@@ -21,8 +21,11 @@ USAGE:  run_pe.pl -g genefile -p matchfile [-c] [-b pe_binary] [-l log] [-d debu
 =item B<--output,-o>
     Optional. Output file. Default is STDOUT.  This is required when using the -c option.
 
-=item B<--pe_binary,-p>
+=item B<--pebin,-p>
     Optional. PE format XML file containing gene matches
+
+=item B<--gap_penalty,-g>
+    Optional. Gap penalty. eg -50.
 
 =item B<--condor,-c>
     Optional. Run on condor
@@ -46,16 +49,16 @@ use Log::Log4perl qw(get_logger :levels :easy);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
-my ($pegene,$pematch,$pebin,$debug,$condor,$outputfile,$log,$help);
+my ($pegene,$pematch,$pebin,$debug,$condor,$outputfile,$gap_penalty,$log,$help);
 my $results = GetOptions ('pegene|g=s' => \$pegene, 
 			  'pematch|m=s' => \$pematch, 
 			  'pebin|b=s' => \$pebin,
+			  'gap_penalty|g=s' => \$gap_penalty,
 			  'condor|c' => \$condor,
 			  'output|o=s' => \$outputfile,
 			  'debug|D=s' => \$debug,
 			  'log|l=s' => \$log,
 			  'help|?|h' => \$help);
-
 pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if($help || !$pegene || !$pematch);
 Log::Log4perl-> Log::Log4perl::init_and_watch($ENV{LOG4PERL_CONF}) if($ENV{LOG4PERL_CONF});
 my $logger = get_logger('papyrus::pe');
@@ -83,6 +86,8 @@ if($log){
 $pebin = "/usr/local/devel/ANNOTATION/shared/bin/linux/peffect" if($pebin eq "");
 
 $logger->debug("PE binary set to $pebin");
+$gap_penalty = "-50" if($gap_penalty eq "");
+$logger->debug("PE gap_penalty set to $gap_penalty");
 
 if($condor){
     &run_pe_condor($pebin,$pegene,$pematch);
@@ -104,8 +109,8 @@ else{
 sub run_pe{
     my($pebin,$pegene,$pematch) = @_;
     my $logger = get_logger('papyrus::pe');
-    $logger->info("Running local execution of '$pebin  -w 10 -g -50 -r -100 -m 4 -o 3 -f $pegene < $pematch'");
-    my $output = qx($pebin /tmp/done -w 10 -g -50 -r -100 -m 4 -o 3 -f $pegene < $pematch);
+    $logger->info("Running local execution of '$pebin  -w 10 -g $gap_penalty -r -100 -m 2 -o 3 -f $pegene < $pematch'");
+    my $output = qx($pebin /tmp/done -w 10 -g $gap_penalty -r -100 -m 4 -o 3 -f $pegene < $pematch);
     if($?) {
 	$logger->fatal("Unable to execute $pebin");
 	return;
@@ -122,13 +127,13 @@ sub run_pe{
 sub run_pe_condor{
     my($pebin,$pegene,$pematch) = @_;
     my $logger = get_logger('papyrus::pe');
-    $logger->info("Running condor execution of '$pebin  -w 10 -g -50 -r -100 -m 4 -o 3 -f $pegene < $pematch'");
+    $logger->info("Running condor execution of '$pebin  -w 10 -g $gap_penalty -r -100 -m 4 -o 3 -f $pegene < $pematch'");
     
     open FILE,">/usr/local/scratch/pe$$.condor.config";
     print FILE <<ENDCONFIG;
 executable = $pebin
 Requirements = ((Arch == "INTEL") && (OpSys == "LINUX"))
-arguments = $outputfile.done -w 10 -g -50 -r -100 -m 4 -o 3 -f $pegene
+arguments = $outputfile.done -w 10 -g $gap_penalty -r -100 -m 4 -o 3 -f $pegene
 input = $pematch
 log = /usr/local/scratch/pe$$.condor.log
 error = /usr/local/scratch/pe$$.condor.error
