@@ -1,5 +1,6 @@
 #!/bin/sh
 
+
 RUNPATHPREFIX=.
 WORKFLOWTEMPLATEDIR=.
 WRAPPERPATH=.
@@ -17,22 +18,37 @@ do case "$opt" in
 	  exit;;
       esac
 done
-
+	  
 if [ -z $database ]
 then
-    echo "Usage: `basename $0` -d dbname";
+    echo "Usage: 'basename $0' -d dbname [-a asmbl_id] [-f asmbl_file]";
     echo;
+    echo "You must specify -a or -f";
     exit 1;
 fi
 
+
 #Set up workflow vars
-wfname="db2bsml"
 databasekey=`echo $database | tr '[a-z]' '[A-Z]'`
 source $WRAPPERPATH/wfenv_bash.sh
-wfnamedir="$RUNPATHPREFIX/$databasekey/workflow/$wfname/$$"
-mkdir -p $wfnamedir
 
-$WRAPPERPATH/set_runtime_vars.sh -d $database -w $wfname -r $wfnamedir
-
+if [ "$asmbl_file" ]
+then
+    wfname="blastp_multi"
+    wfnamedir="$RUNPATHPREFIX/$databasekey/workflow/$wfname/$$"
+    mkdir -p $wfnamedir
+    $WRAPPERPATH/set_runtime_vars.sh -f $asmbl_file -d $database -w $wfname -r $wfnamedir -a $asmbl
+    cp $asmbl_file $wfnamedir
+elif [ "$asmbl" ]
+then 
+    wfname="blastp"
+    wfnamedir="$RUNPATHPREFIX/$databasekey/workflow/$wfname/$$"
+    mkdir -p $wfnamedir
+    $WRAPPERPATH/set_runtime_vars.sh -a $asmbl -d $database  -w $wfname -r $wfnamedir
+else
+    echo "You must specify -a or -f"
+    exit;
+fi
 /usr/local/devel/ANNOTATION/workflow/CreateWorkflow -t $wfnamedir/${wfname}_template.xml -c $wfnamedir/$wfname.ini -i $wfnamedir/$wfname.xml -l $wfnamedir/$wfname.$$.log
 /usr/local/devel/ANNOTATION/workflow/RunWorkflow -i $wfnamedir/$wfname.xml -l $wfnamedir/$wfname.$$.log
+

@@ -8,13 +8,9 @@
 #
 ##############################################################################
 
-#WORKFLOW_TEMPLATE_DIR	= /usr/local/devel/ANNOTATION/shared/doc/workflow
-#WORKFLOW_WRAPPER_DIR	= /usr/local/devel/ANNOTATION/shared/bin
-#WORKFLOW_RUN_DIR	= /usr/local/annotation/
-
-WORKFLOW_TEMPLATE_DIR	= /tmp/workflow/workflow
-WORKFLOW_WRAPPER_DIR	= /tmp/workflow/bin
-WORKFLOW_RUN_DIR	= /tmp/workflow/run
+WORKFLOW_TEMPLATE_DIR	= /usr/local/devel/ANNOTATION/shared/doc/workflow
+WORKFLOW_WRAPPER_DIR	= /usr/local/devel/ANNOTATION/shared/bin
+WORKFLOW_RUN_DIR	= /usr/local/annotation/
 
 all	: install
 

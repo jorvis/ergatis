@@ -1,6 +1,8 @@
 #!/bin/sh
 
-RUNPATH=.
+RUNPATHPREFIX=.
+WORKFLOWTEMPLATEDIR=.
+WRAPPERPATH=.
 
 #process command options
 
@@ -24,23 +26,25 @@ then
     exit 1;
 fi
 
-#Set up workflow vars
-source $RUNPATH/wfenv_bash.sh
-
-project="$database$$"
+databasekey=`echo $database | tr '[a-z]' '[A-Z]'`
+source $WRAPPERPATH/wfenv_bash.sh
 
 if [ "$asmbl_file" ]
 then
-    program="pe_multi"
-    $RUNPATH/set_runtime_vars.sh -f $asmbl_file -d $database -p $project -r $program -a $asmbl
-    cp $asmbl_file $project
+    wfname="pe_multi"
+    wfnamedir="$RUNPATHPREFIX/$databasekey/workflow/$wfname/$$"
+    mkdir -p $wfnamedir
+    $WRAPPERPATH/set_runtime_vars.sh -f $asmbl_file -d $database -w $wfname -r $wfnamedir -a $asmbl
+    cp $asmbl_file $wfnamedir
 elif [ "$asmbl" ]
 then 
-    program="pe"
-     $RUNPATH/set_runtime_vars.sh -a $asmbl -d $database -p $project -r $program
+    wfname="pe"
+    wfnamedir="$RUNPATHPREFIX/$databasekey/workflow/$wfname/$$"
+    mkdir -p $wfnamedir
+    $WRAPPERPATH/set_runtime_vars.sh -a $asmbl -d $database  -w $wfname -r $wfnamedir 
 else
     echo "You must specify -a or -f"
     exit;
 fi
-/usr/local/devel/ANNOTATION/workflow/CreateWorkflow -t $project/${program}_template.xml -c $project/$program.ini -i $project/$program.xml -l $project/$program.$$.log
-/usr/local/devel/ANNOTATION/workflow/RunWorkflow -i $project/$program.xml -l $project/$program.$$.log
+/usr/local/devel/ANNOTATION/workflow/CreateWorkflow -t $wfnamedir/${wfname}_template.xml -c $wfnamedir/$wfname.ini -i $wfnamedir/$wfname.xml -l $wfnamedir/$wfname.$$.log
+/usr/local/devel/ANNOTATION/workflow/RunWorkflow -i $wfnamedir/$wfname.xml -l $wfnamedir/$wfname.$$.log

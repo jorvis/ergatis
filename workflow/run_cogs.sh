@@ -10,7 +10,9 @@
 #
 # ./run_cogs.sh -d TRYP -s all_vs_all
 
-RUNPATH=.
+RUNPATHPREFIX=.
+WORKFLOWTEMPLATEDIR=.
+WRAPPERPATH=.
 
 #process command options
 
@@ -24,13 +26,27 @@ do case "$opt" in
       esac
 done
 
+if [ -z $database ]
+then
+    echo "Usage: `basename $0` -d dbname -s search";
+    echo "where search = [all_vs_all | blastp]";
+    echo;
+    echo "You must specify -d and -s";
+    exit 1;
+fi
+
+
 #Set up workflow vars
-source $RUNPATH/wfenv_bash.sh
+#Set up workflow vars
+databasekey=`echo $database | tr '[a-z]' '[A-Z]'`
+source $WRAPPERPATH/wfenv_bash.sh
 
-project="$database$$"
-program="cogs"
+wfname="cogs"
+wfnamedir="$RUNPATHPREFIX/$databasekey/workflow/$wfname/$$"
+mkdir -p $wfnamedir
 
-    $RUNPATH/set_runtime_vars.sh -d $database -p $project -r $program -a $search
+$WRAPPERPATH/set_runtime_vars.sh -d $database -w $wfname -r $wfnamedir -a $search
 
-/usr/local/devel/ANNOTATION/workflow/CreateWorkflow -t $project/${program}_template.xml -c $project/$program.ini -i $project/$program.xml -l $project/$program.$$.log
-/usr/local/devel/ANNOTATION/workflow/RunWorkflow -i $project/$program.xml -l $project/$program.$$.log
+/usr/local/devel/ANNOTATION/workflow/CreateWorkflow -t $wfnamedir/${wfname}_template.xml -c $wfnamedir/$wfname.ini -i $wfnamedir/$wfname.xml -l $wfnamedir/$wfname.$$.log
+/usr/local/devel/ANNOTATION/workflow/RunWorkflow -i $wfnamedir/$wfname.xml -l $wfnamedir/$wfname.$$.log
+
