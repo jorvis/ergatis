@@ -444,16 +444,12 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     # All of the *.log and *.stats files necessary for the migration
     #
     $conf->{';BSML2CHADO_LOGFILE;'}    = $workflow_instance_dir ."/". $bsml_basename ."/bsml2chado.log";
-    $conf->{';LOAD_LOGFILE;'}          = $workflow_instance_dir ."/". $bsml_basename ."/load.log";
-    $conf->{';LOAD_STATS;'}            = $workflow_instance_dir ."/". $bsml_basename ."/load.stats";
-    $conf->{';DBSPACE_LOGFILE;'}       = $workflow_instance_dir ."/". $bsml_basename ."/dbspace.log";
-    $conf->{';VALIDATION_LOGFILE;'}    = $workflow_instance_dir ."/". $bsml_basename ."/validation.log";
-    $conf->{';VALIDATION_OUTDIR;'}     = $workflow_instance_dir ."/". $bsml_basename;
-    $conf->{';CONFIRM_LOAD_LOGFILE;'}  = $workflow_instance_dir ."/". $bsml_basename ."/confirm_load.log";
-    $conf->{';CONFIRM_LOAD_OUTDIR;'}   = $workflow_instance_dir ."/". $bsml_basename;
     $conf->{';LOG_DIRECTORY;'}         = $workflow_instance_dir ."/". $bsml_basename;
-    $conf->{';VALIDATIONPATH;'}        = $WorkflowExecDir;
-    
+    $conf->{';VALIDATION_OUTDIR;'}             = $workflow_instance_dir ."/". $bsml_basename;
+    $conf->{';VALIDATIONPATH;'}                = $WorkflowExecDir;
+    $conf->{';CONFIRM_LOAD_OUTDIR;'}           = $workflow_instance_dir ."/". $bsml_basename;
+
+
     #
     # Store the configuration for this specific bsml
     # and set global permissions

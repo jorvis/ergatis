@@ -40,5 +40,45 @@
             <name>RunUnixCommand</name>
             <configMapId>replace_placeholders</configMapId>
         </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>validate_feature</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>validate_featureloc</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>validate_organism</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>validate_analysisprop</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>validate_analysis</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>validate_analysisfeature</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>drop_indexes</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>load_sybase</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>rebuild_indexes</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>change_log_permissions</configMapId>
+        </command>
     </commandSet>
 </commandSetRoot>
