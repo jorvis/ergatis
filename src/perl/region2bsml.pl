@@ -1,59 +1,87 @@
 #!/usr/local/bin/perl
 
+=head1 NAME
+
+region2bsml - Convert gene_boundaries(region) output to BSML
+
+=head1 SYNOPSIS
+
+USAGE: region2bsml -r region_file -o output_file [--debug debug_level] [--log log_file] [--help]
+
+=head1 DESCRIPTION
+
+    Convert gene_boundaries(region) output to BSML
+
+=cut
+
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use File::Basename;
 use BSML::BsmlBuilder;
+use Log::Log4perl qw(get_logger :levels :easy);
+use Pod::Usage;
 
+my ($region,$output_file,$debug,$log,$help);
+my $results = GetOptions ('region|r=s'=> \$region,
+			  'output|o=s' => \$output_file,
+			  'debug|D=s' => \$debug,
+			  'log|l=s' => \$log,
+			  'help|?|h' => \$help);
 
-my %options = ();
-my $results = GetOptions (\%options, 'pe_region|f=s', 'bsml_dir|b=s', 'output|o=s', 'verbose|v', 'help|h',);
+pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if($help || !$region || !$output_file);
 
+###-------------------------------------------------------###
+#Init logger
+#Use central install log file as default if available
+Log::Log4perl-> Log::Log4perl::init_and_watch($ENV{LOG4PERL_CONF}) if($ENV{LOG4PERL_CONF});
 
-###-------------PROCESSING COMMAND LINE OPTIONS-------------###
-my $pe_region   = $options{'pe_region'};
-my $output_file = $options{'output'};
-my $BSML_dir   = $options{'bsml_dir'};
-$BSML_dir =~ s/\/+$//;         #remove terminating '/'s
-my $verbose    = $options{'verbose'};
-
-if(!$pe_region or !$output_file  or exists($options{'help'})) {
-    #$logger->fatal("Not all of the required options have been defined.  Exiting...");
-    &print_usage();
+my $logger = get_logger('papyrus::regions');
+$logger->level($INFO);
+$logger->more_logging($debug) if($debug);
+# Define a file appender or a screen appender
+if($log){
+    my $file_appender = Log::Log4perl::Appender->new(
+						     "Log::Dispatch::File",
+						     filename  => $log);
+    
+    my $layout = 
+	Log::Log4perl::Layout::PatternLayout->new(
+						  "%d %p> %F{1}:%L %M - %m%n");
+    $file_appender->layout($layout);
+    $logger->add_appender($file_appender);
+}else{
+    my $screen_appender = Log::Log4perl::Appender->new(
+						       "Log::Dispatch::Screen");	
+    
+    $logger->add_appender($screen_appender);
 }
+
 
 ###-------------------------------------------------------###
 
 my $doc = BSML::BsmlBuilder->new();
 
-open (IN, $pe_region) or die "unable to read $pe_region due to $!";
+open (IN, $region) or die "unable to read $region due to $!";
 while (my $line = <IN>) {
     if($line !~ /^\#/) {
 	chomp($line);
 	my @elements = split(/\s+/, $line);
-	if (@elements == 6) {
-	    my $align = $doc->createAndAddSequencePairAlignment('query_name' => $elements[0], 'dbmatch_accession' => $elements[1]);
-	    my $query_align_length = $elements[3]-$elements[2]+1;
-	    my $match_align_length = $elements[5]-$elements[4]+1;
-	    $doc->createAndAddSequencePairRun('alignment_pair' => $align, 'start_query' => $elements[2], 'runlength' =>$query_align_length,
-                                              'start_hit'=> $elements[4], 'comprunlength'=>$match_align_length);
+	my ($refseq,$compseq,$refstart,$compstart,$refend,$compend) = @elements;
+	$logger->debug("Parsing match line $refseq,$compseq,$refstart,$compstart,$refend,$compend");
+	if (scalar(@elements) == 6) {
+	    my $align = $doc->createAndAddSequencePairAlignment('refseq' => $refseq, 'compseq' => $compseq);
+	    my $query_align_length = $refend-$refstart+1;
+	    my $match_align_length = $compend-$compstart+1;
+	    $doc->createAndAddSequencePairRun('alignment_pair' => $align, 'refpos' => $refstart, 'runlength' =>$query_align_length,
+                                              'comppos'=> $compstart, 'comprunlength'=>$match_align_length);
         } else {
-	    print STDERR "less than 6 elements\n";
+	    $logger->info("Bad match line: $line");
         }
     }
 }
 # write the altered file to disk
 $doc->write( $output_file );
 chmod 0666, $output_file;
+$logger->info("Wrote output file $output_file");
 
-sub print_usage {
-
-
-    print STDERR "SAMPLE USAGE:  region2bsml.pl -f gbs_799_assembly_vs_all.pe.region -o output file\n";
-    print STDERR "  --pe_region   = file containing gene boundaries\n";
-    print STDERR "  --output      = output file \n";
-    print STDERR "  --help = This help message.\n";
-    exit 1;
-
-}
