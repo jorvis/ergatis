@@ -4,7 +4,11 @@
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <name>all_vs_all</name>
-        <configMapId>1</configMapId>
+        <configMapId>1</configMapId> 
+        <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.1.1</configMapId>
+        </command>
         <commandSet type ="parallel">
             <name>get_sequence</name>
             <configMapId>2</configMapId>
