@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>CGC WF</name>
+        <configMapId>1</configMapId>
+        <commandSet type ="parallel">
+            <name>build WF instances</name>
+            <configMapId>2</configMapId>
+            <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.1</configMapId>
+            </command>
+            <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.2</configMapId>
+            </command>
+            <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.3</configMapId>
+            </command>
+        </commandSet>
+        <commandSet type="parallel">
+            <name>Run all WF instances</name>
+            <configMapId>3</configMapId>
+            <command>
+                <name>RunUnixCommand</name>
+                <configMapId>3.1</configMapId>
+            </command>
+            <commandSet type ="serial">
+                <name>run allvsall_PE WF</name>
+                <configMapId>4</configMapId>
+                <command>
+                    <name>RunUnixCommand</name>
+                    <configMapId>4.1</configMapId>
+                </command>
+                <command>
+                    <name>RunUnixCommand</name>
+                    <configMapId>4.2</configMapId>
+                </command>               
+            </commandSet>
+        </commandSet>
+        <command>
+            <name>RunUnixCommand</name>
+            <configMapId>1.1</configMapId>
+        </command>        
+    </commandSet>
+</commandSetRoot>
+
+
+
+
+
