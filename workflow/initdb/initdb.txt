@@ -1,0 +1,10 @@
+1. create tmp dirs
+2. revoke access
+3. backup all tables to scratch (parallel)
+4. truncate all tables
+5. drop all indexes and constraints
+6. loadSybaseChadoTables.pl for all stable tables
+7. rebuild all indexes and constraints
+8. OBO2Chado.pl for all ontologies and loadSybaseChadoTables.pl
+9. grant access
+10. adjust all permissions
