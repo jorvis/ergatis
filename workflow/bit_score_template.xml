@@ -8,13 +8,21 @@
         <commandSet type ="parallel">
             <name>get_sequences</name>
             <configMapId>2</configMapId>
+            <commandSet type ="serial">
+                <name>get_sequence</name>
+                <configMapId>3</configMapId>
+                <command>
+                    <name>RunUnixCommand</name>
+                    <configMapId>3.1</configMapId>
+                </command>
+                <command>
+                    <name>RunUnixCommand</name>
+                    <configMapId>3.2</configMapId>
+                </command>
+            </commandSet>            
             <command>
                 <name>RunUnixCommand</name>
                 <configMapId>2.1</configMapId>
-            </command>
-            <command>
-                <name>RunUnixCommand</name>
-                <configMapId>2.2</configMapId>
             </command>
         </commandSet>
         <command>    
