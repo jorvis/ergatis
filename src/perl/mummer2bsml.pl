@@ -186,11 +186,11 @@ sub parse_promer_full_coords {
 						   'comprunlength'    => $qry_length,
                                                   );
 	#additional attributes
-	$s->addBsmlAttr( 'percent identity',  $percent_id);
-	$s->addBsmlAttr( 'percent similarity', $percent_sim);
-	$s->addBsmlAttr( 'percent stop',  $percent_stop);
-	$s->addBsmlAttr( 'ref frame', $frame_ref );
-	$s->addBsmlAttr( 'query frame', $frame_qry );
+	$s->addBsmlAttr( 'percent_identity',  $percent_id);
+	$s->addBsmlAttr( 'percent_similarity', $percent_sim);
+	$s->addBsmlAttr( 'percent_stop',  $percent_stop);
+	$s->addBsmlAttr( 'ref_frame', $frame_ref );
+	$s->addBsmlAttr( 'query_frame', $frame_qry );
 
     }
 }
@@ -237,7 +237,7 @@ sub parse_nucmer_full_coords {
 						   'comprunlength'    => $qry_length,
 						   'compcomplement'   => $complement
 						   );
-	$s->addBsmlAttr( 'percent identity',  $percent_id);
+	$s->addBsmlAttr( 'percent_identity',  $percent_id);
     }
 }
 
