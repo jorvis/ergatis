@@ -56,13 +56,29 @@ if( $options{'help'} ){
 
 my $doc = new BSML::BsmlBuilder(); 
 
+my $crossrefctr=0;
+
+my $genome = $doc->createAndAddGenome();
+
+
 my $organismelt = $doc->createAndAddOrganism( 
-					   'genome'  => $doc->createAndAddGenome(),
+					   'genome'  => $genome,
 					   'genus'   => $options{'genus'},
 					   'species' => $options{'species'}
 					);
 
 my $abbrev = lc(substr($options{'genus'},0,1))."_".lc($options{'species'});
+my $database = $options{'source_database'} . ':' . $abbrev;
+
+my $xref = $doc->createAndAddCrossReference(
+					    'parent'          => $genome,
+					    'id'              => ++$crossrefctr,
+					    'database'        => $database,
+					    'identifier'      => $option{'species'},
+					    'identifier-type' => 'current'
+					    );
+
+
 
 
 my $strainelt = $doc->createAndAddStrain( 
@@ -173,7 +189,7 @@ sub add_stuff {
 						      'dbsource' => '', 
 						      'icAcckey' => '', 
 						      'strand' => '');
-    $asmseq->setattr('class','protein');
+    $asmseq->addattr('class','protein');
 
     $doc->createAndAddSeqDataImport($asmseq, 
 				    'fasta', 
