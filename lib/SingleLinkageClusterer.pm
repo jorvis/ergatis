@@ -8,7 +8,7 @@ package SingleLinkageClusterer;
 ##              return ([1,2,3] , [6,7,8], ...)
 
 
-our $CLUSTERPATH;
+our $CLUSTERPATH='/usr/local/devel/ANNOTATION/cas/bin/cluster';
 
 use strict;
 
