@@ -117,7 +117,7 @@ sub parse_allvsall_btabs {
 	    $btab[5] =~ s/\|//g;   #get rid of trailing |
 	    $query_protein_id = $btab[0];
 	    $btab[0] = $protID_cdsID->{$btab[0]};
-            $query_cds_id = $btab[0];	    
+	    $query_cds_id = $btab[0];	    
             #$query_name = $btab[0];
 	    $match_name = $btab[5];
 	    splice(@btab, 19, 1);
