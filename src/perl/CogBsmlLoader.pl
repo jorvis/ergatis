@@ -43,7 +43,6 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 =cut
 
-use lib '/export/CVS/bsml/src';
 use strict;
 use warnings;
 use Pod::Usage;
