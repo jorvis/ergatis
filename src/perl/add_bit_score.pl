@@ -1,5 +1,52 @@
 #!/usr/local/bin/perl
 
+=head1  NAME 
+
+add_bit_score.pl  - adds bit_score percentage to existing BLASTP Bsml documents
+
+=head1 SYNOPSIS
+
+USAGE:  add_bit_score.pl -f blastp.bsml -o blastp.bsml
+
+=head1 OPTIONS
+
+=over 4
+
+=item *
+
+B<--bsml_file,-f> [REQUIRED] The Bsml file containing pairwise alignments (i.e. BLASTP)
+
+=item *
+
+B<--output,-o> output BSML file containing bit_score information (default: input file)
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+add_bit_score.pl is designed to add bit_score percentage information to an 
+existing BSML document containing pairwise alignment (i.e. BLASTP).  Bit_score
+percentage is defined as the bit_score of gene A vs gene B divided by the
+bit_score of gene A vs itself.
+
+Samples:
+
+1. add bit_score percentage to file "blastp.bsml"
+
+   add_bit_score.pl -f blastp.bsml -o blastp.bsml 
+
+   Note*  if -o is not specified, the output file will be same as input file.
+
+NOTE:  
+
+Calling the script name with NO flags/options or --help will display the syntax requirement.
+
+
+=cut
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -7,10 +54,10 @@ use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
 use File::Basename;
 use BSML::BsmlBuilder;
-
+use Pod::Usage;
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_file|f=s', 'bsml_dir|b=s', 'output|o=s', 'verbose|v', 'help|h',);
+my $results = GetOptions (\%options, 'bsml_file|f=s', 'bsml_dir|b=s', 'output|o=s', 'verbose|v', 'help|h', 'man') || pod2usage();
 
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -20,11 +67,7 @@ my $BSML_dir   = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;         #remove terminating '/'s
 my $verbose    = $options{'verbose'};
 
-if(!$bsml_file or !$output_file  or exists($options{'help'})) {
-    #$logger->fatal("Not all of the required options have been defined.  Exiting...");
-    &print_usage();
-}
-
+&cmd_check();
 ###-------------------------------------------------------###
 
 my $reader = BSML::BsmlReader->new();
@@ -69,4 +112,26 @@ sub print_usage {
     print STDERR "  --help = This help message.\n";
     exit 1;
 
+}
+
+sub cmd_check {
+#quality check
+
+    if( exists($options{'man'})) {
+	pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+    }   
+    
+    if( exists($options{'help'})) {
+	pod2usage({-exitval => 1, -verbose => 1, -output => \*STDOUT});
+    }
+    
+    
+    if(!$bsml_file or !$output_file) {
+	pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});    
+    }
+
+    if(! -e $bsml_file) {
+	print STDERR "$bsml_file CANNOT be found... Aborting!!!\n";
+	exit 3;
+    }
 }
