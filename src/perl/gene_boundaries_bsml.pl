@@ -269,9 +269,13 @@ sub fillAnnotation  {
     foreach my $seq (keys %{$idlookup->{$asmbl_id}}){
 	foreach my $gene (keys %{$idlookup->{$seq}}){
 	    foreach my $transcript (keys %{$idlookup->{$gene}}){
-		my $fobj = $reader->id_to_object($transcript);
-		$asmbl_lookup->{$seq}->{$transcript->{'protein_id'}}->{'end5'} = $fobj->{'start_loc'};
-		$asmbl_lookup->{$seq}->{$transcript->{'protein_id'}}->{'end3'} = $fobj->{'stop_loc'};
+		my $fobj = BSML::BsmlDoc::BsmlReturnDocumentLookup($transcript);
+		my $feature = $reader->readFeature($fobj);
+		my $locs = $feature->{'locations'};
+		my $start_loc = $locs->[0]->{'startpos'};
+		my $end_loc = $locs->[0]->{'endpos'};
+		$asmbl_lookup->{$seq}->{$transcript->{'protein_id'}}->{'end5'} = $start_loc;
+		$asmbl_lookup->{$seq}->{$transcript->{'protein_id'}}->{'end3'} = $end_loc;
 		
 	    }
 	}
