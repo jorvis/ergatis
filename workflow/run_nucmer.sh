@@ -25,7 +25,7 @@ then
 fi
 
 #Set up workflow vars
-#source $RUNPATH/wfenv_bash.sh
+source $RUNPATH/wfenv_bash.sh
 
 project="$database$$"
 
