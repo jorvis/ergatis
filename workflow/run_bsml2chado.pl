@@ -350,7 +350,8 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     
     $conf->{';CONFIG_LIST;'}   .= $workflow_instance_dir ."/" . $bsml_basename .".ini,";
     $conf->{';INSTANCE_LIST;'} .= $workflow_instance_dir ."/" . $bsml_basename .".xml,";
-    $conf->{';WORKFLOW_INSTANCE_DIRS;'} .= $workflow_instance_dir . "/" . $bsml_basename .",";
+    $conf->{';WORKFLOW_INSTANCE_DIRS;'} .= $workflow_instance_dir . "/" . $bsml_basename ." ";
+
 }    
 
 #
@@ -359,6 +360,7 @@ foreach my $bsml_item (sort keys %$bsml_hash){
 chop $conf->{';CONFIG_LIST;'};
 chop $conf->{';INSTANCE_LIST;'};
 chop $conf->{';WORKFLOW_INSTANCE_DIRS;'};
+
 
 $conf->{';WORKFLOW_INSTANCE_DIR;'} = $workflow_instance_dir;
 
@@ -379,8 +381,11 @@ $execution_string = "chmod 666 $master_wf_fullpath";
 $execution_string = $set_runtime ." -c ". $master_wf_fullpath ." < ". $conf->{';BSML2CHADO_MASTER_CONF;'} ." > ". $workflow_instance_dir ."/bsml2chado-master-instance.ini";
 &execute(\$execution_string);
 
-$execution_string = "chmod 666 " . $workflow_instance_dir ."/bsml2chado-master-instance.ini";
-&execute(\$execution_string);
+
+undef $conf->{';CONFIG_LIST;'};
+undef $conf->{';INSTANCE_LIST;'};
+undef $conf->{';WORKFLOW_INSTANCE_DIRS;'};
+
 
 
 #------------------------------------------------------------------------------------------
@@ -419,27 +424,6 @@ foreach my $bsml_item (sort keys %$bsml_hash){
 
 
     #
-    # Create a subdirectory in the scratch space for this bsml 
-    #
-#    my $execution_string = "mkdir -p -m 777 " . $conf->{';TMP_DIR;'};
-#    &execute(\$execution_string);
-#    $execution_string = "mkdir -p -m 777 " . $conf->{';TMP_DIR;'} ."/". $conf->{';TARGET_DATABASE_LC;'};
-#    &execute(\$execution_string);
-#    $execution_string = "mkdir -p -m 777 " . $conf->{';TMP_DIR;'} ."/". $conf->{';TARGET_DATABASE_LC;'} . "/" . $bsml_basename;
-#    &execute(\$execution_string);
-
-
-    #
-    # Create a subdirectory in the workflow instance directory for this bsml
-    # We will store all the associated goodies in this bsml specific directory
-    #
-
-#    $execution_string = "mkdir -p -m 777 ". $workflow_instance_dir;
-#    &execute(\$execution_string);
-#    $execution_string = "mkdir -p -m 777 ". $workflow_instance_dir  . "/" . $bsml_basename;
-#    &execute(\$execution_string);
-
-    #
     # All of the *.log and *.stats files necessary for the migration
     #
     $conf->{';BSML2CHADO_LOGFILE;'}    = $workflow_instance_dir ."/". $bsml_basename ."/bsml2chado.log";
@@ -457,24 +441,15 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     # Store the configuration for this specific bsml
     # and set global permissions
     #
-    my $bsml_subflow = $workflow_instance_dir ."/". $bsml_basename ."/". $bsml_basename .".sub";
+    my $bsml_subflow = $workflow_instance_dir ."/". $bsml_basename .".sub";
     &store_conf_to_file(\$bsml_subflow, $conf);
     
-    $execution_string = "chmod 666 $bsml_subflow";
-    &execute(\$execution_string);
-
     #
     # Perform sed replacement on the specific bsml subflow configuration .ini file 
     #
     $execution_string = $set_runtime ." -c ". $bsml_subflow ." < ". $conf->{';BSML2CHADO_CONF;'} ." > ". $workflow_instance_dir ."/". $bsml_basename .".ini";
     &execute(\$execution_string);
 
-    #
-    # Give the subflow instance configuration file global permissions
-    #
-    $execution_string = "chmod 666 " . $workflow_instance_dir ."/". $bsml_basename .".ini";
-    &execute(\$execution_string);
-    
 }
 
 #
@@ -483,28 +458,48 @@ foreach my $bsml_item (sort keys %$bsml_hash){
 #
 # and then set global permissions
 #
+
 $execution_string = "cp ". $conf->{';BSML2CHADO_TEMPLATE;'} ." ". $workflow_instance_dir ."/bsml2chado-instance_template.xml";
 &execute(\$execution_string);
 $execution_string = "cp ". $conf->{';BSML2CHADO_MASTER_TEMPLATE;'} ." ". $workflow_instance_dir ."/bsml2chado-master-instance_template.xml";
 &execute(\$execution_string);
 
-$execution_string = "chmod 666 ". $workflow_instance_dir . "/bsml2chado-instance_template.xml";
-&execute(\$execution_string);
-$execution_string = "chmod 666 ". $workflow_instance_dir . "/bsml2chado-master-instance_template.xml";
-&execute(\$execution_string);
-    
-
 #
 # Run the bsml2chado workflow
+# The run_wf script currently executes the following steps:
+# 1) CreateWorkflow
+# 2) RunWorkflow
 #
 $execution_string = $run_wf ." -d ". $workflow_instance_dir ." -c ". $workflow_instance_dir ."/bsml2chado-master-instance.ini" . " -t ". $workflow_instance_dir ."/bsml2chado-master-instance_template.xml" . " -i ". $workflow_instance_dir ."/bsml2chado.xml" ." -l ". $workflow_instance_dir ."/log.txt";
 &execute(\$execution_string);
 
-$execution_string = "chmod 666 ". $workflow_instance_dir . "/*.xml";
+
+#
+# Move the bsml2chado log4perl log file to the workflow instance directory
+#
+$execution_string = "mv $log4perl $workflow_instance_dir/$log4perl";
+&execute(\$execution_string);
+
+#
+# Adjust the permissions for all of the .subs, .ini and .xml files
+#
+$execution_string = "find " . $workflow_instance_dir . " -name \"*.subs\" -type f -exec chmod 666 \\{\\} \\;";
+&execute(\$execution_string);
+
+$execution_string = "find " . $workflow_instance_dir . " -name \"*.ini\" -type f -exec chmod 666 \\{\\} \\;";
+&execute(\$execution_string);
+
+$execution_string = "find " . $workflow_instance_dir . " -name \"*.xml\" -type f -exec chmod 666 \\{\\} \\;";
+&execute(\$execution_string);
+
+$execution_string = "chmod 666 $workflow_instance_dir/$log4perl";
 &execute(\$execution_string);
 
 
-print STDERR "\n$0 execution complete\nPlease review log4perl log file:$log4perl\n\n";
+
+print STDERR "\n$0 execution complete\nPlease review log4perl log file:$workflow_instance_dir/$log4perl\n\n";
+
+
 #----------------------------------------------------------------------------------------------------------------------------
 #
 #                          END OF MAIN -- SUBROUTINES FOLLOW
