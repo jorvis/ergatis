@@ -39,20 +39,18 @@ if(!$asmbl_file and ! $ASMBL_IDS) {
     &print_usage();
 }
 
-if($asmbl_file and $ASMBL_IDS) {
-    print STDERR " Specify either --asmbl_ids OR --asmbl_file\n"; 
-    &print_usage();
-}
 
 
 ###-------------------------------------------------------###
 
 my $valid_asmbl_ids = fetch_valid_asmbl_id($gene_pos_file) if($check_gene_pos);
-my ($cdsID_protID, $proteinID_seqID) = build_id_lookups($BSML_dir);
+#my ($cdsID_protID, $proteinID_seqID) = build_id_lookups($BSML_dir);
 
 my @asm_ids;
+my $bsml_matchfile;
 if($asmbl_file) {   #asmbl_id will be read from a flat file
     @asm_ids = read_asmbl_file($asmbl_file);
+    print STDERR @asm_ids,"\n";
     if(!@asm_ids) {
 	print STDERR "No asmbl_ids found in $asmbl_file.  Aborting...\n";
 	exit 4;
@@ -74,22 +72,35 @@ if($asmbl_file) {   #asmbl_id will be read from a flat file
 my $pexml = new PEffect::PEffectXML();
 my $reader;
 foreach my $asmbl_id (@asm_ids) {
-    my $bsml_btab_file = "$bsml_btab_dir/$asmbl_id.allvsall.bsml";
-    if (!-s $bsml_btab_file) {
-	print STDERR "The $bsml_btab_file does not exist!  Skipping...\n";
-	next;
-    } else {
-	print STDERR "Processing $asmbl_id\n";
+    my @matchfile;
+    if($asmbl_file){
+	@matchfile = <$bsml_btab_dir/$ASMBL_IDS.*.bsml>;
+	#don't reparse same file if already parsed
+	if(!$reader){
+	    my $bsml_btab_file = $matchfile[0];
+	    if (!-s $bsml_btab_file) {
+		print STDERR "The $bsml_btab_file does not exist!  Skipping...\n";
+		next;
+	    }
+	    print STDERR "$bsml_btab_file\n";
+	    $reader = BsmlCGCReader->new(); 
+	    my $parser = BSML::BsmlParserTwig->new();
+	    $parser->parse( \$reader, $bsml_btab_file );
+	}
+    }
+    else{
+	@matchfile = <$bsml_btab_dir/$asmbl_id.*.bsml>;
+	my $bsml_btab_file = $matchfile[0];
+	if (!-s $bsml_btab_file) {
+	    print STDERR "The $bsml_btab_file does not exist!  Skipping...\n";
+	    next;
+	}
 	$reader = BsmlCGCReader->new(); 
 	my $parser = BSML::BsmlParserTwig->new();
 	$parser->parse( \$reader, $bsml_btab_file );
-	#my $pexml = new PEffect::PEffectXML();
-	addMatches($asmbl_id, $match_asmbl_id, $pexml);
-	#my($oref);
-	#$pexml->outputXML(\$oref);
-	#print $oref,"\n";
+	
     }
-
+    addMatches($asmbl_id, $match_asmbl_id, $pexml, $reader);
 }
 my($oref);
 $pexml->outputXML(\$oref);
@@ -98,7 +109,7 @@ print $oref,"\n";
 
 sub addMatches {
 
-    my($asmbl_id, $match_asmbl_id, $pexml) = @_;
+    my($asmbl_id, $match_asmbl_id, $pexml, $reader) = @_;
 
     my $lref;
     if($match_asmbl_id ne 'all') {
@@ -123,20 +134,20 @@ sub addMatches {
     
     foreach my $match (@$lref) {
 	my $q_feat_name = $match->{'query_gene_name'};
-	$q_feat_name = $cdsID_protID->{$q_feat_name};
+#	$q_feat_name = $cdsID_protID->{$q_feat_name} if(exists $cdsID_protID->{$q_feat_name});
         my $m_feat_name = $match->{'match_gene_name'};
 	my $per_sim     = $match->{'percent_similarity'};
 	my $per_id      = $match->{'percent_identity'};
         my $pvalue      = $match->{'pval'};
 
 	#If check_gene_pos option is enabled, the asmbl_id to which each match_gene_name belongs to MUST exist in the gene position xml
-	if($check_gene_pos) {              
-	    my $seqID = $proteinID_seqID->{$m_feat_name};  
-	    if(!exists($valid_asmbl_ids->{$seqID})) { #skip if asmbl_id NOT in gene position xml
-		#print STDERR "$seqID to which $m_feat_name belongs to is NOT in gene position xml.  Skipping...\n";
-                next;
-	    }
-	}
+#	if($check_gene_pos) {              
+#	    my $seqID = $proteinID_seqID->{$m_feat_name};  
+#	    if(!exists($valid_asmbl_ids->{$seqID})) { #skip if asmbl_id NOT in gene position xml
+#		#print STDERR "$seqID to which $m_feat_name belongs to is NOT in gene position xml.  Skipping...\n";
+#                next;
+#	    }
+#	}
 	$pexml->addAlignment($q_feat_name, $m_feat_name, $per_sim, $per_id, $pvalue);
     }
 
