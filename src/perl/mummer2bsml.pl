@@ -229,6 +229,12 @@ sub parse_nucmer_full_coords {
 							 ); 
 
 	my $complement= ($qry_start > $qry_end) ? 1 : 0;
+	if($complement){
+	    $qry_end++;
+	}
+	else{
+	    $qry_start--;
+	}
 
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
 						   'refpos'           => $ref_start,
