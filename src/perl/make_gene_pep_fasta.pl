@@ -159,7 +159,7 @@ sub cmd_check {
 	pod2usage(-exitval =>2, -verbose => 1, -message => "$0: Must specify either --asmbl_ids OR --asmbl_file.", -output => \*STDERR);
     }
     
-    if( $mode !~ /[123]/ ) {
+    if( $mode !~ /^[123]$/ ) {
 	pod2usage(-exitval =>2, -verbose => 1, -message => "$0: valid mode =  1 or 2 or 3", -output => \*STDERR);
     }
     
