@@ -26,7 +26,7 @@ B<--btab_dir,-b> [REQUIRED] Dir containing btab files
 
 =item *
 
-B<--btab_type,-t> [REQUIRED] Type of btab files: 1=allvsall, 2=blastp
+B<--btab_type,-t> [REQUIRED] Type of btab files: 1=ber, 2=blastp
 
 =item *
 
@@ -70,7 +70,7 @@ use Pod::Usage;
 
 my %options = ();
 my $results = GetOptions (\%options, 'btab_dir|b=s', 'bsml_dir|d=s', 'btab_type|t=s', 
-                                     'output|o=s', 'cutoff|c=s', 'verbose|v', 'help|h', 'man') || pod2usage();
+                                     'output|o=s', 'max_hsp_count|m=s', 'cutoff|c=s', 'verbose|v', 'help|h', 'man') || pod2usage();
 
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -81,18 +81,10 @@ my $btab_dir   = $options{'btab_dir'};
 $btab_dir =~ s/\/+$//;
 my $BSML_dir   = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;        
-my $btab_type     = $options{'btab_type'};   # 1 = allvsall , 2 = blast family 
+my $btab_type     = $options{'btab_type'};   # 1 = ber , 2 = blast family 
 my $verbose    = $options{'verbose'};
 my $cutoff = $options{'cutoff'};
-if( !($cutoff) )
-{
-    $cutoff = '1e-15';
-}
-
-
-
-#Log::Log4perl->init("log.conf");
-#my $logger = get_logger();
+my $hspcutoff = $options{'max_hsp_count'};
 
 &cmd_check();
 ###-------------------------------------------------------###
@@ -110,10 +102,14 @@ while( my $file = readdir(DIR)) {
     }
 }
 
+#my $bsmlrepo = new BSML::BsmlRepository('REPOSITORY_ROOT'=>$BSML_dir);
+
+#my ($files) = $bsmlrepo->list_bsml_files();
+
 if($btab_type == 1) {
-    ($gene_asmbl_id, $protID_cdsID) = build_id_lookups_allvsall($BSML_dir);
+    ($gene_asmbl_id, $protID_cdsID) = build_id_lookups_ber($BSML_dir);
     $doc->makeCurrentDocument();
-    parse_allvsall_btabs(\@files);
+    parse_ber_btabs(\@files);
 }elsif($btab_type == 2) {
     $gene_asmbl_id = build_id_lookups_blast($BSML_dir);
     $doc->makeCurrentDocument();
@@ -124,10 +120,6 @@ if($btab_type == 1) {
 }
 
 $doc->write($output);
-chmod 0666, $output;
-
-
-
 
 sub parse_blast_btabs {
 
@@ -137,33 +129,57 @@ sub parse_blast_btabs {
     foreach my $file(@$btab_files) {
 	$num++;
 	open (BTAB, "$file") or die "Unable to open \"$file\" due to $!";
-	print STDERR "opening $file  $num\n" if($verbose);
-	my (@btab, $seq);
+	print STDERR "opening $file  $num using cutoff $cutoff\n" if($verbose);
+	my $hsplookup;
 	while(my $line = <BTAB>) {
 	    chomp($line);
-	    @btab = split("\t", $line);
-	    next if($btab[19] > $cutoff );
-	    next if(!$btab[0] or !$btab[5]);
-	    my $align = $doc->createAndAddBtabLine(@btab);
-	    $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
-	    my $match_asmbl_id = $gene_asmbl_id->{$btab[5]};
-	    my $query_asmbl_id = $gene_asmbl_id->{$btab[0]};
-	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$match_asmbl_id);
+	    my @btab = split("\t", $line);
+	    if(($btab[19] < $cutoff) && ($btab[0] ne "") && ($btab[5] ne "")){
+		if(!(exists $hsplookup->{$btab[0]}->{$btab[5]})){
+		    $hsplookup->{$btab[0]}->{$btab[5]} = [];
+		}
+		push @{$hsplookup->{$btab[0]}->{$btab[5]}},{'pvalue'=>$btab[19],
+							    'line'=>$line};
+	    }
 	}
 	close BTAB;
-	next if(!defined($btab[0]));
-	$seq = $doc->returnBsmlSequenceByIDR($btab[0]);
-	if($seq) {
-	    my $query_asmbl_id = $gene_asmbl_id->{$btab[0]};
-	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$query_asmbl_id);
-        }
+	foreach my $query (keys %$hsplookup){
+	    foreach my $subject (keys %{$hsplookup->{$query}}){
+		my @hsps = sort {$a->{'pvalue'} <=> $b->{'pvalue'}} @{$hsplookup->{$query}->{$subject}};
+		my $maxhsp;
+		if($hspcutoff ne ""){
+		    $maxhsp = ($hspcutoff<scalar(@hsps)) ? $hspcutoff : scalar(@hsps);
+		}
+		else{
+		    $maxhsp = scalar(@hsps);
+		}
+		my $queryid;
+		for(my $i=0;$i<$maxhsp;$i++){
+		    my $line = $hsps[$i]->{'line'};
+		    my @btab = split("\t", $line);
+		    print STDERR "Storing HSP $btab[0] $btab[5] $btab[19] with max hsp_count: $maxhsp\n" if($verbose);;
+		    $queryid = $btab[0] if($btab[0] && (!$queryid));
+		    my $align = $doc->createAndAddBtabLine(@btab);
+		    my $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
+		    my $match_asmbl_id = $gene_asmbl_id->{$btab[5]};
+		    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$match_asmbl_id);
+		}
+		if($queryid){
+		    my $seq = $doc->returnBsmlSequenceByIDR($queryid);
+		    if($seq) {
+			my $query_asmbl_id = $gene_asmbl_id->{$queryid};
+			$doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$query_asmbl_id);
+		    }
+		}
+	    }
+	}
     }
     $doc->createAndAddAnalysis("program" => "washu blastp", "programversion" => '2.0mp', 'sourcename' =>$output,
                                "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
 
 }
     
-sub parse_allvsall_btabs {
+sub parse_ber_btabs {
 
     my $btab_files = shift;
     my $num;
@@ -199,14 +215,14 @@ sub parse_allvsall_btabs {
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$query_asmbl_id");
 	}
     }
-    $doc->createAndAddAnalysis("program" => "ber", "programversion" => '1.0', 'sourcename' =>$output,
+    $doc->createAndAddAnalysis("program" => "ber", "programversion" => '-', 'sourcename' =>$output,
                                "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
 }
 
 
 
     
-sub build_id_lookups_allvsall {
+sub build_id_lookups_ber {
 
     my $BSML_dir = shift;
 
