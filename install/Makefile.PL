@@ -56,7 +56,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-workflow_install	: dirs shellwrappers promer nucmer blastp wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis
+workflow_install	: dirs shellwrappers promer nucmer blastp wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-paralleliterator_template.xml $(WORKFLOW_DOCS_DIR)
