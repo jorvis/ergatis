@@ -41,6 +41,7 @@ if($dowrite == 1){
     open FILE, "+>$xmltemplate" or die("Can't open output xml file $xmltemplate.new : $!");
     $t1->print(\*FILE);
     close FILE;
+    `chmod 666 $xmltemplate`;
 
     print redirect(-uri=>"./show_pipeline.cgi?xmltemplate=$xmltemplate&node=$node");
 }
