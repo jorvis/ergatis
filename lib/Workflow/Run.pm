@@ -136,16 +136,19 @@ sub RunWorkflow{
 	$SIG{'TERM'} = sub {
 	    my $signal = shift;
 	    $SIG{'TERM'} = '';
+	    print STDERR "Caught signal $signal. Killing spawned workflow $pid\n";
 	    kill $signal,$pid;
 	};
 	$SIG{'INT'} = sub {
 	    my $signal = shift;
 	    $SIG{'INT'} = '';
+	    print STDERR "Caught signal $signal. Killing spawned workflow $pid\n;";
 	    kill $signal,$pid;
 	};
 	$SIG{'QUIT'} = sub {
 	    my $signal = shift;
 	    $SIG{'QUIT'} = '';
+	    print STDERR "Caught signal $signal. Killing spawned workflow $pid\n";
 	    kill $signal,$pid;
 	};
 	waitpid($pid,0);
