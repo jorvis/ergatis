@@ -23,6 +23,8 @@ WriteMakefile(
                                  'bin/region2bsml.pl',
                                  'bin/do_blastp.pl',
                                  'bin/max_match_post_process.pl'
-                                 ],
+                                 'bin/make_asmbl_fasta.pl',
+                                 'bin/mummer2bsml.pl'
+                                ],
 
 	      );
