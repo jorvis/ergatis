@@ -86,10 +86,10 @@ while (my $line = <PE> ) {
 	my $length = $aalookup->{$pe[2]}->{'length'} || 0;
 	my $comprunlength = $aalookup->{$pe[3]}->{'length'} || 0;
 	push @{$seq_pair->{$pe[2]}->{$pe[3]}}, {
-	    'start_query'    => 1,
+	    'start_query'    => 0,
 	    'runlength'      => $length,
 	    'comprunlength'  => $comprunlength,
-	    'start_hit'      => 1,
+	    'start_hit'      => 0,
 	    'runscore'       => $ClusterScore,
 	    'PEffect_Cluster_Id' => $ClusterId,
 	    'PEffect_Cluster_Gap_Count' => $ClusterGapCount,
@@ -127,6 +127,7 @@ foreach my $query_name (keys %$seq_pair){
 			my $s = $doc->createAndAddSequencePairRun( 'alignment_pair' => $aln,
 								   'refpos'    => $run->{'start_query'},
 								   'runlength'      => $run->{'runlength'},
+								   'comprunlength'      => $run->{'comprunlength'},
 								   'comppos'      => $run->{'start_hit'},
 								   'runscore'       => $run->{'runscore'},
 								   );
