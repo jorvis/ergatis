@@ -88,11 +88,6 @@
 <!-- TIGR_roles ontology -->
         <command>    
             <type>RunUnixCommand</type>
-            <name>load_stable_tables</name>
-            <configMapId>load_stable_tables</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <name>Process Relation Typedef Ontology</name>
             <configMapId>parse_rel_onto</configMapId>
         </command>
@@ -100,6 +95,11 @@
             <type>RunUnixCommand</type>
             <name>Load Relation Typedef Ontology</name>
             <configMapId>load_rel_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>load_stable_tables</name>
+            <configMapId>load_stable_tables</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
