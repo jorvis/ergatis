@@ -5,14 +5,18 @@
     <commandSet type="serial">
         <name>nucmer_compute</name>
         <configMapId>1</configMapId>
-        <commandSet type ="parallel">
-            <name>get_sequences</name>
-            <configMapId>2</configMapId>
-            <command>
+        <command>
                 <name>RunUnixCommand</name>
                 <configMapId>2.1</configMapId>
-            </command>
-        </commandSet>
+        </command>
+        <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.2</configMapId>
+        </command>
+        <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.3</configMapId>
+        </command>        
         <command>    
             <name>RunUnixCommand</name>
             <configMapId>1.1</configMapId>
@@ -27,3 +31,4 @@
         </command>
     </commandSet>
 </commandSetRoot>
+

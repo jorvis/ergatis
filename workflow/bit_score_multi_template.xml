@@ -5,6 +5,14 @@
     <commandSet type="serial">
         <name>bit_score_analysis</name>
         <configMapId>1</configMapId>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.4</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.5</configMapId>
+        </command>        
         <commandSet type ="parallel">
             <name>get_sequences</name>
             <configMapId>2</configMapId>
@@ -25,14 +33,6 @@
             <name>RunUnixCommand</name>
             <configMapId>1.3</configMapId>
         </command>
-         <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>1.4</configMapId>
-        </command>   
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>1.5</configMapId>
-        </command>    
     </commandSet>
 </commandSetRoot>
 
