@@ -1,0 +1,7 @@
+cvs co papyrus_install
+perl Makefile.PL PREFIX=/usr/local/devel/ANNOTATION/shared
+make
+make install
+
+cvs co papyrus_workflow_install
+make install
