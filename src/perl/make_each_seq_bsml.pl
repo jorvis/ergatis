@@ -61,13 +61,14 @@ foreach my $asmbl_id (@asm_ids) {
     if (-s $bsml_file) {
 	my $reader = BSML::BsmlReader->new();
 	$parser->parse( \$reader, $bsml_file );
-	my $extend_seq = $reader->get_all_protein_dna_extended($asmbl_id, '300') ;
+	my $extend_seq = $reader->get_all_cds_dna($asmbl_id) ;
 	while( my ($gene, $seq) = each %$extend_seq ) {
 	    next if(length($seq) < 1); 
 	    $gene =~ s/_\d$//;
-	    my $gene_file = "$final_output_dir/${gene}.seq";
+	    my $protein_seq_id = $reader->cdsIdtoProteinSeqId($gene);
+	    my $gene_file = "$final_output_dir/${protein_seq_id}.seq";
 	    open(FILE, ">$gene_file") || die "Unable to write to $gene_file due to $!";
-	    my $fastaout = &fasta_out($gene, $seq);
+	    my $fastaout = &fasta_out($protein_seq_id, $seq);
 	    print FILE $fastaout;
 	    close FILE;
 	    chmod 0777, $gene_file;

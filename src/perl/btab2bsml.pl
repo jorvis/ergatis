@@ -1,16 +1,20 @@
 #!/usr/local/bin/perl
 
 
-use lib("shared", "/usr/local/annotation/PNEUMO/clu_dir/BSML/ANNOTATION/bsml/src");
+#use lib("shared", "/usr/local/annotation/PNEUMO/clu_dir/BSML/bsml/src");
 use strict;
 use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use English;
-use BsmlBuilder;
+use BSML::BsmlBuilder;
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
+use File::Basename;
+
 
 
 my %options = ();
-my $results = GetOptions (\%options, 'btab_dir|b=s', 'bsml_dir', 'btab_type|t=s', 'output|o=s', 'help|h',);
+my $results = GetOptions (\%options, 'btab_dir|b=s', 'bsml_dir|d=s', 'btab_type|t=s', 'output|o=s', 'verbose|v', 'help|h',);
 
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -18,16 +22,16 @@ my $results = GetOptions (\%options, 'btab_dir|b=s', 'bsml_dir', 'btab_type|t=s'
 my $output     = $options{'output'};
 my $btab_dir   = $options{'btab_dir'};
 $btab_dir =~ s/\/+$//;
-my $BSML_dir   = $options{'bsml_dir'} || "/usr/local/annotation/PNEUMO/BSML_repository";
+my $BSML_dir   = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;         #remove terminating '/'s
 my $btab_type     = $options{'btab_type'};   # 1 = allvsall , 2 = blast family 
-
+my $verbose    = $options{'verbose'};
 #Log::Log4perl->init("log.conf");
 #my $logger = get_logger();
 
 
 
-if(!$btab_dir or !$output or !$btab_type or exists($options{'help'})) {
+if(!$btab_dir or !$output or !$btab_type or !$BSML_dir or exists($options{'help'})) {
     #$logger->fatal("Not all of the required options have been defined.  Exiting...");
     &print_usage();
 }
@@ -41,17 +45,18 @@ if(! -d $btab_dir ) {
     exit 10;
 }
 
-
-#Make a new bsml object
-my $doc = new BsmlBuilder();
-
-my $gene_asmbl_id = get_gene_asmbl_id();  #hash_ref stores each gene and the asmbl_id to which it belongs
+my $doc = new BSML::BsmlBuilder();
 
 
+my ($gene_asmbl_id, $protID_cdsID);
 my @files = <$btab_dir/*.btab>;
 if($btab_type == 1) {
+    ($gene_asmbl_id, $protID_cdsID) = build_id_lookups_allvsall();
+    $doc->makeCurrentDocument();
     parse_allvsall_btabs(\@files);
 }else {
+    $gene_asmbl_id = build_id_lookups_blast();
+    $doc->makeCurrentDocument();
     parse_blast_btabs(\@files);
 }
 
@@ -69,23 +74,24 @@ sub parse_blast_btabs {
     foreach my $file(@$btab_files) {
 	$num++;
 	open (BTAB, "$file") or die "Unable to open \"$file\" due to $!";
-	print STDERR "opening $file  $num\n";
+	print STDERR "opening $file  $num\n" if($verbose);
 	my (@btab, $seq);
 	while(my $line = <BTAB>) {
 	    chomp($line);
 	    @btab = split("\t", $line);
-	    next if($btab[19] > '1e-10');
+	    next if($btab[19] > '1e-15');
+	    next if(!$btab[0] or !$btab[5]);
 	    my $align = $doc->createAndAddBtabLine(@btab);
-	    $seq = $doc->returnBsmlSequenceByIDR($btab[5]."_aa");
+	    $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
 	    my $match_asmbl_id = $gene_asmbl_id->{$btab[5]};
 	    my $query_asmbl_id = $gene_asmbl_id->{$btab[0]};
-	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"PNEUMO_${match_asmbl_id}");
+	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$match_asmbl_id);
 	}
 	close BTAB;
-	$seq = $doc->returnBsmlSequenceByIDR($btab[0]."_aa");
+	$seq = $doc->returnBsmlSequenceByIDR($btab[0]);
 	if($seq) {
 	    my $query_asmbl_id = $gene_asmbl_id->{$btab[0]};
-	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"PNEUMO_${query_asmbl_id}");
+	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$query_asmbl_id);
         }
     }
 
@@ -99,83 +105,120 @@ sub parse_allvsall_btabs {
     foreach my $file (@$btab_files) {
 	$num++; 
 	open (BTAB, "$file") or die "Unable to open \"$file\" due to $!";
-	print STDERR "opening $file  $num\n";
-        my (@btab, $seq, $query_name, $match_name);
+	print STDERR "opening $file  $num\n" if($verbose);
+        my (@btab, $seq, $query_name, $match_name, $query_cds_id, $query_protein_id);
 	while(my $line = <BTAB>) {
 	    chomp($line);
 	    @btab = split("\t", $line);
-	    next if($btab[20] > '1e-10');
+	    next if($btab[20] > '1e-15');
 	    next if($btab[3] ne 'praze');
 	    next if( !($btab[13] > 0) || !($btab[14] > 0) );
 	    next if(!$btab[0] or !$btab[5]);
 	    $btab[5] =~ s/\|//g;   #get rid of trailing |
-	    $query_name = $btab[0];
+	    $query_protein_id = $btab[0];
+	    $btab[0] = $protID_cdsID->{$btab[0]};
+            $query_cds_id = $btab[0];	    
+            #$query_name = $btab[0];
 	    $match_name = $btab[5];
 	    splice(@btab, 19, 1);
+	    
 	    my $align = $doc->createAndAddBtabLine(@btab);
-	    $seq = $doc->returnBsmlSequenceByIDR($match_name."_aa");
+	    $seq = $doc->returnBsmlSequenceByIDR($match_name);
 	    my $match_asmbl_id = $gene_asmbl_id->{$match_name};
-	    my $query_asmbl_id = $gene_asmbl_id->{$query_name};
-	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"PNEUMO_${match_asmbl_id}");
+	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$match_asmbl_id");
 	}
 	close BTAB;
-	$seq = $doc->returnBsmlSequenceByIDR($query_name."_aa");
+	$seq = $doc->returnBsmlSequenceByIDR($query_cds_id);
 	if($seq) {
-	    my $query_asmbl_id = $gene_asmbl_id->{$query_name};
-	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"PNEUMO_${query_asmbl_id}");
+	    my $query_asmbl_id = $gene_asmbl_id->{$query_protein_id};
+	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$query_asmbl_id");
 	}
     }
 }
 
 
-=hello
-sub get_gene_asmbl_id2 {
-#This subroutine retrieves all the genes and the asmbl_id to which they belong
 
-    #my $logger = get_logger();
-    #$logger->info("Begin retrieving mapping of genes to asmbl_ids");
     
-    my ($id, $asmbl_id, $feat_name, $hash_ref);
-    my $result = $CGC->fetch_all_gene_genome();
-    #$logger->debug("Mapping of gene to asmbl_id contain $result->{'count'} entries");
-    for(my $i=0; $i<$result->{'count'}; $i++) {
-	$id = $result->{$i}->{'id'};
-	$asmbl_id = $result->{$i}->{'asmbl_id'};
-        $feat_name = $result->{$i}->{'feat_name'};
-        $hash_ref->{$feat_name} = $asmbl_id;
+sub build_id_lookups_allvsall {
+
+    my @files = <$BSML_dir/*.bsml>;
+    my $parser = new BSML::BsmlParserTwig;
+
+    my $protID_cdsID = {};
+    my $gene_asmbl_id ={};
+    my $reader;
+    foreach my $bsml_doc (@files) {
+	if (-s $bsml_doc) {
+	    print STDERR "parsing $bsml_doc\n" if($verbose);
+	    $reader = BSML::BsmlReader->new();
+	    $parser->parse( \$reader, $bsml_doc );
+	    my $hash_ref = $reader->get_all_protein_assemblyId();
+	    while(my ($protein_id, $asmbl_id) = each %$hash_ref) {
+		$gene_asmbl_id->{$protein_id} = $asmbl_id;
+	    }
+	    my $rhash = $reader->returnAllIdentifiers();
+	    build_protID_cdsID_mapping($rhash, $protID_cdsID); 	
+	} else {  print STDERR "Empty $bsml_doc...skipping\n" if($verbose); }
     }
 
-    #$logger->info("Finished retrieveing mapping of genes to asmbl_ids");
-    return $hash_ref;
+    return ($gene_asmbl_id, $protID_cdsID);
 
 }
-=cut
 
 
-sub get_gene_asmbl_id {
+sub build_id_lookups_blast {
 
-    #my $BSML_dir = "/usr/local/annotation/PNEUMO/BSML_repository";
-    #$BSML_dir =~ s/\/+$//;       #remove terminating '/'s
-    
-    my $gene_asmbl_id={};
-    open (IN, "$BSML_dir/gene_asmbl.txt") or die "Unable to open $BSML_dir/gene_asmbl.txt due to $!";
-    while(my $line = <IN>) {
-	chomp($line);
-	my ($feat_name, $asmbl_id) = split("\t", $line);
-	$gene_asmbl_id->{$feat_name} = $asmbl_id;
+    my @files = <$BSML_dir/*.bsml>;
+    my $parser = new BSML::BsmlParserTwig;
+
+    my $gene_asmbl_id ={};
+    my $reader;
+    foreach my $bsml_doc (@files) {
+	if (-s $bsml_doc) {
+	    print STDERR "parsing $bsml_doc\n" if($verbose);
+	    $reader = BSML::BsmlReader->new();
+	    $parser->parse( \$reader, $bsml_doc );
+	    my $hash_ref = $reader->get_all_protein_assemblyId();
+	    while(my ($protein_id, $asmbl_id) = each %$hash_ref) {
+		$gene_asmbl_id->{$protein_id} = $asmbl_id;
+	    }
+	    #my $rhash = $reader->returnAllIdentifiers();
+	    #build_cdsID_protID_mapping($rhash, $cdsID_protID); 	
+	} else {  print STDERR "Empty $bsml_doc...skipping\n" if($verbose); }
     }
 
     return $gene_asmbl_id;
 
 }
 
+sub build_protID_cdsID_mapping {
+#This function builds a mapping between cdsID to proteinID. 
+#The returned structure is a hash ref, where key is protID, value is cdsID
+
+    my $rhash = shift;
+    my $protID_cdsID=shift;
+
+    foreach my $seqID (keys %$rhash) {
+	foreach my $geneID (keys %{ $rhash->{$seqID} }) {
+	    foreach my $transcriptID (keys %{ $rhash->{$seqID}->{$geneID} }) {
+		my $cdsID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'cdsId'};
+		my $proteinID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'proteinId'};
+		$protID_cdsID->{$proteinID} = $cdsID;
+	    }
+	}
+    }
+
+}
+    
+
 
 sub print_usage {
 
 
-    print STDERR "SAMPLE USAGE:  btab2bsml.pl -b btab_dir -o output\n";
+    print STDERR "SAMPLE USAGE:  btab2bsml.pl -b btab_dir -o output -t 1\n";
     print STDERR "  --btab_dir    = dir containing btab files\n";
     print STDERR "  --output      = file to save output to\n";
+    print STDERR "  --btab_type   = type of btab files (1=allvsall, 2=blast)\n";
     print STDERR "  --help = This help message.\n";
     print STDERR "  *optional:    --bsml_dir    = dir containing BSML doc\n";
     exit 1;

@@ -6,7 +6,7 @@ use PEffect::PEffectXML;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
-
+use File::Basename;
 
 my %options = ();
 my $results = GetOptions (\%options, 'asmbl_ids|a=s@', 'output|o=s', 'bsml_dir|b=s', 'help|h' );
@@ -28,24 +28,21 @@ if(!$BSML_dir or exists($options{'help'})) {
 
 ###-------------------------------------------------------###
 
-my $parser = new BSML::BsmlParserTwig;
-my $pexml = new PEffect::PEffectXML();
+my $parser = BSML::BsmlParserTwig->new();
+my $pexml =  PEffect::PEffectXML->new();
  
 #my @asmbls;
 if(!@asmbls) {
     my @files = <$BSML_dir/*.bsml>;
     foreach (@files) {
-	if(/asmbl_(\d+)\.bsml/) {
+	my $basename = basename($_);
+	if($basename =~ /(.+)\.bsml/) {
 	    push(@asmbls, $1);
         }
     } 
 }
 
 foreach my $asmbl_id (@asmbls){
-    if($asmbl_id !~ /\d+/) {
-	print STDERR "bad asmbl_id \"$asmbl_id\"\n";
-        next;
-    }
     addGenes($asmbl_id, "db_${asmbl_id}", $pexml);
 }
 
@@ -68,15 +65,20 @@ sub addGenes {
     my $name = shift;
     my $pexml = shift;
 
-    my $bsml_file = "$BSML_dir/asmbl_${asmbl_id}.bsml";
+    my $geneID_protID={};
+    my $bsml_file = "$BSML_dir/${asmbl_id}.bsml";
     if (-s $bsml_file) {
-	my $reader = BsmlReader->new();
+	my $reader = BSML::BsmlReader->new();
 	$parser->parse( \$reader, $bsml_file );
+	my $rhash = $reader->returnAllIdentifiers();
+	$geneID_protID = build_geneID_protID_mapping($rhash);
 	my $order = 0;
 	my $sorted_genes = get_sorted_gene_position($asmbl_id, $reader);
 	foreach my $gene (@$sorted_genes) {
 	    my $attrref={};
 	    my $feat_name = $gene->{'feat_name'};
+	    #In prok, only 1 protein id maps to a gene id
+	    $feat_name = $geneID_protID->{$feat_name}->[0];
 	    $attrref->{'length'} = $gene->{'length'}; 
 	    $attrref->{'orient'} = $gene->{'orient'}; 
 	    $attrref->{'coord'}  = $gene->{'coord'}; 
@@ -89,12 +91,36 @@ sub addGenes {
 	
 }
 
+
+sub build_geneID_protID_mapping {
+#This function builds a mapping between geneID to proteinID. 
+#For Prok, it will be 1 to 1, however for Euk, there can be
+#more than 1 proteinID to each geneID.
+#The returned structure is a hash ref, where key is geneID, value is an array ref of proteinID
+
+    my $rhash = shift;
+
+    my $geneID_protID={};
+    foreach my $seqID (keys %$rhash) {
+	foreach my $geneID (keys %{ $rhash->{$seqID} }) {
+	    foreach my $transcriptID (keys %{ $rhash->{$seqID}->{$geneID} }) {
+		push (@{ $geneID_protID->{$geneID} }, $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'proteinId'});
+	    }
+	}
+    }
+
+    return $geneID_protID;
+
+}
+
+
+
 sub get_sorted_gene_position {
 
     my $asmbl_id = shift;
     my $reader   = shift;
 
-    my $gene_pos = $reader->fetch_gene_positions("PNEUMO_${asmbl_id}");
+    my $gene_pos = $reader->fetch_gene_positions($asmbl_id);
     my $array_ref=[];
     foreach (@$gene_pos) {
 	foreach my $gene (keys %$_) {
