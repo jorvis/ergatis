@@ -47,4 +47,15 @@ while (my $line = <IN>) {
 }
 # write the altered file to disk
 $doc->write( $output_file );
+chmod 0666, $output_file;
 
+sub print_usage {
+
+
+    print STDERR "SAMPLE USAGE:  region2bsml.pl -f gbs_799_assembly_vs_all.pe.region -o output file\n";
+    print STDERR "  --pe_region   = file containing gene boundaries\n";
+    print STDERR "  --output      = output file \n";
+    print STDERR "  --help = This help message.\n";
+    exit 1;
+
+}

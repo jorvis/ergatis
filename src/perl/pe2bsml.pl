@@ -107,5 +107,16 @@ sub read_pe_output {
     $doc->write($output);
 
     print STDERR "Writing done\n";
+    chmod 0666, $output;
 }
 
+sub print_usage {
+
+
+    print STDERR "SAMPLE USAGE:  pe2bsml.pl -p PEffect_output -o output_file\n";
+    print STDERR "  --pe_file     = PEffect output file\n";
+    print STDERR "  --output      = bsml output file\n";
+    print STDERR "  --help = This help message.\n";
+    exit 1;
+
+}

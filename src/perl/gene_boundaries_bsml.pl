@@ -372,9 +372,9 @@ sub print_usage {
 
 
     print STDERR "SAMPLE USAGE:  gene_boundaries_bsml.pl -d /usr/local/annotation/PNEUMO/BSML_repository/ -a gbs_799_assembly -f /usr/local/annotation/PNEUMO/BSML_repository/PEffect/gbs_799_assembly_vs_all.pe.bsml > pe.region\n";
-    print STDERR "  --database   = database name\n";
-    print STDERR "  --bsml_dir   = directory containing bsml doc\n";
-    print STDERR "  --asmbl_id = asmbl_id \n";
+    print STDERR "  --bsml_dir   = repository directory containing bsml doc\n";
+    print STDERR "  --asmbl_id   = asmbl_id \n";
+    print STDERR "  --bsml_file  = bsml doc containing PEffect output\n";
     print STDERR "  *optional: --maxgap = maximum gap (default 10000)\n";
     print STDERR "             --minsize = minimum size (default 10000)\n";
     print STDERR "  --help = This help message.\n";
