@@ -26,40 +26,31 @@
   <p> <b>Software Products</b><br>
   <ul>
     <li><em>run_promer</em></li>
-    <br>
-    [srs] <a href='run_promer.htm'>[use_cases]</a> 
+    [srs] <a href='run_promer.htm'>[use_cases]</a> <br>
     <li><em>run_nucmer</em></li>
-    <br>
-    [srs] [use_cases] 
+    [srs] [use_cases] <br>
     <li><em>run_blastp</em></li>
-    <br>
-    [srs] [use_cases] 
+    [srs] [use_cases] <br>
     <li><em>run_pe</em></li>
-    <br>
-    [srs] [use_cases] 
+    [srs] [use_cases] <br>
     <li><em>run_cogs</em></li>
-    <br>
-    [srs] [use_cases] 
+    [srs] [use_cases] <br>
     <li><em>run_ber</em></li>
-    <br>
-    [srs] [use_cases] 
+    [srs] [use_cases] <br>
     <li><em>run_snps</em></li>
-    <br>
-    [srs] [use_cases] 
+    [srs] [use_cases] <br>
     <li><em>run_custom_blastp</em></li>
-    <br>
-    [srs] [use_cases]
+    [srs] [use_cases]<br>
 	<li><em>set_runtime_vars</em></li>
-	<br>
-	<a href='srs_set_runtime_vars.html'>[srs]</a> [use_cases]
+	<a href='srs_set_runtime_vars.html'>[srs]</a> [use_cases]<br>
 	<li><em>generate_subflow</em></li>
-    <br>[srs] [use_cases]
+    [srs] [use_cases]<br>
 	<li><em>run_wf.sh</em></li>
-    <br>[srs] [use_cases]
+    [srs] [use_cases]<br>
 	<li><em>run_wf_monitor.sh</em></li>
-    <br>[srs] [use_cases]
+    [srs] [use_cases]<br>
 	<li><em>rerun_wf.sh</em></li>
-    <br>[srs] [use_cases]
+    [srs] [use_cases]<br>
   </ul>
   <p>
 <b>Code</b><br>

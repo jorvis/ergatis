@@ -11,18 +11,20 @@
   <p><font size="-3"><em><strong>Use case document</strong></em><BR>
     <EM>Sam Angiuoli</EM><BR>
     <EM>TIGR</EM><BR>
-    <EM>10/1/2003</EM><BR>
-    <EM>v1.1</EM> </font></p>
+    <EM>$Date$</EM><BR>
+    <EM>$Revision$</EM> </font></p>
   <p>&nbsp; </p>
 </center>
 <table width="75%" border="1">
   <tr> 
     <td width="18%"><font size="-3"><strong>Use case</strong></font></td>
-    <td width="82%"><font size="-3">run_promer</font></td>
+    <td width="82%"><font size="-3">run_promer on all sequences</font></td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Description</strong></font></td>
-    <td><font size="-3">Generate promer data for a comparative database</font></td>
+    <td><font size="-3">Generate PROmer search data from a data repository. The 
+      data is generated in a &quot;all vs. all&quot; manner by searching all sequences 
+      in the repository against each other.</font></td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Actors</strong></font></td>
@@ -31,8 +33,8 @@
   <tr> 
     <td><font size="-3"><strong>Assumptions/Pre-conditions</strong></font></td>
     <td><font size="-3">The BSML_repository and FASTA_repository for the project 
-      must be generated via <strong>generate_repository</strong>. The repository 
-      must be in a &quot;valid&quot; state as reported by <strong>repository_status.</strong></font></td>
+      must be generated via <strong>chado2bsml</strong>. <br>
+	  The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.</strong></font></td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Post-condition</strong></font></td>
@@ -41,20 +43,20 @@
   </tr>
   <tr> 
     <td><font size="-3"><strong>Steps</strong></font></td>
-    <td><p><font size="-3">Interactions between actors and system that are necessary 
-        to achieve goal</font></p>
+    <td>
       <ol>
-        <li><font size="-3">Check repository status via <strong>repository_status</strong></font></li>
+        <li><font size="-3">Check repository status via <strong>check_repository</strong></font></li>
         <li><font size="-3">Execute <strong>run_promer -d [project_name]</strong></font></li>
-        <li><font size="-3">Execute workflow monitor on instance filename reported 
-          by <em>Step 2. </em></font></li>
+        <li><font size="-3">Execute workflow monitor, <strong>run_wf_monitor -i 
+          [instance file],</strong> using the instance filename reported by <em>Step 
+          2. </em></font></li>
         <li><font size="-3">REPEAT </font> 
           <ol>
             <li><font size="-3">Monitor workflow status<br>
               UNTIL workflow completed</font></li>
           </ol>
         </li>
-        <li><font size="-3"> Execute <strong>repository_status</strong></font></li>
+        <li><font size="-3"> Execute <strong>check_repository</strong></font></li>
       </ol></td>
   </tr>
   <tr> 
@@ -63,7 +65,7 @@
   </tr>
   <tr> 
     <td><font size="-3"><strong>Variations (optional)</strong></font></td>
-    <td><font size="-3">Any variations in the steps of a use case</font></td>
+    <td><font size=-3>If the execution is not successfull, execute <strong>'rerun_wf -i [instance file]'</strong> and continue with <em>Step 4</em></font>&nbsp;</td>
   </tr>
   <tr> 
     <td><font size="-3"><strong>Non-Functional (optional)</strong></font></td>
@@ -76,6 +78,149 @@
     <td>&nbsp;</td>
   </tr>
 </table>
+<p>&nbsp;</p><table width="75%" border="1">
+  <tr> 
+    <td width="18%"><font size="-3"><strong>Use case</strong></font></td>
+    <td width="82%"><font size="-3">run_promer on a single sequence</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Description</strong></font></td>
+    <td><font size="-3">Generate PROmer search data from a data repository. A 
+      single sequence is searched all sequences in the repository.</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Actors</strong></font></td>
+    <td><font size="-3">user,developer</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Assumptions/Pre-conditions</strong></font></td>
+    <td><font size="-3">The BSML_repository and FASTA_repository for the project 
+      must be generated via <strong>chado2bsml</strong>.<br>
+	  The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.</strong><br>
+	  The input sequence identifier must be a valid sequence identifier for the project corresponding to a genomic sequence record stored in the data repository.</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Post-condition</strong></font></td>
+    <td><font size="-3">BSML encodings of the PROmer results are stored in the 
+      BSML_repository</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Steps</strong></font></td>
+    <td>
+      <ol>
+        <li><font size="-3">Check repository status via the <strong>check_repository</strong> 
+          utility </font></li>
+        <li><font size="-3">Execute <strong>run_promer -d [project_name] -a [sequence_identifier]</strong></font></li>
+        <li><font size="-3">Execute workflow monitor, <strong>run_wf_monitor -i 
+          [instance file],</strong> using the instance filename reported by <em>Step 
+          2. </em></font></li>
+        <li><font size="-3">REPEAT </font> 
+          <ol>
+            <li><font size="-3">Monitor workflow status<br>
+              UNTIL workflow completed</font></li>
+          </ol>
+        </li>
+        <li><font size="-3"> Check repository status via the <strong>check_repository</strong> 
+          utility </font></li>
+      </ol></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Example invocations</strong></font></td>
+    <td><font size="-3">/usr/local/devel/ANNOTATION/shared/bin/run_promer -d tryp 
+      -a lma2_100_assembly</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Variations (optional)</strong></font></td>
+    <td><font size=-3>If the execution is not successfull, execute <strong>'rerun_wf 
+      -i [instance file]'</strong> and continue with <em>Step 4</em></font>&nbsp;</td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Non-Functional (optional)</strong></font></td>
+    <td><font size="-3">The project repository must have sufficient space available 
+      to store results.<BR>
+      The user must have permission to write to the project area.</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Issues</strong></font></td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
+<table width="75%" border="1">
+  <tr> 
+    <td width="18%"><font size="-3"><strong>Use case</strong></font></td>
+    <td width="82%"><font size="-3">run_promer on all sequences using a custom 
+      configuration </font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Description</strong></font></td>
+    <td><font size="-3">Generate PROmer search data from a data repository. The 
+      data is generated in a &quot;all vs. all&quot; manner by searching all sequences 
+      in the repository against each other.</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Actors</strong></font></td>
+    <td><font size="-3">user,developer</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Assumptions/Pre-conditions</strong></font></td>
+    <td><font size="-3">The BSML_repository and FASTA_repository for the project 
+      must be generated via <strong>chado2bsml</strong>.<br>
+      The repository must be in a &quot;valid&quot; state as reported by <strong>check_repository.</strong></font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Post-condition</strong></font></td>
+    <td><font size="-3">BSML encodings of the PROmer results are stored in the 
+      BSML_repository</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Steps</strong></font></td>
+    <td> <ol>
+        <li><font size="-3">Check repository status via the <strong>check_repository</strong> 
+          utility</font></li>
+        <li><font size="-3">Execute <strong>run_promer --printconf &gt; myconf</strong> 
+          to print the configuration setting to a file named <strong>myconf</strong></font> 
+        </li>
+        <li><font size="-3">Edit <strong>myconf</strong> to set configuration 
+          settings</font></li>
+        <li><font size="-3">Execute <strong>run_promer -d [project_name] -c myconf</strong></font></li>
+        <li><font size="-3">Execute workflow monitor, <strong>run_wf_monitor -i 
+          [instance file],</strong> using the instance filename reported by <em>Step 
+          2. </em></font></li>
+        <li><font size="-3">REPEAT </font> 
+          <ol>
+            <li><font size="-3">Monitor workflow status<br>
+              UNTIL workflow completed</font></li>
+          </ol>
+        </li>
+        <li><font size="-3"> Check repository status via the <strong>check_repository</strong> 
+          utility </font></li>
+      </ol></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Example invocations</strong></font></td>
+    <td><font size="-3">/usr/local/devel/ANNOTATION/shared/bin/run_promer -d tryp 
+      -c myconf</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Variations (optional)</strong></font></td>
+    <td><font size=-3>If the execution is not successfull, execute <strong>'rerun_wf 
+      -i [instance file]'</strong> and continue with <em>Step 4</em><br>
+	  The <strong>project_name</strong> can also be specified in the config file.  run_promer can be invoked without the -d parameter: <strong>run_promer -c myfile</strong>.
+	  </font>&nbsp;</td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Non-Functional (optional)</strong></font></td>
+    <td><font size="-3">The project repository must have sufficient space available 
+      to store results.<BR>
+      The user must have permission to write to the project area.</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Issues</strong></font></td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+<p>&nbsp;</p>
 <h1>&nbsp;</h1>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
