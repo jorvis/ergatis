@@ -56,6 +56,7 @@
         <command>    
             <name>RunUnixCommand</name>
             <configMapId>1.5.1</configMapId>
+        </command>
         <command>    
             <name>RunUnixCommand</name>
             <configMapId>1.8</configMapId>
