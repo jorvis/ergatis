@@ -28,5 +28,5 @@ echo "Running workflow instance $instance"
 echo "To launch viewer execute... $INSTALL_DIR/run_wfmonitor.sh -i $instance"
 echo "Or launch via the web http://xmen:8080/tigr-scripts/papyrus/cgi-bin/show_pipeline.cgi?xmltemplate=$instance"
 
-RunWorkflow -i $instance -l $log $debugstr 1>>$out 2>>$out
+exec RunWorkflow -i $instance -l $log $debugstr 1>>$out 2>>$out
 
