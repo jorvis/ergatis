@@ -89,7 +89,7 @@ sub CreateWorkflow{
     if($self->{_nodistrib} == 1){
 	$template = $self->_replacedistrib($template,"$outfile.template.nodistrib");
     }
-    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_CREATE_EXEC} -t $template -c $ini -i $instance -l $log -o $outfile > $outfile";
+    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_CREATE_EXEC} -t $template -c $ini -i $instance -l $log -o $outfile";
     $self->{_logger}->debug("Exec via system: $execstr") if ($self->{_logger}->is_debug());
     my $debugstr = "";
     if($self->{_logger}->is_debug()){
@@ -125,7 +125,7 @@ sub CreateWorkflow{
 
 sub RunWorkflow{
     my($self,$instance, $log, $outfile) = @_;
-    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_RUN_EXEC} -i $instance -l $log -o $outfile > $outfile";
+    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_RUN_EXEC} -i $instance -l $log -o $outfile";
     $self->{_logger}->debug("Exec via system: $execstr") if ($self->{_logger}->is_debug());
     my $debugstr = "";
     if($self->{_logger}->is_debug()){
