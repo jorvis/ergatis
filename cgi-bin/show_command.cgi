@@ -31,13 +31,16 @@ my $t1 = new XML::Twig( TwigHandlers => { 'command' =>
 						      print "<br><pre>$runstr</pre><br><hr>";
 						      print "<pre>";
 						      my $text = $elt->sprint();
-						      if($text =~ /\/.*\.xml/){
-							  $text =~ s/(\/.*\.xml)/<a href='show_pipeline.cgi?&xmltemplate=$1'>$1<\/a>/mg;
+						      my @lines  = split(/\n/,$text);
+						      foreach my $line (@lines){
+							  if($line =~ /\/.*\.xml/){
+							      $line =~ s/(\/.*\.xml)/<a href='show_pipeline.cgi?&xmltemplate=$1'>$1<\/a>/mg;
+							  }
+							  else{
+							      $line =~ s/(\/.*\.\w+)/<a href='show_file.cgi?&file=$1'>$1<\/a>/mg;
+							  }
+							  print $line,"\n";
 						      }
-						      else{
-							  $text =~ s/(\/.*\.\w+)/<a href='show_file.cgi?&file=$1'>$1<\/a>/mg;
-						      }
-						      print $text;
 						      print "</pre>";
 						  }
 					      }
