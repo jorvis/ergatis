@@ -91,7 +91,8 @@ sub error_check  {
 	print "Unable to locate the query file $query_fasta!  Aborting...\n";;
 	return 4;
     }
-	    
+
+=hello	    
     #check for the presence of *.fsa files
     if( ! -d "$pep_dir/$asmbl_id") {
 	print "Unable to find the \"$pep_dir/asmbl_id_${asmbl_id}\" directory. Aborting...\n";
@@ -109,7 +110,8 @@ sub error_check  {
 	print STDERR "No seq files found in \"$seq_dir/asmbl_id_${asmbl_id}\" directory!  Aborting...\n";
 	return 8;
     }    
-    
+=cut    
+
     #check for the presence of the output_dir
     if(! -d $output_dir) {
 	mkdir $output_dir;
