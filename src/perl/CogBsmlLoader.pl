@@ -113,7 +113,6 @@ if( $options{'bsmlJaccardDir'} && $options{'bsmlJaccardDir'} ne "" )
 	my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
 	foreach my $bsmlFile (<$options{'bsmlJaccardDir'}/*.bsml>)
 	{
-	    print STDERR "Parsing $bsmlFile\n";
 	    $multiAlnParser->parse( $bsmlFile );
 	}
     }
@@ -130,7 +129,6 @@ my $genome = '';
 # loop through the documents in the model directory to create the protein genome map
 
 foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlModelList'})}){
-    print STDERR "Parsing $bsmlFile\n";
     $featParser->parse( $bsmlFile );
     $genome = '';
 }
@@ -167,9 +165,7 @@ foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlSearchList'})}){
     
     # builds the COGS input data structure
 
-    print STDERR "Parsing $bsmlFile\n";
     $alnParser->parse( $bsmlFile );
-    print STDERR "Done parsing $bsmlFile\n";
 
     # print the results
 
@@ -178,9 +174,7 @@ foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlSearchList'})}){
 	foreach my $k2 (keys( %{$COGInput->{$k1}}))
 	{
 	    my $member = $COGInput->{$k1}->{$k2}->[0];
-	    print STDERR "Checking $member for jaccard\n";
 	    if(exists $jaccardClusterHash->{$member}){
-		print STDERR "FOUND ",scalar(@{$jaccardRepSeqHash->{$jaccardClusterHash->{$member}}})," members\n";
 		$COGInput->{$k1}->{$k2}->[21] = join(',',@{$jaccardRepSeqHash->{$jaccardClusterHash->{$member}}});
 	    }
 	    print OUTFILE join("\t", @{$COGInput->{$k1}->{$k2}});
