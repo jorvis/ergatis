@@ -52,12 +52,12 @@ sub execute_allvsall {
     my $asmbl_id = shift;
     
 
-    my $query_fasta = "asmbl_id_".$asmbl_id.".pep";
+    my $query_fasta = "${asmbl_id}.pep";
 
     my $fastafile = "$query_dir/$query_fasta";
-    my $seqdir    = "$seq_dir/asmbl_id_${asmbl_id}";
+    my $seqdir    = "$seq_dir/${asmbl_id}";
     my $pepdir    = "$pep_dir";
-    my $outputdir = "$output_dir/asmbl_id_${asmbl_id}";
+    my $outputdir = "$output_dir/${asmbl_id}";
 	 
 	      
     #my $command = "pallvsall -nowait -parameters database=$db_file,fastafile=$fastafile,seqdir=$seqdir,pepdir=$pepdir,outputdir=$outputdir";     
@@ -74,7 +74,7 @@ sub error_check  {
     my $asmbl_id = shift;
 
     #$org = uc($org);
-    my $query_fasta = "asmbl_id_".$asmbl_id.".pep";
+    my $query_fasta = $asmbl_id.".pep";
 
     #check for the presence of database file
     if( ! -s $db_file) {
@@ -94,19 +94,19 @@ sub error_check  {
     }
 	    
     #check for the presence of *.fsa files
-    if( ! -d "$pep_dir/asmbl_id_".$asmbl_id) {
+    if( ! -d "$pep_dir/$asmbl_id") {
 	print "Unable to find the \"$pep_dir/asmbl_id_${asmbl_id}\" directory. Aborting...\n";
 	return 5;
-    }elsif(! (my @files = <$pep_dir/asmbl_id_$asmbl_id/*.fsa>)) {
+    }elsif(! (my @files = <$pep_dir/$asmbl_id/*.fsa>)) {
 	print STDERR "No fsa files found in \"$pep_dir/asmbl_id_$asmbl_id\" directory!  Aborting...\n";
 	return 6;
     }    
 	    
     #check for the presence of *.seq files
-    if( ! -d "$seq_dir/asmbl_id_".$asmbl_id) {
+    if( ! -d "$seq_dir/$asmbl_id") {
 	print "Unable to find the \"$seq_dir/asmbl_id_${asmbl_id}\" directory. Aborting...\n";
 	return 7;
-    }elsif(! (my @files = <$seq_dir/asmbl_id_$asmbl_id/*.seq>)) {
+    }elsif(! (my @files = <$seq_dir/$asmbl_id/*.seq>)) {
 	print STDERR "No seq files found in \"$seq_dir/asmbl_id_${asmbl_id}\" directory!  Aborting...\n";
 	return 8;
     }    
@@ -116,9 +116,9 @@ sub error_check  {
 	mkdir $output_dir;
 	chmod 0777, $output_dir;
     }
-    if(! -d "$output_dir/asmbl_id_${asmbl_id}") {
-	mkdir "$output_dir/asmbl_id_${asmbl_id}";
-	chmod 0777, "$output_dir/asmbl_id_${asmbl_id}";
+    if(! -d "$output_dir/${asmbl_id}") {
+	mkdir "$output_dir/${asmbl_id}";
+	chmod 0777, "$output_dir/${asmbl_id}";
     }
         
 	
