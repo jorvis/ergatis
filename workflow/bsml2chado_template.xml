@@ -3,58 +3,34 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <name>bsml2chado workflow</name>
-        <configMapId>1</configMapId>
+        <configMapId>empty</configMapId>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>12.1</configMapId>
+            <configMapId>create_scratch_dir</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.1</configMapId>
+            <configMapId>bsml2chado</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.2</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>3.1</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>3.2</configMapId>
+            <configMapId>validate_out_files</configMapId>
         </command>
         <command>
             <name>RunUnixCommand</name>
-            <configMapId>4.1</configMapId>
+            <configMapId>check_database_space</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>4.2</configMapId>
+            <configMapId>load_sybase</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>2.1</configMapId>
+            <configMapId>confirm_database_loaded</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>2.2</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>2.3</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>2.4</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>5.1</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>5.2</configMapId>
+            <configMapId>change_log_permissions</configMapId>
         </command>
     </commandSet>
 </commandSetRoot>
