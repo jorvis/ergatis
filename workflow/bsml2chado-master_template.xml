@@ -66,6 +66,10 @@
         </command>
         <command>    
             <name>RunUnixCommand</name>
+            <configMapId>revoke_public</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
             <configMapId>drop_indexes</configMapId>
         </command>
         <command>    
@@ -75,6 +79,18 @@
         <command>    
             <name>RunUnixCommand</name>
             <configMapId>rebuild_indexes</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>confirm_database_loaded</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>grant_public</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>grant_cas_permissions</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
