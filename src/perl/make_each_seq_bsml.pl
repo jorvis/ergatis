@@ -9,7 +9,7 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'asmbl_ids|a=s', 'asmbl_file=s', 'help|h' );
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'project|p=s', 'asmbl_ids|a=s', 'asmbl_file=s', 'help|h' );
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
@@ -20,7 +20,7 @@ my $BSML_dir = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;       #remove terminating '/'
 my $QUERYPRINT;
 my $DEBUG = $options{'DEBUG'} || 0;
-
+my $project = $options{'project'};
 my $asmbl_file      = $options{'asmbl_file'};
 
 if(!$BSML_dir or !$output_dir or exists($options{'help'})) {
@@ -73,11 +73,47 @@ if($asmbl_file) {   #asmbl_id will be read from a flat file
 }
 my $parser = new BSML::BsmlParserTwig;
 
-regular_output(\@asm_ids);
+if($project) {
+    consolidated_output(\@asm_ids);
+}
+else {
+    regular_output(\@asm_ids);
+} 
 
+sub consolidated_output {
 
+    my $assembly_ids = shift;
+    my $final_output_dir = "$output_dir/".$project;
+    if(! -d $final_output_dir ) {
+	mkdir $final_output_dir;
+    } else {
+	unlink glob("$final_output_dir/*");
+    }
+    chmod 0777, $final_output_dir;
+    foreach my $asmbl_id (@$assembly_ids) {
+	my $bsml_file = "$BSML_dir/${asmbl_id}.bsml";
+	if (-s $bsml_file) {
+	    my $reader = BSML::BsmlReader->new();
+	    $parser->parse( \$reader, $bsml_file );
+	    my $extend_seq = $reader->get_all_cds_dna($asmbl_id) ;
+	    while( my ($gene, $seq) = each %$extend_seq ) {
+		next if(length($seq) < 1); 
+		$gene =~ s/_\d$//;
+		my $protein_seq_id = $reader->cdsIdtoProteinSeqId($gene);
+		my $gene_file = "$final_output_dir/${protein_seq_id}.seq";
+		open(FILE, ">$gene_file") || die "Unable to write to $gene_file due to $!";
+		my $fastaout = &fasta_out($protein_seq_id, $seq);
+		print FILE $fastaout;
+		close FILE;
+		chmod 0777, $gene_file;
+	    }
+	} else {
+	    print STDERR "$bsml_file NOT found!!!!\n";
+	}
 
+    }
 
+}
 
 sub regular_output {
 
