@@ -26,7 +26,7 @@
                        <config>
                        <param>
                            <key>template</key>
-                           <value>bsml2chado-instance_template.xml</value>
+                           <value>bsmlscaffold2chado-instance_template.xml</value>
                        </param>
                        </config>
                    </commandSet>
