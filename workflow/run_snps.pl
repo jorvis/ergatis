@@ -29,7 +29,7 @@ B<--help, -h> [OPTIONAL]  program help
 =cut
 
 my %options = ();
-my $results = GetOptions (\%options, 'asmbl_file|f=s', 'database|d=s', 'printconf|p', 'ref_asmbl|r=s', 'query_file|q=s', 'help|h' );
+my $results = GetOptions (\%options, 'asmbl_file|f=s', 'database|d=s', 'printconf|p', 'ref_asmbl|r=s', 'query_file|q=s', 'help|h', 'config|c=s' );
 
 # display documentation
 
