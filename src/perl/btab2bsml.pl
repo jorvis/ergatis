@@ -104,6 +104,11 @@ my $class;
 if (!defined($options{'class'})){
     $logger->logdie("class was not defined");
 }
+else{
+    $class = $options{'class'};
+}
+
+
 
 # display documentation
 if( $options{'help'} ){
