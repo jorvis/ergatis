@@ -609,7 +609,10 @@ sub retrieve_directory_contents{
     $logger->logdie("dir was not defined") if (!defined($$dir));
     $logger->logdie("dir:$dir is not a directory") if (!-d $$dir);
 
-    my @bsml_files = qx"ls -1 $$dir/*.bsml";
+#    my @bsml_files = qx"ls -1 $$dir/*.bsml";
+
+    my @bsml_files = qx{find $$dir -name \"*.bsml\" -type f};
+
     chomp @bsml_files;
     
     return \@bsml_files;
