@@ -31,6 +31,9 @@ cat all_vs_all_fast.ini | sed "s/$KEY/$1/g" | sed "s/$DB/$2/g" > $1/all_vs_all_f
 #echo "Saving $1/nucmer.ini"
 cat nucmer.ini | sed "s/$KEY/$1/g" | sed "s/$DB/$2/g" > $1/nucmer.ini
 
+#echo "Saving $1/promer.ini"
+cat promer.ini | sed "s/$KEY/$1/g" | sed "s/$DB/$2/g" > $1/promer.ini
+
 #echo "Saving $1/moaf.ini"
 cat moaf.ini | sed "s/$KEY/$1/g" | sed "s/$DB/$2/g" > $1/moaf.ini
 
@@ -44,6 +47,8 @@ cat all_vs_all_template.xml | sed "s/$KEY/$1/g" > $1/all_vs_all_template.xml
 cat all_vs_all_fast_template.xml | sed "s/$KEY/$1/g" > $1/all_vs_all_fast_template.xml
 #echo "Saving $1/nucmer_template.xml"
 cat nucmer_template.xml | sed "s/$KEY/$1/g" > $1/nucmer_template.xml
+#echo "Saving $1/promer_template.xml"
+cat promer_template.xml | sed "s/$KEY/$1/g" > $1/promer_template.xml
 
 #echo "Saving $1/moaf_template.xml"
 cat moaf_template.xml | sed "s/$KEY/$1/g" > $1/moaf_template.xml
@@ -56,3 +61,4 @@ echo "RunWorkflow -t all_vs_all_fast_template.xml -c all_vs_all_fast.ini -i allv
 echo "RunWorkflow -t pe_template.xml -c pe.ini -i pe.$1.xml -l pe.$1.log"
 echo "RunWorkflow -t bit_score_template.xml -c bit_score.ini -i bit_score.$1.xml -l bit_score.$1.log"
 echo "RunWorkflow -t nucmer_template.xml -c nucmer.ini -i nucmer.$1.xml -l nucmer.$1.log"
+echo "RunWorkflow -t promer_template.xml -c promer.ini -i promer.$1.xml -l promer.$1.log"
