@@ -11,7 +11,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Data::Dumper;
 
 my %options = ();
-my $results = GetOptions( \%options, 'bsmlAssembly|b=s', 'startCoord|s=s', 'windowSize|w=s', 'output_fasta_file|f=s', 'output_bsml_prefix|p=s', 'help|h', 'man' ) || pod2usage();
+my $results = GetOptions( \%options, 'bsmlAssembly|b=s', 'startCoord|s=s', 'windowSize|w=s', 'output_fasta_file|f=s', 'output_bsml_prefix|p=s', 'output_maps_prefix|m=s', 'help|h', 'man' ) || pod2usage();
 
 my $Parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&sequenceHandler, GenomeCallBack => \&genomeHandler );
 my $Reader = new BSML::BsmlReader;
@@ -22,18 +22,26 @@ my $endCoord = $options{'windowSize'} + $options{'startCoord'};
 my $subAssemblyCount = 0;
 my $end = 0;
 
+my $bsmlMap = new BSML::BsmlBuilder;
+
 open( FASTA_FILE, ">>$options{'output_fasta_file'}" ) or die "Could not open fasta file for concatenation.\n";
 
 while( !($end) )
 {
     $bsmlDoc = new BSML::BsmlBuilder;
+   
     $Parser->parse( $options{'bsmlAssembly'} );
 
-    $bsmlDoc->write( "$options{'output_bsml_prefix'}_$subAssemblyCount" );
+    $bsmlDoc->write( "$options{'output_bsml_prefix'}_$subAssemblyCount.bsml" );
+
     $startCoord = $startCoord += $options{'windowSize'};
     $endCoord = $startCoord + $options{'windowSize'};
     $subAssemblyCount++;
+
 }
+
+$bsmlMap->makeCurrentDocument();
+$bsmlMap->write( "$options{'output_maps_prefix'}.bsml" );
 
 close FASTA_FILE;
 
@@ -52,6 +60,36 @@ sub sequenceHandler
 	    $end = 1;
 	}
 
+	# if the CONTIG has no been added to the chunk map, add it now...
+
+	$bsmlMap->makeCurrentDocument();
+
+	if( !( BSML::BsmlDoc::BsmlReturnDocumentLookup( $rhash->{'id'} ) ) )
+	{
+	    my $newSeq = $bsmlMap->createAndAddExtendedSequenceN( id => $rhash->{'id'}, 
+								  title => $rhash->{'id'}, 
+								  molecule => $rhash->{'molecule'},
+								  length => $rhash->{'length'} );
+
+	    $bsmlMap->createAndAddSeqDataImportN( seq => $newSeq,
+						  format => "BSML",
+                                                  sorce =>  $options{'bsmlAssembly'},
+                                                  id => "_$rhash->{'id'}" );
+	}
+
+        my $newSeq = $bsmlMap->createAndAddExtendedSequenceN( id => "$rhash->{'id'}_$subAssemblyCount", 
+							      title => "$rhash->{'id'}_$subAssemblyCount", 
+							      molecule => $rhash->{'molecule'},
+							      length => $endCoord - $startCoord );
+
+        $bsmlMap->createAndAddNumbering( seq => $newSeq,
+                                         seqref => $rhash->{'id'},
+                                         refnum => $startCoord,
+                                         ascending => '1' );
+
+	$bsmlDoc->makeCurrentDocument();
+
+
 	print "DEBUG: $startCoord $endCoord\n";
 
 	my $seqdat = $Reader->subSequence( $seqref, $startCoord, $endCoord, 0 );
@@ -59,7 +97,7 @@ sub sequenceHandler
 	print FASTA_FILE ">$options{'output_bsml_prefix'}_$subAssemblyCount\n";
 	print FASTA_FILE "$seqdat\n";
 
-	my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $rhash->{'id'}."_$subAssemblyCount", 
+	$newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $rhash->{'id'}."_$subAssemblyCount", 
 						 title => $rhash->{'id'}."_$subAssemblyCount", 
 						 molecule => $rhash->{'molecule'},
 						 length => ($endCoord - $startCoord) );
