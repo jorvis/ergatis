@@ -43,12 +43,16 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 =cut
 
+use lib '/usr/local/devel/ANNOTATION/cas/tester/lib/site_perl/5.6.0';
 use strict;
 use warnings;
 use Pod::Usage;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlReader;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
+use Data::Dumper;
+
+my $pairsCount = 0;
 
 # Preprosess data stored in BSML pairwise alignment documents into BTAB
 # structure for COG analysis.
@@ -63,7 +67,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 #
  
 my %options = ();
-my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'outFile|o=s', 'help|h', 'man' ) || pod2usage();
+my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'bsmlJaccardDir|j=s', 'outFile|o=s', 'help|h', 'man' ) || pod2usage();
 
 my $bsmlSearchDir = $options{'bsmlSearchDir'};
 my $bsmlModelDir = $options{'bsmlModelDir'};my $outFile = $options{'outFile'};
@@ -80,6 +84,48 @@ my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureH
 if( exists($options{'help'}) || exists($options{'man'}) )
 {
     pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+}
+
+# If Jaccard data has been specified, use it for equivalence class filtering
+
+my $jaccardClusterHash = {};  #Associate Jaccard clusters by sequence id
+my $jaccardRepSeqHash = {};   #Associate a representative sequence for each cluster
+my $jaccardClusterCount = 0;
+
+if( $options{'bsmlJaccardDir'} )
+{
+    my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
+    foreach my $bsmlFile (<$options{'bsmlJaccardDir'}/*.bsml>)
+    {
+	$multiAlnParser->parse( $bsmlFile );
+    }
+}
+
+sub multipleAlignmentHandler
+{
+    my $aln = shift;
+    my $bsml_reader = new BSML::BsmlReader();
+
+    my $maln_ref = $bsml_reader->readMultipleAlignmentTable($aln);
+
+    foreach my $alnSum ( @{ $maln_ref->{'AlignmentSummaries'} } )
+    {
+	my $seqCount = 0;
+	foreach my $alnSeq ( @{ $alnSum->{'AlignedSequences'} } )
+	{
+	    my $name = $alnSeq->{'name'};
+	    $name =~ s/:[\d]*//;
+
+	    $jaccardClusterHash->{$name} = $jaccardClusterCount;
+	    if( $seqCount == 0 )
+	    {
+		$jaccardRepSeqHash->{$jaccardClusterCount} = $name;
+	    }
+	    $seqCount++;
+	}
+    }
+
+    $jaccardClusterCount++;
 }
 
 if(!$bsmlSearchDir || !$bsmlModelDir )
@@ -185,6 +231,17 @@ sub alignmentHandler
     return if( $compseq eq $refseq );
 
 
+    # if compseq is part of a Jaccard equivalence class, only use it if it is the
+    # Jaccard reference sequence for the class
+
+    if( defined( my $jId = $jaccardClusterHash->{$compseq} ) )
+    {
+	if( !($compseq eq $jaccardRepSeqHash->{$jId}) )
+	{
+	    return;
+	}
+    }
+
     # find the highest scoring run for each pairwise alignment
 
     foreach my $seqPairRun ( @{$aln->returnBsmlSeqPairRunListR} )
@@ -254,6 +311,9 @@ sub alignmentHandler
     {
 	$COGInput->{$refseq}->{$compGenome} = $lref;
     }
+
+    if( $pairsCount > 200 ){ exit(); }
+    $pairsCount++;
 }
 
 sub genomeHandler
@@ -263,7 +323,10 @@ sub genomeHandler
     
     my $rhash = $reader->readGenome( $bsmlGenome );
 
-    
+    if( !defined($rhash->{'strain'}) )
+    {
+	$rhash->{'strain'} = ' ';
+    }
 
     $genome = $rhash->{'genus'}.':'.$rhash->{'species'}.':'.$rhash->{'strain'};
 }
