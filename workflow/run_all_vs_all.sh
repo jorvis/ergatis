@@ -28,13 +28,15 @@ fi
 source $RUNPATH/wfenv_bash.sh
 
 project="$database$$"
-program="all_vs_all"
 
 if [ "$asmbl_file" ]
 then
-    $RUNPATH/set_runtime_vars.sh -f $asmbl_file -d $database -p $project -r $program
+    program="all_vs_all_multi"
+    $RUNPATH/set_runtime_vars.sh -f $asmbl_file -d $database -p $project -r $program -a $asmbl
+    cp $asmbl_file $project
 elif [ "$asmbl" ]
 then 
+    program="all_vs_all"
     $RUNPATH/set_runtime_vars.sh -a $asmbl -d $database -p $project -r $program
 else
     echo "You must specify -a or -f"
