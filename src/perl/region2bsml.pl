@@ -73,16 +73,17 @@ while (my $line = <IN>) {
 	    my $align = $doc->createAndAddSequencePairAlignment('refseq' => $refseq, 'compseq' => $compseq);
 	    my $complement= ($compstart > $compend) ? 1 : 0;
 	    if($complement){
-		$compend++;
+		($compstart,$compend) = ($compend,$compstart);
 	    }
-	    else{
-		$refstart--;
+	    if($refstart >= $refend){
+		$logger->logdie("Bad reference coordinates $refstart- $refend in output between $refseq $compseq\n");
 	    }
 	    my $query_align_length = abs($refend-$refstart);
 	    my $match_align_length = abs($compend-$compstart);
 	    $doc->createAndAddSequencePairRun('alignment_pair' => $align, 
 					      'refpos' => $refstart, 
 					      'runlength' =>$query_align_length,
+					      'complement' => 0,
                                               'comppos'=> $compstart, 
 					      'comprunlength'=>$match_align_length,
 					      'compcomplement'=>$complement);
