@@ -164,7 +164,9 @@ while( my $line = <ALIGN> )
 
 
 	if($revCom == 1){
-	    $asblPos = $asbllength-$asblPos;
+	    #Pipeline reports base-based coordinates
+            #Must +1 to keep base-based when subtracting coords.
+	    $asblPos = $asbllength-$asblPos+1;
 	}
 	print "$ref $assemblyId $refPos $asblPos $refBase $asblBase | $cov[0] $cov[1] $cov[2]\n";
 
