@@ -54,17 +54,15 @@ sub read_pe_output {
 	    if(! (exists $seq_pair->{$pe[2]}->{$pe[3]})){
 		$seq_pair->{$pe[2]}->{$pe[3]} = [];
 	    }
-	    else{
-		push @{$seq_pair->{$pe[2]}->{$pe[3]}}, {
-						       'start_query'    => $pe[0],
-						       'runlength'      => 0,
-						       'start_hit'      => $pe[1],
-						       'runscore'       => $ClusterScore,
-						       'PEffect_Cluster_Id' => $ClusterId,
-						       'PEffect_Cluster_Gap_Count' => $ClusterGapCount,
-						       'PEffect_Cluster_Gene_Count' => $ClusterGeneCount 
-						       };
-	    }
+	    push @{$seq_pair->{$pe[2]}->{$pe[3]}}, {
+		'start_query'    => $pe[0],
+		'runlength'      => 0,
+		'start_hit'      => $pe[1],
+		'runscore'       => $ClusterScore,
+		'PEffect_Cluster_Id' => $ClusterId,
+		'PEffect_Cluster_Gap_Count' => $ClusterGapCount,
+		'PEffect_Cluster_Gene_Count' => $ClusterGeneCount 
+		};
 	}
     }
 
