@@ -103,21 +103,21 @@ sub parse_promer_coords {
 	chomp($line);
 	@promer = split("\t", $line);	
 	#In Promer ref seq refers to query
-	my $ref_name    = $promer[15];
-        my $qry_name    = $promer[16];
+	my $ref_name    = $promer[10];
+        my $qry_name    = $promer[11];
 	my $ref_start   = $promer[0];
 	my $ref_end     = $promer[1];
 	my $ref_length  = $promer[4];
 	my $qry_start   = $promer[2];
         my $qry_end     = $promer[3];
 	my $qry_length  = $promer[5];
-	my $percent_id  = $promer[6];
-        my $percent_sim = $promer[7];
-	my $percent_stop = $promer[8];
-	my $qry_asmbl_length = $promer[10];
-        my $ref_asmbl_length = $promer[9];
-	my $frame_ref = $promer[13];
-        my $frame_qry = $promer[14];
+	my $percent_id  = $promer[8];
+        my $percent_sim = $promer[9];
+	my $percent_stop = 0;
+	my $qry_asmbl_length = $promer[7];
+        my $ref_asmbl_length = $promer[6];
+	my $frame_ref = 0;
+        my $frame_qry = 0;
 	
 	$qry_name =~ s/^$database\_//i; #strip leading database name for now
 	$ref_name =~ s/^$database\_//i; #strip leading database name for now
