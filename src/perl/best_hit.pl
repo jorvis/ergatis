@@ -33,6 +33,7 @@ $DEBUG = $opt_D;
 
 $cutoff = (length($opt_c) == 0) ? 0.0001 : $opt_c;
 
+
 $quorum = ($opt_n < 2) ? 2 : $opt_n;  
 
 $DEBUG && print ("DEBUG is ON, cog minimum is $quorum, cutoff is $cutoff\n");
