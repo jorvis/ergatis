@@ -48,14 +48,14 @@ my $parser = new BSML::BsmlParserTwig;
 my $reader = new BSML::BsmlReader;
 $parser->parse( \$reader, $bsml_file );
 
-my %asmbllookup;
-my %proteinlookup;
-
 print "Parsed $bsml_file\n" if($DEBUG);
 
-&fillAnnotation(\%asmbllookup, \%proteinlookup, $asmbl_id1);
+
 
 for(my $i=1;$i<@asmbls;$i++){
+    my %asmbllookup;
+    my %proteinlookup;
+    &fillAnnotation(\%asmbllookup, \%proteinlookup, $asmbl_id1);    
     my $asmbl_id2 = $asmbls[$i];
     &fillAnnotation(\%asmbllookup, \%proteinlookup, $asmbl_id2);
     &populateMatches($reader,$asmbl_id1,$asmbl_id2,\%asmbllookup,\%proteinlookup);
@@ -84,82 +84,79 @@ sub populateMatches{
     my ($reader, $query_asmbl_id, $match_asmbl_id,$asmbl_lookup, $protein_lookup) = @_;
     $reader->makeCurrentDocument();
     #print STDERR "$query_asmbl_id Proteins($protein_lookup->{$query_asmbl_id}->{'proteins'})",@{$protein_lookup->{$query_asmbl_id}->{'proteins'}},"\n";
-    foreach my $seq (@{$protein_lookup->{$query_asmbl_id}->{'proteins'}}) {   #grab all seq obj given query_asmbl_id
-	my $seq_id = $seq->returnattr( 'id' );  #return seq_id of an seq obj
-	if($seq->returnattr( 'molecule' ) eq 'aa'){
-	    my $alnpairs = $reader->fetch_all_alignmentPairs( $seq_id );
-	    foreach my $aln (@$alnpairs) { #return all alignment with query as $seq_id
-		if(ref($aln)) {
-		    my $match_ref = $reader->readSeqPairAlignment($aln);            #return all pair_runs for an alignment_pair
+    foreach my $seq_id (@{$protein_lookup->{$query_asmbl_id}->{'proteins'}}) {   #grab all seq obj given query_asmbl_id
+	my $alnpairs = $reader->fetch_all_alignmentPairs( $seq_id );
+	foreach my $aln (@$alnpairs) { #return all alignment with query as $seq_id
+	    if(ref($aln)) {
+		my $match_ref = $reader->readSeqPairAlignment($aln);            #return all pair_runs for an alignment_pair
 		
-		    if(exists $asmbl_lookup->{$match_asmbl_id}->{$match_ref->{'compseq'}}){
-			print  "Checking $match_asmbl_id $match_ref->{'compseq'}\n" if($DEBUG);
-			print  "Fetching alignment pairs $seq_id ($aln)\n" if($DEBUG);
-			my $bestscore=0;
-			print  "Process alignment $aln between  $match_ref->{'refseq'} $match_ref->{'compseq'}\n" if($DEBUG);
-			foreach my $pair_run(@{ $match_ref->{'seqPairRuns'} }) {
-			    $bestscore = $pair_run->{'runscore'} if($pair_run->{'runscore'} > $bestscore);  #store best bit_score
-			}
-			
-			my $id1 = $match_ref->{'refseq'};
-			my $id2 = $match_ref->{'compseq'};
-			if(exists $asmbl_lookup->{$query_asmbl_id}->{$id1}){
-			    if(exists $asmbl_lookup->{$match_asmbl_id}->{$id2}){
-				if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne ""){
-				    if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne $id2){
-					if($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
-					    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
-					    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
-					    print  "Saving y best score for $id1 as $id2 $bestscore\n" if($DEBUG);
-					}
-				    }
-				    elsif($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
-					print  "Saving y best score for $id1 as $id2 $bestscore\n" if($DEBUG);
+		if(exists $asmbl_lookup->{$match_asmbl_id}->{$match_ref->{'compseq'}}){
+		    print  "Checking $match_asmbl_id $match_ref->{'compseq'}\n" if($DEBUG);
+		    print  "Fetching alignment pairs $seq_id ($aln)\n" if($DEBUG);
+		    my $bestscore=0;
+		    print  "Process alignment $aln between  $match_ref->{'refseq'} $match_ref->{'compseq'}\n" if($DEBUG);
+		    foreach my $pair_run(@{ $match_ref->{'seqPairRuns'} }) {
+			$bestscore = $pair_run->{'runscore'} if($pair_run->{'runscore'} > $bestscore);  #store best bit_score
+		    }
+		    
+		    my $id1 = $match_ref->{'refseq'};
+		    my $id2 = $match_ref->{'compseq'};
+		    if(exists $asmbl_lookup->{$query_asmbl_id}->{$id1}){
+			if(exists $asmbl_lookup->{$match_asmbl_id}->{$id2}){
+			    if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne ""){
+				if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne $id2){
+				    if($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
+					$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
 					$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
+					print  "Saving y best score for $id1 as $id2 $bestscore\n" if($DEBUG);
 				    }
 				}
-				else{
+				elsif($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
 				    print  "Saving y best score for $id1 as $id2 $bestscore\n" if($DEBUG);
 				    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
-				    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
 				}
-				if($asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} ne ""){
-				    if($asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} ne $id1){
-					if($bestscore > $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'}){
-					    $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} = $id1;
-					    $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'} = $bestscore;
-					    print  "Saving x best score for $id2 as $id1 $bestscore\n" if($DEBUG);
-					}
-				    }
-				    elsif($bestscore > $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'}){
+			    }
+			    else{
+				print  "Saving y best score for $id1 as $id2 $bestscore\n" if($DEBUG);
+				$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
+				$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
+			    }
+			    if($asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} ne ""){
+				if($asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} ne $id1){
+				    if($bestscore > $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'}){
+					$asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} = $id1;
 					$asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'} = $bestscore;
 					print  "Saving x best score for $id2 as $id1 $bestscore\n" if($DEBUG);
 				    }
 				}
-				else{
-				    print  "Saving x best score for $id2 as $id1 $bestscore\n" if($DEBUG);
+				elsif($bestscore > $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'}){
 				    $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'} = $bestscore;
-				    $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} = $id1;
+				    print  "Saving x best score for $id2 as $id1 $bestscore\n" if($DEBUG);
 				}
-
-				print  "Marking $id1 $id2\n" if($DEBUG);
-				print Dumper ($asmbl_lookup->{$query_asmbl_id}->{$id1}),"\n" if($DEBUG);
-				print Dumper ($asmbl_lookup->{$match_asmbl_id}->{$id2}),"\n" if($DEBUG);
-
-				$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'marked'} = 1;
-				$asmbl_lookup->{$match_asmbl_id}->{$id2}->{'marked'} = 1;
 			    }
 			    else{
-				print  "Can't find $id2 in $match_asmbl_id\n" if($DEBUG);
+				print  "Saving x best score for $id2 as $id1 $bestscore\n" if($DEBUG);
+				$asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'} = $bestscore;
+				$asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} = $id1;
 			    }
+			    
+			    print  "Marking $id1 $id2\n" if($DEBUG);
+			    print Dumper ($asmbl_lookup->{$query_asmbl_id}->{$id1}),"\n" if($DEBUG);
+			    print Dumper ($asmbl_lookup->{$match_asmbl_id}->{$id2}),"\n" if($DEBUG);
+			    
+			    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'marked'} = 1;
+			    $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'marked'} = 1;
 			}
 			else{
-			    print  "Can't find $id1 in $query_asmbl_id\n" if($DEBUG);
+			    print  "Can't find $id2 in $match_asmbl_id\n" if($DEBUG);
 			}
 		    }
 		    else{
-			#print STDERR "Can't find $match_ref->{'compseq'} in $match_asmbl_id $match_ref->{'refseq'} ($query_asmbl_id)\n";
+			print  "Can't find $id1 in $query_asmbl_id\n" if($DEBUG);
 		    }
+		}
+		else{
+		    #print STDERR "Can't find $match_ref->{'compseq'} in $match_asmbl_id $match_ref->{'refseq'} ($query_asmbl_id)\n";
 		}
 	    }
 	}
@@ -269,7 +266,7 @@ sub printGroupings{
 	    my($xdist) =$xref->{$matches->{$match}->{'xstopfeat'}}->{'end5'} -  $xref->{$matches->{$match}->{'xstartfeat'}}->{'end5'};
 	    my($ydist) =$yref->{$matches->{$match}->{'ystopfeat'}}->{'end5'} - $yref->{$matches->{$match}->{'ystartfeat'}}->{'end5'};
 	    if(abs($xdist)>= $minsize || abs($ydist)>= $minsize){
-		print "#Match $match $xdist $ydist ($matches->{$match}->{'xgap'}:$matches->{$match}->{'xgapfeat'} $matches->{$match}->{'ygap'}:$matches->{$match}->{'ygapfeat'})"; 
+		print "#Match $match $xdist $ydist ($matches->{$match}->{'xgap'}:$matches->{$match}->{'xgapfeat'} $matches->{$match}->{'ygap'}:$matches->{$match}->{'ygapfeat'})\n"; 
 		print "#$asmbl_idx:$matches->{$match}->{'xstartfeat'} $asmbl_idy:$matches->{$match}->{'ystartfeat'} $asmbl_idx:$matches->{$match}->{'xstopfeat'} $asmbl_idy:$matches->{$match}->{'ystopfeat'}\n";
 		print "$asmbl_idx $asmbl_idy $xref->{$matches->{$match}->{'xstartfeat'}}->{'end5'} $yref->{$matches->{$match}->{'ystartfeat'}}->{'end5'} $xref->{$matches->{$match}->{'xstopfeat'}}->{'end5'} $yref->{$matches->{$match}->{'ystopfeat'}}->{'end5'}\n";
 	    }
@@ -355,7 +352,15 @@ sub fillAnnotation  {
 
 	    }
 	}
-	$protein_lookup->{$asmbl_id}->{'proteins'} = $reader->assemblyIdtoSeqList($asmbl_id);
+	my(@seq_ids);
+	my($seqs) = $reader->assemblyIdtoSeqList($asmbl_id);
+
+	foreach my $seq (@$seqs){
+	    if($seq->returnattr( 'molecule' ) eq 'aa'){
+		push @seq_ids,$seq->returnattr( 'id' );  #return seq_id of an seq obj
+	    }
+	}
+	$protein_lookup->{$asmbl_id}->{'proteins'} = \@seq_ids;
 	print STDERR "Lookup built for $asmbl_id Proteins($protein_lookup->{$asmbl_id}->{'proteins'})\n" if($DEBUG);
 
     }
