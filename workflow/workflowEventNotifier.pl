@@ -11,8 +11,11 @@
 #          See: Antware's "Observer Scripts" http://intranet/ifx/devel/workflow/main_frame.html
 #
 #
-# usage:   CAS group's run_wf.sh script should configure and deploy this script
-#        
+# usage:   CAS group's run_wf.sh script should configure and deploy this script as part of the
+#          RunWorkflow invocation (--scripts command-line argument)
+#
+#
+#
 #-----------------------------------------------------------------------------------------------
 
 use strict;
@@ -27,7 +30,7 @@ $|=1;
 # Parse command line options
 #-------------------------------------------------------------
 
-my ($name, $id, $time, $event, $file, $props);
+my ($name, $id, $time, $event, $file, $props, $sample);
 
 my $results = GetOptions (
 			  'name=s'        => \$name,
@@ -36,6 +39,7 @@ my $results = GetOptions (
 			  'event=s'       => \$event,
 			  'file=s'        => \$file,
 			  'props=s'       => \$props,
+			  'sample'        => \$sample,
 			  );
 
 print STDERR "name was not defined\n"  if (!defined($name));
@@ -46,80 +50,84 @@ print STDERR "file was not defined\n"  if (!defined($file));
 print STDERR "props was not defined\n" if (!defined($props));
 
 &print_usage() if (!$name or !$id or !$time or !$event or !$file or !$props);
-
+&print_sample() if $sample;
 
 
 #die "name '$name' id '$id' time '$time' event '$event' file '$file' props '$props'";
 
 my $addiprops = &get_additional_properties($props);
-print Dumper $addiprops;die;
+#print Dumper $addiprops;die;
+
+
+
+my $nameevent = $name . '_' . $event;
+#die "nameevent:$nameevent";
+
+#
+# default subject and body
+#
+my $subject = "[Workflow Observer] id '$id' name '$name' ";
+my $body = "name '$name'\nid '$id'\ntime '$time'\nevent '$event'\nfile '$file'\n";
 
 
 #
-# Notification will only be sent if event is a qualified event
+# append additional event specific information to the subject and body
 #
-foreach my $q_event (sort @{$addiprops->{$name}->{'qualified_events'}}){
+if ((exists $addiprops->{'v'}->{$nameevent}->{'subject'}) and (defined($addiprops->{'v'}->{$nameevent}->{'subject'}))){
+    $subject .= $addiprops->{'v'}->{$nameevent}->{'subject'};
+}
+if ((exists $addiprops->{'v'}->{$nameevent}->{'body'}) and (defined($addiprops->{'v'}->{$nameevent}->{'body'}))){
+    $body .= $addiprops->{'v'}->{$nameevent}->{'body'};
+}
 
-    if ($event eq $q_event){
-	
-	#
-	# default subject and body
-	#
-	my $subject = "[Workflow Observer] id '$id' name '$name' ";
-	my $body = "name '$name'\nid '$id'\ntime '$time'\nevent '$event'\nfile '$file'\n";
+my $final_to = {};
 
-
-	#
-	# append additional event specific information to the subject and body
-	#
-	if ((exists $addiprops->{$name}->{$event}->{'subject'}) and (defined($addiprops->{$name}->{$event}->{'subject'}))){
-	    $subject .= $addiprops->{$name}->{$event}->{'subject'};
-	}
-	if ((exists $addiprops->{$name}->{$event}->{'body'}) and (defined($addiprops->{$name}->{$event}->{'body'}))){
-	    $body .= $addiprops->{$name}->{$event}->{'body'};
-	}
-
-
-
-	my $final_to = {};
-	
-	#
-	# check if there are event specific individuals to notify
-	#
-	if ((exists $addiprops->{$name}->{$event}->{'to'}) and (defined($addiprops->{$name}->{$event}->{'to'}))){
-
-	    foreach my $spec (sort @{$addiprops->{$name}->{$event}->{'to'}}){
-		$final_to->{$spec} = '';
-	    }
-	}
-
-	#
-	# build unique 'to list'
-	#
-	foreach my $to (sort @{$addiprops->{'to_list'}}){
-	    if (!exists $final_to->{$to}){
-		$final_to->{$to} = '';
-	    }
-	}
-
-	#
-	# generate the to_list
-	#
-	my $to_list;
-	foreach my $key (sort keys %$final_to){
-	    $to_list .= $key . ',';
-	}
-	chop $to_list;
-
-	print STDERR ("to_list: $to_list\n");
-	print STDERR ("subject: $subject\n");
-	print STDERR ("body:    $body\n");
-
-
-	&send_notification($to_list, $subject, $body);
-	exit(0);
+#
+# Collect all the default to email addresses in a hash so that we can ensure uniqueness
+#
+if ((exists $addiprops->{'v'}->{'to_list'}->{'to'}) and (defined($addiprops->{'v'}->{'to_list'}->{'to'}))){
+    
+    my $to_list = $addiprops->{'v'}->{'to_list'}->{'to'};
+    my @sendlist = split(/,/,$to_list);
+    foreach my $name (sort @sendlist){
+	$final_to->{$name} = 1;
     }
 }
+
+#
+# Now collect all name-event specific address in the same hash
+#
+if ((exists $addiprops->{'v'}->{$nameevent}->{'to'}) and (defined($addiprops->{'v'}->{$nameevent}->{'to'}))){
+
+    my $to_list = $addiprops->{'v'}->{$nameevent}->{'to'};
+    my @sendlist = split(/,/,$to_list);
+    foreach my $name (sort @sendlist){
+	if (!exists $final_to->{$name}){
+	    $final_to->{$name} = 1;
+	}
+    }
+}
+
+
+#
+# generate the to_list
+#
+my $to_list;
+foreach my $key (sort keys %$final_to){
+    $to_list .= $key . ',';
+}
+chop $to_list;
+
+#print STDERR ("subject: $subject\n");
+#print STDERR ("body:    $body\n");
+#print STDERR ("to_list: $to_list\n");
+#die;
+
+
+&send_notification($to_list, $subject, $body);
+exit(0);
+
+
 
 
 #----------------------------------------------------------------------
@@ -132,13 +140,16 @@ sub send_notification {
 
     my $mailer = Mail::Mailer->new ('mail');
     $mailer->open({
-	To   => '$to_list',
+	To   => "$to_list",
 	Subject => "Workflow $$ completed"
     }) or die "Could not create and send message";
     
     print $mailer $body;
     
     $mailer->close;
+
+    print "Notification sent\n";
+
 }
 
 
@@ -161,105 +172,75 @@ sub get_additional_properties {
 }#end sub get_additional_properties()
 
 
+#-----------------------------------------------------------------
+# print_sample()
+#
+#-----------------------------------------------------------------
+sub print_sample {
+
+    print<<END_SAMPLE;
+
+[to_list]
+to=sundaram\@tigr.org
+
+[legacy2chado_start]
+body=
+subject=
+to=sundaram\@tigr.org,jay_sundaram\@hotmail.com
+
+[legacy2chado_finish]
+body=
+subject=
+to=
+
+[legacy2chado_failure]
+body=
+subject=
+to=jay_sundaram\@hotmail.com,2409947066\@vtext.com,sundaram\@tigr.org
+
+[legacy2chado_interrupt]
+body=
+subject=
+
+[legacy2chado_resume]
+body=
+subject=
+
+[legacy2chado_restart]
+body=
+subject=
 
 
+[chado2bsml_start]
+body=
+subject=
 
-# $addiprops = {
-#                qualified_events => [
-#                                      'start',
-#                                      'finish',
-#                                      'failure'
-#                                     ],
-#                to_list => [
-#                             'sundaram@tigr.org',
-#                             '2409947066@vtext.com',
-#                             'angiuoli@tigr.org'
-#                           ],
-#
-#                start     => {
-#                                body => 'some default message when start event occurs',
-#                                subject => 'some default subject when start event occurs',
-#                                to => [
-#                                        'angiuoli@tigr.org'
-#                                      ]
-#                             },
-#                finish    => {
-#                                body => 'some default message when finish event occurs',
-#                                subject => 'some default subject when finish event occurs',
-#                                to => [
-#                                         'crabtree@tigr.org'
-#                                      ]
-#                             },
-#                failure   => {
-#                                body => 'some default message when failure event occurs',
-#                                subject => 'some default subject when failure event occurs',
-#                                to => [
-#                                         'sundaram@tigr.org,
-#                                          angiuoli@tigr.org'
-#                                      ]
-#                             },
-#                resume    => {
-#                                body => 'some default message when resume event occurs',
-#                                subject => 'some default subject when resume event occurs'
-#                             },
-#                interrupt => {
-#                                body => 'some default message when interrupt event occurs',
-#                                subject => 'some default subject when interrupt event occurs'
-#                             },
-#                restart => {
-#                                body => 'some default message when restart event occurs',
-#                                subject => 'some default subject when restart event occurs'
-#                             },
-#                subject   => {
-#                                body => 'some default message when subject event occurs',
-#                                subject => 'some default subject when subject event occurs'
-#                             },
-#                body      => {
-#                                body => 'some default message when body event occurs',
-#                                subject => 'some default subject when body event occurs'
-#                             }
-#              }
-#
-#
-#
-# Sample ini props file:
-#
-#
-# [qualified_events]
-# start=1
-# finish=1
-# failure=1
-#
-# [to_list]
-# sundaram@tigr.org=1
-# angiuoli@tigr.org=1
-# 2409947066@vtext.com=1
-#
-# [start]
-# body=
-# subject=
-#
-# [finish]
-# body=
-# subject=
-#
-# [failure]
-# body=
-# subject=
-#
-# [interrupt]
-# body=
-# subject=
-#
-# [resume]
-# body=
-# subject=
-#
-# [restart]
-# body=
-# subject=
-#
-#
+[chado2bsml_finish]
+body=
+subject=
+
+[chado2bsml_failure]
+body=
+subject=
+
+[chado2bsml_interrupt]
+body=
+subject=
+
+[chado2bsml_resume]
+body=
+subject=
+
+[chado2bsml_restart]
+body=
+subject=
+
+END_SAMPLE
+
+
+exit(0);
+
+}
 
 
 #-----------------------------------------------------------------
@@ -268,13 +249,14 @@ sub get_additional_properties {
 #-----------------------------------------------------------------
 sub print_usage {
 
-    print STDERR "SAMPLE USAGE:  $0 --name=<name> --id=<id> --time=<time> --event=<event> --file=<file> --props=<props>\n";
+    print STDERR "SAMPLE USAGE:  $0 --name=<name> --id=<id> --time=<time> --event=<event> --file=<file> --props=<props> [--sample]\n";
     print STDERR "  --name     = \n";
     print STDERR "  --id       = \n";
     print STDERR "  --time     = \n";
     print STDERR "  --event    = \n";
     print STDERR "  --file     = \n";
     print STDERR "  --props    = \n";
+    print STDERR "  --sample   = Optional - to view sample props file\n";
     exit 1;
    
 
