@@ -350,7 +350,7 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     
     $conf->{';CONFIG_LIST;'}   .= $workflow_instance_dir ."/" . $bsml_basename .".ini,";
     $conf->{';INSTANCE_LIST;'} .= $workflow_instance_dir ."/" . $bsml_basename .".xml,";
-
+    $conf->{';WORKFLOW_INSTANCE_DIRS;'} .= $workflow_instance_dir . "/" . $bsml_basename .",";
 }    
 
 #
@@ -358,6 +358,7 @@ foreach my $bsml_item (sort keys %$bsml_hash){
 #
 chop $conf->{';CONFIG_LIST;'};
 chop $conf->{';INSTANCE_LIST;'};
+chop $conf->{';WORKFLOW_INSTANCE_DIRS;'};
 
 $conf->{';WORKFLOW_INSTANCE_DIR;'} = $workflow_instance_dir;
 
@@ -432,10 +433,11 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     # Create a subdirectory in the workflow instance directory for this bsml
     # We will store all the associated goodies in this bsml specific directory
     #
-    $execution_string = "mkdir -p -m 777 ". $workflow_instance_dir;
-    &execute(\$execution_string);
-    $execution_string = "mkdir -p -m 777 ". $workflow_instance_dir  . "/" . $bsml_basename;
-    &execute(\$execution_string);
+
+#    $execution_string = "mkdir -p -m 777 ". $workflow_instance_dir;
+#    &execute(\$execution_string);
+#    $execution_string = "mkdir -p -m 777 ". $workflow_instance_dir  . "/" . $bsml_basename;
+#    &execute(\$execution_string);
 
     #
     # All of the *.log and *.stats files necessary for the migration
