@@ -146,7 +146,6 @@ ENDCONFIG
     
     $logger->debug("Running 'condor_submit /usr/local/scratch/pe$$.condor.config'");
     unlink "$outputfile.done" if(-e "$outputfile.done");
-    print `condor_submit /usr/local/scratch/pe$$.condor.config`;
     my $counter=0;
     while (! (-e "$outputfile.done")){
 	if($counter>6){
