@@ -30,7 +30,7 @@ my ($outputdir) = ($xmltemplate =~ /(.*)\/Workflow/);
 my $pipelinedir = "$outputdir/Workflow/pipeline";
 $outputdir .= "/workflow_config_files";
 my $sharedconf = "$outputdir/sharedconf.ini";
-my $WorkflowDocsDir = "/usr/local/devel/ANNOTATION/cas/v2test/docs";
+my $WorkflowDocsDir = "/usr/local/devel/ANNOTATION/cas/docs";
 my $componentbldconf = &get_component_blds($outputdir);
 
 

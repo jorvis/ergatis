@@ -29,7 +29,7 @@ if($dowrite){
 
 my $cfg = new Config::IniFiles(-file => $conffile);
 
-my $WorkflowDocsDir = $ENV{'WORKFLOW_DOCS_DIR'} || "/usr/local/devel/ANNOTATION/cas/v2test/docs";
+my $WorkflowDocsDir = $ENV{'WORKFLOW_DOCS_DIR'} || "/usr/local/devel/ANNOTATION/cas/docs";
 
 #print all conf options
 
