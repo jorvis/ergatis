@@ -284,7 +284,7 @@ if ($target_server !~ /^SYBIL|SYBTIGR$/){
 }
 
 
-my $bsml2chado_program = &determine_bsml2chado_program($bsml_type) if ($bsml_type);
+my $bsmlscaffold2chado_program = &determine_bsmlscaffold2chado_program($bsml_type) if ($bsml_type);
 
 
 #
@@ -303,7 +303,7 @@ if ($bsml_directory){
 #
 $conf->{';USERNAME;'}           = $username           if (defined($username));
 $conf->{';PASSWORD;'}           = $password           if (defined($password));
-$conf->{';BSML2CHADO_PROGRAM;'} = $bsml2chado_program if (defined($bsml2chado_program));
+$conf->{';BSMLSCAFFOLD2CHADO_PROGRAM;'} = $bsmlscaffold2chado_program if (defined($bsmlscaffold2chado_program));
 $conf->{';TARGET_SERVER;'}      = $target_server             if (defined($target_server));
 $conf->{';TARGET_DATABASE_LC;'} = lc($target_database)       if (defined($target_database));
 $conf->{';TARGET_DATABASE_UC;'} = uc($target_database)       if (defined($target_database));
@@ -312,7 +312,7 @@ $conf->{';WFID;'}               = $$;
 
 #---------------------------------------------------------------------------------------------
 # Create the workflow archive directory within the BSML 
-# repository e.g. mkdir -m 777 -p /usr/local/annotation/CHADO_TEST/Workflow/bsml2chado/3065
+# repository e.g. mkdir -m 777 -p /usr/local/annotation/CHADO_TEST/Workflow/bsmlscaffold2chado/3065
 #
 #---------------------------------------------------------------------------------------------
 $logger->logdie("$conf->{';REPOSITORY_ROOT;'} is not a directory") if (!-d $conf->{';REPOSITORY_ROOT;'});
@@ -408,11 +408,11 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     # Determine the BSML program based on BSML type by extracting the bsml_type if available
     #
     if (exists $bsml_hash->{$bsml_item}->{'bsml_type'}){
-	$bsml2chado_program = &determine_bsml2chado_program($bsml_hash->{$bsml_item}->{'bsml_type'});
+	$bsmlscaffold2chado_program = &determine_bsmlscaffold2chado_program($bsml_hash->{$bsml_item}->{'bsml_type'});
 	$conf->{';ANALYSIS_TYPE;'} = $bsml_hash->{$bsml_item}->{'bsml_type'};
     }
 
-    $conf->{';BSML2CHADO_PROGRAM;'} = $bsml2chado_program;
+    $conf->{';BSMLSCAFFOLD2CHADO_PROGRAM;'} = $bsmlscaffold2chado_program;
 
     #
     # Extract the fullpath for the BSML document
@@ -654,10 +654,10 @@ sub print_configuration {
 
 
 #------------------------------------------------------------------------
-# determine_bsml2chado_program()
+# determine_bsmlscaffold2chado_program()
 #
 #------------------------------------------------------------------------
-sub determine_bsml2chado_program {
+sub determine_bsmlscaffold2chado_program {
 
     my $script = shift;
     $logger->logdie("script was not defined") if (!defined($script));
@@ -672,7 +672,7 @@ sub determine_bsml2chado_program {
 	$logger->logdie("Unrecognized option: $script");
     }
 
-    $logger->info("bsml2chado program set to:$program");
+    $logger->info("bsmlscaffold2chado program set to:$program");
     return $program;
 }
 
