@@ -40,8 +40,8 @@ if(($inifile ne "") && ($template ne "")){
 	    chdir '/usr/local/scratch/workflow';
 	    use POSIX qw(setsid);
 	    setsid() or die "Can't start a new session: $!";
-	    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/wf-test";
-	    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/wf-test";
+	    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-2.2B1";
+	    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-2.2B1";
 	    $ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/packages/sybase/lib";
 	    $ENV{'SYBASE'} = "/usr/local/packages/sybase";
 	    $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";
@@ -72,8 +72,8 @@ else{
 	    use POSIX qw(setsid);
 	    setsid() or die "Can't start a new session: $!";
 
-	    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/wf-test";
-	    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/wf-test";
+	    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-2.2B1";
+	    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-2.2B1";
 	    $ENV{'SYBASE'} = "/usr/local/packages/sybase";
 	    $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";
 	    $ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/packages/sybase/lib";
