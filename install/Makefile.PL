@@ -197,6 +197,13 @@ delete_analysis  :
 	@install workflow/delete_analysis/delete_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/delete_analysis/delete_analysisconf.ini $(WORKFLOW_DOCS_DIR)  
 
+initdb  :
+	@echo "Installing initdb workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/initdb/initdb-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/initdb/initdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/initdb/initdbconf.ini $(WORKFLOW_DOCS_DIR)  
+
+
 END
 
     $postamble;
