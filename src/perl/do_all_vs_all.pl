@@ -52,6 +52,10 @@ sub execute_allvsall {
     my $pepdir    = "$pep_dir";
     my $outputdir = "$output_dir/${asmbl_id}";
 	 
+    if(! -d $outputdir) {
+	mkdir $outputdir;
+	chmod 0777, $outputdir;
+    }
 	      
     #my $command = "pallvsall -nowait -parameters database=$db_file,fastafile=$fastafile,seqdir=$seqdir,pepdir=$pepdir,outputdir=$outputdir";     
     my $command = "pallvsall -parameters database=$db_file,fastafile=$fastafile,seqdir=$seqdir,pepdir=$pepdir,outputdir=$outputdir";
