@@ -65,7 +65,7 @@ else{
     my $workflowdocsdir = &get_workflow_docs($sharedconf);
     print STDERR "Searching $workflowdocsdir parsed from $sharedconf\n";
     my $componentconf = &get_component_conf($workflowdocsdir);
-    foreach my $component (keys %$componentconf){
+    foreach my $component (sort keys %$componentconf){
 	my $outputfile = "$outputdir/$component"."_$$"."conf.bld.ini";
 	print "<a target='config' href='config_component.cgi?conffile=$componentconf->{$component}&outputfile=$outputfile&sharedconf=$sharedconf&ignoresect=init&id=$$'>$component</a><br>";
     }
