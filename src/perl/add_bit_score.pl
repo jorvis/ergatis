@@ -37,7 +37,6 @@ foreach my $seqobj (@{$reader->returnAllSequences()}) {
     # return the alignment object corresponding to the query sequences verses itself.
     my $alignment_list = $reader->fetch_all_alignmentPairs( $seqId, $seqId );
     if( $alignment_list->[0] ) {
-	print STDERR "found base match\n";
 	my $base_alignment = $reader->readSeqPairAlignment( $alignment_list->[0] );
 	my $base_score = $base_alignment->{'seqPairRuns'}->[0]->{'runscore'};
 	# get all the alignment objects having $seqId as the query sequence
@@ -49,14 +48,25 @@ foreach my $seqobj (@{$reader->returnAllSequences()}) {
 		my $score = $run->{'runscore'};
 		my $PercentBitScore = sprintf('%.3f', $score/$base_score);
 		# add a bsml attribute to the document for percent bit score
-		print STDERR "adding percent bit score $PercentBitScore\n";
+		print STDERR "adding percent bit score $PercentBitScore\n" if($verbose);
 		$run->{'bsmlRef'}->addBsmlAttr( 'percent_bit_score', $PercentBitScore );
 	    }
 	}
     } else {
-	print STDERR "NO BASE MATCH found\n";
+	print STDERR "NO BASE MATCH found\n" if($verbose);
     }
 }
 
 # write the altered file to disk
 $reader->write( $output_file );
+chmod 0666, $output_file;
+
+sub print_usage {
+
+    print STDERR "SAMPLE USAGE:  add_bit_score.pl -f bsml_file -o output_file\n";
+    print STDERR "  --bsml_file    = BSML doc containing blastp info\n";
+    print STDERR "  --output       = dir to save output to (if omitted, overwrite input file)\n";
+    print STDERR "  --help = This help message.\n";
+    exit 1;
+
+}
