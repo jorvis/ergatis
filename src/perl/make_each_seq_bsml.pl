@@ -40,9 +40,25 @@ my $result;
 
 
 my @asm_ids;
-if(defined($ASMBL_IDS)) {
+if($ASMBL_IDS =~ /all/i) {
+    my @files = <$BSML_dir/*.bsml>;
+    foreach (@files) {
+	my $basename = basename($_);
+	if($basename =~ /(.+)\.bsml/) {
+	    push(@asm_ids, $1);
+        }
+    }
+} else {
     @asm_ids = split(/,/, $ASMBL_IDS);
 }
+
+
+
+
+
+#if(defined($ASMBL_IDS)) {
+#    @asm_ids = split(/,/, $ASMBL_IDS);
+#}
 
 my $parser = new BSML::BsmlParserTwig;
 
@@ -101,10 +117,11 @@ sub fasta_out {
 sub print_usage {
 
 
-    print STDERR "SAMPLE USAGE:  make_each_seq_bsml.pl -b bsml_dir -o output_dir -a 19\n";
+    print STDERR "SAMPLE USAGE:  make_each_seq_bsml.pl -b bsml_dir -o output_dir -a bsp_3839_assembly\n";
     print STDERR "  --bsml_dir    = dir containing BSML doc\n";
     print STDERR "  --output_dir  = dir to save output to\n";
-    print STDERR "  --asmbl_ids  (only get sequences  belong to particular asmbl_ids)\n";
+    print STDERR "  --asmbl_ids  (multiple values can be comma separated)\n";
+    print STDERR "               (-a all  grabs all asmbl_ids)\n";    
     print STDERR "  --help = This help message.\n";
     exit 1;
 
