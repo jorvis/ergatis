@@ -17,6 +17,7 @@ my $ASMBL_IDS       = $options{'asmbl_ids'};
 my $simple_header   = $options{'simple_header'};
 my $each_file       = $options{'each_file'} || 0;
 my $each_genome     = $options{'each_genome'} || 0;
+my $project         = $options{'project'};
 my $output_dir      = $options{'output_dir'};
 $output_dir =~ s/\/+$//;       #remove terminating '/'s
 my $BSML_dir        = $options{'bsml_dir'};
@@ -26,6 +27,12 @@ if($each_file and $each_genome) {
     print STDERR "--each_genome(-g) and --each_file(-e) CANNOT be invoked at the same time.\n";
     exit 1;
 }
+
+if(!$each_file and !$each_genome and $project) {
+    print STDERR "Must specify project name\n";
+    exit 1;
+}
+
 
 if(!defined($ASMBL_IDS) or !$output_dir or !$BSML_dir or exists($options{'help'})) {
     &print_usage();
@@ -143,7 +150,7 @@ sub make_PNEUMO_pep_for_ALL_genomes {
 
     my $assembly_ids = shift;
 
-    my $pep_file = "$output_dir/PNEUMO.pep";
+    my $pep_file = "$output_dir/$project.pep";
     open(FILE, ">$pep_file") || die "Cant open $pep_file due to $!";
     foreach my $asmbl_id (@$assembly_ids) {
 	#my $result = $CGC->fetch_protein_seq_info_from_asmbl_id($asmbl_id);
