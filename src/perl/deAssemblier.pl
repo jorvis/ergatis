@@ -11,19 +11,27 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Data::Dumper;
 
 my %options = ();
-my $results = GetOptions( \%options, 'bsmlAssembly|b=s', 'startCoord|s=s', 'windowSize|w=s', 'help|h', 'man' ) || pod2usage();
+my $results = GetOptions( \%options, 'bsmlAssembly|b=s', 'startCoord|s=s', 'windowSize|w=s', 'output_fasta_file|f=s', 'output_bsml_prefix|p=s', 'help|h', 'man' ) || pod2usage();
 
 my $Parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&sequenceHandler, GenomeCallBack => \&genomeHandler );
 my $Reader = new BSML::BsmlReader;
+
+my $bsmlDoc;
 my $startCoord = $options{'startCoord'};
 my $endCoord = $options{'windowSize'} + $options{'startCoord'};
 my $subAssemblyCount = 0;
+my $end = 0;
 
-my $bsmlDoc = new BSML::BsmlBuilder;
+while( !($end) )
+{
+    $bsmlDoc = new BSML::BsmlBuilder;
+    $Parser->parse( $options{'bsmlAssembly'} );
 
-$Parser->parse( $options{'bsmlAssembly'} );
-
-$bsmlDoc->write( "test.bsml" );
+    $bsmlDoc->write( "$options{'output_bsml_prefix'}_$subAssemblyCount" );
+    $startCoord = $startCoord += $options{'windowSize'};
+    $endCoord = $startCoord + $options{'windowSize'};
+    $subAssemblyCount++;
+}
 
 sub sequenceHandler
 {
@@ -34,7 +42,11 @@ sub sequenceHandler
     {
 	my $rhash = $Reader->readSequence( $seqref );
 
-	if( $endCoord > $rhash->{'length'} ){ $endCoord = $rhash->{'length'}};
+	if( $endCoord > $rhash->{'length'} )
+	{ 
+	    $endCoord = $rhash->{'length'};
+	    $end = 1;
+	}
 
 	my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $rhash->{'id'}."_$subAssemblyCount", 
 						 title => $rhash->{'id'}."_$subAssemblyCount", 
