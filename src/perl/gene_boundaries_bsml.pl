@@ -7,18 +7,17 @@ use BSML::BsmlParserTwig;
 
 
 my %options = ();
-my $results = GetOptions (\%options, 'database=s', 'asmbl_id|a=s@', 'bsml_file=s', 'bsml_dir|d=s',
+my $results = GetOptions (\%options, 'asmbl_id|a=s@', 'bsml_file|f=s', 'bsml_dir|d=s',
                                      'maxgap|m=s', 'minsize|s=s', 'coordinates|c', 'help|h' );
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
-my $database   = $options{'database'};
 my $bsml_file = $options{'bsml_file'};
 my $maxgap     = $options{'maxgap'} || '10000';
 my $minsize    = $options{'minsize'} || '10000';
 my $BSML_dir = $options{'bsml_dir'};
 $BSML_dir =~ s/\/$//;
 
-if(!$database or $options{'asmbl_id'} or !$BSML_dir or exists($options{'help'})) {
+if(!$options{'asmbl_id'} or !$BSML_dir or exists($options{'help'})) {
     &print_usage();
 }
 
@@ -29,57 +28,73 @@ my @asmbls = @{$options{'asmbl_id'}};
 
 
 my $parser = new BSML::BsmlParserTwig;
-my $reader = new BsmlReader;
+my $reader = new BSML::BsmlReader;
 $parser->parse( \$reader, $bsml_file );
 
 my %asmbllookup;
+my %proteinlookup;
+
+print STDERR "Parsed $bsml_file\n";
 
 foreach my $asmbl_id1 (@asmbls){
-    &fillAnnotation(\%asmbllookup, $asmbl_id1, $reader);
+    print STDERR "Filling for $asmbl_id1\n";
+    &fillAnnotation(\%asmbllookup, \%proteinlookup, $asmbl_id1);
     foreach my $asmbl_id2 (@asmbls){
-	&fillAnnotation(\%asmbllookup, $asmbl_id2, $reader);
-	&populateMatches($reader,$asmbl_id1,$asmbl_id2,\%asmbllookup);
-	my($xref,$yref,$matches) = &getGroupings($asmbl_id1,$asmbl_id2,\%asmbllookup);
-	&printGroupings($matches,$xref,$yref,$asmbl_id1,$asmbl_id2,$minsize);
+	if($asmbl_id1 ne $asmbl_id2){
+	    &fillAnnotation(\%asmbllookup, \%proteinlookup, $asmbl_id2);
+	    print STDERR "Populating matches for $asmbl_id1 $asmbl_id2\n";
+	    &populateMatches($reader,$asmbl_id1,$asmbl_id2,\%asmbllookup,\%proteinlookup);
+	    print STDERR "Getting groupings\n";
+	    my($xref,$yref,$matches) = &getGroupings($asmbl_id1,$asmbl_id2,\%asmbllookup);
+	    print STDERR "Printing groupings\n";
+	    &printGroupings($matches,$xref,$yref,$asmbl_id1,$asmbl_id2,$minsize);
+	    print STDERR "Done\n";
+	}
     }
 }
 
 sub populateMatches{
-    my ($reader, $query_asmbl_id, $match_asmbl_id,$asmbl_lookup) = @_;
-    foreach my $seq (@{$reader->assemblyIdtoSeqList($query_asmbl_id )}) {   #grab all seq obj given query_asmbl_id
-	my $seq_id = $seq->returnattr( 'id' );                              #return seq_id of an seq obj
-	foreach my $aln (@{$reader->fetch_all_alignmentPairs( $seq_id )}) { #return all alignment with query as $seq_id
-	    if(ref($aln)) {
-		my $match_ref = $reader->readSeqPairAlignment($aln);            #return all pair_runs for an alignment_pair
-		my $bestscore=0;
-		foreach my $pair_run(@{ $match_ref->{'seqPairRuns'} }) {
-		    $bestscore = $pair_run->{'runscore'} if($pair_run->{'runscore'} > $bestscore);  #store best bit_score
-		}
-			
-		my $id1 = $match_ref->{'refseq'};
-		my $id2 = $match_ref->{'compseq'};
-		if(exists $asmbl_lookup->{$query_asmbl_id}->{$id1}){
-		    if(exists $asmbl_lookup->{$match_asmbl_id}->{$id2}){
-			if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne ""){
-			    if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne $id2){
-				if($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
-				    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
-				    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
-			    }
+    my ($reader, $query_asmbl_id, $match_asmbl_id,$asmbl_lookup, $protein_lookup) = @_;
+    print STDERR "$query_asmbl_id Proteins($protein_lookup->{$query_asmbl_id}->{'proteins'})",@{$protein_lookup->{$query_asmbl_id}->{'proteins'}},"\n";
+    foreach my $seq (@{$protein_lookup->{$query_asmbl_id}->{'proteins'}}) {   #grab all seq obj given query_asmbl_id
+	my $seq_id = $seq->returnattr( 'id' );  #return seq_id of an seq obj
+	print STDERR "$seq_id\n";
+	if($seq->returnattr( 'molecule' ) eq 'aa'){
+	    print STDERR "Fetching alignment pairs\n";
+	    foreach my $aln (@{$reader->fetch_all_alignmentPairs( $seq_id )}) { #return all alignment with query as $seq_id
+		if(ref($aln)) {
+		    my $match_ref = $reader->readSeqPairAlignment($aln);            #return all pair_runs for an alignment_pair
+		    my $bestscore=0;
+		    print STDERR "Process alignment $aln between  $match_ref->{'refseq'} $match_ref->{'compseq'}";
+		    
+		    foreach my $pair_run(@{ $match_ref->{'seqPairRuns'} }) {
+			$bestscore = $pair_run->{'runscore'} if($pair_run->{'runscore'} > $bestscore);  #store best bit_score
+		    }
+		    
+		    my $id1 = $match_ref->{'refseq'};
+		    my $id2 = $match_ref->{'compseq'};
+		    if(exists $asmbl_lookup->{$query_asmbl_id}->{$id1}){
+			if(exists $asmbl_lookup->{$match_asmbl_id}->{$id2}){
+			    if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne ""){
+				if($asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} ne $id2){
+				    if($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
+					$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
+					$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
+				    }
 #			    if($coord_only){
 #				print "$asmbl_lookup{$database}->{$query_asmbl_id}->{$id1}->{'end5'} $asmbl_lookup{$database}->{$query_asmbl_id}->{$id1}->{'end3'} $asmbl_lookup{$database}->{$match_asmbl_id}->{$id2}->{'end5'} $asmbl_lookup{$database}->{$match_asmbl_id}->{$id2}->{'end3'}\n";
 #			    } 
-			}
-			elsif($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
-			    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
-			}
-		    }
-		    else{
+				}
+				elsif($bestscore > $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'}){
+				    $asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yscore'} = $bestscore;
+				}
+			    }
+			    else{
 #			if($coord_only){
 #			    print "$asmbl_lookup{$database}->{$query_asmbl_id}->{$id1}->{'end5'} $asmbl_lookup{$database}->{$query_asmbl_id}->{$id1}->{'end3'} $asmbl_lookup{$database}->{$match_asmbl_id}->{$id2}->{'end5'} $asmbl_lookup{$database}->{$match_asmbl_id}->{$id2}->{'end3'}\n";
 #			} 
-			$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
-		    }
+				$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'yhit'} = $id2;
+			    }
 			if($asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} ne ""){
 			    if($asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xhit'} ne $id1){
 				if($bestscore > $asmbl_lookup->{$match_asmbl_id}->{$id2}->{'xscore'}){
@@ -97,12 +112,13 @@ sub populateMatches{
 			$asmbl_lookup->{$query_asmbl_id}->{$id1}->{'marked'} = 1;
 			$asmbl_lookup->{$match_asmbl_id}->{$id2}->{'marked'} = 1;
 		    }
-		    else{
-			print STDERR "Can't find $id2 in $match_asmbl_id\n";
+			else{
+			    print STDERR "Can't find $id2 in $match_asmbl_id\n";
+			}
 		    }
-		}
-		else{
-		    print STDERR "Can't find $id1 in $query_asmbl_id\n";
+		    else{
+			print STDERR "Can't find $id1 in $query_asmbl_id\n";
+		    }
 		}
 	    }
 	}
@@ -259,26 +275,40 @@ sub getDistance{
 sub fillAnnotation  {
 
     my $asmbl_lookup = shift;
+    my $protein_lookup = shift;
     my $asmbl_id = shift;
-    my $reader = new BsmlReader;  #use local reader for now
 
-    my $parser = new BSML::BsmlParserTwig;
-    $parser->parse( \$reader, "BSML_dir/$asmbl_id.bsml" );
-
-    my $idlookup = $reader->returnAllIdentifiers();
-    foreach my $seq (keys %{$idlookup->{$asmbl_id}}){
-	foreach my $gene (keys %{$idlookup->{$seq}}){
-	    foreach my $transcript (keys %{$idlookup->{$gene}}){
+    if(! exists $asmbl_lookup->{$asmbl_id}){
+	
+	my $reader = new BSML::BsmlReader;  #use local reader for now
+	
+	my $parser = new BSML::BsmlParserTwig;
+	$parser->parse( \$reader, "$BSML_dir/$asmbl_id.bsml" );
+	
+	print STDERR "Parsing $BSML_dir/$asmbl_id.bsml\n";
+	
+	my $idlookup = $reader->returnAllIdentifiers();
+	
+	print STDERR "Got all ids ",keys (%$idlookup),"\n";
+	foreach my $gene (keys %{$idlookup->{$asmbl_id}}){
+	    foreach my $transcript (keys %{$idlookup->{$asmbl_id}->{$gene}}){
 		my $fobj = BSML::BsmlDoc::BsmlReturnDocumentLookup($transcript);
-		my $feature = $reader->readFeature($fobj);
-		my $locs = $feature->{'locations'};
-		my $start_loc = $locs->[0]->{'startpos'};
-		my $end_loc = $locs->[0]->{'endpos'};
-		$asmbl_lookup->{$seq}->{$transcript->{'protein_id'}}->{'end5'} = $start_loc;
-		$asmbl_lookup->{$seq}->{$transcript->{'protein_id'}}->{'end3'} = $end_loc;
-		
+		my $locs = [];
+		foreach my $interval_loc (@{$fobj->returnBsmlSiteLocListR()})
+		  {
+		      push( @{$locs}, $interval_loc->{'sitepos'});
+		  }
+		my $start_loc = $locs->[0];
+		my $end_loc = $locs->[1];
+		$asmbl_lookup->{$asmbl_id}->{$idlookup->{$asmbl_id}->{$gene}->{$transcript}->{'proteinId'}}->{'end5'} = $start_loc;
+		$asmbl_lookup->{$asmbl_id}->{$idlookup->{$asmbl_id}->{$gene}->{$transcript}->{'proteinId'}}->{'end3'} = $end_loc;
+		#print STDERR "Reading $transcript $start_loc $end_loc\n";
+
 	    }
 	}
+	$protein_lookup->{$asmbl_id}->{'proteins'} = $reader->assemblyIdtoSeqList($asmbl_id);
+	print STDERR "Lookup built for $asmbl_id Proteins($protein_lookup->{$asmbl_id}->{'proteins'})\n";
+
     }
     return $asmbl_lookup;
 }
