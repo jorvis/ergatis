@@ -12,6 +12,11 @@ use strict;
 
 my $string = $ARGV[0];
 
+if (($string eq "--help") || ($string eq "-h")){
+    print "./watchwf.pl [pipeline.xml] [sleep]\nFirst argument should be the pipeline instance you wish to monitor.\nOptional - second argument should be the sleep time (default is 10 seconds)\n";
+    exit(0);
+}
+
 if (!defined($string)){
     print STDERR "You must specify the Workflow instance file\n";
     exit(1);
