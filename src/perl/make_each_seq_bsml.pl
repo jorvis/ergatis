@@ -9,7 +9,7 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'asmbl_ids|a=s', 'project|p=s', 'asmbl_file=s', 'help|h' );
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'asmbl_ids|a=s', 'asmbl_file=s', 'help|h' );
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
@@ -20,7 +20,6 @@ my $BSML_dir = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;       #remove terminating '/'
 my $QUERYPRINT;
 my $DEBUG = $options{'DEBUG'} || 0;
-my $project         = $options{'project'};
 
 my $asmbl_file      = $options{'asmbl_file'};
 
@@ -74,11 +73,8 @@ if($asmbl_file) {   #asmbl_id will be read from a flat file
 }
 my $parser = new BSML::BsmlParserTwig;
 
-if($project) {
-    consolidated_output(\@asm_ids);
-} else {
-    regular_output(\@asm_ids);
-}
+regular_output(\@asm_ids);
+
 
 
 
