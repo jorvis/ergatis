@@ -53,7 +53,9 @@ my $conf = {
     ';MASTER_CONF;' => "$WorkflowConfigFileDir/snps-master.ini",
     ';MASTER_TEMPLATE;' => "$WorkflowConfigFileDir/snps-master_template.xml",
     ';REF_ASMBL;' => '',
-    ';QUERY_ASMBL_FILE;' => ''
+    ';QUERY_ASMBL_FILE;' => '',
+    ';DATABASE;' => '',
+    ';DATABASE_LC;' => ''
     };
 
 # Override the defaults if the user has specified a config file
