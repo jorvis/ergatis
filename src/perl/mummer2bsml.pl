@@ -1,5 +1,55 @@
 #!/usr/local/bin/perl
 
+=head1  NAME 
+
+mummer2bsml.pl  - convert info stored in mummer coord files into BSML documents
+
+=head1 SYNOPSIS
+
+USAGE:  mummer2bsml.pl -m mummer_coord.txt -o nucmer.bsml -t 1
+
+=head1 OPTIONS
+
+=over 4
+
+=item *
+
+B<--mummer_coords,-m> [REQUIRED]  mummer coordinate file
+
+=item *
+
+B<--output,-o> [REQUIRED] output BSML file containing mummer coordinate information
+
+=item *
+
+B<--mummer_type,-t> [REQUIRED] Type of mummer files: 1 = nucmer, 2 = promer
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+mummer2bsml.pl is designed to convert information in mummer coordinate files 
+into BSML documents.  There 2 types of mummer files: nucmer and promer.  The user 
+can specify which type of mummer files to convert by --mummer_type(t) flag.  An 
+argument of 1 means nucmer, while a 2 indicate the file is that of promer.  
+
+Samples:
+
+1. convert nucmer coordinate files "nucmer_coord.txt" into BSML doc 
+
+   mummer2bsml.pl -m nucmer_coord.txt -o nucmer.bsml -t 1 
+
+NOTE:  
+
+Calling the script name with NO flags/options or --help will display the syntax requirement.
+
+
+=cut
+
 
 use strict;
 #use Log::Log4perl qw(get_logger);
@@ -8,29 +58,25 @@ use English;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 use File::Basename;
+use Pod::Usage;
 
-
+umask(0000);
 
 my %options = ();
-my $results = GetOptions (\%options, 'mummer_coords|m=s', 'bsml_dir|b=s', 'mummer_type|t=s', 'output|o=s', 'verbose|v', 'help|h',);
+my $results = GetOptions (\%options, 'mummer_coords|m=s', 'mummer_type|t=s', 'man', 'output|o=s', 'verbose|v', 'help|h') || pod2usage();
 
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my $mummer_file     = $options{'mummer_coords'};
 my $output          = $options{'output'};
+my $output_dir      = dirname($output);
 my $mummer_type     = $options{'mummer_type'};   # 1 = nucmer , 2 = promer
-my $BSML_dir        = $options{'bsml_dir'};
-$BSML_dir =~ s/\/+$//;         #remove terminating '/'s
 my $verbose    = $options{'verbose'};
 #Log::Log4perl->init("log.conf");
 #my $logger = get_logger();
 
-if(!$mummer_file or !$mummer_type or !$output  or exists($options{'help'})) {
-    #$logger->fatal("Not all of the required options have been defined.  Exiting...");
-    &print_usage();
-}
-
+&cmd_check();
 ###-------------------------------------------------------###
 
 my $doc = BSML::BsmlBuilder->new();
@@ -71,6 +117,8 @@ sub parse_promer_coords {
         my $ref_asmbl_length = $promer[9];
 	my $frame_ref = $promer[13];
         my $frame_qry = $promer[14];
+	
+	next if($ref_name eq $qry_name);
 
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
@@ -121,6 +169,8 @@ sub parse_nucmer_coords {
 	my $qry_asmbl_length = $mummer[8];
         my $ref_asmbl_length = $mummer[7];
 
+	next if($ref_name eq $qry_name);	
+
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
                                                            'complength'    => $qry_asmbl_length,
@@ -141,14 +191,32 @@ sub parse_nucmer_coords {
 
 }
 
-sub print_usage {
+
+sub cmd_check {
+#quality check
+
+    if( exists($options{'man'})) {
+	pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+    }   
+    
+    if( exists($options{'help'})) {
+	pod2usage({-exitval => 1, -verbose => 1, -output => \*STDOUT});
+    }
+    
+    if(!$mummer_file or !$mummer_type or !$output) {
+	pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});    
+    }
 
 
-    print STDERR "SAMPLE USAGE:  mummer2bsml.pl -m mummer_coords -t 1 -o output_file\n";
-    print STDERR "  --mummer_coords     = mummer output file\n";
-    print STDERR "  --output            = bsml output file\n";
-    print STDERR "  --mummer_type(-t)   = type of mummer output (1=nucmer, 2=promer)\n";
-    print STDERR "  --help = This help message.\n";
-    exit 1;
+    if($mummer_type != '1' and $mummer_type != '2') {
+	pod2usage({-exitval => 2,  -message => "$0: mummer_type can only be 1 or 2", -verbose => 1, -output => \*STDERR}); 
+    }
+
+    #check for presence of output directory
+    if(! -d $output_dir) {
+	mkpath($output_dir) or die "Unable to create $output_dir.  Aborting...\n";
+	#chmod 0777, $output_dir;
+    }
 
 }
+
