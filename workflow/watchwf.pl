@@ -16,6 +16,18 @@ if (!defined($string)){
     print STDERR "You must specify the Workflow instance file\n";
     exit(1);
 }
+
+if (!-e $string){
+    print STDERR "Workflow instance file '$string' does not exist\n";
+    exit(1);
+}
+
+if (!-T $string){
+    print STDERR "Workflow instance file '$string' is not a text file\n";
+    exit(1);
+}
+
+
 my $sleep  = $ARGV[1];
 if (!defined($sleep)){
     $sleep = 10;
