@@ -78,9 +78,9 @@ while( my $line = <INPUTCOGS> )
     if( $line =~ /^COG\s+=\s+([^,\s]+)/ )
     {
 	# A new cog has been encountered, flush the previous to disk if present
-	print STDERR "Found cog $line $1\n";
+	print STDERR "Found cog $line $cog\n";
 	if( $cog){
-	    print STDERR "Outputing cog $1\n";
+	    print STDERR "Outputing cog $cog\n";
 	    if(scalar(@{$list})>1){
 		if(@{$list} <= $maxCogSeqCount){
 		    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
@@ -105,6 +105,29 @@ while( my $line = <INPUTCOGS> )
 
 	$cog = $1;
 	$list = [];
+    }
+}
+if( $cog){
+    print STDERR "Outputing cog $cog\n";
+    if(scalar(@{$list})>1){
+	if(@{$list} <= $maxCogSeqCount){
+	    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+	    foreach my $seq ( @{$list} )
+	    {
+		print OUTFILE ">$seq\n";
+			print OUTFILE $Prot->{$seq}."\n";
+	    }
+	    close( OUTFILE );
+	}
+	else{
+	    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+	    foreach my $seq ( @{$list} )
+	    {
+		print OUTFILE ">$seq\n";
+		print OUTFILE "A\n";
+	    }
+	    close( OUTFILE );
+	}
     }
 }
 
