@@ -30,7 +30,7 @@ my ($outputdir) = ($xmltemplate =~ /(.*)\/Workflow/);
 my $pipelinedir = "$outputdir/Workflow/pipeline";
 $outputdir .= "/workflow_config_files";
 my $sharedconf = "$outputdir/sharedconf.ini";
-my $WorkflowDocsDir = "/usr/local/devel/ANNOTATION/cas/docs";
+my $WorkflowDocsDir = "/usr/local/devel/ANNOTATION/cas/docs"; #only used to set up shared conf file
 my $componentbldconf = &get_component_blds($outputdir);
 
 
@@ -57,15 +57,13 @@ foreach my $pipeline (sort {$pipelineconf->{$b}->{'date'} cmp $pipelineconf->{$a
 print "</table>";
 print "<h3>Configure component from template</h3>";
 
-my $componentconf = &get_component_conf($WorkflowDocsDir);
 
 if(! (-e $sharedconf)){
-    print "<a target='config' href='config_component.cgi?conffile=$WorkflowDocsDir/sharedconf.ini&outputfile=$sharedconf&limitsect=init>Shared configuration</a><br>";
-    foreach my $component (keys %$componentconf){
-	print "$component<br>";
-    }
+    print "<a target='config' href='config_component.cgi?conffile=$WorkflowDocsDir/sharedconf.ini&outputfile=$sharedconf&limitsect=init>Shared configuration</a><i>This configuration must be set before adding any components</i><br>";
 }
 else{
+    my $workflowdocsdir = &get_workflow_docs($sharedconf);
+    my $componentconf = &get_component_conf($workflowdocsdir);
     foreach my $component (keys %$componentconf){
 	my $outputfile = "$outputdir/$component"."_$$"."conf.bld.ini";
 	print "<a target='config' href='config_component.cgi?conffile=$componentconf->{$component}&outputfile=$outputfile&sharedconf=$sharedconf&ignoresect=init&id=$$'>$component</a><br>";
@@ -73,6 +71,17 @@ else{
 }
 
 print "</body></html>";
+
+sub get_workflow_docs{
+    my($file) = @_;
+    my $cfg = new Config::IniFiles(-file => $file);
+    return $cfg->val("init","$;WORKFLOWDOCS_DIR$;");
+}
+sub get_workflow_bin{
+    my($file) = @_;
+    my $cfg = new Config::IniFiles(-file => $file);
+    return $cfg->val("init","$;BIN_DIR$;");
+}
 
 sub get_pipeline_blds{
     my($dir) = @_;

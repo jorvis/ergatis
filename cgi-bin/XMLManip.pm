@@ -3,9 +3,6 @@ use strict;
 
 use XML::Twig;
 
-my $WorkflowDocsDir = "/usr/local/devel/ANNOTATION/cas/docs/";
-my $WorkflowBinDir = "/usr/local/devel/ANNOTATION/cas/bin/";
-
 sub findxml{
     my($xmlfile,$id) = @_;
     my $myelt;
@@ -221,6 +218,9 @@ sub get_component_xml{
 	&_write_component_ini($fileprefix,$componentid);
 	&_write_component_subflow_xml($fileprefix,$componentid);
 
+	my $WorkflowBinDir = &_get_bin_dir($conf);
+
+
 	return parse XML::Twig::Elt( "
        <commandSet type='serial'>
          <configMapId>component_$componentid</configMapId>
@@ -347,3 +347,17 @@ sub _check_conf{
     }
     return 0;
 }
+
+sub _get_workflow_bin{
+    my($file) = @_;
+    my $cfg = new Config::IniFiles(-file => $file);
+    return $cfg->val("init","$;BIN_DIR$;");
+}
+
+sub _get_workflow_docs{
+    my($file) = @_;
+    my $cfg = new Config::IniFiles(-file => $file);
+    return $cfg->val("init","$;WORKFLOWDOCS_DIR$;");
+}
+
+1;

@@ -29,8 +29,6 @@ if($dowrite){
 
 my $cfg = new Config::IniFiles(-file => $conffile);
 
-my $WorkflowDocsDir = $ENV{'WORKFLOW_DOCS_DIR'} || "/usr/local/devel/ANNOTATION/cas/docs";
-
 #print all conf options
 
 my $ignoresectlookup = {};
@@ -90,7 +88,6 @@ sub import_includes{
 	foreach my $param (@parameters){
 	    if($param eq '$;SHARED_CONFIG$;'){
 		my $includefile =  $sharedconf;#$cfg->val($member,$param);
-		$includefile =~ s/\$;WORKFLOWDOCS_DIR\$;/$WorkflowDocsDir/g;
 		if(-e $includefile){
 		    my $newcfg = new Config::IniFiles( -file => $includefile, 
 						       -import => $currcfg);
@@ -120,6 +117,7 @@ sub write_config_from_params{
 	}
     }
     $newcfg->WriteConfig($filename);
+    `chmod 777 $filename`;
 }
 
 sub print_config{
