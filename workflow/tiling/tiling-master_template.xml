@@ -96,11 +96,6 @@
           <name>Set output permissions</name>
           <configMapId>set_output_permissions</configMapId>
        </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>check_logfiles</name>
-          <configMapId>check_logfiles</configMapId>
-       </command>
      </commandSet>
 </commandSetRoot>
 
