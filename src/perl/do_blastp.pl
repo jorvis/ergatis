@@ -39,6 +39,8 @@ if( ! -s $query_fasta) {
     
 if(! -d $output_dir) {
     mkdir $output_dir;
+} else {
+    unlink glob("$output_dir/*");  #delete old output files if any....
 }
 chmod 0777, $output_dir;
 
