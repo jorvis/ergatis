@@ -1,0 +1,335 @@
+<HTML><HEAD><TITLE>Software Requirements Specification Document Template </TITLE>
+</HEAD>
+<BODY>
+<CENTER>
+  <H1><EM>set_runtime_vars</EM></H1>
+  <em><strong>SRS Document</strong></em><BR>
+  <em>Sam Angiuoli</em> <BR>
+  <em>TIGR</em> <BR>
+  <em>10/14/03</em> <BR>
+  <em>v1.1</em> 
+</CENTER> 
+<H2><a name="a1"></a>1. Introduction</H2>
+<UL>
+  <P> 
+  <LI><B><a name="a1b1"></a>1.1 Purpose of this document</B><BR>
+    This documentsThis document provides the specification for the software utility 
+    <strong>set_runtime_vars</strong>. 
+    <P></P>
+  <LI><B><a name="a1b2"></a>1.2 Scope of this document</B><BR>
+    This document should provide the complete specification needed to engineer 
+    the <strong>set_runtime_vars </strong>utility. This document should be updated 
+    as needed to reflect the implementation of the software. 
+    <P>&nbsp;
+  <LI><B><a name="a1b3"></a>1.3 Overview</B><BR>
+    <strong>set_runtime_vars</strong> is a utility for replacing placeholder text 
+    strings (keys) with values as specified in a simple configuration file. 
+    <P></P>
+  <LI><B><a name="a1b4"></a>1.4 Business Context</B><BR>
+    This utility is a simple, resuawble component for replacing placeholder keys 
+    in text files. This is a common task and a simple utility is needed to handle 
+    this task uniformly.</LI>
+</UL>
+<H2><a name="a2"></a>2. General Description</H2>
+<UL>
+  <P>
+  <LI><B>2.1 Product Functions</B><BR>
+    A configuration file of key/value pairs is read. The keys are searched against 
+    a text file and the key string is replaced with the value from the configuration 
+    file. This utility performs a simple search/replace on a text file. 
+    <P></P>
+  <LI><B>2.2 Similar System Information</B><BR>
+    sed is a common UNIX utility that can perform search/replace via regular expressions. 
+    sed may be used in the implementation of <strong>set_runtime_vars</strong>. 
+    <P></P>
+  <LI><B>2.3 User Characteristics</B><BR>
+    This utility should be usable by anyone familiar with the UNIX environment 
+    <P></P>
+  <LI><B>2.4 User Problem Statement</B><BR>
+    There is no standard way to set configuration options for the workflow templates/ini 
+    files that are part of <a href='/ifxdevel/cas/papyrus'>Papyrus</a>.
+    <P></P>
+  <LI><B>2.5 User Objectives</B><BR>
+    <P></P>
+  <LI><B>2.6 General Constraints</B><BR>
+  </LI>
+</UL>
+<H2><a name="funcreqs"></a>3. Functional Requirements</H2>
+This section lists the functional requirements in ranked order. Functional requirements 
+describes the possible effects of a software system, in other words, <EM>what</EM> 
+the system must accomplish. Other kinds of requirements (such as interface requirements, 
+performance requirements, or reliability requirements) describe <EM>how</EM> the 
+system accomplishes its functional requirements. Each functional requirement should 
+be specified in a format similar to the following: 
+<OL>
+  <P> 
+  <LI><B>Read configuration file</B><BR>
+    <OL>
+      <P> 
+      <LI><B>Description</B><BR>
+        Read a simple configuration file specifying key/value pairs 
+        <P></P>
+      <LI><B>Criticality</B><BR>
+        Essential 
+        <P></P>
+      <LI><B>Technical issues</B><BR>
+        The configuration file should follow a simple format. Valid key strings 
+        can be any non-white space character. Replacement values can be any non-space 
+        character. Key strings should be easily identifiable and fenceposted with 
+        delimeters, such as ';', to avoid erroneous matches. 
+        <pre>
+	  ;KEY1;=VALUE1
+	  ;KEY2;=VALUE2
+	  </pre>
+        <P></P>
+      <LI><B>Cost and schedule</B><BR>
+        <P></P>
+      <LI><B>Risks</B><BR>
+        <P></P>
+      <LI><B>Dependencies with other requirements</B><BR>
+        <BR>
+    </OL>
+    <P></P>
+	
+  <LI><b>Replace key strings in input file</b><BR>
+    <OL>
+      <P> 
+      <LI><B>Description</B><BR>
+        Read an input file and replace key strings with replacement values. The 
+        key strings and replacement values are input from the configuration file. 
+        The input file can be any text file. 
+        <P></P>
+      <LI><B>Criticality</B><BR>
+        Essential 
+        <P></P>
+      <LI><B>Technical issues</B><BR>
+        Given this configuration file: 
+        <pre>
+	  ;KEY1;=VALUE1
+	  ;KEY2;=VALUE2
+	  </pre>
+	  This utility will transform the following document
+	  <pre>
+	  &lt;tag1 attribute=';KEY1;'&gt;;KEY2;&lt;/tag1&gt;
+	  </pre>
+	 and output
+	 <pre>
+	 &lt;tag1 attribute='VALUE1'&gt;VALUE2&lt;/tag1&gt;
+	 </pre> 
+        <P></P>
+      <LI><B>Cost and schedule</B><BR>
+        <P></P>
+      <LI><B>Risks</B><BR>
+        <P></P>
+      <LI><B>Dependencies with other requirements</B><BR>
+        <BR>
+    </OL>
+  <LI><B>&lt;Name of second highest ranked requirement&gt;</B><BR>
+    And so forth... </LI>
+</OL>
+<H2><a name="interfacereqs"></a>4. Interface Requirements</H2>
+This section describes how the software interfaces with other software products 
+or users for input or output. Examples of such interfaces include library routines, 
+token streams, shared memory, data streams, and so forth. 
+<UL>
+  <P> 
+  <LI><B>4.1 User Interfaces</B><BR>
+    Describes how this product interfaces with the user. 
+    <UL>
+      <P> 
+      <LI><B>4.1.1 GUI</B><BR>
+        N/A 
+        <P></P>
+      <LI><B>4.1.2 CLI</B><BR>
+        Describes the command-line interface if present. For each command, a description 
+        of all arguments and example values and invocations should be provided. 
+        <table width="75%" border="1">
+          <tr> 
+            <td colspan="2">Parameter</td>
+            <td width="41%">Description</td>
+            <td width="31%">Default</td>
+            <td width="10%">Required</td>
+          </tr>
+          <tr> 
+            <td width="6%">Short</td>
+            <td width="12%">Long</td>
+            <td colspan="3">&nbsp;</td>
+          </tr>
+          <tr> 
+            <td>-c</td>
+            <td>&nbsp;</td>
+            <td>Name of configuration file</td>
+            <td>&nbsp;</td>
+            <td>y</td>
+          </tr>
+          <tr> 
+            <td>-h</td>
+            <td>&nbsp;</td>
+            <td>Print usage</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr> 
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr> 
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr> 
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr> 
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr> 
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+          <tr> 
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+          </tr>
+        </table>
+        The utility should accept input from STDIN and print output to STDOUT. 
+        The configfile should be a fully qualified path to a configuration file.<br>
+        The input file can be any text file.<br>
+        <br>
+        <pre>
+	set_runtime_vars -c configfile < template_file.xml > instance_file.xml
+		</pre>
+      <LI><B>4.1.3 API</B><BR>
+        N/A 
+        <P></P>
+      <LI><B>4.1.4 Diagnostics or ROM</B><BR>
+        N/A </LI>
+    </UL>
+    <P></P>
+  <LI><B>4.2 Hardware Interfaces</B><BR>
+    N/A 
+    <P></P>
+  <LI><B>4.3 Communications Interfaces</B><BR>
+    N/A 
+    <P></P>
+  <LI><B>4.4 Software Interfaces</B><BR>
+    N/A</LI>
+</UL>
+<H2><a name="perfreqs"></a>5. Performance Requirements</H2>
+N/A 
+<H2><a name="designconstraints"></a>6. Design Constraints</H2>
+Specifies any constraints for the design team using this document. 
+<UL>
+  <P>
+  <LI><B>6.1 Standards Compliance</B><BR>
+  <P></P>
+  <LI><B>6.2 Hardware Limitations</B><BR>
+  <P></P>
+  <LI><B>... others as appropriate</B><BR></LI></UL>
+<H2><a name="attributes"></a>7. Other non-functional attributes</H2>
+Specifies any other particular non-functional attributes required by the system. 
+Examples are provided below. 
+<UL>
+  <P>
+  <LI><B>7.1 Security</B><BR>
+  <P></P>
+  <LI><B>7.2 Binary Compatibility</B><BR>
+  <P></P>
+  <LI><B>7.3 Reliability</B><BR>
+  <P></P>
+  <LI><B>7.4 Maintainability</B><BR>
+  <P></P>
+  <LI><B>7.5 Portability</B><BR>
+  <P></P>
+  <LI><B>7.6 Extensibility</B><BR>
+  <P></P>
+  <LI><B>7.7 Reusability</B><BR>
+  <P></P>
+  <LI><B>7.8 Application Affinity/Compatibility</B><BR>
+  <P></P>
+  <LI><B>7.9 Resource Utilization</B><BR>
+  <P></P>
+  <LI><B>7.10 Serviceability</B><BR>
+  <P></P>
+  <LI><B>... others as appropriate</B><BR></LI></UL>
+<H2>8. Preliminary Object-Oriented Domain Analysis</H2>
+N/A 
+<H2>9. Operational Scenarios</H2>
+Link to use case documents here 
+<BLOCKQUOTE><P>&nbsp;</P>
+</BLOCKQUOTE>
+<H2>10. Preliminary Schedule</H2>
+<P>&nbsp;
+<H2>11. Testing plan</H2>
+<p>This section provides a summary of the testing strategy and requirements. A 
+  complete list of testable and untestable components of the package should be 
+  discussed.</p>
+<UL>
+  <LI><strong>11.1 Testable components</strong><br>
+    <br>
+    A list of testable components/units of the system<br>
+  <LI><B>11.2 Untestable components</B><BR>
+    <P></P>
+    A list of untestable components/units of the system<br>
+</UL>
+    <h2>12. Installation requirements</h2>
+    <P>This section provides a set of requirements for installation of the package. 
+      This section applies both to in-house software installations and external 
+      installations. 
+    
+<UL>
+  <LI><strong>12.1 Platforms</strong><br>
+    The implementation should be hardware independent<br>
+      <LI><B>12.2 Hardware requirements</B><BR>
+        <P></P>
+        None<br>
+      <LI><B>12.3 Software requirements</B><BR>
+        <P></P>
+        None<br>
+      <LI><b>12.4 Distribution strategy</b><BR>
+        <P></P>
+        
+    <br>
+      <LI><b>12.5 Installation mechanism</b><BR>
+        
+    <P>&nbsp;</P>
+      <LI><b>12.6 Support strategy</b><BR>
+        <BR>
+</ul>
+    <H2>13. Documentation requirements</H2>
+    
+<p>This utility should provide command line help via a '-h' option.</p>
+    <H2>14. Appendices</H2>
+    Specifies other useful information for understanding the requirements. All 
+    SRS documents should include at least the following two appendices: 
+    <UL>
+      <P> 
+      <LI><B>14.1 Definitions, Acronyms, Abbreviations</B><BR>
+        Provides definitions of unfamiliar definitions, terms, and acronyms. 
+        <P></P>
+      <LI><B>14.2 References</B><BR>
+        Provides complete citations to all documents and meetings referenced or 
+        used in the preparation of this document. </LI>
+    </UL>
+</UL>
+</BODY></HTML>
