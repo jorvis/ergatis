@@ -56,7 +56,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-workflow_install	: dirs shellwrappers promer nucmer blastp ber pe cogs snps legacy2chado chado2bsml bsml2chado jaccard bsmlscaffold2chado delete_analysis
+workflow_install	: dirs shellwrappers promer nucmer blastp ber pe cogs snps legacy2chado chado2bsml bsml2chado jaccard bsmlscaffold2chado delete_analysis test
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -153,7 +153,10 @@ delete_analysis:
 	@install workflow/delete_analysis-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/delete_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
 
-
+test:
+        @echo "Installing test workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/test.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/test_template.xml $(WORKFLOW_DOCS_DIR)  
 
 END
 
