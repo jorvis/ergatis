@@ -56,3 +56,19 @@ To Execute: (sample)
 RunWorkflow -t bit_score_template.xml -c bit_score.ini -i bitscore.xml -l bitscore.log
 
 replace -i and -l arugment with appropriate file name
+
+
+ntsp01_1_assembly IN PROGRESS                                                           
+ntsp02_2_assembly                                                               
+gbs18rs21_797_assembly                                                          
+gbs515_318_assembly                                                
+gbscjb111_200_assembly                                                          
+gbscoh1_483_assembly                                                            
+gbsa909_747_assembly                                                            
+gbsh36b_475_assembly                                                            
+gpa_1200_assembly                                                               
+ntsa04_2_assembly                                                               
+gmi_953_assembly                                                                
+
+bsp_3839_assembly DONE 
+gbs_799_assembly DONE
