@@ -56,10 +56,10 @@ if( $options{'help'} ){
 &check_parameters(\%options);
 
 if($options{'nodelete'}){
-    print `tar cvzf $options{'file'} --no-recursion $options{'directory'}`;
+    print `tar cvzf $options{'file'} $options{'directory'}`;
 }
 else{
-    print `tar cvzf $options{'file'} --remove-files --no-recursion $options{'file'} $options{'directory'}`;
+    print `tar cvzf $options{'file'} --remove-files $options{'file'} $options{'directory'}`;
 }
 
 
