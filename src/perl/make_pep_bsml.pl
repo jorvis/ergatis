@@ -67,11 +67,11 @@ if($ASMBL_IDS =~ /all/i) {
 my $parser = new BSML::BsmlParserTwig;
 
 if($each_genome) {
-    make_fasta_for_each_genome(\@asm_ids) if($verbose);
-    print "Finished making fasta pep files for EACH genome\n";
+    make_fasta_for_each_genome(\@asm_ids);
+    print "Finished making fasta pep files for EACH genome\n" if($verbose);
 }elsif($each_file) {
-    make_fasta_for_each_gene(\@asm_ids) if($verbose);
-    print "Finished making fasta pep file for each gene\n";
+    make_fasta_for_each_gene(\@asm_ids);
+    print "Finished making fasta pep file for each gene\n" if($verbose);
 }else {
     make_PNEUMO_pep_for_ALL_genomes(\@asm_ids);
     print "Finished making fasta pep file for all assemblies\n" if($verbose);
@@ -128,7 +128,6 @@ sub make_fasta_for_each_genome {
 	if (-s $bsml_file) {
 	    my $reader = BSML::BsmlReader->new();
 	    $parser->parse( \$reader, $bsml_file );
-	    print STDERR "Search protein with ID: chado_pneumo_${asmbl_id}\n";
 	    my $proteins = $reader->get_all_protein_aa($asmbl_id);
 	    while (my ($identifier, $seq) = each %$proteins) {
 		$identifier =~ s/_\d$//;	
