@@ -1,0 +1,113 @@
+#!/usr/local/bin/perl
+
+
+use lib("/usr/local/annotation/PNEUMO/clu_dir/BSML/ANNOTATION/bsml/src");
+use strict;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
+use BsmlReader;
+use BsmlParserTwig;
+
+
+my %options = ();
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'asmbl_ids|a=s', 'DEBUG', 'help|h' );
+
+###-------------PROCESSING COMMAND LINE OPTIONS-------------###
+
+my $ASMBL_IDS = $options{'asmbl_ids'};
+my $output_dir = $options{'output_dir'};
+my $BSML_dir = $options{'bsml_dir'};
+my $QUERYPRINT;
+my $DEBUG = $options{'DEBUG'} || 0;
+
+if(!$BSML_dir or !$output_dir or !$ASMBL_IDS or exists($options{'help'})) {
+    &print_usage();
+}
+
+###-------------------------------------------------------###
+
+#$output_dir = $ENV{'PNEUMO_SEQ_DIR'} if(!$output_dir);
+$output_dir =~ s/\/+$//;       #remove terminating '/'s
+#create the directory that will hold all the individual peptide files if it doesn't exist
+if(! -d $output_dir ) {
+    mkdir $output_dir;
+}
+chmod 0777, $output_dir;
+
+my $result;
+
+
+my @asm_ids;
+if(defined($ASMBL_IDS)) {
+    @asm_ids = split(/,/, $ASMBL_IDS);
+}
+
+my $parser = new BsmlParserTwig;
+
+
+
+foreach my $asmbl_id (@asm_ids) {
+    my $final_output_dir = "$output_dir/asmbl_id_".$asmbl_id;
+    if(! -d $final_output_dir ) {
+	mkdir $final_output_dir;
+    } else {
+	unlink glob("$final_output_dir/*");
+    }
+    chmod 0777, $final_output_dir;
+    my $bsml_file = "$BSML_dir/asmbl_${asmbl_id}.bsml";
+    if (-s $bsml_file) {
+	my $reader = BsmlReader->new();
+	$parser->parse( \$reader, $bsml_file );
+	my $extend_seq = $reader->get_all_protein_dna_extended("PNEUMO_${asmbl_id}", '300') ;
+	while( my ($gene, $seq) = each %$extend_seq ) {
+	    next if(length($seq) < 1); 
+	    $gene =~ s/_\d$//;
+	    my $gene_file = "$final_output_dir/${gene}.seq";
+	    open(FILE, ">$gene_file") || die "Unable to write to $gene_file due to $!";
+	    my $fastaout = &fasta_out($gene, $seq);
+	    print FILE $fastaout;
+	    close FILE;
+	    chmod 0777, $gene_file;
+	}
+    } else {
+	print STDERR "$bsml_file NOT found!!!!\n";
+    }
+}
+
+
+
+sub fasta_out {
+#This subroutine takes a sequence name and its sequence and
+#outputs a correctly formatted single fasta entry (including newlines).
+
+    my $seq_name = shift;
+    my $seq = shift;
+
+    my $fasta=">"."$seq_name"."\n";
+    for(my $i=0; $i < length($seq); $i+=60){
+	my $seq_fragment = substr($seq, $i, 60);
+	$fasta .= "$seq_fragment"."\n";
+    }
+    return $fasta;
+
+}
+
+
+
+
+sub print_usage {
+
+
+    print STDERR "SAMPLE USAGE:  make_each_seq_bsml.pl -b bsml_dir -o output_dir -a 19\n";
+    print STDERR "  --bsml_dir    = dir containing BSML doc\n";
+    print STDERR "  --output_dir  = dir to save output to\n";
+    print STDERR "  --asmbl_ids  (only get sequences  belong to particular asmbl_ids)\n";
+    print STDERR "  --help = This help message.\n";
+    exit 1;
+
+}
+
+
+
+
+
+
