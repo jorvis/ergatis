@@ -27,6 +27,6 @@ then
 fi
 
 echo "Creating workflow instance $instance"
-exec CreateWorkflow -t $template -c $ini -i $instance -l $log $debugstr --autobuild=false 1> $out 2> $out.stderr
+exec CreateWorkflow -t $template -c $ini -i $instance -l $log $debugstr --autobuild=false
 
 
