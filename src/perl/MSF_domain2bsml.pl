@@ -38,7 +38,7 @@ into BSML documents.  More specifically this script is equippd to parse the mult
 sequence alignments of domains.  This requires the capture of the start and end 
 coordinates of each "subsequence" in the alignment.  As an option, the user can
 specify the suffix of the alignment files that the script should parse in the 
-directory specified by --ali-dir.  The default suffix is "msf" i.e. family.msf.
+directory specified by --ali_dir.  The default suffix is "msf" i.e. family.msf.
 
 Samples:
 
