@@ -1,0 +1,4 @@
+mkdir release
+cd release
+cvs co papyrus
+cvs tag $RELEASE_TAG$
