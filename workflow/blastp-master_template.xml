@@ -37,10 +37,10 @@
           <name>RunUnixCommand</name>
           <configMapId>5.2</configMapId>
         </command>
-        <commandSet type="parallel">
+        <commandSet type="distributed-parallel">
           <name>Run Blastp Analysis Workflow</name>
             <configMapId>1</configMapId>
-              <commandSet type="serial">
+              <commandSet type="distributed-serial">
                 <name>Iterative Workflow</name>
                 <configMapId>1.1</configMapId>
                 <config>
