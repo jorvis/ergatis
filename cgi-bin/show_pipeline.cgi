@@ -77,7 +77,7 @@ print header();
 
 print "<HTML><META HTTP-EQUIV=Refresh CONTENT='$refreshrate; URL=show_pipeline.cgi?xmltemplate=$xmltemplate&summary=".param('summary')."'><title>$xmltemplate $user $last</title>\n";
 my $topimage = view_dag_tree::get_commandset_image($newdag->root->attributes->{'state'});
-print "<body><table><tr><td colspan=3>$topimage<b>$xmltemplate</b></td></tr><tr><td>User: $user</td><td>Last modified: $last</td><td>Age: $age s</td></tr></table>";
+print "<body><table><tr><td colspan=3>$topimage<b>$xmltemplate</b></td></tr><tr><td>User: $user</td><td>Last modified: $last</td><td>Age: $age s</td></tr><tr><td>Start: ",&DateCalc("Jan 1, 1970  00:00:00 GMT",$newdag->root->attributes->{'starttime'}),"</td><td>End: ",&DateCalc("Jan 1, 1970  00:00:00 GMT",$newdag->root->attributes->{'endtime'}),"</td></tr></table>";
 if($quota < $quotawarn){
     print "Project space usage <b>$quota%</b><br>";
 }
