@@ -160,7 +160,9 @@ while( my $line = <ALIGN> )
 	$refFeat->addBsmlLink( 'SNP', "SNP:$tmpAssemblyId:$assemblySNPCount" );
 
 	my $asbllength = &getAsmblLength($tmpAssemblyId,$asbllengthlookup);
-	
+	$bsmlDoc->makeCurrentDocument();
+
+
 	if($revCom == 1){
 	    $asblPos = $asbllength-$asblPos;
 	}
