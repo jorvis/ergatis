@@ -46,7 +46,7 @@ chmod 0777, $output_dir;
 
 
 
-my $command = "pblastp -parameters database=$db_file,fastafile=$query_fasta,report=btab,outputdir=$output_dir";
+my $command = "pblastp -parameters database=$db_file,fastafile=$query_fasta,report=both,outputdir=$output_dir";
 qx($command);
 
 
