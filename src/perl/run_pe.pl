@@ -105,7 +105,7 @@ sub run_pe{
     my($pebin,$pegene,$pematch) = @_;
     my $logger = get_logger('papyrus::pe');
     $logger->info("Running local execution of '$pebin  -w 10 -g -50 -r -100 -m 4 -o 3 -f $pegene < $pematch'");
-    my $output = qx($pebin  -w 10 -g -50 -r -100 -m 4 -o 3 -f $pegene < $pematch);
+    my $output = qx($pebin /tmp/done -w 10 -g -50 -r -100 -m 4 -o 3 -f $pegene < $pematch);
     if($?) {
 	$logger->fatal("Unable to execute $pebin");
 	return;
