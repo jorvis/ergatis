@@ -485,10 +485,10 @@ sub createAndAddBtabLine {
     #check to see if sequences exist in the BsmlDoc, if not add them with basic attributes
 
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-	$doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa' );}
+	$doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );}
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-	$doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_accession'}", '', 'aa' );}
+	$doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_accession'}", '', 'aa', $args{'class'} );}
     
     $alignment_pair = $doc->returnBsmlSeqPairAlignmentR( $doc->addBsmlSeqPairAlignment() );
     
