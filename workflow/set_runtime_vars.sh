@@ -6,6 +6,7 @@
 ASMBLKEY=";ASMBL;"
 ASMBLFILEKEY=";ASMBL_FILE;"
 DBKEY=";DATABASE;"
+DBLCKEY=";DATABASE_LC;"
 
 while getopts d:a:f:p:r:h opt
 do case "$opt" in
@@ -28,11 +29,12 @@ then
 fi
 
 databasekey=`echo $database | tr '[a-z]' '[A-Z]'`
+databaselckey=`echo $database | tr '[A-Z]' '[a-z]'`
 
 echo "Storing workflow xml and ini to $project"
 echo "Setting asmbl:$asmbl asmbl_file:$asmbl_file database:$database for $program"
-cat $program.ini | sed "s/$ASMBLKEY/$asmbl/g" | sed "s/$DBKEY/$databasekey/g" | sed "s/$ASMBLFILEKEY/$asmbl_file/g" > $project/$program.ini
-cat ${program}_template.xml | sed "s/$ASMBLKEY/$asmbl/g" | sed "s/$DBKEY/$databasekey/g" | sed "s/$ASMBLFILEKEY/$asmbl_file/g" > $project/${program}_template.xml
+cat $program.ini | sed "s/$ASMBLKEY/$asmbl/g" | sed "s/$DBKEY/$databasekey/g" | sed "s/$DBLCKEY/$databaselckey/g" | sed "s/$ASMBLFILEKEY/$asmbl_file/g" > $project/$program.ini
+cat ${program}_template.xml | sed "s/$ASMBLKEY/$asmbl/g" | sed "s/$DBKEY/$databasekey/g" | sed "s/$DBLCKEY/$databaselckey/g" | sed "s/$ASMBLFILEKEY/$asmbl_file/g" > $project/${program}_template.xml
 
 
 
