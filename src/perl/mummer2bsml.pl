@@ -63,13 +63,14 @@ use Pod::Usage;
 umask(0000);
 
 my %options = ();
-my $results = GetOptions (\%options, 'mummer_coords|m=s', 'mummer_type|t=s', 'man', 'output|o=s', 'verbose|v', 'help|h') || pod2usage();
+my $results = GetOptions (\%options, 'mummer_coords|m=s', 'mummer_type|t=s', 'man', 'output|o=s', 'database|d=s', 'verbose|v', 'help|h') || pod2usage();
 
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my $mummer_file     = $options{'mummer_coords'};
 my $output          = $options{'output'};
+my $database          = $options{'database'};
 my $output_dir      = dirname($output);
 my $mummer_type     = $options{'mummer_type'};   # 1 = nucmer , 2 = promer
 my $verbose    = $options{'verbose'};
@@ -118,7 +119,8 @@ sub parse_promer_coords {
 	my $frame_ref = $promer[13];
         my $frame_qry = $promer[14];
 	
-	$qry_name =~ s/^\w+\_//; #strip leading database name for now
+	$qry_name =~ s/^$database\_//; #strip leading database name for now
+	$ref_name =~ s/^$database\_//; #strip leading database name for now
 
 	next if($ref_name eq $qry_name);
 
@@ -172,6 +174,10 @@ sub parse_nucmer_coords {
 	#my $percent_cov_qry = $mummer[10];
 	my $qry_asmbl_length = $mummer[8];
         my $ref_asmbl_length = $mummer[7];
+
+	
+	$qry_name =~ s/^$database\_//; #strip leading database name for now
+	$ref_name =~ s/^$database\_//; #strip leading database name for now
 
 	next if($ref_name eq $qry_name);	
 
