@@ -105,9 +105,8 @@ my $conf = {
     ';PASSWORD;'                     => '',               
     ';TARGET_DATABASE;'              => '',               
     ';TARGET_SERVER;'                => 'SYBTIGR',
-    ';BSML_BATCH_FILE;'              => '',
-    ';BSML_TYPE;'                    => '',
-    ';BSML_DIRECTORY;'               => '',
+    ';ALGORITHM;'                    => '',
+    ';ANALYSIS_ID;'                  => '',
 };
 
 
