@@ -41,6 +41,14 @@
             <name>RunUnixCommand</name>
             <configMapId>1.4.2</configMapId>
         </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.5</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.5.1</configMapId>
+        </command>
 
     </commandSet>
 </commandSetRoot>
