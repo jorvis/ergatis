@@ -109,47 +109,67 @@ my @files;
 if ($options{'bsml_file'} ne ""){
     my @inputfiles = split(/,/,$options{'bsml_file'});
     foreach my $file (@inputfiles){
-	if((-s $file)) {
-	    $logger->debug("Adding file $file for processing") if($logger->is_debug());
-	    push @files,$file;
-	}
-	else{
-	    $logger->warn("Error reading file $file");
-	}
-    }
-}
-if ($options{'bsml_list'}){
-    open FILE, "$options{'bsml_list'}" or $logger->logdie("Can't open file $options{'bsml_list'}");
-    while (my $filename=<FILE>){
-	chomp $filename;
-	if(-s $filename) {
-	    $logger->debug("Adding file $filename for processing") if($logger->is_debug());
-	    push @files,$filename;
-	}
-        else{
-	    $logger->warn("Error reading file $options{'bsml_file'}");
-	}
-    }
-}
-
-if ($options{'bsml_dir'} && (-r $options{'bsml_dir'})) {
-    opendir(DIR, $options{'bsml_dir'}) or $logger->warn("Unable to access $options{'bsml_dir'} due to $!");
-    while( my $filename = readdir(DIR)) {
-	if($filename =~ /(.+)\.bsml$/) {
-	    if(-s "$options{'bsml_dir'}/$filename"){
-		$logger->debug("Adding file $options{'bsml_dir'}/$filename for processing") if($logger->is_debug());
-		push (@files, "$options{'bsml_dir'}/$filename");
+	$file =~ s/\s//g;
+	if($file ne ""){
+	    if((-s $file)) {
+		$logger->debug("Adding file $file for processing") if($logger->is_debug());
+		push @files,$file;
 	    }
 	    else{
-		$logger->warn("Error reading file $options{'bsml_dir'}/$filename");
+		$logger->warn("Error reading file $file");
 	    }
-        }
+	}
     }
 }
-else{
-    $logger->warn("Error reading directory $options{'bsml_dir'}");
+if ($options{'bsml_list'} ne ""){
+    my @filelists = split(/,/,$options{'bsml_list'});
+    foreach my $filelist (@filelists){
+	$filelist =~ s/\s//g;
+	if($filelist ne ""){
+	    open FILE, "$filelist" or $logger->logdie("Can't open file $filelist");
+	    while (my $filename=<FILE>){
+		chomp $filename;
+		if(-s $filename) {
+		    $logger->debug("Adding file $filename for processing") if($logger->is_debug());
+		    push @files,$filename;
+		}
+		else{
+		    $logger->warn("Error reading file $filename");
+		}
+	    }
+	}
+    }
 }
 
+if ($options{'bsml_dir'} ne "") {
+    my @bsmldirs = split(/,/,$options{'bsml_dir'});
+    foreach my $dir (@bsmldirs){
+	$dir =~ s/\s//g;
+	if($dir ne ""){
+	    if(-r $dir){
+		opendir(DIR, $dir) or $logger->warn("Unable to access $dir due to $!");
+		while( my $filename = readdir(DIR)) {
+		    if($filename =~ /(.+)\.bsml$/) {
+			if(-s "$dir/$filename"){
+			    $logger->debug("Adding file $dir/$filename for processing") if($logger->is_debug());
+			    push (@files, "$dir/$filename");
+			}
+			else{
+			    $logger->warn("Error reading file $dir/$filename");
+			}
+		    }
+		}
+	    }
+	    else{
+		$logger->warn("Error reading directory $dir");
+	    }
+	}
+    }
+}
+
+if(scalar(@files)==0){
+    $logger->logdie("No files found");
+}
 
 
 foreach my $file (@files){
