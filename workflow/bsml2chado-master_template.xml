@@ -78,6 +78,10 @@
         </command>
         <command>    
             <name>RunUnixCommand</name>
+            <configMapId>confirm_database_loaded</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
             <configMapId>change_log_permissions</configMapId>
         </command>
     </commandSet>
