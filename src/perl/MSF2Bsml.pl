@@ -14,6 +14,9 @@
 #                 in the clusterDir, will produce an empty BSML multiple alignment document.
 #                 If clusterDir is not defined, script behaves as previous version.
 #
+#                 2003-12-30 sundaram
+#                 1) print_usage() added
+#
 #
 #-------------------------------------------------------------------------------------------
 
@@ -23,7 +26,7 @@ MSF2Bsml.pl  - convert MSF format alignment files into BSML documents
 
 =head1 SYNOPSIS
 
-USAGE:  MSF2Bsml.pl -a ali_dir -o msf.bsml [-c configfile] [-l log4perl] [-p program] [-s suffix] [-h help] [-k clusterDir]
+USAGE:  MSF2Bsml.pl -a ali_dir -o output [-c configfile] [-l log4perl] [-p program] [-s suffix] [-h help] [-k clusterDir]
 
 =head1 OPTIONS
 
@@ -116,6 +119,11 @@ my $results = GetOptions (\%options,
 			  'man') || pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
+
+
+
+
+&print_usage() if ((exists $options{'help'}) and (defined($options{'help'}))); 
 
 
 my $msf_suffix = $options{'suffix'} if ((exists $options{'suffix'}) and (defined($options{'suffix'}))); 
@@ -546,4 +554,24 @@ sub cmd_check {
 
 
 
+#--------------------------------------------------------------
+# print_usage()
+#
+#
+#--------------------------------------------------------------
+sub print_usage {
 
+    print STDERR "USAGE:  $0 -a ali_dir -o output [-c configfile] [-l log4perl] [-p program] [-s suffix] [-h help] [-k clusterDir]\n\n";
+    print STDERR " -a|--ali_dir      = alignment directory containing input alignment files\n";
+    print STDERR " -o|--output       = BSML output filename\n";
+    print STDERR " -c|--configfile   = input configuration file (for workflow related key-value pair data to be stored in the <Analysis> component\n";
+    print STDERR " -l|--log4perl     = log4perl log file\n";
+    print STDERR " -p|--program      = multiple alignment program (to be stored as the BSML attribute \"program\" in the <Analysis> component -default is \"clustal\"\n";
+    print STDERR " -s|--suffix       = alignment filename extension (default is \".msf\")\n";
+    print STDERR " -h|--help         = display this print_usage message\n";
+    print STDERR " -k|--clusterDir   = cluster directory\n\n\n";
+
+    exit(0);
+
+
+}#end sub print_usage()
