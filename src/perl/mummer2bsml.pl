@@ -12,7 +12,7 @@ use File::Basename;
 
 
 my %options = ();
-my $results = GetOptions (\%options, 'mummer_coords|m=s', 'bsml_dir|d=s', 'mummer_type|t=s', 'output|o=s', 'verbose|v', 'help|h',);
+my $results = GetOptions (\%options, 'mummer_coords|m=s', 'bsml_dir|b=s', 'mummer_type|t=s', 'output|o=s', 'verbose|v', 'help|h',);
 
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -85,10 +85,11 @@ sub parse_nucmer_coords {
 sub print_usage {
 
 
-    print STDERR "SAMPLE USAGE:  mummer2bsml.pl -m mummer_coords -d bsml_repository -t 1 -o output_file\n";
+    print STDERR "SAMPLE USAGE:  mummer2bsml.pl -m mummer_coords -b bsml_repository -t 1 -o output_file\n";
     print STDERR "  --mummer_coords     = mummer output file\n";
+    print STDERR "  --bsml_dir(-b)      = BSML repository directory\n";
     print STDERR "  --output            = bsml output file\n";
-    print STDERR "  --mummer_type       = type of mummer output (1=nucmer, 2=promer)\n";
+    print STDERR "  --mummer_type(-t)   = type of mummer output (1=nucmer, 2=promer)\n";
     print STDERR "  --help = This help message.\n";
     exit 1;
 
