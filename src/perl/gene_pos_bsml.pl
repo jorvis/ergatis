@@ -141,9 +141,9 @@ sub get_sorted_gene_position {
 sub print_usage {
 
 
-    print STDERR "SAMPLE USAGE:  gene_pos_bsml.pl -b bsml_dir -a 1,2,3,4\n";
+    print STDERR "SAMPLE USAGE:  gene_pos_bsml.pl -b bsml_dir -a bsp_3839_assembly > output\n";
     print STDERR "  --bsml_dir    = dir containing BSML doc\n";
-    print STDERR "  --asmbl_ids  = assembly ids (comma separated) \n";
+    print STDERR "  --asmbl_ids  = assembly ids (comma separated.  grabs all if omitted) \n";
     print STDERR "  --help = This help message.\n";
     exit 1;
 
