@@ -9,7 +9,7 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 
 my %options = ();
-my $results = GetOptions (\%options, 'asmbl_ids|a=s', 'output|o=s', 'bsml_dir|b=s', 'gene_cutoff=s', 'asmbl_file=s', 'help|h' );
+my $results = GetOptions (\%options, 'asmbl_ids|a=s', 'output|o=s', 'bsml_dir|b=s', 'gene_cutoff=s', 'size_cutoff=s', 'asmbl_file=s', 'help|h' );
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my @asmbls;
@@ -24,6 +24,7 @@ my $BSML_dir        = $options{'bsml_dir'};
 $BSML_dir =~ s/\/$//;
 my $output          = $options{'output'};
 my $gene_cutoff     = $options{'gene_cutoff'} || '0';
+my $gene_size_cutoff = $options{'size_cutoff'} || '0';
 my $asmbl_file      = $options{'asmbl_file'};
 
 if(!$BSML_dir or exists($options{'help'})) {
@@ -112,7 +113,9 @@ sub addGenes {
 	    $attrref->{'length'} = $gene->{'length'}; 
 	    $attrref->{'orient'} = $gene->{'orient'}; 
 	    $attrref->{'coord'}  = $gene->{'coord'}; 
-	    $pexml->addFeature($feat_name, $attrref, $name, $order);
+	    if($gene->{'length'} > $gene_size_cutoff){
+		$pexml->addFeature($feat_name, $attrref, $name, $order);
+	    }
 	    $order++;
 	}
     } else {
