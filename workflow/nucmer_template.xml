@@ -12,6 +12,10 @@
                 <name>RunUnixCommand</name>
                 <configMapId>2.1</configMapId>
             </command>
+            <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.2</configMapId>
+            </command>
         </commandSet>
         <command>    
             <name>RunUnixCommand</name>
