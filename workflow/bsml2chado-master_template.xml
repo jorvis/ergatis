@@ -40,13 +40,5 @@
             <name>RunUnixCommand</name>
             <configMapId>replace_placeholders</configMapId>
         </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>change_log_permissions</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>change_workflowdocs_permissions</configMapId>
-        </command>
     </commandSet>
 </commandSetRoot>
