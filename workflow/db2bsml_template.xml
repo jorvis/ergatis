@@ -7,11 +7,43 @@
         <configMapId>1</configMapId>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.7</configMapId>
+            <configMapId>1.6</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.6</configMapId>
+            <configMapId>1.6.1</configMapId>
+        </command>       
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.2</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.3</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.4</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.5</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.6</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.7</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.8</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6.9</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
@@ -19,15 +51,7 @@
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.1.1</configMapId>
-        </command>
-         <command>    
-            <name>RunUnixCommand</name>
             <configMapId>1.2</configMapId>
-        </command>       
-         <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>1.2.1</configMapId>
         </command>       
         <command>    
             <name>RunUnixCommand</name>
@@ -55,16 +79,15 @@
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.5.1</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>1.8</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
             <configMapId>1.9</configMapId>
         </command>
-
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.9.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.9.2</configMapId>
+        </command>
     </commandSet>
 </commandSetRoot>
