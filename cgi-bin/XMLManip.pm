@@ -61,6 +61,7 @@ sub movexml{
     open FILE, "+>$xmlfile" or die("Can't open output xml file $xmlfile : $!");
     $t1->print(\*FILE);
     close FILE;
+    `chmod 666 $xmlfile`;
 }
 
 sub removexml{
@@ -87,6 +88,7 @@ sub removexml{
     open FILE, "+>$xmlfile" or die("Can't open output xml file $xmlfile : $!");
     $t1->print(\*FILE);
     close FILE;
+    `chmod 666 $xmlfile`;
 }
 
     
@@ -125,6 +127,7 @@ sub addxml{
     open FILE, "+>$xmlfile" or die("Can't open output xml file $xmlfile : $!");
     $t1->print(\*FILE);
     close FILE;
+    `chmod 666 $xmlfile`;
 }
 
 sub get_pipeline_xml{
@@ -338,6 +341,7 @@ sub _write_component_subflow_xml{
     open FILE,"+>$fileprefix.subflow_template.$id.xml" or die "Can't open xml file $fileprefix.subflow_template.xml";
     print FILE "$subflowxml";
     close FILE;
+    `chmod 666 $fileprefix.subflow_template.$id.xml`;
 }
 
 sub _check_conf{
