@@ -7,6 +7,10 @@
         <configMapId>1</configMapId>
          <command>    
             <name>RunUnixCommand</name>
+            <configMapId>1.7</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
             <configMapId>1.6</configMapId>
         </command>
         <command>    
