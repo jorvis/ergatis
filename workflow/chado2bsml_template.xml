@@ -111,6 +111,10 @@
         </command>
         <command>    
             <name>RunUnixCommand</name>
+            <configMapId>10.8</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
             <configMapId>20.1</configMapId>
         </command>
         <command>    
