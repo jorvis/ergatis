@@ -393,7 +393,7 @@ sub handle_command{
     if($configmapid =~ /^generate_component/){
 	my $arg = $cs->first_child_text('arg');
 	my ($conf) = ($arg =~ /\-c\s+(\S+)/);
-	$new_daughter->attributes()->{'conf'} = $conf;
+	$node->attributes()->{'conf'} = $conf;
     }
 
 
