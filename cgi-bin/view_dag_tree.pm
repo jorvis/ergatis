@@ -216,6 +216,10 @@ sub get_label {
 	my $type = $node->attributes->{'type'};
 		
 	$label = "$name<a href='show_commandset.cgi?xmltemplate=$xmlfile&node=$nodeid'>[info]</a><a href='show_pipeline.cgi?xmltemplate=$xmlfile'>[view]</a>";
+	my $conf = $node->attributes->{'conf'};
+	if(-e $conf){
+	    $label .= "<a href='show_file.cgi?&file=$conf' target='_condorlog'>[conf]</a>";
+	}	
 	if($self->{'editmode'}){
 	    my $left_sister = $node->left_sister;
 	    my $right_sister = $node->right_sister;
@@ -253,10 +257,7 @@ sub get_label {
 	elsif($type =~ /parallel/){
 	    $image = "<b>P</b>$imaget<BR><b>P</b>$imaget";
 	}
-	my $conf = $node->attributes->{'conf'};
-	if(-e $conf){
-	    $label .= "<a href='show_file.cgi?&file=$conf' target='_condorlog'>[conf]</a>";
-	}	
+
     }
     elsif($elt eq "command"){
 	$label = "$name<a href='show_command.cgi?xmltemplate=$xmlfile&node=$nodeid'>[info]</a>";
