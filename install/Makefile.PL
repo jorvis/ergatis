@@ -149,10 +149,10 @@ snps	:
 
 legacy2chado  :
 	@echo "Installing legacy2chado workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/legacy2chado-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/legacy2chado-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install workflow/legacy2chado.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/legacy2chado_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/legacy2chado/legacy2chado-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/legacy2chado/legacy2chado-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/legacy2chado/legacy2chado.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/legacy2chado/legacy2chado_template.xml $(WORKFLOW_DOCS_DIR)  
 
 chado2bsml  :
 	@echo "Installing chado2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
