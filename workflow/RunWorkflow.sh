@@ -1,5 +1,7 @@
 #!/bin/sh
 
+umask 0
+
 INSTALL_DIR=/usr/local/devel/ANNOTATION/wf-test
 
 while getopts i:l:o:v:h opt
