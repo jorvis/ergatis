@@ -9,9 +9,17 @@
             <name>RunUnixCommand</name>
             <configMapId>1.1</configMapId>
         </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.1.1</configMapId>
+        </command>
          <command>    
             <name>RunUnixCommand</name>
             <configMapId>1.2</configMapId>
+        </command>       
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.2.1</configMapId>
         </command>       
         <command>    
             <name>RunUnixCommand</name>
@@ -21,5 +29,14 @@
             <name>RunUnixCommand</name>
             <configMapId>1.3.1</configMapId>
         </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.4</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.4.1</configMapId>
+        </command>
+
     </commandSet>
 </commandSetRoot>
