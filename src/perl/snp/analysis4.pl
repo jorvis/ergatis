@@ -72,7 +72,7 @@ use Benchmark;
 
 $| = 1;
 
-my ($help, $filename, $contig, $logfile, $coverage, $config_file, $remove_files);
+my ($help, $filename, $contig, $logfile, $coverage, $config_file, $remove_files, $sort_snp_file);
 
 my $result = GetOptions (
 			 'logfile|l'         => \$logfile,
@@ -81,7 +81,8 @@ my $result = GetOptions (
 			 'c=s'               => \$contig,
 			 'cov=s'             => \$coverage,
 			 'config_file|C'     => \$config_file,
-			 'remove_files|r'    => \$remove_files
+			 'remove_files|r'    => \$remove_files,
+			 'sort_snp|s'        => \$sort_snp_file    
 			 );
 
 if (!$filename or !$contig){
@@ -124,6 +125,14 @@ if (!defined($config_hash)){
 }
 
 #
+# Loads multi fasta files in memory
+#
+&build_arrays(
+	      project_prefix => \$filename,
+	      config_hash    => $config_hash
+	      );
+
+#
 # daddy4{} iterates through all files prefixed with "ID" in the <project>_asmbl_seq.dir directory and calls quality_SNP8
 # e.g. anthrax_test_asmbl_seq.dir
 #
@@ -142,10 +151,11 @@ if (!defined($config_hash)){
 # sort_snp_file{} produces output for downstream analysis: post_analysis.pl
 # We could choose to omit executing this sort operation
 #
-&sort_snp_file(
-		snp_header_file      => $config_hash->{'snp_header_file'},
-		sort_snp_header_file => $config_hash->{'sort_snp_header_file'},
-		);
+if ($sort_snp_file){
+    &sort_snp_file(
+		   snp_header_file      => $config_hash->{'snp_header_file'},
+		   sort_snp_header_file => $config_hash->{'sort_snp_header_file'},
+		   );
 
 #
 # coverage_stat{}: Comments forthcoming
@@ -172,7 +182,7 @@ if (!defined($config_hash)){
 	    contig       => \$contig,
 	    config_hash  => $config_hash,
 	    );
-
+}
 #system ("~/src/SNP/Daddy4.pl -F $filename -C $contig");
 #system ("sort -k13nr SNP_Header.txt > SNP_sort_Header.txt");
 #system ("~/src/SNP/coverage_stat.pl -F SNP_Header.txt -O SNP_cov -C 20");
@@ -199,48 +209,6 @@ exit(0);
 #                 END OF MAIN  -- SUBROUTINES FOLLOW
 #
 #--------------------------------------------------------------------------------------------------------------------
-
-
-#----------------------------------------------------------
-# get_config_hash()
-#
-#
-#----------------------------------------------------------
-sub get_config_hash {
-
-    my $logger = get_logger("snp");
-    $logger->info("Entered get_config_hash");
-    
-
-    my $file = shift;
-    if (!defined($file)){
-	$logger->logdie("file was not defined");
-    }
-
-    my $file_contents = &get_contents($file);
-    if (!defined($file_contents)){
-	$logger->logdie("file_contents was not defined");
-    }
-
-    my %hash;
-    foreach my $line (@$file_contents){
-	if (!defined($line)){
-	    $logger->logdie("line was not defined");
-	}
-	my ($key, $val) = split([\s]+,$line);
-	if (!defined($key)){
-	    $logger->logdie("key was not defined for line:$line");
-	}
-	if (!defined($val)){
-	    $logger->logdie("val was not defined for line:$line");
-	}
-	$hash{$key} = $val;
-    }
-
-    return \%hash;
-
-}#end sub get_config_hash()
-
 
 
 #----------------------------------------------------------
@@ -1185,50 +1153,54 @@ sub daddy4 {
     my $contig_dir    = $dir_prefix . ${$config_hash->{'contig_dir_mask'}};
     my $cov_dir       = $dir_prefix . ${$config_hash->{'cov_dir_mask'}};
 
-    #---------------------------------------------------------
-    # Open and read all files from the assembly sequence 
-    # directory
+
     #
-    #---------------------------------------------------------
-    unless(opendir(DIRECTORY, "$asmbl_seq_dir")) {
-	$logger->logdie("Cannot open $directory");
+    # We will iterate through all of the asmbl ids (as keys in the asmbl_hash)
+    # i.e. Main loop
+    #
+    my $asmbl_hash = $config_hash->{'asmbl_hash'};
+    if (!defined($asmbl_hash)){
+	$logger->logdie("asmbl_hash was not defined");
     }
-    
-    # READ ALL FILES BUT THE . and .. FILES	
-	
-    @files = grep (!/^\.\.?$/, readdir(DIRECTORY));
-    
-    closedir(DIRECTORY);
 
-    # GO THROUGH EACH FILENAME AND RUN THE SCRIPT
 
-    foreach my $file (@files) {	
-	
+    #
+    # Currently, Jacques does not use the mum.align files as input
+    #
+    my $mum_hash = $config_hash->{'mum_hash'};
+    if (!defined($mum_hash)){
+	$logger->logdie("mum_hash was not defined");
+    }
 
-	if ($file =~ /^ID/) {
-	    chomp $file;
-	    print $file, "\n\n";
-	    (my $file2 = $file);
+    foreach my $key (keys %$asmbl_hash){
+
+	if ($key =~ /ID/) {
+
+
+	    # e.g. key = ID1090revcom
+	    # Strip the "ID" and "revcom"
+	    #
+	    (my $file2 = $key);
 	    $file2 =~ s/^ID//;
 	    (my $file3 = $file2) =~ s/revcom$//;
-	    print "FILE3 $file3\n";
+
 
 	    #### PIPE THE FILE INTO MUMer
 	
 	    my $snp_fasta_outfile= "SNP_" . $dir_prefix . ".fasta";
 
-	    my $genome_file = $source . "/" . $contig;
-	    my $fasta_file  = $asmbl_seq_dir . "/" . $file;
-	    my $info_file   = $mum_align_dir . "/" . $file . ".align";
-	    my $contig_file = $contig_dir . "/" . $file3 . ".contig";
-	    my $asmbl_id    = $file3;
-	    my $t_cov       = $cov_dir . "/" . $file3 . ".tcov";
-	    my $out_file    = $snp_fasta_outfile;
+	    my $genome_file = $source . "/" . $contig;                    # e.g. ~src/SNP/GBA6612.1con
+	    my $fasta_seq   = $asmbl_hash{$key};                          # e.g. concatenated sequence of ID1090
+	    my @mum_array   = $mum_hash{$key};                            # e.g. array of mummer output associated to this key ID1090
+	    my $contig_file = $contig_dir . "/" . $file3 . ".contig";     # e.g. anthrax_test_contig.dir/1090.contig
+	    my $asmbl_id    = $file3;                                     # e.g. 1090
+	    my $t_cov       = $cov_dir . "/" . $file3 . ".tcov";          # e.g. anthrax_test_cov.dir/1090.tcov
+	    my $out_file    = $snp_fasta_outfile;                         # e.g. SNP_anthrax_test.fasta
 
 	    my $output_ref = quality_SNP8(
 					  genome_file => \$genome_file,
-					  fasta_file  => \$fasta_file,
-					  info_file   => \$info_file,
+					  fasta_seq   => \$fasta_seq,
+					  mum_array   => \@mum_array,
 					  contig_file => \$contig_file,
 					  dir_prefix  => \$dir_prefix,
 					  asmbl_id    => \$asmbl_id,
@@ -1305,16 +1277,16 @@ sub quality_SNP8 {
     # Extract arguments from parameter hash
     #
     #-------------------------------------------------------------
-                                                          # Jacques comments:                                  | Jay's comments: Examples:
-    my $genome      = $parameter_hash->{'genome_file'};   # REFERENCE GENOME CHANGE HERE TO ENTER AT PROMPT    | "~src/SNP/GBA6612.1con"
-    my $fasta       = $parameter_hash->{'fasta_file'};    # ASSEMBLY FILE IN FASTA FORMAT                      | "anthrax_test_asmbl_seq.dir/ID1090"
-    my $readfile    = $parameter_hash->{'info_file'};     # MUMMER .align file                                 | "anthrax_test_mum_align.dir/ID1090.align"
-    my $contigfile  = $parameter_hash->{'contig_file'};   # .config FIEL FROM PULLCONTIG WILL NEED TO BE PIPED | "anthrax_test_contig.dir/1090.contig"
-    my $tag         = $parameter_hash->{'dir_prefix'};    # e.g. "anthrax_test"                                | "anthrax_test"
-    my $asmbl_id    = $parameter_hash->{'asmbl_id'};      # THE ASSEMBLY ID NUMBER FOR CutAsm                  | "1090"
-    my $tcov        = $parameter_hash->{'t_cov'};         #                                                    | "anthrax_test_cov.dir/1090.tcov"
-    my $outputfile  = $parameter_hash->{'out_file'};      #                                                    | "SNP_anthrax_test.fasta"
-    my $config_hash = $parameter_hash->{'config_hash'};   #                                                    | configuration hash
+                                                              # Jacques comments:                                  | Jay's comments: Examples:
+    my $genome          = $parameter_hash->{'genome_file'};   # REFERENCE GENOME CHANGE HERE TO ENTER AT PROMPT    | "~src/SNP/GBA6615.2con"
+    my $fasta_seq_ref   = $parameter_hash->{'fasta_seq'};     # ASSEMBLY FILE IN FASTA FORMAT                      | assembly sequence of asmbl_id 1090
+    my $mum_array_ref   = $parameter_hash->{'mum_array'};     # MUMMER .align file                                 | array containing mummer output associated to asmbl_id 1090
+    my $contigfile      = $parameter_hash->{'contig_file'};   # .config FIEL FROM PULLCONTIG WILL NEED TO BE PIPED | "anthrax_test_contig.dir/1090.contig"
+    my $tag             = $parameter_hash->{'dir_prefix'};    # e.g. "anthrax_test"                                | "anthrax_test"
+    my $asmbl_id        = $parameter_hash->{'asmbl_id'};      # THE ASSEMBLY ID NUMBER FOR CutAsm                  | "1090"
+    my $tcov            = $parameter_hash->{'t_cov'};         #                                                    | "anthrax_test_cov.dir/1090.tcov"
+    my $outputfile      = $parameter_hash->{'out_file'};      #                                                    | "SNP_anthrax_test.fasta"
+    my $config_hash     = $parameter_hash->{'config_hash'};   #                                                    | configuration hash
 
     #--------------------------------------------------------------
     # Extract output file names from configuration hash
@@ -1343,8 +1315,8 @@ sub quality_SNP8 {
     if (!defined($genome)){
 	$logger->logdie("genome was not defined");
     }
-    if (!defined($readfile)){
-	$logger->logdie("readfile was not defined");
+    if (!defined($mum_array)){
+	$logger->logdie("mum_array was not defined");
     }
     if (!defined($contigfile)){
 	$logger->logdie("contigfile was not defined");
@@ -1383,17 +1355,7 @@ sub quality_SNP8 {
 	$logger->logdie("length was not defined");
     }
 
-
-    #---------------------------------------------------------------
-    # Retrieve the assembly sequence from fasta file
-    #---------------------------------------------------------------
-    my $assembly_seq = &get_sequence(\$fasta);
-    if (!defined($assembly_seq)){
-	$logger->logdie("assembly_seq was not defined");
-    }
-
-    my $assembly_seq_length = length($assembly_seq);
-    print ("$assembly_seq_length\n"); # length of the contig
+    my $assembly_seq_length = length($$fasta_seq);
 
     #---------------------------------------------------------------
     # Retrieve the genome sequence from fasta file
@@ -1408,7 +1370,7 @@ sub quality_SNP8 {
 
     my $tagname = $tag . $config_hash->{'asmbl_seq_dir_mask'}; #### NAME OF THE FOLDER WHERE THE FASTA FILES ARE LOCATED
     
-    $fasta =~ s/^$tagname\///;        ### REMOVE THE NAME OF THE FOLDER FROM THE NAME FILE
+    $fasta = "ID" . $asmbl_id;
     
     
     #--------------------------------------------------------------------
@@ -1424,28 +1386,36 @@ sub quality_SNP8 {
 
     my ($t, @at);
     
-    for ($t=0;$t<@coverage;$t++) {
+    for ($t=0;$t<@$coverage_contents;$t++) {
 	
-	if ($coverage[$t] =~ /^(\d+)/ && !$at[$1]) {
+	if ($coverage_contents[$t] =~ /^(\d+)/ && !$at[$1]) {
 	    $at[$1] = $t;
 	}
     }
     
     #-----------------------------------------------------
-    # Retrieve mummer output from readfile
+    # Retrieve mummer output from mum_array
     # with order re-arranged
     #-----------------------------------------------------
-    my $change_align = &get_change_align(\$readfile);
-    if (!defined($change_align)){
-	$logger->logdie("change_align was not defined");
+    my $reordered_mum_align = &reorder_mum_align($mum_array);
+    if (!defined($reordered_mum_align)){
+	$logger->logdie("reordered_mum_align was not defined");
     }
 
     my (@read);
     my $i=1;
     
-    foreach my $array_ref (@$change_align) {
+    foreach my $array_ref (@$reordered_mum_align) {
        
-	@read = @$array_ref;
+	if (!defined($array_ref)){
+	    $logger->logdie("array_ref was not defined");
+	}
+
+	$read[0] = $array_ref[0];
+	$read[1] = $array_ref[1];
+	$read[2] = $array_ref[2];
+	$read[3] = $array_ref[3];
+	
 
 	### DOES NOT PROCESS GAPS (INSERTION/DELETION)
 	### IF . IN SECOND COLUMN (REF) SKIP
@@ -1580,7 +1550,7 @@ sub quality_SNP8 {
 
 	## GET THE SEQUENCE AROUND THE SNP 20 bp AROUND/ CALL TO QUICKCUT AS A SUBROUTINE IN SUB
 
-	$subgseq = quickcut ($gseq, $gpos1, $gpos2);
+	$subgseq = quickcut ($genome_seq, $gpos1, $gpos2);
 
 	## FORMAT THE ALIGNMENT
 
@@ -1941,6 +1911,51 @@ sub get_change_align {
 
 }#end sub get_change_align()
 
+#----------------------------------------------------------------------------
+# reorder_mum_align()
+#
+#
+#
+#----------------------------------------------------------------------------
+sub reorder_mum_align {
+
+    my $logger = get_logger("snp");
+    $logger->info("Entered reorder_mum_align");
+
+    my $mum_array = shift;
+    if (!defined($mum_array)){
+	$logger->logdie("mum_array was not defined");
+    }
+
+    my @in_array;
+    my @out_array;
+    my $out_line;
+    my $marker = 0;
+    my $i =0;
+
+    foreach my $in_line (@$mum_align) {
+    
+	my @tmp_array;
+	
+	@in_array = split([\s]+, $in_line);
+	
+	$tmp_array[0] = $in_array[2];
+	$tmp_array[1] = $in_array[4];
+	$tmp_array[2] = $in_array[5];
+	$tmp_array[3] = $in_array[3];
+	
+	push (@out_array, \@tmp_array);
+	$i++;
+	next;
+    }
+
+    push (@out_array, "Total number of errors = $i\n");
+
+    return \@out_array;
+
+}#end sub reorder_mum_align()
+
+
 #------------------------------------------------------------------------------
 # get_contents()
 #
@@ -1967,3 +1982,143 @@ sub get_contents {
 
 
 }#end sub get_contents()
+
+#-----------------------------------------------------------------
+# build_arrays()
+#
+#
+#-----------------------------------------------------------------
+sub build_arrays{
+
+
+    my $logger = get_logger("snp");
+    $logger->info("Entered build_arrays");
+
+    my $prefix      = shift;
+    my $config_hash = shift;
+
+    #----------------------------------------
+    # Verify whether arguments were defined
+    #
+    #----------------------------------------
+    if (!defined($prefix)){
+	$logger->logdie("prefix was not defined");
+    }
+    if (!defined($config_hash)){
+	$logger->logdie("config_hash was not defined");
+    }
+
+    my $source = $config_hash->{'source'};
+
+    #-----------------------------------------
+    # Load the assembly file in memory
+    #
+    #-----------------------------------------
+    my $asmbl_dir       = $config_hash->{'asmbl_seq_dir_mask'};
+    my $asmbl_file      = $config_hash->{'tiled_asmbl_seq_fasta_file'};
+    my $full_asmbl_path = $source . "/" . $prefix . "_" . $asmbl_dir . "/" . $prefix . "_" . $asmbl_file;
+
+    my $asmbl_contents = &get_contents(\$full_asmbl_path);
+    if (!defined($asmbl_contents)){
+	$logger->logdie("asmbl_contents was not defined");
+    }
+    my $asmbl_hash ={};
+    foreach my $line (@$asmbl_contents){
+	if (!defined($line)){
+	    $logger->logdie("line was not defined");
+	}
+
+	if ($line =~ /^(>.*)/){
+	    $key = $1;
+
+	}
+	else {
+	    $hash->{$key} = $line;
+	}
+    }
+    $config_hash->{'asmbl_hash'} = $asmbl_hash;
+
+
+    #-----------------------------------------
+    # Load the mummer file into memory
+    #
+    #-----------------------------------------
+    my $mum_dir       = $config_hash->{'mum_align_dir_mask'};
+    my $mum_file      = $config_hash->{'tiled_mum_align_file'};
+    my $full_mum_path = $source . "/" . $prefix . "_" . $mum_dir . "/" . $prefix . "_" . $mum_file;
+
+    my $mum_contents = &get_contents(\$full_mum_path);
+    if (!defined($mum_contents)){
+	$logger->logdie("mum_contents was not defined");
+    }
+
+    my $mum_hash = {};
+    my $key;
+    foreach my $line (@$mum_contents){
+
+	if (!defined($line)){
+	    $logger->logdie("line was not defined");
+	}
+
+	if ($line =~ /^(>.*)/){
+	    $key = $1;
+	    #
+	    # get rid of space i.e. "> ID1090" becomes ">ID1090"
+	    $key =~ s/[\s]+//;
+	    #
+	    # get rid of "Reverse" i.e. ">ID1090Reverse" becomes ">ID1090"
+	    $key =~ s/Reverse$//;
+
+	}
+	else{
+	    push(@{$mum_hash->{$key}}, $line);
+	}
+    }
+    $config_hash->{'mum_hash'} = $mum_hash;
+
+
+}#end sub build_arrays()
+
+
+
+#----------------------------------------------------------
+# get_config_hash()
+#
+#
+#----------------------------------------------------------
+sub get_config_hash {
+
+    my $logger = get_logger("snp");
+    $logger->info("Entered get_config_hash");
+    
+
+    my $file = shift;
+    if (!defined($file)){
+	$logger->logdie("file was not defined");
+    }
+
+    my $file_contents = &get_contents($file);
+    if (!defined($file_contents)){
+	$logger->logdie("file_contents was not defined");
+    }
+
+    my %hash;
+    foreach my $line (@$file_contents){
+	if (!defined($line)){
+	    $logger->logdie("line was not defined");
+	}
+	my ($key, $val) = split([\s]+,$line);
+	if (!defined($key)){
+	    $logger->logdie("key was not defined for line:$line");
+	}
+	if (!defined($val)){
+	    $logger->logdie("val was not defined for line:$line");
+	}
+	$hash{$key} = $val;
+    }
+
+    return \%hash;
+
+}#end sub get_config_hash()
+
+

@@ -7,20 +7,15 @@
         <configMapId>2</configMapId>
         <command>    
             <name>RunUnixCommand</name>
+            <configMapId>1.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
             <configMapId>2.1</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>2.2</configMapId>
-        </command>        
-        </commandSet>
-        <command>    
-            <name>RunUnixCommand</name>
             <configMapId>5.1</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>5.2</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
@@ -36,7 +31,7 @@
         </command>   
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>6.5</configMapId>
+            <configMapId>6.4</configMapId>
         </command>   
         <command>    
             <name>RunUnixCommand</name>

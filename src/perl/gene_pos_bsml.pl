@@ -110,8 +110,11 @@ my $pexml =  PEffect::PEffectXML->new();
 my @asm_ids = determine_all_asmbl_id($asmbl_ids, $asmbl_file, $BSML_dir);
 
 foreach my $asmbl_id (@asm_ids){
-    addGenes($asmbl_id, "db_${asmbl_id}", $pexml);
+
+    print "$asmbl_id\n";
+#    addGenes($asmbl_id, "db_${asmbl_id}", $pexml);
 }
+die;
 
 
 #print out the entire xml to STDOUT
@@ -250,7 +253,12 @@ sub determine_all_asmbl_id {
 	    push(@final_asmbl_ids, $asmbl_id) unless $unique_asmbl_ids{$asmbl_id}++;
 	}
     }
-       
+ 
+#    foreach my $asm (@final_asmbl_ids){
+#	print "$asm\n";
+#    }
+#    die;
+      
     #check asmbl_id from a flat file
     if(defined($asmbl_file)) {
 	@id_list = read_asmbl_file($asmbl_file);
@@ -280,6 +288,12 @@ sub get_all_asmbl_id_via_all {
 	    push(@asm_ids, $1);
 	}
     }
+
+
+#    foreach my $asm (@asm_ids){
+#	print "$asm\n";
+#    }
+#    die;
 
     return  @asm_ids;
 

@@ -8,3 +8,4 @@ snp_header		SNP_Header.txt
 snpout			snpqual.txt
 indelR 			refins.txt
 indelQ			queryins.txt
+source 			/usr/local/scratch/chauser/anthrax
