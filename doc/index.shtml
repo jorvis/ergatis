@@ -17,9 +17,17 @@
 <br>
 <br>
 <b>Description</b><br>
-  Papyrus is a package of data management scripts and associated workflows 
+  Papyrus is a package of data management scripts and associated workflows.  As the names of the
+  command-line tools suggest, these scripts and workflows are primarily concerned with running 
+  various types of comparative analyses.  Papyrus operates on <a href='/ifx/devel/cas/bsml/'>BSML</a>-formatted 
+  data files, and relies on <a href='/ifx/devel/cas/prism'>Prism</a> to generate its BSML input files
+  (typically from a chado database) and load its BSML output files back into a chado database.  
+  Papyrus also relies on the TIGR <a href='/ifx/devel/workflow/'>Workflow</a> and 
+  <a href='/ifx/devel/HTC'>HTC</a> systems to manage and distribute the execution of its analysis 
+  tasks and subtasks.
+
   <p> <b>Documentation</b><br>
-  <a href='srs_repository.html'>Data Repository</a><br>
+  Data Repository<a href='srs_repository.html'>[srs]</a><br>
   Perl CLI coding standards<br>
   Workflow document standards<br>
 	
