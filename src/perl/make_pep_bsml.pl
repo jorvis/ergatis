@@ -29,7 +29,7 @@ if($each_file and $each_genome) {
 }
 
 if(!$each_file and !$each_genome and $project) {
-    print STDERR "Must specify project name\n";
+    print STDERR "Must specify project name without --each_genome(-g) and --each_file(-e).\n";
     exit 1;
 }
 
@@ -203,6 +203,7 @@ sub print_usage {
     print STDERR "  --asmbl_ids  (only get sequences  belong to particular asmbl_ids)\n";
     print STDERR "  --each_genome = save fasta file individually for each genome\n";
     print STDERR "  --each_file   = save fasta file individually for each gene\n";
+    print STDERR "  --project     = name of the total peptide fasta file\n";
     print STDERR " NOTE* --each_genome and --each_file cannot be invoked concurrently\n";
     print STDERR "  --help = This help message.\n";
     exit 1;
