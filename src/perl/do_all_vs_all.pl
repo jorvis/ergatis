@@ -119,6 +119,8 @@ sub error_check  {
     if(! -d "$output_dir/${asmbl_id}") {
 	mkdir "$output_dir/${asmbl_id}";
 	chmod 0777, "$output_dir/${asmbl_id}";
+    } else {
+	unlink glob("$output_dir/${asmbl_id}*"); #delete old allvsall output files
     }
         
 	

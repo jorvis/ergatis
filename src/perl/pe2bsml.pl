@@ -13,7 +13,7 @@ use File::Basename;
 
 
 my %options = ();
-my $results = GetOptions (\%options, 'pe_file|p=s', 'bsml_dir|d=s', 'verbose|v', 'output|o=s', 'verbose|v', 'help|h',);
+my $results = GetOptions (\%options, 'pe_file|p=s', 'bsml_dir|b=s', 'verbose|v', 'output|o=s', 'verbose|v', 'help|h',);
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
@@ -24,7 +24,6 @@ $BSML_dir =~ s/\/+$//;         #remove terminating '/'s
 my $verbose    = $options{'verbose'};
 #Log::Log4perl->init("log.conf");
 #my $logger = get_logger();
-my $verbose    = $options{'verbose'};
 
 if(!$pe_file or !$output or exists($options{'help'})) {
     #$logger->fatal("Not all of the required options have been defined.  Exiting...");
