@@ -8,7 +8,8 @@ while getopts d:s:h opt
 do case "$opt" in
       d) database=$OPTARG;;
       s) search=$OPTARG;;
-      h) echo "Usage: `basename $0` -d dbname";
+      h) echo "Usage: `basename $0` -d dbname -s search";
+	 echo "where search = [all_vs_all | blastp]";
 	  exit;;
       esac
 done

@@ -9,6 +9,10 @@
             <name>RunUnixCommand</name>
             <configMapId>1.1</configMapId>
         </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.11</configMapId>
+        </command>
          <command>    
             <name>RunUnixCommand</name>
             <configMapId>1.2</configMapId>
