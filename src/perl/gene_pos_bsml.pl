@@ -9,40 +9,68 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 
 my %options = ();
-my $results = GetOptions (\%options, 'asmbl_ids|a=s@', 'output|o=s', 'bsml_dir|b=s', 'help|h' );
+my $results = GetOptions (\%options, 'asmbl_ids|a=s', 'output|o=s', 'bsml_dir|b=s', 'gene_cutoff=s', 'asmbl_file=s', 'help|h' );
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my @asmbls;
 #asmbl_id can be specified by comma separated list or invoking -a flag multiple times
-if(exists($options{'asmbl_ids'})) {
-    @asmbls= @{$options{'asmbl_ids'}};
-    @asmbls = split(/,/,join(',',@asmbls));
-}
-my $BSML_dir = $options{'bsml_dir'};
+#if(exists($options{'asmbl_ids'})) {
+#    @asmbls= @{$options{'asmbl_ids'}};
+#    @asmbls = split(/,/,join(',',@asmbls));
+#}
+
+my $ASMBL_IDS       = $options{'asmbl_ids'};
+my $BSML_dir        = $options{'bsml_dir'};
 $BSML_dir =~ s/\/$//;
-my $output = $options{'output'};
+my $output          = $options{'output'};
+my $gene_cutoff     = $options{'gene_cutoff'} || '0';
+my $asmbl_file      = $options{'asmbl_file'};
 
 if(!$BSML_dir or exists($options{'help'})) {
     &print_usage();
 }
+
+if(!$asmbl_file and ! $ASMBL_IDS) {
+    print STDERR "Either --asmbl_ids  OR --asmbl_file option is needed\n";
+    &print_usage();
+}
+
+if($asmbl_file and $ASMBL_IDS) {
+    print STDERR " Specify either --asmbl_ids OR --asmbl_file\n"; 
+    &print_usage();
+}
+
 
 ###-------------------------------------------------------###
 
 my $parser = BSML::BsmlParserTwig->new();
 my $pexml =  PEffect::PEffectXML->new();
  
-#my @asmbls;
-if(!@asmbls) {
-    my @files = <$BSML_dir/*.bsml>;
-    foreach (@files) {
-	my $basename = basename($_);
-	if($basename =~ /(.+)\.bsml/) {
-	    push(@asmbls, $1);
-        }
-    } 
+my @asm_ids;
+if($asmbl_file) {   #asmbl_id will be read from a flat file
+    @asm_ids = read_asmbl_file($asmbl_file);
+    if(!@asm_ids) {
+	print STDERR "No asmbl_ids found in $asmbl_file.  Aborting...\n";
+	exit 4;
+    }
+} else {   #asmbl_id will be read from --asmbl_ids flag
+    if($ASMBL_IDS =~ /all/i) {
+	my @files = <$BSML_dir/*.bsml>;
+	foreach (@files) {
+	    my $basename = basename($_);
+	    if($basename =~ /(.+)\.bsml/) {
+		push(@asm_ids, $1);
+	    }
+	}
+    } else {
+	@asm_ids = split(/,/, $ASMBL_IDS);
+    }
+
 }
 
-foreach my $asmbl_id (@asmbls){
+
+
+foreach my $asmbl_id (@asm_ids){
     addGenes($asmbl_id, "db_${asmbl_id}", $pexml);
 }
 
@@ -74,6 +102,8 @@ sub addGenes {
 	$geneID_protID = build_geneID_protID_mapping($rhash);
 	my $order = 0;
 	my $sorted_genes = get_sorted_gene_position($asmbl_id, $reader);
+	print STDERR "There are ", scalar(@$sorted_genes), " genes for $asmbl_id\n";
+	return if(@$sorted_genes < $gene_cutoff);  #filter out assemblies whose gene number is below cutoff
 	foreach my $gene (@$sorted_genes) {
 	    my $attrref={};
 	    my $feat_name = $gene->{'feat_name'};
@@ -138,12 +168,36 @@ sub get_sorted_gene_position {
 
 }
 
+sub read_asmbl_file {
+
+    my $file = shift;
+
+    my @asmbl_id_list;
+
+    open (IN, "$file")  or die "Unable to read $file due to $!";
+    my $line;
+    while($line = <IN>) {
+	chomp($line);
+	next if($line =~ /^\s*$/);
+	push(@asmbl_id_list, $line);
+    }
+    close IN;
+
+    return @asmbl_id_list;
+
+}
+
+
+
+
 sub print_usage {
 
 
     print STDERR "SAMPLE USAGE:  gene_pos_bsml.pl -b bsml_dir -a bsp_3839_assembly > output\n";
     print STDERR "  --bsml_dir    = dir containing BSML doc\n";
-    print STDERR "  --asmbl_ids  = assembly ids (comma separated.  grabs all if omitted) \n";
+    print STDERR "  --asmbl_ids   = assembly ids (comma separated.  grabs all if omitted) \n";
+    print STDERR "  --asmbl_file  = name of the file containing a list of asmbl_ids\n";
+    print STDERR "  --gene_cutoff = minimum number of genes on the assembly (default is 0)\n";
     print STDERR "  --help = This help message.\n";
     exit 1;
 

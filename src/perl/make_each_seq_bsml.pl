@@ -8,7 +8,7 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'asmbl_ids|a=s', 'DEBUG', 'help|h' );
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'asmbl_ids|a=s', 'DEBUG', 'asmbl_file=s', 'help|h' );
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
@@ -20,7 +20,18 @@ $BSML_dir =~ s/\/+$//;       #remove terminating '/'
 my $QUERYPRINT;
 my $DEBUG = $options{'DEBUG'} || 0;
 
-if(!$BSML_dir or !$output_dir or !$ASMBL_IDS or exists($options{'help'})) {
+my $asmbl_file      = $options{'asmbl_file'};
+
+if(!$BSML_dir or !$output_dir or exists($options{'help'})) {
+    &print_usage();
+}
+if(!$asmbl_file and ! $ASMBL_IDS) {
+    print STDERR "Either --asmbl_ids  OR --asmbl_file option is needed\n";
+    &print_usage();
+}
+
+if($asmbl_file and $ASMBL_IDS) {
+    print STDERR " Specify either --asmbl_ids OR --asmbl_file\n"; 
     &print_usage();
 }
 
@@ -40,25 +51,28 @@ my $result;
 
 
 my @asm_ids;
-if($ASMBL_IDS =~ /all/i) {
-    my @files = <$BSML_dir/*.bsml>;
-    foreach (@files) {
-	my $basename = basename($_);
-	if($basename =~ /(.+)\.bsml/) {
-	    push(@asm_ids, $1);
-        }
+if($asmbl_file) {   #asmbl_id will be read from a flat file
+    @asm_ids = read_asmbl_file($asmbl_file);
+    if(!@asm_ids) {
+	print STDERR "No asmbl_ids found in $asmbl_file.  Aborting...\n";
+	exit 4;
     }
-} else {
-    @asm_ids = split(/,/, $ASMBL_IDS);
+}else {
+    if($ASMBL_IDS =~ /all/i) {
+	my @files = <$BSML_dir/*.bsml>;
+	foreach (@files) {
+	    my $basename = basename($_);
+	    if($basename =~ /(.+)\.bsml/) {
+		push(@asm_ids, $1);
+	    }
+	}
+    } else {
+	@asm_ids = split(/,/, $ASMBL_IDS);
+    }
 }
 
 
 
-
-
-#if(defined($ASMBL_IDS)) {
-#    @asm_ids = split(/,/, $ASMBL_IDS);
-#}
 
 my $parser = new BSML::BsmlParserTwig;
 
@@ -111,7 +125,24 @@ sub fasta_out {
 
 }
 
+sub read_asmbl_file {
 
+    my $file = shift;
+
+    my @asmbl_id_list;
+
+    open (IN, "$file")  or die "Unable to read $file due to $!";
+    my $line;
+    while($line = <IN>) {
+	chomp($line);
+	next if($line =~ /^\s*$/);
+	push(@asmbl_id_list, $line);
+    }
+    close IN;
+
+    return @asmbl_id_list;
+
+}
 
 
 sub print_usage {
@@ -122,6 +153,7 @@ sub print_usage {
     print STDERR "  --output_dir  = dir to save output to\n";
     print STDERR "  --asmbl_ids  (multiple values can be comma separated)\n";
     print STDERR "               (-a all  grabs all asmbl_ids)\n";    
+    print STDERR "  --asmbl_file  = name of the file containing a list of asmbl_ids\n";
     print STDERR "  --help = This help message.\n";
     exit 1;
 

@@ -9,7 +9,7 @@ use File::Basename;
 
 my %options = ();
 my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s', 'project|p=s', 'verbose|v',
-                                     'output_dir|o=s', 'DEBUG', 'help|h', 'each_file|e', 'each_genome|g' );
+                                     'output_dir|o=s', 'DEBUG', 'help|h', 'each_file|e', 'each_genome|g', 'asmbl_file=s' );
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
@@ -24,10 +24,22 @@ $output_dir =~ s/\/+$//;       #remove terminating '/'s
 my $BSML_dir        = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;         #remove terminating '/'s
 
+my $asmbl_file      = $options{'asmbl_file'};
 
-if(!defined($ASMBL_IDS) or !$output_dir or !$BSML_dir or exists($options{'help'})) {
+if(!$output_dir or !$BSML_dir or exists($options{'help'})) {
     &print_usage();
 }
+if(!$asmbl_file and ! $ASMBL_IDS) {
+    print STDERR "Either --asmbl_ids  OR --asmbl_file option is needed\n";
+    &print_usage();
+}
+
+if($asmbl_file and $ASMBL_IDS) {
+    print STDERR " Specify either --asmbl_ids OR --asmbl_file\n"; 
+    &print_usage();
+}
+
+
 if($each_file and $each_genome) {
     print STDERR "--each_genome(-g) and --each_file(-e) CANNOT be invoked at the same time.\n";
     exit 1;
@@ -52,17 +64,27 @@ if(! -d $output_dir ) {
 chmod 0777, $output_dir;
 
 my @asm_ids;
-if($ASMBL_IDS =~ /all/i) {
-    my @files = <$BSML_dir/*.bsml>;
-    foreach (@files) {
-	my $basename = basename($_);
-	if($basename =~ /(.+)\.bsml/) {
-	    push(@asm_ids, $1);
-        }
+if($asmbl_file) {   #asmbl_id will be read from a flat file
+    @asm_ids = read_asmbl_file($asmbl_file);
+    if(!@asm_ids) {
+	print STDERR "No asmbl_ids found in $asmbl_file.  Aborting...\n";
+	exit 4;
     }
-} else {
-    @asm_ids = split(/,/, $ASMBL_IDS);
+} else {   #asmbl_id will be read from --asmbl_ids flag
+    if($ASMBL_IDS =~ /all/i) {
+	my @files = <$BSML_dir/*.bsml>;
+	foreach (@files) {
+	    my $basename = basename($_);
+	    if($basename =~ /(.+)\.bsml/) {
+		push(@asm_ids, $1);
+	    }
+	}
+    } else {
+	@asm_ids = split(/,/, $ASMBL_IDS);
+    }
+
 }
+
 
 my $parser = new BSML::BsmlParserTwig;
 
@@ -191,6 +213,27 @@ sub fasta_out {
 
 }
 
+sub read_asmbl_file {
+
+    my $file = shift;
+
+    my @asmbl_id_list;
+
+    open (IN, "$file")  or die "Unable to read $file due to $!";
+    my $line;
+    while($line = <IN>) {
+	chomp($line);
+	next if($line =~ /^\s*$/);
+	$line =~ s/^\s+//;
+	$line =~ s/\s+$//;
+	push(@asmbl_id_list, $line);
+    }
+    close IN;
+
+    return @asmbl_id_list;
+
+}
+
 
 
 sub print_usage {
@@ -203,8 +246,10 @@ sub print_usage {
     print STDERR "               (-a all  grabs all asmbl_ids)\n";
     print STDERR "  --each_genome = save fasta file individually for each genome\n";
     print STDERR "  --each_file   = save fasta file individually for each gene\n";
+    print STDERR "  --asmbl_file  = name of the file containing a list of asmbl_ids\n";
     print STDERR "  --project     = name of the total peptide fasta file\n";
     print STDERR " NOTE* --each_genome and --each_file cannot be invoked concurrently\n";
+    print STDERR "       --Specify Either --asmbl_ids OR --asmbl_file \n";
     print STDERR "  --help = This help message.\n";
     exit 1;
 
