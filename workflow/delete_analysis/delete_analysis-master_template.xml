@@ -73,7 +73,7 @@
             <name>truncate_companalysis_tables</name>
             <configMapId>truncate_companalysis_tables</configMapId>
         </command>
-        <commandSet type="serial">
+        <commandSet type="parallel">
                 <name>Load filtered analysis records</name>
                 <configMapId>empty</configMapId>
                 <command>    
@@ -124,6 +124,11 @@
           <type>RunUnixCommand</type>
           <name>Set permissions for scratch area</name>
           <configMapId>set_scratch_permissions</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>check_logfiles</name>
+          <configMapId>check_logfiles</configMapId>
        </command>
      </commandSet>
 </commandSetRoot>

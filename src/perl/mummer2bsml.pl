@@ -35,6 +35,10 @@ B<--log,-l> Log file
 
 =item *
 
+B<--class,-c> ref/comp sequence class type.  Default class is 'assembly'
+
+=item *
+
 B<--help,-h> This help message
 
 =back
@@ -76,6 +80,7 @@ my $results = GetOptions (\%options,
 			  'database|d=s', 
 			  'log|l=s',
 			  'debug=s',
+			  'class|c=s',
 			  'help|h') || pod2usage();
 
 
@@ -86,6 +91,11 @@ my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 $logger = Workflow::Logger::get_logger();
 
 &check_parameters(\%options);
+
+my $class;
+if (!defined($options{'class'})){
+    $logger->logdie("class was not defined");
+}
 
 my $doc = BSML::BsmlBuilder->new();
 if($options{'mummer_type'} == 1) {
@@ -141,7 +151,8 @@ sub parse_mummer_collapsed_coords {
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
                                                            'complength'    => $qry_asmbl_length,
-                                                           'reflength'     => $ref_asmbl_length
+                                                           'reflength'     => $ref_asmbl_length,
+							   'class'         => $class
 							 ); 
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
 						   'refpos'           => $ref_start,
@@ -197,7 +208,8 @@ sub parse_promer_full_coords {
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
                                                            'complength'    => $qry_asmbl_length,
-                                                           'reflength'     => $ref_asmbl_length
+                                                           'reflength'     => $ref_asmbl_length,
+							   'class'         => $class
 							 ); 
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
 						   'refpos'           => $ref_start,
@@ -247,7 +259,8 @@ sub parse_nucmer_full_coords {
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
                                                            'complength'    => $qry_asmbl_length,
-                                                           'reflength'     => $ref_asmbl_length
+                                                           'reflength'     => $ref_asmbl_length,
+							   'class'         => $class
 							 ); 
 
 	my $complement= ($qry_start > $qry_end) ? 1 : 0;

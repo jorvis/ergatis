@@ -1,4 +1,49 @@
-use lib "/export/CVS/bsml/src/";
+#!/usr/local/bin/perl
+
+# this is temporary for development
+# use lib "/export/CVS/bsml/src/";
+
+=head1  NAME 
+
+tcov2bsml.pl  - convert tcov files into BSML documents
+
+=head1 SYNOPSIS
+
+USAGE:  tcov2bsml.pl -t tcov_file -b bsml_repository_path -o output_file_bsml
+
+=head1 OPTIONS
+
+=over 4
+
+=item *
+
+B<--tcov,-t> [REQUIRED] file containing tcov data
+
+=item *
+
+B<--output,-o> [REQUIRED] output BSML file containing coverage information
+
+=item * 
+
+B<--bsml_repository,-b> [REQUIRED] filepath to the bsml repository 
+
+=item *
+
+B<--chunk_size,-c> [OPTIONAL] optional chunk size (default is 1000 bases) 
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+tcov2bsml.pl is designed to convert information in tcov files (coverage data)
+into BSML documents.
+
+=cut
+
 use BSML::BsmlBuilder;
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
@@ -17,19 +62,53 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'tcov|t=s',
 			  'bsml_repository_path|b=s',
+			  'database|d=s',
+			  'chunk_size|c=s',
 			  'output|o=s',  
 			  'log|l=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
 
+# display documentation
+if( $options{'help'} ){
+    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
+}
+
+if( !( $options{'bsml_repository_path' } ) )
+{
+    pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
+}
+
+if( !( $options{'tcov' } ) )
+{
+    pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
+}
+
+if( !( $options{'database' } ) )
+{
+    pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
+}
+
 my $tcovFilePath = $options{'tcov'};
 my $repositoryPath = $options{'bsml_repository_path'};
 my $outputFile = $options{'output'};
+my $chunk_count;
+my $database = $options{'database'};
+
+if( $options{'chunk_size'} )
+    {
+	$chunk_count = $options{'chunk_size'};
+    }
+else
+{
+    $chunk_count = 1000;
+}
+
 
 # filename is expected to encode the assembly id
 # ie /usr/local/annotation/MYCOTB/chauser/bmt_coverage_data/443.tcov
 
-$tcovFilePath =~ /[\S]*\/([\d]*).tcov/;
+$tcovFilePath =~ /[\S]*_([\d]*).tcov/;
 my $assemblyId = $1;
 
 open( TCOV, $tcovFilePath ) or die "Could not open $tcovFilePath\n";
@@ -133,80 +212,171 @@ my $asmbl_length = @consensus_quality_score;
 
 # add the reference sequence and it's link in the repository
 
-my $seq = $bsmlDoc->createAndAddExtendedSequenceN( id => "bmt_".$assemblyId."_assembly",
-						   class => "CONTIG",
+my $seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $database."_".$assemblyId."_assembly",
+						   class => "contig",
 						   length => $asmbl_length );
+
+$seq->addattr( 'class', "assembly" );
 
 $bsmlDoc->createAndAddSeqDataImportN( seq => $seq,
 				      format => "BSML",
-                                      source => $repositoryPath."/bmt_".$assemblyId."_assembly.bsml",
-                                      id => "_bmt_".$assemblyId."_assembly");
+                                      source => $repositoryPath."/".$database."_".$assemblyId."_assembly.bsml",
+                                      id => "_".$database."_".$assemblyId."_assembly");
 
 
 # add the consensus quality score sequence
 
 my $tmpstr = '';
+my $tmpstr_count = 0;
+my $offset = 0;
+my $count = 0;
+
 
 for( my $i=0; $i<$asmbl_length; $i++ )
 {
     $tmpstr .= ":$consensus_quality_score[$i]";
+    $tmpstr_count++;
+
+    if( ((($i+1) % $chunk_count) == 0))
+    {
+	my $consensus_quality_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $database."_".$assemblyId."_assembly_consensus_quality_score_".$count,
+										   class => "consensus_quality_value",
+										   length => $tmpstr_count );
+	
+	$consensus_quality_score_seq->addattr( 'class', "consensus_quality_value" );
+    
+	$bsmlDoc->createAndAddSeqData( $consensus_quality_score_seq, $tmpstr );
+	
+	my $numbering = $bsmlDoc->createAndAddNumbering( seq => $consensus_quality_score_seq,
+						 seqref => $database."_".$assemblyId."_assembly",
+						 refnum => $offset,
+						 ascending => 1 );
+
+	$offset += $chunk_count;
+	$count++;
+
+	$tmpstr = '';
+	$tmpstr_count = 0;
+    }
 }
 
-my $consensus_quality_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => "bmt_".$assemblyId."_assembly_consensus_quality_score",
-									   class => "quality_score",
-									   length => $asmbl_length );
+my $consensus_quality_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $database."_".$assemblyId."_assembly_consensus_quality_score_".$count,
+									   class => "consensus_quality_value",
+									   length => $tmpstr_count );
+
+$consensus_quality_score_seq->addattr( 'class', "consensus_quality_value" );
 
 $bsmlDoc->createAndAddSeqData( $consensus_quality_score_seq, $tmpstr );
 
 # map it to the reference sequence
 
 my $numbering = $bsmlDoc->createAndAddNumbering( seq => $consensus_quality_score_seq,
-						 seqref => "bmt_".$assemblyId."_assembly",
-						 refnum => 0,
+						 seqref => $database."_".$assemblyId."_assembly",
+						 refnum => $offset,
 						 ascending => 1 );
 
 # add the sequence depth score sequence
 
 $tmpstr = '';
+$tmpstr_count = 0;
+$offset = 0;
+$count = 0;
+
 
 for( my $i=0; $i<$asmbl_length; $i++ )
 {
     $tmpstr .= ":$read_depth[$i]";
+    $tmpstr_count++;
+
+    if( ((($i+1) % $chunk_count) == 0))
+    {
+	my $read_depth_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $database."_".$assemblyId."_assembly_read_depth_".$count,
+										   class => "read_depth",
+										   length => $tmpstr_count );
+	    
+	$read_depth_score_seq->addattr( 'class', "read_depth" );
+
+	$bsmlDoc->createAndAddSeqData( $read_depth_score_seq, $tmpstr );
+	
+	my $numbering = $bsmlDoc->createAndAddNumbering( seq => $read_depth_score_seq,
+						 seqref => $database."_".$assemblyId."_assembly",
+						 refnum => $offset,
+						 ascending => 1 );
+
+	$offset += $chunk_count;
+	$count++;
+
+	$tmpstr = '';
+	$tmpstr_count = 0;
+    }
 }
 
-my $read_depth_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => "bmt_".$assemblyId."_assembly_read_depth",
-									   class => "depth_score",
-									   length => $asmbl_length );
+my $read_depth_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $database."_".$assemblyId."_assembly_read_depth_".$count,
+									   class => "read_depth",
+									   length => $tmpstr_count );
+
+$read_depth_score_seq->addattr( 'class', "read_depth" );
 
 $bsmlDoc->createAndAddSeqData( $read_depth_score_seq, $tmpstr );
 
 # map it to the reference sequence
 
 my $numbering = $bsmlDoc->createAndAddNumbering( seq => $read_depth_score_seq,
-						 seqref => "bmt_".$assemblyId."_assembly",
-						 refnum => 0,
+						 seqref => $database."_".$assemblyId."_assembly",
+						 refnum => $offset,
 						 ascending => 1 );
 
 # add the alternate base sequence
 
 $tmpstr = '';
+$tmpstr_count = 0;
+$offset = 0;
+$count = 0;
 
 for( my $i=0; $i<$asmbl_length; $i++ )
 {
-    $tmpstr .= ":$most_common_alternate_base[$i]";
+    $tmpstr .= "$most_common_alternate_base[$i]";
+    $tmpstr_count++;
+
+      if( ((($i+1) % $chunk_count) == 0))
+      {
+	my $alt_base_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $database."_".$assemblyId."_assembly_alt_base_".$count,
+										   class => "alternative_base",
+										   length => $tmpstr_count );
+	    
+	$alt_base_score_seq->addattr( 'class', "alternative_base" );
+
+
+	$bsmlDoc->createAndAddSeqData( $alt_base_score_seq, $tmpstr );
+	
+	my $numbering = $bsmlDoc->createAndAddNumbering( seq => $alt_base_score_seq,
+						 seqref => $database."_".$assemblyId."_assembly",
+						 refnum => $offset,
+						 ascending => 1 );
+
+	$offset += $chunk_count;
+	$count++;
+
+	$tmpstr = '';
+	$tmpstr_count = 0;
+    }
+
+
 }
 
-my $alt_base_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => "bmt_".$assemblyId."_assembly_alt_base",
-									   class => "alt_base",
-									   length => $asmbl_length );
+my $alt_base_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $database."_".$assemblyId."_assembly_alt_base_".$count,
+									   class => "alternative_base",
+									   length => $tmpstr_count );
+
+$alt_base_score_seq->addattr( 'class', "alternate_base" );
 
 $bsmlDoc->createAndAddSeqData( $alt_base_score_seq, $tmpstr );
 
 # map it to the reference sequence
 
 my $numbering = $bsmlDoc->createAndAddNumbering( seq => $alt_base_score_seq,
-						 seqref => "bmt_".$assemblyId."_assembly",
-						 refnum => 0,
+						 seqref => $database."_".$assemblyId."_assembly",
+						 refnum => $offset,
 						 ascending => 1 );
 
 $bsmlDoc->write( $outputFile ); 

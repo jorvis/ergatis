@@ -20,6 +20,10 @@ B<--log,-l> Log file
 
 =item *
 
+B<--class,-c> ref/comp sequence class type. Default is 'assembly'
+
+=item *
+
 B<--help,-h> This help message
 
 =back
@@ -45,6 +49,7 @@ my $results = GetOptions (\%options,
 			  'num_hits|n=s',
 			  'log|l=s',
 			  'debug=s',
+			  'class|c=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -58,6 +63,11 @@ if( $options{'help'} ){
 }
 
 $options{'num_hits'} = 1 if(!$options{'num_hits'});
+
+my $class;
+if (!defined($options{'class'})){
+    $logger->logdie("class was not defined");
+}
 
 &check_parameters(\%options);
 
@@ -107,12 +117,12 @@ foreach my $query_name (keys %$seq_pair){
 	foreach my $dbmatch_accession (keys %{$seq_pair->{$query_name}}){
 	    if($dbmatch_accession ne "GAP"){
 		if( !( $doc->returnBsmlSequenceByIDR($query_name) )){
-		    $doc->createAndAddSequence($query_name,$query_name,$aalookup->{$query_name}->{'length'}, 'aa' );
+		    $doc->createAndAddSequence($query_name,$query_name,$aalookup->{$query_name}->{'length'}, 'aa', $class );
 		    my $seq = $doc->returnBsmlSequenceByIDR($query_name);
 		    $seq->addBsmlAttr('ASSEMBLY',$aalookup->{$query_name}->{'asmbl'});
 		}
 		if( !( $doc->returnBsmlSequenceByIDR($dbmatch_accession) )){
-		    $doc->createAndAddSequence($dbmatch_accession,$dbmatch_accession,$aalookup->{$dbmatch_accession}->{'length'}, 'aa' );
+		    $doc->createAndAddSequence($dbmatch_accession,$dbmatch_accession,$aalookup->{$dbmatch_accession}->{'length'}, 'aa', $class );
 		    my $seq = $doc->returnBsmlSequenceByIDR($dbmatch_accession);
 		    $seq->addBsmlAttr('ASSEMBLY',$aalookup->{$dbmatch_accession}->{'asmbl'});
 		}

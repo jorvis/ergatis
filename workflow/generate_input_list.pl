@@ -60,8 +60,10 @@ $options{'extension'} = 'bsml' if($options{'extension'} eq "");
 
 my $keyname = '$;'.uc($options{'extension'}).'_FILE$;';
 
-my $iteratorconf = {$keyname=>[],
-		    '$;SUBFLOW_NAME$;'=>[]};
+my $iteratorconf = {
+    $keyname            => [],
+    '$;SUBFLOW_NAME$;'  => [],
+};
 
 if($options{'file'}){
     push( @{$iteratorconf->{$keyname}}, $options{'file'} );

@@ -22,12 +22,15 @@ use BSML::BsmlBuilder;
 use Log::Log4perl qw(get_logger :levels :easy);
 use Pod::Usage;
 
-my ($region,$output_file,$debug,$log,$help);
-my $results = GetOptions ('region|r=s'=> \$region,
+my ($region,$output_file,$debug,$log,$help,$class);
+my $results = GetOptions (
+			  'region|r=s' => \$region,
 			  'output|o=s' => \$output_file,
-			  'debug|D=s' => \$debug,
-			  'log|l=s' => \$log,
-			  'help|?|h' => \$help);
+			  'debug|D=s'  => \$debug,
+			  'log|l=s'    => \$log,
+			  'help|?|h'   => \$help,
+			  'class|c=s'  => \$class
+			  );
 
 pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if($help || !$region || !$output_file);
 
@@ -60,6 +63,13 @@ if($log){
 
 ###-------------------------------------------------------###
 
+
+if (!defined($class)){
+    $logger->logdie("class was not defined");
+}
+
+
+
 my $doc = BSML::BsmlBuilder->new();
 
 open (IN, $region) or die "unable to read $region due to $!";
@@ -67,10 +77,15 @@ while (my $line = <IN>) {
     if($line !~ /^\#/) {
 	chomp($line);
 	my @elements = split(/\s+/, $line);
-	my ($refseq,$compseq,$refstart,$compstart,$refend,$compend) = @elements;
+	my ($refseq,$compseq,$refstart,$compstart,$refend,$compend, $derived_class) = @elements;
+
+	if (!defined($derived_class)){
+	    $derived_class = $class;
+	}
+
 	$logger->debug("Parsing match line $refseq,$compseq,$refstart,$compstart,$refend,$compend");
 	if (scalar(@elements) == 6) {
-	    my $align = $doc->createAndAddSequencePairAlignment('refseq' => $refseq, 'compseq' => $compseq);
+	    my $align = $doc->createAndAddSequencePairAlignment('refseq' => $refseq, 'compseq' => $compseq, 'class' => $derived_class);
 	    my $complement= ($compstart > $compend) ? 1 : 0;
 	    if($complement){
 		($compstart,$compend) = ($compend,$compstart);

@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-      <name>blastp workflow</name>
+      <name>coverage workflow</name>
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
@@ -30,18 +30,18 @@
 <!--Preprocessing-->
         <command>
           <type>RunUnixCommand</type>
-          <name>Create searchable database fasta</name>
-          <configMapId>make_database_fasta</configMapId>
+          <name>copy the contig file to the temp directory</name>
+          <configMapId>copy_contig_to_temp</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>Index database fasta file</name>
-          <configMapId>index_fasta_file</configMapId>
+          <name>copy the qual file to the temp directory</name>
+          <configMapId>copy_qual_to_temp</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>Set fasta file permissions</name>
-          <configMapId>set_fasta_permissions</configMapId>
+          <name>copy the seq file to the temp directory</name>
+          <configMapId>copy_seq_to_temp</configMapId>
         </command>
 <!--Processing-->
 	<command>

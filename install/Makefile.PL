@@ -56,7 +56,9 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-workflow_install	: dirs shellwrappers promer nucmer blastp wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb backupdb snps legacy2chado
+
+workflow_install	: dirs shellwrappers promer nucmer blastp wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb backupdb snps coverage tiling legacy2chado
+
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-paralleliterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -210,6 +212,19 @@ backupdb  :
 	@install workflow/backupdb/backupdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/backupdb/backupdbconf.ini $(WORKFLOW_DOCS_DIR)  
 
+coverage  :
+	@echo "Installing coverage workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/coverage/coverage-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/coverage/coverage-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/coverage/coverageconf.ini $(WORKFLOW_DOCS_DIR) 
+	@install workflow/coverage/coverage.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/coverage/coverage_template.xml $(WORKFLOW_DOCS_DIR)  
+
+tiling  :
+	@echo "Installing tiling workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/tiling/tiling-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/tiling/tiling-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/tiling/tilingconf.ini $(WORKFLOW_DOCS_DIR) 
 
 END
 

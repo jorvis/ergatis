@@ -13,12 +13,52 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>create_component_scratch</name>
+          <name>Create component scratch</name>
           <configMapId>create_component_scratch</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>create_output_scratch</name>
+          <name>Create rel scratch</name>
+          <configMapId>create_rel_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create ec scratch</name>
+          <configMapId>create_ec_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create evidence scratch</name>
+          <configMapId>create_evidence_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create goprop scratch</name>
+          <configMapId>create_goprop_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create tigr scratch</name>
+          <configMapId>create_tigr_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create anno scratch</name>
+          <configMapId>create_anno_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create so scratch</name>
+          <configMapId>create_so_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create go scratch</name>
+          <configMapId>create_go_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output scratch</name>
           <configMapId>create_output_scratch</configMapId>
         </command>
 <!--Preprocess permissions-->
@@ -30,49 +70,133 @@
 <!--Preprocessing-->
        <command>    
             <type>RunUnixCommand</type>
-            <name>revoke_public</name>
+            <name>Revoke public</name>
             <configMapId>revoke_public</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>truncate_all</name>
+            <name>Truncate all tables</name>
             <configMapId>truncate_all</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>drop_indexes</name>
+            <name>Drop indexes constraints</name>
             <configMapId>drop_indexes</configMapId>
         </command>
 <!--Iterator steps-->
 <!--Processing steps-->
+<!-- TIGR_roles ontology -->
         <command>    
             <type>RunUnixCommand</type>
-            <name>load_stable_tables</name>
-            <configMapId>load_stable_tables</configMapId>
+            <name>Process Relation Typedef Ontology</name>
+            <configMapId>parse_rel_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>rebuild_indexes</name>
+            <name>Load Relation Typedef Ontology</name>
+            <configMapId>load_rel_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process TIGR_roles Ontology</name>
+            <configMapId>parse_tigr_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load TIGR_roles Ontology</name>
+            <configMapId>load_tigr_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Restore indexes constraints</name>
             <configMapId>rebuild_indexes</configMapId>
         </command>
+<!-- enzyme commission ontology -->
         <command>    
             <type>RunUnixCommand</type>
-            <name>parse_component_onto</name>
-            <configMapId>parse_component_onto</configMapId>
+            <name>Process EC</name>
+            <configMapId>parse_ec_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>load_component_onto</name>
-            <configMapId>load_component_onto</configMapId>
+            <name>Load EC</name>
+            <configMapId>load_ec_onto</configMapId>
+        </command>
+<!-- evidence_codes ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process evidence</name>
+            <configMapId>parse_evidence_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>parse_output_onto</name>
+            <name>Load SO</name>
+            <configMapId>load_evidence_onto</configMapId>
+        </command>
+<!-- go_properties ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process GO Properties</name>
+            <configMapId>parse_goprop_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load GO Properties</name>
+            <configMapId>load_goprop_onto</configMapId>
+        </command>
+<!-- sequence ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process SO</name>
+            <configMapId>parse_so_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load SO</name>
+            <configMapId>load_so_onto</configMapId>
+        </command>
+<!-- gene ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process GO</name>
+            <configMapId>parse_go_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load GO</name>
+            <configMapId>load_go_onto</configMapId>
+        </command>
+<!-- annotation_attributes ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process Annotation Ontology</name>
+            <configMapId>parse_anno_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load Annotation Ontology</name>
+            <configMapId>load_anno_onto</configMapId>
+        </command>
+<!-- component ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process Component Ontology</name>
+            <configMapId>parse_comp_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load Component Ontology</name>
+            <configMapId>load_comp_onto</configMapId>
+        </command>
+<!-- output ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process Output Ontology</name>
             <configMapId>parse_output_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>load_output_onto</name>
+            <name>Load Output Ontology</name>
             <configMapId>load_output_onto</configMapId>
         </command>
 <!--Postprocessing-->
@@ -80,7 +204,7 @@
 <!--Postprocess permissions-->
         <command>    
             <type>RunUnixCommand</type>
-            <name>grant_public</name>
+            <name>Grant public</name>
             <configMapId>grant_public</configMapId>
         </command>
         <command>        
@@ -92,6 +216,11 @@
           <type>RunUnixCommand</type>
           <name>Set permissions for scratch area</name>
           <configMapId>set_scratch_permissions</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Check logfiles</name>
+          <configMapId>check_logfiles</configMapId>
        </command>
      </commandSet>
 </commandSetRoot>

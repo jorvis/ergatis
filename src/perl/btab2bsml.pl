@@ -34,6 +34,10 @@ B<--max_hsp_count,-m> [REQUIRED] Maximum number of HSPs stored per alignment
     
 =item *
 
+B<--class,-c> The ref/comp sequence type.  Default is 'assembly'
+
+=item *
+
 B<--help,-h> This help message
 
 =back
@@ -84,6 +88,7 @@ my $results = GetOptions (\%options,
 			  'pvalue|p=s', 
 			  'log|l=s',
 			  'debug=s',
+			  'class|c=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -93,6 +98,11 @@ $logger = $logger->get_logger();
 
 if($options{'pvalue'} eq ""){
     $options{'pvalue'} = 10;
+}
+
+my $class;
+if (!defined($options{'class'})){
+    $logger->logdie("class was not defined");
 }
 
 # display documentation
@@ -170,7 +180,6 @@ sub parse_blast_btabs {
 			    $btab[$i] = undef;
 			}
 		    }
-
 		    my $align = &createAndAddBtabLine(
 						      doc                => $doc,
 						      query_name         => $btab[0],
@@ -192,7 +201,8 @@ sub parse_blast_btabs {
 						      unknown1           => $btab[16],
 						      unknown2           => $btab[17],
 						      e_value            => $btab[18],
-						      p_value            => $btab[19]
+						      p_value            => $btab[19],
+						      class              => $class
 						      );
 
 		    my $seq = $doc->returnBsmlSequenceByIDR($btab[5]);

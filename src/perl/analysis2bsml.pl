@@ -22,6 +22,14 @@ B<--log,-l> Log file
 
 B<--help,-h> This help message
 
+=item *
+
+B<--componenturl,-u> Stores component url in <Analysis>
+
+=item *
+
+B<--pipelineurl,-p> Store pipeline.xml url in <Analysis>
+
 =back
 
 =head1   DESCRIPTION
@@ -43,6 +51,8 @@ my $results = GetOptions (\%options,
 			  'conf|c=s',
 			  'log|l=s',
 			  'debug=s',
+			  'componenturl|u=s',
+			  'pipelineurl|p=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -77,6 +87,13 @@ foreach my $section (@sections){
 	    $analysis->addBsmlAttr( $param, $value );
 	}
     }
+}
+
+if (defined($options{'componenturl'})){
+    $analysis->addBsmlAttr( 'component_xml', $options{'componenturl'} );
+}
+if (defined($options{'pipelineurl'})){
+    $analysis->addBsmlAttr( 'pipeline_xml', $options{'pipelineurl'} );
 }
 
 $reader->write( $options{'bsml_file'} );
