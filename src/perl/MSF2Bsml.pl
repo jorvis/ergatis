@@ -75,8 +75,8 @@ my $builder = new BSML::BsmlBuilder;
 
 # add an analysis object to the document. 
 
-$builder->createAndAddAnalysis( 'source_name' => $output,
-				'program_version' => '1.0',
+$builder->createAndAddAnalysis( 'sourcename' => $output,
+				'programversion' => '1.0',
 				'program' => 'clustal',
 				'bsml_link_url' => 'BsmlTables',
 				'bsml_link_relation' => 'MULTIPLE_ALIGNMENTS' );
