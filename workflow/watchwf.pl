@@ -36,7 +36,9 @@ my $checks =  {
 while (1){
     sleep $sleep;
     
-    print "Monitoring $string (with process id $$)\n";
+    my $date = qx{date};
+    chomp $date;
+    print "$date Monitoring $string (with process id $$)\n";
     foreach my $key (sort keys %$checks){
 	my $grep = $checks->{$key};
 	
