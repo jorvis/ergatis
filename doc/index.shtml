@@ -27,28 +27,28 @@ RFC: Workflow document standards<br>
   <ul>
     <li><em>run_promer</em></li>
     <br>
- [srs]  [use_cases]
+    [srs] <a href='use_case_run_promer'>[use_cases]</a> 
     <li><em>run_nucmer</em></li>
     <br>
-  [srs]  [use_cases]
+    [srs] [use_cases] 
     <li><em>run_blastp</em></li>
     <br>
-  [srs]  [use_cases]
+    [srs] [use_cases] 
     <li><em>run_pe</em></li>
     <br>
-  [srs]  [use_cases]
+    [srs] [use_cases] 
     <li><em>run_cogs</em></li>
     <br>
-  [srs]  [use_cases]
+    [srs] [use_cases] 
     <li><em>run_ber</em></li>
     <br>
-  [srs]  [use_cases]
+    [srs] [use_cases] 
     <li><em>run_snps</em></li>
     <br>
-  [srs]  [use_cases]
+    [srs] [use_cases] 
     <li><em>run_custom_blastp</em></li>
     <br>
-  [srs]  [use_cases]
+    [srs] [use_cases] 
   </ul>
   <p>
 <b>Code</b><br>

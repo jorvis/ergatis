@@ -1,0 +1,83 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Untitled Document</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+</head>
+
+<body>
+<center>
+  <H1><EM><font size="-3">run_promer</font></EM></H1>
+  <p><font size="-3"><em><strong>Use case document</strong></em><BR>
+    <EM>Sam Angiuoli</EM><BR>
+    <EM>TIGR</EM><BR>
+    <EM>10/1/2003</EM><BR>
+    <EM>v1.1</EM> </font></p>
+  <p>&nbsp; </p>
+</center>
+<table width="75%" border="1">
+  <tr> 
+    <td width="18%"><font size="-3"><strong>Use case</strong></font></td>
+    <td width="82%"><font size="-3">run_promer</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Description</strong></font></td>
+    <td><font size="-3">Generate promer data for a comparative database</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Actors</strong></font></td>
+    <td><font size="-3">user,developer</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Assumptions/Pre-conditions</strong></font></td>
+    <td><font size="-3">The BSML_repository and FASTA_repository for the project 
+      must be generated via <strong>generate_repository</strong>. The repository 
+      must be in a &quot;valid&quot; state as reported by <strong>repository_status.</strong></font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Post-condition</strong></font></td>
+    <td><font size="-3">BSML encodings of the promer results are stored in the 
+      BSML_repository</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Steps</strong></font></td>
+    <td><p><font size="-3">Interactions between actors and system that are necessary 
+        to achieve goal</font></p>
+      <ol>
+        <li><font size="-3">Check repository status via <strong>repository_status</strong></font></li>
+        <li><font size="-3">Execute <strong>run_promer -d [project_name]</strong></font></li>
+        <li><font size="-3">Execute workflow monitor on instance filename reported 
+          by <em>Step 2. </em></font></li>
+        <li><font size="-3">REPEAT </font> 
+          <ol>
+            <li><font size="-3">Monitor workflow status<br>
+              UNTIL workflow completed</font></li>
+          </ol>
+        </li>
+        <li><font size="-3"> Execute <strong>repository_status</strong></font></li>
+      </ol></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Example invocations</strong></font></td>
+    <td><font size="-3">/usr/local/devel/ANNOTATION/shared/bin/run_promer -d tryp</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Variations (optional)</strong></font></td>
+    <td><font size="-3">Any variations in the steps of a use case</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Non-Functional (optional)</strong></font></td>
+    <td><font size="-3">The project repository must have sufficient space available 
+      to store results.<BR>
+      The user must have permission to write to the project area.</font></td>
+  </tr>
+  <tr> 
+    <td><font size="-3"><strong>Issues</strong></font></td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+<h1>&nbsp;</h1>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+</body>
+</html>
