@@ -247,7 +247,12 @@ sub get_label {
 	    $imaget = &get_commandset_image($state);
 	    
 	}
-	$image = "$imaget<BR>$imaget";
+	if($type =~ /serial/){
+	    $image = "$imaget<BR>$imaget";
+	}
+	elsif($type =~ /parallel/){
+	    $image = "<b>P</b>$imaget<BR><b>P</b>$imaget";
+	}
     }
     elsif($elt eq "command"){
 	$label = "$name<a href='show_command.cgi?xmltemplate=$xmlfile&node=$nodeid'>[info]</a>";
