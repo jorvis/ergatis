@@ -271,15 +271,23 @@ sub sequenceHandler
       }
     }
 
- 
-
   # if the sequence is an assembly sequence. Replicate the sequence attributes in the subAssembly. 
 }
 
 sub genomeHandler
 {
   # replicate the genome object in the subAssembly. 
+    my $genome = shift;
+    my $rhash = $Reader->readGenome( $genome );
 
+    my $organism = $bsmlDoc->createAndAddOrganism( genome => $bsmlDoc->createAndAddGenome(),
+						   species => $rhash->{'species'},
+						   genus => $rhash->{'genus'} );
 
+    my $strain = $bsmlDoc->createAndAddStrain( organism => $organism,
+					       name => $rhash->{'strain'},
+					       database => $rhash->{'database'},
+					       source_database => $rhash->{'source_database'} );
+						   
 }
 
