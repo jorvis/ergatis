@@ -66,10 +66,11 @@ my $pairsCount = 0;
 #
  
 my %options = ();
-my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'bsmlJaccardDir|j=s', 'jaccardFilter|f=s', 'outFile|o=s', 'help|h', 'man' ) || pod2usage();
+my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'bsmlJaccardDir|j=s', 'jaccardFilter|f=s', 'outFile|o=s', 'pvalcut|p=s', 'help|h', 'man' ) || pod2usage();
 
 my $bsmlSearchDir = $options{'bsmlSearchDir'};
 my $bsmlModelDir = $options{'bsmlModelDir'};my $outFile = $options{'outFile'};
+my $PVALCUTOFF = $options{'pvalcut'};
 
 # associative array to translate cds identifiers to protein ids.
 my $cds2Prot = {};
@@ -83,6 +84,11 @@ my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureH
 if( exists($options{'help'}) || exists($options{'man'}) )
 {
     pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+}
+
+if( !$PVALCUTOFF )
+{
+    die "ERROR: No pvalue cutoff has been specified";
 }
 
 # If Jaccard data has been specified, use it for equivalence class filtering
@@ -248,8 +254,9 @@ sub alignmentHandler
     foreach my $seqPairRun ( @{$aln->returnBsmlSeqPairRunListR} )
     {
 	my $runscore = $seqPairRun->returnattr( 'runscore' );
+	my $pvalue = $seqPairRun->returnBsmlAttr( 'p_value' );
 
-	if( $runscore > $bestRunScore )
+	if( ($runscore > $bestRunScore) && ($pvalue < $PVALCUTOFF) )
 	{
 	    $bestRunScore = $runscore;
 	    $bestSeqPairRun = $seqPairRun;
