@@ -27,6 +27,12 @@ my $outFile = $options{'outFile'};
 
 my $cds2Prot = {};
 
+# determine if CDS to PROTEIN identifier translation needs to be performed. This
+# feels like a hack. All_vs_all have CDS refseq identifiers. 
+
+my $CDS2PROT_TRANS = 0;
+$CDS2PROT_TRANS = 1 if( $bsmlSearchDir =~ /all_vs_all/ );
+
 # Usage of two parsers is less efficient, but insures that the sequence objects are 
 # parsed before the alignments.
 
@@ -97,7 +103,8 @@ sub alignmentHandler
     my $aln = shift;
     my $refseq = $aln->returnattr( 'refseq' );
     my $compseq = $aln->returnattr( 'compseq' );
-    $refseq = $cds2Prot->{$refseq};
+
+    $refseq = $cds2Prot->{$refseq} if( $CDS2PROT_TRANS );
     
     my $bestRunScore = 0;
     my $bestSeqPairRun = undef;
