@@ -233,7 +233,7 @@ sub produce_cluster_output {
 	    my $size = scalar(@$cluster);
 	    my $clustername = "jaccard_$clustercount";
 
-	    print OUTFILE "COG = $clustername, size $size, connections  = -1, perfect = -1;";
+	    print OUTFILE "COG = $clustername, size $size, connections  = -1, perfect = -1;\n";
 	    
 	    foreach my $member (@$cluster){
 		print OUTFILE "\t$member\n";
