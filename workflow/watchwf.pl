@@ -27,9 +27,9 @@ print STDERR "Remember to kill this job when you're done (process id $$)\n";
 my $checks =  {
 	       states   => "grep state $string | wc -l",
 	       complete => "grep state $string | grep \">complete\" | wc -l",
-	       running  => "grep state $string | grep running | wc -l",
-	       failed   => "grep state $string | grep failed | wc -l",
-	       pending  => "grep state $string | grep pending | wc -l",
+	       running  => "grep state $string | grep \">running\" | wc -l",
+	       failed   => "grep state $string | grep \">failed\" | wc -l",
+	       pending  => "grep state $string | grep \">pending\" | wc -l",
 	       incomplete =>  "grep state $string | grep \">incomplete\" | wc -l"
 	   }; 
 
