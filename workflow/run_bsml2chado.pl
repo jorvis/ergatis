@@ -93,8 +93,8 @@ use File::Basename;
 use Pod::Usage;
 
 
-my $WorkflowConfigFileDir = $ENV{'WORKFLOW_DOCS_DIR'};
-my $WorkflowExecDir       = $ENV{'WORKFLOW_WRAPPERS_DIR'};
+my $WorkflowConfigFileDir = $ENV{'WORKFLOW_DOCS_DIR'} || ".";
+my $WorkflowExecDir       = $ENV{'WORKFLOW_WRAPPERS_DIR'} || ".";
 
 #
 # The default bsml2chado configuration
