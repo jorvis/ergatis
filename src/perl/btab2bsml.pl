@@ -93,6 +93,8 @@ sub parse_blast_btabs {
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$query_asmbl_id);
         }
     }
+    $doc->createAndAddAnalysis("program" => "blastp 2.0mp-washu", "programversion" => '2.0', 'sourcename' =>$output,
+                               "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
 
 }
     
@@ -133,6 +135,8 @@ sub parse_allvsall_btabs {
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$query_asmbl_id");
 	}
     }
+    $doc->createAndAddAnalysis("program" => "allvsall", "programversion" => '1.0', 'sourcename' =>$output,
+                               "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
 }
 
 

@@ -94,8 +94,11 @@ sub read_pe_output {
 		$hitnum++;
 	    }
 	}
+    
     }
 
+    $doc->createAndAddAnalysis("program" => "peffect", "programversion" => '1.0', 'sourcename' =>$output,
+                               "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
     print STDERR "Writing output\n";
     
     $doc->write($output);

@@ -90,9 +90,9 @@ sub parse_promer_coords {
 	$s->addBsmlAttr( 'refframe', $frame_ref );
 	$s->addBsmlAttr( 'compframe', $frame_qry );
 
-
-
     }
+    $doc->createAndAddAnalysis("program" => "PROmer", "programversion" => '3.0', 'sourcename' =>$output,
+                               "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
 
 }
 
@@ -135,14 +135,17 @@ sub parse_nucmer_coords {
                                                    'percent_identity' => $percent_id,
 						  );
     }
+    $doc->createAndAddAnalysis("program" => "NUCmer", "programversion" => '3.0', 'sourcename' =>$output,
+                               "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
+
+
 }
 
 sub print_usage {
 
 
-    print STDERR "SAMPLE USAGE:  mummer2bsml.pl -m mummer_coords -b bsml_repository -t 1 -o output_file\n";
+    print STDERR "SAMPLE USAGE:  mummer2bsml.pl -m mummer_coords -t 1 -o output_file\n";
     print STDERR "  --mummer_coords     = mummer output file\n";
-    print STDERR "  --bsml_dir(-b)      = BSML repository directory\n";
     print STDERR "  --output            = bsml output file\n";
     print STDERR "  --mummer_type(-t)   = type of mummer output (1=nucmer, 2=promer)\n";
     print STDERR "  --help = This help message.\n";
