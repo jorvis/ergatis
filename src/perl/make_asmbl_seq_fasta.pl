@@ -187,7 +187,7 @@ sub determine_all_asmbl_id {
     
     #check asmbl_id passed via command line option
     if(defined($asmbl_ids)) {
-	if($asmbl_ids =~ /^all$/) {
+	if($asmbl_ids =~ /^all$/i) {
 	    @id_list = get_all_asmbl_id_via_all($bsml_dir);
 	} else{
 	    @id_list = split(/,/, $asmbl_ids);
