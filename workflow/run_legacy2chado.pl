@@ -533,8 +533,8 @@ foreach my $org_ref (sort keys %$organism_hash){
     $conf->{';LOCALIZATION_LOGFILE;'} = $workflow_instance_dir ."/". $conf->{';DATABASE_LC;'} ."/". $conf->{';DATABASE_LC;'} .".protein.local.opt.log";
     $conf->{';CONFIRM_LOAD_LOGFILE;'} = $workflow_instance_dir ."/". $conf->{';DATABASE_LC;'} ."/". $conf->{';DATABASE_LC;'} .".confirm.load.log";
     $conf->{';CONFIRM_LOAD_OUTDIR;'}  = $workflow_instance_dir ."/". $conf->{';DATABASE_LC;'};
-
-
+    $conf->{';VALIDATIONPATH;'}       = $WorkflowExecDir;
+ 
     #
     # Store the configuration for this specific organism/database
     # and set global permissions
