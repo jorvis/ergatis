@@ -437,7 +437,9 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     $conf->{';LOG_DIRECTORY;'}         = $workflow_instance_dir ."/". $bsml_basename;
 
     $conf->{';WORKFLOW_INSTANCE_DIR;'} = $workflow_instance_dir . "/" . $bsml_basename;
-   
+    $conf->{';VALIDATIONPATH;'} = $WorkflowExecDir;
+
+
     #
     # Store the configuration for this specific bsml
     # and set global permissions
