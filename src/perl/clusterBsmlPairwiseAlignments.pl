@@ -71,6 +71,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use BSML::BsmlParserSerialSearch;
 use Workflow::Logger;
+use Data::Dumper;
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -135,9 +136,11 @@ sub retrieve_asmbls{
     my $valid_asmbls = {};
 
     foreach my $bsmldoc (@$bsmldoclist){
+
+
 	$logger->logdie("bsmldoc was not defined") if (!defined($bsmldoc));
 
-	$logger->info("Processing bsml document: $bsmldoc");
+	$logger->debug("Processing bsml document: $bsmldoc") if $logger->is_debug;
 
 	#----------------------------------------------------------
 	# New serial parsing manner in which analysis component
@@ -153,6 +156,9 @@ sub retrieve_asmbls{
 
 							       my $assembly_id = $sequence_ref->{'BsmlAttr'}->{'ASSEMBLY'} if ((exists $sequence_ref->{'BsmlAttr'}->{'ASSEMBLY'}) and (defined($sequence_ref->{'BsmlAttr'}->{'ASSEMBLY'})));
 							       my $protein_id = $sequence_ref->{'attr'}->{'id'} if ((exists $sequence_ref->{'attr'}->{'id'}) and (defined($sequence_ref->{'attr'}->{'id'})));
+							       $logger->debug(Dumper $sequence_ref->{'BsmlAttr'}) if $logger->is_debug;
+
+
 							       $logger->logdie("assembly_id was not defined") if (!defined($assembly_id));
 							       $logger->logdie("protein_id was not defined") if (!defined($protein_id));
 
