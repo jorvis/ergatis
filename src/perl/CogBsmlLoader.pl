@@ -177,6 +177,12 @@ foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlSearchList'})}){
     {
 	foreach my $k2 (keys( %{$COGInput->{$k1}}))
 	{
+	    my $member = $COGInput->{$k1}->{$k2}->[0];
+	    print STDERR "Checking $member for jaccard\n";
+	    if(exists $jaccardClusterHash->{$member}){
+		print STDERR "FOUND ",scalar(@{$jaccardRepSeqHash->{$jaccardClusterHash->{$member}}})," members\n";
+		$COGInput->{$k1}->{$k2}->[21] = join(',',@{$jaccardRepSeqHash->{$jaccardClusterHash->{$member}}});
+	    }
 	    print OUTFILE join("\t", @{$COGInput->{$k1}->{$k2}});
 	    print OUTFILE "\n";
 	}
@@ -210,7 +216,11 @@ sub multipleAlignmentHandler
  
 	    if( $seqCount == 0 )
 	    {
-		$jaccardRepSeqHash->{$jaccardClusterCount} = $name;
+		$jaccardRepSeqHash->{$jaccardClusterCount} = [];
+		push @{$jaccardRepSeqHash->{$jaccardClusterCount}},$name;
+	    }
+	    else{
+		push @{$jaccardRepSeqHash->{$jaccardClusterCount}},$name;
 	    }
 	    $seqCount++;
 	}
@@ -265,13 +275,17 @@ sub alignmentHandler
 
 	if( ($runscore > $bestRunScore) && ($pvalue < $options{'pvalcut'}) )
 	{
+	    $logger->debug("Using run with runscore $runscore $pvalue. Previous bestrunscore $bestRunScore. pvalue cutoff $options{'pvalcut'}");
 	    $bestRunScore = $runscore;
 	    $bestSeqPairRun = $seqPairRun;
 	}
     }
 
     # 
-    return if( !($bestSeqPairRun) );
+    if( !($bestSeqPairRun) ){
+	$logger->warn("Best run not defined");
+	return;
+    }
 
     my $runscore = $bestSeqPairRun->returnattr( 'runscore' );
     
@@ -280,12 +294,14 @@ sub alignmentHandler
 
     if( defined( my $jId = $jaccardClusterHash->{$compseq} ) )
     {
-	$compseq = $jaccardRepSeqHash->{$jId};
+	$logger->debug("Found jaccard cluster $jId for id $compseq. Using $jaccardRepSeqHash->{$jId}->[0] as cluster representative");
+	$compseq = $jaccardRepSeqHash->{$jId}->[0];
     }
 
     if( defined( my $jId = $jaccardClusterHash->{$refseq} ) )
     {
-	$refseq = $jaccardRepSeqHash->{$jId};
+	$logger->debug("Found jaccard cluster $jId for id $refseq. Using $jaccardRepSeqHash->{$jId}->[0] as cluster representative");
+	$refseq = $jaccardRepSeqHash->{$jId}->[0];
     }
     
     my $lref = [];
@@ -317,11 +333,13 @@ sub alignmentHandler
     {
 	if(  $COGInput->{$refseq}->{$compGenome}->[12] < $bestRunScore )
 	{
+	    $logger->debug("$refseq match to $compGenome with score $bestRunScore is highest scoring match.  Previous high score is $COGInput->{$refseq}->{$compGenome}->[12]");
 	    $COGInput->{$refseq}->{$compGenome} = $lref;
 	}
     }
     else
     {
+	$logger->debug("$refseq match to $compGenome is first match found.");
 	$COGInput->{$refseq}->{$compGenome} = $lref;
     }
 }
@@ -355,6 +373,9 @@ sub featureHandler
 	    {
 		$protId = $link->{'href'};
 		$protId =~ s/#//;
+
+		$logger->debug("Adding protein $protId to protein lookup with genome $genome");
+		$logger->debug("Adding CDS $cdsId $protId to cds lookup with protiein $protId");
 
 		$cds2Prot->{$cdsId} = $protId;
 		$geneGenomeMap->{$protId} = $genome;

@@ -38,8 +38,11 @@ $quorum = ($opt_n < 2) ? 2 : $opt_n;
 
 $DEBUG && print ("DEBUG is ON, cog minimum is $quorum, cutoff is $cutoff\n");
 
+my %jaccard;
+
 # first load all the hits data
 while ($btab = <STDIN>) {
+    chomp $btab;
     @data = split (/\t/,$btab);
     if ($data[20] > $cutoff)  {next;}    # discard if a weak hit by E-value.        
     if ($data[20] < 0)        {next;}    # a little quality control
@@ -62,13 +65,15 @@ while ($btab = <STDIN>) {
         $all_best_hits{$munge}->{'from_Cterm'} = $data[7];  # 
         $all_best_hits{$munge}->{'to_Nterm'} = $data[8];    #
         $all_best_hits{$munge}->{'to_Cterm'} = $data[9];    #
+        $jaccard{$from_tag} = $data[21] if($data[21] ne "");  
     }  else {
         $munge = $to_tag."..".$from_tag;
         $all_best_hits{$munge}->{'from_Nterm'} = $data[8];  # gets overwritten if bidirectional.
         $all_best_hits{$munge}->{'from_Cterm'} = $data[9];  # 
         $all_best_hits{$munge}->{'to_Nterm'} = $data[6];    #
         $all_best_hits{$munge}->{'to_Cterm'} = $data[7];    #
-        $all_best_hits{$munge}->{'to_score'} = $data[20]; 
+	$all_best_hits{$munge}->{'to_score'} = $data[20];
+        $jaccard{$from_tag} = $data[21] if($data[21] ne ""); 
     }
     # bidirectional best hit if non-zero 'to_score' and 'from_score'
 }
@@ -118,7 +123,15 @@ foreach $key (keys %cogs)      {
     print("COG = $key, size $n, connections = $cogs{$key}->{'connectivity'}, perfect = $perfect;\n");
     *return_array = $cogs{$key}->{'listPtr'};
     foreach $term (sort @return_array)    {
-        print "\t$term\n";
+	if(exists $jaccard{$term}){
+	    my @jmembers = split(/\,/,$jaccard{$term});
+	    foreach my $member (@jmembers){
+		print "\t$member\n";
+	    }
+	}
+	else{
+	    print "\t$term\n";
+	}
     }
 
     # HERE, COULD TEST CLOSURE UNDER TRANSITIVITY
