@@ -105,8 +105,8 @@ my $conf = {
     ';PASSWORD;'                     => '',               
     ';TARGET_DATABASE;'              => '',               
     ';TARGET_SERVER;'                => 'SYBTIGR',
-    ';ALGORITHM;'                    => '',
-    ';ANALYSIS_ID;'                  => '',
+    ';ALGORITHM;'                    => 'NONE',
+    ';ANALYSIS_ID;'                  => 'NONE',
 };
 
 
