@@ -56,7 +56,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-workflow_install	: dirs shellwrappers promer nucmer blastp ber pe cogs snps legacy2chado chado2bsml bsml2chado jaccard
+workflow_install	: dirs shellwrappers promer nucmer blastp ber pe cogs snps legacy2chado chado2bsml bsml2chado jaccard bsmlscaffold2chado
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -123,23 +123,31 @@ legacy2chado  :
 	@install workflow/legacy2chado_template.xml $(WORKFLOW_DOCS_DIR)  
 
 chado2bsml  :
-	@echo "Installing chado2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
+	@echo "Installing chado2bsml workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/chado2bsml.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/chado2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
 
 bsml2chado  :
-	@echo "Installing bmsl2chado workflows in $(WORKFLOW_DOCS_DIR)"
+	@echo "Installing bsml2chado workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/bsml2chado.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/bsml2chado_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/bsml2chado-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/bsml2chado-master_template.xml $(WORKFLOW_DOCS_DIR)  
 
 jaccard  :
-	@echo "Installing bmsl2chado workflows in $(WORKFLOW_DOCS_DIR)"
+	@echo "Installing bsml2chado workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/jaccard_cluster.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/jaccard_cluster_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/jaccard_cluster-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/jaccard_cluster-master_template.xml $(WORKFLOW_DOCS_DIR)  
+
+bsmlscaffold2chado:
+	@echo "Installing bsmlscaffold2chado workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/bsmlscaffold2chado.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/bsmlscaffold2chado_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/bsmlscaffold2chado-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/bsmlscaffold2chado-master_template.xml $(WORKFLOW_DOCS_DIR)  
+
 
 
 END
