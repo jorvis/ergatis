@@ -49,6 +49,9 @@ my $results = GetOptions (\%options,
 			  'debug=s',
 			  'help|h') || pod2usage();
 
+## friendly permissions
+umask(0000);
+
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
