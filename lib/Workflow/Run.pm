@@ -173,8 +173,4 @@ sub _replacedistrib{
     return $outputfile;
 }
 
-sub handler{
-    my($signal,$pid);
-
-}
 1;
