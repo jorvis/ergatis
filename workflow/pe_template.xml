@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="distributed-serial">
-        <name>ber_compute</name>
+        <name>pe_compute</name>
         <configMapId>1</configMapId>
         <command>
             <name>RunDistributedCommand</name>

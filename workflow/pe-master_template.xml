@@ -40,7 +40,7 @@
         <commandSet type="parallel">
           <name>Run Position Effect Analysis Workflow</name>
             <configMapId>1</configMapId>
-              <commandSet type="serial">
+              <commandSet type="distributed-serial">
                 <name>Iterative Workflow</name>
                 <configMapId>1.1</configMapId>
                 <config>
