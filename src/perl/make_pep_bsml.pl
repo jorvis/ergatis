@@ -8,7 +8,7 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s',
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s', 'project|p=s',
                                      'output_dir|o=s', 'DEBUG', 'help|h', 'each_file|e', 'each_genome|g' );
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -28,7 +28,7 @@ if($each_file and $each_genome) {
     exit 1;
 }
 
-if(!$each_file and !$each_genome and $project) {
+if(!$each_file and !$each_genome and !$project) {
     print STDERR "Must specify project name without --each_genome(-g) and --each_file(-e).\n";
     exit 1;
 }
