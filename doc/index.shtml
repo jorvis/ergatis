@@ -1,0 +1,71 @@
+<html>
+<head>
+<title>TIGR Intranet -- Bioinformatics</title>
+
+
+<!--#include virtual="/include/header_ifx.inc"-->
+
+<div align="center">
+<p class="title">Papyrus</p>
+</div>
+	<div class="maintext">
+
+<!-- BEGIN MAIN BODY -->	
+
+<hr>
+
+<br>
+<br>
+<b>Description</b><br>
+  Papyrus is a package of data management scripts and associated workflows 
+  <p>
+<b>Documentation</b><br>
+RFC: Perl CLI coding standards<br>
+RFC: Workflow document standards<br>
+
+  <p> <b>Software Products</b><br>
+  <ul>
+    <li><em>run_promer</em></li>
+    <br>
+ [srs]  [use_cases]
+    <li><em>run_nucmer</em></li>
+    <br>
+  [srs]  [use_cases]
+    <li><em>run_blastp</em></li>
+    <br>
+  [srs]  [use_cases]
+    <li><em>run_pe</em></li>
+    <br>
+  [srs]  [use_cases]
+    <li><em>run_cogs</em></li>
+    <br>
+  [srs]  [use_cases]
+    <li><em>run_ber</em></li>
+    <br>
+  [srs]  [use_cases]
+    <li><em>run_snps</em></li>
+    <br>
+  [srs]  [use_cases]
+    <li><em>run_custom_blastp</em></li>
+    <br>
+  [srs]  [use_cases]
+  </ul>
+  <p>
+<b>Code</b><br>
+Perl scripts <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/papyrus/src'>[CVS]</a><br>
+Workflows <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/papyrus/workflow'>[CVS]</a>
+<p>
+
+<b>Last modified:</b><!--#config timefmt="%Y-%m-%d" --> <!--#echo var="LAST_MODIFIED" -->
+</table>	
+
+<!-- END MAIN BODY -->
+
+	
+	</div>
+	</td>
+  </tr>
+</table>
+
+</body>
+</html>
