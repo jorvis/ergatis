@@ -6,7 +6,7 @@ make_gene_pep_fasta.pl  - Generates protein sequences in FASTA format from BSML 
 
 =head1 SYNOPSIS
 
-USAGE:  make_gene_pep_fasta_bsml.pl -b bsml_dir -o output_dir -a bsp_3839_assembly -name PNEUMO
+USAGE:  make_gene_pep_fasta.pl -b bsml_dir -o output_dir -a bsp_3839_assembly -name PNEUMO
 
 =head1 OPTIONS
 
@@ -35,6 +35,7 @@ B<--mode, -m>  mode types: 1 (default mode)  = total_fasta; 2 = fasta/genome; 3 
 =item *
 
 B<--name,-n> name of the peptide fasta file. Required in mode 1 ONLY
+
 =item *
 
 B<--allvsall_header> enable alt fasta header for pallvsall search mode 1 ONLY (i.e ">asmbl_id:protein_id")
