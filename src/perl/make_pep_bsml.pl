@@ -1,5 +1,84 @@
 #!/usr/local/bin/perl
 
+=head1  NAME 
+
+make_pep_bsml.pl  - Generates protein sequences in FASTA format
+
+=head1 SYNOPSIS
+
+USAGE:  make_pep_bsml.pl -b bsml_dir -o output_dir -a bsp_3839_assembly -g
+
+=head1 OPTIONS
+
+=over 4
+
+=item *
+
+B<--bsml_dir,-b>   [REQUIRED] Dir containing BSML documents (repository)
+
+=item *
+
+B<--output_dir,-o> [REQUIRED] dir to save output to
+
+=item *
+
+B<--asmbl_ids,-a> Build sequences from this asmbl_id.  Multiple values can be comma separated
+
+=item *
+
+B<--asmbl_file>  name of the file containing a list of asmbl_ids
+
+=item * 
+
+B<--project,-p> name of the TOTAL peptide fasta file. Required if -g -e options ARE NOT invoked
+
+=item *
+
+B<--each_genome,-g> save fasta file one asmbl_id per fasta file
+
+=item *
+
+B<--each_file,-e> save fasta file one sequence per fasta file
+
+=item *
+
+B<--log,-l> Log file
+
+=item *
+
+B<--debug,--D>  Debug level
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+make_pep_bsml.pl is designed to generate multi-fasta files of protein sequences
+for each gene given a list of assembly IDs.  The data is obtained through existing
+BSML files in some central repository.  There are three modes:  -g outputs all the
+sequences for 1 assembly into a fasta file and stores that file in the arguments
+of --output_dir.  -e outputs each sequence into a fasta 
+file and all the fasta files into the a dir called with the asmbl_id name which sits
+in the --output_dir argument. Without -e or -g, a -p flag must be used to specify the
+name of the pep file.  This file will be stored in the argument of --output_dir.  The
+last mode is ideal for generating sequences from multiple assembly ids and outputting
+them into 1 file (e.g. PNEUMOl.pep)
+
+IMPORTANT:
+
+You must specify EITHER --asmbl_ids OR --asmbl_file flag. Not BOTH.
+You must specify --project if -g and -e ARE NOT invoked
+
+NOTE:  
+
+Calling the script name with NO flags/options or --help will display the syntax requirement.
+
+
+=cut
+
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -7,10 +86,12 @@ use Log::Log4perl qw(get_logger :levels :easy);
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
 use File::Basename;
+use Pod::Usage;
+
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s', 'project|p=s', 'verbose|v',
-                                     'output_dir|o=s', 'DEBUG', 'help|h', 'each_file|e', 'each_genome|g', 'asmbl_file=s' );
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s', 'project|p=s', 'verbose|v', 'log|l=s', 'debug|D=s',
+                                     'output_dir|o=s', 'help|h', 'each_file|e', 'each_genome|g', 'asmbl_file=s' ) || pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
@@ -24,33 +105,57 @@ my $output_dir      = $options{'output_dir'};
 $output_dir =~ s/\/+$//;       #remove terminating '/'s
 my $BSML_dir        = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;         #remove terminating '/'s
+my $debug           = $options{'debug'};
+my $log             = $options{'log'};
 
 my $asmbl_file      = $options{'asmbl_file'};
 
-if(!$output_dir or !$BSML_dir or exists($options{'help'})) {
-    &print_usage();
+if( exists($options{'help'})) {
+    pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+}
+
+if(!$output_dir or !$BSML_dir) {
+    pod2usage({-exitval => 1,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});
 }
 if(!$asmbl_file and ! $ASMBL_IDS) {
-    print STDERR "Either --asmbl_ids  OR --asmbl_file option is needed\n";
-    &print_usage();
+    pod2usage(-verbose => 1, -message => "$0: Must specify either --asmbl_ids OR --asmbl_file.", -output => \*STDERR);
 }
 
 if($asmbl_file and $ASMBL_IDS) {
-    print STDERR " Specify either --asmbl_ids OR --asmbl_file\n"; 
-    &print_usage();
+    pod2usage(-verbose => 1, -message => "$0: Must specify either --asmbl_ids OR --asmbl_file. NOT BOTH.", -output => \*STDERR);
+    
 }
 
-
 if($each_file and $each_genome) {
-    print STDERR "--each_genome(-g) and --each_file(-e) CANNOT be invoked at the same time.\n";
-    exit 1;
+    pod2usage(-verbose => 1, -message => "$0: --each_genome(-g) and --each_file(-e) CANNOT be invoked at the same time", -output => \*STDERR) ;
 }
 
 if(!$each_file and !$each_genome and !$project) {
-    print STDERR "Must specify project name without --each_genome(-g) and --each_file(-e).\n";
-    exit 1;
+    pod2usage(-verbose => 1, -message => "$0: Must specify project name without --each_genome(-g) and --each_file(-e)",  -output => \*STDERR) ;
 }
 
+
+Log::Log4perl-> Log::Log4perl::init_and_watch($ENV{LOG4PERL_CONF}) if($ENV{LOG4PERL_CONF});
+my $logger = get_logger('papyrus::pe');
+$logger->level($INFO);
+$logger->more_logging($debug) if($debug);
+
+# Define a file appender or a screen appender
+if($log){
+    my $file_appender = Log::Log4perl::Appender->new(
+						     "Log::Dispatch::File",
+						     mode => "append",
+						     filename  => $log);
+    
+    my $layout = Log::Log4perl::Layout::PatternLayout->new("%d %p> %F{1}:%L %M - %m%n");
+    $file_appender->layout($layout);
+    $logger->add_appender($file_appender);
+}else{
+    my $screen_appender = Log::Log4perl::Appender->new(
+						       "Log::Dispatch::Screen");	
+    
+    $logger->add_appender($screen_appender);
+}
 
 ###-------------------------------------------------------###
 my $min_dir = dirname($output_dir);
@@ -66,12 +171,13 @@ chmod 0777, $output_dir;
 
 my @asm_ids;
 if($asmbl_file) {   #asmbl_id will be read from a flat file
+    $logger->debug("Getting asmbl_ids from $asmbl_file");
     @asm_ids = read_asmbl_file($asmbl_file);
     if(!@asm_ids) {
-	print STDERR "No asmbl_ids found in $asmbl_file.  Aborting...\n";
-	exit 4;
+	$logger->logdie("No asmbl_ids found in $asmbl_file.  Aborting");
     }
 } else {   #asmbl_id will be read from --asmbl_ids flag
+    $logger->debug("Getting asmbl_ids from -a flag");
     if($ASMBL_IDS =~ /all/i) {
 	my @files = <$BSML_dir/*.bsml>;
 	foreach (@files) {
@@ -85,7 +191,7 @@ if($asmbl_file) {   #asmbl_id will be read from a flat file
     }
 
 }
-
+$logger->debug("asmbl_id(s) to do: @asm_ids");
 
 my $parser = new BSML::BsmlParserTwig;
 
@@ -96,7 +202,7 @@ if($each_genome) {
     make_fasta_for_each_gene(\@asm_ids);
     print "Finished making fasta pep file for each gene\n" if($verbose);
 }else {
-    make_PNEUMO_pep_for_ALL_genomes(\@asm_ids);
+    make_pep_for_ALL_genomes(\@asm_ids);
     print "Finished making fasta pep file for all assemblies\n" if($verbose);
 }
 
@@ -105,6 +211,8 @@ if($each_genome) {
 sub make_fasta_for_each_gene  {
 
     my $assembly_ids = shift;
+
+    $logger->debug("generating fasta files: 1 sequence per file");
 
     foreach my $asmbl_id (@$assembly_ids) {
 	next if($asmbl_id !~ /\d+/);
@@ -132,8 +240,7 @@ sub make_fasta_for_each_gene  {
 		chmod 0777, $pep_file;
 	    }
 	} else {
-	    print STDERR "The $bsml_file does not exist!\n";
-	    exit 5;
+	    $logger->logdie("$bsml_file NOT found!  Exiting...");
 	}
 
     }
@@ -144,6 +251,8 @@ sub make_fasta_for_each_genome {
 
     my $assembly_ids = shift;
 
+    $logger->debug("generating fasta files: 1 assembly per file");
+    
     foreach my $asmbl_id (@$assembly_ids) {
 	my $pep_file = "$output_dir/$asmbl_id".".pep";
 	open(FILE, ">$pep_file") || die "Unable to write to $pep_file due to $!";
@@ -161,17 +270,24 @@ sub make_fasta_for_each_genome {
 	    close FILE;
 	    chmod 0777, $pep_file;
 	}else {
-	    print STDERR "$bsml_file NOT found!!!! Aborting...\n";
-	    exit 5;
+	    $logger->logdie("$bsml_file NOT found!  Exiting...");
 	}
     }
 
 }
 
 
-sub make_PNEUMO_pep_for_ALL_genomes {
+sub make_pep_for_ALL_genomes {
 
     my $assembly_ids = shift;
+
+    $logger->debug("generating fasta files: multiple assemblies per file");
+    if($simple_header) {
+	$logger->debug("using simple header");
+    } else {
+	$logger->debug("using complex header");
+    }
+	  
 
     my $pep_file = "$output_dir/$project.pep";
     open(FILE, ">$pep_file") || die "Cant open $pep_file due to $!";
@@ -188,13 +304,11 @@ sub make_PNEUMO_pep_for_ALL_genomes {
                 print FILE $fastaout;
             }
 	} else {
-	    print STDERR "$bsml_file NOT found!!!! Aborting...\n";
+	    $logger->logdie("$bsml_file NOT found!  Exiting...");
         }
     }
     close FILE;
     chmod 0777, $pep_file;
-    #qx(setdb $pep_file);
-    #chmod 0777 <$pep_file.*>;
 }
 
 
@@ -220,7 +334,7 @@ sub read_asmbl_file {
 
     my @asmbl_id_list;
 
-    open (IN, "$file")  or die "Unable to read $file due to $!";
+    open (IN, "$file")  or $logger->logdie("Unable to read $file due to $!");
     my $line;
     while($line = <IN>) {
 	chomp($line);
