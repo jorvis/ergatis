@@ -109,7 +109,7 @@ sub print_dag_page{
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$xmltemplate'>[Show all nodes]</a>&nbsp;";
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$xmltemplate&forcereload=1'>[Force reparse]</a>&nbsp;";
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$dirname&glob=pipeline'>[Directory list]</a>&nbsp;";
-    print "<a href='http://tools/condor-status/index.cgi'>[Condor status]</a>&nbsp;";
+    print "<a href='http://htcmaster.tigr.org/antware/condor-status/'>[Condor status]</a>&nbsp;";
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$xmltemplate&edit=1'>[Edit mode]</a>&nbsp;" if($type ne "instance");
     print "Depth: <a href='",$dag_tree_obj->{link_url},"&max_level=",$max_level-1,"&xmltemplate=$xmltemplate'>[--] <a href='",$dag_tree_obj->{link_url},"&max_level=2&xmltemplate=$xmltemplate'>[2]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=3&xmltemplate=$xmltemplate'>[3]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=4&xmltemplate=$xmltemplate'>[4]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=5&xmltemplate=$xmltemplate'>[5]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=6&xmltemplate=$xmltemplate'>[6]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=7&xmltemplate=$xmltemplate'>[7]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=8&xmltemplate=$xmltemplate'>[8]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=9&xmltemplate=$xmltemplate'>[9]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=10&xmltemplate=$xmltemplate'>[10] <a href='",$dag_tree_obj->{link_url},"&max_level=",$max_level+1,"&xmltemplate=$xmltemplate'>[++]</a>";
     if($type eq "instance"){
