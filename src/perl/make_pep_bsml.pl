@@ -8,7 +8,7 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s', 'project|p=s',
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s', 'project|p=s', 'verbose|v',
                                      'output_dir|o=s', 'DEBUG', 'help|h', 'each_file|e', 'each_genome|g' );
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -18,11 +18,16 @@ my $simple_header   = $options{'simple_header'};
 my $each_file       = $options{'each_file'} || 0;
 my $each_genome     = $options{'each_genome'} || 0;
 my $project         = $options{'project'};
+my $verbose         = $options{'verbose'};
 my $output_dir      = $options{'output_dir'};
 $output_dir =~ s/\/+$//;       #remove terminating '/'s
 my $BSML_dir        = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;         #remove terminating '/'s
 
+
+if(!defined($ASMBL_IDS) or !$output_dir or !$BSML_dir or exists($options{'help'})) {
+    &print_usage();
+}
 if($each_file and $each_genome) {
     print STDERR "--each_genome(-g) and --each_file(-e) CANNOT be invoked at the same time.\n";
     exit 1;
@@ -33,10 +38,6 @@ if(!$each_file and !$each_genome and !$project) {
     exit 1;
 }
 
-
-if(!defined($ASMBL_IDS) or !$output_dir or !$BSML_dir or exists($options{'help'})) {
-    &print_usage();
-}
 
 ###-------------------------------------------------------###
 my $min_dir = dirname($output_dir);
@@ -66,17 +67,17 @@ if($ASMBL_IDS =~ /all/i) {
 my $parser = new BSML::BsmlParserTwig;
 
 if($each_genome) {
-    #$output_dir = $ENV{'PNEUMO_QUERY_DIR'} if(!$output_dir);
-    make_fasta_for_each_genome(\@asm_ids);
+    make_fasta_for_each_genome(\@asm_ids) if($verbose);
     print "Finished making fasta pep files for EACH genome\n";
 }elsif($each_file) {
-    make_fasta_for_each_gene(\@asm_ids);
+    make_fasta_for_each_gene(\@asm_ids) if($verbose);
     print "Finished making fasta pep file for each gene\n";
 }else {
-    #$output_dir = $ENV{'PNEUMO_DB_DIR'} if(!$output_dir);
     make_PNEUMO_pep_for_ALL_genomes(\@asm_ids);
-    print "Finished making PNEUMO.pep file\n";
+    print "Finished making fasta pep file for all assemblies\n" if($verbose);
 }
+
+
 
 sub make_fasta_for_each_gene  {
 
@@ -153,7 +154,6 @@ sub make_PNEUMO_pep_for_ALL_genomes {
     my $pep_file = "$output_dir/$project.pep";
     open(FILE, ">$pep_file") || die "Cant open $pep_file due to $!";
     foreach my $asmbl_id (@$assembly_ids) {
-	#my $result = $CGC->fetch_protein_seq_info_from_asmbl_id($asmbl_id);
 	my $bsml_file = "$BSML_dir/${asmbl_id}.bsml";
 	if (-s $bsml_file) {
 	    my $reader = BSML::BsmlReader->new();
@@ -171,7 +171,7 @@ sub make_PNEUMO_pep_for_ALL_genomes {
     }
     close FILE;
     chmod 0777, $pep_file;
-    qx(setdb $pep_file);
+    #qx(setdb $pep_file);
     #chmod 0777 <$pep_file.*>;
 }
 
@@ -197,10 +197,11 @@ sub fasta_out {
 sub print_usage {
 
 
-    print STDERR "SAMPLE USAGE:  make_pep_bsml.pl -b bsml_dir -o output_dir -a 19\n";
+    print STDERR "SAMPLE USAGE:  make_pep_bsml.pl -b bsml_dir -o output_dir -a bsp_3839_assembly\n";
     print STDERR "  --bsml_dir    = dir containing BSML doc\n";
     print STDERR "  --output_dir  = dir to save output to\n";
-    print STDERR "  --asmbl_ids  (only get sequences  belong to particular asmbl_ids)\n";
+    print STDERR "  --asmbl_ids  (multiple values can be comma separated)\n";
+    print STDERR "               (-a all  grabs all asmbl_ids)\n";
     print STDERR "  --each_genome = save fasta file individually for each genome\n";
     print STDERR "  --each_file   = save fasta file individually for each gene\n";
     print STDERR "  --project     = name of the total peptide fasta file\n";
