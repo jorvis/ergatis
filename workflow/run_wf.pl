@@ -38,19 +38,6 @@ use Pod::Usage;
 use Workflow::Logger;
 use Workflow::Run;
 
-###### signal handler code ###############
- sub handler {
-     my ($signal) = @_;
-     kill $signal, 0;
-     # add any clean up
-}
- 
- 
-$SIG{'HUP'} = 'handler';
-$SIG{'INT'} = 'handler';
-$SIG{'QUIT'} = 'handler';
-$SIG{'TERM'} = 'handler';
-
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'instance|i=s',
