@@ -3,15 +3,18 @@
 use strict;
 use warnings;
 use BSML::BsmlBuilder;
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
-my $results = GetOptions( \%options, 'mumsAlignFile|m=s', 'coverageFilePath|c=s', 'outFile|o=s', 'help|h', 'man' );
+my $results = GetOptions( \%options, 'mumsAlignFile|m=s', 'coverageFilePath|c=s', 'outFile|o=s', 'repository|r=s', 'help|h', 'man' );
 
 
 my $mumsAlignFile = $options{'mumsAlignFile'};
 my $coverageFilePath = $options{'coverageFilePath'};
 my $outputBsmlFile = $options{'outFile'};
+my $bsmlrepository = $options{'repository'};
 
 # open the mummer alignment file (*.align)
 # This file should be generated using the -D option
@@ -29,7 +32,7 @@ my $bsmlDoc = new BSML::BsmlBuilder();
 my $assemblyId = 0;
 my $assemblySNPCount = 0;
 my $refSNPCount = 0;
-
+my $asbllengthlookup = {};
 
 while( my $line = <ALIGN> )
 {
@@ -114,8 +117,6 @@ while( my $line = <ALIGN> )
 
 	# This will be removed after QC phase...
 
-	print "$ref $assemblyId $refPos $asblPos $refBase $asblBase | $cov[0] $cov[1] $cov[2]\n";
-
 	# encode the SNP in BSML.
 
 	my $refSeq;
@@ -143,7 +144,7 @@ while( my $line = <ALIGN> )
 	my $refFeat = $bsmlDoc->createAndAddFeatureWithLocN( 'FTable' => $refFTable,
 							    'id' => "SNP:$ref:$refSNPCount",
 							    'class' => 'SNP',
-							    'start' => $refPos,
+							    'start' => $refPos-1,
 							    'end' => $refPos,
 							    'complement' => 0
 							    );
@@ -158,10 +159,18 @@ while( my $line = <ALIGN> )
 
 	$refFeat->addBsmlLink( 'SNP', "SNP:$tmpAssemblyId:$assemblySNPCount" );
 
+	my $asbllength = &getAsmblLength($tmpAssemblyId,$asbllengthlookup);
+	
+	if($revCom == 1){
+	    $asblPos = $asbllength-$asblPos;
+	}
+	print "$ref $assemblyId $refPos $asblPos $refBase $asblBase | $cov[0] $cov[1] $cov[2]\n";
+
+
 	my $assemblyFeat = $bsmlDoc->createAndAddFeatureWithLocN( 'FTable' => $assemblyFTable,
 							    'id' => "SNP:$tmpAssemblyId:$assemblySNPCount",
 							    'class' => 'SNP',
-							    'start' => $asblPos,
+							    'start' => $asblPos-1,
 							    'end' => $asblPos,
 							    'complement' => $revCom
 							    );
@@ -182,6 +191,30 @@ $bsmlDoc->createAndAddAnalysis( 'sourcename' => $outputBsmlFile,
 				'program' => 'TIGR SNP Analysis Pipeline' );
 
 $bsmlDoc->write( $outputBsmlFile );
+
+sub getAsmblLength{
+    my ($asmbl,$lengthlookup) = @_;
+    if(exists $lengthlookup->{$asmbl}){
+	return $lengthlookup->{$asmbl};
+    }
+    else{
+	my $reader = new BSML::BsmlReader;
+	my $parser = new BSML::BsmlParserTwig;
+
+	$parser->parse( \$reader, "$bsmlrepository/$asmbl.bsml" );
+
+	my $seqobj = BSML::BsmlDoc::BsmlReturnDocumentLookup( $asmbl );
+	if($seqobj){
+	    my $seqlen = $seqobj->returnattr('length');
+	    
+	    $lengthlookup->{$asmbl} = $seqlen;
+	    return $lengthlookup->{$asmbl};
+	}
+	else{
+	    print STDERR "$seqobj is null\n";
+	}
+    }
+}
 
 sub getCoverage
 {
