@@ -84,7 +84,7 @@ sub read_pe_output {
 							       );
 	    my $runs = $seq_pair->{$query_name}->{$dbmatch_accession};
 	    my $hitnum = 0;
-	    foreach my $run (sort {$a->{'runscore'} <=> $b->{'runscore'}} (@$runs)){
+	    foreach my $run (sort {$b->{'runscore'} <=> $a->{'runscore'}} (@$runs)){
 		if($hitnum <3){
 		    my $s = $doc->createAndAddSequencePairRun( 'alignment_pair' => $aln,
 							       'start_query'    => $run->{'start_query'},
