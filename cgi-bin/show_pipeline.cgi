@@ -37,7 +37,7 @@ my $quota = &get_quota($xmltemplate);
 
 if(-d $xmltemplate){
     if($glob eq ''){
-	$glob='\.xml$';
+	$glob='\.xml';
     }
     else{
 	$glob=$glob.'[^\/]*\.xml';
@@ -522,6 +522,7 @@ sub get_workflows_from_directory{
 	      my $currglob = $glob;
 	      if($currdir =~ /pipeline$/){
 		  $currglob = "$glob"."\.instance";
+		  print STDERR "$currglob $glob\n";
 	      }
 	      if($file =~ /$currglob$/){
 		  if(-e $file){
