@@ -99,8 +99,6 @@ my $jaccardClusterCount = 0;
 
 if( $options{'bsmlJaccardDir'} && $options{'jaccardFilter'} == 1 )
 {
-    print "Filtering\n";
-
     my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
     foreach my $bsmlFile (<$options{'bsmlJaccardDir'}/*.bsml>)
     {
