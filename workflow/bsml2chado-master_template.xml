@@ -17,7 +17,6 @@
             <name>RunUnixCommand</name>
             <configMapId>create_scratch2</configMapId>
         </command>
-
         <commandSet type="parallel">
             <name>Run bsml to chado subflow</name>
                 <configMapId>empty</configMapId>
@@ -40,31 +39,43 @@
             <name>RunUnixCommand</name>
             <configMapId>replace_placeholders</configMapId>
         </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>validate_feature</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>validate_featureloc</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>validate_organism</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>validate_analysisprop</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>validate_analysis</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>validate_analysisfeature</configMapId>
-        </command>
-        <command>    
+        <commandSet type="parallel">
+            <name>Run bsml to chado subflow</name>
+                <configMapId>empty</configMapId>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_feature</configMapId>
+                   </command>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_featureprop</configMapId>
+                   </command>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_featureloc</configMapId>
+                   </command>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_organism</configMapId>
+                   </command>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_organismprop</configMapId>
+                   </command>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_analysisprop</configMapId>
+                   </command>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_analysis</configMapId>
+                   </command>
+                   <command>    
+                        <name>RunUnixCommand</name>
+                        <configMapId>validate_analysisfeature</configMapId>
+                   </command>
+       </commandSet>
+       <command>    
             <name>RunUnixCommand</name>
             <configMapId>revoke_public</configMapId>
         </command>
