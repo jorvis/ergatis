@@ -1,10 +1,9 @@
 #!/usr/local/bin/perl
 
-
 use strict;
 use PEffect::PEffectXML;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlReader;
+use BsmlCGCReader;
 use BSML::BsmlParserTwig;
 
 my %options = ();
@@ -41,7 +40,7 @@ if (!-s $bsml_btab_file) {
     print STDERR "The $bsml_btab_file does not exist!  Aborting...\n";
     exit 5;
 } else {
-    $reader = BSML::BsmlReader->new();
+    $reader = BsmlCGCReader->new(); 
     my $parser = BSML::BsmlParserTwig->new();
     $parser->parse( \$reader, $bsml_btab_file );
     my $pexml = new PEffect::PEffectXML();
@@ -107,7 +106,7 @@ sub build_id_lookups {
     foreach my $bsml_doc (@files) {
 	if (-s $bsml_doc) {
 	    print STDERR "parsing $bsml_doc\n" if($verbose);
-	    my $reader = BSML::BsmlReader->new();
+	    my $reader = BsmlCGCReader->new();
 	    $new_parser->parse( \$reader, $bsml_doc );
 	    my $rhash = $reader->returnAllIdentifiers();
 	    build_cdsID_protID_mapping($rhash, $cdsID_protID); 
@@ -127,7 +126,7 @@ sub print_usage {
     print STDERR "  --asmbl_ids  = assembly id\n";
     print STDERR "  --match_asmbl_ids = assembly id or 'all' \n";
     print STDERR "  --bsml_dir = directory containing the BSML documents\n";
-    print STDERR "  --bsml_btab = bsmldoc encoding the btab info\n";
+    print STDERR "  --bsml_btab(-f) = bsmldoc encoding the btab info\n";
     print STDERR "  --help = This help message.\n";
     exit 1;
 
