@@ -42,9 +42,9 @@
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>load_sybase</configMapId>
+            <configMapId>change_log_permissions</configMapId>
         </command>
-         <command>    
+        <command>    
             <name>RunUnixCommand</name>
             <configMapId>change_workflowdocs_permissions</configMapId>
         </command>

@@ -12,25 +12,5 @@
             <name>RunUnixCommand</name>
             <configMapId>bsml2chado</configMapId>
         </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>validate_out_files</configMapId>
-        </command>
-        <command>
-            <name>RunUnixCommand</name>
-            <configMapId>check_database_space</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>load_sybase</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>confirm_database_loaded</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>change_log_permissions</configMapId>
-        </command>
     </commandSet>
 </commandSetRoot>

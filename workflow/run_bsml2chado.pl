@@ -524,7 +524,6 @@ sub get_file_contents {
     if (!defined($file)){
 	$logger->logdie("file was not defined");
     }
-
     if (&is_file_readable($file)){
 
 	open (IN_FILE, "<$$file") || $logger->logdie("Could not open file: $$file for input");
@@ -610,7 +609,7 @@ sub retrieve_directory_contents{
     $logger->logdie("dir was not defined") if (!defined($$dir));
     $logger->logdie("dir:$dir is not a directory") if (!-d $$dir);
 
-    my @bsml_files = qx"ls -1 $$dir/*.bsml";
+    my @bsml_files = qx"find $$dir -name '*.bsml'";
     chomp @bsml_files;
     
     return \@bsml_files;
