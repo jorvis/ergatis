@@ -70,12 +70,7 @@ but with a prepended underscore.
 B<Returns:> None.
 
 =cut
- ###### signal handler code ###############
-sub handler {
-     my ($signal) = @_;
-     kill $signal, 0;
-     # add any clean up
-}
+
 sub _init {
     my $self = shift;
     $self->{_WORKFLOW_EXEC_DIR} = "$ENV{'WORKFLOW_WRAPPERS_DIR'}" || ".";
@@ -87,13 +82,6 @@ sub _init {
     foreach my $key (keys %arg) {
         $self->{"_$key"} = $arg{$key}
     }
- 
- 
-    $SIG{'HUP'} = 'handler';
-    $SIG{'INT'} = 'handler';
-    $SIG{'QUIT'} = 'handler';
-    $SIG{'TERM'} = 'handler';
-    
 }
 
 sub CreateWorkflow{
@@ -107,9 +95,32 @@ sub CreateWorkflow{
     if($self->{_logger}->is_debug()){
 	$debugstr = "-v 6";
     }
-    my $ret = system("$execstr $debugstr");
-    $ret >>= 8;
-    return $ret;
+    my $pid;
+    if($pid = fork){
+	$SIG{'TERM'} = sub {
+	    my $signal = shift;
+	    $SIG{'TERM'} = '';
+	    kill $signal,$pid;
+	};
+	$SIG{'INT'} = sub {
+	    my $signal = shift;
+	    $SIG{'INT'} = '';
+	    kill $signal,$pid;
+	};
+	$SIG{'QUIT'} = sub {
+	    my $signal = shift;
+	    $SIG{'QUIT'} = '';
+	    kill $signal,$pid;
+	};
+	waitpid($pid,0);
+	my $ret = $?;
+	$ret >>= 8;
+	return $ret;
+    }
+    else{
+	die "cannot fork: $!" unless defined $pid;
+	exec("$execstr $debugstr");
+    }
 }
 
 sub RunWorkflow{
@@ -120,9 +131,32 @@ sub RunWorkflow{
     if($self->{_logger}->is_debug()){
 	$debugstr = "-v 6";
     }
-    my $ret = system("$execstr $debugstr");
-    $ret >>= 8;
-    return $ret;
+    my $pid;
+    if($pid = fork){
+	$SIG{'TERM'} = sub {
+	    my $signal = shift;
+	    $SIG{'TERM'} = '';
+	    kill $signal,$pid;
+	};
+	$SIG{'INT'} = sub {
+	    my $signal = shift;
+	    $SIG{'INT'} = '';
+	    kill $signal,$pid;
+	};
+	$SIG{'QUIT'} = sub {
+	    my $signal = shift;
+	    $SIG{'QUIT'} = '';
+	    kill $signal,$pid;
+	};
+	waitpid($pid,0);
+	my $ret = $?;
+	$ret >>= 8;
+	return $ret;
+    }
+    else{
+	die "cannot fork: $!" unless defined $pid;
+	exec("$execstr $debugstr");
+    }
 }
 
 sub _replacedistrib{
@@ -139,4 +173,8 @@ sub _replacedistrib{
     return $outputfile;
 }
 
+sub handler{
+    my($signal,$pid);
+
+}
 1;
