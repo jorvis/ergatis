@@ -23,10 +23,6 @@
         </command>
        <command>
           <name>RunUnixCommand</name>
-          <configMapId>2.15</configMapId>
-        </command>
-       <command>
-          <name>RunUnixCommand</name>
           <configMapId>2.2</configMapId>
         </command>
         <command>
