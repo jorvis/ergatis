@@ -44,7 +44,7 @@ if(!$asmbl_file and ! $ASMBL_IDS) {
 ###-------------------------------------------------------###
 
 my $valid_asmbl_ids = fetch_valid_asmbl_id($gene_pos_file) if($check_gene_pos);
-#my ($cdsID_protID, $proteinID_seqID) = build_id_lookups($BSML_dir);
+my ($id_protID, $proteinID_seqID) = build_id_lookups($BSML_dir);
 
 my @asm_ids;
 my $bsml_matchfile;
@@ -134,31 +134,32 @@ sub addMatches {
     
     foreach my $match (@$lref) {
 	my $q_feat_name = $match->{'query_gene_name'};
-#	$q_feat_name = $cdsID_protID->{$q_feat_name} if(exists $cdsID_protID->{$q_feat_name});
+	$q_feat_name = $id_protID->{$q_feat_name} if(exists $id_protID->{$q_feat_name});
         my $m_feat_name = $match->{'match_gene_name'};
+	$m_feat_name = $id_protID->{$m_feat_name} if(exists $id_protID->{$m_feat_name});
 	my $per_sim     = $match->{'percent_similarity'};
 	my $per_id      = $match->{'percent_identity'};
         my $pvalue      = $match->{'pval'};
 
 	#If check_gene_pos option is enabled, the asmbl_id to which each match_gene_name belongs to MUST exist in the gene position xml
-#	if($check_gene_pos) {              
-#	    my $seqID = $proteinID_seqID->{$m_feat_name};  
-#	    if(!exists($valid_asmbl_ids->{$seqID})) { #skip if asmbl_id NOT in gene position xml
-#		#print STDERR "$seqID to which $m_feat_name belongs to is NOT in gene position xml.  Skipping...\n";
-#                next;
-#	    }
-#	}
+	if($check_gene_pos) {              
+	    my $seqID = $proteinID_seqID->{$id_protID->{$m_feat_name}};  
+	    if(!exists($valid_asmbl_ids->{$seqID})) { #skip if asmbl_id NOT in gene position xml
+		#print STDERR "$seqID to which $m_feat_name belongs to is NOT in gene position xml.  Skipping...\n";
+                next;
+	    }
+	}
 	$pexml->addAlignment($q_feat_name, $m_feat_name, $per_sim, $per_id, $pvalue);
     }
 
 }
 
-sub build_cdsID_protID_mapping {
-#This function builds a mapping between cdsID to proteinID. 
-#The returned structure is a hash ref, where key is cdsID, value is proteinID
+sub build_id_protID_mapping {
+#This function builds a mapping between id to proteinID. 
+#The returned structure is a hash ref, where key is id, value is proteinID
 
     my $rhash = shift;
-    my $cdsID_protID=shift;
+    my $id_protID=shift;
     my $proteinID_seqID=shift;
 
     foreach my $seqID (keys %$rhash) {
@@ -166,7 +167,12 @@ sub build_cdsID_protID_mapping {
 	    foreach my $transcriptID (keys %{ $rhash->{$seqID}->{$geneID} }) {
 		my $cdsID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'cdsId'};
 		my $proteinID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'proteinId'};
-		$cdsID_protID->{$cdsID} = $proteinID;
+		my $transcriptID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'transcriptId'};
+		my $geneID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'geneId'};
+		$id_protID->{$cdsID} = $proteinID;
+		$id_protID->{$transcriptID} = $proteinID;
+		$id_protID->{$geneID} = $proteinID;
+		$id_protID->{$proteinID} = $proteinID;
 		$proteinID_seqID->{$proteinID} = $seqID;
 	    }
 	}
@@ -177,7 +183,7 @@ sub build_cdsID_protID_mapping {
 sub build_id_lookups {
 
     my $BSML_dir = shift;
-    my $cdsID_protID = {};
+    my $id_protID = {};
     my $proteinID_seqID = {};
 
     my @files = <$BSML_dir/*.bsml>;
@@ -189,13 +195,13 @@ sub build_id_lookups {
 	    my $reader = BsmlCGCReader->new();
 	    $new_parser->parse( \$reader, $bsml_doc );
 	    my $rhash = $reader->returnAllIdentifiers();
-	    build_cdsID_protID_mapping($rhash, $cdsID_protID, $proteinID_seqID); 
+	    build_id_protID_mapping($rhash, $id_protID, $proteinID_seqID); 
 	} else {
 	    print STDERR "Empty $bsml_doc...skipping\n" if($verbose);
         }
     }
 
-    return ($cdsID_protID, $proteinID_seqID);
+    return ($id_protID, $proteinID_seqID);
 
 }
 
