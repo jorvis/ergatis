@@ -43,7 +43,6 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 =cut
 
-use lib '/usr/local/devel/ANNOTATION/cas/tester/lib/site_perl/5.6.0';
 use strict;
 use warnings;
 use Pod::Usage;
