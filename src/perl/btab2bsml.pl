@@ -51,6 +51,15 @@ my ($gene_asmbl_id, $protID_cdsID);
 my @files = <$btab_dir/*.btab>;
 if($btab_type == 1) {
     ($gene_asmbl_id, $protID_cdsID) = build_id_lookups_allvsall();
+    #open (OUT, ">id_mapping.txt") or die "can't write to mapping txt\n";
+    #foreach my $id(keys %$protID_cdsID) {
+	#print OUT "$id\t\t$protID_cdsID->{$id}\n";
+    #}
+#    open (FILE, "id_mapping.txt") or die "can't read id_mapping.txt\n";
+#    while (my $line =<FILE>) {
+#	my ($prot_id, $cds_id) = split(/\s+/, $line);
+#	$protID_cdsID->{$prot_id} = $cds_id;
+#    }
     $doc->makeCurrentDocument();
     parse_allvsall_btabs(\@files);
 }else {
@@ -80,10 +89,13 @@ sub parse_blast_btabs {
 	    @btab = split("\t", $line);
 	    next if($btab[19] > '1e-15');
 	    next if(!$btab[0] or !$btab[5]);
+	    print STDERR "createandaddbtabline\n";
 	    my $align = $doc->createAndAddBtabLine(@btab);
+	    print STDERR "returnBsmlSequenceByIDR\n";
 	    $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
 	    my $match_asmbl_id = $gene_asmbl_id->{$btab[5]};
 	    my $query_asmbl_id = $gene_asmbl_id->{$btab[0]};
+	    print STDERR ">createAndAddBsmlAttributeN\n";
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$match_asmbl_id);
 	}
 	close BTAB;
@@ -117,23 +129,22 @@ sub parse_allvsall_btabs {
 	    next if(!$btab[0] or !$btab[5]);
 	    $btab[5] =~ s/\|//g;   #get rid of trailing |
 	    $query_protein_id = $btab[0];
-	    $btab[0] = $protID_cdsID->{$btab[0]};
-	    $query_cds_id = $btab[0];	    
-            #$query_name = $btab[0];
+            $btab[0] = $protID_cdsID->{$btab[0]};
+            $query_cds_id = $btab[0];	    
 	    $match_name = $btab[5];
 	    splice(@btab, 19, 1);
-	    
 	    my $align = $doc->createAndAddBtabLine(@btab);
 	    $seq = $doc->returnBsmlSequenceByIDR($match_name);
 	    my $match_asmbl_id = $gene_asmbl_id->{$match_name};
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$match_asmbl_id");
 	}
 	close BTAB;
+	next if(!defined($query_cds_id));
 	$seq = $doc->returnBsmlSequenceByIDR($query_cds_id);
 	if($seq) {
 	    my $query_asmbl_id = $gene_asmbl_id->{$query_protein_id};
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$query_asmbl_id");
-	}
+	} 
     }
     $doc->createAndAddAnalysis("program" => "allvsall", "programversion" => '1.0', 'sourcename' =>$output,
                                "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
