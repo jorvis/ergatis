@@ -168,7 +168,7 @@ foreach my $file (sort @{$list}){
 	next;
     }
     if (-z $file){
-	$logger->error("file '$file' had zero size and therefore will not be processed");
+	$logger->info("file '$file' had zero size and therefore will not be processed");
 	$filectr--;
 	next;
     }
