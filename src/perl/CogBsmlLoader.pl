@@ -10,7 +10,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 # Preprosess data stored in BSML pairwise alignment documents into BTAB
 # structure for COG analysis.
 
-########
+############
 # Arguments:
 #
 # bsmlSearchDir - directory containing BSML pairwise sequence encodings
