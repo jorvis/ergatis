@@ -134,6 +134,7 @@ sub get_pipeline_xml{
     my($pipelineid,$xmlfile,$pipelinexml) = @_;
     my $topelt;
     my $ok=0;
+    my $id=0;
     my $t1 = new XML::Twig( TwigHandlers => { 'commandSet' =>
 						  sub {
 						      my ($t, $elt) = @_;
@@ -146,8 +147,10 @@ sub get_pipeline_xml{
 							  my $cfg = new Config::IniFiles(-file => $inifile);
 							  $cfg->newval("start_"."$$","");
 							  $cfg->WriteConfig($inifile);
+							  `chmod 666 $inifile`;
 						      }
 						      elsif($configmapid =~ /^component_/){
+							  $id++;
 							  my $conf;
 							  my $name;
 							  my $gen;
@@ -161,7 +164,7 @@ sub get_pipeline_xml{
 							  }
 							  if($conf ne "" && $name ne ""){
 							      $ok=1;
-							      my $componentid = "$name"."_$$";
+							      my $componentid = "$name"."_$$".$id;
 							      print STDERR "Parsing config $gen $name $conf\n";
 							      my $newxml = XMLManip::get_component_xml($componentid,$pipelineid,$conf,$xmlfile);
 							      $newxml->replace($elt);
@@ -175,6 +178,7 @@ sub get_pipeline_xml{
 							  my $cfg = new Config::IniFiles(-file => $inifile);
 							  $cfg->newval($configmapid,"");
 							  $cfg->WriteConfig($inifile);
+							  `chmod 666 $inifile`;
 						      }
 					      }
 					  },
@@ -201,6 +205,7 @@ sub get_commandset_xml{
     my $cfg = new Config::IniFiles(-file => $inifile);
     $cfg->newval("$id","");
     $cfg->WriteConfig($inifile);
+    `chmod 666 $inifile`;
 
     return  parse XML::Twig::Elt( "
     <commandSet type='$type'>
@@ -249,6 +254,45 @@ sub get_component_xml{
     }
 }
 
+sub get_root_commandset{
+    my($fileprefix) = @_;
+
+    my $inifile = "$fileprefix.ini";
+
+    my $cfg = new Config::IniFiles(-file => $inifile);
+    $cfg->newval("start","");
+    $cfg->WriteConfig($inifile);
+    `chmod 666 $inifile`;
+    
+    return  parse XML::Twig::Elt( "<commandSetRoot xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:schemaLocation='commandSet.xsd'>
+            <commandSet type='serial'>
+                <configMapId>start</configMapId>
+            </commandSet>
+            </commandSetRoot>");
+}
+
+
+sub get_command_xml{
+    my($command,$arg,$name,$fileprefix) = @_;
+    my $inifile = "$fileprefix.ini";
+    my $cfg = new Config::IniFiles(-file => $inifile);
+    $cfg->newval("$name","");
+    $cfg->WriteConfig($inifile);
+    `chmod 666 $inifile`;
+    
+    return  parse XML::Twig::Elt( "
+    <command>
+      <type>RunUnixCommand</type>
+      <configMapId>$name</configMapId>
+       <param>
+                <key>command</key>
+                <value>$command</value>
+           </param>
+           <arg>$arg</arg>
+    </command>");
+}
+
+
 sub _check_node{
     my($elt,$id) = @_;
 
@@ -267,11 +311,13 @@ sub _write_component_ini{
     $cfg->newval("component_$id","");
     $cfg->newval("subflow_$id","fileName","$fileprefix.subflow.$id.xml");
     $cfg->WriteConfig($inifile);
-    
+    `chmod 666 $inifile`;
+
     my $subflowinifile = "$fileprefix.subflow.$id.ini";
     my $inicfg = new Config::IniFiles();
     $inicfg->newval("run_subflow_$id","");
     $inicfg->WriteConfig($subflowinifile);
+    `chmod 666 $subflowinifile`;
 }
 
 sub _write_component_subflow_xml{
