@@ -5,6 +5,10 @@
     <commandSet type="serial">
         <name>generate bsml repository</name>
         <configMapId>1</configMapId>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.6</configMapId>
+        </command>
         <command>    
             <name>RunUnixCommand</name>
             <configMapId>1.1</configMapId>
