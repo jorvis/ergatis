@@ -162,7 +162,7 @@ sub generate_iterator_instance{
 	    }
 	}
 	$self->{_logger}->debug("Writing config file $subflowconffile") if($self->{_logger}->is_debug());
-	$subflowconfigobj->WriteConfig($subflowconffile);
+	$subflowconfigobj->WriteConfig($subflowconffile) if($self->{_logger}->is_debug());
 
 	my $subflowinifile = "$self->{_OUTPUT_DIR}/$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}.ini";
 	my $errors = $self->_create_ini_file($subflowconfigobj, $inifile, $subflowinifile);
