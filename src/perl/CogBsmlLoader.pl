@@ -233,18 +233,6 @@ sub alignmentHandler
     # self-self alignments are not included 
     return if( $compseq eq $refseq );
 
-
-    # if refseq is part of a Jaccard equivalence class, only use it if it is the
-    # Jaccard reference sequence for the class
-
-    if( defined( my $jId = $jaccardClusterHash->{$refseq} ) )
-    {
-	if( !($refseq eq $jaccardRepSeqHash->{$jId}) )
-	{
-	    return;
-	}
-    }
-
     # find the highest scoring run for each pairwise alignment
 
     foreach my $seqPairRun ( @{$aln->returnBsmlSeqPairRunListR} )
@@ -288,6 +276,11 @@ sub alignmentHandler
     {
 	$compseq = $jaccardRepSeqHash->{$jId};
     }
+
+    if( defined( my $jId = $jaccardClusterHash->{$refseq} ) )
+    {
+	$refseq = $jaccardRepSeqHash->{$jId};
+    }
     
     my $lref = [];
     
@@ -313,6 +306,7 @@ sub alignmentHandler
     $lref->[19] = $bestSeqPairRun->returnattr('runprob' );
     $lref->[20] = $bestSeqPairRun->returnBsmlAttr( 'p_value' );
 
+   
     if(  $COGInput->{$refseq}->{$compGenome} )
     {
 	if(  $COGInput->{$refseq}->{$compGenome}->[12] < $bestRunScore )
