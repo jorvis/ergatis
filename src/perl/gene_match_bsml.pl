@@ -104,7 +104,7 @@ use Pod::Usage;
 
 
 my %options = ();
-my $results = GetOptions (\%options, 'asmbl_id|a=s', 'verbose|v', 'bsml_btab_dir|f=s', 'gene_pos_file=s', 'man',
+my $results = GetOptions (\%options, 'asmbl_id|a=s', 'verbose|v', 'bsml_btab_dir|f=s', 'gene_pos_file=s', 'input_search_type|s=s', 'man',
                                      'match_asmbl_id|b=s',  'gene_pos_check', 'bsml_dir|d=s', 'asmbl_file|i=s', 'help|h' )|| pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -119,6 +119,7 @@ my $gene_pos_file  = $options{'gene_pos_file'};
 my $BSML_dir = $options{'bsml_dir'};
 $BSML_dir =~ s/\/$//;
 my $asmbl_file      = $options{'asmbl_file'};
+my $input_search_type = $options{'input_search_type'};
 
 &cmd_check();
 
@@ -137,7 +138,7 @@ foreach my $asmbl_id (@asm_ids) {
     my @matchfile;
     if($asmbl_file){
 	print STDERR "Entering the asmbl_file realm\n";
-	my $bsml_btab_file = "$bsml_btab_dir/${ASMBL_IDS}.allvsall.bsml";
+	my $bsml_btab_file = "$bsml_btab_dir/${ASMBL_IDS}.$input_search_type.bsml";
 	if (!-s $bsml_btab_file) {
 	    print STDERR "The $bsml_btab_file does not exist!  Aborting...\n";
 	    exit 5;
@@ -148,7 +149,7 @@ foreach my $asmbl_id (@asm_ids) {
 	}
     } else {
 	print STDERR "Enter the asmbl_id realm\n";
-	my $bsml_btab_file = "$bsml_btab_dir/${asmbl_id}.allvsall.bsml";
+	my $bsml_btab_file = "$bsml_btab_dir/${asmbl_id}.$input_search_type.bsml";
 	if (!-s $bsml_btab_file) {
 	    print STDERR "The $bsml_btab_file does not exist!  Skipping...\n";
 	    next;

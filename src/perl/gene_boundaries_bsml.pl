@@ -76,14 +76,14 @@ use Pod::Usage;
 
 my $DEBUG=0;
 
-my(@asmbl_ids,$asmbl_file,$bsml_file,$bsml_file_list,$maxgap,$minsize,$BSML_dir,$all_asmbl_flag,$debug,$log,$help);
+my(@asmbl_ids,$asmbl_file,$bsml_file,$bsml_file_list,$mingap,$mincluster,$BSML_dir,$all_asmbl_flag,$debug,$log,$help);
 my $results = GetOptions ('asmbl_id|a=s@' => \@asmbl_ids, 
 			  'asmbl_file|f=s' => \$asmbl_file,
 			  'bsml_file|b=s' => \$bsml_file,
 			  'bsml_file_list|c=s' => \$bsml_file_list,
 			  'bsml_dir|d=s' => \$BSML_dir,
-			  'maxgap|m=s' => \$maxgap,
-			  'minsize|s=s' => \$minsize,
+			  'min_gap|m=s' => \$mingap,
+			  'min_cluster|s=s' => \$mincluster,
 			  'match_all_asmbls|e' => \$all_asmbl_flag,
 			  'debug|D=s' => \$debug,
 			  'log|l=s' => \$log,
@@ -92,8 +92,8 @@ my $results = GetOptions ('asmbl_id|a=s@' => \@asmbl_ids,
 pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if($help || (!$bsml_file && !$bsml_file_list) || (!@asmbl_ids && !$asmbl_file));
 
 $BSML_dir =~ s/\/$//;
-$maxgap = 10000 if($maxgap eq "");
-$minsize = 3000 if($minsize eq "");
+$mingap = 10000 if($mingap eq "");
+$mincluster = 3000 if($mincluster eq "");
 
 ###-------------------------------------------------------###
 #Init logger
@@ -182,7 +182,7 @@ foreach my $curr_bsml_file (@allbsmlfiles){
 		&fillAnnotation(\%asmbllookup, "$BSML_dir/${asmbl_id2}.bsml") if(! (exists $asmbllookup{$asmbl_id2}));;
 		my $match_lookup = &populateMatches($reader,$asmbl_id1,$asmbl_id2,\%asmbllookup,$proteinmatches);
 		my($xref,$yref,$matches) = &getGroupings($asmbl_id1,$asmbl_id2,\%asmbllookup,$match_lookup);
-		&printGroupings($matches,\%asmbllookup,$xref,$yref,$asmbl_id1,$asmbl_id2,$minsize);
+		&printGroupings($matches,\%asmbllookup,$xref,$yref,$asmbl_id1,$asmbl_id2,$mincluster);
 	    }
 	}
     }
@@ -344,7 +344,7 @@ sub getGroupings{
     my($lastyfeat); #prev feat_name on genome y
     my($xgaplength)=0; #distance between current feat_name and prev feat_name on genome x
     my($ygaplength)=0; #distance between current feat_name and prev feat_name on genome y
-    my($step)=$maxgap; #minimum linear separation(bp) between groupings
+    my($step)=$mingap; #minimum linear separation(bp) between groupings
     $logger->debug("Setting minimum linear separation(bp) between groupings at $step");
     my($matches)={};	#hash containing the groupings
     #$i = group number
@@ -409,7 +409,7 @@ sub getGroupings{
 #$matches->{$i}->{'ygap'} = size(bp) of gap in y coord space
 #$matches->{$i}->{'xgapfeat'} = feat_name after gap in x coord space
 #$matches->{$i}->{'ygapfeat'} = feat_name after gap in y coord space
-#$minsize = minimum size(bp) of matching regions to print
+#$mincluster = minimum size(bp) of matching regions to print
 #$xref->{$feat_name}->{'end5'} = end5 coord of $feat_name in genome on x axis
 #$yref->{$feat_name}->{'end5'} = end5 coord of $feat_name in genome on y axis
 #$xref->{$feat_name}->{'end3'} = end3 coord of $feat_name in genome on x axis
@@ -417,19 +417,19 @@ sub getGroupings{
 #$asbml_idx = asmbl_id of genome x
 #$asmbl_idy = asmbl_id of genome y 
 sub printGroupings{
-    my($matches,$asmbl_lookup,$xref,$yref,$asmbl_idx,$asmbl_idy,$minsize) = @_;
+    my($matches,$asmbl_lookup,$xref,$yref,$asmbl_idx,$asmbl_idy,$mincluster) = @_;
     foreach my $match (sort {$matches->{$a} <=> $matches->{$b}} (keys %$matches)){
 	    my($xdist) = &getDistance($asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstopfeat'}},$asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstartfeat'}});
 #$asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstopfeat'}}->{'end5'} -  $asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstartfeat'}}->{'end5'};
 	    my($ydist) = &getDistance($asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystopfeat'}},$asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystartfeat'}});
 #$asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystopfeat'}}->{'end5'} - $asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystartfeat'}}->{'end5'};
-	    if(abs($xdist)>= $minsize || abs($ydist)>= $minsize){
+	    if(abs($xdist)>= $mincluster || abs($ydist)>= $mincluster){
 		print "#Match $match $xdist $ydist ($matches->{$match}->{'xgap'}:$matches->{$match}->{'xgapfeat'} $matches->{$match}->{'ygap'}:$matches->{$match}->{'ygapfeat'})\n"; 
 		print "#$asmbl_idx:$matches->{$match}->{'xstartfeat'} $asmbl_idy:$matches->{$match}->{'ystartfeat'} $asmbl_idx:$matches->{$match}->{'xstopfeat'} $asmbl_idy:$matches->{$match}->{'ystopfeat'}\n";
 		print "$asmbl_idx $asmbl_idy $asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstartfeat'}}->{'end5'} $asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystartfeat'}}->{'end5'} $asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstopfeat'}}->{'end5'} $asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystopfeat'}}->{'end5'}\n";
 	    }
 	    else{
-		$logger->debug("Group $matches->{$match}->{'xstartfeat'}-->$matches->{$match}->{'xstopfeat'}=$xdist $matches->{$match}->{'ystartfeat'}-->$matches->{$match}->{'ystopfeat'}=$ydist is below minimum size of $minsize");
+		$logger->debug("Group $matches->{$match}->{'xstartfeat'}-->$matches->{$match}->{'xstopfeat'}=$xdist $matches->{$match}->{'ystartfeat'}-->$matches->{$match}->{'ystopfeat'}=$ydist is below minimum size of $mincluster");
 	    }
 	}
 }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>chado2bsml workflow</name>
+        <configMapId>1</configMapId>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>10.1</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.1</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.2</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.3</configMapId>
+        </command>       
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>3.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>3.2</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>3.3</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>4.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>4.2</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>5.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>5.2</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>5.3</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>6.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>6.2</configMapId>
+        </command>
+    </commandSet>
+</commandSetRoot>

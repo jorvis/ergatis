@@ -176,8 +176,8 @@ sub parse_nucmer_coords {
         my $ref_asmbl_length = $mummer[7];
 
 	
-	$qry_name =~ s/^$database\_//; #strip leading database name for now
-	$ref_name =~ s/^$database\_//; #strip leading database name for now
+	$qry_name =~ s/^$database\_//i; #strip leading database name for now
+	$ref_name =~ s/^$database\_//i; #strip leading database name for now
 
 	next if($ref_name eq $qry_name);	
 

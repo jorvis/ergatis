@@ -70,7 +70,7 @@ use Pod::Usage;
 
 my %options = ();
 my $results = GetOptions (\%options, 'btab_dir|b=s', 'bsml_dir|d=s', 'btab_type|t=s', 
-                                     'output|o=s', 'verbose|v', 'help|h', 'man') || pod2usage();
+                                     'output|o=s', 'cutoff|c=s', 'verbose|v', 'help|h', 'man') || pod2usage();
 
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -83,6 +83,14 @@ my $BSML_dir   = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;        
 my $btab_type     = $options{'btab_type'};   # 1 = allvsall , 2 = blast family 
 my $verbose    = $options{'verbose'};
+my $cutoff = $options{'cutoff'};
+if( !($cutoff) )
+{
+    $cutoff = '1e-15';
+}
+
+
+
 #Log::Log4perl->init("log.conf");
 #my $logger = get_logger();
 
@@ -134,7 +142,7 @@ sub parse_blast_btabs {
 	while(my $line = <BTAB>) {
 	    chomp($line);
 	    @btab = split("\t", $line);
-	    next if($btab[19] > '1e-15');
+	    next if($btab[19] > $cutoff );
 	    next if(!$btab[0] or !$btab[5]);
 	    my $align = $doc->createAndAddBtabLine(@btab);
 	    $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
@@ -150,7 +158,7 @@ sub parse_blast_btabs {
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$query_asmbl_id);
         }
     }
-    $doc->createAndAddAnalysis("program" => "blastp 2.0mp-washu", "programversion" => '2.0', 'sourcename' =>$output,
+    $doc->createAndAddAnalysis("program" => "washu blastp", "programversion" => '2.0mp', 'sourcename' =>$output,
                                "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
 
 }
@@ -158,7 +166,6 @@ sub parse_blast_btabs {
 sub parse_allvsall_btabs {
 
     my $btab_files = shift;
-
     my $num;
     foreach my $file (@$btab_files) {
 	$num++; 
@@ -168,7 +175,7 @@ sub parse_allvsall_btabs {
 	while(my $line = <BTAB>) {
 	    chomp($line);
 	    @btab = split("\t", $line);
-	    next if($btab[20] > '1e-15');
+	    next if($btab[20] > $cutoff );
 	    next if($btab[3] ne 'praze');
 	    next if( !($btab[13] > 0) || !($btab[14] > 0) );
 	    next if(!$btab[0] or !$btab[5]);
@@ -192,7 +199,7 @@ sub parse_allvsall_btabs {
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$query_asmbl_id");
 	}
     }
-    $doc->createAndAddAnalysis("program" => "allvsall", "programversion" => '1.0', 'sourcename' =>$output,
+    $doc->createAndAddAnalysis("program" => "ber", "programversion" => '1.0', 'sourcename' =>$output,
                                "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
 }
 

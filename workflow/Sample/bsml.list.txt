@@ -1,0 +1,5 @@
+bsml_doc:/usr/local/annotation/CHADO_TEST/BSML_repository/blastp/bsp_3839_assembly.blastp.bsml		
+bsml_doc:/usr/local/annotation/CHADO_TEST/BSML_repository/blastp/gbs_799_assembly.blastp.bsml
+bsml_doc:/usr/local/annotation/CHADO_TEST/BSML_repository/blastp/gpa_1200_assembly.blastp.bsml
+bsml_doc:/usr/local/annotation/CHADO_TEST/BSML_repository/blastp/gbs18rs21_2501_assembly.blastp.bsml
+bsml_doc:/usr/local/annotation/CHADO_TEST/BSML_repository/blastp/gmi_1459_assembly.blastp.bsml

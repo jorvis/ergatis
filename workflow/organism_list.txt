@@ -1,0 +1,15 @@
+organism:gbs
+type:prok
+ALL
+organism:gbs18rs21
+type:prok
+ALL
+organism:gmi
+type:prok
+ALL
+organism:bsp
+type:prok
+ALL
+organism:gpa
+type:prok
+ALL

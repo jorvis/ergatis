@@ -3,10 +3,15 @@
 use strict;
 use warnings;
 use BSML::BsmlBuilder;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
-my $mumsAlignFile = $ARGV[0];
-my $coverageFilePath = $ARGV[1];
-my $outputBsmlFile = $ARGV[2];
+my %options = ();
+my $results = GetOptions( \%options, 'mumsAlignFile|m=s', 'coverageFilePath|c=s', 'outFile|o=s', 'help|h', 'man' );
+
+
+my $mumsAlignFile = $options{'mumsAlignFile'};
+my $coverageFilePath = $options{'coverageFilePath'};
+my $outputBsmlFile = $options{'outFile'};
 
 # open the mummer alignment file (*.align)
 # This file should be generated using the -D option
@@ -100,7 +105,12 @@ while( my $line = <ALIGN> )
 	# retrieve the coverage data associated with the SNP position. Should coverage on the 
 	# reference also be looked up?
 
-	my @cov = getCoverage( $tmpAssemblyId, $coverageFilePath, $asblPos, $revCom );
+	my @cov = ( 'UNKNOWN', 'UNKNOWN', 'UNKNOWN' );
+
+	if( $tmpAssemblyId && $coverageFilePath )
+	{
+	    @cov = getCoverage( $tmpAssemblyId, $coverageFilePath, $asblPos, $revCom );
+	}
 
 	# This will be removed after QC phase...
 
@@ -111,16 +121,20 @@ while( my $line = <ALIGN> )
 	my $refSeq;
 	my $assemblySeq;
 
-	if( !( $refSeq = $bsmlDoc->returnBsmlSequenceByIDR( "_$ref" ) ) )
+	if( !( $refSeq = $bsmlDoc->returnBsmlSequenceByIDR( "$ref" ) ) )
 	    {
-		$refSeq = $bsmlDoc->createAndAddSequence( "_$ref", '', '', '' );
+		$refSeq = $bsmlDoc->createAndAddSequence( "$ref", '', '', '' );
 		$bsmlDoc->createAndAddFeatureTable( $refSeq );
+
+		$refSeq->addBsmlAttr( 'snp_sequence_type', 'reference' );
 	    }
 
-	if( !( $assemblySeq = $bsmlDoc->returnBsmlSequenceByIDR( "_$tmpAssemblyId" ) ) )
+	if( !( $assemblySeq = $bsmlDoc->returnBsmlSequenceByIDR( "$tmpAssemblyId" ) ) )
 	    {
-		$assemblySeq = $bsmlDoc->createAndAddSequence( "_$tmpAssemblyId", '', '', '' );
+		$assemblySeq = $bsmlDoc->createAndAddSequence( "$tmpAssemblyId", '', '', '' );
 		$bsmlDoc->createAndAddFeatureTable( $assemblySeq );
+
+		$assemblySeq->addBsmlAttr( 'snp_sequence_type', 'query' );
 	    }
 
 	my $refFTable = $refSeq->returnBsmlFeatureTableR( 0 );
@@ -134,8 +148,12 @@ while( my $line = <ALIGN> )
 							    'complement' => 0
 							    );
 	
+	# Reference sequence coverage and consensus scores are not calculated in the current
+        # pipeline.
+
 	$refFeat->addBsmlAttr( "COVERAGE", $cov[2] );
-	$refFeat->addBsmlAttr( "CONSENSUS_SCORE", $cov[1] );
+        $refFeat->addBsmlAttr( "CONSENSUS_SCORE", $cov[1] );
+
 	$refFeat->addBsmlAttr( "SNP", "$refBase..$asblBase" );
 
 	$refFeat->addBsmlLink( 'SNP', "SNP:$tmpAssemblyId:$assemblySNPCount" );
@@ -159,7 +177,11 @@ while( my $line = <ALIGN> )
     }
 }
 
-$bsmlDoc->write( $ARGV[2] );
+$bsmlDoc->createAndAddAnalysis( 'sourcename' => $outputBsmlFile,
+				'programversion' => '1.0',
+				'program' => 'TIGR SNP Analysis Pipeline' );
+
+$bsmlDoc->write( $outputBsmlFile );
 
 sub getCoverage
 {

@@ -2,46 +2,32 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
-    <commandSet type="serial">
-        <name>bit_score_analysis</name>
+    <commandSet type="distributed-serial">
+        <name>blastp_compute</name>
         <configMapId>1</configMapId>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>1.4</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>1.5</configMapId>
+        <command>
+            <name>RunDistributedCommand</name>
+            <configMapId>2.3</configMapId>
         </command>        
-        <commandSet type ="parallel">
-            <name>get_sequences</name>
-            <configMapId>2</configMapId>
-            <command>
-                <name>RunUnixCommand</name>
-                <configMapId>2.1</configMapId>
-            </command>
-        </commandSet>
         <command>    
             <name>RunUnixCommand</name>
             <configMapId>1.1</configMapId>
         </command>
         <command>    
-            <name>RunUnixCommand</name>
+            <name>RunDistributedCommand</name>
             <configMapId>1.2</configMapId>
         </command>
         <command>    
-            <name>RunUnixCommand</name>
+            <name>RunDistributedCommand</name>
             <configMapId>1.3</configMapId>
-        </command>   
+        </command>
+        <command>
+            <name>RunDistributedCommand</name>
+            <configMapId>3.0</configMapId>
+        </command>
+        <command>
+            <name>RunDistributedCommand</name>
+            <configMapId>3.1</configMapId>
+        </command>
     </commandSet>
 </commandSetRoot>
-
-
-
-
-
-
-
-
-
-

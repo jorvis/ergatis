@@ -27,6 +27,10 @@ B<--suffix,-s> suffix of the multiple sequence alignment file. Default(msf)
 
 =item *
 
+B<--program,-p> projects this analyisi is for. Default(clustal)
+
+=item *
+
 B<--help,-h> This help message
 
 =back
@@ -39,6 +43,10 @@ sequence alignments of domains.  This requires the capture of the start and end
 coordinates of each "subsequence" in the alignment.  As an option, the user can
 specify the suffix of the alignment files that the script should parse in the 
 directory specified by --ali_dir.  The default suffix is "msf" i.e. family.msf.
+In addition, the user can specify what program this script is for.  For example if the
+multiple sequence alignment represents COGS, the user can specify that
+with the --program flag.  This will be reflected in the analysis object
+of the BSML document.
 
 Samples:
 
@@ -62,30 +70,60 @@ use Pod::Usage;
 
 
 my %options = ();
-my $results = GetOptions (\%options, 'ali_dir|a=s', 'output|o=s', 'verbose|v', 'suffix|s=s', 'help|h', 'man') || pod2usage();
+my $results = GetOptions (\%options, 'ali_dir|a=s', 'output|o=s', 'program|p=s', 
+                                     'verbose|v', 'suffix|s=s', 'help|h', 'man') || pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my $output    = $options{'output'};
 my $ali_dir   = $options{'ali_dir'};
-$ali_dir =~ s/\/+$//;
+$ali_dir =~ s/\/+$// if($ali_dir);
 my $msf_suffix = $options{'suffix'} || "msf";  #default suffix pattern of alignment files
+my $program   = $options{'program'} || "clustal";
 
 &cmd_check();
 ###-------------------------------------------------------###
 
 my $builder = new BSML::BsmlBuilder;
 
+# add an analysis object to the document. 
+my $filename = basename($output);
+$builder->createAndAddAnalysis( 'sourcename' => $filename,
+				'programversion' => '1.0',
+				'program' => $program,
+				'bsml_link_url' => 'BsmlTables',
+				'bsml_link_relation' => 'MULTIPLE_ALIGNMENTS' );
+
 my $file_found = 0;
+my $id=0;
 opendir(DIR, $ali_dir) or die "Unable to access $ali_dir due to $!";
 while( my $file = readdir(DIR)) {
     next if ($file =~ /^\.{1,2}$/);  #skip  "." ,  ".."
     if($file =~ /^(.+?)(\.msf\.dtab)?\.$msf_suffix$/) {
 	$file_found++;
-	my $fam_name = $1;
+	my $accession = undef;
+	my $domain_id = "domain_";
+	if($file =~ /^(PF\d{5})\.$msf_suffix$/ || $file =~ /^(TIGR\d{5})\.$msf_suffix$/) { 
+	    $accession = $1;
+	    $domain_id .= $accession;
+	} else {
+	    #my $fam_name = $1;
+	    $id++;
+	    $domain_id .= $id
+	}
 	my $MSF_alignments = process_MSF_file("$ali_dir/$file");
-	next if(keys %$MSF_alignments < 1);   #skip empty msf files
+	if(keys %$MSF_alignments < 1) {  #skip empty msf files
+	    #this checks to see if the previous domain_id is from $id++ or $accession
+            #and will subtract 1 from $id if previous domain_id is from $id++
+	    if(!defined($accession)) { 
+		$id--;
+            }
+	    next;
+	}
+
 	my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'});
+	$table->addattr( 'id', $domain_id );
+
 	my $summary = $builder->createAndAddAlignmentSummary( 'multipleAlignmentTable' => $table,
 							      'seq-type' =>  $MSF_alignments->{'mol_type'},
 							      'seq-format' => 'MSF' 
@@ -95,18 +133,25 @@ while( my $file = readdir(DIR)) {
 	my $sequences_tag;
 	foreach my $seq (keys %{ $MSF_alignments->{'proteins'} }) {
 	    $seqnum++;
+	    my ($pro_acc, $coords) = split(/\//, $seq);
+	    $pro_acc =~ s/\|\|$//;                         #remove terminal '||' if exists
 	    my $alignment = join ('', @{ $MSF_alignments->{'proteins'}->{$seq}->{'alignment'} });
 	    my $start  = $MSF_alignments->{'proteins'}->{$seq}->{'end5'}; 
 	    my $end    = $MSF_alignments->{'proteins'}->{$seq}->{'end3'};
 	    my $domain_length = $end - $start + 1;
+	    #IMPORTANT!!!!
+	    #In order to ensure that each seq in a multiple sequence alignment is truly
+            #unique, the seq-name and name will be in the form "protein_accession:seqnum"
+            #i.e. (ana1.10005.m00234_protein:1). 
+
 	    $builder->createAndAddAlignedSequence( 'alignmentSummary' => $summary,
 						   'seqnum' => $seqnum,
 						   'length' => $domain_length,
-						   'name'   => $seq,
+						   'name'   => "$pro_acc:$seqnum", #<--see notes above
                                                    'start'  => $start
                                                  );
 	    $builder->createAndAddSequenceData( 'sequenceAlignment' => $aln,
-						'seq-name' => $seq,
+						'seq-name' => "$pro_acc:$seqnum",  #<--see notes above
 						'seq-data' => $alignment
                                               );
 	    $sequences_tag .= "$seqnum:";
@@ -118,7 +163,7 @@ while( my $file = readdir(DIR)) {
 }
 if($file_found) {
     $builder->write( $output );
-    chmod 0755, $output;
+    chmod 0777, $output;
 } else {
     print STDERR "No files that ends in \"$msf_suffix\" are found in $ali_dir\n";
 }
@@ -137,8 +182,10 @@ sub process_MSF_file {
     my $line;
     my $msf_type;
     while(defined($line = <MSF>) and $line !~ /^\/\//) {
-	if( $line =~ /MSF:\s+([\S]+)\s+Type:\s+([\S]+)\s+Check/) {
+	if( $line =~ /MSF:\s*([\S]+)\s*Type:\s*([\S]+)\s*Check/) {
 	    my $msf_length = $1;
+	    return undef if($msf_length == 0);  #abort if align_len = 0
+
 	    if($2 eq 'P') {
 		$msf_type = 'protein';
 	    }elsif($2 eq 'N') {
@@ -149,20 +196,21 @@ sub process_MSF_file {
 	    $MSF_alignments->{'mol_type'} = $msf_type;
 	}
 
-	if($line =~ /Name:\s+([\S]+)\s+Len:\s+([\S]+)\s+Check:\s+([\S]+)\s+Weight:\s+([\S]+)/) {
+	if($line =~ /Name:\s*([\S]+)\s*Len:\s*([\S]+)\s*Check:\s*([\S]+)\s*Weight:\s*([\S]+)/) {
 	    my $name    = $1;
+	    my $name2   = $name;
 	    my $ali_len = $2;
 	    my $check   = $3;
 	    my $weight  = $4;
 	    my ($protein, $coord) = split(/\//, $name);
 	    my ($start5, $end3) = split("-", $coord);
 	    
-	    $MSF_alignments->{'proteins'}->{$protein}->{'length'} = $ali_len;
-	    $MSF_alignments->{'proteins'}->{$protein}->{'check'}  = $check;
-	    $MSF_alignments->{'proteins'}->{$protein}->{'weight'} = $weight;
-	    $MSF_alignments->{'proteins'}->{$protein}->{'end5'}   = $start5;
-	    $MSF_alignments->{'proteins'}->{$protein}->{'end3'}   = $end3;
-	    $MSF_alignments->{'proteins'}->{$protein}->{'alignment'} = [];
+	    $MSF_alignments->{'proteins'}->{$name}->{'length'} = $ali_len;
+	    $MSF_alignments->{'proteins'}->{$name}->{'check'}  = $check;
+	    $MSF_alignments->{'proteins'}->{$name}->{'weight'} = $weight;
+	    $MSF_alignments->{'proteins'}->{$name}->{'end5'}   = $start5;
+	    $MSF_alignments->{'proteins'}->{$name}->{'end3'}   = $end3;
+	    $MSF_alignments->{'proteins'}->{$name}->{'alignment'} = [];
 	}
     }
 
@@ -171,14 +219,15 @@ sub process_MSF_file {
     while($line = <MSF>) {
 	if($line =~ /^([\S]+)/) {
 	    my $name = $1;
+	    my $name2  = $name;
 	    if($name =~ /(\/.+)/) {
 		$replacements = $1;
 		$spaces = " " x length($replacements);
 		$line =~ s/$replacements/$spaces/;
 		$name =~ s/$replacements//g;
 	    }
-	    if(exists($MSF_alignments->{'proteins'}->{$name})) {
-		push( @{ $MSF_alignments->{'proteins'}->{$name}->{'alignment'} }, $line );
+	    if(exists($MSF_alignments->{'proteins'}->{$name2})) {
+		push( @{ $MSF_alignments->{'proteins'}->{$name2}->{'alignment'} }, $line );
             } else {
 		print STDERR "ERROR, $name is not valid protein name\n";
             }

@@ -32,10 +32,7 @@ if( ! -s $db_file) {
     qx(setdb $db_file) if(! -e "$db_file.ahd" || ! -e "$db_file.atb" || ! -e "$db_file.bsq");
 }
 
-if( ! -s $query_fasta) {
-    print "Unable to locate the query fasta file $query_fasta. Aborting... \n";
-    exit 3;
-}
+
     
 if(! -d $output_dir) {
     mkdir $output_dir;
@@ -45,9 +42,22 @@ if(! -d $output_dir) {
 chmod 0777, $output_dir;
 
 
+if( ! -s $query_fasta) {
+    # Not proteins were found on the input sequence...
+    # Return success, but do not run blast. Workflow will propogate an empty BSML search encoding
+    exit(0);
+}
 
 my $command = "pblastp -parameters database=$db_file,fastafile=$query_fasta,report=both,outputdir=$output_dir";
-qx($command);
+my $status = system( $command );
+
+my $exit_value = $status >> 8;
+my $signal_num = $status & 127;
+my $dumped_core = $status & 128;
+
+# propogate the return value of pblastp
+
+exit($exit_value);
 
 
 

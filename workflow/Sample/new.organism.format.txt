@@ -1,0 +1,10 @@
+organism:gbs
+type:prok
+asmbl_id:1,2,3-9,11,13,21-33
+organism:ntsp02
+type:ntprok
+asmbl_id:20,
+asmbl_id:,,,21
+organism:ntsp01
+type:ntprok
+asmbl_id:ALL

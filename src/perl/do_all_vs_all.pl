@@ -39,6 +39,7 @@ foreach my $asmbl_id (@asm_ids) {
     execute_allvsall($asmbl_id);
 }
 
+exit(0);
 
 sub execute_allvsall {
 
@@ -57,13 +58,25 @@ sub execute_allvsall {
 	chmod 0777, $outputdir;
     }
 	      
-    #my $command = "pallvsall -nowait -parameters database=$db_file,fastafile=$fastafile,seqdir=$seqdir,pepdir=$pepdir,outputdir=$outputdir";     
+    if( !( -s $fastafile ))
+    {
+	# The assembly does not have any genes
+	exit(0);
+    }
+     
     my $command = "pallvsall -parameters database=$db_file,fastafile=$fastafile,seqdir=$seqdir,pepdir=$pepdir,outputdir=$outputdir";
-    print "$command\n";
-    qx($command);
+    my $status = system( $command );
 
-    return 1;
+    my $exit_value = $status >> 8;
+    my $signal_num = $status & 127;
+    my $dumped_core = $status & 128;
 
+    if( !($exit_value == 0) )
+    {
+	exit( $exit_value );
+    }
+
+    return $exit_value;
 }
 
 
