@@ -1,30 +1,68 @@
 #!/usr/local/bin/perl
 
+=head1  NAME 
+
+pe2bsml.pl  - convert PEffect output files into BSML documents
+
+=head1 SYNOPSIS
+
+USAGE:  pe2bsml.pl -p peffect.out -o pe.bsml
+
+=head1 OPTIONS
+
+=over 4
+
+=item *
+
+B<--pe_file,-p> [REQUIRED] PEffect output file
+
+=item *
+
+B<--output,-o> [REQUIRED] output BSML file
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+pe2bsml.pl is designed to convert PEffect output files into BSML documents.  
+
+Samples:
+
+1. Convert PE file a.pe into a BSML doc a.bsml
+   pe2bsml.pl -p a.pe -o a.bsml
+
+
+NOTE:  
+
+Calling the script name with NO flags/options or --help will display the syntax requirement.
+
+
+=cut
+
 use strict;
 #use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlBuilder;
 use File::Basename;
-
+use Pod::Usage;
 
 my %options = ();
-my $results = GetOptions (\%options, 'pe_file|p=s', 'bsml_dir|b=s', 'verbose|v', 'output|o=s', 'verbose|v', 'help|h',);
+my $results = GetOptions (\%options, 'pe_file|p=s', 'bsml_dir|b=s', 'verbose|v', 'output|o=s', 
+                                     'verbose|v', 'help|h', 'man') || pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my $output     = $options{'output'};
-my $pe_file     = $options{'pe_file'};
-my $BSML_dir   = $options{'bsml_dir'};
-$BSML_dir =~ s/\/+$//;         #remove terminating '/'s
+my $pe_file    = $options{'pe_file'};
 my $verbose    = $options{'verbose'};
 #Log::Log4perl->init("log.conf");
 #my $logger = get_logger();
 
-if(!$pe_file or !$output or exists($options{'help'})) {
-    #$logger->fatal("Not all of the required options have been defined.  Exiting...");
-    &print_usage();
-}
-
+&cmd_check();
 ###-------------------------------------------------------###
 
 
@@ -107,13 +145,19 @@ sub read_pe_output {
     chmod 0666, $output;
 }
 
-sub print_usage {
+sub cmd_check {
+#quality check
 
+    if( exists($options{'man'})) {
+	pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+    }   
 
-    print STDERR "SAMPLE USAGE:  pe2bsml.pl -p PEffect_output -o output_file\n";
-    print STDERR "  --pe_file     = PEffect output file\n";
-    print STDERR "  --output      = bsml output file\n";
-    print STDERR "  --help = This help message.\n";
-    exit 1;
+    if( exists($options{'help'})) {
+	pod2usage({-exitval => 1, -verbose => 1, -output => \*STDOUT});
+    }
+
+    if(!$output or !$pe_file) {
+	pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});
+    }
 
 }
