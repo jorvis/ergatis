@@ -1,6 +1,6 @@
 #!/usr/local/bin/perl
 
-=head1  NAME 
+=head1  NAMES
 
 gene_match_bsml.pl  - Generates pairwise matches for PEffect from BSML files
 
