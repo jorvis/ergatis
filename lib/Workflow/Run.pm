@@ -70,7 +70,12 @@ but with a prepended underscore.
 B<Returns:> None.
 
 =cut
-
+ ###### signal handler code ###############
+sub handler {
+     my ($signal) = @_;
+     kill $signal, 0;
+     # add any clean up
+}
 sub _init {
     my $self = shift;
     $self->{_WORKFLOW_EXEC_DIR} = "$ENV{'WORKFLOW_WRAPPERS_DIR'}" || ".";
@@ -82,6 +87,13 @@ sub _init {
     foreach my $key (keys %arg) {
         $self->{"_$key"} = $arg{$key}
     }
+ 
+ 
+    $SIG{'HUP'} = 'handler';
+    $SIG{'INT'} = 'handler';
+    $SIG{'QUIT'} = 'handler';
+    $SIG{'TERM'} = 'handler';
+    
 }
 
 sub CreateWorkflow{
