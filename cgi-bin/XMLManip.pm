@@ -222,6 +222,9 @@ sub get_component_xml{
 	&_write_component_subflow_xml($fileprefix,$componentid);
 
 	my $WorkflowBinDir = &_get_bin_dir($conf);
+	if(!-e $WorkflowBinDir){
+	    die "Can't find $WorkflowBinDir";
+	}
 
 
 	return parse XML::Twig::Elt( "
@@ -354,8 +357,22 @@ sub _check_conf{
 
 sub _get_bin_dir{
     my($file) = @_;
+
     my $cfg = new Config::IniFiles(-file => $file);
-    return $cfg->val("init",'$;BIN_DIR$;');
+
+    my @includes = $cfg->GroupMembers("include");
+    my $currcfg = $cfg;
+    foreach my $member (@includes){
+	my @parameters = $cfg->Parameters ($member);
+	foreach my $param (@parameters){
+	    my $includefile = $cfg->val($member,$param);
+	    my $newcfg = new Config::IniFiles( -file => $includefile, 
+					       -import => $currcfg);
+	    $currcfg = $newcfg;
+	}
+    }
+
+    return $currcfg->val("init",'$;BIN_DIR$;');
 }
 
 sub _get_workflow_docs{
