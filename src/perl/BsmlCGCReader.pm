@@ -88,7 +88,8 @@ sub fetch_genome_pairwise_matches
 	    if(ref($aln)) {
 		my $match_ref = $reader->readSeqPairAlignment($aln);            #return all pair_runs for an alignment_pair
 		my $m_asmbl_id = $reader->seqIdtoAssemblyId($match_ref->{'compseq'});
-		if($m_asmbl_id eq $match_asmbl_id || $match_asmbl_id eq 'all' )
+		my $q_asmbl_id = $reader->seqIdtoAssemblyId($match_ref->{'refseq'});
+		if($m_asmbl_id eq $match_asmbl_id || ($match_asmbl_id eq 'all' && ($m_asmbl_id ne $q_asmbl_id) ))
 		  {
 		    my $rhash = {};
 		    
