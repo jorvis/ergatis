@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bit_score_analysis</name>
+        <configMapId>1</configMapId>
+        <commandSet type ="parallel">
+            <name>get_sequences</name>
+            <configMapId>2</configMapId>
+            <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.1</configMapId>
+            </command>
+            <command>
+                <name>RunUnixCommand</name>
+                <configMapId>2.2</configMapId>
+            </command>
+        </commandSet>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.2</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>1.3</configMapId>
+        </command>   
+    </commandSet>
+</commandSetRoot>
+
+
+
+
+
+
+
+
+
+
