@@ -129,13 +129,13 @@ foreach $key (keys %cogs)      {
 # The bidirectional best hit is two proteins.
 # Search both for membership in up to one cluster each.
 sub search_cogs{
-    local (\%cogs, $front, $back) = @_;
+    local ($cogs, $front, $back) = @_;
     local ($found1, $found2) = (-1, -1);
     local (*temp_array);
     $current_cog_count = 0;
-    foreach $key (keys %cogs)                      {
+    foreach $key (keys %$cogs)                      {
         $current_cog_count++;
-	*temp_array = $cogs{$key}->{'listPtr'};
+	*temp_array = $cogs->{$key}->{'listPtr'};
         for ($k=0; $k < @temp_array; $k++)     {
 	    $found1 = $key if ($temp_array[$k] eq $front);
             $found2 = $key if ($temp_array[$k] eq $back);
@@ -149,24 +149,24 @@ sub search_cogs{
 # The bidirectional best hit is two proteins.
 # Create a new cluster with exactly those two members
 sub new_cog {
-    local (\%cogs, $key, $front, $back) = @_;
+    local ($cogs, $key, $front, $back) = @_;
     local (@array) = ($front, $back);
-    $cogs{$key}->{'listPtr'} = \@array;
-    $cogs{$key}->{'size'} = 2;
-    $cogs{$key}->{'connectivity'} = 1;     
+    $cogs->{$key}->{'listPtr'} = \@array;
+    $cogs->{$key}->{'size'} = 2;
+    $cogs->{$key}->{'connectivity'} = 1;     
 }
 
 
 # The bidirectional best hit is two proteins.
 # One was already a member of a cluster. Now add in the other.
 sub add_to_cog {
-    local (\%cogs, $key, $back) = @_; 
+    local ($cogs, $key, $back) = @_; 
     local (*temp_array);
-    *temp_array = $cogs{$key}->{'listPtr'};
+    *temp_array = $cogs->{$key}->{'listPtr'};
     push (@temp_array, $back);
-    $cogs{$key}->{'listPtr'} = \@temp_array;
-    $cogs{$key}->{'size'} += 1;
-    $cogs{$key}->{'connectivity'} += 1;  
+    $cogs->{$key}->{'listPtr'} = \@temp_array;
+    $cogs->{$key}->{'size'} += 1;
+    $cogs->{$key}->{'connectivity'} += 1;  
 }
 
 
@@ -175,19 +175,19 @@ sub add_to_cog {
 # Append all the members of the donor cluster to the keep cluster,
 # then delete the donor cluster.
 sub merge_cogs {
-    local (\%cogs, $key1, $key2) = @_;
+    local ($cogs, $key1, $key2) = @_;
     local (*keep_array, *donor_array);
     $DEBUG && print ("MERGE WORKING! $key1, $key2 \n");
-    *keep_array = $cogs{$key1}->{'listPtr'};
-    *donor_array = $cogs{$key2}->{'listPtr'};
+    *keep_array = $cogs->{$key1}->{'listPtr'};
+    *donor_array = $cogs->{$key2}->{'listPtr'};
     push(@keep_array, @donor_array);
-    $cogs{$key1}->{'listPtr'} = \@keep_array;
-    $cogs{$key1}->{'size'}   += $cogs{$key2}->{'size'};
-    $cogs{$key1}->{'connectivity'} += (1 +  $cogs{$key2}->{'connectivity'});
-    delete $cogs{$key2}->{'listPtr'};
-    delete $cogs{$key2}->{'size'};
-    delete $cogs{$key2}->{'connectivity'};
-    delete $cogs{$key2};
+    $cogs->{$key1}->{'listPtr'} = \@keep_array;
+    $cogs->{$key1}->{'size'}   += $cogs->{$key2}->{'size'};
+    $cogs->{$key1}->{'connectivity'} += (1 +  $cogs->{$key2}->{'connectivity'});
+    delete $cogs->{$key2}->{'listPtr'};
+    delete $cogs->{$key2}->{'size'};
+    delete $cogs->{$key2}->{'connectivity'};
+    delete $cogs->{$key2};
 }
 
 
