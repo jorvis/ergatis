@@ -350,7 +350,7 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     
     $conf->{';CONFIG_LIST;'}   .= $workflow_instance_dir ."/" . $bsml_basename .".ini,";
     $conf->{';INSTANCE_LIST;'} .= $workflow_instance_dir ."/" . $bsml_basename .".xml,";
-    $conf->{';WORKFLOW_INSTANCE_DIRS;'} .= $workflow_instance_dir . "/" . $bsml_basename ." ";
+#    $conf->{';WORKFLOW_INSTANCE_DIRS;'} .= $workflow_instance_dir . "/" . $bsml_basename ." ";
 
 }    
 
@@ -436,7 +436,8 @@ foreach my $bsml_item (sort keys %$bsml_hash){
     $conf->{';CONFIRM_LOAD_OUTDIR;'}   = $workflow_instance_dir ."/". $bsml_basename;
     $conf->{';LOG_DIRECTORY;'}         = $workflow_instance_dir ."/". $bsml_basename;
 
-    
+    $conf->{';WORKFLOW_INSTANCE_DIR;'} = $workflow_instance_dir . "/" . $bsml_basename;
+   
     #
     # Store the configuration for this specific bsml
     # and set global permissions
