@@ -490,7 +490,7 @@ sub createAndAddBtabLine {
 
     $alignment_pair->setattr( 'refxref', ':'.$args{'query_name'})        if (defined ($args{'query_name'}));                     
     $alignment_pair->setattr( 'refstart', 0 );
-    $alignment_pair->setattr( 'refend', $args{'query_length'} - 1 )      if (defined ($args{'query_length'}));
+    $alignment_pair->setattr( 'refend', $args{'query_length'} )      if (defined ($args{'query_length'}));
     $alignment_pair->setattr( 'reflength', $args{'query_length'} )       if (defined ($args{'query_length'}));
 
     $alignment_pair->setattr( 'method', $args{'blast_program'} )         if (defined ($args{'blast_program'}));

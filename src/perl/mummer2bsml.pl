@@ -83,6 +83,8 @@ my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 
+$logger = Workflow::Logger::get_logger();
+
 &check_parameters(\%options);
 
 my $doc = BSML::BsmlBuilder->new();
@@ -126,7 +128,15 @@ sub parse_mummer_collapsed_coords {
 
 	next if($ref_name eq $qry_name);
 
-	
+	my $complement= ($qry_start > $qry_end) ? 1 : 0;
+	if($complement){
+	    ($qry_start,$qry_end) = ($qry_end,$qry_start);
+	}
+	if($ref_start > $ref_end){
+	    $logger->logdie("Unexpected reference coordinates $ref_start $ref_end\n");
+	}
+	$qry_start--;
+	$ref_start--;	
 
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
@@ -135,9 +145,11 @@ sub parse_mummer_collapsed_coords {
 							 ); 
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
 						   'refpos'           => $ref_start,
+						   'refcomplement'    => 0,
 						   'runlength'        => $ref_length,
 						   'comppos'          => $qry_start,
-						   'comprunlength'    => $qry_length
+						   'comprunlength'    => $qry_length,
+						   'compcomplement'   => $complement
                                                   );
     }
 }
@@ -172,7 +184,15 @@ sub parse_promer_full_coords {
 
 	next if($ref_name eq $qry_name);
 
-	
+	my $complement= ($qry_start > $qry_end) ? 1 : 0;
+	if($complement){
+	    ($qry_start,$qry_end) = ($qry_end,$qry_start);
+	}
+	if($ref_start > $ref_end){
+	    $logger->logdie("Unexpected reference coordinates $ref_start $ref_end\n");
+	}
+	$qry_start--;
+	$ref_start--;	
 
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
 							   'compseq'       => $qry_name,
@@ -181,9 +201,11 @@ sub parse_promer_full_coords {
 							 ); 
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
 						   'refpos'           => $ref_start,
+						   'refcomplement'    => 0,
 						   'runlength'        => $ref_length,
 						   'comppos'          => $qry_start,
 						   'comprunlength'    => $qry_length,
+						   'compcomplement'   => $complement
                                                   );
 	#additional attributes
 	$s->addBsmlAttr( 'percent_identity',  $percent_id);
@@ -230,14 +252,17 @@ sub parse_nucmer_full_coords {
 
 	my $complement= ($qry_start > $qry_end) ? 1 : 0;
 	if($complement){
-	    $qry_end++;
+	    ($qry_start,$qry_end) = ($qry_end,$qry_start);
 	}
-	else{
-	    $qry_start--;
+	if($ref_start > $ref_end){
+	    $logger->logdie("Unexpected reference coordinates $ref_start $ref_end\n");
 	}
+	$qry_start--;
+	$ref_start--;
 
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
 						   'refpos'           => $ref_start,
+						   'refcomplement'    => 0,
  						   'runlength'        => $ref_length,
 						   'comppos'          => $qry_start,
 						   'comprunlength'    => $qry_length,
