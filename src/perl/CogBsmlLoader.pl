@@ -204,11 +204,21 @@ sub alignmentHandler
 
     my $runscore = $bestSeqPairRun->returnattr( 'runscore' );
     my $compGenome = $geneGenomeMap->{$compseq};
+    my $refGenome = $geneGenomeMap->{$refseq};
 
     if( !( $compGenome )) 
     {
 	die "$compseq: compseq not found in gene genome map\n";
     }
+
+    if( !( $refGenome ) )
+    {
+	die "$refGenome: refseq not found in gene genome map\n";
+    }
+
+    # alignments to the same genome are not included in COG clusters
+
+    return if( $compGenome eq $refGenome );
 
     my $lref = [];
     
@@ -254,7 +264,9 @@ sub genomeHandler
     
     my $rhash = $reader->readGenome( $bsmlGenome );
 
-    $genome = $rhash->{'source_database'};    
+    
+
+    $genome = $rhash->{'genus'}.':'.$rhash->{'species'}.':'.$rhash->{'strain'};
 }
 	
 sub featureHandler
