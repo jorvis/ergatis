@@ -163,7 +163,8 @@ sub get_logger {
 }
 
 sub get_default_logfilename{
-    return "/tmp/".basename($0).".$$.log";
+    #return "/tmp/".basename($0).".$$.log";
+    return '/dev/null';
 }
 
 1;
