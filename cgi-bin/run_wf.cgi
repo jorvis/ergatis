@@ -42,7 +42,7 @@ if(($inifile ne "") && ($template ne "")){
 	    setsid() or die "Can't start a new session: $!";
 	    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-2.2B1";
 	    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-2.2B1";
-	    $ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/packages/sybase/lib";
+	    $ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/packages/sybase/OCS/lib";
 	    $ENV{'SYBASE'} = "/usr/local/packages/sybase";
 	    $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";
 	    system("$ENV{'WF_ROOT'}/CreateWorkflow -i $instancexml -t $template -c $inifile --delayedbuild=true --autobuild=false > $instancexml.run.out");
