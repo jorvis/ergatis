@@ -53,13 +53,5 @@
             <name>RunUnixCommand</name>
             <configMapId>5.3</configMapId>
         </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>6.1</configMapId>
-        </command>
-        <command>    
-            <name>RunUnixCommand</name>
-            <configMapId>6.2</configMapId>
-        </command>
     </commandSet>
 </commandSetRoot>
