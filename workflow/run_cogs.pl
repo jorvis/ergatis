@@ -45,6 +45,8 @@ my $WorkflowSchemaDir = $ENV{'SCHEMA_DOCS_DIR'};
 my $WorkflowExecDir = $ENV{'WORKFLOW_WRAPPERS_DIR'};
 
 my $conf = {
+    ';DATABASE;' => ' ',
+    ';DATABASE_LC;' => ' ',
     ';TMP_DIR;' => '/usr/local/scratch',
     ';REPOSITORY_ROOT;' => '/usr/local/annotation',
     ';INSTALLATION_DIR;' => $WorkflowExecDir,
