@@ -23,6 +23,10 @@
         </command>
          <command>    
             <name>RunUnixCommand</name>
+            <configMapId>revoke_public</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
             <configMapId>create_filter_views</configMapId>
         </command>
         <commandSet type="parallel">
@@ -116,6 +120,14 @@
         <command>    
             <name>RunUnixCommand</name>
             <configMapId>rebuild_indexes</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>grant_public</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>grant_cas_permissions</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
