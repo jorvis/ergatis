@@ -34,8 +34,6 @@ my $seqParser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&createGe
 my $alnParser = new BSML::BsmlParserSerialSearch( AlignmentCallBack => \&alignmentHandler );
 my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureHandler );
 
-print "Looking for BSML documents in $bsmlSearchDir\n";
-
 $bsmlSearchDir =~ s/\/+$//; #remove trailing slash if present
 $bsmlModelDir =~ s/\/+$//; 
 
@@ -53,7 +51,6 @@ else
 
 foreach my $bsmlFile (<$bsmlModelDir/*.bsml>)
 {
-    print "  - $bsmlFile\n";
     $featParser->parse( $bsmlFile );
 }
 
@@ -71,7 +68,6 @@ my $COGInput = {};
 foreach my $bsmlFile (<$bsmlSearchDir/*.bsml>)
 {
     $geneGenomeMap = {};
-    print "  - $bsmlFile\n";
     $seqParser->parse( $bsmlFile );
     $alnParser->parse( $bsmlFile );
 
