@@ -1,6 +1,9 @@
 #!/bin/sh
 
 KEY=";ASMBL;"
+DB=";PROJECT;"
+
+
 
 if [ ! -d $1 ]
 then
@@ -8,20 +11,27 @@ then
 fi
 
 echo "Storing workflow xml and ini to $1"
+echo "new asmbl_id is $1"
+echo "new project name is $2"
+
+
 
 echo "Saving $1/bit_score.ini"
-cat bit_score.ini | sed "s/$KEY/$1/" > $1/bit_score.ini
+cat bit_score.ini | sed "s/$KEY/$1/g" | sed "s/$DB/$2/g" > $1/bit_score.ini
+
 echo "Saving $1/pe.ini"
-cat pe.ini | sed "s/$KEY/$1/" > $1/pe.ini
+cat pe.ini | sed "s/$KEY/$1/g" | sed "s/$DB/$2/g" > $1/pe.ini
+
 echo "Saving $1/all_vs_all.ini"
-cat all_vs_all.ini | sed "s/$KEY/$1/" > $1/all_vs_all.ini
+cat all_vs_all.ini | sed "s/$KEY/$1/g" | sed "s/$DB/$2/g" > $1/all_vs_all.ini
+
 
 echo "Saving $1/bit_score_template.xml"
-cat bit_score_template.xml | sed "s/$KEY/$1/" > $1/bit_score_template.xml
+cat bit_score_template.xml | sed "s/$KEY/$1/g" > $1/bit_score_template.xml
 echo "Saving $1/pe_template.xml"
-cat pe_template.xml | sed "s/$KEY/$1/" > $1/pe_template.xml
+cat pe_template.xml | sed "s/$KEY/$1/g" > $1/pe_template.xml
 echo "Saving $1/all_vs_all_template.xml"
-cat all_vs_all_template.xml | sed "s/$KEY/$1/" > $1/all_vs_all_template.xml
+cat all_vs_all_template.xml | sed "s/$KEY/$1/g" > $1/all_vs_all_template.xml
 
 
 echo "Start workflow with cd $1;"
