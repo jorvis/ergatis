@@ -89,37 +89,37 @@ my $doc = BSML::BsmlBuilder->new();
 if($options{'mummer_type'} == 1) {
     parse_promer_full_coords($options{'mummer_coords'});
 }elsif($options{'mummer_type'} == 2) {
-    parse_promer_collapsed_coords($options{'mummer_coords'});
+    parse_mummer_collapsed_coords($options{'mummer_coords'});
 }
 elsif($options{'mummer_type'} == 3) {
-    parse_promer_collapsed_coords($options{'mummer_coords'});
+    parse_nucmer_full_coords($options{'mummer_coords'});
 }else {
     $logger->logdie("Bad options{'mummer_type'} $options{'mummer_type'}");
 }
 
 $doc->write($options{'output'});
 
-sub parse_promer_collapsed_coords {
+sub parse_mummer_collapsed_coords {
 
     my $coords_file = shift;
 
-    my @promer;
-    open (PROMER, $coords_file) or die "Unable to open \"$coords_file\" due to $!";
-    while (my $line = <PROMER>) {
+    my @mummer;
+    open (MUMMER, $coords_file) or die "Unable to open \"$coords_file\" due to $!";
+    while (my $line = <MUMMER>) {
 	chomp($line);
-	@promer = split("\t", $line);	
-	#In Promer ref seq refers to query
+	@mummer = split("\t", $line);	
+	#In Mummer ref seq refers to query
 
-	my $ref_start   = $promer[0];
-	my $ref_end     = $promer[1];
-	my $qry_start   = $promer[2];
-        my $qry_end     = $promer[3];
-	my $ref_length  = $promer[4];
-	my $qry_length  = $promer[5];
-	my $ref_asmbl_length = $promer[6];
-	my $qry_asmbl_length = $promer[7];
-	my $ref_name    = $promer[10];
-        my $qry_name    = $promer[11];
+	my $ref_start   = $mummer[0];
+	my $ref_end     = $mummer[1];
+	my $qry_start   = $mummer[2];
+        my $qry_end     = $mummer[3];
+	my $ref_length  = $mummer[4];
+	my $qry_length  = $mummer[5];
+	my $ref_asmbl_length = $mummer[6];
+	my $qry_asmbl_length = $mummer[7];
+	my $ref_name    = $mummer[10];
+        my $qry_name    = $mummer[11];
 
 	$qry_name =~ s/^$options{'database'}\_//i; #strip leading database name for now
 	$ref_name =~ s/^$options{'database'}\_//i; #strip leading database name for now
@@ -194,7 +194,8 @@ sub parse_promer_full_coords {
 
     }
 }
-sub parse_nucmer_coords {
+
+sub parse_nucmer_full_coords {
 
     my $coords_file = shift;
 
@@ -227,11 +228,14 @@ sub parse_nucmer_coords {
                                                            'reflength'     => $ref_asmbl_length
 							 ); 
 
+	my $complement= ($qry_start > $qry_end) ? 1 : 0;
+
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
 						   'refpos'           => $ref_start,
-						   'runlength'        => $ref_length,
+ 						   'runlength'        => $ref_length,
 						   'comppos'          => $qry_start,
 						   'comprunlength'    => $qry_length,
+						   'compcomplement'   => $complement
 						   );
 	$s->addBsmlAttr( 'percent identity',  $percent_id);
     }
@@ -246,7 +250,7 @@ sub check_parameters{
     }
 
 
-    if($options{'mummer_type'} != '1' and $options{'mummer_type'} != '2') {
+    if($options{'mummer_type'} != '1' and $options{'mummer_type'} != '2' and $options{'mummer_type'} != '3') {
 	pod2usage({-exitval => 2,  -message => "$0: mummer_type can only be 1 or 2", -verbose => 1, -output => \*STDERR}); 
     }
 }
