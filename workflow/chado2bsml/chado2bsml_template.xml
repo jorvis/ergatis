@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>chado2bsml</name>
+        <configMapId>empty</configMapId>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>dtd_validation</configMapId>
+            <name>DTD validation</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>xsd_validation</configMapId>
+            <name>XML schema validation</name>
+        </command>
+    </commandSet>
+</commandSetRoot>

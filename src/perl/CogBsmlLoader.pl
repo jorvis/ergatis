@@ -23,7 +23,7 @@ B<--bsmlSearchDir, -b>  [REQUIRED] Dir containing the BSML search encodings of p
 
 =item *
 
-B<--outFile, -o>        [REQUIRED] output BTAB file
+B<--output, -o>        [REQUIRED] output BTAB file
 
 =item *
 
@@ -43,14 +43,6 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 =cut
 
-use strict;
-use warnings;
-use Pod::Usage;
-use BSML::BsmlParserSerialSearch;
-use BSML::BsmlReader;
-use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use Data::Dumper;
-
 # Preprosess data stored in BSML pairwise alignment documents into BTAB
 # structure for COG analysis.
 
@@ -62,13 +54,39 @@ use Data::Dumper;
 # outfile - btab output file
 #
 #
- 
-my %options = ();
-my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'bsmlJaccardDir|j=s', 'jaccardFilter|f=s', 'outFile|o=s', 'pvalcut|p=s', 'help|h', 'man' ) || pod2usage();
 
-my $bsmlSearchDir = $options{'bsmlSearchDir'};
-my $bsmlModelDir = $options{'bsmlModelDir'};my $outFile = $options{'outFile'};
-my $PVALCUTOFF = $options{'pvalcut'};
+use strict;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+use Pod::Usage;
+use Workflow::Logger;
+use BSML::BsmlParserSerialSearch;
+use BSML::BsmlReader;
+
+my %options = ();
+my $results = GetOptions( \%options, 
+			  'bsmlSearchList|b=s', 
+			  'bsmlModelList|m=s', 
+			  'bsmlJaccardDir|j=s', 
+			  'outfile|o=s', 
+			  'pvalcut|p=s', 
+			  'log|l=s',
+			  'debug=s',
+			  'help|h') || pod2usage();
+
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+				  'LOG_LEVEL'=>$options{'debug'});
+$logger = Workflow::Logger::get_logger();
+
+# display documentation
+if( $options{'help'} ){
+    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDERR} );
+}
+
+
+&check_parameters(\%options);
+
+#MAIN HERE
 
 # associative array to translate cds identifiers to protein ids.
 my $cds2Prot = {};
@@ -79,30 +97,94 @@ my $cds2Prot = {};
 my $alnParser = new BSML::BsmlParserSerialSearch( AlignmentCallBack => \&alignmentHandler );
 my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureHandler, GenomeCallBack => \&genomeHandler );
 
-if( exists($options{'help'}) || exists($options{'man'}) )
-{
-    pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
-}
-
-if( !$PVALCUTOFF )
-{
-    die "ERROR: No pvalue cutoff has been specified";
-}
-
 # If Jaccard data has been specified, use it for equivalence class filtering
 
 my $jaccardClusterHash = {};  #Associate Jaccard clusters by sequence id
 my $jaccardRepSeqHash = {};   #Associate a representative sequence for each cluster
 my $jaccardClusterCount = 0;
 
-if( $options{'bsmlJaccardDir'} && $options{'jaccardFilter'} == 1 )
+
+$options{'bsmlJaccardDir'} =~ s/\'//g;
+$options{'bsmlJaccardDir'} =~ s/\"//g;
+
+if( $options{'bsmlJaccardDir'} && $options{'bsmlJaccardDir'} ne "" )
 {
-    my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
-    foreach my $bsmlFile (<$options{'bsmlJaccardDir'}/*.bsml>)
-    {
-	$multiAlnParser->parse( $bsmlFile );
+    if(-r $options{'bsmlJaccardDir'}){
+	my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
+	foreach my $bsmlFile (<$options{'bsmlJaccardDir'}/*.bsml>)
+	{
+	    print STDERR "Parsing $bsmlFile\n";
+	    $multiAlnParser->parse( $bsmlFile );
+	}
+    }
+    else{
+	$logger->logdie("Can't read jaccard dir $options{'bsmlJaccardDir'}");
     }
 }
+
+
+# protein sequence identifer to genome mapping 
+my $geneGenomeMap = {};
+my $genome = '';
+
+# loop through the documents in the model directory to create the protein genome map
+
+foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlModelList'})}){
+    print STDERR "Parsing $bsmlFile\n";
+    $featParser->parse( $bsmlFile );
+    $genome = '';
+}
+
+
+open( OUTFILE, ">$options{'outfile'}" ) or $logger->logdie("Can't open file $options{'outfile'}");
+
+#####################################
+
+# structure for building the COGS input. For each query gene, the COGS analysis expects
+# the single best scoring alignment for each reference genome. In BSML terms, COGS expects the
+# highest scoring seqpair for each refseq compseq combination where all compseqs 
+# are contained in the same genome. 
+
+
+#  Genome A           Genome B            Genome C
+#  compseqA1          compseqB1           compseqC1
+#  compseqA2          compseqB2           compseqC2
+#  compseqA3                              compseqC3
+
+
+# If the above represent the sets of reference genes by genome. The following would 
+# correspond to the expected output if A1, B2, and C1 were the best hits by genome. 
+
+# refseq -> compseqA1
+# refseq -> compseqB2
+# refseq -> compseqC1
+
+####################################
+    
+my $COGInput = {};
+
+foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlSearchList'})}){
+    
+    # builds the COGS input data structure
+
+    print STDERR "Parsing $bsmlFile\n";
+    $alnParser->parse( $bsmlFile );
+    print STDERR "Done parsing $bsmlFile\n";
+
+    # print the results
+
+    foreach my $k1 ( keys( %{$COGInput} ) )
+    {
+	foreach my $k2 (keys( %{$COGInput->{$k1}}))
+	{
+	    print OUTFILE join("\t", @{$COGInput->{$k1}->{$k2}});
+	    print OUTFILE "\n";
+	}
+    }
+
+    $COGInput = {};
+}
+
 
 sub multipleAlignmentHandler
 {
@@ -130,90 +212,6 @@ sub multipleAlignmentHandler
 
     $jaccardClusterCount++;
 }
-
-if(!$bsmlSearchDir || !$bsmlModelDir )
-{
-    die "ERROR: BSML directories for search encodings and gene-sequence models not specified\n";
-}
-else
-{
-    $bsmlSearchDir =~ s/\/+$//; #remove trailing slash if present
-    $bsmlModelDir =~ s/\/+$//; 
-
-    if( ! -d $bsmlSearchDir || ! -d $bsmlModelDir )
-    {
-	die "could not open directory: $bsmlSearchDir\n";
-    }
-}
-
-
-
-# protein sequence identifer to genome mapping 
-my $geneGenomeMap = {};
-my $genome = '';
-
-# loop through the documents in the model directory to create the protein genome map
-
-foreach my $bsmlFile (<$bsmlModelDir/*.bsml>)
-{
-    $featParser->parse( $bsmlFile );
-    $genome = '';
-}
-
-
-if(! $outFile )
-{
-    die "output file not specified\n";
-}
-
-open( OUTFILE, ">$outFile" );
-
-#####################################
-
-# structure for building the COGS input. For each query gene, the COGS analysis expects
-# the single best scoring alignment for each reference genome. In BSML terms, COGS expects the
-# highest scoring seqpair for each refseq compseq combination where all compseqs 
-# are contained in the same genome. 
-
-
-#  Genome A           Genome B            Genome C
-#  compseqA1          compseqB1           compseqC1
-#  compseqA2          compseqB2           compseqC2
-#  compseqA3                              compseqC3
-
-
-# If the above represent the sets of reference genes by genome. The following would 
-# correspond to the expected output if A1, B2, and C1 were the best hits by genome. 
-
-# refseq -> compseqA1
-# refseq -> compseqB2
-# refseq -> compseqC1
-
-####################################
-    
-my $COGInput = {};
-
-foreach my $bsmlFile (<$bsmlSearchDir/*.bsml>)
-{
-    
-    # builds the COGS input data structure
-
-    $alnParser->parse( $bsmlFile );
-
-    # print the results
-
-    foreach my $k1 ( keys( %{$COGInput} ) )
-    {
-	foreach my $k2 (keys( %{$COGInput->{$k1}}))
-	{
-	    print OUTFILE join("\t", @{$COGInput->{$k1}->{$k2}});
-	    print OUTFILE "\n";
-	}
-    }
-
-    $COGInput = {};
-}
-
 sub alignmentHandler
 {
     my $aln = shift;
@@ -233,14 +231,33 @@ sub alignmentHandler
     # self-self alignments are not included 
     return if( $compseq eq $refseq );
 
-    # find the highest scoring run for each pairwise alignment
+    my $compGenome = $geneGenomeMap->{$compseq};
+    my $refGenome = $geneGenomeMap->{$refseq};
+
+    if( !( $compGenome )) 
+    {
+	$logger->debug("$compseq: compseq not found in gene genome map. skipping.") if($logger->is_debug());
+	return;
+    }
+
+    if( !( $refGenome ) )
+    {
+	$logger->debug("$refseq: compseq not found in gene genome map. skipping.") if($logger->is_debug());
+	return;
+    }
+
+    # alignments to the same genome are not included in COG clusters
+
+    return if( $compGenome eq $refGenome );
+
+     # find the highest scoring run for each pairwise alignment
 
     foreach my $seqPairRun ( @{$aln->returnBsmlSeqPairRunListR} )
     {
 	my $runscore = $seqPairRun->returnattr( 'runscore' );
 	my $pvalue = $seqPairRun->returnBsmlAttr( 'p_value' );
 
-	if( ($runscore > $bestRunScore) && ($pvalue < $PVALCUTOFF) )
+	if( ($runscore > $bestRunScore) && ($pvalue < $options{'pvalcut'}) )
 	{
 	    $bestRunScore = $runscore;
 	    $bestSeqPairRun = $seqPairRun;
@@ -251,24 +268,7 @@ sub alignmentHandler
     return if( !($bestSeqPairRun) );
 
     my $runscore = $bestSeqPairRun->returnattr( 'runscore' );
-    my $compGenome = $geneGenomeMap->{$compseq};
-    my $refGenome = $geneGenomeMap->{$refseq};
-
-    if( !( $compGenome )) 
-    {
-	die "$compseq: compseq not found in gene genome map\n";
-    }
-
-    if( !( $refGenome ) )
-    {
-	die "$refGenome: refseq not found in gene genome map\n";
-    }
-
-    # alignments to the same genome are not included in COG clusters
-
-    return if( $compGenome eq $refGenome );
-
-
+    
     # If compseq is defined in a Jaccard equivalence class identify the class by
     # its reference sequence. 
 
@@ -359,5 +359,21 @@ sub featureHandler
     }
 } 
 
+sub get_list_from_file{
+    my($file) = @_;
+    my @lines;
+    open( FH, $file ) or $logger->logdie("Could not open $file");
+    while( my $line = <FH> ){
+	chomp($line);
+	push @lines, split(',',$line) if($line =~ /\S+/);
+    }
+    return \@lines;
+}
 
-
+sub check_parameters{
+    my ($options) = @_;
+    
+    if(0){
+	pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
+    }
+}

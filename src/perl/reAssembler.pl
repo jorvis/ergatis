@@ -3,7 +3,6 @@
 
 use strict;
 use warnings;
-use lib "/export/CVS/bsml/src"; 
 use Pod::Usage;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlReader;
@@ -12,18 +11,24 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Data::Dumper;
 
 my %options = ();
-my $results = GetOptions( \%options, 'bsmlSearchFile|b=s', 'bsmlMapDir|m=s', 'help|h', 'man' ) || pod2usage();
+my $results = GetOptions( \%options, 'bsmlMapSearchFile|b=s', 'bsmlSearchDir|d=s', 'bsmlMapDir|m=s', 'bsmlOutputDir|o=s', 'help|h', 'man' ) || pod2usage();
 
-my $mapping_Parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&sequenceHandler );
+my $mapping_Parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&mapping_sequenceHandler );
+my $post_mapping_Parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&post_mapping_sequenceHandler );
+
 my $reader = new BSML::BsmlReader;
 
 my $lengthLookUp = {};
 my $sequenceLookup = {};
 my $offsetLookup = {};
 
-# Process the mapping files, building lookups for sequence length, sequence references, and sequence offsets
+my $currentAssembly = '';
+my $currentChunkList = [];
 
-print "$options{'bsmlMapDir'}\n";
+my $bsmlDoc;
+my $analysis_written = 0;
+
+# Process the mapping files, building lookups for sequence length, sequence references, and sequence offsets
 
 foreach my $bsmlMap ( <$options{'bsmlMapDir'}/*.bsml> )
 {
@@ -56,8 +61,75 @@ sub mapping_sequenceHandler
     }
 }
 
-my $search_Parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&search_sequenceHandler, AlignmentCallBack => \&search_alignmentHandler );
-my $bsmlDoc = new BSML::BsmlBuilder;
+sub post_mapping_sequenceHandler
+{
+  my $seq = shift;
+    
+    # if the sequence has a numbering it's a chunk, else it's a reference sequence
+
+    if( my $numbering = $reader->readNumbering( $seq ) )
+    {
+	push( @{$currentChunkList}, $seq->returnattr( 'id' ));
+    }
+    else
+    {
+	$currentAssembly =  $seq->returnattr( 'id' );
+    }
+}
+
+my $search_Parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&search_sequenceHandler, AlignmentCallBack => \&search_alignmentHandler, AnalysisCallBack => \&analysis_Handler );
+
+if( !( $options{'bsmlMapSearchFile'} ) )
+{
+    foreach my $bsmlMap ( <$options{'bsmlMapDir'}/*.bsml> )
+    {
+	$currentAssembly = '';
+	$currentChunkList = [];
+	
+	$post_mapping_Parser->parse( $bsmlMap );
+
+	$bsmlDoc = new BSML::BsmlBuilder;
+	$bsmlDoc->makeCurrentDocument();
+	
+	my $search = '';
+	
+	foreach my $chunk ( <$options{'bsmlSearchDir'}/${currentAssembly}_*>)
+	{
+	    $chunk =~ /$options{'bsmlSearchDir'}\/${currentAssembly}_([\d]*)_([\S]*).bsml/;
+	    $search = $2;
+
+	    $search_Parser->parse( $chunk );
+	}
+
+	$bsmlDoc->write( "$options{'bsmlOutputDir'}/${currentAssembly}_${search}.bsml" );
+    }
+}
+else
+{
+   
+    my $bsmlMap = $options{'bsmlMapSearchFile'};
+
+    $currentAssembly = '';
+    $currentChunkList = [];
+	
+    $post_mapping_Parser->parse( $bsmlMap );
+    
+    $bsmlDoc = new BSML::BsmlBuilder;
+    $bsmlDoc->makeCurrentDocument();
+    
+    my $search = '';
+	
+    foreach my $chunk ( <$options{'bsmlSearchDir'}/${currentAssembly}_*>)
+    {
+	print "$chunk\n";
+	$chunk =~ /$options{'bsmlSearchDir'}\/${currentAssembly}_([\d]*)_([\S]*).bsml/;
+	$search = $2;
+	
+	$search_Parser->parse( $chunk );
+    }
+    
+    $bsmlDoc->write( "$options{'bsmlOutputDir'}/${currentAssembly}_${search}.bsml" );
+}
 
 sub search_sequenceHandler
 {
@@ -78,10 +150,22 @@ sub search_sequenceHandler
 	$seq_length = $lengthLookUp->{$mapped_id};
     }
 
-    my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $seq_id,
+    my $assmblId = $seqref->returnBsmlAttr( 'ASSEMBLY' );
+
+    if( my $mapped_id = $sequenceLookup->{$assmblId} )
+    {
+	$assmblId = $mapped_id;
+    }
+
+    if( !( BSML::BsmlDoc::BsmlReturnDocumentLookup( $seq_id ) ) )
+    {
+	my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $seq_id,
 							  title => $seq_id, 
 							  molecule => $seq_molecule,
 							  length => $seq_length );
+
+	$newSeq->addBsmlAttr( 'ASSEMBLY', $assmblId );
+    }
 }
 
 sub search_alignmentHandler
@@ -135,10 +219,32 @@ sub search_alignmentHandler
 		$qual ne 'comprunlength' &&
 		$qual ne 'compcomplement' &&
 		$qual ne 'runscore' &&
-		$qual ne 'runprob' )
+		$qual ne 'runprob' &&
+		$qual ne 'bsmlRef' )
 	    {
 		$run->addBsmlAttr( $qual, $alnrun->{$qual} );
 	    }
 	}
+    }
+}
+
+
+
+sub analysis_Handler
+{
+    my $analysis = shift;
+    my $rhash = $reader->readElement( $analysis );
+
+    
+    if( $analysis_written == 0 )
+    {
+	my $new_analysis = $bsmlDoc->createAndAddAnalysis();
+
+	foreach my $attr (keys(%{$rhash}))
+	{
+	    $new_analysis->addBsmlAttr( $attr, $rhash->{$attr} );
+	}
+
+	$analysis_written = 1;
     }
 }

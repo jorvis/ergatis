@@ -1,9 +1,8 @@
 #! /local/perl/bin/perl
-#
+##
 
 use strict;
 use warnings;
-use lib "/export/CVS/bsml/src"; 
 use Pod::Usage;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlReader;
@@ -91,7 +90,7 @@ sub sequenceHandler
 	$bsmlDoc->makeCurrentDocument();
 
 
-	print "DEBUG: $startCoord $endCoord\n";
+	# print "DEBUG: $startCoord $endCoord\n";
 
 	my $seqdat = $Reader->subSequence( $seqref, $startCoord, $endCoord, 0 );
 
@@ -126,7 +125,7 @@ sub sequenceHandler
 			($fmin, $fmax, $complement) = ($fmax, $fmin, 1);
 		    }
 
-		    if( $fmin >= $startCoord && $fmax <= $endCoord )
+		    if( ($complement == 0 && ($fmin >= $startCoord && $fmin <= $endCoord )) || ($complement == 1 && ($fmax >= $startCoord && $fmax <= $endCoord ))  )
 		    {
 			my $mapped_fmin = $fmin - $startCoord;
 			my $mapped_fmax = $fmax - $startCoord;
@@ -167,7 +166,7 @@ sub sequenceHandler
 			($fmin, $fmax, $complement) = ($fmax, $fmin, 1);
 		    }
 
-		    if( $fmin >= $startCoord && $fmax <= $endCoord )
+		    if(  ($complement == 0 && ($fmin >= $startCoord && $fmin <= $endCoord )) || ($complement == 1 && ($fmax >= $startCoord && $fmax <= $endCoord )) )
 		    { 
 
 		    my $mapped_fmin = $fmin - $startCoord;
@@ -209,7 +208,7 @@ sub sequenceHandler
 			($fmin, $fmax, $complement) = ($fmax, $fmin, 1);
 		    }
 		    
-		    if( $fmin >= $startCoord && $fmax <= $endCoord )
+		    if(  ($complement == 0 && ($fmin >= $startCoord && $fmin <= $endCoord )) || ($complement == 1 && ($fmax >= $startCoord && $fmax <= $endCoord )) )
 		    {
 			my $mapped_fmin = $fmin - $startCoord;
 			my $mapped_fmax = $fmax - $startCoord;
@@ -242,7 +241,7 @@ sub sequenceHandler
 		if( $feature->{'class'} eq 'CDS' ) 
 		{
 		    my $fmin = $feature->{'locations'}->[0]->{'startpos'};
-		    my $fmax = $feature->{'locations'}->[1]->{'endpos'};
+		    my $fmax = $feature->{'locations'}->[0]->{'endpos'};
 		    my $complement = $feature->{'locations'}->[0]->{'complement'};
 		    
 		    if( $fmin > $fmax )
@@ -250,7 +249,7 @@ sub sequenceHandler
 			($fmin, $fmax, $complement) = ($fmax, $fmin, 1);
 		    }
 		    
-		    if( $fmin >= $startCoord && $fmax <= $endCoord )
+		    if(  ($complement == 0 && ($fmin >= $startCoord && $fmin <= $endCoord )) || ($complement == 1 && ($fmax >= $startCoord && $fmax <= $endCoord )) )
 		    { 
 
 		    my $mapped_fmin = $fmin - $startCoord;
@@ -280,9 +279,11 @@ sub sequenceHandler
 		    {
 			$newFeat->addBsmlLink($bsmllink->{'rel'}, $bsmllink->{'href'} );
 
-			$bsmllink->{'href'} =~ s/#//;
+			$bsmllink->{'href'} =~ s/\#//;
 
 			my $protSeq = $bsmlDoc->createAndAddSequence( $bsmllink->{'href'}, '', '', 'aa' );
+
+                        $protSeq->addBsmlAttr( 'ASSEMBLY', "$rhash->{'id'}_$subAssemblyCount" );
 			
 			$bsmlDoc->makeCurrentDocument();
 			BSML::BsmlDoc::BsmlSetDocumentLookup( $bsmllink->{'href'}, $protSeq );

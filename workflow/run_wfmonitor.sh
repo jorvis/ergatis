@@ -1,6 +1,6 @@
 #!/bin/sh
 
-INSTALL_DIR=.
+INSTALL_DIR=/usr/local/devel/ANNOTATION/workflow-2.1/
 
 while getopts i:h opt
 do case "$opt" in
@@ -11,5 +11,5 @@ do case "$opt" in
       esac
 done
 
-source $INSTALL_DIR/exec_env.sh
+source $INSTALL_DIR/exec_env.bash
 WorkflowMonitor $instance  1>/dev/null 2>/dev/null

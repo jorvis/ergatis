@@ -6,19 +6,11 @@ gene_boundaries_bsml - Clusters gene matches into syntenic regions
 
 =head1 SYNOPSIS
 
-USAGE:  gene_boundaries_bsml -a asmbl_id [-f asmbl_file] -b bsml_file [-c file] -d bsml_directory [-e match_all_asmbls]  [-m min_gap_between_clusters] [-s min_cluster_size] [-l log_file] [--debug debug_level]
+USAGE:  gene_boundaries_bsml -b bsml_file [-c file] -d bsml_directory [-e match_all_asmbls]  [-m min_gap_between_clusters] [-s min_cluster_size] [-l log_file] [--debug debug_level]
 
 =head1 OPTIONS
 
 =over 8
-
-=item B<--asmbl_id,-a>
-    
-    The asmbl_id to analyze for syntenic regions.  Multiple asmbl_ids can be specified by a comma separated list or through multiple -a parameters.  See --asmbl_file for an alternate forms for input.
-
-=item B<--asmbl_file,-f>
-    
-    The a file containing a list of asmbl_ids to analyze for syntenic regions.  The file format is one asmbl_id per line.
 
 =item B<--bsml_file,-b>
     
@@ -66,59 +58,48 @@ USAGE:  gene_boundaries_bsml -a asmbl_id [-f asmbl_file] -b bsml_file [-c file] 
 =cut
  
 use strict;
-use Log::Log4perl qw(get_logger :levels :easy);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
+use BSML::BsmlRepository;
 use Data::Dumper;
 use File::Basename;
 use Pod::Usage;
+use Workflow::Logger;
 
-my $DEBUG=0;
+my($bsml_file,$bsml_file_list,$xmingap,$ymingap,$mincluster,$BSML_dir,$all_asmbl_flag,$debug,$log,$help);
 
-my(@asmbl_ids,$asmbl_file,$bsml_file,$bsml_file_list,$mingap,$mincluster,$BSML_dir,$all_asmbl_flag,$debug,$log,$help);
-my $results = GetOptions ('asmbl_id|a=s@' => \@asmbl_ids, 
-			  'asmbl_file|f=s' => \$asmbl_file,
-			  'bsml_file|b=s' => \$bsml_file,
-			  'bsml_file_list|c=s' => \$bsml_file_list,
-			  'bsml_dir|d=s' => \$BSML_dir,
-			  'min_gap|m=s' => \$mingap,
-			  'min_cluster|s=s' => \$mincluster,
-			  'match_all_asmbls|e' => \$all_asmbl_flag,
-			  'debug|D=s' => \$debug,
-			  'log|l=s' => \$log,
-			  'help|?|h' => \$help);
-###-------------PROCESSING COMMAND LINE OPTIONS-------------###
-pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if($help || (!$bsml_file && !$bsml_file_list) || (!@asmbl_ids && !$asmbl_file));
+my %options = ();
+my $results = GetOptions (\%options,
+			  'bsml_file|b=s',
+			  'bsml_file_list|c=s',
+			  'bsml_dir|d=s',
+			  'xmin_gap|x=s',
+			  'ymin_gap|y=s',
+			  'min_cluster|s=s',
+			  'match_all_asmbls|e',
+			  'debug=s',
+			  'log|l=s',
+			  'help|?|h');
 
-$BSML_dir =~ s/\/$//;
-$mingap = 10000 if($mingap eq "");
-$mincluster = 3000 if($mincluster eq "");
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+				  'LOG_LEVEL'=>$options{'debug'});
+$logger = Workflow::Logger::get_logger();
 
-###-------------------------------------------------------###
-#Init logger
-#Use central install log file as default if available
-Log::Log4perl-> Log::Log4perl::init_and_watch($ENV{LOG4PERL_CONF}) if($ENV{LOG4PERL_CONF});
-my $logger = get_logger('papyrus::regions');
-$logger->level($INFO);
-$logger->more_logging($debug) if($debug);
-# Define a file appender or a screen appender
-if($log){
-    my $file_appender = Log::Log4perl::Appender->new(
-						     "Log::Dispatch::File",
-						     filename  => $log);
-    
-    my $layout = 
-	Log::Log4perl::Layout::PatternLayout->new(
-						  "%d %p> %F{1}:%L %M - %m%n");
-    $file_appender->layout($layout);
-    $logger->add_appender($file_appender);
-}else{
-    my $screen_appender = Log::Log4perl::Appender->new(
-						       "Log::Dispatch::Screen");	
-    
-    $logger->add_appender($screen_appender);
+# display documentation
+if( $options{'help'} ){
+    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDERR} );
 }
+
+
+&check_parameters(\%options);
+
+###-------------PROCESSING COMMAND LINE OPTIONS-------------###
+$options{'bsml_dir'} =~ s/\/$//;
+$options{'xmin_gap'} = 10000 if($options{'xmin_gap'} eq "");
+$options{'ymin_gap'} = 10000 if($options{'ymin_gap'} eq "");
+$options{'min_cluster'} = 3000 if($options{'min_cluster'} eq "");
 
 
 my %asmbllookup;
@@ -129,8 +110,8 @@ my %asmbllookup;
 ########
 my @allbsmlfiles;
 
-if($bsml_file_list){
-    open FILE,$bsml_file_list or die "Can't open $bsml_file_list\n";
+if($options{'bsml_file_list'}){
+    open FILE,$options{'bsml_file_list'} or die "Can't open $options{'bsml_file_list'}\n";
     while (my $line = <FILE>){
 	chomp $line;
 	push @allbsmlfiles,$line;
@@ -139,26 +120,15 @@ if($bsml_file_list){
     close FILE;
 }
 else{
-    $logger->info("Adding matches from $bsml_file to analysis");
-    push @allbsmlfiles,$bsml_file;
+    $logger->info("Adding matches from $options{'bsml_file'} to analysis");
+    push @allbsmlfiles,$options{'bsml_file'};
 }
 
-######
-#Get all asmbls to use for comparison
-######
-if($asmbl_file){
-    open FILE,$asmbl_file or die "Can't open $asmbl_file\n";
-    while (my $line = <FILE>){
-	chomp $line;
-	push @asmbl_ids,$line;
-	$logger->info("Adding asmbl_id $line to analysis");
-    }
-}
-if($all_asmbl_flag){
-    $logger->info("Comparing ",join(',',@asmbl_ids), " vs. all asmbl_ids in $BSML_dir");
+if($options{'match_all_asmbls'}){
+    $logger->info("Comparing vs. all asmbl_ids in $options{'bsml_dir'}");
 }
 else{
-    $logger->info("Comparing ",join(',',@asmbl_ids), " against each other");
+    $logger->info("Comparing match asmbls against each other");
 }
  
 foreach my $curr_bsml_file (@allbsmlfiles){
@@ -166,23 +136,34 @@ foreach my $curr_bsml_file (@allbsmlfiles){
     my $reader = new BSML::BsmlReader;
     $parser->parse( \$reader, $curr_bsml_file );
 
-    $logger->info("Parsed match file $curr_bsml_file");
-    
-    
+    my $asmbl_ids = &get_refseq_asmbls($reader);
 
-    foreach my $asmbl_id1 (@asmbl_ids){
+    $logger->info("Parsed match file $curr_bsml_file");
+       
+    my $repo = new BSML::BsmlRepository('BSML_repository'=>$options{'bsml_dir'});
+    
+    foreach my $asmbl_id1 (@$asmbl_ids){
+	my $asmbl_id1doc = $repo->get_assembly_doc($asmbl_id1);
+	$logger->debug("Processing query sequence $asmbl_id1 from document $asmbl_id1doc");
+	&fillAnnotation(\%asmbllookup, "$asmbl_id1doc") if(! (exists $asmbllookup{$asmbl_id1}));;;    
 	
-	&fillAnnotation(\%asmbllookup, "$BSML_dir/${asmbl_id1}.bsml") if(! (exists $asmbllookup{$asmbl_id1}));;;    
+	my @allasmbls = &get_all_asmbls($asmbl_ids,$options{'match_all_asmbls'});
 	
-	my @allasmbls = &get_all_asmbls(\@asmbl_ids,$all_asmbl_flag);
 	my $proteinmatches = &getMatchingIds($reader,$asmbllookup{$asmbl_id1});
 
+	if(scalar (@$proteinmatches) == 0){
+	    $logger->logdie('No matches found on $asmbl_id1');
+	}
+
 	foreach my $asmbl_id2 (@allasmbls){ 
+
 	    if($asmbl_id1 ne $asmbl_id2){
-		&fillAnnotation(\%asmbllookup, "$BSML_dir/${asmbl_id2}.bsml") if(! (exists $asmbllookup{$asmbl_id2}));;
+		my $asmbl_id2doc = $repo->get_assembly_doc($asmbl_id2);
+		$logger->debug("Processing match sequence $asmbl_id2 against $asmbl_id1 $asmbl_id1doc $asmbl_id2doc");
+		&fillAnnotation(\%asmbllookup, "$asmbl_id2doc") if(! (exists $asmbllookup{$asmbl_id2}));;
 		my $match_lookup = &populateMatches($reader,$asmbl_id1,$asmbl_id2,\%asmbllookup,$proteinmatches);
 		my($xref,$yref,$matches) = &getGroupings($asmbl_id1,$asmbl_id2,\%asmbllookup,$match_lookup);
-		&printGroupings($matches,\%asmbllookup,$xref,$yref,$asmbl_id1,$asmbl_id2,$mincluster);
+		&printGroupings($matches,\%asmbllookup,$xref,$yref,$asmbl_id1,$asmbl_id2,$options{'min_cluster'});
 	    }
 	}
     }
@@ -191,7 +172,6 @@ foreach my $curr_bsml_file (@allbsmlfiles){
 sub getMatchingIds{
     my($reader,$asmblref) = @_;
     my @matchingprots;
-    my $logger = get_logger('papyrus::regions');
     my $seqalns = $reader->returnAllSeqPairAlignmentsListR();
     foreach my $seqaln (@$seqalns){
 	my $match_ref = $reader->readSeqPairAlignment($seqaln);
@@ -209,27 +189,21 @@ sub getMatchingIds{
 
 sub get_all_asmbls{
     my($asmblref,$flag) = @_;
-    my @asmbls;
+    my $asmbls;
     if($flag){
-	my @files = <$BSML_dir/*.bsml>; 
-	foreach (@files) {
-	    my $basename = basename($_);
-	    if(my ($newasmbl) = ($basename =~ /(.+)\.bsml/)) {
-		push(@asmbls, $newasmbl);
-	    }
-	}
+	my $repo = new BSML::BsmlRepository('BSML_repository'=>$options{'bsml_dir'});	
+	$asmbls = $repo->list_assemblies();
     }
     else{
-	@asmbls = @$asmblref;
+	$asmbls = $asmblref;
     }
 
-    return @asmbls;
+    return @$asmbls;
 }
 sub populateMatches{
     my ($reader, $query_asmbl_id, $match_asmbl_id,$asmbl_lookup, $proteinmatches) = @_;
     my $match_lookup = {};
     $reader->makeCurrentDocument();
-    my $logger = get_logger('papyrus::regions');
     $logger->debug ("Searching ",scalar(@$proteinmatches)," proteins on $query_asmbl_id for seqpairs");
     foreach my $match_ref (@$proteinmatches) {   #grab all seq obj given query_asmbl_id
 	if($match_ref->{'compseq'} ne $match_ref->{'refseq'}){ #ignore self hit
@@ -317,8 +291,6 @@ sub populateMatches{
 sub getGroupings{
     my($asmbl_id1,$asmbl_id2,$asmbl_lookup,$match_lookup) = @_;
 
-    my $logger = get_logger('papyrus::regions');
-
     my $xref = $match_lookup->{$asmbl_id1};
     #$xref->{$feat_name}->{'end5'} = end5 coord of $feat_name in genome on x axis
     #$xref->{$feat_name}->{'end3'} = end3 coord of $feat_name in genome on x axis
@@ -344,8 +316,9 @@ sub getGroupings{
     my($lastyfeat); #prev feat_name on genome y
     my($xgaplength)=0; #distance between current feat_name and prev feat_name on genome x
     my($ygaplength)=0; #distance between current feat_name and prev feat_name on genome y
-    my($step)=$mingap; #minimum linear separation(bp) between groupings
-    $logger->debug("Setting minimum linear separation(bp) between groupings at $step");
+    my($xstep)=$options{'xmin_gap'}; #minimum linear separation(bp) between groupings
+    my($ystep)=$options{'ymin_gap'}; #minimum linear separation(bp) between groupings
+    $logger->debug("Setting minimum linear separation(bp) between groupings at x:$xstep y:$ystep");
     my($matches)={};	#hash containing the groupings
     #$i = group number
     #$matches->{$i}->{'xstartfeat'} = feat_name of first gene in matching region $i in genome on x axis
@@ -368,8 +341,8 @@ sub getGroupings{
 	    $ystartfeat = $hitsref->{$pos}->{'yfeat'};
 	    $logger->debug("START REGION $xstartfeat $ystartfeat");
 	}
-	elsif($xgaplength>$step || $ygaplength>$step){
-	    $logger->debug("CLOSING REGION $xstartfeat-->$lastxfeat $ystartfeat-->$lastyfeat. $xgaplength or $ygaplength exceeded max separation of $step.");
+	elsif($xgaplength>$xstep || $ygaplength>$ystep){
+	    $logger->debug("CLOSING REGION $xstartfeat-->$lastxfeat $ystartfeat-->$lastyfeat. $xgaplength or $ygaplength exceeded max separation of xstep: $xstep ystep: $ystep");
 	    $matches->{$matchcount}->{'xstartfeat'} = $xstartfeat;
 	    $matches->{$matchcount}->{'ystartfeat'} = $ystartfeat;
 	    $matches->{$matchcount}->{'xstopfeat'} = $lastxfeat;
@@ -388,7 +361,7 @@ sub getGroupings{
     }
     #Clean up end of last grouping
     if($xstartfeat ne ""){
-	$logger->debug("CLOSING REGION $xstartfeat-->$lastxfeat $ystartfeat-->$lastyfeat. $xgaplength or $ygaplength exceeded max separation of $step.");
+	$logger->debug("CLOSING REGION $xstartfeat-->$lastxfeat $ystartfeat-->$lastyfeat. $xgaplength or $ygaplength exceeded max separation of xstep: $xstep ystep: $ystep.");
 	$matches->{$matchcount}->{'xstartfeat'} = $xstartfeat;
 	$matches->{$matchcount}->{'ystartfeat'} = $ystartfeat;
 	$matches->{$matchcount}->{'xstopfeat'} = $lastxfeat;
@@ -409,7 +382,7 @@ sub getGroupings{
 #$matches->{$i}->{'ygap'} = size(bp) of gap in y coord space
 #$matches->{$i}->{'xgapfeat'} = feat_name after gap in x coord space
 #$matches->{$i}->{'ygapfeat'} = feat_name after gap in y coord space
-#$mincluster = minimum size(bp) of matching regions to print
+#$options{'min_cluster'} = minimum size(bp) of matching regions to print
 #$xref->{$feat_name}->{'end5'} = end5 coord of $feat_name in genome on x axis
 #$yref->{$feat_name}->{'end5'} = end5 coord of $feat_name in genome on y axis
 #$xref->{$feat_name}->{'end3'} = end3 coord of $feat_name in genome on x axis
@@ -417,19 +390,19 @@ sub getGroupings{
 #$asbml_idx = asmbl_id of genome x
 #$asmbl_idy = asmbl_id of genome y 
 sub printGroupings{
-    my($matches,$asmbl_lookup,$xref,$yref,$asmbl_idx,$asmbl_idy,$mincluster) = @_;
+    my($matches,$asmbl_lookup,$xref,$yref,$asmbl_idx,$asmbl_idy,$min_cluster) = @_;
     foreach my $match (sort {$matches->{$a} <=> $matches->{$b}} (keys %$matches)){
 	    my($xdist) = &getDistance($asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstopfeat'}},$asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstartfeat'}});
 #$asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstopfeat'}}->{'end5'} -  $asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstartfeat'}}->{'end5'};
 	    my($ydist) = &getDistance($asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystopfeat'}},$asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystartfeat'}});
 #$asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystopfeat'}}->{'end5'} - $asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystartfeat'}}->{'end5'};
-	    if(abs($xdist)>= $mincluster || abs($ydist)>= $mincluster){
+	    if(abs($xdist)>= $min_cluster || abs($ydist)>= $min_cluster){
 		print "#Match $match $xdist $ydist ($matches->{$match}->{'xgap'}:$matches->{$match}->{'xgapfeat'} $matches->{$match}->{'ygap'}:$matches->{$match}->{'ygapfeat'})\n"; 
 		print "#$asmbl_idx:$matches->{$match}->{'xstartfeat'} $asmbl_idy:$matches->{$match}->{'ystartfeat'} $asmbl_idx:$matches->{$match}->{'xstopfeat'} $asmbl_idy:$matches->{$match}->{'ystopfeat'}\n";
 		print "$asmbl_idx $asmbl_idy $asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstartfeat'}}->{'end5'} $asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystartfeat'}}->{'end5'} $asmbl_lookup->{$asmbl_idx}->{$matches->{$match}->{'xstopfeat'}}->{'end5'} $asmbl_lookup->{$asmbl_idy}->{$matches->{$match}->{'ystopfeat'}}->{'end5'}\n";
 	    }
 	    else{
-		$logger->debug("Group $matches->{$match}->{'xstartfeat'}-->$matches->{$match}->{'xstopfeat'}=$xdist $matches->{$match}->{'ystartfeat'}-->$matches->{$match}->{'ystopfeat'}=$ydist is below minimum size of $mincluster");
+		$logger->debug("Group $matches->{$match}->{'xstartfeat'}-->$matches->{$match}->{'xstopfeat'}=$xdist $matches->{$match}->{'ystartfeat'}-->$matches->{$match}->{'ystopfeat'}=$ydist is below minimum size of $min_cluster");
 	    }
 	}
 }
@@ -450,7 +423,6 @@ sub printGroupings{
 sub createPositionBasedLookup{
     my($xref,$asmblref) = @_;
     my $hitsref = {};
-    my $logger = get_logger('papyrus::regions');
     foreach my $feat (keys %$xref){
 	my $pos = $asmblref->{$feat}->{'end5'} > $asmblref->{$feat}->{'end3'} ? $asmblref->{$feat}->{'end5'} : $asmblref->{$feat}->{'end3'};
 	$logger->debug("POS: $pos $feat [ $xref->{$feat}->{'marked'} ]");
@@ -486,8 +458,6 @@ sub fillAnnotation  {
     my $asmbl_lookup = shift;
     my $asmbl_file = shift;
 
-    my $logger = get_logger('papyrus::regions');
-
     my $reader = new BSML::BsmlReader;  #use local reader for now
     
     my $parser = new BSML::BsmlParserTwig;
@@ -501,15 +471,21 @@ sub fillAnnotation  {
     foreach my $asmbl_id (keys %$idlookup){
 	$logger->debug("Storing ",scalar(keys %{$idlookup->{$asmbl_id}}), " genes");
 	foreach my $gene (keys %{$idlookup->{$asmbl_id}}){
+	    my $fobj = BSML::BsmlDoc::BsmlReturnDocumentLookup($gene);
+	    my $locs = [];
+	    my $intervals = $fobj->returnBsmlIntervalLocListR();
+	    
+	    my $start_loc = $intervals->[0]->{'startpos'};
+	    my $end_loc = $intervals->[0]->{'endpos'};
+	    my $complement = $intervals->[0]->{'complement'};
+	    ($start_loc,$end_loc) = (($complement == -1) ? ($end_loc,$start_loc) : ($start_loc,$end_loc));
+		
+	    
+	    if(!$start_loc && !$end_loc){
+		$logger->error("Can't find start_loc $start_loc or end_loc $end_loc for feature $gene");
+	    }
+
 	    foreach my $transcript (keys %{$idlookup->{$asmbl_id}->{$gene}}){
-		my $fobj = BSML::BsmlDoc::BsmlReturnDocumentLookup($transcript);
-		my $locs = [];
-		foreach my $interval_loc (@{$fobj->returnBsmlSiteLocListR()})
-		{
-		    push( @{$locs}, $interval_loc->{'sitepos'});
-		}
-		my $start_loc = $locs->[0];
-		my $end_loc = $locs->[1];
 		$logger->debug("Storing $idlookup->{$asmbl_id}->{$gene}->{$transcript}->{'proteinId'} with coords $start_loc,$end_loc");
 		$asmbl_lookup->{$asmbl_id}->{$idlookup->{$asmbl_id}->{$gene}->{$transcript}->{'proteinId'}}->{'end5'} = $start_loc;
 		$asmbl_lookup->{$asmbl_id}->{$idlookup->{$asmbl_id}->{$gene}->{$transcript}->{'proteinId'}}->{'end3'} = $end_loc;
@@ -518,11 +494,42 @@ sub fillAnnotation  {
     }
 }
 
+sub get_refseq_asmbls{
+    my ($reader) = @_;
+    my $seqList = $reader->returnAllSequences();
 
+    # return structure is a reference to a hash with key value pairs
+    # of protein id -> assembly id
 
+    my $rhash = {};
 
+    # loop through the sequence list, checking for sequences of type amino acid
 
+    foreach my $seq (@{$seqList})
+    {
+	# when an aa sequence is found, add it and its assembly id to the return structure
 
+	if( $seq->returnattr('molecule') eq 'aa' )
+	{
+	    $rhash->{$seq->returnattr('id')} = $seq->returnBsmlAttr('ASSEMBLY');
+	}
+    }
+    
+    my $asmbls = {};
+    foreach my $SeqPairAln (@{$reader->returnBsmlSeqPairAlignmentListR()}){
+	if(exists $rhash->{$SeqPairAln->returnattr('refseq')}){
+	    if($rhash->{$SeqPairAln->returnattr('refseq')}){
+		$asmbls->{$rhash->{$SeqPairAln->returnattr('refseq')}} = 1;
+	    }
+	}
+    }
+    my @refasmbls = (keys %$asmbls);
+    return (\@refasmbls);
+}
 
-
-
+sub check_parameters{
+    my ($options) = @_;
+    if(!$options{'bsml_file'} && !$options{'bsml_file_list'}){
+	pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
+    }
+}

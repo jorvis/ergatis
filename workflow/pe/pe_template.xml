@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>PEffect compute</name>
+        <configMapId>empty</configMapId>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>make_pe_match_xml</configMapId>
+            <name>make_pe_match_xml</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>peffect</configMapId>
+            <name>peffect</name>
+        </command>        
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>pe2bsml</configMapId>
+            <name>pe2bsml</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>store_config_params</configMapId>
+            <name>Store configuration</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>dtd_validation</configMapId>
+            <name>DTD validation</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>xsd_validation</configMapId>
+            <name>XML schema validation</name>
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bsml2chado workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output repository</name>
+          <configMapId>create_compute_output</configMapId>
+        </command>
+<!--Preprocess permissions-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Set workflowdocs permissions</name>
+          <configMapId>set_workflowdocs_permissions</configMapId>
+        </command>
+<!--Preprocessing-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>File-cache the queries</name>
+          <configMapId>cache_queries</configMapId>
+        </command>
+<!--Iterator steps-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterator list</name>
+          <configMapId>create_iterator_list_subflow1</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Add analysis id</name>
+          <configMapId>add_analysis_id</configMapId>
+        </command>
+      	<command>
+          <type>RunUnixCommand</type>
+          <name>Create groups</name>
+          <configMapId>create_groups_subflow1</configMapId>
+        </command>
+  <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterative subflow</name>
+          <configMapId>create_iterative_subflow1</configMapId>
+        </command>
+        <commandSet type="parallel">
+          <name>Iterated subflow</name>
+          <configMapId>subflow1</configMapId>
+        </commandSet>
+<!--Postprocessing-->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Generate output list</name>
+            <configMapId>generate_directory_list</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Replace placeholders</name>
+            <configMapId>replace_placeholders</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>load_tables</configMapId>
+            <name>load_tables</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>confirm_database_loaded</configMapId>
+            <name>confirm_database_loaded</name>
+        </command>
+<!--Checksum creation-->
+<!--Postprocess permissions-->
+        <command>        
+          <type>RunUnixCommand</type>
+          <name>Set workflowdocs permissions</name>
+          <configMapId>set_workflowdocs_permissions</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Set permissions for scratch area</name>
+          <configMapId>set_scratch_permissions</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Set permissions for output</name>
+          <configMapId>set_output_permissions</configMapId>
+       </command>
+     </commandSet>
+</commandSetRoot>

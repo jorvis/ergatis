@@ -1,6 +1,5 @@
 #! /local/perl/bin/perl
 
-use lib '/export/CVS/bsml/src';
 use strict;
 use warnings;
 use BSML::BsmlParserSerialSearch;
@@ -58,6 +57,7 @@ else
 
 foreach my $bsmlFile (<$bsmlModelDir/*.bsml>)
 {
+    print STDERR "Parsing $bsmlFile\n";
     $seqParser->parse( $bsmlFile );
 }
 
@@ -71,23 +71,36 @@ while( my $line = <INPUTCOGS> )
     if( $line =~ /^\t([\S]*)/ )
     {
 	# A new sequence has been found and added to the current cog.
-
+	print STDERR "Found line $line\n";
 	push( @{$list}, $1 );
     }
 
-    if( $line =~ /^COG = ([\d]*),/ )
+    if( $line =~ /^COG\s+=\s+([^,\s]+)/ )
     {
 	# A new cog has been encountered, flush the previous to disk if present
-
-	if( $cog && @{$list} <= $maxCogSeqCount )
-	{
-	    open( OUTFILE, ">$outDir/$cog.fasta" ) or die "could not open $cog.fasta\n";
-	    foreach my $seq ( @{$list} )
-	    {
-		print OUTFILE ">$seq\n";
-		print OUTFILE $Prot->{$seq}."\n";
+	print STDERR "Found cog $line $1\n";
+	if( $cog){
+	    print STDERR "Outputing cog $1\n";
+	    if(scalar(@{$list})>1){
+		if(@{$list} <= $maxCogSeqCount){
+		    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+		    foreach my $seq ( @{$list} )
+		    {
+			print OUTFILE ">$seq\n";
+			print OUTFILE $Prot->{$seq}."\n";
+		    }
+		    close( OUTFILE );
+		}
+		else{
+		    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+		    foreach my $seq ( @{$list} )
+		    {
+			print OUTFILE ">$seq\n";
+			print OUTFILE "A\n";
+		    }
+		    close( OUTFILE );
+		}
 	    }
-	    close( OUTFILE );
 	}
 
 	$cog = $1;

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+       <configMapId>empty</configMapId>
+       <name>Grouped subflow</name>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterative subflow</name>
+          <configMapId>create_iterative_subflow2</configMapId>
+        </command>
+        <commandSet type="serial">
+           <name>Grouped subflows</name>
+           <configMapId>subflow2</configMapId>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>
+ 

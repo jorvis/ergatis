@@ -58,7 +58,6 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 
 
-#use lib '/export/CVS/bsml/src';
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);

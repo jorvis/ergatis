@@ -66,6 +66,23 @@ Perl scripts <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/papyrus/src'>[
 Workflows <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/papyrus/workflow'>[CVS]</a>
 <p>
 
+<b>Papyrus install</b><br>
+
+The Papyrus package contains data management scripts and associated
+workflows.  The Papyrus package is installed using the standard Perl
+module install syntax.  In addition, you must specify a
+SCHEMA_DOCS_DIR where the BSML schemas are installed.  The
+WORKFLOW_DOCS_DIR specifies where the workflow template and default
+configuration files will be stored.
+
+<pre>
+  cvs co papyrus_install
+  cd papyrus_install
+  perl Makefile.PL PREFIX=[install_dir] SCHEMA_DOCS_DIR=[schema_docs_dir] WORKFLOW_DOCS_DIR=[workflow_docs_dir]
+  make 
+  make install
+</pre>
+
 <b>Last modified:</b><!--#config timefmt="%Y-%m-%d" --> <!--#echo var="LAST_MODIFIED" -->
 </table>	
 

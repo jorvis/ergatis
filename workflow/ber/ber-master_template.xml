@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+      <name>BER workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Archive compute output</name>
+         <configMapId>archive_output</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output repository</name>
+          <configMapId>create_compute_output</configMapId>
+        </command>
+<!--Preprocess permissions-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Set workflowdocs permissions</name>
+          <configMapId>set_workflowdocs_permissions</configMapId>
+        </command>
+<!--Preprocessing-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create searchable database fasta</name>
+          <configMapId>make_database_fasta</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Index searchable database</name>
+          <configMapId>index_fasta_file</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Set fasta file permissions</name>
+          <configMapId>set_fasta_permissions</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Make sequence fasta files</name>
+          <configMapId>make_database_seq_fasta</configMapId>
+        </command>
+<!--Processing-->
+	<command>
+          <type>RunUnixCommand</type>
+          <name>Create iterator list</name>
+          <configMapId>create_iterator_list_subflow1</configMapId>
+        </command>
+	<command>
+          <type>RunUnixCommand</type>
+          <name>Create groups</name>
+          <configMapId>create_groups_subflow1</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterative subflow</name>
+          <configMapId>create_iterative_subflow1</configMapId>
+        </command>
+        <commandSet type="parallel">
+          <name>Iterated subflow</name>
+          <configMapId>subflow1</configMapId>
+       </commandSet>
+<!--Postprocessing-->
+<!--Checksum creation-->
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Create file list for checksums</name>
+          <configMapId>create_checksum_file_list</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Generate checksums</name>
+          <configMapId>create_checksum</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Create file list for checksums.sum</name>
+          <configMapId>create_checksum_sum_file_list</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Create checksums.sum</name>
+          <configMapId>create_checksum_sum</configMapId>
+       </command>
+<!--Postprocess permissions-->
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Set workflowdocs permissions</name>
+          <configMapId>set_workflowdocs_permissions</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Set permissions for scratch area</name>
+          <configMapId>set_scratch_permissions</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Set permissions for output</name>
+          <configMapId>set_output_permissions</configMapId>
+       </command>
+     </commandSet>
+</commandSetRoot>

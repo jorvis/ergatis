@@ -80,8 +80,7 @@ while (my $line = <IN>) {
         }
     }
 }
-$doc->createAndAddAnalysis("program" => "region", "programversion" => '1.0', 'sourcename' =>$output_file,
-			   "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
+
 # write the altered file to disk
 $doc->write( $output_file );
 chmod 0666, $output_file;

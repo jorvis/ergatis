@@ -2,23 +2,21 @@
 
 =head1  NAME 
 
-pe2bsml.pl  - convert PEffect output files into BSML documents
+dummy.pl - do nothing
 
 =head1 SYNOPSIS
 
-USAGE:  pe2bsml.pl -p peffect.out -o pe.bsml
+USAGE:  dummy.pl --debug debug_level --log log_file
 
 =head1 OPTIONS
 
-=over 4
+=item *
+
+B<--debug,-d> Debug level.  Use a large number to turn on verbose debugging. 
 
 =item *
 
-B<--pe_file,-p> [REQUIRED] PEffect output file
-
-=item *
-
-B<--output,-o> [REQUIRED] output BSML file
+B<--log,-l> Log file
 
 =item *
 
@@ -28,136 +26,159 @@ B<--help,-h> This help message
 
 =head1   DESCRIPTION
 
-pe2bsml.pl is designed to convert PEffect output files into BSML documents.  
-
-Samples:
-
-1. Convert PE file a.pe into a BSML doc a.bsml
-   pe2bsml.pl -p a.pe -o a.bsml
-
-
-NOTE:  
-
-Calling the script name with NO flags/options or --help will display the syntax requirement.
-
-
 =cut
 
+
 use strict;
-#use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use File::Basename;
 use Pod::Usage;
+use Workflow::Logger;
+use BSML::BsmlBuilder;
+use BSML::BsmlRepository;
+use BSML::BsmlParserSerialSearch;
 
 my %options = ();
-my $results = GetOptions (\%options, 'pe_file|p=s', 'bsml_dir|b=s', 'verbose|v', 'output|o=s', 
-                                     'verbose|v', 'help|h', 'man') || pod2usage();
+my $results = GetOptions (\%options, 
+			  'file|f=s',
+			  'bsml_repository|b=s',
+			  'output|o=s',
+			  'num_hits|n=s',
+			  'log|l=s',
+			  'debug=s',
+			  'help|h') || pod2usage();
 
-###-------------PROCESSING COMMAND LINE OPTIONS-------------###
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+				  'LOG_LEVEL'=>$options{'debug'});
+$logger = Workflow::Logger::get_logger();
 
-my $output     = $options{'output'};
-my $pe_file    = $options{'pe_file'};
-my $verbose    = $options{'verbose'};
-#Log::Log4perl->init("log.conf");
-#my $logger = get_logger();
+# display documentation
+if( $options{'help'} ){
+    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDERR} );
+}
 
-&cmd_check();
-###-------------------------------------------------------###
+$options{'num_hits'} = 1 if(!$options{'num_hits'});
 
+&check_parameters(\%options);
 
-read_pe_output($pe_file);
+my $aalookup = &get_aa_lookup($options{'bsml_repository'});
 
+my $doc = BSML::BsmlBuilder->new();
 
-sub read_pe_output {
+my $seq_pair = {};
 
-    my $pe_out = shift;
+my ($ClusterGeneCount, $ClusterGapCount, $ClusterScore, $ClusterId);
 
-    my $doc = BSML::BsmlBuilder->new();
-
-    my $seq_pair = {};
-
-    my ($ClusterGeneCount, $ClusterGapCount, $ClusterScore, $ClusterId);
-    open (PE, "$pe_out") or die "Unable to open \"$pe_out\" due to $!";
-    while (my $line = <PE> ) {
-	chomp($line);
-	my @pe = split(/\s+/, $line);
-	if(@pe == 5) {
-	    #Encountered a cluster definition
-	    $ClusterGeneCount = $pe[0];
-	    $ClusterGapCount = $pe[1];
-	    $ClusterScore = $pe[2];
-	    $ClusterId = $pe[4];
-	} elsif(@pe == 4) {
-	    if(! (exists $seq_pair->{$pe[2]}->{$pe[3]})){
-		$seq_pair->{$pe[2]}->{$pe[3]} = [];
-	    }
-	    push @{$seq_pair->{$pe[2]}->{$pe[3]}}, {
-		'start_query'    => $pe[0],
-		'runlength'      => 0,
-		'start_hit'      => $pe[1],
-		'runscore'       => $ClusterScore,
-		'PEffect_Cluster_Id' => $ClusterId,
-		'PEffect_Cluster_Gap_Count' => $ClusterGapCount,
-		'PEffect_Cluster_Gene_Count' => $ClusterGeneCount 
-		};
+open (PE, "$options{'file'}") or die "Unable to open \"$options{'file'}\" due to $!";
+while (my $line = <PE> ) {
+    chomp($line);
+    my @pe = split(/\s+/, $line);
+    if(@pe == 5) {
+	#Encountered a cluster definition
+	$ClusterGeneCount = $pe[0];
+	$ClusterGapCount = $pe[1];
+	$ClusterScore = $pe[2];
+	$ClusterId = $pe[4];
+    } elsif(@pe == 4) {
+	if(! (exists $seq_pair->{$pe[2]}->{$pe[3]})){
+	    $seq_pair->{$pe[2]}->{$pe[3]} = [];
 	}
+	my $length = $aalookup->{$pe[2]}->{'length'} || 0;
+	my $comprunlength = $aalookup->{$pe[3]}->{'length'} || 0;
+	push @{$seq_pair->{$pe[2]}->{$pe[3]}}, {
+	    'start_query'    => 1,
+	    'runlength'      => $length,
+	    'comprunlength'  => $comprunlength,
+	    'start_hit'      => 1,
+	    'runscore'       => $ClusterScore,
+	    'PEffect_Cluster_Id' => $ClusterId,
+	    'PEffect_Cluster_Gap_Count' => $ClusterGapCount,
+	    'PEffect_Cluster_Gene_Count' => $ClusterGeneCount 
+	    };
     }
+}
 
-    close PE;
+close PE;
 
-    print STDERR "Created lookup with ",scalar(keys %$seq_pair)," matches\n";
+$logger->debug("Created lookup with ",scalar(keys %$seq_pair)," matches") if($logger->is_debug());
 
-    foreach my $query_name (keys %$seq_pair){
+foreach my $query_name (keys %$seq_pair){
+    if($query_name ne "GAP"){
 	foreach my $dbmatch_accession (keys %{$seq_pair->{$query_name}}){
-	    my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'  => $query_name,
-							       'compseq' => $dbmatch_accession 
-							     );
-	    my $runs = $seq_pair->{$query_name}->{$dbmatch_accession};
-	    my $hitnum = 0;
-	    foreach my $run (sort {$b->{'runscore'} <=> $a->{'runscore'}} (@$runs)){
-		if($hitnum <3){
-		    my $s = $doc->createAndAddSequencePairRun( 'alignment_pair' => $aln,
-							       'refpos'    => $run->{'start_query'},
-							       'runlength'      => $run->{'runlength'},
-							       'comppos'      => $run->{'start_hit'},
-							       'runscore'       => $run->{'runscore'},
-							       );
-		    #additional attributes
-		    $s->addBsmlAttr( 'PEffect_Cluster_Id',  $run->{'PEffect_Cluster_Id'} );
-		    $s->addBsmlAttr( 'PEffect_Cluster_Gap_Count', $run->{'PEffect_Cluster_Gap_Count'} );
-		    $s->addBsmlAttr( 'PEffect_Cluster_Gene_Count', $run->{'PEffect_Cluster_Gene_Count'} );
-
+	    if($dbmatch_accession ne "GAP"){
+		if( !( $doc->returnBsmlSequenceByIDR($query_name) )){
+		    $doc->createAndAddSequence($query_name,$query_name,$aalookup->{$query_name}->{'length'}, 'aa' );
+		    my $seq = $doc->returnBsmlSequenceByIDR($query_name);
+		    $seq->addBsmlAttr('ASSEMBLY',$aalookup->{$query_name}->{'asmbl'});
 		}
-		$hitnum++;
+		if( !( $doc->returnBsmlSequenceByIDR($dbmatch_accession) )){
+		    $doc->createAndAddSequence($dbmatch_accession,$dbmatch_accession,$aalookup->{$dbmatch_accession}->{'length'}, 'aa' );
+		    my $seq = $doc->returnBsmlSequenceByIDR($dbmatch_accession);
+		    $seq->addBsmlAttr('ASSEMBLY',$aalookup->{$dbmatch_accession}->{'asmbl'});
+		}
+		my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'  => $query_name,
+								   'compseq' => $dbmatch_accession 
+								   );
+		
+		my $runs = $seq_pair->{$query_name}->{$dbmatch_accession};
+		my $hitnum = 0;
+		foreach my $run (sort {$b->{'runscore'} <=> $a->{'runscore'}} (@$runs)){
+		    if($hitnum <$options{'num_hits'}){
+			my $s = $doc->createAndAddSequencePairRun( 'alignment_pair' => $aln,
+								   'refpos'    => $run->{'start_query'},
+								   'runlength'      => $run->{'runlength'},
+								   'comppos'      => $run->{'start_hit'},
+								   'runscore'       => $run->{'runscore'},
+								   );
+			#additional attributes
+			$s->addBsmlAttr( 'PEffect_Cluster_Id',  $run->{'PEffect_Cluster_Id'} );
+			$s->addBsmlAttr( 'PEffect_Cluster_Gap_Count', $run->{'PEffect_Cluster_Gap_Count'} );
+			$s->addBsmlAttr( 'PEffect_Cluster_Gene_Count', $run->{'PEffect_Cluster_Gene_Count'} );
+			
+		    }
+		    $hitnum++;
+		}
 	    }
 	}
-    
     }
+ }
 
-    $doc->createAndAddAnalysis("program" => "peffect", "programversion" => '1.0', 'sourcename' =>$output,
-                               "bsml_link_relation" => 'SEQ_PAIR_ALIGNMENTS', 'bsml_link_url' => '#BsmlTables');
-    print STDERR "Writing output\n";
+$doc->write($options{'output'});
+
+sub get_aa_lookup{
+    my($repository) = @_;
     
-    $doc->write($output);
+    my $bsmlrepo = new BSML::BsmlRepository('BSML_repository'=>$repository);
+    my ($files) = $bsmlrepo->list_bsml_files();
 
-    print STDERR "Writing done\n";
-    chmod 0666, $output;
+    my $lookup = {};
+    foreach my $bsml_doc (@$files) {
+	my $seqParser = new BSML::BsmlParserSerialSearch( ReadFeatureTables => 0,
+							  SequenceCallBack =>sub 
+							  {
+							      my $seqRef = shift;
+							      my $id = $seqRef->returnattr( 'id' );
+							      my $type = $seqRef->returnattr( 'molecule' );
+							      my $length = $seqRef->returnattr( 'length' );
+							      if($type eq "aa"){
+								  $logger->debug("Storing sequence $id in lookup with ".$seqRef->returnBsmlAttr('ASSEMBLY'))  if($logger->is_debug());
+								  $lookup->{$id}->{'asmbl'} = $seqRef->returnBsmlAttr('ASSEMBLY');
+								  $lookup->{$id}->{'length'} = $length;
+							      }
+							  }); 
+	
+	
+	$seqParser->parse($bsml_doc);
+    }
+    return $lookup;
 }
 
-sub cmd_check {
-#quality check
 
-    if( exists($options{'man'})) {
-	pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
-    }   
-
-    if( exists($options{'help'})) {
-	pod2usage({-exitval => 1, -verbose => 1, -output => \*STDOUT});
+sub check_parameters{
+    my ($options) = @_;
+    
+    if(0){
+	pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
     }
-
-    if(!$output or !$pe_file) {
-	pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});
-    }
-
 }
+
