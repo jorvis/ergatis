@@ -8,7 +8,7 @@ use English;
 use File::Path;
 
 my %options = ();
-my $results = GetOptions (\%options, 'db_dir=s', 'pep_dir=s', 'mini_db|i=s', 'help|h' );
+my $results = GetOptions (\%options, 'db_dir=s', 'pep_dir=s', 'mini_db|i=s', 'help|h', 'project|p=s');
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
 
 my $mini_db   = $options{'mini_db'};
@@ -16,9 +16,9 @@ my $db_dir    = $options{'db_dir'};
 $db_dir =~ s/\/+$//;       #remove terminating '/'s
 my $pep_dir   = $options{'pep_dir'};
 $pep_dir =~ s/\/+$//;       #remove terminating '/'s
+my $project   = $options{'project'};
 
-
-if(!$mini_db or !$db_dir or !$pep_dir or exists($options{'help'})) {
+if(!$project or !$mini_db or !$db_dir or !$pep_dir or exists($options{'help'})) {
     &print_usage();
 }
 
@@ -43,7 +43,7 @@ unless(open (MINIDB, "< $mini_db")) {
     print STDERR "Unable to Open \"$mini_db\" due to $!\n";
     exit 5;
 }else {
-    my $pep_db = "$db_dir/PNEUMO.pep";
+    my $pep_db = "$db_dir/$project.pep";
     open(DB, ">$pep_db") || die "Cant open $pep_db due to $!";
     my $line = <MINIDB>;
     my ($sequence, $header);
