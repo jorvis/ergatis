@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bsml2chado workflow</name>
+        <configMapId>2</configMapId>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>2.1</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>2.2</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>3.1</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>4.1</configMapId>
+        </command>
+        <commandSet type="serial">
+            <name>Run bsml to chado subflow</name>
+                <configMapId>1</configMapId>
+                   <commandSet type="serial">
+                       <name>Iterative Workflow</name>
+                       <configMapId>1.1</configMapId>
+                       <config>
+                       <param>
+                           <key>template</key>
+                           <value>bsml2chado-instance_template.xml</value>
+                       </param>
+                       </config>
+                   </commandSet>
+       </commandSet>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>20.1</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>20.2</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>20.3</configMapId>
+        </command>
+        <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>20.4</configMapId>
+        </command>
+    </commandSet>
+</commandSetRoot>
