@@ -143,6 +143,7 @@ sub parse_blast_btabs {
 	    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$match_asmbl_id);
 	}
 	close BTAB;
+	next if(!defined($btab[0]));
 	$seq = $doc->returnBsmlSequenceByIDR($btab[0]);
 	if($seq) {
 	    my $query_asmbl_id = $gene_asmbl_id->{$btab[0]};
