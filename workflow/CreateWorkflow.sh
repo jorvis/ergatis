@@ -2,7 +2,7 @@
 
 umask 0
 
-INSTALL_DIR=/usr/local/devel/ANNOTATION/workflow-2.2B2
+INSTALL_DIR=/usr/local/devel/ANNOTATION/workflow-2.2B3
 
 while getopts t:c:i:l:o:v:h opt
 do case "$opt" in
