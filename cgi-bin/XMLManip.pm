@@ -170,6 +170,12 @@ sub get_pipeline_xml{
 							      print STDERR "Can't parse generate component\n";
 							  }
 						      }
+						      else{
+							  my $inifile = "$xmlfile.ini";
+							  my $cfg = new Config::IniFiles(-file => $inifile);
+							  $cfg->newval($configmapid,"");
+							  $cfg->WriteConfig($inifile);
+						      }
 					      }
 					  },
 			    pretty_print => 'indented'
