@@ -68,6 +68,10 @@ my $class;
 if (!defined($options{'class'})){
     $logger->logdie("class was not defined");
 }
+else{
+    $class = $options{'class'};
+}
+
 
 &check_parameters(\%options);
 
