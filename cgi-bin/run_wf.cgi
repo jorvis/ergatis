@@ -45,8 +45,12 @@ if(($inifile ne "") && ($template ne "")){
 	    $ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/packages/sybase/OCS/lib:/usr/local/packages/sybase/lib";
 	    $ENV{'SYBASE'} = "/usr/local/packages/sybase";
 	    $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";
-	    system("$ENV{'WF_ROOT'}/CreateWorkflow -i $instancexml -t $template -c $inifile --delayedbuild=true --autobuild=false > $instancexml.create.out");
-	    system("$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml > $instancexml.run.out");
+	    my $createexecstr = "$ENV{'WF_ROOT'}/CreateWorkflow -i $instancexml -t $template -c $inifile --delayedbuild=true --autobuild=false > $instancexml.create.out 2>&1";
+	    print STDERR $createexecstr,"\n";
+	    system("$createexecstr");
+	    my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml > $instancexml.run.out 2>&1";
+	    print STDERR $runexecstr,"\n";
+	    system($runexecstr);
 	    exit;
 	}
 	exit;
