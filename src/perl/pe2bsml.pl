@@ -72,22 +72,24 @@ sub read_pe_output {
 
     foreach my $query_name (keys %$seq_pair){
 	foreach my $dbmatch_accession (keys %{$seq_pair->{$query_name}}){
-	    my $aln = $doc->createAndAddSequencePairAlignment( 'query_name'        => $query_name,
-							       'dbmatch_accession' => $dbmatch_accession 
-							       );
+	    my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'  => $query_name,
+							       'compseq' => $dbmatch_accession 
+							     );
 	    my $runs = $seq_pair->{$query_name}->{$dbmatch_accession};
 	    my $hitnum = 0;
 	    foreach my $run (sort {$b->{'runscore'} <=> $a->{'runscore'}} (@$runs)){
 		if($hitnum <3){
 		    my $s = $doc->createAndAddSequencePairRun( 'alignment_pair' => $aln,
-							       'start_query'    => $run->{'start_query'},
+							       'refpos'    => $run->{'start_query'},
 							       'runlength'      => $run->{'runlength'},
-							       'start_hit'      => $run->{'start_hit'},
+							       'comppos'      => $run->{'start_hit'},
 							       'runscore'       => $run->{'runscore'},
-							       'PEffect_Cluster_Id' => $run->{'PEffect_Cluster_Id'},
-							       'PEffect_Cluster_Gap_Count' => $run->{'PEffect_Cluster_Gap_Count'},
-							       'PEffect_Cluster_Gene_Count' => $run->{'PEffect_Cluster_Gene_Count'}
 							       );
+		    #additional attributes
+		    $s->addBsmlAttr( 'PEffect_Cluster_Id',  $run->{'PEffect_Cluster_Id'} );
+		    $s->addBsmlAttr( 'PEffect_Cluster_Gap_Count', $run->{'PEffect_Cluster_Gap_Count'} );
+		    $s->addBsmlAttr( 'PEffect_Cluster_Gene_Count', $run->{'PEffect_Cluster_Gene_Count'} );
+
 		}
 		$hitnum++;
 	    }
