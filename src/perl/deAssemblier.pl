@@ -22,6 +22,8 @@ my $endCoord = $options{'windowSize'} + $options{'startCoord'};
 my $subAssemblyCount = 0;
 my $end = 0;
 
+open( FASTA_FILE, ">>$options{'output_fasta_file'}" ) or die "Could not open fasta file for concatenation.\n";
+
 while( !($end) )
 {
     $bsmlDoc = new BSML::BsmlBuilder;
@@ -32,6 +34,8 @@ while( !($end) )
     $endCoord = $startCoord + $options{'windowSize'};
     $subAssemblyCount++;
 }
+
+close FASTA_FILE;
 
 sub sequenceHandler
 {
@@ -47,6 +51,13 @@ sub sequenceHandler
 	    $endCoord = $rhash->{'length'};
 	    $end = 1;
 	}
+
+	print "DEBUG: $startCoord $endCoord\n";
+
+	my $seqdat = $Reader->subSequence( $seqref, $startCoord, $endCoord, 0 );
+
+	print FASTA_FILE ">$options{'output_bsml_prefix'}_$subAssemblyCount\n";
+	print FASTA_FILE "$seqdat\n";
 
 	my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $rhash->{'id'}."_$subAssemblyCount", 
 						 title => $rhash->{'id'}."_$subAssemblyCount", 
