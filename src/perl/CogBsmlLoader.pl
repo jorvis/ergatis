@@ -234,12 +234,12 @@ sub alignmentHandler
     return if( $compseq eq $refseq );
 
 
-    # if compseq is part of a Jaccard equivalence class, only use it if it is the
+    # if refseq is part of a Jaccard equivalence class, only use it if it is the
     # Jaccard reference sequence for the class
 
-    if( defined( my $jId = $jaccardClusterHash->{$compseq} ) )
+    if( defined( my $jId = $jaccardClusterHash->{$refseq} ) )
     {
-	if( !($compseq eq $jaccardRepSeqHash->{$jId}) )
+	if( !($refseq eq $jaccardRepSeqHash->{$jId}) )
 	{
 	    return;
 	}
@@ -280,6 +280,15 @@ sub alignmentHandler
 
     return if( $compGenome eq $refGenome );
 
+
+    # If compseq is defined in a Jaccard equivalence class identify the class by
+    # its reference sequence. 
+
+    if( defined( my $jId = $jaccardClusterHash->{$compseq} ) )
+    {
+	$compseq = $jaccardRepSeqHash->{$jId};
+    }
+    
     my $lref = [];
     
     $lref->[0] = $refseq;  #query name
