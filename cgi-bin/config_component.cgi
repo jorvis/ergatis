@@ -117,7 +117,7 @@ sub write_config_from_params{
 	}
     }
     $newcfg->WriteConfig($filename);
-    `chmod 777 $filename`;
+    `chmod 666 $filename`;
 }
 
 sub print_config{
