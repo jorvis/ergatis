@@ -22,11 +22,11 @@
             <configMapId>1.3</configMapId>
         </command>
         <command>
-            <name>RunDistributedCommand</name>
+            <name>RunUnixCommand</name>
             <configMapId>3.0</configMapId>
         </command>
         <command>
-            <name>RunDistributedCommand</name>
+            <name>RunUnixCommand</name>
             <configMapId>3.1</configMapId>
         </command>
     </commandSet>
