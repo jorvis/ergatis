@@ -1,12 +1,11 @@
 #!/usr/local/bin/perl
 
 
-use lib("/usr/local/annotation/PNEUMO/clu_dir/BSML/ANNOTATION/bsml/src");
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BsmlReader;
-use BsmlParserTwig;
-
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
+use File::Basename;
 
 my %options = ();
 my $results = GetOptions (\%options, 'bsml_dir|b=s', 'asmbl_ids|a=s', 'simple_header|s',
@@ -33,6 +32,12 @@ if(!defined($ASMBL_IDS) or !$output_dir or !$BSML_dir or exists($options{'help'}
 }
 
 ###-------------------------------------------------------###
+my $min_dir = dirname($output_dir);
+if(! -d $min_dir) {
+    mkdir $min_dir;
+    chmod 0777, $min_dir;
+}
+
 if(! -d $output_dir ) {
     mkdir $output_dir;
 }
@@ -50,7 +55,7 @@ if($ASMBL_IDS =~ /all/i) {
     @asm_ids = split(/,/, $ASMBL_IDS);
 }
 
-my $parser = new BsmlParserTwig;
+my $parser = new BSML::BsmlParserTwig;
 
 if($each_genome) {
     #$output_dir = $ENV{'PNEUMO_QUERY_DIR'} if(!$output_dir);
@@ -81,7 +86,7 @@ sub make_fasta_for_each_gene  {
 	chmod 0777, $final_output_dir;
 	my $bsml_file = "$BSML_dir/asmbl_${asmbl_id}.bsml";
 	if (-s $bsml_file) {
-	    my $reader = BsmlReader->new();
+	    my $reader = BSML::BsmlReader->new();
 	    $parser->parse( \$reader, $bsml_file );
 	    my $proteins = $reader->get_all_protein_aa("PNEUMO_${asmbl_id}");
 	    while (my ($identifier, $seq) = each %$proteins) {
@@ -112,7 +117,7 @@ sub make_fasta_for_each_genome {
 	open(FILE, ">$pep_file") || die "Unable to write to $pep_file due to $!";
 	my $bsml_file = "$BSML_dir/asmbl_${asmbl_id}.bsml";
 	if (-s $bsml_file) {
-	    my $reader = BsmlReader->new();
+	    my $reader = BSML::BsmlReader->new();
 	    $parser->parse( \$reader, $bsml_file );
 	    my $proteins = $reader->get_all_protein_aa("PNEUMO_${asmbl_id}");
 	    while (my ($identifier, $seq) = each %$proteins) {
@@ -142,7 +147,7 @@ sub make_PNEUMO_pep_for_ALL_genomes {
 	#my $result = $CGC->fetch_protein_seq_info_from_asmbl_id($asmbl_id);
 	my $bsml_file = "$BSML_dir/asmbl_${asmbl_id}.bsml";
 	if (-s $bsml_file) {
-	    my $reader = BsmlReader->new();
+	    my $reader = BSML::BsmlReader->new();
 	    $parser->parse( \$reader, $bsml_file );
 	    my $proteins = $reader->get_all_protein_aa("PNEUMO_${asmbl_id}");
 	    while (my ($identifier, $seq) = each %$proteins) {
