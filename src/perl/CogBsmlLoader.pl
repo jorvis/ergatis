@@ -66,7 +66,7 @@ my $pairsCount = 0;
 #
  
 my %options = ();
-my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'bsmlJaccardDir|j=s', 'outFile|o=s', 'help|h', 'man' ) || pod2usage();
+my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'bsmlJaccardDir|j=s', 'jaccardFilter|f=s', 'outFile|o=s', 'help|h', 'man' ) || pod2usage();
 
 my $bsmlSearchDir = $options{'bsmlSearchDir'};
 my $bsmlModelDir = $options{'bsmlModelDir'};my $outFile = $options{'outFile'};
@@ -91,8 +91,10 @@ my $jaccardClusterHash = {};  #Associate Jaccard clusters by sequence id
 my $jaccardRepSeqHash = {};   #Associate a representative sequence for each cluster
 my $jaccardClusterCount = 0;
 
-if( $options{'bsmlJaccardDir'} )
+if( $options{'bsmlJaccardDir'} && $options{'jaccardFilter'} == 1 )
 {
+    print "Filtering\n";
+
     my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
     foreach my $bsmlFile (<$options{'bsmlJaccardDir'}/*.bsml>)
     {

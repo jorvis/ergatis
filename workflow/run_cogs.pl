@@ -53,7 +53,10 @@ my $conf = {
     ';MASTER_CONF;' => "$WorkflowConfigFileDir/cogs-master.ini",
     ';MASTER_TEMPLATE;' => "$WorkflowConfigFileDir/cogs-master_template.xml",
     ';BSML_SEARCH;' => 'blastp',
-    ';PVALCUT;' => '1e-5'
+    ';PVALCUT;' => '1e-5',
+    ';JACCARD_FILTERING;' => '0',
+    ';DATABASE;' => '',
+    ';DATABASE_LC;' => '',
     };
 
 # Override the defaults if the user has specified a config file
