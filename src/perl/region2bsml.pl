@@ -71,10 +71,21 @@ while (my $line = <IN>) {
 	$logger->debug("Parsing match line $refseq,$compseq,$refstart,$compstart,$refend,$compend");
 	if (scalar(@elements) == 6) {
 	    my $align = $doc->createAndAddSequencePairAlignment('refseq' => $refseq, 'compseq' => $compseq);
-	    my $query_align_length = $refend-$refstart+1;
-	    my $match_align_length = $compend-$compstart+1;
-	    $doc->createAndAddSequencePairRun('alignment_pair' => $align, 'refpos' => $refstart, 'runlength' =>$query_align_length,
-                                              'comppos'=> $compstart, 'comprunlength'=>$match_align_length);
+	    my $complement= ($compstart > $compend) ? 1 : 0;
+	    if($complement){
+		$compend++;
+	    }
+	    else{
+		$refstart--;
+	    }
+	    my $query_align_length = abs($refend-$refstart);
+	    my $match_align_length = abs($compend-$compstart);
+	    $doc->createAndAddSequencePairRun('alignment_pair' => $align, 
+					      'refpos' => $refstart, 
+					      'runlength' =>$query_align_length,
+                                              'comppos'=> $compstart, 
+					      'comprunlength'=>$match_align_length,
+					      'compcomplement'=>$complement);
         } else {
 	    $logger->info("Bad match line: $line");
         }
