@@ -104,11 +104,6 @@
                      <name>RunUnixCommand</name>
                      <configMapId>load_feature</configMapId>
                 </command>
-
-                <command>    
-                     <name>RunUnixCommand</name>
-                     <configMapId>load_analysis</configMapId>
-                </command>
                 <command>    
                      <name>RunUnixCommand</name>
                      <configMapId>load_featureprop</configMapId>
