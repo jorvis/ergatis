@@ -1,4 +1,4 @@
-#! /local/perl/bin/perl
+#!/usr/local/bin/perl
 
 
 =head1  NAME 
@@ -57,7 +57,6 @@ Calling the script name with NO flags/options or --help will display the syntax 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlBuilder;
-use Data::Dumper;
 use File::Basename;
 use Pod::Usage;
 
@@ -77,10 +76,12 @@ my $msf_suffix = $options{'suffix'} || "msf";  #default suffix pattern of alignm
 
 my $builder = new BSML::BsmlBuilder;
 
+my $file_found = 0;
 opendir(DIR, $ali_dir) or die "Unable to access $ali_dir due to $!";
 while( my $file = readdir(DIR)) {
     next if ($file =~ /^\.{1,2}$/);  #skip  "." ,  ".."
     if($file =~ /^(.+?)(\.msf\.dtab)?\.$msf_suffix$/) {
+	$file_found++;
 	my $fam_name = $1;
 	my $MSF_alignments = process_MSF_file("$ali_dir/$file");
 	next if(keys %$MSF_alignments < 1);   #skip empty msf files
@@ -115,8 +116,12 @@ while( my $file = readdir(DIR)) {
     }
 
 }
-
-$builder->write( $output );
+if($file_found) {
+    $builder->write( $output );
+    chmod 0755, $output;
+} else {
+    print STDERR "No files that ends in \"$msf_suffix\" are found in $ali_dir\n";
+}
 
 
 
@@ -200,9 +205,8 @@ sub cmd_check {
 	pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});
     }
     
-    #checking BSML repository directory
     if(! -d $ali_dir) {
-	print STDERR "$ali_dir NOT found.  Aborting...\n";
+	print STDERR "$ali_dir directory NOT found.  Aborting...\n";
 	exit 5;
     }
 
