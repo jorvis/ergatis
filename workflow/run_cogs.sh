@@ -1,5 +1,15 @@
 #!/bin/sh
 
+#####################################################
+#
+# run_cogs.sh - interface for the cogs analysis workflow
+#
+# Args:
+#   -d Database Name - to direct to BSML Repository
+#   -s search [all_vs_all or blastp]
+#
+# ./run_cogs.sh -d TRYP -s all_vs_all
+
 RUNPATH=.
 
 #process command options
