@@ -73,11 +73,6 @@
             <name>truncate_companalysis_tables</name>
             <configMapId>truncate_companalysis_tables</configMapId>
         </command>
-       <command>    
-            <type>RunUnixCommand</type>
-            <name>drop_indexes</name>
-            <configMapId>drop_indexes</configMapId>
-        </command>
         <commandSet type="serial">
                 <name>Load filtered analysis records</name>
                 <configMapId>empty</configMapId>
