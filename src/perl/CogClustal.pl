@@ -14,8 +14,13 @@
 #              2) Introduced log4perl logging
 #           
 #              2003-12-24 sundaram
-#              ls was replaced by find
+#              1) ls was replaced by find
 #    
+#
+#              2003-12-30 sundaram
+#              1) using /usr/local/devel/ANNOTATION/cas/tester/clustalw
+#              2) clustalw no longer re-directed to /dev/null
+#
 #
 #
 #
@@ -126,7 +131,8 @@ foreach my $fastaFile (@$fastafiles){
     $clustalFile =~ s/fasta/clustal/;
 
     # clustalw spits out a lot of stuff to STDOUT this redirects it to /dev/null
-    my $status = system( "clustalw -output=gcg -infile=$fastaFile -outfile=$clustalFile > /dev/null" );
+    #my $status = system( "clustalw -output=gcg -infile=$fastaFile -outfile=$clustalFile > /dev/null" );
+    my $status = system( "/usr/local/devel/ANNOTATION/cas/tester/clustalw -output=gcg -infile=$fastaFile -outfile=$clustalFile" );
 
     my $exit_value = $status >> 8;
     my $signal_num = $status & 127;
