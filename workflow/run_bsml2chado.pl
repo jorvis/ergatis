@@ -783,7 +783,7 @@ sub retrieve_bsml_document_hash {
 	foreach my $line (@$contents){
 	    $logger->logdie("line was not defined") if (!defined($line));
 	    $linectr++;
-	    if ($line =~ /^bsml_doc:(\S+\.bsml)\s*(bsml_type:\d)?$/){
+	    if ($line =~ /^bsml_doc:(\S+\.bsml)\s*(bsml_type:\d)?\s*$/){
 		#
 		# E.g.  line = bsml_doc:/usr/local/annotation/CHADO_TEST/BSML_repository/blastp//bsp_3839_assembly.blastp.bsml
 		#
