@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers promer nucmer blastp wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb backupdb snps coverage tiling legacy2chado
+workflow_install	: dirs shellwrappers promer nucmer blastp blastx wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb backupdb snps coverage tiling legacy2chado
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -108,6 +108,14 @@ blastp	:
 	@install workflow/blastp/blastp.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/blastp/blastp_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/blastp/blastpconf.ini $(WORKFLOW_DOCS_DIR)  
+
+blastx	:
+	@echo "Installing blastx workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/blastx/blastx-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/blastx/blastx-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/blastx/blastx.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/blastx/blastx_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/blastx/blastxconf.ini $(WORKFLOW_DOCS_DIR) 
 
 ber	:
 	@echo "Installing ber workflows in $(WORKFLOW_DOCS_DIR)"
