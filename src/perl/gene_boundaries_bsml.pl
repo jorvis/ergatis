@@ -135,7 +135,7 @@ if($bsml_file_list){
     while (my $line = <FILE>){
 	chomp $line;
 	push @allbsmlfiles,$line;
-	$logger->info("Adding matches from $bsml_file to analysis");
+	$logger->info("Adding matches from $line to analysis");
     }
     close FILE;
 }
