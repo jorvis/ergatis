@@ -348,7 +348,7 @@ sub _check_conf{
     return 0;
 }
 
-sub _get_workflow_bin{
+sub _get_bin_dir{
     my($file) = @_;
     my $cfg = new Config::IniFiles(-file => $file);
     return $cfg->val("init",'$;BIN_DIR$;');
