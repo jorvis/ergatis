@@ -24,6 +24,8 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use BSML::BsmlBuilder;
 use Workflow::Logger;
+use TIGR::FASTAreader;
+use TIGR::FASTArecord;
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -59,6 +61,9 @@ my $organismelt = $doc->createAndAddOrganism(
 					   'genus'   => $options{'genus'},
 					   'species' => $options{'species'}
 					);
+
+my $abbrev = lc(substr($options{'genus'},0,1))."_".lc($options{'species'});
+
 
 my $strainelt = $doc->createAndAddStrain( 
 					  'organism'        => $organismelt,
@@ -138,32 +143,18 @@ if(scalar(@files)==0){
 
 foreach my $fasta_file (@files){
 
-    my ($uid, $seq);
+    my ($uid);
     
-    
-    open(F_IN, $fasta_file) || die ("no can find: $fasta_file");
-    my $first_time = 1;
-    while(<F_IN>) {
-	s/\n//;
-	if(/^>/) {
-	    s/>//;
-	    s/\s.*//;
-	    $uid = $_;
-	    
-	    $uid = "_" . $uid if ($uid =~ /^[0-9]/);
-	    
-	    if ($first_time != 1) {
-		add_stuff($doc, $uid, $seq, $fasta_file);
-	    }
-	    
-	    $first_time = 0;
-	    my $seq;
-	}
-	else {
-	    $seq .= $_;
-	}
+    my $fasta_reader = new TIGR::FASTAreader;                                                                                                                                   
+    $fasta_reader->open($fasta_file) or $logger->logdie("Cannot read file $fasta_file\n");
+                                                                                                                                                                                      
+    while ( $fasta_reader->hasNext() ) {                                                                                                                                                  
+	# print each record to OUTFILE                                                                                                                                                    
+	my($record) = $fasta_reader->next();                                                                                                                                              
+	my($header) = $record->getIdentifier();
+	&add_stuff($doc,$header,$record->size(),$fasta_file);
     }
-}
+} 
 
 $doc->write("$options{'output'}");
 
@@ -172,10 +163,7 @@ if(! -e "$options{'output'}"){
 }
 
 sub add_stuff {
-    my($doc, $uid, $seq, $fasta_file) = @_;
-    my($seq_length);
-
-    $seq_length = length($seq);
+    my($doc, $uid, $seq_length, $fasta_file) = @_;
 
     my $asmseq = $doc->createAndAddExtendedSequenceN( 'id' => $uid, 
 						      'title' => '', 
@@ -185,6 +173,7 @@ sub add_stuff {
 						      'dbsource' => '', 
 						      'icAcckey' => '', 
 						      'strand' => '');
+    $asmseq->setattr('class','protein');
 
     $doc->createAndAddSeqDataImport($asmseq, 
 				    'fasta', 
