@@ -51,8 +51,6 @@ use BSML::BsmlReader;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Data::Dumper;
 
-my $pairsCount = 0;
-
 # Preprosess data stored in BSML pairwise alignment documents into BTAB
 # structure for COG analysis.
 
@@ -317,9 +315,6 @@ sub alignmentHandler
     {
 	$COGInput->{$refseq}->{$compGenome} = $lref;
     }
-
-    if( $pairsCount > 200 ){ exit(); }
-    $pairsCount++;
 }
 
 sub genomeHandler
