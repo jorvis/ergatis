@@ -132,7 +132,7 @@ foreach my $fastaFile (@$fastafiles){
 
     # clustalw spits out a lot of stuff to STDOUT this redirects it to /dev/null
     #my $status = system( "clustalw -output=gcg -infile=$fastaFile -outfile=$clustalFile > /dev/null" );
-    my $status = system( "/usr/local/devel/ANNOTATION/cas/tester/clustalw -output=gcg -infile=$fastaFile -outfile=$clustalFile" );
+    my $status = system( "clustalw -output=gcg -infile=$fastaFile -outfile=$clustalFile" );
 
     my $exit_value = $status >> 8;
     my $signal_num = $status & 127;
