@@ -1,8 +1,52 @@
 #! /local/perl/bin/perl
 
+=head1  NAME 
+
+CogBsmlLoader.pl  -  Preprosess data stored in BSML pairwise alignment documents into BTAB
+structure for COG analysis using best_hits.pl. 
+
+=head1 SYNOPSIS
+
+USAGE:  CogBsmlLoader.pl -m BsmlGeneModelDirectory -b BsmlPairwiseAlignmentDirectory -o OutputFile
+
+=head1 OPTIONS
+
+=over 4
+
+=item *
+
+B<--bsmlModelDir, -m>   [REQUIRED] Dir containing the BSML gene/sequence encodings referenced in the search directory
+
+=item *
+
+B<--bsmlSearchDir, -b>  [REQUIRED] Dir containing the BSML search encodings of pairwise alignments (all_vs_all, blastp)
+
+=item *
+
+B<--outFile, -o>        [REQUIRED] output BTAB file
+
+=item *
+
+B<--help,-h> This help message
+
+=back
+
+=head1   DESCRIPTION
+
+CogBsmlLoader.pl is designed to preprocess the data contained in a BSML pairwise alignment search 
+for COGS analysis. Specifically it identifies the "best hit" per genome for each query gene. 
+This data is packaged into the BTAB format for linkage analysis using best_hits.pl  
+
+NOTE:  
+
+Calling the script name with NO flags/options or --help will display the syntax requirement.
+
+=cut
+
 use lib '/export/CVS/bsml/src';
 use strict;
 use warnings;
+use Pod::Usage;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlReader;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -20,11 +64,10 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 #
  
 my %options = ();
-my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'outFile|o=s' );
+my $results = GetOptions( \%options, 'bsmlSearchDir|b=s', 'bsmlModelDir|m=s', 'outFile|o=s', 'help|h', 'man' ) || pod2usage();
 
 my $bsmlSearchDir = $options{'bsmlSearchDir'};
-my $bsmlModelDir = $options{'bsmlModelDir'};
-my $outFile = $options{'outFile'};
+my $bsmlModelDir = $options{'bsmlModelDir'};my $outFile = $options{'outFile'};
 
 # associative array to translate cds identifiers to protein ids.
 my $cds2Prot = {};
@@ -35,20 +78,27 @@ my $cds2Prot = {};
 my $alnParser = new BSML::BsmlParserSerialSearch( AlignmentCallBack => \&alignmentHandler );
 my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureHandler, GenomeCallBack => \&genomeHandler );
 
-$bsmlSearchDir =~ s/\/+$//; #remove trailing slash if present
-$bsmlModelDir =~ s/\/+$//; 
+if( exists($options{'help'}) || exists($options{'man'}) )
+{
+    pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
+}
 
 if(!$bsmlSearchDir || !$bsmlModelDir )
 {
-    die "no Bsml Directory specified\n";
+    die "ERROR: BSML directories for search encodings and gene-sequence models not specified\n";
 }
 else
 {
+    $bsmlSearchDir =~ s/\/+$//; #remove trailing slash if present
+    $bsmlModelDir =~ s/\/+$//; 
+
     if( ! -d $bsmlSearchDir || ! -d $bsmlModelDir )
     {
 	die "could not open directory: $bsmlSearchDir\n";
     }
 }
+
+
 
 # protein sequence identifer to genome mapping 
 my $geneGenomeMap = {};
