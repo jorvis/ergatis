@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 
 
-use lib("shared", "/usr/local/annotation/PNEUMO/clu_dir/BSML/bsml/src");
+use lib("shared");
 use strict;
 #use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
