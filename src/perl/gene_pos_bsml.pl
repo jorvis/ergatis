@@ -2,12 +2,10 @@
 
 
 use strict;
-use lib("/usr/local/annotation/PNEUMO/clu_dir/prok_CGC"); 
-use lib("../..", "/usr/local/annotation/PNEUMO/clu_dir/BSML/ANNOTATION/bsml/src");
 use PEffect::PEffectXML;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BsmlReader;
-use BsmlParserTwig;
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
 
 
 my %options = ();
@@ -24,16 +22,13 @@ my $BSML_dir = $options{'bsml_dir'};
 $BSML_dir =~ s/\/$//;
 my $output = $options{'output'};
 
-#my $QUERYPRINT;
-#my $DEBUG = $options{'DEBUG'} || 0;
-
 if(!$BSML_dir or exists($options{'help'})) {
     &print_usage();
 }
 
 ###-------------------------------------------------------###
 
-my $parser = new BsmlParserTwig;
+my $parser = new BSML::BsmlParserTwig;
 my $pexml = new PEffect::PEffectXML();
  
 #my @asmbls;

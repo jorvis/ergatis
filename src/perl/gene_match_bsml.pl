@@ -2,12 +2,10 @@
 
 
 use strict;
-#use lib("/usr/local/annotation/PNEUMO/clu_dir/prok_CGC"); 
-use lib("../..", "/usr/local/annotation/PNEUMO/clu_dir/BSML/ANNOTATION/bsml/src");
 use PEffect::PEffectXML;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BsmlReader;
-use BsmlParserTwig;
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
 
 my %options = ();
 my $results = GetOptions (\%options, 'asmbl_id|a=s', 'output|o=s', 'match_asmbl_id|b=s',  'bsml_dir|d=s', 'help|h' );
@@ -39,8 +37,8 @@ if (!-s $bsml_file) {
     print STDERR "The $bsml_file does not exist!  Aborting...\n";
     exit 5;
 } else {
-    $reader = new BsmlReader;
-    my $parser = new BsmlParserTwig;
+    $reader = BSML::BsmlReader->new();
+    my $parser = BSML::BsmlParserTwig->new();
     $parser->parse( \$reader, $bsml_file );
     my $pexml = new PEffect::PEffectXML();
     addMatches($asmbl_id, $match_asmbl_id, $pexml);
