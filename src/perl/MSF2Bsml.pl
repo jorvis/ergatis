@@ -73,6 +73,13 @@ my $msf_suffix = $options{'suffix'} || "msf";  #default suffix pattern of alignm
 
 my $builder = new BSML::BsmlBuilder;
 
+# add an analysis object to the document. 
+
+$builder->createAndAddAnalysis( 'source_name' => $output,
+				'program_version' => '1.0',
+				'program' => 'clustal',
+				'bsml_link_url' => 'BsmlTables',
+				'bsml_link_relation' => 'MULTIPLE_ALIGNMENTS' );
 
 my $file_found = 0;
 opendir(DIR, $ali_dir) or die "Unable to access $ali_dir due to $!";
