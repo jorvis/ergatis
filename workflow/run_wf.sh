@@ -25,5 +25,5 @@ CreateWorkflow -t $template -c $ini -i $instance -l $log 1>shell_log.txt 2>shell
 echo "Running workflow instance $instance"
 echo "To launch viewer execute... $INSTALL_DIR/run_wfmonitor.sh -i $instance"
 
-RunWorkflow -i $instance -l $log 1>>shell_log.txt 2>>shell_log.txt &
+#RunWorkflow -i $instance -l $log 1>>shell_log.txt 2>>shell_log.txt &
 
