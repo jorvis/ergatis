@@ -12,6 +12,12 @@
 #              1) If detects "no_clusters.txt" in cluster directory,
 #                 no clustalw alignment will be produced
 #              2) Introduced log4perl logging
+#           
+#              2003-12-24 sundaram
+#              ls was replaced by find
+#    
+#
+#
 #
 #---------------------------------------------------------------------------------
 use strict;
@@ -144,8 +150,8 @@ sub retrieve_fasta_files {
     my $dir = shift;
 
 
+   my @bsml_files = qx[find $$dir -name "*.fasta" -type f];
 
-    my @bsml_files = qx"ls -1 $$dir/*.fasta";
     chomp @bsml_files;
 
 
