@@ -34,6 +34,13 @@ B<--asmbl_file>  name of the file containing a list of asmbl_ids
 
 B<--project,-p> save all sequences in this subdirectory (default in each asmbl_id's dir)
 
+=item *
+
+B<--log,-l> Log file
+
+=item *
+
+B<--debug,--D>  Debug level
 
 =item *
 
@@ -75,7 +82,7 @@ use Pod::Usage;
 
 
 my %options = ();
-my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'project|p=s', 
+my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'project|p=s', 'log|l=s', 'debug|D=s',
                                      'asmbl_ids|a=s', 'asmbl_file=s', 'help|h' ) || pod2usage();
 
 ###-------------PROCESSING COMMAND LINE OPTIONS-------------###
@@ -83,12 +90,12 @@ my $results = GetOptions (\%options, 'bsml_dir|b=s', 'output_dir|o=s', 'project|
 my $ASMBL_IDS  = $options{'asmbl_ids'};
 my $output_dir = $options{'output_dir'};
 $output_dir =~ s/\/+$//;       #remove terminating '/'s
-my $BSML_dir = $options{'bsml_dir'};
+my $BSML_dir   = $options{'bsml_dir'};
 $BSML_dir =~ s/\/+$//;       #remove terminating '/'
-my $QUERYPRINT;
-my $DEBUG = $options{'DEBUG'} || 0;
-my $project = $options{'project'};
-my $asmbl_file      = $options{'asmbl_file'};
+my $debug      = $options{'debug'};
+my $log        = $options{'log'};
+my $project    = $options{'project'};
+my $asmbl_file = $options{'asmbl_file'};
 
 if( exists($options{'help'})) {
     pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT});
@@ -107,6 +114,29 @@ if($asmbl_file and $ASMBL_IDS) {
     pod2usage(-verbose => 1, -message => "$0: Must specify either --asmbl_ids OR --asmbl_file. NOT BOTH.", -output => \*STDERR) 
 }
 
+Log::Log4perl-> Log::Log4perl::init_and_watch($ENV{LOG4PERL_CONF}) if($ENV{LOG4PERL_CONF});
+my $logger = get_logger('papyrus::pe');
+$logger->level($INFO);
+$logger->more_logging($debug) if($debug);
+
+# Define a file appender or a screen appender
+if($log){
+    my $file_appender = Log::Log4perl::Appender->new(
+						     "Log::Dispatch::File",
+						     mode => "append",
+						     filename  => $log);
+    
+    my $layout = 
+	Log::Log4perl::Layout::PatternLayout->new(
+						  "%d %p> %F{1}:%L %M - %m%n");
+    $file_appender->layout($layout);
+    $logger->add_appender($file_appender);
+}else{
+    my $screen_appender = Log::Log4perl::Appender->new(
+						       "Log::Dispatch::Screen");	
+    
+    $logger->add_appender($screen_appender);
+}
 ###-------------------------------------------------------###
 my $min_dir = dirname($output_dir);
 if(! -d $min_dir) {
@@ -116,6 +146,7 @@ if(! -d $min_dir) {
 #create the directory that will hold all the individual peptide files if it doesn't exist
 if(! -d $output_dir ) {
     mkdir $output_dir;
+    $logger->debug("$output_dir not exists, creating $output_dir");
 }
 chmod 0777, $output_dir;
 
@@ -124,12 +155,13 @@ my $result;
 
 my @asm_ids;
 if($asmbl_file) {   #asmbl_id will be read from a flat file
+    $logger->debug("Getting asmbl_ids from $asmbl_file");
     @asm_ids = read_asmbl_file($asmbl_file);
     if(!@asm_ids) {
-	print STDERR "No asmbl_ids found in $asmbl_file.  Aborting...\n";
-	exit 4;
+	$logger->logdie("No asmbl_ids found in $asmbl_file.  Aborting");
     }
 }else {
+    $logger->debug("Getting asmbl_ids from -a flag");
     if($ASMBL_IDS =~ /all/i) {
 	my @files = <$BSML_dir/*.bsml>;
 	foreach (@files) {
@@ -145,9 +177,11 @@ if($asmbl_file) {   #asmbl_id will be read from a flat file
 my $parser = new BSML::BsmlParserTwig;
 
 if($project) {
+    $logger->debug("Outputting all files into $output_dir/$project");
     consolidated_output(\@asm_ids);
 }
 else {
+    $logger->debug("Outputting all files into asmbl_id subdir under $output_dir");
     regular_output(\@asm_ids);
 } 
 
@@ -167,8 +201,10 @@ sub consolidated_output {
 	    my $reader = BSML::BsmlReader->new();
 	    $parser->parse( \$reader, $bsml_file );
 	    my $extend_seq = $reader->get_all_cds_dna($asmbl_id) ;
+	    my $output_seq_counter=0;
 	    while( my ($gene, $seq) = each %$extend_seq ) {
 		next if(length($seq) < 1); 
+		$output_seq_counter++;
 		$gene =~ s/_\d$//;
 		my $protein_seq_id = $reader->cdsIdtoProteinSeqId($gene);
 		my $gene_file = "$final_output_dir/${protein_seq_id}.seq";
@@ -178,8 +214,9 @@ sub consolidated_output {
 		close FILE;
 		chmod 0777, $gene_file;
 	    }
+	    $logger->debug("$output_seq_counter sequences for $asmbl_id written to $final_output_dir ");
 	} else {
-	    print STDERR "$bsml_file NOT found!!!!\n";
+	    $logger->logwarn("$bsml_file NOT found!  Skipping...");
 	}
 
     }
@@ -203,8 +240,10 @@ sub regular_output {
 	    my $reader = BSML::BsmlReader->new();
 	    $parser->parse( \$reader, $bsml_file );
 	    my $extend_seq = $reader->get_all_cds_dna($asmbl_id) ;
+	    my $output_seq_counter=0;
 	    while( my ($gene, $seq) = each %$extend_seq ) {
 		next if(length($seq) < 1); 
+		$output_seq_counter++;
 		$gene =~ s/_\d$//;
 		my $protein_seq_id = $reader->cdsIdtoProteinSeqId($gene);
 		my $gene_file = "$final_output_dir/${protein_seq_id}.seq";
@@ -214,8 +253,9 @@ sub regular_output {
 		close FILE;
 		chmod 0777, $gene_file;
 	    }
+	    $logger->debug("$output_seq_counter sequences for $asmbl_id written to $final_output_dir ");
 	} else {
-	    print STDERR "$bsml_file NOT found!!!!\n";
+	    $logger->logwarn("$bsml_file NOT found!  Skipping...");
 	}
     }
 
@@ -244,7 +284,7 @@ sub read_asmbl_file {
 
     my @asmbl_id_list;
 
-    open (IN, "$file")  or die "Unable to read $file due to $!";
+    open (IN, "$file")  or $logger->logdie("Unable to open and read $file!");
     my $line;
     while($line = <IN>) {
 	chomp($line);
