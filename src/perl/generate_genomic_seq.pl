@@ -1,7 +1,6 @@
 #!/usr/local/bin/perl
 
 
-use lib("shared", "/usr/local/annotation/PNEUMO/clu_dir/BSML/ANNOTATION/bsml/src");
 use strict;
 #use Log::Log4perl qw(get_logger);
 use DBI;

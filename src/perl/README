@@ -1,2 +1,8 @@
 perl sources
 the preferred file prefix is .pl for perl executables
+
+make_pep_bsml.pl  - makes peptide files in fasta format 
+make_each_seq.pl  - make fasta files (1 entry / file) of DNA sequence
+do_all_vs_all.pl  - execute pallvsall
+btab2bsml.pl      - encode btab info into BSML doc.  Handles both allvsall
+                    and regular BLAST btab files

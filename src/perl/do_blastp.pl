@@ -1,6 +1,5 @@
 #!/usr/local/bin/perl
 
-use lib("shared");
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use File::Basename;

@@ -1,12 +1,11 @@
 #!/usr/local/bin/perl
 
 
-use lib("/usr/local/annotation/PNEUMO/clu_dir/BSML/ANNOTATION/bsml/src");
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Log::Log4perl qw(get_logger);
-use BsmlReader;
-use BsmlParserTwig;
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
 
 
 my %options = ();
@@ -40,8 +39,8 @@ if(! -d $BSML_dir ) {
     exit 5;
 }
 
-my $parser = new BsmlParserTwig;
-my $reader = BsmlReader->new();
+my $parser = BSML::BsmlParserTwig->new();
+my $reader = BSML::BsmlReader->new();
 
 $parser->parse( \$reader, $bsml_file );
 my @orders = split(/,/, $order);          #parses the order input, as comma separated argument        

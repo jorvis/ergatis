@@ -1,7 +1,6 @@
 #!/usr/local/bin/perl
 
 
-#use lib("/usr/local/annotation/PNEUMO/clu_dir/BSML/bsml/src");
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlReader;

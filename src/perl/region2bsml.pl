@@ -3,8 +3,6 @@
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-#use BSML::BsmlReader;
-#use BSML::BsmlParserTwig;
 use File::Basename;
 use BSML::BsmlBuilder;
 
