@@ -9,7 +9,7 @@
             <configMapId>create_scratch_dir</configMapId>
         </command>
         <command>    
-            <name>RunUnixCommand</name>
+            <name>RunDistributedCommand</name>
             <configMapId>bsml2chado</configMapId>
         </command>
     </commandSet>
