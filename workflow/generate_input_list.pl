@@ -105,37 +105,43 @@ exit;
 
 
 sub get_list_from_file{
-    my ($iteratorconf, $file) = @_;
+    my ($iteratorconf, $f) = @_;
     my @elts;
     my @lines;
-    if( $file){
-	open( FH, $file ) or die "Could not open $file";
-	while( my $line = <FH> ){
-	    chomp($line);
-	    push @lines,  split(',',$line) if($line =~ /\S+/);
-	}
-	fisher_yates_shuffle(\@lines);
-	foreach my $line (@lines){
-	    if($line){
-		my $filename = "$line";
-		my $name = &get_name_from_file($filename);
-		&add_entry_to_conf($iteratorconf,$filename,$name);
+    my @files = split(',',$f);
+    foreach my $file (@files){
+	if( $file){
+	    open( FH, $file ) or die "Could not open $file";
+	    while( my $line = <FH> ){
+		chomp($line);
+		push @lines,  split(',',$line) if($line =~ /\S+/);
 	    }
+	    fisher_yates_shuffle(\@lines);
+	    foreach my $line (@lines){
+		if($line){
+		    my $filename = "$line";
+		    my $name = &get_name_from_file($filename);
+		    &add_entry_to_conf($iteratorconf,$filename,$name);
+		}
+	    }
+	    close( FH );
 	}
-	close( FH );
     }
 }
 
 sub get_list_from_directory{
-    my ($iteratorconf, $directory, $glob) = @_;
+    my ($iteratorconf, $dir, $glob) = @_;
 
-    opendir DIR, "$directory" or $logger->logdie("Can't read directory $directory");
-    my @files = grep /\.$options{'extension'}$/, readdir DIR;
-    fisher_yates_shuffle( \@files );    # permutes @array in place
-    foreach my $file (@files ){
-	my $filename = "$directory/$file";
-	my $name = &get_name_from_file($filename);
-	&add_entry_to_conf($iteratorconf,$filename,$name);
+    my @directories = split(',',$dir);
+    foreach my $directory (@directories){
+	opendir DIR, "$directory" or $logger->logdie("Can't read directory $directory");
+	my @files = grep /\.$options{'extension'}$/, readdir DIR;
+	fisher_yates_shuffle( \@files );    # permutes @array in place
+	foreach my $file (@files ){
+	    my $filename = "$directory/$file";
+	    my $name = &get_name_from_file($filename);
+	    &add_entry_to_conf($iteratorconf,$filename,$name);
+	}
     }
 }
 
