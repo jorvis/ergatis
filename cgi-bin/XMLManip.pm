@@ -158,7 +158,7 @@ sub get_pipeline_xml{
 							      my $cmdconfigmapid = $commands->first_child_text("configMapId");
 							      if($cmdconfigmapid =~ /^generate_component/){
 								  ($conf) = ($commands->first_child_text("arg") =~ /-c\s+(\S+\.bld\.ini)/);
-								  ($name) = ($configmapid =~ /component_(\w+)_\d+/);
+								  ($name) = ($configmapid =~ /component_([\w\-]+)_\d+/);
 								  $gen = $cmdconfigmapid;
 							      }
 							  }
