@@ -7,43 +7,47 @@
         <configMapId>1</configMapId>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>10.1</configMapId>
+            <configMapId>create_target_database_subdir</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.1</configMapId>
+            <configMapId>create_database_subdir</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.2</configMapId>
+            <configMapId>legacy2chado</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>chmod_bcp_files</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>1.3</configMapId>
+            <configMapId>chmod_legacy2chado_log</configMapId>
         </command>       
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>3.1</configMapId>
+            <configMapId>validate_bcp_files</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>3.2</configMapId>
+            <configMapId>chmod_validation_log</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>3.3</configMapId>
+            <configMapId>chmod_all_validation_logs</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>5.1</configMapId>
+            <configMapId>load_sybase</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>5.2</configMapId>
+            <configMapId>chmod_load_log</configMapId>
         </command>
         <command>    
             <name>RunUnixCommand</name>
-            <configMapId>5.3</configMapId>
+            <configMapId>chmod_load_stats</configMapId>
         </command>
     </commandSet>
 </commandSetRoot>

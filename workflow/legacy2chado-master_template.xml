@@ -7,15 +7,15 @@
         <configMapId>2</configMapId>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>2.1</configMapId>
+            <configMapId>create_tmpdir</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>2.2</configMapId>
+            <configMapId>create_target_database_subdir</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>2.3</configMapId>
+            <configMapId>rm_target_database_subdir</configMapId>
         </command>
         <commandSet type="serial">
             <name>Run legacy to chado migration Workflow</name>
@@ -33,43 +33,47 @@
        </commandSet>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>10.1</configMapId>
+            <configMapId>mkdir_protein_local_dir</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>10.2</configMapId>
+            <configMapId>protein_localizations</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>10.3</configMapId>
+            <configMapId>chmod_protein_log</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>10.5</configMapId>
+            <configMapId>chmod_protein_local_dir</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>10.6</configMapId>
+            <configMapId>load_sybase_proteins</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>10.7</configMapId>
+            <configMapId>chmod_protein_load_log</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>20.1</configMapId>
+            <configMapId>chmod_protein_load_stats</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>20.2</configMapId>
+            <configMapId>chmod_all_logfiles</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>20.3</configMapId>
+            <configMapId>chmod_all_txtfiles</configMapId>
         </command>
          <command>    
             <name>RunUnixCommand</name>
-            <configMapId>20.4</configMapId>
+            <configMapId>chmod_all_xmlfiles</configMapId>
+        </command>
+         <command>    
+            <name>RunUnixCommand</name>
+            <configMapId>chmod_all_inifiles</configMapId>
         </command>
     </commandSet>
 </commandSetRoot>
