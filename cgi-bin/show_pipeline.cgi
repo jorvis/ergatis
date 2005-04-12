@@ -569,12 +569,24 @@ sub print_directory_page{
 	print "<blink><font color=red>Project space usage <b>$quota%</b></font></blink><br>";
     }
     print "<br>Parent directory $dirname&nbsp;<a href='./show_pipeline.cgi?&xmltemplate=$dirname&glob=".param('glob')."'>[view]</a><br>";
+    print "Sub-directories: ";
+    opendir(DIR,$dirname) or die "Can't open file $dirname: $!";
+    while(defined(my $file = readdir(DIR))){
+	if((-d "$dirname/$file") && ($file !~ /^\.\.$/) && ($file !~ /^\.$/)){	
+	    print "<a href='./show_pipeline.cgi?&xmltemplate=$dirname/$file&glob=pipeline'>[$file]</a>&nbsp;\n";
+	}
+    }
+    print "<br>";
+
+
     print "<a href='./new_pipeline.cgi?&root=$outputdir'>[New]</a>&nbsp;<hr>";
 
     my $files = &get_workflows_from_directory($dir,$glob);
     
     print "<table>";
-    my $prevdir;
+    my $prevdir; 
+
+    
     foreach my $file (sort {
 	if($files->{$a}->{'dirname'} eq $files->{$b}->{'dirname'}){
 	    $files->{$b}->{'date'} cmp $files->{$a}->{'date'}
