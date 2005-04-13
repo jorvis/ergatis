@@ -163,9 +163,11 @@ sub add_entry_to_conf{
 sub fisher_yates_shuffle {
     my $array = shift;
     my $i;
-    for ($i = @$array; --$i; ) {
-	my $j = int rand ($i+1);
-	next if $i == $j;
-	@$array[$i,$j] = @$array[$j,$i];
+    if(@$array){
+	for ($i = @$array; --$i; ) {
+	    my $j = int rand ($i+1);
+	    next if $i == $j;
+	    @$array[$i,$j] = @$array[$j,$i];
+	}
     }
 }
