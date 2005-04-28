@@ -10,6 +10,11 @@
             <configMapId>clustalw</configMapId>
             <name>clustalw</name>
         </command>        
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>validate_clustalw_output</configMapId>
+            <name>validate_clustalw_output</name>
+        </command>        
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>msf2bsml</configMapId>
