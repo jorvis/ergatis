@@ -2,7 +2,13 @@
 
 =head1  NAME 
 
-btab2bsml.pl  - convert info stored in btab files into BSML documents
+btab2bsml.pl  - convert info stored in btab files into BSML documents 
+
+=head1 VERSION
+
+$Revision$
+$Name$
+$Date$
 
 =head1 SYNOPSIS
 
