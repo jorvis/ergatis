@@ -6,8 +6,17 @@ bsml2fasta.pl - convert BSML files to fasta
 
 =head1 SYNOPSIS
 
-USAGE:  bsml2fasta.pl --bsml_input=/path/to/fileORdir | --bsml_list=/path/to/file
-        [--class_filter=class --debug=debug_level --log=log_file]
+USAGE:  bsml2fasta.pl 
+          --bsml_input=/path/to/fileORdir | --bsml_list=/path/to/file
+          --format=single|multi
+        [ --output_list=/path/to/somefile.list
+          --output_subdir_size=20000
+          --output_subdir_prefix='somename'
+          --parse_element=sequence|feature
+          --class_filter=someclass 
+          --debug=debug_level 
+          --log=log_file
+        ]
 
 =head1 OPTIONS
 
@@ -18,10 +27,10 @@ B<--bsml_list,-s>
     Text file that is a list of input files and/or folders.
 
 B<--class_filter,-c> 
-    Filter output sequences to only include those in the passed class.
+    Optional. Filter output sequences to only include those in the passed class.
 
 B<--debug,-d> 
-    Debug level.  Use a large number to turn on verbose debugging. 
+    Optional. Debug level.  Use a large number to turn on verbose debugging. 
 
 B<--format,-f> 
     Format.  'multi' (default) writes all sequences to a multi-fasta file, and 'single' writes each sequence in a separate file named like $id.fsa
@@ -31,6 +40,17 @@ B<--log,-l>
 
 B<--output,-o> 
     Output file (if --format=multi) or directory (if --format=single)
+
+B<--output_list,-u>
+    Optional.  If passed, will create a list file containing the path to each of the
+    files created.
+    
+B<--output_subdir_size,-z>
+    Optional.  Number of files to create within each output subdirectory.
+    
+B<--output_subdir_prefix,-x>
+    Optional.  Rather than just plain numberical names (N), output subdirectories will
+    be named like "prefixN" if you pass a prefix with this.
 
 B<--help,-h> 
     This help message
@@ -138,10 +158,50 @@ cds class.  Sequences without class attributes will not be included if --class_f
 is used.  The values of these class attributes can be anything, but should correspond 
 to SO terms.
 
+You can pass a path to the optional --output_list to create a text file containing the full paths
+to each of the FASTA files created by this script.
+
+Two other optional arguments, --output_subdir_size and --output_subdir_prefix, can be used
+on input sets that are too large to write out to one directory.  This depends on the limitations
+of your file system, but you usually don't want 100,000 files written in the same directory.
+
+If you are going to create 95000 sequences, and use the following option:
+
+    --output=/some/path
+    --output_subdir_size=30000
+    
+The following will be created:
+
+    directory              file count
+    ---------------------------------
+    /some/path/1/          30000
+    /some/path/2/          30000
+    /some/path/3/          30000
+    /some/path/4/           5000
+
+If you choose to create a list file (and you probably want to), it will contain these proper paths.
+
+You may not want the subdirectories to simply be numbers, as above, so you can use the
+--output_subdir_prefix option.  For example:        
+
+    --output=/some/path
+    --output_subdir_size=30000
+    --output_subdir_prefix=fasta
+    
+The following will be created:
+
+    directory              file count
+    ---------------------------------
+    /some/path/fasta1/     30000
+    /some/path/fasta2/     30000
+    /some/path/fasta3/     30000
+    /some/path/fasta4/      5000
+
+
 =head1 CONTACT
 
-Joshua Orvis
-jorvis@tigr.org
+    Joshua Orvis
+    jorvis@tigr.org
 
 =cut
 
@@ -166,6 +226,8 @@ my $results = GetOptions (\%options,
                             'class_filter|c=s',
                             'type|t=s',             ## deprecated
                             'output_list|u=s',
+                            'output_subdir_size|z=s',
+                            'output_subdir_prefix|x=s',
                             'debug=s',
                             'format|m=s',
                             'log|l=s',
@@ -249,6 +311,9 @@ if ($options{output_list}) {
     open($olist_fh, ">$options{output_list}") || $logger->logdie("couldn't create output list $options{output_list} : $!");
 }
 
+## variables for handling output sub directory groupings (if needed)
+my $sub_dir_num = 0;
+my $seq_file_count = 0;
 
 ## remember which IDs have been found already
 my %ids;
@@ -406,6 +471,9 @@ sub check_parameters {
         $options{parse_element} = 'sequence';
     }
 
+    $options{output_subdir_size}   = 0  unless ($options{output_subdir_size});
+    $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
+
     if(0){
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
     }
@@ -424,6 +492,7 @@ sub fasta_out {
 
 sub write_sequence {
     my ($id, $seqref) = @_;
+    my $dirpath = '';
 
     ## has this ID already been found?
     if ($ids{$id}) {
@@ -436,18 +505,37 @@ sub write_sequence {
         &fasta_out("$id $title", $seqref, $mfh);
 
     } elsif ($options{format} eq 'single') {
+        ## the path depends on whether we are using output subdirectories
+        if ($options{output_subdir_size}) {
+            $dirpath = "$options{'output'}/$options{output_subdir_prefix}$sub_dir_num";
+        } else {
+            $dirpath = "$options{'output'}";
+        }
+        
+        ## if the directory doesn't exist, create it.
+        mkdir($dirpath) unless (-e $dirpath);
+        
         ## legal characters only in the output file name:
         my $name = $id;
         $name =~ s/[^a-z0-9\.\-]/_/gi;
 
         $logger->debug("attempting to create file $options{output}/$name.fsa") if ($logger->is_debug);
-        open (my $sfh, ">$options{output}/$name.fsa") || $logger->logdie("Unable to write to file $options{output}/$name due to $!");
+        open (my $sfh, ">$dirpath/$name.fsa") || $logger->logdie("Unable to write to file $options{output}/$name due to $!");
+        $seq_file_count++;
         &fasta_out("$id $title", $seqref, $sfh);
+        
+        ## if we are writing multiple subdirectories and have hit our size limit,
+        ##  increase the counter to the next one
+        if ($options{output_subdir_size} && $options{output_subdir_size} == $seq_file_count) {
+            $sub_dir_num++;
+            $seq_file_count = 0;
+        }
 
         if ($options{output_list}) {
-            print $olist_fh "$options{output}/$name.fsa\n";
+            print $olist_fh "$dirpath/$name.fsa\n";
         }
     }
 
 }
+
 
