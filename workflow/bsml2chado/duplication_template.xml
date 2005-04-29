@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>Record duplication resolution subflow</name>
+        <configMapId>empty</configMapId>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Detect duplicate records</name>
+          <configMapId>dup_list</configMapId>
+        </command>
+        <command>    
+          <type>RunUnixCommand</type>
+          <name>Remove duplicate records</name>
+          <configMapId>remove_dups</configMapId>
+        </command>
+    </commandSet>
+</commandSetRoot>
