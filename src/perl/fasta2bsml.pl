@@ -6,7 +6,10 @@ fasta2bsml.pl - convert fasta files to BSML
 
 =head1 SYNOPSIS
 
-USAGE:  fasta2bsml.pl --fasta_input=/path/to/fileORdir | --fasta_list=/path/to/file
+USAGE:  fasta2bsml.pl 
+        --fasta_input=/path/to/fileORdir | --fasta_list=/path/to/file
+        --format=multi|single
+        --output=/path/to/somefile.fsa   | /path/to/somedir
         [ --debug=debug_level --log=log_file ]
 
 =head1 OPTIONS
@@ -279,8 +282,10 @@ sub add_file {
     #  exists and is populated.
     my $file = shift;
     
-    ## only do .f?a files (.fna .fsa .faa .fasta)
-    return 0 unless ( $file =~ /\.f.a$/ || $file =~ /\.fasta$/);
+    ## only do .f?a files (.fna .fsa .faa .fasta) unless we're operating on a list
+    if (! $options{fasta_list}) {
+        return 0 unless ( $file =~ /\.f.a$/ || $file =~ /\.fasta$/);
+    }
     
     if (-e $file && -s $file) {
         $logger->debug("Adding file $file for processing") if ($logger->is_debug);
