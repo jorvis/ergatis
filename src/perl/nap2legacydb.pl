@@ -127,7 +127,7 @@ for (@files) {
     $logger->info("processing $file") if ($logger->is_info);
     
     ## we can parse the assembly ID out of the file name
-    if ($file =~ /_(\d+)/) {
+    if ($file =~ /\.assembly\.(\d+)/) {
         $asmbl_id = $1;
     } else {
         $logger->logdie("couldn't parse asmbl_id from file name!");   
