@@ -2,8 +2,9 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
-<commandSet type="serial">
+<commandSet type="parallel">
   <configMapId>empty</configMapId>
+  <maxParallelCmds>1</maxParallelCmds>
     <commandSet type="serial">
       <name>Subflow</name>
       <configMapId>subflow_iterator</configMapId>

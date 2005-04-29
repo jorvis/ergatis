@@ -97,7 +97,7 @@ else{
     }
     else{
 	foreach my $key (keys %$iteratorconf){
-	    print FILE "$key=",join(',',@{$iteratorconf->{$key}}),"\n";
+	    print "$key=",join(',',@{$iteratorconf->{$key}}),"\n";
 	}
     }
 }

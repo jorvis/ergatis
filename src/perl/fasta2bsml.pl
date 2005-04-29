@@ -1,45 +1,159 @@
-#!/local/perl/bin/perl
+#!/usr/local/bin/perl
 
-=head1 NAME
+=head1  NAME 
 
-fasta2bsml.pl
+fasta2bsml.pl - convert fasta files to BSML
 
 =head1 SYNOPSIS
 
-USAGE:  
+USAGE:  fasta2bsml.pl --fasta_input=/path/to/fileORdir | --fasta_list=/path/to/file
+        [ --debug=debug_level --log=log_file ]
 
 =head1 OPTIONS
 
-=over 8
+B<--fasta_input,-i> 
+    Input files or folders.  Can be a comma-separated list of mixed input types.
 
-=item 
-    
-=back
+B<--fasta_list,-s> 
+    Text file that is a list of input files and/or folders.
 
-=head1 DESCRIPTION
+B<--debug,-d> 
+    Debug level.  Use a large number to turn on verbose debugging. 
+
+B<--format,-f> 
+    Format.  'multi' (default) writes all sequences to a multi-entry bsml file, and 'single' writes each sequence in a separate file named like $id.bsml
+
+B<--log,-l> 
+    Log file
+
+B<--output,-o> 
+    Output file (if --format=multi) or directory (if --format=single)
+
+B<--help,-h> 
+    This help message
+
+=head1   DESCRIPTION
+
+This script is used to convert fasta to BSML.  The input is meant to be as flexible 
+as possible and is described below.  The output can be either a single file with 
+multiple <Sequence> entries, or separate files for each entry.
+
+=head1 INPUT
+
+Input can be either a single file, a directory of files, or a list.  A list is
+a text file containing a list of either files or directories, one on each line.
+
+Any individual fasta file can have a single entry or multiple entries.  This
+script will separate them as needed.
+
+The --fasta_input option is used to pass files or directories.  The following
+example passes a single fasta file:
+
+    fasta2bsml.pl --fasta_input=/foo/bar/dnaA.fna
+
+We can pass multiple files in a comma-separated list (use quotes):
+
+    fasta2bsml.pl --fasta_input="/foo/bar/dnaA.fna, /foo/bar/tonB.faa"
+
+If /foo/bar had many fasta files in it and we want to process them all, we could 
+just do:
+
+    fasta2bsml.pl --fasta_input=/foo/bar
+
+Also multiple directories are ok:
+
+    fasta2bsml.pl --fasta_input="/foo/bar, /home/you"
+
+You can even mix directories and files:
+
+    fasta2bsml.pl --fasta_input="/foo/bar/dnaA.fna, /home/you"
+
+Lists are useful if you have a specific set of files or directories to process.
+If we have a file named, for example, '/foo/bar/neatstuff.list', which has contents 
+like (the .list suffix is completely optional):
+
+    /foo/bar/thingy1.fna
+    /foo/bar/thingy2.faa
+    ...
+    /foo/bar/thingy1034.fsa
+
+You can pass this list to the script:
+
+    fasta2bsml.pl --fasta_list=/foo/bar/neatstuff.list
+
+If one of the lines in the list is a path to a directory rather than a file, each
+fasta file in that directory will be processed.  A list can contain paths to both
+files and directories such as:
+
+    /foo/bar/thingy1.bsml
+    /foo/bar/thingy2.bsml
+    ...
+    /foo/bar/thingy1034.bsml
+    /home/you
+
+Finally, you can be really messy and mix input types and methods to process files,
+directories and lists all at the same time:
+
+    fasta2bsml.pl --fasta_input="/foo/bar/dnaA.bsml, /home/you" --fasta_list=/home/you/some.list
+
+Once everything is evaluated down to the file-level, all will be skipped that
+don't have one of the following suffices: .fsa .faa .fna .fasta
+
+=head1 OUTPUT
+
+The fasta format is limited in its data representation in the header.  Because of this,
+this script was written very generically to allow any sort of header.  In each <Sequence>
+element created, the attributes generated are length, title, and id.  (other attributes
+my be handled by default in BsmlBuilder).  The id is assumed to be the first part of
+the fasta header up to the initial whitespace.  So with this header:
+
+    >gi46446716  putative chromosomal replication initiator protein, dnaA
+
+The 'id' attribute will be set to 'gi46446716'.  The 'title' attribute is set to
+the entire value of the fasta header, including the first word that became the id.
+
+Output is specified using the required --output and optional --format options.  By
+default the output will be a single file containing multiple sequences entries.  So:
+
+    fasta2bsml.pl --fasta_input=/foo/bar --output=/home/you/seqs.bsml
+
+This would read all the fasta files in /foo/bar and write their sequences to the
+seqs.bsml file in /home/you in multi-entry format.  If you want each sequence to be
+output separately, you need to use the --format=single option:
+
+    fasta2bsml.pl --fasta_input=/foo/bar --output=/home/you/data --format=single
+
+This would write each sequence to its own .bsml file into the /home/you/data directory.
+Each file will be named using the id attribute of each sequence, like $id.fsa .
+--format=multi is the default and does not need to be passed explicitly.  Note that
+the only legal characters for the file name are in the set [ a-z A-Z 0-9 - _ . ].  Any
+other characters will be replaced with underscores.
+
+=head1 CONTACT
+
+Joshua Orvis
+jorvis@tigr.org
 
 =cut
 
+
 use strict;
-use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use BSML::BsmlBuilder;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+use Pod::Usage;
 use Workflow::Logger;
-use TIGR::FASTAreader;
-use TIGR::FASTArecord;
 
 my %options = ();
 my $results = GetOptions (\%options,
-			  'fasta_file|f=s',
-			  'fasta_list|l=s',
-			  'fasta_dir|d=s',
-			  'output|o=s', 
-			  'genus|g=s',
-			  'species|s=s',
-			  'strain|S=s',
-			  'source_database|u=s', 
-			  'log|l=s',
-			  'debug=s',
-			  'help|h') || pod2usage();
+                          'fasta_input|i=s',
+                          'fasta_list|s=s',
+                          'fasta_dir|d=s',      ## deprecated
+                          'fasta_file|f=s',     ## deprecated
+                          'output|o=s',
+                          'format|m=s',
+			              'log|l=s',
+			              'debug=s',
+			              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
@@ -51,154 +165,240 @@ if( $options{'help'} ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDERR} );
 }
 
+
 &check_parameters(\%options);
 
-
-my $doc = new BSML::BsmlBuilder(); 
-
-my $crossrefctr=0;
-
-my $genome = $doc->createAndAddGenome();
-
-
-my $organismelt = $doc->createAndAddOrganism( 
-					   'genome'  => $genome,
-					   'genus'   => $options{'genus'},
-					   'species' => $options{'species'}
-					);
-
-my $abbrev = lc(substr($options{'genus'},0,1))."_".lc($options{'species'});
-my $database = $options{'source_database'} . ':' . $abbrev;
-
-my $xref = $doc->createAndAddCrossReference(
-					    'parent'          => $genome,
-					    'id'              => ++$crossrefctr,
-					    'database'        => $database,
-					    'identifier'      => $options{'species'},
-					    'identifier-type' => 'current'
-					    );
-
-
-
-
-my $strainelt = $doc->createAndAddStrain( 
-					  'organism'        => $organismelt,
-					  'name'            => $options{'strain'}, 
-					  'database'        => $options{'source_database'},
-					  'source_database' => $options{'source_database'}
-				    );				   
-
+#######
+## gather the list of files we're going to processes.  the user can pass file or
+#  directory names using --fasta_input, which can be a single file, a list of 
+#  filenames, a directory of files, or a list of directories of files (lists are
+#  comma-separated.  it can even be a mixed list of file and dir names.  fancy!
+#  a file containing a list of file/dir names should be passed with --fasta_list.  
 my @files;
-if ($options{'fasta_file'} ne ""){
-    my @inputfiles = split(/,/,$options{'fasta_file'});
-    foreach my $file (@inputfiles){
-	$file =~ s/\s//g;
-	if($file ne ""){
-	    if((-s $file)) {
-		$logger->debug("Adding file $file for processing") if($logger->is_debug());
-		push @files,$file;
-	    }
-	    else{
-		$logger->warn("Error reading file $file");
-	    }
-	}
-    }
-}
-if ($options{'fasta_list'} ne ""){
-    my @filelists = split(/,/,$options{'fasta_list'});
-    foreach my $filelist (@filelists){
-	$filelist =~ s/\s//g;
-	if($filelist ne ""){
-	    open FILE, "$filelist" or $logger->logdie("Can't open file $filelist");
-	    while (my $filename=<FILE>){
-		chomp $filename;
-		if(-s $filename) {
-		    $logger->debug("Adding file $filename for processing") if($logger->is_debug());
-		    push @files,$filename;
-		}
-		else{
-		    $logger->warn("Error reading file $filename");
-		}
-	    }
-	}
+my @list_elements = ();
+
+## did the user pass a list?  if so, get each file/dir names out of it, check it, and add it
+if ( $options{fasta_list} ) {
+    for my $list ( split(/,/, $options{fasta_list}) ) {
+        $list =~ s/\s//g;
+        
+        if (-f $list && -s $list) {
+            open (my $fh, $list) || $logger->logdie("Can't open file $list");
+            for ( <$fh> ) {
+                chomp;
+                if (-e $_ && -s $_) {
+                    push @list_elements, $_;
+                } else {
+                    $logger->warn("Error reading $_ from list $list") if ($logger->is_warn);
+                }
+            }
+        } else {
+            $logger->warn("Error reading $list") if ($logger->is_warn);
+        }
     }
 }
 
-if ($options{'fasta_dir'} ne "") {
-    my @fastadirs = split(/,/,$options{'fasta_dir'});
-    foreach my $dir (@fastadirs){
-	$dir =~ s/\s//g;
-	if($dir ne ""){
-	    if(-r $dir){
-		opendir(DIR, $dir) or $logger->warn("Unable to access $dir due to $!");
-		while( my $filename = readdir(DIR)) {
-		    if($filename =~ /(.+)\.fasta$/ || $filename =~ /(.+)\.pep$/ || $filename =~ /(.+)\.fsa$/) {
-			if(-s "$dir/$filename"){
-			    $logger->debug("Adding file $dir/$filename for processing") if($logger->is_debug());
-			    push (@files, "$dir/$filename");
-			}
-			else{
-			    $logger->warn("Error reading file $dir/$filename");
-			}
-		    }
-		}
-	    }
-	    else{
-		$logger->warn("Error reading directory $dir");
-	    }
-	}
+## loop through each input thing passed
+for my $thing ( split(/,/, ($options{fasta_input} || '') ),
+                split(/,/, ($options{fasta_file}  || '') ),  ## backwards compatibility
+                split(/,/, ($options{fasta_dir}   || '') ),  ## backwards compatibility
+                @list_elements) {
+    $thing =~ s/\s//g;
+    next unless ($thing);
+    
+    ## is this a directory?
+    if (-d $thing) {
+        opendir(my $dh, $thing) || $logger->warn("Unable to access $thing due to $!");
+        
+        for my $file (readdir $dh) {
+            &add_file("$thing/$file");
+        }
+        
+    ## else it's probably a file, make sure it exists and has size and add it, else warn
+    } elsif (! &add_file($thing) ) {
+        $logger->warn("Error reading $thing") if ($logger->is_warn);
     }
 }
 
-if(scalar(@files)==0){
+## die if no files found
+if ( scalar @files == 0 ) {
     $logger->logdie("No files found");
 }
 
 
+#######
+## parse out sequences from each file
+my $doc;
 
+## if we're writing out to a multi-entry file, create the doc now:
+if ($options{format} eq 'multi') {
+    $doc = new BSML::BsmlBuilder;
+}
 
-foreach my $fasta_file (@files){
-
-    my ($uid);
+for my $file ( @files ) {
     
-    my $fasta_reader = new TIGR::FASTAreader;                                                                                                                                   
-    $fasta_reader->open($fasta_file) or $logger->logdie("Cannot read file $fasta_file\n");
-                                                                                                                                                                                      
-    while ( $fasta_reader->hasNext() ) {                                                                                                                                                  
-	# print each record to OUTFILE                                                                                                                                                    
-	my($record) = $fasta_reader->next();                                                                                                                                              
-	my($header) = $record->getIdentifier();
-	&add_stuff($doc,$header,$record->size(),$fasta_file);
+    my %seqs = loadMultiSequence( $file );
+    
+    for my $seqid ( sort {$a<=>$b} keys %seqs ) {
+        
+        ## capture the first element of the header up to the first whitespace
+        my $id;
+        if ($seqs{$seqid}{h} =~ /^(\S+)/) {
+            $id = $1;
+        } else {
+            $logger->warn("unrecognized header format: $seqs{$seqid}{h}") if ($logger->is_warn);
+        }
+        
+        ## are we writing each sequence to single files?  If so, start a new doc
+        if ($options{format} eq 'single') {
+            $doc = new BSML::BsmlBuilder;
+        }
+         
+        my $seq_element = $doc->createAndAddSequence( $id, $seqs{$seqid}{h}, length($seqs{$seqid}{s}) );
+        $logger->debug("adding id $id to the bsml doc") if ($logger->is_debug);
+        $doc->createAndAddSeqData( $seq_element, $seqs{$seqid}{s} );
+        
+        ## write this doc if we're in single mode.  the only thing we can use is the id,
+        #  which needs to be made safe first.
+        if ($options{format} eq 'single') {
+            $id =~ s/[^a-z0-9\.\-]/_/gi;
+            $doc->write( "$options{output}/$id.bsml" );
+        }
     }
-} 
-
-$doc->write("$options{'output'}");
-
-if(! -e "$options{'output'}"){
-    die ("File not created $options{'output'}");
 }
 
-sub add_stuff {
-    my($doc, $uid, $seq_length, $fasta_file) = @_;
-
-    my $asmseq = $doc->createAndAddExtendedSequenceN( 'id' => $uid, 
-						      'title' => '', 
-						      'length' => $seq_length, 
-						      'molecule' => 'aa', 
-						      'locus' => '', 
-						      'dbsource' => '', 
-						      'icAcckey' => '', 
-						      'strand' => '');
-    $asmseq->addattr('class','protein');
-
-    $doc->createAndAddSeqDataImport($asmseq, 
-				    'fasta', 
-				    $fasta_file, 
-				    $uid);
+if ($options{format} eq 'multi') {
+    $doc->write( $options{output} );
 }
 
-sub check_parameters{
+## fin
+exit;
+
+sub add_file {
+    ## adds a file to the list of those to process, checking to make sure it
+    #  exists and is populated.
+    my $file = shift;
+    
+    ## only do .f?a files (.fna .fsa .faa .fasta)
+    return 0 unless ( $file =~ /\.f.a$/ || $file =~ /\.fasta$/);
+    
+    if (-e $file && -s $file) {
+        $logger->debug("Adding file $file for processing") if ($logger->is_debug);
+        push @files, $file;
+    } else {
+        $logger->warn("Error reading file $file") if ($logger->is_warn);
+        return 0;
+    }
+    
+    return 1;
+}
+
+sub check_parameters {
     my ($options) = @_;
     
+    ## they have to pass some form of input
+    unless ($options{fasta_input} || $options{fasta_list} ||
+            $options{fasta_file}  || $options{fasta_dir}) {
+        $logger->logdie("You must specify input with --fasta_input --fasta_list --fasta_file or --fasta_dir");
+    }
+
+    ## output is required
+    unless ( $options{output} ) {
+        $logger->logdie("You must specify an output directory or file with --output");
+    }
+
+    ## check the format setting or set a default if it wasn't passed
+    if (! $options{format}) {
+        $options{format} = 'multi';
+    } elsif ( $options{format} ne 'single' && $options{format} ne 'multi' ) {
+        $logger->logdie("--format must be either 'single' or 'multi'");
+    }
+    
+    ## if format is single, output must be a directory
+    if ($options{format} eq 'single') {
+        unless (-d $options{output}) {
+            $logger->logdie("if using --format=single then --output must point to a directory");
+        }
+    ## else if format is multi, output must NOT be a directory
+    } elsif ($options{format} eq 'multi') {
+        if (-d $options{output}) {
+            $logger->logdie("if using --format=multi then --output must NOT point to a directory");
+        }
+    }
+
+
+    if(0){
+        pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
+    }
 }
 
+sub loadMultiSequence {
+    #  USAGE:   loadMultiSequence($filepath)
+    #  RETURNS: hash
+    #
+    #  takes a file or path as an argument.  that file should be a multiple-
+    #  sequence FASTA file.  It returns a hash with a structure like:
+    #      $db{id}{'h'} = header
+    #             {'s'} = sequence without whitespace
+    #
+    #  where id is an incrementing integer that represents that sequence's
+    #  order in the file.
+    #
+    #########################################################################
+    my ($file) = @_;
+    
+    my $seqid = 0;
+    my $seq = '';
+    my $header;
+    my %db;
+    
+    ## load the sequence file
+    open (my $sfh, "<$file") || $logger->logdie("can't open $file because $!");
+
+    for (<$sfh>) {
+        ## if we find a header line ...
+        if (/^\>(.*)/) {
+
+            $header = $1;
+
+            ## don't do anything if this is the first sequence
+            if ($seqid == 0) {
+                $seqid++;
+                $db{$seqid}{'h'} = $header;
+                next;
+            } 
+
+            ## remove whitespace
+            $seq =~ s/\s//g;
+ 
+            ## record the previous sequence before starting the new one
+            $db{$seqid}{'s'} = $seq;
+
+            ## increment the id counter
+            $seqid++;
+
+            ## record the new header
+            $db{$seqid}{'h'} = $header;
+
+            ## reset the sequence
+            $seq = '';
+
+        ## else we've found a sequence line
+        } else {
+            ## skip it if it is just whitespace
+            next if (/^\s*$/);
+
+            ## record this portion of the sequence
+            $seq .= $_;
+        }
+    }
+    
+    ## don't forget the last sequence
+    $seq =~ s/\s//g;
+    $db{$seqid}{'s'} = $seq;
+
+    ## close the sequence file
+    close $sfh;
+    
+    return %db;
+}

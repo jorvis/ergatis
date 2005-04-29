@@ -95,6 +95,15 @@ sub CreateWorkflow{
     if($self->{_logger}->is_debug()){
 	$debugstr = "-v 6";
     }
+    
+    ## we want to reset the huge ENV so that it doesn't overload XML-RPC
+    %ENV = (
+                PATH => $ENV{PATH},
+                HOST => $ENV{HOST},
+                USER => $ENV{USER},
+                GROUP => $ENV{GROUP}
+           );
+
     my $pid;
     if($pid = fork){
 	$SIG{'TERM'} = sub {
@@ -131,6 +140,18 @@ sub RunWorkflow{
     if($self->{_logger}->is_debug()){
 	$debugstr = "-v 6";
     }
+    
+    ## we want to reset the huge ENV so that it doesn't overload XML-RPC
+    %ENV = (
+                PATH            => $ENV{PATH},
+                HOST            => $ENV{HOST},
+                USER            => $ENV{USER},
+                GROUP           => $ENV{GROUP},
+                ## next two needed by hmmpfam2htab
+                HMM_SCRIPTS     => '/usr/local/devel/ANNOTATION/hmm/bin',
+                SYBASE          => '/usr/local/packages/sybase',
+           );
+    
     my $pid;
     if($pid = fork){
 	$SIG{'TERM'} = sub {

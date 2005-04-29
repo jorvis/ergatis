@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+      <name>bsml2fasta workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output directory</name>
+          <configMapId>create_output_directory</configMapId>
+        </command>
+<!--Processing-->
+    	<command>
+          <type>RunUnixCommand</type>
+          <name>bsml2fasta</name>
+          <configMapId>bsml2fasta</configMapId>
+        </command>
+<!--Postprocessing-->
+     </commandSet>
+</commandSetRoot>

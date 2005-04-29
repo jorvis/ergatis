@@ -44,7 +44,7 @@ initialize the object with. Initialization actually occurs in the
 private _init method.
 
 my $builder = new Workflow::Builder('NAME'=>'blastp', #verbose debugging
-				    );
+                    );
 
 B<Returns:> $self (A Workflow::Logger object).
 
@@ -76,8 +76,8 @@ sub _init {
     my $self = shift;
     #Each subflow mush have a unique name.  This name is stored in the configuration hash with the following key.
     $self->{_SUBFLOW_NAME_CONF_KEY} = '$;SUBFLOW_NAME$;'; 
-    $self->{_CONFIGITERATOR_KEY} = '$;CONFIG_LIST$;'; 	 
-    $self->{_INSTANCEITERATOR_KEY} = '$;INSTANCE_LIST$;'; 	 
+    $self->{_CONFIGITERATOR_KEY} = '$;CONFIG_LIST$;';      
+    $self->{_INSTANCEITERATOR_KEY} = '$;INSTANCE_LIST$;';      
     $self->{_TEMPLATE_KEY} = '$;TEMPLATE_FILE$;';
     $self->{_NODISTRIB} = 0;
 
@@ -90,10 +90,10 @@ sub _init {
         $self->{"_$key"} = $arg{$key}
     }
     if(!(exists $self->{_NAME})){
-	$self->{_logger}->logdie("Name not specified via NAME argument");
+    $self->{_logger}->logdie("Name not specified via NAME argument");
     }
     if(!(exists $self->{_OUTPUT_DIR})){
-	$self->{_logger}->logdie("ouput directory not specified via OUTPUT_DIR argument");
+    $self->{_logger}->logdie("ouput directory not specified via OUTPUT_DIR argument");
     }
 }
 
@@ -122,64 +122,78 @@ sub generate_iterator_instance{
     my ($self, $inifile, $xmltemplatefile, $confighash, $instancefile) = @_;
     $self->{_logger}->debug("Generating iterator instance $instancefile from inifile=$inifile xmltemplatefile=$xmltemplatefile")  if($self->{_logger}->is_debug());
     if(scalar(keys %$confighash) < 1){
-	$self->{_logger}->logdie("No iterator parameter specified when creating iterator");
+        $self->{_logger}->logdie("No iterator parameter specified when creating iterator");
     }
+    
     my @subflowconfigs;
     foreach my $elt (keys %$confighash){
-	if(scalar(@{$confighash->{$elt}}) < 1){
-	    $self->{_logger}->logdie(scalar(@{$confighash->{$elt}})." values for option $elt when trying to create iterator");
-	}
-	$self->{_logger}->debug("Creating subflow config hash for $elt") if($self->{_logger}->is_debug());
-	for(my $i=0;$i<@{$confighash->{$elt}};$i++){
-	    $self->{_logger}->debug("Storing $elt value $i as $confighash->{$elt}->[$i]") if($self->{_logger}->is_debug());
-	    $subflowconfigs[$i]->{$elt} = $confighash->{$elt}->[$i];
-	    if($elt eq $self->{_SUBFLOW_NAME_CONF_KEY}){
-		if(exists $confighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}){
-		    $subflowconfigs[$i]->{$self->{_SUBFLOW_NAME_CONF_KEY}} = "$confighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}->[$i]";
-		}
-		else{
-		    $self->{_logger}->warn("Required key '$self->{_SUBFLOW_NAME_CONF_KEY}' is missing from iterator configuration hash");
-		}
-	    }
-	}
+        if(scalar(@{$confighash->{$elt}}) < 1){
+            $self->{_logger}->logdie(scalar(@{$confighash->{$elt}})." values for option $elt when trying to create iterator");
+        }
+        
+        $self->{_logger}->debug("Creating subflow config hash for $elt") if($self->{_logger}->is_debug());
+        
+        for(my $i=0;$i<@{$confighash->{$elt}};$i++){
+            $self->{_logger}->debug("Storing $elt value $i as $confighash->{$elt}->[$i]") if($self->{_logger}->is_debug());
+            $subflowconfigs[$i]->{$elt} = $confighash->{$elt}->[$i];
+            if($elt eq $self->{_SUBFLOW_NAME_CONF_KEY}){
+                if(exists $confighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}){
+                    $subflowconfigs[$i]->{$self->{_SUBFLOW_NAME_CONF_KEY}} = "$confighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}->[$i]";
+                }
+                else{
+                    $self->{_logger}->warn("Required key '$self->{_SUBFLOW_NAME_CONF_KEY}' is missing from iterator configuration hash");
+                }
+            }
+        }
     }
     my @subflowinis;
     my @subflowinstances;
     my $subflowconfigobj =  new Config::IniFiles(-import =>  $self->{_INICONFIGOBJ});
     foreach my $subflowconfighash (@subflowconfigs){
-	$self->{_logger}->debug("Creating subflow with config ".Dumper($subflowconfighash)) if($self->{_logger}->is_debug());
+    
+        $self->{_logger}->debug("Creating subflow with config ".Dumper($subflowconfighash)) if($self->{_logger}->is_debug());
 
-	$self->{_logger}->debug("Subflow name ".$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}) if($self->{_logger}->is_debug());
-	my $subflowconffile = "$self->{_OUTPUT_DIR}/".$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}.".conf";
-	foreach my $key (keys %$subflowconfighash){
-	    $self->{_logger}->debug("Storing $key=$subflowconfighash->{$key} in section [input $self->{_NAME}]") if($self->{_logger}->is_debug());
-	    my $success = $subflowconfigobj->setval("input $self->{_NAME}",$key,$subflowconfighash->{$key});
-	    if(!$success){
-		$success = $subflowconfigobj->newval("input $self->{_NAME}",$key,$subflowconfighash->{$key});
-	    }
-	    if(!$success){
-		$self->{_logger}->fatal("Not able to set value $key=$subflowconfighash->{$key} in section [input $self->{_NAME}]");
-	    }
-	}
-	$self->{_logger}->debug("Writing config file $subflowconffile") if($self->{_logger}->is_debug());
-	$subflowconfigobj->WriteConfig($subflowconffile) if($self->{_logger}->is_debug());
+        $self->{_logger}->debug("Subflow name ".$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}) if($self->{_logger}->is_debug());
+        my $subflowconffile = "$self->{_OUTPUT_DIR}/" . $subflowconfighash->{'$;GROUP_NAME$;'} . "/$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}.conf";
+        foreach my $key (keys %$subflowconfighash){
+            $self->{_logger}->debug("Storing $key=$subflowconfighash->{$key} in section [input $self->{_NAME}]") if($self->{_logger}->is_debug());
+            my $success = $subflowconfigobj->setval("input $self->{_NAME}",$key,$subflowconfighash->{$key});
+            if(!$success){
+                $success = $subflowconfigobj->newval("input $self->{_NAME}",$key,$subflowconfighash->{$key});
+            }
+            if(!$success){
+                $self->{_logger}->fatal("Not able to set value $key=$subflowconfighash->{$key} in section [input $self->{_NAME}]");
+            }
+        }
+        $self->{_logger}->debug("Writing config file $subflowconffile") if($self->{_logger}->is_debug());
+        $subflowconfigobj->WriteConfig($subflowconffile) if($self->{_logger}->is_debug());
 
-	my $subflowinifile = "$self->{_OUTPUT_DIR}/$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}.ini";
-	my $errors = $self->_create_ini_file($subflowconfigobj, $inifile, $subflowinifile);
-	if($errors != 0){
-	    $self->{_logger}->logdie("Errors encountered creating ini file $subflowinifile. Check logs");
-	}
-	my $subflowinstancefile = "$self->{_OUTPUT_DIR}/$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}.xml";
-	push @subflowinis,$subflowinifile;
-	#note subflow instances are created by the workflow engine at runtime
-	push @subflowinstances,$subflowinstancefile;
+        my $subflowinifile = "$self->{_OUTPUT_DIR}/" . $subflowconfighash->{'$;GROUP_NAME$;'} . "/$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}.ini";
+        my $errors = $self->_create_ini_file($subflowconfigobj, $inifile, $subflowinifile);
+        if($errors != 0){
+            $self->{_logger}->logdie("Errors encountered creating ini file $subflowinifile. Check logs");
+        }
+        my $subflowinstancefile = "$self->{_OUTPUT_DIR}/" . $subflowconfighash->{'$;GROUP_NAME$;'} . "/$subflowconfighash->{$self->{_SUBFLOW_NAME_CONF_KEY}}.xml";
+        push @subflowinis,$subflowinifile;
+        #note subflow instances are created by the workflow engine at runtime
+        push @subflowinstances,$subflowinstancefile;
     }
 
     my $instancebase = basename($instancefile);
 
-    my $iteratorini = "$self->{_OUTPUT_DIR}/$self->{_FILENAME_PREFIX}.$instancebase.ini";
-    my $iteratorconffile = "$self->{_OUTPUT_DIR}/$self->{_FILENAME_PREFIX}.$instancebase.conf";
-    
+    ## HACK (is there a cleaner way to do this?)
+    ## subflow iterators need to go into their own directories, all others go into the root
+    my ($iteratorini, $iteratorconffile);
+    if ($self->{_FILENAME_PREFIX} eq 'iterator' && $instancebase =~ /(\d+)\.xml$/) {
+        ## matched here because instancebase was named ending with an integer, like subflow_subflow1groups0.xml
+        ##  where the group number is the last in the name (then .xml)
+        $iteratorini = "$self->{_OUTPUT_DIR}/$1/$self->{_FILENAME_PREFIX}.$instancebase.ini";
+        $iteratorconffile = "$self->{_OUTPUT_DIR}/$1/$self->{_FILENAME_PREFIX}.$instancebase.conf";        
+    } else {
+        $iteratorini = "$self->{_OUTPUT_DIR}/$self->{_FILENAME_PREFIX}.$instancebase.ini";
+        $iteratorconffile = "$self->{_OUTPUT_DIR}/$self->{_FILENAME_PREFIX}.$instancebase.conf";    
+    }
+
     $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_CONFIGITERATOR_KEY},join(', ',@subflowinis));
     $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_INSTANCEITERATOR_KEY},join(', ',@subflowinstances));
     $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_TEMPLATE_KEY},$xmltemplatefile);
@@ -189,12 +203,12 @@ sub generate_iterator_instance{
     $self->_create_ini_file( $self->{_INICONFIGOBJ}, $self->{_ITERATOR_INI}, $iteratorini);
     my $createstatus = $self->_create_instance_file($instancefile,$iteratorini,$self->{_ITERATOR_TEMPLATE});
     if($createstatus == 0){
-	$self->{_logger}->debug("Created instance file $instancefile") if($self->{_logger}->is_debug());
-	return $instancefile;
+    $self->{_logger}->debug("Created instance file $instancefile") if($self->{_logger}->is_debug());
+    return $instancefile;
     }
     else{
-	$self->{_logger}->logdie("Unable to create instance file $instancefile");
-	return undef;
+    $self->{_logger}->logdie("Unable to create instance file $instancefile");
+    return undef;
     }
 }
 

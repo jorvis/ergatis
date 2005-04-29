@@ -185,6 +185,12 @@ sub parse_blast_btabs {
 			    $btab[$i] = undef;
 			}
 		    }
+            
+            ## dbmatch_accession needs to be alphanumeric or _
+            ##  but the original needs to be passed to createAndAddBtabLine so it can
+            ##  be recognized and parsed
+            $btab[5] =~ s/[^a-z0-9\_]/_/gi;
+            
 		    my $align = &createAndAddBtabLine(
 						      doc                => $doc,
 						      query_name         => $btab[0],
@@ -211,7 +217,8 @@ sub parse_blast_btabs {
 						      );
 
 		    my $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
-		    my $match_asmbl_id = $gene_asmbl_id->{$btab[5]};
+
+            my $match_asmbl_id = $gene_asmbl_id->{$btab[5]};
 
 		    
 		    if ($match_asmbl_id ne 'N/A'){
@@ -486,21 +493,28 @@ sub createAndAddBtabLine {
 	  }
 
     #no alignment pair matches, add a new alignment pair and sequence run
-
     #check to see if sequences exist in the BsmlDoc, if not add them with basic attributes
-
+    my $seq;
+    
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-	$doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );}
+	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
+    }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-	$doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_accession'}", '', 'aa', $args{'class'} );}
-    
+        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", '', 'aa', $args{'class'} );
+    }
+
+    ## see if the dbmatch_header format is recognized.  if so, add some cross-references
+    if (defined $args{'dbmatch_header'}) {
+        $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $args{'dbmatch_header'} );
+    }
+
     $alignment_pair = $doc->returnBsmlSeqPairAlignmentR( $doc->addBsmlSeqPairAlignment() );
     
 
     $alignment_pair->setattr( 'refseq', "$args{'query_name'}" )                                 if (defined ($args{'query_name'}));
     $alignment_pair->setattr( 'compseq', "$args{'dbmatch_accession'}" )                         if (defined ($args{'dbmatch_accession'}));
-
+    
     BSML::BsmlDoc::BsmlSetAlignmentLookup( "$args{'query_name'}", "$args{'dbmatch_accession'}", $alignment_pair );
 
     $alignment_pair->setattr( 'refxref', ':'.$args{'query_name'})        if (defined ($args{'query_name'}));                     

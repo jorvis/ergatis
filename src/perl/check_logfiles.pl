@@ -168,7 +168,7 @@ foreach my $file (sort @{$list}){
 	next;
     }
     if (-z $file){
-	$logger->info("file '$file' had zero size and therefore will not be processed");
+	$logger->debug("file '$file' had zero size and therefore will not be processed");
 	$filectr--;
 	next;
     }
@@ -289,12 +289,7 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
     $body .= "Please review logfile '$log4perl'";
 
 
-    my $from     = $username;
-    &send_notification($username, $subject, $body, $from);
-
-
-    &write_report($subject,$body, $repository);
-
+    &send_notification($username, $subject, $body);
     
     $logger->fatal("Total fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'. Please review $log4perl");
 }
@@ -334,13 +329,13 @@ sub write_report {
 #------------------------------------------------------
 sub send_notification {
 
-    my ($username, $subject, $body, $from) = @_;
+    my ($username, $subject, $body) = @_;
 
     my $mailer = Mail::Mailer->new ('sendmail');
     $mailer->open({
 	             To      => $username,
 		     Subject => $subject,
-		     From    => $from
+		     From    => $username
 		 }) or $logger->logdie("Could not create and send message");
     
     print $mailer $body;

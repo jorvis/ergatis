@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+      <name>xdformat workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+<!--Preprocess permissions-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Set workflowdocs permissions</name>
+          <configMapId>set_workflowdocs_permissions</configMapId>
+        </command>
+<!--Preprocessing-->
+<!--Processing-->
+    	<command>
+          <type>RunUnixCommand</type>
+          <name>xdformat</name>
+          <configMapId>xdformat</configMapId>
+        </command>
+<!--Postprocessing-->
+<!--Checksum creation-->
+<!--Postprocess permissions-->
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Set workflowdocs permissions</name>
+          <configMapId>set_workflowdocs_permissions</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Set permissions for scratch area</name>
+          <configMapId>set_scratch_permissions</configMapId>
+       </command>
+     </commandSet>
+</commandSetRoot>

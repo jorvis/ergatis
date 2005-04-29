@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers promer nucmer blastp blastx wait pe chado2bsml cogs region jaccard bsml2chado chunker dechunker delete_analysis initdb backupdb snps coverage tiling legacy2chado
+workflow_install	: dirs shellwrappers promer nucmer blastp blastx wait pe chado2bsml cogs region jaccard adjust_bsml_coordinates bsml2chado bsml2fasta chunker dechunker delete_analysis initdb backupdb snps coverage tiling legacy2chado split_fasta split_multifasta tRNAscan-SE wu-blastp xdformat trf glimmerHMM aat_aa aat_na legacy2bsml
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -108,6 +108,13 @@ blastp	:
 	@install workflow/blastp/blastp.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/blastp/blastp_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/blastp/blastpconf.ini $(WORKFLOW_DOCS_DIR)  
+blastx	:
+	@echo "Installing blastx workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/blastx/blastx-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/blastx/blastx-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/blastx/blastx.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/blastx/blastx_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/blastx/blastxconf.ini $(WORKFLOW_DOCS_DIR)  
 
 blastx	:
 	@echo "Installing blastx workflows in $(WORKFLOW_DOCS_DIR)"
@@ -124,6 +131,12 @@ ber	:
 	@install workflow/ber/ber.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/ber/ber_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/ber/berconf.ini $(WORKFLOW_DOCS_DIR)  
+
+bsml2fasta	:
+	@echo "Installing bsml2fasta workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/bsml2fasta/bsml2fastaconf.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/bsml2fasta/bsml2fasta-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/bsml2fasta/bsml2fasta-master_template.xml $(WORKFLOW_DOCS_DIR)
 
 pe	:
 	@echo "Installing pe workflows in $(WORKFLOW_DOCS_DIR)"
@@ -228,11 +241,96 @@ coverage  :
 	@install workflow/coverage/coverage.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/coverage/coverage_template.xml $(WORKFLOW_DOCS_DIR)  
 
+split_fasta	:
+	@echo "Installing split_fasta workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/split_fasta/split_fasta-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/split_fasta/split_fasta-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/split_fasta/split_fasta.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/split_fasta/split_fasta_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/split_fasta/split_fastaconf.ini $(WORKFLOW_DOCS_DIR)
+
+split_multifasta	:
+	@echo "Installing split_multifasta workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/split_multifasta/split_multifasta-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/split_multifasta/split_multifasta-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/split_multifasta/split_multifasta.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/split_multifasta/split_multifasta_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/split_multifasta/split_multifastaconf.ini $(WORKFLOW_DOCS_DIR)
+
 tiling  :
 	@echo "Installing tiling workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/tiling/tiling-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/tiling/tiling-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/tiling/tilingconf.ini $(WORKFLOW_DOCS_DIR) 
+
+trf	:
+	@echo "Installing trf workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/trf/trf-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/trf/trf-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/trf/trf.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/trf/trf_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/trf/trfconf.ini $(WORKFLOW_DOCS_DIR)
+
+tRNAscan-SE	:
+	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/tRNAscan-SE/tRNAscan-SE-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/tRNAscan-SE/tRNAscan-SE-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/tRNAscan-SE/tRNAscan-SE.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/tRNAscan-SE/tRNAscan-SE_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/tRNAscan-SE/tRNAscan-SEconf.ini $(WORKFLOW_DOCS_DIR)
+
+wu-blastp	:
+	@echo "Installing wu-blastp workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/wu-blastp/wu-blastp-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastp/wu-blastp-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastp/wu-blastp.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastp/wu-blastp_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/wu-blastp/wu-blastpconf.ini $(WORKFLOW_DOCS_DIR)
+
+glimmerHMM	:
+	@echo "Installing glimmerHMM workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/glimmerHMM/glimmerHMM-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/glimmerHMM/glimmerHMM-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/glimmerHMM/glimmerHMM.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/glimmerHMM/glimmerHMM_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/glimmerHMM/glimmerHMMconf.ini $(WORKFLOW_DOCS_DIR)
+
+aat_aa	:
+	@echo "Installing aat_aa workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/aat_aa/aat_aa-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_aa/aat_aa-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_aa/aat_aa.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_aa/aat_aa_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/aat_aa/aat_aaconf.ini $(WORKFLOW_DOCS_DIR)
+
+aat_na	:
+	@echo "Installing aat_na workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/aat_na/aat_na-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_na/aat_na-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_na/aat_na.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_na/aat_na_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/aat_na/aat_naconf.ini $(WORKFLOW_DOCS_DIR)
+
+xdformat	:
+	@echo "Installing xdformat workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/xdformat/xdformat-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/xdformat/xdformat-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/xdformat/xdformatconf.ini $(WORKFLOW_DOCS_DIR) 
+
+adjust_bsml_coordinates	:
+	@echo "Installing adjust_bsml_coordinates workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinatesconf.ini $(WORKFLOW_DOCS_DIR) 
+
+legacy2bsml  :
+	@echo "Installing legacy2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/legacy2bsml/legacy2bsml.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/legacy2bsml/legacy2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/legacy2bsml/legacy2bsml-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/legacy2bsml/legacy2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/legacy2bsml/legacy2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
+
 
 END
 

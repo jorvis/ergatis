@@ -1,6 +1,6 @@
 #!/bin/sh
 
-INSTALL_DIR=/usr/local/devel/ANNOTATION/workflow-2.1/
+INSTALL_DIR=/usr/local/devel/ANNOTATION/workflow-2.2/
 
 while getopts i:h opt
 do case "$opt" in

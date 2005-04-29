@@ -293,8 +293,11 @@ sub replace_keys{
 	my @parameters = $cfg->Parameters ($section);
 	foreach my $param (@parameters){
 	    my $value = $cfg->val($section,$param);
-	    $value =~ s/\s//g;
-	    $cfg->setval($section,$param,$value);
+	    
+        ## take spaces off front and back of value, leaving internal ones
+	    $value =~ s/^\s*(.+?)\s*$/$1/;
+	    
+        $cfg->setval($section,$param,$value);
 	    $allkeys->{$param}->{'value'} = $value;
 	    $allkeys->{$param}->{'section'} = $section;
 	    $logger->get_logger()->debug("Scanning $value for key $param in section [ $section ] as candidate for replacement") if($logger->get_logger()->is_debug());

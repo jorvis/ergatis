@@ -10,8 +10,9 @@
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow2</configMapId>
         </command>
-        <commandSet type="serial">
+        <commandSet type="parallel">
            <name>Grouped subflows</name>
+           <maxParallelCmds>1</maxParallelCmds>
            <configMapId>subflow2</configMapId>
         </commandSet>
     </commandSet>

@@ -5,17 +5,12 @@
     <commandSet type="serial">
         <name>Nucmer Compute</name>
         <configMapId>empty</configMapId>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>make_query_fasta</configMapId>
-            <name>make_query_fasta</name>
-        </command>        
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>NUCmer</configMapId>
             <name>NUCmer</name>
         </command>
-        <command>    
+        <command>
             <type>RunUnixCommand</type>
             <configMapId>show-coords</configMapId>
             <name>show-coords</name>
@@ -35,10 +30,10 @@
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>
-        <command>
+<!--        <command>
             <type>RunUnixCommand</type>
             <configMapId>xsd_validation</configMapId>
             <name>XML schema validation</name>
-        </command>
+        </command>-->
     </commandSet>
 </commandSetRoot>

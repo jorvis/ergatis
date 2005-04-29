@@ -21,7 +21,7 @@ if($dowrite){
     my $newcfg = new Config::IniFiles(-file => $conffile);
     print header();
     &write_config_from_params($newcfg,$outputfile);
-    print "<html><body onLoad='window.parent.location.reload();'>Output file $outputfile written.<br><pre>\n";
+    print "<html><body>Output file $outputfile written.<br><pre>\n";
     &print_config($newcfg);
     print "</pre><br><a href='javascript:window.close();'>[close]</a></body></html>";
     exit;
@@ -65,8 +65,13 @@ foreach my $section (@sections){
 	my @parameters = $currcfg->Parameters ($section);
 	foreach my $param (@parameters){
 	    my $value = $currcfg->val($section,$param);
-	    $value =~ s/\s//g;
-	    if($ignoresectlookup->{$section}){
+        
+        ## trim whitespace off the ends, but leave internal (keeps opts like "-f 10")
+        if ($value =~ /^\s*(.+?)\s*$/) {
+	        $value = $1;
+        }
+        
+        if($ignoresectlookup->{$section}){
 		print "<tr><td>$param</td><td>$value</td></tr>";
 	    }
 	    
