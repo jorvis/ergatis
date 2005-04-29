@@ -16,6 +16,16 @@
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create dupdir</name>
+          <configMapId>create_dupdir</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create analysis_dir</name>
+          <configMapId>create_analysis_dir</configMapId>
+        </command>
 <!--Preprocess permissions-->
         <command>
           <type>RunUnixCommand</type>
@@ -50,19 +60,42 @@
           <configMapId>create_iterative_subflow1</configMapId>
         </command>
         <commandSet type="parallel">
-          <name>Iterated subflow</name>
+          <name>Iterated subflow1</name>
           <configMapId>subflow1</configMapId>
         </commandSet>
 <!--Postprocessing-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterative subflow</name>
+          <configMapId>create_iterative_subflow2</configMapId>
+        </command>
+        <commandSet type="serial">
+          <name>Record duplication resolution subflow</name>
+          <configMapId>subflow2</configMapId>
+        </commandSet>
         <command>    
             <type>RunUnixCommand</type>
-            <name>Generate output list</name>
-            <configMapId>generate_directory_list</configMapId>
+            <name>Make External Reference List</name>
+            <configMapId>make_external_reference_list</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
             <name>Replace placeholders</name>
             <configMapId>replace_placeholders</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterative subflow</name>
+          <configMapId>create_iterative_subflow2</configMapId>
+        </command>
+        <commandSet type="serial">
+          <name>Index Validation subflow</name>
+          <configMapId>subflow3</configMapId>
+        </commandSet>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Foreign Constraints Validation</name>
+            <configMapId>foreign_key_validation</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
