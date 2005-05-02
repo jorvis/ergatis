@@ -14,6 +14,8 @@ USAGE:  adjust_gap2_coordinates.pl
             --output_dir=/path/to/somedir
           [ --list_file_glob='.*.gap2.raw'
             --output_list=/path/to/some.list
+            --output_subdir_size=1000
+            --output_subdir_prefix=fasta
             --debug=4
             --log=/path/to/somefile.log
           ]
@@ -39,6 +41,16 @@ B<--output_list,-u>
 
 B<--output_dir,-o> 
     Directory where output analysis files will be written.
+
+B<--output_subdir_size,-z>
+    If defined, this script will create numbered subdirectories in the output directory, each
+    containing this many sequences files.  Once this limit is reached, another subdirectory
+    is created.
+
+B<--output_subdir_prefix,-x>
+    To be used along with --output_subdir_size, this allows more control of the names of the
+    subdirectories created.  Rather than just incrementing numbers (like 10), each subdirectory 
+    will be named with this prefix (like prefix10).
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -143,6 +155,8 @@ my $results = GetOptions (\%options,
                             'list_file_glob|g=s',
                             'output_list|u=s',
                             'output_dir|o=s',
+                            'output_subdir_size|z=s',
+                            'output_subdir_prefix|x=s',
                             'filter_ends|f=s',
                             'debug=s',
                             'log|l=s',
@@ -212,6 +226,11 @@ if ($options{output_list}) {
     open($olfh, ">$options{output_list}") || $logger->logdie("can't create $options{output_list} : $!");
 }
 
+## these are used if we are grouping output into subdirectories
+my $sub_dir   = 1;
+my $files_in_dir = 0;
+my $output_dir = $options{output_dir};
+
 ## loop through each gap2 alignment file and adjust coordinates
 my $adjustment;
 my $feat_id;
@@ -232,8 +251,20 @@ for my $gf (@gap2_files) {
         $logger->logdie("adjustment value not found for feature $feat_id in file $gf");
     }
 
+    ## are we grouping the output files?
+    if ($options{output_subdir_size}) {
+        $output_dir = "$options{output_dir}/$options{output_subdir_prefix}$sub_dir";
+        
+        ## if the output directory doesn't exist, create it.
+        mkdir($output_dir) unless (-e $output_dir);
+        
+        ## increment the sub_dir label if we've hit our sequence limit
+        $files_in_dir++;
+        $sub_dir++ if ( $files_in_dir == $options{output_subdir_size} );
+    }
+
     ## open the output file
-    open (my $ofh, ">$options{output_dir}/$fname.part") || $logger->logdie("can't create output file: $!");
+    open (my $ofh, ">$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
 
     ## open the input file
     open (my $ifh, "<$gf") || $logger->logdie("can't read input file: $!");
@@ -275,11 +306,11 @@ for my $gf (@gap2_files) {
     }
     
     ## mv the temp file over the target (can't read and write to same file)
-    system("mv $options{output_dir}/$fname.part $options{output_dir}/$fname");
+    system("mv $output_dir/$fname.part $output_dir/$fname");
     
     ## write to the list file, if requested
     if ($options{output_list}) {
-        print $olfh "$options{output_dir}/$fname\n";
+        print $olfh "$output_dir/$fname\n";
     }
 }
 
@@ -316,6 +347,8 @@ sub check_parameters {
 
     ## set some defaults
     $options{output_list} = 0 unless($options{output_list});
+    $options{output_subdir_size}   = 0  unless ($options{output_subdir_size});
+    $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
 
     if(0){
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
