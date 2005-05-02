@@ -16,12 +16,6 @@
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
-<!--Preprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command>
 <!--Preprocessing-->
 <!--Processing-->
 	<command>
