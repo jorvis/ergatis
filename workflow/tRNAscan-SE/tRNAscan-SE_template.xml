@@ -7,10 +7,24 @@
         <configMapId>empty</configMapId>
         <command>    
             <type>RunUnixCommand</type>
+            <configMapId>create_group_output_dir</configMapId>
+            <name>create_group_output_dir</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_group_tmp_dir</configMapId>
+            <name>create_group_tmp_dir</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
             <configMapId>tRNAscan-SE</configMapId>
             <name>tRNAscan-SE</name>
         </command>
-<!-- FORMAT TO BSML AND VALIDATE LATER HERE -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_raw_list</configMapId>
+            <name>create_raw_list</name>
+        </command>
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>tRNAscan-SE2bsml</configMapId>
@@ -21,16 +35,15 @@
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
         </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_bsml_list</configMapId>
+            <name>create_bsml_list</name>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>
-<!--
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>xsd_validation</configMapId>
-            <name>XML schema validation</name>
-        </command>-->
     </commandSet>
 </commandSetRoot>
