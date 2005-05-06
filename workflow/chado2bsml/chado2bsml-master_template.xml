@@ -32,11 +32,6 @@
           <configMapId>create_fasta_repository</configMapId>
         </command>
 <!--Preprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command>
 <!--Preprocessing-->
 <!--Processing-->
         <command>
@@ -44,15 +39,15 @@
           <name>Generate genomic fasta</name>
           <configMapId>generate_asmbl_fasta</configMapId>
         </command>
-<!--        <command>-->
-<!--          <type>RunUnixCommand</type>-->
-<!--          <name>Generate protein fasta</name>-->
-<!--          <configMapId>generate_protein_fasta</configMapId>-->
-<!--        </command>-->
         <command>
           <type>RunUnixCommand</type>
           <name>Run chado2bsml</name>
           <configMapId>chado2bsml</configMapId>
+        </command>	
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Run generate_jaccard_organism_asmbl_files</name>
+          <configMapId>generate_jaccard_organism_asmbl_files</configMapId>
         </command>	
         <command>
           <type>RunUnixCommand</type>
@@ -75,71 +70,6 @@
        </commandSet>
 <!--Postprocessing-->
 <!--Checksum creation-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums</name>
-          <configMapId>create_bsml_checksum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Generate checksums</name>
-          <configMapId>create_bsml_checksum</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums.sum</name>
-          <configMapId>create_bsml_checksum_sum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create checksums.sum</name>
-          <configMapId>create_bsml_checksum_sum</configMapId>
-       </command>
-             <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums</name>
-          <configMapId>create_fasta_checksum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Generate checksums</name>
-          <configMapId>create_fasta_checksum</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums.sum</name>
-          <configMapId>create_fasta_checksum_sum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create checksums.sum</name>
-          <configMapId>create_fasta_checksum_sum</configMapId>
-       </command>
-<!--   <command> -->
-<!--         <type>RunUnixCommand</type> -->
-<!--          <name>Check repository</name> -->
-<!--          <configMapId>check_repository</configMapId> -->
-<!--       </command> -->
 <!--Postprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for scratch area</name>
-          <configMapId>set_scratch_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for BSML_repository</name>
-          <configMapId>set_bsml_repository_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for FASTA_repository</name>
-          <configMapId>set_fasta_repository_permissions</configMapId>
-       </command>
     </commandSet>
 </commandSetRoot>
