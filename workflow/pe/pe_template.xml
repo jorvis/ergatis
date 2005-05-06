@@ -45,10 +45,5 @@
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>xsd_validation</configMapId>
-            <name>XML schema validation</name>
-        </command>
     </commandSet>
 </commandSetRoot>
