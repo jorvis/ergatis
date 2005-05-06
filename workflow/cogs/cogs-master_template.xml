@@ -13,20 +13,10 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>Archive compute output</name>
-         <configMapId>archive_output</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
 <!--Preprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command>
 <!--Preprocessing-->
         <command>
           <type>RunUnixCommand</type>
@@ -77,6 +67,11 @@
 <!--Checksum creation-->
        <command>
           <type>RunUnixCommand</type>
+          <name>Merge bsml list files</name>
+          <configMapId>merge_bsml_list_files</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
           <name>Create file list for checksums</name>
           <configMapId>create_checksum_file_list</configMapId>
        </command>
@@ -96,20 +91,5 @@
           <configMapId>create_checksum_sum</configMapId>
        </command>
 <!--Postprocess permissions-->
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for scratch area</name>
-          <configMapId>set_scratch_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for output</name>
-          <configMapId>set_output_permissions</configMapId>
-       </command>
      </commandSet>
 </commandSetRoot>
