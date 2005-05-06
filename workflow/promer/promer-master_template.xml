@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
+o
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
@@ -13,20 +13,10 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>Archive compute output</name>
-         <configMapId>archive_output</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
 <!--Preprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command>
 <!--Preprocessing-->
         <command>
           <type>RunUnixCommand</type>
@@ -54,6 +44,11 @@
           <configMapId>subflow1</configMapId>
        </commandSet>
 <!--Postprocessing-->
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Merge bsml list files</name>
+          <configMapId>merge_bsml_list_files</configMapId>
+       </command>
 <!--Checksum creation-->
        <command>
           <type>RunUnixCommand</type>
@@ -76,20 +71,6 @@
           <configMapId>create_checksum_sum</configMapId>
        </command>
 <!--Postprocess permissions-->
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for scratch area</name>
-          <configMapId>set_scratch_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for output</name>
-          <configMapId>set_output_permissions</configMapId>
        </command>
      </commandSet>
 </commandSetRoot>

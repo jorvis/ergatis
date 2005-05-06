@@ -5,6 +5,16 @@
     <commandSet type="serial">
         <name>Promer Compute</name>
         <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_group_output_dir</configMapId>
+            <name>create_group_output_dir</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_group_tmp_dir</configMapId>
+            <name>create_group_tmp_dir</name>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <configMapId>make_query_fasta</configMapId>
@@ -29,6 +39,11 @@
             <type>RunUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>Store configuration</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_bsml_list</configMapId>
+            <name>create_bsml_list</name>
         </command>
         <command>
             <type>RunUnixCommand</type>
