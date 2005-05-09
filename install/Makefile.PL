@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis genie glimmerHMM initdb jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta tRNAscan-SE tiling trf wait wu_blastp xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis genie glimmerHMM initdb jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta tRNAscan-SE tiling trf wait wu-blastp xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
