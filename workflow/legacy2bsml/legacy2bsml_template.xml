@@ -10,10 +10,6 @@
         </command>
          <command>    
             <type>RunUnixCommand</type>
-            <configMapId>chmod_legacy2bsml_log</configMapId>
-        </command>
-         <command>    
-            <type>RunUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
         </command>
     </commandSet>
