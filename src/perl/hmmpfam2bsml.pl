@@ -151,7 +151,7 @@ while (<$ifh>) {
         
         ## add the total_score and total_eval for this pair
         $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_score', $score);
-        $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_eval',  $eval);
+        $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_e_value',  $eval);
         
 
     }
@@ -182,6 +182,7 @@ while (<$ifh>) {
                                                    );
         ## add other attributes of the run
         $doc->createAndAddBsmlAttributes($run, 
+                                            e_value    => $eval,
                                             domain_num => $domain_num,
                                             domain_of  => $domain_of
                                         );
