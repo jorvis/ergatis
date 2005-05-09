@@ -4,131 +4,116 @@
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <name>delete_analysis workflow</name>
-      <configMapId>empty</configMapId>
+        <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
-          <name>Create scratch space</name>
-         <configMapId>create_compute_scratch</configMapId>
+            <type>RunUnixCommand</type>
+            <name>Create scratch space</name>
+            <configMapId>create_compute_scratch</configMapId>
         </command>
 <!--Preprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command> 
 <!--Preprocessing-->
 <!--Processing-->
-      <command>    
+        <command>    
             <type>RunUnixCommand</type>
             <name>create_filter_views</name>
             <configMapId>create_filter_views</configMapId>
-      </command>
-      <commandSet type="parallel">
-                <name>Filter analysis tables</name>
-                <configMapId>empty</configMapId>
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>filter_analysis</name>
-                    <configMapId>filter_analysis</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>filter_analysisprop</name>
-                    <configMapId>filter_analysisprop</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>filter_analysisfeature</name>
-                    <configMapId>filter_analysisfeature</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>filter_feature</name>
-                    <configMapId>filter_feature</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>filter_featureprop</name>
-                    <configMapId>filter_featureprop</configMapId>
-                </command>   
-                <command>    
-                    <type>RunUnixCommand</type>
-                    <name>filter_featureloc</name>
-                    <configMapId>filter_featureloc</configMapId>
-                </command>   
-       </commandSet>
-       <command>    
-            <type>RunUnixCommand</type>
-            <name>drop_filters</name>
-            <configMapId>drop_filters</configMapId>
-        </command>
-       <command>    
-            <type>RunUnixCommand</type>
-            <name>drop_indexes</name>
-            <configMapId>drop_indexes</configMapId>
-        </command>
-       <command>    
-            <type>RunUnixCommand</type>
-            <name>truncate_companalysis_tables</name>
-            <configMapId>truncate_companalysis_tables</configMapId>
         </command>
         <commandSet type="parallel">
-                <name>Load filtered analysis records</name>
-                <configMapId>empty</configMapId>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_analysis</name>
-                     <configMapId>load_analysis</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_analysisprop</name>
-                     <configMapId>load_analysisprop</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_analysisfeature</name>
-                     <configMapId>load_analysisfeature</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_feature</name>
-                     <configMapId>load_feature</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_featureprop</name>
-                     <configMapId>load_featureprop</configMapId>
-                </command>
-                <command>    
-                     <type>RunUnixCommand</type>
-                     <name>load_featureloc</name>
-                     <configMapId>load_featureloc</configMapId>
-                </command>
+            <name>Filter analysis tables</name>
+            <configMapId>empty</configMapId>
+            <command>    
+                <type>RunUnixCommand</type>
+                <name>filter_analysis</name>
+                <configMapId>filter_analysis</configMapId>
+            </command>   
+            <command>    
+                <type>RunUnixCommand</type>
+                <name>filter_analysisprop</name>
+                <configMapId>filter_analysisprop</configMapId>
+            </command>   
+            <command>    
+                <type>RunUnixCommand</type>
+                <name>filter_analysisfeature</name>
+                <configMapId>filter_analysisfeature</configMapId>
+            </command>   
+            <command>    
+                <type>RunUnixCommand</type>
+                <name>filter_feature</name>
+                <configMapId>filter_feature</configMapId>
+            </command>   
+            <command>    
+                <type>RunUnixCommand</type>
+                <name>filter_featureprop</name>
+                <configMapId>filter_featureprop</configMapId>
+            </command>   
+            <command>    
+                <type>RunUnixCommand</type>
+                <name>filter_featureloc</name>
+                <configMapId>filter_featureloc</configMapId>
+            </command>   
+       </commandSet>
+       <command>    
+           <type>RunUnixCommand</type>
+           <name>drop_filters</name>
+           <configMapId>drop_filters</configMapId>
+       </command>
+       <command>    
+           <type>RunUnixCommand</type>
+           <name>drop_indexes</name>
+           <configMapId>drop_indexes</configMapId>
+       </command>
+       <command>    
+           <type>RunUnixCommand</type>
+           <name>truncate_companalysis_tables</name>
+           <configMapId>truncate_companalysis_tables</configMapId>
+       </command>
+       <commandSet type="parallel">
+           <name>Load filtered analysis records</name>
+           <configMapId>empty</configMapId>
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>load_analysis</name>
+               <configMapId>load_analysis</configMapId>
+           </command>
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>load_analysisprop</name>
+               <configMapId>load_analysisprop</configMapId>
+           </command>
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>load_analysisfeature</name>
+               <configMapId>load_analysisfeature</configMapId>
+           </command>
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>load_feature</name>
+               <configMapId>load_feature</configMapId>
+           </command>
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>load_featureprop</name>
+               <configMapId>load_featureprop</configMapId>
+           </command>
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>load_featureloc</name>
+               <configMapId>load_featureloc</configMapId>
+           </command>
        </commandSet>
 <!--Postprocessing-->
        <command>    
-            <type>RunUnixCommand</type>
-            <name>rebuild_indexes</name>
-            <configMapId>rebuild_indexes</configMapId>
-        </command>
+           <type>RunUnixCommand</type>
+           <name>rebuild_indexes</name>
+           <configMapId>rebuild_indexes</configMapId>
+       </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->
-        <command>        
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-       </command>
        <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for scratch area</name>
-          <configMapId>set_scratch_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>check_logfiles</name>
-          <configMapId>check_logfiles</configMapId>
+           <type>RunUnixCommand</type>
+           <name>check_logfiles</name>
+           <configMapId>check_logfiles</configMapId>
        </command>
      </commandSet>
 </commandSetRoot>
