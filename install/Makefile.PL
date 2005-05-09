@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers promer nucmer blastx wait pe chado2bsml cogs region jaccard adjust_bsml_coordinates bsml2chado bsml2fasta chunker dechunker delete_analysis initdb backupdb snps coverage tiling legacy2chado split_fasta split_multifasta tRNAscan-SE wu-blastp xdformat trf glimmerHMM aat_aa aat_na legacy2bsml
+workflow_install	: dirs shellwrappers promer nucmer wait pe chado2bsml cogs region jaccard adjust_bsml_coordinates bsml2chado bsml2fasta chunker dechunker delete_analysis initdb backupdb snps coverage tiling legacy2chado split_fasta split_multifasta tRNAscan-SE wu-blastp xdformat trf glimmerHMM aat_aa aat_na legacy2bsml
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -100,14 +100,6 @@ nucmer	:
 	@install workflow/nucmer/nucmer.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/nucmer/nucmer_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/nucmer/nucmerconf.ini $(WORKFLOW_DOCS_DIR)  
-
-blastx	:
-	@echo "Installing blastx workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/blastx/blastx-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/blastx/blastx-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install workflow/blastx/blastx.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/blastx/blastx_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install workflow/blastx/blastxconf.ini $(WORKFLOW_DOCS_DIR) 
 
 ber	:
 	@echo "Installing ber workflows in $(WORKFLOW_DOCS_DIR)"
