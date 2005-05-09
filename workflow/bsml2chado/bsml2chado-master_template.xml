@@ -27,11 +27,6 @@
           <configMapId>create_analysis_dir</configMapId>
         </command>
 <!--Preprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command>
 <!--Preprocessing-->
 <!--Iterator steps-->
         <command>
@@ -456,7 +451,12 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>Replace placeholders</name>
+            <name>make_external_reference_list</name>
+            <configMapId>make_external_reference_list</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>replace_placeholder</name>
             <configMapId>replace_placeholders</configMapId>
         </command>
         <commandSet type="parallel">
