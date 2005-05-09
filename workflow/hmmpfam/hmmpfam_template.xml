@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>hmmpfam Compute</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_group_output_dir</configMapId>
+            <name>create_group_output_dir</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_group_tmp_dir</configMapId>
+            <name>create_group_tmp_dir</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>hmmpfam</configMapId>
+            <name>hmmpfam</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_raw_list</configMapId>
+            <name>create_raw_list</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>hmmpfam2htab</configMapId>
+            <name>hmmpfam2htab</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_htab_list</configMapId>
+            <name>create_htab_list</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>hmmpfam2bsml</configMapId>
+            <name>hmmpfam2bsml</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_bsml_list</configMapId>
+            <name>create_bsml_list</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>store_config_params</configMapId>
+            <name>store_config_params</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>dtd_validation</configMapId>
+            <name>DTD validation</name>
+        </command>
+    </commandSet>
+</commandSetRoot>
