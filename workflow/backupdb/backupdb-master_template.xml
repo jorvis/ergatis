@@ -12,11 +12,6 @@
          <configMapId>create_compute_scratch</configMapId>
         </command>
 <!--Preprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command> 
 <!--Preprocessing-->
 <!--Processing-->
        <commandSet type="parallel">
@@ -191,16 +186,6 @@
 <!--Postprocessing-->
 <!--Checksum creation-->
 <!--Postprocess permissions-->
-       <command>        
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for scratch area</name>
-          <configMapId>set_scratch_permissions</configMapId>
-       </command>
        <command>
           <type>RunUnixCommand</type>
           <name>check_logfiles</name>

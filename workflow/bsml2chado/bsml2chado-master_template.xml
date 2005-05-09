@@ -842,21 +842,6 @@
         </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->
-        <command>        
-          <type>RunUnixCommand</type>
-          <name>Set workflowdocs permissions</name>
-          <configMapId>set_workflowdocs_permissions</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for scratch area</name>
-          <configMapId>set_scratch_permissions</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set permissions for output</name>
-          <configMapId>set_output_permissions</configMapId>
-        </command>
         <command>
           <type>RunUnixCommand</type>
           <name>check_logfiles_repository</name>
