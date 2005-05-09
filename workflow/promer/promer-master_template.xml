@@ -50,26 +50,6 @@ o
           <configMapId>merge_bsml_list_files</configMapId>
        </command>
 <!--Checksum creation-->
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums</name>
-          <configMapId>create_checksum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Generate checksums</name>
-          <configMapId>create_checksum</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums.sum</name>
-          <configMapId>create_checksum_sum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create checksums.sum</name>
-          <configMapId>create_checksum_sum</configMapId>
-       </command>
 <!--Postprocess permissions-->
        </command>
      </commandSet>
