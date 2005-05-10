@@ -963,8 +963,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>load_custom_cvterm_relationship</configMapId>
-            <name>load_custom_cvterm_relationship</name>
+            <configMapId>load_custom_cvterm_relationships</configMapId>
+            <name>load_custom_cvterm_relationships</name>
         </command>
 <!--Postprocessing-->
 <!--Checksum creation-->
