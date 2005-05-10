@@ -83,13 +83,13 @@
 <!-- TIGR_roles ontology -->
         <command>    
             <type>RunUnixCommand</type>
-            <name>load_contact_tables</name>
-            <configMapId>load_contact_tables</configMapId>
+            <name>load_contact_table</name>
+            <configMapId>load_contact_table</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>load_pub_tables</name>
-            <configMapId>load_pub_tables</configMapId>
+            <name>load_pub_table</name>
+            <configMapId>load_pub_table</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
