@@ -675,8 +675,8 @@
           </command>
           <command>    
               <type>RunUnixCommand</type>
-              <name>validate_cvterm_relationship</name>
-              <configMapId>validate_cvterm_relationship</configMapId>
+              <name>validate_cvterm_relationship1</name>
+              <configMapId>validate_cvterm_relationship1</configMapId>
           </command>
           <command>    
               <type>RunUnixCommand</type>
@@ -953,8 +953,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>validate_cvterm_relationship</configMapId>
-            <name>validate_cvterm_relationship</name>
+            <configMapId>validate_cvterm_relationship2</configMapId>
+            <name>validate_cvterm_relationship2</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
