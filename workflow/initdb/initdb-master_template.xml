@@ -168,7 +168,7 @@
                 <name>Process TIGR Roles Ontology</name>
                 <configMapId>parse_tigr_onto</configMapId>
             </command>
-         </commadSet>
+         </commandSet>
 <!-- Duplication detection and elminitation Step -->
         <command>
           <type>RunUnixCommand</type>
