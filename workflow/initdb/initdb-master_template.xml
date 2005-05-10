@@ -13,6 +13,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>create_dupdir</name>
+          <configMapId>create_dupdir</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create component scratch</name>
           <configMapId>create_component_scratch</configMapId>
         </command>
@@ -559,6 +564,11 @@
             <type>RunUnixCommand</type>
             <name>remove_dups_analysisfeature</name>
             <configMapId>remove_dups_analysisfeature</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>make_external_reference_list</name>
+            <configMapId>make_external_reference_list</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
