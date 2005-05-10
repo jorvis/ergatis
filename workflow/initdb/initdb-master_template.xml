@@ -948,8 +948,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>generate_custom_cvterm_relationship</configMapId>
-            <name>generate_custom_cvterm_relationship</name>
+            <configMapId>generate_custom_cvterm_relationships</configMapId>
+            <name>generate_custom_cvterm_relationships</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
