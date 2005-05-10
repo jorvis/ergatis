@@ -6,22 +6,32 @@ hmmpfam2bsml.pl - convert hmmpfam raw output to BSML
 
 =head1 SYNOPSIS
 
-USAGE: hmmpfam2bsml.pl --input=/path/to/somefile.hmmpfam.raw 
-                       --output=/path/to/somefile.hmmpfam.bsml
+USAGE: hmmpfam2bsml.pl 
+        --input=/path/to/somefile.hmmpfam.raw 
+        --output=/path/to/somefile.hmmpfam.bsml
+      [ --search_method=hmmpfam
+        --log=/path/to/some.log
+        --debug=4 
+        --help
+      ]
 
 =head1 OPTIONS
 
 B<--input,-i> 
     Input raw alignment file from an hmmpfam search.
 
+B<--output,-o> 
+    Output BSML file
+
+B<--search_method,-m> 
+    Optional. Search method used with hmmpfam.  default is 'hmmpfam' but others
+    include 'hmmsmart', 'hmmpir', etc.
+
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
 B<--log,-l> 
     Log file
-
-B<--output,-o> 
-    Output BSML file
 
 B<--help,-h> 
     This help message
@@ -47,6 +57,10 @@ validation.
 The BSML file to be created is defined using the --output option.  If the file already exists
 it will be overwritten.
 
+Because the hmmpfam executable is used to perform a variety of searches, including hmmsmart
+and hmmtigr, the user may pass a value using --search_method, which will create the
+appropriate titles in the BSML Analysis element.  If not passed, the default 'hmmpfam' is used.
+
 =head1 CONTACT
 
     Joshua Orvis
@@ -68,6 +82,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
+              'search_method|m=s',
               'log|l=s',
               'debug=s',
 			  'help|h') || pod2usage();
@@ -123,7 +138,7 @@ unless ($qry_id)        { $logger->logdie("Query sequence definition not found i
 ## add the query sequence file to the doc
 ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
 my $seq = $doc->createAndAddSequence($qry_id, $qry_id_orig, undef, 'aa', 'protein');
-   $seq->addBsmlLink('analysis', '#hmmpfam_analysis');
+   $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis");
 
 ## for each model matched, create a Seq-pair-alignment and record the overall score and
 ## overall E-value
@@ -137,14 +152,14 @@ while (<$ifh>) {
 
         ## add this model sequence
         my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'profile');
-        $seq->addBsmlLink('analysis', '#hmmpfam_analysis');
+        $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis");
         
         $alignments{$model} = $doc->createAndAddSequencePairAlignment( refseq => $qry_id,
                                                                        refxref => ":$qry_id",
                                                                        refstart => 0,
                                                                        #refend => $cols[2] - 1,
                                                                        #reflength => $cols[2],
-                                                                       method => 'hmmpfam',
+                                                                       method => $options{search_method},
                                                                        compseq => $model,
                                                                        compxref => "$hmm_file:$model",
                                                                      );
@@ -196,7 +211,7 @@ while (<$ifh>) {
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
-                            id => 'hmmpfam_analysis',
+                            id => "$options{search_method}_analysis",
                             sourcename => $options{'output'},
                           );
 
@@ -213,6 +228,9 @@ sub check_parameters {
 
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
+
+    ## handle defaults
+    $options{'search_method'} = 'hmmpfam' unless ( $options{'search_method'} );
 
     return 1;
 }
