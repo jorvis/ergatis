@@ -755,8 +755,8 @@
           </command>
           <command>    
             <type>RunUnixCommand</type>
-            <name>validate_foreign_constraints_featurepub</name>
-            <configMapId>validate_foreign_constraints_featurepub</configMapId>
+            <name>validate_foreign_constraints_feature_pub</name>
+            <configMapId>validate_foreign_constraints_feature_pub</configMapId>
           </command>
           <command>    
             <type>RunUnixCommand</type>
