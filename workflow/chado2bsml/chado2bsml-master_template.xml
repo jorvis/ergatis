@@ -18,18 +18,8 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>Archive FASTA_repository</name>
-         <configMapId>archive_fasta_repository</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create BSML_repository</name>
-          <configMapId>create_bsml_repository</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create FASTA_repository</name>
-          <configMapId>create_fasta_repository</configMapId>
+          <name>remove_bsml_gene_model_docs</name>
+         <configMapId>remove_bsml_gene_model_docs</configMapId>
         </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
