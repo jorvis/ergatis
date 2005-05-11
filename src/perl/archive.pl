@@ -38,7 +38,7 @@ my %options = ();
 my $results = GetOptions (\%options,
 			  'file|f=s',
 			  'directory|d=s',
-			  'nodelete|n',
+			  'nodelete|n=s',
 			  'log|l=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
@@ -55,7 +55,7 @@ if( $options{'help'} ){
 
 &check_parameters(\%options);
 
-if($options{'nodelete'}){
+if(($options{'nodelete'}) && ($options{'nodelete'} == 1)){
     print `tar cvzf $options{'file'} $options{'directory'}`;
 }
 else{
