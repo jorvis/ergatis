@@ -16,7 +16,7 @@ USAGE: genie2bsml.pl
 =head1 OPTIONS
 
 B<--input,-i> 
-    Input file file from a glimmerHMM scan.
+    Input file file from a genie scan.
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -40,7 +40,7 @@ B<--help,-h>
 
 =head1   DESCRIPTION
 
-This script is used to convert the output from a glimmerHMM search into BSML.
+This script is used to convert the output from a genie search into BSML.
 
 =head1 INPUT
 
