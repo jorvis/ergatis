@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis genie glimmerHMM initdb jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta tRNAscan-SE tiling trf wait wu-blastp xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta tRNAscan-SE tiling trf wait wu-blastp xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -117,6 +117,14 @@ adjust_nap_coordinates	:
 	@install workflow/adjust_nap_coordinates/adjust_nap_coordinates-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/adjust_nap_coordinates/adjust_nap_coordinatesconf.ini $(WORKFLOW_DOCS_DIR) 
 
+augustus	:
+	@echo "Installing augustus workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/augustus/augustus-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/augustus/augustus-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/augustus/augustus.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/augustus/augustus_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/augustus/augustusconf.ini $(WORKFLOW_DOCS_DIR)
+
 backupdb  :
 	@echo "Installing backupdb workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/backupdb/backupdb-master.ini $(WORKFLOW_DOCS_DIR)
@@ -175,6 +183,14 @@ delete_analysis  :
 	@install workflow/delete_analysis/delete_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/delete_analysis/delete_analysisconf.ini $(WORKFLOW_DOCS_DIR)  
 
+genezilla  :
+	@echo "Installing genezilla workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/genezilla/genezilla-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genezilla/genezilla-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genezilla/genezilla.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genezilla/genezilla_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genezilla/genezillaconf.ini $(WORKFLOW_DOCS_DIR)  
+
 genie  :
 	@echo "Installing genie workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/genie/genie-master.ini $(WORKFLOW_DOCS_DIR)
@@ -190,6 +206,38 @@ glimmerHMM	:
 	@install workflow/glimmerHMM/glimmerHMM.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/glimmerHMM/glimmerHMM_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/glimmerHMM/glimmerHMMconf.ini $(WORKFLOW_DOCS_DIR)
+
+hmmpfam	:
+	@echo "Installing hmmpfam workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/hmmpfam/hmmpfam-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmpfam/hmmpfam-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmpfam/hmmpfam.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmpfam/hmmpfam_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/hmmpfam/hmmpfamconf.ini $(WORKFLOW_DOCS_DIR)
+
+hmmpir	:
+	@echo "Installing hmmpir workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/hmmpir/hmmpir-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmpir/hmmpir-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmpir/hmmpir.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmpir/hmmpir_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/hmmpir/hmmpirconf.ini $(WORKFLOW_DOCS_DIR)
+
+hmmsmart	:
+	@echo "Installing hmmsmart workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/hmmsmart/hmmsmart-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmsmart/hmmsmart-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmsmart/hmmsmart.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmsmart/hmmsmart_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/hmmsmart/hmmsmartconf.ini $(WORKFLOW_DOCS_DIR)
+
+hmmtigr	:
+	@echo "Installing hmmtigr workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/hmmtigr/hmmtigr-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmtigr/hmmtigr-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmtigr/hmmtigr.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmtigr/hmmtigr_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/hmmtigr/hmmtigrconf.ini $(WORKFLOW_DOCS_DIR)
 
 initdb  :
 	@echo "Installing initdb workflows in $(WORKFLOW_DOCS_DIR)"
@@ -258,6 +306,7 @@ snps	:
 	@install workflow/snp/snp-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/snp/snp-master_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/snp/snpconf.ini $(WORKFLOW_DOCS_DIR)
+
 split_fasta	:
 	@echo "Installing split_fasta workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/split_fasta/split_fasta-master.ini $(WORKFLOW_DOCS_DIR)
