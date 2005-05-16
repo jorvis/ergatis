@@ -209,7 +209,9 @@ gene                                    gene
 intergenic_region                       intergenic_region
 intron                                  intron
 noncoding_exon                          exon
+polyA_signal_sequence                   polyA_signal_sequence
 primary_transcript                      transcript
+promoter                                promoter
 splice_site                             splice_site
 three_prime_UTR                         three_prime_UTR
 transcript                              transcript
