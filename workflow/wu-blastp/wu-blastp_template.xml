@@ -50,6 +50,11 @@
             <configMapId>create_bsml_list</configMapId>
             <name>create_bsml_list</name>
         </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>compress_raw_output</configMapId>
+            <name>compress_raw_output</name>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
