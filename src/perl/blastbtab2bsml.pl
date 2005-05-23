@@ -6,15 +6,11 @@ blastbtab2bsml.pl  - convert info stored in btab files into BSML documents
 
 =head1 SYNOPSIS
 
-USAGE:  blastbtab2bsml.pl -b btab_dir -o blastp.bsml -d bsml_dir
+USAGE:  blastbtab2bsml.pl -b btab_dir -o blastp.bsml
 
 =head1 OPTIONS
 
 =over 4
-
-=item *
-
-B<--bsml_dir,-d> [REQUIRED]  Dir containing BSML documents (repository)
 
 =item *
 
@@ -66,7 +62,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
               'btab_dir|b=s', 
               'btab_file|f=s',
-              'bsml_dir|d=s', 
+              'bsml_dir|d=s', ## deprecated.  keeping for backward compat (for now)
               'output|o=s', 
               'max_hsp_count|m=s',
               'pvalue|p=s', 
@@ -226,13 +222,8 @@ sub get_btab_files{
 sub check_parameters{
     my ($options) = @_;
     
-    if(!$options{'bsml_dir'} or !$options{'output'} or (!$options{'btab_dir'} && !$options{'btab_file'})) {
+    if(!$options{'output'} or (!$options{'btab_dir'} && !$options{'btab_file'})) {
     pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});    
-    }
-
-    if(!-d $options{'bsml_dir'}) {
-    print STDERR "bsml repository directory \"$options{'bsml_dir'}\" cannot be found.  Aborting...\n";
-    exit 5;
     }
 
     if((! -d $options{'btab_dir'}) && (! -e $options{'btab_file'})) {
