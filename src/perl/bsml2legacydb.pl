@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/local/bin/perl
 
 =head1	NAME
 
@@ -98,11 +98,11 @@ sub swap;
 sub prepare_insert_stmt;
 
 GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
-	   "server|s=s", "db|d=s", "user|u=s", "pass|p=s",
+	   "server|s=s", "database|d=s",
 	   "debug|D=i", "log|l=s", "help|h");
 parse_opts;
 
-my $dbh = DBI->connect("dbi:Sybase:$server", $user, $pass, 
+my $dbh = DBI->connect("dbi:Sybase:$server", 'egc', 'egcpwd', 
 		       {AutoCommit => 0, RaiseError => 1, PrintError => 1}) or
 	die "Error accessing db: DBI::errstr";
 $dbh->do("use $db");
@@ -130,14 +130,8 @@ sub parse_opts
 		elsif ($key eq "server") {
 			$server = $val;
 		}
-		elsif ($key eq "db") {
+		elsif ($key eq "database") {
 			$db = $val;
-		}
-		elsif ($key eq "user") {
-			$user = $val;
-		}
-		elsif ($key eq "pass") {
-			$pass = $val;
 		}
 		elsif ($key eq "debug") {
 			$debug = $val;
@@ -154,8 +148,6 @@ sub parse_opts
 	$logger = Workflow::Logger::get_logger;
 	$logger->logdie("No input(s) provided") if !scalar(@files);
 	$logger->logdie("No database provided") if !$db;
-	$logger->logdie("No username provided") if !$user;
-	$logger->logdie("No password provided") if !$pass;
 }
 
 sub print_usage
