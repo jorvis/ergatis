@@ -8,22 +8,31 @@ use CGI qw(:standard);
 
 use Tree::DAG_Node;
 use Config::IniFiles;
+use Data::Dumper;
 
 my $conffile = param('conffile');
-my $outputfile = param('outputfile');
 my $dowrite = param('dowrite');
 my $limitsect = param('limitsect');
 my $ignoresect = param('ignoresect');
 my $sharedconf = param('sharedconf');
-my $id = param('id');
+my $pipeline_id = param('pipeline_id');
+my $component_name = param('component_name');
+my $repository_root = param('repository_root');
 
 if($dowrite){
     my $newcfg = new Config::IniFiles(-file => $conffile);
     print header();
-    &write_config_from_params($newcfg,$outputfile);
-    print "<html><body>Output file $outputfile written.<br><pre>\n";
-    &print_config($newcfg);
-    print "</pre><br><a href='javascript:window.close();'>[close]</a></body></html>";
+    my $filewritten = &write_config_from_params($newcfg);
+    
+    if ($filewritten) {
+        print "<html><body>Output file $filewritten written.<br><pre>\n";
+        &print_config($newcfg);
+        print "</pre><br><a href='javascript:window.close();'>[close]</a></body></html>";
+    } else {
+        print "<html><body>There was an error creating the output file</body></html>\n";
+    }
+
+
     exit;
 }
 
@@ -45,12 +54,17 @@ my $currcfg = &import_includes($cfg,$sharedconf);
 print header();
 
 print "<html><body>";
-print "<form name='myform'><input type=hidden name='dowrite' value=1><input type=hidden name='conffile' value='$conffile'><input type=hidden name='outputfile' value='$outputfile'>";
-print "Configuration will be written to $outputfile&nbsp;<a href='remove_component.cgi?conffile=$conffile'>[remove]</a>\n";
+print "<form name='myform'><input type=hidden name='dowrite' value=1><input type=hidden name='conffile' value='$conffile'>";
 
-if($id ne ""){
-    $currcfg->setval('init','$;PIPELINE$;',$currcfg->val(($currcfg->GroupMembers("workflowdocs"))[0],'$;NAME$;')."_$id");
+#print "we have access to this: <pre> " . Dumper(\$currcfg) . "</pre>";
+
+$repository_root = $currcfg->val('init', '$;REPOSITORY_ROOT$;') || die "couln't get a REPOSITORY ROOT";
+
+if($pipeline_id ne ""){
+    $currcfg->setval('init','$;PIPELINE$;',"${component_name}_$pipeline_id");
 }
+
+$currcfg->setval('init','$;PIPELINEID$;', $pipeline_id);
 
 my @sections = $currcfg->Sections();
 
@@ -71,7 +85,7 @@ foreach my $section (@sections){
 	        $value = $1;
         }
         
-        if($ignoresectlookup->{$section}){
+	    if($ignoresectlookup->{$section}){
 		print "<tr><td>$param</td><td>$value</td></tr>";
 	    }
 	    
@@ -82,6 +96,10 @@ foreach my $section (@sections){
     }
     print "</table>";
 }
+
+print "<input type=hidden name=repository_root value='$repository_root'>";
+print "<input type=hidden name=component_name value='$component_name'>";
+print "<input type=hidden name=pipeline_id value='$pipeline_id'>";
 print "<input type='submit' value='Write config'></form></html></body>";
 
 sub import_includes{
@@ -106,7 +124,7 @@ sub import_includes{
 }
 
 sub write_config_from_params{
-    my($newcfg,$filename) = @_;
+    my($newcfg) = @_;
     my @allparams = param();
     foreach my $p (@allparams){
 	if($p =~ /^edit_/){
@@ -117,12 +135,26 @@ sub write_config_from_params{
 	    #print "Writing [$section] $secp=",param($p),"<br><\n>";
 	    my $s = $newcfg->setval($section,$secp,param($p));
 	    if(!$s){
-		die "Can't write  [$section] $secp".param($p);
+		    die "Can't write  [$section] $secp".param($p);
 	    }
 	}
     }
-    $newcfg->WriteConfig($filename);
-    `chmod 666 $filename`;
+    
+    my $output_token = $newcfg->val("output $component_name", '$;OUTPUT_TOKEN$;') || die "no OUTPUT_TOKEN found";
+    my $outputdir = "$repository_root/Workflow/$component_name/${pipeline_id}_$output_token";
+    
+    ## make sure the output directory exists
+    &create_directory($outputdir);
+    
+    my $outputfile = $outputdir . "/component.conf.bld.ini";
+    
+    $newcfg->WriteConfig($outputfile);
+    if (-e $outputfile) {
+        `chmod 666 $outputfile`;
+        return $outputfile;
+    } else {
+        return 0;
+    }
 }
 
 sub print_config{
@@ -139,4 +171,9 @@ sub print_config{
 }
 
 
-    
+sub create_directory{
+    my($dir) = @_;
+    my $ret = system("mkdir -m 777 -p $dir");
+    $ret >>= 8;
+    return $ret;
+}    

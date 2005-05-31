@@ -11,7 +11,12 @@ use Config::IniFiles;
 
 my $root = param('root');
 
-my $xmltemplate = "$root/pipeline$$.xml";
+## create the directory for the pipeline
+if (create_directory("$root/$$")) {
+    die "couldn't create directory $root/$$ for pipeline\n";
+}
+
+my $xmltemplate = "$root/$$/pipeline.xml";
 
 my $newxml = &get_skeleton_commandset();
 

@@ -540,8 +540,8 @@ sub get_workflows_from_directory{
 		      my $state = 'unknown';
 		      my $t1 = new XML::Twig( TwigHandlers => { 'commandSetRoot/commandSet/state' =>
 								    sub {
-									my ($t, $elt) = @_;
-									$state = $elt->text();
+									    my ($t, $elt) = @_;
+									    $state = $elt->text();
 								    },
 							    });
 		      $t1->parsefile($files->{$file}->{'filename'}); 
