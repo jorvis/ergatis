@@ -6,6 +6,11 @@
       <name>xdformat workflow</name>
       <configMapId>empty</configMapId>
 <!--Preprocessing-->
+    	<command>
+          <type>RunUnixCommand</type>
+          <name>create_compute_scratch</name>
+          <configMapId>create_compute_scratch</configMapId>
+        </command>
 <!--Processing-->
     	<command>
           <type>RunUnixCommand</type>
