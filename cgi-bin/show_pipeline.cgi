@@ -532,8 +532,6 @@ sub get_workflows_from_directory{
     my($dir,$glob) = @_;
     my $files = {};
     
-    print "searching $dir<br>\n";
-    
     for my $pipedir ( dir_list( $dir ) ) {
         my $file = "$dir/$pipedir/pipeline.xml";
         if ( -e $file ) {
