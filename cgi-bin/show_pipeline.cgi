@@ -514,43 +514,58 @@ sub get_id{
     return ($nodeid,$n);
 }
 
+sub dir_list {
+    my ($path) = @_;
+    my @dirs;
+
+    opendir my $idh, $path || die "can't read directory\n:$!";
+
+    for ( readdir $idh ) {
+        next if (/^\./);
+        push @dirs, $_ if (-d "$path/$_");
+    }
+    
+    return @dirs;
+}
+
 sub get_workflows_from_directory{
     my($dir,$glob) = @_;
     my $files = {};
-    find(sub {my $file = $File::Find::name;
-	      my $currdir = dirname($file);
-	      my $currglob = $glob;
-	      if($currdir =~ /pipeline$/){
-		  $currglob = "$glob"."\.instance";
-		  print STDERR "$currglob $glob\n";
-	      }
-	      if($file =~ /$currglob$/){
-		  if(-e $file){
-		      $files->{$file}->{'filename'} = "$file";
-		      my $dir = dirname($file);
-		      if($dir =~ /\d+$/){
-			  ($dir) = ($dir =~ /(.*)\/\d+/);
-		      }
-		      $files->{$file}->{'dirname'} = $dir;
-		      my $st = stat($files->{$file}->{'filename'});
-		      $files->{$file}->{'size'} = $st->size;
-		      $files->{$file}->{'date'} = $st->mtime;
-		      $files->{$file}->{'user'} = getpwuid($st->uid);
-		      my $root = Tree::DAG_Node->new();
-		      my $state = 'unknown';
-		      my $t1 = new XML::Twig( TwigHandlers => { 'commandSetRoot/commandSet/state' =>
-								    sub {
-									    my ($t, $elt) = @_;
-									    $state = $elt->text();
-								    },
-							    });
-		      $t1->parsefile($files->{$file}->{'filename'}); 
-		      $t1->purge() if($dopurge);
-		      
-		      $files->{$file}->{'state'} = $state;
-		  }
-	      }
-	  },$xmltemplate);
+    
+    print "searching $dir<br>\n";
+    
+    for my $pipedir ( dir_list( $dir ) ) {
+        my $file = "$dir/$pipedir/pipeline.xml";
+        if ( -e $file ) {
+        
+            ## if an instance file exists, show that instead
+            $file .= '.instance' if (-e "$file.instance");
+        
+            $files->{$file}->{'filename'} = "$file";
+            my $dir = dirname($file);
+            if($dir =~ /\d+$/){
+            ($dir) = ($dir =~ /(.*)\/\d+/);
+            }
+            $files->{$file}->{'dirname'} = $dir;
+            my $st = stat($files->{$file}->{'filename'});
+            $files->{$file}->{'size'} = $st->size;
+            $files->{$file}->{'date'} = $st->mtime;
+            $files->{$file}->{'user'} = getpwuid($st->uid);
+            my $root = Tree::DAG_Node->new();
+            my $state = 'unknown';
+            my $t1 = new XML::Twig( TwigHandlers => { 'commandSetRoot/commandSet/state' =>
+					            sub {
+						            my ($t, $elt) = @_;
+						            $state = $elt->text();
+					            },
+				            });
+            $t1->parsefile($files->{$file}->{'filename'}); 
+            $t1->purge() if ($dopurge);
+
+            $files->{$file}->{'state'} = $state;
+        }
+    }
+
     return $files;
 }
 
