@@ -105,42 +105,45 @@ sub get_workflow_bin{
 
 sub get_pipeline_blds{
     my($dir) = @_;
-    my $glob = 'pipeline\d+\.xml$';
     my $pipelinefiles = {};
-    find(sub {my $file = $File::Find::name;
-          if($file =~ /$glob/){
-          my($date,$user,$name) = &get_pipeline_bld_info($file);
-          my (@components);
-          my ($stale);
-          my $t1 = new XML::Twig( TwigHandlers => { 'command/arg' => 
+    
+    for my $pdir ( dir_list($dir) ) {
+        my $file = "$dir/$pdir/pipeline.xml";
+        if(-e $file){
+
+            my($date,$user,$name) = &get_pipeline_bld_info($file);
+            my (@components);
+            my ($stale);
+            my $t1 = new XML::Twig( TwigHandlers => { 'command/arg' => 
                                 sub {
-                                my($t,$elt) = @_;
-                                my $text = $elt->text();
-                                my($config) = ($text =~ /-c\s+(\S+\.bld\.ini)/);
-                                print STDERR "Config $config\n";
-                                if(-e $config){
-                                    my($type,$date,$user,$name) = &get_component_bld_info($config);
-                                    push @components,{'type'=>$type,
-                                              'date'=>$date,
-                                              'user'=>$user,
-                                              'name'=>$name,
-                                              'file'=>$config};
-                                }
-                                else{
-                                    $stale=1;
-                                }
+                                    my($t,$elt) = @_;
+                                    my $text = $elt->text();
+                                    my($config) = ($text =~ /-c\s+(\S+\.bld\.ini)/);
+                                    print STDERR "Config $config\n";
+                                    if(-e $config){
+                                        my($type,$date,$user,$name) = &get_component_bld_info($config);
+                                        push @components,{'type'=>$type,
+                                                  'date'=>$date,
+                                                  'user'=>$user,
+                                                  'name'=>$name,
+                                                  'file'=>$config};
+                                    }
+                                    else{
+                                        $stale=1;
+                                    }
                                 }
                             });
-          if($stale!=1){
-              print STDERR "File $file\n";
-              $t1->parsefile($file);            
-              $pipelinefiles->{$file}->{'date'} = $date;
-              $pipelinefiles->{$file}->{'user'} = $user;
-              $pipelinefiles->{$file}->{'name'} = $name;
-              $pipelinefiles->{$file}->{'components'} = \@components;
-          }
-          }
-      },$dir);
+            if($stale!=1){
+                print STDERR "File $file\n";
+                $t1->parsefile($file);            
+                $pipelinefiles->{$file}->{'date'} = $date;
+                $pipelinefiles->{$file}->{'user'} = $user;
+                $pipelinefiles->{$file}->{'name'} = $name;
+                $pipelinefiles->{$file}->{'components'} = \@components;
+            }
+        }        
+    }
+
     return $pipelinefiles;
 }
           
