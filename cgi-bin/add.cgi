@@ -26,13 +26,14 @@ print "<h3>Add commandset</h3>";
 print "<a href='add_commandset.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&type=parallel'>[parallel]</a><br>";
 print "<a href='add_commandset.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&type=serial'>[serial]</a><br>";
 print "<h3>Configured components</h3>";
-my ($outputdir) = ($xmltemplate =~ /(.*)\/Workflow/);
+my ($workflow_dir, $outputdir) = ($xmltemplate =~ /((.*)\/Workflow)/);
 my ($pipeline_id) = ($xmltemplate =~ m|pipeline/(\d+)/pipeline.xml|);
 my $pipelinedir = "$outputdir/Workflow/pipeline";
 #$outputdir .= "/workflow_config_files";
 my $sharedconf = "$outputdir/workflow_config_files/sharedconf_jo.ini";
 my $WorkflowDocsDir = "/usr/local/devel/ANNOTATION/cas/docs"; #only used to set up shared conf file
-my $componentbldconf = &get_component_blds($outputdir);
+#my $componentbldconf = &get_component_blds($outputdir);
+my $componentbldconf = &get_component_blds($workflow_dir);
 
 
 if( -e $sharedconf){
@@ -76,6 +77,20 @@ else{
 
 print "</body></html>";
 
+sub dir_list {
+    my ($path) = @_;
+    my @dirs;
+
+    opendir my $idh, $path || die "can't read directory\n:$!";
+
+    for ( readdir $idh ) {
+        next if (/^\./);
+        push @dirs, $_ if (-d "$path/$_");
+    }
+    
+    return @dirs;
+}
+
 sub get_workflow_docs{
     my($file) = @_;
     my $cfg = new Config::IniFiles(-file => $file);
@@ -86,6 +101,7 @@ sub get_workflow_bin{
     my $cfg = new Config::IniFiles(-file => $file);
     return $cfg->val("init",'$;BIN_DIR$;');
 }
+
 
 sub get_pipeline_blds{
     my($dir) = @_;
@@ -129,23 +145,31 @@ sub get_pipeline_blds{
 }
           
 
-
-sub get_component_blds{
+sub get_component_blds {
     my($dir) = @_;
     my $conffiles = {};
-    find(sub {
-                my $file = $File::Find::name;
-                if ($file =~ /component.conf.bld.ini$/){
-                    my($type,$date,$user,$name) = &get_component_bld_info($file);
-                    $conffiles->{$file}->{'date'} = $date;
-                    $conffiles->{$file}->{'user'} = $user;
-                    $conffiles->{$file}->{'type'} = $type;
-                    $conffiles->{$file}->{'file'} = $file;
-                    $conffiles->{$file}->{'name'} = $name;
-                }
-             },$dir);
+    
+    ## the component directories are directly under the workflow dir
+    for my $componentdir ( dir_list($dir) ) {
+        ## each component directory contains pipeline directories
+        for my $pipelinedir ( dir_list("$dir/$componentdir") ) {
+
+            my $file = "$dir/$componentdir/$pipelinedir/component.conf.bld.ini";
+
+            if (-e $file) {
+                my($type,$date,$user,$name) = &get_component_bld_info($file);
+                $conffiles->{$file}->{'date'} = $date;
+                $conffiles->{$file}->{'user'} = $user;
+                $conffiles->{$file}->{'type'} = $type;
+                $conffiles->{$file}->{'file'} = $file;
+                $conffiles->{$file}->{'name'} = $name;
+            }
+        }
+    }
+    
     return $conffiles;
 }
+
 
 sub get_component_conf{
     my($dir) = @_;
