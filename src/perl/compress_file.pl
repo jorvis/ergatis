@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
+
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 =head1  NAME 
 
@@ -111,7 +114,9 @@ if ($options{list_file}) {
     $logger->debug("creating list file $options{list_file}") if ($logger->is_debug);
     open(my $lfh, ">$options{list_file}") || $logger->logdie("can't create list file $options{list_file}");
     
-    print $lfh "$options{file}.gz\n";
+    print $lfh "$options{file}";
+    print $lfh ".gz" if $options{compress};
+    print $lfh "\n";
 } else {
     $logger->debug("skipping list file creation because --list_file=$options{list_file}") if ($logger->is_debug);
 }
