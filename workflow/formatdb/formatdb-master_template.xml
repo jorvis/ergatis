@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+      <name>formatdb workflow</name>
+      <configMapId>empty</configMapId>
+<!--Preprocessing-->
+    	<command>
+          <type>RunUnixCommand</type>
+          <name>create_database_dir</name>
+          <configMapId>create_database_dir</configMapId>
+        </command>
+<!--Processing-->
+    	<command>
+          <type>RunUnixCommand</type>
+          <name>formatdb</name>
+          <configMapId>formatdb</configMapId>
+        </command>
+<!--Postprocessing-->
+     </commandSet>
+</commandSetRoot>
