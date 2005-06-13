@@ -61,6 +61,11 @@
 <!--Postprocessing-->
         <command>
           <type>RunUnixCommand</type>
+          <name>create_table_group_list_file</name>
+          <configMapId>create_table_group_list_file</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>dup_list_tableinfo</name>
           <configMapId>dup_list_tableinfo</configMapId>
         </command>
@@ -459,6 +464,8 @@
             <name>replace_placeholder</name>
             <configMapId>replace_placeholders</configMapId>
         </command>
+<!-- Skipping the validation for now
+
         <commandSet type="parallel">
           <name>Validation of Indexes, primary and uniqueness constraints</name>
           <configMapId>empty</configMapId>
@@ -825,6 +832,9 @@
           </command>
         </commandSet>
 <!-- End of parallel index, primary, uniqueness, foreign key constraints validation -->
+
+-->
+
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>drop_indexes</configMapId>
