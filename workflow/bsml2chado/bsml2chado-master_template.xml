@@ -664,7 +664,9 @@
             <name>validate_analysisfeature</name>
             <configMapId>validate_analysisfeature</configMapId>
           </command>
+-->
 <!-- Foreign Key constraint validations -->
+<!--
           <command>    
             <type>RunUnixCommand</type>
             <name>validate_foreign_constraints_db</name>
@@ -831,9 +833,10 @@
             <configMapId>validate_foreign_constraints_analysisfeature</configMapId>
           </command>
         </commandSet>
+-->
 <!-- End of parallel index, primary, uniqueness, foreign key constraints validation -->
 
--->
+
 
         <command>    
             <type>RunUnixCommand</type>
