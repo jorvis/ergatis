@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/local/bin/perl -w
 
 =head1	NAME
 
@@ -9,10 +9,10 @@ bsm2legacydb.pl - load WorkFlow BSML files into the legacy database
 USAGE: bsml2legacydb.pl
 		--input_file|i=/path/to/bsml_data.bsml
 		--input_list|I=/path/to/bsml_file_list
-		--database=aa1
+		--database|d=aa1
 	[
-		--debug=4
-		--log=/path/to/log_file.log
+		--debug|D=4
+		--log|l=/path/to/log_file.log
 	]
 
 =head1	OPTIONS
@@ -75,8 +75,6 @@ use Annot_prediction_loader;
 my @files	= ();
 my $server	= "SYBTIGR";
 my $db		= 0;
-my $user	= 0;
-my $pass	= 0;
 my %opts	= ();
 my %coords	= ();
 my @genes	= ();
@@ -84,6 +82,7 @@ my %db_ids	= ();
 my $debug	= 4;
 my $log_file	= Workflow::Logger::get_default_logfilename;
 my $logger	= 0;
+my %id2title	= ();
 
 sub print_usage;
 sub parse_opts;
@@ -91,6 +90,7 @@ sub process_files;
 sub process_feat;
 sub process_feat_group;
 sub process_aln;
+sub process_sequence;
 sub get_db_id;
 sub fetch_db_id;
 sub insert_db_id;
@@ -103,7 +103,7 @@ GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
 parse_opts;
 
 my $dbh = DBI->connect("dbi:Sybase:$server", 'egc', 'egcpwd', 
-		       {AutoCommit => 0, RaiseError => 1, PrintError => 1}) or
+		       {AutoCommit => 1, RaiseError => 1, PrintError => 1}) or
 	die "Error accessing db: DBI::errstr";
 $dbh->do("use $db");
 
@@ -173,7 +173,9 @@ sub process_files
 					my ($twig, $aln) = @_;
 					process_aln($twig, $aln,
 						    $asm_id, $prog_name);
-					}});
+					},
+				 'Sequence' => \&process_sequence
+				});
 		$twig->parsefile($file);
 		if (scalar(@genes)) {
 			process_results($asm_id, $prog_name);
@@ -243,6 +245,7 @@ sub process_feat_group
 sub process_aln
 {
 	my ($twig, $aln, $asm_id, $prog_name) = @_;
+	my $insert_stmt = prepare_insert_stmt;
 	my $total_score = 0;
 	foreach my $attr ($aln->children('Attribute')) {
 		$total_score = $attr->att('content') and last
@@ -250,8 +253,10 @@ sub process_aln
 			$logger->logdie("Failed to get total_score from " .
 					"Seq-pair-alignment");
 	}
-	my $subj_id = $aln->att('compseq') or
-		$logger->logdie("Cannot find compseq for Seq-pair-alignment");
+	$logger->logdie("Cannot find compseq for Seq-pair-alignment")
+		if !defined $aln->att('compseq');
+	my $subj_id = $id2title{$aln->att('compseq')} or
+		$logger->logdie("Cannot find id-title mapping for Sequence");
 	my $db_name = $1 if $aln->att('compxref') =~ /\/([\w\.]+):/ or
 		$logger->logdie("Cannot extract compxref from " .
 				"Seq-pair-alignment");
@@ -288,13 +293,21 @@ sub process_aln
 				"from Seq-pair_run")
 			if !$chain_num or !$pct_id or !$pct_sim;
 		my $prog_tag = $prog_name eq 'aat_aa' ? 'nap' : 'gap2';
-		my $insert_stmt = prepare_insert_stmt;
 		$insert_stmt->execute("$asm_id.intergenic", $prog_tag, 
 				      $subj_id, $query_start, $query_stop,
 				      $subj_start, $subj_stop, $prog_name,
 				      $pct_id, $pct_sim, $score, $db_id,
 				      $score, $total_score, $chain_num);
 	}
+	$twig->purge;
+}
+
+sub process_sequence
+{
+	my ($twig, $sequence) = @_;
+	$id2title{$sequence->att('id')} = $sequence->att('title')
+		if defined $sequence->att('id') and 
+			defined $sequence->att('title');
 	$twig->purge;
 }
 
