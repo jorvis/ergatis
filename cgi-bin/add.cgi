@@ -30,7 +30,7 @@ my ($workflow_dir, $outputdir) = ($xmltemplate =~ /((.*)\/Workflow)/);
 my ($pipeline_id) = ($xmltemplate =~ m|pipeline/(\d+)/pipeline.xml|);
 my $pipelinedir = "$outputdir/Workflow/pipeline";
 #$outputdir .= "/workflow_config_files";
-my $sharedconf = "$outputdir/workflow_config_files/sharedconf_jo.ini";
+my $sharedconf = "$outputdir/workflow_config_files/sharedconf.ini";
 my $WorkflowDocsDir = "/usr/local/devel/ANNOTATION/cas/docs"; #only used to set up shared conf file
 #my $componentbldconf = &get_component_blds($outputdir);
 my $componentbldconf = &get_component_blds($workflow_dir);
