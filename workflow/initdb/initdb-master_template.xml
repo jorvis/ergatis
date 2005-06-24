@@ -58,6 +58,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>Create so-aux scratch</name>
+          <configMapId>create_so_aux_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create go scratch</name>
           <configMapId>create_go_scratch</configMapId>
         </command>
@@ -956,25 +961,16 @@
             <configMapId>rebuild_indexes2</configMapId>
             <name>rebuild_indexes2</name>
         </command>
+<!-- Auxiliary Sequence Ontology -->
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>generate_custom_cvterm_relationships</configMapId>
-            <name>generate_custom_cvterm_relationships</name>
+            <name>Process Auxiliary Sequence Ontology</name>
+            <configMapId>parse_aux_so_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>validate_cvterm_relationship2</configMapId>
-            <name>validate_cvterm_relationship2</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>validate_foreign_constraints_cvterm_relationship2</configMapId>
-            <name>validate_foreign_constraints_cvterm_relationship2</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>load_custom_cvterm_relationships</configMapId>
-            <name>load_custom_cvterm_relationships</name>
+            <configMapId>load_aux_so_onto</configMapId>
+            <name>load_aux_so_onto</name>
         </command>
 <!--Postprocessing-->
 <!--Checksum creation-->
