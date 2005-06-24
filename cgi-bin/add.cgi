@@ -1,11 +1,8 @@
 #!/usr/local/bin/perl
 
 use strict;
-
 use XML::Twig;
-
 use CGI qw(:standard);
-
 use Tree::DAG_Node;
 use File::Find;
 use File::Basename;
@@ -41,7 +38,7 @@ if( -e $sharedconf){
 }
 print "<table>";
 foreach my $componentbld (sort {$componentbldconf->{$b}->{'date'} <=> $componentbldconf->{$a}->{'date'}} keys %$componentbldconf){
-    print "<tr><td>$componentbldconf->{$componentbld}->{'type'}</td><td>$componentbldconf->{$componentbld}->{'name'}</td><td>$componentbldconf->{$componentbld}->{'user'}</td><td>".localtime($componentbldconf->{$componentbld}->{'date'})."</td><td><a href='add_component.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&conf=$componentbldconf->{$componentbld}->{'file'}&name=$componentbldconf->{$componentbld}->{'name'}&component_name=$componentbldconf->{$componentbld}->{'type'}&pipeline_id=$pipeline_id'>[add]</a><a  target='config' href='view_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[view]</a><a target='config' href='config_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}&outputfile=$componentbldconf->{$componentbld}->{'file'}&ignoresect=init&sharedconf=$sharedconf'>[edit]</a><a href='remove_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[remove]</a></td></tr>";
+    print "<tr><td>$componentbldconf->{$componentbld}->{'type'}</td><td>$componentbldconf->{$componentbld}->{'name'}</td><td>$componentbldconf->{$componentbld}->{'user'}</td><td>".localtime($componentbldconf->{$componentbld}->{'date'})."</td><td><a href='add_component.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&conf=$componentbldconf->{$componentbld}->{'file'}&name=$componentbldconf->{$componentbld}->{'name'}&component_name=$componentbldconf->{$componentbld}->{'type'}&pipeline_id=$pipeline_id'>[add]</a><a  target='config' href='view_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[view]</a><a target='config' href='config_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}&outputfile=$componentbldconf->{$componentbld}->{'file'}&ignoresect=init&sharedconf=$sharedconf&component_name=$componentbldconf->{$componentbld}->{'type'}'>[edit]</a><a href='remove_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[remove]</a></td></tr>";
 }
 print "</table>";
 print "<h3>Pipelines</h3>";
@@ -65,7 +62,7 @@ if(! (-e $sharedconf)){
 }
 else{
     my $workflowdocsdir = &get_workflow_docs($sharedconf);
-    print STDERR "Searching $workflowdocsdir parsed from $sharedconf\n";
+    #print STDERR "Searching $workflowdocsdir parsed from $sharedconf\n";
     my $componentconf = &get_component_conf($workflowdocsdir);
     
     ## print a link for each configurable component
@@ -119,7 +116,7 @@ sub get_pipeline_blds{
                                     my($t,$elt) = @_;
                                     my $text = $elt->text();
                                     my($config) = ($text =~ /-c\s+(\S+\.bld\.ini)/);
-                                    print STDERR "Config $config\n";
+                                    #print STDERR "Config $config\n";
                                     if(-e $config){
                                         my($type,$date,$user,$name) = &get_component_bld_info($config);
                                         push @components,{'type'=>$type,
@@ -134,7 +131,7 @@ sub get_pipeline_blds{
                                 }
                             });
             if($stale!=1){
-                print STDERR "File $file\n";
+                #print STDERR "File $file\n";
                 $t1->parsefile($file);            
                 $pipelinefiles->{$file}->{'date'} = $date;
                 $pipelinefiles->{$file}->{'user'} = $user;
@@ -182,7 +179,7 @@ sub get_component_conf{
                 my $file = $File::Find::name;
                 if($file =~ /$glob/){
                     my $cfg = new Config::IniFiles(-file => $file);
-                    print STDERR "$file\n";
+                    #print STDERR "$file\n";
                     if ($cfg){
                         my @workflows = $cfg->GroupMembers("workflowdocs");
                         foreach my $workflow (@workflows){
