@@ -161,6 +161,9 @@ sub print_usage
 sub process_files
 {
 	foreach my $file (@files) {
+		%coords = ();
+		@genes = ();
+		%id2title = ();
 		$logger->debug("Processing $file") if $logger->is_debug;
 		my $asm_id = $1 if $file =~ /\.assembly\.(\d+)/ or
 			$logger->logdie("Couldn't extract assembly id from: " .
