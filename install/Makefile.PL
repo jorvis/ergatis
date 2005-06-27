@@ -1,6 +1,6 @@
 use ExtUtils::MakeMaker;
 require ExtUtils::Manifest;
-require "perl2wrapper_papyrus.pl";
+require "perl2wrapper_cram.pl";
 use strict;
 
 if(-e "MANIFEST"){}
@@ -45,7 +45,7 @@ my($scripts,$wrapperstr) = &get_bins();
 
 
 WriteMakefile(
-	      'NAME'=>'papyrus',
+	      'NAME'=>'cram',
 	      'EXE_FILES'=>$scripts,
 	      'clean' =>{FILES => "MANIFEST.bak $wrapperstr README.symlinks"}
 	      );

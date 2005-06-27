@@ -124,7 +124,7 @@ __DATA__
 
 example usage:
 
-http://jorvis-lx:8080/tigr-scripts/papyrus/cgi-bin/add_component.cgi?
+http://jorvis-lx:8080/tigr-scripts/cram/cgi-bin/add_component.cgi?
     xmltemplate=/usr/local/scratch/annotation/TGA1/Workflow/pipeline/8840/pipeline.xml&
     node=start&location=last_child&
     conf=/usr/local/scratch/annotation/TGA1/Workflow/aat_aa/8840_default/component.conf.bld.ini&

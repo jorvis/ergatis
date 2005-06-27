@@ -1,4 +1,4 @@
 mkdir release
 cd release
-cvs co papyrus
+cvs co cram
 cvs tag -b $BRANCH_TAG$

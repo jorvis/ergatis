@@ -1,0 +1,66 @@
+use File::Basename;
+use File::Find;
+
+sub get_bins{
+    my($instdir,$workflowdocsdir,$schemadocsdir);
+    my(@binfiles);
+    my($wrapper_str);
+    foreach my $arg (@ARGV){
+	if($arg =~ /PREFIX/){
+	    ($instdir) = ($arg =~ /PREFIX=(.*)/);
+	}
+	if($arg =~ /WORKFLOW_DOCS_DIR/){
+	    ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(.*)/);
+	}
+	if($arg =~ /SCHEMA_DOCS_DIR/){
+	    ($schemadocsdir) = ($arg =~ /SCHEMA_DOCS_DIR=(.*)/);
+	}
+    }
+
+    open FILE, 'MANIFEST' or die "MANIFEST is missing!\n";
+    open SYMS, "+>README.symlinks" or die "Can't save symlinks for silly sadmins";
+    print SYMS "#Copy or symlink the following shell scripts into a standard area\n";
+
+    my $envbuffer;
+    my $env_hash = {'WORKFLOW_DOCS_DIR' => "$workflowdocsdir",
+		    'SCHEMA_DOCS_DIR' => "$schemadocsdir",
+		    'WORKFLOW_WRAPPERS_DIR'  => "$instdir/bin"
+		    };
+    
+    foreach my $key (keys %$env_hash){
+	$envbuffer .= "if [ -z \"\$$key\" ]\nthen\n    $key=$env_hash->{$key}\nexport $key\nfi\n";
+    }
+
+
+    while(my $line = <FILE>){
+	chomp $line;
+	if($line =~ m|bin/[\w-]+\.pl| || $line =~ m|workflow/[\w-]+\.pl|){
+	    my($fname) = basename($line);
+	    my($strip_fname) = ($fname =~ /(.*)\.pl$/);
+	    open WRAPPER, "+>bin/$strip_fname" or die "Can't open file bin/$strip_fname\n";
+	    my($shell_args)  = q/$*/;
+	    my $addbuffer = $envbuffer;
+            print WRAPPER <<_END_WRAPPER_;
+#!/bin/sh
+$addbuffer
+
+exec /usr/local/devel/ANNOTATION/perl/bin/perl -I $instdir/lib/site_perl/5.8.5 $instdir/bin/$fname $shell_args    
+
+_END_WRAPPER_
+   ;
+	    close WRAPPER;
+	    
+	    print SYMS "$instdir/bin/$strip_fname\n";
+	    
+	    push @binfiles,"$line";
+	    push @binfiles,"bin/$strip_fname";
+	    $wrapper_str .= "bin/$strip_fname ";
+	}
+    }
+    close SYMS;
+    close FILE;
+    return (\@binfiles,$wrapper_str);
+}
+
+
+return 1;

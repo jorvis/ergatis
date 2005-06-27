@@ -12,7 +12,7 @@ do case "$opt" in
     t)    TEST="-n";;
     \?)   echo "Usage: `basename $0` -r(release tag) [-d(irectory for output)] [-t(est)]";
           echo;
-          echo "eg. `basename $0` -r papyrus-v1r8b1";
+          echo "eg. `basename $0` -r cram-v1r8b1";
           exit 1;;
   esac
 done
@@ -38,6 +38,6 @@ if [ "$?" -ne 0 ]; then
     exit 1
 fi
 cd bug_release
-cvs -Q co papyrus_all
+cvs -Q co cram_all
 cvs -Q $TEST tag $RELEASE_TAG
-echo "Added tag $RELEASE_TAG in papyrus_all"
+echo "Added tag $RELEASE_TAG in cram_all"

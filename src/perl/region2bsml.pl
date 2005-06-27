@@ -39,7 +39,7 @@ pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if($help || !$reg
 #Use central install log file as default if available
 Log::Log4perl-> Log::Log4perl::init_and_watch($ENV{LOG4PERL_CONF}) if($ENV{LOG4PERL_CONF});
 
-my $logger = get_logger('papyrus::regions');
+my $logger = get_logger('cram::regions');
 $logger->level($INFO);
 $logger->more_logging($debug) if($debug);
 # Define a file appender or a screen appender

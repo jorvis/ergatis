@@ -266,7 +266,7 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
 
     my $body;
 
-    $body .= "Workflow link http://xmen:8080/tigr-scripts/papyrus/cgi-bin/show_pipeline.cgi?xmltemplate=" . $workflow_id . "\n\n" if (defined($workflow_id));
+    $body .= "Workflow link http://xmen:8080/tigr-scripts/cram/cgi-bin/show_pipeline.cgi?xmltemplate=" . $workflow_id . "\n\n" if (defined($workflow_id));
 
     $body  .= "The following log4perl logfiles were scanned:\n\n@$list\n\nTotal fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'.\n\nThe unique log messages reported and their number of occurrences are listed below\n\n";
 
