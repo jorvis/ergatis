@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/local/bin/perl
 
 =head1	NAME
 
@@ -62,31 +62,31 @@ Ed Lee (elee@tigr.org)
 =cut
 
 use strict;
+use warnings;
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
 use Workflow::Logger;
 use DBI;
 use XML::Twig;
 use IO::File;
-use lib '/usr/local/devel/ANNOTATION/Euk_modules/bin';
-use Gene_obj;
-use Annot_prediction_loader;
 
 my @files	= ();
 my $server	= "SYBTIGR";
-my $db		= 0;
+my $db		= undef;
 my %opts	= ();
 my %coords	= ();
 my @genes	= ();
 my %db_ids	= ();
 my $debug	= 4;
 my $log_file	= Workflow::Logger::get_default_logfilename;
-my $logger	= 0;
+my $logger	= undef;
 my %id2title	= ();
+my $loader	= $& if $0 =~ /[\w\.\d]+$/;
 
-sub print_usage;
 sub parse_opts;
+sub print_usage;
 sub process_files;
+sub process_results;
 sub process_feat;
 sub process_feat_group;
 sub process_aln;
@@ -95,7 +95,12 @@ sub get_db_id;
 sub fetch_db_id;
 sub insert_db_id;
 sub swap;
-sub prepare_insert_stmt;
+sub prepare_evidence_insert_stmt;
+sub prepare_asm_feature_insert_stmt;
+sub prepare_phys_ev_insert_stmt;
+sub prepare_feat_link_insert_stmt;
+sub cleanup_records;
+sub get_latest_id;
 
 GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
 	   "server|s=s", "database|d=s",
@@ -103,12 +108,10 @@ GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
 parse_opts;
 
 my $dbh = DBI->connect("dbi:Sybase:$server", 'egc', 'egcpwd', 
-		       {AutoCommit => 1, RaiseError => 1, PrintError => 1}) or
+		       {RaiseError => 1, PrintError => 1}) or
 	die "Error accessing db: DBI::errstr";
 $dbh->do("use $db");
-
 process_files;
-$dbh->commit if !$dbh->{AutoCommit};
 $dbh->disconnect;
 
 sub parse_opts
@@ -187,8 +190,56 @@ sub process_results
 {
 	my ($asm_id, $prog_name) = @_;
 	$prog_name = 'GeneZilla' if $prog_name =~ /genezilla/;
-	my $loader = new Annot_prediction_loader($dbh, $asm_id, $prog_name);
-	$loader->load_predictions(@genes);
+	cleanup_records($asm_id, $prog_name);
+	my $model_id = get_latest_id($asm_id, "model");
+	my $exon_id = get_latest_id($asm_id, "exon");
+	my $asm_feature_insert_stmt = prepare_asm_feature_insert_stmt;
+	my $phys_ev_insert_stmt = prepare_phys_ev_insert_stmt;
+	my $feat_link_insert_stmt = prepare_feat_link_insert_stmt;
+	foreach my $gene_coords (@genes) {
+		++$model_id;
+		my $model_feat_name = "$asm_id.m$model_id";
+#		print "$model_feat_name\n";
+		my ($model_pos5p, $model_pos3p);
+		if ($$gene_coords[0][0] < $$gene_coords[0][1]) {
+			$model_pos5p = $$gene_coords[0][0];
+			$model_pos3p = $$gene_coords[$#$gene_coords][1];
+		}
+		else {
+			$model_pos5p = $$gene_coords[$#$gene_coords][0];
+			$model_pos3p = $$gene_coords[0][1];
+		}
+#		print "[$model_pos5p\t$model_pos3p]\n";
+		$asm_feature_insert_stmt->execute("model", $loader,
+						  $model_pos5p, $model_pos3p,
+						  $model_feat_name,
+						  $asm_id);
+		$phys_ev_insert_stmt->execute($model_feat_name,
+					      $prog_name);
+		foreach my $exon_coords (@{$gene_coords}) {
+			++$exon_id;
+			my $exon_feat_name = "$asm_id.e$exon_id";
+			my ($exon_pos5p, $exon_pos3p) =
+				($$exon_coords[0], $$exon_coords[1]);
+#			print "$exon_feat_name\n";
+#			print "$exon_pos5p\t$exon_pos3p\n";
+			$asm_feature_insert_stmt->execute("exon", $loader,
+						  $exon_pos5p, $exon_pos3p,
+						  $exon_feat_name,
+						  $asm_id);
+			$phys_ev_insert_stmt->execute($exon_feat_name,
+						      $prog_name);
+			$feat_link_insert_stmt->execute($model_feat_name,
+							$exon_feat_name);
+		}
+#		print "\n";
+	}
+
+#	my $stmt = $dbh->prepare("select feat_name, feat_type from asm_feature where asmbl_id=$asm_id");
+#	$stmt->execute;
+#	while ($_ = $stmt->fetchrow_arrayref) {
+#		print "$$_[0]\t$$_[1]\n";
+#	}
 }
 
 sub process_feat
@@ -220,23 +271,23 @@ sub process_feat
 sub process_feat_group
 {
 	my ($twig, $feat_group) = @_;
-	my %exon_coords = ();
+	my @exon_coords = ();
 	foreach my $child ($feat_group->children('Feature-group-member')) {
 		if ($child->att('feature-type') eq 'exon') {
 			my $id = $child->att('featref') or
 				$logger->logdie("Feature-group-member has no " .
 						"featref");
-			$exon_coords{$coords{$id}->[0]} = $coords{$id}->[1];
+			push @exon_coords,
+				[$coords{$id}->[0], $coords{$id}->[1]];
 		}
 	}
-	if (scalar keys %exon_coords) {
-		my $gene = new Gene_obj;
-		$gene->populate_gene_obj(\%exon_coords, \%exon_coords);
-		push @genes, $gene;
+	if (scalar @exon_coords) {
+		@exon_coords = sort { $$a[0] <=> $$b[0]; } @exon_coords;
+		push @genes, \@exon_coords;
 	}
 	else {
 		$logger->warn("Skipping feature group " .
-			      $feat_group->att('group_set') .
+			      $feat_group->att('group-set') .
 			      " because it has no exons") if $logger->is_warn;
 	}
 	$twig->purge;
@@ -245,7 +296,7 @@ sub process_feat_group
 sub process_aln
 {
 	my ($twig, $aln, $asm_id, $prog_name) = @_;
-	my $insert_stmt = prepare_insert_stmt;
+	my $insert_stmt = prepare_evidence_insert_stmt;
 	my $total_score = 0;
 	foreach my $attr ($aln->children('Attribute')) {
 		$total_score = $attr->att('content') and last
@@ -337,7 +388,8 @@ sub fetch_db_id
 	my $sql = "SELECT id FROM common..search_dbs WHERE name='$db_name'";
 	my $stmt = $dbh->prepare($sql);
 	$stmt->execute;
-	my $db_id = $stmt->fetchrow_arrayref->[0] or 0;
+	my $rows = $stmt->fetchrow_arrayref;
+	my $db_id = $rows ? $rows->[0] : 0;
 	$stmt->finish;
 	return $db_id;
 }
@@ -349,8 +401,7 @@ sub insert_db_id
 		  "release_notes, date, assignby, iscurrent, type) " .
 		  "VALUES ('$db_name', NULL, getdate(), 'workflow', 1, " .
 		  "'custom')";
-	my $stmt = $dbh->prepare($sql);
-	$stmt->do($sql);
+	$dbh->do($sql);
 	return fetch_db_id($db_name);
 }
 
@@ -360,7 +411,7 @@ sub swap
 	($$val1, $$val2) = ($$val2, $$val1);
 }
 
-sub prepare_insert_stmt
+sub prepare_evidence_insert_stmt
 {
 	my $sql = "INSERT INTO evidence (feat_name, ev_type, accession, " .
 		  "end5, end3, rel_end5, rel_end3, m_lend, m_rend, curated, " .
@@ -371,4 +422,68 @@ sub prepare_insert_stmt
 		  "'workflow', 0, 0, ?, ?, ?, ?, ?, NULL, ?, NULL, ?, " .
 		  "NULL, ?)";
 	return $dbh->prepare($sql);
+}
+
+sub prepare_asm_feature_insert_stmt
+{
+	my $sql = "INSERT INTO asm_feature (feat_type, feat_method, " .
+		  "end5, end3, assignby, date, feat_name, asmbl_id, " .
+		  "change_log, save_history, curated) ".
+		  "VALUES (?, ?, ?, ?, 'workflow', getdate(), ?, ?, 0, 0, 0)";
+	return $dbh->prepare($sql);
+}
+
+sub prepare_phys_ev_insert_stmt
+{
+	my $sql = "INSERT INTO phys_ev (feat_name, ev_type, assignby, " .
+		  "datestamp) " .
+		  "VALUES (?, ?, 'workflow', getdate())";
+	return $dbh->prepare($sql);
+}
+
+sub prepare_feat_link_insert_stmt
+{
+	my $sql = "INSERT INTO feat_link (parent_feat, child_feat, " .
+		  "assignby, datestamp) " .
+		  "VALUES (?, ?, 'workflow', getdate())";
+	return $dbh->prepare($sql);
+}
+
+sub cleanup_records
+{
+	my ($asm_id, $ev_type) = @_;
+	my $stmt = $dbh->prepare("SELECT p.feat_name " .
+				 "FROM phys_ev p INNER JOIN asm_feature a " .
+				 "ON (p.feat_name=a.feat_name) " .
+				 "WHERE a.asmbl_id=$asm_id AND " .
+				 "p.ev_type='$ev_type'");
+	$stmt->execute;
+	while (my $row = $stmt->fetchrow_arrayref) {
+		$dbh->do("DELETE FROM asm_feature " .
+			 "WHERE feat_name='$$row[0]'");
+		$dbh->do("DELETE FROM phys_ev " .
+			 "WHERE feat_name='$$row[0]'");
+		$dbh->do("DELETE FROM feat_link " .
+			 "WHERE parent_feat='$$row[0]' OR " .
+			 "child_feat='$$row[0]'");
+#		print "$$row[0]\n";
+	}
+}
+	
+sub get_latest_id
+{
+	my ($asm_id, $feat_type) = @_;
+	my $last_array;
+	my $last_feat_name =
+		$dbh->selectrow_arrayref("SELECT MAX(feat_name) " .
+					 "FROM asm_feature " .
+					 "WHERE asmbl_id=$asm_id AND " .
+					 "feat_type='$feat_type'")->[0];
+	if (!$last_feat_name) {
+		return "000000";
+	}
+	else {
+		$last_feat_name =~ /\d+$/;
+		return $&;
+	}
 }
