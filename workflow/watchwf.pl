@@ -10,6 +10,8 @@
 use Data::Dumper;
 use strict;
 
+umask(0000);
+
 my $string = $ARGV[0];
 
 if (($string eq "--help") || ($string eq "-h")){

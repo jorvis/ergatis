@@ -49,6 +49,8 @@ use Workflow::IteratorBuilder;
 use File::Basename;
 use Config::IniFiles;
 
+umask(0000);
+
 my %options = ();
 
 my $results = GetOptions (\%options, 

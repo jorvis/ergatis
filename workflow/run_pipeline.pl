@@ -38,6 +38,8 @@ use Workflow::Builder;
 use Workflow::IteratorBuilder;
 use Config::IniFiles;
 
+umask(0000);
+
 # Installation directories are pulled from environment for now
 my $WorkflowDocsDir = $ENV{'WORKFLOW_DOCS_DIR'};
 my $BinDir = $ENV{'WORKFLOW_WRAPPERS_DIR'};

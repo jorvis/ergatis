@@ -54,6 +54,8 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Workflow::Logger;
 use File::Basename;
 
+umask(0000);
+
 my %options = ();
 
 my $results = GetOptions (\%options, 

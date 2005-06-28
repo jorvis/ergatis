@@ -92,6 +92,8 @@ use Pod::Usage;
 use Workflow::Logger;
 use IO::File;
 
+umask(0000);
+
 my %options = ();
 my $results = GetOptions (\%options,
 			  'file|f=s',
