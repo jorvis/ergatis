@@ -336,48 +336,48 @@ sub LockRetrieve {
 sub get_command_image{
     my ($status) = @_;
     if($status eq 'complete'){
-	return "<img width=5 height=15 border=0 src = \"/cram/htdocs/greenpixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/cram/greenpixel.gif\">";
     }
     if($status eq 'interrupted'){
-	return "<img width=5 height=15 border=0 src = \"/cram/htdocs/purplepixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/cram/purplepixel.gif\">";
     }
     if($status eq 'incomplete'){
-	return "<img width=5 height=15 border=0 src = \"/cram/htdocs/greypixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/cram/greypixel.gif\">";
     }
     if($status eq 'pending'){
-	return "<img width=5 height=15 border=0 src = \"/cram/htdocs/yellowpixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/cram/yellowpixel.gif\">";
     }
     if($status eq 'running'){
-	return "<img width=5 height=15 border=0 src = \"/cram/htdocs/bluepixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/cram/bluepixel.gif\">";
     }
     if($status eq 'running_distributed'){
-	return "<img width=5 height=15 border=0 src = \"/cram/htdocs/ltbluepixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/cram/ltbluepixel.gif\">";
     }
     if($status eq 'error' || $status eq 'failed'){
-	return "<img width=5 height=15 border=0 src = \"/cram/htdocs/redpixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/cram/redpixel.gif\">";
     }
-    return "<img width=5 height=15 border=0 src = \"/cram/htdocs/blackpixel.gif\">";
+    return "<img width=5 height=15 border=0 src = \"/cram/blackpixel.gif\">";
 }
 
 sub get_commandset_image{
     my ($status) = @_;
     if($status eq 'complete'){
-	return "<img width=20 height=5 border=1 src = \"/cram/htdocs/greenpixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/cram/greenpixel.gif\">";
     }
     if($status eq 'interrupted'){
-	return "<img width=20 height=5 border=1 src = \"/cram/htdocs/purplepixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/cram/purplepixel.gif\">";
     }
     if($status eq 'incomplete'){
-	return "<img width=20 height=5 border=1 src = \"/cram/htdocs/greypixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/cram/greypixel.gif\">";
     }
     if($status eq 'pending'){
-	return "<img width=20 height=5 border=1 src = \"/cram/htdocs/yellowpixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/cram/yellowpixel.gif\">";
     }
     if($status eq 'running'){
-	return "<img width=20 height=5 border=1 src = \"/cram/htdocs/bluepixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/cram/bluepixel.gif\">";
     }
     if($status eq 'error' || $status eq 'failed'){
-	return "<img width=20 height=5 border=1 src = \"/cram/htdocs/redpixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/cram/redpixel.gif\">";
     }
-    return "<img width=20 height=5 border=1 src = \"/cram/htdocs/blackpixel.gif\">";
+    return "<img width=20 height=5 border=1 src = \"/cram/blackpixel.gif\">";
 }
