@@ -109,8 +109,8 @@ if (-e $pipeline) {
     $messages_line
     <li class="actions">
         [view] 
-        [<a href="./view_xml_source.cgi?file=$pipeline" target="_blank">xml</a>] 
-        [<a href="./view_ini_source.cgi?file=$component_conf" target="_blank">conf</a>] 
+        [<a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank">xml</a>] 
+        [<a href="./view_formatted_ini_source.cgi?file=$component_conf" target="_blank">conf</a>] 
         [<a onclick="requestComponentUpdate('$pipeline', '$ul_id')">update</a>] 
         [<a onclick="stopAutoUpdate('$ul_id')">stop updates</a>]
     </li>
