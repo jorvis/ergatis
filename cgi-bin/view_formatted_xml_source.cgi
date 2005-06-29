@@ -51,15 +51,21 @@ while (my $line = readline $ifh) {
 
     
     ## look for any linkable xml
-    if ( $line =~ m!(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))!i ) {
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
     }
     
     ## look for any linkable ini
-    if ( $line =~ m!(/[/a-z0-9_\-.]+\.(?:ini|config|conf))!i ) {
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))(?![\./])^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
+    }
+
+    ## look for any linkable lists
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)(?![\./])^i ) {
+        $url = $1;
+        $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
     }
     
     print $line;
