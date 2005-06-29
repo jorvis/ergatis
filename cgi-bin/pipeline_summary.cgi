@@ -83,8 +83,8 @@ print "    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</stro
 print "    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>\n";
 print "    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>20</span>s</div>\n";
 print "    <div id='pipelinecommands'>" .
-               "[<a href='/tigr-scripts/papyrus/cgi-bin/run_wf.cgi?instancexml=$pipeline'>rerun</a>] " .
-               "[<a href='/tigr-scripts/papyrus/cgi-bin/kill_wf.cgi?instancexml=$pipeline'>kill</a>] " .
+               "[<a href='./run_wf.cgi?instancexml=$pipeline'>rerun</a>] " .
+               "[<a href='./kill_wf.cgi?instancexml=$pipeline'>kill</a>] " .
                "[<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>]" .
           "</div>\n";
 
