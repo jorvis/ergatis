@@ -612,7 +612,7 @@ sub print_directory_page{
 	}
 	$prevdir = $files->{$file}->{'dirname'};
 	my $image = view_dag_tree::get_commandset_image($files->{$file}->{'state'});
-	print "<tr><td><a href='show_pipeline.cgi?&xmltemplate=$files->{$file}->{'filename'}'>$files->{$file}->{'filename'}</a></td><td>$image</td><td>$files->{$file}->{'state'}</td><td>$files->{$file}->{'user'}</td><td>".localtime($files->{$file}->{'date'})."</td><td><a href='show_pipeline.cgi?&xmltemplate=$files->{$file}->{'filename'}&summary=1'>[summary]</a>&nbsp;<a href='remove_workflow.cgi?file=$files->{$file}->{'filename'}&removedir=1' target='_new'>[delete]</a>&nbsp;<a href='kill_wf.cgi?instancexml=xmltemplate=$files->{$file}->{'filename'}'>[kill]</a></td></tr>\n";
+	print "<tr><td><a href='view_workflow_pipeline.cgi?&instance=$files->{$file}->{'filename'}'>$files->{$file}->{'filename'}</a></td><td>$image</td><td>$files->{$file}->{'state'}</td><td>$files->{$file}->{'user'}</td><td>".localtime($files->{$file}->{'date'})."</td><td><a href='view_workflow_pipeline.cgi?&instance=$files->{$file}->{'filename'}'>[summary]</a>&nbsp;<a href='remove_workflow.cgi?file=$files->{$file}->{'filename'}&removedir=1' target='_new'>[delete]</a>&nbsp;<a href='kill_wf.cgi?instancexml=xmltemplate=$files->{$file}->{'filename'}'>[kill]</a></td></tr>\n";
     }
     print "</table>";
     print "</html>";
