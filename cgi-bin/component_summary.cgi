@@ -20,7 +20,7 @@ my $ul_id = $q->param("ul_id") || die "pass ul_id";
 my $progress_image_width = 500;
 my $component_state = 'unknown';
 my $command_count = 0;
-my %stati;
+my %states;
 my @messages;
 
 ## give colors as rgb values or hexidecimal
@@ -58,11 +58,11 @@ if (-e $pipeline) {
 
     ## build the line that lists each status and its count
     my $status_list_line = '';
-    if (scalar keys %stati > 1) {
-        $status_list_line = '<li>stati: ';
+    if (scalar keys %states > 1) {
+        $status_list_line = '<li>states: ';
         
-        for my $status (sort keys %stati) {
-            $status_list_line .= "$status (<span style='color:$colors{$status};'>$stati{$status}</span>), ";
+        for my $status (sort keys %states) {
+            $status_list_line .= "$status (<span style='color:$colors{$status};'>$states{$status}</span>), ";
         }
         
         ## take off the trailing comma
@@ -73,12 +73,12 @@ if (-e $pipeline) {
         $status_list_line .= "</li>\n";
     }
 
-    ## build the "image" div contents that represent the different stati
+    ## build the "image" div contents that represent the different states
     my $status_image = '';
-    for my $status (sort keys %stati) {
+    for my $status (sort keys %states) {
         ## each status gives a percentage of the total command_count
         $status_image .= '<div class="status_bar_portion" style="width: ' . 
-                           int( ($stati{$status} / $command_count) * $progress_image_width) . 'px; background-color: ' . 
+                           int( ($states{$status} / $command_count) * $progress_image_width) . 'px; background-color: ' . 
                            ($colors{$status} || 'rgb(0,0,0)') . ';">' . "</div>\n";
     }
 
@@ -151,7 +151,7 @@ sub parseCommandSet {
             }
             
             if ($type->text) {
-                $stati{$type->gi} += $type->text;
+                $states{$type->gi} += $type->text;
                 $command_count += $type->text;
             }
         }
