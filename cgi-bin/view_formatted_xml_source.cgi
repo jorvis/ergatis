@@ -77,11 +77,10 @@ while (my $line = readline $ifh) {
 
     $line = $newline;
     
-   
     ## look for comments
     $line =~ s/<!--/STARTCOMMENTSPAN<!--/g;
     $line =~ s|-->|-->ENDCOMMENTSPAN|g;
-    
+
     $line =~ s/\</\&lt\;/g;
     $line =~ s/\>/\&gt\;/g;
 
@@ -90,7 +89,6 @@ while (my $line = readline $ifh) {
     $line =~ s|STARTCOMMENTSPAN|<span class="comment">|g;
     $line =~ s!(ENDTAGSPAN|ENDCOMMENTSPAN)!</span>!g;
 
-    
     ## look for any linkable xml
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
         $url = $1;
@@ -107,6 +105,13 @@ while (my $line = readline $ifh) {
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)(?![\./])^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+    }
+
+    ## look for any execution hosts
+    if ( $line =~ m|executionHost</span>\&gt\;(.+?)&lt;|i ) {
+        print "found a match\n";
+        my $ehost = $1;
+        $line =~ s|$ehost|<a href="http://enterprise.tigr.org/ganglia/?m=load_one&r=hour&s=descending&c=Main+Cluster&h=$ehost&sh=1&hc=4">$ehost</a>|;
     }
     
     print $line;
