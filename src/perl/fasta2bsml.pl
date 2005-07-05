@@ -10,7 +10,12 @@ USAGE:  fasta2bsml.pl
         --fasta_input=/path/to/fileORdir | --fasta_list=/path/to/file
         --format=multi|single
         --output=/path/to/somefile.fsa   | /path/to/somedir
-        [ --debug=debug_level --log=log_file ]
+      [ --output_list=/path/to/somefile.list
+        --output_subdir_size=20000
+        --output_subdir_prefix='somename'
+        --debug=debug_level 
+        --log=log_file 
+      ]
 
 =head1 OPTIONS
 
@@ -31,6 +36,17 @@ B<--log,-l>
 
 B<--output,-o> 
     Output file (if --format=multi) or directory (if --format=single)
+
+B<--output_list,-u>
+    Optional.  If passed, will create a list file containing the path to each of the
+    files created.
+    
+B<--output_subdir_size,-z>
+    Optional.  Number of files to create within each output subdirectory.
+    
+B<--output_subdir_prefix,-x>
+    Optional.  Rather than just plain numberical names (N), output subdirectories will
+    be named like "prefixN" if you pass a prefix with this.
 
 B<--help,-h> 
     This help message
@@ -132,10 +148,49 @@ Each file will be named using the id attribute of each sequence, like $id.fsa .
 the only legal characters for the file name are in the set [ a-z A-Z 0-9 - _ . ].  Any
 other characters will be replaced with underscores.
 
+You can pass a path to the optional --output_list to create a text file containing the full paths
+to each of the BSML files created by this script.
+
+Two other optional arguments, --output_subdir_size and --output_subdir_prefix, can be used
+on input sets that are too large to write out to one directory.  This depends on the limitations
+of your file system, but you usually don't want 100,000 files written in the same directory.
+
+If you are going to create 95000 sequences, and use the following option:
+
+    --output=/some/path
+    --output_subdir_size=30000
+    
+The following will be created:
+
+    directory              file count
+    ---------------------------------
+    /some/path/0/          30000
+    /some/path/1/          30000
+    /some/path/2/          30000
+    /some/path/3/           5000
+
+If you choose to create a list file (and you probably want to), it will contain these paths.
+
+You may not want the subdirectories to simply be numbers, as above, so you can use the
+--output_subdir_prefix option.  For example:        
+
+    --output=/some/path
+    --output_subdir_size=30000
+    --output_subdir_prefix=bsml
+    
+The following will be created:
+
+    directory              file count
+    ---------------------------------
+    /some/path/bsml0/     30000
+    /some/path/bsml1/     30000
+    /some/path/bsml2/     30000
+    /some/path/bsml3/      5000
+
 =head1 CONTACT
 
-Joshua Orvis
-jorvis@tigr.org
+    Joshua Orvis
+    jorvis@tigr.org
 
 =cut
 
@@ -153,6 +208,9 @@ my $results = GetOptions (\%options,
                           'fasta_dir|d=s',      ## deprecated
                           'fasta_file|f=s',     ## deprecated
                           'output|o=s',
+                          'output_list|u=s',
+                          'output_subdir_size|z=s',
+                          'output_subdir_prefix|x=s',
                           'format|m=s',
 			              'log|l=s',
 			              'debug=s',
@@ -228,6 +286,17 @@ if ( scalar @files == 0 ) {
     $logger->logdie("No files found");
 }
 
+## create an output list if passed
+my $olist_fh;
+if ($options{output_list}) {
+    $logger->debug("Creating output list at $options{output_list}") if ($logger->debug);
+    open($olist_fh, ">$options{output_list}") || $logger->logdie("couldn't create output list $options{output_list} : $!");
+}
+
+## variables for handling output sub directory groupings (if needed)
+my $sub_dir_num = 0;
+my $seq_file_count = 0;
+
 
 #######
 ## parse out sequences from each file
@@ -265,17 +334,29 @@ for my $file ( @files ) {
         #  which needs to be made safe first.
         if ($options{format} eq 'single') {
             $id =~ s/[^a-z0-9\.\-]/_/gi;
-            $doc->write( "$options{output}/$id.bsml" );
+            
+            write_single_doc( $doc, $id );
+            
+            #$doc->write( "$options{output}/$id.bsml" );
+            
+            #if ($options{output_list}) {
+            #    print $olist_fh "$options{output}/$id.bsml\n";
+            #}
         }
     }
 }
 
 if ($options{format} eq 'multi') {
     $doc->write( $options{output} );
+    
+    if ($options{output_list}) {
+        print $olist_fh "$options{output}\n";
+    }
 }
 
 ## fin
 exit;
+
 
 sub add_file {
     ## adds a file to the list of those to process, checking to make sure it
@@ -331,6 +412,8 @@ sub check_parameters {
         }
     }
 
+    $options{output_subdir_size}   = 0  unless ($options{output_subdir_size});
+    $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
 
     if(0){
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
@@ -406,4 +489,34 @@ sub loadMultiSequence {
     close $sfh;
     
     return %db;
+}
+
+sub write_single_doc {
+    my ($doc, $id) = @_;
+    my $dirpath = '';
+    
+    ## the path depends on whether we are using output subdirectories
+    if ($options{output_subdir_size}) {
+        $dirpath = "$options{'output'}/$options{output_subdir_prefix}$sub_dir_num";
+    } else {
+        $dirpath = "$options{'output'}";
+    }
+
+    ## if the directory doesn't exist, create it.
+    mkdir($dirpath) unless (-e $dirpath);
+    
+    $seq_file_count++;
+    $logger->debug("writing file $dirpath/$id.bsml") if ($logger->is_debug);
+    $doc->write( "$dirpath/$id.bsml" );
+
+    ## if we are writing multiple subdirectories and have hit our size limit,
+    ##  increase the counter to the next one
+    if ($options{output_subdir_size} && $options{output_subdir_size} == $seq_file_count) {
+        $sub_dir_num++;
+        $seq_file_count = 0;
+    }
+
+    if ($options{output_list}) {
+        print $olist_fh "$dirpath/$id.bsml\n";
+    }
 }
