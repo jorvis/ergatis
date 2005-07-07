@@ -23,7 +23,7 @@ if(($inifile ne "") && ($template ne "")){
 	while(! (-e $instancexml)){
 	    sleep 3;
 	}
-	print redirect(-uri=>"./show_pipeline.cgi?xmltemplate=$instancexml");    
+	print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");    
 	exit;
     }
     else{
@@ -57,7 +57,7 @@ if(($inifile ne "") && ($template ne "")){
 else{
     my $child_pid = fork;
     if($child_pid){
-	print redirect(-uri=>"./show_pipeline.cgi?xmltemplate=$instancexml");    
+	print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");    
 	exit;
     }
     else{
