@@ -182,6 +182,11 @@
 <!-- Duplication detection and elminitation Step -->
         <command>
           <type>RunUnixCommand</type>
+          <name>create_table_group_list_file</name>
+          <configMapId>create_table_group_list_file</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>dup_list_tableinfo</name>
           <configMapId>dup_list_tableinfo</configMapId>
         </command>
