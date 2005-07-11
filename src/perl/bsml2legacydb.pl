@@ -193,6 +193,7 @@ sub process_results
 {
 	my ($asm_id, $prog_name) = @_;
 	$prog_name = 'GeneZilla' if $prog_name =~ /genezilla/;
+    
 	cleanup_records($asm_id, $prog_name);
 	my $model_id = get_latest_id($asm_id, "model");
 	my $exon_id = get_latest_id($asm_id, "exon");
@@ -213,12 +214,16 @@ sub process_results
 			$model_pos3p = $$gene_coords[0][1];
 		}
 #		print "[$model_pos5p\t$model_pos3p]\n";
+
+        $logger->debug("asm_feature_insert_stmt ('model', $loader, $model_pos5p, $model_pos3p, $model_feat_name, $asm_id) ") if $logger->is_debug;
 		$asm_feature_insert_stmt->execute("model", $loader,
 						  $model_pos5p, $model_pos3p,
 						  $model_feat_name,
 						  $asm_id);
+        $logger->debug("phys_ev_insert_stmt ($model_feat_name, $prog_name) ") if $logger->is_debug;                          
 		$phys_ev_insert_stmt->execute($model_feat_name,
 					      $prog_name);
+
 		foreach my $exon_coords (@{$gene_coords}) {
 			++$exon_id;
 			my $exon_feat_name = "$asm_id.e$exon_id";
@@ -226,12 +231,18 @@ sub process_results
 				($$exon_coords[0], $$exon_coords[1]);
 #			print "$exon_feat_name\n";
 #			print "$exon_pos5p\t$exon_pos3p\n";
+
+            $logger->debug("asm_feature_insert_stmt ($loader, $exon_pos5p, $exon_pos3p, $exon_feat_name, $asm_id) ") if $logger->is_debug;
 			$asm_feature_insert_stmt->execute("exon", $loader,
 						  $exon_pos5p, $exon_pos3p,
 						  $exon_feat_name,
 						  $asm_id);
+
+            $logger->debug("phys_ev_insert_stmt ($model_feat_name, $prog_name) ") if $logger->is_debug;
 			$phys_ev_insert_stmt->execute($exon_feat_name,
 						      $prog_name);
+
+            $logger->debug("feat_link_insert_stmt ($model_feat_name, $exon_feat_name) ") if $logger->is_debug;
 			$feat_link_insert_stmt->execute($model_feat_name,
 							$exon_feat_name);
 		}
