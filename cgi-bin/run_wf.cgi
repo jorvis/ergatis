@@ -79,7 +79,7 @@ else{
 	    $ENV{'SYBASE'} = "/usr/local/packages/sybase";
 	    $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";
 	    $ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/packages/sybase/OCS/lib:/usr/local/packages/sybase/lib";
-	    my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log -v5 >& $instancexml.run.out";
+	    my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log >& $instancexml.run.out";
 	    my $rc = 0xffff & system($runstring);
 	    use Data::Dumper;
 	    print STDERR Dumper(%ENV);
