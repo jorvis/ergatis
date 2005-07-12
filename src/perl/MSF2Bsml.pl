@@ -97,6 +97,18 @@ if(keys %$MSF_alignments > 1){   #skip empty msf files
 	#unique, the seq-name and name will be in the form "protein_accession:seqnum"
 	#i.e. (ana1.10005.m00234_protein:1). 
 	
+
+	#
+	# bugzilla case 1979
+	# sundaram@tigr.org
+	# 2005.07.12
+	# Protein identifiers in clustalw output are being truncated.
+	#
+	if ($seq =~ /_protei$/){
+	    $logger->warn("protein identifier '$seq' was truncated by clustalw, repairing now");
+	    $seq .= "n";
+	}
+
 	$builder->createAndAddAlignedSequence(
 					      'alignmentSummary' => $summary,
 					      'seqnum'           => $seqnum,
