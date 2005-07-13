@@ -108,7 +108,7 @@ if(keys %$MSF_alignments > 1){   #skip empty msf files
 	    $logger->warn("protein identifier '$seq' was truncated by clustalw, repairing now");
 	    $seq .= "n";
 	}
-	if ($alignment =~ /_protei$/){
+	if ($alignment =~ /_protei /){
 	    $logger->warn("protein identifier in the alignment of '$seq' was truncated by clustalw, repairing now");
 	    $alignment =~ s/_protei /_protein /g;
 	}
