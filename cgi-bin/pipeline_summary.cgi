@@ -9,6 +9,7 @@ use POSIX;
 use XML::Twig;
 
 my $q = new CGI;
+my $repository_root;
 
 print $q->header( -type => 'text/html' );
 
@@ -16,8 +17,11 @@ print $q->header( -type => 'text/html' );
 ## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 
-
 my $twig = new XML::Twig;
+
+if ($pipeline =~ /(.+)\/Workflow/ ) {
+    $repository_root = $1;
+}
 
 $twig->parsefile($pipeline);
 
@@ -83,6 +87,7 @@ print "    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</stro
 print "    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>\n";
 print "    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>20</span>s</div>\n";
 print "    <div id='pipelinecommands'>" .
+               "[<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>] " .
                "[<a href='./run_wf.cgi?instancexml=$pipeline'>rerun</a>] " .
                "[<a href='./kill_wf.cgi?instancexml=$pipeline'>kill</a>] " .
                "[<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>]" .
