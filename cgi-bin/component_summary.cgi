@@ -54,7 +54,7 @@ if (-e $pipeline) {
     my $twig = new XML::Twig;
        $twig->parsefile($pipeline);
     my $commandSetRoot = $twig->root;
-    parseCommandSet( $commandSetRoot->first_child('commandSet') );
+    parseCommandSet( $commandSetRoot->first_child('commandSet'), $pipeline );
 
     ## build the line that lists each status and its count
     my $status_list_line = '';
@@ -132,7 +132,7 @@ sub gatherMessages {
 }
 
 sub parseCommandSet {
-    my $commandSet = shift;
+    my ($commandSet, $fileparsed) = @_;
     
     ## get the component state if it hasn't been defined yet
     if ( $component_state eq 'unknown' ) {
@@ -170,16 +170,19 @@ sub parseCommandSet {
     
     ## this is a terrible way to do this, as it doubles the memory required for
     ##  the twig.  it's functional, but needs to be replaced.
-    my $text = $commandSet->sprint;
-    while ( $text =~ m|<message>(.+?)</message>|gs) {
-        my $msg = $1;
-        
-        ## can we simplify this message?
-        if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
-            $msg = $1;
+    ## don't look into the groups.xml here (yet).
+    if ($fileparsed !~ /groups.xml$/) {
+        my $text = $commandSet->sprint;
+        while ( $text =~ m|<message>(.+?)</message>|gs) {
+            my $msg = $1;
+
+            ## can we simplify this message?
+            if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
+                $msg = $1;
+            }
+
+            push @messages, $msg;
         }
-        
-        push @messages, $msg;
     }
 }
 
@@ -191,7 +194,7 @@ sub parseComponentSubflow {
     my $twig = new XML::Twig;
        $twig->parsefile($groupsXML);
     my $commandSetRoot = $twig->root;
-    parseCommandSet( $commandSetRoot->first_child('commandSet') );
+    parseCommandSet( $commandSetRoot->first_child('commandSet'), $groupsXML );
 
 }
 
