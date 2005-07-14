@@ -99,6 +99,7 @@ if (-e $pipeline) {
         $update_interval = 31;
     }
 
+    ## gather any messages here
 
     ## print the component summary HTML
     print <<ComPONENTSummary;
@@ -124,6 +125,12 @@ ComPONENTSummary
     printIncompleteSummary();
 }
 
+sub gatherMessages {
+    my $twig = shift;
+    
+    
+}
+
 sub parseCommandSet {
     my $commandSet = shift;
     
@@ -142,14 +149,6 @@ sub parseCommandSet {
             ## don't do the 'total' types here
             next if ($type->gi eq 'total');
             
-            ## store any messages, but don't count them as a status (why are they there in XML?)
-            if ($type->gi eq 'message' && $type->text) {
-                ## don't show the "Command set with name: X finished" message
-                next if ($type->text =~ /Command set with name.*finished$/i);
-                
-                push @messages, $type->text;
-            }
-            
             if ($type->text) {
                 $states{$type->gi} += $type->text;
                 $command_count += $type->text;
@@ -157,7 +156,7 @@ sub parseCommandSet {
         }
     }
     
-    ## all iterative components will have a single commandSet to parse (file-based subflow)
+    ## all iterative components will have a commandSet to parse (file-based subflow)
     my $subflowCommandSet = $commandSet->first_child("commandSet") || 0;
     if ($subflowCommandSet) {
         ## this command set should contain a fileName element
@@ -167,6 +166,20 @@ sub parseCommandSet {
                 parseComponentSubflow($fileName->text);
             }
         }
+    }
+    
+    ## this is a terrible way to do this, as it doubles the memory required for
+    ##  the twig.  it's functional, but needs to be replaced.
+    my $text = $commandSet->sprint;
+    while ( $text =~ m|<message>(.+?)</message>|gs) {
+        my $msg = $1;
+        
+        ## can we simplify this message?
+        if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
+            $msg = $1;
+        }
+        
+        push @messages, $msg;
     }
 }
 
