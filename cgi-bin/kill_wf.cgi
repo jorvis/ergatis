@@ -21,11 +21,11 @@ while(defined (my $file = readdir(DIR))){
 	    if ($count != 1) {
 		print header();
 		print "<html><body>";
-		print "Error signalling process with pid $pid; manual intervention may be required<br><a href='./view_workflow_pipeline.cgi?xml_input=$instancexml'>[view workflow]</a>";
+		print "Error signalling process with pid $pid; manual intervention may be required<br><a href='./view_workflow_pipeline.cgi?instance=$instancexml'>[view workflow]</a>";
 		print "</body></html";
 		exit(1);
 	    } else {
-		print redirect(-uri=>"./view_workflow_pipeline.cgi?xml_input=$instancexml");
+		print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");
 		exit(0);
 	    }
 	}
