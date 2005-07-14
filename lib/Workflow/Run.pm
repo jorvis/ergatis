@@ -98,12 +98,25 @@ sub CreateWorkflow{
     
     ## we want to reset the huge ENV so that it doesn't overload XML-RPC
     %ENV = (
-                PATH => $ENV{PATH},
-                HOST => $ENV{HOST},
-                USER => $ENV{USER},
-                GROUP => $ENV{GROUP}
+                PATH            => $ENV{PATH},
+                HOST            => $ENV{HOST},
+                USER            => $ENV{USER},
+                GROUP           => $ENV{GROUP},
+                WORKFLOW_WRAPPERS_DIR => $ENV{WORKFLOW_WRAPPERS_DIR},
+                
+                ## next two needed by hmmpfam2htab
+                HMM_SCRIPTS     => '/usr/local/devel/ANNOTATION/hmm/bin',
+                SYBASE          => '/usr/local/packages/sybase',
+                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+                
+                ## should workflow take care of this?
+                SGE_ROOT        => '/local/n1ge',
+                SGE_CELL => 'tigr',
+                SGE_QMASTER_PORT => '536',
+                SGE_EXECD_PORT => '537',
+                SGE_ARCH => 'lx26-x86',
            );
-
+    
     my $pid;
     if($pid = fork){
 	$SIG{'TERM'} = sub {
@@ -138,7 +151,7 @@ sub RunWorkflow{
     $self->{_logger}->debug("Exec via system: $execstr") if ($self->{_logger}->is_debug());
     my $debugstr = "";
     if($self->{_logger}->is_debug()){
-	$debugstr = "-v 6";
+        $debugstr = "-v 6";
     }
     
     ## we want to reset the huge ENV so that it doesn't overload XML-RPC
@@ -147,11 +160,21 @@ sub RunWorkflow{
                 HOST            => $ENV{HOST},
                 USER            => $ENV{USER},
                 GROUP           => $ENV{GROUP},
+                WORKFLOW_WRAPPERS_DIR => $ENV{WORKFLOW_WRAPPERS_DIR},
+                
                 ## next two needed by hmmpfam2htab
                 HMM_SCRIPTS     => '/usr/local/devel/ANNOTATION/hmm/bin',
                 SYBASE          => '/usr/local/packages/sybase',
+                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+                
+                ## should workflow take care of this?
+                SGE_ROOT        => '/local/n1ge',
+                SGE_CELL => 'tigr',
+                SGE_QMASTER_PORT => '536',
+                SGE_EXECD_PORT => '537',
+                SGE_ARCH => 'lx26-x86',
            );
-    
+
     my $pid;
     if($pid = fork){
 	$SIG{'TERM'} = sub {
