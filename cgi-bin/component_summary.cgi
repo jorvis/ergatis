@@ -165,9 +165,6 @@ sub parseCommandSet {
         if ($fileName) {
             if (-e $fileName->text) {
                 parseComponentSubflow($fileName->text);
-            } else {
-                printIncompleteSummary();
-                exit;
             }
         }
     }
