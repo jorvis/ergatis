@@ -22,6 +22,7 @@ my $component_state = 'unknown';
 my $command_count = 0;
 my %states;
 my @messages;
+my %message_counts;
 
 ## give colors as rgb values or hexidecimal
 my %colors = (
@@ -86,7 +87,14 @@ if (-e $pipeline) {
     my $messages_line = '';
     if (scalar @messages) {
         $messages_line = '<li class="messages"><b>messages:</b><br>';
-        $messages_line .= join('<br>', @messages);
+        for my $msg (@messages) {
+            ## show a counter if a message happened more than once
+            if ($message_counts{$msg} > 1) {
+                $messages_line .= "$msg <strong>($message_counts{$msg} times)</strong><br>";
+            } else {
+                $messages_line .= "$msg<br>";
+            }
+        }
         $messages_line .= "</li>\n";
     }
 
@@ -184,7 +192,9 @@ sub parseCommandSet {
 
             $msg =~ s/\</\&lt\;/g;
             $msg =~ s/\>/\&gt\;/g;
-            push @messages, $msg;
+            
+            ## add this to the messages array if it hasn't been seen yet.
+            push @messages, $msg unless $message_counts{$msg}++;
         }
     }
 }
