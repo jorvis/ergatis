@@ -10,6 +10,8 @@ use Tree::DAG_Node;
 use Config::IniFiles;
 use Data::Dumper;
 
+umask(0000);
+
 my $conffile = param('conffile');
 my $dowrite = param('dowrite');
 my $limitsect = param('limitsect');
@@ -175,5 +177,6 @@ sub create_directory{
     my($dir) = @_;
     my $ret = system("mkdir -m 777 -p $dir");
     $ret >>= 8;
+
     return $ret;
 }    
