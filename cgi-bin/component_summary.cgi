@@ -99,8 +99,6 @@ if (-e $pipeline) {
         $update_interval = 31;
     }
 
-    ## gather any messages here
-
     ## print the component summary HTML
     print <<ComPONENTSummary;
     <h1><div class="component_label"><b>component</b>: $ul_id</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
@@ -146,8 +144,8 @@ sub parseCommandSet {
     my $status = $commandSet->first_child('status') || 0;
     if ($status) {
         for my $type ($status->children) {
-            ## don't do the 'total' types here
-            next if ($type->gi eq 'total');
+            ## don't do the 'total' or 'message' types here
+            next if ($type->gi eq 'total' || $type->gi eq 'message');
             
             if ($type->text) {
                 $states{$type->gi} += $type->text;
@@ -175,12 +173,17 @@ sub parseCommandSet {
         my $text = $commandSet->sprint;
         while ( $text =~ m|<message>(.+?)</message>|gs) {
             my $msg = $1;
+            
+            ## don't include the "Command set with name: ? finished" messages
+            next if ($msg =~ /Command set with name\:.+?finished/i);
 
             ## can we simplify this message?
             if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
                 $msg = $1;
             }
 
+            $msg =~ s/\</\&lt\;/g;
+            $msg =~ s/\>/\&gt\;/g;
             push @messages, $msg;
         }
     }
