@@ -187,6 +187,8 @@ sub parseCommandSet {
             
             ## don't include the "Command set with name: ? finished" messages
             next if ($msg =~ /Command set with name\:.+?finished/i);
+            ## don't include "Job terminated." messages
+            next if ($msg =~ /^Job terminated\.$/i);
 
             ## can we simplify this message?
             if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
