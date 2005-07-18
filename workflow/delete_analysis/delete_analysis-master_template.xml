@@ -19,6 +19,11 @@
             <name>create_filter_views</name>
             <configMapId>create_filter_views</configMapId>
         </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>revoke_public</name>
+            <configMapId>revoke_public</configMapId>
+        </command>
         <commandSet type="parallel">
             <name>Filter analysis tables</name>
             <configMapId>empty</configMapId>
@@ -65,8 +70,18 @@
        </command>
        <command>    
            <type>RunUnixCommand</type>
+           <name>Unpartition tables</name>
+           <configMapId>unpartition</configMapId>
+       </command>
+       <command>    
+           <type>RunUnixCommand</type>
            <name>truncate_companalysis_tables</name>
            <configMapId>truncate_companalysis_tables</configMapId>
+       </command>
+       <command>    
+           <type>RunUnixCommand</type>
+           <name>Partition tables</name>
+           <configMapId>partition</configMapId>
        </command>
        <commandSet type="parallel">
            <name>Load filtered analysis records</name>
@@ -107,6 +122,11 @@
            <type>RunUnixCommand</type>
            <name>rebuild_indexes</name>
            <configMapId>rebuild_indexes</configMapId>
+       </command>
+       <command>    
+           <type>RunUnixCommand</type>
+           <name>grant_public</name>
+           <configMapId>grant_public</configMapId>
        </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->
