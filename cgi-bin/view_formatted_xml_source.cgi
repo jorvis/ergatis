@@ -119,7 +119,7 @@ while (my $line = readline $ifh) {
 
 print "</div>";
 
-if (defined %states) {
+if (scalar keys %states) {
 
     ## build the "image" div contents that represent the different states
     my $status_image = '';
