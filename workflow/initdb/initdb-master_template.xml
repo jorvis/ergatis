@@ -73,15 +73,25 @@
         </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
-       <command>    
+        <command>    
             <type>RunUnixCommand</type>
             <name>Revoke public</name>
             <configMapId>revoke_public</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
+            <name>Unpartition tables</name>
+            <configMapId>unpartition</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
             <name>Truncate all tables</name>
             <configMapId>truncate_all</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Partition tables</name>
+            <configMapId>partition</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
