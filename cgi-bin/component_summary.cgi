@@ -179,8 +179,11 @@ sub parseCommandSet {
     ## don't look into the groups.xml here (yet).
     if ($fileparsed !~ /groups.xml$/) {
         my $text = $commandSet->sprint;
-        while ( $text =~ m|<message>(.+?)</message>|gs) {
+        while ( $text =~ m|<message>(.*?)</message>|g) {
             my $msg = $1;
+            
+            ## don't do anything with empty messages
+            next unless length $msg > 0;
             
             ## don't include the "Command set with name: ? finished" messages
             next if ($msg =~ /Command set with name\:.+?finished/i);
