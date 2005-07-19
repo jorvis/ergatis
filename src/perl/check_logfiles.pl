@@ -195,7 +195,7 @@ foreach my $file (sort @{$list}){
 	    my ($prgline, $samplemsg) = split(/ - /,$message);
 	    if ((defined($prgline)) and (defined($samplemsg))){
 		$filehash->{$file}->{$prgline}->{'count'}++;
-		$filehash->{$file}->{$prgline}->{'samplemsg'} = $samplemsg;
+		$filehash->{$file}->{$prgline}->{'samplemsg'}->{$samplemsg}++;
 		$filehash->{$file}->{$prgline}->{'level'} = 'FATAL';
 	    }
 	    else{
@@ -209,7 +209,7 @@ foreach my $file (sort @{$list}){
 	    my ($prgline, $samplemsg) = split(/ - /,$message);
 	    if ((defined($prgline)) and (defined($samplemsg))){
 		$filehash->{$file}->{$prgline}->{'count'}++;
-		$filehash->{$file}->{$prgline}->{'samplemsg'} = $samplemsg;
+		$filehash->{$file}->{$prgline}->{'samplemsg'}->{$samplemsg}++;
 		$filehash->{$file}->{$prgline}->{'level'} = 'ERROR';
 	    }
 	    else{
@@ -223,7 +223,7 @@ foreach my $file (sort @{$list}){
 	    my ($prgline, $samplemsg) = split(/ - /,$message);
 	    if ((defined($prgline)) and (defined($samplemsg))){
 		$filehash->{$file}->{$prgline}->{'count'}++;
-		$filehash->{$file}->{$prgline}->{'samplemsg'} = $samplemsg;
+		$filehash->{$file}->{$prgline}->{'samplemsg'}->{$samplemsg}++;
 		$filehash->{$file}->{$prgline}->{'level'} = 'WARN';
 	    }
 	    else{
@@ -273,20 +273,51 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
     foreach my $file (sort keys %{$filehash}){
 
 
-	$body .= "\nLOGFILE '$file'\n\n";
+	my $begin = "Begin log file ";
+	my $blen = length($begin) + length($file) + 2; 
+	my $bliner = "-"x$blen;
+	
+	$begin .= "'$file'";
+	
+	$body .= "$bliner\n".
+	"$begin\n\n";
+
 
 	foreach my $prgline (sort keys %{$filehash->{$file}}){
 
-	    my $count     = $filehash->{$file}->{$prgline}->{'count'};
-	    my $samplemsg = $filehash->{$file}->{$prgline}->{'samplemsg'};
-	    my $level     = $filehash->{$file}->{$prgline}->{'level'};
-	    $body .= "LEVEL: $level\nPROGRAM LINE: $prgline\nSAMPLE MESSAGE: $samplemsg\nCOUNT: $count\n\n";
-	}
+	    $body .= "LEVEL: $filehash->{$file}->{$prgline}->{'level'}\n".
+	    "PROGRAM LINE: $prgline\n".
+	    "TOTAL COUNT: $filehash->{$file}->{$prgline}->{'count'}\n\n";
 
+	    my @keys = sort keys %{$filehash->{$file}->{$prgline}->{'samplemsg'}};
+	    my $klen = scalar(@keys);
+	    my $i=0;
+
+	    foreach my $msg (@keys){
+		
+		$i++;
+
+		$body .= "DISTINCT SAMPLE MESSAGE: $msg\n".
+		"COUNT: $filehash->{$file}->{$prgline}->{'samplemsg'}->{$msg}\n\n";
+		
+		$body .= "--------------------\n" if (($filehash->{$file}->{$prgline}->{'count'} > 1) && ($i < $klen));
+
+	    }
+
+	    $body .= "---------------------------------------\n";
+	}
+	
+	my $end = "End log file ";
+	my $elen = length($end) + length($file) + 2;
+	my $eliner = "-"x$elen;
+	$end .= "'$file'";
+
+	$body .= "\n$end\n".
+	"$eliner\n\n";
     }
 
 
-    $body .= "Please review logfile '$log4perl'";
+    $body .= "\n\nPlease review logfile '$log4perl'";
 
 
     &send_notification($username, $subject, $body);
