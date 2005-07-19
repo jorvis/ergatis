@@ -151,7 +151,8 @@ sub parseCommandSet {
 ComponeNTBlock
 
     ## configMapId is just numeric when we have a serial or parallel command set grouping
-    } elsif ( $configMapId =~ /^\d+$/) {
+    ##  also handle imported pipelines here, which have a serial root
+    } elsif ( $configMapId =~ /^\d+$/ || $configMapId =~ /^pipeline_\d+$/ ) {
 
         print "<ul class='$type'>\n";
 
