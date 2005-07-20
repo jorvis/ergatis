@@ -20,8 +20,8 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_s, $opt_h, $opt_l, $opt_t, $opt_T, $opt_z);
-getopts('L:D:s:hfl:t:T:z');
+our ($opt_L, $opt_D, $opt_A, $opt_B $opt_h, $opt_l, $opt_t, $opt_T, $opt_z);
+getopts('L:D:ABhfl:t:T:z');
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
@@ -41,8 +41,6 @@ MAIN:{
 		}
 	}
 	
-	# my $file_kwd = $fragmented ? qr/((?:\S+\D)?(\d+))\.(\d+).*$opt_s/ : qr/((?:\S+\D)?(\d+))\..*$opt_s/;
-	# my $file_kwd = $fragmented ? qr/((?:[^\s_]+_)?(\d+))\.(\d+)\./ : qr/((?:[^\s_]+_)?(\d+))\./;
 	my $file_kwd = $fragmented ? qr/($opt_D\.assembly\.(\d+))\.(\d+)\./ : qr/($opt_D\.assembly\.(\d+))\./ if defined $opt_D;
 	
 	if (defined $opt_D){
@@ -52,20 +50,13 @@ MAIN:{
 		++$bad;
 	}
 
-	if (defined $opt_s){
-		my $small_s = lc($opt_s);
-		
-		if ($small_s eq 'b'){
-			$btab =  1;
-		}
-		elsif ($small_s eq 'a'){
-			$btab = 0;
-		} else {
-			$message .= "Bad value for option -s\n\n";
-		++$bad;
-		}
+	if ($opt_B){
+		$btab =  1;
+	}
+	elsif ($opt_A){
+		$btab = 0;
 	} else {
-		$message .= "Option -s (File type) is required\n\n" unless $opt_h;
+		$message .= "You must specify either option -A or -B\n\n";
 		++$bad;
 	}
 	
@@ -122,7 +113,9 @@ MAIN:{
 #
 # -D Annotation database
 #
-# -s File type b -> btab, a -> alignment
+# -B btab file
+#
+# -A Alignment file
 #
 # -h print this option menu and quit
 #
