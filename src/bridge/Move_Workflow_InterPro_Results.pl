@@ -21,8 +21,8 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_O, $opt_h);
-getopts('L:D:O:h');
+our ($opt_L, $opt_D, $opt_h);
+getopts('L:D:h');
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
@@ -32,15 +32,6 @@ MAIN:{
 	my $summary_tool = 'iprscan';
 	my %files = ();
 
-	if (defined $opt_O){
-		unless (open(OUTLIST, ">$opt_O")){
-			$message .= "Impossible to opne the output file $opt_O\n\n";
-			++$bad;
-		}
-	} else {
-		$message .= "Option -O (Name for output list) is required\n\n" unless $opt_h;
-		++$bad;
-	}
 
 		
 	
@@ -106,8 +97,6 @@ MAIN:{
 #
 # -D Annotation database
 #
-# -O Name for output list of model names
-#
 # -h Help: prints this option menu and quit
 #
 ###############################################################################
@@ -131,7 +120,6 @@ MAIN:{
 			foreach my $info (@{$mdl_files->{$tool}}){
 				my ($mol_name, $model, $file, $target_file) = (@{$info}, $target_path);
 				$model = sprintf("%d.m%05d", $asmbl, $model);
-				print OUTLIST "$model\n" unless $printed;  # it assumes that all the tools contain the results of all the genes, therefore it relies on the first tool...
 				$target_file .= "/$model.$tool";
 			
 				
@@ -159,7 +147,6 @@ MAIN:{
 		
 				chmod(0444, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
 			}
-			$printed = 1;
 		}
 	}
 	
