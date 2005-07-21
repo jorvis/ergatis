@@ -109,7 +109,6 @@ while (my $line = readline $ifh) {
 
     ## look for any execution hosts
     if ( $line =~ m|executionHost</span>\&gt\;(.+?)&lt;|i ) {
-        print "found a match\n";
         my $ehost = $1;
         $line =~ s|$ehost|<a href="http://enterprise.tigr.org/ganglia/?m=load_one&r=hour&s=descending&c=Main+Cluster&h=$ehost&sh=1&hc=4">$ehost</a>|;
     }
