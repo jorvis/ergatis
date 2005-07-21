@@ -20,7 +20,7 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_A, $opt_B $opt_h, $opt_l, $opt_t, $opt_T, $opt_z);
+our ($opt_L, $opt_D, $opt_A, $opt_B, $opt_h, $opt_l, $opt_t, $opt_T, $opt_z);
 getopts('L:D:ABhfl:t:T:z');
 
 MAIN:{
