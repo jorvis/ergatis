@@ -63,6 +63,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>Create naming_conv scratch</name>
+          <configMapId>create_so_naming_conv_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create go scratch</name>
           <configMapId>create_go_scratch</configMapId>
         </command>
@@ -986,6 +991,16 @@
             <type>RunUnixCommand</type>
             <configMapId>load_aux_so_onto</configMapId>
             <name>load_aux_so_onto</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process Naming Convention Ontology</name>
+            <configMapId>parse_so_naming_conv_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>load_aux_so_onto</configMapId>
+            <name>load_so_naming_conv_onto</name>
         </command>
 <!--Postprocessing-->
 <!--Checksum creation-->
