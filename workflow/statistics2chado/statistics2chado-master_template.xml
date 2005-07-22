@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>statistics2chado workflow</name>
+      <configMapId>empty</configMapId>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output repository</name>
+          <configMapId>create_compute_output</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>truncate_stats_tables</name>
+          <configMapId>truncate_stats_tables</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>populate_stats_tables</name>
+          <configMapId>populate_stats_tables</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>update_stats_tables_statistics</name>
+          <configMapId>update_stats_tables_statistics</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>check_logfiles</name>
+          <configMapId>check_logfiles</configMapId>
+        </command>
+     </commandSet>
+</commandSetRoot>
