@@ -1,5 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
 
+   Workflow: statistics2chado 
+
+   Author:   Jay Sundaram sundaram@tigr.org
+ 
+   Date:     2005.07.22
+
+   Purpose:  This workflow is intended to be executed immediately following any
+             bsml2chado workflow which has loaded analyses into the chado
+             Computational Analysis Module.
+
+
+             Note that it is only necessary to run this workflow if the particular 
+             project has a Sybil interface established for the purposes of viewing
+             the comparative data via HTML.
+
+
+   Version:  $Id$
+
+   CVS:      cram/workflow/statistics2chado/statistics2chado-master_template.xml
+
+-->
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
