@@ -54,6 +54,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>grant_select_stats_tables</name>
+          <configMapId>grant_select_stats_tables</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>check_logfiles</name>
           <configMapId>check_logfiles</configMapId>
         </command>
