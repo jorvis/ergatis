@@ -999,7 +999,7 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>load_aux_so_onto</configMapId>
+            <configMapId>load_so_naming_conv_onto</configMapId>
             <name>load_so_naming_conv_onto</name>
         </command>
 <!--Postprocessing-->
