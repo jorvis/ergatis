@@ -108,6 +108,7 @@ my $mylogger = new Workflow::Logger('LOG_FILE'=>$log4perl,
 
 my $logger = Workflow::Logger::get_logger(__PACKAGE__);
 
+
 $logger->info("Processing the following list of log4perl logfiles: '$filelist'");    
 
 
@@ -268,14 +269,25 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
 
     $body .= "Workflow link http://xmen:8080/tigr-scripts/cram/cgi-bin/show_pipeline.cgi?xmltemplate=" . $workflow_id . "\n\n" if (defined($workflow_id));
 
-    $body  .= "The following log4perl logfiles were scanned:\n\n@$list\n\nTotal fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'.\n\nThe unique log messages reported and their number of occurrences are listed below\n\n";
+    my $scanned_file_ctr=0;
+
+    $body  .= "The following log4perl logfiles were scanned:\n\n";
+    foreach my $scanned_file ( @{$list} ){
+
+	$scanned_file_ctr++;
+
+	$body .= "$scanned_file_ctr\t$scanned_file\n";
+
+    }
+
+    $body .= "\n\nTotal fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'.\n\nThe unique log messages reported and their number of occurrences are listed below\n\n";
 
     foreach my $file (sort keys %{$filehash}){
 
 
 	my $begin = "Begin log file ";
 	my $blen = length($begin) + length($file) + 2; 
-	my $bliner = "-"x$blen;
+	my $bliner = "-"x$blen; # need to check on this -jay
 	
 	$begin .= "'$file'";
 	
