@@ -142,6 +142,14 @@ sub write_config_from_params{
 	}
     }
     
+    ## if we haven't got a pipeline_id we need to derive it from the conffile,
+    ##  this should happen when editing an existing config
+    if (! $pipeline_id) {
+        if ( $conffile =~ m|Workflow/.+?/(\d+)_| ) {
+            $pipeline_id = $1;
+        }
+    }
+    
     my $output_token = $newcfg->val("output $component_name", '$;OUTPUT_TOKEN$;') || die "no OUTPUT_TOKEN found";
     my $outputdir = "$repository_root/Workflow/$component_name/${pipeline_id}_$output_token";
     
