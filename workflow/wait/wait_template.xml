@@ -10,10 +10,5 @@
             <configMapId>do_wait</configMapId>
             <name>Wait</name>
         </command>        
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>echo_filename</configMapId>
-            <name>Echo filename</name>
-        </command>
     </commandSet>
 </commandSetRoot>

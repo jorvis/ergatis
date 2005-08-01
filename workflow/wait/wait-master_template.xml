@@ -7,12 +7,12 @@
       <configMapId>empty</configMapId>
 <!--Preprocessing-->
 <!--Processing-->
-	<command>
+	    <command>
           <type>RunUnixCommand</type>
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
-	<command>
+	    <command>
           <type>RunUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
