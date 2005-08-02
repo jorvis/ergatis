@@ -16,28 +16,6 @@
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
-<!--Preprocess permissions-->
-<!--Preprocessing-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create searchable database fasta</name>
-          <configMapId>make_database_fasta</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Index searchable database</name>
-          <configMapId>index_fasta_file</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Set fasta file permissions</name>
-          <configMapId>set_fasta_permissions</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Make sequence fasta files</name>
-          <configMapId>make_database_seq_fasta</configMapId>
-        </command>
 <!--Processing-->
 	<command>
           <type>RunUnixCommand</type>
@@ -59,32 +37,26 @@
           <configMapId>subflow1</configMapId>
        </commandSet>
 <!--Postprocessing-->
+    <command>
+        <type>RunUnixCommand</type>
+        <name>Merge bsml list files</name>
+        <configMapId>merge_bsml_list_files</configMapId>
+    </command>
+    <command>
+        <type>RunUnixCommand</type>
+        <name>Merge btab list files</name>
+        <configMapId>merge_btab_list_files</configMapId>
+    </command>
+    <command>
+        <type>RunUnixCommand</type>
+        <name>Merge raw list files</name>
+        <configMapId>merge_raw_list_files</configMapId>
+    </command>
 <!--Checksum creation-->
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Merge bsml list files</name>
-          <configMapId>merge_bsml_list_files</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums</name>
-          <configMapId>create_checksum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Generate checksums</name>
-          <configMapId>create_checksum</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create file list for checksums.sum</name>
-          <configMapId>create_checksum_sum_file_list</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>Create checksums.sum</name>
-          <configMapId>create_checksum_sum</configMapId>
-       </command>
-<!--Postprocess permissions-->
+    <command>
+       <type>RunUnixCommand</type>
+       <name>Cleanup scratch space</name>
+       <configMapId>cleanup_compute_scratch</configMapId>
+     </command>
      </commandSet>
 </commandSetRoot>
