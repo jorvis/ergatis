@@ -40,6 +40,13 @@ if($dowrite){
 
 my $cfg = new Config::IniFiles(-file => $conffile);
 
+## we have to hide some configurable sections from conf files that have already
+##  been written.  These include all ending in .bld.ini
+my $preexisting = 0;
+if ($conffile =~ /\.bld\.ini$/ ) {
+    $preexisting = 1;
+}
+
 #print all conf options
 
 my $ignoresectlookup = {};
@@ -89,10 +96,13 @@ foreach my $section (@sections){
         
 	    if($ignoresectlookup->{$section}){
 		print "<tr><td>$param</td><td>$value</td></tr>";
-	    }
-	    
-	    else{ 
-		print "<tr><td>$param</td><td><input type=text name='edit_",$section,"::","$param' value='$value' size=100></td></tr>";
+	    } else { 
+            ## don't display editable OUTPUT_TOKEN if this is a pre-existing component build
+            if ($preexisting && $param eq '$;OUTPUT_TOKEN$;') {
+            print "<tr><td>$param</td><td>$value</td></tr>";
+            } else {
+		    print "<tr><td>$param</td><td><input type=text name='edit_",$section,"::","$param' value='$value' size=100></td></tr>";
+            }
 	    }
 	}
     }
