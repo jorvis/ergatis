@@ -39,12 +39,14 @@ use File::Basename;
 use File::Path;
 use Pod::Usage;
 use Workflow::Logger;
+use MLDBM "DB_File";
 
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'bsml_file|b=s', 
 			  'bsml_list|s=s', 
 			  'bsml_dir|d=s',
+			  'asmbl_lookup|a=s',
 			  'output|o=s', 
 			  'scorefield|c=s',
 			  'rankfield|r=s',
@@ -119,7 +121,7 @@ foreach my $file (@files){
     $logger->debug("Parsing entire file $file") if($logger->debug());
     $parser->parse( \$reader, $file );
 
-    my $asmbllookup = build_asmbl_lookup($reader);
+    my $asmbllookup = build_asmbl_lookup($options{'asmbl_lookup'});
 
     foreach my $maln (@{$reader->returnMultipleAlignmentTables()}){
 	my $mtable = $reader->readMultipleAlignmentTable($maln);
@@ -144,6 +146,7 @@ foreach my $file (@files){
 
     foreach my $aln (@{$reader->returnAllSeqPairAlignmentsListR()}){
 	my $spaln = $reader->readSeqPairAlignment($aln);
+	$logger->debug("Alingment between $spaln->{'refseq'} : $asmbllookup->{$spaln->{'refseq'}} and $spaln->{'compseq'} : $asmbllookup->{$spaln->{'compseq'}}") if($logger->is_debug());
 	if($asmbllookup->{$spaln->{'refseq'}} ne $asmbllookup->{$spaln->{'compseq'}}){
 	    my $seqpairruns = $spaln->{'seqPairRuns'};
 	    my @sortedseqpairruns = sort { $a->{$options{'rankfield'}} <=> $b->{$options{'rankfield'}}  } @$seqpairruns;
@@ -178,10 +181,12 @@ sub check_parameters{
 
 sub build_asmbl_lookup{
     my $reader = shift;
-    my $lookup = {};
-    my $seqs = $reader->returnAllSequences();
-    foreach my $seq (@$seqs){
-	$lookup->{$seq->returnattr('id')} = $seq->returnBsmlAttr('ASSEMBLY');
-    }
-    return $lookup;
+    my %lookup;
+    $logger->debug("Reading lookup $reader") if($logger->is_debug());
+    eval {
+	tie %lookup, 'MLDBM', $reader;
+    };
+    $logger->debug("Found ".scalar(keys %lookup)." keys") if($logger->is_debug());
+    print STDERR "Found ".scalar(keys %lookup)." keys\n";
+    return \%lookup;
 }
