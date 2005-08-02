@@ -23,6 +23,11 @@
           <name>make_pe_position_xml</name>
           <configMapId>make_pe_position_xml</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>make_asmbl_lookup</name>
+          <configMapId>make_asmbl_lookup</configMapId>
+        </command>
  <!--Processing-->
        <command>
           <type>RunUnixCommand</type>
