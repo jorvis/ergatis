@@ -100,6 +100,7 @@ use BSML::BsmlParserTwig;
 use BSML::BsmlRepository;
 use Pod::Usage;
 use Workflow::Logger;
+use Papyrus::TempIdCreator;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -132,6 +133,9 @@ my $next_id = 1;
 
 ## we want a new doc
 my $doc = new BSML::BsmlBuilder();
+
+## we're going to generate ids
+my $idcreator = new Papyrus::TempIdCreator();
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -173,7 +177,7 @@ while (<$ifh>) {
         ## if this gene number is different than the last one we need to 
         #   add it and start a new feature group
         if ($cols[0] ne $last_gene_num) {
-            ## if last_gene_num > 0 we're must not be doing the first one. add 
+            ## if last_gene_num > 0 we must not be doing the first one. add 
             ##  the interval loc of the last gene before we move on.
             if ($last_gene_num > 0) {
                 if ($gene_dir eq '+') {
@@ -184,8 +188,11 @@ while (<$ifh>) {
                     $logger->logdie("unrecognized gene direction ($gene_dir)");
                 }
             }
-            
-            $gene = $doc->createAndAddFeature($ft, &fake_id('gene'), '', 'gene');
+
+            $gene = $doc->createAndAddFeature($ft, 
+                                              $idcreator->new_id( db => $options{project}, so_type => 'gene', prefix => $options{command_id} ),
+                                              '', 'gene'
+                                             );
             $fg = $doc->createAndAddFeatureGroup( $seq, '', $gene->returnattr('id') );
             $fg->addBsmlFeatureGroupMember( $gene->returnattr('id'), $gene->returnattr('class') );
             $gene->addBsmlLink('analysis', '#glimmerHMM_analysis');
@@ -200,7 +207,10 @@ while (<$ifh>) {
         $gene_stop = $cols[5] - 1;
         
         ## add this exon feature
-        my $exon = $doc->createAndAddFeature($ft, &fake_id('exon'), '', 'exon');
+        my $exon = $doc->createAndAddFeature($ft, 
+                                             $idcreator->new_id( db => $options{project}, so_type => 'exon', prefix => $options{command_id} ),
+                                             '', 'exon'
+                                            );
            $exon->addBsmlLink('analysis', '#glimmerHMM_analysis');
         $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
         
@@ -258,12 +268,5 @@ sub check_parameters {
     $options{'command_id'} = '' unless ($options{'command_id'});
     
     return 1;
-}
-
-sub fake_id {
-    my $so_type = shift;
-
-    ## this will be used by the id replacement software to find ids to replace.
-    return "ir.$options{project}.$so_type.$options{'command_id'}" . $next_id++;
 }
 
