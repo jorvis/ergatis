@@ -74,11 +74,12 @@ according to the following convention:
     
 Where N is an incrementing integer for that so type.  For example:
 
-    ir.aa1.gene.50.3
+    ir.aa1.gene.38556579.3
     
 The prefix is optional, and is used to group the temporary IDs and help make them unique
-across documents.  All of the temp IDs within the same document will usually have the
-same prefix.
+across documents.  In practice the prefix is usually the Workflow command id for the
+command generating the new features, such as a foo2bsml.pl script.  Thus, all of the temp
+IDs within the same document will usually have the same prefix.
 
 The so_type passed to this method will first be checked and changed to the currently
 implemented so_type, if necessary.
