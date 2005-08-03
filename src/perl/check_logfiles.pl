@@ -1,12 +1,23 @@
 #!/usr/local/bin/perl
-
+#------------------------------------------------------------------------------
+#
+# author:   Jay Sundaram sundaram@tigr.org
+#
+# date:     2005-08-03
+#
+# cvs:      cram/src/perl/check_logfiles.pl
+#
+# $Id$
+#
+#
+#------------------------------------------------------------------------------
 =head1 NAME
 
-verify_logfiles.pl - greps all log4perl logfiles and checks for FATAL, ERROR, WARN
+check_logfiles.pl - greps all log4perl logfiles and checks for FATAL, ERROR, WARN
 
 =head1 SYNOPSIS
 
-USAGE:  verify_logfiles.pl [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username
+USAGE:  check_logfiles.pl [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username
 
 =head1 OPTIONS
 
@@ -94,9 +105,6 @@ my $results = GetOptions (
 &pod2usage({-exitval => 1, -verbose => 1, -output => \*STDOUT}) if ($help);
 
 
-
-&print_usage if(!$username);
-
 $debug_level = 5;
 
 #
@@ -112,16 +120,43 @@ my $logger = Workflow::Logger::get_logger(__PACKAGE__);
 $logger->info("Processing the following list of log4perl logfiles: '$filelist'");    
 
 
+my $emaillist;
 
 #
 # if error is defined then the username better be too
 #
 if (!defined($username)){
-    $logger->logdie("username was not defined");
+    $logger->warn("username was not defined");
 }
 else{
-    $username .= "\@tigr.org";
-    $logger->debug("username set to '$username'") if $logger->is_debug;
+
+    #
+    #  Remove all spaces and then append the @tigr.org suffix if not present
+    #
+    $username =~ s/\s+//g;
+
+
+    my @list = split ( /,/, $username  ) ;
+    
+    foreach my $person ( sort @list ) {
+
+	if ($person =~ /\@/ ){
+	    #
+	    # Found an at symbol
+	    #
+	    $emaillist .= $person . ",";
+	}
+	else{
+	    $emaillist .= $person . "\@tigr.org,";
+	}
+    }
+    
+    #
+    # Remove the final comma
+    #
+    chop $emaillist;
+
+    $logger->debug("email list is set to '$emaillist'") if $logger->is_debug;
 }
 
 #
@@ -332,8 +367,10 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
     $body .= "\n\nPlease review logfile '$log4perl'";
 
 
-    &send_notification($username, $subject, $body);
-    
+    if (defined($username)){
+	&send_notification($emaillist, $subject, $body);
+    }
+
     $logger->fatal("Total fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'. Please review $log4perl");
 }
 
@@ -372,11 +409,11 @@ sub write_report {
 #------------------------------------------------------
 sub send_notification {
 
-    my ($username, $subject, $body) = @_;
+    my ($emaillist, $subject, $body, $username) = @_;
 
     my $mailer = Mail::Mailer->new ('sendmail');
     $mailer->open({
-	             To      => $username,
+	             To      => $emaillist,
 		     Subject => $subject,
 		     From    => $username
 		 }) or $logger->logdie("Could not create and send message");
@@ -492,15 +529,15 @@ sub is_file_readable {
 #------------------------------------------------------
 sub print_usage {
 
-    print STDERR "SAMPLE USAGE:  $0 [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username\n";
-    print STDERR "  -d|--debug_level         = Optional - Coati::Logger log4perl logging level.  Default is 0\n";    
-    print STDERR "  -f|--filelist            = Optional - Comma-separated list of log4perl logfiles to check for FATAL, ERROR, WARN\n";
-    print STDERR "  -h|--help                = Optional - Display pod2usage help screen\n";
-    print STDERR "  -l|--log4perl            = Optional - Log4perl log file (default: /tmp/check_logfiles.pl.log)\n";
-    print STDERR "  -m|--man                 = Optional - Display pod2usage pages for this utility\n";
-    print STDERR "  -w|--repository          = Optional - $;WORKFLOW_REPOSITORY$;\n";
-    print STDERR "  -w|--workflow_id         = Optional - workflow pipeline XML\n";
-    print STDERR "  -U|--username            = Username of person to be notified by email (only if -e=1)\n";
+    print STDERR "SAMPLE USAGE:  $0 [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username\n".
+    "  -d|--debug_level         = Optional - Coati::Logger log4perl logging level.  Default is 0\n".
+    "  -f|--filelist            = Optional - Comma-separated list of log4perl logfiles to check for FATAL, ERROR, WARN\n".
+    "  -h|--help                = Optional - Display pod2usage help screen\n".
+    "  -l|--log4perl            = Optional - Log4perl log file (default: /tmp/check_logfiles.pl.log)\n".
+    "  -m|--man                 = Optional - Display pod2usage pages for this utility\n".
+    "  -w|--repository          = Optional - $;WORKFLOW_REPOSITORY$;\n".
+    "  -w|--workflow_id         = Optional - workflow pipeline XML\n".
+    "  -U|--username            = Username of person to be notified by email (only if -e=1)\n";
     exit 1;
 
 }
