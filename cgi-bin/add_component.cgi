@@ -27,7 +27,7 @@ my $component_name = param('component_name');
 my $output_token = $component_conf->val("output $component_name", '$;OUTPUT_TOKEN$;');
 my $bin_dir = $component_conf->val('init', '$;BIN_DIR$;');
 my $repository_root = $component_conf->val('init', '$;REPOSITORY_ROOT$;');
-my $name_token = "${component_name}_$output_token";
+my $name_token = "$component_name.$output_token";
 
 my $fakexml = <<FAKExml;
 <commandSet type='serial'>
