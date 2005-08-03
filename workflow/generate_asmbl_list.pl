@@ -15,7 +15,7 @@
 # 3) generate_subflow.pl
 #
 #
-#
+# $Id$
 #
 #
 #--------------------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ if (!defined($options{'output'})){
 #
 # Read in the information from asmbl_file OR asmbl_list
 #
-if($options{'asmbl_files'}){
+if(($options{'asmbl_files'}) && (uc ($options{'asmbl_files'}) ne 'NONE')){
     &get_list_from_file($iteratorconf,$options{'asmbl_files'});
 }
 if($options{'asmbl_list'}){
