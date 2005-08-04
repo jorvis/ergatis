@@ -460,7 +460,7 @@
             <configMapId>make_external_reference_list</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunDistributedCommand</type>
             <name>replace_placeholder</name>
             <configMapId>replace_placeholders</configMapId>
         </command>
