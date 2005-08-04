@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta tRNAscan-SE tiling trf wait wu-blastp xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta tRNAscan-SE tiling trf wait wu-blastp xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -250,6 +250,14 @@ initdb  :
 	@install workflow/initdb/initdb-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/initdb/initdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/initdb/initdbconf.ini $(WORKFLOW_DOCS_DIR)  
+
+iprscan	:
+	@echo "Installing iprscan workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/iprscan/iprscan-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/iprscan/iprscan-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/iprscan/iprscan.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/iprscan/iprscan_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/iprscan/iprscanconf.ini $(WORKFLOW_DOCS_DIR)
 
 jaccard  :
 	@echo "Installing jaccard workflows in $(WORKFLOW_DOCS_DIR)"
