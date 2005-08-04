@@ -97,7 +97,14 @@ if (!defined($options{'output'})){
 if(($options{'asmbl_files'}) && (uc ($options{'asmbl_files'}) ne 'NONE')){
     &get_list_from_file($iteratorconf,$options{'asmbl_files'});
 }
-if($options{'asmbl_list'}){
+
+#
+# editor:  sundaram@tigr.org
+# date:    2005-08-04
+# bgzcase: 2025
+# comment: The script should not process asmbl_list == none
+#
+if(($options{'asmbl_list'}) && ( uc ($options{'asmbl_list'} ne 'NONE')){
     &get_list_from_list($iteratorconf,$options{'asmbl_list'});
 }
 
