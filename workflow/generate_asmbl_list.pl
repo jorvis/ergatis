@@ -104,7 +104,7 @@ if(($options{'asmbl_files'}) && (uc ($options{'asmbl_files'}) ne 'NONE')){
 # bgzcase: 2025
 # comment: The script should not process asmbl_list == none
 #
-if(($options{'asmbl_list'}) && ( uc ($options{'asmbl_list'} ne 'NONE')){
+if(($options{'asmbl_list'}) && ( uc ($options{'asmbl_list'}) ne 'NONE')){
     &get_list_from_list($iteratorconf,$options{'asmbl_list'});
 }
 
