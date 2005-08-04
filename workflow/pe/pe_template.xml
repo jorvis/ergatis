@@ -40,10 +40,5 @@
             <configMapId>create_bsml_list</configMapId>
             <name>create_bsml_list</name>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>dtd_validation</configMapId>
-            <name>DTD validation</name>
-        </command>
     </commandSet>
 </commandSetRoot>
