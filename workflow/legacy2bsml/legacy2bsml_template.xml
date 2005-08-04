@@ -26,6 +26,11 @@
         <configMapId>empty</configMapId>
          <command>    
             <type>RunUnixCommand</type>
+            <configMapId>create_output_directory</configMapId>
+            <name>create_output_directory</name>
+         </command>
+         <command>    
+            <type>RunUnixCommand</type>
             <configMapId>legacy2bsml</configMapId>
             <name>legacy2bsml</name>
         </command>
