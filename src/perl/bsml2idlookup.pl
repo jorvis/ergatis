@@ -28,6 +28,7 @@ use XML::Twig;
 
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
+use BSML::BsmlParserSerialSearch;
 use MLDBM "DB_File";
 
 #######
@@ -127,28 +128,23 @@ my %lookup;
 tie %lookup, 'MLDBM', $options{'output'} or $logger->logdie("Can't tie $options{'output'}");
 
 for my $file ( @files ) {
-	my $parser = new BSML::BsmlParserTwig();
-	my $reader = new BSML::BsmlReader();
-	$logger->debug("Parsing entire file $file") if ($logger->debug);
-	$parser->parse( \$reader, $file );
-
-	my $seq_list = $reader->returnAllSequences();
-
-	## iterate through BSML::BsmlSequence objects
-	my $seq;
-	
-	for my $seq_obj (@$seq_list) {
-	    my $seq_id = $seq_obj->returnattr('id') || $seq_obj->returnattr('identifier');
-	    #support for deprecated link of ASSEMBLY attribute
-	    $lookup{$seq_obj->returnattr('id')} = $seq_obj->returnBsmlAttr('ASSEMBLY');
-	    if(defined $seq_obj && defined $seq_obj->returnBsmlFeatureTableListR->[0]){
-		my $features = $seq_obj->returnBsmlFeatureTableListR->[0]->returnBsmlFeatureListR();
-		foreach my $feat (@$features){
-		    $lookup{$feat->returnattr('id')} = $seq_id;
-		}
-	    }
-	}
-    }
+    my $seqParser = new BSML::BsmlParserSerialSearch(
+						     SequenceCallBack =>sub 
+						     {
+							 my $seqRef = shift;
+							 my $seq_id = $seqRef->returnattr('id') || $seqRef->returnattr('identifier');
+							 #support for deprecated link of ASSEMBLY attribute
+							 $lookup{$seqRef->returnattr('id')} = $seqRef->returnBsmlAttr('ASSEMBLY');
+							 if(defined $seqRef && defined $seqRef->returnBsmlFeatureTableListR->[0]){
+							     my $features = $seqRef->returnBsmlFeatureTableListR->[0]->returnBsmlFeatureListR();
+							     foreach my $feat (@$features){
+								 $lookup{$feat->returnattr('id')} = $seq_id;
+							     }
+							 }
+						     });
+    $logger->debug("Parsing file $file") if ($logger->debug);
+    $seqParser->parse( $file );
+}
 
 exit;	    
 

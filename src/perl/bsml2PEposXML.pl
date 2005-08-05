@@ -34,6 +34,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use PEffect::PEffectXML;
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
+use BSML::BsmlParserSerialSearch;
 
 use File::Basename;
 use File::Path;
@@ -111,35 +112,32 @@ else{
 my $pexml =  PEffect::PEffectXML->new();
 
 foreach my $file (@files){
-    my $parser = new BSML::BsmlParserTwig();
-    my $reader = new BSML::BsmlReader();
-    $logger->debug("Parsing entire file $file") if($logger->debug());
-    $parser->parse( \$reader, $file );
-    my $order = 0; 
-    my $seqs = $reader->returnAllSequences();
-    foreach my $seq (@$seqs){
-	if($seq->{'attr'}->{'molecule'} eq "dna"){
-	    my $sorted_genes = get_sorted_gene_position($reader,$seq);
-	    if(scalar(@$sorted_genes) >= $options{'gene_count_cutoff'}){
-		foreach my $gene (@$sorted_genes) {
-		    my $attrref={};
-		    my $feat_name = $gene->{'feat_name'};
-		    $attrref->{'length'} = $gene->{'length'}; 
-		    $attrref->{'orient'} = $gene->{'orient'}; 
-		    $attrref->{'coord'}  = $gene->{'coord'}; 
-		    if($gene->{'length'} >= $options{'gene_length_cutoff'}){
-			$pexml->addFeature($feat_name, $attrref, $seq->{'attr'}->{'id'}, $order);
-		    }
-		    else{
-			$logger->warn("$feat_name length $gene->{'length'} is less than $options{'gene_length_cutoff'}!!! skipping...");
-		    }	
-		    $order++;
-		}
-	    } else {
-		$logger->warn("$file ".scalar(@$sorted_genes)." has less than $options{'gene_count_cutoff'} genes!!! skipping...");
-	    }
-	}
-    }
+    my $seqParser = new BSML::BsmlParserSerialSearch(
+						     SequenceCallBack =>sub 
+						     {
+							 my $seqRef = shift; 
+							 my $order = 0; 
+							 if($seqRef->returnattr('molecule') eq "dna"){
+							     my $sorted_genes = get_sorted_gene_position($seqRef);
+							     if(scalar(@$sorted_genes) >= $options{'gene_count_cutoff'}){
+								 foreach my $gene (@$sorted_genes) {
+								     my $attrref={};
+								     my $feat_name = $gene->{'feat_name'};
+								     $attrref->{'length'} = $gene->{'length'}; 
+								     $attrref->{'orient'} = $gene->{'orient'}; 
+								     $attrref->{'coord'}  = $gene->{'coord'}; 
+								     if($gene->{'length'} >= $options{'gene_length_cutoff'}){
+									 $pexml->addFeature($feat_name, $attrref, $seqRef->returnattr('id'), $order);
+								     }
+								     else{
+									 $logger->warn("$feat_name length $gene->{'length'} is less than $options{'gene_length_cutoff'}!!! skipping...");
+								     }	
+								     $order++;
+								 }
+							     }
+							 }
+						     });
+    $seqParser->parse($file);
 }
 
 my($oref);
@@ -150,8 +148,8 @@ close FILE;
 
 sub get_sorted_gene_position {
 
-    my $reader   = shift;
     my $seq = shift;
+    my $reader = new BSML::BsmlReader();
     my $feats = $reader->readFeatures($seq);
 
     $logger->debug("Reading sequence $seq->{'attr'}->{'id'}") if($logger->is_debug());
