@@ -213,6 +213,7 @@ use Workflow::Logger;
 
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
+use BSML::BsmlParserSerialSearch;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -323,11 +324,6 @@ my %ids;
 my $mfh;
 my $title;
 for my $file ( @files ) {
-	my $parser = new BSML::BsmlParserTwig();
-	my $reader = new BSML::BsmlReader();
-	$logger->debug("Parsing entire file $file") if ($logger->debug);
-	$parser->parse( \$reader, $file );
-
     my $sfh;
     
     if ($options{format} eq "multi") {
@@ -339,43 +335,63 @@ for my $file ( @files ) {
         }
     }
     
-    my $seq_list = $reader->returnAllSequences();
-    
-    ## iterate through BSML::BsmlSequence objects
-    my $seq;
-    for my $seq_obj (@$seq_list) {
-        my $seq_id = $seq_obj->returnattr('id') || $seq_obj->returnattr('identifier');
-        $title = $seq_obj->returnattr('title') || '';
-        
-        ## make sure an identifier was found
-        if (! $seq_id) {
-            $logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
-            next;
-        }
-        
-        ## if the user passed a class_filter, skip this sequence if it isn't the right class.
-        if ($options{parse_element} eq 'sequence') {
-            if ($options{class_filter} && $options{class_filter} ne $seq_obj->returnattr('class')) {
-                $logger->debug("Skipping $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
-                next;
-            }
-        }
-        
-        ## check and make sure we have a sequence, else log error and skip it
-        ##  (whole sequence is returned with -1 passed as start)
-        $seq = $reader->subSequence($seq_obj,-1,0,0);
-        $seq =~ s/\s//g;
-        
-        if (length $seq < 1) {
-            $logger->error("sequence $seq_id has no length.  cowardly refusing to export anything.") if ($logger->is_error);
-            next;
-        }
-        
-        if ($options{parse_element} eq 'sequence') {
-            ## multi or single format?
-            write_sequence($seq_id, \$seq);
+    if ($options{parse_element} eq 'sequence') {
+	my $seqParser = new BSML::BsmlParserSerialSearch( ReadFeatureTables => 0,
+							  SequenceCallBack =>sub 
+							  {
+							      my $seqRef = shift;
+							      my $seq_id = $seqRef->returnattr('id') || $seqRef->returnattr('identifier');
+							      $title = $seqRef->returnattr('title') || '';
+							      
+							      ## make sure an identifier was found
+							      if (! $seq_id) {
+								  $logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
+								  next;
+							      }
+							      
+							      if ($options{class_filter} && $options{class_filter} ne $seqRef->returnattr('class')) {
+								  $logger->debug("Skipping $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
+								  next;
+							      }
+							      
+							      ## check and make sure we have a sequence, else log error and skip it
+							      ##  (whole sequence is returned with -1 passed as start)
+							      my $reader = new BSML::BsmlReader();
+							      my $seq = $reader->subSequence($seqRef,-1,0,0);
+							      $seq =~ s/\s//g;
+								  
+							      my $id = $seqRef->returnattr( 'id' );
+							      my $seqdat = $seqRef->returnSeqData();
+							      if (length $seq < 1) {
+								  $logger->error("sequence $seq_id has no length.  cowardly refusing to export anything.") if ($logger->is_error);
+								  next;
+							      }
+							      
+							      write_sequence($seq_id, \$seq);
+							  }); 
+	$logger->debug("Parsing Sequence elements in file $file") if ($logger->debug);
+	$seqParser->parse($file);
+    }
+    elsif ($options{parse_element} eq 'feature') {
+	my $parser = new BSML::BsmlParserTwig();
+	my $reader = new BSML::BsmlReader();
+	$logger->debug("Parsing entire file $file") if ($logger->debug);
+	$parser->parse( \$reader, $file );
+	my $seq_list = $reader->returnAllSequences();
 
-        } elsif ($options{parse_element} eq 'feature') {
+
+	## iterate through BSML::BsmlSequence objects
+	my $seq;
+	for my $seq_obj (@$seq_list) {
+	    my $seq_id = $seq_obj->returnattr('id') || $seq_obj->returnattr('identifier');
+	    $title = $seq_obj->returnattr('title') || '';
+        
+	    ## make sure an identifier was found
+	    if (! $seq_id) {
+		$logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
+		next;
+	    }
+	    
             ## if we are parsing features we need to get all the feature elements within this Sequence.
             my $feat_list = $reader->readFeatures($seq_obj);
             
