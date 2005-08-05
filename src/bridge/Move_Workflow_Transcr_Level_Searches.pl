@@ -173,9 +173,9 @@ MAIN:{
 					unlink("$target_file.gz") || warn "Impossible to delete the pre-existing file $target_file.gz\n";
 				}
 				system("gzip $target_file") && warn "Errors compressing the file $target_file\n";
-				chmod(0444, "$target_file.gz") || warn "Impossible to change permissions to the file $target_file.gz\n";
+				chmod(0666, "$target_file.gz") || warn "Impossible to change permissions to the file $target_file.gz\n";
 			} else {
-				chmod(0444, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
+				chmod(0666, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
 			}
 			print STDERR "OK\n";
 		}		

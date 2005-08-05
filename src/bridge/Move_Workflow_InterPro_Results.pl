@@ -145,7 +145,7 @@ MAIN:{
 					next;
 				}
 		
-				chmod(0444, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
+				chmod(0666, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
 			}
 		}
 	}
