@@ -68,9 +68,14 @@ my $iteratorconf = {
 };
 
 if($options{'file'}){
-    push( @{$iteratorconf->{$keyname}}, $options{'file'} );
-    my $name = &get_name_from_file($options{'file'});
-    push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $name );
+    if(-e $options{'file'} && -f $options{'file'}){
+	push( @{$iteratorconf->{$keyname}}, $options{'file'} );
+	my $name = &get_name_from_file($options{'file'});
+	push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $name );
+    }
+    else{
+	$logger->logdie("Can't open file $options{'file'}");
+    }
 }
 if($options{'filelist'}){
     &get_list_from_file($iteratorconf,$options{'filelist'});
@@ -115,20 +120,26 @@ sub get_list_from_file{
     my @files = split(',',$f);
     foreach my $file (@files){
 	if( $file){
-	    open( FH, $file ) or die "Could not open $file";
-	    while( my $line = <FH> ){
-		chomp($line);
-		push @lines,  split(',',$line) if($line =~ /\S+/);
-	    }
-	    fisher_yates_shuffle(\@lines);
-	    foreach my $line (@lines){
-		if($line){
-		    my $filename = "$line";
-		    my $name = &get_name_from_file($filename);
-		    &add_entry_to_conf($iteratorconf,$filename,$name);
+	    if(-e $file && -f $file){
+		open( FH, $file ) or $logger->logdie("Could not open $file");
+		while( my $line = <FH> ){
+		    chomp($line);
+		    push @lines,  split(',',$line) if($line =~ /\S+/);
 		}
+		fisher_yates_shuffle(\@lines);
+		foreach my $line (@lines){
+		    if($line){
+			my $filename = "$line";
+			my $name = &get_name_from_file($filename);
+			&add_entry_to_conf($iteratorconf,$filename,$name);
+		    }
+		}
+		close( FH );
 	    }
-	    close( FH );
+	    else{
+		$logger->logdie("Can't open list file $file");
+	    }
+	       
 	}
     }
 }
@@ -138,13 +149,18 @@ sub get_list_from_directory{
 
     my @directories = split(',',$dir);
     foreach my $directory (@directories){
-	opendir DIR, "$directory" or $logger->logdie("Can't read directory $directory");
-	my @files = grep /\.$options{'extension'}$/, readdir DIR;
-	fisher_yates_shuffle( \@files );    # permutes @array in place
-	foreach my $file (@files ){
-	    my $filename = "$directory/$file";
-	    my $name = &get_name_from_file($filename);
-	    &add_entry_to_conf($iteratorconf,$filename,$name);
+	if(-e $directory && -d $directory){
+	    opendir DIR, "$directory" or $logger->logdie("Can't read directory $directory");
+	    my @files = grep /\.$options{'extension'}$/, readdir DIR;
+	    fisher_yates_shuffle( \@files );    # permutes @array in place
+	    foreach my $file (@files ){
+		my $filename = "$directory/$file";
+		my $name = &get_name_from_file($filename);
+		&add_entry_to_conf($iteratorconf,$filename,$name);
+	    }
+	}
+	else{
+	    $logger->logdie("Can't open directory $directory");
 	}
     }
 }
