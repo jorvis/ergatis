@@ -372,51 +372,50 @@ for my $file ( @files ) {
 	$logger->debug("Parsing Sequence elements in file $file") if ($logger->debug);
 	$seqParser->parse($file);
     }
-    elsif ($options{parse_element} eq 'feature') {
-	my $parser = new BSML::BsmlParserTwig();
-	my $reader = new BSML::BsmlReader();
-	$logger->debug("Parsing entire file $file") if ($logger->debug);
-	$parser->parse( \$reader, $file );
-	my $seq_list = $reader->returnAllSequences();
-
-
-	## iterate through BSML::BsmlSequence objects
-	my $seq;
-	for my $seq_obj (@$seq_list) {
-	    my $seq_id = $seq_obj->returnattr('id') || $seq_obj->returnattr('identifier');
-	    $title = $seq_obj->returnattr('title') || '';
-        
-	    ## make sure an identifier was found
-	    if (! $seq_id) {
-		$logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
-		next;
-	    }
+    elsif ($options{parse_element} eq 'feature') { 
+	my $seqParser = new BSML::BsmlParserSerialSearch(
+							 SequenceCallBack =>sub 
+							 {
+							     my $seqRef = shift; 
+							     my $order = 0; 
+							     my $seq_id = $seqRef->returnattr('id') || $seqRef->returnattr('identifier');
+							     $title = $seqRef->returnattr('title') || '';
+							     
+							     ## make sure an identifier was found
+							     if (! $seq_id) {
+								 $logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
+								 next;
+							     }
 	    
-            ## if we are parsing features we need to get all the feature elements within this Sequence.
-            my $feat_list = $reader->readFeatures($seq_obj);
+							     ## if we are parsing features we need to get all the feature elements within this Sequence.
+							     my $reader = new BSML::BsmlReader();
+							     my $feat_list = $reader->readFeatures($seqRef);
             
-            ## read each feature.
-            foreach my $feat (@$feat_list) {
-                my $feat_id = $feat->{id} || die "didn't get an id";
-            
-                ## are we checking for a specific class?
-                if ($options{class_filter} && $options{class_filter} ne $feat->{class}) {
-                    $logger->debug("Skipping $feat_id of $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
-                    next;
-                }
+							     ## read each feature.
+							     foreach my $feat (@$feat_list) {
+								 my $feat_id = $feat->{id} || die "didn't get an id";
+								 
+								 ## are we checking for a specific class?
+								 if ($options{class_filter} && $options{class_filter} ne $feat->{class}) {
+								     $logger->debug("Skipping $feat_id of $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
+								     next;
+								 }
 
-                my $positions = $feat->{locations}->[0];
-                
-                $logger->debug("attempting to extract $positions->{startpos}, $positions->{endpos}, $positions->{complement}") if ($logger->is_debug);
-                my $feat_seq = $reader->extractSequence( \$seq, $positions->{startpos}, $positions->{endpos}, $positions->{complement} );
-            
-                ## now write the sequence
-                write_sequence($feat_id, \$feat_seq);
-            }
-        }
+								 my $positions = $feat->{locations}->[0];
+								 
+								 $logger->debug("attempting to extract $positions->{startpos}, $positions->{endpos}, $positions->{complement}") if ($logger->is_debug);
+								 my $seq;
+								 my $feat_seq = $reader->extractSequence( \$seq, $positions->{startpos}, $positions->{endpos}, $positions->{complement} );
+								 
+								 ## now write the sequence
+								 write_sequence($feat_id, \$feat_seq);
+							     }
+							 });
+	$logger->debug("Parsing Sequence and Feature elements in file $file") if ($logger->debug);
+	$seqParser->parse($file);
+						     
     }
 }
-
 #######
 ## fin   
 exit;
