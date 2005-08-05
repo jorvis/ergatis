@@ -78,6 +78,8 @@ sub _init {
     $self->{_SUBFLOW_NAME_CONF_KEY} = '$;SUBFLOW_NAME$;'; 
     $self->{_CONFIGITERATOR_KEY} = '$;CONFIG_LIST$;';      
     $self->{_INSTANCEITERATOR_KEY} = '$;INSTANCE_LIST$;';      
+    $self->{_STDOUT_KEY} = '$;STDOUT_LIST$;';      
+    $self->{_STDERR_KEY} = '$;STDERR_LIST$;';      
     $self->{_TEMPLATE_KEY} = '$;TEMPLATE_FILE$;';
     $self->{_NODISTRIB} = 0;
 
@@ -148,6 +150,8 @@ sub generate_iterator_instance{
     }
     my @subflowinis;
     my @subflowinstances;
+    my @stderrfiles;
+    my @stdoutfiles;
     my $subflowconfigobj =  new Config::IniFiles(-import =>  $self->{_INICONFIGOBJ});
     foreach my $subflowconfighash (@subflowconfigs){
     
@@ -177,6 +181,8 @@ sub generate_iterator_instance{
         push @subflowinis,$subflowinifile;
         #note subflow instances are created by the workflow engine at runtime
         push @subflowinstances,$subflowinstancefile;
+	push @stderrfiles,"$subflowinstancefile.stderr";
+	push @stdoutfiles,"$subflowinstancefile.stdout";
     }
 
     my $instancebase = basename($instancefile);
@@ -196,6 +202,10 @@ sub generate_iterator_instance{
 
     $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_CONFIGITERATOR_KEY},join(', ',@subflowinis));
     $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_INSTANCEITERATOR_KEY},join(', ',@subflowinstances));
+    
+    $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_STDERR_KEY},join(', ',@stderrfiles));
+    $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_STDOUT_KEY},join(', ',@stdoutfiles));
+
     $self->{_INICONFIGOBJ}->newval("workflowdocs $self->{_NAME}",$self->{_TEMPLATE_KEY},$xmltemplatefile);
 
     $self->{_INICONFIGOBJ}->WriteConfig($iteratorconffile);
