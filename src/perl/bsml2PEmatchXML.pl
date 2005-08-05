@@ -115,13 +115,13 @@ else{
 
 my $pexml =  PEffect::PEffectXML->new();
 
+my $asmbllookup = build_asmbl_lookup($options{'asmbl_lookup'});
+
 foreach my $file (@files){
     my $parser = new BSML::BsmlParserTwig();
     my $reader = new BSML::BsmlReader();
     $logger->debug("Parsing entire file $file") if($logger->debug());
     $parser->parse( \$reader, $file );
-
-    my $asmbllookup = build_asmbl_lookup($options{'asmbl_lookup'});
 
     foreach my $maln (@{$reader->returnMultipleAlignmentTables()}){
 	my $mtable = $reader->readMultipleAlignmentTable($maln);
@@ -183,10 +183,7 @@ sub build_asmbl_lookup{
     my $reader = shift;
     my %lookup;
     $logger->debug("Reading lookup $reader") if($logger->is_debug());
-    eval {
-	tie %lookup, 'MLDBM', $reader;
-    };
+    tie %lookup, 'MLDBM', $reader or $logger->logdie("Can't tie $reader");
     $logger->debug("Found ".scalar(keys %lookup)." keys") if($logger->is_debug());
-    print STDERR "Found ".scalar(keys %lookup)." keys\n";
     return \%lookup;
 }

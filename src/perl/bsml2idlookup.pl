@@ -124,9 +124,7 @@ my $title;
 
 my %lookup;
 	
-eval {
-    tie %lookup, 'MLDBM', $options{'output'};
-};
+tie %lookup, 'MLDBM', $options{'output'} or $logger->logdie("Can't tie $options{'output'}");
 
 for my $file ( @files ) {
 	my $parser = new BSML::BsmlParserTwig();
