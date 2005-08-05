@@ -221,7 +221,7 @@ foreach my $workflow (@workflows){
 	my $runoutfile = "$instancexmlfile.run.out";
 	$logger->get_logger()->debug("Running instance file $instancexmlfile") if($logger->get_logger()->is_debug());
 	print "Running instance file $instancexmlfile\n";
-	print "To launch viewer execute... $BinDir/run_wfmonitor.sh -i $instancexmlfile\n";
+	print "To launch viewer execute... WorkflowMonitor $instancexmlfile\n";
 	my $runstatus = $wfexec->RunWorkflow($instancexmlfile,$runlogfile,$runoutfile);
 	if($runstatus == 0){
 	    $logger->get_logger()->debug("Execution complete of $instancexmlfile with status $runstatus") if($logger->get_logger()->is_debug());
@@ -277,9 +277,14 @@ sub import_includes{
 	    $logger->get_logger()->debug("Found includefile $includefile in section [ $member ] with key $param") if($logger->get_logger()->is_debug());
 	    $includefile =~ s/\$;WORKFLOWDOCS_DIR\$;/$WorkflowDocsDir/g;
 	    $logger->get_logger()->debug("Set includefile=$includefile using \$;WORKFLOWDOCS_DIR\$;=$WorkflowDocsDir") if($logger->get_logger()->is_debug());
-	    my $newcfg = new Config::IniFiles( -file => $includefile, 
-					       -import => $currcfg);
-	    $currcfg = $newcfg;
+	    if(-e $includefile){
+		my $newcfg = new Config::IniFiles( -file => $includefile, 
+						   -import => $currcfg);
+		$currcfg = $newcfg;
+	    }
+	    else{
+		$logger->get_logger()->logdie("Can't find included config file $includefile");
+	    }
 	}
     }
     return $currcfg;
