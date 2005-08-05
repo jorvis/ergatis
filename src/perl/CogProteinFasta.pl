@@ -57,7 +57,7 @@ else
 
 foreach my $bsmlFile (<$bsmlModelDir/*.bsml>)
 {
-    print STDERR "Parsing $bsmlFile\n";
+    print STDOUT "Parsing $bsmlFile\n";
     $seqParser->parse( $bsmlFile );
 }
 
