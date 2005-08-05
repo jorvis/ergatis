@@ -28,6 +28,11 @@
           <name>generate_asmbl_input</name>
           <configMapId>generate_asmbl_input</configMapId>
         </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>make_asmbl_lookup</name>
+          <configMapId>make_asmbl_lookup</configMapId>
+        </command>
         <command>
           <type>RunDistributedCommand</type>
           <name>generate_clusters</name>

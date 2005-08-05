@@ -123,12 +123,10 @@ foreach my $query_name (keys %$seq_pair){
 		if( !( $doc->returnBsmlSequenceByIDR($query_name) )){
 		    $doc->createAndAddSequence($query_name,$query_name,$aalookup->{$query_name}->{'length'}, 'aa', $class );
 		    my $seq = $doc->returnBsmlSequenceByIDR($query_name);
-		    $seq->addBsmlAttr('ASSEMBLY',$aalookup->{$query_name}->{'asmbl'});
 		}
 		if( !( $doc->returnBsmlSequenceByIDR($dbmatch_accession) )){
 		    $doc->createAndAddSequence($dbmatch_accession,$dbmatch_accession,$aalookup->{$dbmatch_accession}->{'length'}, 'aa', $class );
 		    my $seq = $doc->returnBsmlSequenceByIDR($dbmatch_accession);
-		    $seq->addBsmlAttr('ASSEMBLY',$aalookup->{$dbmatch_accession}->{'asmbl'});
 		}
 		my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'  => $query_name,
 								   'compseq' => $dbmatch_accession 
@@ -176,8 +174,7 @@ sub get_aa_lookup{
 							      my $type = $seqRef->returnattr( 'molecule' );
 							      my $length = $seqRef->returnattr( 'length' );
 							      if($type eq "aa"){
-								  $logger->debug("Storing sequence $id in lookup with ".$seqRef->returnBsmlAttr('ASSEMBLY'))  if($logger->is_debug());
-								  $lookup->{$id}->{'asmbl'} = $seqRef->returnBsmlAttr('ASSEMBLY');
+								  $logger->debug("Storing sequence $id in lookup with length $length")  if($logger->is_debug());
 								  $lookup->{$id}->{'length'} = $length;
 							      }
 							  }); 

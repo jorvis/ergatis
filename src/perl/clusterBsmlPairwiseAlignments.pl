@@ -72,11 +72,12 @@ use Pod::Usage;
 use BSML::BsmlParserSerialSearch;
 use Workflow::Logger;
 use Data::Dumper;
+use MLDBM "DB_File";
 
 my %options = ();
 my $results = GetOptions (\%options,
 			  'bsmlSearchList|m=s',
-			  'bsmlModelList|b=s',
+			  'asmbl_lookup|a=s',
 			  'linkscore|k=s',
 			  'percent_identity|p=s',
 			  'p_value|u=s',
@@ -101,7 +102,7 @@ if( $options{'help'} ){
 #MAIN HERE
 
 
-my $valid_asmbls = &retrieve_asmbls(&get_list_from_file($options{'bsmlModelList'}));
+my $valid_asmbls = build_asmbl_lookup($options{'asmbl_lookup'});
 
 my $pairs = &retrieve_protein_pairs(
 				    bsmldoc_list     => &get_list_from_file($options{'bsmlSearchList'}),
@@ -129,63 +130,6 @@ $logger->info("Please verify log4perl log file: $options{'log'}");
 #                           END OF MAIN  -- SUBROUTINES FOLLOW
 #
 #---------------------------------------------------------------------------------------------------------------------
-
-sub retrieve_asmbls{
-    my ($bsmldoclist) = @_;
-
-    my $valid_asmbls = {};
-
-    foreach my $bsmldoc (@$bsmldoclist){
-
-
-	$logger->logdie("bsmldoc was not defined") if (!defined($bsmldoc));
-
-	$logger->debug("Processing bsml document: $bsmldoc") if $logger->is_debug;
-
-	#----------------------------------------------------------
-	# New serial parsing manner in which analysis component
-	# and seq-pair-alignment components will be serially
-	# parsed via callback methods.
-	#
-	#-----------------------------------------------------------
-
-	print ("Parsing Sequence component for bsml document: $bsmldoc\nAnd extracting assembly-protein pairs\n");
-	my $bsml_parser = new BSML::BsmlParserSerialSearch(ReadFeatureTables => 0,
-							   SequenceCallBack  => sub {
-							       my ($sequence_ref) = @_;
-
-							       my $assembly_id = $sequence_ref->{'BsmlAttr'}->{'ASSEMBLY'} if ((exists $sequence_ref->{'BsmlAttr'}->{'ASSEMBLY'}) and (defined($sequence_ref->{'BsmlAttr'}->{'ASSEMBLY'})));
-							       my $protein_id = $sequence_ref->{'attr'}->{'id'} if ((exists $sequence_ref->{'attr'}->{'id'}) and (defined($sequence_ref->{'attr'}->{'id'})));
-							       $logger->debug(Dumper $sequence_ref->{'BsmlAttr'}) if $logger->is_debug;
-
-
-							       $logger->logdie("assembly_id was not defined") if (!defined($assembly_id));
-							       $logger->logdie("protein_id was not defined") if (!defined($protein_id));
-
-
-									       
-							       #
-							       # Store only unique protein-assembly pairs
-							       #
-							       if ((!exists $valid_asmbls->{$protein_id})){
-								   $valid_asmbls->{$protein_id} = $assembly_id;
-							       }
-							       #
-							       # Inform the user that something fishy about their BSML search encoding document...
-							       #
-							       else{
-								   $logger->warn("FYI protein:$protein_id was previously encountered with assembly $valid_asmbls->{$protein_id}...") if $logger->is_warn();
-							       }
-							   }
-							   );
-	
-	$logger->logdie("bsml_parser was not defined") if (!defined($bsml_parser));
-	$bsml_parser->parse($bsmldoc);
-    }
-
-    return $valid_asmbls;
-}
-
 
 #------------------------------------------------------------
 # produce_cluster_output()
@@ -360,6 +304,16 @@ sub get_list_from_file{
     }
     return \@lines;
 }
+
+sub build_asmbl_lookup{
+    my $reader = shift;
+    my %lookup;
+    $logger->debug("Reading lookup $reader") if($logger->is_debug());
+    tie %lookup, 'MLDBM', $reader or $logger->logdie("Can't tie $reader");
+    $logger->debug("Found ".scalar(keys %lookup)." keys") if($logger->is_debug());
+    return \%lookup;
+}
+
 
 sub check_parameters{
     my ($options) = @_;

@@ -227,20 +227,12 @@ sub parse_blast_btabs {
             my $match_asmbl_id = $gene_asmbl_id->{$btab[5]};
 
 		    
-		    if ($match_asmbl_id ne 'N/A'){
-			$doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$match_asmbl_id);
-		    }
-
-
 		}
 		if($queryid){
 		    my $seq = $doc->returnBsmlSequenceByIDR($queryid);
 		    if($seq) {
 			my $query_asmbl_id = $gene_asmbl_id->{$queryid};
 
-			if ($query_asmbl_id ne 'N/A'){
-			    $doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>$query_asmbl_id);
-			}
 		    }
 		}
 	    }
@@ -303,18 +295,12 @@ sub parse_ber_btabs {
 	    $seq = $doc->returnBsmlSequenceByIDR($match_name);
 	    my $match_asmbl_id = $gene_asmbl_id->{$match_name};
 
-	    if ($match_asmbl_id ne 'N/A'){
-		$doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$match_asmbl_id");
-	    }
 	}
 	close BTAB;
 	next if(!defined($query_cds_id));
 	$seq = $doc->returnBsmlSequenceByIDR($query_cds_id);
 	if($seq) {
 	    my $query_asmbl_id = $gene_asmbl_id->{$query_protein_id};
-	    if ($query_asmbl_id ne 'N/A'){
-		$doc->createAndAddBsmlAttributeN('elem'=> $seq, 'key'=>'ASSEMBLY', 'value'=>"$query_asmbl_id");
-	    }
 	}
     }
 }
