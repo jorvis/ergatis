@@ -98,6 +98,7 @@ sub parseXMLFile {
     print "    <div id='pipelinecommands'>" .
                    "[<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>] " .
                    "[<a href='./run_wf.cgi?instancexml=$file'>rerun</a>] " .
+                   "[<a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'>edit</a>] " .
                    "[<a href='./kill_wf.cgi?instancexml=$file'>kill</a>] " .
                    "[<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>] " .
                    "[<a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'>SGE status</a>] " .
