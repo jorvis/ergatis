@@ -62,8 +62,53 @@ my $currcfg = &import_includes($cfg,$sharedconf);
 
 print header();
 
-print "<html><body>";
-print "<form name='myform'><input type=hidden name='dowrite' value=1><input type=hidden name='conffile' value='$conffile'>";
+print <<PageHeadeR;
+<html>
+
+<head>
+
+<style type="text/css">
+    body {
+	    font-family: verdana,sans-serif;
+	    font-size: 10pt;
+	    line-height: 1.5em;
+    }
+    
+     td, input {
+	    font-family: verdana,sans-serif;
+	    font-size: 10pt;
+     }
+     
+     input {
+        border: 1px solid grey;
+        padding-left: 5px;
+     }
+     
+     h3 {
+        color: rgb(100, 100, 100);
+        text-decoration: underline;
+        margin-bottom: 5px;
+        font-size: 11pt;
+     }
+     
+     table {
+        margin-left: 5px;
+     }
+     
+     tr.param_comment td {
+        font-size: 8pt;
+        color: rgb(100, 150, 100);
+        padding-top: 3px;
+
+     }
+</style>
+
+</head>
+
+<body>
+
+<form name='myform'><input type=hidden name='dowrite' value=1><input type=hidden name='conffile' value='$conffile'>
+PageHeadeR
 
 #print "we have access to this: <pre> " . Dumper(\$currcfg) . "</pre>";
 
@@ -80,14 +125,23 @@ my @sections = $currcfg->Sections();
 foreach my $section (@sections){
     if(($limitsect && $limitsectlookup->{$section}) || !$limitsect){
 	if($ignoresectlookup->{$section}){
-	    print "<h3>$section</h3><table>";
+	    print "<h3>$section</h3>\n<table>\n";
 	}
 	else{
-	    print "<h3>$section</h3><table>";
+	    print "<h3>$section</h3>\n<table>\n";
 	}
 	my @parameters = $currcfg->Parameters ($section);
 	foreach my $param (@parameters){
 	    my $value = $currcfg->val($section,$param);
+        my @param_comments = $currcfg->GetParameterComment( $section, $param );
+        
+        ## print out the comments here
+        for my $comment ( @param_comments ) {
+            ## only do the comment if it starts with ;;  (double semi-colon)
+            if ($comment =~ /^\s*\;\;\s*(\S.*)/ ) {
+                print "\t<tr class='param_comment'><td>&nbsp;</td><td>$1</td>\n";
+            }
+        }
         
         ## trim whitespace off the ends, but leave internal (keeps opts like "-f 10")
         if ($value =~ /^\s*(.+?)\s*$/) {
@@ -95,24 +149,24 @@ foreach my $section (@sections){
         }
         
 	    if($ignoresectlookup->{$section}){
-		print "<tr><td>$param</td><td>$value</td></tr>";
+		print "\t<tr><td>$param</td><td>$value</td></tr>\n";
 	    } else { 
             ## don't display editable OUTPUT_TOKEN if this is a pre-existing component build
             if ($preexisting && $param eq '$;OUTPUT_TOKEN$;') {
-            print "<tr><td>$param</td><td>$value</td></tr>";
+            print "\t<tr><td>$param</td><td>$value</td></tr>\n";
             } else {
-		    print "<tr><td>$param</td><td><input type=text name='edit_",$section,"::","$param' value='$value' size=100></td></tr>";
+		    print "\t<tr><td>$param</td><td><input type=text name='edit_",$section,"::","$param' value='$value' size=100></td></tr>\n";
             }
 	    }
 	}
     }
-    print "</table>";
+    print "</table>\n";
 }
 
-print "<input type=hidden name=repository_root value='$repository_root'>";
-print "<input type=hidden name=component_name value='$component_name'>";
-print "<input type=hidden name=pipeline_id value='$pipeline_id'>";
-print "<input type='submit' value='Write config'></form></html></body>";
+print "<input type=hidden name=repository_root value='$repository_root'>\n";
+print "<input type=hidden name=component_name value='$component_name'>\n";
+print "<input type=hidden name=pipeline_id value='$pipeline_id'>\n";
+print "<input type='submit' value='Write config'>\n</form>\n</body>\n</html>";
 
 sub import_includes{
     my($cfg,$sharedconf) = @_;
