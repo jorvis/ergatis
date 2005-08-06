@@ -322,7 +322,7 @@ sub process_aln
 		if !defined $aln->att('compseq');
 	my $subj_id = $id2title{$aln->att('compseq')} or
 		$logger->logdie("Cannot find id-title mapping for Sequence");
-	my $db_name = $1 if $aln->att('compxref') =~ /\/([\w\.]+):/ or
+	my $db_name = $1 if $aln->att('compxref') =~ /\/([\w\.\-]+):/ or
 		$logger->logdie("Cannot extract compxref from " .
 				"Seq-pair-alignment");
 	my $db_id = get_db_id($db_name);
