@@ -346,12 +346,12 @@ for my $file ( @files ) {
 							      ## make sure an identifier was found
 							      if (! $seq_id) {
 								  $logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
-								  next;
+								  return;
 							      }
 							      
 							      if ($options{class_filter} && $options{class_filter} ne $seqRef->returnattr('class')) {
 								  $logger->debug("Skipping $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
-								  next;
+								  return;
 							      }
 							      
 							      ## check and make sure we have a sequence, else log error and skip it
@@ -384,7 +384,7 @@ for my $file ( @files ) {
 							     ## make sure an identifier was found
 							     if (! $seq_id) {
 								 $logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
-								 next;
+								 return;
 							     }
 	    
 							     ## if we are parsing features we need to get all the feature elements within this Sequence.
@@ -398,7 +398,7 @@ for my $file ( @files ) {
 								 ## are we checking for a specific class?
 								 if ($options{class_filter} && $options{class_filter} ne $feat->{class}) {
 								     $logger->debug("Skipping $feat_id of $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
-								     next;
+								     return;
 								 }
 
 								 my $positions = $feat->{locations}->[0];
