@@ -125,6 +125,9 @@ if( ($inifile ne "") && ($template ne "") ) {
 }
 
 sub setup_environment {
+
+    umask 000;
+
     ## remove the apache SERVER variables from the environment
     for my $k (keys %ENV) {
         if ($k =~ /^SERVER_/ ) {

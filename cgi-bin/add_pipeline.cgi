@@ -15,6 +15,8 @@ use XMLManip;
 ## get the structure of the previously run pipeline
 ##  
 
+umask 000;
+
 my $xmltemplate = param('xmltemplate');
 my $node = param('node');
 my $pipelinexml = param('pipelinexml');

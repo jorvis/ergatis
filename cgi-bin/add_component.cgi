@@ -13,6 +13,8 @@ use File::Copy;
 use XMLManip;
 use XML::Twig;
 
+umask 000;
+
 my $xmltemplate = param('xmltemplate');
 my $node = param('node');
 my $conf = param('conf');

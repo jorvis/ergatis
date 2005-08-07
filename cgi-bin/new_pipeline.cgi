@@ -11,6 +11,8 @@ use Config::IniFiles;
 
 my $root = param('root');
 
+umask 000;
+
 ## create the directory for the pipeline
 if (create_directory("$root/$$")) {
     die "couldn't create directory $root/$$ for pipeline\n";
