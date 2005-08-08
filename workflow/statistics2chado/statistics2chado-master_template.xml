@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
 <!--
 
-   Workflow: statistics2chado 
+   Component: statistics2chado 
 
    Author:   Jay Sundaram sundaram@tigr.org
  
@@ -22,8 +23,6 @@
    CVS:      cram/workflow/statistics2chado/statistics2chado-master_template.xml
 
 -->
-<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <name>statistics2chado workflow</name>
       <configMapId>empty</configMapId>
