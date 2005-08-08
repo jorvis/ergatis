@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta tRNAscan-SE tiling trf wait wu-blastp xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastp xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -336,6 +336,14 @@ split_multifasta	:
 	@install workflow/split_multifasta/split_multifasta.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/split_multifasta/split_multifasta_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/split_multifasta/split_multifastaconf.ini $(WORKFLOW_DOCS_DIR)
+
+statistics2chado	:
+	@echo "Installing statistics2chado workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/statistics2chado/statistics2chado-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/statistics2chado/statistics2chado-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/statistics2chado/statistics2chado.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/statistics2chado/statistics2chado_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/statistics2chado/statistics2chadoconf.ini $(WORKFLOW_DOCS_DIR)
 
 tRNAscan-SE	:
 	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
