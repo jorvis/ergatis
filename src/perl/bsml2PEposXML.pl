@@ -157,6 +157,9 @@ sub get_sorted_gene_position {
     my $gene_pos = [];
 
     foreach my $feat (@$feats){
+	#
+	#the cds class code should be deprecated
+	#support for old style legacy2bsml documents
 	if(lc($feat->{'class'}) eq "cds"){
 	    $logger->debug("Reading cds $feat->{'id'}") if($logger->is_debug());
 	    my $loc = $feat->{'locations'}->[0];
