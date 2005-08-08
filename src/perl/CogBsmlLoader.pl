@@ -356,7 +356,9 @@ sub genomeHandler
 sub featureHandler
 {
     my $feature = shift;
-
+    #
+    #the cds class code should be deprecated
+    #support for old style legacy2bsml documents only
     if( $feature->returnattr('class') eq 'CDS' )
     {
 	my $cdsId = $feature->returnattr('id');
@@ -377,6 +379,12 @@ sub featureHandler
 		return;
 	    }
 	}
+    }
+    elsif( $feature->returnattr('class') eq 'protein')
+    {
+	my $protId = $feature->returnattr('id');
+	$logger->debug("Adding protein $protId to protein lookup with genome $genome");
+	$geneGenomeMap->{$protId} = $genome;
     }
 } 
 
