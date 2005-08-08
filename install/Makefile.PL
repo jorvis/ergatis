@@ -341,8 +341,6 @@ statistics2chado	:
 	@echo "Installing statistics2chado workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/statistics2chado/statistics2chado-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/statistics2chado/statistics2chado-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install workflow/statistics2chado/statistics2chado.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/statistics2chado/statistics2chado_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/statistics2chado/statistics2chadoconf.ini $(WORKFLOW_DOCS_DIR)
 
 tRNAscan-SE	:
