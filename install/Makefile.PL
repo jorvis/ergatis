@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastp xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -275,6 +275,46 @@ legacy2bsml  :
 	@install workflow/legacy2bsml/legacy2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/legacy2bsml/legacy2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
 
+ncbi-blastn	:
+	@echo "Installing ncbi-blastn workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/ncbi-blastn/ncbi-blastn-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastn/ncbi-blastn-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastn/ncbi-blastn.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastn/ncbi-blastn_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/ncbi-blastn/ncbi-blastnconf.ini $(WORKFLOW_DOCS_DIR)
+
+ncbi-blastp	:
+	@echo "Installing ncbi-blastp workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/ncbi-blastp/ncbi-blastp-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastp/ncbi-blastp-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastp/ncbi-blastp.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastp/ncbi-blastp_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/ncbi-blastp/ncbi-blastpconf.ini $(WORKFLOW_DOCS_DIR)
+
+ncbi-blastx	:
+	@echo "Installing ncbi-blastx workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/ncbi-blastx/ncbi-blastx-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastx/ncbi-blastx-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastx/ncbi-blastx.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-blastx/ncbi-blastx_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/ncbi-blastx/ncbi-blastxconf.ini $(WORKFLOW_DOCS_DIR)
+
+ncbi-tblastn	:
+	@echo "Installing ncbi-tblastn workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/ncbi-tblastn/ncbi-tblastn-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-tblastn/ncbi-tblastn-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-tblastn/ncbi-tblastn.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-tblastn/ncbi-tblastn_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/ncbi-tblastn/ncbi-tblastnconf.ini $(WORKFLOW_DOCS_DIR)
+
+ncbi-tblastx	:
+	@echo "Installing ncbi-tblastx workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/ncbi-tblastx/ncbi-tblastx-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-tblastx/ncbi-tblastx-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-tblastx/ncbi-tblastx.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ncbi-tblastx/ncbi-tblastx_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/ncbi-tblastx/ncbi-tblastxconf.ini $(WORKFLOW_DOCS_DIR)
+
 nucmer	:
 	@echo "Installing nucmer workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/nucmer/nucmer-master.ini $(WORKFLOW_DOCS_DIR)
@@ -373,6 +413,14 @@ wait	:
 	@install workflow/wait/wait_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/wait/waitconf.ini $(WORKFLOW_DOCS_DIR)
 
+wu-blastn	:
+	@echo "Installing wu-blastn workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/wu-blastn/wu-blastn-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastn/wu-blastn-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastn/wu-blastn.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastn/wu-blastn_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/wu-blastn/wu-blastnconf.ini $(WORKFLOW_DOCS_DIR)
+
 wu-blastp	:
 	@echo "Installing wu-blastp workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/wu-blastp/wu-blastp-master.ini $(WORKFLOW_DOCS_DIR)
@@ -381,6 +429,29 @@ wu-blastp	:
 	@install workflow/wu-blastp/wu-blastp_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/wu-blastp/wu-blastpconf.ini $(WORKFLOW_DOCS_DIR)
 
+wu-blastx	:
+	@echo "Installing wu-blastx workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/wu-blastx/wu-blastx-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastx/wu-blastx-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastx/wu-blastx.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-blastx/wu-blastx_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/wu-blastx/wu-blastxconf.ini $(WORKFLOW_DOCS_DIR)
+
+wu-tblastn	:
+	@echo "Installing wu-tblastn workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/wu-tblastn/wu-tblastn-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-tblastn/wu-tblastn-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-tblastn/wu-tblastn.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-tblastn/wu-tblastn_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/wu-tblastn/wu-tblastnconf.ini $(WORKFLOW_DOCS_DIR)
+
+wu-tblastx	:
+	@echo "Installing wu-tblastx workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/wu-tblastx/wu-tblastx-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-tblastx/wu-tblastx-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-tblastx/wu-tblastx.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/wu-tblastx/wu-tblastx_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/wu-tblastx/wu-tblastxconf.ini $(WORKFLOW_DOCS_DIR)
 
 xdformat	:
 	@echo "Installing xdformat workflows in $(WORKFLOW_DOCS_DIR)"
