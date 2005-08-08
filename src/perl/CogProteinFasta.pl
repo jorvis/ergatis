@@ -1,15 +1,15 @@
 #! /local/perl/bin/perl
 
 use strict;
-use warnings;
 use BSML::BsmlParserSerialSearch;
+use BSML::BsmlReader;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
-my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelDir|m=s', 'outputDir|o=s', 'maxCogSeqCount|s=s');
+my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'maxCogSeqCount|s=s');
 
 my $cogFile = $options{'cogFile'};
-my $bsmlModelDir = $options{'bsmlModelDir'};
+my $bsmlModelList = $options{'bsmlModelList'};
 my $outDir = $options{'outputDir'};
 my $maxCogSeqCount = $options{'maxCogSeqCount'};
 
@@ -18,22 +18,22 @@ my $Prot = {};
 # set up a serial parser to parse sequence elements, bypassing feature tables for 
 # efficiency.
 
-my $seqParser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&createProteinLookup, ReadBsmlTables => 0 );
+my $seqParser = new BSML::BsmlParserSerialSearch( ReadFeatureTables => 0, SequenceCallBack => \&createProteinLookup);
 
 #Get rid of trailing slashes in directory names
 
-$bsmlModelDir =~ s/\/+$//;
+$bsmlModelList =~ s/\/+$//;
 $outDir =~ s/\/+$//; 
 
-if( !$bsmlModelDir )
+if( !$bsmlModelList )
 {
     die "no Bsml Directory specified\n";
 }
 else
 {
-    if( ! -d $bsmlModelDir )
+    if( ! -e $bsmlModelList )
     {
-	die "could not open directory: $bsmlModelDir\n";
+	die "could not open list file: $bsmlModelList\n";
     }
 }
 
@@ -54,11 +54,14 @@ else
     }
 }
 
-
-foreach my $bsmlFile (<$bsmlModelDir/*.bsml>)
+open FILE, $bsmlModelList or die "Can't open file $bsmlModelList";
+while(my $bsmlFile=<FILE>)
 {
-    print STDOUT "Parsing $bsmlFile\n";
-    $seqParser->parse( $bsmlFile );
+    chomp $bsmlFile;
+    if(-e $bsmlFile){
+	print STDOUT "Parsing $bsmlFile\n";
+	$seqParser->parse( $bsmlFile );
+    }
 }
 
 open( INPUTCOGS, "<$cogFile" ) or die "could not open $cogFile.\n";
@@ -137,17 +140,30 @@ sub createProteinLookup
 
     # We're only interested in protein sequences for all-vs-all and pblast
 
-    if( $seqRef->returnattr( 'molecule' ) eq 'aa' )
+    if( ($seqRef->returnattr( 'molecule' ) eq 'aa') || ($seqRef->returnattr('class') eq 'protein'))
     {
-	my $id = $seqRef->returnattr( 'id' );
-	my $seqdat = $seqRef->returnSeqData();
+	my $reader = new BSML::BsmlReader();
+	my $seq = '';
+	$seq = $reader->subSequence($seqRef,-1,0,0);
+	$seq =~ s/\s//g;
+	
+	my $identifier;
+	if(defined $seqRef->{'BsmlSeqDataImport'}){
+	    $identifier = $seqRef->{'BsmlSeqDataImport'}->{'identifier'};
+	}
+	else{
+	    $identifier = $seqRef->returnattr( 'id' );
+	}
 
-	if( $id && $seqdat )
+	if( $identifier && $seq )
 	{
-	    $Prot->{$id} = $seqdat;
+	    $Prot->{$identifier} = $seq;
 	}
     }
 }
+
+
+
 
 
 
