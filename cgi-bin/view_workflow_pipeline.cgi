@@ -7,6 +7,7 @@ use Date::Manip;
 use File::stat;
 use POSIX;
 use XML::Twig;
+use File::Basename;
 
 my $q = new CGI;
 my $repository_root;
@@ -15,7 +16,18 @@ print $q->header( -type => 'text/html' );
 
 my $xml_input = $q->param("instance") || die "pass instance";
 
-print_header();
+
+#
+# author:  sundaram@tigr.org
+# date:    2005-08-03
+# comment: The following modification will display the project/state/component in the title bar 
+#          of the browser
+# bgzcase: 2020
+#
+my ($project, $component, $state) = &get_title($xml_input);
+
+print_header($project, $component, $state);
+
 
 if (-f $xml_input && $xml_input =~ /(.+)\/Workflow/) {
     ## the repository root is everything up until the Workflow directory
@@ -193,14 +205,31 @@ sub parseCommandSetChildren {
 
 
 sub print_header {
-    print <<HeAdER;
+
+    my ($project, $component, $state) = @_;
+
+    print <<TopHeAdER;
 
 <html>
 
 <head>
     <meta http-equiv="Content-Language" content="en-us">
     <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-    <title>pre-pre-alpha workflow interface prototype</title>
+
+TopHeAdER
+
+#
+# author:  sundaram@tigr.org
+# date:    2005-08-03
+# comment: The following modification will display the project/state/component in the title bar 
+#          of the browser
+#
+print "<title>$project/$state/$component pre-pre-alpha workflow interface prototype</title>\n";
+
+
+
+    print <<HeAdER;
+
     <style type="text/css">
         body {
             font-family: verdana, helvetica, arial, sans-serif;
@@ -504,4 +533,91 @@ sub print_footer {
 
 </html>
 FooTER
+}
+
+
+#--------------------------------------------------------------
+#
+# author:   sundaram@tigr.org
+#
+# date:     2005-08-03
+#
+# purpose:  This routine will extract the project name
+#           from the file name and retrieve the
+#           the state & component name from within the file
+#
+#
+# input:    workflow .xml filename
+#
+# output:   none
+#
+# return:   project, state, component
+#
+#
+#--------------------------------------------------------------
+sub get_title {
+
+    my $file = shift;
+
+
+    my ($project, $component, $state);
+
+
+    #
+    # Parse the project name from the file name
+    #
+    if (-f $file && $file =~ /(.+)\/Workflow/) {
+	
+	$project = $1;
+	$project = lc ( File::Basename::basename($project) );
+    }
+    
+
+    if (-e $xml_input){
+	#
+	# Retrieve the component name 
+	#
+	my $twig = new XML::Twig;
+	
+	$twig->parsefile($xml_input);
+	
+	my $commandSetRoot = $twig->root;
+	
+
+	#
+	# Check first level commandSet's first child configMapId
+	#
+	my $commandSet = $commandSetRoot->first_child('commandSet');
+	
+	my $configMapId = $commandSet->first_child('configMapId')->text();
+	
+	if ($configMapId !~ /^component_/) {
+	    
+
+	    #
+	    # Check second level commandSet's first child configMapId
+	    #
+
+	    my $commandSet = $commandSet->first_child('commandSet');
+	    
+	    $configMapId = $commandSet->first_child('configMapId')->text();
+	    
+	}
+	
+	if ($configMapId =~ /^component_(.+)/){
+	    $component = $1;
+	}
+	
+	if ( $commandSet->first_child('state') ) {
+	    $state  = $commandSet->first_child('state')->text();
+	}
+	
+
+
+    }
+
+
+
+    return ($project, $component, $state);
+
 }
