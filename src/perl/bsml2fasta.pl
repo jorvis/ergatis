@@ -360,14 +360,14 @@ for my $file ( @files ) {
 							      my $seq = $reader->subSequence($seqRef,-1,0,0);
 							      $seq =~ s/\s//g;
 								  
-							      my $id = $seqRef->returnattr( 'id' );
+							      my $id = $seqRef->{'BsmlSeqDataImport'}->{'identifier'};
 							      my $seqdat = $seqRef->returnSeqData();
 							      if (length $seq < 1) {
 								  $logger->error("sequence $seq_id has no length.  cowardly refusing to export anything.") if ($logger->is_error);
 								  next;
 							      }
 							      
-							      write_sequence($seq_id, \$seq);
+							      write_sequence($id, \$seq);
 							  }); 
 	$logger->debug("Parsing Sequence elements in file $file") if ($logger->debug);
 	$seqParser->parse($file);
