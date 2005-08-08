@@ -177,8 +177,20 @@ sub get_sorted_gene_position {
 		    }
 		}
 	    }
-	    push @$gene_pos, { 'feat_name' => $proteinId, 'length' => $length, 'orient' => $complement, 'coord' => $coord }; 
+	    push @$gene_pos, { 'feat_name' => $proteinId, 'length' => $length, 'orient' => $complement, 'coord' => $coord } if($proteinId); 
 	}
+	elsif(lc($feat->{'class'}) eq "protein"){
+	    $logger->debug("Reading protein $feat->{'id'}") if($logger->is_debug());
+	    my $loc = $feat->{'locations'}->[0];
+	    my $coord = $loc->{'startpos'} > $loc->{'endpos'} ? $loc->{'startpos'} : $loc->{'endpos'};
+	    $logger->debug("Coord start:$loc->{'startpos'} end:$loc->{'endpos'}") if($logger->is_debug());
+	    my $length = abs($loc->{'endpos'} - $loc->{'startpos'});
+	    my $complement = $loc->{'complement'} == 1 ? '+' : '-'; 
+	    $logger->debug("Storing position:$coord length:$length complement:$complement for $feat->{'id'}") if($logger->is_debug());
+	    my $proteinId = $feat->returnattr('id');
+	    push @$gene_pos, { 'feat_name' => $proteinId, 'length' => $length, 'orient' => $complement, 'coord' => $coord } if($proteinId); 
+	}
+	    
     }
 
     my @sorted_ref = sort { $a->{'coord'} <=> $b->{'coord'}} @$gene_pos;
