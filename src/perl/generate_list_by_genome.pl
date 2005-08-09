@@ -89,16 +89,19 @@ if($options{'directory'}){
 my $genome;
 my $genomelookup = {};
 foreach my $file (@{$iteratorconf->{$keyname}}){
+    $logger->debug("Parsing file $file");
     my $featParser = new BSML::BsmlParserSerialSearch(GenomeCallBack => \&genomeHandler );
+    $featParser->parse($file);
+    $logger->debug("Found genome $genome in file $file");
     if(! exists $genomelookup->{$genome}){
 	$genomelookup->{$genome} = [];
     }
     push @{$genomelookup->{$genome}},$file;
-    $featParser->parse($file);
 }
 
 foreach my $g (keys %$genomelookup){
-    my $outfile = $options{'output_dir'}."/$g"."."."$options{'output_extentsion'}";
+    $logger->debug("Dumping genome $g");
+    my $outfile = $options{'output_dir'}."/$g"."."."$options{'output_extension'}";
     open FILE, "+>$outfile"
 	or $logger->logdie("Can't open output file $outfile");
     print FILE join("\n",@{$genomelookup->{$g}}),"\n";
@@ -120,6 +123,7 @@ sub genomeHandler{
     }
 
     $genome = $rhash->{'genus'}.'_'.$rhash->{'species'}.'_'.$rhash->{'strain'};
+    $genome =~ s/\s//g;
 }
 					     
 
