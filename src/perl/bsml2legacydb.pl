@@ -357,7 +357,7 @@ sub process_aln
 				"percent_identity, or percent_similarity ".
 				"from Seq-pair_run")
 			if !$chain_num or !$pct_id or !$pct_sim;
-		my $prog_tag = $prog_name eq 'aat_aa' ? 'nap' : 'gap2';
+		my $prog_tag = $prog_name =~ /aat_aa/ ? 'nap' : 'gap2';
 		$insert_stmt->execute("$asm_id.intergenic", $prog_tag, 
 				      $subj_id, $query_start, $query_stop,
 				      $subj_start, $subj_stop, $prog_name,
