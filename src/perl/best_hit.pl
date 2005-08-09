@@ -1,4 +1,5 @@
-#!/local/perl/bin/perl
+#!/usr/local/bin/perl
+
 # this program accepts a stream of skim results of the best
 # hits among a number of genomes and generates clusters of
 # proteins connected by best hits. The core of each group is
@@ -17,16 +18,17 @@
 require "getopts.pl";
 $usage = <<_MESSAGE_;
 Usage:  fish.pl feat_name[s]
-cat source_of_hit_results  |  bi-best-hitter.pl [options] > output_file
+best_hit.pl [options] > output_file
     -D     DEBUG              default = off        Show diagnostic messages
     -h     help               print this message
     -c     cutoff             default = 0.0001
+    -i      input file
     -s     secondary cutoff   see -u option
     -u     unidirectional     add unidirectional hits better than secondary cutoff   
     -n     minimum            default = 2      minimum set of transitively related.
 _MESSAGE_
 
-&Getopts('Dhuc:s:n:');
+&Getopts('Dhui:c:s:n:');
 die "$usage\n" if ($opt_h == 1);
 
 $DEBUG = $opt_D;
@@ -40,8 +42,11 @@ $DEBUG && print ("DEBUG is ON, cog minimum is $quorum, cutoff is $cutoff\n");
 
 my %jaccard;
 
+## open the input file
+open(my $ifh, "<$opt_i") || die "can't open input file: $!";
+
 # first load all the hits data
-while ($btab = <STDIN>) {
+while ($btab = <$ifh>) {
     chomp $btab;
     @data = split (/\t/,$btab);
     if ($data[20] > $cutoff)  {next;}    # discard if a weak hit by E-value.        
