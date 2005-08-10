@@ -334,7 +334,7 @@ while (<$gff3_fh>) {
             ## we have key=value pairs
             if ($pair =~ /^\s*(.+)=(.+)\s*$/) {
                 ## load the attributes hash with these values
-                @{$atth{$1}} = split(',', $2)
+                push @{$atth{$1}},split(',', $2)
                 
             } else {
                 record_error("attribute ($pair) in column 9, line $. does not seem to be in key=value format");
