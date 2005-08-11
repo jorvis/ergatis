@@ -115,28 +115,49 @@ foreach my $file (@files){
     my $seqParser = new BSML::BsmlParserSerialSearch(
 						     SequenceCallBack =>sub 
 						     {
-							 my $seqRef = shift; 
+							 my $seqRef = shift;
 							 my $order = 0; 
-							 if($seqRef->returnattr('molecule') eq "dna"){
-							     my $sorted_genes = get_sorted_gene_position($seqRef);
-							     if(scalar(@$sorted_genes) >= $options{'gene_count_cutoff'}){
-								 foreach my $gene (@$sorted_genes) {
-								     my $attrref={};
-								     my $feat_name = $gene->{'feat_name'};
-								     $attrref->{'length'} = $gene->{'length'}; 
-								     $attrref->{'orient'} = $gene->{'orient'}; 
-								     $attrref->{'coord'}  = $gene->{'coord'}; 
-								     if($gene->{'length'} >= $options{'gene_length_cutoff'}){
-									 $pexml->addFeature($feat_name, $attrref, $seqRef->returnattr('id'), $order);
-								     }
-								     else{
-									 $logger->warn("$feat_name length $gene->{'length'} is less than $options{'gene_length_cutoff'}!!! skipping...");
-								     }	
-								     $order++;
+							 my $seq_id = $seqRef->returnattr('id') || $seqRef->returnattr('identifier');
+							 $logger->debug("Reading sequence $seq_id");
+							 print STDERR "Reading sequence $seq_id\n";
+							 if(defined $seqRef && defined $seqRef->returnBsmlFeatureTableListR->[0]){
+							     my $features = $seqRef->returnBsmlFeatureTableListR->[0]->returnBsmlFeatureListR();
+							     my $gene_pos = [];
+							     $logger->debug("Iterating over features for $seq_id");
+							     foreach my $feat (@$features){
+								 if($feat->returnattr('class') eq 'protein'){
+								     my $loc = $feat->returnBsmlIntervalLocListR->[0];
+								     my $coord = $loc->{'startpos'} > $loc->{'endpos'} ? $loc->{'startpos'} : $loc->{'endpos'};
+								     $logger->debug("Coord start:$loc->{'startpos'} end:$loc->{'endpos'}") if($logger->is_debug());
+								     my $length = abs($loc->{'endpos'} - $loc->{'startpos'});
+								     my $complement = $loc->{'complement'} == 1 ? '+' : '-'; 
+								     $logger->debug("Storing position:$coord length:$length complement:$complement for $feat->{'id'}") if($logger->is_debug());
+								     my $proteinId = $feat->returnattr('id');
+								     #print STDERR "Storing position:$coord length:$length complement:$complement for $proteinId\n";
+							 
+								     push @$gene_pos, { 'feat_name' => $proteinId, 'length' => $length, 'orient' => $complement, 'coord' => $coord };
 								 }
+							     }
+							     my @sorted_genes;
+							     @sorted_genes = sort { $a->{'coord'} <=> $b->{'coord'}} @$gene_pos;
+							 
+							     foreach my $gene (@sorted_genes) {
+								 my $attrref={};
+								 my $feat_name = $gene->{'feat_name'};
+								 $attrref->{'length'} = $gene->{'length'}; 
+								 $attrref->{'orient'} = $gene->{'orient'}; 
+								 $attrref->{'coord'}  = $gene->{'coord'}; 
+								 if($gene->{'length'} >= $options{'gene_length_cutoff'}){
+								     $pexml->addFeature($feat_name, $attrref, $seqRef->returnattr('id'), $order);
+								 }
+								 else{
+								     $logger->warn("$feat_name length $gene->{'length'} is less than $options{'gene_length_cutoff'}!!! skipping...");
+								 }	
+								 $order++;
 							     }
 							 }
 						     });
+						     
     $seqParser->parse($file);
 }
 
@@ -150,39 +171,16 @@ sub get_sorted_gene_position {
 
     my $seq = shift;
     my $reader = new BSML::BsmlReader();
+    $logger->debug("Reading sequence $seq->{'attr'}->{'id'}") if($logger->is_debug());
     my $feats = $reader->readFeatures($seq);
 
-    $logger->debug("Reading sequence $seq->{'attr'}->{'id'}") if($logger->is_debug());
+    $logger->debug("Obtained feature list") if($logger->is_debug());
 
     my $gene_pos = [];
 
     foreach my $feat (@$feats){
 	#
-	#the cds class code should be deprecated
-	#support for old style legacy2bsml documents
-	if(lc($feat->{'class'}) eq "cds"){
-	    $logger->debug("Reading cds $feat->{'id'}") if($logger->is_debug());
-	    my $loc = $feat->{'locations'}->[0];
-	    my $coord = $loc->{'startpos'} > $loc->{'endpos'} ? $loc->{'startpos'} : $loc->{'endpos'};
-	    $logger->debug("Coord start:$loc->{'startpos'} end:$loc->{'endpos'}") if($logger->is_debug());
-	    my $length = abs($loc->{'endpos'} - $loc->{'startpos'});
-	    my $complement = $loc->{'complement'} == 1 ? '+' : '-'; 
-	    $logger->debug("Storing position:$coord length:$length complement:$complement for $feat->{'id'}") if($logger->is_debug());
-	    my $proteinId;
-	    foreach my $link (@{$feat->{'bsmllinks'}}){
-		# a link of type 'SEQ' links to the protein sequence object
-		if( $link->{'rel'} eq 'SEQ' ){
-		    $proteinId = $link->{'href'};
-		    $proteinId =~ s/#//;
-		    $logger->debug("Storing protein id $proteinId associated with cds $feat->{'id'}") if($logger->is_debug());
-		    if($proteinId eq ""){
-			$logger->logdie("Can't find associted protein with cds $feat->{'id'}");
-		    }
-		}
-	    }
-	    push @$gene_pos, { 'feat_name' => $proteinId, 'length' => $length, 'orient' => $complement, 'coord' => $coord } if($proteinId); 
-	}
-	elsif(lc($feat->{'class'}) eq "protein"){
+	if(lc($feat->{'class'}) eq "protein"){
 	    $logger->debug("Reading protein $feat->{'id'}") if($logger->is_debug());
 	    my $loc = $feat->{'locations'}->[0];
 	    my $coord = $loc->{'startpos'} > $loc->{'endpos'} ? $loc->{'startpos'} : $loc->{'endpos'};

@@ -169,29 +169,27 @@ sub produce_cluster_output {
     
     my @clusters = $resolver->resolve_clusters(@$pairs);
     
-    if (@clusters){
-	#
-	# 2. Open and write to cluster output file
-	#
-	open (OUTFILE, ">$output") or $logger->logdie("Could not open $output in write mode");
+    #
+    # 2. Open and write to cluster output file
+    #
+    open (OUTFILE, ">$output") or $logger->logdie("Could not open $output in write mode");
+    
+    my $clustercount=0;
+    
+    foreach my $cluster (@clusters){
+	$logger->logdie("cluster was not defined") if (!defined($cluster));
 	
-	my $clustercount=0;
-
-	foreach my $cluster (@clusters){
-	    $logger->logdie("cluster was not defined") if (!defined($cluster));
-	    
-	    my $size = scalar(@$cluster);
-	    my $clustername = "jaccard_$clustercount";
-
-	    print OUTFILE "COG = $clustername, size $size, connections  = -1, perfect = -1;\n";
-	    
-	    foreach my $member (@$cluster){
-		print OUTFILE "\t$member\n";
-	    }
-	    $clustercount++;
+	my $size = scalar(@$cluster);
+	my $clustername = "jaccard_$clustercount";
+	
+	print OUTFILE "COG = $clustername, size $size, connections  = -1, perfect = -1;\n";
+	
+	foreach my $member (@$cluster){
+	    print OUTFILE "\t$member\n";
 	}
-	close OUTFILE;
+	$clustercount++;
     }
+    close OUTFILE;
 }
 
 #-------------------------------------------------------------------------
