@@ -44,31 +44,12 @@
           <configMapId>cogs2fasta</configMapId>
         </command>
 <!--Processing-->
-	<command>
-          <type>RunUnixCommand</type>
-          <name>Create iterator list</name>
-          <configMapId>create_iterator_list_subflow1</configMapId>
-        </command>
-	<command>
-          <type>RunUnixCommand</type>
-          <name>Create groups</name>
-          <configMapId>create_groups_subflow1</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create iterative subflow</name>
-          <configMapId>create_iterative_subflow1</configMapId>
-        </command>
-        <commandSet type="parallel">
-          <name>Iterated subflow</name>
-          <configMapId>subflow1</configMapId>
-       </commandSet>
 <!--Postprocessing-->
 <!--Checksum creation-->
        <command>
           <type>RunUnixCommand</type>
-          <name>Merge bsml list files</name>
-          <configMapId>merge_bsml_list_files</configMapId>
+          <name>Merge fasta list files</name>
+          <configMapId>merge_fasta_list_files</configMapId>
        </command>
 <!--Postprocess permissions-->
      </commandSet>

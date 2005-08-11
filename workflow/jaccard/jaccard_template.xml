@@ -15,35 +15,30 @@
             <configMapId>create_group_tmp_dir</configMapId>
             <name>create_group_tmp_dir</name>
         </command>
-         <command>
-            <type>RunUnixCommand</type>
-            <configMapId>clustalw</configMapId>
-            <name>clustalw</name>
-        </command>        
         <command>
-            <type>RunUnixCommand</type>
-            <configMapId>validate_clustalw_output</configMapId>
-            <name>validate_clustalw_output</name>
-        </command>        
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>msf2bsml</configMapId>
-            <name>msf2bsml</name>
-        </command> 
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>store_config_params</configMapId>
-            <name>store_config_params</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_bsml_list</configMapId>
-            <name>create_bsml_list</name>
+          <type>RunUnixCommand</type>
+          <name>generate_asmbl_input</name>
+          <configMapId>generate_asmbl_input</configMapId>
         </command>
         <command>
-            <type>RunUnixCommand</type>
-            <configMapId>dtd_validation</configMapId>
-            <name>DTD validation</name>
+          <type>RunUnixCommand</type>
+          <name>make_asmbl_lookup</name>
+          <configMapId>make_asmbl_lookup</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>generate_clusters</name>
+          <configMapId>generate_clusters</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>jaccard2fasta</name>
+          <configMapId>jaccard2fasta</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create fasta list</name>
+          <configMapId>create_fasta_list</configMapId>
         </command>
     </commandSet>
 </commandSetRoot>

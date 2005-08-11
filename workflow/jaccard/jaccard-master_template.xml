@@ -25,23 +25,8 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>generate_asmbl_input</name>
-          <configMapId>generate_asmbl_input</configMapId>
-        </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>make_asmbl_lookup</name>
-          <configMapId>make_asmbl_lookup</configMapId>
-        </command>
-        <command>
-          <type>RunDistributedCommand</type>
-          <name>generate_clusters</name>
-          <configMapId>generate_clusters</configMapId>
-        </command>
-        <command>
-          <type>RunDistributedCommand</type>
-          <name>jaccard2fasta</name>
-          <configMapId>jaccard2fasta</configMapId>
+          <name>generate_organism_list</name>
+          <configMapId>generate_organism_list</configMapId>
         </command>
 <!--Processing-->
 	<command>
@@ -67,8 +52,8 @@
 <!--Checksum creation-->
        <command>
           <type>RunUnixCommand</type>
-          <name>Merge bsml list files</name>
-          <configMapId>merge_bsml_list_files</configMapId>
+          <name>Merge fasta list files</name>
+          <configMapId>merge_fasta_list_files</configMapId>
        </command>
 <!--Postprocess permissions-->
      </commandSet>
