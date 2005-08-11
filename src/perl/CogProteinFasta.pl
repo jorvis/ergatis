@@ -6,12 +6,15 @@ use BSML::BsmlReader;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
-my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'maxCogSeqCount|s=s');
+my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'maxCogSeqCount|s=s', 'extension|e=s');
 
 my $cogFile = $options{'cogFile'};
 my $bsmlModelList = $options{'bsmlModelList'};
 my $outDir = $options{'outputDir'};
 my $maxCogSeqCount = $options{'maxCogSeqCount'};
+if($options{'extension'} eq ''){
+    $options{'extension'} = 'fsa';
+}
 
 my $Prot = {};
 
@@ -86,7 +89,7 @@ while( my $line = <INPUTCOGS> )
 	    print STDERR "Outputing cog $cog\n";
 	    if(scalar(@{$list})>1){
 		if(@{$list} <= $maxCogSeqCount){
-		    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+		    open( OUTFILE, ">$outDir/$cog.$$.$options{'extension'}" ) or die "could not open $cog.$options{'extension'}\n";
 		    foreach my $seq ( @{$list} )
 		    {
 			print OUTFILE ">$seq\n";
@@ -95,7 +98,7 @@ while( my $line = <INPUTCOGS> )
 		    close( OUTFILE );
 		}
 		else{
-		    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+		    open( OUTFILE, ">$outDir/$cog.$$.$options{'extension'}" ) or die "could not open $cog.$options{'extension'}\n";
 		    foreach my $seq ( @{$list} )
 		    {
 			print OUTFILE ">$seq\n";
@@ -114,7 +117,7 @@ if( $cog){
     print STDERR "Outputing cog $cog\n";
     if(scalar(@{$list})>1){
 	if(@{$list} <= $maxCogSeqCount){
-	    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+	    open( OUTFILE, ">$outDir/$cog.$$.$options{'extension'}" ) or die "could not open $cog.$options{'extension'}\n";
 	    foreach my $seq ( @{$list} )
 	    {
 		print OUTFILE ">$seq\n";
@@ -123,7 +126,7 @@ if( $cog){
 	    close( OUTFILE );
 	}
 	else{
-	    open( OUTFILE, ">$outDir/$cog.$$.fasta" ) or die "could not open $cog.fasta\n";
+	    open( OUTFILE, ">$outDir/$cog.$$.$options{'extension'}" ) or die "could not open $cog.$options{'extension'}\n";
 	    foreach my $seq ( @{$list} )
 	    {
 		print OUTFILE ">$seq\n";
