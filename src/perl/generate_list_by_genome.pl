@@ -124,6 +124,7 @@ sub genomeHandler{
 
     $genome = $rhash->{'genus'}.'_'.$rhash->{'species'}.'_'.$rhash->{'strain'};
     $genome =~ s/\s//g;
+    $genome =~ s/[^\w\.\-\_]/_/g;
 }
 					     
 
