@@ -142,9 +142,9 @@ sub setup_environment {
     $ENV{SGE_EXECD_PORT} = '537';
     $ENV{SGE_ARCH} = 'lx26-x86';
 
-    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-2.2";
+    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-sge";
     #$ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-test-sge";
-    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-2.2";
+    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-sge";
     #$ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-test-sge";
 
     $ENV{'SYBASE'} = "/usr/local/packages/sybase";
