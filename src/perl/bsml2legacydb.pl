@@ -11,6 +11,9 @@ USAGE: bsml2legacydb.pl
 		--input_list|I=/path/to/bsml_file_list
 		--database|d=aa1
 	[
+		--prog_name|p=program_name
+	]
+	[
 		--debug|D=4
 		--log|l=/path/to/log_file.log
 	]
@@ -25,6 +28,9 @@ B<--input_list,-I>
 
 B<--database,-d>
 	Database where data will be loaded to
+
+B<--prog_name,-p>
+	Program name used to generate BSML data
 
 B<--debug,-D>
 	Debug level.  Use a large number to turn on verbose debugging
@@ -75,6 +81,7 @@ my $server	= "SYBTIGR";
 my $db		= undef;
 my %opts	= ();
 my %coords	= ();
+my %asm_ids	= ();
 my @genes	= ();
 my %db_ids	= ();
 my $debug	= 4;
@@ -82,6 +89,7 @@ my $log_file	= Workflow::Logger::get_default_logfilename;
 my $logger	= undef;
 my %id2title	= ();
 my $loader	= $& if $0 =~ /[\w\.\d]+$/;
+my $prog_name	= undef;
 
 sub parse_opts;
 sub print_usage;
@@ -103,7 +111,7 @@ sub cleanup_records;
 sub get_latest_id;
 
 GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
-	   "server|s=s", "database|d=s",
+	   "server|s=s", "database|d=s", "prog_name|p=s",
 	   "debug|D=i", "log|l=s", "help|h");
 parse_opts;
 
@@ -135,6 +143,9 @@ sub parse_opts
 		}
 		elsif ($key eq "database") {
 			$db = $val;
+		}
+		elsif ($key eq "prog_name") {
+			$prog_name = $val;
 		}
 		elsif ($key eq "debug") {
 			$debug = $val;
@@ -168,9 +179,11 @@ sub process_files
 		my $asm_id = $1 if $file =~ /\.assembly\.(\d+)/ or
 			$logger->logdie("Couldn't extract assembly id from: " .
 					"$file");
-		my $prog_name = $1 if $file =~ /(\w+)\.bsml/ or
-			$logger->logdie("Couldn't extract program name from: " .
-					"$file");
+		if (!$prog_name) {
+			$prog_name = $1 if $file =~ /(\w+)\.bsml/ or
+				$logger->logdie("Couldn't extract program " .
+						"name from: $file");
+		}
 		my $twig = new XML::Twig
 			(twig_roots =>
 				{'Feature' => \&process_feat,
@@ -186,6 +199,7 @@ sub process_files
 		if (scalar(@genes)) {
 			process_results($asm_id, $prog_name);
 		}
+		++$asm_ids{$asm_id};
 	}
 }
 
@@ -194,7 +208,7 @@ sub process_results
 	my ($asm_id, $prog_name) = @_;
 	$prog_name = 'GeneZilla' if $prog_name =~ /genezilla/;
     
-	cleanup_records($asm_id, $prog_name);
+	cleanup_records($asm_id, $prog_name) if !$asm_ids{$asm_id};
 	my $model_id = get_latest_id($asm_id, "model");
 	my $exon_id = get_latest_id($asm_id, "exon");
 	my $asm_feature_insert_stmt = prepare_asm_feature_insert_stmt;
