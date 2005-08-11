@@ -66,7 +66,7 @@ my %options = ();
 my $results = GetOptions( \%options, 
 			  'bsmlSearchList|b=s', 
 			  'bsmlModelList|m=s', 
-			  'bsmlJaccardDir|j=s', 
+			  'bsmlJaccardList|j=s', 
 			  'outfile|o=s', 
 			  'pvalcut|p=s', 
 			  'log|l=s',
@@ -104,20 +104,27 @@ my $jaccardRepSeqHash = {};   #Associate a representative sequence for each clus
 my $jaccardClusterCount = 0;
 
 
-$options{'bsmlJaccardDir'} =~ s/\'//g;
-$options{'bsmlJaccardDir'} =~ s/\"//g;
+$options{'bsmlJaccardList'} =~ s/\'//g;
+$options{'bsmlJaccardList'} =~ s/\"//g;
 
-if( $options{'bsmlJaccardDir'} && $options{'bsmlJaccardDir'} ne "" )
+if( $options{'bsmlJaccardList'} && $options{'bsmlJaccardList'} ne "" )
 {
-    if(-r $options{'bsmlJaccardDir'}){
+    if(-e $options{'bsmlJaccardList'}){
 	my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
-	foreach my $bsmlFile (<$options{'bsmlJaccardDir'}/*.bsml>)
-	{
-	    $multiAlnParser->parse( $bsmlFile );
+	open JFILE, "$options{'bsmlJaccardList'}" or $logger->logdie("Can't open file $options{'bsmlJaccardList'}");
+	while(my $bsmlFile=<JFILE>){
+	    chomp $bsmlFile;
+	    $logger->debug("Parsing jaccard file $bsmlFile") if($logger->is_debug());
+	    if(-e $bsmlFile){
+		$multiAlnParser->parse( $bsmlFile );
+	    }
+	    else{
+		$logger->logdie("Can't read jaccard bsml file $bsmlFile");
+	    }
 	}
     }
     else{
-	$logger->logdie("Can't read jaccard dir $options{'bsmlJaccardDir'}");
+	$logger->logdie("Can't read jaccard list $options{'bsmlJaccardList'}");
     }
 }
 
@@ -129,6 +136,7 @@ my $genome = '';
 # loop through the documents in the model directory to create the protein genome map
 
 foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlModelList'})}){
+    $logger->debug("Parsing genome file $bsmlFile") if($logger->is_debug());
     $featParser->parse( $bsmlFile );
     $genome = '';
 }
@@ -164,6 +172,8 @@ my $COGInput = {};
 foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlSearchList'})}){
     
     # builds the COGS input data structure
+
+    $logger->debug("Parsing alignment file $bsmlFile") if($logger->is_debug());
 
     $alnParser->parse( $bsmlFile );
 
