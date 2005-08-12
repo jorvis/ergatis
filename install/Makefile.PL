@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml genezilla genie glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -189,6 +189,22 @@ fasta2bsml	:
 	@install workflow/fasta2bsml/fasta2bsml-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/fasta2bsml/fasta2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)
 
+fgenesh  :
+	@echo "Installing fgenesh workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/fgenesh/fgenesh-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/fgenesh/fgenesh-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/fgenesh/fgenesh.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/fgenesh/fgenesh_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/fgenesh/fgeneshconf.ini $(WORKFLOW_DOCS_DIR)  
+
+genemark  :
+	@echo "Installing genemark workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/genemark/genemark-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genemark/genemark-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genemark/genemark.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genemark/genemark_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genemark/genemarkconf.ini $(WORKFLOW_DOCS_DIR)  
+
 genezilla  :
 	@echo "Installing genezilla workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/genezilla/genezilla-master.ini $(WORKFLOW_DOCS_DIR)
@@ -204,6 +220,22 @@ genie  :
 	@install workflow/genie/genie.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/genie/genie_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/genie/genieconf.ini $(WORKFLOW_DOCS_DIR)  
+
+genscan  :
+	@echo "Installing genscan workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/genscan/genscan-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genscan/genscan-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genscan/genscan.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genscan/genscan_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genscan/genscanconf.ini $(WORKFLOW_DOCS_DIR)  
+
+genscan-plus  :
+	@echo "Installing genscan-plus workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/genscan-plus/genscan-plus-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genscan-plus/genscan-plus-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genscan-plus/genscan-plus.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genscan-plus/genscan-plus_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genscan-plus/genscan-plusconf.ini $(WORKFLOW_DOCS_DIR)  
 
 glimmerHMM	:
 	@echo "Installing glimmerHMM workflows in $(WORKFLOW_DOCS_DIR)"

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+      <name>fgenesh workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output repository</name>
+          <configMapId>create_compute_output</configMapId>
+        </command>
+<!--Processing-->
+	<command>
+          <type>RunUnixCommand</type>
+          <name>Create iterator list</name>
+          <configMapId>create_iterator_list_subflow1</configMapId>
+        </command>
+	<command>
+          <type>RunUnixCommand</type>
+          <name>Create groups</name>
+          <configMapId>create_groups_subflow1</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterative subflow</name>
+          <configMapId>create_iterative_subflow1</configMapId>
+        </command>
+        <commandSet type="parallel">
+          <name>Iterated subflow</name>
+          <configMapId>subflow1</configMapId>
+       </commandSet>
+<!--Postprocessing-->
+    <command>
+        <type>RunUnixCommand</type>
+        <name>Merge bsml list files</name>
+        <configMapId>merge_bsml_list_files</configMapId>
+    </command>
+    <command>
+        <type>RunUnixCommand</type>
+        <name>Merge raw list files</name>
+        <configMapId>merge_raw_list_files</configMapId>
+    </command>
+    </commandSet>
+</commandSetRoot>
