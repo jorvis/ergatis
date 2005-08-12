@@ -85,6 +85,14 @@ my $iteratorconf = {
 if ((!defined($options{'asmbl_files'})) and (!defined($options{'asmbl_list'}))){
     $logger->logdie("Either asmbl_files or asmbl_list should be defined");
 }
+
+#
+# Both asmbl_files and asmbl_list cannot be == none
+#
+if ( ( lc($options{'asmbl_files'}) eq 'none' )  and ( lc($options{'asmbl_list'}) eq 'none' ) ) {
+    $logger->logdie("Either asmbl_files or asmbl_list should be defined");
+}
+
 if (!defined($options{'output'})){
     $logger->logdie("output was not defined.");
 }
