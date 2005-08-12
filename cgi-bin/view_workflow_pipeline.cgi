@@ -224,7 +224,7 @@ TopHeAdER
 # comment: The following modification will display the project/state/component in the title bar 
 #          of the browser
 #
-print "<title>$project/$state/$component pre-pre-alpha workflow interface prototype</title>\n";
+print "<title>$project|$state|$component  pre-pre-alpha workflow interface prototype</title>\n";
 
 
 
