@@ -31,7 +31,7 @@ B<--help,-h> This help message
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-
+use Data::Dumper;
 use Workflow::Logger;
 use File::Basename;
 
@@ -61,6 +61,9 @@ my @iteratorelts;
 $options{'extension'} = 'bsml' if($options{'extension'} eq "");
 
 my $keyname = '$;'.uc($options{'extension'}).'_FILE$;';
+
+my $filehash = {};
+
 
 my $iteratorconf = {
     $keyname            => [],
@@ -116,21 +119,76 @@ exit;
 sub get_list_from_file{
     my ($iteratorconf, $f) = @_;
     my @elts;
-    my @lines;
+
+
+
+    #
+    # Given the following sample invocation of generate_input_list.pl:
+    #
+    # perl -I ../lib/ generate_input_list.pl --directory='' --file='' --filelist='/usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.1.list,/usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.2.list' --output=subflow1.list
+    #
+    #
+    # Sample filelist stored in $f:
+    # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.1.list,/usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.2.list
+    #
     my @files = split(',',$f);
     foreach my $file (@files){
+
+	$logger->debug("Processing file '$file'") if $logger->is_debug();
+
 	if( $file){
 	    if(-e $file && -f $file){
 		open( FH, $file ) or $logger->logdie("Could not open $file");
+
+		
+		#
+		# editor:     sundaram@tigr.org
+		# date:       2005-08-12
+		# bgzcase:    2041 
+		# URL:        http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2041
+		# comment:    @lines array should be locally scoped to ensure no files are output more than once!
+		#
+		my @lines;
+
+		#
+		# Contents of sample file /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.1.list
+		#
+		# /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_2_assembly.bsml
+		# /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_1_assembly.bsml
+		# /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_3_assembly.bsml
+		#
+		#
+		# Contents of sample file /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.2.list
+		#
+		#
+		# /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_4_assembly.bsml
+		# /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_5_assembly.bsml
+		# /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_6_assembly.bsml
+		#
+
+
 		while( my $line = <FH> ){
 		    chomp($line);
-		    push @lines,  split(',',$line) if($line =~ /\S+/);
+
+		    $logger->debug("line '$line'") if $logger->is_debug();
+
+		    push @lines,  split(',',$line) if ($line =~ /\S+/);
+
 		}
-		fisher_yates_shuffle(\@lines);
+
+
+		&fisher_yates_shuffle(\@lines);
+
 		foreach my $line (@lines){
+		    
 		    if($line){
+			
 			my $filename = "$line";
 			my $name = &get_name_from_file($filename);
+
+			$logger->debug("filename '$filename' name '$name'") if $logger->is_debug();
+
+
 			&add_entry_to_conf($iteratorconf,$filename,$name);
 		    }
 		}
@@ -174,8 +232,23 @@ sub get_name_from_file{
 
 sub add_entry_to_conf{
     my($iteratorconf,$filename,$name) = @_;
-    push( @{$iteratorconf->{$keyname}}, $filename );
-    push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $name );
+    
+
+    #
+    # editor:     sundaram@tigr.org
+    # date:       2005-08-12
+    # bgzcase:    2041
+    # URL:        http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2041
+    # comment:    This script should output a unique file list
+    #
+    if (! exists $filehash->{$filename} ){
+	push( @{$iteratorconf->{$keyname}}, $filename );
+	push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $name );
+
+	$filehash->{$filename}++;
+    }
+
+
 }
 
 sub fisher_yates_shuffle {
