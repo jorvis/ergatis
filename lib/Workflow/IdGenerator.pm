@@ -10,7 +10,7 @@ IdGenerator.pm - A module for creating pipeline IDs.
 
     my $idgen = new Workflow::IdGenerator;
 
-    my $pipelineid = $idgen->new_id();
+    my $pipelineid = $idgen->next_id();
     
 =head1 DESCRIPTION
 
@@ -102,7 +102,7 @@ umask(0000);
     my %_attributes = (
                         current_id  => undef,
                         id_dir      => '/usr/local/scratch/jorvis/id_generation',
-                        logging  => 1,
+                        logging     => 1,
                         log_dir     => '/usr/local/scratch/jorvis/id_generation/logs',
                         _id_file    => undef,
                         _logfh      => undef,
