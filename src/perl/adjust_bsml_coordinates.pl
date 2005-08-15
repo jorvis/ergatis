@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/local/devel/ANNOTATION/perl/bin/perl
+
+eval 'exec /usr/local/devel/ANNOTATION/perl/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 =head1  NAME 
 
@@ -50,7 +53,6 @@ B<--output_subdir_prefix,-x>
     To be used along with --output_subdir_size, this allows more control of the names of the
     subdirectories created.  Rather than just incrementing numbers (like 10), each subdirectory 
     will be named with this prefix (like prefix10).
-
 
 B<--filter_ends,-f> 
     NOT YET IMPLEMENTED
@@ -241,10 +243,16 @@ my $output_dir = $options{output_dir};
 my $adjustment;
 my $ofh;
 my $analyses_found = 0;
-my $feat_id;
+my $feat_id;  ## like cpa1.assem.2.1
+
+## some analysis types (such as AAT) have chain numbers which need to be refactored
+##  along with the coordinate adjustment.  this hash stores the next available numbers
+##  for each feat_name
+my %next_chain_num;
+
 ## the first sequence in each of these bsml file should be a sequence stub for the query sequence.
 ##  it's ID (after changing the reference back to the original) goes in here.
-my $root_seq_stub;
+my $root_seq_stub;  ## like cpa1.assem.2
 
 for my $bf (@bsml_files) {
     ## get the filename
@@ -285,7 +293,7 @@ for my $bf (@bsml_files) {
                                                              'Interval-loc'       => \&processIntervalLoc,
                                                              'Site-loc'           => \&processSiteLoc,
                                                              'Analyses'           => \&processAnalyses,
-                                                             'Sequence'           => \&processSequence
+                                                             'Sequence'           => \&processSequence,
                                                            },
                                twig_print_outside_roots => $ofh,
                                pretty_print => 'indented',
@@ -452,12 +460,25 @@ sub processSeqPairAlignment {
         }
     }
     
+    ## reserve next chain number for this Seq-pair-alignment
+    #   this may only be used by some components, such as AAT
+    my $chain_num = ++$next_chain_num{$root_seq_stub};
+    $logger->debug("chain_num $chain_num reserved for root_seq_stub $root_seq_stub (feat_id $feat_id)") if ($logger->is_debug);
+    
     ##  then check each child Seq-pair-run (spr) for refpos
     ##  (comppos refers to the subject sequence and is skipped)
-    my @sprs = $spa->children('Seq-pair-run');
-    for my $spr (@sprs) {
+    for my $spr ( $spa->children('Seq-pair-run') ) {
+    
         if (defined $spr->{att}->{refpos}) {
             $spr->{att}->{refpos} += $adjustment;
+        }
+        
+        ## check for a chain_number attribute
+        for my $att ( $spr->children('Attribute') ) {
+            if ($att->{att}->{name} && $att->{att}->{name} eq 'chain_number') {
+                $logger->debug("reassigned chain_number from " . $att->{att}->{content} . " to $chain_num") if ($logger->is_debug);
+                $att->{att}->{content} = $chain_num;
+            }
         }
     }
     
