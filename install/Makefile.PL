@@ -57,7 +57,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml clustalw cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -160,6 +160,14 @@ chado2bsml  :
 	@install workflow/chado2bsml/chado2bsml.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/chado2bsml/chado2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/chado2bsml/chado2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
+
+clustalw	:
+	@echo "Installing clustalw workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/clustalw/clustalw-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/clustalw/clustalw-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/clustalw/clustalw.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/clustalw/clustalw_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/clustalw/clustalwconf.ini $(WORKFLOW_DOCS_DIR)  
 
 cogs	:
 	@echo "Installing cogs workflows in $(WORKFLOW_DOCS_DIR)"
