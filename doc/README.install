@@ -6,4 +6,4 @@ make install
 cvs co cram_workflow_install
 make install
 
-#this is a test
+#this is a change
