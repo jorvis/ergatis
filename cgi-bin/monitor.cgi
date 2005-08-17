@@ -79,7 +79,7 @@ sub print_header {
 <head>
     <meta http-equiv="Content-Language" content="en-us">
     <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-    <title>pre-pre-alpha workflow interface prototype</title>
+    <title>workflow monitor</title>
     <!-- <link rel="stylesheet" type="text/css" href="/concept/builder.css"> -->
     <style type="text/css">
         body {
