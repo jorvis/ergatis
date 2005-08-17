@@ -34,11 +34,11 @@ my $componentbldconf = &get_component_blds($workflow_dir);
 
 
 if( -e $sharedconf){
-    print "Shared config <a  target='config' href='view_component.cgi?conffile=$sharedconf'>[view]<a target='config' href='config_component.cgi?conffile=$sharedconf&outputfile=$sharedconf&limitsect=init'>[edit]</a><br>";
+    print "Shared config <a  target='config' href='view_formatted_ini_source.cgi?file=$sharedconf'>[view]<a target='config' href='config_component.cgi?conffile=$sharedconf&outputfile=$sharedconf&limitsect=init'>[edit]</a><br>";
 }
 print "<table>";
 foreach my $componentbld (sort {$componentbldconf->{$b}->{'date'} <=> $componentbldconf->{$a}->{'date'}} keys %$componentbldconf){
-    print "<tr><td>$componentbldconf->{$componentbld}->{'type'}</td><td>$componentbldconf->{$componentbld}->{'name'}</td><td>$componentbldconf->{$componentbld}->{'user'}</td><td>".localtime($componentbldconf->{$componentbld}->{'date'})."</td><td><a href='add_component.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&conf=$componentbldconf->{$componentbld}->{'file'}&name=$componentbldconf->{$componentbld}->{'name'}&component_name=$componentbldconf->{$componentbld}->{'type'}&pipeline_id=$pipeline_id'>[add]</a><a  target='config' href='view_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[view]</a><a target='config' href='config_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}&outputfile=$componentbldconf->{$componentbld}->{'file'}&ignoresect=init&sharedconf=$sharedconf&component_name=$componentbldconf->{$componentbld}->{'type'}'>[edit]</a><a href='remove_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[remove]</a></td></tr>";
+    print "<tr><td>$componentbldconf->{$componentbld}->{'type'}</td><td>$componentbldconf->{$componentbld}->{'name'}</td><td>$componentbldconf->{$componentbld}->{'user'}</td><td>".localtime($componentbldconf->{$componentbld}->{'date'})."</td><td><a href='add_component.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&conf=$componentbldconf->{$componentbld}->{'file'}&name=$componentbldconf->{$componentbld}->{'name'}&component_name=$componentbldconf->{$componentbld}->{'type'}&pipeline_id=$pipeline_id'>[add]</a><a  target='config' href='view_formatted_ini_source.cgi?file=$componentbldconf->{$componentbld}->{'file'}'>[view]</a><a target='config' href='config_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}&outputfile=$componentbldconf->{$componentbld}->{'file'}&ignoresect=init&sharedconf=$sharedconf&component_name=$componentbldconf->{$componentbld}->{'type'}'>[edit]</a><a href='remove_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[remove]</a></td></tr>";
 }
 print "</table>";
 print "<h3>Pipelines</h3>";
@@ -49,7 +49,7 @@ foreach my $pipeline (sort {$pipelineconf->{$b}->{'date'} cmp $pipelineconf->{$a
     if(scalar(@$subcomponents)>1){
     print "<tr><td><a href='show_pipeline.cgi?&xmltemplate=$pipeline'>$pipelineconf->{$pipeline}->{'name'}</a></td><td>$pipelineconf->{$pipeline}->{'user'}</td><td>".localtime($pipelineconf->{$pipeline}->{'date'})."</td><td><a href='add_pipeline.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&pipelinexml=$pipeline'>[add]</a></tr>";
     foreach my $component (@$subcomponents){
-        print "<tr><td>&nbsp;</td><td>$component->{'type'}</td><td><a  target='config' href='view_component.cgi?conffile=$component->{'file'}'>$component->{'name'}</a></td><td>$component->{'user'}</td><td>".localtime($component->{'date'})."</td></tr>";
+        print "<tr><td>&nbsp;</td><td>$component->{'type'}</td><td><a  target='config' href='view_formatted_ini_source.cgi?file=$component->{'file'}'>$component->{'name'}</a></td><td>$component->{'user'}</td><td>".localtime($component->{'date'})."</td></tr>";
     }
     }
 }
