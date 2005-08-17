@@ -17,6 +17,11 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
+            <configMapId>relocate_query_file</configMapId>
+            <name>relocate_query_file</name>
+        </command> 
+        <command>    
+            <type>RunUnixCommand</type>
             <configMapId>clustalw</configMapId>
             <name>clustalw</name>
         </command>
