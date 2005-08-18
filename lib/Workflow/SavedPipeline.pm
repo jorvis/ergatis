@@ -213,7 +213,7 @@ use XML::Twig;
         
         ## create a new Config file
         my $cfg = new Config::IniFiles;
-           $cfg->SetFileName( "$pipeline_dir/pipeline.ini" );
+           $cfg->SetFileName( "$pipeline_dir/pipeline.xml.ini" );
 
         ## add a blank Section for each configMapId
         for my $configmapid ( $self->_configmapids() ) {
