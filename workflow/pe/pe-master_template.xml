@@ -54,6 +54,31 @@
           <name>Merge raw list files</name>
           <configMapId>merge_raw_list_files</configMapId>
        </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Merge fasta list files</name>
+          <configMapId>merge_fasta_list_files</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Cluster PE</name>
+          <configMapId>cluster_pe</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Create cluster output directory</name>
+          <configMapId>create_cluster_output_dir</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Create clustered FASTA</name>
+          <configMapId>create_cluster_fasta</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>Create cluster fasta list</name>
+          <configMapId>create_cluster_fasta_list</configMapId>
+       </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->
      </commandSet>

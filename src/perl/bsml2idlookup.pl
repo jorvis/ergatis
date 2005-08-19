@@ -46,6 +46,7 @@ my $results = GetOptions (\%options,
                             'debug=s',
                             'log|l=s',
                             'output|o=s',
+			    'fasta_list|f=s',
                             'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -123,28 +124,21 @@ if ( scalar @files == 0 ) {
 my $mfh;
 my $title;
 
+my %protein_fastas = ();
+
 my %lookup;
 	
 tie %lookup, 'MLDBM', $options{'output'} or $logger->logdie("Can't tie $options{'output'}");
 
 for my $file ( @files ) {
-    my $seqParser = new BSML::BsmlParserSerialSearch(
-						     SequenceCallBack =>sub 
-						     {
-							 my $seqRef = shift;
-							 my $seq_id = $seqRef->returnattr('id') || $seqRef->returnattr('identifier');
-							 #support for deprecated link of ASSEMBLY attribute
-							 $lookup{$seqRef->returnattr('id')} = $seqRef->returnBsmlAttr('ASSEMBLY');
-							 if(defined $seqRef && defined $seqRef->returnBsmlFeatureTableListR->[0]){
-							     my $features = $seqRef->returnBsmlFeatureTableListR->[0]->returnBsmlFeatureListR();
-							     foreach my $feat (@$features){
-								 $lookup{$feat->returnattr('id')} = $seq_id;
-							     }
-							 }
-						     });
+    my $seqParser = new BSML::BsmlParserSerialSearch
+	(SequenceCallBack => \&process_sequence);
     $logger->debug("Parsing file $file") if ($logger->debug);
     $seqParser->parse( $file );
 }
+
+&print_fasta_list;
+
 
 exit;	    
 
@@ -184,4 +178,36 @@ sub check_parameters {
     if(0){
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
     }
+}
+
+sub process_sequence
+{
+	my $seqRef = shift;
+	my $seq_id = $seqRef->returnattr('id') ||
+		$seqRef->returnattr('identifier');
+	#support for deprecated link of ASSEMBLY attribute
+	$lookup{$seqRef->returnattr('id')} =
+		$seqRef->returnBsmlAttr('ASSEMBLY');
+	if ($seqRef->returnattr('class') eq 'protein') {
+		my $fasta_file = $seqRef->returnBsmlSeqDataImport->{source};
+		++$protein_fastas{$fasta_file} if length $fasta_file;
+	}
+	if(defined $seqRef &&
+	   defined $seqRef->returnBsmlFeatureTableListR->[0]){
+		my $features = $seqRef->returnBsmlFeatureTableListR->[0]->
+			       returnBsmlFeatureListR();
+		foreach my $feat (@$features){
+			$lookup{$feat->returnattr('id')} = $seq_id;
+		}
+	}
+}
+
+sub print_fasta_list
+{
+	return if (!$options{fasta_list});
+	open FASTA_OUT, ">>$options{fasta_list}" or
+		die "Error writing fasta list $options{fasta_list}: $!";
+	foreach my $fasta (keys %protein_fastas) {
+		print FASTA_OUT "$fasta\n";
+	}
 }
