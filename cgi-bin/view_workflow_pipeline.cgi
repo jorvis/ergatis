@@ -84,18 +84,18 @@ sub parseXMLFile {
     $lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
 
     ## quota information (only works if in /usr/local/annotation/SOMETHING)
-    my $quotastring = '';
-    if ($file =~ m|^(/usr/local/annotation/.+?/)|) {
-        $quotastring = `getquota -N $1`;
-        if ($quotastring =~ /(\d+)\s+(\d+)/) {
-            my ($limit, $used) = ($1, $2);
-            $quotastring = sprintf("%.1f", ($used/$limit) * 100) . "\% ($used KB of $limit KB used)";
-        } else {
-            $quotastring = 'error parsing quota information';
-        }
-    } else {
-        $quotastring = 'unavailable (outside of project area)';
-    }
+    my $quotastring = 'quota information currently disabled';
+#    if ($file =~ m|^(/usr/local/annotation/.+?/)|) {
+#        $quotastring = `getquota -N $1`;
+#        if ($quotastring =~ /(\d+)\s+(\d+)/) {
+#            my ($limit, $used) = ($1, $2);
+#            $quotastring = sprintf("%.1f", ($used/$limit) * 100) . "\% ($used KB of $limit KB used)";
+#        } else {
+#            $quotastring = 'error parsing quota information';
+#        }
+#    } else {
+#        $quotastring = 'unavailable (outside of project area)';
+#    }
 
     print "<div id='pipelinesummary'>\n";
     print "    <div id='pipeline'>$file</div>\n";
@@ -209,6 +209,8 @@ sub print_header {
     my ($project, $component, $state) = @_;
 
     print <<TopHeAdER;
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
 
@@ -224,7 +226,7 @@ TopHeAdER
 # comment: The following modification will display the project/state/component in the title bar 
 #          of the browser
 #
-print "<title>$project|$state|$component  pre-pre-alpha workflow interface prototype</title>\n";
+print "<title>$project|$state|$component  pipeline view</title>\n";
 
 
 
