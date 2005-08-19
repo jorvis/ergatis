@@ -697,6 +697,10 @@ sub get_filename{
 
 sub get_quota{
     my($xmlfile) = @_;
+    
+    ## temporary hack!
+    return 'disabled';
+    
     my($projectdir) = ($xmlfile =~ /(\/usr\/local\/annotation\/[^\/]+)/);
     my $out = `getquota $projectdir`;
     my ($limit) = ($out =~ /Current\s+Quota\s+Limit\s+:\s+(\d+)/gi);
