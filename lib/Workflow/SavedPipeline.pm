@@ -310,10 +310,12 @@ XMLfraGMENt
             my $configmapid =  $configmapid_elt->text();
 
             ## remember the configmapid
-            $self->_add_configmapid( $configmapid );
+            $self->_add_configmapid( $configmapid ); #for the commandset
             
             ## if this is a component, parse the name and check that the file exists.
             if ($configmapid =~ /component_(.+?)\.(.+)/) {
+		$self->_add_configmapid( "generate_".$configmapid ); #for command "Generate component"
+		$self->_add_configmapid( "run_".$configmapid ); #for commandset that runs subflow 
                 my ($component_name, $token) = ($1, $2);
 
                 ## file will be named like:
