@@ -1,4 +1,4 @@
-#!/local/perl/bin/perl -w
+#!/usr/local/bin/perl -w
 
 ## this shouldn't be used at all yet.  i'm just playing
 ##  with it right now.
