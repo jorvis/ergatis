@@ -219,7 +219,7 @@ sub print_header {
     <style type="text/css">
         body {
             font-family: verdana, sans-serif;
-            font-size: 10pt;
+            font-size: 8pt;
             margin: 0;
             padding: 0;
         }

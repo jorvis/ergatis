@@ -235,7 +235,7 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
     <style type="text/css">
         body {
             font-family: verdana, sans-serif;
-            font-size: 10pt;
+            font-size: 8pt;
             margin: 5px;
             padding: 0px;
         }
