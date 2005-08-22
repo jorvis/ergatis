@@ -161,8 +161,13 @@ sub process_command {
     
     my $start_time_obj = ParseDate( $command->first_child('startTime')->text );
     my $start_time     = UnixDate( $start_time_obj, "%c" );
-    my $end_time_obj   = ParseDate( $command->first_child('endTime')->text );
-    my $end_time       = UnixDate( $end_time_obj, "%c" );
+    
+    my ($end_time_obj, $end_time);
+    ## end time may not exist (if running, for example)
+    if ( $command->first_child('endTime') ) {
+        $end_time_obj   = ParseDate( $command->first_child('endTime')->text );
+        $end_time       = UnixDate( $end_time_obj, "%c" );
+    }
 
     ## we can calculate runtime only if start and end time are known, or if start is known and state is running
     my $runtime = '?';
