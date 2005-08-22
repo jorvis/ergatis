@@ -80,7 +80,7 @@ print <<PageHeadeR;
      }
      
      input {
-        border: 1px solid grey;
+        border: 1px solid rgb(150,150,150);
         padding-left: 5px;
      }
      

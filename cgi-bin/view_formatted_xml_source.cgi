@@ -195,7 +195,7 @@ sub pageHeader {
             margin-left: 20px;
         }
         ul.component {
-            border: 1px solid grey;
+            border: 1px solid rgb(150,150,150);
             margin-bottom: 5px;
         }
         div.component_progress_image {
