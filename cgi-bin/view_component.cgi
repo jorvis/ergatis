@@ -32,7 +32,7 @@ if ( $parent_pipeline =~ /.+\/(.+?)\/Workflow/ ) {
     $component_project = $1;
 }
 
-print_header();
+print_header($parent_pipeline);
 
 ## look at each of the children of the root
 foreach my $child ( $parent_commandset->children() ) {
@@ -205,6 +205,8 @@ SubflowGroupBar
 
 
 sub print_header {
+    my $pipeline = shift;
+
     print <<HeAdER;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
 "http://www.w3.org/TR/html4/strict.dtd">
@@ -290,6 +292,9 @@ sub print_header {
         div.subflowinfo table {
             background-color: rgb(235,235,235);
             padding: 5px;
+        }
+        div.navigation {
+            margin-bottom: 10px;
         }
         td, th {
             font-size: 90%;
@@ -422,6 +427,9 @@ sub print_header {
 <body>
 
 <div id='workflowcontainer'>
+    <div class='navigation'>
+        [<a href='./view_workflow_pipeline.cgi?&instance=$pipeline'>pipeline view</a>]
+    </div>
     <div class='start'>
         $component_name start
     </div>
