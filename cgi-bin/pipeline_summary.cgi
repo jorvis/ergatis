@@ -76,26 +76,25 @@ my $quotastring = 'quota information currently disabled';
 #    $quotastring = 'unavailable (outside of project area)';
 #}
 
-
-
-print "    <div id='pipeline'>$pipeline</div>\n";
-print "    <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>\n";
-print "    <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>\n";
-print "    <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>\n";
-print "    <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>\n";
-print "    <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>\n";
-print "    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>\n";
-print "    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>\n";
-print "    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>20</span>s</div>\n";
-print "    <div id='pipelinecommands'>" .
-               "[<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>] " .
-               "[<a href='./run_wf.cgi?instancexml=$pipeline'>rerun</a>] " .
-               "[<a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'>edit</a>] " .
-               "[<a href='./kill_wf.cgi?instancexml=$pipeline'>kill</a>] " .
-               "[<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>] " .
-               "[<a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'>SGE status</a>] " .
-          "</div>\n";
-
+print <<PipelineSummarY;
+    <div id='pipeline'>$pipeline</div>
+    <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
+    <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
+    <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
+    <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
+    <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
+    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
+    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
+    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>20</span>s</div>
+    <div id='pipelinecommands'>
+        [<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>] 
+        [<a href='./run_wf.cgi?instancexml=$pipeline'>rerun</a>] 
+        [<a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'>edit</a>] 
+        [<a href='./kill_wf.cgi?instancexml=$pipeline'>kill</a>] 
+        [<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>] 
+        [<a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'>SGE status</a>] 
+    </div>
+PipelineSummarY
 
 
 
