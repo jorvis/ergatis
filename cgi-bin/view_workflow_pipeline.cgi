@@ -234,8 +234,8 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
 
     <style type="text/css">
         body {
-            font-family: verdana, helvetica, arial, sans-serif;
-            font-size: 10px;
+            font-family: verdana, sans-serif;
+            font-size: 10pt;
             margin: 5px;
             padding: 0px;
         }
@@ -277,7 +277,7 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
         }
         
         ul.start, ul.end {
-            border: 1px solid grey;
+            border: 1px solid rgb(150,150,150);
             width: 300px;
             background-color: rgb(220, 220, 220);
         }
@@ -288,7 +288,7 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
         }
         
         ul.component {
-            border: 1px solid grey;
+            border: 1px solid rgb(150,150,150);
             margin-bottom: 5px;
         }
         
@@ -299,8 +299,8 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
         }
         
         #pipelinesummary {
-            border: 1px solid grey;
-            width: 700px;
+            border: 1px solid rgb(150,150,150);
+            width: 750px;
             padding-bottom: 5px;
         }
         #pipelinecommands {
@@ -449,7 +449,7 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
             }
             
             // change border color back to show we've finished an update
-            document.getElementById(component).style.borderColor = 'grey';
+            document.getElementById(component).style.borderColor = 'rgb(150,150,150)';
         }
         
         var pipeline_update_req;
@@ -487,7 +487,7 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
                 document.getElementById('pipelinesummary').innerHTML = pipeline_update_req.responseText;
                 
                 // set the border back
-                document.getElementById('pipelinesummary').style.borderColor = 'grey';
+                document.getElementById('pipelinesummary').style.borderColor = 'rgb(150,150,150)';
                 
                 // set the label back
                 document.getElementById('pipeline_timer_label').innerHTML = "update in <span id='pipeline_counter'>20</span>s";
