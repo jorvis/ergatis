@@ -115,7 +115,7 @@ if (-e $pipeline) {
     $status_list_line
     $messages_line
     <li class="actions">
-        [view] 
+        [<a href="./view_component.cgi?pipeline_xml=$pipeline" target="_blank">view</a>]  
         [<a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank">xml</a>] 
         [<a href="./view_formatted_ini_source.cgi?file=$component_conf" target="_blank">conf</a>] 
         [<a onclick="requestComponentUpdate('$pipeline', '$ul_id')">update</a>] 
@@ -129,12 +129,6 @@ ComPONENTSummary
 } else {
     ## print the incomplete component summary HTML
     printIncompleteSummary();
-}
-
-sub gatherMessages {
-    my $twig = shift;
-    
-    
 }
 
 sub parseCommandSet {
