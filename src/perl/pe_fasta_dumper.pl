@@ -6,7 +6,6 @@ use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
 
 use Fasta::FastaIndexedReader;
-use Utils::Progress;
 
 my $indexer		= undef;
 my $clusters		= new IO::File->fdopen(fileno(STDIN), "r");
@@ -56,7 +55,6 @@ sub dump_fasta
 {
 	my $cid = 0;
 	my $chunk = 0;
-	my $progress = new Utils::Progress;
 	my $dir = "$output_dir";
 	while (my $line = <$clusters>) {
 		if ($cid % $chunk_size == 0) {
@@ -64,8 +62,6 @@ sub dump_fasta
 			mkdir($dir);
 			++$chunk;
 		}
-		$progress->SetMessage(sprintf("Dumping FASTA [%d]", $cid));
-		$progress->Show;
 		chomp $line;
 		my @ids = split /\t/, $line;
 		my $fname = "$dir/cluster_$cid.fsa";
@@ -79,7 +75,6 @@ sub dump_fasta
 		}
 		print $out "\n";
 	}
-	$progress->Show(1);
 }
 
 sub process_fasta_list
