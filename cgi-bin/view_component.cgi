@@ -201,7 +201,7 @@ sub process_command {
                 <tr><th>end time:</th><td>$end_time</td></tr>
                 <tr><th>duration:</th><td>$runtime</td></tr>
                 <tr><th>grid id:</th><td>$grid_id</td></tr>
-                <tr><th>execution host:</th><td>$execution_host</td></tr>
+                <tr><th>execution host:</th><td><a href='http://enterprise.tigr.org/ganglia/?m=load_one&r=hour&s=descending&c=Main+Cluster&h=$execution_host&sh=1&hc=4' target='_blank'>$execution_host</a></td></tr>
                 <tr><th colspan='2'>xml:</th></tr>
                 <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=$file'>$file</a></td></tr>
             </table>
