@@ -1,7 +1,4 @@
-#!/usr/local/devel/ANNOTATION/perl/bin/perl
-
-eval 'exec /usr/local/devel/ANNOTATION/perl/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
+#!/usr/local/bin/perl
 
 =head1  NAME 
 
