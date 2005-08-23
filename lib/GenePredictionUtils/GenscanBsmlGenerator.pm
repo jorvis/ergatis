@@ -1,4 +1,4 @@
-package GenscanBsmlGenerator;
+package GenePredictionUtils::GenscanBsmlGenerator;
 @ISA = qw(GenePredictionUtils::GenePredictionBsmlGenerator);
 
 use strict;
