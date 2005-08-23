@@ -4,7 +4,6 @@ use strict;
 use warnings;
 
 use Sequence::Sequence;
-use Utils::Progress;
 
 use IO::File;
 
@@ -25,12 +24,10 @@ sub Init
 		$files = [$files];
 	}
 	$this->{INDEX} = {};
-	my $progress = new Utils::Progress("Indexing FASTA");
 	foreach my $file (@$files) {
 		my $fh = new IO::File($file) or
 			die "Error reading FASTA data $file: $!";
 		while (my $c = $fh->getc) {
-			$progress->Show if $show_progress;
 			if ($c ne ">") {
 				<$fh>;
 				next;
@@ -41,7 +38,6 @@ sub Init
 			$this->{INDEX}->{$id} = [$fh, $fpos];
 		}
 	}
-	$progress->Show(1) if $show_progress;
 }
 
 sub FetchSequence
