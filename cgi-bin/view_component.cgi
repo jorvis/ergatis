@@ -25,7 +25,10 @@ if ( $parent_commandset->first_child('name')->text =~ /(.+) workflow/) {
     $component_name = $1;
 }
 
-my $parent_pipeline = $parent_commandset->first_child('parentFileName')->text || '';
+my $parent_pipeline = '';
+if ( $parent_commandset->first_child('parentFileName') ) {
+    $parent_pipeline = $parent_commandset->first_child('parentFileName')->text;
+}
 
 my $component_project = '?';
 if ( $parent_pipeline =~ /.+\/(.+?)\/Workflow/ ) {
