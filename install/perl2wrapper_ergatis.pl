@@ -46,7 +46,7 @@ $addbuffer
 
 umask 0000
 
-exec /usr/local/devel/ANNOTATION/perl/bin/perl -I $instdir/lib/site_perl/5.8.5 $instdir/bin/$fname $shell_args    
+exec /usr/local/bin/perl -I $instdir/lib/site_perl/5.8.5 $instdir/bin/$fname $shell_args    
 
 _END_WRAPPER_
    ;
