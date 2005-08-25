@@ -45,7 +45,7 @@ sub process_iterated_commandset {
     my $state = $commandset->first_child('state')->text();
     
     print <<SubFlowFile;
-    <div id='${name}_bar' class='itembar'>
+    <div id='${name}_bar' class='subflowbar'>
         <div class='leftside'>
             <img id='${name}_arrow' class='expander' src='/cram/arrow_right.gif' onclick='toggle_subflow_display("$name", "$file");' alt='expand' title='expand'>
             <img class='status' src='/cram/status_$state.png' title='$state' alt='$state'>
@@ -55,7 +55,7 @@ sub process_iterated_commandset {
             <span class='minor'>n/a</span>
         </div>
     </div>
-    <div id='${name}_data' class='itemdata' style='display: none;'></div>
+    <div id='${name}_data' class='subflowdata' style='display: none;'></div>
 SubFlowFile
 
     $twig->purge;

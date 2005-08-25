@@ -183,7 +183,7 @@ sub process_command {
     }
     
     print <<SubflowGroupBar;
-        <div id='${name}_bar' class='subflowbar'>
+        <div id='${name}_bar' class='subflowgroupbar'>
             <div class='leftside'>
                 <img id='${name}_arrow' class='expander' src='/cram/arrow_right.gif' onclick='toggle_subflowgroup_display("$name", "$file");' alt='expand' title='expand'>
                 <img class='status' src='/cram/status_$state.png' title='$state' alt='$state'>
@@ -206,7 +206,7 @@ sub process_command {
                 <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=$file'>$file</a></td></tr>
             </table>
         </div>
-        <div id='${name}_data' class='subflowdata' style='display: none;'></div>
+        <div id='${name}_data' class='subflowgroupdata' style='display: none;'></div>
 SubflowGroupBar
 }
 
@@ -225,7 +225,6 @@ sub print_header {
     <meta http-equiv="Content-Language" content="en-us">
     <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
     <title>$component_project|$component_name|$component_state</title>
-    <!-- <link rel="stylesheet" type="text/css" href="/concept/builder.css"> -->
     <style type="text/css">
         body {
             font-family: verdana, sans-serif;
@@ -249,13 +248,13 @@ sub print_header {
             font-weight: bold; 
             font-size: 100%; 
         }
-        div.subflowbar, div.itembar {
+        div.subflowgroupbar, div.subflowbar {
             margin-bottom: 5px;
             width: 500px;
             padding-bottom: 2px;
             margin-top: 3px;
         }
-        div.subflowbar {
+        div.subflowgroupbar {
             border-bottom: 1px solid rgb(150,150,150);
         }
         div.command {
@@ -263,8 +262,9 @@ sub print_header {
             width: 500px;
             padding-bottom: 2px;
         }
-        div.subflowdata, div.itemdata {
+        div.subflowgroupdata, div.subflowdata {
             padding: 5px 0px 0px 30px;
+            margin-bottom: 15px;
             display: none;
         }
         div.start, div.end {
@@ -282,6 +282,7 @@ sub print_header {
         span.minor {
             color: rgb(150,150,150);
             font-size: 80%;
+            margin-left: 20px;
         }
         span.infolabel {
             color: rgb(0,0,200);
