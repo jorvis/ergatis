@@ -1,7 +1,4 @@
-#!/usr/local/devel/ANNOTATION/perl/bin/perl
-
-eval 'exec /usr/local/devel/ANNOTATION/perl/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
+#!/usr/local/bin/perl
 
 =head1  NAME 
 
@@ -105,6 +102,10 @@ coordinates in these files relate to the original non-split file, here named cpa
 If mapping information for the files in your list come from multiple BSML maps, you can use
 the --map_dir option.  This will load all maps in the specified directory whose names end
 in '.map.bsml'
+
+Also note this script handles compressed input.  If the input BSML files have been gzipped
+and end in either the '.gz' or '.gzip' extension, they will be decompressed, modified and
+recompressed on the fly.
 
 =head1 OUTPUT
 
@@ -283,8 +284,15 @@ for my $bf (@bsml_files) {
         $sub_dir++ if ( $files_in_dir == $options{output_subdir_size} );
     }
     
-    ## open the output file
-    open ($ofh, ">$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
+    ## open the input and output files.  how we do this depends on whether the input was zipped or not
+    my $ifh;
+    if ($fname =~ /\.(gz|gzip)$/) {
+        open ($ifh, "<:gzip", $bf)                       || $logger->logdie("can't read zipped input file '$bf': $!");
+        open ($ofh, ">:gzip", "$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
+    } else {
+        open ($ifh, "<$bf")                     || $logger->logdie("can't read input file $bf: $!");
+        open ($ofh, ">$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
+    }
 
     my $twig = XML::Twig->new(
                                twig_roots               => {
@@ -300,7 +308,8 @@ for my $bf (@bsml_files) {
                              );
     
     ## do the parse
-    $twig->parsefile($bf);
+    #$twig->parsefile($bf);
+    $twig->parse($ifh);
     
     ## error if we didn't find an analysis
     if ($analyses_found) {
