@@ -100,7 +100,7 @@ print <<pipeLINEsummary;
     <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
     <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
     <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
-    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>10</span>s</div>
+    <div class='timer' id='pipeline_timer_label'></div>
     <div id='pipelinecommands'>
                [<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>]
                [<a href='./run_wf.cgi?instancexml=$file'>rerun</a>] 
@@ -110,8 +110,12 @@ print <<pipeLINEsummary;
                [<a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'>SGE status</a>] 
     </div>
 </div>
-<script>pipelineCountdown();</script>
 pipeLINEsummary
+
+## if state is not complete, start an update timer
+if ($state ne 'complete') {
+    print "<script>pipelineCountdown();</script>\n";
+}
 
 ## parse the root commandSet to find components and set definitions
 parseCommandSet( $commandSet );
@@ -439,7 +443,7 @@ sub print_header {
         }
         
         var pipeline_update_req;
-        timers['pipeline'] = 21;
+        timers['pipeline'] = 31;
         
         function getPipelineUpdate(url) {
             // set the border and label to show update
@@ -480,12 +484,11 @@ sub print_header {
                 // set the border back
                 document.getElementById('pipelinesummary').style.borderColor = 'rgb(150,150,150)';
                 
-                // set the label back
-                document.getElementById('pipeline_timer_label').innerHTML = "update in <span id='pipeline_counter'>20</span>s";
-                
-                // start the timer again
-                timers['pipeline'] = 31;
-                pipelineCountdown();
+                // if the state is not complete, continue checking
+                if ( document.getElementById('pipelinestate').innerHTML != 'complete' ) {
+                    timers['pipeline'] = 31;
+                    pipelineCountdown();
+                }
             }
         }
         
@@ -498,7 +501,7 @@ sub print_header {
         
             timers['pipeline']--;
             
-            document.getElementById('pipeline_counter').innerHTML = timers['pipeline'];
+            document.getElementById('pipeline_timer_label').innerHTML = 'update in ' + timers['pipeline'] + 's';
             
             if (timers['pipeline'] > 0) {
                 window.setTimeout( "pipelineCountdown()", 1000);

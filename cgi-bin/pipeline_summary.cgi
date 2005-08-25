@@ -93,7 +93,7 @@ print <<PipelineSummarY;
     <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
     <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
     <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
-    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>20</span>s</div>
+    <div class='timer' id='pipeline_timer_label'></div>
     <div id='pipelinecommands'>
         [<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>] 
         [<a href='./run_wf.cgi?instancexml=$pipeline'>rerun</a>] 
