@@ -109,6 +109,10 @@ examples above.  This convention is:
 where featid must match the id of some Sequence element in the mapping file.  This is how
 the relationship between the fragment and the map is defined.
 
+Also note this script handles compressed input.  If the input BSML files have been gzipped
+and end in either the '.gz' or '.gzip' extension, they will be decompressed, modified and
+recompressed on the fly.
+
 =head1 OUTPUT
 
 The output alignment files will be written to the directory specified by --output_dir.  You may
@@ -264,11 +268,15 @@ for my $nf (@nap_files) {
         $sub_dir++ if ( $files_in_dir == $options{output_subdir_size} );
     }
 
-    ## open the output file
-    open (my $ofh, ">$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
-
-    ## open the input file
-    open (my $ifh, "<$nf") || $logger->logdie("can't read input file: $!");
+    ## open the input and output files.  how we do this depends on whether the input was zipped or not
+    my ($ifh, $ofh);
+    if ($fname =~ /\.(gz|gzip)$/) {
+        open ($ifh, "<:gzip", $nf)                       || $logger->logdie("can't read zipped input file '$nf': $!");
+        open ($ofh, ">:gzip", "$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
+    } else {
+        open ($ifh, "<$nf")                     || $logger->logdie("can't read input file $nf: $!");
+        open ($ofh, ">$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
+    }
 
     ## do the adjustment (same as brian's previous code)
     ##  the numbers to adjust are on the line immediately after a line
