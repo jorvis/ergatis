@@ -47,6 +47,26 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
+            <configMapId>remove_raw_dds_output</configMapId>
+            <name>remove_raw_dds_output</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>remove_raw_ext_output</configMapId>
+            <name>remove_raw_ext_output</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>remove_raw_ext_collapsed_output</configMapId>
+            <name>remove_raw_ext_collapsed_output</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>remove_raw_filter_output</configMapId>
+            <name>remove_raw_filter_output</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
             <configMapId>touch_btab</configMapId>
             <name>touch_btab</name>
         </command>
@@ -60,10 +80,25 @@
             <configMapId>gap22bsml</configMapId>
             <name>gap22bsml</name>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>compress_gap2_btab</configMapId>
+            <name>compress_gap2_btab</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>compress_gap2</configMapId>
+            <name>compress_gap2</name>
+        </command>
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>compress_bsml</configMapId>
+            <name>compress_bsml</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
