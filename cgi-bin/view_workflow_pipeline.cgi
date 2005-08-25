@@ -16,75 +16,65 @@ print $q->header( -type => 'text/html' );
 
 my $xml_input = $q->param("instance") || die "pass instance";
 
+my ($project, $state) = ('?', '?');
 
-#
-# author:  sundaram@tigr.org
-# date:    2005-08-03
-# comment: The following modification will display the project/state/component in the title bar 
-#          of the browser
-# bgzcase: 2020
-#
-my ($project, $component, $state) = &get_title($xml_input);
-
-print_header($project, $component, $state);
-
-
-if (-f $xml_input && $xml_input =~ /(.+)\/Workflow/) {
-    ## the repository root is everything up until the Workflow directory
-    $repository_root = $1;
-    parseXMLFile($xml_input);
-} else {
-    die "don't know what to do with $xml_input";
+## make sure the file exists
+if (! -f $xml_input) {
+    die "$xml_input doesn't exist";
 }
 
-print_footer();
+## extract the project
+if ( $xml_input =~ m|(.+/(.+?))/Workflow| ) {
+    $repository_root = $1;
+    $project = $2;
+} else {
+    die "failed to extract a repository_root from $xml_input.  expected a Workflow subdirectory somewhere."
+}
 
-exit(0);
 
-sub parseXMLFile {
-    my $file = shift;
-    my $twig = new XML::Twig;
+my $file = $xml_input;
+my $twig = new XML::Twig;
 
-    $twig->parsefile($file);
-   
-    my $commandSetRoot = $twig->root;
-    my $commandSet = $commandSetRoot->first_child('commandSet');
-    
-    ## pull desired info out of the root commmandSet
-    ## pull: project space usage
-    my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
-    my ($starttimeobj, $endtimeobj);
-    
-    if ($commandSet->first_child('startTime') ) {
-        $starttimeobj = ParseDate($commandSet->first_child('startTime')->text());
-        $starttime = UnixDate($starttimeobj, "%c");
+$twig->parsefile($file);
+
+my $commandSetRoot = $twig->root;
+my $commandSet = $commandSetRoot->first_child('commandSet');
+
+## pull desired info out of the root commmandSet
+## pull: project space usage
+my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
+my ($starttimeobj, $endtimeobj);
+
+if ($commandSet->first_child('startTime') ) {
+    $starttimeobj = ParseDate($commandSet->first_child('startTime')->text());
+    $starttime = UnixDate($starttimeobj, "%c");
+}
+
+if ($commandSet->first_child('endTime') ) {
+    $endtimeobj = ParseDate($commandSet->first_child('endTime')->text());
+    $endtime = UnixDate($endtimeobj, "%c");
+}
+
+if ( $commandSet->first_child('state') ) {
+    $state  = $commandSet->first_child('state')->text();
+}
+
+## we can calculate runtime only if start and end time are known, or if start is known and state is running
+if ($starttimeobj) {
+    if ($endtimeobj) {
+        $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc($starttimeobj, $endtimeobj)) );
+    } elsif ($state eq 'running') {
+        $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("now", $starttimeobj)) ) . ' ...';
     }
+}
 
-    if ($commandSet->first_child('endTime') ) {
-        $endtimeobj = ParseDate($commandSet->first_child('endTime')->text());
-        $endtime = UnixDate($endtimeobj, "%c");
-    }
+my $filestat = stat($file);
+my $user = getpwuid($filestat->uid);
+$lastmodtime = time - $filestat->mtime;
+$lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
 
-    if ( $commandSet->first_child('state') ) {
-        $state  = $commandSet->first_child('state')->text();
-    }
-
-    ## we can calculate runtime only if start and end time are known, or if start is known and state is running
-    if ($starttimeobj) {
-        if ($endtimeobj) {
-            $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc($starttimeobj, $endtimeobj)) );
-        } elsif ($state eq 'running') {
-            $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("now", $starttimeobj)) ) . ' ...';
-        }
-    }
-
-    my $filestat = stat($file);
-    my $user = getpwuid($filestat->uid);
-    $lastmodtime = time - $filestat->mtime;
-    $lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
-
-    ## quota information (only works if in /usr/local/annotation/SOMETHING)
-    my $quotastring = 'quota information currently disabled';
+## quota information (only works if in /usr/local/annotation/SOMETHING)
+my $quotastring = 'quota information currently disabled';
 #    if ($file =~ m|^(/usr/local/annotation/.+?/)|) {
 #        $quotastring = `getquota -N $1`;
 #        if ($quotastring =~ /(\d+)\s+(\d+)/) {
@@ -97,30 +87,39 @@ sub parseXMLFile {
 #        $quotastring = 'unavailable (outside of project area)';
 #    }
 
-    print "<div id='pipelinesummary'>\n";
-    print "    <div id='pipeline'>$file</div>\n";
-    print "    <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>\n";
-    print "    <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>\n";
-    print "    <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>\n";
-    print "    <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>\n";
-    print "    <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>\n";
-    print "    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>\n";
-    print "    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>\n";
-    print "    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>10</span>s</div>\n";
-    print "    <div id='pipelinecommands'>" .
-                   "[<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>] " .
-                   "[<a href='./run_wf.cgi?instancexml=$file'>rerun</a>] " .
-                   "[<a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'>edit</a>] " .
-                   "[<a href='./kill_wf.cgi?instancexml=$file'>kill</a>] " .
-                   "[<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>] " .
-                   "[<a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'>SGE status</a>] " .
-              "</div>\n";
-    print "</div>\n";
-    print "<script>pipelineCountdown();</script>";
-    
-    ## parse the root commandSet to find components and set definitions
-    parseCommandSet( $commandSet );
-}
+print_header($project, $state);
+
+print <<pipeLINEsummary;
+<div id='pipelinesummary'>
+    <div id='pipeline'>$file</div>
+    <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
+    <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
+    <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
+    <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
+    <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
+    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
+    <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
+    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
+    <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>10</span>s</div>
+    <div id='pipelinecommands'>
+               [<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>]
+               [<a href='./run_wf.cgi?instancexml=$file'>rerun</a>] 
+               [<a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'>edit</a>] 
+               [<a href='./kill_wf.cgi?instancexml=$file'>kill</a>] 
+               [<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>] 
+               [<a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'>SGE status</a>] 
+    </div>
+</div>
+<script>pipelineCountdown();</script>
+pipeLINEsummary
+
+## parse the root commandSet to find components and set definitions
+parseCommandSet( $commandSet );
+
+print_footer();
+
+exit(0);
+
 
 
 sub parseCommandSet {
@@ -206,9 +205,9 @@ sub parseCommandSetChildren {
 
 sub print_header {
 
-    my ($project, $component, $state) = @_;
+    my ($project, $state) = @_;
 
-    print <<TopHeAdER;
+    print <<HeAdER;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
 "http://www.w3.org/TR/html4/strict.dtd">
 
@@ -217,20 +216,7 @@ sub print_header {
 <head>
     <meta http-equiv="Content-Language" content="en-us">
     <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-
-TopHeAdER
-
-#
-# author:  sundaram@tigr.org
-# date:    2005-08-03
-# comment: The following modification will display the project/state/component in the title bar 
-#          of the browser
-#
-print "<title>$project|$state|$component  pipeline view</title>\n";
-
-
-
-    print <<HeAdER;
+    <title>$project|$state|pipeline</title>
 
     <style type="text/css">
         body {
@@ -486,6 +472,11 @@ print "<title>$project|$state|$component  pipeline view</title>\n";
                 // write the contents of the div 
                 document.getElementById('pipelinesummary').innerHTML = pipeline_update_req.responseText;
                 
+                // update the page title
+                //  title should be like "project|state pipeline view"
+                document.title = document.getElementById('projectid').innerHTML + '|' + 
+                                 document.getElementById('pipelinestate').innerHTML + '|pipeline';
+                
                 // set the border back
                 document.getElementById('pipelinesummary').style.borderColor = 'rgb(150,150,150)';
                 
@@ -535,91 +526,4 @@ sub print_footer {
 
 </html>
 FooTER
-}
-
-
-#--------------------------------------------------------------
-#
-# author:   sundaram@tigr.org
-#
-# date:     2005-08-03
-#
-# purpose:  This routine will extract the project name
-#           from the file name and retrieve the
-#           the state & component name from within the file
-#
-#
-# input:    workflow .xml filename
-#
-# output:   none
-#
-# return:   project, state, component
-#
-#
-#--------------------------------------------------------------
-sub get_title {
-
-    my $file = shift;
-
-
-    my ($project, $component, $state);
-
-
-    #
-    # Parse the project name from the file name
-    #
-    if (-f $file && $file =~ /(.+)\/Workflow/) {
-	
-	$project = $1;
-	$project = lc ( File::Basename::basename($project) );
-    }
-    
-
-    if (-e $xml_input){
-	#
-	# Retrieve the component name 
-	#
-	my $twig = new XML::Twig;
-	
-	$twig->parsefile($xml_input);
-	
-	my $commandSetRoot = $twig->root;
-	
-
-	#
-	# Check first level commandSet's first child configMapId
-	#
-	my $commandSet = $commandSetRoot->first_child('commandSet');
-	
-	my $configMapId = $commandSet->first_child('configMapId')->text();
-	
-	if ($configMapId !~ /^component_/) {
-	    
-
-	    #
-	    # Check second level commandSet's first child configMapId
-	    #
-
-	    my $commandSet = $commandSet->first_child('commandSet');
-	    
-	    $configMapId = $commandSet->first_child('configMapId')->text();
-	    
-	}
-	
-	if ($configMapId =~ /^component_(.+)/){
-	    $component = $1;
-	}
-	
-	if ( $commandSet->first_child('state') ) {
-	    $state  = $commandSet->first_child('state')->text();
-	}
-	
-
-
-    }
-
-
-
-    return ($project, $component, $state);
-
 }

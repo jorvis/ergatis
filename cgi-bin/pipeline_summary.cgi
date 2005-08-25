@@ -17,6 +17,13 @@ print $q->header( -type => 'text/html' );
 ## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 
+## get the project label out of the pipeline.  just before 'Workflow'
+my $project = '?';
+if ( $pipeline =~ m|.+/(.+?)/Workflow| ) {
+    $project = $1;
+}
+
+
 my $twig = new XML::Twig;
 
 if ($pipeline =~ /(.+)\/Workflow/ ) {
@@ -81,9 +88,10 @@ print <<PipelineSummarY;
     <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
     <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
     <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
-    <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
+    <div class='pipelinestat'><strong>state:</strong> <span id='pipelinestate'>$state</span></div>
     <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
     <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
+    <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
     <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
     <div class='timer' id='pipeline_timer_label'>update in <span id='pipeline_counter'>20</span>s</div>
     <div id='pipelinecommands'>
