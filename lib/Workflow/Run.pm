@@ -107,8 +107,12 @@ sub CreateWorkflow{
                 ## next two needed by hmmpfam2htab
                 HMM_SCRIPTS     => '/usr/local/devel/ANNOTATION/hmm/bin',
                 SYBASE          => '/usr/local/packages/sybase',
-                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
                 
+                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+            
+                # for genewise
+                WISECONFIGDIR => "/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg",
+
                 ## should workflow take care of this?
                 SGE_ROOT        => '/local/n1ge',
                 SGE_CELL => 'tigr',
