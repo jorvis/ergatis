@@ -119,6 +119,9 @@ each seqid referenced in column 1 must also have a contig or supercontig definit
 =item *
 each seqid referenced in column 1 must also have a FASTA sequence within the GFF3 file.
 
+=item *
+there must be at least one row of type mRNA cds and exon
+
 =back
 
 =cut
@@ -126,6 +129,10 @@ each seqid referenced in column 1 must also have a FASTA sequence within the GFF
 use strict;
 use GO::Parser;
 use LWP::Simple;
+
+#url of website with documentation info
+#my $url = "file:///usr/local/devel/ANNOTATION/agussman/brcdevel.org/public_html/iowg/gff3.html"; #for test
+my $url = "http://iowg.brcdevel.org/gff3.html"; #for real
 
 my $file = shift || die "\nUSAGE: $0 file.gff\n\n";
 
@@ -145,7 +152,7 @@ my $gencc = '[a-zA-Z0-9.:_-]';
 ## the first line in the file must be the version definition
 my $first_line = readline $gff3_fh;
 if ($first_line !~ /^##gff-version\s+3/) {
-    record_error("first line of file must be: \#\#gff-version 3");
+    record_error("First line of file $file must be: \#\#gff-version 3 not: $first_line", "a_gff3d");
 }
 
 my ($seqid, $source, $type, $start, $end, $score, $strand, $phase, $attributes);
@@ -164,6 +171,10 @@ my %seqids_referenced;
 
 ## holds the FASTA seqs found within the document (just ids so far)
 my %seqs;
+
+## count the number of mrna, cds, and exons
+## later, ensure that we saw one of each
+my %type_count = ( mrna => 0, cds => 0, exon => 0);
 
 while (<$gff3_fh>) {
     chomp;
@@ -190,7 +201,7 @@ while (<$gff3_fh>) {
     
     ## warn if the user uses an implied fasta directive
     if (/^\>/) {
-        print "WARNING: implied FASTA directive found on line $.\n";
+        record_error("Implied FASTA directive found on line $. but no ##FASTA directive encountered","a_fasta");
         $within_fasta = 1;
         next;
     }
@@ -218,9 +229,8 @@ while (<$gff3_fh>) {
     if (/^##sequence-region/) {
         ## make sure it is in the format: seqid start end
         unless (/^##sequence-region\s+(.+?)\s+(\d+)\s+(\d+)/) {
-            record_error("sequence-region directive improperly formatted on line $.  should be ##sequence-region seqid start end");
+            record_error("Sequence-region directive improperly formatted on line $.  should be ##sequence-region seqid start end", "a_gff_line1");
         }
-        
         next;
     }
 
@@ -233,7 +243,7 @@ while (<$gff3_fh>) {
     ## TEMP
     ## aren't handling other directives yet    
     if (/^##.+/) {
-        record_error("unknown directive ($_) on line $.");
+        record_error("Unknown directive ($_) on line $.", "a_gff_directives");
         next;
     };
     
@@ -241,22 +251,24 @@ while (<$gff3_fh>) {
     ## syntax checks ##
     ###################
     
-    my @cols = split(/\t/);    
+    my @cols = split(/\t/);
     
     ## we should have 9 columns.
     if ($#cols != 8) {
-        record_error("incorrect column count, line $.");
+        record_error("Incorrect column count, line $.", "a_gff3d");
         next;
     }
     
     ## more transparent
     ($seqid, $source, $type, $start, $end, $score, $strand, $phase, $attributes) = @cols;
     undef @cols;
+
+    $type = lc($type); #because we don't care
     
     ## column 1: "seqid"
     #  must match the general character class
     if ($seqid !~ /^${gencc}+$/) {
-        record_error("seqid ($seqid) on line $. does not match character class $gencc");
+        record_error("Seqid ($seqid) on line $. contains invalid characters.  Valid characters are $gencc", "a_gff3d");
     }
 
     ## remember this reference so we can make sure a FASTA sequence is defined later
@@ -266,7 +278,7 @@ while (<$gff3_fh>) {
     #  no character class restrictions.
     #  cannot be all whitespace or null
     if ($source =~ /^\s*$/) {
-        record_error("source on line $. seems to be empty.  (use . for null fields)");
+        record_error("Source on line $. seems to be empty.  (use . for null fields)", "a_gff3d");
     }
     
     ## column 3: "type"
@@ -275,24 +287,26 @@ while (<$gff3_fh>) {
         my $term = fetch_term($type, $feat_ont);
         
         if (! $term) {
-            record_error("term ($type) not defined in feature ontology on line $.");
+            record_error("Type ($type) not defined in feature ontology on line $.", "a_canon");
         }
     }
-    
+    ## increment count of type
+    ++$type_count{$type};
+
     ## column 4 & 5: "start" and "end"
     #  start must be a positive integer
     if ($start !~ /^[0-9]+$/) {
-        record_error("start ($start) on line $. not defined as an integer");
+        record_error("Start ($start) on line $. not defined as an integer", "a_gff_startend");
     }
     
     # end must be a positive integer
     if ($end !~ /^[0-9]+$/) {
-        record_error("end ($end) on line $. not defined as an integer");
+        record_error("End ($end) on line $. not defined as an integer", "a_gff_startend");
     }
     
     # start must be less than or = end
     if ($start > $end) {
-        record_error("start ($start) not <= end ($end) on line $.");
+        record_error("Start ($start) not <= end ($end) on line $.","a_start_end");
     }
     
     ## column 6: "score"
@@ -301,24 +315,24 @@ while (<$gff3_fh>) {
     if ($score =~ /e/i) {
         # valid notations are like 5e-3 -5e+10 5E-3 5E+20 but NOT e-10
         if ($score !~ /^[\-0-9.]+e[+\-][0-9]+$/i) {
-            record_error("score ($score) given in unrecognized scientific notation on line $.");
+            record_error("Score ($score) given in unrecognized scientific notation on line $.", "a_gff3d");
         }
 
     #  else check for regular floating point numbers
     } elsif ($score !~ /^[\-0-9.]+$/) {
-        record_error("score ($score) on line $. not recognized as a floating point number");
+        record_error("Score ($score) on line $. not recognized as a floating point number", "a_gff_score");
     }
     
     ## column 7: "strand"
     #  legal values for strand are - + . ?
     if ($strand !~ /^[\-+.?]$/) {
-        record_error("strand value ($strand) on line $. not a legal value. [-+.?]");
+        record_error("Strand value ($strand) on line $. not a legal value. [-+.?]", "a_gff_strand");
     }
     
     ## column 8: "phase"
     #  legal values are 0 1 2 .
     if ($phase !~ /^[0-2.]$/) {
-        record_error("phase value ($phase) on line $. not a legal value. [012.]");
+        record_error("Phase value ($phase) on line $. not a legal value. [012.]", "a_gff_phase");
     }
     
     ## column 9: "attributes"
@@ -337,7 +351,7 @@ while (<$gff3_fh>) {
                 push @{$atth{$1}},split(',', $2)
                 
             } else {
-                record_error("attribute ($pair) in column 9, line $. does not seem to be in key=value format");
+                record_error("Attribute ($pair) in column 9, line $. does not seem to be in key=value format", "a_doa");
             }
         }
         
@@ -348,7 +362,7 @@ while (<$gff3_fh>) {
                 my $term = fetch_term($att, $att_ont);
 
                 if (! $term) {
-                    record_error("term ($att) not defined in attribute ontology on line $.");
+                    record_error("Term ($att) not defined in attribute ontology on line $.", "a_gff_ont", "a_gff_ont");
                 }
             }
             
@@ -381,7 +395,12 @@ while (<$gff3_fh>) {
                 ## dbxrefs are in the format of db:id
                 for my $val ( @{$atth{$att}} ) {
                     if ($val !~ /.+\:.+/) {
-                        record_error("Dbxref ($val) does not conform to the format db:id");
+                        if ($val !~ /\%3A/) {
+                          record_error("Dbxref ($val) does not conform to the format db:id", "a_dbxref");
+                        }
+                        else {
+                          record_error("Dbxref ($val) in incorrect format, apparently : is replaced with \%3A", "a_dbxref"); 
+                        }
                     }
                 }
             
@@ -389,7 +408,7 @@ while (<$gff3_fh>) {
                 ## make sure the ontology term is given in a valid format ( AA:0000000 )
                 for my $val ( @{$atth{$att}} ) {
                     if ($val !~ /^[A-Z]{2}\:[0-9]{7}$/) {
-                        record_error("Ontology_term ($val) on line $. does not conform to the format AA:0000000");
+                        record_error("Ontology_term ($val) on line $. does not conform to the format AA:0000000", "a_ontterm");
                     }
                 }
 
@@ -397,7 +416,7 @@ while (<$gff3_fh>) {
                 ## required format for ec_number is N.N.N.N
                 for my $val ( @{$atth{$att}} ) {
                     if ($val !~ /.+\..+\..+\..+/) {
-                        record_error("ec_number ($val) on line $. does not conform to the format N.N.N.N");
+                        record_error("ec_number ($val) on line $. does not conform to the format N.N.N.N", "a_ecnum");
                     }
                 }
             
@@ -405,7 +424,7 @@ while (<$gff3_fh>) {
                 ## legal values are dsDNA | ssDNA | dsRNA | ssRNA
                 for my $val ( @{$atth{$att}} ) {
                     if ($val !~ /dsDNA|ssDNA|dsRNA|ssRNA/) {
-                        record_error("invalid molecule_type ($val) on line $..  (dsDNA | ssDNA | dsRNA | ssRNA)");
+                        record_error("Invalid molecule_type ($val) on line $..  (dsDNA | ssDNA | dsRNA | ssRNA)", "a_moltype");
                     }
                 }
             
@@ -413,7 +432,7 @@ while (<$gff3_fh>) {
                 ## legal values are linear | circular
                 for my $val ( @{$atth{$att}} ) {
                     if ($val !~ /linear|circular/) {
-                        record_error("invalid topology ($val) on line $..  (linear | circular)");
+                        record_error("Invalid topology ($val) on line $..  (linear | circular)", "a_topology");
                     }
                 }
 
@@ -421,17 +440,17 @@ while (<$gff3_fh>) {
                 ## legal values are mitochondrion | plastid | episome | plasmid | nuclear | chromosomal
                 for my $val ( @{$atth{$att}} ) {
                     if ($val !~ /mitochondrion|plastid|episome|plasmid|nuclear|chromosomal/) {
-                        record_error("invalid localization ($val) on line $..  use (mitochondrion | plastid | episome | plasmid | nuclear | chromosomal)");
+                        record_error("Invalid localization ($val) on line $..  use (mitochondrion | plastid | episome | plasmid | nuclear | chromosomal)", "a_localization");
                     }
                 }
             }
         }
         
         ## if the feature type is mRNA, check the required attributes
-        if ($type eq 'mRNA' || $type eq 'SO:0000234') {
+        if ($type eq 'mrna' || $type eq 'SO:0000234') {
             for ( 'ID', 'Name', 'Dbxref', 'description' ) {
                 if (! defined $atth{$_}) {
-                    record_error("$_ is a required attribute for mRNA feature types (line $.)");
+                    record_error("$_ is a required attribute for mRNA feature types (line $.)", "a_transcript");
                 }
             }
         }
@@ -441,7 +460,7 @@ while (<$gff3_fh>) {
             ## make sure these are defined
             for ( 'ID', 'Name', 'molecule_type', 'organism_name', 'translation_table', 'Dbxref' ) {
                 if (! defined $atth{$_}) {
-                    record_error("$_ is a required attribute for reference sequence types (line $.)");
+                    record_error("$_ is a required attribute for reference sequence types (line $.)", "a_sod");
                 }
             }
             
@@ -454,33 +473,46 @@ while (<$gff3_fh>) {
             }
             
             if (! $taxonid_found) {
-                record_error("Dbxref must include a taxon reference when defining a reference sequences on line $.");
+                record_error("Dbxref must include a taxon reference when defining a reference sequences on line $.", "a_sod");
             }
         }
     }
 }
 
 ## make sure each of the seqids referenced have a corresponding FASTA sequence and that
-##  they were defined in the document
+## they were defined in the document
 for my $seqid (keys %seqids_referenced) {
     if (! defined $seqs{$seqid}) {
-        record_error("seqid $seqid referenced in file but no corresponding FASTA sequence was found");
+        record_error("A seqid ($seqid) is referenced in file but no corresponding FASTA sequence is provided", "a_fasta");
     }
     
     if (! defined $seqids_defined{$seqid} ) {
-        record_error("seqid $seqid referenced but not defined in this file");
+        #this links to section in The Canonical Gene, also check for at least one mRNA, exon, CDS
+        record_error("A seqid ($seqid) is referenced but not defined in this file", "a_sod");
     }
 }
 
 
 ## warn if either attribute or feature ontologies were not given
-if (! $checking_feature_ontology) {
-    print "WARNING: feature ontologies were not checked.\n";
+unless ($checking_feature_ontology) {
+    print "<a href='$url#a_gff_ont'>WARNING:</a> feature ontologies were not checked.\n";
 }
 
 if (! $checking_attribute_ontology) {
-    print "WARNING: attribute ontologies were not checked.\n";
+    print "<a href='$url#a_gff_ont'>WARNING:</a> attribute ontologies were not checked.\n";
 }
+
+## check to ensure that we saw the required types: mRNA, cds, exon
+unless ($type_count{'mrna'} && $type_count{'cds'} && $type_count{'exon'}) {
+    my @missing_types;
+    foreach ('mrna', 'cds', 'exon') {
+      unless ($type_count{$_}) {
+        push(@missing_types, $_);
+      }
+    }
+    record_error("Required type(s) not present in the file: @missing_types", "a_canon");
+}
+
 
 ## return code is the number of errors found in the document (not warnings)
 exit($error_count);
@@ -537,7 +569,14 @@ sub load_ontology {
 
 sub record_error {
     my $msg = shift;
-    
-    print "ERROR: $msg\n";
+    my $anchor = shift;
+
     ++$error_count;
+    
+    if ($anchor) {
+	print "<a href='$url#$anchor'>ERROR:</a> $msg\n";
+    }
+    else {
+	print "ERROR: $msg\n";
+    }
 }
