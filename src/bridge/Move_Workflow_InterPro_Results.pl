@@ -55,9 +55,9 @@ MAIN:{
 				'superfamily' => 'superfamily',
 				'seg'         => 'Seg');
 
-	if (defined $opt_L && open(FILELIST, $opt_L) &! $bad){
+	if (defined $opt_L && open(my $filelist, $opt_L) &! $bad){
 		my ($good, $crap) = (0) x 2;
-		while (<FILELIST>){
+		while (<$filelist>){
 			chomp();
 			unless  (/$file_kwd/){
 				warn "File: \"$_\" is not recognized by the search pattern\n\n";
@@ -75,7 +75,7 @@ MAIN:{
 			push(@{$files{$asmbl}{$prog_to_ev_type{$tool}}}, [$mol_name, $model, $_]);
 			++$good;
 		}
-		close(FILELIST);
+		close($filelist);
 		die "\n\nThe program has aborted because it was able to recognize $good files but not $crap other ones\n\n" if $crap;
 	}
 	elsif (defined $opt_L){
@@ -128,18 +128,20 @@ MAIN:{
 					unlink("$target_file") || warn "Impossible to delete the pre-existing file $target_file\n";
 				}
 				
-				if (open(SRC, "$file")){
-					if (open(TGT, ">$target_file")){
-						while (<SRC>){
+				my $mode = $file =~ /gz$|gzip$/ ? '<:gzip' : '<';
+				
+				if (open(my $srcfile, $mode, "$file")){
+					if (open(my $tgt, ">$target_file")){
+						while (<$srcfile>){
 							s/$mol_name\S*/$model/g;
-							print TGT;
+							print {$tgt} $_;
 						}
-						close(TGT);
+						close($tgt);
 					} else {
 						warn "Impossible to copy the file $file to $target_file\n";
 						next;
 					}
-					close(SRC);
+					close($srcfile);
 				} else {
 					warn "Impossible to access to the source file $file\n";
 					next;
@@ -149,7 +151,4 @@ MAIN:{
 			}
 		}
 	}
-	
-	
-	close(OUTLIST);
 }

@@ -41,28 +41,12 @@ MAIN:{
 		++$bad;
 	}
 
-#	if (defined $opt_s){
-#		my $small_s = lc($opt_s);
-#		
-#		if ($small_s eq 'b'){
-#			$btab =  1;
-#		}
-#		elsif ($small_s eq 'a'){
-#			$btab = 0;
-#		} else {
-#			$message .= "Bad value for option -s\n\n";
-#		++$bad;
-#		}
-#	} else {
-#		$message .= "Option -s (File type) is required\n\n" unless $opt_h;
-#		++$bad;
-#	}
 
 	my $file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5})(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
 
-	if (defined $opt_L && open(FILELIST, $opt_L) &! $bad){
+	if (defined $opt_L && open(my $filelist, $opt_L) &! $bad){
 		my ($good, $crap) = (0) x 2;
-		while (<FILELIST>){
+		while (<$filelist>){
 			chomp();
 			unless  (/$file_kwd/){
 				warn "File: \"$_\" is not recognized by the searhc pattern\n\n";
@@ -73,7 +57,7 @@ MAIN:{
 			push(@{$files{$asmbl}}, [$mol_name, $model, $_]);
 			++$good;
 		}
-		close(FILELIST);
+		close($filelist);
 		die "\n\nThe program has aborted because it was able to recognize $good files but not $crap other ones\n\n" if $crap;
 	}
 	elsif (defined $opt_L){
@@ -149,19 +133,21 @@ MAIN:{
 				chmod(0666, "$target_file") || warn "Impossible to change permissions to the pre-existing file $target_file\n";
 				unlink("$target_file") || warn "Impossible to delete the pre-existing file $target_file\n";
 			}
-
-			if (open(SRC, "$file")){
-				if (open(TGT, ">$target_file")){
-					while (<SRC>){
+			
+			my $mode = $file =~ /gz$|gzip$/ ? '<:gzip' : '<';
+			
+			if (open(my $srcfile, $mode, "$file")){
+				if (open(my $tgt, ">$target_file")){
+					while (<$srcfile>){
 						s/$mol_name/$model/g;
-						print TGT;
+						print $tgt $_;
 					}
-					close(TGT);
+					close($tgt);
 				} else {
 					warn "Impossible to copy the file $file to $target_file\n";
 					next;
 				}
-				close(SRC);
+				close($srcfile);
 			} else {
 				warn "Impossible to access to the source file $file\n";
 				next;
