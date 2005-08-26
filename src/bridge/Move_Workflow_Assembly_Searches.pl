@@ -20,18 +20,27 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_A, $opt_B, $opt_h, $opt_l, $opt_t, $opt_T, $opt_z);
-getopts('L:D:ABhfl:t:T:z');
+our ($opt_L, $opt_D, $opt_A, $opt_B, $opt_a, $opt_h, $opt_l, $opt_t, $opt_T, $opt_z);
+getopts('L:D:ABahfl:t:T:z');
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
 	my $fragmented = 1;
 	my $message = "\n\nUsage:   $prN   <Options>\n\n";
 	my $bad = 0;
-	my ($proj_dir, $source_dir, $target_dir, $file_end, $btab);
+	my ($proj_dir, $source_dir, $target_dir, $file_end, $btab, $db);
 	my $frg_ln = 50000; # default fragment length
 	my $copied = 0;
 	my %files = ();
+	
+	if (defined $opt_A && defined $opt_B || defined $opt_A && defined $opt_a || defined $opt_B && defined $opt_a){
+		$message .= "Options -A, -B and -a are incompatible among them: use one and oly one of them\n\n" unless $opt_h;
+		++$bad;
+	}
+	elsif (!defined $opt_A &! defined $opt_B &! defined $opt_a){
+		$message .= "you must specify one and only one among options -A, -B and -a\n\n" unless $opt_h;
+		++$bad;
+	}
 	
 	if (defined $opt_l && $opt_l =~ /\d/ && $opt_l !~ /\D/){
 		if ($opt_l){
@@ -40,11 +49,14 @@ MAIN:{
 			$fragmented = 0;
 		}
 	}
-	
-	my $file_kwd = $fragmented ? qr/($opt_D\.assembly\.(\d+))\.(\d+)\./ : qr/($opt_D\.assembly\.(\d+))\./ if defined $opt_D;
+	elsif (defined $opt_l){
+		$message .= "Bad value for option -l (Length of the fragment)\n\n" unless $opt_h;
+		++$bad;
+	}
 	
 	if (defined $opt_D){
 		$proj_dir = "$ENV{ANNOTATION_DIR}/" . uc($opt_D) . '/asmbls';
+		$db = $opt_D;
 	} else {
 		$message .= "Option -D (Source directory) is required\n\n" unless $opt_h;
 		++$bad;
@@ -52,20 +64,23 @@ MAIN:{
 
 	if ($opt_B){
 		$btab =  1;
-	}
-	elsif ($opt_A){
-		$btab = 0;
 	} else {
-		$message .= "You must specify either option -A or -B\n\n";
-		++$bad;
-	}
+		$btab = 0;
+	} 
 	
-	if (defined $opt_L && open(FILELIST, $opt_L) &! $bad){
+	if ($opt_a){
+		$frg_ln = 0;
+		$fragmented = 0;
+	}
+
+	my $file_kwd = $fragmented ? qr/($opt_D\.assembly\.(\d+))\.(\d+)\./ : qr/($opt_D\.assembly\.(\d+))\./ if defined $opt_D;
+
+	if (defined $opt_L && open(my $filelist, $opt_L) &! $bad){
 		my ($good, $crap) = (0) x 2;
-		while (<FILELIST>){
+		while (<$filelist>){
 			chomp();
 			unless  (/$file_kwd/){
-				warn "File: \"$_\" is not recognized by the searhc pattern\n\n";
+				warn "File: \"$_\" is not recognized by the search pattern\n\n";
 				++$crap;
 				next;
 			}
@@ -73,7 +88,7 @@ MAIN:{
 			push(@{$files{$asmbl}[$segment]}, [$mol_name, $_]);
 			++$good;
 		}
-		close(FILELIST);
+		close($filelist);
 		die "\n\nThe program has aborted because it was able to recognize $good files but not $crap other ones\n\n" if $crap;
 	}
 	elsif (defined $opt_L){
@@ -84,11 +99,10 @@ MAIN:{
 		++$bad;
 	}
 
-
-
 	if (defined $opt_t){
 		($file_end = $opt_t) =~ s/^\.//;
-		$file_end =~ s/\.gz$//; # eliminating the possible double gz extension
+		$file_end =~ s/\.gz$//;   # eliminating the possible double gz extension
+		$file_end .= '.btab' unless $file_end =~ /\.btab$/;  # Appending btab, in the case it has been forgotten...
 		
 	} else {
 		$message .= "Option -t (Target file 'ending') is required\n\n" unless $opt_h;
@@ -117,11 +131,13 @@ MAIN:{
 #
 # -A Alignment file
 #
+# -a assembly file
+#
 # -h print this option menu and quit
 #
 # -l Length of the fragment (default: $frg_ln nt)
 #
-# -t Target file 'ending' (i.e. nr.btab, everything after asmbl_id or model name)
+# -t Target file 'ending' (i.e. nr.btab, everything after asmbl_id)
 #
 # -T Targret directory inside $ENV{ANNOTATION_DIR}/DB/asmbls/\$asmbl_id (i.e. blastp)
 #
@@ -165,38 +181,27 @@ Note: The program assumes by default that the sequences have been fragmented.
 					chmod(0666, "$target_file") || warn "Impossible to change permissions to the pre-existing file $target_file\n";
 					unlink("$target_file") || warn "Impossible to delete the pre-existing file $target_file\n" unless $btab && $fragmented;
 				}
-		
-#				Need to replace the name of the molecule with the name of the assembly..
-#
-#				copy("$source_dir/$file", $target_file) || warn "Impossible to copy the file $file to $target_file\n";
-#
-#				Practically a useless action....
-#
-#				if ($file =~ /gz$/){
-#					chomp(my $curr_dir = `pwd`);
-#					chdir($source_dir);
-#					system("gunzip $file") && die "\n\nImpossilbe to extract the file $source_dir/$file\n\n";
-#					chdir($curr_dir);
-#					$file =~ s/\.gz$//;
-#					$target_file =~ s/\.gz$//;
-#					$opt_z = 1;
-#				}
-		
-				if (open(SRC, "$file")){
+				my $mode = $file =~ /gz$|gzip$/ ? '<:gzip' : '<';
+				
+				if (open(my $srcfile, $mode, "$file")){
 					my $open_string = $btab && $fragmented ? ">>$target_file" : ">$target_file";
 			
-					if (open(TGT, $open_string)){
-						while (<SRC>){
-							s/$mol_name\S*/$asmbl/g;
-							print TGT;
+					if (open(my $tgt, $open_string)){
+						while (<$srcfile>){
+							if ($opt_a){
+								s/$mol_name\S*/$asmbl $db/g;
+							} else {
+								s/$mol_name\S*/$asmbl/g;
+							}
+							print {$tgt} $_;
 					
 						}
-						close(TGT);
+						close($tgt);
 					} else {
 						warn "Impossible to copy the file $file to $target_file (\"$open_string\")\n";
 						next;
 					}
-					close(SRC);
+					close($srcfile);
 				} else {
 					warn "Impossible to access to the source file $source_dir/$file\n";
 					next;
