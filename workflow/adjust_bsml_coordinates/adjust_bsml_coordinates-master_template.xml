@@ -19,7 +19,7 @@
 <!--Preprocessing-->
 <!--Processing-->
     	<command>
-          <type>RunUnixCommand</type>
+          <type>RunDistributedCommand</type>
           <name>adjust_bsml_coordinates</name>
           <configMapId>adjust_bsml_coordinates</configMapId>
         </command>

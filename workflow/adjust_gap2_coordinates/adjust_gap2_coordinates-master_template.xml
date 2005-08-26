@@ -19,7 +19,7 @@
 <!--Preprocessing-->
 <!--Processing-->
     	<command>
-          <type>RunUnixCommand</type>
+          <type>RunDistributedCommand</type>
           <name>adjust_gap2_coordinates</name>
           <configMapId>adjust_gap2_coordinates</configMapId>
         </command>
