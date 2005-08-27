@@ -288,6 +288,7 @@ sub print_header {
             color: rgb(0,0,200);
             font-size: 80%;
             cursor: pointer;
+            margin-left: 20px;
         }
         div.leftside {
             float: left;
@@ -295,12 +296,13 @@ sub print_header {
         div.rightside {
             text-align: right;
         }
-        div.subflowinfo {
-            padding-left: 30px;
+        div.subflowinfo, div.cmdinfo {
+            padding-left: 25px;
         }
-        div.subflowinfo table {
+        div.subflowinfo table, div.cmdinfo table {
             background-color: rgb(235,235,235);
             padding: 5px;
+            width: 500px;
         }
         div.navigation {
             margin-bottom: 10px;
@@ -407,9 +409,26 @@ sub print_header {
             if ( subflownameinfo.style.display == 'none' ) {
                 subflownameinfo.style.display = 'block';
                 get_object(subflowname + '_infolabel').innerHTML = 'hide group info';
+            
+            // else, hide it
             } else {
                 subflownameinfo.style.display = 'none';
                 get_object(subflowname + '_infolabel').innerHTML = 'show group info';
+            }
+        }
+        
+        function toggle_cmd_info(cmd_id) {
+            cmdinfoblock = get_object(cmd_id);
+            
+            // if the command info block is hidden, display it
+            if ( cmdinfoblock.style.display == 'none' ) {
+                cmdinfoblock.style.display = 'block';
+                get_object(cmd_id + '_infolabel').innerHTML = 'hide info';
+            
+            // else, hide it
+            } else {
+                cmdinfoblock.style.display = 'none';
+                get_object(cmd_id + '_infolabel').innerHTML = 'show info';
             }
         }
         

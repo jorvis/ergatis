@@ -49,17 +49,24 @@ sub process_command {
     
     my $name  = $command->first_child('name')->text;
     my $state = $command->first_child('state')->text;
+    my $id    = $command->first_child('id')->text;
 
     my ($start_time, $end_time, $run_time) = time_info($command);
     
     my $time_label;
     ## if still running, display the start time
     if ($state eq 'running') {
-        $time_label = "start: $start_time";
+        $time_label = "$run_time ...";
         
     ## else display the elapsed time
     } else {
-        $time_label = "time: $run_time";
+        $time_label = "$run_time";
+    }
+
+    ## can we get a return value?
+    my $return_value = 'unknown';
+    if ( $command->first_child('status') && $command->first_child('status')->first_child('retValue') ) {
+         $return_value = $command->first_child('status')->first_child('retValue')->text;
     }
 
     print <<CommAnD;
@@ -70,8 +77,30 @@ sub process_command {
         </div>
         <div class='rightside'>
             <span class='minor'>$time_label</span>
-            <span class='minor'>n/a</span>
+            <span class='infolabel' id='${id}_infolabel'   onclick='toggle_cmd_info("$id")'>show info</span>
         </div>
+    </div>
+    <div class='cmdinfo' id='$id' style='display: none;'>
+        <table>
+            <tr>
+                <th>workflow id:</th><td>$id</td>
+            </tr>
+            <tr>
+                <th>state:</th><td>$state</td>
+            </tr>
+            <tr>
+                <th>start time:</th><td>$start_time</td>
+            </tr>
+            <tr>
+                <th>end time:</th><td>$end_time</td>
+            </tr>
+            <tr>
+                <th>duration:</th><td>$run_time</td>
+            </tr>
+            <tr>
+                <th>return value:</th><td>$return_value</td>
+            </tr>
+        </table>
     </div>
 CommAnD
 
