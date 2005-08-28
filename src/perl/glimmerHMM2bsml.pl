@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
+
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 =head1  NAME 
 
@@ -169,6 +172,7 @@ if ($options{'fasta_file'}) {
 my (@cols, $fg, $gene);
 my $last_gene_num = 0;
 my ($gene_start, $gene_stop, $gene_dir);
+my $at_least_one_found = 0;
 while (<$ifh>) {
     ## matches lines like "1    1  -  Initial        2522       2729      208"
     if (/^\s*\d+\s+\d+\s+.\s+.+\s+\d+\s+\d+\s+\d+$/) {
@@ -221,16 +225,20 @@ while (<$ifh>) {
         } else {
             $logger->logdie("unknown value ($cols[2]) in column 3 of input file");
         }
+        
+        $at_least_one_found = 1;
     }
 }
 
-## add the last gene interval loc
-if ($gene_dir eq '+') {
-    &add_interval_loc($gene, $gene_start, $gene_stop);
-} elsif ($gene_dir eq '-') {
-    &add_interval_loc($gene, $gene_stop, $gene_start);
-} else {
-    $logger->logdie("unrecognized gene direction ($gene_dir)");
+if ($at_least_one_found) {
+    ## add the last gene interval loc
+    if ($gene_dir eq '+') {
+        &add_interval_loc($gene, $gene_start, $gene_stop);
+    } elsif ($gene_dir eq '-') {
+        &add_interval_loc($gene, $gene_stop, $gene_start);
+    } else {
+        $logger->logdie("unrecognized gene direction ($gene_dir)");
+    }
 }
 
 ## add the analysis element
