@@ -50,6 +50,7 @@ sub process_command {
     my $name  = $command->first_child('name')->text;
     my $state = $command->first_child('state')->text;
     my $id    = $command->first_child('id')->text;
+    my $type  = $command->first_child('type')->text;
 
     my ($start_time, $end_time, $run_time) = time_info($command);
     
@@ -68,6 +69,49 @@ sub process_command {
     if ( $command->first_child('status') && $command->first_child('status')->first_child('retValue') ) {
          $return_value = $command->first_child('status')->first_child('retValue')->text;
     }
+
+    ## can we build a command line string?
+    my $command_string = 'unknown';
+    my $command_args = '';
+    my $arg = '';
+    my $stderr = 'not defined';
+    my $stdout = 'not defined';
+    for my $param ( $command->children('param') ) {
+        my $key   = $param->first_child('key')->text;
+        my $value = $param->first_child('value')->text;
+        
+        ## is this the command?
+        if ($key eq 'command') {
+            $command_string = $value;
+        
+        ## is this stdout?
+        } elsif ($key eq 'stdout') {
+            $stdout = $value;
+            
+        ## is this stderr?
+        } elsif ($key eq 'stderr') {
+            $stderr = $value;
+            
+        ## else it must be a parameter of the command
+        } else {
+            ## if the command type is RunUnixCommand and the key doesn't start with
+            ##  the string '--', we need to add it.  this should be fixed later.
+            ##  since workflow does it, we have to do it
+            if ($type eq 'RunUnixCommand' && $key !~ /^\-\-/) {
+                $key = '--' . $key;
+            }
+            
+            $command_args .= " $key=$value";
+        }
+    }
+    
+    ## snatch the arg element if there was one
+    if ( $command->first_child('arg') ) {
+        $arg = $command->first_child('arg')->text;
+    }
+    
+    ## finish the command string build
+    $command_string = "$command_string $command_args $arg";
 
     print <<CommAnD;
     <div class='command'>
@@ -99,6 +143,18 @@ sub process_command {
             </tr>
             <tr>
                 <th>return value:</th><td>$return_value</td>
+            </tr>
+            <tr>
+                <th>stdout:</th><td>$stdout</td>
+            </tr>
+            <tr>
+                <th>stderr:</th><td>$stderr</td>
+            </tr>
+            <tr>
+                <th colspan='2'>command:</th>
+            </tr>
+            <tr>
+                <td colspan='2'>$command_string</td>
             </tr>
         </table>
     </div>
@@ -163,8 +219,13 @@ sub time_info {
     ## if hours or minutes are 00, take them off
     $runtime =~ s/00 .+? //g;
     
+    ## take off leading zero (if present)
+    if ($runtime =~ /^0(.+)/) {
+        $runtime = $1;
+    }
+    
     ## 00 seconds isn't possible
-    $runtime = '&lt; 01 sec' if $runtime eq '00 sec';
+    $runtime = '&lt; 1 sec' if $runtime eq '0 sec';
     
     return ($start_time, $end_time, $runtime);
 }
