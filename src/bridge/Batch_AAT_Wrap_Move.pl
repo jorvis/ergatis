@@ -75,8 +75,7 @@ MAIN:{
 	
 	my $debug = 0;
 	
-	# my $mover = 'Move_Workflow_Assembly_Searches.pl'; # Do put the path if it isn't in the executable path
-	my $mover = '/home/pamedeo/bin/Move_Workflow_Assembly_Searches.pl'; 
+	my $mover = '/usr/local/devel/ANNOTATION/Paolo/Cram_Bridge/Move_Workflow_Assembly_Searches.pl'; 
 	
 	# specific parameters for moving the different kind of results
 	
