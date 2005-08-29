@@ -25,7 +25,7 @@ Workflow pipeline ID (it is possible to specify more instances)
 List of pipeline IDs
 
 =item -R / --remove_source
-Remove the results from the source directory after moving them (not yet implemented!!!)
+Remove the results from the source directory after moving them
 
 =item -h / --help
 Prints this page and quits
@@ -72,6 +72,8 @@ use Pod::Usage;
 MAIN:{
 	my ($prN) = ($0 =~ /([^\/]+)$/);
 	my $dbfile = "$ENV{EGC_SCRIPTS}/egc_password";
+	
+	my $safetime = 5; # waiting time before actually running anything where the option -R / remove_source is used
 	
 	my $debug = 0;
 	
@@ -139,6 +141,12 @@ MAIN:{
 		}
 	}
 	
+	if ($remove){
+		print "Warn: you have decided to remove the source files: you have $safetime seconds still to stop this program by hitting Ctrl-C\n\n";
+		sleep($safetime);
+	}
+		
+	
 	foreach my $pip (@piplst){
 		undef $pipes{$pip};
 	}
@@ -186,9 +194,11 @@ MAIN:{
 						$tfile .= ".adj.$type";
 					}
 					my $cmd = "$mover -D $db -L $list -t $tfile $move_opt{$type}";
+					# $cmd .= ' -R' if $remove; More conservative approach, giving the killing chance in the target script each time is launched
+					$cmd .= ' -r' if $remove;
 					print "CMD: '$cmd'\n";
 				
-					# system($cmd) && warn "Pipeline ID: '$pip' Result type: '$type'\t- Some error has occoured:\t\"$!\"\n\n";
+					system($cmd) && warn "Pipeline ID: '$pip' Result type: '$type'\t- Some error has occoured:\t\"$!\"\n\n";
 				} else {
 					warn "Impossible to find the list '$list'\n\n";
 				}
