@@ -20,11 +20,12 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_A, $opt_B, $opt_a, $opt_h, $opt_l, $opt_t, $opt_T, $opt_z);
-getopts('L:D:ABahfl:t:T:z');
+our ($opt_L, $opt_D, $opt_A, $opt_B, $opt_a, $opt_h, $opt_l, $opt_t, $opt_T, $opt_z, $opt_R, $opt_r);
+getopts('L:D:ABahfl:t:T:zR');
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
+	my $safetime = 5; # Time for which the program would pause (allowing killing) in the case option -R has been used
 	my $fragmented = 1;
 	my $message = "\n\nUsage:   $prN   <Options>\n\n";
 	my $bad = 0;
@@ -101,7 +102,7 @@ MAIN:{
 	if (defined $opt_t){
 		($file_end = $opt_t) =~ s/^\.//;
 		$file_end =~ s/\.gz$//;   # eliminating the possible double gz extension
-		$file_end .= '.btab' unless $file_end =~ /\.btab$/;  # Appending btab, in the case it has been forgotten...
+		$file_end .= '.btab' if $btab && $file_end !~ /\.btab$/;  # Appending btab, in the case it has been forgotten...
 		
 	} else {
 		$message .= "Option -t (Target file 'ending') is required\n\n" unless $opt_h;
@@ -115,8 +116,6 @@ MAIN:{
 	} else {
 		$message .= "Option -T not specified.\nAssuming as target directory \$ANNOTATION_DIR/DB/asmbls/\$asmbl_id\n\n" unless $opt_h;
 	}
-	
-	
 	
 
 	$message .= "
@@ -142,6 +141,8 @@ MAIN:{
 #
 # -z Compress the target file
 #
+# -R Remove source files.
+#
 ###############################################################################
 
 Note: The program assumes by default that the sequences have been fragmented.
@@ -150,9 +151,15 @@ Note: The program assumes by default that the sequences have been fragmented.
 	
 	die $message if $bad || $opt_h;
 
-		
+	if ($opt_R){
+		print "\n\nYou have chosen to remove the source files. Hit Ctrl-C within $safetime secs to stop.";
+		sleep($asfetime);
+	}
+	
 	while (my ($asmbl, $asm_files) = each %files){
 		my $target_path = "$proj_dir/$asmbl";
+		
+		print "Processing Assembly $asmbl\n";
 		
 		system("$ENV{EGC_SCRIPTS}/ensure_asmbl_dir.dbi -D $opt_D -p $ENV{EGC_SCRIPTS}/egc_password -a $asmbl") && die "\n\nImpossible to find the project directory $target_path\n\n" unless -d $target_path;
 		
@@ -161,7 +168,7 @@ Note: The program assumes by default that the sequences have been fragmented.
 			
 			unless (-d $target_path){
 				mkpath($target_path) || die "\n\nImpossible to create the directory $target_path\n\n";
-				chmod(0777, $target_path) || warn "Impossible to change permissions to directory $target_path\n";
+				chmod(0777, $target_path); # || warn "Impossible to change permissions to directory $target_path\n";
 			}
 		}
 		
@@ -177,7 +184,7 @@ Note: The program assumes by default that the sequences have been fragmented.
 				                $fragmented ? "/$asmbl\_s" . $frg_ln * $n . ".$file_end" : "/$asmbl.$file_end";
 
 				if (-e $target_file){
-					chmod(0666, "$target_file") || warn "Impossible to change permissions to the pre-existing file $target_file\n";
+					chmod(0666, "$target_file"); # || warn "Impossible to change permissions to the pre-existing file $target_file\n";
 					unlink("$target_file") || warn "Impossible to delete the pre-existing file $target_file\n" unless $btab && $fragmented;
 				}
 				my $mode = $file =~ /gz$|gzip$/ ? '<:gzip' : '<';
@@ -186,6 +193,12 @@ Note: The program assumes by default that the sequences have been fragmented.
 					my $open_string = $btab && $fragmented ? ">>$target_file" : ">$target_file";
 			
 					if (open(my $tgt, $open_string)){
+						
+						print "Moving $file to $target_file";
+						print '.gz' if $opt_z;
+						print " (concatenating)" if  $btab && $fragmented;
+						print "\n";
+						
 						while (<$srcfile>){
 							if ($opt_a){
 								s/$mol_name\S*/$asmbl $db/g;
@@ -208,14 +221,20 @@ Note: The program assumes by default that the sequences have been fragmented.
 		
 				if ($opt_z){ # requirested to compress the file...
 					if (-e "$target_file.gz"){
-						chmod(0666, "$target_file.gz") || warn "Impossible to change permissions to the pre-existing file $target_file.gz\n";
+						chmod(0666, "$target_file.gz"); # || warn "Impossible to change permissions to the pre-existing file $target_file.gz\n";
 						unlink("$target_file.gz") || warn "Impossible to delete the pre-existing file $target_file.gz\n";
 					}
 					system("gzip $target_file") && warn "Errors compressing the file $target_file\n";
-					chmod(0666, "$target_file.gz") || warn "Impossible to change permissions to the file $target_file.gz\n";
+					chmod(0666, "$target_file.gz"); # || warn "Impossible to change permissions to the file $target_file.gz\n";
 				} else {
-					chmod(0666, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
+					chmod(0666, $target_file); # || warn "Impossible to change permissions to the file $target_file\n";
 				}
+				if ($opt_R ||  $opt_r){
+					print "Deleting source file: '$file'..";
+					chmod(0666, $file);
+					my $outcome = unlink($file) ? "OK" : "Impossible to delete the source file: '$!'\n";
+					print $outcome;
+				}	
 			}		
 		}
 	}
