@@ -153,7 +153,7 @@ Note: The program assumes by default that the sequences have been fragmented.
 
 	if ($opt_R){
 		print "\n\nYou have chosen to remove the source files. Hit Ctrl-C within $safetime secs to stop.";
-		sleep($asfetime);
+		sleep($safetime);
 	}
 	
 	while (my ($asmbl, $asm_files) = each %files){
