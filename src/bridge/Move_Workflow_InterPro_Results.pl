@@ -21,12 +21,13 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_h);
-getopts('L:D:h');
+our ($opt_L, $opt_D, $opt_R, $opt_r, $opt_h);
+getopts('L:D:hRr');
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
 	my $message = "\n\nUsage:   $prN   <Options>\n\n";
+	my $safetime = 5; # Time for which the program would pause (allowing killing) in the case option -R has been used
 	my $bad = 0;
 	my ($proj_dir, $source_dir, $target_dir, $file_end);
 	my $summary_tool = 'iprscan';
@@ -97,6 +98,8 @@ MAIN:{
 #
 # -D Annotation database
 #
+# -R Remove source files
+#
 # -h Help: prints this option menu and quit
 #
 ###############################################################################
@@ -105,6 +108,11 @@ MAIN:{
 	
 	die $message if $bad || $opt_h;
 
+	if ($opt_R){
+		print "\n\nYou have chosen to remove the source files. Hit Ctrl-C within $safetime secs to stop.";
+		sleep($safetime);
+	}
+	
 	while (my ($asmbl, $mdl_files) = each %files){
 		my $printed = 0;
 		system("$ENV{EGC_SCRIPTS}/ensure_asmbl_dir.dbi -D $opt_D -p $ENV{EGC_SCRIPTS}/egc_password -a $asmbl") && die "\n\nImpossible to find the project directory $proj_dir/$asmbl\n\n" unless -d "$proj_dir/$asmbl";
@@ -114,7 +122,7 @@ MAIN:{
 			
 			unless (-d $target_path){
 				mkpath($target_path) || die "\n\nImpossible to create the directory $target_path\n\n";
-				chmod(0777, $target_path) || warn "Impossible to change permissions to directory $target_path\n";
+				chmod(0777, $target_path); # || warn "Impossible to change permissions to directory $target_path\n";
 			}
 		
 			foreach my $info (@{$mdl_files->{$tool}}){
@@ -124,7 +132,7 @@ MAIN:{
 			
 				
 				if (-e $target_file){
-					chmod(0666, "$target_file") || warn "Impossible to change permissions to the pre-existing file $target_file\n";
+					chmod(0666, "$target_file"); # || warn "Impossible to change permissions to the pre-existing file $target_file\n";
 					unlink("$target_file") || warn "Impossible to delete the pre-existing file $target_file\n";
 				}
 				
@@ -147,7 +155,14 @@ MAIN:{
 					next;
 				}
 		
-				chmod(0666, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
+				chmod(0666, $target_file); # || warn "Impossible to change permissions to the file $target_file\n";
+				
+				if ($opt_R ||  $opt_r){
+					print "Deleting source file: '$file'..";
+					chmod(0666, $file);
+					my $outcome = unlink($file) ? "OK" : "Impossible to delete the source file: '$!'\n";
+					print $outcome;
+				}	
 			}
 		}
 	}

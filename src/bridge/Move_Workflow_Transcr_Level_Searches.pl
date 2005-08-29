@@ -23,11 +23,12 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_h, $opt_t, $opt_T, $opt_z);
-getopts('L:D:ht:T:z');
+our ($opt_L, $opt_D, $opt_h, $opt_t, $opt_T, $opt_z, $opt_R, $opt_r);
+getopts('L:D:ht:T:zRr');
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
+	my $safetime = 5; # Time for which the program would pause (allowing killing) in the case option -R has been used
 	my $message = "\n\nUsage:   $prN   <Options>\n\n";
 	my $bad = 0;
 	my ($proj_dir, $source_dir, $target_dir, $file_end);
@@ -102,11 +103,18 @@ MAIN:{
 #
 # -z Compress the target file
 #
+# -R Remove source files
+#
 ###############################################################################
 
 ";
 	
 	die $message if $bad || $opt_h;
+	
+	if ($opt_R){
+		print "\n\nYou have chosen to remove the source files. Hit Ctrl-C within $safetime secs to stop.";
+		sleep($safetime);
+	}
 
 	while (my ($asmbl, $mdl_files) = each %files){
 		my $target_path = "$proj_dir/$asmbl";
@@ -118,7 +126,7 @@ MAIN:{
 			
 			unless (-d $target_path){
 				mkpath($target_path) || die "\n\nImpossible to create the directory $target_path\n\n";
-				chmod(0777, $target_path) || warn "Impossible to change permissions to directory $target_path\n";
+				chmod(0777, $target_path); # || warn "Impossible to change permissions to directory $target_path\n";
 			}
 		}
 	
@@ -130,7 +138,7 @@ MAIN:{
 			print STDERR "Moving $file to $target_file.. ";
 			
 			if (-e $target_file){
-				chmod(0666, "$target_file") || warn "Impossible to change permissions to the pre-existing file $target_file\n";
+				chmod(0666, "$target_file"); # || warn "Impossible to change permissions to the pre-existing file $target_file\n";
 				unlink("$target_file") || warn "Impossible to delete the pre-existing file $target_file\n";
 			}
 			
@@ -155,15 +163,22 @@ MAIN:{
 		
 			if ($opt_z){ # requirested to compress the file...
 				if (-e "$target_file.gz"){
-					chmod(0666, "$target_file.gz") || warn "Impossible to change permissions to the pre-existing file $target_file.gz\n";
+					chmod(0666, "$target_file.gz"); # || warn "Impossible to change permissions to the pre-existing file $target_file.gz\n";
 					unlink("$target_file.gz") || warn "Impossible to delete the pre-existing file $target_file.gz\n";
 				}
 				system("gzip $target_file") && warn "Errors compressing the file $target_file\n";
-				chmod(0666, "$target_file.gz") || warn "Impossible to change permissions to the file $target_file.gz\n";
+				chmod(0666, "$target_file.gz"); # || warn "Impossible to change permissions to the file $target_file.gz\n";
 			} else {
-				chmod(0666, $target_file) || warn "Impossible to change permissions to the file $target_file\n";
+				chmod(0666, $target_file); # || warn "Impossible to change permissions to the file $target_file\n";
 			}
 			print STDERR "OK\n";
+			
+			if ($opt_R ||  $opt_r){
+				print "Deleting source file: '$file'..";
+				chmod(0666, $file);
+				my $outcome = unlink($file) ? "OK" : "Impossible to delete the source file: '$!'\n";
+				print $outcome;
+			}
 		}		
 	}
 }
