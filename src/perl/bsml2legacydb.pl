@@ -12,8 +12,6 @@ USAGE: bsml2legacydb.pl
 		--database|d=aa1
 	[
 		--prog_name|p=program_name
-	]
-	[
 		--debug|D=4
 		--log|l=/path/to/log_file.log
 	]
@@ -74,7 +72,6 @@ use Pod::Usage;
 use Workflow::Logger;
 use DBI;
 use XML::Twig;
-use IO::File;
 
 my @files	= ();
 my $server	= "SYBTIGR";
@@ -129,9 +126,8 @@ sub parse_opts
 			push @files, $val;
 		}
 		elsif ($key eq "input_list") {
-			my $fh = new IO::File($val) or
-				die "Error accessing input list " .
-				    "$opts{input_list}: $!";
+            open(my $fh, "<$val") || die "Error accessing input list $opts{input_list}: $!";
+
 			while (my $file = <$fh>) {
 				chomp $file;
 				next if $file =~ /^\s*$/;
@@ -184,6 +180,16 @@ sub process_files
 				$logger->logdie("Couldn't extract program " .
 						"name from: $file");
 		}
+        
+        ## open the input file.  how we do this depends on whether the input file
+        ##  is compressed.
+        my $ifh;
+        if ($file =~ /\.(gz|gzip)$/) {
+            open ($ifh, "<:gzip", $file)                       || $logger->logdie("can't read zipped input file '$file': $!");
+        } else {
+            open ($ifh, "<$file")                     || $logger->logdie("can't read input file $file: $!");
+        }
+        
 		my $twig = new XML::Twig
 			(twig_roots =>
 				{'Feature' => \&process_feat,
@@ -195,7 +201,7 @@ sub process_files
 					},
 				 'Sequence' => \&process_sequence
 				});
-		$twig->parsefile($file);
+		$twig->parse($ifh);
 		if (scalar(@genes)) {
 			process_results($asm_id, $prog_name);
 		}
