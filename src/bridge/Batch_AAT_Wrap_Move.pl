@@ -16,7 +16,7 @@ Batch_AAT_Wrap_Move.pl - one-sentence description.
 Annotation database
 
 =item -d / --directory
-Path where to find the pipeline directories
+Repositiory root
 
 =item -p / --pipiline_id
 Workflow pipeline ID (it is possible to specify more instances)
