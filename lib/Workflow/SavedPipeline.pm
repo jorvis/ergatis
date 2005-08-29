@@ -16,8 +16,12 @@ SavedPipeline.pm - A module for loading and building saved pipeline templates.
         repository_root => '/usr/local/annotation/FUN' 
     );
     
-    The creation of a pipeline template from an already existing pipeline
-    instance is still in development.
+    To saved a pipeline template from an existing pipeline.xml:
+
+    my $pipe = Workflow::SavedPipeline->new(
+        source => '/path/PROJECT/Workflow/pipeline/pipeline_id/pipeline.xml'
+    );
+    $pipe->write_template( template => 'save/pipeline/dir/' );
 
 =head1 DESCRIPTION
 
@@ -37,15 +41,15 @@ failed to pass a 'template' parameter when using the new method.
 
 =item I<$OBJ>->load_pipeline()
 
-NOT YET FUNCTIONING
-Loads an existing pipeline structure, usually in order to create a template for
-later use.
+Loads an existing pipeline structure and checks that component.conf.bld.ini 
+files are present, usually in order to create a template for later use.
+Only needs to be called if a 'source' parameter was not passed with new method.
 
 =item I<$OBJ>->write_template()
 
-NOT YET FUNCTIONING
-Writes a pipeline template into the saved area, optionally with the associated
-component config files.
+Writes a pipeline template into the saved area, 
+(optionally with the associated component config files <- not true, all 
+component.conf.bld.ini files will be copied into save dir)
 
 =item I<$OBJ>->write_pipeline()
 
@@ -55,6 +59,11 @@ pass a shared_config parameter, else it will derive it from the repository root.
 
 
 =back
+
+=head1 NOTES
+
+Using the same SavedPipeline object for saving a template pipeline and building
+a new pipeline from a saved template is not recommended and is prevented.
 
 =head1 AUTHOR
 
@@ -80,9 +89,12 @@ use XML::Twig;
                         pipeline_id             => undef,
                         shared_config           => undef,
                         template                => undef,
+		        source                  => undef,
+		        _source_twig            => undef,
                         _configmapids           => undef,
                         _template_dir           => undef,
                         _repository_root        => undef,
+		        _load_type              => undef,
                       );
 
     sub new {
@@ -104,13 +116,147 @@ use XML::Twig;
         if (defined $self->{template}) {
             $self->load_template();
         }
+        ## if the source was defined, load it
+        if (defined $self->{source}) {
+            $self->load_pipeline();
+        }
         
         return $self;
     }
 
+    sub load_pipeline {
+	my ($self, %args) = @_;
+
+	if (! $self->{_load_type}) {
+	    $self->{_load_type} = "pipeline";
+	}
+	elsif ( $self->{_load_type} ne "pipeline") {
+	    croak( "Inappropriate object reuse: cannot load pipelines and load templates with the same object");
+	}
+        
+	# either source must exist from new or they just passed a source
+        if (! defined $self->{source} ) {
+            if (exists $args{source}) {
+                $self->{source} = $args{source};
+            } else {
+                croak ("source pipeline.xml must be provided either in new or load_pipeline");
+            }
+        }
+
+	#get repository root and pipeline_id of input xml
+	#(this might be incorrect, could result in user overwriting pipeline.xml)
+	#(if write pipeline called on same repository_root, pipeline_id would already be stored)
+	if ( $self->{source} =~ m|(.+/([^/]+))/Workflow/pipeline/(\d+)| ) {
+	    $self->{_repository_root} = $1;
+#	    $project_id = $2;
+	    $self->{pipeline_id} = $3;
+	} else {
+	    croak("failed to extract repository root, project id, or pipeline id from ".$self->{source});
+	}
+	
+	#load pipeline from xml
+        $self->{_source_twig} = XML::Twig->new(pretty_print => 'indented');
+	$self->{_source_twig}->parsefile($self->{source}) || croak "unable to parse ".$self->{source};
+
+	#strip it to the barebones
+	$self->_strip_pipeline( $self->{_source_twig}->root );
+
+	#remove version= if present
+	$self->{_source_twig}->root->strip_att("version");
+
+	#check that all expected component.conf.bld.ini files are present
+	#(not saving configMapIds)
+	foreach my $child ( $self->{_source_twig}->root->descendants("configMapId") ) {
+	    if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
+		my $component = $1;
+		my $token = $2;
+		#check that conf exists
+		my $source_file = $self->{_repository_root}."/Workflow/$component/".$self->{pipeline_id}."_$token/component.conf.bld.ini";
+		unless (-e $source_file) {
+		    croak("component configuration file $source_file not found");
+		}
+	    }
+	}
+    }
+
+
+    sub write_template {
+	my ($self, %args) = @_;
+	unless (exists $args{template}) {
+	    croak ("template output directory must be provided");
+	}
+
+        #print out the pipeline
+	unless (-e $args{template}) {
+	    mkdir($args{template}) || croak( "unable to create tmeplate directory ".$args{template});
+	}
+	open(my $FOUT, ">".$args{template}."/pipeline.xml") || croak("unable to create pipeline.xml in ".$args{template});
+	$self->{_source_twig}->print($FOUT);
+	close($FOUT);
+
+        #copy neccessary .ini files
+        #convert from -/PROJECTDIR/Workflow/$component/$pipelineid_$token/component.conf.bld.ini
+        #to $template_dir/$component.$token.ini
+
+	#repository_root and pipeline_id should already be defined
+	unless (exists $self->{_repository_root} && exists $self->{pipeline_id}) {
+	    croak("repository_root or pipeline_id not defined");
+	}
+
+	#copy .ini files
+	foreach my $child ( $self->{_source_twig}->root->descendants("configMapId") ) {
+	    if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
+		my $component = $1;
+		my $token = $2;
+		#copy file
+		my $source_file = $self->{_repository_root}."/Workflow/$component/".$self->{pipeline_id}."_$token/component.conf.bld.ini";
+		copy($source_file, $args{template}."/$component.$token.ini") || croak ("unable to copy ($source_file)");
+	    }
+	}
+    }
+
+    #strip all unwanted tags from the pipeline, 
+    #leaving only the "core" tags for saving
+    sub _strip_pipeline {
+	my ($self, $n) = @_; #a tag in the pipeline
+	foreach my $child ( $n->children() ) {
+#	    $child->gi eq "commandSetRoot" 
+	    if ($child->gi eq "commandSet")
+	    {
+		my $cmi = $child->first_child("configMapId")->text();
+		#tags we want to keep and search under
+		if ($cmi eq "start" ||
+		    $cmi eq "empty" ||
+		    $cmi =~ /^component_/ ||
+		    $cmi =~ /^pipeline_/ ||
+		    $cmi =~ /^\d+/) 
+		{
+		    $self->_strip_pipeline($child);
+		}
+		else {
+		    $child->delete;
+		}
+	    }
+	    #tags to keep and NOT search under
+	    elsif ($child->gi ne "#PCDATA" && #text in the tag is treated as an element
+		   $child->gi ne "configMapId") { 
+		$child->delete;
+	    }
+	}
+    }
+
+
+
     sub load_template {
         my ($self, %args) = @_;
-        
+
+   	if (! $self->{_load_type}) {
+	    $self->{_load_type} = "template";
+	}
+	elsif ( $self->{_load_type} ne "template") {
+	    croak( "Inappropriate object reuse: cannot load pipelines and load templates with the same object");
+	}
+     
         ## if the template wasn't defined in the constructor, it's required now.
         if (! defined $self->{template} ) {
             if (exists $args{template}) {
