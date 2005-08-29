@@ -70,7 +70,6 @@ MAIN:{
 	
 	if ($opt_a){
 		$frg_ln = 0;
-		$fragmented = 0;
 	}
 
 	my $file_kwd = $fragmented ? qr/($opt_D\.assembly\.(\d+))\.(\d+)\./ : qr/($opt_D\.assembly\.(\d+))\./ if defined $opt_D;
