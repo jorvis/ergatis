@@ -56,7 +56,7 @@ MAIN:{
 	
 	if (defined $opt_D){
 		$proj_dir = "$ENV{ANNOTATION_DIR}/" . uc($opt_D) . '/asmbls';
-		$db = $opt_D;
+		$db = lc($opt_D);
 	} else {
 		$message .= "Option -D (Source directory) is required\n\n" unless $opt_h;
 		++$bad;
@@ -72,7 +72,7 @@ MAIN:{
 		$frg_ln = 0;
 	}
 
-	my $file_kwd = $fragmented ? qr/($opt_D\.assembly\.(\d+))\.(\d+)\./ : qr/($opt_D\.assembly\.(\d+))\./ if defined $opt_D;
+	my $file_kwd = $fragmented ? qr/($db\.assembly\.(\d+))\.(\d+)\./ : qr/($db\.assembly\.(\d+))\./ if defined $opt_D;
 
 	if (defined $opt_L && open(my $filelist, $opt_L) &! $bad){
 		my ($good, $crap) = (0) x 2;
@@ -124,7 +124,7 @@ MAIN:{
 #
 # -L List of files
 #
-# -D Annotation database
+# -D Annotation database 
 #
 # -B btab file
 #
