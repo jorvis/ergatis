@@ -16,7 +16,7 @@ SavedPipeline.pm - A module for loading and building saved pipeline templates.
         repository_root => '/usr/local/annotation/FUN' 
     );
     
-    To saved a pipeline template from an existing pipeline.xml:
+    To save a pipeline template from an existing pipeline.xml:
 
     my $pipe = Workflow::SavedPipeline->new(
         source => '/path/PROJECT/Workflow/pipeline/pipeline_id/pipeline.xml'
@@ -208,9 +208,12 @@ use XML::Twig;
 	    if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
 		my $component = $1;
 		my $token = $2;
-		#copy file
+		#copy .ini, setting SHARED_CONFIG = ""
 		my $source_file = $self->{_repository_root}."/Workflow/$component/".$self->{pipeline_id}."_$token/component.conf.bld.ini";
-		copy($source_file, $args{template}."/$component.$token.ini") || croak ("unable to copy ($source_file)");
+		my $dest_file = $args{template}."/$component.$token.ini";
+		my $cfg = new Config::IniFiles( -file => $source_file );
+		$cfg->setval( "include $component", '$;SHARED_CONFIG$;', "" );        
+		$cfg->WriteConfig( $dest_file );
 	    }
 	}
     }
