@@ -200,7 +200,7 @@ sub get_list_from_file{
 		$line =~ s/^\s+//;
 		
 		# get rid of trailing whitespaces
-		$line =~ s/\s+$/;
+		$line =~ s/\s+$//;
 
 		my ($asmbl_id, $secondary) = split(/\s+/, $line);
 		
