@@ -58,12 +58,14 @@ umask(0000);
 
 my %options = ();
 
+
 my $results = GetOptions (\%options, 
                           'asmbl_files|f=s', 
                           'asmbl_list|a=s',
 			  'output|o=s',
 			  'log|l=s',
                           'debug=s', 
+			  'sequencetype|s=s',
                           'help|h' ) || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -72,12 +74,30 @@ my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 $logger = Workflow::Logger::get_logger();
 
 
-my $keyname = '$;ASMBL_ID$;';
+my $keyname     = '$;ASMBL_ID$;';
 my $subflowname = '$;SUBFLOW_NAME$;';
+
+#
+# editor:   sundaram@tigr.org
+# date:     2005-09-01
+# bgzcase:
+# URL:
+# comment:  The secondary sequence-type will also need to be propagated properly
+#
+my $sequence_type = 'none';
+
+if ((exists $options{'sequencetype'}) && (defined($options{'sequencetype'}))){
+
+    $sequence_type = $options{'sequencetype'};
+}
+
+
+my $seqtypename = '$;SEQUENCE_TYPE$;';
 
 my $iteratorconf = {
     $keyname      => [],
     $subflowname  => [],
+    $seqtypename  => []
 };
 
 
@@ -103,7 +123,7 @@ if (!defined($options{'output'})){
 # Read in the information from asmbl_file OR asmbl_list
 #
 if(($options{'asmbl_files'}) && (uc ($options{'asmbl_files'}) ne 'NONE')){
-    &get_list_from_file($iteratorconf,$options{'asmbl_files'});
+    &get_list_from_file($iteratorconf,$options{'asmbl_files'}, $sequence_type);
 }
 
 #
@@ -153,28 +173,72 @@ sub output_lists {
 
 
 sub get_list_from_file{
-    my ($iteratorconf, $f) = @_;
+    my ($iteratorconf, $f, $sequence_type) = @_;
 
     my @lines;
+    my $secondaryhash = {};
+
     my @files = split(',',$f);
     foreach my $file (@files){
 	if( $file){
-	    open( FH, $file ) or die "Could not open $file";
-	    my @contents = <FH>;
-	    close( FH );
 
-	    chomp @contents;
 
-	    foreach my $asmbl_id (@contents){
-		$asmbl_id =~ s/\s//g;
-		push (@lines, $asmbl_id);
+	    #
+	    # editor:   sundaram@tigr.org
+	    # date:     2005-09-01
+	    # bgzcase:
+	    # URL:
+	    # comment:  The secondary sequence-type will also need to be propagated properly
+	    #
+	    open( FH, $file ) or $logger->logdie("Could not open $file");
+	    
+	    while (my $line = <FH>){
+
+		chomp $line;
+		
+		# get rid of leading whitespaces
+		$line =~ s/^\s+//;
+		
+		# get rid of trailing whitespaces
+		$line =~ s/\s+$/;
+
+		my ($asmbl_id, $secondary) = split(/\s+/, $line);
+		
+		push ( @lines, $asmbl_id );
+
+		if (defined($secondary)){
+		    
+		    #
+		    # The file contains secondary sequence type information afterall.
+		    # Sample asmbl_file lines:
+		    #
+		    # 101 SO:contig
+		    # 102 SO:supercontig
+		    #
+		    $secondaryhash->{$asmbl_id} = $secondary;
+		    
+		}
 	    }
 
 	    fisher_yates_shuffle(\@lines);
 	    foreach my $asmbl_id (@lines){
 		if($asmbl_id){
 		    my $subflow_name = 'asmbl_id_' . $asmbl_id;
-		    &add_entry_to_conf($iteratorconf,$asmbl_id, $subflow_name);
+
+		    my $seqtype_name;
+
+		    if (( exists $secondaryhash->{$asmbl_id}) && (defined($secondaryhash->{$asmbl_id}))) { 
+			
+			$seqtype_name = $secondaryhash->{$asmbl_id};
+		    }
+		    else{
+			#
+			# Assign the globally defined sequence_type
+			#
+			$seqtype_name = $sequence_type;
+		    }
+
+		    &add_entry_to_conf($iteratorconf,$asmbl_id, $subflow_name, $seqtype_name);
 		}
 	    }
 
@@ -199,9 +263,10 @@ sub get_list_from_list{
 }
 
 sub add_entry_to_conf{
-    my($iteratorconf,$filename,$name) = @_;
+    my($iteratorconf,$filename,$name, $seqtype) = @_;
     push( @{$iteratorconf->{$keyname}}, $filename );
     push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $name );
+    push( @{$iteratorconf->{'$;SEQUENCE_TYPE$;'}}, $seqtype );
 }
 
 sub fisher_yates_shuffle {
