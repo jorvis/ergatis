@@ -4,6 +4,7 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
+use File::Basename;
 use POSIX;
 use XML::Twig;
 
@@ -12,6 +13,7 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 my $xml_input = $q->param("xml_input") || die "pass xml_input";
+my $subflow_name  = basename($xml_input, '.xml');
 my $subflow_state = 'unknown';
 my $subflow_start = '';
 my $subflow_end   = '';
@@ -28,6 +30,7 @@ my $twig = XML::Twig->new( twig_roots => {
                                 'commandSet/state'     => sub {
                                                             my ($t, $elt) = @_;
                                                             $subflow_state = $elt->text;
+                                                            print "<span class='hidden' id='${subflow_name}_state'>$subflow_state</span>\n";
                                                           },
                                 'commandSet/startTime' => sub {
                                                             my ($t, $elt) = @_;
@@ -54,16 +57,6 @@ sub process_command {
 
     my ($start_time, $end_time, $run_time) = time_info($command);
     
-    my $time_label;
-    ## if still running, display the start time
-    if ($state eq 'running') {
-        $time_label = "$run_time ...";
-        
-    ## else display the elapsed time
-    } else {
-        $time_label = "$run_time";
-    }
-
     ## can we get a return value?
     my $return_value = 'unknown';
     if ( $command->first_child('status') && $command->first_child('status')->first_child('retValue') ) {
@@ -120,7 +113,7 @@ sub process_command {
             $name
         </div>
         <div class='rightside'>
-            <span class='minor'>$time_label</span>
+            <span class='minor'>$run_time</span>
             <span class='infolabel' id='${id}_infolabel'   onclick='toggle_cmd_info("$id")'>show info</span>
         </div>
     </div>

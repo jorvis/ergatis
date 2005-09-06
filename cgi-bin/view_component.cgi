@@ -235,8 +235,11 @@ sub print_header {
         img.status {
             margin-right: 5px;
         }
-        img.expander {
+        img.expander, img.reloader {
             cursor: pointer;
+        }
+        img.reloader {
+            margin-left: 5px;
         }
         #workflowcontainer {
             margin: 10px;
@@ -314,6 +317,9 @@ sub print_header {
         }
         th {
             color: rgb(100,100,100);
+        }
+        .shidden {
+            display: none;
         }
     </style>
     <script type="text/javascript">
@@ -400,6 +406,18 @@ sub print_header {
         
         function updateSubflow (sometext, subflowname) {
             get_object(subflowname + '_data').innerHTML = sometext;
+            
+            // get the state of this newly updated subflow
+            subflowstate = get_object(subflowname + '_state').innerHTML;
+            
+            // update the subflow image
+            subflowstateimg = get_object(subflowname + '_img');
+            subflowstateimg.src   = '/cram/status_' + subflowstate + '.png';
+            subflowstateimg.title = subflowstate;
+            subflowstateimg.alt   = subflowstate;
+            
+            // set the background color to white
+            get_object(subflowname + '_data').style.backgroundColor = 'rgb(255,255,255)';
         }
 
         function toggle_group_info(subflowname) {
@@ -448,6 +466,13 @@ sub print_header {
         //  caching. 
         function no_cache_string () {
             return (   Math.round(  ( Math.random() * 999999 ) + 1  )   );
+        }
+        
+        function reload_subflow(subflowname, subflowfile) {
+            // set the background partially grey
+            get_object(subflowname + '_data').style.backgroundColor = 'rgb(225,225,225)';
+            
+            sendElementUpdateRequest('./subflow_summary.cgi?xml_input=' + subflowfile + '&nocache=' + no_cache_string(), updateSubflow, subflowname);
         }
     </script>
 </head>

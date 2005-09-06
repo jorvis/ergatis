@@ -48,11 +48,11 @@ sub process_iterated_commandset {
     <div id='${name}_bar' class='subflowbar'>
         <div class='leftside'>
             <img id='${name}_arrow' class='expander' src='/cram/arrow_right.gif' onclick='toggle_subflow_display("$name", "$file");' alt='expand' title='expand'>
-            <img class='status' src='/cram/status_$state.png' title='$state' alt='$state'>
+            <img id='${name}_img' class='status' src='/cram/status_$state.png' title='$state' alt='$state'>
             $name
         </div>
         <div class='rightside'>
-            <span class='minor'>n/a</span>
+            <img class='reloader' src='/cram/reload_blue.png' onclick='reload_subflow("$name", "$file")' alt='reload' title='reload'>
         </div>
     </div>
     <div id='${name}_data' class='subflowdata' style='display: none;'></div>
