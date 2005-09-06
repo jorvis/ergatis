@@ -264,7 +264,7 @@ sub get_list_from_list{
     foreach my $asmbl_id (@array){
 	if($asmbl_id){
 	    my $subflow_name = 'asmbl_id_' . $asmbl_id;
-	    &add_entry_to_conf($iteratorconf,$asmbl_id, $subflow_name $sequence_type);
+	    &add_entry_to_conf($iteratorconf,$asmbl_id, $subflow_name, $sequence_type);
 	}
     }
 }
