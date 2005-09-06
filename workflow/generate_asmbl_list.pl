@@ -80,8 +80,8 @@ my $subflowname = '$;SUBFLOW_NAME$;';
 #
 # editor:   sundaram@tigr.org
 # date:     2005-09-01
-# bgzcase:
-# URL:
+# bgzcase:  2088
+# URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2088
 # comment:  The secondary sequence-type will also need to be propagated properly
 #
 my $sequence_type = 'none';
@@ -133,7 +133,7 @@ if(($options{'asmbl_files'}) && (uc ($options{'asmbl_files'}) ne 'NONE')){
 # comment: The script should not process asmbl_list == none
 #
 if(($options{'asmbl_list'}) && ( uc ($options{'asmbl_list'}) ne 'NONE')){
-    &get_list_from_list($iteratorconf,$options{'asmbl_list'});
+    &get_list_from_list($iteratorconf,$options{'asmbl_list'}, $sequence_type);
 }
 
 
@@ -186,8 +186,8 @@ sub get_list_from_file{
 	    #
 	    # editor:   sundaram@tigr.org
 	    # date:     2005-09-01
-	    # bgzcase:
-	    # URL:
+	    # bgzcase:  2088
+	    # URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2088
 	    # comment:  The secondary sequence-type will also need to be propagated properly
 	    #
 	    open( FH, $file ) or $logger->logdie("Could not open $file");
@@ -248,7 +248,14 @@ sub get_list_from_file{
 
 sub get_list_from_list{
 
-    my ($iteratorconf, $list) = @_;
+    #
+    # editor:   sundaram@tigr.org
+    # date:     2005-09-06
+    # bgzcase:  2088
+    # URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2088
+    # comment:  The secondary sequence-type will also need to be propagated properly
+    #
+    my ($iteratorconf, $list, $sequence_type) = @_;
 
     my @array = split(',',$list);
 
@@ -257,7 +264,7 @@ sub get_list_from_list{
     foreach my $asmbl_id (@array){
 	if($asmbl_id){
 	    my $subflow_name = 'asmbl_id_' . $asmbl_id;
-	    &add_entry_to_conf($iteratorconf,$asmbl_id, $subflow_name);
+	    &add_entry_to_conf($iteratorconf,$asmbl_id, $subflow_name $sequence_type);
 	}
     }
 }
