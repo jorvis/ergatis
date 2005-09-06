@@ -318,7 +318,7 @@ sub print_header {
         th {
             color: rgb(100,100,100);
         }
-        .shidden {
+        .hidden {
             display: none;
         }
     </style>
