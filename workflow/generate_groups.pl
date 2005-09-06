@@ -174,7 +174,7 @@ sub readiteratorconf{
         my @elts = split(/,/,$value);
 	    
 	    if(scalar(@elts) == 0){
-		$logger->get_logger()->logdie("Invalid value '$value' for key $key");
+		$logger->get_logger()->logdie("Invalid value '$value' for key $key in $listfile");
 	    }
 
 	    my $numelts;
