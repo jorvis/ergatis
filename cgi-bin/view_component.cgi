@@ -4,6 +4,7 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
+use Monitor;
 use POSIX;
 use XML::Twig;
 
@@ -40,17 +41,10 @@ print_header($parent_pipeline);
 ## look at each of the children of the root
 foreach my $child ( $parent_commandset->children() ) {
     
-    ## if this is a command, print its name
+    ## if this is a command, process its details
     if ($child->gi eq 'command') {
-        ## get its state
-        my $command_state = 'unknown';
-        if ( $child->first_child('state') ) {
-            $command_state = $child->first_child('state')->text();
-        }
         
-        print "    <div class='command'>" .
-              "<img class='status' src='/cram/status_${command_state}.png' title='$command_state' alt='$command_state'>" .
-              $child->first_child('name')->text() . "</div>\n";
+        &process_command($twig, $child);
     
     ## if it is a commandSet, it should be a file-based subflow
     } elsif ($child->gi eq 'commandSet') {
@@ -115,14 +109,14 @@ sub parse_groups_xml {
 #                                              $component_state = $elt->text();
 #                                              #print "            <div>state: $component_state</div>\n";
 #                                        },
-                                    'command'              => \&process_command,
+                                    'command'              => \&process_subflowgroup,
                                }
                              );
     $twig->parsefile($filename);
     
 }
 
-sub process_command {
+sub process_subflowgroup {
     my ($twig, $command) = @_;
     my $state = 'unknown';
     my $execution_host = '';
@@ -162,25 +156,7 @@ sub process_command {
         $workflow_id = $command->first_child('id')->text();
     }
     
-    my $start_time_obj = ParseDate( $command->first_child('startTime')->text );
-    my $start_time     = UnixDate( $start_time_obj, "%c" );
-    
-    my ($end_time_obj, $end_time);
-    ## end time may not exist (if running, for example)
-    if ( $command->first_child('endTime') ) {
-        $end_time_obj   = ParseDate( $command->first_child('endTime')->text );
-        $end_time       = UnixDate( $end_time_obj, "%c" );
-    }
-
-    ## we can calculate runtime only if start and end time are known, or if start is known and state is running
-    my $runtime = '?';
-    if ($start_time_obj) {
-        if ($end_time_obj) {
-            $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc($start_time_obj, $end_time_obj)) );
-        } elsif ($state eq 'running') {
-            $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("now", $start_time_obj)) ) . ' ...';
-        }
-    }
+    my ($start_time, $end_time, $runtime) = &time_info($command);
     
     print <<SubflowGroupBar;
         <div id='${name}_bar' class='subflowgroupbar'>
