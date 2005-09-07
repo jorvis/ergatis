@@ -43,14 +43,15 @@ MAIN:{
 	}
 
 
-	my $file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5})(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
+	my $old_file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5})(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
+	my $new_file_kwd =  qr/($opt_D\.model\.(\d+)_(\d+)(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
 
 	if (defined $opt_L && open(my $filelist, $opt_L) &! $bad){
 		my ($good, $crap) = (0) x 2;
 		while (<$filelist>){
 			chomp();
-			unless  (/$file_kwd/){
-				warn "File: \"$_\" is not recognized by the searhc pattern\n\n";
+			unless  (/$new_file_kwd/ || /$old_file_kwd/){
+				warn "File: \"$_\" is not recognized by the search pattern\n\n";
 				++$crap;
 				next;
 			}

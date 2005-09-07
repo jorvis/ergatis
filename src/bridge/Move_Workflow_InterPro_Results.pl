@@ -44,7 +44,9 @@ MAIN:{
 	}
 
 
-	my $file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5}))\.(\w+)/ unless $bad;  #avoids complains if $opt_D is not specified
+	my $old_file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5}))\.(\w+)/ unless $bad;  #avoids complains if $opt_D is not specified
+	my $new_file_kwd =  qr/($opt_D\.model\.(\d+)_(\d+))\.(\w+)/ unless $bad;  #avoids complains if $opt_D is not specified
+	
 	my %prog_to_ev_type = ( 'blastprodom' => "BlastProDom",
 				'coils'       => "Coil",
 				'hmmpir'      => "HMMpir",
@@ -60,7 +62,7 @@ MAIN:{
 		my ($good, $crap) = (0) x 2;
 		while (<$filelist>){
 			chomp();
-			unless  (/$file_kwd/){
+			unless  (/$new_file_kwd/ || $old_file_kwd){
 				warn "File: \"$_\" is not recognized by the search pattern\n\n";
 				++$crap;
 				next;
