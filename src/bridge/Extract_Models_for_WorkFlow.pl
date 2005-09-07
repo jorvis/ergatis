@@ -177,7 +177,7 @@ sub Fetch_n_Write {
 			warn "Model $mod_name lacks Nucleotinde and / or Protein sequence - skept\n";
 			next;
 		}
-		$mod_name =~ s/\D+//g;
+		$mod_name =~ s/\.m/_/;
 		my $header = ">$dbase.model.$mod_name";
 		
 		foreach my $seq ($nucl, $prot){
