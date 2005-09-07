@@ -86,21 +86,21 @@ Each protein is retrieved from the protein database fasta file using the cdbyank
 genome region is extracted as a substring of the genome sequence.  Both the protein and genome
 sequence substring are written as fasta files in the working directory, structured like so:
 
-{WORKING_DIRECTORY}/{asmbl_id}/{counter}.fsa.pep
+{WORKING_DIRECTORY}/{asmbl_id}/{database}.assembly.{asmbl_id}.{counter}.fsa.pep
 
-{WORKING_DIRECTORY}/{asmbl_id}/{counter}.fsa
+{WORKING_DIRECTORY}/{asmbl_id}/{database}.assembly.{asmbl_id}.{counter}.fsa
 
 for the protein and genome sequence region, respectively.  The counter is an integer incremented for
 each genome location on each asmbl_id.
 
 The header of the .fsa file is constructed like so:
 
-{asmbl_id}.{end5}.{end3}
+{database}.assembly.{asmbl_id}.{end5}.{end3}
 
 so that, by extracting the header for this entry, the exact genome coordinates can be inferred,
 and 
 
-A list of complete paths to each {counter}.fsa file is stored as:
+A list of complete paths to each .fsa file is stored as:
 
 {WORKING_DIRECTORY}/{file_list}  
 
@@ -406,17 +406,17 @@ sub prepare_genewise_inputs {
 	chomp $subseq;
 	
 	# write genome entry
-	open (my $fh, ">$asmbl_id/$counter.fsa") or die $!;
-	print $fh ">$asmbl_id.$lend.$rend\n$subseq\n";
+	open (my $fh, ">$asmbl_id/$database.assembly.$asmbl_id.$counter.fsa") or die $!;
+	print $fh ">$database.assembly.$asmbl_id.$lend.$rend\n$subseq\n";
 	close $fh;
 	
 	# write protein entry:
-	open ($fh, ">$asmbl_id/$counter.fsa.pep") or die $!;
+	open ($fh, ">$asmbl_id/$database.assembly.$asmbl_id.$counter.fsa.pep") or die $!;
 	print $fh $fasta_entry;
 	close $fh;
 	
 	## add entry in file listing:
-	print $file_list_fh "$work_dir/$asmbl_id/$counter.fsa\n";
+	print $file_list_fh "$work_dir/$asmbl_id/$database.assembly.$asmbl_id.$counter.fsa\n";
 
     }
 }
