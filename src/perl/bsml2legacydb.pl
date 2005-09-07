@@ -1,4 +1,3 @@
-#!/usr/local/bin/perl
 
 =head1	NAME
 
@@ -87,6 +86,7 @@ my $logger	= undef;
 my %id2title	= ();
 my $loader	= $& if $0 =~ /[\w\.\d]+$/;
 my $prog_name	= undef;
+my %latest_ids	= ();
 
 sub parse_opts;
 sub print_usage;
@@ -215,14 +215,15 @@ sub process_results
 	$prog_name = 'GeneZilla' if $prog_name =~ /genezilla/;
     
 	cleanup_records($asm_id, $prog_name) if !$asm_ids{$asm_id};
+
 	my $model_id = get_latest_id($asm_id, "model");
 	my $exon_id = get_latest_id($asm_id, "exon");
 	my $asm_feature_insert_stmt = prepare_asm_feature_insert_stmt;
 	my $phys_ev_insert_stmt = prepare_phys_ev_insert_stmt;
 	my $feat_link_insert_stmt = prepare_feat_link_insert_stmt;
 	foreach my $gene_coords (@genes) {
-		++$model_id;
-		my $model_feat_name = "$asm_id.m$model_id";
+		++$$model_id;
+		my $model_feat_name = "$asm_id.m$$model_id";
 #		print "$model_feat_name\n";
 		my ($model_pos5p, $model_pos3p);
 		if ($$gene_coords[0][0] < $$gene_coords[0][1]) {
@@ -236,35 +237,42 @@ sub process_results
 #		print "[$model_pos5p\t$model_pos3p]\n";
 
         $logger->debug("asm_feature_insert_stmt ('model', $loader, $model_pos5p, $model_pos3p, $model_feat_name, $asm_id) ") if $logger->is_debug;
+
 		$asm_feature_insert_stmt->execute("model", $loader,
 						  $model_pos5p, $model_pos3p,
 						  $model_feat_name,
 						  $asm_id);
-        $logger->debug("phys_ev_insert_stmt ($model_feat_name, $prog_name) ") if $logger->is_debug;                          
+
+        $logger->debug("phys_ev_insert_stmt ($model_feat_name, $prog_name) ") if $logger->is_debug;
+
 		$phys_ev_insert_stmt->execute($model_feat_name,
 					      $prog_name);
 
 		foreach my $exon_coords (@{$gene_coords}) {
-			++$exon_id;
-			my $exon_feat_name = "$asm_id.e$exon_id";
+			++$$exon_id;
+			my $exon_feat_name = "$asm_id.e$$exon_id";
 			my ($exon_pos5p, $exon_pos3p) =
 				($$exon_coords[0], $$exon_coords[1]);
 #			print "$exon_feat_name\n";
 #			print "$exon_pos5p\t$exon_pos3p\n";
 
             $logger->debug("asm_feature_insert_stmt ($loader, $exon_pos5p, $exon_pos3p, $exon_feat_name, $asm_id) ") if $logger->is_debug;
+
 			$asm_feature_insert_stmt->execute("exon", $loader,
 						  $exon_pos5p, $exon_pos3p,
 						  $exon_feat_name,
 						  $asm_id);
 
-            $logger->debug("phys_ev_insert_stmt ($model_feat_name, $prog_name) ") if $logger->is_debug;
+            $logger->debug("phys_ev_insert_stmt ($exon_feat_name, $prog_name) ") if $logger->is_debug;
+
 			$phys_ev_insert_stmt->execute($exon_feat_name,
 						      $prog_name);
 
             $logger->debug("feat_link_insert_stmt ($model_feat_name, $exon_feat_name) ") if $logger->is_debug;
+
 			$feat_link_insert_stmt->execute($model_feat_name,
 							$exon_feat_name);
+
 		}
 #		print "\n";
 	}
@@ -378,11 +386,13 @@ sub process_aln
 				"from Seq-pair_run")
 			if !$chain_num or !$pct_id or !$pct_sim;
 		my $prog_tag = $prog_name =~ /aat_aa/ ? 'nap' : 'gap2';
+
 		$insert_stmt->execute("$asm_id.intergenic", $prog_tag, 
 				      $subj_id, $query_start, $query_stop,
 				      $subj_start, $subj_stop, $prog_name,
 				      $pct_id, $pct_sim, $score, $db_id,
 				      $score, $total_score, $chain_num);
+
 	}
 	$twig->purge;
 }
@@ -507,17 +517,18 @@ sub cleanup_records
 sub get_latest_id
 {
 	my ($asm_id, $feat_type) = @_;
-	my $last_array;
-	my $last_feat_name =
-		$dbh->selectrow_arrayref("SELECT MAX(feat_name) " .
+	if (!exists $latest_ids{$asm_id}{$feat_type}) {
+		my $stmt = $dbh->prepare("SELECT DISTINCT feat_name " .
 					 "FROM asm_feature " .
 					 "WHERE asmbl_id=$asm_id AND " .
-					 "feat_type='$feat_type'")->[0];
-	if (!$last_feat_name) {
-		return "000000";
+					 "feat_type='$feat_type'");
+		$stmt->execute;
+		my $last_id = "000000";
+		while (my $row = $stmt->fetchrow_arrayref) {
+			my $id = $& if $$row[0] =~ /\d+$/;
+			$last_id = $id if $id > $last_id;
+		}
+		$latest_ids{$asm_id}{$feat_type} = $last_id;
 	}
-	else {
-		$last_feat_name =~ /\d+$/;
-		return $&;
-	}
+	return \($latest_ids{$asm_id}{$feat_type});
 }
