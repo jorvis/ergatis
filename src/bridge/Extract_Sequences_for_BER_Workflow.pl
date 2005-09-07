@@ -211,7 +211,7 @@ sub Fetch_n_Write {
 		
 		foreach my $model (@{$models}){
 			my ($start, $end, $minusstrand) = $model->[1] < $model->[2] ? (@{$model}[1,2], 0) : (@{$model}[2,1], 1);
-			(my $mod_name = $model->[0]) =~ s/\D+//g;
+			(my $model_name = $model->[0]) =~ s/\.m/_/;
 			my $header = "$dbase.model.$mod_name";
 			print {$tblfile} "$header\t$header\n";
 			
