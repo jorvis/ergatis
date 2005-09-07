@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-      <name>wu-blastp workflow</name>
+      <name>genewise_best_loc workflow</name>
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
