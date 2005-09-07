@@ -1,3 +1,4 @@
+#!/usr/local/bin/perl
 
 =head1	NAME
 
