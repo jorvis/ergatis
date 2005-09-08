@@ -111,7 +111,7 @@ sub CreateWorkflow{
                 AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
             
                 # for genewise
-                WISECONFIGDIR => "/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg",
+                WISECONFIGDIR => '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg',
 
                 ## should workflow take care of this?
                 SGE_ROOT        => '/local/n1ge',
@@ -170,6 +170,9 @@ sub RunWorkflow{
                 HMM_SCRIPTS     => '/usr/local/devel/ANNOTATION/hmm/bin',
                 SYBASE          => '/usr/local/packages/sybase',
                 AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+
+                # for genewise
+                WISECONFIGDIR => '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg',
                 
                 ## should workflow take care of this?
                 SGE_ROOT        => '/local/n1ge',
