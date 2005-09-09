@@ -4,6 +4,8 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use XML::Twig;
+use Date::Manip;
+use POSIX;
 
 my $q = new CGI;
 
@@ -23,6 +25,9 @@ my $command_count = 0;
 my %states;
 my @messages;
 my %message_counts;
+#time variables
+my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
+my ($starttimeobj, $endtimeobj);
 
 ## give colors as rgb values or hexidecimal
 my %colors = (
@@ -109,7 +114,7 @@ if (-e $pipeline) {
 
     ## print the component summary HTML
     print <<ComPONENTSummary;
-    <h1><div class="component_label"><b>component</b>: $ul_id</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
+    <h1><div class="component_label"><b>component</b>: $ul_id <b>runtime</b>: $runtime</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
     <li><div class="component_progress_image">$status_image</div></li>
     <li>state: <span style='color: $colors{$component_state}'>$component_state</span> actions: $command_count</li>
     $status_list_line
@@ -155,6 +160,33 @@ sub parseCommandSet {
             }
         }
     }
+
+    ## pull out the start time (and end time)
+#    $start_time = $commandSet->first_child('startTime')->text;
+#    $end_time = $commandSet->first_child('startTime')->text;
+    if ($commandSet->first_child('startTime') ) {
+	$starttimeobj = ParseDate($commandSet->first_child('startTime')->text());
+	$starttime = UnixDate($starttimeobj, "%c");
+    }
+
+    if ($commandSet->first_child('endTime') ) {
+	$endtimeobj = ParseDate($commandSet->first_child('endTime')->text());
+	$endtime = UnixDate($endtimeobj, "%c");
+    }
+
+    if ( $commandSet->first_child('state') ) {
+	$state  = $commandSet->first_child('state')->text();
+    }
+
+## we can calculate runtime only if start and end time are known, or if start is known and state is running
+    if ($starttimeobj) {
+	if ($endtimeobj) {
+	    $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc($starttimeobj, $endtimeobj)) );
+	} elsif ($state eq 'running') {
+	    $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("now", $starttimeobj)) ) . ' ...';
+	}
+    }
+
     
     ## all iterative components will have a commandSet to parse (file-based subflow)
     my $subflowCommandSet = $commandSet->first_child("commandSet") || 0;
