@@ -25,7 +25,7 @@ on NFS.
 This module requires a bit of initial setup before it can be used.  Simply
 create a directory someplace, and put an empty file in it named like:
 
-    current.1000000.id
+    current.100.id
     
 The integer portion of this can be whatever you like - it will be the first
 ID returned to any calling instances of the class.  This file and directory
@@ -101,9 +101,9 @@ umask(0000);
 
     my %_attributes = (
                         current_id  => undef,
-                        id_dir      => '/usr/local/scratch/jorvis/id_generation',
+                        id_dir      => '/usr/local/devel/ANNOTATION/jorvis/id_generation',
                         logging     => 1,
-                        log_dir     => '/usr/local/scratch/jorvis/id_generation/logs',
+                        log_dir     => '/usr/local/devel/ANNOTATION/jorvis/id_generation/logs',
                         _id_file    => undef,
                         _logfh      => undef,
                       );
