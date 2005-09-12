@@ -90,24 +90,26 @@ my $quotastring = 'quota information currently disabled';
 print_header($project, $state);
 
 print <<pipeLINEsummary;
-<div id='pipelinesummary'>
-    <div id='pipeline'>$file</div>
-    <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
-    <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
-    <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
-    <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
-    <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
-    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
-    <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
-    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
-    <div class='timer' id='pipeline_timer_label'></div>
-    <div id='pipelinecommands'>
-               [<a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'>new</a>]
-               [<a href='./run_wf.cgi?instancexml=$file'>rerun</a>] 
-               [<a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'>edit</a>] 
-               [<a href='./kill_wf.cgi?instancexml=$file'>kill</a>] 
-               [<a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'>condor status</a>] 
-               [<a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'>SGE status</a>] 
+<div id='bannerbottom'>
+    <div id='pipelinesummary'>
+        <div id='pipeline'>$file</div>
+        <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
+        <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
+        <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
+        <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
+        <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
+        <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
+        <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
+        <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
+        <div class='timer' id='pipeline_timer_label'></div>
+        <div id='pipelinecommands'>
+            <a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'><img class='navbutton' src='/cram/button_blue_new.png' alt='new' title='new'></a>
+            <a href='./run_wf.cgi?instancexml=$file'><img class='navbutton' src='/cram/button_blue_rerun.png' alt='rerun' title='rerun'></a>
+            <a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'><img class='navbutton' src='/cram/button_blue_edit.png' alt='edit' title='edit'></a>
+            <a href='./kill_wf.cgi?instancexml=$file'><img class='navbutton' src='/cram/button_blue_kill.png' alt='kill' title='kill'></a>
+            <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/cram/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
+            <a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/cram/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+        </div>
     </div>
 </div>
 pipeLINEsummary
@@ -224,12 +226,27 @@ sub print_header {
 
     <style type="text/css">
         body {
+            /* font: 11px courier, verdana, geneva, arial, sans-serif; */
             font-family: verdana, sans-serif;
             font-size: 8pt;
-            margin: 5px;
+            margin: 0px;
+            padding: 0px;
+            background-color: rgb(255,255,255);
+            background-image: url('/cram/bg1.png');
+            background-repeat: repeat-x;
+        }
+        
+        #bannertop {
+            height: 36px;
+            margin: 0px;
             padding: 0px;
         }
-
+        
+        #bannerbottom {
+            background-color: rgb(229,229,220);
+            border-bottom: 1px solid rgb(131,150,145);
+        }
+        
         a {
             text-decoration: none;
             color: rgb(0,100,0);
@@ -284,13 +301,10 @@ sub print_header {
         
         #pipeline {
             font-weight: bold;
-            margin-top: 5px;
             margin-left: 5px;
         }
         
         #pipelinesummary {
-            border: 1px solid rgb(150,150,150);
-            width: 750px;
             padding-bottom: 5px;
         }
         #pipelinecommands {
@@ -326,7 +340,11 @@ sub print_header {
             height: 10px;
             float: left;
         }
-
+        img.navbutton {
+            border: none;
+            margin: 5px 3px 0px 0px;
+            padding: 0px;
+        }
     </style>
     <script type="text/javascript">
         var timers = new Array();
@@ -514,8 +532,9 @@ sub print_header {
 
 <body>
 
-<div id="debugbox"></div>
-
+<div id='bannertop'>
+    <img src='/cram/banner_main.png' />
+</div>
 HeAdER
 }
 
