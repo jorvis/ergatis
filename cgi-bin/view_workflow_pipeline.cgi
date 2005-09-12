@@ -232,7 +232,7 @@ sub print_header {
             margin: 0px;
             padding: 0px;
             background-color: rgb(255,255,255);
-            background-image: url('/cram/bg1.png');
+            background-image: url('/cram/background_main.png');
             background-repeat: repeat-x;
         }
         
