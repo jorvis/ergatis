@@ -72,9 +72,11 @@ sub create_bsml
 		next if !length($line);
 		$line =~ s/^\s+//g;
 		my @tokens = split /\s+/, $line;
-		next if $tokens[0] !~ /(\d+)\.\d+/;
+		next if $tokens[0] !~ /^(\d+)\.\d+/;
+
 		my $from = $tokens[3] - 1;
 		my $to = $tokens[4] - 1;
+
 		if (exists EXON_LABELS->{$tokens[1]}) {
 			$bsml_generator->AddExon($1, $from, $to);
 		}

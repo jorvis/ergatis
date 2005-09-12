@@ -128,7 +128,8 @@ sub AddFeature
 				 '', $type);
 	AddLink($feat, $gene_finder_name);
 	$feat_group->addBsmlFeatureGroupMember($feat->returnattr('id'),
-				 	       $feat->returnattr('class'));
+				 	       $feat->returnattr('class'))
+		if $feat_group;
 	AddLoc($feat, $coord1, $coord2);
 }
 
