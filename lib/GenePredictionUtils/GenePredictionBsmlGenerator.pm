@@ -6,6 +6,8 @@ use warnings;
 use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 
+#silly hack to get it to commit in cvs
+
 sub new
 {
 	my $class = shift;
