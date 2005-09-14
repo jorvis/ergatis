@@ -148,7 +148,10 @@ sub _create_ini_file{
     open( INSTANCEINIFILE, "+>$instanceinifile") or $self->{_logger}->logdie("Could not open new ini file $instanceinifile");
     
     while( my $line = <TEMPLATEINIFILE> ){
-	$line =~ s/(\$;[\w_]+\$;)/&replaceval($self,$1,$subs)/ge;
+        ## don't replace vals on comment lines
+        if ( $line !~ /^\;/ && $line !~ /^\#/ ) {
+	    $line =~ s/(\$;[\w_]+\$;)/&replaceval($self,$1,$subs)/ge;
+        }
 	print INSTANCEINIFILE $line;
     }
     close TEMPLATEINIFILE;
