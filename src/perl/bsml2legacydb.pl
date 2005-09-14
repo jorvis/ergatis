@@ -177,7 +177,7 @@ sub process_files
 			$logger->logdie("Couldn't extract assembly id from: " .
 					"$file");
 		if (!$prog_name) {
-			$prog_name = $1 if $file =~ /(\w+)\.bsml/ or
+			$prog_name = $1 if $file =~ /.+\.(.+?)\.bsml/ or
 				$logger->logdie("Couldn't extract program " .
 						"name from: $file");
 		}
