@@ -114,10 +114,11 @@ if (-e $pipeline) {
 
     ## print the component summary HTML
     print <<ComPONENTSummary;
-    <h1><div class="component_label"><b>component</b>: $ul_id <b>runtime</b>: $runtime</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
+    <h1><div class="component_label"><b>component</b>: $ul_id</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
     <li><div class="component_progress_image">$status_image</div></li>
     <li>state: <span style='color: $colors{$component_state}'>$component_state</span> actions: $command_count</li>
     $status_list_line
+    <b>runtime</b>: $runtime
     $messages_line
     <li class="actions">
         [<a href="./view_component.cgi?pipeline_xml=$pipeline">view</a>]  
