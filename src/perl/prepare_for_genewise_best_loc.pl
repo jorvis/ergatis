@@ -86,7 +86,7 @@ Each protein is retrieved from the protein database fasta file using the cdbyank
 genome region is extracted as a substring of the genome sequence.  Both the protein and genome
 sequence substring are written as fasta files in the working directory, structured like so:
 
-{WORKING_DIRECTORY}/{asmbl_id}/{database}.assembly.{asmbl_id}.{counter}.fsa.pep
+{WORKING_DIRECTORY}/{asmbl_id}/{database}.assembly.{asmbl_id}.{counter}.pep
 
 {WORKING_DIRECTORY}/{asmbl_id}/{database}.assembly.{asmbl_id}.{counter}.fsa
 
@@ -411,7 +411,7 @@ sub prepare_genewise_inputs {
 	close $fh;
 	
 	# write protein entry:
-	open ($fh, ">$asmbl_id/$database.assembly.$asmbl_id.$counter.fsa.pep") or die $!;
+	open ($fh, ">$asmbl_id/$database.assembly.$asmbl_id.$counter.pep") or die $!;
 	print $fh $fasta_entry;
 	close $fh;
 	
