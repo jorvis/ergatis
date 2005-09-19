@@ -17,7 +17,7 @@
           <configMapId>create_compute_output</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunDistributedCommand</type>
           <name>prepare for genewise best loc</name>
           <configMapId>prepare_for_genewise_best_loc</configMapId>
         </command>
@@ -44,8 +44,8 @@
 <!--Postprocessing-->
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge raw list files</name>
-        <configMapId>merge_raw_list_files</configMapId>
+        <name>create raw list</name>
+        <configMapId>create_raw_list</configMapId>
     </command>
 <!--Checksum creation-->
      </commandSet>
