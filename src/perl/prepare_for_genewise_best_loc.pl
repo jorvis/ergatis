@@ -163,6 +163,7 @@ my $dbproc = DBI->connect("dbi:Sybase:server=SYBTIGR; packetSize=8092",$username
     || croak "couldn't establish a database connection\n\n";
 $dbproc->{RaiseError} = 1; # don't tolerate faulty db interactions
 $dbproc->do("use $database");
+$dbproc->do("set textsize 50000000");
 
 ## find search_db file:
 my $protein_fasta_file = &find_fasta_file ($search_db) or die "Error, cannot find fasta file for $search_db";
@@ -199,6 +200,9 @@ if (! -d $work_dir) {
 
 umask(0000); #write all output files permissibly
 
+## prepare a reusable statement for getting assembly size
+#my $length_fetch = $dbproc->prepare("select DATALENGTH(sequence) from assembly where asmbl_id = ?");
+
 if (! $file_list) {
     $file_list = $DEFAULT_FILE_LIST;
 }
@@ -209,10 +213,24 @@ foreach my $asmbl_id (@asmbls_to_process) {
     &prepare_asmbl_data($asmbl_id);
 }
 
+#$length_fetch->finish();
+
 close $file_list_fh;
 
 exit(0);
 
+
+#sub fetch_assembly_length {
+#    my $asmbl_id = shift;
+#    
+#    $length_fetch->execute($asmbl_id);
+#    
+#    my $length = ( $length_fetch->fetchrow_array() )[0];
+#    
+#    print "fetched length $length for assembly $asmbl_id\n";
+#    
+#    return $length;
+#}
 
 
 ####
@@ -358,12 +376,18 @@ sub prepare_genewise_inputs {
         
     ## prepare sequence files
     mkdir ($asmbl_id) or croak "error, couldn't mkdir $asmbl_id in $work_dir "; 
+
+    ## make sure we can handle a sequence of this length    
+#    my $query = "set textsize 100000000"; #larger than any single sequence to encounter. 
+#    $dbproc->do($query);
+#    $dbproc->{LongReadLen} = fetch_assembly_length($asmbl_id);
+#    $dbproc->do( "set textsize " . &fetch_assembly_length($asmbl_id) );
+
+    ## get the genome sequence:    
+    my $query = qq{select sequence from assembly where asmbl_id = $asmbl_id};
     
-    ## get the genome sequence:
-    my $query = "set textsize 1000000000"; #larger than any single sequence to encounter. 
-    $dbproc->do($query);
+    ## need to set textsize here
     
-    $query = qq{select sequence from assembly where asmbl_id = $asmbl_id};
     my $sth = $dbproc->prepare($query);
     $sth->execute();
     my ($genome_seq) = $sth->fetchrow_array;
