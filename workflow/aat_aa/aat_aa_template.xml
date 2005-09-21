@@ -5,16 +5,6 @@
     <commandSet type="serial">
         <name>aat_aa Compute</name>
         <configMapId>empty</configMapId>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>create_group_output_dir</configMapId>
-            <name>create_group_output_dir</name>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>create_group_tmp_dir</configMapId>
-            <name>create_group_tmp_dir</name>
-        </command>
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>dps</configMapId>
@@ -52,11 +42,6 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_nap_list</configMapId>
-            <name>create_nap_list</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>remove_raw_dps_output</configMapId>
             <name>remove_raw_dps_output</name>
         </command>
@@ -85,11 +70,6 @@
             <configMapId>relocate_btab</configMapId>
             <name>relocate_btab</name>
         </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_btab_list</configMapId>
-            <name>create_btab_list</name>
-        </command>
         <command>
             <type>RunUnixCommand</type>
             <configMapId>nap2bsml</configMapId>
@@ -114,11 +94,6 @@
             <type>RunUnixCommand</type>
             <configMapId>compress_bsml</configMapId>
             <name>compress_bsml</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_bsml_list</configMapId>
-            <name>create_bsml_list</name>
         </command>
         <command>
             <type>RunUnixCommand</type>
