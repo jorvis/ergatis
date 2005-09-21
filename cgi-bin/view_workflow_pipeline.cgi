@@ -4,10 +4,12 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
+use File::Basename;
 use File::stat;
+use Monitor;
 use POSIX;
 use XML::Twig;
-use File::Basename;
+
 
 my $q = new CGI;
 my $repository_root;
@@ -43,30 +45,12 @@ my $commandSet = $commandSetRoot->first_child('commandSet');
 ## pull desired info out of the root commmandSet
 ## pull: project space usage
 my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
-my ($starttimeobj, $endtimeobj);
-
-if ($commandSet->first_child('startTime') ) {
-    $starttimeobj = ParseDate($commandSet->first_child('startTime')->text());
-    $starttime = UnixDate($starttimeobj, "%c");
-}
-
-if ($commandSet->first_child('endTime') ) {
-    $endtimeobj = ParseDate($commandSet->first_child('endTime')->text());
-    $endtime = UnixDate($endtimeobj, "%c");
-}
 
 if ( $commandSet->first_child('state') ) {
     $state  = $commandSet->first_child('state')->text();
 }
 
-## we can calculate runtime only if start and end time are known, or if start is known and state is running
-if ($starttimeobj) {
-    if ($endtimeobj) {
-        $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc($starttimeobj, $endtimeobj)) );
-    } elsif ($state eq 'running') {
-        $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("now", $starttimeobj)) ) . ' ...';
-    }
-}
+($starttime, $endtime, $runtime) = &time_info($commandSet);
 
 my $filestat = stat($file);
 my $user = getpwuid($filestat->uid);
@@ -159,11 +143,7 @@ sub parseCommandSet {
         print <<ComponeNTBlock;
 <ul class='component' id='$name_token'>
     <h1><span><b>component</b>: $name_token</span></h1>
-    <li><div class="component_progress_image"></div></li>
     <li>state: wait for update</li>
-    <li class="actions">
-        [view] [<a>xml</a>] [<a>conf</a>] [<a>update</a>]
-    </li>
 </ul>
 <script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token', updateComponent, '$name_token', '$filebased_subflow');</script>
 ComponeNTBlock
