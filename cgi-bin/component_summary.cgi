@@ -5,6 +5,7 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use XML::Twig;
 use Date::Manip;
+use Monitor;
 use POSIX;
 
 my $q = new CGI;
@@ -26,8 +27,7 @@ my %states;
 my @messages;
 my %message_counts;
 #time variables
-my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
-my ($starttimeobj, $endtimeobj);
+my ($start_time, $end_time, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
 
 ## give colors as rgb values or hexidecimal
 my %colors = (
@@ -118,14 +118,14 @@ if (-e $pipeline) {
     <li><div class="component_progress_image">$status_image</div></li>
     <li>state: <span style='color: $colors{$component_state}'>$component_state</span> actions: $command_count</li>
     $status_list_line
-    <b>runtime</b>: $runtime
+    <b>runtime</b>: $runtime<br />
     $messages_line
     <li class="actions">
-        [<a href="./view_component.cgi?pipeline_xml=$pipeline">view</a>]  
-        [<a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank">xml</a>] 
-        [<a href="./view_formatted_ini_source.cgi?file=$component_conf" target="_blank">conf</a>] 
-        [<a onclick="requestComponentUpdate('$pipeline', '$ul_id')">update</a>] 
-        [<a onclick="stopAutoUpdate('$ul_id')">stop updates</a>]
+        <a href="./view_component.cgi?pipeline_xml=$pipeline"><img class='navbutton' src='/cram/button_blue_view.png' alt='view' title='view'></a>
+        <a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank"><img class='navbutton' src='/cram/button_blue_xml.png' alt='xml' title='xml'></a>
+        <a href="./view_formatted_ini_source.cgi?file=$component_conf" target="_blank"><img class='navbutton' src='/cram/button_blue_config.png' alt='config' title='config'></a> 
+        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/cram/button_blue_update.png' alt='update' title='update'></a>
+        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/cram/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
     </li>
     <li class="pass_values">
         <span id="${ul_id}_continue_update">$update_interval</span>
@@ -162,33 +162,12 @@ sub parseCommandSet {
         }
     }
 
-    ## pull out the start time (and end time)
-#    $start_time = $commandSet->first_child('startTime')->text;
-#    $end_time = $commandSet->first_child('startTime')->text;
-    if ($commandSet->first_child('startTime') ) {
-	$starttimeobj = ParseDate($commandSet->first_child('startTime')->text());
-	$starttime = UnixDate($starttimeobj, "%c");
-    }
-
-    if ($commandSet->first_child('endTime') ) {
-	$endtimeobj = ParseDate($commandSet->first_child('endTime')->text());
-	$endtime = UnixDate($endtimeobj, "%c");
-    }
-
     if ( $commandSet->first_child('state') ) {
-	$state  = $commandSet->first_child('state')->text();
+        $state  = $commandSet->first_child('state')->text();
     }
 
-## we can calculate runtime only if start and end time are known, or if start is known and state is running
-    if ($starttimeobj) {
-	if ($endtimeobj) {
-	    $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc($starttimeobj, $endtimeobj)) );
-	} elsif ($state eq 'running') {
-	    $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("now", $starttimeobj)) ) . ' ...';
-	}
-    }
+    ($start_time, $end_time, $runtime) = &time_info( $commandSet );
 
-    
     ## all iterative components will have a commandSet to parse (file-based subflow)
     my $subflowCommandSet = $commandSet->first_child("commandSet") || 0;
     if ($subflowCommandSet) {
@@ -252,27 +231,15 @@ sub printIncompleteSummary {
     <li><div class="component_progress_image"><div class="status_bar_portion" style="width: 500px; background-color: $colors{incomplete}"></div></div></li>
     <li>state: <span style='color: $colors{incomplete}'>incomplete</span></li>
     <li class="actions">
-        [view] 
-        [xml] 
-        [conf] 
-        [<a onclick="requestComponentUpdate('$pipeline', '$ul_id')">update</a>] 
-        [<a onclick="stopAutoUpdate('$ul_id')">stop updates</a>]
+        <img class='navbutton' src='/cram/button_grey_view.png' alt='view' title='view'> 
+        <img class='navbutton' src='/cram/button_grey_xml.png' alt='xml' title='xml'>  
+        <img class='navbutton' src='/cram/button_grey_config.png' alt='config' title='config'>  
+        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/cram/button_blue_update.png' alt='update' title='update'></a>
+        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/cram/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
     </li>
     <li class="pass_values">
         <span id="${ul_id}_continue_update">60</span>
     </li>
 ComponentNOTyetCreated
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
