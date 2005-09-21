@@ -174,7 +174,8 @@ my %seqs;
 
 ## count the number of mrna, cds, and exons
 ## later, ensure that we saw one of each
-my %type_count = ( mrna => 0, cds => 0, exon => 0);
+#my %type_count = ( mrna => 0, cds => 0, exon => 0);
+my %type_count = ( gene => 0, cds => 0);
 
 while (<$gff3_fh>) {
     chomp;
@@ -285,7 +286,6 @@ while (<$gff3_fh>) {
     ## are we doing ontology checking?
     if ($checking_feature_ontology) {
         my $term = fetch_term($type, $feat_ont);
-        
         if (! $term) {
             record_error("Type ($type) not defined in feature ontology on line $.", "a_canon");
         }
@@ -503,9 +503,9 @@ if (! $checking_attribute_ontology) {
 }
 
 ## check to ensure that we saw the required types: mRNA, cds, exon
-unless ($type_count{'mrna'} && $type_count{'cds'} && $type_count{'exon'}) {
+unless ($type_count{'gene'} && $type_count{'cds'}) {
     my @missing_types;
-    foreach ('mrna', 'cds', 'exon') {
+    foreach ('gene', 'cds') {
       unless ($type_count{$_}) {
         push(@missing_types, $_);
       }
@@ -520,7 +520,7 @@ exit($error_count);
 sub fetch_term {
     my ($id, $ont) = @_;
     my $term = 0;
-    
+   
     ## is this an id like GO:0000245 ?
     if ($id =~ /^[A-Z]{2}\:[0-9]{7}$/) {
         $term = $ont->get_term($id);
@@ -536,7 +536,7 @@ sub load_ontology {
     my $uri = shift;
     my $ont;
     my $status = 0;
-    
+
     my $parser = new GO::Parser( {handler => 'obj' } );
     
     ## is it a urn?
