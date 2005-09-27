@@ -1,0 +1,203 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <title>ergatis | pipeline list</title>
+
+    <style type="text/css">
+        body {
+            /* font: 11px courier, verdana, geneva, arial, sans-serif; */
+            font-family: verdana, sans-serif;
+            font-size: 8pt;
+            margin: 0px;
+            padding: 0px;
+            background-color: rgb(255,255,255);
+            background-image: url('/cram/background_main.png');
+            background-repeat: repeat-x;
+        }
+        
+        #bannertop {
+            height: 36px;
+            margin: 0px;
+            padding: 0px;
+        }
+        
+        #bannerbottom {
+            background-color: rgb(229,229,220);
+            border-bottom: 1px solid rgb(131,150,145);
+        }
+        #pipelinesummary {
+            padding: 5px 0px 5px 0px;
+        }       
+        #pipelinecommands {
+            margin-left: 15px;
+        }
+        #pipelinelist {
+            margin: 10px 0px 0px 10px;
+        }
+        #errorlist {
+            margin: 15px;
+            padding: 15px;
+            border: 2px solid rgb(200,0,0);
+        }
+        #pipelinetable {
+            /* width: 90%; */
+        }
+        .pipelinestat {
+            margin-left: 15px;
+            display: inline;
+            color: rgb(75,75,75);
+        }
+        h1 {
+            color: rgb(76,109,143);
+            font-size: 1.5em;
+        }
+         
+        a {
+            text-decoration: none;
+            color: rgb(76,109,143);
+            cursor: pointer;
+            cursor: hand;
+        }
+
+        img.navbutton {
+            border: none;
+            margin: 5px 3px 0px 0px;
+            padding: 0px;
+        }
+        th {
+            text-align: left;
+            padding-right: 10px;
+        }
+        td {
+            padding-right: 15px;
+        }
+        span.state {
+            font-weight: bold;
+        }
+        span.complete    { color: rgb(0,200,0); }
+        span.incomplete  { color: rgb(75,75,75); }
+        span.failed      { color: rgb(200,0,0); }
+        span.pending     { color: rgb(200,200,0); }
+        span.error       { color: rgb(200,0,0); }
+        span.running     { color: rgb(0,0,200); }
+        span.waiting     { color: rgb(200,200,0); }
+        span.interrupted { color: rgb(200,0,200); }
+        span.unknown     { color: rgb(0,0,0); }
+
+        td.component_review div {
+            display: none;
+            position: absolute;
+            border: 1px solid rgb(100,100,100);
+            width: 30em;
+            background-color: rgb(230,230,230);
+            padding: .8em;
+            margin-left: 8em;
+            margin-top: -2em;
+            opacity: 0.9;
+        }
+        td.component_review:hover div {
+            display: block;
+        }
+        td.component_review div:hover {
+            display: none;
+        }
+        span.component_review_header {
+            font-weight: bold;
+        }
+        hr {
+            margin: 1em 0em;
+            height: 1px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id='bannertop'>
+    <img src='/cram/banner_main.png' />
+</div>
+<div id='bannerbottom'>
+    <div id='pipelinesummary'>
+        <div class='pipelinestat'><strong>repository root:</strong> <TMPL_VAR NAME=REPOSITORY_ROOT></div><br>
+        <div class='pipelinestat'><strong>quota:</strong> currently disabled</div>
+        <div id='pipelinecommands'>
+            <a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'><img class='navbutton' src='/cram/button_blue_new.png' alt='new' title='new'></a>
+            <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/cram/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
+            <a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/cram/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+        </div>
+    </div>
+</div>
+<TMPL_IF NAME=ERRORS_FOUND>
+<div id='errorlist'>
+    <strong>ERROR:</strong><br><br>
+<TMPL_LOOP NAME=ERROR_MSGS>
+    <TMPL_VAR NAME=MSG><br>
+</TMPL_LOOP>
+</div>
+</TMPL_IF> <!-- if ERRORS_FOUND -->
+
+<div id='pipelinelist'>
+    <h1>pipeline list</h1>
+    <TMPL_IF NAME=PIPELINE_COUNT>
+    <table id='pipelinetable'>
+        <tr>
+            <th>pipeline id</th>
+            <th>state</th>
+            <th>user</th>
+            <th>last mod</th>
+            <th>run time</th>
+            <th>contents</th>
+            <th>actions</th>
+        </tr>
+    <TMPL_LOOP NAME=PIPELINES>
+        <tr>
+            <td><TMPL_VAR NAME=PIPELINE_ID></td>
+            <td>
+                <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+            </td>
+            <td><TMPL_VAR NAME=PIPELINE_USER></td>
+            <td><TMPL_VAR NAME=LAST_MOD></td>
+            <td><TMPL_VAR NAME=RUN_TIME></td>
+            <td class='component_review'>
+                <a href='<TMPL_VAR NAME=VIEW_LINK>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
+                <div>
+                    <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
+                    <hr/>
+                <TMPL_IF NAME=COMPONENT_COUNT>
+                <TMPL_LOOP NAME=COMPONENTS>
+                    <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
+                <TMPL_ELSE>
+                    no components found
+                </TMPL_IF>
+                </div>
+            </td>
+            <td>
+                <a href='<TMPL_VAR NAME=VIEW_LINK>'><img class='navbutton' src='/cram/button_blue_view.png' alt='view' title='view'></a>
+                <a href='<TMPL_VAR NAME=EDIT_LINK>'><img class='navbutton' src='/cram/button_blue_edit.png' alt='view' title='view'></a>
+                <img class='navbutton' src='/cram/button_grey_delete.png' alt='delete' title='delete'>
+            </td>
+        </tr>
+    </TMPL_LOOP>
+    </table>
+    </TMPL_IF> <!-- if PIPELINE_COUNT -->
+</div> <!-- end pipelinelist -->
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
