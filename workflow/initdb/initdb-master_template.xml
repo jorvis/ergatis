@@ -85,23 +85,18 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>Unpartition tables</name>
-            <configMapId>unpartition</configMapId>
+            <name>Drop all tables</name>
+            <configMapId>drop_all_tables</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>Truncate all tables</name>
-            <configMapId>truncate_all</configMapId>
+            <name>Create all tables</name>
+            <configMapId>create_all_tables</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
             <name>Partition tables</name>
             <configMapId>partition</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>Drop indexes constraints</name>
-            <configMapId>drop_indexes1</configMapId>
         </command>
 <!--Iterator steps-->
 <!--Processing steps-->
