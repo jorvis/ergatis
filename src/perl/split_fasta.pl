@@ -13,6 +13,7 @@ split_fasta.pl - split a single-sequence FASTA file into separate, optionally ov
               [ --overlap_length=1000 
                 --file_numbering=incremental|positional
                 --file_name_root=string
+                --file_name_suffix=string
                 --output_list=/path/to/somefile.list
                 --bsml_map=/path/to/somefile.map.bsml
               ]
@@ -36,6 +37,9 @@ B<--file_numbering,-n>
 
 B<--file_name_root,-r>
     Forms the root part of the file name created.  See the OUTPUT section for more information.
+
+B<--file_name_suffix,-u>
+    Forms the suffix part of each file name created.  If omitted, defaults to 'fsa'. See the OUTPUT section for more information.
 
 B<--output_list,-s>
     Write a list file containing the paths of each of the regular output files.  This may be useful
@@ -90,21 +94,26 @@ after the root portion.  The default value is 'incremental'.  Examples are in or
     original file name: somefile.fsa
     --file_numbering='incremental'
     --file_name_root was NOT PASSED
+    --file_name_suffix='fsa'
     --fragment_length=50000
 
-    somefile.fsa.1
-    somefile.fsa.2
-    somefile.fsa.3
+    somefile.fsa.1.fsa
+    somefile.fsa.2.fsa
+    somefile.fsa.3.fsa
     ...
+
+But that's probably not what you want, since .fsa is now in the file name twice.  It would be better
+to do it like this:
 
     original file name: somefile.fsa
     --file_numbering='incremental'
-    --file_name_root='disco_stu'
+    --file_name_root='somefile'
+    --file_name_suffix='fsa'
     --fragment_length=50000
-    
-    disco_stu.1
-    disco_stu.2
-    disco_stu.3
+
+    somefile.1.fsa
+    somefile.2.fsa
+    somefile.3.fsa
     ...
 
 This may be fine for some applications, but these file names give no positional information
@@ -117,11 +126,12 @@ your --fragment_length is set to 50000, the files generated will be named like:
     original file name: somefile.fsa
     --file_numbering='incremental'
     --file_name_root='blastres'
+    --file_name_suffix='fsa'
     --fragment_length=50000
 
-    blast_res.0
-    blast_res.50000
-    blast_res.100000
+    blast_res.0.fsa
+    blast_res.50000.fsa
+    blast_res.100000.fsa
     ...
 
 The FASTA headers for each of the fragment files created will have a slightly modified header.
@@ -150,6 +160,7 @@ my $results = GetOptions (\%options,
                           'overlap_length|p=s',
                           'file_numbering|n=s',
                           'file_name_root|r=s',
+                          'file_name_suffix|u=s',
                           'output_list|s=s',
                           'bsml_map|b=s',
                           'output_dir|o=s',
@@ -204,8 +215,6 @@ if (defined $options{bsml_map}) {
     $refseq = $doc->createAndAddSequence( ($options{file_name_root} || $fname), undef, undef, undef, 'assembly' );
     $refseq->addBsmlLink('analysis', '#split_fasta_analysis');
     $refseq->addBsmlAttr('sourceuri', $options{input_file});
-    
-    print "got here\n";
     
     ## add this analysis
     $analysis = $doc->createAndAddAnalysis(
@@ -299,8 +308,14 @@ sub check_parameters {
     $options{overlap_length} = 0 if (! defined $options{overlap_length});
     $options{file_numbering} = 'incremental' if (! defined $options{overlap_length});
     
-    if(0){
-        pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
+    ## if the file name suffix was defined, keep it, but take off the dot if passed.
+    if (defined $options{file_name_suffix}) {
+        if ( $options{file_name_suffix} =~ /^\.(.+)/ ) {
+            $options{file_name_suffix} = $1;
+        }
+    ## else assign the default
+    } else {
+        $options{file_name_suffix} = 'fsa';
     }
 }
 
@@ -315,7 +330,7 @@ sub writeSequence {
         $froot = $fname;
     }
     
-    my $filepath = "$options{output_dir}/$froot.$id";
+    my $filepath = "$options{output_dir}/$froot.$id.$options{file_name_suffix}";
     
     ## write the sequence
     $logger->debug("Writing sequence to $filepath");
