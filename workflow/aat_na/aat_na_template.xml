@@ -5,16 +5,6 @@
     <commandSet type="serial">
         <name>aat_na Compute</name>
         <configMapId>empty</configMapId>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>create_group_output_dir</configMapId>
-            <name>create_group_output_dir</name>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>create_group_tmp_dir</configMapId>
-            <name>create_group_tmp_dir</name>
-        </command>
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>dds</configMapId>
