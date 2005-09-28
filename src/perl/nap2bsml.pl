@@ -95,13 +95,6 @@ my $doc = new BSML::BsmlBuilder();
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
-## to allow btab files to be merged together before they are converted to BSML,
-##  we can't assume that the first column will always be the qry id, even though
-##  nap can only be run on one sequence.  So that we don't have to hold the entire
-##  doc in memory, we'll keep each qry_id - sbj_id combination in %data along with
-##  a reference to their Seq-pair-alignment.  That way we can just add Seq-pair-run
-##  elements to them when necessary.
-
 ## each chainID = one Seq-pair-alignment
 ## each chain segment = one Seq-pair-run
 
