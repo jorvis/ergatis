@@ -80,11 +80,6 @@
 <!--Preprocessing-->
         <command>    
             <type>RunUnixCommand</type>
-            <name>Revoke public</name>
-            <configMapId>revoke_public</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <name>Drop all tables</name>
             <configMapId>drop_all_tables</configMapId>
         </command>
