@@ -30,7 +30,7 @@ MAIN:{
 	my $message = "\n\nUsage:   $prN   <Options>\n\n";
 	my $bad = 0;
 	my ($proj_dir, $source_dir, $target_dir, $file_end, $btab, $db);
-	my $frg_ln = 50000; # default fragment length
+	my $frg_ln = 100000; # default fragment length
 	my $copied = 0;
 	my %files = ();
 	
