@@ -34,9 +34,10 @@ This script is used to convert the btab output from a nap search into BSML.
 =head1 INPUT
 
 The input to this component is the btab file created by the nap executable.  This file
-is 19-column, tab-delimited text document.  The input can be a the nap btab output from
-a single search for a concatenated file from multiple searches.  Define the input file
-using the --input option.
+is 19-column, tab-delimited text document.  The input must be a nap btab output from
+a single search.  Seq-pair-alignment elements are based on the chain ID from nap, so if you concatenate
+btabs together each chainID 1, for example, would get merged into the same alignment, which 
+is probably not what you want.  Define the input file using the --input option.
 
 Illegal characters will be removed from the 
 IDs for the query sequence (column 0) and subject hit (column 5) if necessary to create 
@@ -100,8 +101,14 @@ open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for 
 ##  doc in memory, we'll keep each qry_id - sbj_id combination in %data along with
 ##  a reference to their Seq-pair-alignment.  That way we can just add Seq-pair-run
 ##  elements to them when necessary.
-my %data;
+
+## each chainID = one Seq-pair-alignment
+## each chain segment = one Seq-pair-run
+
 my %seqs_found;
+
+## this hash will hold the chainIDs as their key and a reference to its Seq-pair-alignment
+my %chains;
 while (<$ifh>) {
     ## ignore whitespace lines
     next if ( /^\s*$/ );
@@ -140,25 +147,27 @@ while (<$ifh>) {
         $seqs_found{$sbj_id} = 1;
     }
     
+    my ($chainID, $segmentID) = ($cols[13], $cols[14]);
+    
     ## if this combination doesn't exist yet, create its Seq-pair-alignment
-    if (! exists $data{$qry_id}{$sbj_id}) {
+    if (! exists $chains{$chainID}) {
         ## skipped attributes here are complength, compstart, compend and method
-        $data{$qry_id}{$sbj_id} = $doc->createAndAddSequencePairAlignment( refseq => $qry_id,
-                                                                           refxref => ":$qry_id",
-                                                                           refstart => 0,
-                                                                           refend => $cols[2] - 1,
-                                                                           reflength => $cols[2],
-                                                                           compseq => $sbj_id,
-                                                                           compxref => "$cols[4]:$sbj_id",
-                                                                         );
+        $chains{$chainID} = $doc->createAndAddSequencePairAlignment( refseq => $qry_id,
+                                                                     refxref => ":$qry_id",
+                                                                     refstart => 0,
+                                                                     refend => $cols[2] - 1,
+                                                                     reflength => $cols[2],
+                                                                     compseq => $sbj_id,
+                                                                     compxref => "$cols[4]:$sbj_id",
+                                                                   );
 
         ## add the total_score (will be the same for each matching segment)
-        $doc->createAndAddBsmlAttribute($data{$qry_id}{$sbj_id}, 'total_score', $cols[18]);
+        $doc->createAndAddBsmlAttribute($chains{$chainID}, 'total_score', $cols[18]);
     }
     
     ## now add the Seq-pair-run
     ## skipped attributes are runprob
-    my $run = $doc->createAndAddSequencePairRun(   alignment_pair => $data{$qry_id}{$sbj_id},
+    my $run = $doc->createAndAddSequencePairRun(   alignment_pair => $chains{$chainID},
                                                    runscore => $cols[12],
                                                    runlength => abs($cols[7] - $cols[6]) + 1,
                                                    comprunlength => abs($cols[9] - $cols[8]) + 1,
@@ -170,8 +179,8 @@ while (<$ifh>) {
     
     $doc->createAndAddBsmlAttribute($run, 'percent_identity', $cols[10]);
     $doc->createAndAddBsmlAttribute($run, 'percent_similarity', $cols[11]);
-    $doc->createAndAddBsmlAttribute($run, 'chain_number', $cols[13]);
-    $doc->createAndAddBsmlAttribute($run, 'segment_number', $cols[14]);
+    $doc->createAndAddBsmlAttribute($run, 'chain_number', $chainID);
+    $doc->createAndAddBsmlAttribute($run, 'segment_number', $segmentID);
 }
 
 ## add the analysis element
