@@ -1,8 +1,8 @@
-cvs co cram_install
+cvs co ergatis_install
 perl Makefile.PL PREFIX=/usr/local/devel/ANNOTATION/shared
 make
 make install
 
-cvs co cram_workflow_install
+cvs co ergatis_workflow_install
 make install
 

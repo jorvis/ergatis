@@ -14,7 +14,7 @@ do case "$opt" in
     t)    TEST="-n";;
     \?)   echo "Usage: `basename $0` -r(oot tag) -b(branch tag) [-d(irectory for output)] [-t(est)]";
           echo;
-          echo "eg. `basename $0` -r cram-v1r8 -b cram-v1r8-branch";
+          echo "eg. `basename $0` -r ergatis-v1r8 -b ergatis-v1r8-branch";
           exit 1;;
   esac
 done
@@ -50,12 +50,12 @@ cd merge
 mkdir trunk
 mkdir branch
 cd trunk
-cvs -Q co cram_all
+cvs -Q co ergatis_all
 
 cd ../branch
-cvs -Q co -r $BRANCH_TAG cram_all
+cvs -Q co -r $BRANCH_TAG ergatis_all
 if [ "$?" -ne 0 ]; then
-    echo "Bad release tag $BRANCH_TAG for cram_all"
+    echo "Bad release tag $BRANCH_TAG for ergatis_all"
     exit 1
 fi
 

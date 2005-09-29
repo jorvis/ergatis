@@ -1,6 +1,6 @@
 use ExtUtils::MakeMaker;
 require ExtUtils::Manifest;
-require "perl2wrapper_cram.pl";
+require "perl2wrapper_ergatis.pl";
 use strict;
 
 if(-e "MANIFEST"){}
@@ -45,7 +45,7 @@ my($scripts,$wrapperstr) = &get_bins();
 
 
 WriteMakefile(
-	      'NAME'=>'cram',
+	      'NAME'=>'ergatis',
 	      'EXE_FILES'=>$scripts,
 	      'clean' =>{FILES => "MANIFEST.bak $wrapperstr README.symlinks"}
 	      );

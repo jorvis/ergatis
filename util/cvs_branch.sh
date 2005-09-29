@@ -13,7 +13,7 @@ do case "$opt" in
     t)    TEST="-n";;
     \?)   echo "Usage: `basename $0` -b(branch tag) [-d(irectory for output)] [-t(est)]";
           echo;
-          echo "eg. `basename $0` -b cram-v1r8-branch";
+          echo "eg. `basename $0` -b ergatis-v1r8-branch";
           exit 1;;
   esac
 done
@@ -39,8 +39,8 @@ if [ "$?" -ne 0 ]; then
     exit 1
 fi
 cd branch
-cvs -Q co cram_all
+cvs -Q co ergatis_all
 cvs -Q $TEST tag -b $BRANCH_TAG
-echo "Created branch $BRANCH_TAG in cram_all"
+echo "Created branch $BRANCH_TAG in ergatis_all"
 
 

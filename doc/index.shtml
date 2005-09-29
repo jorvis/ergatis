@@ -6,7 +6,7 @@
 <!--#include virtual="/include/header_ifx.inc"-->
 
 <div align="center">
-<p class="title">cram</p>
+<p class="title">ergatis</p>
 </div>
 	<div class="maintext">
 
@@ -17,12 +17,12 @@
 <br>
 <br>
 <b>Description</b><br>
-  cram is a package of data management scripts and associated workflows.  As the names of the
+  ergatis is a package of data management scripts and associated workflows.  As the names of the
   command-line tools suggest, these scripts and workflows are primarily concerned with running 
-  various types of comparative analyses.  cram operates on <a href='/ifx/devel/cas/bsml/'>BSML</a>-formatted 
+  various types of comparative analyses.  ergatis operates on <a href='/ifx/devel/cas/bsml/'>BSML</a>-formatted 
   data files, and relies on <a href='/ifx/devel/cas/prism'>Prism</a> to generate its BSML input files
   (typically from a chado database) and load its BSML output files back into a chado database.  
-  cram also relies on the TIGR <a href='/ifx/devel/workflow/'>Workflow</a> and 
+  ergatis also relies on the TIGR <a href='/ifx/devel/workflow/'>Workflow</a> and 
   <a href='/ifx/devel/HTC'>HTC</a> systems to manage and distribute the execution of its analysis 
   tasks and subtasks.
 
@@ -62,22 +62,22 @@
   </ul>
   <p>
 <b>Code</b><br>
-Perl scripts <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/cram/src'>[CVS]</a><br>
-Workflows <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/cram/workflow'>[CVS]</a>
+Perl scripts <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/ergatis/src'>[CVS]</a><br>
+Workflows <a href='http://tools/viewcvs/viewcvs.cgi/ANNOTATION/ergatis/workflow'>[CVS]</a>
 <p>
 
-<b>cram install</b><br>
+<b>ergatis install</b><br>
 
-The cram package contains data management scripts and associated
-workflows.  The cram package is installed using the standard Perl
+The ergatis package contains data management scripts and associated
+workflows.  The ergatis package is installed using the standard Perl
 module install syntax.  In addition, you must specify a
 SCHEMA_DOCS_DIR where the BSML schemas are installed.  The
 WORKFLOW_DOCS_DIR specifies where the workflow template and default
 configuration files will be stored.
 
 <pre>
-  cvs co cram_install
-  cd cram_install
+  cvs co ergatis_install
+  cd ergatis_install
   perl Makefile.PL PREFIX=[install_dir] SCHEMA_DOCS_DIR=[schema_docs_dir] WORKFLOW_DOCS_DIR=[workflow_docs_dir]
   make 
   make install

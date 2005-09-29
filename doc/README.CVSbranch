@@ -1,4 +1,4 @@
 mkdir release
 cd release
-cvs co cram
+cvs co ergatis
 cvs tag -b $BRANCH_TAG$
