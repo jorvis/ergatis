@@ -362,12 +362,16 @@ sub process_aln
 		my $score = $seq_pair_run->att('runscore');
 		my $query_start = $seq_pair_run->att('refpos') + 1;
 		my $query_aln_len = $seq_pair_run->att('runlength');
-		my $query_stop = $query_start + $query_aln_len;
+		#my $query_stop = $query_start + $query_aln_len;  ## generated off-by-one errors
+        my $query_stop = $seq_pair_run->att('refpos') + $query_aln_len;
 		my $query_comp = $seq_pair_run->att('refcomplement');
-		my $subj_start = $seq_pair_run->att('comppos') + 1;
+		
+        my $subj_start = $seq_pair_run->att('comppos') + 1;
 		my $subj_aln_len = $seq_pair_run->att('comprunlength');
-		my $subj_stop = $subj_start + $subj_aln_len;
+		#my $subj_stop = $subj_start + $subj_aln_len;  ## generated off-by-one errors
+        my $subj_stop = $seq_pair_run->att('comppos') + $subj_aln_len;
 		my $subj_comp = $seq_pair_run->att('compcomplement');
+        
 		swap(\$query_start, \$query_stop) if $query_comp;
 		swap(\$subj_start, \$subj_stop) if $subj_comp;
 		foreach my $attr ($seq_pair_run->children('Attribute')) {
