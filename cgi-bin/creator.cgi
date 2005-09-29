@@ -11,7 +11,7 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 ## get the configuration
-my $sys_config = Config::IniFiles->new( -file => 'cram.ini' );
+my $sys_config = Config::IniFiles->new( -file => 'ergatis.ini' );
 
 my %conf = load_shared_conf( $sys_config->val('path', 'workflow_conf') );
 

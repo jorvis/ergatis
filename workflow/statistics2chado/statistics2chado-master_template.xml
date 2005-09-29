@@ -20,7 +20,7 @@
 
    Version:  $Id$
 
-   CVS:      cram/workflow/statistics2chado/statistics2chado-master_template.xml
+   CVS:      ergatis/workflow/statistics2chado/statistics2chado-master_template.xml
 
 -->
     <commandSet type="serial">

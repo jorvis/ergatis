@@ -161,8 +161,8 @@ sub process_subflowgroup {
     print <<SubflowGroupBar;
         <div id='${name}_bar' class='subflowgroupbar'>
             <div class='leftside'>
-                <img id='${name}_arrow' class='expander' src='/cram/arrow_right.gif' onclick='toggle_subflowgroup_display("$name", "$file");' alt='expand' title='expand'>
-                <img class='status' src='/cram/status_$state.png' title='$state' alt='$state'>
+                <img id='${name}_arrow' class='expander' src='/ergatis/arrow_right.gif' onclick='toggle_subflowgroup_display("$name", "$file");' alt='expand' title='expand'>
+                <img class='status' src='/ergatis/status_$state.png' title='$state' alt='$state'>
                 <span class='minor'>group $group_num</span>
             </div>
             <div class='rightside'>
@@ -307,13 +307,13 @@ sub print_header {
             // is it hidden?
             if ( subflownamedata.style.display == 'none' ) {
                 subflownamedata.style.display = 'block';
-                get_object(subflowname + '_arrow').src = '/cram/arrow_down.gif';
+                get_object(subflowname + '_arrow').src = '/ergatis/arrow_down.gif';
                 get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
                 sendElementUpdateRequest('./subflowgroup_summary.cgi?xml_input=' + subflowfile + '&nocache=' + no_cache_string(), updateSubflowGroup, subflowname);
                 
             } else {
                 subflownamedata.style.display = 'none';
-                get_object(subflowname + '_arrow').src = '/cram/arrow_right.gif';
+                get_object(subflowname + '_arrow').src = '/ergatis/arrow_right.gif';
                 get_object(subflowname + '_data').innerHTML = '';
             }
         }
@@ -324,13 +324,13 @@ sub print_header {
             // is it hidden?
             if ( subflownamedata.style.display == 'none' ) {
                 subflownamedata.style.display = 'block';
-                get_object(subflowname + '_arrow').src = '/cram/arrow_down.gif';
+                get_object(subflowname + '_arrow').src = '/ergatis/arrow_down.gif';
                 get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
                 sendElementUpdateRequest('./subflow_summary.cgi?xml_input=' + subflowfile + '&nocache=' + no_cache_string(), updateSubflow, subflowname);
                 
             } else {
                 subflownamedata.style.display = 'none';
-                get_object(subflowname + '_arrow').src = '/cram/arrow_right.gif';
+                get_object(subflowname + '_arrow').src = '/ergatis/arrow_right.gif';
                 get_object(subflowname + '_data').innerHTML = '';
             }
         }
@@ -388,7 +388,7 @@ sub print_header {
             
             // update the subflow image
             subflowstateimg = get_object(subflowname + '_img');
-            subflowstateimg.src   = '/cram/status_' + subflowstate + '.png';
+            subflowstateimg.src   = '/ergatis/status_' + subflowstate + '.png';
             subflowstateimg.title = subflowstate;
             subflowstateimg.alt   = subflowstate;
             

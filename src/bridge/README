@@ -3,4 +3,4 @@ only to bridge the processes between the newer workflow/chado
 based system and the older legacy system.  it was added at
 paolo's request to store scripts he has been writing for this
 purpose.  note that no scripts placed here will currently be
-part of the cram install.
+part of the ergatis install.

@@ -9,7 +9,7 @@ use File::Basename;
 
 ## toggles debugging messages
 my $debugging = 0;
-my $debug_file = '/tmp/cram.debug';
+my $debug_file = '/tmp/ergatis.debug';
 
 my $instancexml = param('instancexml');
 my $inifile = param('inifile');

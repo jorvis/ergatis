@@ -5,7 +5,7 @@
 #
 # date:     2005-08-03
 #
-# cvs:      cram/src/perl/check_logfiles.pl
+# cvs:      ergatis/src/perl/check_logfiles.pl
 #
 # $Id$
 #
@@ -302,7 +302,7 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
 
     my $body;
 
-    $body .= "Workflow link http://xmen:8080/tigr-scripts/cram/cgi-bin/show_pipeline.cgi?xmltemplate=" . $workflow_id . "\n\n" if (defined($workflow_id));
+    $body .= "Workflow link http://xmen:8080/tigr-scripts/ergatis/show_pipeline.cgi?xmltemplate=" . $workflow_id . "\n\n" if (defined($workflow_id));
 
     my $scanned_file_ctr=0;
 

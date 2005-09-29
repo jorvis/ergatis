@@ -66,7 +66,7 @@ sub process_command {
     print <<CommAnD;
     <div class='command'>
         <div class='leftside'>
-            <img class='status' src='/cram/status_$state.png' title='$state' alt='$state'>
+            <img class='status' src='/ergatis/status_$state.png' title='$state' alt='$state'>
             $name
         </div>
         <div class='rightside'>

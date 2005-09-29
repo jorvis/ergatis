@@ -16,7 +16,7 @@
             margin: 0px;
             padding: 0px;
             background-color: rgb(255,255,255);
-            background-image: url('/cram/background_main.png');
+            background-image: url('/ergatis/background_main.png');
             background-repeat: repeat-x;
         }
         
@@ -119,16 +119,16 @@
 <body>
 
 <div id='bannertop'>
-    <img src='/cram/banner_main.png' />
+    <img src='/ergatis/banner_main.png' />
 </div>
 <div id='bannerbottom'>
     <div id='pipelinesummary'>
         <div class='pipelinestat'><strong>repository root:</strong> <TMPL_VAR NAME=REPOSITORY_ROOT></div><br>
         <div class='pipelinestat'><strong>quota:</strong> currently disabled</div>
         <div id='pipelinecommands'>
-            <a href='./new_pipeline.cgi?&root=<TMPL_VAR NAME=REPOSITORY_ROOT>/Workflow/pipeline'><img class='navbutton' src='/cram/button_blue_new.png' alt='new' title='new'></a>
-            <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/cram/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
-            <a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/cram/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+            <a href='./new_pipeline.cgi?&root=<TMPL_VAR NAME=REPOSITORY_ROOT>/Workflow/pipeline'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
+            <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
+            <a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
         </div>
     </div>
 </div>
@@ -178,9 +178,9 @@
                 </div>
             </td>
             <td>
-                <a href='<TMPL_VAR NAME=VIEW_LINK>'><img class='navbutton' src='/cram/button_blue_view.png' alt='view' title='view'></a>
-                <a href='<TMPL_VAR NAME=EDIT_LINK>'><img class='navbutton' src='/cram/button_blue_edit.png' alt='view' title='view'></a>
-                <img class='navbutton' src='/cram/button_grey_delete.png' alt='delete' title='delete'>
+                <a href='<TMPL_VAR NAME=VIEW_LINK>'><img class='navbutton' src='/ergatis/button_blue_view.png' alt='view' title='view'></a>
+                <a href='<TMPL_VAR NAME=EDIT_LINK>'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='view' title='view'></a>
+                <img class='navbutton' src='/ergatis/button_grey_delete.png' alt='delete' title='delete'>
             </td>
         </tr>
     </TMPL_LOOP>

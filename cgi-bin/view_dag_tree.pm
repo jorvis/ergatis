@@ -336,48 +336,48 @@ sub LockRetrieve {
 sub get_command_image{
     my ($status) = @_;
     if($status eq 'complete'){
-	return "<img width=5 height=15 border=0 src = \"/cram/greenpixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/ergatis/greenpixel.gif\">";
     }
     if($status eq 'interrupted'){
-	return "<img width=5 height=15 border=0 src = \"/cram/purplepixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/ergatis/purplepixel.gif\">";
     }
     if($status eq 'incomplete'){
-	return "<img width=5 height=15 border=0 src = \"/cram/greypixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/ergatis/greypixel.gif\">";
     }
     if($status eq 'pending'){
-	return "<img width=5 height=15 border=0 src = \"/cram/yellowpixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/ergatis/yellowpixel.gif\">";
     }
     if($status eq 'running'){
-	return "<img width=5 height=15 border=0 src = \"/cram/bluepixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/ergatis/bluepixel.gif\">";
     }
     if($status eq 'running_distributed'){
-	return "<img width=5 height=15 border=0 src = \"/cram/ltbluepixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/ergatis/ltbluepixel.gif\">";
     }
     if($status eq 'error' || $status eq 'failed'){
-	return "<img width=5 height=15 border=0 src = \"/cram/redpixel.gif\">";
+	return "<img width=5 height=15 border=0 src = \"/ergatis/redpixel.gif\">";
     }
-    return "<img width=5 height=15 border=0 src = \"/cram/blackpixel.gif\">";
+    return "<img width=5 height=15 border=0 src = \"/ergatis/blackpixel.gif\">";
 }
 
 sub get_commandset_image{
     my ($status) = @_;
     if($status eq 'complete'){
-	return "<img width=20 height=5 border=1 src = \"/cram/greenpixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/ergatis/greenpixel.gif\">";
     }
     if($status eq 'interrupted'){
-	return "<img width=20 height=5 border=1 src = \"/cram/purplepixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/ergatis/purplepixel.gif\">";
     }
     if($status eq 'incomplete'){
-	return "<img width=20 height=5 border=1 src = \"/cram/greypixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/ergatis/greypixel.gif\">";
     }
     if($status eq 'pending'){
-	return "<img width=20 height=5 border=1 src = \"/cram/yellowpixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/ergatis/yellowpixel.gif\">";
     }
     if($status eq 'running'){
-	return "<img width=20 height=5 border=1 src = \"/cram/bluepixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/ergatis/bluepixel.gif\">";
     }
     if($status eq 'error' || $status eq 'failed'){
-	return "<img width=20 height=5 border=1 src = \"/cram/redpixel.gif\">";
+	return "<img width=20 height=5 border=1 src = \"/ergatis/redpixel.gif\">";
     }
-    return "<img width=20 height=5 border=1 src = \"/cram/blackpixel.gif\">";
+    return "<img width=20 height=5 border=1 src = \"/ergatis/blackpixel.gif\">";
 }

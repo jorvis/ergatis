@@ -121,11 +121,11 @@ if (-e $pipeline) {
     <b>runtime</b>: $runtime<br />
     $messages_line
     <li class="actions">
-        <a href="./view_component.cgi?pipeline_xml=$pipeline"><img class='navbutton' src='/cram/button_blue_view.png' alt='view' title='view'></a>
-        <a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank"><img class='navbutton' src='/cram/button_blue_xml.png' alt='xml' title='xml'></a>
-        <a href="./view_formatted_ini_source.cgi?file=$component_conf" target="_blank"><img class='navbutton' src='/cram/button_blue_config.png' alt='config' title='config'></a> 
-        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/cram/button_blue_update.png' alt='update' title='update'></a>
-        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/cram/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
+        <a href="./view_component.cgi?pipeline_xml=$pipeline"><img class='navbutton' src='/ergatis/button_blue_view.png' alt='view' title='view'></a>
+        <a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank"><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='xml' title='xml'></a>
+        <a href="./view_formatted_ini_source.cgi?file=$component_conf" target="_blank"><img class='navbutton' src='/ergatis/button_blue_config.png' alt='config' title='config'></a> 
+        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/ergatis/button_blue_update.png' alt='update' title='update'></a>
+        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/ergatis/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
     </li>
     <li class="pass_values">
         <span id="${ul_id}_continue_update">$update_interval</span>
@@ -231,11 +231,11 @@ sub printIncompleteSummary {
     <li><div class="component_progress_image"><div class="status_bar_portion" style="width: 500px; background-color: $colors{incomplete}"></div></div></li>
     <li>state: <span style='color: $colors{incomplete}'>incomplete</span></li>
     <li class="actions">
-        <img class='navbutton' src='/cram/button_grey_view.png' alt='view' title='view'> 
-        <img class='navbutton' src='/cram/button_grey_xml.png' alt='xml' title='xml'>  
-        <img class='navbutton' src='/cram/button_grey_config.png' alt='config' title='config'>  
-        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/cram/button_blue_update.png' alt='update' title='update'></a>
-        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/cram/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
+        <img class='navbutton' src='/ergatis/button_grey_view.png' alt='view' title='view'> 
+        <img class='navbutton' src='/ergatis/button_grey_xml.png' alt='xml' title='xml'>  
+        <img class='navbutton' src='/ergatis/button_grey_config.png' alt='config' title='config'>  
+        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/ergatis/button_blue_update.png' alt='update' title='update'></a>
+        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/ergatis/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
     </li>
     <li class="pass_values">
         <span id="${ul_id}_continue_update">60</span>
