@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 #--------------------------------------------------------------------------------------------
 #
-# cvs: ANNOTATION/cram/workflow/generate_asmbl_list.pl
+# cvs: ANNOTATION/ergatis/workflow/generate_asmbl_list.pl
 # date: 2005-01-25
 # contact: sundaram@tigr.org
 #
