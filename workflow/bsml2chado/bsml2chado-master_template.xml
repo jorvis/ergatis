@@ -21,11 +21,11 @@
           <name>Create dupdir</name>
           <configMapId>create_dupdir</configMapId>
         </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Create analysis_dir</name>
-          <configMapId>create_analysis_dir</configMapId>
-        </command>
+<!--         <command> -->
+<!--           <type>RunUnixCommand</type> -->
+<!--           <name>Create analysis_dir</name> -->
+<!--           <configMapId>create_analysis_dir</configMapId> -->
+<!--         </command> -->
 <!--Preprocess permissions-->
 <!--Preprocessing-->
 <!--Iterator steps-->
@@ -34,11 +34,11 @@
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>Add analysis id</name>
-          <configMapId>add_analysis_id</configMapId>
-        </command>
+<!--         <command> -->
+<!--           <type>RunUnixCommand</type> -->
+<!--           <name>Add analysis id</name> -->
+<!--           <configMapId>add_analysis_id</configMapId> -->
+<!--         </command> -->
         <command>
           <type>RunUnixCommand</type>
           <name>File-cache the queries</name>
