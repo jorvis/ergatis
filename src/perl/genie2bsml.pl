@@ -64,7 +64,8 @@ the analysis of a single FASTA sequence.
 =head1 OUTPUT
 
 
-Base positions from the input file are renumbered so that positions start at zero.
+Base positions from the input file are renumbered so that positions start at zero.  Also,
+the stop coordinates of each terminal CDS is extended 3bp to include the stop codon.
 
 =head1 CONTACT
 
@@ -122,6 +123,9 @@ my $seq_id;
 my ($seq, $ft, $fg);
 my ($last_group_name, $current_group_name, $current_transcript_id);
 my ($thing, $id);
+## we have to hold each cds in an array so that we can add 3 bases to the last
+##  one (genie doesn't include the stop codon within the cds)
+my @cds;
 
 ## go through the file
 while (<$ifh>) {
@@ -153,6 +157,23 @@ while (<$ifh>) {
         
         ## remember this group name
         $last_group_name = $current_group_name;
+        
+        ## add 3 bases to the last CDS, if any were found
+        if (scalar @cds) {
+             ## if on the reverse strand, we need to take three from column 2
+            ##   if on the forward add three to column 3
+            if ($cds[-1]->[3]) {
+                $cds[-1]->[1] -= 3;
+            } else {
+                $cds[-1]->[2] += 3;
+            }
+            
+            for my $cd ( @cds ) {
+                &add_feature( @{$cd} );
+            }
+            
+            undef @cds;
+        }
         
         ## pull a new gene id (in genie this = primary transcript)
         $current_transcript_id = $idcreator->new_id( db      => $options{project},
@@ -194,7 +215,8 @@ while (<$ifh>) {
 
     ## CDS
     } elsif ($cols[2] eq 'CDS') {
-        &add_feature('CDS', $cols[3], $cols[4], $cols[6], ($cols[8] || 0) );
+        push @cds, [ 'CDS', $cols[3], $cols[4], $cols[6], ($cols[8] || 0) ];
+        #&add_feature('CDS', $cols[3], $cols[4], $cols[6], ($cols[8] || 0) );
 
     ## Prim_Trans
     } elsif ($cols[2] eq 'Prim_Trans') {
