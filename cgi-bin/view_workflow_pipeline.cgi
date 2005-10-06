@@ -18,7 +18,7 @@ print $q->header( -type => 'text/html' );
 
 my $xml_input = $q->param("instance") || die "pass instance";
 
-my ($project, $state) = ('?', '?');
+my $project = '?';
 
 ## make sure the file exists
 if (! -f $xml_input) {
