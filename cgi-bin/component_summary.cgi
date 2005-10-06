@@ -28,6 +28,7 @@ my @messages;
 my %message_counts;
 #time variables
 my ($start_time, $end_time, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
+my $got_time_info = 0;
 
 ## give colors as rgb values or hexidecimal
 my %colors = (
@@ -166,7 +167,11 @@ sub parseCommandSet {
         $state  = $commandSet->first_child('state')->text();
     }
 
-    ($start_time, $end_time, $runtime) = &time_info( $commandSet );
+    ## we don't want this to happen within groups.xml, only the parent pipeline.xml
+    if (! $got_time_info) {
+        ($start_time, $end_time, $runtime) = &time_info( $commandSet );
+        $got_time_info++;
+    }
 
     ## all iterative components will have a commandSet to parse (file-based subflow)
     my $subflowCommandSet = $commandSet->first_child("commandSet") || 0;
@@ -195,6 +200,8 @@ sub parseCommandSet {
             next if ($msg =~ /Command set with name\:.+?finished/i);
             ## don't include "Job terminated." messages
             next if ($msg =~ /^Job terminated\.$/i);
+            ## don't include "command finished" messages
+            next if ($msg eq 'command finished');
 
             ## can we simplify this message?
             if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
