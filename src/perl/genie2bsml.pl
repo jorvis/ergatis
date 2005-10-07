@@ -137,6 +137,7 @@ while (<$ifh>) {
     unless ($seq_id) {
         $seq_id = $cols[0];
         $seq_id =~ s/\s//g;
+        $logger->debug("processing seq_id: $seq_id\n") if $logger->is_debug();
         
         ## create this sequence, an analysis link, and a feature table
         $seq = $doc->createAndAddSequence($seq_id);
@@ -145,6 +146,7 @@ while (<$ifh>) {
         
         ##  also add a link to the fasta file (Seq-data-import) if requested
         if ($options{'fasta_file'}) {
+            $logger->debug("adding link to fasta_file: $options{'fasta_file'}\n") if $logger->is_debug();
             $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{'fasta_file'}, '', $seq_id);
         }
     }
@@ -160,12 +162,26 @@ while (<$ifh>) {
         
         ## add 3 bases to the last CDS, if any were found
         if (scalar @cds) {
-             ## if on the reverse strand, we need to take three from column 2
+            
+            ## if on the reverse strand, we need to take three from column 2
             ##   if on the forward add three to column 3
-            if ($cds[-1]->[3]) {
-                $cds[-1]->[1] -= 3;
+            ## assumes (obviously) that all CDS in this group are on the same strand
+            if ($cds[-1][3]) {
+                ## here we need to sort the CDS array because the terminal one isn't 
+                ##  explicitly defined and the software can write them in any order.
+                ##  reverse strand, sort descending
+                @cds = sort { $b->[1] <=> $a->[1] } @cds;
+            
+                $logger->debug("manually shifting 3 from reverse CDS coordinate  $cds[-1][1] on $seq_id\n") if $logger->is_debug();
+                $cds[-1][1] -= 3;
             } else {
-                $cds[-1]->[2] += 3;
+                ## here we need to sort the CDS array because the terminal one isn't 
+                ##  explicitly defined and the software can write them in any order.
+                ##  reverse strand, sort descending
+                @cds = sort { $a->[2] <=> $b->[2] } @cds;
+
+                $logger->debug("manually pushing 3 onto forward CDS coordinate  $cds[-1][2] on $seq_id\n") if $logger->is_debug();
+                $cds[-1][2] += 3;
             }
             
             for my $cd ( @cds ) {
@@ -262,6 +278,8 @@ exit;
 
 sub add_feature {
     my ($type, $start, $stop, $strand, $group) = @_;
+    
+    $logger->debug("add_feature($type, $start, $stop, $strand, $group)\n") if $logger->is_debug();
     
     $id = $idcreator->new_id( db => $options{project}, so_type => $type, prefix => $options{command_id} );
     $thing = $doc->createAndAddFeature( $ft, $id, '', $idcreator->so_used($type) );
