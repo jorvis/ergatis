@@ -83,7 +83,7 @@ print <<PipelineSummarY;
         <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
         <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
         <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
-        <a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
     </div>
 PipelineSummarY
 

@@ -523,7 +523,7 @@ sub print_header {
         <div id='pipelinecommands'>
             <a href='./view_workflow_pipeline.cgi?&instance=$parent_pipeline'><img class='navbutton' src='/ergatis/button_blue_pipeline_view.png' alt='pipeline view' title='pipeline view'></a>
             <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
-            <a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
         </div>
     </div>
 </div>
