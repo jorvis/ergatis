@@ -4,6 +4,7 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
+use File::stat;
 use Monitor;
 use POSIX;
 use XML::Twig;
@@ -35,6 +36,16 @@ my $component_project = '?';
 if ( $parent_pipeline =~ /.+\/(.+?)\/Workflow/ ) {
     $component_project = $1;
 }
+
+my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
+
+($starttime, $endtime, $runtime) = &time_info($parent_commandset);
+
+my $filestat = stat($pipeline_xml);
+my $user = getpwuid($filestat->uid);
+$lastmodtime = time - $filestat->mtime;
+$lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
+
 
 print_header($parent_pipeline);
 
@@ -189,7 +200,7 @@ SubflowGroupBar
 
 
 sub print_header {
-    my $pipeline = shift;
+    my $parent_pipeline = shift;
 
     print <<HeAdER;
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
@@ -219,6 +230,38 @@ sub print_header {
         }
         #workflowcontainer {
             margin: 10px;
+        }
+        #bannertop {
+            height: 36px;
+            margin: 0px;
+            padding: 0px;
+            background-color: rgb(76,109,143);
+        }
+        #bannerbottom {
+            background-color: rgb(229,229,220);
+            border-bottom: 1px solid rgb(131,150,145);
+        }
+        a {
+            text-decoration: none;
+            color: rgb(0,100,0);
+            cursor: pointer;
+            cursor: hand;
+        }
+        #pipeline {
+            font-weight: bold;
+            margin-left: 5px;
+        }
+        #pipelinesummary {
+            padding: 5px 0px 5px 0px;
+        }
+        #pipelinecommands {
+            margin-left: 15px;
+        }
+
+        .pipelinestat {
+            margin-left: 15px;
+            display: inline;
+            color: rgb(75,75,75);
         }
         div.subflow {
             margin-bottom: 10px;
@@ -296,6 +339,14 @@ sub print_header {
         }
         .hidden {
             display: none;
+        }
+        img.navbutton {
+            border: none;
+            margin: 5px 3px 0px 0px;
+            padding: 0px;
+        }
+        div {
+            overflow: hidden;
         }
     </style>
     <script type="text/javascript">
@@ -454,11 +505,29 @@ sub print_header {
 </head>
 
 <body>
-
-<div id='workflowcontainer'>
-    <div class='navigation'>
-        [<a href='./view_workflow_pipeline.cgi?&instance=$pipeline'>pipeline view</a>]
+<div id='bannertop'>
+    <img src='/ergatis/banner_main.png' />
+</div>
+<div id='bannerbottom'>
+    <div id='pipelinesummary'>
+        <div id='pipeline'>$pipeline_xml</div>
+        <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
+        <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
+        <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
+        <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
+        <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
+        <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
+        <div class='pipelinestat'><strong>project:</strong> <span id='projectid'></span></div>
+        <div class='pipelinestat' id='projectquota'><strong>quota:</strong> quota information disabled</div>
+        <div class='timer' id='pipeline_timer_label'></div>
+        <div id='pipelinecommands'>
+            <a href='./view_workflow_pipeline.cgi?&instance=$parent_pipeline'><img class='navbutton' src='/ergatis/button_blue_pipeline_view.png' alt='pipeline view' title='pipeline view'></a>
+            <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
+            <a href='http://intranet.tigr.org/grid/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+        </div>
     </div>
+</div>
+<div id='workflowcontainer'>
     <div class='start'>
         $component_name start
     </div>
