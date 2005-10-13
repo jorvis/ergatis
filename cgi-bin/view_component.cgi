@@ -159,8 +159,13 @@ sub process_subflowgroup {
     
     ## grab data from the dceSpec if it has one
     if ( $command->first_child('dceSpec') ) {
-        $execution_host = $command->first_child('dceSpec')->first_child('executionHost')->text();
-        $grid_id        = $command->first_child('dceSpec')->first_child('jobID')->text();
+        if ( $command->first_child('dceSpec')->first_child('executionHost') ) {
+            $execution_host = $command->first_child('dceSpec')->first_child('executionHost')->text();
+        }
+        
+        if ( $command->first_child('dceSpec')->first_child('jobID') ) {
+            $grid_id = $command->first_child('dceSpec')->first_child('jobID')->text();
+        }
     }
     
     if ( $command->first_child('id') ) {
