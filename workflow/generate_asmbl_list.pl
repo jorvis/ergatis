@@ -42,8 +42,6 @@ B<--log,-l> Log file
 
 B<--help,-h> This help message
 
-=back
-
 =head1   DESCRIPTION
 
 =cut
