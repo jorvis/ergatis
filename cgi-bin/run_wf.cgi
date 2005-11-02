@@ -54,7 +54,20 @@ if( ($inifile ne "") && ($template ne "") ) {
             print $debugfh $ENV{'PATH'} if $debugging;
             my $createexecstr = "$ENV{'WF_ROOT'}/CreateWorkflow -debug -i $instancexml -t $template -c $inifile --delayedbuild=true --autobuild=false > $instancexml.create.out 2>&1";
             system("$createexecstr");
-            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml > $instancexml.run.out 2>&1";
+
+	    #------------------------------------------------------------------------------------------------------------
+	    # editor:   sundaram@tigr.org
+	    # date:     2005-10-27
+	    # bgzcase:  2247
+	    # URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2247
+	    # comment:  observer_script.pl
+	    #           For Workflow reference please review: http://intranet/ifx/devel/workflow/main_frame.html
+	    #           Activating observer script.  Will have to workout the installation directives later- for now
+	    #           will simply point to sybil.2005.10.25 installation.
+	    #
+            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml --scripts=/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/bin/observer_script:status:/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/docs/observer_script.props > $instancexml.run.out 2>&1";
+	    #
+	    #------------------------------------------------------------------------------------------------------------
             system($runexecstr);
             close $debugfh if $debugging;
             exit;
@@ -89,8 +102,22 @@ if( ($inifile ne "") && ($template ne "") ) {
             setsid() or die "Can't start a new session: $!";
             
             setup_environment();
-            
-            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log -v5 >& $instancexml.run.out";
+
+	    #------------------------------------------------------------------------------------------------------------
+	    # editor:   sundaram@tigr.org
+	    # date:     2005-10-27
+	    # bgzcase:  2247
+	    # URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2247
+	    # comment:  observer_script.pl
+	    #           For Workflow reference please review: http://intranet/ifx/devel/workflow/main_frame.html
+	    #           Activating observer script.  Will have to workout the installation directives later- for now
+	    #           will simply point to sybil.2005.10.25 installation.
+	    # 
+            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log -v5  --scripts=/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/bin/observer_script:status:/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/docs/observer_script.props >& $instancexml.run.out";
+	    #
+	    #------------------------------------------------------------------------------------------------------------
+
+
 
             if ($debugging) {
                 #use Data::Dumper;
