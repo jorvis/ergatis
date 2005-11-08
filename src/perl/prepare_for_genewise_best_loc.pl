@@ -161,7 +161,7 @@ my $MIN_PERCENT_CHAIN_ALIGN = 70; #minimum percent of the protein sequence found
              'verbose|v' => \$verbose,
              'PADDING_LENGTH=i' => \$PADDING_LENGTH,
              'MIN_CHAIN_SCORE=i' => \$MIN_CHAIN_SCORE,
-             'MIN_PERCENT_CHAIN_ALIGN' => \$MIN_PERCENT_CHAIN_ALIGN,
+             'MIN_PERCENT_CHAIN_ALIGN=f' => \$MIN_PERCENT_CHAIN_ALIGN,
              'num_tiers|n=i' => \$num_tiers,
 
              'JUST_PRINT_BEST_LOCATIONS' => \$JUST_PRINT_BEST_LOCATIONS,
