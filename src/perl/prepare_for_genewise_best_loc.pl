@@ -476,8 +476,18 @@ sub prepare_genewise_inputs {
                                                                             $chain->{score},
                                                                             $chain->{orient});
         
-        my $fasta_entry = cdbyank($accession, $protein_fasta_file);
+        my $fasta_entry;
+        eval {
+            $fasta_entry = cdbyank($accession, $protein_fasta_file);
+        };
+
+        if ($@) {
+            print STDERR "Error, couldn't retrieve fasta etnry $accession from $protein_fasta_file\n";
+            
+            next;
+        }
         
+
         $lend -= $PADDING_LENGTH;
         if ($lend <= 0) {
             $lend = 1;
