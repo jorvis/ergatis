@@ -160,7 +160,9 @@ sub get_logger {
 #   else{
 #	return Log::Log4perl->get_logger($_DEFAULT_LOG_CATEGORY);
 #   }
-    return $name;
+
+#    return $name;
+    return new Workflow::Logger();
 }
 
 sub get_default_logfilename{
