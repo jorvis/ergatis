@@ -10,10 +10,25 @@
             <configMapId>filter_hits</configMapId>
             <name>filter_hits</name>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>filter_additional_hits</configMapId>
+            <name>filter_additional_hits</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>append_to_filtered_hits</configMapId>
+            <name>append_to_filtered_hits</name>
+        </command>
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>create_mini_db</configMapId>
             <name>create_mini_db</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>append_to_mini_db</configMapId>
+            <name>append_to_mini_db</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
