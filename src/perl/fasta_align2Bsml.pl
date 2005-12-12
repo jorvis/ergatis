@@ -26,7 +26,7 @@ B<--suffix,-s> suffix of the multiple sequence alignment file. Default(fa)
 
 =item *
 
-B<--mol_type,-m> molecule_type of alignment. Default(protein)
+B<--mol_type,-m> molecule_type of alignment. Default(polypeptide)
 
 =item *
 
@@ -61,7 +61,10 @@ Calling the script name with NO flags/options or --help will display the syntax 
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+}
 use Data::Dumper;
 use File::Basename;
 use Pod::Usage;
@@ -76,7 +79,7 @@ my $results = GetOptions (\%options, 'ali_dir|a=s', 'suffix|s=s', 'output|o=s', 
 my $output    = $options{'output'};
 my $ali_dir   = $options{'ali_dir'};
 $ali_dir =~ s/\/+$// if($ali_dir);
-my $molecule_type = $options{'mol_type'} || 'protein';
+my $molecule_type = $options{'mol_type'} || 'polypeptide';
 my $ali_suffix = $options{'suffix'} || "fa";  #default suffix pattern of alignment file
 my $program   = $options{'program'} || "clustal";
 

@@ -6,7 +6,10 @@ tRNAscan-SE2bsml.pl - convert tRNAcan-SE output to BSML
 
 =head1 SYNOPSIS
 
-USAGE: tRNAscan-SE2bsml.pl --input=/path/to/tRNAscanfile --output=/path/to/output.bsml
+USAGE: tRNAscan-SE2bsml.pl 
+        --input=/path/to/tRNAscanfile 
+        --output=/path/to/output.bsml
+      [ --project=aa1 ]
 
 =head1 OPTIONS
 
@@ -15,6 +18,10 @@ B<--input,-i>
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
+
+B<--project,-p> 
+    Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
+    not passed.
 
 B<--log,-l> 
     Log file
@@ -75,20 +82,29 @@ jorvis@tigr.org
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
+              'project|p=s',
               'log|l=s',
+              'command_id=s',       ## passed by workflow
+              'logconf=s',          ## passed by workflow (not used)
               'debug=s',
 			  'help|h') || pod2usage();
 
@@ -111,6 +127,9 @@ my $next_id = 1;
 
 ## we want a new doc
 my $doc = new BSML::BsmlBuilder();
+
+## we're going to generate ids
+my $idcreator = new Papyrus::TempIdCreator();
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -139,8 +158,8 @@ while (<$ifh>) {
 
 ## loop through each of the matches that we found
 for my $seqid (keys %data) {
-    my $seq = $doc->createAndAddSequence($seqid);
-       $seq->addBsmlLink('analysis', '#tRNAscan-SE_analysis');
+    my $seq = $doc->createAndAddSequence($seqid, undef, undef, 'na', 'assembly');
+       $seq->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'input_of');
     my $ft  = $doc->createAndAddFeatureTable($seq);
     my $fg;
     
@@ -155,8 +174,14 @@ for my $seqid (keys %data) {
         $$arr[2]--;     ## Bounds End
         
         ## first we need to add the gene, analysis link and interval loc
-        $gene = $doc->createAndAddFeature($ft, &fake_id('gen'), '', 'gene');
-        $gene->addBsmlLink('analysis', '#tRNAscan-SE_analysis');
+        $gene = $doc->createAndAddFeature($ft, 
+                                          $idcreator->new_id( db      => $options{project},
+                                                              so_type => 'gene',
+                                                              prefix  => $options{command_id}
+                                                   ),
+                                          '', 'gene');
+                                          
+        $gene->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
         &add_interval_loc( $gene, $$arr[1], $$arr[2] );
         
         ## now add a feature group for each of the elements we add, using the gene id for the group-set
@@ -166,8 +191,14 @@ for my $seqid (keys %data) {
         $fg->addBsmlFeatureGroupMember( $gene->returnattr('id'), $gene->returnattr('class') );
         
         ## add the tRNA, analysis link and interval loc
-        $trna = $doc->createAndAddFeature($ft, &fake_id('trn'), '', 'tRNA');
-        $trna->addBsmlLink('analysis', '#tRNAscan-SE_analysis');
+        $trna = $doc->createAndAddFeature($ft, 
+                                          $idcreator->new_id( db      => $options{project},
+                                                              so_type => 'tRNA',
+                                                              prefix  => $options{command_id}
+                                                   ),
+                                          '', 'tRNA');
+        
+        $trna->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
         &add_interval_loc( $trna, $$arr[1], $$arr[2] );
         $fg->addBsmlFeatureGroupMember( $trna->returnattr('id'), $trna->returnattr('class') );
         
@@ -180,29 +211,20 @@ for my $seqid (keys %data) {
             $$arr[6]--;     ## Bounds End
             
             ## exon1
-            $exon = $doc->createAndAddFeature($ft, &fake_id('exo'), '', 'exon');
-            $exon->addBsmlLink('analysis', '#tRNAscan-SE_analysis');
-            &add_interval_loc( $exon, $$arr[1], $$arr[5] );
-            $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
+            &add_exon_and_cds($ft, $fg, $$arr[1], $$arr[5]);
 
             ## exon2
-            $exon = $doc->createAndAddFeature($ft, &fake_id('exo'), '', 'exon');
-            $exon->addBsmlLink('analysis', '#tRNAscan-SE_analysis');
-            &add_interval_loc( $exon, $$arr[6], $$arr[2] );
-            $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );                
+            &add_exon_and_cds($ft, $fg, $$arr[6], $$arr[2]);
             
         } else {
             ## just add the whole thing as an exon
-            $exon = $doc->createAndAddFeature($ft, &fake_id('exo'), '', 'exon');
-            $exon->addBsmlLink('analysis', '#tRNAscan-SE_analysis');
-            &add_interval_loc( $exon, $$arr[1], $$arr[2] );
-            $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
+            &add_exon_and_cds($ft, $fg, $$arr[1], $$arr[2]);
         }
     }
 }
 
 ## add the analysis element
-$doc->createAndAddAnalysis(
+my $analysis = $doc->createAndAddAnalysis(
                             id => 'tRNAscan-SE_analysis',
                             sourcename => $options{'output'},
                           );
@@ -211,6 +233,30 @@ $doc->createAndAddAnalysis(
 $doc->write($options{'output'});
 
 exit;
+
+sub add_exon_and_cds {
+    my ($ft, $fg, $start, $stop) = @_;
+
+    my $exon = $doc->createAndAddFeature($ft, 
+                                      $idcreator->new_id( db      => $options{project},
+                                                          so_type => 'exon',
+                                                          prefix  => $options{command_id}
+                                               ),
+                                      '', 'exon');
+    $exon->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
+    &add_interval_loc( $exon, $start, $stop );
+    $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
+    
+    my $cds = $doc->createAndAddFeature($ft, 
+                                      $idcreator->new_id( db      => $options{project},
+                                                          so_type => 'CDS',
+                                                          prefix  => $options{command_id}
+                                               ),
+                                      '', 'CDS');
+    $cds->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
+    &add_interval_loc( $cds, $start, $stop );
+    $fg->addBsmlFeatureGroupMember( $cds->returnattr('id'), $cds->returnattr('class') );
+}
 
 sub add_interval_loc {
     my ($feat, $n, $m) = @_;
@@ -234,11 +280,3 @@ sub check_parameters {
     return 1;
 }
 
-sub fake_id {
-    my $so_type = shift;
-
-    ## this will be used by the id replacement software to find ids to replace.
-    my $temp_prefix = 'ir';
-    
-    return "$temp_prefix.$so_type." . $next_id++;
-}

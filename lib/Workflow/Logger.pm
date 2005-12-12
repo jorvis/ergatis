@@ -170,6 +170,7 @@ sub get_default_logfilename{
     return '/dev/null';
 }
 
+
 sub AUTOLOAD {
     my ($self, @args) = @_;
     return 0;

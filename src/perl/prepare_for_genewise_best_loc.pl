@@ -129,7 +129,7 @@ and to be used with subsequent genewise searches as part of workflow.
 
 use strict;
 use warnings;
-use lib ($ENV{EUK_MODULES});
+use lib '/usr/local/devel/ANNOTATION/Euk_modules/bin';
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use DBI;
 use Pod::Usage;
@@ -226,9 +226,6 @@ if (! -d $work_dir) {
 
 umask(0000); #write all output files permissibly
 
-## prepare a reusable statement for getting assembly size
-#my $length_fetch = $dbproc->prepare("select DATALENGTH(sequence) from assembly where asmbl_id = ?");
-
 
 ## open file for writing input file listings
 if (! $file_list) {
@@ -252,19 +249,6 @@ if (! $JUST_PRINT_BEST_LOCATIONS) {
 }
 
 exit(0);
-
-
-#sub fetch_assembly_length {
-#    my $asmbl_id = shift;
-#    
-#    $length_fetch->execute($asmbl_id);
-#    
-#    my $length = ( $length_fetch->fetchrow_array() )[0];
-#    
-#    print "fetched length $length for assembly $asmbl_id\n";
-#    
-#    return $length;
-#}
 
 
 ####
@@ -393,11 +377,27 @@ sub get_best_location_hits {
         my ($m_lend, $m_rend) = ($chain_struct->{m_lend}, $chain_struct->{m_rend});
         my $align_len = $m_rend - $m_lend + 1;
         my $prot_acc = $chain_struct->{accession};
-        my $prot_len = &get_protein_length_via_accession($prot_acc);
+        
+
+        my $prot_len = -1;
+        eval {
+            ## if the protein database (ie. AllGroup.niaa) has been updated since the last AAT searches
+            ## we might not be able to recover certain entries from the database, in which case,
+            ## this part will die!
+            
+            $prot_len = &get_protein_length_via_accession($prot_acc);
+            
+        };
+        if ($@) {
+            print STDERR "Error trying to extract protein and determine length for entry $prot_acc\n";
+            next;
+        }
+        
+        
+
         if ($align_len/$prot_len * 100 < $MIN_PERCENT_CHAIN_ALIGN) {
             next; #insufficient percent alignment to genome
         }
-        
         
         ## Tile the hit
         if ($chain_struct->{orient} eq '+') {
@@ -405,11 +405,9 @@ sub get_best_location_hits {
         } else {
             &try_add_chain($chain_struct, \@bottom_strand_tiers);
         }
-        
-        
     }
     
-    my @all_alignments = sort {$a->{lend}<=>$b->{lend}} values %alignments;
+
     
     ## move tiers to complete lists:
     my @top_strand_feats;
@@ -423,6 +421,7 @@ sub get_best_location_hits {
     
     if ($verbose || $JUST_PRINT_BEST_LOCATIONS) {
         print "All alignments: \n";
+        my @all_alignments = sort {$a->{lend}<=>$b->{lend}} values %alignments;
         &dump_feats(@all_alignments);
         
         
@@ -442,13 +441,9 @@ sub prepare_genewise_inputs {
     my ($asmbl_id, $best_hits_aref) = @_;
     
     ## prepare sequence files
-    mkdir ($asmbl_id) or croak "error, couldn't mkdir $asmbl_id in $work_dir "; 
-    
-    ## make sure we can handle a sequence of this length    
-#    my $query = "set textsize 100000000"; #larger than any single sequence to encounter. 
-#    $dbproc->do($query);
-#    $dbproc->{LongReadLen} = fetch_assembly_length($asmbl_id);
-#    $dbproc->do( "set textsize " . &fetch_assembly_length($asmbl_id) );
+    if (! -d $asmbl_id) {
+        mkdir ($asmbl_id) or croak "error, couldn't mkdir $asmbl_id in $work_dir "; 
+    }
     
     ## get the genome sequence:    
     my $query = qq{select sequence from assembly where asmbl_id = $asmbl_id};
@@ -476,14 +471,13 @@ sub prepare_genewise_inputs {
                                                                             $chain->{score},
                                                                             $chain->{orient});
         
-        my $fasta_entry;
+		my $fasta_entry;
         eval {
             $fasta_entry = cdbyank($accession, $protein_fasta_file);
         };
 
         if ($@) {
-            print STDERR "Error, couldn't retrieve fasta etnry $accession from $protein_fasta_file\n";
-            
+            print STDERR "Error, couldn't retrieve fasta entry $accession from $protein_fasta_file\n";
             next;
         }
         
@@ -569,7 +563,8 @@ sub find_fasta_file {
     
     foreach my $loc_dir ( "/usr/local/annotation/$DB/CustomDB",
                           "/usr/local/db/common",
-                          "/usr/local/db/panda/AllGroup/") {
+                          "/usr/local/db/panda/AllGroup/",
+                          "/usr/local/annotation/ACLA1/CustomDB") {
         my $candidate_filename = $loc_dir . "/$protein_db_name";
         if (-s $candidate_filename) {
             return ($candidate_filename);

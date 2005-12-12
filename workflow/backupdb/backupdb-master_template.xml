@@ -11,12 +11,22 @@
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create zero scratch space</name>
+         <configMapId>create_zero_scratch</configMapId>
+        </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
 <!--Processing-->
        <commandSet type="parallel">
            <name>Backup analysis tables</name>
            <configMapId>empty</configMapId>
+           <command>    
+	       <type>RunUnixCommand</type>
+               <name>all_auxiliary_tables</name>
+               <configMapId>all_auxiliary_tables</configMapId>
+           </command>   
            <command>    
 	       <type>RunUnixCommand</type>
                <name>tableinfo</name>
@@ -26,11 +36,6 @@
                <type>RunUnixCommand</type>
                <name>project</name>
                <configMapId>project</configMapId>
-           </command>   
-           <command>    
-               <type>RunUnixCommand</type>
-               <name>contact</name>
-               <configMapId>contact</configMapId>
            </command>   
            <command>    
                <type>RunUnixCommand</type>
@@ -59,13 +64,8 @@
            </command>   
            <command>    
                <type>RunUnixCommand</type>
-               <name>cvtermpropt</name>
+               <name>cvtermprop</name>
                <configMapId>cvtermprop</configMapId>
-           </command>   
-           <command>    
-               <type>RunUnixCommand</type>
-               <name>author</name>
-               <configMapId>author</configMapId>
            </command>   
            <command>    
                <type>RunUnixCommand</type>
@@ -94,8 +94,8 @@
            </command>   
            <command>    
                <type>RunUnixCommand</type>
-               <name>pub_author</name>
-               <configMapId>pub_author</configMapId>
+               <name>pubauthor</name>
+               <configMapId>pubauthor</configMapId>
            </command>   
            <command>    
                <type>RunUnixCommand</type>
@@ -164,6 +164,16 @@
            </command>   
            <command>    
                <type>RunUnixCommand</type>
+               <name>feature_cvterm_dbxref</name>
+               <configMapId>feature_cvterm_dbxref</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>feature_cvterm_pub</name>
+               <configMapId>feature_cvterm_pub</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
                <name>feature_cvtermprop</name>
                <configMapId>feature_cvtermprop</configMapId>
            </command>   
@@ -212,6 +222,46 @@
                <name>analysisfeature</name>
                <configMapId>analysisfeature</configMapId>
            </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylotree</name>
+               <configMapId>phylotree</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylotree_pub</name>
+               <configMapId>phylotree_pub</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylonode</name>
+               <configMapId>phylonode</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylonode_dbxref</name>
+               <configMapId>phylonode_dbxref</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylonode_pub</name>
+               <configMapId>phylonode_pub</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylonode_organism</name>
+               <configMapId>phylonode_organism</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylonodeprop</name>
+               <configMapId>phylonodeprop</configMapId>
+           </command>   
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>phylonode_relationship</name>
+               <configMapId>phylonode_relationship</configMapId>
+           </command>   
     </commandSet>
 <!--Postprocessing-->
 <!--Checksum creation-->
@@ -220,6 +270,11 @@
           <type>RunUnixCommand</type>
           <name>check_logfiles</name>
           <configMapId>check_logfiles</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>archive_bcp_files</name>
+          <configMapId>archive_bcp_files</configMapId>
        </command>
      </commandSet>
 </commandSetRoot>

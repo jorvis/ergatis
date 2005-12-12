@@ -1,7 +1,10 @@
 #!/usr/local/bin/perl
 
 use strict;
-use Workflow::Repository;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Repository.pm';
+    import Workflow::Repository;
+}
 use Date::Manip;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 

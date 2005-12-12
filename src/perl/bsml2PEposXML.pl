@@ -32,14 +32,20 @@ B<--help,-h> This help message
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use PEffect::PEffectXML;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlParserSerialSearch;
 
 use File::Basename;
 use File::Path;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
+    import BSML::BsmlReader;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -125,7 +131,7 @@ foreach my $file (@files){
 							     my $gene_pos = [];
 							     $logger->debug("Iterating over features for $seq_id");
 							     foreach my $feat (@$features){
-								 if($feat->returnattr('class') eq 'protein'){
+								 if($feat->returnattr('class') eq 'polypeptide'){
 								     my $loc = $feat->returnBsmlIntervalLocListR->[0];
 								     my $coord = $loc->{'startpos'} > $loc->{'endpos'} ? $loc->{'startpos'} : $loc->{'endpos'};
 								     $logger->debug("Coord start:$loc->{'startpos'} end:$loc->{'endpos'}") if($logger->is_debug());
@@ -180,7 +186,7 @@ sub get_sorted_gene_position {
 
     foreach my $feat (@$feats){
 	#
-	if(lc($feat->{'class'}) eq "protein"){
+	if(lc($feat->{'class'}) eq "polypeptide"){
 	    $logger->debug("Reading protein $feat->{'id'}") if($logger->is_debug());
 	    my $loc = $feat->{'locations'}->[0];
 	    my $coord = $loc->{'startpos'} > $loc->{'endpos'} ? $loc->{'startpos'} : $loc->{'endpos'};

@@ -134,6 +134,7 @@ foreach my $section (@sections){
 	foreach my $param (@parameters){
 	    my $value = $currcfg->val($section,$param);
         my @param_comments = $currcfg->GetParameterComment( $section, $param );
+        my $no_modify = 0;
         
         ## print out the comments here
         for my $comment ( @param_comments ) {
@@ -141,6 +142,9 @@ foreach my $section (@sections){
             if ($comment =~ /^\s*\;\;\s*(\S.*)/ ) {
                 print "\t<tr class='param_comment'><td>&nbsp;</td><td>$1</td>\n";
             }
+
+            ## look for a no_modify directive (this should be done more generally later)
+            $no_modify++ if ($comment =~ /^\;\-no_modify/);
         }
         
         ## trim whitespace off the ends, but leave internal (keeps opts like "-f 10")
@@ -152,10 +156,10 @@ foreach my $section (@sections){
 		print "\t<tr><td>$param</td><td>$value</td></tr>\n";
 	    } else { 
             ## don't display editable OUTPUT_TOKEN if this is a pre-existing component build
-            if ($preexisting && $param eq '$;OUTPUT_TOKEN$;') {
-            print "\t<tr><td>$param</td><td>$value</td></tr>\n";
+            if ( $no_modify || ($preexisting && $param eq '$;OUTPUT_TOKEN$;') ) {
+                print "\t<tr><td>$param</td><td>$value</td></tr>\n";
             } else {
-		    print "\t<tr><td>$param</td><td><input type=text name='edit_",$section,"::","$param' value='$value' size=100></td></tr>\n";
+		        print "\t<tr><td>$param</td><td><input type=text name='edit_",$section,"::","$param' value='$value' size=100></td></tr>\n";
             }
 	    }
 	}

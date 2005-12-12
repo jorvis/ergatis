@@ -23,12 +23,18 @@ use strict;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Workflow::Logger;
 use XML::Twig;
 
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlParserSerialSearch;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
+    import BSML::BsmlReader;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 use MLDBM "DB_File";
 
 #######
@@ -188,7 +194,7 @@ sub process_sequence
 	#support for deprecated link of ASSEMBLY attribute
 	$lookup{$seqRef->returnattr('id')} =
 		$seqRef->returnBsmlAttr('ASSEMBLY');
-	if ($seqRef->returnattr('class') eq 'protein') {
+	if ($seqRef->returnattr('class') eq 'polypeptide') {
 		my $fasta_file = $seqRef->returnBsmlSeqDataImport->{source};
 		++$protein_fastas{$fasta_file} if length $fasta_file;
 	}

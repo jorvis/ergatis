@@ -74,15 +74,20 @@ Base positions from the input file are renumbered so that positions start at zer
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
-use Papyrus::TempIdCreator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -138,7 +143,7 @@ while (<$ifh>) {
         
         ## create this sequence, an analysis link, and a feature table
         $logger->debug("adding seq_id $seq_id") if $logger->is_debug;
-        $seq = $doc->createAndAddSequence($seq_id);
+        $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
         $seq->addBsmlLink('analysis', '#genezilla_analysis');
         $ft = $doc->createAndAddFeatureTable($seq);
         
@@ -187,6 +192,7 @@ while (<$ifh>) {
     ## handle each of the types we know about
     if ($cols[2] eq 'initial-exon' || $cols[2] eq 'internal-exon' || $cols[2] eq 'final-exon' || $cols[2] eq 'single-exon') {
         &add_feature('exon', $cols[3], $cols[4], $cols[6] );
+        &add_feature('CDS',  $cols[3], $cols[4], $cols[6] );
     } elsif ($cols[2] eq 'poly-A-signal') {
         &add_feature('polyA_signal_sequence', $cols[3], $cols[4], $cols[6] );
     } elsif ($cols[2] eq 'promoter') {

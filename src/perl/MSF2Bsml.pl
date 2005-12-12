@@ -30,8 +30,12 @@ B<--help,-h> This help message
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use Workflow::Logger;
-use BSML::BsmlBuilder;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -77,37 +81,37 @@ if(keys %$MSF_alignments > 1){   #skip empty msf files
     my $seqnum=0;
     my $sequences_tag;
     
-    foreach my $seq (keys %{ $MSF_alignments->{'proteins'} }) {
+    foreach my $seq (keys %{ $MSF_alignments->{'polypeptide'} }) {
 	$logger->logdie("seq was not defined") if (!defined($seq));
 	
 	$seqnum++;
 	
-	my $alignment = join ('', @{ $MSF_alignments->{'proteins'}->{$seq}->{'alignment'} });
+	my $alignment = join ('', @{ $MSF_alignments->{'polypeptide'}->{$seq}->{'alignment'} });
 	$logger->logdie("alignment was not defined") if (!defined($alignment));
 	
 	
-	my $align_length = $MSF_alignments->{'proteins'}->{$seq}->{'length'} if ((exists $MSF_alignments->{'proteins'}->{$seq}->{'length'}) and (defined($MSF_alignments->{'proteins'}->{$seq}->{'length'})));
+	my $align_length = $MSF_alignments->{'polypeptide'}->{$seq}->{'length'} if ((exists $MSF_alignments->{'polypeptide'}->{$seq}->{'length'}) and (defined($MSF_alignments->{'polypeptide'}->{$seq}->{'length'})));
 	
 	$logger->logdie("align_length was not defined") if (!defined($align_length));
 	
 	#IMPORTANT!!!!
 	#In order to ensure that each seq in a multiple sequence alignment is truly
-	#unique, the seq-name and name will be in the form "protein_accession:seqnum"
-	#i.e. (ana1.10005.m00234_protein:1). 
+	#unique, the seq-name and name will be in the form "polypeptide_accession:seqnum"
+	#i.e. (ana1.10005.m00234_polypeptide:1). 
 	
 
 	#
 	# bugzilla case 1979
 	# sundaram@tigr.org
 	# 2005.07.12
-	# Protein identifiers in clustalw output are being truncated.
+	# Polypeptide identifiers in clustalw output are being truncated.
 	#
 	if ($seq =~ /_protei$/){
-	    $logger->warn("protein identifier '$seq' was truncated by clustalw, repairing now");
+	    $logger->warn("polypeptide identifier '$seq' was truncated by clustalw, repairing now");
 	    $seq .= "n";
 	}
 	if ($alignment =~ /_protei /){
-	    $logger->warn("protein identifier in the alignment of '$seq' was truncated by clustalw, repairing now");
+	    $logger->warn("polypeptide identifier in the alignment of '$seq' was truncated by clustalw, repairing now");
 	    $alignment =~ s/_protei /_protein /g;
 	}
 
@@ -159,11 +163,11 @@ sub process_MSF_file {
 	    return undef if($msf_length == 0);   #abort if align_len = 0
 
 	    if($2 eq 'P') {
-		$msf_type = 'protein';
+		$msf_type = 'polypeptide';
 	    }elsif($2 eq 'N') {
 		$msf_type = 'nucleotide';
 	    }else {
-		$msf_type = 'protein';
+		$msf_type = 'polypeptide';
 	    }
 	    $MSF_alignments->{'mol_type'} = $msf_type;
 	}
@@ -175,10 +179,10 @@ sub process_MSF_file {
 	    my $check   = $3;
 	    my $weight  = $4;
 	    
-	    $MSF_alignments->{'proteins'}->{$name}->{'length'} = $ali_len;
-	    $MSF_alignments->{'proteins'}->{$name}->{'check'}  = $check;
-	    $MSF_alignments->{'proteins'}->{$name}->{'weight'} = $weight;
-	    $MSF_alignments->{'proteins'}->{$name}->{'alignment'} = [];
+	    $MSF_alignments->{'polypeptide'}->{$name}->{'length'} = $ali_len;
+	    $MSF_alignments->{'polypeptide'}->{$name}->{'check'}  = $check;
+	    $MSF_alignments->{'polypeptide'}->{$name}->{'weight'} = $weight;
+	    $MSF_alignments->{'polypeptide'}->{$name}->{'alignment'} = [];
 	}
     }
 
@@ -187,10 +191,10 @@ sub process_MSF_file {
     while($line = <MSF>) {
 	if($line =~ /^([\S]+)/) {
 	    my $name = $1;
-	    if(exists($MSF_alignments->{'proteins'}->{$name})) {
-		push( @{ $MSF_alignments->{'proteins'}->{$name}->{'alignment'} }, $line );
+	    if(exists($MSF_alignments->{'polypeptide'}->{$name})) {
+		push( @{ $MSF_alignments->{'polypeptide'}->{$name}->{'alignment'} }, $line );
             } else {
-		print STDERR "ERROR, $name is not valid protein name for $file\n";
+		print STDERR "ERROR, $name is not valid polypeptide name for $file\n";
 		exit;
             }
 	}

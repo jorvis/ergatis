@@ -12,7 +12,7 @@ USAGE:  clusterBsmlPairwiseAlignments.pl  -b bsml_list -m match_list -k linkscor
 
 =item B<--bsml_list,-b>
     
-    List of bsml files containing proteins and assemblies
+    List of bsml files containing polypeptides and assemblies
 
 =item B<--match_list,-m>
     
@@ -66,11 +66,16 @@ USAGE:  clusterBsmlPairwiseAlignments.pl  -b bsml_list -m match_list -k linkscor
 
 
 use strict;
-use Jaccard_coefficient_cluster_resolver;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use BSML::BsmlParserSerialSearch;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Jaccard_coefficient_cluster_resolver.pm';
+    import Jaccard_coefficient_cluster_resolver;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
+}
 use Data::Dumper;
 use MLDBM "DB_File";
 
@@ -104,7 +109,7 @@ if( $options{'help'} ){
 
 my $valid_asmbls = build_asmbl_lookup($options{'asmbl_lookup'});
 
-my $pairs = &retrieve_protein_pairs(
+my $pairs = &retrieve_polypeptide_pairs(
 				    bsmldoc_list     => &get_list_from_file($options{'bsmlSearchList'}),
 				    percent_identity => $options{'percent_identity'},
 				    p_value          => $options{'p_value'},
@@ -193,12 +198,12 @@ sub produce_cluster_output {
 }
 
 #-------------------------------------------------------------------------
-# retrieve_protein_pairs()
+# retrieve_polypeptide_pairs()
 #
 #-------------------------------------------------------------------------
-sub retrieve_protein_pairs {
+sub retrieve_polypeptide_pairs {
 
-    $logger->debug("Entered retrieve_protein_pairs") if $logger->is_debug();
+    $logger->debug("Entered retrieve_polypeptide_pairs") if $logger->is_debug();
 
     my (%param) = @_;
     my $paramref = \%param;
@@ -210,7 +215,7 @@ sub retrieve_protein_pairs {
     my $bsmldoclist      = $paramref->{'bsmldoc_list'}       if ((exists $paramref->{'bsmldoc_list'}) and (defined($paramref->{'bsmldoc_list'})));
     my $percent_identity = $paramref->{'percent_identity'}   if ((exists $paramref->{'percent_identity'}) and (defined($paramref->{'percent_identity'})));
     my $p_value          = $paramref->{'p_value'}            if ((exists $paramref->{'p_value'}) and (defined($paramref->{'p_value'})));
-    my $protein2assemblyhash     = $paramref->{'valid_asmbls'}            if ((exists $paramref->{'valid_asmbls'}) and (defined($paramref->{'valid_asmbls'})));
+    my $polypeptide2assemblyhash     = $paramref->{'valid_asmbls'}            if ((exists $paramref->{'valid_asmbls'}) and (defined($paramref->{'valid_asmbls'})));
 
     $logger->logdie("bsmldoclist was not defined")       if (!defined($bsmldoclist));
     $logger->logdie("percent_identity was not defined")  if (!defined($percent_identity));
@@ -218,21 +223,21 @@ sub retrieve_protein_pairs {
     $logger->logdie("valid_asmbls was not defined")           if (!defined($valid_asmbls));
 
 
-    my @proteinpairs;
+    my @polypeptidepairs;
 
     #
     # for each bsml document we will:
     # 1) verify access permissions
     # 2) validate (if told to)
     # 3) parse the document
-    # 4) retrieve all pairs of protein identifiers for which both proteins belong to the same assembly
+    # 4) retrieve all pairs of polypeptide identifiers for which both polypeptides belong to the same assembly
     #
     foreach my $bsmldoc (@$bsmldoclist){
 	$logger->logdie("bsmldoc was not defined") if (!defined($bsmldoc));
 
 	$logger->info("Processing bsml document: $bsmldoc");
     
-	print ("Parsing Seq-pair-alignments for bsml document: $bsmldoc\nAnd extract protein-protein pairs\n");
+	print ("Parsing Seq-pair-alignments for bsml document: $bsmldoc\nAnd extract polypeptide-polypeptide pairs\n");
 	
 	my $bsml_parser = new BSML::BsmlParserSerialSearch(
 							AlignmentCallBack  => sub {
@@ -258,14 +263,14 @@ sub retrieve_protein_pairs {
 #							    print "compseq:$compseq\t\trefseq:$refseq\n";
 							    
 							    #
-							    # We only keep the protein pairs that meet the following conditions:
+							    # We only keep the polypeptide pairs that meet the following conditions:
 							    # 1) the assembly is one in specified assembly list/hash
 							    # 2) the percent_identity is above the threshold value
 							    # 3) the p_value is above the threshold value
 							    #
 							    #
 							    #
-							    if ((exists $protein2assemblyhash->{$compseq}) and (defined($protein2assemblyhash->{$compseq})) and (exists $protein2assemblyhash->{$refseq}) and (defined($protein2assemblyhash->{$refseq}))){
+							    if ((exists $polypeptide2assemblyhash->{$compseq}) and (defined($polypeptide2assemblyhash->{$compseq})) and (exists $polypeptide2assemblyhash->{$refseq}) and (defined($polypeptide2assemblyhash->{$refseq}))){
 								
 								#
 								#  pvalue is from blastp bsml file ()
@@ -273,7 +278,7 @@ sub retrieve_protein_pairs {
 
 								
 								if (($pidentity > $percent_identity) and ($pvalue < $p_value)){
-								    push (@proteinpairs, [$compseq, $refseq]);# if ($protein2assemblyhash->{$compseq} eq $protein2assemblyhash->{$refseq});
+								    push (@polypeptidepairs, [$compseq, $refseq]);# if ($polypeptide2assemblyhash->{$compseq} eq $polypeptide2assemblyhash->{$refseq});
 								}
 							    }
 							    
@@ -286,9 +291,9 @@ sub retrieve_protein_pairs {
 
     }
 
-    $logger->debug("Protein pairs to be processed:\n") if $logger->is_debug();
+    $logger->debug("Polypeptide pairs to be processed:\n") if $logger->is_debug();
 
-    return \@proteinpairs;
+    return \@polypeptidepairs;
 
 }
 

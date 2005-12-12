@@ -47,15 +47,33 @@ This script is used to convert the output from an augustus search into BSML.
 You define the input file using the --input option.  This file does not need any
 special file extension.  The regular output of augustus looks like this:
 
-    aa1.assembly.24383	AUGUSTUS	initial	18982	19143	.	+	0	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	intron	19144	19195	.	+	.	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	internal	19196	19531	.	+	0	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	intron	19532	19599	.	+	.	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	terminal	19600	19854	.	+	0	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	stop_codon	19852	19854	.	+	0	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	CDS	18982	19143	.	+	0	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	CDS	19196	19531	.	+	0	transcript_id "g1.1"; gene_id "g1";
-    aa1.assembly.24383	AUGUSTUS	CDS	19600	19851	.	+	0	transcript_id "g1.1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        gene    27119   37211   .       +       .       g1
+    sma1.assembly.30903     AUGUSTUS        transcript      27119   37211   .       +       .       g1.t1
+    sma1.assembly.30903     AUGUSTUS        start_codon     27119   27121   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        initial 27119   27245   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        intron  27246   27277   .       +       .       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        internal        27278   27462   .       +       2       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        intron  27463   27508   .       +       .       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        internal        27509   27634   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        intron  27635   28144   .       +       .       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        internal        28145   28294   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        intron  28295   30277   .       +       .       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        internal        30278   30442   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        intron  30443   31648   .       +       .       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        internal        31649   31737   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        intron  31738   36316   .       +       .       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        internal        36317   36669   .       +       1       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        intron  36670   36741   .       +       .       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        terminal        36742   37211   .       +       2       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        stop_codon      37209   37211   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     27119   27245   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     27278   27462   .       +       2       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     27509   27634   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     28145   28294   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     30278   30442   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     31649   31737   .       +       0       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     36317   36669   .       +       1       transcript_id "g1.t1"; gene_id "g1";
+    sma1.assembly.30903     AUGUSTUS        CDS     36742   37211   .       +       2       transcript_id "g1.t1"; gene_id "g1";
 
 which has the general format of:
 
@@ -66,7 +84,8 @@ the analysis of a single FASTA sequence.
 
 =head1 OUTPUT
 
-Base positions from the input file are renumbered so that positions start at zero.
+Base positions from the input file are renumbered so that positions start at zero. Also,
+the stop coordinates of each terminal CDS is extended 3bp to include the stop codon.
 
 =head1 CONTACT
 
@@ -76,15 +95,20 @@ Base positions from the input file are renumbered so that positions start at zer
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
-use Papyrus::TempIdCreator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -124,6 +148,9 @@ my $seq_id;
 my ($seq, $ft, $fg);
 my ($last_group_name, $current_group_name, $current_transcript_id);
 my ($thing, $id);
+## we have to hold each cds in an array so that we can add 3 bases to the last
+##  one (augustus doesn't include the stop codon within the cds)
+my @cds;
 
 ## go through the file
 while (<$ifh>) {
@@ -132,6 +159,10 @@ while (<$ifh>) {
     chomp;
     my @cols = split(/\t/);
     
+    ## skip the 'gene' and 'transcript' rows, since they are handled by the
+    ##  explicit groupings in the last column.
+    next if ($cols[2] eq 'gene' || $cols[2] eq 'transcript');
+    
     ## has the sequence been defined yet?  it's in the first column
     ##  this should happen on the first row only
     unless ($seq_id) {
@@ -139,8 +170,8 @@ while (<$ifh>) {
         $seq_id =~ s/\s//g;
         
         ## create this sequence, an analysis link, and a feature table
-        $seq = $doc->createAndAddSequence($seq_id);
-        $seq->addBsmlLink('analysis', '#augustus_analysis');
+        $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
+        $seq->addBsmlLink('analysis', '#augustus_analysis', 'input_of');
         $ft = $doc->createAndAddFeatureTable($seq);
         
         ##  also add a link to the fasta file (Seq-data-import) if requested
@@ -162,6 +193,37 @@ while (<$ifh>) {
         
         ## remember this group name
         $last_group_name = $current_group_name;
+        
+        ## add 3 bases to the last CDS, if any were found
+        if (scalar @cds) {
+            
+            ## if on the reverse strand, we need to take three from column 2
+            ##   if on the forward add three to column 3
+            ## assumes (obviously) that all CDS in this group are on the same strand
+            if ($cds[-1][3]) {
+                ## here we need to sort the CDS array because the terminal one isn't 
+                ##  explicitly defined and the software can write them in any order.
+                ##  reverse strand, sort descending
+                @cds = sort { $b->[1] <=> $a->[1] } @cds;
+            
+                $logger->debug("manually shifting 3 from reverse CDS coordinate  $cds[-1][1] on $seq_id\n") if $logger->is_debug();
+                $cds[-1][1] -= 3;
+            } else {
+                ## here we need to sort the CDS array because the terminal one isn't 
+                ##  explicitly defined and the software can write them in any order.
+                ##  reverse strand, sort descending
+                @cds = sort { $a->[2] <=> $b->[2] } @cds;
+
+                $logger->debug("manually pushing 3 onto forward CDS coordinate  $cds[-1][2] on $seq_id\n") if $logger->is_debug();
+                $cds[-1][2] += 3;
+            }
+            
+            for my $cd ( @cds ) {
+                &add_feature( @{$cd} );
+            }
+            
+            undef @cds;
+        }
         
         ## pull a new gene id
         $current_transcript_id = $idcreator->new_id( db      => $options{project},
@@ -191,11 +253,12 @@ while (<$ifh>) {
     } elsif ($cols[2] eq 'intron') {
         &add_feature('intron', $cols[3], $cols[4], $cols[6] );
     } elsif ($cols[2] eq 'CDS') {
-        &add_feature('CDS', $cols[3], $cols[4], $cols[6] );
+        #&add_feature('CDS', $cols[3], $cols[4], $cols[6] );
+        push @cds, [ 'CDS', $cols[3], $cols[4], $cols[6] ];
+    } elsif ($cols[2] eq 'start_codon') {
+        &add_feature('start_codon', $cols[3], $cols[4], $cols[6] );
     } elsif ($cols[2] eq 'stop_codon') {
-        &add_feature('transcription_end_site', $cols[3], $cols[4], $cols[6] );
-    } elsif ($cols[2] eq 'stop_codon') {
-        &add_feature('transcription_end_site', $cols[3], $cols[4], $cols[6] );
+        &add_feature('stop_codon', $cols[3], $cols[4], $cols[6] );
     } else {
         $logger->logdie("unrecognized type: $cols[2]");
     }
@@ -219,7 +282,7 @@ sub add_feature {
     
     $id = $idcreator->new_id( db => $options{project}, so_type => $type, prefix => $options{command_id} );
     $thing = $doc->createAndAddFeature( $ft, $id, '', $idcreator->so_used($type) );
-    $thing->addBsmlLink('analysis', '#augustus_analysis');
+    $thing->addBsmlLink('analysis', '#augustus_analysis', 'computed_by');
     $thing->addBsmlIntervalLoc($start, $stop, $strand);
 
     $fg->addBsmlFeatureGroupMember( $id, $idcreator->so_used($type) );
@@ -227,7 +290,7 @@ sub add_feature {
     ## if type is a primary_transcript we need to add a gene too
     if ($type eq 'primary_transcript') {
         $thing = $doc->createAndAddFeature( $ft, $current_transcript_id, '', $idcreator->so_used('gene') );
-        $thing->addBsmlLink('analysis', '#augustus_analysis');
+        $thing->addBsmlLink('analysis', '#augustus_analysis', 'computed_by');
         $thing->addBsmlIntervalLoc($start, $stop, $strand);
         $fg->addBsmlFeatureGroupMember( $current_transcript_id, $idcreator->so_used('gene') );
     }

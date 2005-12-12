@@ -27,6 +27,11 @@ B<--output_list,-s>
     Write a list file containing the paths of each of the regular output files.  This may be useful
     for later scripts that can accept a list as input.
 
+B<--output_file_prefix,-f>
+    If defined, each file created will have this string prepended to its name.  This is ignored unless
+    writing multiple sequences to each output file using the --seqs_per_file option with a value greater
+    than 1, else each file created will just be a number.
+
 B<--output_subdir_size,-u>
     If defined, this script will create numbered subdirectories in the output directory, each
     containing this many sequences files.  Once this limit is reached, another subdirectory
@@ -155,12 +160,16 @@ The following will be created:
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
                           'input_file|i=s',
                           'output_dir|o=s',
+                          'output_file_prefix|f=s',
                           'output_list|s=s',
                           'output_subdir_size|u=s',
                           'output_subdir_prefix|p=s',
@@ -262,10 +271,7 @@ sub check_parameters {
     $options{output_subdir_size}   = 0  unless ($options{output_subdir_size});
     $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
     $options{seqs_per_file}        = 1  unless ($options{seqs_per_file});
-    
-    if(0){
-        pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
-    }
+    $options{output_file_prefix} = '' unless ($options{output_file_prefix});
 }
 
 sub writeSequence {
@@ -286,6 +292,11 @@ sub writeSequence {
     ##  fasta header to the current group file name
     if ($options{seqs_per_file} > 1) {
         $id = $group_filename_prefix;
+        
+        ## did the user ask for a file prefix?
+        if ( $options{output_file_prefix} ) {
+            $id = $options{output_file_prefix} . $id;
+        }
     }
 
     
@@ -296,6 +307,7 @@ sub writeSequence {
         $dirpath = "$options{'output_dir'}";
     }
     
+    ## did the user ask for a file prefix?
     my $filepath = "$dirpath/$id.fsa";
     
     ## take any // out of the filepath

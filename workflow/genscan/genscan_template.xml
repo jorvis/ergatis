@@ -7,18 +7,8 @@
         <configMapId>empty</configMapId>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_group_output_dir</configMapId>
-            <name>create_group_output_dir</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>genscan</configMapId>
             <name>genscan</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_raw_list</configMapId>
-            <name>create_raw_list</name>
         </command>
         <command>    
             <type>RunLoggedUnixCommand</type>
@@ -29,11 +19,6 @@
             <type>RunUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_bsml_list</configMapId>
-            <name>create_bsml_list</name>
         </command>
         <command>
             <type>RunUnixCommand</type>

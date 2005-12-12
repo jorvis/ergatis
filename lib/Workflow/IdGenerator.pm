@@ -81,6 +81,20 @@ A lot needs to be done in the way of error handling if a process dies
 prematurely.  This could result in a lock file existing when the process
 responsible for it no longer exists.
 
+Sam found another possible method of doing this which is close to what we are
+doing here.  I'll paste it below in case we want to experiment using link for
+this later.
+
+O_EXCL When used with O_CREAT, if the file already exists it is an error and 
+the open will fail. In this context,  a  symbolic link exists, regardless of 
+where its points to.  O_EXCL is broken on NFS  file  systems,  programs  which  
+rely  on  it for performing locking tasks will contain a race  condition.   The
+solution for performing atomic file locking using a lockfile is to create a 
+unique file on the same fs (e.g., incorporating hostname and pid), use link(2) 
+to make a link to the lockfile. If link() returns 0, the lock is successful.  
+Otherwise, use stat(2) on the unique file to check if its link  count  has
+increased to 2, in which case the lock is also successful.
+
 =head1 AUTHOR
 
     Joshua Orvis

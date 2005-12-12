@@ -49,7 +49,10 @@ B<--help,-h> This help message
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+}
 use File::Basename;
 
 umask(0000);

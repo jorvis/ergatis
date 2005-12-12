@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>signalp Compute</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>signalp</configMapId>
+            <name>Run signalp</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>signalp_graphics_rename</configMapId>
+            <name>Rename signalp graphics files</name>
+        </command>
+        <command>    
+            <type>RunLoggedUnixCommand</type>
+            <configMapId>signalp2bsml</configMapId>
+            <name>Convert signalp raw output to BSML</name>
+        </command>
+
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>store_config_params_nn</configMapId>
+            <name>Store config params for SignalP NN</name>
+        </command>
+	
+	<command>    
+            <type>RunUnixCommand</type>
+            <configMapId>store_config_params_hmm</configMapId>
+            <name>Store config params for SignalP HMM</name>
+        </command>
+<!--
+	<command>    
+            <type>RunUnixCommand</type>
+            <configMapId>compress_raw_output</configMapId>
+            <name>compress_raw_output</name>
+        </command>
+    
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>dtd_validation</configMapId>
+            <name>DTD validation</name>
+        </command>
+-->
+    </commandSet>
+</commandSetRoot>

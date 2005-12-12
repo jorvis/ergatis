@@ -7,16 +7,6 @@
         <configMapId>empty</configMapId>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_group_output_dir</configMapId>
-            <name>create_group_output_dir</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_group_tmp_dir</configMapId>
-            <name>create_group_tmp_dir</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>NUCmer</configMapId>
             <name>NUCmer</name>
         </command>
@@ -29,11 +19,6 @@
             <type>RunUnixCommand</type>
             <configMapId>mummer2bsml</configMapId>
             <name>mummer2bsml</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_bsml_list</configMapId>
-            <name>create_bsml_list</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>

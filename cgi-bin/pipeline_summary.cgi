@@ -46,6 +46,9 @@ if ( $commandSet->first_child('state') ) {
 
 my ($starttime, $endtime, $runtime) = &time_info( $commandSet );
 
+## endtime can be null
+$endtime = '?' unless $endtime;
+
 my $filestat = stat($pipeline);
 my $user = getpwuid($filestat->uid);
 my $lastmodtime = time - $filestat->mtime;
@@ -82,8 +85,7 @@ print <<PipelineSummarY;
         <a href='./run_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
         <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
         <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
-        <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
-        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
     </div>
 PipelineSummarY
 

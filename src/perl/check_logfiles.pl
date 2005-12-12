@@ -17,7 +17,7 @@ check_logfiles.pl - greps all log4perl logfiles and checks for FATAL, ERROR, WAR
 
 =head1 SYNOPSIS
 
-USAGE:  check_logfiles.pl [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username
+USAGE:  check_logfiles.pl [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username [-p project] [-c component]
 
 =head1 OPTIONS
 
@@ -55,6 +55,14 @@ USAGE:  check_logfiles.pl [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m]
 
     Username of person to be notified via email
 
+=item B<--project,-p>
+
+    Name of the database project
+
+=item B<--component,-c>
+
+    Name of the workflow component e.g. initdb or legacy2bsml
+
 =back
 
 =head1 DESCRIPTION
@@ -68,6 +76,10 @@ USAGE:  check_logfiles.pl [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m]
     Sample usage:
     ./check_logfiles.pl -f rebuild.log,drop_indexes.log,load.log -l check_logfiles.pl.log -U sundaram
 
+=head1 CONTACT
+
+    Jay Sundaram
+    sundaram@tigr.org
 
 =cut
 
@@ -77,7 +89,10 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Data::Dumper;
 use Log::Log4perl qw(get_logger);
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+}
 
 
 $|=1;
@@ -86,7 +101,7 @@ $|=1;
 # Parse command line options
 #-------------------------------------------------------------
 
-my ($debug_level, $help, $log4perl, $man, $filelist, $workflow_id, $username, $repository);
+my ($debug_level, $help, $log4perl, $man, $filelist, $workflow_id, $username, $repository, $project, $component);
 
 
 my $results = GetOptions (
@@ -97,7 +112,9 @@ my $results = GetOptions (
 			  'filelist|f=s'     => \$filelist,
 			  'workflow_id|w=s'  => \$workflow_id,
 			  'username|U=s'     => \$username,
-			  'repository|r=s'   => \$repository
+			  'repository|r=s'   => \$repository,
+			  'project|p=s'      => \$project,
+			  'component|c=s'    => \$component
 			  );
 
 
@@ -188,27 +205,23 @@ my $filehash = {};
 
 foreach my $file (sort @{$list}){
 
-    $filectr++;
-
-    $logger->info("Processing the following log4perl logfile '$file'");
-
+    $logger->info("Attempting to process the following log4perl logfile '$file'");
 
     if (!-e $file){
 	$logger->error("file '$file' does not exist");
-	$filectr--;
 	next;
     }
     if (!-r $file){
 	$logger->error("file '$file' does not have read permissions");
-	$filectr--;
 	next;
     }
     if (-z $file){
 	$logger->debug("file '$file' had zero size and therefore will not be processed");
-	$filectr--;
 	next;
     }
 
+
+    $filectr++;
 
     open (INFILE, "<$file") or $logger->logdie("Could not open file '$file'");
 
@@ -288,25 +301,41 @@ foreach my $file (sort @{$list}){
 
 
 if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
-    my $subject  = "Ran check_logfiles.pl ";
+    my $subject;
+
+    if (defined($project)) {
+	$subject .= "[$project] ";
+    }
+    if (defined($component)){
+	$subject .= "[$component] ";
+    }
+
+    $subject .= "check_logfiles.pl ";
+
     if ($fatalmaster > 0){
-	$subject .= "FATAL ";
+	$subject .= "FATAL:$fatalmaster ";
     }
     if ($errormaster > 0){
-	$subject .= "ERROR ";
+	$subject .= "ERROR:$errormaster ";
     }
     if ($warnmaster > 0 ){
-	$subject .= "WARN ";
+	$subject .= "WARN:$warnmaster ";
     }
     $subject .= "detected";
 
     my $body;
 
-    $body .= "Workflow link http://xmen:8080/tigr-scripts/ergatis/show_pipeline.cgi?xmltemplate=" . $workflow_id . "\n\n" if (defined($workflow_id));
+
+    $body .= "Workflow link http://sundaram-lx:8080/cgi-bin/ergatis/view_workflow_pipeline.cgi?instance=" . $workflow_id . "\n\n" if (defined($workflow_id));
+
+
+    $body .= "\n\nTotal fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'.\n\nThe unique log messages reported and their number of occurrences are listed below\n\n";
+
+    $body  .= "The following log4perl logfiles were scanned:\n\n";
+
 
     my $scanned_file_ctr=0;
 
-    $body  .= "The following log4perl logfiles were scanned:\n\n";
     foreach my $scanned_file ( @{$list} ){
 
 	$scanned_file_ctr++;
@@ -315,7 +344,7 @@ if (($fatalmaster > 0) or ($errormaster > 0) or ($warnmaster > 0)){
 
     }
 
-    $body .= "\n\nTotal fatals '$fatalmaster' total errors '$errormaster' total warns '$warnmaster'.\n\nThe unique log messages reported and their number of occurrences are listed below\n\n";
+
 
     foreach my $file (sort keys %{$filehash}){
 
@@ -529,7 +558,7 @@ sub is_file_readable {
 #------------------------------------------------------
 sub print_usage {
 
-    print STDERR "SAMPLE USAGE:  $0 [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username\n".
+    print STDERR "SAMPLE USAGE:  $0 [-d debug_level] [-f filelist] [-h] [-l log4perl] [-m] [-r repository] [-w workflow_id] -U username [-p project]\n".
     "  -d|--debug_level         = Optional - Coati::Logger log4perl logging level.  Default is 0\n".
     "  -f|--filelist            = Optional - Comma-separated list of log4perl logfiles to check for FATAL, ERROR, WARN\n".
     "  -h|--help                = Optional - Display pod2usage help screen\n".
@@ -537,7 +566,8 @@ sub print_usage {
     "  -m|--man                 = Optional - Display pod2usage pages for this utility\n".
     "  -w|--repository          = Optional - $;WORKFLOW_REPOSITORY$;\n".
     "  -w|--workflow_id         = Optional - workflow pipeline XML\n".
-    "  -U|--username            = Username of person to be notified by email (only if -e=1)\n";
+    "  -U|--username            = Username of person to be notified by email (only if -e=1)\n".
+    "  -p|--project             = Optional - database project name\n";
     exit 1;
 
 }

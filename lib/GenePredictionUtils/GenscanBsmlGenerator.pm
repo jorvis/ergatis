@@ -4,7 +4,10 @@ package GenePredictionUtils::GenscanBsmlGenerator;
 use strict;
 use warnings;
 
-use GenePredictionUtils::GenePredictionBsmlGenerator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/GenePredictionUtils/GenePredictionBsmlGenerator.pm';
+    import GenePredictionUtils::GenePredictionBsmlGenerator;
+}
 
 sub new
 {

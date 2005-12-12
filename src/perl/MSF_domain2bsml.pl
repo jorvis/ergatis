@@ -64,7 +64,10 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+}
 use File::Basename;
 use Pod::Usage;
 
@@ -131,18 +134,18 @@ while( my $file = readdir(DIR)) {
 	my $aln = $builder->createAndAddSequenceAlignment( 'multipleAlignmentTable' => $table );
 	my $seqnum=0;
 	my $sequences_tag;
-	foreach my $seq (keys %{ $MSF_alignments->{'proteins'} }) {
+	foreach my $seq (keys %{ $MSF_alignments->{'polypeptides'} }) {
 	    $seqnum++;
 	    my ($pro_acc, $coords) = split(/\//, $seq);
 	    $pro_acc =~ s/\|\|$//;                         #remove terminal '||' if exists
-	    my $alignment = join ('', @{ $MSF_alignments->{'proteins'}->{$seq}->{'alignment'} });
-	    my $start  = $MSF_alignments->{'proteins'}->{$seq}->{'end5'}; 
-	    my $end    = $MSF_alignments->{'proteins'}->{$seq}->{'end3'};
+	    my $alignment = join ('', @{ $MSF_alignments->{'polypeptides'}->{$seq}->{'alignment'} });
+	    my $start  = $MSF_alignments->{'polypeptides'}->{$seq}->{'end5'}; 
+	    my $end    = $MSF_alignments->{'polypeptides'}->{$seq}->{'end3'};
 	    my $domain_length = $end - $start + 1;
 	    #IMPORTANT!!!!
 	    #In order to ensure that each seq in a multiple sequence alignment is truly
-            #unique, the seq-name and name will be in the form "protein_accession:seqnum"
-            #i.e. (ana1.10005.m00234_protein:1). 
+            #unique, the seq-name and name will be in the form "polypeptide_accession:seqnum"
+            #i.e. (ana1.10005.m00234_polypeptide:1). 
 
 	    $builder->createAndAddAlignedSequence( 'alignmentSummary' => $summary,
 						   'seqnum' => $seqnum,
@@ -187,11 +190,11 @@ sub process_MSF_file {
 	    return undef if($msf_length == 0);  #abort if align_len = 0
 
 	    if($2 eq 'P') {
-		$msf_type = 'protein';
+		$msf_type = 'polypeptide';
 	    }elsif($2 eq 'N') {
 		$msf_type = 'nucleotide';
 	    }else {
-		$msf_type = 'protein';
+		$msf_type = 'polypeptide';
 	    }
 	    $MSF_alignments->{'mol_type'} = $msf_type;
 	}
@@ -202,15 +205,15 @@ sub process_MSF_file {
 	    my $ali_len = $2;
 	    my $check   = $3;
 	    my $weight  = $4;
-	    my ($protein, $coord) = split(/\//, $name);
+	    my ($polypeptide, $coord) = split(/\//, $name);
 	    my ($start5, $end3) = split("-", $coord);
 	    
-	    $MSF_alignments->{'proteins'}->{$name}->{'length'} = $ali_len;
-	    $MSF_alignments->{'proteins'}->{$name}->{'check'}  = $check;
-	    $MSF_alignments->{'proteins'}->{$name}->{'weight'} = $weight;
-	    $MSF_alignments->{'proteins'}->{$name}->{'end5'}   = $start5;
-	    $MSF_alignments->{'proteins'}->{$name}->{'end3'}   = $end3;
-	    $MSF_alignments->{'proteins'}->{$name}->{'alignment'} = [];
+	    $MSF_alignments->{'polypeptides'}->{$name}->{'length'} = $ali_len;
+	    $MSF_alignments->{'polypeptides'}->{$name}->{'check'}  = $check;
+	    $MSF_alignments->{'polypeptides'}->{$name}->{'weight'} = $weight;
+	    $MSF_alignments->{'polypeptides'}->{$name}->{'end5'}   = $start5;
+	    $MSF_alignments->{'polypeptides'}->{$name}->{'end3'}   = $end3;
+	    $MSF_alignments->{'polypeptides'}->{$name}->{'alignment'} = [];
 	}
     }
 
@@ -226,10 +229,10 @@ sub process_MSF_file {
 		$line =~ s/$replacements/$spaces/;
 		$name =~ s/$replacements//g;
 	    }
-	    if(exists($MSF_alignments->{'proteins'}->{$name2})) {
-		push( @{ $MSF_alignments->{'proteins'}->{$name2}->{'alignment'} }, $line );
+	    if(exists($MSF_alignments->{'polypeptides'}->{$name2})) {
+		push( @{ $MSF_alignments->{'polypeptides'}->{$name2}->{'alignment'} }, $line );
             } else {
-		print STDERR "ERROR, $name is not valid protein name\n";
+		print STDERR "ERROR, $name is not valid polypeptide name\n";
             }
 	}
     }

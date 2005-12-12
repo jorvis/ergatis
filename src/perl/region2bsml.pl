@@ -18,7 +18,10 @@ USAGE: region2bsml -r region_file -o output_file [--debug debug_level] [--log lo
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use File::Basename;
-use BSML::BsmlBuilder;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+}
 use Log::Log4perl qw(get_logger :levels :easy);
 use Pod::Usage;
 

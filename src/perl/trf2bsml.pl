@@ -9,6 +9,7 @@ trf2bsml.pl - convert Tandem Repeat Finder (trf) output to BSML
 USAGE: trf2bsml.pl 
             --input=/path/to/somefile.dat 
             --output=/path/to/output.bsml
+          [ --project=aa1 ]
 
 =head1 OPTIONS
 
@@ -23,6 +24,10 @@ B<--log,-l>
 
 B<--output,-o> 
     Output BSML file (will be created, must not exist)
+
+B<--project,-p>
+    Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
+    not passed.
 
 B<--help,-h> 
     This help message
@@ -57,8 +62,7 @@ special file extension.
 
 After parsing the input file, a file specified by the --output option is created.  This script
 will fail if it already exists.  The file is created, and temporary IDs are created for
-each result element.  They are only unique to the document, and will need to be replaced
-before any database insertion.
+each result element. 
 
 Base positions from the input file are renumbered so that positions start at zero.  
 
@@ -70,20 +74,29 @@ Base positions from the input file are renumbered so that positions start at zer
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
               'debug|d=s',
+              'command_id=s',       ## passed by workflow
+              'logconf=s',          ## passed by workflow (not used)
+              'project|p=s',
               'log|l=s',
 			  'help|h') || pod2usage();
 
@@ -106,6 +119,9 @@ my $next_id = 1;
 
 ## we want a new doc
 my $doc = new BSML::BsmlBuilder();
+
+## we're going to generate ids
+my $idcreator = new Papyrus::TempIdCreator();
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -140,8 +156,8 @@ while (<$ifh>) {
 
 ## loop through each of the matches that we found
 for my $seqid (keys %data) {
-    my $seq = $doc->createAndAddSequence($seqid);
-       $seq->addBsmlLink('analysis', 'trf_analysis');
+    my $seq = $doc->createAndAddSequence($seqid, undef, '', 'dna', 'assembly');
+       $seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
     my $ft  = $doc->createAndAddFeatureTable($seq);
     my $fg;
     
@@ -149,9 +165,15 @@ for my $seqid (keys %data) {
     my $repeat;
     my @elements;
     foreach my $arr ( @{$data{$seqid}} ) {
+        ## grab an ID
+        my $new_id = $idcreator->new_id( db     => $options{project},
+                                                          so_type => 'tandem_repeat',
+                                                          prefix => $options{command_id}
+                                                        );
+        
         ## add the repeat
-        $repeat = $doc->createAndAddFeature($ft, &fake_id('rep'), '', 'repeat_region');
-        $repeat->addBsmlLink('analysis', 'trf_analysis');
+        $repeat = $doc->createAndAddFeature($ft, $new_id, '', $idcreator->so_used('tandem_repeat') );
+        $repeat->addBsmlLink('analysis', '#trf_analysis', 'computed_by');
         
         ## add the location of the repeat (all given by RepeatMasker as coords on the forward strand)
         ## 1 is subtracted from each position to give interbase numbering
@@ -163,7 +185,7 @@ for my $seqid (keys %data) {
                                                    'consensus_size',     $$arr[4],
                                                    'percent_identity',   $$arr[5],
                                                    'percent_indels',     $$arr[6],
-                                                   'score',              $$arr[7],
+                                                   'raw_score',          $$arr[7],
                                                    'percent_a',          $$arr[8],
                                                    'percent_c',          $$arr[9],
                                                    'percent_g',          $$arr[10],
@@ -176,7 +198,7 @@ for my $seqid (keys %data) {
 }
 
 ## add the analysis element
-$doc->createAndAddAnalysis(
+my $analysis = $doc->createAndAddAnalysis(
                             id => 'trf_analysis',
                             sourcename => $options{'output'},
                           );
@@ -194,14 +216,9 @@ sub check_parameters {
     ## make sure output file doesn't exist yet
     if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
     
+    $options{'project'}    = 'unknown' unless ($options{'project'});
+    $options{'command_id'} = '0' unless ($options{'command_id'});
+    
     return 1;
 }
 
-sub fake_id {
-    my $so_type = shift;
-
-    ## this will be used by the id replacement software to find ids to replace.
-    my $temp_prefix = 'ir';
-    
-    return "$temp_prefix.$so_type." . $next_id++;
-}

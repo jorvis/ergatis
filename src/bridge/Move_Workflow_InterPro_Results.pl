@@ -49,10 +49,12 @@ MAIN:{
 	
 	my %prog_to_ev_type = ( 'blastprodom' => "BlastProDom",
 				'coils'       => "Coil",
+                'hmmpfam'     => 'HMMPfam',
 				'hmmpir'      => "HMMpir",
 				'hmmsmart'    => 'HMMSmart',
-				'hmmtigr'     => 'HMM_TIGR',
+				'hmmtigr'     => 'HMMTIGR',
 				'fprintscan'  => 'FPrintScan',
+                'scanprositec' => 'ScanPrositeC',
 				'scanregexp'  => 'ScanRegExp',
 				'profilescan' => 'ProfileScan',
 				'superfamily' => 'superfamily',

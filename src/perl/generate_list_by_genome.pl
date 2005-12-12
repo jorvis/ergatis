@@ -30,10 +30,15 @@ B<--help,-h> This help message
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
-use Workflow::Logger;
 use File::Basename;
-use BSML::BsmlParserSerialSearch;
-use BSML::BsmlReader;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
+    import BSML::BsmlReader;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
+}
 
 umask(0000);
 

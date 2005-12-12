@@ -8,7 +8,7 @@ package SingleLinkageClusterer;
 ##              return ([1,2,3] , [6,7,8], ...)
 
 
-our $CLUSTERPATH='/usr/local/devel/ANNOTATION/cas/bin/cluster';
+our $CLUSTERPATH='/usr/local/devel/ANNOTATION/EGC_utilities/bin/cluster';
 
 use strict;
 

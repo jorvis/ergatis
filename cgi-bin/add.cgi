@@ -8,6 +8,7 @@ use File::Find;
 use File::Basename;
 use File::stat;
 use Config::IniFiles;
+use Data::Dumper;
 
 my $node = param('node');
 my $xmltemplate = param('xmltemplate');
@@ -38,7 +39,8 @@ if( -e $sharedconf){
 }
 print "<table>";
 foreach my $componentbld (sort {$componentbldconf->{$b}->{'date'} <=> $componentbldconf->{$a}->{'date'}} keys %$componentbldconf){
-    print "<tr><td>$componentbldconf->{$componentbld}->{'type'}</td><td>$componentbldconf->{$componentbld}->{'name'}</td><td>$componentbldconf->{$componentbld}->{'user'}</td><td>".localtime($componentbldconf->{$componentbld}->{'date'})."</td><td><a href='add_component.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&conf=$componentbldconf->{$componentbld}->{'file'}&name=$componentbldconf->{$componentbld}->{'name'}&component_name=$componentbldconf->{$componentbld}->{'type'}&pipeline_id=$pipeline_id'>[add]</a><a  target='config' href='view_formatted_ini_source.cgi?file=$componentbldconf->{$componentbld}->{'file'}'>[view]</a><a target='config' href='config_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}&outputfile=$componentbldconf->{$componentbld}->{'file'}&ignoresect=init&sharedconf=$sharedconf&component_name=$componentbldconf->{$componentbld}->{'type'}'>[edit]</a><a href='remove_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[remove]</a></td></tr>";
+
+    print "<tr><td>$componentbldconf->{$componentbld}->{'type'}</td><td>$componentbldconf->{$componentbld}->{'output_token'}</td><td>$componentbldconf->{$componentbld}->{'name'}</td><td>$componentbldconf->{$componentbld}->{'user'}</td><td>".localtime($componentbldconf->{$componentbld}->{'date'})."</td><td><a href='add_component.cgi?xmltemplate=$xmltemplate&node=$node&location=$location&conf=$componentbldconf->{$componentbld}->{'file'}&name=$componentbldconf->{$componentbld}->{'name'}&component_name=$componentbldconf->{$componentbld}->{'type'}&pipeline_id=$pipeline_id'>[add]</a><a  target='config' href='view_formatted_ini_source.cgi?file=$componentbldconf->{$componentbld}->{'file'}'>[view]</a><a target='config' href='config_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}&outputfile=$componentbldconf->{$componentbld}->{'file'}&ignoresect=init&sharedconf=$sharedconf&component_name=$componentbldconf->{$componentbld}->{'type'}'>[edit]</a><a href='remove_component.cgi?conffile=$componentbldconf->{$componentbld}->{'file'}'>[remove]</a></td></tr>";
 }
 print "</table>";
 print "<h3>Pipelines</h3>";
@@ -157,12 +159,13 @@ sub get_component_blds {
             my $file = "$dir/$componentdir/$pipelinedir/component.conf.bld.ini";
 
             if (-e $file) {
-                my($type,$date,$user,$name) = &get_component_bld_info($file);
+                my($type,$date,$user,$name, $output_token) = &get_component_bld_info($file);
                 $conffiles->{$file}->{'date'} = $date;
                 $conffiles->{$file}->{'user'} = $user;
                 $conffiles->{$file}->{'type'} = $type;
                 $conffiles->{$file}->{'file'} = $file;
                 $conffiles->{$file}->{'name'} = $name;
+                $conffiles->{$file}->{'output_token'} = $output_token;
             }
         }
     }
@@ -205,18 +208,46 @@ sub get_component_bld_info{
     my($file) = @_;
     my $cfg = new Config::IniFiles(-file => $file);
     my $fullname;
+	my $output_token;
+
+
+
+
     if($cfg){
-    my @workflows = $cfg->GroupMembers("workflowdocs");
-    foreach my $workflow (@workflows){
-        my $wfname = $cfg->val($workflow,'$;NAME$;');
-        $wfname =~ s/\s//g;
-        $fullname = $wfname;
-    }
+
+
+		my @workflows = $cfg->GroupMembers("workflowdocs");
+		
+	
+		foreach my $workflow (@workflows){
+			
+			my $wfname = $cfg->val($workflow,'$;NAME$;');
+			$wfname =~ s/\s//g;
+			$fullname = $wfname;
+			
+			
+			
+		}
+		
+		
+		my @outputs = $cfg->GroupMembers("output");
+		
+		foreach my $output (@outputs){
+			
+			$output_token = $cfg->val($output,'$;OUTPUT_TOKEN$;');
+			$output_token =~ s/\s//g;
+			
+		}
+		
+		
+
+
     }
     my $st = stat($file);
     my ($name) = fileparse($file); 
     my ($user) = getpwuid($st->uid);
-    return ($fullname,$st->mtime,$user,$name);
+
+    return ($fullname,$st->mtime,$user,$name, $output_token);
 }
 
 sub get_pipeline_bld_info{

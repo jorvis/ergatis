@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
+
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 =head1  NAME 
 
@@ -46,20 +49,25 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use English;
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use File::Basename;
 use File::Path;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
+              'analysis_id|a=s',
               'btab_dir|b=s', 
               'btab_file|f=s',
               'bsml_dir|d=s', ## deprecated.  keeping for backward compat (for now)
@@ -104,6 +112,12 @@ my $doc = new BSML::BsmlBuilder();
 #generate lookups
 $doc->makeCurrentDocument();
 parse_blast_btabs($files);
+
+## add the analysis element
+$doc->createAndAddAnalysis(
+                            id => $options{analysis_id},
+                            sourcename => $options{'output'},
+                          );
 
 $doc->write($options{'output'});
 
@@ -231,6 +245,11 @@ sub check_parameters{
     exit 5;
     } 
 
+    ## handle some defaults
+    if (! $options{analysis_id}) {
+        $options{analysis_id} = 'unknown_analysis';
+    }
+
     return 1;
 }
 
@@ -283,10 +302,12 @@ sub createAndAddBtabLine {
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
         $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
+        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
         $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", '', 'aa', $args{'class'} );
+        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
 
     ## see if the dbmatch_header format is recognized.  if so, add some cross-references
@@ -296,6 +317,8 @@ sub createAndAddBtabLine {
     
     $alignment_pair = $doc->returnBsmlSeqPairAlignmentR( $doc->addBsmlSeqPairAlignment() );
     
+    ## to the alignment pair, add a Link to the analysis
+    $alignment_pair->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
 
     $alignment_pair->setattr( 'refseq', "$args{'query_name'}" )                                 if (defined ($args{'query_name'}));
     $alignment_pair->setattr( 'compseq', "$args{'dbmatch_accession'}" )                         if (defined ($args{'dbmatch_accession'}));

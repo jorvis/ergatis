@@ -66,11 +66,16 @@ Calling the script name with NO flags/options or --help will display the syntax 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use English;
-use BSML::BsmlBuilder;
-use BSML::BsmlParserTwig;
 use File::Basename;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 

@@ -80,7 +80,10 @@ use strict;
 use PEffect::PEffectXML;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BsmlCGCReader;
-use BSML::BsmlParserTwig;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 use File::Basename;
 use Pod::Usage;
 use File::Path;

@@ -40,13 +40,18 @@
 <!--Postprocessing-->
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge bsml list files</name>
-        <configMapId>merge_bsml_list_files</configMapId>
+        <name>create_bsml_list</name>
+        <configMapId>create_bsml_list</configMapId>
     </command>
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge raw list files</name>
-        <configMapId>merge_raw_list_files</configMapId>
+        <name>create_fasta_list</name>
+        <configMapId>create_fasta_list</configMapId>
+    </command>
+    <command>
+        <type>RunUnixCommand</type>
+        <name>create_raw_list</name>
+        <configMapId>create_raw_list</configMapId>
     </command>
      </commandSet>
 </commandSetRoot>

@@ -1,8 +1,12 @@
 #! /local/perl/bin/perl
 
 use strict;
-use BSML::BsmlParserSerialSearch;
-use BSML::BsmlReader;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
+    import BSML::BsmlReader;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
+}
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
@@ -21,7 +25,7 @@ my $Prot = {};
 # set up a serial parser to parse sequence elements, bypassing feature tables for 
 # efficiency.
 
-my $seqParser = new BSML::BsmlParserSerialSearch( ReadFeatureTables => 0, SequenceCallBack => \&createProteinLookup);
+my $seqParser = new BSML::BsmlParserSerialSearch( ReadFeatureTables => 0, SequenceCallBack => \&createPolypeptideLookup);
 
 #Get rid of trailing slashes in directory names
 
@@ -137,13 +141,13 @@ if( $cog){
     }
 }
 
-sub createProteinLookup
+sub createPolypeptideLookup
 {
     my $seqRef = shift;
 
-    # We're only interested in protein sequences for all-vs-all and pblast
+    # We're only interested in polypeptide sequences for all-vs-all and pblast
 
-    if( ($seqRef->returnattr( 'molecule' ) eq 'aa') || ($seqRef->returnattr('class') eq 'protein'))
+    if( ($seqRef->returnattr( 'molecule' ) eq 'aa') || ($seqRef->returnattr('class') eq 'polypeptide'))
     {
 	my $reader = new BSML::BsmlReader();
 	my $seq = '';

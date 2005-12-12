@@ -213,9 +213,16 @@ noncoding_exon                          exon
 polyA_signal_sequence                   polyA_signal_sequence
 primary_transcript                      transcript
 promoter                                promoter
+repeat_region                           repeat_region
+signal_peptide                          signal_peptide
 splice_site                             splice_site
+start_codon                             start_codon
+stop_codon                              stop_codon
+tandem_repeat                           repeat_region
 three_prime_UTR                         three_prime_UTR
 transcript                              transcript
 transcription_start_site                transcription_start_site
 transcription_end_site                  transcription_end_site
+transit_peptide                         transit_peptide
+tRNA                                    tRNA
 

@@ -102,25 +102,7 @@ sub parse_groups_xml {
     
     ## create the twig
     my $twig = XML::Twig->new( twig_roots => {
-#                                    'commandSet/startTime' => 
-#                                        sub {
-#                                              my ($t, $elt) = @_;
-#                                              $component_start_time = $elt->text();
-#                                              #print "            <div>start: $component_start_time</div>\n";
-#                                        },
-#                                    'commandSet/endTime'   => 
-#                                        sub {
-#                                              my ($t, $elt) = @_;
-#                                              $component_end_time = $elt->text();
-#                                              #print "            <div>end: $component_end_time</div>\n";
-#                                        },
-#                                    'commandSet/state'     => 
-#                                        sub {
-#                                              my ($t, $elt) = @_;
-#                                              $component_state = $elt->text();
-#                                              #print "            <div>state: $component_state</div>\n";
-#                                        },
-                                    'command'              => \&process_subflowgroup,
+                                    'command' => \&process_subflowgroup,
                                }
                              );
     $twig->parsefile($filename);
@@ -173,6 +155,34 @@ sub process_subflowgroup {
     }
     
     my ($start_time, $end_time, $runtime) = &time_info($command);
+
+    my $ret_value = 'unknown';
+    my $message = '';
+    
+    ## if there is a status and a message, grab it
+    if ( $command->first_child('status') ) {
+        if ( $command->first_child('status')->first_child('retValue') ) {
+            $ret_value = $command->first_child('status')->first_child('retValue')->text;
+        }
+        
+        if ( $command->first_child('status')->first_child('message') ) {
+            $message = $command->first_child('status')->first_child('message')->text;
+        }
+        
+        ## don't include 'command finished' messages
+        $message =~ s/command finished//;
+        
+        if ( $message && $ret_value != 0) {
+            $message = <<messageBLOCK;
+        <div class='messageblock'>
+            return value: $ret_value<br>
+            message: $message
+        </div>
+messageBLOCK
+        } else {
+            $message = '';
+        }
+    }
     
     print <<SubflowGroupBar;
         <div id='${name}_bar' class='subflowgroupbar'>
@@ -185,6 +195,7 @@ sub process_subflowgroup {
                 <span class='infolabel' id='${name}_infolabel' onclick='toggle_group_info("$name")'>show group info</span>
             </div>
         </div>
+$message
         <div id='${name}_info' class='subflowinfo' style='display: none;'>
             <table>
                 <tr><th>workflow id:</th><td>$workflow_id</td></tr>

@@ -11,7 +11,8 @@ USAGE: bsml2legacydb.pl
 		--input_list|I=/path/to/bsml_file_list
 		--database|d=aa1
 	[
-		--prog_name|p=program_name
+		--prog_name|p=alt_program_name
+        --db_name|n=alt_db_name
 		--debug|D=4
 		--log|l=/path/to/log_file.log
 	]
@@ -28,7 +29,11 @@ B<--database,-d>
 	Database where data will be loaded to
 
 B<--prog_name,-p>
-	Program name used to generate BSML data
+	Program name used to generate BSML data.  (if you want to overwrite the autodetection.)
+
+B<--db_name,-n>
+	Name of the database searched (for alignment data, if you want to over-ride the value
+    found within the compxref attribute)
 
 B<--debug,-D>
 	Debug level.  Use a large number to turn on verbose debugging
@@ -69,7 +74,10 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+}
 use DBI;
 use XML::Twig;
 
@@ -87,6 +95,7 @@ my $logger	= undef;
 my %id2title	= ();
 my $loader	= $& if $0 =~ /[\w\.\d]+$/;
 my $prog_name	= undef;
+my $db_name = undef;
 my %latest_ids	= ();
 
 sub parse_opts;
@@ -109,7 +118,7 @@ sub cleanup_records;
 sub get_latest_id;
 
 GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
-	   "server|s=s", "database|d=s", "prog_name|p=s",
+	   "server|s=s", "database|d=s", "prog_name|p=s", "db_name|n=s",
 	   "debug|D=i", "log|l=s", "help|h");
 parse_opts;
 
@@ -143,6 +152,9 @@ sub parse_opts
 		}
 		elsif ($key eq "prog_name") {
 			$prog_name = $val;
+		}
+		elsif ($key eq "db_name") {
+			$db_name = $val;
 		}
 		elsif ($key eq "debug") {
 			$debug = $val;
@@ -186,9 +198,9 @@ sub process_files
         ##  is compressed.
         my $ifh;
         if ($file =~ /\.(gz|gzip)$/) {
-            open ($ifh, "<:gzip", $file)                       || $logger->logdie("can't read zipped input file '$file': $!");
+            open ($ifh, "<:gzip", $file) || $logger->logdie("can't read zipped input file '$file': $!");
         } else {
-            open ($ifh, "<$file")                     || $logger->logdie("can't read input file $file: $!");
+            open ($ifh, "<$file") || $logger->logdie("can't read input file $file: $!");
         }
         
 		my $twig = new XML::Twig
@@ -224,8 +236,9 @@ sub process_results
 	my $feat_link_insert_stmt = prepare_feat_link_insert_stmt;
 	foreach my $gene_coords (@genes) {
 		++$$model_id;
-		my $model_feat_name = "$asm_id.m$$model_id";
-#		print "$model_feat_name\n";
+
+        ## zero-pad the numeric portion of the model_id to 6 places
+		my $model_feat_name = "$asm_id.m" . sprintf("%06d", $$model_id);
 		my ($model_pos5p, $model_pos3p);
 		if ($$gene_coords[0][0] < $$gene_coords[0][1]) {
 			$model_pos5p = $$gene_coords[0][0];
@@ -235,7 +248,6 @@ sub process_results
 			$model_pos5p = $$gene_coords[$#$gene_coords][0];
 			$model_pos3p = $$gene_coords[0][1];
 		}
-#		print "[$model_pos5p\t$model_pos3p]\n";
 
         $logger->debug("asm_feature_insert_stmt ('model', $loader, $model_pos5p, $model_pos3p, $model_feat_name, $asm_id) ") if $logger->is_debug;
 
@@ -252,10 +264,7 @@ sub process_results
 		foreach my $exon_coords (@{$gene_coords}) {
 			++$$exon_id;
 			my $exon_feat_name = "$asm_id.e$$exon_id";
-			my ($exon_pos5p, $exon_pos3p) =
-				($$exon_coords[0], $$exon_coords[1]);
-#			print "$exon_feat_name\n";
-#			print "$exon_pos5p\t$exon_pos3p\n";
+			my ($exon_pos5p, $exon_pos3p) = ($$exon_coords[0], $$exon_coords[1]);
 
             $logger->debug("asm_feature_insert_stmt ($loader, $exon_pos5p, $exon_pos3p, $exon_feat_name, $asm_id) ") if $logger->is_debug;
 
@@ -275,14 +284,7 @@ sub process_results
 							$exon_feat_name);
 
 		}
-#		print "\n";
 	}
-
-#	my $stmt = $dbh->prepare("select feat_name, feat_type from asm_feature where asmbl_id=$asm_id");
-#	$stmt->execute;
-#	while ($_ = $stmt->fetchrow_arrayref) {
-#		print "$$_[0]\t$$_[1]\n";
-#	}
 }
 
 sub process_feat
@@ -290,7 +292,10 @@ sub process_feat
 	my ($twig, $feat) = @_;
 	my $id = $feat->att('id') or
 		$logger->logdie("Feature found with no id");
-	if ($feat->att('class') eq 'exon') {
+        
+    ## we're going to process CDS features as exons since we need
+    ##  the UTR regions excluded.
+	if ($feat->att('class') eq 'CDS') {
 		my $seq_int = $feat->first_child('Interval-loc') or
 			$logger->logdie("Feature $id has no Interval-loc");
 		$logger->logdie("Feature $id missing seq positions") if
@@ -305,7 +310,7 @@ sub process_feat
 		push @{$coords{$id}}, $start_pos, $end_pos;
 	}
 	else {
-		$logger->debug("Skipping feature $id [class is not exon]")
+		$logger->debug("Skipping feature $id [class is not CDS]")
 			if $logger->is_debug;
 	}
 	$twig->purge;
@@ -316,7 +321,9 @@ sub process_feat_group
 	my ($twig, $feat_group) = @_;
 	my @exon_coords = ();
 	foreach my $child ($feat_group->children('Feature-group-member')) {
-		if ($child->att('feature-type') eq 'exon') {
+        ## we're going to process CDS features as exons since we need
+        ##  the UTR regions excluded.
+		if ($child->att('feature-type') eq 'CDS') {
 			my $id = $child->att('featref') or
 				$logger->logdie("Feature-group-member has no " .
 						"featref");
@@ -336,8 +343,7 @@ sub process_feat_group
 	$twig->purge;
 }
 
-sub process_aln
-{
+sub process_aln {
 	my ($twig, $aln, $asm_id, $prog_name) = @_;
 	my $insert_stmt = prepare_evidence_insert_stmt;
 	my $total_score = 0;
@@ -351,9 +357,13 @@ sub process_aln
 		if !defined $aln->att('compseq');
 	my $subj_id = $id2title{$aln->att('compseq')} or
 		$logger->logdie("Cannot find id-title mapping for Sequence");
-	my $db_name = $1 if $aln->att('compxref') =~ /\/([\w\.\-]+):/ or
+                
+    if (! defined $db_name ) {
+        $db_name = $1 if $aln->att('compxref') =~ /\/([\w\.\-]+):/ or
 		$logger->logdie("Cannot extract compxref from " .
 				"Seq-pair-alignment");
+    }
+                
 	my $db_id = get_db_id($db_name);
 	my $chain_num = 0;
 	my $pct_id = 0;
@@ -391,7 +401,13 @@ sub process_aln
 				"from Seq-pair_run")
 			if !$chain_num or !$pct_id or !$pct_sim;
 		my $prog_tag = $prog_name =~ /aat_aa/ ? 'nap' : 'gap2';
-
+        
+        $logger->debug("executing evidence insert_stmt: $asm_id.intergenic, $prog_tag, " .
+				      "$subj_id, $query_start, $query_stop, " .
+				      "$subj_start, $subj_stop, $prog_name, " .
+				      "$pct_id, $pct_sim, $score, $db_id, " .
+				      "$score, $total_score, $chain_num") if $logger->is_debug();
+        
 		$insert_stmt->execute("$asm_id.intergenic", $prog_tag, 
 				      $subj_id, $query_start, $query_stop,
 				      $subj_start, $subj_stop, $prog_name,

@@ -75,15 +75,20 @@ the stop coordinates of each terminal CDS is extended 3bp to include the stop co
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
-use Papyrus::TempIdCreator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -140,7 +145,7 @@ while (<$ifh>) {
         $logger->debug("processing seq_id: $seq_id\n") if $logger->is_debug();
         
         ## create this sequence, an analysis link, and a feature table
-        $seq = $doc->createAndAddSequence($seq_id);
+        $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
         $seq->addBsmlLink('analysis', '#genie_analysis');
         $ft = $doc->createAndAddFeatureTable($seq);
         

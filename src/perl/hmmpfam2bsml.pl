@@ -69,27 +69,31 @@ appropriate titles in the BSML Analysis element.  If not passed, the default 'hm
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
               'search_method|m=s',
               'log|l=s',
               'debug=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -137,8 +141,8 @@ unless ($qry_id)        { $logger->logdie("Query sequence definition not found i
 
 ## add the query sequence file to the doc
 ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
-my $seq = $doc->createAndAddSequence($qry_id, $qry_id_orig, undef, 'aa', 'protein');
-   $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis");
+my $seq = $doc->createAndAddSequence($qry_id, $qry_id_orig, undef, 'aa', 'polypeptide');
+   $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
 
 ## for each model matched, create a Seq-pair-alignment and record the overall score and
 ## overall E-value
@@ -146,29 +150,31 @@ my %alignments;
 my ($model, $description, $score, $eval);
 while (<$ifh>) {
     ## datalines here look like this:
-    #   PF01582   TIR: TIR domain                               189.0    1.4e-53   1
-    if (/(\S+)\s+(.+?)\s+([0-9\.\-e]+)\s+([0-9\.\-e]+)\s+\d+/) {
+    # PF00933   Glyco_hydro_3: Glycosyl hydrolase family 3    320.7      3e-93   1
+    # PF01915   Glyco_hydro_3_C: Glycosyl hydrolase family    152.2    1.7e-42   1
+    # PF07691   PA14: PA14 domain                              25.5    0.00022   1
+    # TIGR02148 Fibro_Slime: fibro-slime domain               -33.6        1.1   1
+    # PF02014   Reeler: Reeler domain                         -46.3        5.9   1
+    # PF06325   PrmA: ribosomal protein L11 methyltransfera  -198.1        8.5   1
+    if (/^(\S+)\s+(.+?)\s+([0-9\.\-e]+)\s+([0-9\.\-e]+)\s+\d+\s*$/) {
         ($model, $description, $score, $eval) = ($1, $2, $3, $4);
 
         ## add this model sequence
-        my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'profile');
-        $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis");
+        my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'polypeptide');
+        $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
         
         $alignments{$model} = $doc->createAndAddSequencePairAlignment( refseq => $qry_id,
-                                                                       refxref => ":$qry_id",
                                                                        refstart => 0,
                                                                        #refend => $cols[2] - 1,
                                                                        #reflength => $cols[2],
-                                                                       method => $options{search_method},
                                                                        compseq => $model,
-                                                                       compxref => "$hmm_file:$model",
                                                                      );
+        ## add a link element inside this seq-pair-alignment
+        $alignments{$model}->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
         
         ## add the total_score and total_eval for this pair
         $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_score', $score);
         $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_e_value',  $eval);
-        
-
     }
 
     ## quit once we hit domain section
@@ -178,13 +184,26 @@ while (<$ifh>) {
 
 ## we should now be in the region where the domain hits are described.  We'll add Seq-pair-runs
 ##  to each of our Seq-pair-alignments here
+my $linectr=0;
+
 while (<$ifh>) {
+    chomp;
+
     ## these rows should look like this:
-    # PF02310     1/1      12   136 ..     1   142 []   -14.7      1.1
-    # PF01582     1/1      14   142 ..     1   150 []   189.0  1.4e-53
+    # PF00933     1/1      39   254 ..     1   243 []   320.7    3e-93
+    # PF01915     1/1     331   702 ..     1   308 []   152.2  1.7e-42
+    # PF02014     1/1     345   465 ..     1   150 []   -46.3      5.9
+    # PF07691     1/1     406   539 ..     1   178 []    25.5  0.00022
+    # TIGR02148   1/1     432   525 ..     1    92 []   -33.6      1.1
+    # PF06325     1/1     449   682 ..     1   312 []  -198.1      8.5
     my ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval);
-    if (/(\S+)\s+([0-9]+)\/([0-9]+)\s+(\d+)\s+(\d+).+(\d+)\s+(\d+).+([0-9\.\-e]+)\s+([0-9\.\-e]+)/) {
+    if (/^(\S+)\s+([0-9]+)\/([0-9]+)\s+(\d+)\s+(\d+).+(\d+)\s+(\d+).+?([0-9\.\-e]+)\s+([0-9\.\-e\+]+)\s*$/) {
+
+        $linectr++;
+
         ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+        print "got score $score, eval $eval on model $model\n";
+        
         
         my $run = $doc->createAndAddSequencePairRun(   alignment_pair => $alignments{$model},
                                                        runscore => $score,
@@ -201,8 +220,20 @@ while (<$ifh>) {
                                             domain_num => $domain_num,
                                             domain_of  => $domain_of
                                         );
+
+    } else {
+
+        ## Skip the headers and blank lines
+        next if (/^Model     Domain  seq-f seq-t    hmm-f hmm-t      score  E-value/);
+        next if (/^--------  ------- ----- -----    ----- -----      -----  -------/);
+        next if (/^\s*$/);
+        
+        ## do nothing if no matches were found
+        next if (/no hits above thresholds/);
+        
+        last if (/Alignments of top-scoring domains/);
+        die "Could not parse line number '$linectr': '$_'";
     }
-    
     ## quit once we've read the alignments section
     last if (/Alignments of top-scoring domains/);
 }

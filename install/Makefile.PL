@@ -3,11 +3,8 @@ require ExtUtils::Manifest;
 require "perl2wrapper_ergatis.pl";
 use strict;
 
-if(-e "MANIFEST"){}
-else{
-    ExtUtils::Manifest::mkmanifest();
-  }
-
+## always remake the MANIFEST
+ExtUtils::Manifest::mkmanifest();
 
 my $workflowdocsdir = '';
 my $schemadocsdir = '';
@@ -57,7 +54,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_na adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml clustalw cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe promer region repeatmasker snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml clustalw cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -85,6 +82,14 @@ aat_aa	:
 	@install workflow/aat_aa/aat_aa_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/aat_aa/aat_aaconf.ini $(WORKFLOW_DOCS_DIR)
 
+aat_aa_masked	:
+	@echo "Installing aat_aa_masked workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/aat_aa_masked/aat_aa_masked-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_aa_masked/aat_aa_masked-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_aa_masked/aat_aa_masked.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_aa_masked/aat_aa_masked_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/aat_aa_masked/aat_aa_maskedconf.ini $(WORKFLOW_DOCS_DIR)
+
 aat_na	:
 	@echo "Installing aat_na workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/aat_na/aat_na-master.ini $(WORKFLOW_DOCS_DIR)
@@ -92,6 +97,14 @@ aat_na	:
 	@install workflow/aat_na/aat_na.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/aat_na/aat_na_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/aat_na/aat_naconf.ini $(WORKFLOW_DOCS_DIR)
+
+aat_na_masked	:
+	@echo "Installing aat_na_masked workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/aat_na_masked/aat_na_masked-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_na_masked/aat_na_masked-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_na_masked/aat_na_masked.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/aat_na_masked/aat_na_masked_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/aat_na_masked/aat_na_maskedconf.ini $(WORKFLOW_DOCS_DIR)
 
 adjust_bsml_coordinates	:
 	@echo "Installing adjust_bsml_coordinates workflows in $(WORKFLOW_DOCS_DIR)"
@@ -212,6 +225,14 @@ genemark  :
 	@install workflow/genemark/genemark.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/genemark/genemark_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/genemark/genemarkconf.ini $(WORKFLOW_DOCS_DIR)  
+
+genewise_best_loc	:
+	@echo "Installing genewise_best_loc workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/genewise_best_loc/genewise_best_loc-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genewise_best_loc/genewise_best_loc-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/genewise_best_loc/genewise_best_loc.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/genewise_best_loc/genewise_best_loc_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/genewise_best_loc/genewise_best_locconf.ini $(WORKFLOW_DOCS_DIR)
 
 genezilla  :
 	@echo "Installing genezilla workflows in $(WORKFLOW_DOCS_DIR)"
@@ -379,6 +400,14 @@ promer	:
 	@install workflow/promer/promer_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/promer/promerconf.ini $(WORKFLOW_DOCS_DIR)  
 
+predotar	:
+	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/predotar/predotar-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/predotar/predotar-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/predotar/predotar.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/predotar/predotar_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/predotar/predotarconf.ini $(WORKFLOW_DOCS_DIR)  
+
 region	:
 	@echo "Installing region workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/region/region-master.ini $(WORKFLOW_DOCS_DIR)
@@ -394,6 +423,14 @@ repeatmasker :
 	@install workflow/repeatmasker/repeatmasker.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/repeatmasker/repeatmasker_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/repeatmasker/repeatmaskerconf.ini $(WORKFLOW_DOCS_DIR)
+
+signalp	:
+	@echo "Installing signalp workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/signalp/signalp-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/signalp/signalp-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/signalp/signalp.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/signalp/signalp_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/signalp/signalpconf.ini $(WORKFLOW_DOCS_DIR)  
 
 snps	:
 	@echo "Installing snps workflows in $(WORKFLOW_DOCS_DIR)"

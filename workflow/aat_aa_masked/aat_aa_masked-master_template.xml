@@ -40,18 +40,18 @@
 <!--Postprocessing-->
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge bsml list files</name>
-        <configMapId>merge_bsml_list_files</configMapId>
+        <name>create bsml list</name>
+        <configMapId>create_bsml_list</configMapId>
     </command>
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge btab list files</name>
-        <configMapId>merge_btab_list_files</configMapId>
+        <name>create btab list</name>
+        <configMapId>create_btab_list</configMapId>
     </command>
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge nap list files</name>
-        <configMapId>merge_nap_list_files</configMapId>
+        <name>create nap list</name>
+        <configMapId>create_nap_list</configMapId>
     </command>
 <!--Checksum creation-->
      </commandSet>

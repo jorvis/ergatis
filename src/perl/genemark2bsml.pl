@@ -5,7 +5,10 @@ use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
 use IO::File;
 
-use GenePredictionUtils::GeneMarkBsmlGenerator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/GenePredictionUtils/GeneMarkBsmlGenerator.pm';
+    import GenePredictionUtils::GeneMarkBsmlGenerator;
+}
 
 use constant
 {

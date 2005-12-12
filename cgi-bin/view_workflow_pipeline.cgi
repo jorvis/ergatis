@@ -91,8 +91,7 @@ print <<pipeLINEsummary;
             <a href='./run_wf.cgi?instancexml=$file'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
             <a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
             <a href='./kill_wf.cgi?instancexml=$file'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
-            <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
-            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
         </div>
     </div>
 </div>
@@ -145,7 +144,7 @@ sub parseCommandSet {
     <h1><span><b>component</b>: $name_token</span></h1>
     <li>state: wait for update</li>
 </ul>
-<script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token', updateComponent, '$name_token', '$filebased_subflow');</script>
+<script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token&parent_pipeline=$xml_input', updateComponent, '$name_token', '$filebased_subflow');</script>
 ComponeNTBlock
 
     ## configMapId is just numeric when we have a serial or parallel command set grouping
@@ -212,14 +211,13 @@ sub print_header {
             margin: 0px;
             padding: 0px;
             background-color: rgb(255,255,255);
-            background-image: url('/ergatis/background_main.png');
-            background-repeat: repeat-x;
         }
         
         #bannertop {
             height: 36px;
             margin: 0px;
             padding: 0px;
+            background-color: rgb(76,109,143);
         }
         
         #bannerbottom {
@@ -339,7 +337,10 @@ sub print_header {
             // change the countdown label to show we've started the update
             document.getElementById(ul_id + "_timer_label").innerHTML = "updating ...";
 
-            sendComponentUpdateRequest('./component_summary.cgi?pipeline=' + subflow + '&ul_id=' + ul_id, updateComponent, ul_id, subflow);
+            sendComponentUpdateRequest('./component_summary.cgi?pipeline=' + subflow + 
+                                       '&ul_id=' + ul_id +
+                                       '&parent_pipeline=$xml_input',
+                                       updateComponent, ul_id, subflow);
         }
         
         function startAutoUpdate (subflow, ul_id, updateinterval) {

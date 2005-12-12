@@ -37,21 +37,21 @@
           <configMapId>subflow1</configMapId>
        </commandSet>
 <!--Postprocessing-->
-    <command>
-        <type>RunUnixCommand</type>
-        <name>create bsml list</name>
-        <configMapId>create_bsml_list</configMapId>
-    </command>
-    <command>
-        <type>RunUnixCommand</type>
-        <name>create raw list</name>
-        <configMapId>create_raw_list</configMapId>
-    </command>
-    <command>
-        <type>RunUnixCommand</type>
-        <name>create btab list</name>
-        <configMapId>create_btab_list</configMapId>
-    </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create bsml list</name>
+            <configMapId>create_bsml_list</configMapId>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create raw list</name>
+            <configMapId>create_raw_list</configMapId>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create btab list</name>
+            <configMapId>create_btab_list</configMapId>
+        </command>
 <!--Checksum creation-->
      </commandSet>
 </commandSetRoot>

@@ -3,7 +3,10 @@ package Fasta::FastaIndexedReader;
 use strict;
 use warnings;
 
-use Sequence::Sequence;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Sequence/Sequence.pm';
+    import Sequence::Sequence;
+}
 
 use IO::File;
 

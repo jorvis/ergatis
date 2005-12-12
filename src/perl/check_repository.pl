@@ -29,8 +29,12 @@ B<--skip-workflows> [OPTIONAL] skip the workflow execution tests
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Data::Dumper;
-use BSML::BsmlParserSerialSearch;
-use BSML::BsmlReader;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
+    import BSML::BsmlReader;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
+}
 use Pod::Usage;
 
 my $ref_parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&sequenceCheck );

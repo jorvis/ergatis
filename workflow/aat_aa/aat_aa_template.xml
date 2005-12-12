@@ -92,13 +92,13 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <configMapId>compress_bsml</configMapId>
-            <name>compress_bsml</name>
+            <configMapId>dtd_validation</configMapId>
+            <name>DTD validation</name>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <configMapId>dtd_validation</configMapId>
-            <name>DTD validation</name>
+            <configMapId>compress_bsml</configMapId>
+            <name>compress_bsml</name>
         </command>
     </commandSet>
 </commandSetRoot>

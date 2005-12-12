@@ -8,10 +8,6 @@ package Workflow::Run;
 
 Run.pm - A module for building workflow instances
 
-=head1 VERSION
-
-This document refers to version $Name$ of frontend.cgi, $Revision$. 
-Last modified on $Date$
 
 =head1 SYNOPSIS
 
@@ -28,7 +24,10 @@ Last modified on $Date$
 
 
 use strict;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+}
 use Data::Dumper;
 
 =item new
@@ -108,10 +107,14 @@ sub CreateWorkflow{
                 HMM_SCRIPTS     => '/usr/local/devel/ANNOTATION/hmm/bin',
                 SYBASE          => '/usr/local/packages/sybase',
                 
+                ## for augustus
                 AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
             
-                # for genewise
+                ## for genewise
                 WISECONFIGDIR => '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg',
+
+                ## for tRNAscan-SE
+                ANNOT_DEVEL => $ENV{ANNOT_DEVEL},
 
                 ## should workflow take care of this?
                 SGE_ROOT        => '/local/n1ge',
@@ -169,10 +172,15 @@ sub RunWorkflow{
                 ## next two needed by hmmpfam2htab
                 HMM_SCRIPTS     => '/usr/local/devel/ANNOTATION/hmm/bin',
                 SYBASE          => '/usr/local/packages/sybase',
+
+                ## for augustus
                 AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
 
                 # for genewise
                 WISECONFIGDIR => '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg',
+                
+                ## for tRNAscan-SE
+                ANNOT_DEVEL => $ENV{ANNOT_DEVEL},
                 
                 ## should workflow take care of this?
                 SGE_ROOT        => '/local/n1ge',

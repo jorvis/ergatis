@@ -59,7 +59,10 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
-use BSML::BsmlBuilder;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+}
 
 my %options = ();
 my $results = GetOptions( \%options, 'tilingPath|t=s', 'bsml_repository_path|b=s', 'outFile|o=s', 'help|h' ) || pod2usage();

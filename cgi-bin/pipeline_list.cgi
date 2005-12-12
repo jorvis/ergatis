@@ -50,7 +50,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $is_instance = 0;
     
     
-    ## if just the pipeline.xml.instance exists, process it
+    ## if the pipeline.xml.instance exists, just process it
     if (-e "$pipeline_file.instance" ) {
         $pipeline_file .= '.instance';
         $is_instance = 1; 
@@ -69,7 +69,9 @@ foreach my $pipeline_id ( readdir $rdh ) {
 
     my $commandSetRoot = $twig->root;
     my $commandSet = $commandSetRoot->first_child('commandSet');
-
+    
+    next if (! $commandSet );
+    
     if ( $commandSet->first_child('state') ) {
         $state  = $commandSet->first_child('state')->text();
     }
@@ -86,7 +88,10 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $view_link = "./view_workflow_pipeline.cgi?&instance=$pipeline_file";
     my $edit_link = "./show_pipeline.cgi?xmltemplate=$pipeline_file&edit=1";
 
+    ## this is done as a new twig parse since elements can be nested
+    ## at any level.
     my %components = &component_count_hash( $pipeline_file );
+    
     my $component_aref;
     foreach my $component (sort keys %components) {
         $component_count += $components{$component};
@@ -131,8 +136,15 @@ sub component_count_hash {
     my $t = XML::Twig->new( twig_roots => {
                                 'commandSet/configMapId' => sub {
                                                                     my ($t, $elt) = @_;
-                                                                    ## do stuff
+
                                                                     if ($elt->text() =~ /^component_(.+?)\./) {
+                                                                        $components{$1}++;
+                                                                        
+                                                                    ## this part is for those older components that didn't
+                                                                    ## yet have output_token portions within the configMapId
+                                                                    ## this will look funny and fail grouping on some of the
+                                                                    ## displays, but it's better than showing no components at all.
+                                                                    } elsif ($elt->text() =~ /^component_(.+)/) {
                                                                         $components{$1}++;
                                                                     }
                                                                 },

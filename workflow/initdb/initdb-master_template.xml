@@ -13,6 +13,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>Create cache dir space</name>
+         <configMapId>create_cache_dir</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>create_dupdir</name>
           <configMapId>create_dupdir</configMapId>
         </command>
@@ -76,6 +81,11 @@
           <name>Create output scratch</name>
           <configMapId>create_output_scratch</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create relationship aux</name>
+          <configMapId>create_rel_aux_scratch</configMapId>
+        </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
         <command>    
@@ -98,11 +108,6 @@
 <!-- TIGR_roles ontology -->
         <command>    
             <type>RunUnixCommand</type>
-            <name>load_contact_table</name>
-            <configMapId>load_contact_table</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <name>load_pub_table</name>
             <configMapId>load_pub_table</configMapId>
         </command>
@@ -115,6 +120,16 @@
             <type>RunUnixCommand</type>
             <name>Load Relation Typedef Ontology</name>
             <configMapId>load_rel_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process Auxiliary Relation Typedef Ontology</name>
+            <configMapId>parse_aux_rel_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load Auxiliary Relation Typedef Ontology</name>
+            <configMapId>load_aux_rel_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
@@ -640,11 +655,6 @@
           </command>
           <command>    
               <type>RunUnixCommand</type>
-              <name>validate_author</name>
-              <configMapId>validate_author</configMapId>
-          </command>
-          <command>    
-              <type>RunUnixCommand</type>
               <name>validate_pub</name>
               <configMapId>validate_pub</configMapId>
           </command>
@@ -670,8 +680,8 @@
           </command>
           <command>    
               <type>RunUnixCommand</type>
-              <name>validate_pub_author</name>
-              <configMapId>validate_pub_author</configMapId>
+              <name>validate_pubauthor</name>
+              <configMapId>validate_pubauthor</configMapId>
           </command>
           <command>    
               <type>RunUnixCommand</type>
@@ -737,6 +747,24 @@
               <type>RunUnixCommand</type>
               <name>validate_feature_cvterm</name>
               <configMapId>validate_feature_cvterm</configMapId>
+          </command>
+<!--
+      editor:  sundaram@tigr.org
+      date:    2005-10-09
+      bgzcase: 2152
+      URL:     http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2152
+      comment: New chado schema version chado-v1r3b4 introduces new tables: 
+               feature_cvterm_dbxref, feature_cvterm_pub
+-->
+          <command>    
+              <type>RunUnixCommand</type>
+              <name>validate_feature_cvterm_dbxref</name>
+              <configMapId>validate_feature_cvterm_dbxref</configMapId>
+          </command>
+          <command>    
+              <type>RunUnixCommand</type>
+              <name>validate_feature_cvterm_pub</name>
+              <configMapId>validate_feature_cvterm_pub</configMapId>
           </command>
           <command>    
               <type>RunUnixCommand</type>
@@ -858,11 +886,6 @@
               <type>RunUnixCommand</type>
               <name>validate_foreign_constraints_pub_dbxref</name>
               <configMapId>validate_foreign_constraints_pub_dbxref</configMapId>
-          </command>
-          <command>    
-              <type>RunUnixCommand</type>
-              <name>validate_foreign_constraints_author</name>
-              <configMapId>validate_foreign_constraints_author</configMapId>
           </command>
           <command>    
               <type>RunUnixCommand</type>

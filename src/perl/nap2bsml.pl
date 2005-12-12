@@ -59,14 +59,18 @@ it will be overwritten.
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -128,15 +132,15 @@ while (<$ifh>) {
     ## has this query sequence been added to the doc yet?
     if (! exists $seqs_found{$qry_id}) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'assembly');
-        $seq->addBsmlLink('analysis', '#aat_aa_analysis');
+        $seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
         $seqs_found{$qry_id} = 1;
     }
     
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
-        my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'aa', 'protein');
+        my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'aa', 'polypeptide');
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
-        $seq->addBsmlLink('analysis', '#aat_aa_analysis');
+        $seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
         $seqs_found{$sbj_id} = 1;
     }
     
@@ -144,7 +148,7 @@ while (<$ifh>) {
     
     ## if this combination doesn't exist yet, create its Seq-pair-alignment
     if (! exists $chains{$chainID}) {
-        ## skipped attributes here are complength, compstart, compend and method
+        ## skipped attributes here are complength, compstart, compend, compxref, refxref and method
         $chains{$chainID} = $doc->createAndAddSequencePairAlignment( refseq => $qry_id,
                                                                      refxref => ":$qry_id",
                                                                      refstart => 0,
@@ -152,7 +156,9 @@ while (<$ifh>) {
                                                                      reflength => $cols[2],
                                                                      compseq => $sbj_id,
                                                                      compxref => "$cols[4]:$sbj_id",
+                                                                     class => 'match',
                                                                    );
+        $chains{$chainID}->addBsmlLink('analysis', '#aat_aa_analysis', 'computed_by');
 
         ## add the total_score (will be the same for each matching segment)
         $doc->createAndAddBsmlAttribute($chains{$chainID}, 'total_score', $cols[18]);
@@ -177,7 +183,7 @@ while (<$ifh>) {
 }
 
 ## add the analysis element
-$doc->createAndAddAnalysis(
+my $analysis = $doc->createAndAddAnalysis(
                             id => 'aat_aa_analysis',
                             sourcename => $options{'output'},
                           );

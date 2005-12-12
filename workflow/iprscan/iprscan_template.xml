@@ -7,23 +7,8 @@
         <configMapId>empty</configMapId>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_group_output_dir</configMapId>
-            <name>create_group_output_dir</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_group_tmp_dir</configMapId>
-            <name>create_group_tmp_dir</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>blastprodom</configMapId>
             <name>blastprodom</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_blastprodom_list</configMapId>
-            <name>create_blastprodom_list</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
@@ -32,18 +17,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_coils_list</configMapId>
-            <name>create_coils_list</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>hmmpir</configMapId>
             <name>hmmpir</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_hmmpir_list</configMapId>
-            <name>create_hmmpir_list</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
@@ -52,18 +27,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_hmmpfam_list</configMapId>
-            <name>create_hmmpfam_list</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>hmmsmart</configMapId>
             <name>hmmsmart</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_hmmsmart_list</configMapId>
-            <name>create_hmmsmart_list</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
@@ -72,18 +37,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_hmmtigr_list</configMapId>
-            <name>create_hmmtigr_list</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>fprintscan</configMapId>
             <name>fprintscan</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_fprintscan_list</configMapId>
-            <name>create_fprintscan_list</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
@@ -92,18 +47,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_scanregexp_list</configMapId>
-            <name>create_scanregexp_list</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>profilescan</configMapId>
             <name>profilescan</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_profilescan_list</configMapId>
-            <name>create_profilescan_list</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
@@ -112,18 +57,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_superfamily_list</configMapId>
-            <name>create_superfamily_list</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>seg</configMapId>
             <name>seg</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_seg_list</configMapId>
-            <name>create_seg_list</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
@@ -132,20 +67,15 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_raw_list</configMapId>
-            <name>create_raw_list</name>
-        </command>
-<!--
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>iprscanxml2bsml</configMapId>
-            <name>iprscanxml2bsml</name>
+            <configMapId>iprscan2bsml</configMapId>
+            <name>iprscan2bsml</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
         </command>
+<!--
         <command>
             <type>RunUnixCommand</type>
             <configMapId>dtd_validation</configMapId>

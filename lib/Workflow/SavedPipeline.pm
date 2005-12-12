@@ -79,7 +79,10 @@ use Config::IniFiles;
 use Cwd;
 use File::Basename;
 use File::Copy;
-use Workflow::IdGenerator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/IdGenerator.pm';
+    import Workflow::IdGenerator;
+}
 use XML::Twig;
 
 

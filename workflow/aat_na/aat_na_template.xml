@@ -32,11 +32,6 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>create_gap2_list</configMapId>
-            <name>create_gap2_list</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
             <configMapId>remove_raw_dds_output</configMapId>
             <name>remove_raw_dds_output</name>
         </command>
@@ -60,11 +55,6 @@
             <configMapId>touch_btab</configMapId>
             <name>touch_btab</name>
         </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_btab_list</configMapId>
-            <name>create_btab_list</name>
-        </command>
         <command>
             <type>RunUnixCommand</type>
             <configMapId>gap22bsml</configMapId>
@@ -87,18 +77,13 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <configMapId>compress_bsml</configMapId>
-            <name>compress_bsml</name>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>create_bsml_list</configMapId>
-            <name>create_bsml_list</name>
+            <configMapId>dtd_validation</configMapId>
+            <name>DTD validation</name>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <configMapId>dtd_validation</configMapId>
-            <name>DTD validation</name>
+            <configMapId>compress_bsml</configMapId>
+            <name>compress_bsml</name>
         </command>
     </commandSet>
 </commandSetRoot>

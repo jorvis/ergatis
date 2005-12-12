@@ -58,9 +58,14 @@ Calling the script name with NO flags/options or --help will display the syntax 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Workflow::Logger;
-use BSML::BsmlParserSerialSearch;
-use BSML::BsmlReader;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
+    import BSML::BsmlReader;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
+}
 
 my %options = ();
 my $results = GetOptions( \%options, 
@@ -88,11 +93,11 @@ if( $options{'help'} ){
 
 #MAIN HERE
 
-# associative array to translate cds identifiers to protein ids.
+# associative array to translate cds identifiers to polypeptide ids.
 my $cds2Prot = {};
 
 # The alignment parser handles the pairwise alignments encoded in the search directory. The feature parser
-# creates a lookup table mapping protein sequence identifiers to their genome. 
+# creates a lookup table mapping polypeptide sequence identifiers to their genome. 
 
 my $alnParser = new BSML::BsmlParserSerialSearch( AlignmentCallBack => \&alignmentHandler );
 my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureHandler, GenomeCallBack => \&genomeHandler );
@@ -129,11 +134,11 @@ if( $options{'bsmlJaccardList'} && $options{'bsmlJaccardList'} ne "" )
 }
 
 
-# protein sequence identifer to genome mapping 
+# polypeptide sequence identifer to genome mapping 
 my $geneGenomeMap = {};
 my $genome = '';
 
-# loop through the documents in the model directory to create the protein genome map
+# loop through the documents in the model directory to create the polypeptide genome map
 
 foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlModelList'})}){
     $logger->debug("Parsing genome file $bsmlFile") if($logger->is_debug());
@@ -238,7 +243,7 @@ sub alignmentHandler
     my $refseq = $aln->returnattr( 'refseq' );
     my $compseq = $aln->returnattr( 'compseq' );
 
-    # if refseq is a CDS identifier, translate it to a protein id. 
+    # if refseq is a CDS identifier, translate it to a polypeptide id. 
 
     if( my $Trefseq = $cds2Prot->{$refseq} )
     {
@@ -380,7 +385,7 @@ sub featureHandler
 		$protId = $link->{'href'};
 		$protId =~ s/#//;
 
-		$logger->debug("Adding protein $protId to protein lookup with genome $genome");
+		$logger->debug("Adding polypeptide $protId to polypeptide lookup with genome $genome");
 		$logger->debug("Adding CDS $cdsId $protId to cds lookup with protiein $protId");
 
 		$cds2Prot->{$cdsId} = $protId;
@@ -390,10 +395,10 @@ sub featureHandler
 	    }
 	}
     }
-    elsif( $feature->returnattr('class') eq 'protein')
+    elsif( $feature->returnattr('class') eq 'polypeptide')
     {
 	my $protId = $feature->returnattr('id');
-	$logger->debug("Adding protein $protId to protein lookup with genome $genome");
+	$logger->debug("Adding polypeptide $protId to polypeptide lookup with genome $genome");
 	$geneGenomeMap->{$protId} = $genome;
     }
 } 

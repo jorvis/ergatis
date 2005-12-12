@@ -40,8 +40,8 @@
 <!--Postprocessing-->
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge bsml list files</name>
-        <configMapId>merge_bsml_list_files</configMapId>
+        <name>create_bsml_list</name>
+        <configMapId>create_bsml_list</configMapId>
     </command>
      </commandSet>
 </commandSetRoot>

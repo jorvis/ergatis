@@ -28,9 +28,14 @@ Last modified on $Date$
 
 
 use strict;
-use Workflow::Logger;
-use Workflow::Run;
-use Workflow::Repository;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Repository.pm';
+    import Workflow::Repository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Run.pm';
+    import Workflow::Run;
+}
 use Data::Dumper;
 
 =item new

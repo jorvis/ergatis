@@ -59,13 +59,19 @@ USAGE:  gene_boundaries_bsml -b bsml_file [-c file] -d bsml_directory [-e match_
  
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Data::Dumper;
 use File::Basename;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
+    import BSML::BsmlReader;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my($bsml_file,$bsml_file_list,$xmingap,$ymingap,$mincluster,$BSML_dir,$all_asmbl_flag,$debug,$log,$help);
 

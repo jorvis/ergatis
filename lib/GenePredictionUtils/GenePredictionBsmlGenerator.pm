@@ -3,8 +3,12 @@ package GenePredictionUtils::GenePredictionBsmlGenerator;
 use strict;
 use warnings;
 
-use Papyrus::TempIdCreator;
-use BSML::BsmlBuilder;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+}
 
 #silly hack to get it to commit in cvs
 
@@ -46,7 +50,7 @@ sub GenerateBsml
 
 	my $doc = new BSML::BsmlBuilder;
 	my $idcreator = new Papyrus::TempIdCreator;
-	my $seq = $doc->createAndAddSequence($seq_id);
+	my $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
 	AddLink($seq, $gene_finder_name);
 	my $feat_table = $doc->createAndAddFeatureTable($seq);
 	if ($fasta) {

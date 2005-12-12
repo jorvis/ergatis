@@ -5,7 +5,10 @@ use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
 use IO::File;
 
-use GenePredictionUtils::FGeneShBsmlGenerator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/GenePredictionUtils/FGeneShBsmlGenerator.pm';
+    import GenePredictionUtils::FGeneShBsmlGenerator;
+}
 
 use constant
 {

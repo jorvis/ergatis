@@ -6,7 +6,10 @@ package Jaccard_coefficient_cluster_resolver;
 
 use strict;
 
-use SingleLinkageClusterer;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/SingleLinkageClusterer.pm';
+    import SingleLinkageClusterer;
+}
 
 =head1 NAME
 

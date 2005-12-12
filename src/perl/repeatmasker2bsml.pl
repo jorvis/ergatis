@@ -147,6 +147,7 @@ while (<$ifh>) {
     ## (I think these don't exist anymore in current versions)
     if (( /^\s*sw.*position.*repeat/i) || (/^\s*score.*class.*id/i)) {
 
+
 	## set flag which indicates script is parsing older version of repeatmasker output
 	$old_version = 1;
 

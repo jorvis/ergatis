@@ -35,6 +35,11 @@
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create fasta repository</name>
+          <configMapId>create_fastadir</configMapId>
+        </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
 <!--Iterator steps-->
@@ -61,6 +66,16 @@
 <!--Checksum creation-->
 <!--Postprocess permissions-->
 <!--Check logfiles-->
+       <command>
+          <type>RunUnixCommand</type>
+          <name>create_fasta_list_file</name>
+          <configMapId>create_fasta_list_file</configMapId>
+       </command>
+       <command>
+          <type>RunUnixCommand</type>
+          <name>create_bsml_list_file</name>
+          <configMapId>create_bsml_list_file</configMapId>
+       </command>
        <command>
           <type>RunUnixCommand</type>
           <name>check_logfiles</name>

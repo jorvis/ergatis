@@ -5,7 +5,10 @@ use IO::File;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
 
-use Fasta::FastaIndexedReader;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Fasta/FastaIndexedReader.pm';
+    import Fasta::FastaIndexedReader;
+}
 
 my $indexer		= undef;
 my $clusters		= new IO::File->fdopen(fileno(STDIN), "r");

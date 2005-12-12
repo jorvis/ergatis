@@ -1,7 +1,4 @@
-#!/usr/local/packages/perl-5.8.5/bin/perl
-
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
+#!/usr/local/bin/perl
 
 =head1  NAME 
 
@@ -95,15 +92,20 @@ Base positions from the input file are renumbered so that positions start at zer
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
-use Papyrus::TempIdCreator;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -159,7 +161,7 @@ unless (defined $seq_id) {
 }
 
 ## create this sequence, an analysis link, and a feature table
-my $seq = $doc->createAndAddSequence($seq_id);
+my $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
    $seq->addBsmlLink('analysis', '#glimmerHMM_analysis');
 my $ft = $doc->createAndAddFeatureTable($seq);
 
@@ -215,13 +217,25 @@ while (<$ifh>) {
                                              $idcreator->new_id( db => $options{project}, so_type => 'exon', prefix => $options{command_id} ),
                                              '', 'exon'
                                             );
-           $exon->addBsmlLink('analysis', '#glimmerHMM_analysis');
+                                            
+        $exon->addBsmlLink('analysis', '#glimmerHMM_analysis');
         $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
+        
+        ## make a CDS feature to match the exon, since glimmerHMM doesn't call them.
+        my $cds = $doc->createAndAddFeature($ft, 
+                                             $idcreator->new_id( db => $options{project}, so_type => 'CDS', prefix => $options{command_id} ),
+                                             '', 'CDS'
+                                            );
+                                            
+        $cds->addBsmlLink('analysis', '#glimmerHMM_analysis');
+        $fg->addBsmlFeatureGroupMember( $cds->returnattr('id'), $cds->returnattr('class') );
         
         if ($cols[2] eq '+') {
             &add_interval_loc($exon, $cols[4] - 1, $cols[5] - 1);
+            &add_interval_loc($cds,  $cols[4] - 1, $cols[5] - 1);
         } elsif ($cols[2] eq '-') {
             &add_interval_loc($exon, $cols[5] - 1, $cols[4] - 1);
+            &add_interval_loc($cds,  $cols[5] - 1, $cols[4] - 1);
         } else {
             $logger->logdie("unknown value ($cols[2]) in column 3 of input file");
         }

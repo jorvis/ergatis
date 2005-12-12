@@ -158,23 +158,36 @@ sub time_info {
 
     ## we can calculate runtime only if start and end time are known, or if start is known and state is running
     my $runtime = '?';
+
+    ## doing it here manually because strftime was behaving badly (or I coded it badly)
     if ($start_time_obj) {
+        my $diffstring;
+        $runtime = '';
+        
         if ($end_time_obj) {
-            $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc($start_time_obj, $end_time_obj)) );
-        } elsif ($state eq 'running') {
-            $runtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("now", $start_time_obj)) ) . ' ...';
+            $diffstring = DateCalc($start_time_obj, $end_time_obj, undef, 1);
+        } else {
+            $diffstring = DateCalc($start_time_obj, "now", undef, 1);
         }
+        
+        ## take out any non \d: characters
+        $diffstring =~ s/[^0-9\:]//g;
+
+        my @parts = split(/:/, $diffstring);
+        
+        ## years + months + weeks + days
+        my $val = ($parts[0] * 365) + ($parts[1] * 30) + ($parts[2] * 7) + ($parts[3]);
+        if ($val > 1) {
+            $runtime .= "$val days ";
+        } elsif ($val == 1) {
+            $runtime .= "$val day ";
+        }
+        
+        $runtime .= "$parts[4] hr " if $parts[4];
+        $runtime .= "$parts[5] min " if $parts[5];
+        $runtime .= "$parts[6] sec";
     }
-    
-    ## if hours or minutes are 00, take them off
-    $runtime =~ s/00 .+? //g;
-    
-    ## take off leading zero (if present)
-    if ($runtime =~ /^0(.+)/) {
-        $runtime = $1;
-    }
-    
-    ## 00 seconds isn't possible
+
     $runtime = '&lt; 1 sec' if $runtime eq '0 sec';
 
     return ($start_time, $end_time, $runtime);

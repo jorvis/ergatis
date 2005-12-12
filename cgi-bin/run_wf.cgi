@@ -113,11 +113,10 @@ if( ($inifile ne "") && ($template ne "") ) {
 	    #           Activating observer script.  Will have to workout the installation directives later- for now
 	    #           will simply point to sybil.2005.10.25 installation.
 	    # 
-            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log -v5  --scripts=/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/bin/observer_script:status:/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/docs/observer_script.props >& $instancexml.run.out";
+            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log --scripts=/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/bin/observer_script:status:/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/docs/observer_script.props >& $instancexml.run.out";
+				## REMOVED -v5 flag because logs were too large	
 	    #
 	    #------------------------------------------------------------------------------------------------------------
-
-
 
             if ($debugging) {
                 #use Data::Dumper;
@@ -169,10 +168,10 @@ sub setup_environment {
     $ENV{SGE_EXECD_PORT} = '537';
     $ENV{SGE_ARCH} = 'lx26-x86';
 
-    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-sge";
-    #$ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-test-sge";
-    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-sge";
-    #$ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-test-sge";
+    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-ergatis";
+    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-ergatis";
+    #$ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow";
+    #$ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow";
 
     $ENV{'SYBASE'} = "/usr/local/packages/sybase";
     $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";

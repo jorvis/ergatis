@@ -13,12 +13,16 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 ## will be like:
-## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
+## /usr/local/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 
 ## will be like:
-## split_fasta_test2
+## split_fasta.test2
 my $ul_id = $q->param("ul_id") || die "pass ul_id";
+
+## will be like:
+## /usr/local/annotation/AA1/Workflow/pipeline/29671/pipeline.xml.instance
+my $parent_pipeline = $q->param("parent_pipeline") || '';
 
 my $progress_image_width = 500;
 my $component_state = 'unknown';
@@ -82,11 +86,25 @@ if (-e $pipeline) {
 
     ## build the "image" div contents that represent the different states
     my $status_image = '';
+    
+    ## these will be used to stretch the div to the full width, if necessary
+    my $width_used = 0;  
+    my $state_count = scalar keys %states;
+    my $states_handled = 0;
     for my $status (sort keys %states) {
         ## each status gives a percentage of the total command_count
-        $status_image .= '<div class="status_bar_portion" style="width: ' . 
-                           int( ($states{$status} / $command_count) * $progress_image_width) . 'px; background-color: ' . 
-                           ($colors{$status} || 'rgb(0,0,0)') . ';">' . "</div>\n";
+        my $width = int( ($states{$status} / $command_count) * $progress_image_width);
+        $width_used += $width;
+        $states_handled++;
+        
+        ## if this is the last state and there are unused pixels in the bar, just tag
+        ## the unused ones onto this color so we don't have a gap
+        if ( $states_handled == $state_count && $width_used < $progress_image_width ) {
+            $width += $progress_image_width - $width_used;
+        }
+        
+        $status_image .= "<div class='status_bar_portion' style='width: ${width}px; background-color: " . 
+                           ($colors{$status} || 'rgb(0,0,0)') . ";'></div>\n";
     }
 
     ## build the messages line, if there are any
@@ -149,22 +167,24 @@ sub parseCommandSet {
         }
     }
     
-    ## pull the status section for this commandset
-    my $status = $commandSet->first_child('status') || 0;
-    if ($status) {
-        for my $type ($status->children) {
-            ## don't do the 'total' or 'message' types here
-            next if ($type->gi eq 'total' || $type->gi eq 'message');
-            
-            if ($type->text) {
-                $states{$type->gi} += $type->text;
-                $command_count += $type->text;
-            }
+    ## we need to get the status counts.  iterate through the commands and
+    ##  get the states for each.  distributed subflow groups will count as
+    ##  one command here (mostly for parsing speed purposes)
+    foreach my $command ( $commandSet->children('command') ) {
+        if ( $command->first_child('state') ) {
+            ## increase the count for this state
+            $states{ $command->first_child('state')->text }++;            
+
+        } else {
+            ## state may not have been created yet (this should be rare)
+            $states{unknown}++;
         }
+
+        $command_count++;
     }
 
     if ( $commandSet->first_child('state') ) {
-        $state  = $commandSet->first_child('state')->text();
+        $state = $commandSet->first_child('state')->text();
     }
 
     ## we don't want this to happen within groups.xml, only the parent pipeline.xml
@@ -233,10 +253,36 @@ sub parseComponentSubflow {
 
 
 sub printIncompleteSummary {
+    ## if the pipeline.xml doesn't exist, we need to check for errors during the component creation.
+    ## we can only do this if the user passed the parent pipeline
+    my $messages_line = '';
+    if ($parent_pipeline) {
+        my $twig = new XML::Twig;
+           $twig->parsefile($parent_pipeline);
+        my $commandSetRoot = $twig->root;
+        my $parentCommandSet = $commandSetRoot->first_child('commandSet');
+        
+        ## find the commandSet for this component
+        foreach my $commandSet ( $parentCommandSet->children('commandSet') ) {
+            ## have we found it?
+            if ( $commandSet->first_child('configMapId')->text() eq "component_$ul_id" ) {
+                ## if it has a status, see if there are any messages;
+                if ( $commandSet->first_child('status') ) {
+                    $messages_line .= '<li class="messages"><b>messages:</b><br>';
+                    $messages_line .= $commandSet->first_child('status')->first_child('message')->text();
+                    $messages_line .= "</li>\n";
+                }
+                
+                last;
+            }
+        }
+    }
+
     print <<ComponentNOTyetCreated;
     <h1><div class="component_label"><b>component</b>: $ul_id</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
     <li><div class="component_progress_image"><div class="status_bar_portion" style="width: 500px; background-color: $colors{incomplete}"></div></div></li>
     <li>state: <span style='color: $colors{incomplete}'>incomplete</span></li>
+    $messages_line
     <li class="actions">
         <img class='navbutton' src='/ergatis/button_grey_view.png' alt='view' title='view'> 
         <img class='navbutton' src='/ergatis/button_grey_xml.png' alt='xml' title='xml'>  

@@ -39,19 +39,18 @@
 <!--Postprocessing-->
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge bsml list files</name>
-        <configMapId>merge_bsml_list_files</configMapId>
+        <name>create bsml list</name>
+        <configMapId>create_bsml_list</configMapId>
     </command>
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge raw list files</name>
-        <configMapId>merge_raw_list_files</configMapId>
+        <name>create raw list</name>
+        <configMapId>create_raw_list</configMapId>
     </command>
     <command>
         <type>RunUnixCommand</type>
-        <name>Merge btab list files</name>
-        <configMapId>merge_btab_list_files</configMapId>
+        <name>create btab list</name>
+        <configMapId>create_btab_list</configMapId>
     </command>
-<!--Checksum creation-->
      </commandSet>
 </commandSetRoot>

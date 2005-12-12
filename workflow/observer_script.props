@@ -1,0 +1,484 @@
+#----------------------------------------------------------------------------------------------------------------
+#
+# author:   sundaram@tigr.org
+# date:     2005-10-27
+# bgzcase:  2247
+# URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2247
+# comment:  This properties configuration file works in conjunction with ergatis/workflow/observer_script.pl
+#           For Workflow reference please review: http://intranet/ifx/devel/workflow/user_guide.html
+#
+#
+#----------------------------------------------------------------------------------------------------------------
+
+[backupdb]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = sundaram@tigr.org
+interrupt = sundaram@tigr.org
+restart   = 0
+
+
+[bsml2chado]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = sundaram@tigr.org
+interrupt = sundaram@tigr.org
+restart   = 0
+
+
+[copydb]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = sundaram@tigr.org
+interrupt = sundaram@tigr.org
+restart   = 0
+
+
+[delete_analysis]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = sundaram@tigr.org
+interrupt = sundaram@tigr.org
+restart   = 0
+
+
+[legacy2bsml]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = sundaram@tigr.org
+interrupt = sundaram@tigr.org
+restart   = 0
+
+
+[pivotdbs]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = sundaram@tigr.org
+interrupt = sundaram@tigr.org
+restart   = 0
+
+[aat_aa]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[aat_aa_masked]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[aat_na]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[adjust_bsml_coordinates]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[adjust_btab_coordinates]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[adjust_gap2_coordinates]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[adjust_nap_coordinates]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[augustus]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[ber]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[bsml2fasta]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[chado2bsml]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[clustalw]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[cogs]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+
+[coverage]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+
+[fasta2bsml]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[fgenesh]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[formatdb]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[genemark]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[genewise_best_loc]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[genezilla]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[genie]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[genscan]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[genscan-plus]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[glimmerHMM]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[hmmpfam]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[hmmpir]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[hmmsmart]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[hmmtigr]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[iprscan]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[jaccard]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[ncbi-blastn]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[ncbi-blastp]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[ncbi-blastx]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[ncbi-tblastn]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[ncbi-tblastx]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[nucmer]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[pe]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[promer]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[region]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[repeatmasker]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[snp]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[split_fasta]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[split_multifasta]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[tiling]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[trf]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[tRNAscan-SE]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+
+[wu-blastn]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[wu-blastp]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[wu-blastx]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[wu-tblastn]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[wu-tblastx]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
+[xdformat]
+start     = 0
+finish    = 0
+resume    = 0
+failure   = 0
+interrupt = 0
+restart   = 0
+
