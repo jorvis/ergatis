@@ -6,7 +6,10 @@ repeatmasker2bsml.pl - convert RepeatMasker output to BSML
 
 =head1 SYNOPSIS
 
-USAGE: repeatmasker2bsml.pl --input=/path/to/somefile.out --output=/path/to/output.bsml
+USAGE: repeatmasker2bsml.pl 
+        --input=/path/to/somefile.out 
+        --output=/path/to/output.bsml
+      [ --project=aa1 ]
 
 =head1 OPTIONS
 
@@ -22,6 +25,10 @@ B<--log,-l>
 B<--output,-o> 
     Output BSML file (will be created, must not exist)
 
+B<--project,-p> 
+    Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
+    not passed.
+
 B<--help,-h> 
     This help message
 
@@ -33,21 +40,17 @@ This script is used to convert the output from a RepeatMasker search into BSML.
 
 RepeatMasker can be run using multiple input sequences simultaneously, and this
 script supports parsing single or multiple input result sets.  It generates a few
-output files, but the tab-delimited ".out" file is used here.  A usual RepeatMasker
+output files, but the space-delimited ".out" file is used here.  A usual RepeatMasker
 .out file looks like (wide-window):
 
-       SW  perc perc perc  query     position in query               matching       repeat         position in  repeat
-    score  div. del. ins.  sequence     begin      end     (left)   repeat         class/family   begin  end (left)   ID
+       SW  perc perc perc  query                position in query           matching       repeat             position in repeat
+    score  div. del. ins.  sequence               begin      end   (left)   repeat         class/family           begin  end   (left)
 
-      254  22.7 10.5  0.8  id51595      30597    30729 (19616362) +  (AGCTG)n       Simple_repeat      5  150    (0)    1  
-      204  25.8  0.0  6.6  id51595      31229    31365 (19615726) +  (CGGA)n        Simple_repeat      1  128    (0)    2  
-      237  23.5 10.5  0.8  id51595      33531    33663 (19613428) +  (AGCTG)n       Simple_repeat      5  150    (0)    3  
-      204  25.8  0.0  6.6  id51595      34163    34299 (19612792) +  (CGGA)n        Simple_repeat      1  128    (0)    4  
-      252   0.0  0.0  0.0  id51595      37646    37673 (19609418) +  (A)n           Simple_repeat      1   28    (0)    5  
-       21   0.0  0.0  0.0  id51595      49671    49691 (19597400) +  AT_rich        Low_complexity     1   21    (0)    6  
-       21   0.0  0.0  0.0  id51595      52652    52672 (19594419) +  AT_rich        Low_complexity     1   21    (0)    7  
+       219  6.9  0.0  0.0 sma1.assembly.30997     11239    11267  (23517) +  (TA)n          Simple_repeat         1      29     (151)
+       572 24.2  4.0  5.7 sma1.assembly.30997     11493    11720  (23045) C  R=109                             (226)    1736    1513 *
+      1124 17.9  0.0  2.2 sma1.assembly.30997     11539    11766  (22999) C  R=86                                (1)     511     289 *
 
-The header rows should be ignored by this script.
+The * at the end of some lines indicates an overlap with other predictions.
 
 You define the input file using the --input option.  This file does not need any
 special file extension.
@@ -56,20 +59,17 @@ special file extension.
 
 After parsing the input file, a file specified by the --output option is created.  This script
 will fail if it already exists.  The file is created, and temporary IDs are created for
-each result element.  They are only unique to the document, and will need to be replaced
-before any database insertion.
+each result element.  They are globally unique, but will need to be replaced before any database 
+insertion.
 
 Base positions from the input file are renumbered so that positions start at zero.  The
 current output elements from RepeatFinder that are not represented in the BSML file are:
 
-    SW score
     perc_div
     perc_del
     perc_ins
-    matching_repeat ?
-    repeat_class/family
 
-These need to be included later.
+We can add these later if anyone thinks they are necessary.
 
 =head1 CONTACT
 
@@ -79,19 +79,30 @@ These need to be included later.
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use Pod::Usage;
-use Workflow::Logger;
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
+    import BSML::BsmlRepository;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    import Papyrus::TempIdCreator;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    import BSML::BsmlBuilder;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
+    import BSML::BsmlParserTwig;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
+              'project|p=s',
+              'log|l=s',
+              'command_id=s',       ## passed by workflow
+              'logconf=s',          ## passed by workflow (not used)
+              'debug=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -107,41 +118,91 @@ if( $options{'help'} ){
 ## make sure all passed options are peachy
 &check_parameters(\%options);
 
-## we want to create ids unique to this document, which will be replaced later.  they must
-##  contain the prefix that will be used to look up a real id, such as ath1.gen.15
-my $next_id = 1;
-
 ## we want a new doc
 my $doc = new BSML::BsmlBuilder();
+
+## we're going to generate ids
+my $idcreator = new Papyrus::TempIdCreator();
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
 my %data;
+
+my $linectr=0;
+my $datalinectr=0;
+
+my $old_version=0;
+
 while (<$ifh>) {
-    my @cols = split;
-    
+
+
+    $linectr++;
+
+    chomp;
     #check whitespace, no warn
     next if ( /^\s*$/ );
     
     ## make sure we don't parse the repeatmasker output header lines
-    next if ( /^sw.*position.*repeat/i ||
-              /^score.*class.*id/i);
+    ## (I think these don't exist anymore in current versions)
+    if (( /^\s*sw.*position.*repeat/i) || (/^\s*score.*class.*id/i)) {
 
-    ## there should be 15 elements in cols, unless we have an unrecognized format.
-    unless (scalar @cols == 15) {
-        $logger->error("the following RepeatMasker line was not recognized and could not be parsed:\n$_\n") if ($logger->is_error);
-        next;
+	## set flag which indicates script is parsing older version of repeatmasker output
+	$old_version = 1;
+
+	next;
     }
+
+    ## let's count the data lines
+    $datalinectr++;
+
+    ## skip lines that warn about lack of matches:
+    next if ( /were no repetitive sequences detected/i );
+
+    ## if the line ends with an asterisk, remove it.  it only causes
+    ## column ambiguity.
+    s/(.+)\s+\*\s*$/$1/;
+
+    my @cols = split;
+
+    ## get the number of columns parsed
+    my $colctr = scalar(@cols);
+
     
-    ## add this data row to this sequence
-    push( @{$data{$cols[4]}}, \@cols );
+    if (($old_version) && ($colctr == 15)){
+
+	## if we are parsing the old version of input file and the number of columns is fifteen with last column being an integer (ID value)- remove that last column.  it only causes
+	## column ambiguity.
+
+	s/(.+)\s+\*\s*$/$1/;
+
+	$colctr--;
+    }
+
+
+
+    ## if there are 13 columns, the repeat family must have been missing and we need to adjust.
+    if ( $colctr == 13 ) {
+	( $cols[10], $cols[11], $cols[12], $cols[13] ) = ( '', $cols[10], $cols[11], $cols[12] );
+	
+	push( @{$data{$cols[4]}}, \@cols );    
+	
+	## if there are 14 columns, just add.
+    } elsif ( $colctr ==14 ) {
+	push( @{$data{$cols[4]}}, \@cols );
+	
+	## else we have an unrecognized row.
+    } else {
+	$logger->logdie("Could not parse file '$options{'input'}' at file line '$linectr' data line '$datalinectr'.  Number of columns '$colctr'.  The following RepeatMasker line was not recognized and could not be parsed:\n$_\n");
+    }
+
+
 }
 
 ## loop through each of the matches that we found
 for my $seqid (keys %data) {
-    my $seq = $doc->createAndAddSequence($seqid);
-       $seq->addBsmlLink('analysis', 'repeatmasker_analysis');
+    my $seq = $doc->createAndAddSequence($seqid, undef, '', 'dna', 'assembly');
+       $seq->addBsmlLink('analysis', '#repeatmasker_analysis', 'input_of');
     my $ft  = $doc->createAndAddFeatureTable($seq);
     my $fg;
     
@@ -151,14 +212,24 @@ for my $seqid (keys %data) {
     my @elements;
     foreach my $arr ( @{$data{$seqid}} ) {
         ## add the repeat
-        $repeat = $doc->createAndAddFeature($ft, &fake_id('rep'), '', 'repeat_region');
-        $repeat->addBsmlLink('analysis', 'repeatmasker_analysis');
+        my $id = $idcreator->new_id( db => $options{project}, so_type => 'repeat_region', prefix => $options{command_id} );
+        $repeat = $doc->createAndAddFeature($ft, $id, '', 'repeat_region');
+        $repeat->addBsmlLink('analysis', '#repeatmasker_analysis', 'computed_by');
         
         ## add the location of the repeat (all given by RepeatMasker as coords on the forward strand)
         ## 1 is subtracted from each position to give interbase numbering
         $repeat->addBsmlIntervalLoc( --$$arr[5], --$$arr[6], 0);
         
-        ## SO terms for these repeats need to be added??
+        ## add the properties of the repeat:
+        $doc->createAndAddBsmlAttributes( $repeat, 'matching_repeat',   $$arr[9],
+                                                   'sw_score',          $$arr[0],
+                                        );
+
+        ## add the repeat class, if we have one
+        if ($$arr[10]) {
+            $doc->createAndAddBsmlAttributes( $repeat, 'repeat_class', $$arr[10] );
+        }
+
     }
 }
 
@@ -182,13 +253,4 @@ sub check_parameters {
     if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
     
     return 1;
-}
-
-sub fake_id {
-    my $so_type = shift;
-
-    ## this will be used by the id replacement software to find ids to replace.
-    my $temp_prefix = 'ir';
-    
-    return "$temp_prefix.$so_type." . $next_id++;
 }
