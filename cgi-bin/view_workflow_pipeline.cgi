@@ -120,11 +120,34 @@ sub parseCommandSet {
     if ( $configMapId =~ /^component_(.+)/) {
         my $filebased_subflow = '';
         my $name_token = $1;
+        my $user_msg = 'state: wait for update';
+        my $do_auto_update = 1;
         
         ## here we need to get the information out of the file-based subflow
         #  each component commandSet will have one command to create the subflow
         #  and then a commandSet reference with a <fileName> that references
-        #  the external file-based subflow.  Grab that.
+        #  the external file-based subflow.  Check and make sure the generation
+        #  of the componet was ok, then grab the reference to the file-based
+        #  subflow so it can be parsed.
+        my $generation_command = $commandSet->first_child('command') || 0;
+        if ( $generation_command ) {
+            my $generation_command_status = $generation_command->first_child('status') || 0;
+        
+            if ( $generation_command_status ) {
+                if ( $generation_command_status->has_child('retValue') && 
+                     $generation_command_status->first_child('retValue')->text() != 0 ) {
+                     
+                     $do_auto_update = 0;
+                     $user_msg = "there was an error generating this component";
+                     
+                     if ( $generation_command_status->has_child('message') ) {
+                        $user_msg .= '<br>' . $generation_command_status->first_child('message')->text();
+                     }
+                }
+            }
+        }
+        
+        
         my $subcommandSet = $commandSet->first_child('commandSet') || 0;
         if ( $subcommandSet ) {
             my $fileName = $subcommandSet->first_child('fileName') || 0;
@@ -142,10 +165,14 @@ sub parseCommandSet {
         print <<ComponeNTBlock;
 <ul class='component' id='$name_token'>
     <h1><span><b>component</b>: $name_token</span></h1>
-    <li>state: wait for update</li>
+    <li>state: $user_msg</li>
 </ul>
-<script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token&parent_pipeline=$xml_input', updateComponent, '$name_token', '$filebased_subflow');</script>
 ComponeNTBlock
+
+        ## should we spawn an autoupdate?
+        if ( $do_auto_update ) {
+            print "<script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token&parent_pipeline=$xml_input', updateComponent, '$name_token', '$filebased_subflow');</script>\n";
+        }
 
     ## configMapId is just numeric when we have a serial or parallel command set grouping
     ##  also handle imported pipelines here, which have a serial root
