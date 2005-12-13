@@ -6,8 +6,8 @@ repeat2legacydb.pl - load repeat data into the legacy database schema.
 
 =head1 SYNOPSIS
 
-USAGE: iprscan2bsml.pl 
-        --input_list=/path/to/somefile.raw.list
+USAGE: repeat2legacydb.pl 
+        --input_list=/path/to/somefile.bsml.list
         --database=sma1
       [ --log=/path/to/some.log ]
 
@@ -197,7 +197,7 @@ sub process_repeat_feature {
     if ($$prog_name eq 'trf') {
         $score       = 'tandem';
         $score_desc  = 'class';   
-        $score2      = &get_attribute($elt, 'score');
+        $score2      = &get_attribute($elt, 'raw_score');
         $score2_desc = 'score';
     } elsif ($$prog_name eq 'repeatmasker') {
         $score       = &get_attribute($elt, 'matching_repeat');
