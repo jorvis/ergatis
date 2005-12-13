@@ -138,10 +138,8 @@ while (my $infile = <$listfh>) {
     
     ## make sure there is a directory for this asmbl id
     if (! -d "$options{repository_root}/asmbls/$asmblid" ) {
-        ## we want this to die, since this should have been made already and
-        ## may indicated a problem.
-        _log("ERROR: no asmbl directory found for $asmblid, expected $options{repository_root}/asmbls/$asmblid");
-        exit(1);
+        _log("WARNING: no asmbl directory found for $asmblid, creating $options{repository_root}/asmbls/$asmblid");
+        _check_and_create_dir("$options{repository_root}/asmbls/$asmblid");
     }
     
     ## make sure there is an HMM_searches directory
