@@ -109,6 +109,8 @@ sub CreateWorkflow{
                 
                 ## for augustus
                 AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+                #AUGUSTUS_CONFIG_PATH => '/usr/local/annotation/TTA1/augustus/config',
+                #AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/EGC_utilities/AUGUSTUS/augustus/config',
             
                 ## for genewise
                 WISECONFIGDIR => '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg',
@@ -175,6 +177,8 @@ sub RunWorkflow{
 
                 ## for augustus
                 AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+                #AUGUSTUS_CONFIG_PATH => '/usr/local/annotation/TTA1/augustus/config',
+                #AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/EGC_utilities/AUGUSTUS/augustus/config',
 
                 # for genewise
                 WISECONFIGDIR => '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg',
