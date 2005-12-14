@@ -9,6 +9,7 @@ iprscan2legacydb.pl - load iprscan data into the legacy database schema.
 USAGE: iprscan2bsml.pl 
         --input_list=/path/to/somefile.raw.list
         --database=sma1
+      [ --log=/path/to/some/log ]
 
 =head1 OPTIONS
 
