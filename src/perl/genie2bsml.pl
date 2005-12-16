@@ -146,7 +146,7 @@ while (<$ifh>) {
         
         ## create this sequence, an analysis link, and a feature table
         $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
-        $seq->addBsmlLink('analysis', '#genie_analysis');
+        $seq->addBsmlLink('analysis', '#genie_analysis', 'input_of');
         $ft = $doc->createAndAddFeatureTable($seq);
         
         ##  also add a link to the fasta file (Seq-data-import) if requested
@@ -288,7 +288,7 @@ sub add_feature {
     
     $id = $idcreator->new_id( db => $options{project}, so_type => $type, prefix => $options{command_id} );
     $thing = $doc->createAndAddFeature( $ft, $id, '', $idcreator->so_used($type) );
-    $thing->addBsmlLink('analysis', '#genie_analysis');
+    $thing->addBsmlLink('analysis', '#genie_analysis', 'computed_by');
     $thing->addBsmlIntervalLoc($start, $stop, $strand);
     
     ## some features aren't added to a group
@@ -299,7 +299,7 @@ sub add_feature {
     ## if type is a primary_transcript we need to add a gene too
     if ($type eq 'primary_transcript') {
         $thing = $doc->createAndAddFeature( $ft, $current_transcript_id, '', $idcreator->so_used('gene') );
-        $thing->addBsmlLink('analysis', '#genie_analysis');
+        $thing->addBsmlLink('analysis', '#genie_analysis', 'computed_by');
         $thing->addBsmlIntervalLoc($start, $stop, $strand);
         $fg->addBsmlFeatureGroupMember( $current_transcript_id, $idcreator->so_used('gene') );
     }
