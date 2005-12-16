@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
 
 =head1  NAME 
 
@@ -137,7 +137,8 @@ foreach my $query_name (keys %$seq_pair){
 		my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'  => $query_name,
 								   'compseq' => $dbmatch_accession 
 								   );
-		
+
+	    $aln->addBsmlLink('analysis', '#pe_analysis', 'computed_by');	
 		my $runs = $seq_pair->{$query_name}->{$dbmatch_accession};
 		my $hitnum = 0;
 		foreach my $run (sort {$b->{'runscore'} <=> $a->{'runscore'}} (@$runs)){
@@ -148,6 +149,8 @@ foreach my $query_name (keys %$seq_pair){
 								   'comprunlength'      => $run->{'comprunlength'},
 								   'comppos'      => $run->{'start_hit'},
 								   'runscore'       => $run->{'runscore'},
+								   'refcomplement' => 0,
+								   'compcomplement' => 0,
 								   );
 			#additional attributes
 			$s->addBsmlAttr( 'PEffect_Cluster_Id',  $run->{'PEffect_Cluster_Id'} );
