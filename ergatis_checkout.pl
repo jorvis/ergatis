@@ -57,7 +57,7 @@ if ($opts{'init'}) {
 	#doORdie("mkdir -m 777 -p $tmp_dir");
 	mkpathORdie($tmp_dir);
 } else {
-    print "Not reinitializing previous install\n";
+    die "Not reinitializing previous install\n";
 }
 
 #3) #checkout everything we need from CVS
@@ -226,8 +226,9 @@ sub editConfFile {
 
 sub mkpathORdie {
 	my $dir = shift;
+	print "Creating path $dir\n";
 	eval {mkpath($dir, 1, 0777)};
-	if ($@) {
+	if (! (-d '$dir')) {
 		print STDERR "Couldn't create $dir: $@";
 		exit(1);
 	}
@@ -236,7 +237,8 @@ sub mkpathORdie {
 sub rmtreeORdie {
 	my $dir = shift;
 	eval {rmtree($dir, 1)};
-	if ($@) {
+	print "Removing path $dir\n";
+	if (-e '$dir') {
 		print STDERR "Couldn't remove $dir: $@";
 		exit(1);
 	}
