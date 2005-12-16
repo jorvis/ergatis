@@ -1,11 +1,5 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1  NAME 
 
 signalp2bsml.pl - convert SignalP output to BSML
@@ -246,7 +240,7 @@ while (<$ifh>) {
                                                  so_type => 'signal_peptide',                                           	 prefix  => $options{command_id},
                                                 );
         		my $signalp = $doc->createAndAddFeature($ft, $new_id, '', 'signal_peptide');
-	   	   	$signalp->addBsmlLink('analysis', '#signalp_'.$a.'_analysis', 'created_by');
+	   	   	$signalp->addBsmlLink('analysis', '#signalp_'.$a.'_analysis', 'computed_by');
 
 			foreach my $k(keys %{$result_ref_hash{$s,$a}}) {
 				$doc->createAndAddBsmlAttribute($signalp, $k, $result_ref_hash{$s,$a}->{$k} );

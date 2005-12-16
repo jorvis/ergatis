@@ -255,7 +255,7 @@ for (my $i = 0; $i < $result_count; $i++) {
                                          so_type => 'transit_peptide',                                           	 prefix  => $options{command_id},
                                        );
         my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
-	$feature->addBsmlLink('analysis', '#predotar_analysis', 'created_by');
+	$feature->addBsmlLink('analysis', '#predotar_analysis', 'computed_by');
 	
 	unless (defined($go_id{$prediction})) {
 		$logger->logdie("predotar prediction '$prediction' was not an expected result");
