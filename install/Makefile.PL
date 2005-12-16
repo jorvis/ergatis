@@ -54,7 +54,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml clustalw cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2fasta chado2bsml clustalw cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -391,6 +391,14 @@ pe	:
 	@install workflow/pe/pe.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/pe/pe_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/pe/peconf.ini $(WORKFLOW_DOCS_DIR)  
+
+phat	:
+	@echo "Installing phat workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/phat/phat-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/phat/phat-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/phat/phat.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/phat/phat_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/phat/phatconf.ini $(WORKFLOW_DOCS_DIR)  
 
 promer	:
 	@echo "Installing promer workflows in $(WORKFLOW_DOCS_DIR)"
