@@ -310,7 +310,7 @@ sub install_peffect {
 
     chdir("peffect");
 
-    $execstring = "find . -name Makefile -exec \"perl -i.bak -pe 's|/usr/local/devel/ANNOTATION/cas|$installdir|' \{\} \;\"";
+    $execstring = "find . -name Makefile -exec perl -i.bak -pe 's|/usr/local/devel/ANNOTATION/cas|$installdir|' \{\} \\;";
     
     &do_or_die($execstring);
     
