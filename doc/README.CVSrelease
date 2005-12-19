@@ -1,4 +1,29 @@
-mkdir release
-cd release
-cvs co ergatis
-cvs tag $RELEASE_TAG$
+Project release tag SOP
+========================
+
+Ergatis releases
+----------------
+
+cvs co -d ergatis_release ANNOTATION/ergatis/util/cvs_release.sh
+./cvs_release.sh -r ERGATIS_TAG_NAME
+
+Prism releases
+--------------
+
+cvs co -d prism_release ANNOTATION/Prism/util/cvs_release.sh
+./cvs_release.sh -r PRISM_TAG_NAME
+
+BSML releases
+-------------
+
+cvs co -d bsml_release ANNOTATION/bsml/util/cvs_release.sh
+./cvs_release.sh -r BSML_TAG_NAME
+
+Chado releases
+--------------
+
+cvs co -d chado_release ANNOTATION/chado/util/cvs_release.sh
+./cvs_release.sh -r CHADO_TAG_NAME
+
+
+
