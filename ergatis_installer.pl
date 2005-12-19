@@ -182,6 +182,7 @@ if (!defined($workingdir)){
 
 &clear_working_dir($workingdir);
 
+
 my $cvshash = &determine_cvs_revisions($cvscode, $controlfile);
 
 
@@ -767,7 +768,7 @@ sub load_hash {
 #------------------------------------------------------
 sub print_usage {
 
-    print STDERR "SAMPLE USAGE:  $0 --installdir=installdir --workingdir=workingdir --username=username --server=server --cvscode=\"cvscode\" --controlfile=controlfile [-d debug_level] [-h] [-l log4perl] [-m]\n".
+    print STDERR "SAMPLE USAGE:  $0 --installdir=installdir --workingdir=workingdir --username=username --server=server --cvscode=\"cvscode\" --controlfile=controlfile [-d debug_level] [-h] [--init] [-l log4perl] [-m]\n".
     "  -i|--installdir          = Installation directory\n".
     "  -w|--workingdir          = Working directory\n".
     "  -U|--username            = Username\n".
@@ -776,6 +777,7 @@ sub print_usage {
     "  -l|--log4perl            = Optional - Log4perl log file (default: /tmp/cas_installer.pl.log)\n".
     "  -m|--man                 = Optional - Display pod2usage pages for this utility\n".
     "  -S|--server              = Optional - Sybase server for chado databases\n".
+    "  --init                   = Optional - if specified the installdir is wiped\n".
     "  --cvscode                = Optional - CVS code and tags\n".
     "  --controlfile            = Optional - control file listing CVS code and tags\n";
     exit 1;
