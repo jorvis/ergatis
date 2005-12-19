@@ -88,7 +88,10 @@ First, choose a target area for the install and create a control file.
  ergatis=ergatis-v1r1b1
  server=SYBTIGR
 
-cvs co -d checkout ANNOTATION/ergatis/ergatis_checkout.pl
+cvs co -d install ANNOTATION/ergatis/ergatis_installer.pl
+cd install
+./ergatis_installer.pl -U sgc --installdir=/usr/local/devel/ANNOTATION/ard/testing --controlfile=/usr/local/devel/ANNOTATION/ard/testing.ini --workingdir=/tmp
+
 
 About
 -----
