@@ -1,4 +1,0 @@
-mkdir release
-cd release
-cvs co ergatis
-cvs tag -b $BRANCH_TAG$
