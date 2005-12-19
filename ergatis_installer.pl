@@ -354,6 +354,17 @@ sub execute_installation {
 
 	my ($cvshash, $installdir, $workingdir, $server) = @_;
 
+
+	#
+	# server in configuration file overrides the server specified as command-line argument
+	#
+	if ((exists $cvshash->{'server'}) && (defined($cvshash->{'server'})) ) {
+	    $server = $cvshash->{'server'};
+	}
+	
+
+
+
 	foreach my $name (sort keys %{$cvshash} ) {
 
 		my $tag = $cvshash->{$name};
@@ -385,16 +396,16 @@ sub execute_installation {
 		    chdir($workingdir);
 		    
 		    
-		    
-		    
 		    my $execstring = "cvs -Q co -r $tag $installname";
 		    
 		    &do_or_die($execstring);
 		    
 		    chdir($installname);
 		    
-		    if (($name =~ /prism/) && ($server eq 'SYBIL')){
-			
+		    if (($name =~ /prism/) && ($server ne 'SYBTIGR')){
+			#
+			# Alternative Sybase servers are SYBIL and SYBEST
+			#
 			my $file = "./conf/Prism.conf";
 			
 			&edit_prism_conf($file);
