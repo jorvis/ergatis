@@ -12,7 +12,7 @@ cas_installer.pl - Checks out code from CVS repository using specified tags then
 
 =head1 SYNOPSIS
 
-USAGE:  cas_installer.pl -i installdir --installdir=D database -P password -U username [-a autogen_feat] -b bsmldoc [-d debug_level] [-h] [-i insert_new] [-l log4perl] [-m] [-o outdir] [-p] [-R readonlycache] [-s autogen_seq] [-u update] [-x xml_schema_type] [-y cache_dir] [-z doctype]
+USAGE:  cas_installer.pl --installdir=installdirr --workingdir=workingdir --username=username [-S server] --cvscode="cvscode" --controlfile=controlfiler [-d debug_level] [--init] [-h] [-l log4perl] [-m]
 
 =head1 OPTIONS
 
@@ -20,64 +20,40 @@ USAGE:  cas_installer.pl -i installdir --installdir=D database -P password -U us
 
 =item B<--username,-U>
     
-    Database username
+    Name of user installing the software
 
-=item B<--password,-P>
+=item B<--installdir,-i>
     
-    Database password
+    Directory where software will be installed
 
-=item B<--database,-D>
+=item B<--workingdir,-w>
     
-    Target chado database 
+    Optional - Directory where cvs checkouts and other work will take place (Default is current working directory)
 
-=item B<--bsmldoc,-b>
+=item B<--server,-S>
     
-    Bsml document containing pairwise alignment encodings
+    Optional - For Prism based code - name of Sybase server to store in configuration files (Default is SYBTIGR)
 
-=item B<--autogen_feat,-a>
+=item B<--cvscode>
     
-    Optional - Default behavior is to auto-generate (-a=1) chado feature.uniquename values for all inbound features.  To turn off behavior specify this command-line option (-a=0).
+    Optional - Use this command-line arguement to specify code base and tag e.g. --cvscode="chado_prism=prism-v1r9b1;ergatis=ergatis-v1r2b1"
 
-=item B<--autogen_seq,-s>
+=item B<--controlfile>
     
-    Optional - Default behavior is to not (-s=0) auto-generate chado feature.uniquename values for all inbound sequences.  To turn on behavior specify this command-line option (-s=1).
-
-=item B<--insert_new,-i>
-    
-    Optional - Default behavior is to insert (-i=1) insert newly encountered Sequence objects in the BSML document that are not currently present in the Chado database.  To turn off default insert behavior specify this command-line option (-i=0)
+    Optional - Configuration file for specifying code base and corresponding tags
 
 =item B<--debug_level,-d>
 
-    Optional: Coati::Logger log4perl logging level.  Default is 0
+    Optional: log4perl logging level.  Default threshold is WARN
 
 =item B<--man,-m>
 
     Display the pod2usage page for this utility
 
-=item B<--outdir,-o>
 
-    Optional: Output directory for the tab delimited .out files.  Default is current directory
+=item B<--init>
 
-=item B<--pparse,-p>
-
-    Optional - turn off parallel load support via global serial identifier replacement (default is ON)
-
-=item B<--update,-u>
-
-    Optional - Default behavior is to not update the database (-u=0).  To turn on update behavior specify this command-line option (-u=1).
-
-
-=item B<--cache_dir,-y>
-
-    Optional - Query caching directory to write cache files (default is ENV{DBCACHE_DIR})
-
-=item B<--readonlycache,-R>
-
-    Optional - If data file caching is activated and if this readonlycache is == 1, then the tied MLDBM lookup cache files can only be accessed in read-only mode.  Default (-r=0) means cached lookup can be created and access mode is read-write.
-
-=item B<--doctype,-z>
-
-    Optional - If specified, can direct the parser to construct concise lookup - more efficient. One of the following: nucmer, region, promer, pe, blastp, repeat, scaffold, rna, te, coverage
+    Optional - Specifies that the installdir should be wiped  (Default is to not delete the installdir)
 
 =item B<--help,-h>
 
@@ -87,17 +63,14 @@ USAGE:  cas_installer.pl -i installdir --installdir=D database -P password -U us
 
 =head1 DESCRIPTION
 
-    bsml2chado.pl - Parse BSML document and produce tab delimited .out BCP files for insertion into Chado database
+    eragatis_installer.pl - Checks out code from CVS repository using specified tags then installs software in specified install directory
 
     Assumptions:
-    1. The BSML pairwise alignment encoding should validate against the XML schema:.
-    2. User has appropriate permissions (to execute script, access chado database, write to output directory).
-    3. Target chado database already contains all reference features (necessary to build feature and organism lookups) Review and execute db2bsml.pl if required.
-    4. Target chado database contains the necessary controlled vocabulary terms: "match" etc.
-    5. All software has been properly installed, all required libraries are accessible.
+    1. User has appropriate permissions (to execute script, access chado database, write to output directory).
+    2. All software has been properly installed, all required libraries are accessible.
 
     Sample usage:
-    ./bsml2chado.pl -U access -P access -D tryp -b /usr/local/annotation/TRYP/BSML_repository/blastp/lma2_86_assembly.blastp.bsml  -l my.log -o /tmp/outdir
+    ./ergatis_installer.pl --username=sundaram --installdir=/usr/local/devel/ANNOTATION/ergatis_install --workingdir=/tmp --server=SYBIL --log4perl=/tmp/install.log --controlfile=/usr/local/devel/ANNOTATION/ergatis_install/control.ini
 
 
 =cut
@@ -126,29 +99,30 @@ my $htmlfile = "/usr/local/devel/ANNOTATION/cas/datamanagement/cas_install.html"
 umask(0000);
 
 
-my ($installdir, $workingdir, $username, $help, $log4perl, $man, $cvscode, $controlfile, $server, $debug_level);
+my ($installdir, $workingdir, $username, $help, $log4perl, $man, $cvscode, $controlfile, $server, $debug_level, $init);
 
 my $results = GetOptions (
-						  'log4perl|l=s'       => \$log4perl,
-						  'debug_level|d=s'    => \$debug_level, 
-						  'help|h'             => \$help,
-						  'man|m'              => \$man,
-						  'installdir|i=s'     => \$installdir,
-						  'workingdir|w=s'     => \$workingdir,
-						  'username|U=s'       => \$username,
-						  'cvscode=s'          => \$cvscode,
-						  'controlfile=s'      => \$controlfile,
-						  'server|S=s'         => \$server
-						  );
+			  'log4perl|l=s'       => \$log4perl,
+			  'debug_level|d=s'    => \$debug_level, 
+			  'help|h'             => \$help,
+			  'man|m'              => \$man,
+			  'installdir|i=s'     => \$installdir,
+			  'workingdir|w=s'     => \$workingdir,
+			  'username|U=s'       => \$username,
+			  'cvscode=s'          => \$cvscode,
+			  'controlfile=s'      => \$controlfile,
+			  'server|S=s'         => \$server,
+			  'init'               => \$init
+			  );
 
 &pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if ($man);
 &pod2usage({-exitval => 1, -verbose => 1, -output => \*STDOUT}) if ($help);
 
 print STDERR ("username was not defined\n")     if (!$username); 
 print STDERR ("installdir was not defined\n")   if (!$installdir); 
-print STDERR ("workingdir was not defined\n")   if (!$workingdir); 
 
-&print_usage if(!$username or !$installdir or !$workingdir);
+
+&print_usage if(!$username or !$installdir);
 
 #
 # initialize the logger
@@ -182,7 +156,7 @@ Log::Log4perl->init(
 		    );
 
 
-my $logger = get_logger("GFF2BSML");
+my $logger = get_logger("INSTALLER");
 
 
 if (!defined($server)){
@@ -193,13 +167,16 @@ if (!defined($server)){
 
 &verify_create_directory($installdir);
 
-&clear_install_dir($installdir);
+&clear_install_dir($installdir, $init);
 
-#
-# Create the docs directory
-#
-my $docsdir = "$installdir/docs";
-mkdir($docsdir);
+
+if (!defined($workingdir)){
+    $workingdir = "/tmp";
+    if ($logger->is_debug()){
+	$logger->debug("workingdir was set to '$workingdir'");
+    }
+}
+
 
 &verify_create_directory($workingdir);
 
@@ -213,11 +190,6 @@ my $date = `date`;
 chomp $date;
 
 &execute_installation($cvshash, $installdir, $workingdir, $server);
-
-&install_ontologies($workingdir, $installdir, "HEAD");
-&install_schema($workingdir, $installdir, "HEAD");
-&install_bcp_files($workingdir, $installdir, "HEAD");
-&install_peffect($workingdir, $installdir, "HEAD");
 
 &record_installation($installdir, $workingdir, $username, $date, $server, $cvshash, $datamanagementfile, $htmlfile);
 
@@ -347,15 +319,30 @@ sub clear_working_dir {
 #----------------------------------------------------
 sub clear_install_dir {
 	
-	my ($dir) = @_;
+    my ($dir, $init) = @_;
+    
+    
+    if ((defined($init)) && ($init == 1)){
 	
 	my $execstring = "rm -rf $dir";
 	
 	&do_or_die($execstring);
-
+	
 	mkdir($dir);
+	
+    }
 
+
+    my $docsdir = "$dir/docs";
+
+    if (!-e $docsdir) {
+	#
+	# Create the docs directory
+	#
+	mkdir($docsdir);
+    }
 }
+
 
 
 #-----------------------------------------------------
@@ -368,7 +355,6 @@ sub execute_installation {
 
 	foreach my $name (sort keys %{$cvshash} ) {
 
-
 		my $tag = $cvshash->{$name};
 
 		$logger->logdie("tag was not defined for name '$name'") if (!defined($tag));
@@ -376,38 +362,61 @@ sub execute_installation {
 		my $installname = $name ."_install";
 
 
-		chdir($workingdir);
-		my $execstring = "cvs -Q co -r $tag $installname";
+		if ($name eq 'ontologies'){
+		    
+		    &install_ontologies($workingdir, $installdir, $tag);
+		    
+		}
+		elsif ($name eq 'chado_schema'){
+		    
+		    &install_schema($workingdir, $installdir, $tag);
+		}
+		elsif ($name eq 'cvdata') {
 
-		&do_or_die($execstring);
+		    &install_bcp_files($workingdir, $installdir, $tag);
+		}
+		elsif ($name eq 'peffect'){
 
-		chdir($installname);
-		
-		if (($name =~ /prism/) && ($server eq 'SYBIL')){
-
+		    &install_peffect($workingdir, $installdir, "HEAD");
+		}
+		else {
+		    
+		    chdir($workingdir);
+		    
+		    
+		    
+		    
+		    my $execstring = "cvs -Q co -r $tag $installname";
+		    
+		    &do_or_die($execstring);
+		    
+		    chdir($installname);
+		    
+		    if (($name =~ /prism/) && ($server eq 'SYBIL')){
+			
 			my $file = "./conf/Prism.conf";
 			
 			&edit_prism_conf($file);
+		    }
+		    
+		    
+		    my $perlstring = "perl Makefile.PL PREFIX=$installdir WORKFLOW_DOCS_DIR=$installdir/docs SCHEMA_DOCS_DIR=$installdir/docs >& autoinstall.log";
+		    
+        #die "would have executed $perlstring\n";
+
+		    &do_or_die($perlstring);
+		    
+		    my $makestring = "make >> autoinstall.log";
+		    
+		    &do_or_die($makestring);
+
+		    my $makeinstallstring = "make install >> autoinstall.log";
+		    
+		    &do_or_die($makeinstallstring);
 		}
 
 
-		my $perlstring = "perl Makefile.PL PREFIX=$installdir WORKFLOW_DOCS_DIR=$installdir/docs SCHEMA_DOCS_DIR=$installdir/docs >& autoinstall.log";
-
-        #die "would have executed $perlstring\n";
-
-		&do_or_die($perlstring);
-
-		my $makestring = "make >> autoinstall.log";
-
-		&do_or_die($makestring);
-
-		my $makeinstallstring = "make install >> autoinstall.log";
-
-		&do_or_die($makeinstallstring);
-	}
-
-
-
+	    }
 
 
 }
