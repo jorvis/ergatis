@@ -78,7 +78,7 @@ USAGE:  cas_installer.pl --installdir=installdirr --workingdir=workingdir --user
 use strict;
 use File::Copy;
 use File::Basename;
-use File::Path; #better choice than system calls, rm -rf = rmtree()
+use File::Path;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Cwd qw(realpath);
 use Pod::Usage;
@@ -413,8 +413,6 @@ sub execute_installation {
 		    
 		    
 		    my $perlstring = "perl Makefile.PL PREFIX=$installdir WORKFLOW_DOCS_DIR=$installdir/docs SCHEMA_DOCS_DIR=$installdir/docs >& autoinstall.log";
-		    
-        #die "would have executed $perlstring\n";
 
 		    &do_or_die($perlstring);
 		    
@@ -501,30 +499,6 @@ sub create_html {
 	&print_header($title);
 
 	&print_body($title, \@contents);
-
-
-	if (0) {
-	    #
-	    # Will phase out the invocation of cas2html.pl
-	    #
-
-
-#	die "datafile '$datafile' htmlfile '$htmlfile'";
-	    
-	    eval { qx{./cas2html.pl $datafile $htmlfile}; };
-	    
-	    if ($@){
-		$logger->logdie("$!");
-	    }
-	    
-	}
-
-
-
-
-
-
-
 
 }
 
