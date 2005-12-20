@@ -246,7 +246,6 @@ sub parseComponentSubflow {
        $twig->parsefile($groupsXML);
     my $commandSetRoot = $twig->root;
     parseCommandSet( $commandSetRoot->first_child('commandSet'), $groupsXML );
-
 }
 
 
@@ -269,7 +268,11 @@ sub printIncompleteSummary {
                 ## if it has a status, see if there are any messages;
                 if ( $commandSet->first_child('status') ) {
                     $messages_line .= '<li class="messages"><b>messages:</b><br>';
-                    $messages_line .= $commandSet->first_child('status')->first_child('message')->text();
+                    
+                    if ( $commandSet->first_child('status')->first_child('message') ) {
+                        $messages_line .= $commandSet->first_child('status')->first_child('message')->text();
+                    }
+
                     $messages_line .= "</li>\n";
                 }
                 
