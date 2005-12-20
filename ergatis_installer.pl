@@ -709,8 +709,9 @@ sub determine_cvs_revisions {
 
 
 		foreach my $line (@contents){
-			
-			&load_hash($cvshash, $line);
+			if ($line =~ /^.+=.+$/) {
+				&load_hash($cvshash, $line);
+			}
 		}
 
 	}
