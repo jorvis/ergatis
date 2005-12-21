@@ -50,10 +50,10 @@ my %colors = (
 
 ## we can parse some information out of the standardized instance file path
 ##  like: /usr/local/scratch/annotation/EHA1/Workflow/iprscan/30835_default/pipeline.xml
-my ($root_dir, $project, $component, $token, $pipelineid, $component_conf);
+my ($root_dir, $project, $component, $token, $pipelineid, $component_conf_varreplaced, $component_conf_nonvarreplaced);
 if ($pipeline =~ m|(.+/(.+)/Workflow/(.+?)/(\d+)_(.+?))/pipeline.xml|) {
-    #$component_conf = "$1/component.conf.bld.ini";
-    $component_conf = "$1/pipeline.config";
+    $component_conf_nonvarreplaced = "$1/component.conf.bld.ini";
+    $component_conf_varreplaced = "$1/pipeline.config";
     ($project, $component, $pipelineid, $token) = ($2, $3, $4, $5);
 } else {
     print "invalid instance file path format";
@@ -142,7 +142,7 @@ if (-e $pipeline) {
     <li class="actions">
         <a href="./view_component.cgi?pipeline_xml=$pipeline"><img class='navbutton' src='/ergatis/button_blue_view.png' alt='view' title='view'></a>
         <a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank"><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='xml' title='xml'></a>
-        <a href="./view_formatted_ini_source.cgi?file=$component_conf" target="_blank"><img class='navbutton' src='/ergatis/button_blue_config.png' alt='config' title='config'></a> 
+        <a href="./view_formatted_ini_source.cgi?file=$component_conf_varreplaced" target="_blank"><img class='navbutton' src='/ergatis/button_blue_config.png' alt='config' title='config'></a> 
         <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/ergatis/button_blue_update.png' alt='update' title='update'></a>
         <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/ergatis/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
     </li>
@@ -281,6 +281,12 @@ sub printIncompleteSummary {
         }
     }
 
+    ## if the component config file exists, display a button link for it.  else display the disabled button.
+    my $config_html_link = "<img class='navbutton' src='/ergatis/button_grey_config.png' alt='config' title='config'>";
+    if ( -e $component_conf_nonvarreplaced ) {
+        $config_html_link = "<a href='./view_formatted_ini_source.cgi?file=$component_conf_nonvarreplaced' target='_blank'><img class='navbutton' src='/ergatis/button_blue_config.png' alt='config' title='config'></a> ";
+    }
+
     print <<ComponentNOTyetCreated;
     <h1><div class="component_label"><b>component</b>: $ul_id</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
     <li><div class="component_progress_image"><div class="status_bar_portion" style="width: 500px; background-color: $colors{incomplete}"></div></div></li>
@@ -289,7 +295,7 @@ sub printIncompleteSummary {
     <li class="actions">
         <img class='navbutton' src='/ergatis/button_grey_view.png' alt='view' title='view'> 
         <img class='navbutton' src='/ergatis/button_grey_xml.png' alt='xml' title='xml'>  
-        <img class='navbutton' src='/ergatis/button_grey_config.png' alt='config' title='config'>  
+        $config_html_link
         <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/ergatis/button_blue_update.png' alt='update' title='update'></a>
         <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/ergatis/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
     </li>
