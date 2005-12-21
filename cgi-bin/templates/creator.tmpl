@@ -2,295 +2,68 @@
 
 <head>
     <meta http-equiv="Content-Language" content="en-us">
-    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-    <title>pre-pre-alpha workflow interface prototype</title>
-    <link rel="stylesheet" type="text/css" href="/concept/builder.css">
-    <style type="text/css">
-        div.component {
-            position: absolute; 
-            z-index: 1; 
-            border: solid black 1px;
-            background-color: #FFFFFF;
-        }
-        
-        div.component_body {
-            padding: 3px 3px 0px 3px;
-        }
-        
-        div.component_title_bar {
-            background-color: #CCCCCC;
-            padding: 0px 0px 0px 3px;
-            border-bottom: solid black 1px;
-        }
-        
-        span.component_title {
-            float: left;
-        }
-        
-        span.component_close_button {
-            float: right;
-        }
-        
-	div.pset ul {
-        clear: left; 
-        margin: 0; 
-        padding: 0; 
-        list-style-type: none; 
-        width: 10000px 
-    }
-	div.pset ul li {
-        float: left; 
-        width: 200px; 
-        height: 20px; 
-        margin:0; 
-        padding: 0;
-	    border-top: 1px solid black; 
-        border-right: 1px solid black; 
-	    position: relative; 
-        left: -130px; 
-    }
-	div.pset ul li.first {
-        border-top: none; 
-    }
-    div.pset ul li.adder {
-        border-right: none; 
-    }
-	div.pset ul li span.node { 
-        position:relative; 
-        left: 125px; 
-        top: 20px; 
-		display: block; 
-        width: 150px; 
-        height: 20px; 
-		border: 1px solid black; 
-        background-color: white; 
-    }
-    div.pset ul li span.remover { 
-        position:relative; 
-        left: 202px; 
-        top: -21px; 
-		display: block; 
-        width: 20px; 
-        height: 15px; 
-		border: none; 
-        background-color: white;
-        z-index: 2;
-    }
-    div.pset ul li.adder span { 
-        position:relative; 
-        left: 200px; 
-        top: 0px;
-		display: block; 
-        width: 15px; 
-        height: 15px; 
-		border: none; 
-        background-color: white; 
-    }
-	div.pset span:first-letter {
-        padding-left: 16px;
-    }
-	div.pset h1 {
-        height: 20px; 
-        margin: 40px 0 0 175px; 
-        font-weight: normal; 
-        font-size: 100%; 
-        border-left: 1px solid black; 
-    }
-	div.pset h1 span { 
-        position:relative; 
-        margin-left: -75px; 
-        top: -21px; 
-        display: block; 
-        width: 150px; 
-        height: 20px; 
-        border: 1px solid black; 
-    }
-
-        div.testdrop {
-            position:relative;
-            display: block;
-            left: 0px;
-            top: 63px;
-            background-color: #959AC0;
-            border: none;
-            z-index: 0;
-        }
-    </style>
-    
-    <script type="text/javascript" src="/concept/draggable3.js"></script>
-    <script type="text/javascript" src="/concept/ie_methods.js"></script>
-    <script type="text/javascript">
-    <!--
-    var next_elem_id = 0;
-    
-    // an array to hold all the components in the document
-    var components = new Array();
-    
-    function addComponent(compname) {
-        var this_elem_num = next_elem_id;
-        next_elem_id++;
-    
-        // create the object
-        components[this_elem_num] = new WorkflowComponent(compname, "component" + this_elem_num);
-    
-        // add the draggable component div
-        var htmltext = '<div class="component" id="component' + this_elem_num + '" style="left:250px; top:200px; height:100px; width:150px;">' +
-                            '<div class="component_title_bar" onmousedown="StartDrag(document.getElementById(' + "'component" + this_elem_num + "'))" + '" onmouseup="CancelDrag()">' +
-                                '<span class="component_title">' + compname + '</span>' +
-                                '<span class="component_close_button">X</span>' +
-                                '<div style="clear: both;"></div>' + 
-                            '</div>' +
-                            '<div class="component_body">' + 
-                                'configured: no' +
-                            '</div>' +
-                            '<div class="testdrop" style="width: 150; height: 20;" id="component' + this_elem_num + '_drop"></div>' +
-                        '</div>';
-
-        document.body.insertAdjacentHTML('BeforeEnd', htmltext);
-        
-        // initialize the component
-        initializeComponent("component" + this_elem_num);
-    }
-    
-    function addPset() {
-        var this_elem_num = next_elem_id;
-        next_elem_id++;
-        
-        // create object
-        
-        // add the draggable div
-        var htmltext = '<div class="pset" id="pset_container' + this_elem_num + '" onmousedown="StartDrag(this)" onmouseup="CancelDrag()" style="position: absolute; left:-100px; top:75px;">' +
-                       '    <h1><span>drag me</span></h1>' +
-	                   '    <ul>' +
-		               '        <li class="first"><span></span></li>' +
-		               '        <li><span></span></li>' +
-		               '        <li><span></span></li>' +
-	                   '    </ul>' +
-                       '</div>';
-        
-        document.body.insertAdjacentHTML('BeforeEnd', htmltext);
-        
-    }
-    
-    function addParallelSet() {
-        var this_elem_num = next_elem_id;
-        next_elem_id++;
-    
-        var elem_name = "pset_container" + this_elem_num;
-    
-        // create the object
-        //components[this_elem_num] = new ParallelSet("pset", elem_name);
-        
-        // build the text to add
-        var htmltext = '<div class="pset" id="' + elem_name + '" onmousedown="StartDrag(this)" onmouseup="CancelDrag()" style="position: absolute; left:50px; top:75px;">' +
-                           '<h1><span>drag me</span></h1>' +
-                           '<ul>' +
-		                       '<li class="first"><span class="node"></span></li>' +
-		                       '<li id="' + elem_name + '_node1"><span class="node"></span></li>' +
-                               '<li class="adder" id="' + elem_name + '_adder"><span><img src="/concept/plus.png" onclick="addParallelNode(' + "'" + elem_name + "'" + ')"></span></li>' +
-	                       '</ul>' +
-                       '</div>';
-        
-        // add the object to the page
-        document.body.insertAdjacentHTML('BeforeEnd', htmltext);
-
-        // set the initial node count for this element
-        document.getElementById(elem_name).node_count = 2;
-    }
-    
-    function addParallelNode(pset_list) {
-        var this_elem_num = next_elem_id;
-        next_elem_id++;
-    
-        // create the object
-        // components[this_elem_num] = new WorkflowComponent(compname, "component" + this_elem_num);
-    
-        var this_node_num = document.getElementById(pset_list).node_count;
-        document.getElementById(pset_list).node_count += 1;
-    
-        // node code
-        var htmltext = '<li id="pset_container0_node' + this_node_num + '"><span class="node"></span><span class="remover"><img src="/concept/minus.png" onclick="removeParallelNode(' + "'pset_container0_node" + this_node_num + "'" + ')"></span></li>';
-        
-        elem = document.getElementById(pset_list + "_adder");
-        elem.insertAdjacentHTML('beforeBegin', htmltext);
-    }
-    
-    function removeParallelNode(pset_list_node) {
-        elem = document.getElementById(pset_list_node);
-        elem.removeNode(true);
-    }
-
-    -->
-    </script>
-
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2">
+    <title>ergatis pipeline creation interface prototype</title>
+    <!-- bring in the styles -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/creator.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/nav_tree.css">
+    <!-- bring in the functionality -->
+    <script type="text/javascript" src="/ergatis/javascript/common.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/positioning.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/ie_fixes.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/ie_methods.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/draggable.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/creator.js"></script>
 </head>
 
 <body>
 
-    <!-- stats box -->
-    <div id=stats>
-        <p>
-            80% project space usage<br>
-            12 running workflows
-        </p>
+<div id='blocker'></div>
+<div id='bannertop'>
+    <img src='/ergatis/banner_main.png' alt='banner' title='banner' />
+</div>
+<div id='bannerbottom'>
+    <div class='buttons'>
+        <a href=''><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline_list'></a>
+        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
     </div>
+</div>
 
-    <!-- header section -->
-    <div id=banner>
-        <p>
-            <h1>CRAM</h1>
-        </p>
+<div id='controls'>
+    <h3>available components</h3>
+    <div id='component_selector'>
+        <ul id="nav_tree">
+<TMPL_VAR NAME=COMPONENT_CHOOSER_HTML>
+        </ul>
     </div>
-    
-    <!-- three-column layout -->
-    <div id=leftcontent>
-        <p class=head2>
-            add
-        </p>
-        <p class=head3>
-            parallel set
-        </p>
-        <p>
-            <img src="/concept/pset.png" onclick="addParallelSet();">
-        </p>
-        <p class=head3>
-            > components
-        </p>
-        <p>
-            <ul>
-                <TMPL_LOOP NAME=COMPONENTS>
-                <li><span onclick="addComponent('<TMPL_VAR NAME=LABEL>');"><TMPL_VAR NAME=LABEL></span></li>
-                </TMPL_LOOP> <!-- end components loop -->
-            </ul>
-        </p>
-        <p class=head3>
-            > pipelines
-        </p>
-        <p>
-            <ul>
-                <li><a>comparative</a></li>
-                <li><a>egc</a></li>
-                <li><a>sgc</a></li>
-            </ul>
-        </p>
-    </div>
+    <h3>input definitions</h3>
+    <ul id='input_list'>
+        <li><span class='input_type'>[dir ]</span>/tmp/fasta_in</li>
+        <li><span class='input_type'>[list]</span>output of split multifasta::default</li>
+        <li><span class='input_type'>[list]</span>output of aat aa::AllGroup.niaa</li>
+        <li><span class='input_type'>[list]</span>output of aat na::default</li>
+        <li><span class='input_type'>[list]</span>output of augustus:default</li>
+        <li><span class='input_type'>[list]</span>output of glimmerHMM:default</li>
+        <li><span class='input_type'>[list]</span>output of tRNAscan-SE:default</li>
+        <li><span class='input_type'>[list]</span>output of bsml2fasta:default</li>
+        <li><span class='input_type'>[list]</span>output of wu-blastp:AllGroup.niaa</li>
+        <li><span class='input_type'>[list]</span>output of hmmpfam:default</li>
+        <li><span class='input_type'>[list]</span>output of signalp:default</li>
+    </ul>
+</div>
 
-    <div id=centercontent>
-        <p class=head2>
-            current workflow
-        </p>
+<div id='build_area'>
+    <div id='current_config_container'>
+        some label: <input type=text value="foo">
     </div>
+    <h3>pipeline build area</h3>
+</div>
 
-    <div id=rightcontent>
-        <p class=head2>
-            settings
-        </p>
-        <p>
-            <div id="debug_box">
-            debugging information:
-            </div>
-        </p>
-    </div>
+<!-- these should not be visible to the user and are generated dynamically. -->
+<div id='component_templates'>
+<TMPL_VAR NAME=COMPONENT_TEMPLATE_HTML>
+</div>
 
 </body>
 
