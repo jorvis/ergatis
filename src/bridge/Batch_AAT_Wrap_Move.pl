@@ -143,7 +143,7 @@ MAIN:{
 			elsif (-d "$pipdir/$db"){
 				$pipdir .= "/$db";
 			} else {
-				die "\n\nProblem localizing the result directory\n\n";
+				die "\n\nProblem localizing the result directory when looking for $pipdir/$db\n\n";
 			}
 		}
 	} else {
