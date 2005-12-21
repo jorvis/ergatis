@@ -47,3 +47,11 @@ cd bug_release
 cvs -Q co ergatis_all
 cvs -Q $TEST tag $RELEASE_TAG
 echo "Added tag $RELEASE_TAG in ergatis_all"
+
+echo
+echo
+echo "IMPORTANT: Edit and commit a CHANGELOG entry for $RELEASE_TAG"
+echo "Opening file $DIRECTORY/bug_release/ergatis/doc/CHANGELOG in $CVSEDITOR"
+echo "$RELEASE_TAG" >> $DIRECTORY/bug_release/ergatis/doc/CHANGELOG
+echo "------------" >> $DIRECTORY/bug_release/ergatis/doc/CHANGELOG
+$CVSEDITOR $DIRECTORY/bug_release/ergatis/doc/CHANGELOG
