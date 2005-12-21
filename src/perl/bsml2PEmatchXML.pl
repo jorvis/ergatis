@@ -39,8 +39,8 @@ BEGIN {
     import Workflow::Logger;
     require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
     import BSML::BsmlReader;
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
-    import BSML::BsmlParserTwig;
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlParserSerialSearch.pm';
+    import BSML::BsmlParserSerialSearch;
 }
 use MLDBM "DB_File";
 
@@ -121,51 +121,21 @@ my $pexml =  PEffect::PEffectXML->new();
 my $asmbllookup = build_asmbl_lookup($options{'asmbl_lookup'});
 
 foreach my $file (@files){
-    my $parser = new BSML::BsmlParserTwig();
-    my $reader = new BSML::BsmlReader();
+    my $parser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => 
+						   sub{
+						       my $aln = shift;
+						       multipleAlignmentHandler($aln,$pexml);
+						   },
+						   AlignmentCallBack => 
+						   sub{
+						       my $aln = shift;
+						       alignmentHandler($aln,$asmbllookup,$pexml);
+						   });
+
     $logger->debug("Parsing entire file $file") if($logger->debug());
-    $parser->parse( \$reader, $file );
 
-    foreach my $maln (@{$reader->returnMultipleAlignmentTables()}){
-	my $mtable = $reader->readMultipleAlignmentTable($maln);
-	
-	my $sums = $mtable->{'AlignmentSummaries'};
-	foreach my $sum (@{$sums}){
-	    foreach my $seq1 (@{$sum->{'AlignedSequences'}}){
-		foreach my $seq2 (@{$sum->{'AlignedSequences'}}){
-		    my $name1 = $seq1->{'name'};
-		    my $name2 = $seq2->{'name'};
-		    if($name1 ne $name2){
-			$name1 =~ s/:\d+$//;
-			$name2 =~ s/:\d+$//;
-			my $score = 100;
-			$logger->debug("Adding alignment between $name2 and $name2 with score $score") if($logger->is_debug());
-			$pexml->addAlignment($name2, $name1, $score);
-		    }
-		}
-	    }
-	}
-    }
+    $parser->parse( $file );
 
-    foreach my $aln (@{$reader->returnAllSeqPairAlignmentsListR()}){
-	my $spaln = $reader->readSeqPairAlignment($aln);
-	$logger->debug("Alingment between $spaln->{'refseq'} : $asmbllookup->{$spaln->{'refseq'}} and $spaln->{'compseq'} : $asmbllookup->{$spaln->{'compseq'}}") if($logger->is_debug());
-	if($asmbllookup->{$spaln->{'refseq'}} ne $asmbllookup->{$spaln->{'compseq'}}){
-	    my $seqpairruns = $spaln->{'seqPairRuns'};
-	    my @sortedseqpairruns = sort { $a->{$options{'rankfield'}} <=> $b->{$options{'rankfield'}}  } @$seqpairruns;
-	    my $bestrun;
-	    if($options{'ranktype'} == 1){
-		$bestrun = @sortedseqpairruns[0];
-	    }
-	    else{
-		$bestrun = @sortedseqpairruns[$#sortedseqpairruns];
-	    }
-	    $logger->debug("Best run between $spaln->{'refseq'} $spaln->{'compseq'} of ".scalar(@sortedseqpairruns). " with rankfield: $bestrun->{$options{'rankfield'}} scorefield:$bestrun->{$options{'scorefield'}}") if($logger->is_debug());
-	    my $score = $bestrun->{$options{'scorefield'}};
-	    $logger->debug("Adding alignment between $spaln->{'refseq'} $spaln->{'compseq'} with score $score") if($logger->is_debug());
-	    $pexml->addAlignment($spaln->{'refseq'}, $spaln->{'compseq'}, $score);
-	}
-    }
 }
 
 my($oref);
@@ -189,4 +159,86 @@ sub build_asmbl_lookup{
     tie %lookup, 'MLDBM', $reader or $logger->logdie("Can't tie $reader");
     $logger->debug("Found ".scalar(keys %lookup)." keys") if($logger->is_debug());
     return \%lookup;
+}
+
+sub multipleAlignmentHandler
+{
+    my $aln = shift;
+    my $pexml = shift;
+    my $bsml_reader = new BSML::BsmlReader();
+
+    my $maln_ref = $bsml_reader->readMultipleAlignmentTable($aln);
+
+    foreach my $alnSum ( @{ $maln_ref->{'AlignmentSummaries'} } )
+    {
+	my $seqCount = 0;
+	foreach my $seq1 ( @{ $alnSum->{'AlignedSequences'} } )
+	{
+	    foreach my $seq2 ( @{ $alnSum->{'AlignedSequences'} } ){
+		my $name1 = $seq1->{'name'};
+		my $name2 = $seq2->{'name'};
+		if($name1 ne $name2){
+		    $name1 =~ s/:\d+$//;
+		    $name2 =~ s/:\d+$//;
+		    my $score = 100;
+		    $logger->debug("Adding alignment between $name2 and $name2 with score $score") if($logger->is_debug());
+		    $pexml->addAlignment($name2, $name1, $score);
+		}
+	    }
+	}
+    }
+}
+
+sub alignmentHandler
+{
+    my $aln = shift;
+    my $asmbllookup = shift;
+    my $pexml = shift;
+
+    my $refseq = $aln->returnattr( 'refseq' );
+    my $compseq = $aln->returnattr( 'compseq' );
+
+    if($asmbllookup->{$refseq} ne $asmbllookup->{$compseq}){
+	$logger->debug("Alignment between $refseq : $asmbllookup->{$refseq} and $compseq : $asmbllookup->{$compseq}") if($logger->is_debug());
+
+	my $seqpairruns = $aln->returnBsmlSeqPairRunListR;
+
+	my @sortedseqpairruns;
+	if($seqpairruns->[0]->returnBsmlAttr($options{'rankfield'})){
+	    @sortedseqpairruns = sort { $a->returnBsmlAttr($options{'rankfield'}) <=> $b->returnBsmlAttr($options{'rankfield'})  } @$seqpairruns;
+	}
+	elsif($seqpairruns->[0]->returnattr($options{'rankfield'})){
+	    @sortedseqpairruns = sort { $a->returnattr($options{'rankfield'}) <=> $b->returnattr($options{'rankfield'})  } @$seqpairruns;
+	}
+	else{
+	    $logger->logdie("Bad rankfield $options{'rankfield'}");
+	    die;
+	}
+	    
+	my $bestrun;
+	if($options{'ranktype'} == 1){
+	    $bestrun = @sortedseqpairruns[0];
+	}
+	else{
+	    $bestrun = @sortedseqpairruns[$#sortedseqpairruns];
+	}
+	
+
+	my $score;
+	if($bestrun->returnBsmlAttr($options{'scorefield'})){
+	   $score = $bestrun->returnBsmlAttr($options{'scorefield'});
+	}
+	elsif($bestrun->returnattr($options{'scorefield'})){
+	   $score = $bestrun->returnattr($options{'scorefield'});
+	}
+	else{
+	    $logger->logdie("Bad scorefield $options{'scorefield'}");
+	    die;
+	}   
+	 
+	$logger->debug("Best run between $refseq $compseq of ".scalar(@sortedseqpairruns). " with rankfield: $options{'rankfield'} scorefield:$options{'scorefield'} bestscore: $score") if($logger->is_debug());
+
+	$logger->debug("Adding alignment between $refseq $compseq with score $score") if($logger->is_debug());
+	$pexml->addAlignment($refseq, $compseq, $score);
+    }
 }
