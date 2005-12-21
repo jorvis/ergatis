@@ -1,2 +1,8 @@
 ergatis-v1r2b1
 ------------
+
+ergatis-v1r3b1
+------------
+added initial creator framework.
+changed AAT components to use Brian's filter.pl script.
+changed wu-blast components to use soft instead of hard masking.
