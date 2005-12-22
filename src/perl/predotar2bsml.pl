@@ -160,6 +160,12 @@ while (<$ifh>) {
 			last;
 		} else {
 			my @result_fields = split("\t", $result_line);
+			if ($result_line =~ /Discarding/) {
+				$logger->error(
+					"input sequence ".$result_fields[0]." was discarded by predotar."
+				              ) if ($logger->is_error);
+				next;
+			}
 			push (@results, \@result_fields); 
 		}
 
