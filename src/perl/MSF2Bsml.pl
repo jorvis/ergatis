@@ -106,13 +106,13 @@ if(keys %$MSF_alignments > 1){   #skip empty msf files
 	# 2005.07.12
 	# Polypeptide identifiers in clustalw output are being truncated.
 	#
-	if ($seq =~ /_protei$/){
+	if (length($seq) == 30 && $seq !~ /_polypeptide$/){
 	    $logger->warn("polypeptide identifier '$seq' was truncated by clustalw, repairing now");
-	    $seq .= "n";
+	    $seq =~ s/_[^_]+$/_polypeptide/;
 	}
-	if ($alignment =~ /_protei /){
+	if ($alignment !~ /_polypeptide\s/){
 	    $logger->warn("polypeptide identifier in the alignment of '$seq' was truncated by clustalw, repairing now");
-	    $alignment =~ s/_protei /_protein /g;
+	    $alignment =~ s/_[^_\s]+\s/_polypeptide /g;
 	}
 
 	$builder->createAndAddAlignedSequence(
