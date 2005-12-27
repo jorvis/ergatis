@@ -30,6 +30,8 @@ B<--help,-h> This help message
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
+use Config::IniFiles;
+
 BEGIN {
     require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Logger.pm';
     import Workflow::Logger;
@@ -43,6 +45,8 @@ my $results = GetOptions (\%options,
 			  'output|o=s',
 			  'log|l=s',
 			  'debug=s',
+			  'conf=s',
+			  'analysis_conf=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -132,6 +136,12 @@ if(keys %$MSF_alignments > 1){   #skip empty msf files
     $aln->addattr( 'sequences', $sequences_tag );
 }
 
+## add the analysis element
+$builder->createAndAddAnalysis(
+			   id => &get_analysis_name($options{'analysis_conf'}),
+			   sourcename => $options{'output'},
+			   );
+
 $builder->write( $options{'output'} );
 
 sub check_parameters{
@@ -203,3 +213,24 @@ sub process_MSF_file {
     return $MSF_alignments;
 
 }#end sub process_MSF_file()
+
+
+sub get_analysis_name{
+    my($conf) = @_;
+    my $analysis_name = "clustalw_analysis";
+    if(-e $conf){
+	my $cfg = new Config::IniFiles( -file => $conf);
+	my @sections = $cfg->Sections();
+	my $name;
+	for my $section (@sections) {
+	    $name = $cfg->val($section,'$;NAME$;');
+	    if($name ne ""){
+		last;
+	    }
+	}
+	if($name ne ""){
+	    $analysis_name = $name."_analysis";
+	}
+    }
+    return $analysis_name;
+}
