@@ -1,4 +1,7 @@
-#! /usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
+
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 # this is temporary for development
 # use lib "/export/CVS/bsml/src/";
@@ -60,30 +63,33 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
     import BSML::BsmlBuilder;
 }
 
 my %options = ();
-my $results = GetOptions( \%options, 'tilingPath|t=s', 'bsml_repository_path|b=s', 'outFile|o=s', 'help|h' ) || pod2usage();
+GetOptions( \%options, 
+	    'tilingPath|t=s', 
+	    'referencePath|r=s', 
+	    'outFile|o=s', 
+	    'help|h' 
+	    ) || pod2usage();
 
 # display documentation
 if( $options{'help'} ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
 }
 
-if( !( $options{'tilingPath' } ) )
-{
+if( !( $options{'tilingPath'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
 }
 
-if( !( $options{'bsml_repository_path' } ) )
-{
+#path to original reference mfsa required for SeqDataImport in bsml
+if( !( $options{'referencePath'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
 }
 
-if( !( $options{'outFile' } ) )
-{
+if( !( $options{'outFile'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
 }
 
@@ -97,91 +103,154 @@ if( !( $options{'outFile' } ) )
 # 6 - orientation
 # 7 - id
 
-my $repositoryPath = $options{'bsml_repository_path'};
+#my $repositoryPath = $options{'bsml_repository_path'};
 
-open( TILINGS, $options{'tilingPath'} ) or die "Unable to open $options{'tilingPath'}\n";
+open( TILINGS, $options{'tilingPath'} ) or die "Unable to open $options{'tilingPath'}";
+my $doc = new BSML::BsmlBuilder;
+my $ref_id = "";
+my %unique_contigs; #track that each contig is only tiled once, otherwise it's ambiguous
+while (my $line = <TILINGS>) {
+    chomp $line;
+    #Add in a reference sequence
+    if ($line =~ />([\S]*)[\s]([\d]*)/) {
+	$ref_id = $1;
+	my $ref_length = $2;
 
-my $bsmlDoc = new BSML::BsmlBuilder;
+	my $ref_sequence = $doc->createAndAddSequence(
+				    $ref_id, #id
+				    undef, #title
+				    $ref_length, #length
+				    'mol-not-set', #molecule
+				    'supercontig' #class
+				    );
+	#Seq-data-import/@identifier must equal the fasta header up to the first space	    
+	my $ref_sequence_data = $doc->createAndAddSeqDataImport(
+ 				    $ref_sequence,              # Sequence element object reference
+ 				    'fasta',                    # //Seq-data-import/@format
+ 				    $options{'referencePath'},               # //Seq-data-import/@source
+ 				    undef,                      # //Seq-data-import/@id
+ 				    $ref_id                     # //Seq-data-import/@identifier
+ 				    );
+    }
+    #Add in a tile
+    else {
+	unless ($ref_id) {
+	    die "No valid reference sequence";
+	}
+	my @tile = split("\t",$line);
+	my $tile_id = $tile[7];
+	my $tile_length = $tile[3];
+	my $tile_start = $tile[0] - 1; #interbase 0 coordinates
+	my $tile_ascending = 0;
+
+	if( $tile[6] eq '+' ) {
+	    $tile_ascending = 1;
+	}
+        #  else stay 0
+
+	#ensure uniqueness
+#	(exists $unique_contigs{$tile_id}) ? die "Ambigous multi-tiling of contig $tile_id" : $unique_contigs{$tile_id} = 1;
+	if (exists $unique_contigs{$tile_id}) {
+	    die "Ambigous multi-tiling of contig $tile_id";
+	}
+	else { $unique_contigs{$tile_id} = 1; }
+
+	my $tile_sequence = $doc->createAndAddSequence(
+				    $tile_id, #id
+				    undef, #title
+				    $tile_length, #length
+				    'mol-not-set', #molecule
+				    'contig' #class
+				    );
+	$doc->createAndAddNumbering( seq => $tile_sequence,
+ 				     seqref => $ref_id,
+ 				     refnum => $tile_start,
+ 				     ascending => $tile_ascending );	
+    }
+}
+close(TILINGS);
+
+$doc->write( $options{'outFile'} );
 
 # add the reference sequence to the Tiling Document
 
-my $reference_assmbl_id = '';
+# my $reference_assmbl_id = '';
 
-my $line = <TILINGS>;
+# my $line = <TILINGS>;
 
-if( !($line) )
-{
-    die "Tiling path contains no reference sequence\n";
-}
-else
-{
-    # Grab the refseq id from the first line
-    if ($line =~ />([\S]*)[\s]([\d]*)/)
-    {
-	$reference_assmbl_id = $1;
+# if( !($line) )
+# {
+#     die "Tiling path contains no reference sequence\n";
+# }
+# else
+# {
+#     # Grab the refseq id from the first line
+#     if ($line =~ />([\S]*)[\s]([\d]*)/)
+#     {
+# 	$reference_assmbl_id = $1;
 
-	# add the reference sequence to the bsml tiling
-	my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $1,
-							      title => $1,
-							      molecule => 'dna',
-							      length => $2 );
+# 	# add the reference sequence to the bsml tiling
+# 	my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $1,
+# 							      title => $1,
+# 							      molecule => 'dna',
+# 							      length => $2 );
 
-	$newSeq->addattr( 'class', 'assembly' );
+# 	$newSeq->addattr( 'class', 'assembly' );
 
-	# add a file link to the assembly bsml doc in the repository
+# 	# add a file link to the assembly bsml doc in the repository
 
-	$bsmlDoc->createAndAddSeqDataImportN( seq => $newSeq,
-				      format => "BSML",
-                                      source => $repositoryPath."/".$reference_assmbl_id.".bsml",
-                                      id => "_$reference_assmbl_id");
+# 	$bsmlDoc->createAndAddSeqDataImportN( seq => $newSeq,
+# 				      format => "BSML",
+#                                       source => $repositoryPath."/".$reference_assmbl_id.".bsml",
+#                                       id => "_$reference_assmbl_id");
 	
-    }
-    else
-    {
-	die "Unable to determine reference sequence\n";
-    }
-}
+#     }
+#     else
+#     {
+# 	die "Unable to determine reference sequence\n";
+#     }
+# }
 
-my $rank = 0;
+# my $rank = 0;
 
-# add each tiled sequence to the Tiling Document
+# # add each tiled sequence to the Tiling Document
 
-while( my $line = <TILINGS> )
-{
-    my @tile = split( "\t", $line );
-    chomp( $tile[7] );
+# while( my $line = <TILINGS> )
+# {
+#     my @tile = split( "\t", $line );
+#     chomp( $tile[7] );
 
-    my $assmbl_id = $tile[7];
-    my $orientation = $tile[6];
-    my $ascending = 0;
+#     my $assmbl_id = $tile[7];
+#     my $orientation = $tile[6];
+#     my $ascending = 0;
 
-    if( $orientation eq '+' )
-    {
-	$ascending = 1;
-    }
-    else
-    {
-	$ascending = 0;
-    }
+#     if( $orientation eq '+' )
+#     {
+# 	$ascending = 1;
+#     }
+#     else
+#     {
+# 	$ascending = 0;
+#     }
 
-    my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $assmbl_id,
-							  title => $assmbl_id,
-							  molecule => 'dna',
-							  length => $tile[3] );
+#     my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $assmbl_id,
+# 							  title => $assmbl_id,
+# 							  molecule => 'dna',
+# 							  length => $tile[3] );
 
-    $newSeq->addattr( 'class', 'assembly' );
+#     $newSeq->addattr( 'class', 'assembly' );
 
-    $bsmlDoc->createAndAddNumbering( seq => $newSeq,
-				     seqref => $reference_assmbl_id,
-				     refnum => $tile[0],
-				     ascending => $ascending );
+#     $bsmlDoc->createAndAddNumbering( seq => $newSeq,
+# 				     seqref => $reference_assmbl_id,
+# 				     refnum => $tile[0],
+# 				     ascending => $ascending );
 
-    # add a file link to the assembly doc in the bsml repository
+#     # add a file link to the assembly doc in the bsml repository
 
-    $bsmlDoc->createAndAddSeqDataImportN( seq => $newSeq,
-				      format => "BSML",
-                                      source => $repositoryPath."/".$assmbl_id,
-                                      id => "_$assmbl_id");
-}
+#     $bsmlDoc->createAndAddSeqDataImportN( seq => $newSeq,
+# 				      format => "BSML",
+#                                       source => $repositoryPath."/".$assmbl_id,
+#                                       id => "_$assmbl_id");
+# }
 
-$bsmlDoc->write( $options{'outFile'} );
+# $bsmlDoc->write( $options{'outFile'} );
