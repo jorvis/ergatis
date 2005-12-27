@@ -19,7 +19,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use File::Basename;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
     import BSML::BsmlBuilder;
 }
 use Log::Log4perl qw(get_logger :levels :easy);

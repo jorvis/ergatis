@@ -6,7 +6,7 @@ use File::Basename;
 use IO::File;
 
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/GenePredictionUtils/GeneMarkBsmlGenerator.pm';
+    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/GenePredictionUtils/GeneMarkBsmlGenerator.pm';
     import GenePredictionUtils::GeneMarkBsmlGenerator;
 }
 
