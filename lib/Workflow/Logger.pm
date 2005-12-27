@@ -176,6 +176,12 @@ sub AUTOLOAD {
     return 0;
 }
 
+sub logdie{
+    my $arg = shift;
+    die $arg;
+}
+
+
 1;
 
 __END__
