@@ -56,6 +56,8 @@ analysis are recorded for informational purposes or to re-run the analysis.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
+use File::Basename;
+
 BEGIN {
     require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
     import Workflow::Logger;
@@ -209,6 +211,11 @@ sub process_research {
     
     ## add the Attributes to the Analysis element
     &add_config_params($analysis);
+
+    my $sourcename = $analysis->first_child('Attribute',"*[\@name=\"sourcename\"]");
+    if($sourcename){
+	$sourcename->set_att('content',dirname(dirname($sourcename->att('content'))));
+    }
     
     ## add the analysis element to the Analyses element
     $analysis->paste('last_child', $analyses) if ($analysis_not_found);
