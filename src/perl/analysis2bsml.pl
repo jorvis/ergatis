@@ -184,7 +184,12 @@ sub process_research {
     if (! $analyses) {
         $analyses = XML::Twig::Elt->new('Analyses');
         $analyses_not_found = 1;
-    }    
+    }elsif(! defined($options{'analysis_id'}) ) {
+	my $analysis = $analyses->first_child('Analysis');
+	if($analysis){
+	    $options{'analysis_id'} = $analysis->att('id');
+	}
+    }
     
     ## does Analyses contain any Analysis elements?
     my $analysis;
