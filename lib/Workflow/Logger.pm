@@ -91,7 +91,7 @@ sub _init {
 
     my %arg = @_;
     foreach my $key (keys %arg) {
-        $self->{"_$key"} = $arg{$key}
+        $self->{"_$key"} = $arg{$key};
     }
 #    $self->_init_class_loggers();
 }
@@ -109,6 +109,12 @@ B<Returns:>
 sub _init_class_loggers {
     my($self) = @_;
     
+    # make sure that initialization is only done once; this check is relevant under mod_perl
+    if (Log::Log4perl::initialized()) {
+	my $logger = $self->get_logger();
+	return;
+    }
+
     if(defined $self->{_LOGGER_CONF}){
        	Log::Log4perl::init_and_watch($self->{_LOGGER_CONF});
       }
@@ -131,7 +137,8 @@ sub _init_class_loggers {
 	$logger->debug('--------------------------') if($logger->is_debug);
 	$logger->debug("INIT_LOGGER $self->{_caller}") if($logger->is_debug);
 	$logger->debug('--------------------------') if($logger->is_debug);
-	#XML appender is needed for chainsaw. The XMLLayout Perl module is distributed separately and
+	chmod 0666,$self->{_LOG_FILE}; # set to world rw to prevent multi-user access issues
+        #XML appender is needed for chainsaw. The XMLLayout Perl module is distributed separately and
 	#does not seem to work out of the box. A new version of Time::HiRes was needed.
 	#use Log::Log4perl::Layout::XMLLayout;
 	#my $xmlfile_appender = Log::Log4perl::Appender->new("Log::Dispatch::File",
