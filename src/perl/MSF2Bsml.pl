@@ -65,7 +65,7 @@ if( $options{'help'} ){
 $logger->info("Instantiating the BSML builder object");
 my $builder = new BSML::BsmlBuilder;
 $logger->logdie("builder was not defined") if (!defined($builder));
-
+my $analysis_name = &get_analysis_name($options{'analysis_conf'});
 my $MSF_alignments = process_MSF_file("$options{'msffile'}");
 if(keys %$MSF_alignments > 1){   #skip empty msf files
     my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'});
@@ -81,7 +81,7 @@ if(keys %$MSF_alignments > 1){   #skip empty msf files
     
     my $aln = $builder->createAndAddSequenceAlignment( 'multipleAlignmentTable' => $table );
     $logger->logdie("aln was not defined") if (!defined($aln));
-    
+    $table->addBsmlLink('analysis', '#'."$analysis_name", 'computed_by');
     my $seqnum=0;
     my $sequences_tag;
     
@@ -138,7 +138,7 @@ if(keys %$MSF_alignments > 1){   #skip empty msf files
 
 ## add the analysis element
 $builder->createAndAddAnalysis(
-			   id => &get_analysis_name($options{'analysis_conf'}),
+			   id => $analysis_name,
 			   sourcename => $options{'output'},
 			   );
 
