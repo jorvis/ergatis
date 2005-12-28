@@ -4,9 +4,9 @@ use strict;
 use warnings;
 
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
+    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
     import BSML::BsmlBuilder;
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
+    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
     import Papyrus::TempIdCreator;
 }
 

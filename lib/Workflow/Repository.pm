@@ -27,7 +27,7 @@ my $workflowrepository = new Workflow::Repository('PATH'=>$repositorypath);
 use strict;
 use Data::Dumper;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Logger.pm';
     import Workflow::Logger;
 }
 use Date::Manip;

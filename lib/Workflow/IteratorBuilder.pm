@@ -30,7 +30,7 @@ Last modified on $Date$
 use strict;
 use base qw(Workflow::Builder);
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Logger.pm';
     import Workflow::Logger;
 }
 use Data::Dumper;
