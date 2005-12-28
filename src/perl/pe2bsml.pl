@@ -165,6 +165,11 @@ foreach my $query_name (keys %$seq_pair){
     }
  }
 
+$doc->createAndAddAnalysis(
+			   id => "pe_analysis",
+			   sourcename => $options{'output'},
+			   );
+
 $doc->write($options{'output'});
 
 sub get_aa_lookup{
