@@ -3,16 +3,19 @@
 eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 # this is temporary for development
 # use lib "/export/CVS/bsml/src/";
 
 =head1  NAME 
 
-Tiling2Bsml.pl  - convert show_tiling output into BSML sequence mapping documents
+tiling2bsml.pl  - convert show_tiling output into BSML sequence mapping documents
 
 =head1 SYNOPSIS
 
-USAGE:  Tiling2Bsml.pl -t tilings_file -b path_to_bsml_repository -o output_file_bsml
+USAGE:  tiling2bsml.pl -t tilings_file -b path_to_bsml_repository -o output_file_bsml
 
 =head1 OPTIONS
 
@@ -38,7 +41,7 @@ B<--help,-h> This help message
 
 =head1   DESCRIPTION
 
-Tiling2Bsml.pl is designed to convert tiling path data from show_tiling 
+tiling2bsml.pl is designed to convert tiling path data from show_tiling 
 into BSML sequence mapping documents.
 
 
@@ -71,7 +74,10 @@ my %options = ();
 GetOptions( \%options, 
 	    'tilingPath|t=s', 
 	    'referencePath|r=s', 
-	    'outFile|o=s', 
+	    'outFile|o=s',
+	    'reference_class=s',
+	    'query_class=s',
+	    'outFile|o=s',
 	    'help|h' 
 	    ) || pod2usage();
 
@@ -93,6 +99,14 @@ if( !( $options{'outFile'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
 }
 
+#needed inputs available?
+if( !( $options{'reference_class'} ) ) {
+    pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
+}
+if( !( $options{'query_class'} ) ) {
+    pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
+}
+
 # The output of show_tiling is tab deliminted with the following fields
 # 0 - start in ref
 # 1 - end in ref
@@ -108,6 +122,8 @@ if( !( $options{'outFile'} ) ) {
 open( TILINGS, $options{'tilingPath'} ) or die "Unable to open $options{'tilingPath'}";
 my $doc = new BSML::BsmlBuilder;
 my $ref_id = "";
+my $reference_class = $options{'reference_class'};
+my $query_class = $options{'query_class'};
 my %unique_contigs; #track that each contig is only tiled once, otherwise it's ambiguous
 while (my $line = <TILINGS>) {
     chomp $line;
@@ -120,8 +136,8 @@ while (my $line = <TILINGS>) {
 				    $ref_id, #id
 				    undef, #title
 				    $ref_length, #length
-				    'mol-not-set', #molecule
-				    'supercontig' #class
+				    'dna', #molecule
+				    $reference_class #class
 				    );
 	#Seq-data-import/@identifier must equal the fasta header up to the first space	    
 	my $ref_sequence_data = $doc->createAndAddSeqDataImport(
@@ -159,8 +175,8 @@ while (my $line = <TILINGS>) {
 				    $tile_id, #id
 				    undef, #title
 				    $tile_length, #length
-				    'mol-not-set', #molecule
-				    'contig' #class
+				    'dna', #molecule
+				    $query_class #class
 				    );
 	$doc->createAndAddNumbering( seq => $tile_sequence,
  				     seqref => $ref_id,
