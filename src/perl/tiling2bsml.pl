@@ -122,6 +122,7 @@ if( !( $options{'query_class'} ) ) {
 open( TILINGS, $options{'tilingPath'} ) or die "Unable to open $options{'tilingPath'}";
 my $doc = new BSML::BsmlBuilder;
 my $ref_id = "";
+my $ref_length = -1;
 my $reference_class = $options{'reference_class'};
 my $query_class = $options{'query_class'};
 my %unique_contigs; #track that each contig is only tiled once, otherwise it's ambiguous
@@ -130,7 +131,7 @@ while (my $line = <TILINGS>) {
     #Add in a reference sequence
     if ($line =~ />([\S]*)[\s]([\d]*)/) {
 	$ref_id = $1;
-	my $ref_length = $2;
+	$ref_length = $2;
 
 	my $ref_sequence = $doc->createAndAddSequence(
 				    $ref_id, #id
@@ -165,11 +166,21 @@ while (my $line = <TILINGS>) {
         #  else stay 0
 
 	#ensure uniqueness
-#	(exists $unique_contigs{$tile_id}) ? die "Ambigous multi-tiling of contig $tile_id" : $unique_contigs{$tile_id} = 1;
 	if (exists $unique_contigs{$tile_id}) {
 	    die "Ambigous multi-tiling of contig $tile_id";
 	}
 	else { $unique_contigs{$tile_id} = 1; }
+
+	#check that tile.length < scaffold.length
+	if ($ref_length < $tile_length) {
+	    die "Length of scaffold $ref_id ($ref_length), less than tile ($tile_id) ($tile_length)";
+	}
+
+	#check that the coordinates are positive
+	if ($tile_start < 0 || $tile_length < 0) {
+	    die "Invalid tile_start ($tile_start) or tile_length ($tile_length) for $tile_id in $options{'tilingPath'}";
+	}
+	
 
 	my $tile_sequence = $doc->createAndAddSequence(
 				    $tile_id, #id
