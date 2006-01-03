@@ -178,6 +178,14 @@ while (my $line = <TILINGS>) {
 				    'dna', #molecule
 				    $query_class #class
 				    );
+	#Seq-data-import/@identifier must equal the fasta header up to the first space	    
+	my $tile_sequence_data = $doc->createAndAddSeqDataImport(
+ 				    $tile_sequence,              # Sequence element object reference
+ 				    'fasta',                    # //Seq-data-import/@format
+ 				    $options{'tilingPath'},               # //Seq-data-import/@source
+ 				    undef,                      # //Seq-data-import/@id
+ 				    $tile_id                     # //Seq-data-import/@identifier
+ 				    );
 	$doc->createAndAddNumbering( seq => $tile_sequence,
  				     seqref => $ref_id,
  				     refnum => $tile_start,
@@ -187,86 +195,3 @@ while (my $line = <TILINGS>) {
 close(TILINGS);
 
 $doc->write( $options{'outFile'} );
-
-# add the reference sequence to the Tiling Document
-
-# my $reference_assmbl_id = '';
-
-# my $line = <TILINGS>;
-
-# if( !($line) )
-# {
-#     die "Tiling path contains no reference sequence\n";
-# }
-# else
-# {
-#     # Grab the refseq id from the first line
-#     if ($line =~ />([\S]*)[\s]([\d]*)/)
-#     {
-# 	$reference_assmbl_id = $1;
-
-# 	# add the reference sequence to the bsml tiling
-# 	my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $1,
-# 							      title => $1,
-# 							      molecule => 'dna',
-# 							      length => $2 );
-
-# 	$newSeq->addattr( 'class', 'assembly' );
-
-# 	# add a file link to the assembly bsml doc in the repository
-
-# 	$bsmlDoc->createAndAddSeqDataImportN( seq => $newSeq,
-# 				      format => "BSML",
-#                                       source => $repositoryPath."/".$reference_assmbl_id.".bsml",
-#                                       id => "_$reference_assmbl_id");
-	
-#     }
-#     else
-#     {
-# 	die "Unable to determine reference sequence\n";
-#     }
-# }
-
-# my $rank = 0;
-
-# # add each tiled sequence to the Tiling Document
-
-# while( my $line = <TILINGS> )
-# {
-#     my @tile = split( "\t", $line );
-#     chomp( $tile[7] );
-
-#     my $assmbl_id = $tile[7];
-#     my $orientation = $tile[6];
-#     my $ascending = 0;
-
-#     if( $orientation eq '+' )
-#     {
-# 	$ascending = 1;
-#     }
-#     else
-#     {
-# 	$ascending = 0;
-#     }
-
-#     my $newSeq = $bsmlDoc->createAndAddExtendedSequenceN( id => $assmbl_id,
-# 							  title => $assmbl_id,
-# 							  molecule => 'dna',
-# 							  length => $tile[3] );
-
-#     $newSeq->addattr( 'class', 'assembly' );
-
-#     $bsmlDoc->createAndAddNumbering( seq => $newSeq,
-# 				     seqref => $reference_assmbl_id,
-# 				     refnum => $tile[0],
-# 				     ascending => $ascending );
-
-#     # add a file link to the assembly doc in the bsml repository
-
-#     $bsmlDoc->createAndAddSeqDataImportN( seq => $newSeq,
-# 				      format => "BSML",
-#                                       source => $repositoryPath."/".$assmbl_id,
-#                                       id => "_$assmbl_id");
-# }
-
-# $bsmlDoc->write( $options{'outFile'} );
