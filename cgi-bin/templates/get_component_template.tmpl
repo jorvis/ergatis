@@ -1,0 +1,23 @@
+<h3><TMPL_VAR NAME=COMPONENT_NAME> configuration</h3>
+<hr />
+
+<TMPL_IF NAME=COMPONENT_FOUND>
+<table>
+    <TMPL_LOOP NAME=COMPONENT_OPTIONS>
+    <tr>
+        <td><TMPL_VAR NAME=LABEL></td>
+        <td><input type='text' name='<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td>
+    </tr>
+    </TMPL_LOOP>
+</table>
+<TMPL_ELSE>
+Component configuration file not found.  This shouldn't happen.  Please hit cancel
+and try again or contact an administrator.
+</TMPL_IF>
+
+<div class='button_container'>
+<TMPL_IF NAME=COMPONENT_FOUND>
+    <span class='button' onclick=''>save</span>
+</TMPL_IF>
+    <span class='button' onclick='javascript:cancelNewConfiguration()'>cancel</span>
+</div>
