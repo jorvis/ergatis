@@ -44,6 +44,19 @@ sub process_iterated_commandset {
     my $name = basename($file, '.xml');
     my $state = $commandset->first_child('state')->text();
     
+    ## check for any messages
+    my $msg_html = '';
+    if ( $commandset->has_child('status') ) {
+        if ( $commandset->first_child('status')->has_child('message') ) {
+            my $msg = $commandset->first_child('status')->has_child('message')->text();
+            
+            ## don't display it if it is just a 'finished' message
+            unless ( $msg =~ /Command set with name.+ finished/i ) {
+                $msg_html = "<div class='messageblock'>$msg</div>\n";
+            }
+        }
+    }
+    
     print <<SubFlowFile;
     <div id='${name}_bar' class='subflowbar'>
         <div class='leftside'>
@@ -55,6 +68,7 @@ sub process_iterated_commandset {
             <img class='reloader' src='/ergatis/reload_blue.png' onclick='reload_subflow("$name", "$file")' alt='reload' title='reload'>
         </div>
     </div>
+    $msg_html
     <div id='${name}_data' class='subflowdata' style='display: none;'></div>
 SubFlowFile
 
