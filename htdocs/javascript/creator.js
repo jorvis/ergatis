@@ -28,9 +28,15 @@ function addComponent(component_name) {
                             component.label +
                         "</div>" +
                         "<div class='component_body'>" +
-                            "token: " + component.token + "<br />" +
-                            "configured: " + component.configured +
-                        "</div>" +
+                            "token: " + component.token + "<br />";
+
+    if ( component.configured ) {
+        htmltext += "component configured";
+    } else {
+        htmltext += "<a href='javascript:newConfiguration(\"" + component_name + "\")'>component not configured</a>";
+    }
+
+    htmltext +=         "</div>" +
                     "</div>";
 
     // remember the component
@@ -99,5 +105,96 @@ function dropComponent(component_id) {
 function nextElementID() {
     return next_elem_id++;
 }
+
+
+// bring up the dialog to configure a new component.
+function newConfiguration( component_name ) {
+    // display the blocking window
+    getObject('blocker').style.display = 'block';
+    
+    // get a reference to the config container
+    var config_container = getObject('current_config_container');
+    
+    // user notification
+    config_container.innerHTML = 'getting configuration template ...';
+    
+    // fetch the component configuration and populate the div
+    getComponentConfigTemplate( component_name );
+    
+    // display the configuration container
+    config_container.style.display = 'block';
+}
+
+// cancel a new configuration build
+function cancelNewConfiguration() {
+    // hide the configuraton container
+    getObject('current_config_container').style.display = 'none';
+    
+    // hide the blocking window
+    getObject('blocker').style.display = 'none';
+    
+    // clear the configuration container
+    getObject('current_config_container').innerHTML = '';
+}
+
+// threadsafe asynchronous XMLHTTPRequest code
+function getComponentConfigTemplate( component_name ) {
+    // inner functions below.  using these, reassigning the onreadystatechange
+    // function won't stomp over earlier requests
+
+    function ajaxBindCallback() {
+        // progressive transitions are from 0 .. 4
+        if (ajaxRequest.readyState == 4) {
+            // 200 is the successful response code
+            if (ajaxRequest.status == 200) {
+                // could add the component name here too if we later allow multiple configuration windows.
+                ajaxCallback (ajaxRequest.responseText);
+            } else {
+                // error handling here
+                alert("there was a problem fetching the component template");
+            }
+        }
+    }
+
+    var ajaxRequest = null;
+    var ajaxCallback = updateConfigContainer;
+    var url = './get_component_template.cgi?repository_root=' + repository_root + 
+              '&component_name=' + component_name;
+
+    // bind the call back, then do the request
+    if (window.XMLHttpRequest) {
+        // mozilla, firefox, etc will get here
+        ajaxRequest = new XMLHttpRequest();
+        ajaxRequest.onreadystatechange = ajaxBindCallback;
+        ajaxRequest.open("GET", url , true);
+        ajaxRequest.send(null);
+    } else if (window.ActiveXObject) {
+        // IE, of course, has its own way
+        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+
+        if (ajaxRequest) {
+            ajaxRequest.onreadystatechange = ajaxBindCallback;
+            ajaxRequest.open("GET", url, true);
+            ajaxRequest.send();
+        }
+    }
+}
+
+// this should be called once the background request finishes parsing the template.
+function updateConfigContainer( config_html ) {
+    getObject('current_config_container').innerHTML = config_html;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 

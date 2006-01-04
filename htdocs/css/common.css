@@ -7,6 +7,11 @@ body {
     background-color: rgb(255,255,255);
 }
 
+table {
+    font-family: verdana, sans-serif;
+    font-size: 8pt;
+}
+
 #bannertop {
     height: 36px;
     margin: 0px;
@@ -28,11 +33,31 @@ a {
     color: rgb(0,100,0);
     cursor: pointer;
 }
+
+div.button_container {
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+span.button {
+    border: 1px solid rgb(131,150,145);
+    padding: 0.3em;
+    margin-right: 0.3em;
+}
+
 h3 {
     color: rgb(76,109,143);
     margin: 5px 0px 7px 0px;
     font-size: 120%;
 }
+
+input, select {
+    border: 1px solid rgb(131,150,145);
+    padding-left: 3px;
+    font-family: verdana, sans-serif;
+    font-size: 8pt;
+}
+
 img.navbutton {
     border: none;
     margin: 5px 3px 0px 0px;
