@@ -15,6 +15,9 @@
     <script type="text/javascript" src="/ergatis/javascript/ie_methods.js"></script>
     <script type="text/javascript" src="/ergatis/javascript/draggable.js"></script>
     <script type="text/javascript" src="/ergatis/javascript/creator.js"></script>
+    <script type="text/javascript">
+        var repository_root = '<TMPL_VAR NAME=REPOSITORY_ROOT>';
+    </script>
 </head>
 
 <body>
@@ -54,15 +57,16 @@
 </div>
 
 <div id='build_area'>
-    <div id='current_config_container'>
-        some label: <input type=text value="foo">
-    </div>
+    <div id='current_config_container'></div>
     <h3>pipeline build area</h3>
 </div>
 
-<!-- these should not be visible to the user and are generated dynamically. -->
-<div id='component_templates'>
-<TMPL_VAR NAME=COMPONENT_TEMPLATE_HTML>
+<!-- this holds the values for the pipeline -->
+<div id='pipeline_build_data'>
+    <!-- all values will be added here as they are built -->
+    <form name='pipeline' method='post' action='./build_pipeline.cgi'>
+        <input type='text' name='repository_root' value='<TMPL_VAR NAME=REPOSITORY_ROOT>'>
+    </form>
 </div>
 
 </body>

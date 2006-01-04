@@ -21,32 +21,6 @@ my $tmpl = HTML::Template->new( filename => 'templates/creator.tmpl',
                                 die_on_bad_params => 1,
                               );
 
-################################
-## build the component templates
-## html definition lists would perhaps be most appropriate to hold the key/value pairs
-## of the component configurations.
-## 
-my $component_template_html = '';
-for my $conf_file ( glob "$workflowdocs_dir/*conf.ini" ) {
-    $conf_file =~ m|.+\/(.+)conf.ini|;
-    my $component_name = $1;
-    
-    $component_template_html .= "    <dl id='${component_name}_template'>\n";
-    
-    ## read this config file
-    my $component_cfg = new Config::IniFiles( -file => $conf_file );
-    
-    ## it's possible that later the first dd could be comments and the second the value
-    for my $section ( $component_cfg->Sections() ) {
-        for my $parameter ( $component_cfg->Parameters($section) ) {
-            $component_template_html .= "        <dt>$parameter</dt>\n";
-            $component_template_html .= "        <dd>" . ($component_cfg->val($section, $parameter) || '') . "</dd>\n";
-        }
-    }
-    
-    $component_template_html .= "    </dl>\n";
-}
-
 
 ##########################
 ## component chooser build
@@ -67,7 +41,7 @@ my $analysis_tool_root = $graph->get_term_by_name('analysis_tool');
 
 ## push the build out to the template
 $tmpl->param( COMPONENT_CHOOSER_HTML  => $component_chooser_html );
-$tmpl->param( COMPONENT_TEMPLATE_HTML => $component_template_html );
+$tmpl->param( REPOSITORY_ROOT         => $repository_root );
 ################
 
 print $tmpl->output;
