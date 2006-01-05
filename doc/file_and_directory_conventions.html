@@ -1,0 +1,448 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
+    "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta name="generator" content="AsciiDoc 7.0.2" />
+<style type="text/css">
+/* Debug borders */
+p, li, dt, dd, div, pre, h1, h2, h3, h4, h5, h6 {
+/*
+  border: 1px solid red;
+*/
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a { color: blue; }
+a:visited { color: fuchsia; }
+
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: bold;
+}
+
+tt {
+  color: navy;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  font-family: sans-serif;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  border-bottom: 2px solid silver;
+  padding-top: 0.5em;
+}
+
+div.sectionbody {
+  font-family: serif;
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+span#author {
+  color: #527bbd;
+  font-family: sans-serif;
+  font-weight: bold;
+  font-size: 1.2em;
+}
+span#email {
+}
+span#revision {
+  font-family: sans-serif;
+}
+
+div#footer {
+  font-family: sans-serif;
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+div#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+div#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+div#preamble,
+div.tableblock, div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-right: 10%;
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.5em;
+  margin-bottom: 2.5em;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  font-family: sans-serif;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock > div.content {
+  padding-left: 2.0em;
+}
+div.quoteblock .attribution {
+  text-align: right;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 2px solid silver;
+}
+
+div.exampleblock > div.content {
+  border-left: 2px solid silver;
+  padding: 0.5em;
+}
+
+div.verseblock div.content {
+  white-space: pre;
+}
+
+div.imageblock div.content { padding-left: 0; }
+div.imageblock img { border: 1px solid silver; }
+span.image img { border-style: none; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: italic;
+}
+dd > *:first-child {
+  margin-top: 0;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.olist2 {
+  list-style-type: lower-alpha;
+}
+
+div.tableblock > table {
+  border-color: #527bbd;
+  border-width: 3px;
+}
+thead {
+  font-family: sans-serif;
+  font-weight: bold;
+}
+tfoot {
+  font-weight: bold;
+}
+
+div.hlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+td.hlist1 {
+  vertical-align: top;
+  font-style: italic;
+  padding-right: 0.8em;
+}
+td.hlist2 {
+  vertical-align: top;
+}
+
+@media print {
+  div#footer-badges { display: none; }
+}
+/* Workarounds for IE6's broken and incomplete CSS2. */
+
+div.sidebar-content {
+  background: #ffffee;
+  border: 1px solid silver;
+  padding: 0.5em;
+}
+div.sidebar-title, div.image-title {
+  font-family: sans-serif;
+  font-weight: bold;
+  margin-top: 0.0em;
+  margin-bottom: 0.5em;
+}
+
+div.listingblock div.content {
+  border: 1px solid silver;
+  background: #f4f4f4;
+  padding: 0.5em;
+}
+
+div.quoteblock-content {
+  padding-left: 2.0em;
+}
+
+div.exampleblock-content {
+  border-left: 2px solid silver;
+  padding-left: 0.5em;
+}
+</style>
+<title>Ergatis/Workflow file and directory structure conventions</title>
+<style type='text/css'>
+	/* this sheet isn't meant to define all styles for asciidoc html
+	   files, only to override some we don't like.  it was written for
+	   files created with the xhtml11 backend.
+	   
+	   jorvis
+	*/
+	
+	body {
+	    font-family: verdana, sans-serif;
+	    font-size: 8pt;
+	    margin: 15px;
+	}
+	
+	#header h1 {
+	    background-color: rgb(123,156,174);
+	    color: rgb(255,255,255);
+	    margin-top: 10px;
+	    font-size: 135%;
+	    padding: 5px;
+	}
+	
+	h2 {
+	    color: rgb(123,156,174);
+	}
+	
+	#author {
+	    color: rgb(123,156,174) !important;
+	}
+	
+	a, a:visited {
+	    color: rgb(25,25,25);
+	    text-decoration: underline;
+	}
+	
+	pre, tt {
+	    font-size: 105%;
+	}
+</style>
+</head>
+<body>
+<div id="header">
+<h1>Ergatis/Workflow file and directory structure conventions</h1>
+<span id="author">Joshua Orvis</span><br />
+<span id="email"><tt>&lt;<a href="mailto:jorvis@tigr.org">jorvis@tigr.org</a>&gt;</tt></span><br />
+</div>
+<h2>motivation</h2>
+<div class="sectionbody">
+<p>Sam and I have talked about these formalizations of the workflow directory structure, both
+for xml/ini files and output, but I wanted to put them here for feedback.  This is motivated
+in part to allow for easier exportability but also to group as much as possible under a
+single, organized <em>workflow</em> directory.  this will include the elimination of the BSML_repository
+and workflow_config_files directories.</p>
+</div>
+<h2>things to handle / scope</h2>
+<div class="sectionbody">
+<dl>
+<dt>
+id generation for pipelines
+</dt>
+<dd>
+<p>
+    global.
+</p>
+</dd>
+<dt>
+id generation for features
+</dt>
+<dd>
+<p>
+    project-specific.
+</p>
+</dd>
+<dt>
+list of running workflows
+</dt>
+<dd>
+<p>
+    project-specific.  project register with interface for global display.
+</p>
+</dd>
+<dt>
+saved templates
+</dt>
+<dd>
+<p>
+    global and project-specific.  project-specific.  project register with
+    interface for global display.
+</p>
+</dd>
+<dt>
+data pending load (list file copies)
+</dt>
+<dd>
+<p>
+    project-specific.  project register with interface for global display.
+</p>
+</dd>
+<dt>
+run-specific workflow xml/ini
+</dt>
+<dd>
+<p>
+    project-specific.
+</p>
+</dd>
+<dt>
+run-specific output
+</dt>
+<dd>
+<p>
+    project-specific.
+</p>
+</dd>
+<dt>
+sharedconf.ini
+</dt>
+<dd>
+<p>
+    project-specific.
+</p>
+</dd>
+</dl>
+</div>
+<h2>proposed workflow/ergatis directory structure convention</h2>
+<div class="sectionbody">
+<div class="listingblock">
+<div class="content">
+<pre><tt>workflow/
+         project.ini (formerly, sharedconf.ini)
+            parameters specific to a project should go here.  as such, it could be
+            renamed from "sharedconf" to the more specific project.ini, which is what
+            it really is.
+         runtime_files/
+            this directory will contain the contents of what was previously just the
+            Workflow directory - all the xml, ini, and log files used by workflow
+            during the run.  the structure within is unchanged.
+         project_id_repository/
+            this will contain the files needed by the IdGenerator module for generating
+            unique IDs for each feature type.  this is different than the global_id_repository
+            for pipelines, which we want to be unique across all projects.
+         project_saved_templates/
+            here we can store pipeline templates built by the user that are specific to
+            a given project.  the interface will display these templates first, then
+            those in global_saved_templates, then those within other registered project
+            directories.
+         pending_load/
+            the output lists representing data the needing to be loaded into the database
+            should be copied here.  once they are processed, they can just be deleted.
+            when configuring a database-loadable component, there should be a checkbox
+            or something which the user can toggle and will control whether an entry is
+            automatically created here.
+         lock_files/
+            when a workflow is started via the interface a .lock file can be written here.
+            if one already exists, the interface should skip the run and print a warning
+            to the user that the instance file is already being processed by another
+            instance of workflow.  this should help to prevent multiple workflow instances
+            from processing the same files at the same time.
+
+output_repository/
+        (unchanged)
+            i think the output_repository structure, as it exists already, is
+            balanced and scalable.  no problems have been identified, and no
+            changes currently need to be made.
+
+cgi-bin/ergatis/
+            ergatis.ini
+            parameters will go here that involve customizations of the
+            interface as well as 'global' workflow settings.  these settings
+            will be global with respect to a given interface installation.
+            registered projects can go here, as well as a pointer to the
+            global_id_repository and global_saved_templates directory.
+
+global_saved_templates/
+            saved pipeline templates should be placed here that are of general interest
+            and not project specific.  this will be referenced within ergatis.ini
+
+global_id_repository/
+            the files needed by the IdGenerator module will exist here.  it should be
+            referenced by ergatis.ini and used to generate globally unique pipeline IDs
+            across all projects, including periodic cron tests.</tt></pre>
+</div></div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 05-Jan-2006 09:27:48 EDT
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+Ergatis/Workflow file and directory structure conventions
+=========================================================
+Joshua Orvis <jorvis@tigr.org>
+
+motivation
+----------
+
+Sam and I have talked about these formalizations of the workflow directory structure, both 
+for xml/ini files and output, but I wanted to put them here for feedback.  This is motivated 
+in part to allow for easier exportability but also to group as much as possible under a 
+single, organized 'workflow' directory.  this will include the elimination of the BSML_repository
+and workflow_config_files directories.
+
+things to handle / scope
+------------------------
+
+id generation for pipelines::
+    global.
+    
+id generation for features::
+    project-specific.
+    
+list of running workflows::
+    project-specific.  project register with interface for global display.
+    
+saved templates::
+    global and project-specific.  project-specific.  project register with 
+    interface for global display.
+    
+data pending load (list file copies)::
+    project-specific.  project register with interface for global display.
+    
+run-specific workflow xml/ini::
+    project-specific.
+    
+run-specific output::
+    project-specific.
+    
+sharedconf.ini::
+    project-specific.
+
+
+proposed workflow/ergatis directory structure convention
+--------------------------------------------------------
+
+---------------------
+workflow/
+         project.ini (formerly, sharedconf.ini)
+            parameters specific to a project should go here.  as such, it could be
+            renamed from "sharedconf" to the more specific project.ini, which is what
+            it really is.
+         runtime_files/
+            this directory will contain the contents of what was previously just the
+            Workflow directory - all the xml, ini, and log files used by workflow
+            during the run.  the structure within is unchanged.
+         project_id_repository/
+            this will contain the files needed by the IdGenerator module for generating
+            unique IDs for each feature type.  this is different than the global_id_repository
+            for pipelines, which we want to be unique across all projects.
+         project_saved_templates/
+            here we can store pipeline templates built by the user that are specific to
+            a given project.  the interface will display these templates first, then
+            those in global_saved_templates, then those within other registered project
+            directories.
+         pending_load/
+            the output lists representing data the needing to be loaded into the database
+            should be copied here.  once they are processed, they can just be deleted.
+            when configuring a database-loadable component, there should be a checkbox
+            or something which the user can toggle and will control whether an entry is
+            automatically created here.
+         lock_files/
+            when a workflow is started via the interface a .lock file can be written here.
+            if one already exists, the interface should skip the run and print a warning
+            to the user that the instance file is already being processed by another
+            instance of workflow.  this should help to prevent multiple workflow instances
+            from processing the same files at the same time.
+
+output_repository/
+        (unchanged)
+            i think the output_repository structure, as it exists already, is 
+            balanced and scalable.  no problems have been identified, and no
+            changes currently need to be made.
+
+cgi-bin/ergatis/
+            ergatis.ini
+            parameters will go here that involve customizations of the
+            interface as well as 'global' workflow settings.  these settings
+            will be global with respect to a given interface installation.
+            registered projects can go here, as well as a pointer to the
+            global_id_repository and global_saved_templates directory.
+
+global_saved_templates/
+            saved pipeline templates should be placed here that are of general interest
+            and not project specific.  this will be referenced within ergatis.ini
+
+global_id_repository/
+            the files needed by the IdGenerator module will exist here.  it should be
+            referenced by ergatis.ini and used to generate globally unique pipeline IDs
+            across all projects, including periodic cron tests.
+---------------------
+
