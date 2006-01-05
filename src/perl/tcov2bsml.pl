@@ -375,7 +375,7 @@ my $alt_base_score_seq = $bsmlDoc->createAndAddExtendedSequenceN( id => $databas
 									   class => "alternative_base",
 									   length => $tmpstr_count );
 
-$alt_base_score_seq->addattr( 'class', "alternate_base" );
+$alt_base_score_seq->addattr( 'class', "alternative_base" );
 
 $bsmlDoc->createAndAddSeqData( $alt_base_score_seq, $tmpstr );
 
