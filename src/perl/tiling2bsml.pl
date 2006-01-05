@@ -81,7 +81,6 @@ GetOptions( \%options,
 	    'outFile|o=s',
 	    'reference_class=s',
 	    'query_class=s',
-#	    'outFile|o=s',
 	    'analysis_id|a=s',
 	    'help|h' 
 	    ) || pod2usage();
@@ -153,21 +152,6 @@ while (my $line = <TILINGS>) {
 	    die "Reference sequence $ref_id missing from predefined sequences";
 	}
 
-# 	my $ref_sequence = $doc->createAndAddSequence(
-# 				    $ref_id, #id
-# 				    undef, #title
-# 				    $ref_length, #length
-# 				    'dna', #molecule
-# 				    $reference_class #class
-# 				    );
-# 	#Seq-data-import/@identifier must equal the fasta header up to the first space	    
-# 	my $ref_sequence_data = $doc->createAndAddSeqDataImport(
-#  				    $ref_sequence,              # Sequence element object reference
-#  				    'fasta',                    # //Seq-data-import/@format
-#  				    $options{'referencePath'},               # //Seq-data-import/@source
-#  				    undef,                      # //Seq-data-import/@id
-#  				    $ref_id                     # //Seq-data-import/@identifier
-#  				    );
     }
     #Add in a tile
     else {
@@ -178,10 +162,15 @@ while (my $line = <TILINGS>) {
 	my $tile_id = $tile[7];
 	my $tile_length = $tile[3];
 	my $tile_start = $tile[0] - 1; #interbase 0 coordinates
+	my $tile_end = $tile[1];
 	my $tile_ascending = 0;
+	my $tile_is_complement = 1;
+	my $percent_identity = $tile[5];
+	my $percent_coverage = $tile[4];
 
 	if( $tile[6] eq '+' ) {
 	    $tile_ascending = 1;
+	    $tile_is_complement = 0;
 	}
         #  else stay 0
 
@@ -207,25 +196,37 @@ while (my $line = <TILINGS>) {
 	else {
 	    my $tile_sequence = $doc->returnBsmlSequenceByIDR( $tile_id );
 
-# 	my $tile_sequence = $doc->createAndAddSequence(
-# 				    $tile_id, #id
-# 				    undef, #title
-# 				    $tile_length, #length
-# 				    'dna', #molecule
-# 				    $query_class #class
-# 				    );
-# 	#Seq-data-import/@identifier must equal the fasta header up to the first space	    
-# 	my $tile_sequence_data = $doc->createAndAddSeqDataImport(
-#  				    $tile_sequence,              # Sequence element object reference
-#  				    'fasta',                    # //Seq-data-import/@format
-#  				    $options{'queryPath'},     # //Seq-data-import/@source
-#  				    undef,                      # //Seq-data-import/@id
-#  				    $tile_id                     # //Seq-data-import/@identifier
-#  				    );
-	$doc->createAndAddNumbering( seq => $tile_sequence,
- 				     seqref => $ref_id,
- 				     refnum => $tile_start,
- 				     ascending => $tile_ascending );
+	    #Numbering element only applicable for exact matches
+	    if ($percent_identity == 100 && $percent_coverage == 100) {		
+		$doc->createAndAddNumbering( seq => $tile_sequence,
+					 seqref => $ref_id,
+					 refnum => $tile_start,
+					 ascending => $tile_ascending );
+	    }
+
+	    my $aln = $doc->createAndAddSequencePairAlignment(
+                                         refseq => $ref_id,
+					 compseq => $tile_id,
+					 method=> 'tiling',
+#					  refstart => $tile_start,
+#					  refend => $tile_end,
+#					  reflength => $tile_length
+                                          );
+
+             my $run = $doc->createAndAddSequencePairRun(
+                                           alignment_pair => $aln,
+                                           refpos => $tile_start,
+                                           runlength => $tile_length,
+                                           refcomplement => 0, #ref sequence is never complement
+					   #tile is always entire contig
+                                           comppos => 0,
+                                           #comprunlength => $tile_sequence->returnattr( 'length' ),
+                                           comprunlength => $tile_length,
+                                           compcomplement => $tile_is_complement );
+
+	    #add percent_identity and percent_coverage Attributes
+	    $run->addBsmlAttr( 'percent_identity', $percent_identity);
+	    $run->addBsmlAttr( 'percent_coverage', $percent_coverage);
 	}	
     }
 }
