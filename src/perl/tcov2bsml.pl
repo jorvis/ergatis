@@ -10,6 +10,7 @@ tcov2bsml.pl  - convert tcov files into BSML documents
 =head1 SYNOPSIS
 
 USAGE:  tcov2bsml.pl -t tcov_file -b bsml_repository_path -o output_file_bsml
+	-d database -a assembly_id
 
 =head1 OPTIONS
 
@@ -44,17 +45,14 @@ into BSML documents.
 
 =cut
 
-BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
-    import BSML::BsmlReader;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
-    import BSML::BsmlBuilder;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
-    import BSML::BsmlParserTwig;
-}
+use BSML::BsmlBuilder;
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
+
+use strict;
 
 # Utility to convert coverage data stored in the TIGR tcov format from
 # getCoverage into BSML
@@ -72,6 +70,7 @@ my $results = GetOptions (\%options,
 			  'output|o=s',  
 			  'log|l=s',
 			  'debug=s',
+			  'assembly_id|a=i',
 			  'help|h') || pod2usage();
 
 # display documentation
@@ -113,8 +112,9 @@ else
 # filename is expected to encode the assembly id
 # ie /usr/local/annotation/MYCOTB/chauser/bmt_coverage_data/443.tcov
 
-$tcovFilePath =~ /[\S]*_([\d]*).tcov/;
-my $assemblyId = $1;
+$tcovFilePath =~ /(\d+).tcov/;
+my $assemblyId = $1 ? $1 : $options{assembly_id};
+die "No assembly id provided" if !defined $assemblyId;
 
 open( TCOV, $tcovFilePath ) or die "Could not open $tcovFilePath\n";
 
@@ -135,8 +135,10 @@ while( my $line = <TCOV> )
     # | quality values of the bases | Indices of the corresponding bases and quality values
     # see http://intranet/software_docs/getCoverage.html for a more thorough description
 
-    my ($pos, $consensus_base, $consensus_quality_value, $base_calls, $quality_values, $indices ) =
-	split( ' ', $line );
+    my @tokens = split ' ', $line;
+    next if scalar(@tokens) < 6;
+    shift @tokens if scalar(@tokens) > 6;
+    my ($pos, $consensus_base, $consensus_quality_value, $base_calls, $quality_values, $indices ) = @tokens;
 
     # does not support ambiguous base calls 
     if( $consensus_base =~ /[AGCT]/ )
