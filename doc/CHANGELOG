@@ -19,3 +19,13 @@ ergatis-v1r5b1
 -added analysis link element to BSML output of jaccard,cogs,pe workflows
 -disabled debugging in legacy2bsml,bsml2chado workflows
 -fixed tiling component
+
+ergatis-v1r6b1
+-------------
+-additional fixes to tiling component
+
+ergatis-v1r7b1
+-------------
+-updates to ID creation and cgi-bin scripts for building/monitoring
+-additional fixes to tiling component. added link elements
+-fixes to snp2bsml and tcov2bsml
