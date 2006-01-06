@@ -95,7 +95,7 @@ if( !( $options{'tilingPath'} ) ) {
 }
 
 #path to original reference and query mfsa required for SeqDataImport in bsml
-if( !( $options{'referencePath'} ) ) {
+f( !( $options{'referencePath'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
 }
 if( !( $options{'queryPath'} ) ) {
@@ -212,6 +212,7 @@ while (my $line = <TILINGS>) {
 #					  refend => $tile_end,
 #					  reflength => $tile_length
                                           );
+	    $aln->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
 
              my $run = $doc->createAndAddSequencePairRun(
                                            alignment_pair => $aln,
