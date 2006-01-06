@@ -28,4 +28,5 @@ ergatis-v1r7b1
 -------------
 -updates to ID creation and cgi-bin scripts for building/monitoring
 -additional fixes to tiling component. added link elements
--fixes to snp2bsml and tcov2bsml
+-various fixes to snp2bsml and tcov2bsml
+
