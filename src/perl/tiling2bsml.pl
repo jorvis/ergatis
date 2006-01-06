@@ -3,12 +3,6 @@
 eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 # this is temporary for development
 # use lib "/export/CVS/bsml/src/";
 
@@ -95,7 +89,7 @@ if( !( $options{'tilingPath'} ) ) {
 }
 
 #path to original reference and query mfsa required for SeqDataImport in bsml
-f( !( $options{'referencePath'} ) ) {
+if( !( $options{'referencePath'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
 }
 if( !( $options{'queryPath'} ) ) {
@@ -208,10 +202,7 @@ while (my $line = <TILINGS>) {
                                          refseq => $ref_id,
 					 compseq => $tile_id,
 					 method=> 'tiling',
-#					  refstart => $tile_start,
-#					  refend => $tile_end,
-#					  reflength => $tile_length
-                                          );
+                                         );
 	    $aln->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
 
              my $run = $doc->createAndAddSequencePairRun(
