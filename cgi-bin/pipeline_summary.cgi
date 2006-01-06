@@ -82,7 +82,7 @@ print <<PipelineSummarY;
     <div class='timer' id='pipeline_timer_label'></div>
     <div id='pipelinecommands'>
         <a href='./pipeline_list.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline list'></a>
-        <a href='./new_pipeline.cgi?&root=$repository_root/Workflow/pipeline'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
+        <a href='./new_pipeline.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
         <a href='./run_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
         <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
         <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>

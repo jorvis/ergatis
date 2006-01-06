@@ -102,9 +102,10 @@ sub print_dag_page{
     
     my $dirname = dirname($xmltemplate);
     my ($outputdir) = ($xmltemplate =~ /(.*)\/Workflow/);
+    my $repository_root = $outputdir;
     $outputdir .= "/Workflow/pipeline";
 
-    print "<a href='./new_pipeline.cgi?&root=$outputdir'>[New]</a>&nbsp";
+    print "<a href='./new_pipeline.cgi?repository_root=$repository_root'>[New]</a>&nbsp";
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$xmltemplate&summary=1'>[Summary]</a>&nbsp;";
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$xmltemplate'>[Show all nodes]</a>&nbsp;";
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$xmltemplate&forcereload=1'>[Force reparse]</a>&nbsp;";
@@ -573,6 +574,7 @@ sub print_directory_page{
     print header();
     my $dirname = dirname($dir);
     my ($outputdir) = ($dir =~ /(.*)\/Workflow/);
+    my $repository_root = $outputdir;
     $outputdir .= "/Workflow/pipeline";
     print "<html><META HTTP-EQUIV=Refresh CONTENT='120; URL=show_pipeline.cgi?xmltemplate=$dir&glob=".param('glob')."'><h2>Workflows in $dir</h2>";
     if($quota < $quotawarn){
@@ -592,7 +594,7 @@ sub print_directory_page{
     print "<br>";
 
 
-    print "<a href='./new_pipeline.cgi?&root=$outputdir'>[New]</a>&nbsp;<hr>";
+    print "<a href='./new_pipeline.cgi?repository_root=$repository_root'>[New]</a>&nbsp;<hr>";
 
     my $files = &get_workflows_from_directory($dir,$glob);
     
