@@ -26,7 +26,7 @@ fi
 
 echo "Running workflow instance $instance"
 
-exec RunWorkflow -i $instance -l $log $debugstr
+exec RunWorkflow -i $instance -l $log $debugstr --logconf=/usr/local/devel/ANNOTATION/ard/workflow.log4j.properties
 
 echo "To launch viewer execute... WorkflowMonitor $instance"
 
