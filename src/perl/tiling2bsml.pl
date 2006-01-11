@@ -130,6 +130,11 @@ my $reference_class = $options{'reference_class'};
 my $query_class = $options{'query_class'};
 my %unique_contigs; #track that each contig is only tiled once, otherwise it's ambiguous
 
+## add the analysis element
+#$doc->createAndAddAnalysis(
+#                            id => $options{analysis_id},
+#                            sourcename => $options{'outFile'},
+#                          );
 #predefine sequences w/ analysis element to track unused sequences
 predefineSequences($doc, $options{'referencePath'}, $reference_class);   #reference
 predefineSequences($doc, $options{'queryPath'}, $query_class);#query
@@ -153,20 +158,21 @@ while (my $line = <TILINGS>) {
 	    die "No valid reference sequence";
 	}
 	my @tile = split("\t",$line);
-	my $tile_id = $tile[7];
-	my $tile_length = $tile[3];
 	my $tile_start = $tile[0] - 1; #interbase 0 coordinates
-	my $tile_end = $tile[1];
-	my $tile_ascending = 0;
-	my $tile_is_complement = 1;
-	my $percent_identity = $tile[5];
+	#my $tile_end = $tile[1]; #not used
+	my $tile_length = $tile[3];
 	my $percent_coverage = $tile[4];
+	my $percent_identity = $tile[5];
+	my $tile_id = $tile[7];
 
-	if( $tile[6] eq '+' ) {
-	    $tile_ascending = 1;
-	    $tile_is_complement = 0;
+	my $tile_ascending = 1;
+	my $tile_is_complement = 0;
+
+	if( $tile[6] eq '-' ) { #was on the complement
+	    $tile_is_complement = 1;
+	    $tile_ascending = 0;
+	    $tile_start = $tile[1]; #set to tile_end
 	}
-        #  else stay 0
 
 	#ensure uniqueness
 	if (exists $unique_contigs{$tile_id}) {
@@ -193,9 +199,9 @@ while (my $line = <TILINGS>) {
 	    #Numbering element only applicable for exact matches
 	    if ($percent_identity == 100 && $percent_coverage == 100) {		
 		$doc->createAndAddNumbering( seq => $tile_sequence,
-					 seqref => $ref_id,
-					 refnum => $tile_start,
-					 ascending => $tile_ascending );
+					     seqref => $ref_id,
+					     refnum => $tile_start,
+					     ascending => $tile_ascending );
 	    }
 
 	    my $aln = $doc->createAndAddSequencePairAlignment(
@@ -205,7 +211,7 @@ while (my $line = <TILINGS>) {
                                          );
 	    $aln->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
 
-             my $run = $doc->createAndAddSequencePairRun(
+	    my $run = $doc->createAndAddSequencePairRun(
                                            alignment_pair => $aln,
                                            refpos => $tile_start,
                                            runlength => $tile_length,
