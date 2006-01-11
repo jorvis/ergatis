@@ -49,7 +49,7 @@
           <configMapId>subflow1</configMapId>
         </commandSet>
 <!--Postprocessing-->
-        <command>    
+<!--        <command>    
             <type>RunDistributedCommand</type>
             <name>replace_placeholder</name>
             <configMapId>replace_placeholders</configMapId>
@@ -84,6 +84,6 @@
           <type>RunUnixCommand</type>
           <name>check_logfiles_scratch</name>
           <configMapId>check_logfiles_scratch</configMapId>
-        </command>
+        </command>-->
      </commandSet>
 </commandSetRoot>
