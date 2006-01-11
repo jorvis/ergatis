@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bsml2chado workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output repository</name>
+          <configMapId>create_compute_output</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create dupdir</name>
+          <configMapId>create_dupdir</configMapId>
+        </command>
+<!--Preprocess permissions-->
+<!--Preprocessing-->
+<!--Iterator steps-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterator list</name>
+          <configMapId>create_iterator_list_subflow1</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>File-cache the queries</name>
+          <configMapId>cache_queries</configMapId>
+        </command>
+      	<command>
+          <type>RunUnixCommand</type>
+          <name>Create groups</name>
+          <configMapId>create_groups_subflow1</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create iterative subflow</name>
+          <configMapId>create_iterative_subflow1</configMapId>
+        </command>
+        <commandSet type="parallel">
+          <name>Iterated subflow1</name>
+          <configMapId>subflow1</configMapId>
+        </commandSet>
+<!--Postprocessing-->
+        <command>    
+            <type>RunDistributedCommand</type>
+            <name>replace_placeholder</name>
+            <configMapId>replace_placeholders</configMapId>
+        </command>
+<!-- End of parallel index, primary, uniqueness, foreign key constraints validation -->
+
+
+
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>drop_indexes</configMapId>
+            <name>drop_indexes</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>load_tables</configMapId>
+            <name>load_tables</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>rebuild_indexes</configMapId>
+            <name>rebuild_indexes</name>
+        </command>
+<!--Checksum creation-->
+<!--Postprocess permissions-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>check_logfiles_repository</name>
+          <configMapId>check_logfiles_repository</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>check_logfiles_scratch</name>
+          <configMapId>check_logfiles_scratch</configMapId>
+        </command>
+     </commandSet>
+</commandSetRoot>
