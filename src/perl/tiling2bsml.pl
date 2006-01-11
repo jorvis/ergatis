@@ -159,7 +159,7 @@ while (my $line = <TILINGS>) {
 	}
 	my @tile = split("\t",$line);
 	my $tile_start = $tile[0] - 1; #interbase 0 coordinates
-	#my $tile_end = $tile[1]; #not used
+	my $tile_end = $tile[1]; #not used
 	my $tile_length = $tile[3];
 	my $percent_coverage = $tile[4];
 	my $percent_identity = $tile[5];
@@ -167,11 +167,12 @@ while (my $line = <TILINGS>) {
 
 	my $tile_ascending = 1;
 	my $tile_is_complement = 0;
+	my $refnum = $tile_start;
 
 	if( $tile[6] eq '-' ) { #was on the complement
 	    $tile_is_complement = 1;
 	    $tile_ascending = 0;
-	    $tile_start = $tile[1]; #set to tile_end
+	    $refnum = $tile_end;
 	}
 
 	#ensure uniqueness
@@ -200,7 +201,7 @@ while (my $line = <TILINGS>) {
 	    if ($percent_identity == 100 && $percent_coverage == 100) {		
 		$doc->createAndAddNumbering( seq => $tile_sequence,
 					     seqref => $ref_id,
-					     refnum => $tile_start,
+					     refnum => $refnum,
 					     ascending => $tile_ascending );
 	    }
 
