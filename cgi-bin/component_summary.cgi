@@ -33,6 +33,7 @@ my %message_counts;
 #time variables
 my ($start_time, $end_time, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
 my $got_time_info = 0;
+my $current_step;
 
 ## give colors as rgb values or hexidecimal
 my %colors = (
@@ -121,7 +122,18 @@ if (-e $pipeline) {
         }
         $messages_line .= "</li>\n";
     }
-
+    
+    ## build the current step line, if we know it
+    my $current_step_line = '';
+    if ( $current_step ) {
+        ## "Run subflow" just means its on the distributed step.  make a nicer display
+        if ( $current_step eq 'Run subflow' ) {
+            $current_step = 'running distributed jobs';
+        }
+    
+        $current_step_line = "current step: $current_step<br />";
+    }
+    
     ## we can adjust the default update interval here depending on what
     ##  state the component is in
     my $update_interval = 61;
@@ -137,6 +149,7 @@ if (-e $pipeline) {
     <li><div class="component_progress_image">$status_image</div></li>
     <li>state: <span style='color: $colors{$component_state}'>$component_state</span> actions: $command_count</li>
     $status_list_line
+    $current_step_line
     <b>runtime</b>: $runtime<br />
     $messages_line
     <li class="actions">
@@ -169,12 +182,20 @@ sub parseCommandSet {
     
     ## we need to get the status counts.  iterate through the commands and
     ##  get the states for each.  distributed subflow groups will count as
-    ##  one command here (mostly for parsing speed purposes)
+    ##  one command each here (mostly for parsing speed purposes)
     foreach my $command ( $commandSet->children('command') ) {
-        if ( $command->first_child('state') ) {
-            ## increase the count for this state
-            $states{ $command->first_child('state')->text }++;            
 
+        if ( $command->first_child('state') ) {
+           my $state = $command->first_child('state')->text();
+        
+            ## increase the count for this state
+            $states{ $state }++;            
+            
+            ## if the state is running note it
+            if ( $state eq 'running' ) {
+                $current_step = $command->first_child('name')->text();
+            }
+            
         } else {
             ## state may not have been created yet (this should be rare)
             $states{unknown}++;
