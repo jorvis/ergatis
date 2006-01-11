@@ -1,6 +1,8 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 #run as:
-# perl -I /usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/ build_supercontig.pl --bsml_input=/usr/local/scratch/annotation/AGUSSMAN/output_repository/tiling/4563_50-65/tiling.bsml --bsml_output=./test.bsml --scaffold_class=ultracontig
+# perl -I /usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/ build_supercontig.pl --bsml_input=/usr/local/scratch/annotation/AGUSSMAN/output_repository/tiling/4563_50-65/tiling.bsml --bsml_output=./test.bsml --scaffold_class=ultracontig --fasta_output=./test.fsa
+#or
+#perl -I /usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/ bin/build_supercontig.pl --bsml_input=/tmp/agussman/tiling.bsml --bsml_output=/tmp/agussman/build.bsml --scaffold_class=ultracontig --fasta_output=/tmp/agussman/build.fsa
 
 eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
@@ -115,8 +117,12 @@ foreach my $refseq (keys %tiles) {
     # in actuality, only 1 is relevant as show-tilings doesn't output subsumed sequences
     foreach my $refpos (sort { $a <=> $b } keys %{$tiles{$refseq}}) {
 	foreach my $runlength (sort {$a<=>$b} keys %{$tiles{$refseq}{$refpos}}) {
-	    foreach my $compseq (@{$tiles{$refseq}{$refpos}{$runlength}}) {
-		print "$refseq\t$refpos\t$runlength\t$compseq\t($supercontig_name)\n";
+	    #foreach my $compseq (@{$tiles{$refseq}{$refpos}{$runlength}}) {
+	    foreach my $compseq (keys %{$tiles{$refseq}{$refpos}{$runlength}}) {
+		my $is_comp = $tiles{$refseq}{$refpos}{$runlength}{$compseq};
+		my $refnum = $supercontig_len;
+		my $is_ascending = 1;
+		print "$refseq\t$refpos\t$runlength\t$compseq\t$is_comp\t($supercontig_name)\n";
 
 		#add to supercontig sequence
 		my $seq = $reader->subSequence(${$seqtrack{$compseq}},-1,0,0);
@@ -125,14 +131,22 @@ foreach my $refseq (keys %tiles) {
 		if ($seq_len < 1) {
 		    die "Grevious error regarding the recommended length of a sequence";
 		}
-		$seq .= $spacer_seq;
+
+		#check if on complement (Numbering element is at end, descending; Sequence is revcomp)
+		if ($is_comp) {
+		    $is_ascending = 0;
+		    $refnum += $seq_len;
+		    $seq = &revcomp($seq);
+		}
+
+		$seq .= $spacer_seq; #add spacer
 
 		#add Numbering
 		my $seq_elm = $doc->returnBsmlSequenceByIDR( $compseq ) or die "Unable to retrieve sequence";
 		$doc->createAndAddNumbering( seq => $seq_elm,
 					     seqref => $supercontig_name,
-					     refnum => $supercontig_len,
-					     ascending => 1 );
+					     refnum => $refnum,
+					     ascending => $is_ascending );
 
 		#add SeqPairAlignment
 		my $aln = $doc->createAndAddSequencePairAlignment(
@@ -148,7 +162,7 @@ foreach my $refseq (keys %tiles) {
                                             refcomplement => 0, #ref sequence is never complement
                                             comppos => 0,       #always entire contig
                                             comprunlength => $seq_len,
-					    compcomplement => 0 );
+					    compcomplement => $is_comp );
 		#by definition these are 100%
 		$run->addBsmlAttr( 'percent_identity', '100.00');
 		$run->addBsmlAttr( 'percent_coverage', '100.00');
@@ -240,14 +254,15 @@ sub alignmentHandler {
     my $compseq = $aln->returnattr( 'compseq');
 	
     foreach my $SeqPairRun ( @{$aln->returnBsmlSeqPairRunListR()} ) {
-	my $compcomplemnt = $SeqPairRun->returnattr( 'compcomplement' );
 	my $runlength = $SeqPairRun->returnattr( 'runlength' );
 	my $refpos = $SeqPairRun->returnattr( 'refpos' );
-	my $comprunlength = $SeqPairRun->returnattr( 'comprunlength');
-	my $refcomplement = $SeqPairRun->returnattr( 'refcomplement' );
-	my $comppos = $SeqPairRun->returnattr( 'comppos' );
+	#my $comprunlength = $SeqPairRun->returnattr( 'comprunlength');
+	#my $refcomplement = $SeqPairRun->returnattr( 'refcomplement' );
+	#my $comppos = $SeqPairRun->returnattr( 'comppos' );
+	my $compcomplemnt = $SeqPairRun->returnattr( 'compcomplement' );
 	#actually, there can only ever be one tile beginning at a refpos
-	push(@{$tiles{$refseq}->{$refpos}->{$runlength}}, $compseq);
+	#push(@{$tiles{$refseq}->{$refpos}->{$runlength}}, $compseq);
+	$tiles{$refseq}->{$refpos}->{$runlength}->{$compseq} = $compcomplemnt;
     }
 
     print " $refseq $compseq ";
@@ -268,4 +283,11 @@ sub fasta_out {
         $fasta .= "$seq_fragment"."\n";
     }
     return $fasta; 
+}
+
+sub revcomp{
+    my($seq) = @_;
+    $seq =~ tr/ATGCatgc/TACGtacg/;
+    $seq = reverse($seq);
+    return $seq;
 }
