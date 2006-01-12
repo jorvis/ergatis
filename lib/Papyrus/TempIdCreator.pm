@@ -225,9 +225,9 @@ transcription_start_site                transcription_start_site
 transcription_end_site                  transcription_end_site
 transit_peptide                         transit_peptide
 tRNA                                    tRNA
-SNP					SNP
-snp					SNP
-nucleotide_insertion			nucleotide_insertion
-nucleotide_deletion			nucleotide_deletion
-indel					indel
-
+SNP										SNP
+snp										SNP
+nucleotide_insertion					nucleotide_insertion
+nucleotide_deletion						nucleotide_deletion
+indel									indel
+gap										gap
