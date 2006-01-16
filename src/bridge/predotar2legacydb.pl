@@ -19,7 +19,7 @@ B<--input_list,-i>
 B<--database,-d> 
     Sybase project database ID.
 
-B<--log,-d> 
+B<--log,-l> 
     optional.  will create a log file with summaries of all actions performed.
 
 B<--help,-h> 
