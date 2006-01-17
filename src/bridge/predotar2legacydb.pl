@@ -138,6 +138,14 @@ foreach my $file (@files) {
 		## delete the existing predotar evidence for this feat_name
 	    _log("deleting all predotar evidence for $feat_name");
 		$delete->execute($feat_name);
+
+		## if predotar was run on animal/yeast sequences
+		## no 'Plast' key will be defined so store a null value
+		unless(defined($predotar_hash_ref->{'Plast'})) {
+			_log("no key 'Plast' in results --- substituting null value");
+			$predotar_hash_ref->{'Plast'} = '';	
+		}
+
 		## store the data in the db
 	    _log("orf_attribute_insert->execute($feat_name," . $predotar_hash_ref->{'Prediction'}.
 										 ",".$predotar_hash_ref->{'Mit'}.",".$predotar_hash_ref->{'Plast'}.
