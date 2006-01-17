@@ -6,6 +6,8 @@ use CGI qw(:standard);
 use Tree::DAG_Node;
 use File::Find;
 use File::Basename;
+use Ergatis::Validator;
+use HTML::Template;
 
 ## toggles debugging messages
 my $debugging = 0;
@@ -14,9 +16,41 @@ my $debug_file = '/tmp/ergatis.debug';
 my $instancexml = param('instancexml');
 my $inifile = param('inifile');
 my $template = param('xmltemplate');
+my $validate = param('validate');
+
+$validate = 1 if (! defined $validate);
 
 my $log =  $instancexml.".log";
 my $out = $instancexml.".out";
+
+
+if ( $validate ) {
+
+    my $validator = new Ergatis::Validator;
+    my $warnings = $validator->check_pipeline_template( pipeline => $template );
+
+    if ( scalar @$warnings ) {
+        print "Content-type: text/html\n\n";
+
+        my $tmpl = HTML::Template->new( filename => 'templates/warning_intermediate.tmpl',
+                                        die_on_bad_params => 1,
+                                      );
+        
+        my $warning_hash = [];
+        for my $warning ( @$warnings ) {
+            push @$warning_hash, { text => $warning };
+        }
+
+        $tmpl->param( MESSAGE => 'The following are potential problems detected with your pipeline.  Use the back button ' .
+                                 'on your browser if you need to go back and fix these, or click the \'continue anyway\' ' .
+                                 'button to ignore them.' );
+        $tmpl->param( WARNING_MESSAGES => $warning_hash );
+        $tmpl->param( CONTINUE_ACTION  => "/tigr-scripts/ergatis/run_wf.cgi?xmltemplate=$template&inifile=$inifile&instancexml=$instancexml&validate=0" );
+
+        print $tmpl->output;
+        exit;
+    }
+}
 
 my $child_pid;
 $ENV{'HTTP_USER_AGENT'} = '';
