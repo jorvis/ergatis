@@ -67,14 +67,22 @@ my $builder = new BSML::BsmlBuilder;
 $logger->logdie("builder was not defined") if (!defined($builder));
 my $analysis_name = &get_analysis_name($options{'analysis_conf'});
 my $MSF_alignments = process_MSF_file("$options{'msffile'}");
+if($MSF_alignments->{'mol_type'} eq 'polypeptide'){
+    $MSF_alignments->{'mol_type'} = 'protein';
+}
+else{
+    $MSF_alignments->{'mol_type'} = 'nucleotide';
+}
 if(keys %$MSF_alignments > 1){   #skip empty msf files
-    my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'});
+    my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'},
+							     );
+    $table->addattr('class', 'match');
     $logger->logdie("table was not defined") if (!defined($table));
     
     my $summary = $builder->createAndAddAlignmentSummary( 
 							  'multipleAlignmentTable' => $table,
 							  'seq-type'               => $MSF_alignments->{'mol_type'},
-							  'seq-format'             => 'msf' 
+							  'seq-format'             => 'msf'
 							  );
     $logger->logdie("summary was not defined") if (!defined($summary));
     
