@@ -29,5 +29,10 @@
             <configMapId>legacy2bsml</configMapId>
             <name>legacy2bsml</name>
         </command>
+         <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>dtd_validation</configMapId>
+            <name>dtd_validation</name>
+        </command>
     </commandSet>
 </commandSetRoot>
