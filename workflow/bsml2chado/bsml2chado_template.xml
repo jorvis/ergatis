@@ -14,5 +14,10 @@
             <configMapId>bsml2chado</configMapId>
             <name>Run bsml2chado</name>
         </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>appendbcp</configMapId>
+            <name>appendbcp</name>
+        </command>
     </commandSet>
 </commandSetRoot>
