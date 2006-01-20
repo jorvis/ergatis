@@ -855,15 +855,5 @@
         </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>check_logfiles_repository</name>
-          <configMapId>check_logfiles_repository</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>check_logfiles_scratch</name>
-          <configMapId>check_logfiles_scratch</configMapId>
-        </command>
      </commandSet>
 </commandSetRoot>
