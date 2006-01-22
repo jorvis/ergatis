@@ -83,7 +83,7 @@ print <<PipelineSummarY;
     <div id='pipelinecommands'>
         <a href='./pipeline_list.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline list'></a>
         <a href='./new_pipeline.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
-        <a href='./run_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
+        <a href='./run_wf.cgi?instancexml=$pipeline&validate=0'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
         <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
         <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
         <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
