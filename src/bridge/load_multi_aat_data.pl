@@ -94,7 +94,7 @@ sub check_parameters {
     
     ## pipeline_id and repository_root are required
     unless ( defined $options{pipeline_id} && $options{repository_root} ) {
-        print STDERR "input_list and repository_root options are required\n\n";
+        print STDERR "--pipeline_id and --repository_root options are required\n\n";
         pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
     }
     
