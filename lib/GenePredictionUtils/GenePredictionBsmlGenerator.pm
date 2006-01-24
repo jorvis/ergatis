@@ -4,10 +4,8 @@ use strict;
 use warnings;
 
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
-    import BSML::BsmlBuilder;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Papyrus/TempIdCreator.pm';
-    import Papyrus::TempIdCreator;
+use BSML::BsmlBuilder;
+use Papyrus::TempIdCreator;
 }
 
 #silly hack to get it to commit in cvs

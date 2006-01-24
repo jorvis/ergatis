@@ -5,8 +5,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/GenePredictionUtils/GenePredictionBsmlGenerator.pm';
-    import GenePredictionUtils::GenePredictionBsmlGenerator;
+use GenePredictionUtils::GenePredictionBsmlGenerator;
 }
 
 sub new
