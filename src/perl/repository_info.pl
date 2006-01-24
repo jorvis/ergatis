@@ -2,8 +2,7 @@
 
 use strict;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Repository.pm';
-    import Workflow::Repository;
+use Workflow::Repository;
 }
 use Date::Manip;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);

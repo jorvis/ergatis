@@ -55,14 +55,10 @@ use File::Basename;
 use File::Path;
 use Pod::Usage;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
-    import BSML::BsmlRepository;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
-    import BSML::BsmlBuilder;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
-    import BSML::BsmlParserTwig;
+use Workflow::Logger;
+use BSML::BsmlRepository;
+use BSML::BsmlBuilder;
+use BSML::BsmlParserTwig;
 }
 
 my %options = ();

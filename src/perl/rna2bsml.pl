@@ -71,10 +71,8 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Data::Dumper;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
-    import BSML::BsmlBuilder;
+use Workflow::Logger;
+use BSML::BsmlBuilder;
 }
 
 #

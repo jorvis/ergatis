@@ -33,10 +33,8 @@ use Pod::Usage;
 use Config::IniFiles;
 
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlBuilder.pm';
-    import BSML::BsmlBuilder;
+use Workflow::Logger;
+use BSML::BsmlBuilder;
 }
 
 my %options = ();

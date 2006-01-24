@@ -81,8 +81,7 @@ use PEffect::PEffectXML;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BsmlCGCReader;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
-    import BSML::BsmlParserTwig;
+use BSML::BsmlParserTwig;
 }
 use File::Basename;
 use Pod::Usage;

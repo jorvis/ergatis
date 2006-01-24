@@ -1,7 +1,6 @@
 use strict;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BPlite.pm';
-    import BPlite;
+use BPlite;
 }
 
 # multiple (concatenated) BLAST reports

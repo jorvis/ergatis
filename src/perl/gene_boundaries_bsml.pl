@@ -63,14 +63,10 @@ use Data::Dumper;
 use File::Basename;
 use Pod::Usage;
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlRepository.pm';
-    import BSML::BsmlRepository;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlReader.pm';
-    import BSML::BsmlReader;
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/BSML/BsmlParserTwig.pm';
-    import BSML::BsmlParserTwig;
+use Workflow::Logger;
+use BSML::BsmlRepository;
+use BSML::BsmlReader;
+use BSML::BsmlParserTwig;
 }
 
 my($bsml_file,$bsml_file_list,$xmingap,$ymingap,$mincluster,$BSML_dir,$all_asmbl_flag,$debug,$log,$help);

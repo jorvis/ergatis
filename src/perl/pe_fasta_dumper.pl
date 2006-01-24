@@ -6,8 +6,7 @@ use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
 
 BEGIN {
-    require '/usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/Fasta/FastaIndexedReader.pm';
-    import Fasta::FastaIndexedReader;
+use Fasta::FastaIndexedReader;
 }
 
 my $indexer		= undef;
