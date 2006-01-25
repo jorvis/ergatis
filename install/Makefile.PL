@@ -54,7 +54,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -197,6 +197,12 @@ cogs	:
 	@install workflow/cogs/cogs.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/cogs/cogs_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/cogs/cogsconf.ini $(WORKFLOW_DOCS_DIR)  
+
+copydb	:
+	@echo "Installing copydb workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/copydb/copydb-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/copydb/copydb-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/copydb/copydbconf.ini $(WORKFLOW_DOCS_DIR)  
 
 coverage  :
 	@echo "Installing coverage workflows in $(WORKFLOW_DOCS_DIR)"
