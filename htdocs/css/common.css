@@ -1,7 +1,6 @@
 body {
     /* font: 11px courier, verdana, geneva, arial, sans-serif; */
-    font-family: verdana, sans-serif;
-    font-size: 8pt;
+    font: small verdana, sans-serif; 
     margin: 0px;
     padding: 0px;
     background-color: rgb(255,255,255);
@@ -28,6 +27,10 @@ table {
     margin-left: 5px;
 }
 
+#page_content {
+    margin: 10px;
+}
+
 a {
     text-decoration: none;
     color: rgb(0,100,0);
@@ -45,10 +48,17 @@ span.button {
     margin-right: 0.3em;
 }
 
+h2 {
+    color: rgb(76,109,143);
+    font-size: 110%;
+    border-bottom: 1px dashed rgb(150,150,150);
+    margin-top: 0;
+}
+
 h3 {
     color: rgb(76,109,143);
     margin: 5px 0px 7px 0px;
-    font-size: 120%;
+    font-size: 110%;
 }
 
 input, select {
