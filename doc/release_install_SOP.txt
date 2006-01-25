@@ -6,7 +6,9 @@ Overview
 
 1)Testing
 2)CVS release tags
-3)Install
+3)Optional branch creation for immediate fix
+4)Install
+
 
 
 Testing 
@@ -79,20 +81,55 @@ cvs co -d chado_release ANNOTATION/chado/util/cvs_release.sh
 ./cvs_release.sh -r ?CHADO_TAG_NAME?
 
 
+Optional branch creation for immediate fix
+------------------------------------------
+
+Occasionally one of the components (such as ergatis) within the installed code
+base will need an immediate update.  Other commits since the last release may
+not have been tested yet, so we can't just cut a new release and do an install.
+While it is tempting to just manually make the change directly in the install
+area for the fix, this breaks our release SOP and any such manual fixes
+would get lost if someone does a re-install of the currently tagged code
+release.
+
+The solution is to create a branch that contains only your immediate changes,
+cut a release of that, and install.
+
+cvs co -r ?LATEST_TAG_NAME?
+cvs tag -b ?NEXT_TAG_NAME?
+
+From this point we'll take what you chose as NEXT_TAG_NAME and refer to it
+as CURRENT_TAG_NAME
+
+cvs co -r ?CURRENT_TAG_NAME? ergatis
+
+Then make your changes, commit, and carry on with the install directions using
+this CURRENT_TAG_NAME.  Make sure you remember to modify the CHANGELOG, since
+this method avoids using cvs_release.sh
+
+
 Install
 -------
 
-First, choose a target area for the install and create a control file.
+This should be done as the sgc user.
+
+First, choose a target area for the install and create a control file.  For
+example, contents might be:
 
 
- prok_prism=prism-v1r1b1
- coati=prism-v1r1b1
- euk_prism=prism-v1r1b1
- chado_prism=prism-v1r1b1
- shared_prism=prism-v1r1b1
- bsml=bsml-v1r1b1
- ergatis=ergatis-v1r1b1
- server=SYBTIGR
+prok_prism=prism-v1r13b1
+coati=prism-v1r13b1
+euk_prism=prism-v1r13b1
+chado_prism=prism-v1r13b1
+shared_prism=prism-v1r13b1
+bsml=bsml-v2r4b1
+ergatis=ergatis-v1r8b1
+ontologies=chado-v1r5b2
+chado_schema=chado-v1r5b2
+cvdata=chado-v1r5b2
+peffect=HEAD
+server=SYBTIGR
+
 
 cvs co -d install ANNOTATION/ergatis/ergatis_installer.pl
 cd install
