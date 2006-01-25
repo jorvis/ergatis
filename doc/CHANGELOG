@@ -34,6 +34,11 @@ ergatis-v1r8b1
 -------------
 -changed iprscan executable path to a new location on read-only filesystem.
 
+ergatis-v1r9b1
+-------------
+-added brett and ed's fixes for ber component
+-jonathan committed a performance increase of 2 orders of magnitude on best_hit.pl
+
 next
 -------------
 -added panther component
