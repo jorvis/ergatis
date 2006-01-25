@@ -1,0 +1,55 @@
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2">
+    <title>ergatis</title>
+    <!-- bring in the styles -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/index.css">
+</head>
+
+<body>
+
+<div id='bannertop'>
+    <img src='/ergatis/banner_main.png' alt='banner' title='banner' />
+</div>
+<div id='bannerbottom'>
+    <div class='buttons'>
+        <a href=''><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline_list'></a>
+        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
+    </div>
+</div>
+
+<div id='page_content'>
+
+    <div id='project_list_container'>
+        <h2>project list</h2>
+        <dl id='project_list'>
+        <TMPL_LOOP NAME=REGISTERED_PROJECTS>
+            <dt><a href='/tigr-scripts/ergatis/pipeline_list.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>'><TMPL_VAR NAME=LABEL></a></dt>
+            <dd><TMPL_VAR NAME=REPOSITORY_ROOT></dd>
+        </TMPL_LOOP>
+        </dl>
+    </div>
+    
+    <div id='watched_pipeline_container'>
+        <h2>watched pipelines</h2>
+        <p>
+            yet to be populated
+        <p>  
+    </div>
+    
+    <div id='running_pipeline_container'>
+        <h2>running pipelines</h2>
+        <p>
+            yet to be populated
+        <p>          
+    </div>
+    
+
+</div>
+
+</body>
+
+</html>

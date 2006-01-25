@@ -1,0 +1,13 @@
+#project_list_container {
+    float: left;
+    width: 100px;
+}
+
+dl#project_list dd {
+    display: none;
+}
+
+#watched_pipeline_container,
+#running_pipeline_container {
+    padding-left: 120px;
+}
