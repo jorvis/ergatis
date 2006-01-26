@@ -43,3 +43,7 @@ next
 -------------
 -added panther component
 -interface now shows currently running step when viewing pipeline overview
+-fixed BER component missing perl modules
+-added N-gap component and legacy db loader script
+-minor changes to molecular evolution pipeline component (mepipe)
+-added nucmer_snps component
