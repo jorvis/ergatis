@@ -700,7 +700,7 @@ sub determine_cvs_revisions {
 
 
 	if (defined($controlfile)) {
-
+	    print "------------------\nInstalling to $installdir\nwith the following code versions\n\n";
 		open (CONTROLFILE, "<$controlfile") or $logger->logdie("Could not open controlfile '$controlfile': $!");
 
 		my @contents = <CONTROLFILE>;
@@ -709,16 +709,16 @@ sub determine_cvs_revisions {
 
 
 		foreach my $line (@contents){
+		    print $line,"\n";
 			if ($line =~ /^.+=.+$/) {
 				&load_hash($cvshash, $line);
 			}
 		}
-
+	    print "------------------\n\n\n";
 	}
 
 
 	$logger->debug(Dumper $cvshash) if ($logger->is_debug());
-
 	return $cvshash;
 }
 
