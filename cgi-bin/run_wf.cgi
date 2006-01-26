@@ -202,8 +202,8 @@ sub setup_environment {
     $ENV{SGE_EXECD_PORT} = '537';
     $ENV{SGE_ARCH} = 'lx26-x86';
 
-    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow-ergatis";
-    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow-ergatis";
+    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow";
+    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow";
     #$ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow";
     #$ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow";
 
