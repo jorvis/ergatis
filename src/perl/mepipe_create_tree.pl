@@ -188,7 +188,9 @@ foreach my $dir((
 		#chmod(0775, $batchfile);
 		chmod(0777, $batchfile);
 		#print($options{'paup_bin_dir'}."paup -n -f $batchfile\n");
+		$ENV{'HOME'} = '/dev/null';
 		$err = system($options{'paup_bin_dir'}."paup -n -f \"$batchfile\"");
+		$ENV{'HOME'} = '';
 		if ($err) {
 			die "Paup run failed.\n";
 		}
