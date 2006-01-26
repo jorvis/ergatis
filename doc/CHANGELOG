@@ -39,6 +39,10 @@ ergatis-v1r9b1
 -added brett and ed's fixes for ber component
 -jonathan committed a performance increase of 2 orders of magnitude on best_hit.pl
 
+ergatis-v1r10b1
+--------------
+-added os=linux in default iterator
+
 next
 -------------
 -added panther component
