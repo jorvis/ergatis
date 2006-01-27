@@ -51,7 +51,8 @@ span.button {
 h2 {
     color: rgb(76,109,143);
     font-size: 110%;
-    border-bottom: 1px dashed rgb(150,150,150);
+    border-bottom: 1px dotted rgb(150,150,150);
+    padding-bottom: 5px;
     margin-top: 0;
 }
 
@@ -72,4 +73,12 @@ img.navbutton {
     border: none;
     margin: 5px 3px 0px 0px;
     padding: 0px;
+}
+
+table.pipeline_list {
+    width: 100%;
+}
+
+table.pipeline_list th {
+    text-align: left;
 }
