@@ -4,6 +4,34 @@ use POSIX;
 
 use strict;
 
+
+sub component_count_hash {
+    my $pipeline_file = shift;
+    my %components;
+    
+    my $t = XML::Twig->new( twig_roots => {
+                                'commandSet/configMapId' => sub {
+                                                                    my ($t, $elt) = @_;
+
+                                                                    if ($elt->text() =~ /^component_(.+?)\./) {
+                                                                        $components{$1}++;
+                                                                        
+                                                                    ## this part is for those older components that didn't
+                                                                    ## yet have output_token portions within the configMapId
+                                                                    ## this will look funny and fail grouping on some of the
+                                                                    ## displays, but it's better than showing no components at all.
+                                                                    } elsif ($elt->text() =~ /^component_(.+)/) {
+                                                                        $components{$1}++;
+                                                                    }
+                                                                },
+                                          },
+                          );
+    $t->parsefile($pipeline_file);
+    
+    return %components;
+}
+
+
 sub process_command {
     my ($twig, $command) = @_;
     
