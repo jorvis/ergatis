@@ -36,17 +36,33 @@
     <div id='watched_pipeline_container'>
         <h2>watched pipelines</h2>
         <p>
-            yet to be populated
+            not yet implemented
         <p>  
     </div>
     
     <div id='running_pipeline_container'>
         <h2>running pipelines</h2>
-        <p>
-            yet to be populated
-        <p>          
+        <table class='pipeline_list'>
+            <tr>
+                <th>project</th>
+                <th>pipeline id</th>
+                <th>state</th>
+                <th>user</th>
+                <th>last mod</th>
+                <th>run time</th>
+            </tr>
+        <TMPL_LOOP NAME=RUNNING_PIPELINES>
+            <tr>
+                <td><TMPL_VAR NAME=LABEL></td>
+                <td><TMPL_VAR NAME=PIPELINE_ID></td>
+                <td><TMPL_VAR NAME=STATE></td>
+                <td><TMPL_VAR NAME=PIPELINE_USER></td>
+                <td><TMPL_VAR NAME=LAST_MOD></td>
+                <td><TMPL_VAR NAME=RUN_TIME></td>
+            </tr>
+        </TMPL_LOOP>
+        </table>        
     </div>
-    
 
 </div>
 
