@@ -21,8 +21,8 @@ use lib '/local/perl/lib/site_perl';
 use DBI;
 use Getopt::Std;
 
-our ($opt_D, $opt_a, $opt_L, $opt_l, $opt_O, $opt_h);
-getopts('D:a:L:l:O:h');
+our ($opt_D, $opt_a, $opt_L, $opt_l, $opt_O, $opt_h, $opt_s);
+getopts('D:a:L:l:O:h:s');
 
 
 MAIN:{
@@ -33,6 +33,11 @@ MAIN:{
 	my @models = ();
 	
 	my ($db, $out_name);
+
+    if (! defined $opt_s ) {
+        ## default length cutoff
+        $opt_s = 0;
+    }
 
 	if (defined $opt_D && $opt_D =~ /\w/){
 		$db = $opt_D;
@@ -102,7 +107,9 @@ MAIN:{
 # -l list of models
 #  **if none of -a, -l or -L are specified, it will act on all current assemblies
 # 
-# -O Name for the Output fasta files
+# -O Name for the Output multi-fasta file
+#
+# -s size cutoff.  sequences with protein seqs shorter than this will not be included.
 #
 # -h print this option menu and quit
 #
@@ -174,7 +181,7 @@ sub Fetch_n_Write {
 	
 	while ($prepped->fetch()){
 		unless (defined $nucl && $nucl =~ /\w/ && defined $prot && $prot =~ /\w/){
-			warn "Model $mod_name lacks Nucleotinde and / or Protein sequence - skept\n";
+			warn "Model $mod_name lacks Nucleotide and / or Protein sequence - skipped\n";
 			next;
 		}
 		$mod_name =~ s/\.m/_/;
@@ -184,9 +191,12 @@ sub Fetch_n_Write {
 			$seq =~ s/\W+//g;
 			$seq =~ s/(.{1,60})/$1\n/g;
 		}
-		print $ntfile "$header\n$nucl";
-		print $aafile "$header\n$prot";
-		++$written;
+        
+        if ($opt_s && length $prot >= $opt_s ) {
+		    print $ntfile "$header\n$nucl";
+		    print $aafile "$header\n$prot";
+		    ++$written;
+        }
 	}
 	return($written);
 }
