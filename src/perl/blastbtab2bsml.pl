@@ -302,7 +302,7 @@ sub createAndAddBtabLine {
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", '', 'aa', $args{'class'} );
+        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
         $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
 
