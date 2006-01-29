@@ -141,7 +141,7 @@
             <name>File-cache the queries</name>
             <configMapId>cache_queries</configMapId>
         </command>
-        <commandSet type="parallel">
+        <commandSet type="serial">
             <name>Parse remaining ontologies</name>
             <configMapId>empty</configMapId>
 <!-- Annotation_attributes Ontology -->
