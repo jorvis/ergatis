@@ -605,7 +605,7 @@
             <name>Replace placeholders</name>
             <configMapId>replace_placeholders</configMapId>
         </command>
-        <commandSet type="parallel">
+        <commandSet type="serial">
           <name>Validation of Indexes, primary and uniqueness constraints</name>
           <configMapId>empty</configMapId>
           <command>    
