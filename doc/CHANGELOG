@@ -43,11 +43,30 @@ ergatis-v1r10b1
 --------------
 -added os=linux in default iterator
 
-next
--------------
+ergatis-v1r11b1
+--------------
 -added panther component
+-added build_supercontig component
+-added copydb component
+-added N-gap component and legacy db loader script
+-added nucmer_snps component
+-added parameter OTHER_OPTS to xdformat component
+-fixed bugs in tiling component
 -interface now shows currently running step when viewing pipeline overview
 -fixed BER component missing perl modules
--added N-gap component and legacy db loader script
 -minor changes to molecular evolution pipeline component (mepipe)
--added nucmer_snps component
+-added some input validation when building/running a workflow
+-changed workflow install location to /usr/local/devel/ANNOTATION/workflow from  /usr/local/devel/ANNOTATION/workflow-ergatis
+-added class attribute to output of MSF2Bsml
+-added hit_length to output of blastbtab2bsml
+-removed hard coded paths to perl modules
+
+
+ergatis-v1r12b1
+--------------
+-fixed bug in initdb when parsing OBO files in parallel
+
+ergatis-v1r13b1
+--------------
+-fixed bug in bsml2chado that introduced duplicates when running in append mode
+
