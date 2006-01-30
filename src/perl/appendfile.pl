@@ -110,8 +110,8 @@ sub append_file_contents {
 
     my ($bcpfile, $appendfile) = @_;
 
-    `cat $appendfile >> $bcpfile`;
-
+    print `cat $appendfile >> $bcpfile`;
+    print `mv $appendfile $appendfile.$$.bak`;
 
 }
 
