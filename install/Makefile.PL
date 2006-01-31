@@ -73,6 +73,7 @@ shellwrappers:
 	@install workflow/CreateWorkflow.sh $(PREFIX)/bin
 	@install workflow/RunWorkflow.sh $(PREFIX)/bin
 	@install workflow/run_wfmonitor.sh $(PREFIX)/bin
+	@install workflow/create_ber_db.sh $(PREFIX)/bin
 
 aat_aa	:
 	@echo "Installing aat_aa workflows in $(WORKFLOW_DOCS_DIR)"
