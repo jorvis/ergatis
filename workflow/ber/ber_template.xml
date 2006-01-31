@@ -52,8 +52,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>btab2bsml</configMapId>
-            <name>btab2bsml</name>
+            <configMapId>berbtab2bsml</configMapId>
+            <name>berbtab2bsml</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
