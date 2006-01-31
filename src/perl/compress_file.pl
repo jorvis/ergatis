@@ -100,7 +100,7 @@ my $return_status = 0;
 ## we're only going to compress if the user requested it
 if ($options{compress}) {
     $logger->debug("preparing to compress file $options{file}") if ($logger->is_debug);
-    system("gzip $options{file}");
+    system("gzip -f $options{file}");
     
     ## was it successful?
     $return_status = $? >> 8;
