@@ -171,6 +171,16 @@ sub parse_blast_btabs {
             my $orig_dbmatch_accession = $btab[5];
             $btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
 
+			## calculate coverage information
+			if ($btab[2] == 0) {
+				$logger->logdie("Query sequence length is 0!?");
+			}
+			my $coverage_query = int( ($btab[7] - $btab[6] + 1) / $btab[2]*1000 ) / 10;
+			if ($btab[18] == 0) {
+				$logger->logdie("Hit sequence length is 0!?");
+			}
+			my $coverage_hit = int( ($btab[9] - $btab[8] + 1) / $btab[18]*1000 ) / 10;
+			
             my $align = &createAndAddBtabLine(
                               doc                => $doc,
                               query_name         => $btab[0],
@@ -193,6 +203,8 @@ sub parse_blast_btabs {
                               hit_length         => $btab[18],
                               e_value            => $btab[19],
                               p_value            => $btab[20],
+							  coverage_query     => $coverage_query, 
+							  coverage_hit       => $coverage_hit,
                               class              => $class,
                               orig_dbmatch_accession => $orig_dbmatch_accession
                               );
@@ -287,6 +299,8 @@ sub createAndAddBtabLine {
         $seq_run->setattr( 'runprob', $args{'e_value'} )                                     if (defined ($args{'e_value'}));
         $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
         $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
+        $seq_run->addBsmlAttr( 'coverage_query', $args{'coverage_query'} )               if (defined ($args{'coverage_query'}));   
+        $seq_run->addBsmlAttr( 'coverage_hit', $args{'coverage_hit'} )               if (defined ($args{'coverage_hit'}));   
         $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
 
         return $alignment_pair;
@@ -302,7 +316,7 @@ sub createAndAddBtabLine {
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
+		$seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
         $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
 
@@ -348,6 +362,8 @@ sub createAndAddBtabLine {
     $seq_run->setattr( 'runprob', $args{'e_value'} )                                       if (defined  ($args{'e_value'}));
     $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
     $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));
+    $seq_run->addBsmlAttr( 'coverage_query', $args{'coverage_query'} )               if (defined ($args{'coverage_query'}));   
+    $seq_run->addBsmlAttr( 'coverage_hit', $args{'coverage_hit'} )               if (defined ($args{'coverage_hit'}));   
     $seq_run->addBsmlAttr( 'chain_number', $args{'chain_number'} )                         if (defined  ($args{'chain_number'}));
     $seq_run->addBsmlAttr( 'segment_number', $args{'segment_number'} )                     if (defined  ($args{'segment_number'}));
     $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                   if (defined  ($args{'p_value'}));
