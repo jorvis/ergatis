@@ -23,15 +23,15 @@ use Getopt::Std;
 use File::Copy;
 use File::Path;
 
-our ($opt_L, $opt_D, $opt_h, $opt_t, $opt_T, $opt_z, $opt_R, $opt_r);
-getopts('L:D:ht:T:zRr');
+our ($opt_L, $opt_D, $opt_h, $opt_p, $opt_t, $opt_T, $opt_z, $opt_R, $opt_r);
+getopts('L:D:hp:t:T:zRr');
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
 	my $safetime = 5; # Time for which the program would pause (allowing killing) in the case option -R has been used
 	my $message = "\n\nUsage:   $prN   <Options>\n\n";
 	my $bad = 0;
-	my ($proj_dir, $source_dir, $target_dir, $file_end);
+	my ($proj_dir, $source_dir, $target_dir, $file_end, $file_pfix);
 	my %files = ();
 #	my ($proj_dir, $source_dir, $target_dir, $file_end, $btab);
 
@@ -43,14 +43,14 @@ MAIN:{
 	}
 
 
-	my $old_file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5})(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
+# 	my $old_file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5})(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
 	my $new_file_kwd =  qr/($opt_D\.model\.(\d+)_(\d+)(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
 
 	if (defined $opt_L && open(my $filelist, $opt_L) &! $bad){
 		my ($good, $crap) = (0) x 2;
 		while (<$filelist>){
 			chomp();
-			unless  (/$new_file_kwd/ || /$old_file_kwd/){
+			unless  (/$new_file_kwd/){       # || /$old_file_kwd/){
 				warn "File: \"$_\" is not recognized by the search pattern\n\n";
 				++$crap;
 				next;
@@ -71,14 +71,27 @@ MAIN:{
 	}
 
 	if (defined $opt_t){
-		($file_end = $opt_t) =~ s/^\.//;
+		$file_end = $opt_t;
+                $file_end = ".$file_end" unless $file_end =~ /^\./;
 		$file_end =~ s/gz$//;
-	} else {
-		$message .= "Option -t (Target file 'ending') is required\n\n" unless $opt_h;
+        } else {
+                $file_end = '';
+        }
+	
+        
+        if (defined $opt_p){
+		$file_pfix = $opt_p;
+                $file_pfix .= '.'  unless $file_pfix =~ /\.$/;
+        } else {
+                $file_pfix = '';
+        }
+        
+        unless (defined $opt_p || defined $opt_t){
+		$message .= "One among options -t and -p (Target file 'ending' or prefix) is required\n\n" unless $opt_h;
 		++$bad;
 	}
-	
-	if (defined $opt_T){
+        
+        if (defined $opt_T){
 		($target_dir = $opt_T) =~ s/^[\/.]+//;
 		$target_dir =~ s/\/$//;
 		
@@ -97,6 +110,8 @@ MAIN:{
 # -D Annotation database
 #
 # -h Help: prints this option menu and quit
+#
+# -p Prefix (i.e. something to put before the model name in the name of the target file)
 #
 # -t Target file 'ending' (i.e. nr.btab, everything after asmbl_id or model name)
 #
@@ -133,8 +148,12 @@ MAIN:{
 	
 		foreach my $info (@{$mdl_files}){
 			my ($mol_name, $model, $file, $target_file) = (@{$info}, $target_path);
-			$model = sprintf("%d.m%05d", $asmbl, $model);
-			$target_file .= "/$model.$file_end";
+
+			$model = "$asmbl.m$model";
+
+			#$model = $opt_N ? sprintf("%d.m%06d", $asmbl, $model) : sprintf("%d.m%05d", $asmbl, $model);
+			
+                        $target_file .= "/$file_pfix$model$file_end";
 			
 			print STDERR "Moving $file to $target_file.. ";
 			
