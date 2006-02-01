@@ -1,3 +1,6 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
 <html>
 
 <head>
@@ -6,6 +9,7 @@
     <title>ergatis</title>
     <!-- bring in the styles -->
     <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/monitor.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/index.css">
 </head>
 
@@ -27,7 +31,7 @@
         <h2>project list</h2>
         <dl id='project_list'>
         <TMPL_LOOP NAME=REGISTERED_PROJECTS>
-            <dt><a href='/tigr-scripts/ergatis/pipeline_list.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>'><TMPL_VAR NAME=LABEL></a></dt>
+            <dt><a href='./pipeline_list.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>'><TMPL_VAR NAME=LABEL></a></dt>
             <dd><TMPL_VAR NAME=REPOSITORY_ROOT></dd>
         </TMPL_LOOP>
         </dl>
@@ -48,15 +52,30 @@
                 <th>pipeline id</th>
                 <th>state</th>
                 <th>user</th>
+                <th>contents</th>
                 <th>last mod</th>
                 <th>run time</th>
             </tr>
         <TMPL_LOOP NAME=RUNNING_PIPELINES>
             <tr>
-                <td><TMPL_VAR NAME=LABEL></td>
-                <td><TMPL_VAR NAME=PIPELINE_ID></td>
-                <td><TMPL_VAR NAME=STATE></td>
+                <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
+                <td><a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
+                <td><span class='<TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span></td>
                 <td><TMPL_VAR NAME=PIPELINE_USER></td>
+                <td class='component_review'>
+                    <a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
+                    <div>
+                        <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
+                        <hr/>
+                    <TMPL_IF NAME=COMPONENT_COUNT>
+                    <TMPL_LOOP NAME=COMPONENTS>
+                        <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                    </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
+                    <TMPL_ELSE>
+                        no components found
+                    </TMPL_IF>
+                    </div>
+                </td>
                 <td><TMPL_VAR NAME=LAST_MOD></td>
                 <td><TMPL_VAR NAME=RUN_TIME></td>
             </tr>

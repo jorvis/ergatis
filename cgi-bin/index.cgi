@@ -13,6 +13,10 @@ use XML::Twig;
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
+## this toggle will force a rescan of the pipelines rather than pulling from 
+##  the storable object.
+my $force_running_pipeline_recheck = $q->param('force_running_pipeline_recheck') || 0;
+
 my $tmpl = HTML::Template->new( filename => 'templates/index.tmpl',
                                 die_on_bad_params => 1,
                               );
@@ -41,8 +45,11 @@ my $running_pipelines = [];
 ## is there a stored version of the pipeline list?
 my $running_dump_file = "$temp_space/$cfg_md5.ergatis.running.dump";
 
-## if it exists and is less than 10 minutes old just display it.
-if ( -e $running_dump_file && -M $running_dump_file < 0.0069444444) {
+## if it exists and is less than 10 minutes old just display it (unless we're forcing an update).
+if ( -e $running_dump_file && 
+     -M $running_dump_file < 0.0069444444 && 
+     ! $force_running_pipeline_recheck ) {
+     
     $running_pipelines = retrieve $running_dump_file;
 
 } else {
@@ -99,20 +106,34 @@ sub get_currently_running_pipelines {
             $pipeline_user = getpwuid($filestat->uid);
             $last_mod = $filestat->mtime;
 
-            ## this is done as a new twig parse since elements can be nested
-            ## at any level.
             my %components = &component_count_hash( $pipeline_file );
-
+            my $component_count = 0;
+            my $component_aref;
+            foreach my $component (sort keys %components) {
+                $component_count += $components{$component};
+                push @$component_aref, { name => $component, count => $components{$component} };
+            }
+            
+            ## reformat component_count to include a label
+            my $component_label = ' component';
+            if ($component_count != 1) {
+                $component_label = ' components';
+            }
+            
+            $last_mod = localtime($last_mod);
+            
             push @$list, {
                             label           => $label,
+                            project_url     => "./pipeline_list.cgi?repository_root=$repository_root",
                             pipeline_id     => $pipeline_id,
+                            pipeline_url    => "./view_workflow_pipeline.cgi?instance=$pipeline_file",
                             state           => $state,
                             last_mod        => $last_mod,
                             run_time        => $run_time,
                             pipeline_user   => $pipeline_user,
-    #                        components      => \@$component_aref,
-    #                        component_count => $component_count,
-    #                        component_label => $component_label,
+                            components      => \@$component_aref,
+                            component_count => $component_count,
+                            component_label => $component_label,
     #                        view_link       => $view_link,
     #                        edit_link       => $edit_link,
                 };
