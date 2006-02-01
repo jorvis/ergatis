@@ -1,0 +1,24 @@
+td.component_review div {
+    display: none;
+    position: absolute;
+    border: 1px solid rgb(100,100,100);
+    width: 30em;
+    background-color: rgb(230,230,230);
+    padding: .8em;
+    margin-left: 8em;
+    margin-top: -2em;
+    opacity: 0.9;
+}
+td.component_review:hover div {
+    display: block;
+}
+td.component_review div:hover {
+    display: none;
+}
+span.component_review_header {
+    font-weight: bold;
+}
+hr {
+    margin: 1em 0em;
+    height: 1px;
+}
