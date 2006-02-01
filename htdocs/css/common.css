@@ -75,6 +75,16 @@ img.navbutton {
     padding: 0px;
 }
 
+span.complete    { color: rgb(0,200,0); }
+span.incomplete  { color: rgb(75,75,75); }
+span.failed      { color: rgb(200,0,0); }
+span.pending     { color: rgb(200,200,0); }
+span.error       { color: rgb(200,0,0); }
+span.running     { color: rgb(0,0,200); }
+span.waiting     { color: rgb(200,200,0); }
+span.interrupted { color: rgb(200,0,200); }
+span.unknown     { color: rgb(0,0,0); }
+
 table.pipeline_list {
     width: 100%;
 }
