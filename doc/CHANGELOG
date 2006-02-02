@@ -61,7 +61,6 @@ ergatis-v1r11b1
 -added hit_length to output of blastbtab2bsml
 -removed hard coded paths to perl modules
 
-
 ergatis-v1r12b1
 --------------
 -fixed bug in initdb when parsing OBO files in parallel
@@ -70,3 +69,7 @@ ergatis-v1r13b1
 --------------
 -fixed bug in bsml2chado that introduced duplicates when running in append mode
 
+ergatis-v1r14b1
+--------------
+-added support for different database paths between dps and nap steps in aat_aa 
+-corrected Seq-data-import elements in gene prediction output bsml
