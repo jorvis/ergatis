@@ -13,6 +13,8 @@ use XML::Twig;
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
+umask(0000);
+
 ## this toggle will force a rescan of the pipelines rather than pulling from 
 ##  the storable object.
 my $update_cache = $q->param('update_cache') || 0;
