@@ -1,14 +1,12 @@
 body {
-    /* font: 11px courier, verdana, geneva, arial, sans-serif; */
     font: small verdana, sans-serif; 
     margin: 0px;
     padding: 0px;
     background-color: rgb(255,255,255);
 }
 
-table {
-    font-family: verdana, sans-serif;
-    font-size: 8pt;
+td {
+    font-size: 90%;
 }
 
 #bannertop {

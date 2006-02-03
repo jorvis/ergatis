@@ -15,7 +15,7 @@ print $q->header( -type => 'text/html' );
 
 ## this toggle will force a rescan of the pipelines rather than pulling from 
 ##  the storable object.
-my $force_running_pipeline_recheck = $q->param('force_running_pipeline_recheck') || 0;
+my $update_cache = $q->param('update_cache') || 0;
 
 my $tmpl = HTML::Template->new( filename => 'templates/index.tmpl',
                                 die_on_bad_params => 1,
@@ -23,13 +23,17 @@ my $tmpl = HTML::Template->new( filename => 'templates/index.tmpl',
 
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
-my $temp_space  = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
 
+my $temp_space          = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
+
+## an MD5 is used on the project list so that many installations can
+## share the same storable object.
 my $cfg_md5 = $ergatis_cfg->project_list_md5();
 
-## where should we find (or save) the running pipe list?
-#my $running_pipeline_storable_path = "$temp_space/
+my $table_cache_update_time = $ergatis_cfg->val( 'settings', 'pipeline_list_cache_time' ) || 10;  # in minutes
+   $table_cache_update_time /= ( 60 * 24 );  ## convert to number of days (usually a decimal)
 
+my $active_pipeline_age = $ergatis_cfg->val( 'settings', 'active_pipeline_age') || 24;
 
 ## build the project list
 my $registered_projects = [];
@@ -41,30 +45,41 @@ for my $label ( sort $ergatis_cfg->Parameters('projects') ) {
 }
 
 my $running_pipelines = [];
+my $active_pipelines = [];
 
-## is there a stored version of the pipeline list?
+## is there a stored version of the running pipeline list?
 my $running_dump_file = "$temp_space/$cfg_md5.ergatis.running.dump";
+my $active_dump_file  = "$temp_space/$cfg_md5.ergatis.active.dump";
 
-## if it exists and is less than 10 minutes old just display it (unless we're forcing an update).
+## if it exists and is less than the cache update time just display it (unless we're forcing an update).
+my $cache_file_age = -M $running_dump_file;
+
 if ( -e $running_dump_file && 
-     -M $running_dump_file < 0.0069444444 && 
-     ! $force_running_pipeline_recheck ) {
+     $cache_file_age < $table_cache_update_time && 
+     ! $update_cache ) {
      
     $running_pipelines = retrieve $running_dump_file;
+    $active_pipelines  = retrieve $active_dump_file;
 
 } else {
-    &get_currently_running_pipelines( $running_pipelines );
+    ( $running_pipelines, $active_pipelines ) = get_pipeline_lists();
     store $running_pipelines, $running_dump_file;
+    store $active_pipelines, $active_dump_file;
+    $cache_file_age = -M $running_dump_file;
 }
 
 
 $tmpl->param( REGISTERED_PROJECTS => $registered_projects );
 $tmpl->param( RUNNING_PIPELINES   => $running_pipelines );
+$tmpl->param( ACTIVE_PIPELINES    => $active_pipelines );
+$tmpl->param( ACTIVE_PIPELINE_AGE => $active_pipeline_age );
+$tmpl->param( CACHE_FILE_AGE      => int($cache_file_age * 1440) );
 
 print $tmpl->output;
 
-sub get_currently_running_pipelines {
-    my $list = shift;
+sub get_pipeline_lists {
+    my $running_list = [];
+    my $active_list  = [];
     
     for ( @$registered_projects ) {
         my $label           = $_->{label};
@@ -79,10 +94,6 @@ sub get_currently_running_pipelines {
         for my $pipeline_id ( readdir $idh ) {
             my $state = '';
             my $last_mod = '';
-            my $start_time = 'unknown';
-            my $end_time = 'unknown';
-            my $run_time = 'unknown';
-            my $pipeline_user = 'unknown';
             my $pipeline_file = "$repository_root/Workflow/pipeline/$pipeline_id/pipeline.xml.instance";
 
             next unless ( -e $pipeline_file );
@@ -99,13 +110,18 @@ sub get_currently_running_pipelines {
                 $state  = $commandSet->first_child('state')->text();
             }
 
-            next unless ( $state eq 'running' );
-
-            ($start_time, $end_time, $run_time) = &time_info( $commandSet );
             my $filestat = stat($pipeline_file);
-            $pipeline_user = getpwuid($filestat->uid);
-            $last_mod = $filestat->mtime;
 
+            $last_mod = $filestat->mtime;
+            
+            ## check the time here.  we'll skip this one unless
+            ## it is either running or less than active_pipeline_age time
+            next unless ( $state eq 'running' || (time - $last_mod) < ($active_pipeline_age * 3600) );
+            
+            
+            my $pipeline_user = getpwuid($filestat->uid);
+            my ($start_time, $end_time, $run_time) = &time_info( $commandSet );
+            
             my %components = &component_count_hash( $pipeline_file );
             my $component_count = 0;
             my $component_aref;
@@ -122,7 +138,7 @@ sub get_currently_running_pipelines {
             
             $last_mod = localtime($last_mod);
             
-            push @$list, {
+            my $pipeline_info = {
                             label           => $label,
                             project_url     => "./pipeline_list.cgi?repository_root=$repository_root",
                             pipeline_id     => $pipeline_id,
@@ -134,9 +150,17 @@ sub get_currently_running_pipelines {
                             components      => \@$component_aref,
                             component_count => $component_count,
                             component_label => $component_label,
-    #                        view_link       => $view_link,
-    #                        edit_link       => $edit_link,
                 };
+                
+            ## if the pipeline is still running, add it to that list.  else, add it to the 'active'
+            ##   list (since we filtered previously)
+            if ( $state eq 'running' ) {
+                push @$running_list, $pipeline_info;
+            } else {
+                push @$active_list, $pipeline_info;
+            }
         }
     }    
+    
+    return ( $running_list, $active_list );
 }
