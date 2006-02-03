@@ -55,6 +55,7 @@ my $active_dump_file  = "$temp_space/$cfg_md5.ergatis.active.dump";
 my $cache_file_age = -M $running_dump_file;
 
 if ( -e $running_dump_file && 
+     -e $active_dump_file && 
      $cache_file_age < $table_cache_update_time && 
      ! $update_cache ) {
      
