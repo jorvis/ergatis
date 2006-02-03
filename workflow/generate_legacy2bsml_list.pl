@@ -145,18 +145,19 @@ sub get_list_from_file{
     my $orghash = &get_organism_hash($contents);
 
 
-    foreach my $database (sort keys %{$orghash} ){ 
+    foreach my $database_type (sort keys %{$orghash} ){ 
 
-	my $organism_type = $orghash->{$database}->{'organism_type'};
-	my $include_genefinders = $orghash->{$database}->{'include_genefinders'};
-	my $exclude_genefinders = $orghash->{$database}->{'exclude_genefinders'};
+	my $database      = $orghash->{$database_type}->{'database'};
+	my $organism_type = $orghash->{$database_type}->{'organism_type'};
+	my $include_genefinders = $orghash->{$database_type}->{'include_genefinders'};
+	my $exclude_genefinders = $orghash->{$database_type}->{'exclude_genefinders'};
 
-	foreach my $infohash ( @{$orghash->{$database}->{'infohash'}} ) {
+	foreach my $infohash ( @{$orghash->{$database_type}->{'infohash'}} ) {
 
 	    my $sequence_type = $infohash->{'sequence_type'};
 	    my $asmbl_id = $infohash->{'asmbl_id'};
 
-	    my $subflow_name = $database . "_" . $asmbl_id;
+	    my $subflow_name = $database_type . "_" . $asmbl_id;
 
 	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders);
 	}
@@ -276,7 +277,7 @@ sub get_organism_hash {
 
     my $hash = {};
 
-    my $database;
+    my $database_type;
 
     my $unique_asmbl_id_values = {};
 
@@ -299,11 +300,14 @@ sub get_organism_hash {
 
 	    if ($line =~ /^database:(\S+)\s+organism_type:(\S+)\s+include_genefinders:(\S*)\s+exclude_genefinders:(\S*)/){
 		
-		$database      = $1;
+		my $database      = $1;
 		my $organism_type = $2;
 		my $include_genefinders = $3;
 		my $exclude_genefinders = $4;
 
+
+
+		$database_type = $database ."_" .$organism_type;
 
 #		print "organism_type '$organism_type' include_genefinder '$include_genefinders' exclude_genefinder '$exclude_genefinders'\n";
 
@@ -312,34 +316,35 @@ sub get_organism_hash {
 
 		    ($include_genefinders, $exclude_genefinders) = &verify_and_set_genefinders($include_genefinders, $exclude_genefinders, $linectr);
 
+		    
 
-
-		    if (( exists $hash->{$database}) &&
-			(defined($hash->{$database}))){
+		    if (( exists $hash->{$database_type}) &&
+			(defined($hash->{$database_type}))){
 			
-			$logger->logdie("This database '$database' was already encountered in the control file!");
+			$logger->warn("This database_type '$database_type' was already encountered in the control file!");
 		    }
 		    else {
-		    #
+			#
 			# Encountered this organism/database for the first time while processing the control file contents
 			# therefore go ahead and declare the organism's hash attributes
 			#
-			$hash->{$database} = { 'asmbl_id_list'       => [],
-					       'infohash'            => [],
-					       'organism_type'       => $organism_type,
-					       'include_genefinders' => $include_genefinders,
-					       'exclude_genefinders' => $exclude_genefinders };
+			$hash->{$database_type} = { 'database'            => $database,
+						    'asmbl_id_list'       => [],
+						    'infohash'            => [],
+						    'organism_type'       => $organism_type,
+						    'include_genefinders' => $include_genefinders,
+						    'exclude_genefinders' => $exclude_genefinders };
 			
 		    }
 		}
 	    }
 	    elsif ($line =~ /^\s*(\d+)\s*sequence_type:(\S*)/){
 
-		&store_asmbl_id_and_sequence_type($database, $1, $2, $linectr, $unique_asmbl_id_values, $hash);
+		&store_asmbl_id_and_sequence_type($database_type, $1, $2, $linectr, $unique_asmbl_id_values, $hash);
 	    }
 	    elsif ($line =~ /^\s*(\d+)\s*/){
 
-		&store_asmbl_id_and_sequence_type($database, $1, undef, $linectr, $unique_asmbl_id_values, $hash);
+		&store_asmbl_id_and_sequence_type($database_type, $1, undef, $linectr, $unique_asmbl_id_values, $hash);
 	    }
 	    else {
 		$logger->logdie("Could not parse line number '$linectr' - line was '$line'");
@@ -361,7 +366,7 @@ sub store_asmbl_id_and_sequence_type {
     
     my ($database, $asmbl_id, $sequence_type, $linectr, $unique_asmbl_id_values, $hash) = @_;
 
-    print "database '$database' asmbl_id '$asmbl_id' sequence_type '$sequence_type'\n";
+#    print "database '$database' asmbl_id '$asmbl_id' sequence_type '$sequence_type'\n";
 
 
     $sequence_type = &verify_and_set_sequence_type($sequence_type, $linectr);
