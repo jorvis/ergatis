@@ -5,8 +5,8 @@ body {
     background-color: rgb(255,255,255);
 }
 
-td {
-    font-size: 90%;
+table, td {
+    font-size: 100%;
 }
 
 #bannertop {
