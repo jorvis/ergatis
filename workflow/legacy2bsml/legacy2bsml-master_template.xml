@@ -1,26 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
-<!--
-
-  Component: legacy2bsml
-  
-  Author:    Jay Sundaram sundaram@tigr.org
-  
-  Date:      2005.07.22
-  
-  Purpose:   This component will migrate the sequences, features and associated
-             annotation from the specified legacy annotation databases e.g. gba (prok)
-             or bma1 (euk)- to produce bsml gene model encodings.
-  
-  
-  
-  Version:  $Id$
-  
-  CVS:      ergatis/workflow/legacy2bsml/legacy2bsml-master_template.xml
-  
-  Online:   http://sundaram-lx:8080/instructions/legacy2bsml.html
-  
--->
     <commandSet type="serial">
         <name>legacy2bsml workflow</name>
         <configMapId>empty</configMapId>
@@ -75,11 +54,6 @@
           <type>RunUnixCommand</type>
           <name>create_bsml_list_file</name>
           <configMapId>create_bsml_list_file</configMapId>
-       </command>
-       <command>
-          <type>RunUnixCommand</type>
-          <name>check_logfiles</name>
-          <configMapId>check_logfiles</configMapId>
        </command>
      </commandSet>
 </commandSetRoot>
