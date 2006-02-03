@@ -78,6 +78,9 @@ my $sequence_type_key = '$;SEQUENCE_TYPE$;';
 my $subflow_key       = '$;SUBFLOW_NAME$;';
 my $euk_key           = '$;EUK$;';
 my $ntprok_key        = '$;NTPROK$;';
+my $include_genefinders_key = '$;INCLUDE_GENEFINDERS$;';
+my $exclude_genefinders_key = '$;EXCLUDE_GENEFINDERS$;';
+
 
 my $valid_organism_types = { 'prok'   => 1,
 			     'ntprok' => 1,
@@ -96,7 +99,9 @@ if (&verify_control_file($options{'control_file'})){
 	    $sequence_type_key => [],
 	    $subflow_key       => [],
 	    $euk_key           => [],
-	    $ntprok_key        => []
+	    $ntprok_key        => [],
+	    $include_genefinders_key => [],
+	    $exclude_genefinders_key => []
 	};
 
 
@@ -142,14 +147,18 @@ sub get_list_from_file{
 
     foreach my $database (sort keys %{$orghash} ){ 
 
-	my $sequence_type = $orghash->{$database}->{'sequence_type'};
 	my $organism_type = $orghash->{$database}->{'organism_type'};
+	my $include_genefinders = $orghash->{$database}->{'include_genefinders'};
+	my $exclude_genefinders = $orghash->{$database}->{'exclude_genefinders'};
 
-	foreach my $asmbl_id ( @{$orghash->{$database}->{'asmbl_id_list'}} ) {
+	foreach my $infohash ( @{$orghash->{$database}->{'infohash'}} ) {
+
+	    my $sequence_type = $infohash->{'sequence_type'};
+	    my $asmbl_id = $infohash->{'asmbl_id'};
 
 	    my $subflow_name = $database . "_" . $asmbl_id;
 
-	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type);
+	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders);
 	}
     }
     
@@ -162,12 +171,14 @@ sub get_list_from_file{
 #-------------------------------------------
 sub add_entry_to_conf{
 
-    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type) = @_;
+    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders) = @_;
 
     push( @{$iteratorconf->{$database_key}}, $database );
     push( @{$iteratorconf->{$asmbl_id_key}}, $asmbl_id );
     push( @{$iteratorconf->{$subflow_key}}, $subflow_name );
     push( @{$iteratorconf->{$sequence_type_key}}, $sequence_type );
+    push( @{$iteratorconf->{$include_genefinders_key}}, $include_genefinders );
+    push( @{$iteratorconf->{$exclude_genefinders_key}}, $exclude_genefinders );
 
     if ($organism_type eq 'ntprok'){
 	# legacy2bsml.pl --ntprok=1 --euk=0
@@ -266,9 +277,6 @@ sub get_organism_hash {
     my $hash = {};
 
     my $database;
-    my $asmbl_id;
-    my $sequence_type;
-    my $organism_type;
 
     my $unique_asmbl_id_values = {};
 
@@ -289,15 +297,21 @@ sub get_organism_hash {
 	}
 	else{
 
-	    if ($line =~ /^database:(\S+)\s+organism_type:(\S+)\s+sequence_type:(\S*)/){
+	    if ($line =~ /^database:(\S+)\s+organism_type:(\S+)\s+include_genefinders:(\S*)\s+exclude_genefinders:(\S*)/){
 		
 		$database      = $1;
-		$organism_type = $2;
-		$sequence_type = $3;
+		my $organism_type = $2;
+		my $include_genefinders = $3;
+		my $exclude_genefinders = $4;
+
+
+#		print "organism_type '$organism_type' include_genefinder '$include_genefinders' exclude_genefinder '$exclude_genefinders'\n";
+
 
 		if (&verify_organism_type($organism_type, $linectr)){
 
-		    $sequence_type = &verify_and_set_sequence_type($sequence_type, $linectr);
+		    ($include_genefinders, $exclude_genefinders) = &verify_and_set_genefinders($include_genefinders, $exclude_genefinders, $linectr);
+
 
 
 		    if (( exists $hash->{$database}) &&
@@ -310,35 +324,25 @@ sub get_organism_hash {
 			# Encountered this organism/database for the first time while processing the control file contents
 			# therefore go ahead and declare the organism's hash attributes
 			#
-			$hash->{$database} = { 'asmbl_id_list'      => [],
-					       'sequence_type'      => $sequence_type,
-					       'organism_type'      => $organism_type };
+			$hash->{$database} = { 'asmbl_id_list'       => [],
+					       'infohash'            => [],
+					       'organism_type'       => $organism_type,
+					       'include_genefinders' => $include_genefinders,
+					       'exclude_genefinders' => $exclude_genefinders };
 			
 		    }
 		}
 	    }
+	    elsif ($line =~ /^\s*(\d+)\s*sequence_type:(\S*)/){
+
+		&store_asmbl_id_and_sequence_type($database, $1, $2, $linectr, $unique_asmbl_id_values, $hash);
+	    }
 	    elsif ($line =~ /^\s*(\d+)\s*/){
-		#
-		# At the same time, need to ensure that the asmbl_id values are unique
-		#
-		$asmbl_id = $1;
 
-		if (( exists $unique_asmbl_id_values->{$database}->{$asmbl_id}) && 
-		    (defined($unique_asmbl_id_values->{$database}->{$asmbl_id}))){
-
-		    $logger->warn("asmbl_id '$asmbl_id' for organism '$database' was already stored in the lookup");
-		}
-		else {
-		    #
-		    # Update the unique_asmbl_id_values hash to ensure unique assembly identifiers are processed
-		    #
-		    $unique_asmbl_id_values->{$database}->{$asmbl_id}++;
-
-		    #
-		    # Store the next valid asmbl_id in the organism hash
-		    #
-		    push( @{$hash->{$database}->{'asmbl_id_list'}}, $asmbl_id);
-		}
+		&store_asmbl_id_and_sequence_type($database, $1, undef, $linectr, $unique_asmbl_id_values, $hash);
+	    }
+	    else {
+		$logger->logdie("Could not parse line number '$linectr' - line was '$line'");
 	    }
 	}
     }
@@ -347,117 +351,47 @@ sub get_organism_hash {
 
 }
 
-#---------------------------------------------
-# get_organism_hash()
+
+
+#------------------------------------------------------
+# store_asmbl_id_and_sequence_type()
 #
-#---------------------------------------------
-sub get_organism_hash_old {
+#------------------------------------------------------
+sub store_asmbl_id_and_sequence_type {
+    
+    my ($database, $asmbl_id, $sequence_type, $linectr, $unique_asmbl_id_values, $hash) = @_;
 
-    my $contents = shift;
-
-    my $hash = {};
-
-    my $database;
-    my $asmbl_id;
-    my $sequence_type;
-    my $organism_type;
-
-    my $unique_asmbl_id_values = {};
-
-    foreach my $line (@{$contents}){
-
-	if ($line =~ /^\s*$/){
-	    next;
-	}
-	elsif ($line =~ /^\#/){
-	    next;
-	}
-	elsif ($line =~ /^\-\-/){
-	    next;
-	}
-	else{
-
-	    if ($line =~ /^database:(\S+)\s+organism_type:(\S+)\s+sequence_type:(\S+)/){
-		
-		$database = $1;
-
-		if (( exists $hash->{$database}) &&
-		    (defined($hash->{$database}))){
-
-		    $logger->logdie("This database '$database' was already encountered in the control file!");
-		}
-		else {
-		    #
-		    # Encountered this organism/database for the first time while processing the control file contents
-		    # therefore go ahead and declare the organism's hash attributes
-		    #
-		    $hash->{$database} = { 'asmbl_id_list'      => [],
-					   'sequence_type_list' => undef,
-					   'organism_type'      => undef };
-		    
-		}
-	    }
-	    elsif ($line =~ /^organism_type:(\S+)/){
-
-		$organism_type = $1;
-
-		if ((exists $hash->{$database}->{'organism_type'}) &&
-		    (defined($hash->{$database}->{'organism_type'}))){
-
-		    $logger->logdie("The organism_type was already defined for database '$database' as '$hash->{$database}->{'organism_type'}'");
-		}
-		else {
-		    #
-		    # Store the organism_type 
-		    #
-		    $hash->{$database}->{'organism_type'} = $organism_type;
-		}
-	    }
-	    elsif ($line =~ /^asmbl_id:(\d+)/){
-		#
-		# At the same time, need to ensure that the asmbl_id values are unique
-		#
-		$asmbl_id = $1;
-
-		if (( exists $unique_asmbl_id_values->{$database}->{$asmbl_id}) && 
-		    (defined($unique_asmbl_id_values->{$database}->{$asmbl_id}))){
-
-		    $logger->warn("asmbl_id '$asmbl_id' for organism '$database' was already stored in the lookup");
-		}
-		else {
-		    #
-		    # Update the unique_asmbl_id_values hash to ensure unique assembly identifiers are processed
-		    #
-		    $unique_asmbl_id_values->{$database}->{$asmbl_id}++;
-
-		    #
-		    # Store the next valid asmbl_id in the organism hash
-		    #
-		    push( @{$hash->{$database}->{'asmbl_id_list'}}, $asmbl_id);
-		}
-	    }
-	    elsif ($line =~ /^sequence_type:(\S+)/){
-
-		$sequence_type = $1;
-
-		if ((exists $hash->{$database}->{'sequence_type'}) &&
-		    (defined($hash->{$database}->{'sequence_type'}))){
-
-		    $logger->logdie("The sequence_type was already defined for database '$database' as '$hash->{$database}->{'sequence_type'}'");
-		}
-		else {
-		    #
-		    # Store the sequence_type 
-		    #
-		    $hash->{$database}->{'sequence_type'} = $sequence_type;
-		}
-		
+    print "database '$database' asmbl_id '$asmbl_id' sequence_type '$sequence_type'\n";
 
 
-	    }
-	}
+    $sequence_type = &verify_and_set_sequence_type($sequence_type, $linectr);
+    
+    if (( exists $unique_asmbl_id_values->{$database}->{$asmbl_id}) && 
+	(defined($unique_asmbl_id_values->{$database}->{$asmbl_id}))){
+	#
+	# At the same time, need to ensure that the asmbl_id values are unique
+	#
+	
+	$logger->warn("asmbl_id '$asmbl_id' for organism '$database' was already stored in the lookup");
+    }
+    else {
+	#
+	# Update the unique_asmbl_id_values hash to ensure unique assembly identifiers are processed
+	#
+	$unique_asmbl_id_values->{$database}->{$asmbl_id}++;
+	
+	#
+	# Store the next valid asmbl_id in the organism hash
+	#
+	my $infohash = { 'asmbl_id' => $asmbl_id,
+			 'sequence_type' => $sequence_type };
+	
+	push( @{$hash->{$database}->{'infohash'}}, $infohash);
     }
 }
+
+
+
 
 
 #-----------------------------------------------------
@@ -496,6 +430,38 @@ sub verify_and_set_sequence_type {
     # Lame. That's all the checking for now.
     #
     return ($sequence_type);
+    
+    
+}
+
+#-----------------------------------------------------
+# verify_and_set_genefinders()
+#
+#-----------------------------------------------------
+sub verify_and_set_genefinders {
+
+    my ($include_genefinder, $exclude_genefinder, $linectr) = @_;
+    
+    if ((!defined($exclude_genefinder)) || 
+	($exclude_genefinder =~ /^\s*$/)){
+
+	$exclude_genefinder = 'none';
+    } 
+    if ((!defined($include_genefinder)) ||
+	($include_genefinder =~  /^\s*$/)){
+
+	$include_genefinder = 'all';  
+    }
+
+    if ($include_genefinder eq 'none'){
+	$exclude_genefinder = 'all';
+    }
+    elsif ($exclude_genefinder eq 'all'){
+	$include_genefinder = 'none';
+    }
+
+
+    return ($include_genefinder, $exclude_genefinder);
     
     
 }
