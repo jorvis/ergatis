@@ -42,10 +42,6 @@ B<--help,-h> This help message
 
 berbtab2bsml.pl is designed to convert information in ber btab files into BSML documents.
 
-Samples:
-
-   btab2bsml.pl -d bsml_dir -b /usr/btab -o blastp.bsml
-
 NOTE:  
 
 Calling the script name with NO flags/options or --help will display the syntax requirement.
@@ -55,17 +51,15 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use English;
-use BSML::BsmlBuilder;
-use BSML::BsmlReader;
-use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
 use File::Basename;
 use File::Path;
 use Pod::Usage;
 use Workflow::Logger;
+use BSML::BsmlRepository;
+use BSML::BsmlBuilder;
+use BSML::BsmlParserTwig;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -110,24 +104,9 @@ my $files = &get_btab_files($options{'btab_dir'},$options{'btab_file'});
 
 my $doc = new BSML::BsmlBuilder();
 
-#generate lookups
-my ($gene_asmbl_id, $protID_cdsID);
-#if($options{'btab_type'} == 1) {
-($gene_asmbl_id, $protID_cdsID) = build_id_lookups_ber($options{'bsml_dir'});
 $doc->makeCurrentDocument();
 parse_ber_btabs($files);
-#}
-#elsif($options{'btab_type'} == 2) {
-#    $gene_asmbl_id = build_id_lookups_blast($options{'bsml_dir'});
-#    $doc->makeCurrentDocument();
-#    parse_blast_btabs($files);
-#} else {
-#    print STDERR "Bad btab_type.  Aborting...\n";
-#    exit 5;
-#}
-
 $doc->write($options{'output'});
-exit();   
 
 sub parse_ber_btabs {
 
@@ -137,19 +116,17 @@ sub parse_ber_btabs {
 	$num++; 
 	open (BTAB, "$file") or die "Unable to open \"$file\" due to $!";
 	$logger->debug("opening $file $num using pvalue cutoff $options{'pvalue'}") if($logger->is_debug());
-        my (@btab, $seq, $query_name, $match_name, $query_cds_id, $query_protein_id);
+	my $query_id;
 	while(my $line = <BTAB>) {
 	    chomp($line);
-	    @btab = split("\t", $line);
+	    my @btab = split("\t", $line);
 	    next if($btab[20] > $options{'pvalue'} );
 	    next if($btab[3] ne 'praze');
 	    next if( !($btab[13] > 0) || !($btab[14] > 0) );
 	    next if(!$btab[0] or !$btab[5]);
 	    $btab[5] =~ s/\|//g;   #get rid of trailing |
-	    $query_protein_id = $btab[0];
-	    $btab[0] = $protID_cdsID->{$btab[0]} if $protID_cdsID->{$btab[0]};
-	    $query_cds_id = $btab[0];	    
-	    $match_name = $btab[5];
+	    $query_id = $btab[0];	    
+	    my $match_name = $btab[5];
 	    splice(@btab, 19, 1);
 	    
 	    for (my $i=0;$i<scalar(@btab);$i++){
@@ -181,75 +158,16 @@ sub parse_ber_btabs {
 					      p_value            => $btab[19]
 					      );
 
-	    $seq = $doc->returnBsmlSequenceByIDR($match_name);
-	    my $match_asmbl_id = $gene_asmbl_id->{$match_name};
+	    my $seq = $doc->returnBsmlSequenceByIDR($match_name);
 
 	}
 	close BTAB;
-	next if(!defined($query_cds_id));
-	$seq = $doc->returnBsmlSequenceByIDR($query_cds_id);
-	if($seq) {
-	    my $query_asmbl_id = $gene_asmbl_id->{$query_protein_id};
+	if ($query_id) {
+		my $seq = $doc->returnBsmlSequenceByIDR($query_id);
 	}
     }
 }
 
-
-
-    
-sub build_id_lookups_ber {
-
-    my $BSML_dir = shift;
-
-    my $bsmlrepo = new BSML::BsmlRepository('BSML_repository'=>$BSML_dir);
- 
-    my ($files) = $bsmlrepo->list_bsml_files();
-
-    my $parser = new BSML::BsmlParserTwig;
-
-    my $protID_cdsID = {};
-    my $gene_asmbl_id ={};
-    my $reader;
-    foreach my $bsml_doc (@$files) {
-	if (-s $bsml_doc) {
-	    $logger->debug("parsing $bsml_doc") if($logger->is_debug());
-	    $reader = BSML::BsmlReader->new();
-	    $parser->parse( \$reader, $bsml_doc );
-	    my $hash_ref = $reader->get_all_protein_assemblyId();
-	    while(my ($protein_id, $asmbl_id) = each %$hash_ref) {
-		$gene_asmbl_id->{$protein_id} = $asmbl_id;
-	    }
-	    my $rhash = $reader->returnAllIdentifiers();
-	    build_protID_cdsID_mapping($rhash, $protID_cdsID); 	
-	} else {  
-	    $logger->("Empty $bsml_doc...skipping") if($logger->is_debug());
-	    }
-    }
-
-    return ($gene_asmbl_id, $protID_cdsID);
-
-}
-
-
-sub build_protID_cdsID_mapping {
-#This function builds a mapping between cdsID to proteinID. 
-#The returned structure is a hash ref, where key is protID, value is cdsID
-
-    my $rhash = shift;
-    my $protID_cdsID=shift;
-
-    foreach my $seqID (keys %$rhash) {
-	foreach my $geneID (keys %{ $rhash->{$seqID} }) {
-	    foreach my $transcriptID (keys %{ $rhash->{$seqID}->{$geneID} }) {
-		my $cdsID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'cdsId'};
-		my $proteinID = $rhash->{$seqID}->{$geneID}->{$transcriptID}->{'proteinId'};
-		$protID_cdsID->{$proteinID} = $cdsID;
-	    }
-	}
-    }
-
-}
-    
 sub get_btab_files{
     my ($directory,$file) = @_;
     my @files;
@@ -271,13 +189,8 @@ sub get_btab_files{
 sub check_parameters{
     my ($options) = @_;
     
-    if(!$options{'bsml_dir'} or !$options{'output'} or (!$options{'btab_dir'} && !$options{'btab_file'})) {
+    if(!$options{'output'} or (!$options{'btab_dir'} && !$options{'btab_file'})) {
 	pod2usage({-exitval => 2,  -message => "$0: All the required options are not specified", -verbose => 1, -output => \*STDERR});    
-    }
-
-    if(!-d $options{'bsml_dir'}) {
-	print STDERR "bsml repository directory \"$options{'bsml_dir'}\" cannot be found.  Aborting...\n";
-	exit 5;
     }
 
     if((! -d $options{'btab_dir'}) && (! -e $options{'btab_file'})) {
