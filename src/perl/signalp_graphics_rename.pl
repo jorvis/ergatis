@@ -1,8 +1,5 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1  NAME 
 
 rename_signalp_graphics_output.pl - renames gif, eps, ps, and gnu output files
