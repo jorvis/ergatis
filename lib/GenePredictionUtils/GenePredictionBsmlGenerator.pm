@@ -96,6 +96,10 @@ sub GenerateBsml
 				   $idcreator, $project, 'exon',
 				   $gene_finder_name,
 				   $$coords[0], $$coords[1]);
+			AddFeature($doc, $feat_table, $feat_group,
+				   $idcreator, $project, 'CDS',
+				   $gene_finder_name,
+				   $$coords[0], $$coords[1]);
 		}
 	}
 	$doc->createAndAddAnalysis
