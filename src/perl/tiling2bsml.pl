@@ -129,11 +129,6 @@ my $reference_class = $options{'reference_class'};
 my $query_class = $options{'query_class'};
 my %unique_contigs; #track that each contig is only tiled once, otherwise it's ambiguous
 
-## add the analysis element
-#$doc->createAndAddAnalysis(
-#                            id => $options{analysis_id},
-#                            sourcename => $options{'outFile'},
-#                          );
 #predefine sequences w/ analysis element to track unused sequences
 predefineSequences($doc, $options{'referencePath'}, $reference_class);   #reference
 predefineSequences($doc, $options{'queryPath'}, $query_class);#query
@@ -146,7 +141,7 @@ while (my $line = <TILINGS>) {
 	$ref_id = $1;
 	$ref_length = $2;
 
-	if( !( $doc->returnBsmlSequenceByIDR( $ref_id )) ){
+	if( !( $doc->returnBsmlSequenceByIDR( clean_id($ref_id) )) ){
 	    die "Reference sequence $ref_id missing from predefined sequences";
 	}
 
@@ -190,23 +185,23 @@ while (my $line = <TILINGS>) {
 	#    die "Invalid tile_start ($tile_start) or tile_length ($tile_length) for $tile_id in $options{'tilingPath'}";
 	#}
 
-	if( !( $doc->returnBsmlSequenceByIDR( $tile_id )) ){
+	if( !( $doc->returnBsmlSequenceByIDR( clean_id($tile_id) )) ){
 	    die "Query sequence $tile_id missing from predefined sequences";
 	}
 	else {
-	    my $tile_sequence = $doc->returnBsmlSequenceByIDR( $tile_id );
+	    my $tile_sequence = $doc->returnBsmlSequenceByIDR( clean_id($tile_id) );
 
 	    #Numbering element only applicable for exact matches
 	    if ($percent_identity == 100 && $percent_coverage == 100) {		
 		$doc->createAndAddNumbering( seq => $tile_sequence,
-					     seqref => $ref_id,
+					     seqref => clean_id($ref_id),
 					     refnum => $refnum,
 					     ascending => $tile_ascending );
 	    }
 
 	    my $aln = $doc->createAndAddSequencePairAlignment(
-                                         refseq => $ref_id,
-					 compseq => $tile_id,
+                                         refseq => clean_id($ref_id),
+					 compseq => clean_id($tile_id),
 					 method=> 'tiling',
                                          );
 	    $aln->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
@@ -250,8 +245,8 @@ sub predefineSequences {
         }
 
 	my $seqstub = $doc->createAndAddSequence(
-						 $id, #id
-						 undef, #title
+						 clean_id($id), #id
+						 $id, #title
 						 length($seqs{$seqid}{s}), #length
 						 'dna', #molecule
 						 $class #class
@@ -262,7 +257,7 @@ sub predefineSequences {
  				    'fasta',               # //Seq-data-import/@format
  				    $seqfile,              # //Seq-data-import/@source
  				    undef,                 # //Seq-data-import/@id
- 				    $id                    # //Seq-data-import/@identifier
+ 				    clean_id($id)          # //Seq-data-import/@identifier
  				    );
 	$seqstub->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
@@ -290,7 +285,6 @@ sub loadMultiSequence {
     my %db;
     
     ## load the sequence file
-#    open (my $sfh, "<$file") || $logger->logdie("can't open $file because $!");
     open (my $sfh, "<$file") || die("can't open $file because $!");
 
     for (<$sfh>) {
@@ -339,4 +333,13 @@ sub loadMultiSequence {
     close $sfh;
     
     return %db;
+}
+
+
+#problems with the BSML not validating due to issues w/ fasta headers
+sub clean_id {
+    my $header = shift;
+    $header =~ s/'/_/;
+    $header =~ s/^(\d)/_$1/;
+    return $header;
 }
