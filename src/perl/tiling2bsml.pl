@@ -251,6 +251,7 @@ sub predefineSequences {
 						 'dna', #molecule
 						 $class #class
 						 );
+
 	#Seq-data-import/@identifier must equal the fasta header up to the first space	    
 	my $dataimport = $doc->createAndAddSeqDataImport(
  				    $seqstub,              # Sequence element object reference
@@ -260,6 +261,13 @@ sub predefineSequences {
  				    clean_id($id)          # //Seq-data-import/@identifier
  				    );
 	$seqstub->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+
+	#bugzilla case 2692
+	#http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=2692
+	#add //Attribute-list/Attribute[@name="SO", content=<class>]
+	#presumably class is from SO
+	$seqstub->addBsmlAttributeList([{name => 'SO', content=> $class}]);
+	
     }
 }
 
