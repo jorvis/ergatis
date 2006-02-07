@@ -258,7 +258,8 @@ sub predefineSequences {
  				    'fasta',               # //Seq-data-import/@format
  				    $seqfile,              # //Seq-data-import/@source
  				    undef,                 # //Seq-data-import/@id
- 				    clean_id($id)          # //Seq-data-import/@identifier
+				    #should NOT be clean_id since it references the fasta file
+ 				    $id                    # //Seq-data-import/@identifier
  				    );
 	$seqstub->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
 
