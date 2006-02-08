@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use File::Basename;
 
 my $q = new CGI;
 
@@ -46,6 +47,7 @@ my $overall_state = 0;
 my $found_states = 0;
 my $within_status_box = 0;
 my $command_count = 0;
+my @xmlfiles;
 
 while (my $line = readline $ifh) {
     my ($tag, $url, $word);
@@ -93,6 +95,7 @@ while (my $line = readline $ifh) {
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
+	push @xmlfiles,$url;
     }
     
     ## look for any linkable ini
@@ -101,16 +104,35 @@ while (my $line = readline $ifh) {
         $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
     }
 
+    ## look for any linkable log/stderr/sdtout
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:log|stderr|stdout))(?![\./])^i ) {
+	if(-z $url){
+	    $url = $1;
+	    $line =~ s|$url|<a href="./view_formatted_log_source.cgi?file=$url">$url</a>|;
+	}
+	else{
+	}
+    }
+
     ## look for any linkable lists
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)(?![\./])^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
     }
 
+    ##match any other files. not currently working
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.])+(?![\./])^i ) {
+        $url = $1;
+	if(-z $url){
+	    $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+	}
+    }
+
     ## look for any execution hosts
     if ( $line =~ m|executionHost</span>\&gt\;(.+?)&lt;|i ) {
-        my $ehost = $1;
-        $line =~ s|$ehost|<a href="http://enterprise.tigr.org/ganglia/?m=load_one&r=hour&s=descending&c=Main+Cluster&h=$ehost&sh=1&hc=4">$ehost</a>|;
+	my $ehost = $1; 
+	my $hostsrvstr = join(',',split(/\./,$ehost));
+        $line =~ s|$ehost|<a href="http://intranet.tigr.org/cgi-bin/sysadmin/hobbit/bb-hostsvc.sh?HOSTSVC=$hostsrvstr.cpu&IP=0.0.0.0&DISPLAYNAME=$ehost">$ehost</a>|;
     }
     
     print $line;
@@ -146,14 +168,30 @@ if (scalar keys %states) {
 
     $status_list_line .= "</li>\n";
 
+    my $xmlline;
+    foreach my $xml (@xmlfiles){
+	my @stats = stat $xml; 
+	my $kb = sprintf("%.1f", $stats[7]/1024);
+	my $file = basename($xml);
+	$xmlline .= "<a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$xml'>$file</a> <i>$kb kb</i><br>";
+    }
+
     print <<StateBox;
-    <div id='summary'>
+   <div id='summary'>
         <ul class='component'>
             <li><div class="component_progress_image">$status_image</div></li>
             <li>state: <span style='color: $colors{$overall_state}'>$overall_state</span></li>
             $status_list_line
        </ul>
-    </div>
+    <div id='xmlfiles'>
+        <ul class='component'>
+	<li>       Linked XML files</li>
+	$xmlline
+       </ul>
+     </div>
+   </div>
+   
+
 StateBox
 }
 
