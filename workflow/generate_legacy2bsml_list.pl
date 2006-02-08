@@ -72,7 +72,7 @@ my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = Workflow::Logger::get_logger();
 
-my $database_key      = '$;DATABASE$;';
+my $database_key      = '$;SOURCE_DATABASE$;';
 my $asmbl_id_key      = '$;ASMBL_ID$;';
 my $sequence_type_key = '$;SEQUENCE_TYPE$;';
 my $subflow_key       = '$;SUBFLOW_NAME$;';
