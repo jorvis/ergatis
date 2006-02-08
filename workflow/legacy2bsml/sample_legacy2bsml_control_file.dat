@@ -7,6 +7,12 @@ database:ntce1 organism_type:ntprok include_genefinders: exclude_genefinders:
 # here we specify that a euk organism shall be migrated
 database:afu1 organism_type:euk include_genefinders: exclude_genefinders:
 100
+# assembly 101 has secondary sequence type
+101 sequence_type:SO:contig
+102
+# here we specify that a euk organism shall be migrated
+database:afu1 organism_type:euk include_genefinders: exclude_genefinders:
+100
 101
 102
 
