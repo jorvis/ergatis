@@ -169,11 +169,15 @@ if (scalar keys %states) {
     $status_list_line .= "</li>\n";
 
     my $xmlline;
-    foreach my $xml (@xmlfiles){
+    my $listlimit=10;
+    foreach my $xml (splice(@xmlfiles,0,$listlimit)){
 	my @stats = stat $xml; 
 	my $kb = sprintf("%.1f", $stats[7]/1024);
 	my $file = basename($xml);
 	$xmlline .= "<a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$xml'>$file</a> <i>$kb kb</i><br>";
+    }
+    if(scalar(@xmlfiles)  > $listlimit){
+	$xmlline .= "<i>Plus ".(scalar(@xmlfiles)-$listlimit)." others...</i><br>";
     }
 
     print <<StateBox;
