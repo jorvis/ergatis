@@ -1,0 +1,11 @@
+database:ntce1 organism_type:prok include_genefinders: exclude_genefinders:
+2
+# comments are permitted
+database:ntce1 organism_type:ntprok include_genefinders: exclude_genefinders:
+2
+# comment: this organism will have both ORF and NTORF annotation attributes migrated
+database:afu1 organism_type:euk include_genefinders: exclude_genefinders:
+100
+101
+102
+
