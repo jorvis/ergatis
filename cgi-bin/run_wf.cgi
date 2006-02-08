@@ -7,6 +7,8 @@ use Tree::DAG_Node;
 use File::Find;
 use File::Basename;
 use Ergatis::Validator;
+use Ergatis::ConfigFile;
+
 use HTML::Template;
 
 ## toggles debugging messages
@@ -18,11 +20,40 @@ my $inifile = param('inifile');
 my $template = param('xmltemplate');
 my $validate = param('validate');
 
+my $ergatisini = param('ergatisini');
+my $lockdir = param('lockdir');
+my $pipelineid = param('pipelineid');
+
 $validate = 1 if (! defined $validate);
 
 my $log =  $instancexml.".log";
 my $out = $instancexml.".out";
+my $conf;
 
+$ergatisini = "./ergatis.ini" if(!$ergatisini);
+
+if(-e $ergatisini){
+    $conf = Ergatis::ConfigFile->new( -file => $ergatisini );
+    if(! -d $conf->val('paths','workflow_run_dir')){
+	die "Invalid workflow_run_dir in $ergatisini : ".$conf->val('paths','workflow_run_dir');
+    }
+    if(! -d $conf->val('paths','workflow_root')){
+	die "Invalid workflow_root in $ergatisini : ".$conf->val('paths','workflow_root');
+    }
+    if(! -e $conf->val('paths','workflow_log4j')){
+	die "Invalid workflow_log4j in $ergatisini : ".$conf->val('paths','workflow_log4j');
+    }
+}
+else{
+    die "Can't find file ergatis ini $ergatisini\n";
+}
+
+if(!-d $lockdir){
+    die "Can't find lock directory $lockdir\n";
+}
+if(!$pipelineid){
+    die "Required parameter --pipelineid missing\n";
+}
 
 if ( $validate ) {
 
@@ -45,7 +76,7 @@ if ( $validate ) {
                                  'on your browser if you need to go back and fix these, or click the \'continue anyway\' ' .
                                  'button to ignore them.' );
         $tmpl->param( WARNING_MESSAGES => $warning_hash );
-        $tmpl->param( CONTINUE_ACTION  => "/tigr-scripts/ergatis/run_wf.cgi?xmltemplate=$template&inifile=$inifile&instancexml=$instancexml&validate=0" );
+        $tmpl->param( CONTINUE_ACTION  => "/tigr-scripts/ergatis/run_wf.cgi?xmltemplate=$template&inifile=$inifile&instancexml=$instancexml&validate=0&pipelineid=$pipelineid&ergatisini=$ergatisini&lockdir=$lockdir" );
 
         print $tmpl->output;
         exit;
@@ -77,7 +108,7 @@ if( ($inifile ne "") && ($template ne "") ) {
             ## open the debugging file if needed
             open (my $debugfh, ">>$debug_file") if $debugging;
             
-            chdir '/usr/local/scratch/workflow';
+            chdir $conf->val('paths','workflow_run_dir');
             use POSIX qw(setsid);
             setsid() or die "Can't start a new session: $!";
             
@@ -89,20 +120,12 @@ if( ($inifile ne "") && ($template ne "") ) {
             my $createexecstr = "$ENV{'WF_ROOT'}/CreateWorkflow -debug -i $instancexml -t $template -c $inifile --delayedbuild=true --autobuild=false > $instancexml.create.out 2>&1";
             system("$createexecstr");
 
-	    #------------------------------------------------------------------------------------------------------------
-	    # editor:   sundaram@tigr.org
-	    # date:     2005-10-27
-	    # bgzcase:  2247
-	    # URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2247
-	    # comment:  observer_script.pl
-	    #           For Workflow reference please review: http://intranet/ifx/devel/workflow/main_frame.html
-	    #           Activating observer script.  Will have to workout the installation directives later- for now
-	    #           will simply point to sybil.2005.10.25 installation.
-	    #
-            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml --scripts=/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/bin/observer_script:status:/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/docs/observer_script.props > $instancexml.run.out 2>&1";
-	    #
-	    #------------------------------------------------------------------------------------------------------------
-            system($runexecstr);
+            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml --logconf=".$conf->val('paths','workflow_log4j')." > $instancexml.run.out 2>&1";
+
+	    my $lockfile = $lockdir."/pid.$pipelineid";
+	    &writelockfile($lockfile);
+            
+	    system($runexecstr);
             close $debugfh if $debugging;
             exit;
         }
@@ -131,24 +154,13 @@ if( ($inifile ne "") && ($template ne "") ) {
             ## open the debugging file if needed
             open (my $debugfh, ">>$debug_file") if $debugging;
         
-            chdir '/usr/local/scratch/workflow';
+            chdir $conf->val('paths','workflow_run_dir');
             use POSIX qw(setsid);
             setsid() or die "Can't start a new session: $!";
             
             setup_environment();
 
-	    #------------------------------------------------------------------------------------------------------------
-	    # editor:   sundaram@tigr.org
-	    # date:     2005-10-27
-	    # bgzcase:  2247
-	    # URL:      http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2247
-	    # comment:  observer_script.pl
-	    #           For Workflow reference please review: http://intranet/ifx/devel/workflow/main_frame.html
-	    #           Activating observer script.  Will have to workout the installation directives later- for now
-	    #           will simply point to sybil.2005.10.25 installation.
-	    # 
-            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log --scripts=/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/bin/observer_script:status:/usr/local/devel/ANNOTATION/cas/sybil.2005.10.25/docs/observer_script.props >& $instancexml.run.out";
-				## REMOVED -v5 flag because logs were too large	
+            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log --logconf=".$conf->val('paths','workflow_log4j')." >& $instancexml.run.out";
 	    #
 	    #------------------------------------------------------------------------------------------------------------
 
@@ -157,6 +169,9 @@ if( ($inifile ne "") && ($template ne "") ) {
                 #print $debugfh Dumper(\%ENV);
                 print $debugfh "preparing to run $runstring\n";
             }
+	    
+	    my $lockfile = $lockdir."/pid.$pipelineid";
+	    &writelockfile($lockfile);
 
             my $rc = 0xffff & system($runstring);
 
@@ -202,62 +217,19 @@ sub setup_environment {
     $ENV{SGE_EXECD_PORT} = '537';
     $ENV{SGE_ARCH} = 'lx26-x86';
 
-    $ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow";
-    $ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow";
-    #$ENV{'WF_ROOT'} = "/usr/local/devel/ANNOTATION/workflow";
-    #$ENV{'WF_ROOT_INSTALL'} = "/usr/local/devel/ANNOTATION/workflow";
+    $ENV{'WF_ROOT'} = $conf->val('paths','workflow_root');
+    $ENV{'WF_ROOT_INSTALL'} = $conf->val('paths','workflow_root');
 
     $ENV{'SYBASE'} = "/usr/local/packages/sybase";
     $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";
-    $ENV{'LD_LIBRARY_PATH'} = "/usr/local/lib:/usr/local/packages/sybase/OCS/lib:/usr/local/packages/sybase/lib";
+    $ENV{'LD_LIBRARY_PATH'} = "";
 }
 
+sub writelockfile{
+    my($file) = @_;
+    open FILE,"+>$file" or die "Can't open lock file $file for writing :$!";
+    print FILE $$,"\n";
+    close FILE;
+}
 exit;
-
-#use lib "/home/condor/production/request/lib";
-#use TIGR::HTCRequest;
-
-
-#print "hello\n";
-
-#my $request = TIGR::HTCRequest->new(group => "antware",
-#                    initialdir => "/usr/local/annotation/FIXGHI/BER2multi_dir/WORKING");
-#$request->username('angiuoli');
-#$request->set_command("/home/dsommer/working/test.sh");
-#$dd = $request->get_command();
-#print " command is $dd \n";
-#$request->add_param("-output=GCG");
-#$request->add_param("-infile", "/home/dsommer/tmp/.*.fa\$", DIR);
-#$request->add_param("-outfile", "/usr/local/annotation/FIXGHI/BER2multi_dir/WORKING/\$(Name).msf");
-
-#$request->set_output("/home/dsommer/working/htc_test.\$(Name).out");
-#$request->set_error("/home/dsommer/working/htc_test.\$(Name).err");
-
-
-#$request->add_param("filekey", "/home/dsommer/working/filelines", FILE);
-
-
-#$request->set_getenv(1);
-#$request->set_env_list(...);
-
-#my $xx = $request->to_xml();
-#print $xx;
-
-#my $id = $request->submit();
-#print " Request id was $id \n";
-
-# wait for job finish
-#$request->wait_for_request();
-
-#my $message = $request->get_message();
-#if($request->get_state() eq "FAILURE") {
-#    print " dpsSearch failed: $message \n";
-#    exit(1);
-#} elsif ($request->get_state() eq "FINISHED") {
-#    print " Request finished correctly\n";
-#} else {
-#    print " Request finished with state $request->get_state() and $message \n";
-#}
-
-#print "command finished\n";
 
