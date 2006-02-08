@@ -36,12 +36,10 @@ use PEffect::PEffectXML;
 use File::Basename;
 use File::Path;
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
 use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlParserTwig;
-}
 
 my %options = ();
 my $results = GetOptions (\%options, 
