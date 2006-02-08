@@ -53,7 +53,6 @@ use strict;
 use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlBuilder;
-use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
 use BSML::BsmlRepository;
 use Papyrus::TempIdCreator;

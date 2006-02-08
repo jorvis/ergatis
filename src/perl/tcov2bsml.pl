@@ -46,7 +46,6 @@ into BSML documents.
 =cut
 
 use BSML::BsmlBuilder;
-use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
