@@ -183,7 +183,7 @@ messageBLOCK
             $message = '';
         }
     }
-    
+    my $hostsrvstr = join(',',split(/\./,$execution_host));
     print <<SubflowGroupBar;
         <div id='${name}_bar' class='subflowgroupbar'>
             <div class='leftside'>
@@ -204,7 +204,7 @@ $message
                 <tr><th>end time:</th><td>$end_time</td></tr>
                 <tr><th>duration:</th><td>$runtime</td></tr>
                 <tr><th>grid id:</th><td>$grid_id</td></tr>
-                <tr><th>execution host:</th><td><a href='http://enterprise.tigr.org/ganglia/?m=load_one&r=hour&s=descending&c=Main+Cluster&h=$execution_host&sh=1&hc=4' target='_blank'>$execution_host</a></td></tr>
+                <tr><th>execution host:</th><td>$execution_host<a href='http://intranet.tigr.org/cgi-bin/sysadmin/hobbit/bb-hostsvc.sh?HOSTSVC=$hostsrvstr.cpu&IP=0.0.0.0&DISPLAYNAME=$execution_host' target='_blank'>[BB]</a><a href='http://enterprise.tigr.org/ganglia/?m=load_one&r=hour&s=descending&c=Main+Cluster&h=$execution_host&sh=1&hc=4' target='_blank'>[Ganglia]</a></td></tr>
                 <tr><th colspan='2'>xml:</th></tr>
                 <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=$file'>$file</a></td></tr>
             </table>
@@ -522,11 +522,11 @@ sub print_header {
 
 <body>
 <div id='bannertop'>
-    <img src='/ergatis/banner_main.png' />
+     <a href='/cgi-bin/ergatis/index.cgi'><img src='/ergatis/banner_main.png' border=0/></a>
 </div>
 <div id='bannerbottom'>
     <div id='pipelinesummary'>
-        <div id='pipeline'>$pipeline_xml</div>
+        <div id='pipeline'><a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$pipeline_xml' target='_blank'>$pipeline_xml</a></div>
         <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
         <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
         <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
@@ -540,7 +540,9 @@ sub print_header {
             <a href='./view_workflow_pipeline.cgi?&instance=$parent_pipeline'><img class='navbutton' src='/ergatis/button_blue_pipeline_view.png' alt='pipeline view' title='pipeline view'></a>
             <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
             <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+            <a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$pipeline_xml' target='_blank'><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='View XML' title='View XML'></a>
         </div>
+
     </div>
 </div>
 <div id='workflowcontainer'>
