@@ -93,6 +93,7 @@ print <<pipeLINEsummary;
             <a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
             <a href='./kill_wf.cgi?instancexml=$file'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
             <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
+            <a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$file' target='_blank'><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='View XML' title='View XML'></a>
         </div>
     </div>
 </div>
