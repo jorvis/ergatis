@@ -19,6 +19,7 @@ print $q->header( -type => 'text/html' );
 my $xml_input = $q->param("instance") || die "pass instance";
 
 my $project = '?';
+my $pipelineid;
 
 ## make sure the file exists
 if (! -f $xml_input) {
@@ -26,13 +27,15 @@ if (! -f $xml_input) {
 }
 
 ## extract the project
-if ( $xml_input =~ m|(.+/(.+?))/Workflow| ) {
+if ( $xml_input =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
     $repository_root = $1;
     $project = $2;
+    $pipelineid = $3;
 } else {
     die "failed to extract a repository_root from $xml_input.  expected a Workflow subdirectory somewhere."
 }
 
+my $lockdir = "$repository_root/workflow_config_files";
 
 my $file = $xml_input;
 my $twig = new XML::Twig;
@@ -85,11 +88,12 @@ print <<pipeLINEsummary;
         <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
         <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
         <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
+        <div class='pipelinestat' id='pipelineid'><strong>pipeline id:</strong> $pipelineid</div>
         <div class='timer' id='pipeline_timer_label'></div>
         <div id='pipelinecommands'>
             <a href='./pipeline_list.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline list'></a>
             <a href='./new_pipeline.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
-            <a href='./run_wf.cgi?instancexml=$file&validate=0'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
+            <a href='./run_wf.cgi?instancexml=$file&validate=0&pipelineid=$pipelineid&lockdir=$lockdir&'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
             <a href='./show_pipeline.cgi?xmltemplate=$file&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
             <a href='./kill_wf.cgi?instancexml=$file'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
             <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
