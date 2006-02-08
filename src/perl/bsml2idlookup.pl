@@ -25,12 +25,9 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use XML::Twig;
 
-BEGIN {
 use Workflow::Logger;
-use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlParserTwig;
-}
 use MLDBM "DB_File";
 
 #######

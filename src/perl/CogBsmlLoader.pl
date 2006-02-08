@@ -58,11 +58,9 @@ Calling the script name with NO flags/options or --help will display the syntax 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
 use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
-}
 
 my %options = ();
 my $results = GetOptions( \%options, 
