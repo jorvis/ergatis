@@ -43,14 +43,9 @@ B<--help, -h> [OPTIONAL]  program help
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Builder.pm';
-    import Workflow::Builder;
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/IteratorBuilder.pm';
-    import Workflow::IteratorBuilder;
-}
+use Workflow::Builder;
+use Workflow::Logger;
+use Workflow::IteratorBuilder;
 use File::Basename;
 use Config::IniFiles;
 

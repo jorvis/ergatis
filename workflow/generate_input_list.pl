@@ -47,10 +47,8 @@ removed at a certain point.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Data::Dumper;
-BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-}
+
+use Workflow::Logger;
 
 umask(0000);
 
