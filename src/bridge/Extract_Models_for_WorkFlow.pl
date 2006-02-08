@@ -36,7 +36,7 @@ MAIN:{
 
     if (! defined $opt_s ) {
         ## default length cutoff
-        $opt_s = 0;
+        $opt_s = 1;
     }
 
 	if (defined $opt_D && $opt_D =~ /\w/){
