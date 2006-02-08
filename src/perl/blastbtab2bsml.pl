@@ -115,7 +115,7 @@ $doc->createAndAddAnalysis(
                             sourcename => $options{'output'},
                           );
 
-$doc->write($options{'output'});
+$doc->write($options{'output'},undef,1);
 
 sub parse_blast_btabs {
 
