@@ -1,10 +1,8 @@
 #! /local/perl/bin/perl
 
 use strict;
-BEGIN {
-use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
-}
+
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
@@ -147,10 +145,7 @@ sub createPolypeptideLookup
 
     if( ($seqRef->returnattr( 'molecule' ) eq 'aa') || ($seqRef->returnattr('class') eq 'polypeptide'))
     {
-	my $reader = new BSML::BsmlReader();
-	my $seq = '';
-	$seq = $reader->subSequence($seqRef,-1,0,0);
-	$seq =~ s/\s//g;
+	my $seq = $seqRef->subSequence(-1,0,0);
 	
 	my $identifier;
 	if(defined $seqRef->{'BsmlSeqDataImport'}){

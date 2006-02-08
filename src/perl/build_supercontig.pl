@@ -23,14 +23,11 @@ use Pod::Usage;
 umask(0000);
 
 
-BEGIN {
 use BSML::BsmlBuilder;
 use Workflow::Logger;
-use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlParserTwig;
-    
-}
+
 
 my %options = ();
 GetOptions( \%options, 
@@ -91,7 +88,6 @@ $seqParser->parse( $bsmlFile );
 $alnParser->parse( $bsmlFile );
 
 #build a supercontig for each reference scaffold
-my $reader = new BSML::BsmlReader();
 foreach my $refseq (keys %tiles) {
     my $supercontig_seq = "";
     my $supercontig_name = $options{scaffold_class}."_".$refseq;
@@ -120,7 +116,8 @@ foreach my $refseq (keys %tiles) {
 		print "$refseq\t$refpos\t$runlength\t$compseq\t$is_comp\t($supercontig_name)\n";
 
 		#add to supercontig sequence
-		my $seq = $reader->subSequence(${$seqtrack{$compseq}},-1,0,0);
+		my $seqobj = $doc->returnBsmlSequenceByIDR(${$seqtrack{$compseq}});
+		my $seq = $seqobj->subSequence(-1,0,0);
 		$seq =~ s/\s//g;
 		my $seq_len = length($seq);
 		if ($seq_len < 1) {
