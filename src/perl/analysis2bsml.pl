@@ -94,7 +94,28 @@ my $twig = XML::Twig->new(
                             twig_roots => { 'Research' => \&process_research },
                             pretty_print => 'indented',
                          );
-$twig->parsefile($options{'bsml_file'});
+
+my $fh;
+if (-e $options{'bsml_file'} && $options{'bsml_file'} !~ /\.gz$/){
+    print "Opening regular file\n";
+    open ($fh, $options{'bsml_file'}) or $logger->logdie("Could not open file '$options{'bsml_file'}: $!");
+}
+else{
+    if ($options{'bsml_file'} !~ /\.gz$/ && -e $options{'bsml_file'}.".gz"){
+	$options{'bsml_file'} .= ".gz";
+    }
+    if($options{'bsml_file'} =~ /\.gz$/ && -e $options{'bsml_file'}){
+	print "Opening gzip file\n";
+	open ($fh, "<:gzip", $options{'bsml_file'}) || $logger->logdie("Could not open zipped file '$options{'bsml_file'}': $!");
+    }
+    else{
+	$logger->logdie("Could not open file '$options{'bsml_file'}: $!");
+    }
+}
+
+$twig->parse( $fh );
+
+close $fh;
 
 ## if no Research element was found, build one
 if (! $research_found) {
@@ -123,9 +144,17 @@ if (! $research_found) {
 ## open the input file.  if a Research element exists, replace it, else just add it
 ##  before the closing Bsml tag.  because you can't read and write to the same stream,
 ##  we'll have to write to a temp file and then move it over the original.
-open (my $ifh, "<$options{'bsml_file'}") || $logger->logdie("can't read input BSML file");
-open (my $ofh, ">$options{'bsml_file'}.part") || $logger->logdie("can't write output BSML file");
-
+my $ifh;
+my $ofh;
+if($options{'bsml_file'} =~ /\.gz$/){
+    print "Read/write zip file\n";
+    open ($ifh, "<:gzip", $options{'bsml_file'}) || $logger->logdie("can't read input BSML file");
+    open ($ofh, ">:gzip", "$options{'bsml_file'}.part") || $logger->logdie("can't write output BSML file");
+}
+else{
+    open ($ifh, "<$options{'bsml_file'}") || $logger->logdie("can't read input BSML file");
+    open ($ofh, ">$options{'bsml_file'}.part") || $logger->logdie("can't write output BSML file");
+}
 my $replace_mode = 0;
 my $research_not_found = 1;
 
@@ -272,8 +301,8 @@ sub add_config_params {
 sub check_parameters{
     my ($options) = @_;
     
-    if(! -e $options{'bsml_file'}){
-	pod2usage({-exitval => 2,  -message => "Can't read bsml file $options{'bsml_file'}", -verbose => 1, -output => \*STDERR});    
+    if(! -e $options{'bsml_file'} && ! -e $options{'bsml_file'}.".gz"){
+	pod2usage({-exitval => 2,  -message => "Can't read bsml file $options{'bsml_file'} or $options{'bsml_file'}.gz", -verbose => 1, -output => \*STDERR});    
     }
     if(! -e $options{'conf'}){
 	pod2usage({-exitval => 2,  -message => "Can't read conf file $options{'conf'}", -verbose => 1, -output => \*STDERR});    
