@@ -133,7 +133,7 @@ server=SYBTIGR
 
 cvs co -d install ANNOTATION/ergatis/ergatis_installer.pl
 cd install
-./ergatis_installer.pl -U sgc --installdir=/usr/local/devel/ANNOTATION/ard/testing_manual --controlfile=/usr/local/devel/ANNOTATION/ard/testing_manual.ini --workingdir=/tmp/testing_manual
+./ergatis_installer.pl -U sgc --installdir=/usr/local/devel/ANNOTATION/ard/testing_manual --controlfile=/usr/local/devel/ANNOTATION/ard/testing_manual.ini --workingdir=/tmp/testing_manual --chmod
 
 
 About
