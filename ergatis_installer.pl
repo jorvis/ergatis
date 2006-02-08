@@ -55,6 +55,10 @@ USAGE:  cas_installer.pl --installdir=installdirr --workingdir=workingdir --user
 
     Optional - Specifies that the installdir should be wiped  (Default is to not delete the installdir)
 
+=item B<--chmod>
+
+    Optional - Specifies that the installdir should be changed to world read/write
+
 =item B<--help,-h>
 
     Print this help
@@ -93,13 +97,13 @@ my %opts;
 my $exec_path;
 
 
-my $datamanagementfile = "/usr/local/devel/ANNOTATION/cas/datamanagement/cas_install.txt";
-my $htmlfile = "/usr/local/devel/ANNOTATION/cas/datamanagement/cas_install.html";
+my $datamanagementfile = "/usr/local/devel/ANNOTATION/ard/install_log.txt";
+my $htmlfile = "/usr/local/devel/ANNOTATION/ard/install_log.html";
 
 umask(0000);
 
 
-my ($installdir, $workingdir, $username, $help, $log4perl, $man, $cvscode, $controlfile, $server, $debug_level, $init);
+my ($installdir, $workingdir, $username, $help, $log4perl, $man, $cvscode, $controlfile, $server, $debug_level, $init, $chmod);
 
 my $results = GetOptions (
 			  'log4perl|l=s'       => \$log4perl,
@@ -112,7 +116,8 @@ my $results = GetOptions (
 			  'cvscode=s'          => \$cvscode,
 			  'controlfile=s'      => \$controlfile,
 			  'server|S=s'         => \$server,
-			  'init'               => \$init
+			  'init'               => \$init,
+			  'chmod|c'            => \$chmod
 			  );
 
 &pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if ($man);
@@ -277,7 +282,7 @@ sub install_peffect {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -d peffect peffect";
+    my $execstring = "cvs -Q export -r HEAD -d peffect peffect -r";
 
     &do_or_die($execstring);
 
@@ -423,12 +428,19 @@ sub execute_installation {
 		    my $makeinstallstring = "make install >> autoinstall.log";
 		    
 		    &do_or_die($makeinstallstring);
-		}
 
+		}
 
 	    }
 
-
+	if($chmod){
+	    my $chmodstrfile = "find $installdir ".'-type f -exec chmod a+rw {} \;';
+	    my $chmodstrdir = "find $installdir ".'-type d -exec chmod a+rwx {} \;';
+	    my $chmodstrbin = "find $installdir/bin ".'-type f -exec chmod a+rwx {} \;';
+	    &do_or_die($chmodstrfile); 
+	    &do_or_die($chmodstrdir); 
+	    &do_or_die($chmodstrbin); 
+	}
 }
 
 
@@ -465,18 +477,6 @@ sub create_html {
 
 	my ($datafile, $htmlfile) = @_;
 
-
-
-	if (-e $htmlfile){
-		
-	    my $htmlbak = $htmlfile . ".$$.bak";
-
-	    rename ($htmlfile, $htmlbak);
-	    
-	    chmod (0666, $htmlbak);
-
-	}
-
 	if (!defined($datafile)){
 	    $logger->logdie("datafile was not defined");
 	}
@@ -494,7 +494,7 @@ sub create_html {
 	chomp @contents;
 
 
-	my $title = "CAS Installation";
+	my $title = "Installation log";
 
 	&print_header($title);
 
