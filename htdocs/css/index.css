@@ -23,6 +23,11 @@ dd.project_path:hover {
     display: block;
 }
 
+input#repository_root_field {
+    margin-left: 10px;
+    width: 250px;
+}
+
 span.header_note {
     margin-left: 30px;
     font-size: 70%;
@@ -32,11 +37,13 @@ span.header_note {
 
 #watched_pipeline_container,
 #running_pipeline_container,
-#other_active_pipelines_container {
+#other_active_pipelines_container,
+#custom_list_container {
     margin-left: 120px;
 }
 
-#other_active_pipelines_container {
+#other_active_pipelines_container,
+#custom_list_container {
     margin-top: 30px;
 }
 
