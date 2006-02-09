@@ -16,14 +16,23 @@ print $q->header( -type => 'text/html' );
 
 ## will be like:
 ## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
-my $pipeline = $q->param("pipeline") || die "pass pipeline";
 
-## get the project label out of the pipeline.  just before 'Workflow'
-my $project = '?';
-if ( $pipeline =~ m|.+/(.+?)/Workflow| ) {
-    $project = $1;
+my $pipeline = $q->param("pipeline") || die "pass pipeline";
+my $project;
+my $pipelineid;
+if ( $pipeline =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
+    $repository_root = $1;
+    $project = $2;
+    $pipelineid = $3;
+} else {
+    die "failed to extract a repository_root from $pipeline.  expected a Workflow subdirectory somewhere."
 }
 
+my $lockdir = "$repository_root/workflow_config_files";
+my ($pid,$hostname,$execuser,$retries) = &parselockfile("$lockdir/pid.$pipelineid");
+$pid = "" if(!$pid);
+$execuser = "unknown" if(!$execuser);
+$hostname = "unknown" if(!$hostname);
 
 my $twig = new XML::Twig;
 
@@ -71,22 +80,26 @@ my $quotastring = 'quota information currently disabled';
 
 print <<PipelineSummarY;
     <div id='pipeline'>$pipeline</div>
-    <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
-    <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
-    <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
-    <div class='pipelinestat'><strong>state:</strong> <span id='pipelinestate'>$state</span></div>
-    <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
-    <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
-    <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
-    <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
+        <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
+        <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
+        <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
+        <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
+        <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
+        <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div>
+        <div class='pipelinestat' id='pipelineretry'><strong>retries:</strong> $retries</div>
+        <div class='pipelinestat' id='pipelineexec'><strong>exec host:</strong> <a href='http:$hostname:8080/ergatis/view_workflow_pipeline.cgi?instance=$pipeline'>$execuser\@$hostname</a>:$pid</div><br>
+        <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
+        <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
+        <div class='pipelinestat' id='pipelineid'><strong>pipeline id:</strong> $pipelineid</div>
     <div class='timer' id='pipeline_timer_label'></div>
     <div id='pipelinecommands'>
         <a href='./pipeline_list.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline list'></a>
         <a href='./new_pipeline.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
-        <a href='./run_wf.cgi?instancexml=$pipeline&validate=0'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>
-        <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
-        <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
-        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
+         <a href='./run_wf.cgi?instancexml=$pipeline&validate=0&pipelineid=$pipelineid&lockdir=$lockdir&'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>  
+       <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
+    <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
+      <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
+        <a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$pipeline' target='_blank'><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='View XML' title='View XML'></a>
     </div>
 PipelineSummarY
 
@@ -96,3 +109,18 @@ PipelineSummarY
 
 
 
+sub parselockfile{
+    my($file) = @_;
+    if(-e $file){
+	open FILE, "$file" or die "Can't open lock file $file";
+	my(@elts) = <FILE>;
+	close FILE;
+	chomp(@elts);
+	my $pid = $elts[0];
+	my $hostname = $elts[1];
+	my $getpwuid = $elts[2];
+	my $retries = $elts[3];
+	return ($pid,$hostname,$getpwuid,$retries);
+    }
+    return undef;
+}

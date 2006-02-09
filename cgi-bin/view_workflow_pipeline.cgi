@@ -36,7 +36,10 @@ if ( $xml_input =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
 }
 
 my $lockdir = "$repository_root/workflow_config_files";
-
+my ($pid,$hostname,$execuser,$retries) = &parselockfile("$lockdir/pid.$pipelineid");
+$pid = "" if(!$pid);
+$execuser = "unknown" if(!$execuser);
+$hostname = "unknown" if(!$hostname);
 my $file = $xml_input;
 my $twig = new XML::Twig;
 
@@ -85,7 +88,9 @@ print <<pipeLINEsummary;
         <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
         <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
         <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
-        <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
+        <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div>
+        <div class='pipelinestat' id='pipelineretry'><strong>retries:</strong> $retries</div>
+        <div class='pipelinestat' id='pipelineexec'><strong>exec host:</strong> <a href='http:$hostname:8080/ergatis/view_workflow_pipeline.cgi?instance=$file'>$execuser\@$hostname</a>:$pid</div><br>
         <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
         <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
         <div class='pipelinestat' id='pipelineid'><strong>pipeline id:</strong> $pipelineid</div>
@@ -563,3 +568,21 @@ sub print_footer {
 </html>
 FooTER
 }
+
+sub parselockfile{
+    my($file) = @_;
+    if(-e $file){
+	open FILE, "$file" or die "Can't open lock file $file";
+	my(@elts) = <FILE>;
+	close FILE;
+	chomp(@elts);
+	my $pid = $elts[0];
+	my $hostname = $elts[1];
+	my $getpwuid = $elts[2];
+	my $retries = $elts[3];
+	return ($pid,$hostname,$getpwuid,$retries);
+    }
+    return undef;
+}
+
+exit;
