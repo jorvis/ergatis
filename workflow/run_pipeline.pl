@@ -57,6 +57,7 @@ my $results = GetOptions (\%options,
 			  'wfid|w=s',
 			  'pipelineid=s',
                           'debug=s', 
+			  'nodistrib',
 			  'skiprun',
 			  'help|h' );
 
@@ -77,6 +78,10 @@ if(!(-e $WorkflowDocsDir)){
 if( $options{'listconf'} ){
     &listconf($WorkflowDocsDir);
     exit;
+}
+
+if(!exists $options{'nodistrib'}){
+    $options{'nodistrib'} = 0;
 }
 
 if( $options{'conf'} eq ''){
@@ -135,15 +140,23 @@ else{
     $logger->get_logger()->debug('Setting $;PIPELINEID$; to 0') if($logger->get_logger->is_debug());
     $origcfg->setval('init','$;PIPELINEID$;',0);
 }
+my @wfs = $origcfg->GroupMembers("workflowdocs");
+if($origcfg->val($wfs[0], '$;NODISTRIB$;')){
+    
+}
+else{
+    $origcfg->newval($wfs[0],'$;NODISTRIB$;',$options{'nodistrib'});
+}
 
-
+if($origcfg->val($wfs[0],'$;NODISTRIB$;')){
+    $origcfg->setval($wfs[0],'$;GROUPSIZE$;',1);
+}
 
 my $cfg = &replace_keys($origcfg);
 &check_parameters($cfg);
 
 
 my @workflows = $cfg->GroupMembers("workflowdocs");
-
 
 foreach my $workflow (@workflows){
     my $workflowname = $cfg->val($workflow,'$;NAME$;');
@@ -193,7 +206,7 @@ foreach my $workflow (@workflows){
     $logger->get_logger()->debug("Wrote configuration file $instanceconfigfile");
 
     #create builder
-    my $wfmasterobj = new Workflow::Builder('NAME'=>$workflowname); 
+    my $wfmasterobj = new Workflow::Builder('NAME'=>$workflowname, 'NODISTRIB' => $finalcfg->val($workflow, '$;NODISTRIB$;')); 
     $wfmasterobj->set_config($finalcfg);
 
     #generate instance ini file

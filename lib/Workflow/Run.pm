@@ -84,9 +84,6 @@ sub _init {
 
 sub CreateWorkflow{
     my($self,$instance, $ini, $template, $log, $outfile) = @_;
-    if($self->{_nodistrib} == 1){
-	$template = $self->_replacedistrib($template,"$outfile.template.nodistrib");
-    }
     my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_CREATE_EXEC} -t $template -c $ini -i $instance -l $log -o $outfile";
     $self->{_logger}->debug("Exec via system: $execstr") if ($self->{_logger}->is_debug());
     my $debugstr = "";
@@ -145,6 +142,13 @@ sub CreateWorkflow{
 	waitpid($pid,0);
 	my $ret = $?;
 	$ret >>= 8;
+
+	if($self->{_nodistrib} == 1){
+	    $self->_replacedistrib($instance,"$instance.nodistrib");
+	    `cp $instance $instance.bak`;
+	    `cp $instance.nodistrib $instance`;
+	}
+
 	return $ret;
     }
     else{
