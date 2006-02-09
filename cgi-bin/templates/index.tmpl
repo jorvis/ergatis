@@ -16,7 +16,7 @@
 <body>
 
 <div id='bannertop'>
-    <a href='/cgi-bin/ergatis/index.cgi'<img src='/ergatis/banner_main.png' border=0/></a>
+    <a href='/cgi-bin/ergatis/index.cgi'><img src='/ergatis/banner_main.png' alt='main banner'></a>
 </div>
 <div id='bannerbottom'>
     <div class='buttons'>
@@ -130,6 +130,14 @@
         </table>   
     </div>
 
+    <div id='custom_list_container'>
+        <h2>custom pipeline list</h2>
+        <form method='get' action='/cgi-bin/ergatis/pipeline_list.cgi'>
+            <p>
+                repository root: <input id='repository_root_field' type='text' name='repository_root' value='/usr/local/annotation'>
+            </p>
+        </form>
+    </div>
 
 </div>
 
