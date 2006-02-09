@@ -218,7 +218,7 @@ sub install_ontologies {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -r $tag ontologies";
+    my $execstring = "cvs -Q export -kkv -r $tag ontologies";
 
     &do_or_die($execstring);
 
@@ -240,7 +240,7 @@ sub install_schema {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -d chado_schema -r $tag ANNOTATION/chado/tigr_schemas/chado_template/ALL_Modules";
+    my $execstring = "cvs -Q export -kkv -d chado_schema -r $tag ANNOTATION/chado/tigr_schemas/chado_template/ALL_Modules";
 
     &do_or_die($execstring);
 
@@ -262,7 +262,7 @@ sub install_bcp_files {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -d cvdata -r $tag ANNOTATION/chado/cvdata";
+    my $execstring = "cvs -Q export -kkv -d cvdata -r $tag ANNOTATION/chado/cvdata";
 
     &do_or_die($execstring);
 
@@ -282,7 +282,7 @@ sub install_peffect {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -r HEAD -d peffect peffect -r";
+    my $execstring = "cvs -Q export -kkv -r HEAD -d peffect peffect -r";
 
     &do_or_die($execstring);
 
@@ -401,7 +401,7 @@ sub execute_installation {
 		    chdir($workingdir);
 		    
 		    
-		    my $execstring = "cvs -Q export -r $tag $installname";
+		    my $execstring = "cvs -Q export -kkv -r $tag $installname";
 		    
 		    &do_or_die($execstring);
 		    
