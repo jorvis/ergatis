@@ -219,8 +219,8 @@ sub parse_blast_btabs {
 	 		my $coverage_arr_ref = &getAvgBlastPPctCoverage(\@hsp_ref_array);
 		
 			$cov_qual_stats->{$query}->{$new_subject} = {
-				'coverage_query'	=>	sprintf("%.1f",$coverage_arr_ref->[0]),
-				'coverage_hit'		=>	sprintf("%.1f",$coverage_arr_ref->[1]),
+				'percent_coverage_refseq'	=>	sprintf("%.1f",$coverage_arr_ref->[0]),
+				'percent_coverage_compseq'		=>	sprintf("%.1f",$coverage_arr_ref->[1]),
 														};
 		}
 	}
@@ -276,8 +276,8 @@ sub parse_blast_btabs {
                               hit_length         => $btab[18],
                               e_value            => $btab[19],
                               p_value            => $btab[20],
-							  coverage_query	 => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'coverage_query'},
-							  coverage_hit		 => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'coverage_hit'},
+							  percent_coverage_refseq	 => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_refseq'},
+							  percent_coverage_compseq		 => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_compseq'},
                               class              => $class,
                               orig_dbmatch_accession => $orig_dbmatch_accession
                               );
@@ -372,8 +372,8 @@ sub createAndAddBtabLine {
         $seq_run->setattr( 'runprob', $args{'e_value'} )                                     if (defined ($args{'e_value'}));
         $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
         $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
-        $seq_run->addBsmlAttr( 'coverage_query', $args{'coverage_query'} )              	 if (defined ($args{'coverage_query'}));   
-        $seq_run->addBsmlAttr( 'coverage_hit', $args{'coverage_hit'} )           		     if (defined ($args{'coverage_hit'}));   
+        $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )              	 if (defined ($args{'percent_coverage_refseq'}));   
+        $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )           		     if (defined ($args{'percent_coverage_compseq'}));   
         $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
         $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
 
@@ -437,8 +437,8 @@ sub createAndAddBtabLine {
     $seq_run->setattr( 'runprob', $args{'e_value'} )                                       if (defined  ($args{'e_value'}));
     $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
     $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));
-    $seq_run->addBsmlAttr( 'coverage_query', $args{'coverage_query'} )               	   if (defined ($args{'coverage_query'}));   
-    $seq_run->addBsmlAttr( 'coverage_hit', $args{'coverage_hit'} )               		   if (defined ($args{'coverage_hit'}));   
+    $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )               	   if (defined ($args{'percent_coverage_refseq'}));   
+    $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )               		   if (defined ($args{'percent_coverage_compseq'}));   
     $seq_run->addBsmlAttr( 'chain_number', $args{'chain_number'} )                         if (defined  ($args{'chain_number'}));
     $seq_run->addBsmlAttr( 'segment_number', $args{'segment_number'} )                     if (defined  ($args{'segment_number'}));
     $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                   if (defined  ($args{'p_value'}));
