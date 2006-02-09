@@ -8,48 +8,87 @@ use CGI qw(:standard);
 
 use File::Find;
 use File::Basename;
+use Ergatis::ConfigFile;
+use Proc::ProcessTable;
 
 my $instancexml = param('instancexml');
+my $ergatisini = param('ergatisini');
 
-my $rundir = '/usr/local/scratch/workflow';
-opendir(DIR,$rundir) or die "Can't open directory $rundir";
-while(defined (my $file = readdir(DIR))){
-    if($file =~ /^.workflow.*\d+$/){
-	my($pid,$invocation) = &parse_run_file("$rundir/$file");
-	if($invocation =~ /$instancexml/){
-	    my $count = kill 15, $pid;
-	    if ($count != 1) {
-		print header();
-		print "<html><body>";
-		print "Error signalling process with pid $pid; manual intervention may be required<br><a href='./view_workflow_pipeline.cgi?instance=$instancexml'>[view workflow]</a>";
-		print "</body></html";
-		exit(1);
-	    } else {
-		print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");
-		exit(0);
-	    }
+my $ergatisini = "./ergatis.ini" if(!$ergatisini);
+my $conf;
+if(-e $ergatisini){
+    $conf = Ergatis::ConfigFile->new( -file => $ergatisini );
+    if(! -d $conf->val('paths','workflow_run_dir')){
+	die "Invalid workflow_run_dir in $ergatisini : ".$conf->val('paths','workflow_run_dir');
+    }
+}
+my $rundir = $conf->val('paths','workflow_run_dir');
+my $repository_root;
+my $project;
+my $pipelineid;
+
+if ( $instancexml =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
+    $repository_root = $1;
+    $project = $2;
+    $pipelineid = $3;
+} else {
+    die "failed to extract a repository_root from $instancexml.  expected a Workflow subdirectory somewhere."
+}
+
+my $lockdir = "$repository_root/workflow_config_files";
+my ($pid,$hostname,$execuser) = &parselockfile("$lockdir/pid.$pipelineid");
+
+my $t = new Proc::ProcessTable;
+my $parentpids = {};
+$parentpids->{$pid} = 0;
+my @childtokill;
+push @childtokill,$pid;
+foreach my $p ( @{$t->table} ){
+    if(exists $parentpids->{$p->{ppid}}){
+	$parentpids->{$p->{pid}} = $p->{ppid};
+	if($p->{ppid} eq $childtokill[$#childtokill]){
+	    push @childtokill,$p->{pid};
 	}
     }
 }
-closedir DIR;
+my $count;
+
+if($childtokill[3] > 1){
+    $count = kill 15, $childtokill[3];
+}
+
+if ($count != 1 || $childtokill[3] eq '') {
+    print header();
+    print "<html><body>";
+    print "Attempting to kill process $execuser\@$hostname:$pid. Error signalling process with pid $pid; manual intervention may be required<br><a href='./view_workflow_pipeline.cgi?instance=$instancexml'>[view workflow]</a><br><i>Debug information follows</i><br>";
+    print "Detected workflow processes: ",join(',',@childtokill),"<br>";
+    print "<hr>";
+    foreach my $p ( @{$t->table} ){
+	print "Pid: $p->{pid} parent pid: $p->{ppid} cmdline: $p->{cmndline}<br>";
+    }
+
+    print "</body></html";
+    exit(1);
+} else {
+    print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");
+    exit(0);
+}
 print header();
 print "<html><body>Can't find process for instance $instancexml.  Manual intervention required</body></html>";
 exit;
 
-
-sub parse_run_file{
-    my ($file) = @_;
-    open FILE, $file or die "Can't open file $file\n";
-    my $pid;
-    my $invocation;
-    while(my $line=<FILE>){
-	if($line =~ /^pid/){
-	    ($pid) = ($line =~ /pid\s*=\s*(\d+)/);
-	}
-	elsif($line =~ /^invocation/){
-	    ($invocation) = ($line =~ /invocation\s*=\s*(.+)/);
-	}
+sub parselockfile{
+    my($file) = @_;
+    if(-e $file){
+	open FILE, "$file" or die "Can't open lock file $file";
+	my(@elts) = <FILE>;
+	close FILE;
+	chomp(@elts);
+	my $pid = $elts[0];
+	my $hostname = $elts[1];
+	my $getpwuid = $elts[2];
+	return ($pid,$hostname,$getpwuid);
     }
-    close FILE;
-    return ($pid,$invocation);
+    return undef;
 }
+
