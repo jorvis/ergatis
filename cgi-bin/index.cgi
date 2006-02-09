@@ -20,7 +20,7 @@ umask(0000);
 my $update_cache = $q->param('update_cache') || 0;
 
 my $tmpl = HTML::Template->new( filename => 'templates/index.tmpl',
-                                die_on_bad_params => 1,
+                                die_on_bad_params => 0,
                               );
 
 ## read the ergatis config file
@@ -139,6 +139,7 @@ sub get_pipeline_lists {
                 $component_label = ' components';
             }
             
+            my $last_mod_secs = $last_mod;
             $last_mod = localtime($last_mod);
             
             my $pipeline_info = {
@@ -148,6 +149,7 @@ sub get_pipeline_lists {
                             pipeline_url    => "./view_workflow_pipeline.cgi?instance=$pipeline_file",
                             state           => $state,
                             last_mod        => $last_mod,
+			    last_mod_secs   => $last_mod_secs,
                             run_time        => $run_time,
                             pipeline_user   => $pipeline_user,
                             components      => \@$component_aref,
@@ -164,6 +166,7 @@ sub get_pipeline_lists {
             }
         }
     }    
-    
-    return ( $running_list, $active_list );
+    my @sortedrunning_list = sort {$b->{'last_mod_secs'} cmp $a->{'last_mod_secs'}} @$running_list;    
+    my @sortedactive_list = sort {$b->{'last_mod_secs'} cmp $a->{'last_mod_secs'}} @$active_list;
+    return ( \@sortedrunning_list, \@sortedactive_list );
 }
