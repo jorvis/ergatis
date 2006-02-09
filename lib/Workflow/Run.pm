@@ -235,6 +235,7 @@ sub _replacedistrib{
     
     while( my $line = <FILEIN> ){
 	$line =~ s/Distributed/Unix/g;
+	$line =~ s/commandSet(.*)type="parallel"/commandSet$1type="serial"/g;
 	print FILEOUT $line;
     }
     close FILEIN;
