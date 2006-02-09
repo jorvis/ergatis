@@ -10,6 +10,7 @@ use Ergatis::Validator;
 use Ergatis::ConfigFile;
 
 use HTML::Template;
+use Sys::Hostname;
 
 ## toggles debugging messages
 my $debugging = 0;
@@ -227,9 +228,37 @@ sub setup_environment {
 
 sub writelockfile{
     my($file) = @_;
+    my $retrycount=0;
+    if(-e $file){
+	my($pid,$hostname,$getpwuid,$retries) = &parselockfile($file);
+	$retries=0 if(!$retries);
+	$retrycount = $retries++;
+    }
     open FILE,"+>$file" or die "Can't open lock file $file for writing :$!";
     print FILE $$,"\n";
+    print FILE hostname(),"\n";
+    my $user = getpwuid($<);
+    print FILE $user,"\n";
+    print FILE $retrycount,"\n";
     close FILE;
 }
+
+sub parselockfile{
+    my($file) = @_;
+    if(-e $file){
+	open FILE, "$file" or die "Can't open lock file $file";
+	my(@elts) = <FILE>;
+	close FILE;
+	chomp(@elts);
+	my $pid = $elts[0];
+	my $hostname = $elts[1];
+	my $getpwuid = $elts[2];
+	my $retries = $elts[3];
+	return ($pid,$hostname,$getpwuid,$retries);
+    }
+    return undef;
+}
+
+
 exit;
 
