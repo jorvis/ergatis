@@ -547,7 +547,7 @@ sub print_header {
 <body>
 
 <div id='bannertop'>
- <a href='/cgi-bin/ergatis/index.cgi'<img src='/ergatis/banner_main.png' border=0/></a>
+ <a href='/cgi-bin/ergatis/index.cgi'><img src='/ergatis/banner_main.png' border=0/></a>
 </div>
 HeAdER
 }
