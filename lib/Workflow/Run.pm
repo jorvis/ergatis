@@ -159,7 +159,7 @@ sub CreateWorkflow{
 
 sub RunWorkflow{
     my($self,$instance, $log, $outfile) = @_;
-    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_RUN_EXEC} -i $instance -l $log -o $outfile";
+    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_RUN_EXEC} -i $instance -l $log -m 1 -o $outfile";
     $self->{_logger}->debug("Exec via system: $execstr") if ($self->{_logger}->is_debug());
     my $debugstr = "";
     if($self->{_logger}->is_debug()){
