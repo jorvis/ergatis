@@ -83,7 +83,7 @@ print <<PipelineSummarY;
         <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
         <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
         <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
-        <div class='pipelinestat' id='pipelinestate'><strong>state:</strong> $state</div>
+        <div class='pipelinestat'><strong>state:</strong> <span id='pipelinestate'>$state</span></div>
         <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
         <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div>
         <div class='pipelinestat' id='pipelineretry'><strong>retries:</strong> $retries</div>
