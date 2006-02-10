@@ -60,8 +60,12 @@ MAIN:{
 	}
 
 	if (defined $opt_L && open(LIST, $opt_L)){
-		while (<LIST>){
-			push(@asmbls, $1) if /(\d+)/;
+		my %seen = ();
+        
+        while (<LIST>){
+			next unless /(\d+)/ &! exists $seen{$1};
+            push(@asmbls, $1);
+            undef $seen{$1};
 		}
 		close(LIST);
 	}
@@ -71,8 +75,12 @@ MAIN:{
 	}
 
 	if (defined $opt_l && open(LIST, $opt_l)){
-		while (<LIST>){
-			push(@models, $1) if /(\d+\.m\d+)/;
+		my %seen = ();
+        
+        while (<LIST>){
+			next unless /(\d+\.m\d+)/ &! exists $seen{$1};
+            push(@models, $1);
+            undef $seen{$1};
 		}
 		close(LIST);
 	}
