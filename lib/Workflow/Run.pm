@@ -24,9 +24,7 @@ Run.pm - A module for building workflow instances
 
 
 use strict;
-BEGIN {
 use Workflow::Logger;
-}
 use Data::Dumper;
 
 =item new
@@ -72,8 +70,7 @@ B<Returns:> None.
 sub _init {
     my $self = shift;
     $self->{_WORKFLOW_EXEC_DIR} = "$ENV{'WORKFLOW_WRAPPERS_DIR'}" || ".";
-    $self->{_WORKFLOW_CREATE_EXEC} = "CreateWorkflow.sh";
-    $self->{_WORKFLOW_RUN_EXEC} = "RunWorkflow.sh";
+    $self->{_WORKFLOW_ROOT} = '/usr/local/devel/ANNOTATION/workflow';
     $self->{_nodistrib} = 0;
 
     my %arg = @_;
@@ -84,7 +81,7 @@ sub _init {
 
 sub CreateWorkflow{
     my($self,$instance, $ini, $template, $log, $outfile) = @_;
-    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_CREATE_EXEC} -t $template -c $ini -i $instance -l $log -o $outfile";
+    my $execstr = "$self->{_WORKFLOW_ROOT}/CreateWorkflow -t $template -c $ini -i $instance -l $log --autobuild=false";
     $self->{_logger}->debug("Exec via system: $execstr") if ($self->{_logger}->is_debug());
     my $debugstr = "";
     if($self->{_logger}->is_debug()){
@@ -113,7 +110,12 @@ sub CreateWorkflow{
 
                 ## for tRNAscan-SE
                 ANNOT_DEVEL => $ENV{ANNOT_DEVEL},
-
+                
+                ## workflow needs these
+                WF_ROOT => $self->{_WORKFLOW_ROOT},
+                WF_ROOT_INSTALL => $self->{_WORKFLOW_ROOT},
+                WF_TEMPLATE => $self->{_WORKFLOW_ROOT} . '/templates',
+                
                 ## should workflow take care of this?
                 SGE_ROOT        => '/local/n1ge',
                 SGE_CELL => 'tigr',
@@ -159,7 +161,7 @@ sub CreateWorkflow{
 
 sub RunWorkflow{
     my($self,$instance, $log, $outfile) = @_;
-    my $execstr = "$self->{_WORKFLOW_EXEC_DIR}/$self->{_WORKFLOW_RUN_EXEC} -i $instance -l $log -m 1 -o $outfile";
+    my $execstr = "$self->{_WORKFLOW_ROOT}/RunWorkflow -i $instance -l $log -m 1 --logconf=/usr/local/devel/ANNOTATION/ard/workflow.log4j.properties";
     $self->{_logger}->debug("Exec via system: $execstr") if ($self->{_logger}->is_debug());
     my $debugstr = "";
     if($self->{_logger}->is_debug()){
@@ -188,7 +190,12 @@ sub RunWorkflow{
                 
                 ## for tRNAscan-SE
                 ANNOT_DEVEL => $ENV{ANNOT_DEVEL},
-                
+
+                ## workflow needs these
+                WF_ROOT => $self->{_WORKFLOW_ROOT},
+                WF_ROOT_INSTALL => $self->{_WORKFLOW_ROOT},
+                WF_TEMPLATE => $self->{_WORKFLOW_ROOT} . '/templates',
+
                 ## should workflow take care of this?
                 SGE_ROOT        => '/local/n1ge',
                 SGE_CELL => 'tigr',
