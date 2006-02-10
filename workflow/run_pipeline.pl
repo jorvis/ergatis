@@ -148,10 +148,6 @@ else{
     $origcfg->newval($wfs[0],'$;NODISTRIB$;',$options{'nodistrib'});
 }
 
-if($origcfg->val($wfs[0],'$;NODISTRIB$;')){
-    $origcfg->setval($wfs[0],'$;GROUPSIZE$;',1);
-}
-
 my $cfg = &replace_keys($origcfg);
 &check_parameters($cfg);
 
