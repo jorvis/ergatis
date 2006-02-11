@@ -282,7 +282,7 @@ sub install_peffect {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -kkv -r HEAD -d peffect peffect -r";
+    my $execstring = "cvs -Q export -kkv -r HEAD -d peffect peffect";
 
     &do_or_die($execstring);
 
