@@ -207,16 +207,6 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_tableinfo</name>
-          <configMapId>dup_list_tableinfo</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_tableinfo</name>
-            <configMapId>remove_dups_tableinfo</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>dup_list_project</name>
           <configMapId>dup_list_project</configMapId>
         </command>
@@ -224,16 +214,6 @@
             <type>RunUnixCommand</type>
             <name>remove_dups_project</name>
             <configMapId>remove_dups_project</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_contact</name>
-          <configMapId>dup_list_contact</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_contact</name>
-            <configMapId>remove_dups_contact</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
@@ -297,16 +277,6 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_author</name>
-          <configMapId>dup_list_author</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_author</name>
-            <configMapId>remove_dups_author</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>dup_list_pub</name>
           <configMapId>dup_list_pub</configMapId>
         </command>
@@ -357,13 +327,13 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_pub_author</name>
-          <configMapId>dup_list_pub_author</configMapId>
+          <name>dup_list_pubauthor</name>
+          <configMapId>dup_list_pubauthor</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <name>remove_dups_pub_author</name>
-            <configMapId>remove_dups_pub_author</configMapId>
+            <name>remove_dups_pubauthor</name>
+            <configMapId>remove_dups_pubauthor</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
@@ -889,8 +859,8 @@
           </command>
           <command>    
               <type>RunUnixCommand</type>
-              <name>validate_foreign_constraints_pub_author</name>
-              <configMapId>validate_foreign_constraints_pub_author</configMapId>
+              <name>validate_foreign_constraints_pubauthor</name>
+              <configMapId>validate_foreign_constraints_pubauthor</configMapId>
           </command>
           <command>    
               <type>RunUnixCommand</type>
