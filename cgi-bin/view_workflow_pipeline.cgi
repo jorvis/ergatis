@@ -90,7 +90,7 @@ print <<pipeLINEsummary;
         <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
         <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div>
         <div class='pipelinestat' id='pipelineretry'><strong>retries:</strong> $retries</div>
-        <div class='pipelinestat' id='pipelineexec'><strong>exec host:</strong> <a href='http:$hostname:8080/ergatis/view_workflow_pipeline.cgi?instance=$file'>$execuser\@$hostname</a>:$pid</div><br>
+        <div class='pipelinestat' id='pipelineexec'><strong>exec host:</strong> <a href='http://$hostname:8080/cgi-bin/ergatis/view_workflow_pipeline.cgi?instance=$file'>$execuser\@$hostname</a>:$pid</div><br>
         <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
         <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
         <div class='pipelinestat' id='pipelineid'><strong>pipeline id:</strong> $pipelineid</div>
