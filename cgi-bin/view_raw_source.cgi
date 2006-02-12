@@ -14,10 +14,6 @@ my $file = $q->param("file") || die "pass file";
 pageHeader();
 
 ## only print certain file types (for minor security)
-if ($file !~ /\.list$/) {
-    print STDERR "skipped display of $file in source viewer\n";
-    quitNicely("i decline to show this type of file.");
-}
 
 print "<pre>";
 

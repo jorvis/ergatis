@@ -120,10 +120,10 @@ while (my $line = readline $ifh) {
         $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
     }
 
-    ##match any other files. not currently working
-    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.])+(?![\./])^i ) {
+    ##match any other files
+    if ( $line =~ m|(?<!\$\;)(/[/a-z0-9_\-\.]+)\&|i ) {
         $url = $1;
-	if(-z $url){
+	if(-f $url){
 	    $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
 	}
     }
