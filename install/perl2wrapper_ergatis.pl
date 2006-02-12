@@ -49,8 +49,10 @@ umask 0000
 unset PERL5LIB
 unset LD_LIBRARY_PATH
 
-exec /usr/local/bin/perl -I $instdir/lib/site_perl/5.8.5 $instdir/bin/$fname $shell_args    
-#exec /usr/local/bin/perl $instdir/bin/$fname $shell_args    
+PERL_MOD_DIR=$instdir/lib/site_perl/5.8.5
+export PERL_MOD_DIR
+
+exec /usr/local/bin/perl $instdir/bin/$fname $shell_args    
 
 _END_WRAPPER_
    ;
