@@ -1,3 +1,4 @@
+#!/usr/local/bin/perl
 use strict;
 BEGIN {
 use BPlite;

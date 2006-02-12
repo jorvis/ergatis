@@ -1,3 +1,4 @@
+#!/usr/local/bin/perl
 =head1 NAME
 
 snp2bsml.pl - convert clustered snp output information from show-snps to bsml

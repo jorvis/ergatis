@@ -1,3 +1,4 @@
+#!/usr/local/bin/perl
 =head1 NAME
 
 ber_blast_hit_selector.pl - flter hits from blast btab output
