@@ -1,4 +1,7 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
 #run as:
 # perl -I /usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/ build_supercontig.pl --bsml_input=/usr/local/scratch/annotation/AGUSSMAN/output_repository/tiling/4563_50-65/tiling.bsml --bsml_output=./test.bsml --scaffold_class=ultracontig --fasta_output=./test.fsa
 #or

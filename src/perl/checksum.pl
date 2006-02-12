@@ -1,4 +1,7 @@
 #! /local/perl/bin/perl
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
 
 =head1  NAME
 

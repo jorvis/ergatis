@@ -1,4 +1,7 @@
 #! /usr/local/bin/perl
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
 
 # use lib "/export/CVS/bsml/src";
 use strict;

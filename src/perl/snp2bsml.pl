@@ -1,4 +1,7 @@
 #!/usr/local/bin/perl
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
 =head1 NAME
 
 snp2bsml.pl - convert clustered snp output information from show-snps to bsml

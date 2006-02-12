@@ -1,4 +1,7 @@
 #!/usr/local/bin/perl
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
 
 # This program takes as input a single BTAB file containing
 # 1-way best hits, typically between the proteins in 2 or more 
