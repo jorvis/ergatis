@@ -30,6 +30,10 @@ B<--class,-c> The ref/comp sequence type.  Default is 'assembly'
 
 =item *
 
+B<--gzip,-z> gzip bsml output
+
+=item *
+
 B<--help,-h> This help message
 
 =back
@@ -70,6 +74,7 @@ my $results = GetOptions (\%options,
               'log|l=s',
               'debug=s',
               'class|c=s',
+	      'gzip|z',
               'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -112,7 +117,12 @@ $doc->createAndAddAnalysis(
                             sourcename => $options{'output'},
                           );
 
-$doc->write($options{'output'});
+if($options{'gzip'}){
+    $doc->write($options{'output'},undef,1);
+}
+else{
+    $doc->write($options{'output'});
+}
 
 sub parse_blast_btabs {
 
