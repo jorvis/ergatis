@@ -49,6 +49,11 @@ umask 0000
 unset PERL5LIB
 unset LD_LIBRARY_PATH
 
+LANG=C
+export LANG
+LC_ALL=C
+export LC_ALL
+
 PERL_MOD_DIR=$instdir/lib/site_perl/5.8.5
 export PERL_MOD_DIR
 
