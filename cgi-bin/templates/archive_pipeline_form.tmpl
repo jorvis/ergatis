@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2">
+    <title>ergatis - archive/delete a pipeline</title>
+    <!-- bring in the styles -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/archive.css">
+    <!-- bring in the functionality -->
+    <script type="text/javascript" src="/ergatis/javascript/common.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/archive_pipeline_form.js"></script>
+</head>
+
+<body>
+
+<div id='bannertop'>
+    <a href='/cgi-bin/ergatis/index.cgi'><img src='/ergatis/banner_main.png' alt='banner' title='banner' /></a>
+</div>
+<div id='bannerbottom'>
+    <div class='buttons'>
+        <a href=''><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline_list'></a>
+        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
+    </div>
+</div>
+
+<div id='page_content'>
+
+    <div id='choice_dialogue'>
+        <h2>archive/delete a pipeline</h2>
+        <p>
+            This page is used to delete or archive an existing pipeline and all its associated output data.  Please
+            choose an action for pipeline <TMPL_VAR NAME=PIPELINE_ID>.
+        </p>
+        <ul id='archive_choices'>
+            <li><a onclick='javascript: showDialogue("archive_verification_dialogue")'>archive in place</a></li>
+            <li><a onclick='javascript: showDialogue("temp_archive_verification_dialogue")'>archive to <TMPL_VAR NAME=ARCHIVE_ROOT></a></li>
+            <li><a onclick='javascript: showDialogue("delete_dialogue")'>delete</a></li>
+        </ul>
+    </div>
+    
+    <div id='archive_verification_dialogue'>
+        <h3 class='warning'>archive in place verification</h3>
+        <p>
+            Are you sure you want to archive pipeline <TMPL_VAR NAME=PIPELINE_ID>? The pipeline and all its
+            data will be compressed in place.
+        </p>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&action=archive_in_place'>Yes</a></span>
+        <span class='button'><a onclick='javascript: hideDialogue("archive_verification_dialogue")'>No</a></span>
+    </div>
+    
+    <div id='temp_archive_verification_dialogue'>
+        <h3 class='warning'>archive to temp verification</h3>
+        <p>
+            Are you sure you want to archive pipeline <TMPL_VAR NAME=PIPELINE_ID>? The pipeline and all its
+            data will be compressed and moved to <TMPL_VAR NAME=ARCHIVE_ROOT>.
+        </p>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&action=archive_to_temp'>Yes</a></span>
+        <span class='button'><a onclick='javascript: hideDialogue("temp_archive_verification_dialogue")'>No</a></span>
+    </div>
+    
+    <div id='delete_dialogue'>
+        <h3 class='warning'>delete verification</h3>
+        <p>
+            Are you sure you want to delete pipeline <TMPL_VAR NAME=PIPELINE_ID>? You will not be able to undo
+            this action.
+        </p>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&action=delete'>Yes</a></span>
+        <span class='button'><a onclick='javascript: hideDialogue("delete_dialogue")'>No</a></span>
+    </div>
+
+</div>
+
+</body>
+
+</html>
