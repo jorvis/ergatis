@@ -106,8 +106,6 @@ sub print_dag_page{
     my $pipelineid;
     $outputdir .= "/Workflow/pipeline";
 
-    my $lockdir = "$repository_root/workflow_config_files";
-
     if ( $xmltemplate =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
 	$pipelineid = $3;
     }
@@ -124,7 +122,7 @@ sub print_dag_page{
     print "<a href='$dag_tree_obj->{link_url_root}?&xmltemplate=$xmltemplate&edit=1'>[Edit mode]</a>&nbsp;" if($type ne "instance");
     print "Depth: <a href='",$dag_tree_obj->{link_url},"&max_level=",$max_level-1,"&xmltemplate=$xmltemplate'>[--] <a href='",$dag_tree_obj->{link_url},"&max_level=2&xmltemplate=$xmltemplate'>[2]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=3&xmltemplate=$xmltemplate'>[3]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=4&xmltemplate=$xmltemplate'>[4]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=5&xmltemplate=$xmltemplate'>[5]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=6&xmltemplate=$xmltemplate'>[6]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=7&xmltemplate=$xmltemplate'>[7]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=8&xmltemplate=$xmltemplate'>[8]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=9&xmltemplate=$xmltemplate'>[9]</a> <a href='",$dag_tree_obj->{link_url},"&max_level=10&xmltemplate=$xmltemplate'>[10] <a href='",$dag_tree_obj->{link_url},"&max_level=",$max_level+1,"&xmltemplate=$xmltemplate'>[++]</a>";
     if($type eq "instance"){
-	print "<br><a href='./run_wf.cgi?instancexml=$xmltemplate&pipelineid=$pipelineid&lockdir=$lockdir&'>[Run]</a>&nbsp;";
+	print "<br><a href='./run_wf.cgi?instancexml=$xmltemplate&pipelineid=$pipelineid'>[Run]</a>&nbsp;";
 	print "<a href='kill_wf.cgi?instancexml=$xmltemplate'>[Kill]</a>&nbsp;";
     }
     else{
@@ -133,7 +131,7 @@ sub print_dag_page{
 	    print "<br><a href='show_pipeline.cgi?xmltemplate=$instancexml'>[View instance]</a>&nbsp;";
 	}
 	else{
-	    print "<br><a href='run_wf.cgi?xmltemplate=$xmltemplate&inifile=$xmltemplate".".ini"."&instancexml=$instancexml&pipelineid=$pipelineid&lockdir=$lockdir&'>[Run]</a>&nbsp;";
+	    print "<br><a href='run_wf.cgi?xmltemplate=$xmltemplate&inifile=$xmltemplate".".ini"."&instancexml=$instancexml&pipelineid=$pipelineid'>[Run]</a>&nbsp;";
 	}
     }
 

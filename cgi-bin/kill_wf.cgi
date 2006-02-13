@@ -12,17 +12,14 @@ use Ergatis::ConfigFile;
 use Proc::ProcessTable;
 
 my $instancexml = param('instancexml');
-my $ergatisini = param('ergatisini');
 
-my $ergatisini = "./ergatis.ini" if(!$ergatisini);
-my $conf;
-if(-e $ergatisini){
-    $conf = Ergatis::ConfigFile->new( -file => $ergatisini );
-    if(! -d $conf->val('paths','workflow_run_dir')){
-	die "Invalid workflow_run_dir in $ergatisini : ".$conf->val('paths','workflow_run_dir');
-    }
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+
+if(! -d $ergatis_cfg->val('paths','workflow_run_dir')){
+    die "Invalid workflow_run_dir in ergatis.ini : " . $ergatis_cfg->val('paths','workflow_run_dir');
 }
-my $rundir = $conf->val('paths','workflow_run_dir');
+
+my $rundir = $ergatis_cfg->val('paths','workflow_run_dir');
 my $repository_root;
 my $project;
 my $pipelineid;
@@ -35,8 +32,7 @@ if ( $instancexml =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
     die "failed to extract a repository_root from $instancexml.  expected a Workflow subdirectory somewhere."
 }
 
-my $lockdir = "$repository_root/workflow_config_files";
-my ($pid,$hostname,$execuser) = &parselockfile("$lockdir/pid.$pipelineid");
+my ($pid,$hostname,$execuser) = &parselockfile("$repository_root/workflow/lock_files/pid.$pipelineid");
 
 my $t = new Proc::ProcessTable;
 my $parentpids = {};

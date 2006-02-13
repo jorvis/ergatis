@@ -20,38 +20,35 @@ my $instancexml = param('instancexml');
 my $inifile = param('inifile');
 my $template = param('xmltemplate');
 my $validate = param('validate');
-
-my $ergatisini = param('ergatisini');
-my $lockdir = param('lockdir');
 my $pipelineid = param('pipelineid');
 
 $validate = 1 if (! defined $validate);
 
 my $log =  $instancexml.".log";
 my $out = $instancexml.".out";
-my $conf;
 
-$ergatisini = "./ergatis.ini" if(!$ergatisini);
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
-if(-e $ergatisini){
-    $conf = Ergatis::ConfigFile->new( -file => $ergatisini );
-    if(! -d $conf->val('paths','workflow_run_dir')){
-	die "Invalid workflow_run_dir in $ergatisini : ".$conf->val('paths','workflow_run_dir');
-    }
-    if(! -d $conf->val('paths','workflow_root')){
-	die "Invalid workflow_root in $ergatisini : ".$conf->val('paths','workflow_root');
-    }
-    if(! -e $conf->val('paths','workflow_log4j')){
-	die "Invalid workflow_log4j in $ergatisini : ".$conf->val('paths','workflow_log4j');
-    }
+if(! -d $ergatis_cfg->val('paths','workflow_run_dir')){
+    die "Invalid workflow_run_dir in ergatis.ini : " . $ergatis_cfg->val('paths','workflow_run_dir');
 }
-else{
-    die "Can't find file ergatis ini $ergatisini\n";
+if(! -d $ergatis_cfg->val('paths','workflow_root')){
+    die "Invalid workflow_root in ergatis.ini : " . $ergatis_cfg->val('paths','workflow_root');
+}
+if(! -e $ergatis_cfg->val('paths','workflow_log4j')){
+    die "Invalid workflow_log4j in ergatis.ini : " . $ergatis_cfg->val('paths','workflow_log4j');
 }
 
-if(!-d $lockdir){
-    die "Can't find lock directory $lockdir\n";
+## extract the repository root from the instancexml path
+my $repository_root;
+if ( $instancexml =~ m|^(.+)/Workflow| ) {
+    $repository_root = $1;
+} else {
+    die "expected a Workflow dir in the instancexml path";
 }
+
+my $lockfile = "$repository_root/workflow/lock_files/pid.$pipelineid";
+
 if(!$pipelineid){
     die "Required parameter --pipelineid missing\n";
 }
@@ -77,8 +74,8 @@ if ( $validate ) {
                                  'on your browser if you need to go back and fix these, or click the \'continue anyway\' ' .
                                  'button to ignore them.' );
         $tmpl->param( WARNING_MESSAGES => $warning_hash );
-        $tmpl->param( CONTINUE_ACTION  => "./run_wf.cgi?xmltemplate=$template&amp;inifile=$inifile&amp;instancexml=$instancexml&amp;validate=0&amp;pipelineid=$pipelineid&amp;ergatisini=$ergatisini&amp;lockdir=$lockdir" );
-        $tmpl->param( RETRY_ACTION => "./run_wf.cgi?xmltemplate=$template&amp;inifile=$inifile&amp;instancexml=$instancexml&amp;validate=1&amp;pipelineid=$pipelineid&amp;ergatisini=$ergatisini&amp;lockdir=$lockdir" );
+        $tmpl->param( CONTINUE_ACTION  => "./run_wf.cgi?xmltemplate=$template&amp;inifile=$inifile&amp;instancexml=$instancexml&amp;validate=0&amp;pipelineid=$pipelineid" );
+        $tmpl->param( RETRY_ACTION => "./run_wf.cgi?xmltemplate=$template&amp;inifile=$inifile&amp;instancexml=$instancexml&amp;validate=1&amp;pipelineid=$pipelineid" );
 
         print $tmpl->output;
         exit;
@@ -110,7 +107,7 @@ if( ($inifile ne "") && ($template ne "") ) {
             ## open the debugging file if needed
             open (my $debugfh, ">>$debug_file") if $debugging;
             
-            chdir $conf->val('paths','workflow_run_dir');
+            chdir $ergatis_cfg->val('paths','workflow_run_dir');
             use POSIX qw(setsid);
             setsid() or die "Can't start a new session: $!";
             
@@ -122,12 +119,11 @@ if( ($inifile ne "") && ($template ne "") ) {
             my $createexecstr = "$ENV{'WF_ROOT'}/CreateWorkflow -debug -i $instancexml -t $template -c $inifile --delayedbuild=true --autobuild=false > $instancexml.create.out 2>&1";
             system("$createexecstr");
 
-            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml --logconf=".$conf->val('paths','workflow_log4j')." > $instancexml.run.out 2>&1";
+            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml --logconf=".$ergatis_cfg->val('paths','workflow_log4j')." > $instancexml.run.out 2>&1";
 
-	    my $lockfile = $lockdir."/pid.$pipelineid";
-	    &writelockfile($lockfile);
+        &writelockfile($lockfile);
             
-	    system($runexecstr);
+        system($runexecstr);
             close $debugfh if $debugging;
             exit;
         }
@@ -156,24 +152,23 @@ if( ($inifile ne "") && ($template ne "") ) {
             ## open the debugging file if needed
             open (my $debugfh, ">>$debug_file") if $debugging;
         
-            chdir $conf->val('paths','workflow_run_dir');
+            chdir $ergatis_cfg->val('paths','workflow_run_dir');
             use POSIX qw(setsid);
             setsid() or die "Can't start a new session: $!";
             
             setup_environment();
 
-            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log --logconf=".$conf->val('paths','workflow_log4j')." >& $instancexml.run.out";
-	    #
-	    #------------------------------------------------------------------------------------------------------------
+            my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml -l $instancexml.log --logconf=".$ergatis_cfg->val('paths','workflow_log4j')." >& $instancexml.run.out";
+        #
+        #------------------------------------------------------------------------------------------------------------
 
             if ($debugging) {
                 #use Data::Dumper;
                 #print $debugfh Dumper(\%ENV);
                 print $debugfh "preparing to run $runstring\n";
             }
-	    
-	    my $lockfile = $lockdir."/pid.$pipelineid";
-	    &writelockfile($lockfile);
+        
+        &writelockfile($lockfile);
 
             my $rc = 0xffff & system($runstring);
 
@@ -219,8 +214,8 @@ sub setup_environment {
     $ENV{SGE_EXECD_PORT} = '537';
     $ENV{SGE_ARCH} = 'lx26-x86';
 
-    $ENV{'WF_ROOT'} = $conf->val('paths','workflow_root');
-    $ENV{'WF_ROOT_INSTALL'} = $conf->val('paths','workflow_root');
+    $ENV{'WF_ROOT'} = $ergatis_cfg->val('paths','workflow_root');
+    $ENV{'WF_ROOT_INSTALL'} = $ergatis_cfg->val('paths','workflow_root');
 
     $ENV{'SYBASE'} = "/usr/local/packages/sybase";
     $ENV{'PATH'} = "$ENV{'WF_ROOT'}:$ENV{'WF_ROOT'}/bin:$ENV{'WF_ROOT'}/add-ons/bin:$ENV{'PATH'}";
@@ -231,9 +226,9 @@ sub writelockfile{
     my($file) = @_;
     my $retrycount=0;
     if(-e $file){
-	my($pid,$hostname,$getpwuid,$retries) = &parselockfile($file);
-	$retries=0 if(!$retries);
-	$retrycount = $retries++;
+    my($pid,$hostname,$getpwuid,$retries) = &parselockfile($file);
+    $retries=0 if(!$retries);
+    $retrycount = $retries++;
     }
     open FILE,"+>$file" or die "Can't open lock file $file for writing :$!";
     print FILE $$,"\n";
@@ -247,15 +242,15 @@ sub writelockfile{
 sub parselockfile{
     my($file) = @_;
     if(-e $file){
-	open FILE, "$file" or die "Can't open lock file $file";
-	my(@elts) = <FILE>;
-	close FILE;
-	chomp(@elts);
-	my $pid = $elts[0];
-	my $hostname = $elts[1];
-	my $getpwuid = $elts[2];
-	my $retries = $elts[3];
-	return ($pid,$hostname,$getpwuid,$retries);
+    open FILE, "$file" or die "Can't open lock file $file";
+    my(@elts) = <FILE>;
+    close FILE;
+    chomp(@elts);
+    my $pid = $elts[0];
+    my $hostname = $elts[1];
+    my $getpwuid = $elts[2];
+    my $retries = $elts[3];
+    return ($pid,$hostname,$getpwuid,$retries);
     }
     return undef;
 }

@@ -28,8 +28,7 @@ if ( $pipeline =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
     die "failed to extract a repository_root from $pipeline.  expected a Workflow subdirectory somewhere."
 }
 
-my $lockdir = "$repository_root/workflow_config_files";
-my ($pid,$hostname,$execuser,$retries) = &parselockfile("$lockdir/pid.$pipelineid");
+my ($pid,$hostname,$execuser,$retries) = &parselockfile("$repository_root/workflow/lock_files/pid.$pipelineid");
 $pid = "" if(!$pid);
 $execuser = "unknown" if(!$execuser);
 $hostname = "unknown" if(!$hostname);
@@ -95,7 +94,7 @@ print <<PipelineSummarY;
     <div id='pipelinecommands'>
         <a href='./pipeline_list.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline list'></a>
         <a href='./new_pipeline.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
-         <a href='./run_wf.cgi?instancexml=$pipeline&validate=0&pipelineid=$pipelineid&lockdir=$lockdir&'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>  
+         <a href='./run_wf.cgi?instancexml=$pipeline&validate=0&pipelineid=$pipelineid'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>  
        <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
     <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
       <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
