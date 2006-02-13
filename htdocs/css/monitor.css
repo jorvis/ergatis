@@ -1,3 +1,19 @@
+#pipelinesummary {
+    padding: 5px 0px 5px 0px;
+}       
+#pipelinecommands {
+    margin-left: 15px;
+}
+#pipelinelist {
+    margin: 10px 0px 0px 10px;
+}
+
+.pipelinestat {
+    margin-left: 15px;
+    display: inline;
+    color: rgb(75,75,75);
+}
+
 td.component_review div {
     display: none;
     position: absolute;

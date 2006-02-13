@@ -45,7 +45,8 @@ div.button_container {
     padding-bottom: 15px;
 }
 
-div.warning_container {
+div.warning_container,
+div.error_container {
     border: 2px solid rgb(200,0,0);
     margin: 15px;
     padding: 10px;
@@ -66,6 +67,11 @@ span.button a {
 
 span.button:hover {
     cursor: pointer;
+}
+
+h1 {
+    color: rgb(76,109,143);
+    font-size: 140%;
 }
 
 h2 {
@@ -100,6 +106,10 @@ img.navbutton {
     padding: 0px;
 }
 
+span.state {
+    font-weight: bold;
+}
+
 span.complete    { color: rgb(0,200,0); }
 span.incomplete  { color: rgb(75,75,75); }
 span.failed      { color: rgb(200,0,0); }
@@ -116,4 +126,12 @@ table.pipeline_list {
 
 table.pipeline_list th {
     text-align: left;
+}
+
+th {
+    text-align: left;
+    padding-right: 10px;
+}
+td {
+    padding-right: 15px;
 }
