@@ -77,6 +77,7 @@ if ($action eq 'delete') {
 sub print_page {
     my ( $header, $msg ) = @_;
     
+    $tmpl->param( REPOSITORY_ROOT => $repository_root );
     $tmpl->param( MESSAGE_HEADER => $header );
     $tmpl->param( MESSAGE => $msg );
 
