@@ -6,106 +6,24 @@
 <head>
     <meta http-equiv="Content-Language" content="en-us">
     <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <link rel='stylesheet' type='text/css' href='/ergatis/css/common.css'>
     <title>ergatis | warning</title>
-
-    <style type="text/css">
-        body {
-            /* font: 11px courier, verdana, geneva, arial, sans-serif; */
-            font-family: verdana, sans-serif;
-            font-size: 8pt;
-            margin: 0px;
-            padding: 0px;
-            background-color: rgb(255,255,255);
-        }
-        
-        #bannertop {
-            height: 36px;
-            margin: 0px;
-            padding: 0px;
-            background-color: rgb(76,109,143);
-        }
-        
-        #bannerbottom {
-            background-color: rgb(229,229,220);
-            border-bottom: 1px solid rgb(131,150,145);
-        }
-        #pipelinesummary {
-            padding: 5px 0px 5px 0px;
-        }       
-        #pipelinecommands {
-            margin-left: 15px;
-        }
-        #pipelinelist {
-            margin: 10px 0px 0px 10px;
-        }
-        #pipelinetable {
-            /* width: 90%; */
-        }
-        .pipelinestat {
-            margin-left: 15px;
-            display: inline;
-            color: rgb(75,75,75);
-        }
-        h1 {
-            color: rgb(76,109,143);
-            font-size: 1.5em;
-        }
-         
-        a {
-            text-decoration: none;
-            color: rgb(76,109,143);
-            cursor: pointer;
-            cursor: hand;
-        }
-
-        img.navbutton {
-            border: none;
-            margin: 5px 3px 0px 0px;
-            padding: 0px;
-        }
-        th {
-            text-align: left;
-            padding-right: 10px;
-        }
-        td {
-            padding-right: 15px;
-        }
-        span.state {
-            font-weight: bold;
-        }
-        hr {
-            margin: 1em 0em;
-            height: 1px;
-        }
-        #warning_list {
-            margin: 15px;
-            padding: 15px;
-            border: 2px solid rgb(200,0,0);
-        }
-        a.formbuttom {
-            border: 1px solid black;
-            padding: 3px;
-        }
-        ul {
-            margin-bottom: 20px;
-        }
-    </style>
 </head>
 
 <body>
 
 <div id='bannertop'>
-    <img src='/ergatis/banner_main.png' />
+    <img src='/ergatis/banner_main.png' alt='main banner'>
 </div>
 <div id='bannerbottom'>
     <div id='pipelinesummary'>
         <div id='pipelinecommands'>
-            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
+            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
         </div>
     </div>
 </div>
 
-<div id='warning_list'>
+<div class='warning_container'>
     <h3>warnings:</h3>
     <p>
         <TMPL_VAR NAME=MESSAGE>
@@ -116,7 +34,8 @@
 </TMPL_LOOP>
     </ul>
     <p>
-        <a class='formbuttom' href='<TMPL_VAR NAME=CONTINUE_ACTION>'>continue anyway</a>
+        <span class='button'><a href='<TMPL_VAR NAME=CONTINUE_ACTION>'>continue anyway</a></span>
+        <span class='button'><a href='<TMPL_VAR NAME=RETRY_ACTION>'>recheck pipeline</a></span>
     </p>
 </div>
 
