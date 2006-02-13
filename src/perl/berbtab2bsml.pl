@@ -75,6 +75,7 @@ my $results = GetOptions (\%options,
 			  'log|l=s',
 			  'debug=s',
 			  'class|c=s',
+			  'analysis_id=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -261,6 +262,7 @@ sub createAndAddBtabLine {
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
 	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
+		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
@@ -273,7 +275,9 @@ sub createAndAddBtabLine {
     }
 
     $alignment_pair = $doc->returnBsmlSeqPairAlignmentR( $doc->addBsmlSeqPairAlignment() );
-    
+
+	## add analysis link 
+	$alignment_pair->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
 
     $alignment_pair->setattr( 'refseq', "$args{'query_name'}" )                                 if (defined ($args{'query_name'}));
     $alignment_pair->setattr( 'compseq', "$args{'dbmatch_accession'}" )                         if (defined ($args{'dbmatch_accession'}));
