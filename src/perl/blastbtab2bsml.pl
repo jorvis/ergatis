@@ -408,7 +408,8 @@ sub createAndAddBtabLine {
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
 		$seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
-        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+## Removed to resolve bug #2671
+##        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
 
     ## see if the dbmatch_header format is recognized.  if so, add some cross-references
