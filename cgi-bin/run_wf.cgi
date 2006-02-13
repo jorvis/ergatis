@@ -77,7 +77,8 @@ if ( $validate ) {
                                  'on your browser if you need to go back and fix these, or click the \'continue anyway\' ' .
                                  'button to ignore them.' );
         $tmpl->param( WARNING_MESSAGES => $warning_hash );
-        $tmpl->param( CONTINUE_ACTION  => "/tigr-scripts/ergatis/run_wf.cgi?xmltemplate=$template&inifile=$inifile&instancexml=$instancexml&validate=0&pipelineid=$pipelineid&ergatisini=$ergatisini&lockdir=$lockdir" );
+        $tmpl->param( CONTINUE_ACTION  => "./run_wf.cgi?xmltemplate=$template&amp;inifile=$inifile&amp;instancexml=$instancexml&amp;validate=0&amp;pipelineid=$pipelineid&amp;ergatisini=$ergatisini&amp;lockdir=$lockdir" );
+        $tmpl->param( RETRY_ACTION => "./run_wf.cgi?xmltemplate=$template&amp;inifile=$inifile&amp;instancexml=$instancexml&amp;validate=1&amp;pipelineid=$pipelineid&amp;ergatisini=$ergatisini&amp;lockdir=$lockdir" );
 
         print $tmpl->output;
         exit;
