@@ -33,9 +33,14 @@ if ( $parent_commandset->first_child('parentFileName') ) {
 }
 
 my $component_project = '?';
-if ( $parent_pipeline =~ /.+\/(.+?)\/Workflow/ ) {
-    $component_project = $1;
+my $repository_root = '';
+if ( $parent_pipeline =~ /(.+\/(.+?))\/Workflow/ ) {
+    $repository_root = $1;
+    $component_project = $2;
 }
+
+## quota information (only works if in /usr/local/annotation/SOMETHING)
+my $quotastring = &quota_string($repository_root);
 
 my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
 
@@ -534,12 +539,11 @@ sub print_header {
         <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
         <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div><br>
         <div class='pipelinestat'><strong>project:</strong> <span id='projectid'></span></div>
-        <div class='pipelinestat' id='projectquota'><strong>quota:</strong> quota information disabled</div>
+        <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
         <div class='timer' id='pipeline_timer_label'></div>
         <div id='pipelinecommands'>
             <a href='./view_workflow_pipeline.cgi?&instance=$parent_pipeline'><img class='navbutton' src='/ergatis/button_blue_pipeline_view.png' alt='pipeline view' title='pipeline view'></a>
-            <a href='http://htcmaster.tigr.org/antware/condor-status/index.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_condor_status.png' alt='condor status' title='condor status'></a>
-            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi' target='_blank'><img class='navbutton' src='/ergatis/button_blue_sungrid_status.png' alt='SGE status' title='SGE status'></a>
+            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
             <a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$pipeline_xml' target='_blank'><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='View XML' title='View XML'></a>
         </div>
 
