@@ -133,7 +133,7 @@ sub check_parameters{
     }
     
     ## make sure the file exists
-    if (! -e $options{'file'}){
+    if (! -e $options{'file'} && $options{'file'} !~ /\*/){
 	    $logger->logdie("output file $options{file} doesn't exist");
     }
     
