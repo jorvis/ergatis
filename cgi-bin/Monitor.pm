@@ -164,6 +164,31 @@ messageBLOCK
     $twig->purge;
 }
 
+sub quota_string {
+    my $repository_root = shift;
+    
+    my $string = '';
+    my $enable_quota_lookups = 1;
+    
+    if ( $enable_quota_lookups ) {
+
+        if ($repository_root =~ m|^/usr/local/annotation/|) {
+            $string = `/usr/local/common/getquota -N $repository_root`;
+            if ($string =~ /(\d+)\s+(\d+)/) {
+                my ($limit, $used) = ($1, $2);
+                $string = sprintf("%.1f", ($used/$limit) * 100) . "\% ($used KB of $limit KB used)";
+            } else {
+                $string = "error parsing quota information: $string";
+            }
+        } else {
+            $string = 'unavailable (unknown project area)';
+        }
+    } else {
+        $string = 'quota information currently disabled';
+    }
+    
+    return $string;
+}
 
 sub time_info {
     my $command = shift;
