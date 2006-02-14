@@ -9,7 +9,9 @@ repeat2legacydb.pl - load repeat data into the legacy database schema.
 USAGE: repeat2legacydb.pl 
         --input_list=/path/to/somefile.bsml.list
         --database=sma1
-      [ --log=/path/to/some.log ]
+      [ --log=/path/to/some.log 
+        --delete_existing=1
+      ]
 
 =head1 OPTIONS
 
@@ -19,6 +21,10 @@ B<--input_list,-i>
 
 B<--database,-d> 
     Sybase project database ID.
+
+B<--delete_existing,-x> 
+    optional.  will first delete any existing repeats for this repeat type for each
+    assembly passed.
 
 B<--log,-d> 
     optional.  will create a log file with summaries of all actions performed.
@@ -63,6 +69,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'input_list|i=s',
               'database|d=s',
+              'delete_existing|x=i',
               'log|l=s',
 			  'help|h') || pod2usage();
 
@@ -109,6 +116,12 @@ my $qry = "INSERT INTO asm_feature (feat_type, feat_method, end5, end3, assignby
           "VALUES ( 'repeat', ?, ?, ?, '$user', GETDATE(), ?, ?, 1, 0, 0 )";
 my $asm_feature_insert = $dbh->prepare($qry);
 
+## prepare a statement for deleting from asm_feature
+$qry = "DELETE FROM asm_feature " .
+          "WHERE feat_type = 'repeat' " .
+          "   AND feat_method = ? " .
+          "   AND asmbl_id = ? ";
+my $asm_feature_delete = $dbh->prepare($qry);
 
 ## prepare a statement for inserting into ORF_attribute
 $qry = "INSERT INTO ORF_attribute (feat_name, att_type, curated, method, date, assignby, " .
@@ -116,6 +129,12 @@ $qry = "INSERT INTO ORF_attribute (feat_name, att_type, curated, method, date, a
        "VALUES ( ?, 'repeat', 0, ?, GETDATE(), '$user', ?, ?, ?, ? )";
 my $orf_attribute_insert = $dbh->prepare($qry);
 
+## prepare a statement for deleting from ORF_attribute
+$qry = "DELETE FROM ORF_attribute " .
+          "WHERE feat_name LIKE ? " .
+          "  AND att_type = 'repeat' " .
+          "  AND method = ?";
+my $orf_attribute_delete = $dbh->prepare($qry);
 
 foreach my $file (@files) {
     _log("processing $file");
@@ -131,6 +150,15 @@ foreach my $file (@files) {
     ## have we handled this prog?
     if (! $progs_handled{$prog_name}) {
         die "haven't yet handled output from $prog_name.  sorry.\n";
+    }
+    
+    ## are we deleting?
+    if ( $options{delete_existing} ) {
+        _log("deleting $prog_name entries from asm_feature where asmbl_id = $asmbl_id");
+        $asm_feature_delete->execute( $prog_name, $asmbl_id );
+        
+        _log("deleting $prog_name entries from ORF_attribute where feat_name like $asmbl_id.repeat%");
+        $orf_attribute_delete->execute( "$asmbl_id.repeat%", $prog_name );
     }
     
     ## get the latest database ID
@@ -149,7 +177,9 @@ foreach my $file (@files) {
 
 ## clean up
 $asm_feature_insert->finish();
+$asm_feature_delete->finish();
 $orf_attribute_insert->finish();
+$orf_attribute_delete->finish();
 $dbh->disconnect();
 
 exit;
@@ -255,6 +285,9 @@ sub check_parameters {
         print STDERR "\n\ninput_list $options{input_list} does not exist\n\n";
         exit(1);
     }
+    
+    ## set some defaults
+    $options{delete_existing} = 0 unless ( $options{delete_existing} );
 }
 
 
