@@ -63,18 +63,7 @@ $lastmodtime = time - $filestat->mtime;
 $lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
 
 ## quota information (only works if in /usr/local/annotation/SOMETHING)
-my $quotastring = 'quota information currently disabled';
-#    if ($file =~ m|^(/usr/local/annotation/.+?/)|) {
-#        $quotastring = `getquota -N $1`;
-#        if ($quotastring =~ /(\d+)\s+(\d+)/) {
-#            my ($limit, $used) = ($1, $2);
-#            $quotastring = sprintf("%.1f", ($used/$limit) * 100) . "\% ($used KB of $limit KB used)";
-#        } else {
-#            $quotastring = 'error parsing quota information';
-#        }
-#    } else {
-#        $quotastring = 'unavailable (outside of project area)';
-#    }
+my $quotastring = &quota_string($repository_root);
 
 print_header($project, $state);
 

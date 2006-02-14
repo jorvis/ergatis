@@ -16,6 +16,9 @@ my $tmpl = HTML::Template->new( filename => 'templates/pipeline_list.tmpl',
 
 my $repository_root = $q->param("repository_root") || die "pass a repository root";
 
+## quota information (only works if in /usr/local/annotation/SOMETHING)
+my $quotastring = &quota_string($repository_root);
+
 my $pipeline_root = "$repository_root/Workflow/pipeline";
 my $errors_found  = 0;
 my $error_msgs = [];
@@ -167,6 +170,7 @@ sub print_template {
     $tmpl->param( ERROR_MSGS      => $error_msgs );
     $tmpl->param( PIPELINES       => \@pipelines_sorted );
     $tmpl->param( PIPELINE_COUNT  => $pipeline_count );
+    $tmpl->param( QUOTA_STRING    => $quotastring );
 
     ## print the template
     print $tmpl->output();
