@@ -1,4 +1,4 @@
-use ExtUtils::MakeMaker;
+ use ExtUtils::MakeMaker;
 require ExtUtils::Manifest;
 require "perl2wrapper_ergatis.pl";
 use strict;
@@ -70,8 +70,6 @@ dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
 
 shellwrappers:
-	@install workflow/CreateWorkflow.sh $(PREFIX)/bin
-	@install workflow/RunWorkflow.sh $(PREFIX)/bin
 	@install workflow/run_wfmonitor.sh $(PREFIX)/bin
 	@install workflow/create_ber_db.sh $(PREFIX)/bin
 
