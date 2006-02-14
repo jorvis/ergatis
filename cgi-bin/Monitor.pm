@@ -1,6 +1,7 @@
 use Date::Manip;
 use File::stat;
 use POSIX;
+use Ergatis::ConfigFile;
 
 use strict;
 
@@ -168,9 +169,11 @@ sub quota_string {
     my $repository_root = shift;
     
     my $string = '';
-    my $enable_quota_lookups = 1;
     
-    if ( $enable_quota_lookups ) {
+    ## need to see if the user has this enabled
+    my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+    
+    if ( $ergatis_cfg->val('settings', 'enable_quota_lookup') ) {
 
         if ($repository_root =~ m|^/usr/local/annotation/|) {
             $string = `/usr/local/common/getquota -N $repository_root`;
