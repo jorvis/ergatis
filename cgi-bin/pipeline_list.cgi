@@ -67,8 +67,6 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $component_label = ' components';
     my $pipeline_file = "$repository_root/Workflow/pipeline/$pipeline_id/pipeline.xml";  ## may be modified below
     my $is_instance = 0;
-    my $view_link = "./view_workflow_pipeline.cgi?instance=$pipeline_file";
-    my $edit_link = "./show_pipeline.cgi?xmltemplate=$pipeline_file&amp;edit=1";
     my $archive_link = "./archive_pipeline_form.cgi?repository_root=$repository_root&amp;pipeline_id=$pipeline_id";
     my $links_enabled = 1;
     
@@ -89,7 +87,11 @@ foreach my $pipeline_id ( readdir $rdh ) {
         if (-e "$pipeline_file.instance" ) {
             $pipeline_file .= '.instance';
             $is_instance = 1;
-
+        
+        } elsif ( -e "$pipeline_file.instance.gz" ) {
+            $pipeline_file .= '.instance.gz';
+            $is_instance = 1;
+        
         ## elsif only the pipeline.xml exists, we can do less
         } elsif ( -e "$repository_root/Workflow/pipeline/$pipeline_id/pipeline.xml" ) {
             $is_instance = 0;
@@ -99,8 +101,15 @@ foreach my $pipeline_id ( readdir $rdh ) {
             next;
         }
 
+        my $ifh;
+        if ($pipeline_file =~ /\.gz/) {
+            open($ifh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
+        } else {
+            open($ifh, "<$pipeline_file") || die "can't read $pipeline_file: $!";       
+        }
+
         my $twig = new XML::Twig;
-        $twig->parsefile($pipeline_file);
+        $twig->parse($ifh);
 
         my $commandSetRoot = $twig->root;
         my $commandSet = $commandSetRoot->first_child('commandSet');
@@ -134,6 +143,9 @@ foreach my $pipeline_id ( readdir $rdh ) {
             $component_label = ' component';
         }
     }
+    
+    my $view_link = "./view_workflow_pipeline.cgi?instance=$pipeline_file";
+    my $edit_link = "./show_pipeline.cgi?xmltemplate=$pipeline_file&amp;edit=1";
     
     $pipelines{$pipeline_id} = { 
                         pipeline_id     => $pipeline_id,

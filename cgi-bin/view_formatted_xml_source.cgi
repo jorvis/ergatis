@@ -13,10 +13,18 @@ print $q->header( -type => 'text/html' );
 ## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
 my $file = $q->param("file") || die "pass file";
 
+## the file may have been compressed
+if ( ! -e $file && -e "$file.gz" ) {
+    $file .= '.gz';
+}
+
 pageHeader();
 
 ## don't do it if the file doesn't end in .xml or .instance
-if ($file !~ /\.xml$/ && $file !~ /\.instance$/ && $file !~ /\.bsml$/) {
+if ($file !~ /\.xml$/ && 
+    $file !~ /\.instance$/ && 
+    $file !~ /\.bsml$/ &&
+    $file !~ /\.gz$/ ) {
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }
@@ -39,7 +47,13 @@ my $progress_image_width = 500;
 print "<div id='sourcecode'>";
 
 ## open the file and print it to the screen.
-open (my $ifh, "<$file") || quitNicely("couldn't open file $file");
+my $ifh;
+if ($file =~ /\.gz$/) {
+    open($ifh, "<:gzip", $file) || quitNicely("couldn't open file $file");
+} else {
+    open($ifh, "<$file") || quitNicely("couldn't open file $file");
+}
+
 
 ## something to remember what states we find
 my %states;

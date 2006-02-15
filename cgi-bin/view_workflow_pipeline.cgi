@@ -21,9 +21,13 @@ my $xml_input = $q->param("instance") || die "pass instance";
 my $project = '?';
 my $pipelineid;
 
-## make sure the file exists
-if (! -f $xml_input) {
-    die "$xml_input doesn't exist";
+## make sure the file exists, check for .gz version
+if (! -f $xml_input ) {
+    if (-f "$xml_input.gz") {
+        $xml_input .= '.gz';
+    } else {
+        die "$xml_input doesn't exist";
+    }
 }
 
 ## extract the project
@@ -40,9 +44,17 @@ $pid = "" if(!$pid);
 $execuser = "unknown" if(!$execuser);
 $hostname = "unknown" if(!$hostname);
 my $file = $xml_input;
+
+my $ifh;
+if ($file =~ /\.gz/) {
+    open($ifh, "<:gzip", "$file") || die "can't read $file: $!"; 
+} else {
+    open($ifh, "<$file") || die "can't read $file: $!";       
+}
+
 my $twig = new XML::Twig;
 
-$twig->parsefile($file);
+$twig->parse($ifh);
 
 my $commandSetRoot = $twig->root;
 my $commandSet = $commandSetRoot->first_child('commandSet');

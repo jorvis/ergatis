@@ -39,7 +39,16 @@ if ($pipeline =~ /(.+)\/Workflow/ ) {
     $repository_root = $1;
 }
 
-$twig->parsefile($pipeline);
+my $pipeline_fh;
+if ($pipeline =~ /\.gz/) {
+    open($pipeline_fh, "<:gzip", "$pipeline") || die "can't read $pipeline: $!"; 
+} elsif ( ! -e $pipeline && -e "$pipeline.gz" ) {
+    open($pipeline_fh, "<:gzip", "$pipeline.gz") || die "can't read $pipeline: $!"; 
+} else {
+    open($pipeline_fh, "<$pipeline") || die "can't read $pipeline: $!";       
+}
+
+$twig->parse($pipeline_fh);
 
 my $commandSetRoot = $twig->root;
 my $commandSet = $commandSetRoot->first_child('commandSet');

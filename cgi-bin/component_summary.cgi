@@ -61,10 +61,19 @@ if ($pipeline =~ m|(.+/(.+)/Workflow/(.+?)/(\d+)_(.+?))/pipeline.xml|) {
     exit;
 }
 
-if (-e $pipeline) {
+if (-e $pipeline || -e "$pipeline.gz") {
+    
+    my $pipeline_fh;
+    if ($pipeline =~ /\.gz/) {
+        open($pipeline_fh, "<:gzip", "$pipeline") || die "can't read $pipeline: $!"; 
+    } elsif ( -e "$pipeline.gz" ) {
+        open($pipeline_fh, "<:gzip", "$pipeline.gz") || die "can't read $pipeline: $!"; 
+    } else {
+        open($pipeline_fh, "<$pipeline") || die "can't read $pipeline: $!";       
+    }
 
     my $twig = new XML::Twig;
-       $twig->parsefile($pipeline);
+       $twig->parse($pipeline_fh);
     my $commandSetRoot = $twig->root;
     parseCommandSet( $commandSetRoot->first_child('commandSet'), $pipeline );
 
@@ -229,7 +238,7 @@ sub parseCommandSet {
     ## this is a terrible way to do this, as it doubles the memory required for
     ##  the twig.  it's functional, but needs to be replaced.
     ## don't look into the groups.xml here (yet).
-    if ($fileparsed !~ /groups.xml$/) {
+    if ($fileparsed !~ /groups.xml/ ) {
         my $text = $commandSet->sprint;
         while ( $text =~ m|<message>(.*?)</message>|g) {
             my $msg = $1;
@@ -263,8 +272,17 @@ sub parseComponentSubflow {
     ## currently this file should be the component's groups.xml
     my ($groupsXML) = @_;
     
+    my $groupsXML_fh;
+    if ($groupsXML =~ /\.gz/) {
+        open($groupsXML_fh, "<:gzip", "$groupsXML") || die "can't read $groupsXML: $!"; 
+    } elsif ( -e "$groupsXML.gz" ) {
+        open($groupsXML_fh, "<:gzip", "$groupsXML.gz") || die "can't read $groupsXML: $!"; 
+    } else {
+        open($groupsXML_fh, "<$groupsXML") || die "can't read $groupsXML: $!";       
+    }
+    
     my $twig = new XML::Twig;
-       $twig->parsefile($groupsXML);
+       $twig->parse($groupsXML_fh);
     my $commandSetRoot = $twig->root;
     parseCommandSet( $commandSetRoot->first_child('commandSet'), $groupsXML );
 }
@@ -277,8 +295,18 @@ sub printIncompleteSummary {
     ## we can only do this if the user passed the parent pipeline
     my $messages_line = '';
     if ($parent_pipeline) {
+    
+        my $parent_pipeline_fh;
+        if ($parent_pipeline =~ /\.gz/) {
+            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline") || die "can't read $parent_pipeline: $!"; 
+        } elsif ( -e "$parent_pipeline.gz" ) {
+            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline.gz") || die "can't read $parent_pipeline: $!"; 
+        } else {
+            open($parent_pipeline_fh, "<$parent_pipeline") || die "can't read $parent_pipeline: $!";       
+        }
+    
         my $twig = new XML::Twig;
-           $twig->parsefile($parent_pipeline);
+           $twig->parse($parent_pipeline_fh);
         my $commandSetRoot = $twig->root;
         my $parentCommandSet = $commandSetRoot->first_child('commandSet');
         

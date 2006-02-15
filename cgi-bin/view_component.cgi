@@ -16,8 +16,20 @@ print $q->header( -type => 'text/html' );
 
 my $pipeline_xml = $q->param("pipeline_xml") || die "pass pipeline_xml";
 
+## it may have been compressed
+if (! -e $pipeline_xml && -e "$pipeline_xml.gz") {
+    $pipeline_xml .= '.gz';
+}
+
+my $pipeline_xml_fh;
+if ($pipeline_xml =~ /\.gz/) {
+    open($pipeline_xml_fh, "<:gzip", "$pipeline_xml") || die "can't read $pipeline_xml: $!"; 
+} else {
+    open($pipeline_xml_fh, "<$pipeline_xml") || die "can't read $pipeline_xml: $!";       
+}
+
 my $twig = XML::Twig->new( );
-$twig->parsefile($pipeline_xml);
+$twig->parse($pipeline_xml_fh);
 
 my $parent_commandset = $twig->root->first_child('commandSet');
 my $component_state = $parent_commandset->first_child('state')->text || 'unknown';
@@ -92,25 +104,36 @@ exit(0);
 sub parse_groups_xml {
     my $filename = shift;
     
+    ## it may have been compressed
+    if (! -e $filename) {
+        if (-e "$filename.gz") {
+            $filename .= '.gz';
+        } else {
+            print "            <div>not yet created</div>\n";    
+        }
+    }
+    
     ## make sure this is a groups.xml file
     if ( $filename !~ /groups.xml/ ) {
         print "            <div>unable to handle $filename</div>\n";
         return;
     }
     
-    ## make sure it exists
-    if (! -e $filename) {
-        print "            <div>not yet created</div>\n";
-    }
-    
     my ($component_start_time, $component_end_time, $component_state);
+    
+    my $filename_fh;
+    if ($filename =~ /\.gz/) {
+        open($filename_fh, "<:gzip", "$filename") || die "can't read $filename: $!"; 
+    } else {
+        open($filename_fh, "<$filename") || die "can't read $filename: $!";       
+    }
     
     ## create the twig
     my $twig = XML::Twig->new( twig_roots => {
                                     'command' => \&process_subflowgroup,
                                }
                              );
-    $twig->parsefile($filename);
+    $twig->parse($filename_fh);
     
 }
 

@@ -3,10 +3,8 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-use Date::Manip;
 use File::Basename;
 use Monitor;
-use POSIX;
 use XML::Twig;
 
 my $q = new CGI;
@@ -14,17 +12,26 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 my $xml_input = $q->param("xml_input") || die "pass xml_input";
-my $subflow_name  = basename($xml_input, '.xml');
+my $subflow_name  = basename($xml_input, ['.xml', '.gz']);
 my $subflow_state = 'unknown';
 my $subflow_start = '';
 my $subflow_end   = '';
 
 print "    <h1>analysis steps</h1>\n";
 
-## make sure the file exists, else print message
-if (! -e $xml_input) {
-    print "<div class='command'>steps not yet available</div>\n";
-    exit;
+my $xml_input_fh;
+if ($xml_input =~ /\.gz/) {
+    open($xml_input_fh, "<:gzip", "$xml_input") || die "can't read $xml_input: $!"; 
+} elsif ( ! -e $xml_input ) {
+    if ( -e "$xml_input.gz" ) {
+        open($xml_input_fh, "<:gzip", "$xml_input.gz") || die "can't read $xml_input: $!";
+    } else {
+        print "<div class='command'>steps not yet available</div>\n";
+        exit;    
+    }
+
+} else {
+    open($xml_input_fh, "<$xml_input") || die "can't read $xml_input: $!";       
 }
 
 my $twig = XML::Twig->new( twig_roots => {
@@ -44,5 +51,5 @@ my $twig = XML::Twig->new( twig_roots => {
                                 'command'              => \&process_command,
                            },
                       );
-$twig->parsefile($xml_input);
+$twig->parse($xml_input_fh);
 

@@ -9,7 +9,15 @@ use strict;
 sub component_count_hash {
     my $pipeline_file = shift;
     my %components;
-    
+
+    my $ifh;
+    if ($pipeline_file =~ /\.gz/) {
+        open($ifh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
+    } else {
+        open($ifh, "<$pipeline_file") || die "can't read $pipeline_file: $!";       
+    }
+
+
     my $t = XML::Twig->new( twig_roots => {
                                 'commandSet/configMapId' => sub {
                                                                     my ($t, $elt) = @_;
@@ -27,7 +35,7 @@ sub component_count_hash {
                                                                 },
                                           },
                           );
-    $t->parsefile($pipeline_file);
+    $t->parse($ifh);
     
     return %components;
 }

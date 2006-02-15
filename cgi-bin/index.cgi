@@ -98,11 +98,25 @@ sub get_pipeline_lists {
             my $state = '';
             my $last_mod = '';
             my $pipeline_file = "$repository_root/Workflow/pipeline/$pipeline_id/pipeline.xml.instance";
+            
+            ## it may have been compressed
+            if (! -e $pipeline_file ) {
+                if ( -e "$pipeline_file.gz" ) {
+                    $pipeline_file .= '.gz';
+                } else {
+                    next;
+                }
+            }
 
-            next unless ( -e $pipeline_file );
+            my $pipeline_file_fh;
+            if ($pipeline_file =~ /\.gz/) {
+                open($pipeline_file_fh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
+            } else {
+                open($pipeline_file_fh, "<$pipeline_file") || die "can't read $pipeline_file: $!";       
+            }
 
             my $twig = new XML::Twig;
-            $twig->parsefile($pipeline_file);
+            $twig->parse($pipeline_file_fh);
 
             my $commandSetRoot = $twig->root;
             my $commandSet = $commandSetRoot->first_child('commandSet');
@@ -116,6 +130,11 @@ sub get_pipeline_lists {
             my $filestat = stat($pipeline_file);
 
             $last_mod = $filestat->mtime;
+            
+            ## DEBUGGING
+            if ($pipeline_file =~ /8562/) {
+                print STDERR "pipeline 8562 last_mod: $last_mod\n";
+            }
             
             ## check the time here.  we'll skip this one unless
             ## it is either running or less than active_pipeline_age time
