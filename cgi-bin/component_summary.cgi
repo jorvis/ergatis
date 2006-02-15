@@ -229,7 +229,7 @@ sub parseCommandSet {
         ## this command set should contain a fileName element
         my $fileName = $subflowCommandSet->first_child("fileName") || 0;
         if ($fileName) {
-            if (-e $fileName->text) {
+            if (-e $fileName->text || -e $fileName->text . '.gz') {
                 parseComponentSubflow($fileName->text);
             }
         }
@@ -275,7 +275,7 @@ sub parseComponentSubflow {
     my $groupsXML_fh;
     if ($groupsXML =~ /\.gz/) {
         open($groupsXML_fh, "<:gzip", "$groupsXML") || die "can't read $groupsXML: $!"; 
-    } elsif ( -e "$groupsXML.gz" ) {
+    } elsif ( ! -e $groupsXML && -e "$groupsXML.gz" ) {
         open($groupsXML_fh, "<:gzip", "$groupsXML.gz") || die "can't read $groupsXML: $!"; 
     } else {
         open($groupsXML_fh, "<$groupsXML") || die "can't read $groupsXML: $!";       
@@ -284,6 +284,7 @@ sub parseComponentSubflow {
     my $twig = new XML::Twig;
        $twig->parse($groupsXML_fh);
     my $commandSetRoot = $twig->root;
+    
     parseCommandSet( $commandSetRoot->first_child('commandSet'), $groupsXML );
 }
 
