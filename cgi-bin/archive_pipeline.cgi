@@ -27,6 +27,7 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 my $archive_root = $ergatis_cfg->val( 'paths', 'pipeline_archive_root' ) || die "pipeline_archive_root not defined in ergatis.ini file";
 my $temp_space   = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
+my $log_file;
 
 ## create the archive root if it doesn't exist
 unless ( -d $archive_root ) {
@@ -35,15 +36,37 @@ unless ( -d $archive_root ) {
 
 if ($action eq 'delete') {
     
-    my $log_file = "$temp_space/ergatis.pipeline.$pipeline_id.delete.log";
+    $log_file = "$temp_space/ergatis.pipeline.$pipeline_id.delete.log";
+
+    $message_header = "deleting pipeline $pipeline_id";
+    $message = "<p>Deletion of pipeline $pipeline_id has started and will run in the background. " .
+               "It may take several minutes.</p><p>A log file is being written to $log_file</p>";
+    
+    &fork_and_action('delete_pipeline.pl', $message_header, $message, $log_file);
+
+} elsif ($action eq 'archive_in_place') {
+
+    $log_file = "$temp_space/ergatis.pipeline.$pipeline_id.archive_in_place.log";
+
+    $message_header = "archiving pipeline $pipeline_id";
+    $message = "<p>Archival of pipeline $pipeline_id has started and will run in the background. " .
+               "It may take several minutes.</p><p>A log file is being written to $log_file</p>";
+    
+    &fork_and_action('archive_pipeline_in_place.pl', $message_header, $message, $log_file);
+
+} else {
+    $message_header = "archive/deletion failure";
+    $message = "unhandled action: $action.  It hasn't been coded yet?";
+    &print_page( $message_header, $message );
+}
+
+sub fork_and_action {
+    my ($script, $header, $message, $log) = @_;
     
     my $child_pid = fork;
     
     if ($child_pid) {
-        $message_header = "deleting pipeline $pipeline_id";
-        $message = "<p>Deletion of pipeline $pipeline_id has started and will run in the background. " .
-                   "It may take several minutes.</p><p>A log file is being written to $log_file</p>";
-        &print_page( $message_header, $message );
+        &print_page( $header, $message );
         exit;
     } else {
         ## we have to close everything or it won't detach properly
@@ -59,7 +82,7 @@ if ($action eq 'delete') {
         if (! $gpid) {
             
             ## We're in the grandchild.
-            my $result = `./bin/delete_pipeline.pl --pipeline_id=$pipeline_id --repository_root=$repository_root --delete_output=1 --log=$log_file --lock_file=$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock`;
+            my $result = `./bin/$script --pipeline_id=$pipeline_id --repository_root=$repository_root -o=1 --log=$log --lock_file=$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock`;
             exit;
         }
         
@@ -67,11 +90,6 @@ if ($action eq 'delete') {
         exit;
         
     }
-    
-} else {
-    $message_header = "archive/deletion failure";
-    $message = "unhandled action: $action.  It hasn't been coded yet?";
-    &print_page( $message_header, $message );
 }
 
 sub print_page {
