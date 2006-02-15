@@ -131,11 +131,6 @@ sub get_pipeline_lists {
 
             $last_mod = $filestat->mtime;
             
-            ## DEBUGGING
-            if ($pipeline_file =~ /8562/) {
-                print STDERR "pipeline 8562 last_mod: $last_mod\n";
-            }
-            
             ## check the time here.  we'll skip this one unless
             ## it is either running or less than active_pipeline_age time
             next unless ( $state eq 'running' || (time - $last_mod) < ($active_pipeline_age * 3600) );
