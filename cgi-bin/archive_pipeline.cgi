@@ -12,8 +12,9 @@ print $q->header( -type => 'text/html' );
 umask(0000);
 
 my $repository_root = $q->param('repository_root') || die "didn't get a repository_root";
-my $pipeline_id = $q->param('pipeline_id') || die "didn't get a pipeline_id";
-my $action = $q->param('action') || die "didn't get an action";
+my $pipeline_id     = $q->param('pipeline_id') || die "didn't get a pipeline_id";
+my $action          = $q->param('action') || die "didn't get an action";
+my $process_output  = $q->param('process_output') || 0;
 
 my $tmpl = HTML::Template->new( filename => 'templates/archive_pipeline.tmpl',
                                 die_on_bad_params => 1,
@@ -82,7 +83,7 @@ sub fork_and_action {
         if (! $gpid) {
             
             ## We're in the grandchild.
-            my $result = `./bin/$script --pipeline_id=$pipeline_id --repository_root=$repository_root -o=1 --log=$log --lock_file=$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock`;
+            my $result = `./bin/$script --pipeline_id=$pipeline_id --repository_root=$repository_root -o=$process_output --log=$log --lock_file=$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock`;
             exit;
         }
         

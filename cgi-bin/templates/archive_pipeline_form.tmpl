@@ -37,7 +37,7 @@
         </p>
         <ul id='archive_choices'>
             <li><a onclick='javascript: showDialogue("archive_verification_dialogue")'>archive in place</a></li>
-            <li><a onclick='javascript: showDialogue("temp_archive_verification_dialogue")'>archive to <TMPL_VAR NAME=ARCHIVE_ROOT></a></li>
+            <li><a onclick='javascript: showDialogue("temp_archive_verification_dialogue")'>archive to <TMPL_VAR NAME=ARCHIVE_ROOT></a> (not ready)</li>
             <li><a onclick='javascript: showDialogue("delete_dialogue")'>delete</a></li>
         </ul>
     </div>
@@ -45,20 +45,20 @@
     <div id='archive_verification_dialogue'>
         <h3 class='warning'>archive in place verification</h3>
         <p>
-            Are you sure you want to archive pipeline <TMPL_VAR NAME=PIPELINE_ID>? The pipeline and all its
-            data will be compressed in place.
+            Are you sure you want to archive pipeline <TMPL_VAR NAME=PIPELINE_ID>? The pipeline will be compressed in place.
         </p>
-        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&action=archive_in_place'>Yes</a></span>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&amp;pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&amp;action=archive_in_place&amp;process_output=0'>Yes</a></span>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&amp;pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&amp;action=archive_in_place&amp;process_output=1'>Yes, and archive output</a></span>
         <span class='button'><a onclick='javascript: hideDialogue("archive_verification_dialogue")'>No</a></span>
     </div>
     
     <div id='temp_archive_verification_dialogue'>
         <h3 class='warning'>archive to temp verification</h3>
         <p>
-            Are you sure you want to archive pipeline <TMPL_VAR NAME=PIPELINE_ID>? The pipeline and all its
-            data will be compressed and moved to <TMPL_VAR NAME=ARCHIVE_ROOT>.
+            Are you sure you want to archive pipeline <TMPL_VAR NAME=PIPELINE_ID>? The pipeline will be compressed 
+            and moved to <TMPL_VAR NAME=ARCHIVE_ROOT>.
         </p>
-        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&action=archive_to_temp'>Yes</a></span>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&amp;pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&amp;action=archive_to_temp&amp;process_output=0'>Yes</a></span>
         <span class='button'><a onclick='javascript: hideDialogue("temp_archive_verification_dialogue")'>No</a></span>
     </div>
     
@@ -68,7 +68,8 @@
             Are you sure you want to delete pipeline <TMPL_VAR NAME=PIPELINE_ID>? You will not be able to undo
             this action.
         </p>
-        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&action=delete'>Yes</a></span>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&amp;pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&amp;action=delete&amp;process_output=0'>Yes</a></span>
+        <span class='button'><a href='./archive_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>&amp;pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>&amp;action=delete&amp;process_output=1'>Yes, and delete output</a></span>
         <span class='button'><a onclick='javascript: hideDialogue("delete_dialogue")'>No</a></span>
     </div>
 
