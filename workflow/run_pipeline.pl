@@ -164,7 +164,7 @@ foreach my $workflow (@workflows){
     &create_directory($wfrepositorydir);
 
     my $instanceconfigfile = "$wfrepositorydir/pipeline.config";
-    my $instanceinifile = "$wfrepositorydir/".$workflowname."_pipeline.ini";    
+    my $instanceinifile = "$wfrepositorydir/pipeline.ini";    
     my $instancexmlfile = "$wfrepositorydir/"."pipeline.xml";
         
     if($options{'ini'} ne "" ){
