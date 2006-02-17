@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>subfeature_mapping</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>create_output_directory</name>
+         <configMapId>create_output_directory</configMapId>
+        </command>
+<!--Preprocess permissions-->
+<!--Preprocessing-->
+<!--Iterator steps-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mapping</name>
+          <configMapId>mapping</configMapId>
+        </command>
+<!--Postprocessing-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>load_featureloc</name>
+          <configMapId>load_featureloc</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>gzip_files</name>
+          <configMapId>gzip_files</configMapId>
+        </command>
+<!--Checksum creation-->
+<!--Postprocess permissions-->
+     </commandSet>
+</commandSetRoot>
