@@ -54,7 +54,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado subfeature_mapping tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -488,6 +488,12 @@ statistics2chado	:
 	@install workflow/statistics2chado/statistics2chado-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/statistics2chado/statistics2chado-master_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/statistics2chado/statistics2chadoconf.ini $(WORKFLOW_DOCS_DIR)
+
+subfeature_mappingdb  :
+	@echo "Installing subfeature_mappingdb workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/subfeature_mappingdb/subfeature_mappingdb-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/subfeature_mappingdb/subfeature_mappingdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/subfeature_mappingdb/subfeature_mappingdbconf.ini $(WORKFLOW_DOCS_DIR)  
 
 tRNAscan-SE	:
 	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
