@@ -312,11 +312,19 @@ sub clear_working_dir {
 	
 	my ($dir) = @_;
 	
-	my $execstring = "rm -rf $workingdir/*_install";
 	
+	my $execstring = "rm -rf $workingdir/*_install";
 	&do_or_die($execstring);
-
+	$execstring = "rm -rf $workingdir/chado_schema";
+	&do_or_die($execstring);
+	$execstring = "rm -rf $workingdir/peffect";
+	&do_or_die($execstring);
+	$execstring = "rm -rf $workingdir/cvdata";
+	&do_or_die($execstring);
+	$execstring = "rm -rf $workingdir/ontologies";
+	&do_or_die($execstring);
 }
+	
 
 
 #----------------------------------------------------
@@ -365,7 +373,7 @@ sub execute_installation {
 	#
 	if ((exists $cvshash->{'server'}) && (defined($cvshash->{'server'})) ) {
 	    $server = $cvshash->{'server'};
-	}
+        }
 	
 
 
@@ -396,7 +404,7 @@ sub execute_installation {
 
 		    &install_peffect($workingdir, $installdir, "HEAD");
 		}
-		else {
+		elsif( $name ne 'server'){
 		    
 		    chdir($workingdir);
 		    
@@ -413,7 +421,7 @@ sub execute_installation {
 			#
 			my $file = "./conf/Prism.conf";
 			
-			&edit_prism_conf($file);
+			&edit_prism_conf($file,$server);
 		    }
 		    
 		    
@@ -429,7 +437,7 @@ sub execute_installation {
 		    
 		    &do_or_die($makeinstallstring);
 
-		}
+		}else{}
 
 	    }
 
@@ -596,28 +604,12 @@ sub do_or_die {
 
     print "$cmd\n";
 
+    my $res =system($cmd);
 
-
-    if (1){
-	#
-	# Control testing
-	#
-
-
-	system($cmd);
-
-	if ($? == -1) {
+	if ($res != 0) {
 	    $logger->logdie("failed to execute cmd '$cmd': $!");
 	    
 	} 
-	elsif ($? & 127) {
-	    printf STDERR "child died with signal %d, %s coredump\n",
-	    ($? & 127),  ($? & 128) ? 'with' : 'without';
-	    exit(1);
-	}
-    }
-
-
 }
 
 #-----------------------------------------------------
@@ -626,7 +618,7 @@ sub do_or_die {
 #-----------------------------------------------------
 sub edit_prism_conf {
 
-    my ($file) = @_;
+    my ($file,$server) = @_;
 
 	my $execstring = "perl -i.bak -pe 's/Chado:BulkSybase:SYBTIGR/Chado:BulkSybase:$server/' $file";
 
