@@ -22,8 +22,8 @@ foreach my $arg (@ARGV){
 	}
     }
 
-if(!$isworkflowdocsdir){
-    die "You must specify a WORKFLOW_DOCS_DIR.\n".
+if(!$isworkflowdocsdir || !(-e $workflowdocsdir)){
+    die "ERROR: Directory '$workflowdocsdir' does not exist.  You must specify a WORKFLOW_DOCS_DIR.\n".
 	"Workflow XML and ini files will be stored in this directory\n".
 	"Eg. \n\nperl Makefile.PL PREFIX=/usr/local/devel/ANNOTATION/shared WORKFLOW_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs\n\n";
 }
@@ -31,8 +31,9 @@ else{
     print "Ignore the following warning: ";
 }
 if(!$isschemadocsdir || (!(-e $schemadocsdir))){
-    die "You must specify a SCHEMA_DOCS_DIR where BSML XML schemas and the BSML dtd are installed.\n".
-	"Eg. \n\nperl Makefile.PL PREFIX=/usr/local/devel/ANNOTATION/shared WORKFLOW_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs SCHEMA_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs\n\n";
+    die "ERROR: Directory '$schemadocsdir' does not exist.  You must specify a SCHEMA_DOCS_DIR\n".
+	"BSML dtd and schemas are stored in this directory\n".
+        "Eg. \n\nperl Makefile.PL PREFIX=/usr/local/devel/ANNOTATION/shared WORKFLOW_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs SCHEMA_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs\n\n";
 }
 else{
     print "Ignore the following warning: ";
@@ -489,11 +490,11 @@ statistics2chado	:
 	@install workflow/statistics2chado/statistics2chado-master_template.xml $(WORKFLOW_DOCS_DIR)
 	@install workflow/statistics2chado/statistics2chadoconf.ini $(WORKFLOW_DOCS_DIR)
 
-subfeature_mappingdb  :
-	@echo "Installing subfeature_mappingdb workflows in $(WORKFLOW_DOCS_DIR)"
-	@install workflow/subfeature_mappingdb/subfeature_mappingdb-master.ini $(WORKFLOW_DOCS_DIR)
-	@install workflow/subfeature_mappingdb/subfeature_mappingdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install workflow/subfeature_mappingdb/subfeature_mappingdbconf.ini $(WORKFLOW_DOCS_DIR)  
+subfeature_mapping  :
+	@echo "Installing subfeature_mapping workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/subfeature_mapping/subfeature_mapping-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/subfeature_mapping/subfeature_mapping-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/subfeature_mapping/subfeature_mappingconf.ini $(WORKFLOW_DOCS_DIR)  
 
 tRNAscan-SE	:
 	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
