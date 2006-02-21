@@ -276,16 +276,6 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_featureprop</name>
-          <configMapId>dup_list_featureprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_featureprop</name>
-            <configMapId>remove_dups_featureprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>dup_list_feature_pub</name>
           <configMapId>dup_list_feature_pub</configMapId>
         </command>
@@ -346,16 +336,6 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_featureloc</name>
-          <configMapId>dup_list_featureloc</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_featureloc</name>
-            <configMapId>remove_dups_featureloc</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>dup_list_feature_relationship</name>
           <configMapId>dup_list_feature_relationship</configMapId>
         </command>
@@ -413,16 +393,6 @@
             <type>RunUnixCommand</type>
             <name>remove_dups_analysisprop</name>
             <configMapId>remove_dups_analysisprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_analysisfeature</name>
-          <configMapId>dup_list_analysisfeature</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_analysisfeature</name>
-            <configMapId>remove_dups_analysisfeature</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
