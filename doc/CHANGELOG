@@ -74,6 +74,10 @@ ergatis-v1r14b1
 -added support for different database paths between dps and nap steps in aat_aa 
 -corrected Seq-data-import elements in gene prediction output bsml
 
+ergatis-v1r15b1
+--------------
+-fixed fgenesh bsml output, wasn't creating CDS features
+
 next
 --------------
 -added file marshal interval timing to run workflow steps.
