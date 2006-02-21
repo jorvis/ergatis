@@ -39,18 +39,10 @@ accessible on each iteration are as follows:
     $;ITER_FILE_BASE$; = somefile
     $;ITER_FILE_EXT$;  = txt
     
-the following are still available, but have been deprecated and will be
-removed at a certain point.
-
-    $;FSA_FILE$;     = /path/to/somefile.txt (variable name changes based on extension)
-    $;SUBFLOW_NAME$; = somefile
-
 =cut
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-use Data::Dumper;
-
 use Workflow::Logger;
 
 umask(0000);
@@ -89,10 +81,6 @@ my $iteratorconf = {
     '$;ITER_FILE_EXT$;'  => [],
     '$;ITER_FILE_NAME$;' => [],
     '$;ITER_DIR$;'       => [],
-    
-    ## the following two are deprecated and should be removed later:
-    $keyname            => [],
-    '$;SUBFLOW_NAME$;'  => [],
 };
 
 if ($options{file}) {
@@ -145,17 +133,6 @@ sub get_list_from_file{
     my ($iteratorconf, $f) = @_;
     my @elts;
 
-
-
-    #
-    # Given the following sample invocation of generate_input_list.pl:
-    #
-    # perl -I ../lib/ generate_input_list.pl --directory='' --file='' --filelist='/usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.1.list,/usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.2.list' --output=subflow1.list
-    #
-    #
-    # Sample filelist stored in $f:
-    # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.1.list,/usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.2.list
-    #
     my @files = split(',',$f);
     foreach my $file (@files){
 
@@ -165,32 +142,7 @@ sub get_list_from_file{
             if (-e $file && -f $file) {
                 open( FH, $file ) or $logger->logdie("Could not open $file");
 
-
-                #
-                # editor:     sundaram@tigr.org
-                # date:       2005-08-12
-                # bgzcase:    2041 
-                # URL:        http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2041
-                # comment:    @lines array should be locally scoped to ensure no files are output more than once!
-                #
                 my @lines;
-
-                #
-                # Contents of sample file /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.1.list
-                #
-                # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_2_assembly.bsml
-                # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_1_assembly.bsml
-                # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_3_assembly.bsml
-                #
-                #
-                # Contents of sample file /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2.bsml.2.list
-                #
-                #
-                # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_4_assembly.bsml
-                # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_5_assembly.bsml
-                # /usr/local/scratch/annotation/CHADO_TEST2/BSML_repository/legacy2bsml/cea2_6_assembly.bsml
-                #
-
 
                 while( my $line = <FH> ){
                     chomp($line);
@@ -244,13 +196,7 @@ sub get_list_from_directory{
 sub add_entry_to_conf{
     my ($iteratorconf, $filename) = @_;
     my ($iter_dir, $iter_file_name, $iter_file_base, $iter_file_ext) = &parse_file_parts($filename);
-    #
-    # editor:     sundaram@tigr.org
-    # date:       2005-08-12
-    # bgzcase:    2041
-    # URL:        http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2041
-    # comment:    This script should output a unique file list
-    #
+
     if (! exists $filehash->{$filename} ){
     
         push( @{$iteratorconf->{'$;ITER_FILE_PATH$;'}}, $filename );
@@ -258,11 +204,7 @@ sub add_entry_to_conf{
         push( @{$iteratorconf->{'$;ITER_FILE_NAME$;'}}, $iter_file_name );
         push( @{$iteratorconf->{'$;ITER_FILE_BASE$;'}}, $iter_file_base );
         push( @{$iteratorconf->{'$;ITER_FILE_EXT$;'}},  $iter_file_ext );
-    
-        ## the following two are deprecated and should be removed at some
-        ##  later point when all the components are updated.
-        push( @{$iteratorconf->{$keyname}}, $filename );
-        push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $iter_file_base );
+
 
         $filehash->{$filename}++;
     }
