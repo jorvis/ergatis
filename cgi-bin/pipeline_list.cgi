@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::ConfigFile;
 use HTML::Template;
 use Monitor;
 use XML::Twig;
@@ -19,7 +20,11 @@ my $repository_root = $q->param("repository_root") || die "pass a repository roo
 ## quota information (only works if in /usr/local/annotation/SOMETHING)
 my $quotastring = &quota_string($repository_root);
 
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+my $display_codebase = $ergatis_cfg->val( 'settings', 'display_codebase_used') || 0;
+
 my $pipeline_root = "$repository_root/Workflow/pipeline";
+my $shared_conf_path = "$repository_root/workflow_config_files/sharedconf.ini";
 my $errors_found  = 0;
 my $error_msgs = [];
 my %pipelines;
@@ -47,10 +52,19 @@ if (! -d "$repository_root/workflow/lock_files" ) {
     &record_error("directory $repository_root/workflow/lock_files not found");
 }
 
+## make sure it has a shared conf file
+if (! -e $shared_conf_path ) {
+    &record_error("$shared_conf_path not found");
+}
+
 ## quit and throw the template if there were errors.
 if ( scalar @{$error_msgs} ) {
     &print_template();
 }
+
+## pull the ergatis dir from the shared conf file
+my $shared_conf = new Ergatis::ConfigFile( -file => $shared_conf_path );
+my $ergatis_dir = $shared_conf->val('init', '$;ERGATIS_DIR$;') || 'unknown';
 
 foreach my $pipeline_id ( readdir $rdh ) {
     next unless ( $pipeline_id =~ /^\d+$/ );
@@ -183,6 +197,7 @@ sub print_template {
     $tmpl->param( PIPELINES       => \@pipelines_sorted );
     $tmpl->param( PIPELINE_COUNT  => $pipeline_count );
     $tmpl->param( QUOTA_STRING    => $quotastring );
+    $tmpl->param( ERGATIS_DIR     => $ergatis_dir );
 
     ## print the template
     print $tmpl->output();
