@@ -81,3 +81,4 @@ ergatis-v1r15b1
 next
 --------------
 -added file marshal interval timing to run workflow steps.
+-changed GROUPCOUNT references to GROUP_SIZE in all components
