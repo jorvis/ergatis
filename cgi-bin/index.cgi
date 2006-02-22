@@ -138,6 +138,18 @@ sub get_pipeline_lists {
             
             my $pipeline_user = getpwuid($filestat->uid);
             my ($start_time, $end_time, $run_time) = &time_info( $commandSet );
+
+            ## depending on the state, grab the top-level error message if there is one
+            ##  there's no use doing this for running pipelines, since workflow won't
+            ##  propagate the error until it's finished.
+            my $error_message = 0;
+            if ( $state eq 'error' || $state eq 'failed' ) {
+                if ( $commandSet->has_child('status') && 
+                     $commandSet->first_child('status')->has_child('message') ) {
+
+                    $error_message = $commandSet->first_child('status')->first_child('message')->text();
+                }
+            }
             
             my %components = &component_count_hash( $pipeline_file );
             my $component_count = 0;
@@ -172,6 +184,7 @@ sub get_pipeline_lists {
                             components      => \@$component_aref,
                             component_count => $component_count,
                             component_label => $component_label,
+                            error_message   => $error_message,
                 };
                 
             ## if the pipeline is still running, add it to that list.  else, add it to the 'active'

@@ -53,8 +53,15 @@
     <TMPL_LOOP NAME=PIPELINES>
         <tr>
             <td><TMPL_VAR NAME=PIPELINE_ID></td>
-            <td>
+            <td class='pipeline_state'>
                 <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                <TMPL_IF NAME=ERROR_MESSAGE>
+                <div>
+                    <span class='error_message_header'>top-level error message</span>
+                    <hr>
+                    <TMPL_VAR NAME=ERROR_MESSAGE>
+                </div>
+                </TMPL_IF>
             </td>
             <td><TMPL_VAR NAME=PIPELINE_USER></td>
             <td><TMPL_VAR NAME=LAST_MOD></td>

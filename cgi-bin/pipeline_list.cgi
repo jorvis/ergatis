@@ -83,6 +83,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $is_instance = 0;
     my $archive_link = "./archive_pipeline_form.cgi?repository_root=$repository_root&amp;pipeline_id=$pipeline_id";
     my $links_enabled = 1;
+    my $error_message = 0;
     
     ## see if this pipeline is locked (usually for maintenance such as deleting or archiving.)
     my $lock_file = "$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock";
@@ -130,7 +131,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
 
         next if (! $commandSet );
 
-        if ( $commandSet->first_child('state') ) {
+        if ( $commandSet->has_child('state') ) {
             $state  = $commandSet->first_child('state')->text();
         }
 
@@ -142,7 +143,18 @@ foreach my $pipeline_id ( readdir $rdh ) {
         #$last_mod = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${last_mod} seconds")) ) ));
         #$last_mod = localtime( $filestat->mtime );
         $last_mod = $filestat->mtime;
-
+        
+        ## depending on the state, grab the top-level error message if there is one
+        ##  there's no use doing this for running pipelines, since workflow won't
+        ##  propagate the error until it's finished.
+        if ( $state eq 'error' || $state eq 'failed' ) {
+            if ( $commandSet->has_child('status') && 
+                 $commandSet->first_child('status')->has_child('message') ) {
+            
+                $error_message = $commandSet->first_child('status')->first_child('message')->text();
+            }
+        }
+        
         ## this is done as a new twig parse since elements can be nested
         ## at any level.
         my %components = &component_count_hash( $pipeline_file );
@@ -176,7 +188,8 @@ foreach my $pipeline_id ( readdir $rdh ) {
                         view_link       => $view_link,
                         edit_link       => $edit_link,
                         archive_link    => $archive_link,
-                        links_enabled    => $links_enabled,
+                        links_enabled   => $links_enabled,
+                        error_message   => $error_message,
                       };
 }
 

@@ -65,7 +65,16 @@
             <tr>
                 <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
                 <td><a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
-                <td><span class='<TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span></td>
+                <td class='pipeline_state'>
+                    <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                    <TMPL_IF NAME=ERROR_MESSAGE>
+                    <div>
+                        <span class='error_message_header'>top-level error message</span>
+                        <hr>
+                        <TMPL_VAR NAME=ERROR_MESSAGE>
+                    </div>
+                    </TMPL_IF>
+                </td>
                 <td><TMPL_VAR NAME=PIPELINE_USER></td>
                 <td class='component_review'>
                     <a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
@@ -111,7 +120,16 @@
             <tr>
                 <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
                 <td><a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
-                <td><span class='<TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span></td>
+                <td class='pipeline_state'>
+                    <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                    <TMPL_IF NAME=ERROR_MESSAGE>
+                    <div>
+                        <span class='error_message_header'>top-level error message</span>
+                        <hr>
+                        <TMPL_VAR NAME=ERROR_MESSAGE>
+                    </div>
+                    </TMPL_IF>
+                </td>
                 <td><TMPL_VAR NAME=PIPELINE_USER></td>
                 <td class='component_review'>
                     <a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
