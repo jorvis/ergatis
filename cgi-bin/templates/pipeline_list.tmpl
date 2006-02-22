@@ -19,7 +19,8 @@
 <div id='bannerbottom'>
     <div id='pipelinesummary'>
         <div class='pipelinestat'><strong>repository root:</strong> <TMPL_VAR NAME=REPOSITORY_ROOT></div>
-        <div class='pipelinestat'><strong>codebase:</strong> <TMPL_VAR NAME=ERGATIS_DIR></div><br>
+        <TMPL_IF NAME=DISPLAY_CODEBASE><div class='pipelinestat'><strong>codebase:</strong> <TMPL_VAR NAME=ERGATIS_DIR></div></TMPL_IF>
+        <br>
         <div class='pipelinestat'><strong>quota:</strong> <TMPL_VAR NAME=QUOTA_STRING></div>
         <div id='pipelinecommands'>
             <a href='./new_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>

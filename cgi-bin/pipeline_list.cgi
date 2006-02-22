@@ -21,7 +21,7 @@ my $repository_root = $q->param("repository_root") || die "pass a repository roo
 my $quotastring = &quota_string($repository_root);
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
-my $display_codebase = $ergatis_cfg->val( 'settings', 'display_codebase_used') || 0;
+my $display_codebase = $ergatis_cfg->val( 'settings', 'display_codebase') || 0;
 
 my $pipeline_root = "$repository_root/Workflow/pipeline";
 my $shared_conf_path = "$repository_root/workflow_config_files/sharedconf.ini";
@@ -191,13 +191,14 @@ for my $pipeline ( sort { $pipelines{$b}{last_mod} cmp $pipelines{$a}{last_mod} 
 sub print_template {
 
     ## populate the template with the values that will always be passed.
-    $tmpl->param( ERRORS_FOUND    => $errors_found );
-    $tmpl->param( REPOSITORY_ROOT => $repository_root );
-    $tmpl->param( ERROR_MSGS      => $error_msgs );
-    $tmpl->param( PIPELINES       => \@pipelines_sorted );
-    $tmpl->param( PIPELINE_COUNT  => $pipeline_count );
-    $tmpl->param( QUOTA_STRING    => $quotastring );
-    $tmpl->param( ERGATIS_DIR     => $ergatis_dir );
+    $tmpl->param( ERRORS_FOUND     => $errors_found );
+    $tmpl->param( REPOSITORY_ROOT  => $repository_root );
+    $tmpl->param( ERROR_MSGS       => $error_msgs );
+    $tmpl->param( PIPELINES        => \@pipelines_sorted );
+    $tmpl->param( PIPELINE_COUNT   => $pipeline_count );
+    $tmpl->param( QUOTA_STRING     => $quotastring );
+    $tmpl->param( ERGATIS_DIR      => $ergatis_dir );
+    $tmpl->param( DISPLAY_CODEBASE => $display_codebase );
 
     ## print the template
     print $tmpl->output();
