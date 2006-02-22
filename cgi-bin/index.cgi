@@ -143,8 +143,11 @@ sub get_pipeline_lists {
             my $component_count = 0;
             my $component_aref;
             foreach my $component (sort keys %components) {
-                $component_count += $components{$component};
-                push @$component_aref, { name => $component, count => $components{$component} };
+                $component_count += $components{$component}{count};
+                push @$component_aref, { name => $component, 
+                                         count => $components{$component}{count},
+                                         error_count => $components{$component}{error_count},
+                                       };
             }
             
             ## reformat component_count to include a label
@@ -163,7 +166,7 @@ sub get_pipeline_lists {
                             pipeline_url    => "./view_workflow_pipeline.cgi?instance=$pipeline_file",
                             state           => $state,
                             last_mod        => $last_mod,
-			    last_mod_secs   => $last_mod_secs,
+                            last_mod_secs   => $last_mod_secs,
                             run_time        => $run_time,
                             pipeline_user   => $pipeline_user,
                             components      => \@$component_aref,

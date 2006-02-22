@@ -148,8 +148,11 @@ foreach my $pipeline_id ( readdir $rdh ) {
         my %components = &component_count_hash( $pipeline_file );
 
         foreach my $component (sort keys %components) {
-            $component_count += $components{$component};
-            push @$component_aref, { name => $component, count => $components{$component} };
+            $component_count += $components{$component}{count};
+            push @$component_aref, { name => $component, 
+                                     count => $components{$component}{count},
+                                     error_count => $components{$component}{error_count},
+                                   };
         }
 
         ## reformat component_count to include a label

@@ -74,7 +74,11 @@
                         <hr/>
                     <TMPL_IF NAME=COMPONENT_COUNT>
                     <TMPL_LOOP NAME=COMPONENTS>
+                        <TMPL_IF NAME=ERROR_COUNT>
+                        <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+                        <TMPL_ELSE>
                         <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                        </TMPL_IF> <!-- ERROR_COUNT if -->
                     </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
                     <TMPL_ELSE>
                         no components found
@@ -116,7 +120,11 @@
                         <hr/>
                     <TMPL_IF NAME=COMPONENT_COUNT>
                     <TMPL_LOOP NAME=COMPONENTS>
+                        <TMPL_IF NAME=ERROR_COUNT>
+                        <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+                        <TMPL_ELSE>
                         <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                        </TMPL_IF> <!-- ERROR_COUNT if -->
                     </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
                     <TMPL_ELSE>
                         no components found
