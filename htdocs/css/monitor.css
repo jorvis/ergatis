@@ -14,7 +14,8 @@
     color: rgb(75,75,75);
 }
 
-td.component_review div {
+td.component_review div,
+td.pipeline_state div {
     display: none;
     position: absolute;
     border: 1px solid rgb(100,100,100);
@@ -25,13 +26,22 @@ td.component_review div {
     margin-top: -2em;
     opacity: 0.9;
 }
-td.component_review:hover div {
+
+td.pipeline_state div {
+    width: 50em;
+    overflow: hidden;
+}
+
+td.component_review:hover div,
+td.pipeline_state:hover div {
     display: block;
 }
-td.component_review div:hover {
+td.component_review div:hover,
+td.pipeline_state div:hover {
     display: none;
 }
-span.component_review_header {
+span.component_review_header,
+span.error_message_header {
     font-weight: bold;
 }
 hr {
