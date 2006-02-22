@@ -3,16 +3,21 @@ use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
 
-eval 'exec /local/perl/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1  NAME 
 
 run_wf.pl - do nothing
 
 =head1 SYNOPSIS
 
-USAGE:  run_wf.pl --instance instance file --template xml template file --ini ini file [--skiprun] [--nodistib] [--debug debug_level] [--log log_file]
+USAGE:  run_wf.pl 
+    --instance instance file 
+    --template xml template file 
+    --ini ini file 
+  [ --skiprun
+    --nodistib
+    --debug debug_level
+    --log log_file
+  ]
 
 =head1 OPTIONS
 
