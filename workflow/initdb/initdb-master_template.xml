@@ -58,6 +58,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>Create gff3 scratch</name>
+          <configMapId>create_gff3_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create so scratch</name>
           <configMapId>create_so_scratch</configMapId>
         </command>
@@ -146,6 +151,12 @@
             <type>RunUnixCommand</type>
             <name>Process Annotation Ontology</name>
             <configMapId>parse_anno_onto</configMapId>
+        </command>
+<!-- gff3_attributes Ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process GFF3_attributes Ontology</name>
+            <configMapId>parse_gff3_onto</configMapId>
         </command>
 <!-- Component Ontology -->
         <command>    
