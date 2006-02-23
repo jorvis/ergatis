@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -47,12 +48,12 @@ incrementing group number, depending on how many groups are created.
 The input file, usually a .list created by generate_input_list.pl, must be formatted
 like:
 
-$;BSML_FILE$;=/path/to/file1.bsml,/path/to/file2.bsml,...
-$;SUBFLOW_NAME$;=file1,file2,...
+    $;BSML_FILE$;=/path/to/file1.bsml,/path/to/file2.bsml,...
+    $;SUBFLOW_NAME$;=file1,file2,...
 
-Where the SUBFLOW_NAMES can be anything, but are usually the file name without the
-extension.  Both $;BSML_FILE$; and $;SUBFLOW_NAME$; portions are required and must
-be composed of comma-separated lists.
+The variable names here, such as BSML_FILE and SUBFLOW_NAME, don't matter.  All 
+that is required is that there are variables in this format whose values are 
+comma-separated lists.
 
 =head1   OUTPUT
 
@@ -62,7 +63,8 @@ always be created called:
     $prefix.list
 
 This file is similar to the input list file, but is formatted like:
-
+    
+    $;GROUP_NAME$;=1,0,2
     $;SUBFLOW_NAME$;=$prefix1,$prefix2,...
     $;GROUP_FILE$;=/path/to/$prefix1,/path/to/$prefix2,...
 
@@ -129,8 +131,9 @@ if ($options{groupsize} && (! $options{group_count})) {
 
 my $eltshash = &readiteratorconf($options{'file'});
 
-my $groupsconf = {'$;GROUP_FILE$;'=>[],
-		  '$;SUBFLOW_NAME$;'=>[]};
+my $groupsconf = {'$;GROUP_NAME$;' => [],
+                  '$;GROUP_FILE$;' => [],
+                  '$;SUBFLOW_NAME$;' => []};
 
 
 foreach my $group (keys %$eltshash){
@@ -140,8 +143,8 @@ foreach my $group (keys %$eltshash){
     my $fh = IO::File->new("+>$filename") or die "Can't open $filename for writing due to $!\n";
     my $size;
     foreach my $elt (keys %{$eltshash->{$group}}){
-	$size = scalar(@{$eltshash->{$group}->{$elt}});
-	print $fh "$elt=",join(",",@{$eltshash->{$group}->{$elt}}),"\n";
+        $size = scalar(@{$eltshash->{$group}->{$elt}});
+        print $fh "$elt=",join(",",@{$eltshash->{$group}->{$elt}}),"\n";
     }
     my $grouplist = "$group,"x$size;
     chop $grouplist;

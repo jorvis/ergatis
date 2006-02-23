@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -81,6 +82,9 @@ my $iteratorconf = {
     '$;ITER_FILE_EXT$;'  => [],
     '$;ITER_FILE_NAME$;' => [],
     '$;ITER_DIR$;'       => [],
+    
+    ## this should be removed later
+    '$;SUBFLOW_NAME$;' => [],
 };
 
 if ($options{file}) {
@@ -205,7 +209,9 @@ sub add_entry_to_conf{
         push( @{$iteratorconf->{'$;ITER_FILE_BASE$;'}}, $iter_file_base );
         push( @{$iteratorconf->{'$;ITER_FILE_EXT$;'}},  $iter_file_ext );
 
-
+        ## this should be removed later
+        push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $iter_file_base );
+        
         $filehash->{$filename}++;
     }
 }
