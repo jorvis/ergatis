@@ -104,7 +104,7 @@ while (my $line = <$ifl_fh>) {
     chomp $line;
     next if $line =~ /^\s*$/;
     
-    if ( $line =~ m|^(.+/.+\.((\d+).\d+))\.fsa$| ) {
+    if ( $line =~ m|^(.+/.+\.((\d+)\.\d+))\.fsa$| ) {
         ($root, $name, $asmbl_id) = ($1, $2, $3);
         print $logfh "extracted $asmbl_id and $name from $line\n" if $logfh;
         
@@ -117,9 +117,9 @@ while (my $line = <$ifl_fh>) {
         }
         
         print $logfh "executing cp $root.fsa $dir/$name.fsa\n" if $logfh;
-        copy("$root.fsa", "$dir/$name.fsa");
+        copy("$root.fsa", "$dir/$name.fsa") || die "FAILED: cp $root.fsa $dir/$name.fsa BECAUSE $!";
         print $logfh "executing cp $root.pep $dir/$name.pep\n" if $logfh;
-        copy("$root.pep", "$dir/$name.pep");
+        copy("$root.pep", "$dir/$name.pep") || die "FAILED: cp $root.pep $dir/$name.pep BECAUSE $!";
         
     } else {
         die "unrecognized file path format:\n$line";
