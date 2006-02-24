@@ -84,6 +84,7 @@ my $iteratorconf = {
     '$;ITER_DIR$;'       => [],
     
     ## this should be removed later
+    $keyname            => [],
     '$;SUBFLOW_NAME$;' => [],
 };
 
@@ -210,6 +211,7 @@ sub add_entry_to_conf{
         push( @{$iteratorconf->{'$;ITER_FILE_EXT$;'}},  $iter_file_ext );
 
         ## this should be removed later
+        push( @{$iteratorconf->{$keyname}}, $filename );
         push( @{$iteratorconf->{'$;SUBFLOW_NAME$;'}}, $iter_file_base );
         
         $filehash->{$filename}++;
