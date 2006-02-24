@@ -12,7 +12,7 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 my $xml_input = $q->param("xml_input") || die "pass xml_input";
-my $subflow_name  = basename($xml_input, ['.xml', '.gz']);
+my $subflow_name  = basename($xml_input, ('.xml', '.gz'));
 my $subflow_state = 'unknown';
 my $subflow_start = '';
 my $subflow_end   = '';

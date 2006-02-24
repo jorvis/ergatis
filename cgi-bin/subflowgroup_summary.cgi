@@ -59,7 +59,7 @@ sub process_iterated_commandset {
     my ($twig, $commandset) = @_;
     
     my $file = $commandset->first_child('fileName')->text();
-    my $name = basename($file, ['.xml', '.gz']);
+    my $name = basename($file, ('.xml', '.gz'));
     my $state = $commandset->first_child('state')->text();
     
     ## check for any messages
