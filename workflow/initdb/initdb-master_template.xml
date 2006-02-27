@@ -58,6 +58,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>Create annotation flags scratch</name>
+          <configMapId>create_annflg_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create gff3 scratch</name>
           <configMapId>create_gff3_scratch</configMapId>
         </command>
@@ -146,6 +151,12 @@
             <type>RunUnixCommand</type>
             <name>Process Annotation Ontology</name>
             <configMapId>parse_anno_onto</configMapId>
+        </command>
+<!-- Annotation Flag Ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process Annotation Flag Ontology</name>
+            <configMapId>parse_annflg_onto</configMapId>
         </command>
 <!-- gff3_attributes Ontology -->
         <command>    
