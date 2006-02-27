@@ -143,7 +143,7 @@ while (my $line = <$rol_fh>) {
     chomp $line;
     next if $line =~ /^\s*$/;
     
-    if ( $line =~ m|^(.+/.+\.((\d+).\d+)\.genewise_best_loc)\.raw$| ) {
+    if ( $line =~ m|^(.+/.+\.((\d+)\.\d+)\.genewise_best_loc)\.raw$| ) {
         ($root, $name, $asmbl_id) = ($1, $2, $3);
         print $logfh "extracted $asmbl_id and $name from $line\n" if $logfh;
         
