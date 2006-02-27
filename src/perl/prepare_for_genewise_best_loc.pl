@@ -221,7 +221,7 @@ if (! @asmbls_to_process) {
 
 # check for working directory:
 if (! -d $work_dir) {
-    croak "error, cannot find work_dir: $work_dir ";
+    mkdir($work_dir) || die "failed to create work_dir $work_dir because $!";
 } else {
     # change curr dir to work_dir
     chdir ($work_dir) or croak "error, cannot cd to $work_dir ";
