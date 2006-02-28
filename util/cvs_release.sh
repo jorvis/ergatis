@@ -12,7 +12,7 @@ do case "$opt" in
     s)    DATESTAMP=$OPTARG;;
     p)    PRINT="yes";;
     t)    TEST="-n";;
-    \?)   echo "Usage: `basename $0` -r(release tag) [-d(irectory for output)] [-t(est)] [-p(rint latest release]";
+    \?)   echo "Usage: `basename $0` -r(release tag) -s(datestamp) [-d(irectory for output)] [-t(est)] [-p(rint latest release]";
           echo;
           echo "eg. `basename $0` -r ergatis-v1r8b1";
           exit 1;;
