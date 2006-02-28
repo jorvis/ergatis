@@ -5,10 +5,11 @@
 # Copyright (c) 2002 The Institute for Genomic Research. All Rights Reserved.
 
 # This script generates a release tag in cvs
-while getopts r:d:pt opt 2>/dev/null
+while getopts r:d:s:pt opt 2>/dev/null
 do case "$opt" in
     r)    RELEASE_TAG=$OPTARG;;
     d)    DIRECTORY=$OPTARG;;
+    s)    DATESTAMP=$OPTARG;;
     p)    PRINT="yes";;
     t)    TEST="-n";;
     \?)   echo "Usage: `basename $0` -r(release tag) [-d(irectory for output)] [-t(est)] [-p(rint latest release]";
@@ -44,7 +45,7 @@ if [ "$?" -ne 0 ]; then
     exit 1
 fi
 cd bug_release
-cvs -Q co ergatis_all
+cvs -Q co -D "$DATESTAMP" ergatis_all
 cvs -Q $TEST tag $RELEASE_TAG
 echo "Added tag $RELEASE_TAG in ergatis_all"
 
