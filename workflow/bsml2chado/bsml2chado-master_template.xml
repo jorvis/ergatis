@@ -336,16 +336,6 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_feature_relationship</name>
-          <configMapId>dup_list_feature_relationship</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_relationship</name>
-            <configMapId>remove_dups_feature_relationship</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>dup_list_feature_relationship_pub</name>
           <configMapId>dup_list_feature_relationship_pub</configMapId>
         </command>
