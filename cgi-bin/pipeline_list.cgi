@@ -50,6 +50,12 @@ if (! -d "$repository_root/workflow" ) {
 ## make sure it has a 'workflow/lock_files' directory
 if (! -d "$repository_root/workflow/lock_files" ) {
     &record_error("directory $repository_root/workflow/lock_files not found");
+
+} else {
+    ## make sure it is writeable
+    if (! -w "$repository_root/workflow/lock_files") {
+        &record_error("$repository_root/workflow/lock_files not writable");
+    }
 }
 
 ## make sure it has a shared conf file
