@@ -88,4 +88,4 @@ next
 -added more XML based views to the viewer
 -various upgrades to viewer
 -changed GROUPCOUNT references to GROUP_SIZE in all components
-
+-added blat component
