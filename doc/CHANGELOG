@@ -78,7 +78,7 @@ ergatis-v1r15b1
 --------------
 -fixed fgenesh bsml output, wasn't creating CDS features
 
-next
+ergatis-v1r16b1
 --------------
 -added file marshal interval timing to run workflow steps.
 -added archive pipeline function to CGI area
