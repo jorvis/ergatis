@@ -1,41 +1,84 @@
-Project release tag SOP
+Project release SOP
 ========================
 
 Overview
 --------
 
+This document describes the process of cutting code releases and doing
+a production install for the following projects
+
+-chado
+-ergatis
+-bsml
+-prism
+
+In one line the process is "test,tag,release".
+
+ An overview of the process follows
+
+-Successfully run testing suite 
+-Run CVS diff on code bases and notate/compare with existing CHANGELOG
+-Tag code using cvs_release scripts and update/commit CHANGELOG
+-Install code in /usr/local/devel/ANNOTATION/ard/
+
+Detailed descriptions are provided in the following sections
+
 1)Testing
 2)CVS release tags
-3)Optional branch creation for immediate fix
-4)Install
-
+3)Rules for incrementing chado version-revision-build numbers
+4)Optional branch creation for immediate fix
+5)Install
 
 
 Testing 
 ------- 
 
-A project release should only be initiated after a successful run of
+A project release should be initiated only after a successful run of
 the testing suite.  The testing suite is still under development but
 will include a set of saved pipelines which test the core components
-of the production pipelines.
+of the production pipelines.  Currently, the following tests are
+required before cutting a release:
 
+-pro_test
+-euk_test
+-wait_test
+
+A bugzilla case should be opened (product:ergatis
+component:ergatis_test_suite title:testing for release candidate)
+noting the completion of testing and any attaching differences found.
+This case should be annotated with the release tags and install area
+once the release is complete
 
 CVS release tags
 ----------------
 
 Any project that has changed since the last install should receive a
-new release tag in CVS.  All the release tags follow the form
+new release tag in CVS, AKA "cutting a release".  All the release tags
+follow the form
 
  project-v1r1b1
 
-Usually, the revision number (r) is incremented for a release,
-eg. v1r1b1 --> v1r2b1.  
+Usually, the revision number (r) is incremented for a release
+(eg. v1r1b1 --> v1r2b1), but it is left up to the developer to decide
+whether to increment the build, release, or version number when
+cutting a release.  Note, whichever number is used, its most important
+that the CHANGELOG accurately reflects the changes.
 
-Alternatively, for smaller bug fixes, the build number (b) can be
-incremented instead of the revision number. eg. v1r1b1 --> v1r1b2.
+Some rules of thumb follow:
 
-Releases that incorporate substantial changes should increment the
-version number (v). eg. v1r1b1 --> v2r1b1.
+-Most code releases will increment the revision number (r)...unless
+ the change seems trivial or substantial.
+
+-For trivial changes, the build number (b) can be incremented instead
+of the revision number. eg. v1r1b1 --> v1r1b2.  Examples of trivial
+changes include: fixing syntax errors (that escaped testing),
+documentation changes, adding/deleting comments, simple code
+reformatting.
+
+-For substantial changes, the version number (v) should be
+ incremented. eg. v1r1b1 --> v2r1b1.  Examples of substantial changes
+ include: large code refactoring and substantial changes in
+ functionality.
 
 Note, all version, release, build numbers start at 1 not zero.
 
@@ -81,6 +124,61 @@ cvs co -d chado_release ANNOTATION/chado/util/cvs_release.sh
 ./cvs_release.sh -r ?CHADO_TAG_NAME?
 
 
+Rules for incrementing Chado version-revision-build numbers
+-----------------------------------------------------------
+
+The Chado tag (chado-v1r6b1) attempts to describe both schema format
+and usage conventions with the purpose of providing software an
+indication of what to expect in the database.  Database clients (such
+as Apollo, Sybil, Manatee) can expect that all databases with the same
+tag have equivalent table structures, index schemas, and data
+model/usage conventions.  The hope is that the Chado tag will be
+useful for tagging database client software compatibility
+(eg. sybil-v3r1b1 is compatible with database versions
+chado-v1r5b1,chado-v1r6b1,chado-v1r7b1,...).  Note the concept of the
+Chado tag differs from the ergatis,bsml, and prism tags which are tied
+only to code changes in the project.
+
+The rules for incrementing the Chado version-revision-build numbers
+are somewhat arbitrary but the tag should attempt to capture the
+severity of the change(s).  Keeping in mind that the tag is meant to
+guide software compatibility, we would expect that most software
+compatible with chado-v1r6b1 is also compatible with chado-v1r6b2 (in
+general, build increments shouldn't break software).  Alternatively,
+it is not expected that software compatible with chado-v1r6b1 will
+work with chado-v2r1b1 without code revisions.
+
+Note, whichever number is used, its most important that the CHANGELOG
+accurately reflects the changes.
+
+Although there are no firm rules for how to increment the Chado tag
+here are some rules of thumb:
+
+-Version changes are reserved for "substantial" changes to the schema
+ or data model.  These kind of changes will likely break existing
+ software.
+
+-Addition of new Chado modules will usually increment the version number (v)
+
+-Incremental changes to the data model and usage convention constitute
+ a change to the release number (r)
+
+-If data model/usage convention changes are coupled with changes to
+ the table definitions, this may constitute a version change (v)
+
+-Addition of fields or tables to existing modules constitutes a change
+ to the release number (r)
+
+-Changes to the index schema constitute a change to the release number (r)
+
+-Most changes/additions to ontologies that are loaded into the cvterm
+ tables constitute a release number change (r)
+
+-Other small changes which are not expected to "break" existing
+ software constitute build number changes (b).  This includes things
+ like storing an addtional featureprop with a blast match.  Removal of
+ properties would constitute a release number change (r)
+
 Optional branch creation for immediate fix
 ------------------------------------------
 
@@ -113,9 +211,18 @@ Install
 
 This should be done as the sgc user.
 
-First, choose a target area for the install and create a control file.  For
-example, contents might be:
+First, choose a target area for the install.  The name of the target
+area is determined by the latest Chado tag.  For example, in the
+example control file, the chado tag chado-v1r5b2 indicates that the
+install directory will be /usr/local/devel/ANNOTATION/chado-v1r5b2.
+In essence, this structure asserts the latest ergatis, prism, and bsml
+code versions that are compatible with a given Chado tag.
 
+Once a target area has been identified, update/create a control file
+and store in /usr/local/devel/ANNOTATION/ard.
+
+Example of
+/usr/local/devel/ANNOTATION/ard/chado-v1r5b2
 
 prok_prism=prism-v1r13b1
 coati=prism-v1r13b1
@@ -130,6 +237,9 @@ cvdata=chado-v1r5b2
 peffect=HEAD
 server=SYBTIGR
 
+Next, run the ergatis installer.
+
+Example of running ergatis installer to install to testing_manual
 
 cvs co -d install ANNOTATION/ergatis/ergatis_installer.pl
 cd install
