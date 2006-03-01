@@ -122,6 +122,11 @@ foreach my $pipeline_id ( readdir $rdh ) {
             next;
         }
 
+        if (! -s $pipeline_file ) {
+            print STDERR "skipped empty pipeline file $pipeline_file\n";
+            next;
+        }
+
         my $ifh;
         if ($pipeline_file =~ /\.gz/) {
             open($ifh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
