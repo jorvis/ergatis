@@ -21,7 +21,7 @@ gatekeeper.pl - Creates/removes database lock file from project repository root
 
 =head1 SYNOPSIS
 
-USAGE:  gatekeeper.pl -D database -U username -a action -c component [-d debug_level] [-h] [-l log4perl] [-m] -r repository -p pipeline
+USAGE:  gatekeeper.pl -D database [-U username] -a action -c component [-d debug_level] [-h] [-l log4perl] [-m] -r repository -p pipeline
 
 =head1 OPTIONS
 
@@ -61,7 +61,7 @@ USAGE:  gatekeeper.pl -D database -U username -a action -c component [-d debug_l
 
 =item B<--username,-U>
 
-    Username of person to be notified via email
+    Optional - Username of person to be notified via email. Default is value returned from whoami
 
 =item B<--component,-c>
 
@@ -181,7 +181,9 @@ if ($errorctr > 0 ) {
 # username must be specified
 #
 if (!defined($username)){
-    $logger->logdie("username was not defined");
+    $username = `whoami`;
+    chomp $username;
+    $logger->warn("username was set as '$username'");
 }
 
 #
@@ -457,9 +459,9 @@ sub notify_user {
 #------------------------------------------------------
 sub print_usage {
 
-    print STDERR "SAMPLE USAGE:  $0 -D database -U username -a action -c component [-d debug_level] [-h] [-l log4perl] [-m] -r repository -p pipeline_id\n".
+    print STDERR "SAMPLE USAGE:  $0 -D database [-U username] -a action -c component [-d debug_level] [-h] [-l log4perl] [-m] -r repository -p pipeline_id\n".
     "  -D|--database            = Name of database\n".
-    "  -U|--username            = Username of person to be notified by email\n".
+    "  -U|--username            = Optional - Username of person to be notified by email (default is result of whoami)\n".
     "  -a|--action              = Action to be taken either 'create' or 'remove'\n".
     "  -c|--component           = Name of workflow component\n".
     "  -d|--debug_level         = Optional - Coati::Logger log4perl logging level.  Default is 0\n".
