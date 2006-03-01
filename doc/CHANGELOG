@@ -81,7 +81,7 @@ ergatis-v1r15b1
 ergatis-v1r16b1
 --------------
 -added file marshal interval timing to run workflow steps.
--added archive pipeline function to CGI area
+-added delete/archive pipeline function to the viewer
 -moved output log for ergatis install to /usr/local/devel/ANNOTATION/ard/install_log.txt
 -added viewer support for gzipped workflow
 -saving executing host/pid to a lock file pid.#. this info is displayed to the user and used to kill the correct workflow process
@@ -89,3 +89,12 @@ ergatis-v1r16b1
 -various upgrades to viewer
 -changed GROUPCOUNT references to GROUP_SIZE in all components
 -added blat component
+-changed ergatis_installer to use cvs export with keyword expansion instead of cvs co 
+-added support for 'nodistrib' configuration option to all components. This flag is useful for testing components locally on a machine.  Setting the flag changes all distributed steps to local steps and all parallel commandsets to serial command sets.
+-changed Perl scripts to append a single directory to @INC from the environment variable PERL_MOD_DIR.  Previously, this directory was prepended via perl -I.
+-updated Perl scripts to strip '.' from @INC and reference /local/platform instead of /usr/local/packages to avoid traversing symlinks
+-various fixes to berbtab2bsml
+-added average percent coverage/similarity to blastbtab2bsml
+-fixes to tiling2bsml including cleanID functions added
+-update to legacy2bsml component to require a control file as input
+-reworking of initdb and bsml2chado, mostly to deal with scalability problems
