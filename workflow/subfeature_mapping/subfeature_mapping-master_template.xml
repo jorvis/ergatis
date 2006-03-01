@@ -8,6 +8,11 @@
 <!--Set up output and scratch areas-->
         <command>
           <type>RunUnixCommand</type>
+          <name>create_database_lockfile</name>
+          <configMapId>create_database_lockfile</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>create_output_directory</name>
          <configMapId>create_output_directory</configMapId>
         </command>
@@ -24,6 +29,11 @@
           <type>RunUnixCommand</type>
           <name>load_featureloc</name>
           <configMapId>load_featureloc</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>remove_database_lockfile</name>
+          <configMapId>remove_database_lockfile</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
