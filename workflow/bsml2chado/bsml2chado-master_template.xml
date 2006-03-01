@@ -21,6 +21,12 @@
           <name>Create dupdir</name>
           <configMapId>create_dupdir</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>create_database_lockfile</name>
+          <configMapId>create_database_lockfile</configMapId>
+        </command>
+
 <!--         <command> -->
 <!--           <type>RunUnixCommand</type> -->
 <!--           <name>Create analysis_dir</name> -->
@@ -762,6 +768,11 @@
             <type>RunUnixCommand</type>
             <configMapId>rebuild_indexes</configMapId>
             <name>rebuild_indexes</name>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>remove_database_lockfile</name>
+          <configMapId>remove_database_lockfile</configMapId>
         </command>
         <command>
             <type>RunUnixCommand</type>
