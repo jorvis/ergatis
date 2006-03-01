@@ -107,7 +107,12 @@ sub get_pipeline_lists {
                     next;
                 }
             }
-
+            
+            if (! -s $pipeline_file ) {
+                print STDERR "skipped empty pipeline file $pipeline_file\n";
+                next;
+            }
+            
             my $pipeline_file_fh;
             if ($pipeline_file =~ /\.gz/) {
                 open($pipeline_file_fh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
