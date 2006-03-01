@@ -86,7 +86,9 @@ The following sections provides the commands to tag releases in
 Ergatis, Prism, BSML, and Chado.  The syntax is similar for all the
 projects.  The './cvs_release.sh -p' command displays the last release
 version of the project.  The new release can be derived from this
-release tag.
+release tag.  The '-s' flag specifies the source datestamp from CVS.
+It is preferred that this time corresponds to start time of the last
+successful completion of the test suite.
 
 ****************
 Ergatis releases
@@ -95,7 +97,7 @@ Ergatis releases
 cvs co -d ergatis_release ANNOTATION/ergatis/util/cvs_release.sh
 cd ergatis_release
 ./cvs_release.sh -p 
-./cvs_release.sh -r ?ERGATIS_TAG_NAME?
+./cvs_release.sh -r ?ERGATIS_TAG_NAME? -s now
 
 **************
 Prism releases
@@ -104,7 +106,7 @@ Prism releases
 cvs co -d prism_release ANNOTATION/Prism/util/cvs_release.sh
 cd prism_release
 ./cvs_release.sh -p 
-./cvs_release.sh -r ?PRISM_TAG_NAME?
+./cvs_release.sh -r ?PRISM_TAG_NAME? -s now
 
 *************
 BSML releases
@@ -113,7 +115,7 @@ BSML releases
 cvs co -d bsml_release ANNOTATION/bsml/util/cvs_release.sh
 cd bsml_release
 ./cvs_release.sh -p 
-./cvs_release.sh -r ?BSML_TAG_NAME?
+./cvs_release.sh -r ?BSML_TAG_NAME? -s now
 
 **************
 Chado releases
@@ -121,7 +123,7 @@ Chado releases
 
 cvs co -d chado_release ANNOTATION/chado/util/cvs_release.sh
 ./cvs_release.sh -p 
-./cvs_release.sh -r ?CHADO_TAG_NAME?
+./cvs_release.sh -r ?CHADO_TAG_NAME? -s now
 
 
 Rules for incrementing Chado version-revision-build numbers
