@@ -16,6 +16,11 @@
           <name>Create zero scratch space</name>
          <configMapId>create_zero_scratch</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>create_database_lockfile</name>
+          <configMapId>create_database_lockfile</configMapId>
+        </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
 <!--Processing-->
@@ -266,6 +271,11 @@
 <!--Postprocessing-->
 <!--Checksum creation-->
 <!--Postprocess permissions-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>remove_database_lockfile</name>
+          <configMapId>remove_database_lockfile</configMapId>
+        </command>
        <command>
           <type>RunUnixCommand</type>
           <name>check_logfiles</name>
