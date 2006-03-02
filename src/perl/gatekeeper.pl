@@ -146,10 +146,6 @@ if (!defined($database)){
     $errorctr++;
 }
 
-if (!defined($username)){
-    print STDERR "username was not defined\n";
-    $errorctr++;
-}
 
 if (!defined($action)){
     print STDERR "action was not defined\n";
