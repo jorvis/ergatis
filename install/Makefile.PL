@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx nucmer panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado subfeature_mapping tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado subfeature_mapping tmhmm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -390,6 +390,14 @@ ncbi-tblastx	:
 	@install workflow/ncbi-tblastx/ncbi-tblastx_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/ncbi-tblastx/ncbi-tblastxconf.ini $(WORKFLOW_DOCS_DIR)
 
+ngap	:
+	@echo "Installing ngap workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/ngap/ngap-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ngap/ngap-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/ngap/ngap.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/ngap/ngap_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/ngap/ngapconf.ini $(WORKFLOW_DOCS_DIR)  
+
 nucmer	:
 	@echo "Installing nucmer workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/nucmer/nucmer-master.ini $(WORKFLOW_DOCS_DIR)
@@ -398,6 +406,14 @@ nucmer	:
 	@install workflow/nucmer/nucmer_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/nucmer/nucmerconf.ini $(WORKFLOW_DOCS_DIR)  
 
+nucmer_snps	:
+	@echo "Installing nucmer_snps workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/nucmer_snps/nucmer_snps-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/nucmer_snps/nucmer_snps-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/nucmer_snps/nucmer_snps.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/nucmer_snps/nucmer_snps_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/nucmer_snps/nucmer_snpsconf.ini $(WORKFLOW_DOCS_DIR)  
+	
 panther	:
 	@echo "Installing panther workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/panther/panther-master.ini $(WORKFLOW_DOCS_DIR)
@@ -496,6 +512,14 @@ subfeature_mapping  :
 	@install workflow/subfeature_mapping/subfeature_mapping-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/subfeature_mapping/subfeature_mappingconf.ini $(WORKFLOW_DOCS_DIR)  
 
+tmhmm	:
+	@echo "Installing tmhmm workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/tmhmm/tmhmm-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/tmhmm/tmhmm-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/tmhmm/tmhmm.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/tmhmm/tmhmm_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/tmhmm/tmhmmconf.ini $(WORKFLOW_DOCS_DIR)  
+	
 tRNAscan-SE	:
 	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/tRNAscan-SE/tRNAscan-SE-master.ini $(WORKFLOW_DOCS_DIR)
