@@ -163,6 +163,9 @@ foreach my $pipeline_id ( readdir $rdh ) {
                  $commandSet->first_child('status')->has_child('message') ) {
             
                 $error_message = $commandSet->first_child('status')->first_child('message')->text();
+
+                ## handle illegal characters
+                $error_message = CGI::escapeHTML($error_message);
             }
         }
         
