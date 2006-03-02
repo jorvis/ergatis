@@ -98,3 +98,4 @@ ergatis-v1r16b1
 -fixes to tiling2bsml including cleanID functions added
 -update to legacy2bsml component to require a control file as input
 -reworking of initdb and bsml2chado, mostly to deal with scalability problems
+-added ngap, nucmer_snps, tmhmm components to Makefile.PL
