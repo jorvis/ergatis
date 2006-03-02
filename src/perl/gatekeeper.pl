@@ -92,6 +92,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Data::Dumper;
+use XML::Twig;
 
 BEGIN {
 use Workflow::Logger;
@@ -210,25 +211,50 @@ if (-e $lockfile){
     #
     if ($action eq 'create'){
 	
-	&notify_user( $lockfile,
-		      $username,
-		      $database,
-		      $repository,
-		      $pipeline,
-		      $component,
-		      $action );
 
-	#
-	# Abort execution of the pipeline by having this script die 
-	#
-	$logger->logdie("Found database lock file '$lockfile'. Please review logfile '$log4perl'");
+	if (&pipeline_running($lockfile)){
+	    
+	    &notify_user( $lockfile,
+			  $username,
+			  $database,
+			  $repository,
+			  $pipeline,
+			  $component,
+			  $action );
+	    
+	    #
+	    # Abort execution of the pipeline by having this script die 
+	    #
+	    $logger->logdie("Found database lock file '$lockfile'. Please review logfile '$log4perl'");
+	}
+	else {
+	    unlink $lockfile;
+
+	    &create_lock_file($lockfile,
+			      $username,
+			      $database,
+			      $repository,
+			      $pipeline,
+			      $component,
+			      $action );
+
+	}
+	    
     }
     elsif ($action eq 'remove') {
 	
-	$logger->warn("Removing the following database lock file '$lockfile'.");
-	$logger->warn("username [$username] database [$database] repository [$repository] pipeline [$pipeline] component [$component] action [$action]");
+	if (&pipeline_running($lockfile)){
 
-	unlink $lockfile;
+
+	    $logger->logdie("Cannot remove database lock file '$lockfile' because a database manipulating workflow is running.  action '$action' username '$username' database '$database' repository '$repository' component '$component' pipeline '$pipeline'");
+
+	}
+	else {
+	    $logger->warn("Removing the following database lock file '$lockfile'.");
+	    $logger->warn("username [$username] database [$database] repository [$repository] pipeline [$pipeline] component [$component] action [$action]");
+	    
+	    unlink $lockfile;
+	}
     }
     else {
 	$logger->logdie("Unrecognized action '$action'");
@@ -251,6 +277,8 @@ else {
     elsif ($action eq 'remove'){
 
 	$logger->logdie("Cannot remove database lock file '$lockfile' because file does not exist.  action '$action' username '$username' database '$database' repository '$repository' component '$component' pipeline '$pipeline'");
+
+
     }
     else {
 	$logger->logdie("Unrecognized action '$action'");
@@ -469,3 +497,94 @@ sub print_usage {
     exit 1;
 
 }
+
+
+
+
+#------------------------------------------------------
+# pipeline_running()
+#
+#------------------------------------------------------
+sub pipeline_running {
+
+
+    my ($file) = @_;
+
+    my $pipeline_file = &get_pipelinefile($file);
+
+
+
+    ## if the pipeline.xml.instance exists, just process it
+    if (-e "$pipeline_file.instance" ) {
+	$pipeline_file .= '.instance';
+    } 
+    elsif ( -e "$pipeline_file.instance.gz" ) {
+	$pipeline_file .= '.instance.gz';
+    }
+    
+    my $ifh;
+    if ($pipeline_file =~ /\.gz/) {
+	open($ifh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
+    } else {
+	open($ifh, "<$pipeline_file") || die "can't read $pipeline_file: $!";       
+    }
+
+    my $twig = new XML::Twig;
+    $twig->parse($ifh);
+
+    my $commandSetRoot = $twig->root;
+    my $commandSet = $commandSetRoot->first_child('commandSet');
+
+    next if (! $commandSet );
+    
+    my $state;
+
+    if ( $commandSet->has_child('state') ) {
+	$state  = $commandSet->first_child('state')->text();
+    }
+ 
+
+    if (($state eq 'complete') || 
+	($state eq 'failed') ||
+	($state eq 'error')){
+	return 0;
+    }
+    else {
+	return 1;
+    }
+
+
+}
+
+
+
+#------------------------------------------------------
+# get_pipelinefile()
+#
+#------------------------------------------------------
+sub get_pipelinefile {
+
+    my ($file) = @_;
+
+    my $pipelinefile;
+
+    open (INFILE, "<$file") || $logger->logdie("Could not open database_lock file '$file': $!");
+
+    while (my $line = <INFILE>){
+	
+	chomp $line;
+
+	if ($line =~ /^pipeline\s+\[(\S+)\]/){
+	    $pipelinefile = $1;
+	    print "pipelinefile '$pipelinefile'\n";
+	    return $pipelinefile;
+	}
+
+    }
+ 
+    $logger->logdie("Could not find pipeline information in database_lock file '$file'");
+
+}
+
+
+
