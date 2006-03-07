@@ -130,6 +130,7 @@ MAIN:{
 
 	open(DB, "$ENV{EGC_SCRIPTS}/egc_password") || die "\n\nImpossible to open the file with information for database connection\n\n";
 	chomp(my ($user, $pass) = <DB>);
+    #($user, $pass) = ('access', 'access');
 	close(DB);
 	
 	my $dbh1 = DBI->connect("dbi:Sybase:server=SYBTIGR; packetSize=8092",$user, $pass) || die "\n\nProblems with database connection\n\n";
