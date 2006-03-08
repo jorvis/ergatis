@@ -47,6 +47,10 @@
         <name>create raw list</name>
         <configMapId>create_raw_list</configMapId>
     </command>
+    <command>
+        <type>RunUnixCommand</type>
+        <name>create tree list</name>
+        <configMapId>create_tree_list</configMapId>
 <!--Checksum creation-->
      </commandSet>
 </commandSetRoot>
