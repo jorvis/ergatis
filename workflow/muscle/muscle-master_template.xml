@@ -22,7 +22,7 @@
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
-	<command>
+		<command>
           <type>RunUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
@@ -50,7 +50,8 @@
     <command>
         <type>RunUnixCommand</type>
         <name>create tree list</name>
-        <configMapId>create_tree_list</configMapId>
+		<configMapId>create_tree_list</configMapId>
+	</command>
 <!--Checksum creation-->
      </commandSet>
 </commandSetRoot>
