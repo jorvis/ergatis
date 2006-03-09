@@ -1,5 +1,9 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 =head1  NAME 
 
 targetp2bsml.pl - convert TargetP output to BSML
@@ -53,15 +57,16 @@ bwhitty@tigr.org
 =cut
 
 use strict;
-use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
+use Pod::Usage;
+BEGIN {
+use Workflow::Logger;
+use BSML::BsmlRepository;
+use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
-use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
-use Pod::Usage;
-use Workflow::Logger;
+}
 
 my %options = ();
 my $results = GetOptions (\%options, 
