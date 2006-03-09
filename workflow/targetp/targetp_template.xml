@@ -19,7 +19,7 @@
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>store_config_params</configMapId>
-            <name>Store config params for TargetP NN</name>
+            <name>Store config params for TargetP</name>
         </command>
 <!--
 	<command>    
