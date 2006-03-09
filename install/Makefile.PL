@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml mepipe muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado subfeature_mapping tmhmm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr initdb iprscan jaccard legacy2bsml mepipe muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps panther pe phat predotar promer region repeatmasker signalp snps split_fasta split_multifasta statistics2chado subfeature_mapping targetp tmhmm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -528,6 +528,14 @@ subfeature_mapping  :
 	@install workflow/subfeature_mapping/subfeature_mapping-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/subfeature_mapping/subfeature_mappingconf.ini $(WORKFLOW_DOCS_DIR)  
 
+targetp	:
+	@echo "Installing targetp workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/targetp/targetp-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/targetp/targetp-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/targetp/targetp.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/targetp/targetp_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/targetp/targetpconf.ini $(WORKFLOW_DOCS_DIR)  
+	
 tmhmm	:
 	@echo "Installing tmhmm workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/tmhmm/tmhmm-master.ini $(WORKFLOW_DOCS_DIR)
