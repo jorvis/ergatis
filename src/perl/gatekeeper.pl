@@ -228,6 +228,7 @@ if (-e $lockfile){
 	    $logger->logdie("Found database lock file '$lockfile'. Please review logfile '$log4perl'");
 	}
 	else {
+
 	    unlink $lockfile;
 
 	    &create_lock_file($lockfile,
@@ -243,7 +244,7 @@ if (-e $lockfile){
     }
     elsif ($action eq 'remove') {
 	
-	if (&pipeline_running($lockfile)){
+	if (&pipeline_running($lockfile, $pipeline, $action)){
 
 
 	    $logger->logdie("Cannot remove database lock file '$lockfile' because a database manipulating workflow is running.  action '$action' username '$username' database '$database' repository '$repository' component '$component' pipeline '$pipeline'");
@@ -508,7 +509,7 @@ sub print_usage {
 sub pipeline_running {
 
 
-    my ($file) = @_;
+    my ($file, $pipeline, $action) = @_;
 
     my $pipeline_file = &get_pipelinefile($file);
 
@@ -550,7 +551,16 @@ sub pipeline_running {
 	return 0;
     }
     else {
-	return 1;
+	if (($pipeline eq $pipeline_file) &&
+	    ($action eq 'remove')){
+	    #
+	    # It may be the remove_database_lockfile step of the same
+	    # pipeline.
+	    return 0;
+	}
+	else {
+	    return 1;
+	}
     }
 
 
@@ -576,7 +586,6 @@ sub get_pipelinefile {
 
 	if ($line =~ /^pipeline\s+\[(\S+)\]/){
 	    $pipelinefile = $1;
-	    print "pipelinefile '$pipelinefile'\n";
 	    return $pipelinefile;
 	}
 
