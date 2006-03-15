@@ -19,7 +19,7 @@
 <!--Preprocess permissions-->
 <!--Preprocessing-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunDistributedCommand</type>
           <name>make_pe_position_xml</name>
           <configMapId>make_pe_position_xml</configMapId>
         </command>
