@@ -1,9 +1,5 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME 
 
 targetp2bsml.pl - convert TargetP output to BSML
@@ -17,37 +13,34 @@ USAGE: targetp2bsml.pl --input=/path/to/targetp_file --output=/path/to/output.bs
 B<--input,-i> 
     Input file file from a targetp run.
 
-B<--output,-o> 
-    Output BSML file (will be created, must not exist)
-
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
 B<--log,-l> 
     Log file
 
+B<--output,-o> 
+    Output BSML file (will be created, must not exist)
+
 B<--help,-h> 
     This help message
 
 =head1   DESCRIPTION
 
-This script is used to convert the raw output from TargetP into BSML.
+This script is used to convert the output from TargetP into BSML.
 
 =head1 INPUT
 
 TargetP can be run using multiple input sequences simultaneously, and this
 script supports parsing single or multiple input result sets.
-*However* long sequence ids are truncated in the TargetP output table, so
-the script should be run with results from a TargetP run on a single sequence
-input file and the sequence id should be passed to this script using the
---sequence_id flag *unless* you are running manually and plan to fix the 
-sequence ids yourself.
  
-You define the input file using the --input option.  This file does not need any special file extension.
+You define the input file using the --input option.  This file does not need any
+special file extension.
 
 =head1 OUTPUT
 
-After parsing the input file, a file specified by the --output option is created.  This script will fail if it already exists.
+After parsing the input file, a file specified by the --output option is created.  This script
+will fail if it already exists.
 
 =head1 CONTACT
 
@@ -57,16 +50,15 @@ bwhitty@tigr.org
 =cut
 
 use strict;
+use Log::Log4perl qw(get_logger);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use Pod::Usage;
-BEGIN {
-use Workflow::Logger;
-use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
-}
+use BSML::BsmlRepository;
+use Papyrus::TempIdCreator;
+use Pod::Usage;
+use Workflow::Logger;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -106,44 +98,62 @@ my $idcreator = new Papyrus::TempIdCreator();
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
-#my @sequence_ids;
-#my %result_ref_hash;
-#my $temp;
-
-#my $next_seq_flag = 0;
+my $plant_flag = 0;
 
 my @result_line_ref;
 while (<$ifh>) {
     chomp;
+	if (/using PLANT networks/) {
+		$plant_flag = 1;
+	}
 
     #check whitespace, no warn
     next if ( ! /^-{70}$/ );
 
     ##recognize start of results for an individual sequence
     if (/^-{70}/) {
-	$logger->debug("start of results table found") if($logger->is_debug());  
-	while (<$ifh>) {
-		chomp;
-		if (/^-{70}/) {
-			last;
-		}
-		/^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)$/ || $logger->logdie("failed parsing result table line:\n$_");
-		my $result_line = {
-					'name' => $1,
-					'len' => $2,
-					'ctp' => $3,
-					'mtp' => $4,
-					'sp' => $5,
-					'other' => $6,
-					'loc' => $7,
-					'rc' => $8,
-					'tplen' => $9,
-				  };
-		push (@result_line_ref, $result_line);
+		$logger->debug("start of results table found") if($logger->is_debug());  
+		while (<$ifh>) {
+			chomp;
+			
+			if (/^-{70}/) {
+				last;
+			}
+			if ($plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)$/) {
+			
+				my $result_line = {
+									'name'  => $1,
+									'len'   => $2,
+									'ctp'   => $3,
+									'mtp'   => $4,
+									'sp'    => $5,
+									'other' => $6,
+									'loc'   => $7,
+									'rc'    => $8,
+									'tplen' => $9,
+					  			  };
+				push (@result_line_ref, $result_line);
+			} elsif (!$plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)$/) {
+			
+				my $result_line = {
+									'name'  => $1,
+									'len'   => $2,
+									'mtp'   => $3,
+									'sp'    => $4,
+									'other' => $5,
+									'loc'   => $6,
+									'rc'    => $7,
+									'tplen' => $8,
+					  			  };
+				push (@result_line_ref, $result_line);
+			} else {
+				$logger->logdie("failed parsing result line:\n$_\n");
+			}
+
+		}		
 	}
-    }
     if (/^cutoff\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)/) {
-	print "got cutoff\n";
+		print "got cutoff\n";
     }
 }
 
