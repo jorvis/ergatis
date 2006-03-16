@@ -24,9 +24,6 @@
 <!--Preprocess permissions-->
 <!--Preprocessing-->
 <!--Processing-->
-       <commandSet type="parallel">
-           <name>Backup analysis tables</name>
-           <configMapId>empty</configMapId>
            <command>    
 	       <type>RunUnixCommand</type>
                <name>all_auxiliary_tables</name>
@@ -267,7 +264,6 @@
                <name>phylonode_relationship</name>
                <configMapId>phylonode_relationship</configMapId>
            </command>   
-    </commandSet>
 <!--Postprocessing-->
 <!--Checksum creation-->
 <!--Postprocess permissions-->
