@@ -340,6 +340,10 @@ sub send_notification {
 
     my ($username, $subject, $body) = @_;
 
+    if ($username !~ /\@/){
+	$username .= "\@tigr.org";
+    }
+
     my $mailer = Mail::Mailer->new ('sendmail');
 
     $mailer->open({
@@ -443,9 +447,6 @@ sub verify_repository_root {
 sub notify_user {
 
     my ($lockfile, $username, $database, $repository, $pipeline, $component, $action) = @_;
-
-
-    $username .= "\@tigr.org";
 
     my $subject = "[$database] locked - gatekeeper.pl";
 
