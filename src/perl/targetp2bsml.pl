@@ -103,12 +103,26 @@ my $plant_flag = 0;
 my @result_line_ref;
 while (<$ifh>) {
     chomp;
-	if (/using PLANT networks/) {
+	if (/using plant networks/i) {
 		$plant_flag = 1;
 	}
+    if ($plant_flag && /^cutoff\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)/) {
+    	## the cutoff values used will be added to the analysis block
+		## so we don't really need to parse them here
+		my $ctp_cutoff   = $1;
+		my $mtp_cutoff   = $2;
+		my $sp_cutoff    = $3;
+		my $other_cutoff = $4;
+	} elsif (!$plant_flag && /^cutoff\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)/) {
+    	## the cutoff values used will be added to the analysis block
+		## so we don't really need to parse them here
+		my $mtp_cutoff   = $1;
+		my $sp_cutoff    = $2;
+		my $other_cutoff = $3;
+	}
 
-    #check whitespace, no warn
-    next if ( ! /^-{70}$/ );
+	## skip any lines we're not looking for specifically
+	next if ( ! /^-{70}$/ );
 
     ##recognize start of results for an individual sequence
     if (/^-{70}/) {
@@ -147,14 +161,11 @@ while (<$ifh>) {
 					  			  };
 				push (@result_line_ref, $result_line);
 			} else {
+				if ($plant_flag) {print STDERR "died in plant mode\n";} else {print STDERR "died in nonplant mode\n";}
 				$logger->logdie("failed parsing result line:\n$_\n");
 			}
-
 		}		
 	}
-    if (/^cutoff\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)/) {
-		print "got cutoff\n";
-    }
 }
 
 ## GO mappings tables for output
