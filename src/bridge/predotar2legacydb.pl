@@ -121,7 +121,8 @@ foreach my $file (@files) {
     if ( $file =~ /(\d+)_(\d+)\.predotar\.raw/ ) {
         $feat_name = "$1.m$2";
     } else {
-        die "improperly named input file.  couldn't extract feat name from $file";
+        warn "Improperly named input file, or a proper file without results.  Couldn't extract feat name from $file";
+	next;
     }
 
    
