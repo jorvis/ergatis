@@ -29,9 +29,18 @@ my $out = $instancexml.".out";
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
-if(! -d $ergatis_cfg->val('paths','workflow_run_dir')){
-    die "Invalid workflow_run_dir in ergatis.ini : " . $ergatis_cfg->val('paths','workflow_run_dir');
+my $workflow_run_dir = $ergatis_cfg->val('paths','workflow_run_dir');
+if ( -d $workflow_run_dir ) {
+    ## make a subdirectory for this pipelineid
+    $workflow_run_dir .= "/$pipelineid";
+    if (! -d $workflow_run_dir) {
+        mkdir $workflow_run_dir || die "failed to create workflow_run_dir: $workflow_run_dir : $!";
+    }
+} else {
+    die "Invalid workflow_run_dir in ergatis.ini : $workflow_run_dir";
 }
+
+
 if(! -d $ergatis_cfg->val('paths','workflow_root')){
     die "Invalid workflow_root in ergatis.ini : " . $ergatis_cfg->val('paths','workflow_root');
 }
@@ -107,7 +116,7 @@ if( ($inifile ne "") && ($template ne "") ) {
             ## open the debugging file if needed
             open (my $debugfh, ">>$debug_file") if $debugging;
             
-            chdir $ergatis_cfg->val('paths','workflow_run_dir');
+            chdir $workflow_run_dir;
             use POSIX qw(setsid);
             setsid() or die "Can't start a new session: $!";
             
@@ -152,7 +161,7 @@ if( ($inifile ne "") && ($template ne "") ) {
             ## open the debugging file if needed
             open (my $debugfh, ">>$debug_file") if $debugging;
         
-            chdir $ergatis_cfg->val('paths','workflow_run_dir');
+            chdir $workflow_run_dir;
             use POSIX qw(setsid);
             setsid() or die "Can't start a new session: $!";
             
