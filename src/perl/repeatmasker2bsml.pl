@@ -27,7 +27,7 @@ B<--log,-l>
     Log file
 
 B<--output,-o> 
-    Output BSML file (will be created, must not exist)
+    Output BSML file (will be created, or overwritten)
 
 B<--project,-p> 
     Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
@@ -61,10 +61,9 @@ special file extension.
 
 =head1 OUTPUT
 
-After parsing the input file, a file specified by the --output option is created.  This script
-will fail if it already exists.  The file is created, and temporary IDs are created for
-each result element.  They are globally unique, but will need to be replaced before any database 
-insertion.
+After parsing the input file, a file specified by the --output option is created.  
+The file is created, and temporary IDs are created for each result element.  They are 
+globally unique, but will need to be replaced before any database insertion.
 
 Base positions from the input file are renumbered so that positions start at zero.  The
 current output elements from RepeatFinder that are not represented in the BSML file are:
@@ -248,9 +247,6 @@ sub check_parameters {
     
     ## make sure input file exists
     if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
-    
-    ## make sure output file doesn't exist yet
-    if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
     
     return 1;
 }
