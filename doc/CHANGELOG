@@ -102,3 +102,4 @@ ergatis-v1r16b1
 current
 --------------
 -added ngap, nucmer_snps, tmhmm components to Makefile.PL
+-added infernal component
