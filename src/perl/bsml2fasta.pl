@@ -33,6 +33,12 @@ B<--bsml_list,-s>
 B<--class_filter,-c> 
     Optional. Filter output sequences to only include those in the passed class.
 
+B<--role_exclude> 
+    Optional. Filter output sequences to include those with a given role link (can be a comma separated list).
+
+B<--role_include> 
+    Optional. Filter output sequences to exclude those with a given role link (can be a comma separated list).
+
 B<--debug,-d> 
     Optional. Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -231,6 +237,8 @@ my $results = GetOptions (\%options,
                             'bsml_dir|d=s',         ## deprecated
                             'parse_element|p=s',
                             'class_filter|c=s',
+							'role_exclude=s',
+							'role_include=s',
                             'type|t=s',             ## deprecated
                             'output_list|u=s',
                             'output_subdir_size|z=s',
@@ -325,6 +333,18 @@ my $seq_file_count = 0;
 ## remember which IDs have been found already
 my %ids;
 
+## hash of roles to include
+my %role_include;
+foreach (split(",", $options{role_include})) {
+	$role_include{$_} = 1;
+}	
+
+## hash of roles to exclude
+my %role_exclude;
+foreach (split(",", $options{role_exclude})) {
+	$role_exclude{$_} = 1;
+}	
+
 #######
 ## parse out sequences from each file
 my $mfh;
@@ -360,6 +380,31 @@ for my $file ( @files ) {
 								  return;
 							      }
 							      
+								  my $bsml_link_refs = $seqRef->{'BsmlLink'};
+								  
+								  ## check bsml links for exclusion
+								  if ($options{role_exclude}) {
+								    foreach my $link(@{$bsml_link_refs}) {
+								  	  if ($role_exclude{$link->{'role'}}) {
+										$logger->debug("Excluding $seq_id in $file because it's role is ".$link->{'role'}) if ($logger->is_debug);
+								        return;
+								  	  }
+								    }
+							      }
+
+								  ## check bsml links for inclusion
+								  my $include_flag = 0;
+								  foreach my $link(@{$bsml_link_refs}) {
+								  	if ($role_include{$link->{'role'}}) {
+								  		$include_flag = 1;
+										last;
+									}
+								  }
+								  if ($options{role_include} && !$include_flag) {
+									$logger->debug("Skipping $seq_id in $file because role(s) are not in inclusion list") if ($logger->is_debug);
+								    return;
+								  }
+
 							      ## check and make sure we have a sequence, else log error and skip it
 							      ##  (whole sequence is returned with -1 passed as start)
 							      my $reader = new BSML::BsmlReader();
@@ -459,6 +504,16 @@ sub check_parameters {
         $logger->logdie("You must specify an output directory or file with --output");
     }
 
+	## check role_include
+	if ($options{role_include}) {
+		## do some check
+	}
+	
+	## check role_exclude
+	if ($options{role_exclude}) {
+		## do some check
+	}
+	
     ## check the format setting or set a default if it wasn't passed
     if (! $options{format}) {
         $options{format} = 'multi';
