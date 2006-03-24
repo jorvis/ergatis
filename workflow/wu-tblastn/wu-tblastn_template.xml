@@ -17,8 +17,8 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
-            <configMapId>blastbtab2bsml</configMapId>
-            <name>blastbtab2bsml</name>
+            <configMapId>wu-blast2bsml</configMapId>
+            <name>wu-blast2bsml</name>
         </command>
         <command>    
             <type>RunUnixCommand</type>
