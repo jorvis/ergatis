@@ -1,0 +1,7 @@
+database:bma1 organism_type:euk include_genefinders: exclude_genefinders:
+14554
+database:cba1 organism_type:euk include_genefinders: exclude_genefinders:
+315
+117
+database:cea2 organism_type:euk include_genefinders: exclude_genefinders:
+3

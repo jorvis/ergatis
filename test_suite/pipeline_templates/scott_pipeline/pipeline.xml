@@ -1,0 +1,89 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd">
+  <commandSet type="serial">
+    <configMapId>start</configMapId>
+    <commandSet type="serial">
+      <configMapId>component_legacy2bsml.gyma_654</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_legacy2bsml.gymb_2177</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_legacy2bsml.gsyn_103</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_legacy2bsml.gct_3505</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2fasta.multi</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2fasta.single</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_xdformat.default</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_wu-blastp.default</configMapId>
+    </commandSet>
+    <commandSet type="parallel">
+      <configMapId>29598</configMapId>
+      <commandSet type="serial">
+        <configMapId>29684</configMapId>
+        <commandSet type="serial">
+          <configMapId>component_cogs.default</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_clustalw.clustalw_cogs</configMapId>
+        </commandSet>
+      </commandSet>
+      <commandSet type="serial">
+        <configMapId>30455</configMapId>
+        <commandSet type="serial">
+          <configMapId>component_jaccard.default</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_clustalw.clustalw_jaccard</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_cogs.jfcogs</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_clustalw.clustalw_jfcogs</configMapId>
+        </commandSet>
+      </commandSet>
+      <commandSet type="serial">
+        <configMapId>component_pe.default</configMapId>
+      </commandSet>
+    </commandSet>
+
+    <!-- These steps are unnecessary in scott_pipeline
+
+    <commandSet type="serial">
+      <configMapId>component_initdb.default</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2chado.legacydata</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2chado.wu-blastp</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2chado.clustalw_jaccard</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2chado.clustalw_cogs</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2chado.clustalw_jfcogs</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_bsml2chado.pe</configMapId>
+    </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_backupdb.default</configMapId>
+    </commandSet>
+
+    end of commented region -->
+
+  </commandSet>
+</commandSetRoot>

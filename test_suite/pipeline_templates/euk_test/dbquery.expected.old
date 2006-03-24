@@ -1,0 +1,140 @@
+                                           
+ ------------------------------ -----------
+ CDS                                  10645
+ assembly                                 4
+ exon                                 26862
+ gene                                 10278
+ match                               166081
+ protein                              21493
+ rRNA                                    54
+ ribosome_entry_site                   7481
+ signal_peptide                        7471
+ snRNA                                    4
+ tRNA                                   175
+ terminator                            2399
+ transcript                           10645
+
+(13 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ match                          jaccard                                387
+ match                          PROSITE                               1923
+ match                          cogs                                  2385
+ match                          BER_analysis                          4460
+ match                          pe                                    5553
+ match                          NCBI_COG                              5689
+ match                          HMM2_analysis                        31022
+ match                          wu-blastp                           114662
+ ribosome_entry_site            RBS_analysis                          7481
+ terminator                     TERM_analysis                         2399
+
+(10 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ assembly                       seq_db                                   1
+ assembly                       date                                     2
+ assembly                       prelim                                   2
+ assembly                       status                                   2
+ assembly                       comment                                  2
+ assembly                       fa_left                                  2
+ assembly                       license                                  2
+ assembly                       assignby                                 2
+ assembly                       clone_id                                 2
+ assembly                       fa_right                                 2
+ assembly                       fa_orient                                2
+ assembly                       final_asmbl                              2
+ assembly                       seq_asmbl_id                             2
+ assembly                       molecule_name                            2
+ assembly                       orig_annotation                          2
+ assembly                       tigr_annotation                          2
+ match                          PEffect_Cluster_Id                    5553
+ match                          PEffect_Cluster_Gap_Count             5553
+ match                          PEffect_Cluster_Gene_Count            5553
+ match                          p_value                             114662
+ match                          percent_similarity                  119117
+ rRNA                           gene_symbol                             33
+ signal_peptide                 c-score                                  1
+ signal_peptide                 s-score                                  1
+ signal_peptide                 HMM_cleavage_site                     1235
+ signal_peptide                 max_cleavage_site_probability         1235
+ signal_peptide                 NN_cleavage_site                      2336
+ signal_peptide                 signal_probability                    7470
+ signal_peptide                 s-mean                                7471
+ signal_peptide                 y-score                               7471
+ terminator                     term_direction                        2399
+ terminator                     term_confidence                       2399
+ transcript                     auto_annotate_toggle                   729
+ transcript                     gene_symbol                           1666
+ transcript                     comment                               1889
+ transcript                     MW                                    7402
+ transcript                     pI                                    7402
+ transcript                     auto_comment                          7633
+ transcript                     outer_membrane_protein                7675
+ transcript                     percent_GC                            7676
+ transcript                     transmembrane_coords                  7676
+ transcript                     lipo_membrane_protein                 7676
+ transcript                     transmembrane_regions                 7676
+ transcript                     date                                 10278
+ transcript                     assignby                             10278
+ transcript                     gene_product_name                    10278
+
+(46 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ Bacillus anthracis Ames        b_anthracis_ames                    127780
+ Brugia malayi                  b_malayi                               296
+ Caenorhabditis elegans synteny cea2                                 65717
+ Streptococcus agalactiae 2603V s_agalactiae_2603vr                  56179
+ not known                      not known                            13620
+
+(5 rows affected)
+                                           
+ ------------------------------ -----------
+ EC                                   12889
+ EGAD                                  1118
+ Evidence codes                          13
+ GB                                       3
+ GO                                   17712
+ GP                                     874
+ MetaCyc                               3954
+ OMNI                                  1253
+ PIR                                      4
+ PROSITE                                515
+ Pfam                                  2823
+ RESID                                   11
+ Reactome                              1963
+ Relation_typedef.ontology               12
+ SL                                       1
+ SO                                     951
+ SOFA                                     1
+ SP                                     669
+ Synonym                                  1
+ TC                                     391
+ TIGR_TIGRFAMS                         1919
+ TIGR_euk:bma1                          109
+ TIGR_euk:cea2                        27240
+ TIGR_prok:gba                        41612
+ TIGR_prok:gbs                        16537
+ TIGR_role                              268
+ TIGR_roles_order                       122
+ UM-BBD_enzymeID                        451
+ UM-BBD_pathwayID                       109
+ annotation_attributes.ontology         113
+ component.ontology                     140
+ go_properties                           24
+ output.ontology                         70
+
+(33 rows affected)
+                                           
+ ------------------------------ -----------
+ CDS                                   4460
+ assembly                             79188
+ protein                             328300
+
+(3 rows affected)
+                                           
+ ------------------------------ -----------
+ derived_from                         21290
+ part_of                              54495
+
+(2 rows affected)

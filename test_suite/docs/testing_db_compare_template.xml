@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>testing_db_compare Compute</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>db_query</configMapId>
+            <name>db_query</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>diff</configMapId>
+            <name>diff</name>
+        </command>
+    </commandSet>
+</commandSetRoot>

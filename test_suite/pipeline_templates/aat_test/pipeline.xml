@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot type="instance">
+  <commandSet type="serial">
+    <configMapId>start</configMapId>
+    <commandSet type="serial">
+      <configMapId>pipeline_31887</configMapId>
+      <commandSet type="serial">
+        <configMapId>component_split_fasta.50k</configMapId>
+      </commandSet>
+      <commandSet type="parallel">
+        <configMapId>32057</configMapId>
+        <commandSet type="serial">
+          <configMapId>32087</configMapId>
+          <commandSet type="serial">
+            <configMapId>component_aat_aa.AllGroup.niaa</configMapId>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_adjust_bsml_coordinates.AllGroup.niaa</configMapId>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_adjust_btab_coordinates.AllGroup.niaa</configMapId>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_adjust_nap_coordinates.AllGroup.niaa</configMapId>
+          </commandSet>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>1987</configMapId>
+          <commandSet type="serial">
+            <configMapId>component_aat_na.rice_TA_alluniq.fasta</configMapId>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_adjust_bsml_coordinates.rice_TA_alluniq.fasta</configMapId>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_adjust_btab_coordinates.rice_TA_alluniq.fasta</configMapId>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_adjust_gap2_coordinates.rice_TA_alluniq.fasta</configMapId>
+          </commandSet>
+        </commandSet>
+      </commandSet>
+    </commandSet>
+  </commandSet>
+</commandSetRoot>

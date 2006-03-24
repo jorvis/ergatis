@@ -1,0 +1,2 @@
+database:gbs organism_type:prok include_genefinders: exclude_genefinders:
+799

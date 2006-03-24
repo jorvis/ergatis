@@ -1,0 +1,119 @@
+                                           
+ ------------------------------ -----------
+ CDS                                   3387
+ assembly                                 4
+ exon                                 20987
+ gene                                  3020
+ match                                35153
+ protein                               3387
+ transcript                            3387
+
+(7 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ CDS                            snap                                     8
+ CDS                            augustus                                 8
+ CDS                            fgenesh                                 11
+ CDS                            combiner                                11
+ CDS                            combiner2                               11
+ CDS                            glimmerHMM                              12
+ CDS                            NGAP                                   150
+ exon                           combiner                                77
+ exon                           snap                                    80
+ exon                           augustus                                81
+ exon                           glimmerHMM                              81
+ exon                           fgenesh                                 84
+ exon                           combiner2                               85
+ exon                           NGAP                                   150
+ gene                           snap                                     8
+ gene                           augustus                                 8
+ gene                           fgenesh                                 11
+ gene                           combiner                                11
+ gene                           combiner2                               11
+ gene                           glimmerHMM                              12
+ gene                           NGAP                                   150
+ match                          pe                                      18
+ match                          cogs                                   107
+ match                          jaccard                                330
+ match                          wu-blastp                            34698
+ protein                        snap                                     8
+ protein                        augustus                                 8
+ protein                        fgenesh                                 11
+ protein                        combiner                                11
+ protein                        combiner2                               11
+ protein                        glimmerHMM                              12
+ protein                        NGAP                                   150
+ transcript                     snap                                     8
+ transcript                     augustus                                 8
+ transcript                     fgenesh                                 11
+ transcript                     combiner                                11
+ transcript                     combiner2                               11
+ transcript                     glimmerHMM                              12
+ transcript                     NGAP                                   150
+
+(39 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ assembly                       comment                                  2
+ assembly                       date                                     4
+ assembly                       length                                   4
+ assembly                       fa_left                                  4
+ assembly                       assignby                                 4
+ assembly                       fa_right                                 4
+ assembly                       fa_orient                                4
+ assembly                       chromosome                               4
+ match                          PEffect_Cluster_Id                      18
+ match                          PEffect_Cluster_Gap_Count               18
+ match                          PEffect_Cluster_Gene_Count              18
+ match                          p_value                              34698
+ match                          percent_similarity                   34698
+ transcript                     comment                                  3
+ transcript                     auto_comment                             8
+ transcript                     date                                  3176
+ transcript                     assignby                              3176
+ transcript                     gene_product_name                     3176
+
+(18 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ Brugia malayi                  b_malayi                              1787
+ Caenorhabditis briggsae        cba1                                  4432
+ Caenorhabditis elegans synteny cea2                                 62669
+ not known                      not known                              437
+
+(4 rows affected)
+                                           
+ ------------------------------ -----------
+ EC                                   12889
+ Evidence codes                          13
+ GO                                   17712
+ MetaCyc                               3954
+ RESID                                   11
+ Reactome                              1963
+ Relation_typedef.ontology               12
+ SO                                    1028
+ TC                                     391
+ TIGR_euk:bma1                          958
+ TIGR_euk:cba1                         1791
+ TIGR_euk:cea2                        27240
+ TIGR_role                              268
+ TIGR_roles_order                       122
+ UM-BBD_enzymeID                        451
+ UM-BBD_pathwayID                       109
+ annotation_attributes.ontology         113
+ component.ontology                     140
+ go_properties                           24
+ output.ontology                         70
+
+(20 rows affected)
+                                           
+ ------------------------------ -----------
+ assembly                             34168
+ protein                              70474
+
+(2 rows affected)
+                                           
+ ------------------------------ -----------
+ part_of                              20987
+
+(1 row affected)

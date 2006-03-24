@@ -1,0 +1,8 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd">
+  <commandSet type="serial">
+    <configMapId>start</configMapId>
+    <commandSet type="serial">
+      <configMapId>component_initdb.default</configMapId>
+    </commandSet>
+  </commandSet>
+</commandSetRoot>
