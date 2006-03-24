@@ -144,7 +144,8 @@ foreach my $file (@files){
 							     }
 							     my @sorted_genes;
 							     @sorted_genes = sort { $a->{'coord'} <=> $b->{'coord'}} @$gene_pos;
-							 
+								 @{$gene_pos} = ();
+								 
 							     foreach my $gene (@sorted_genes) {
 								 my $attrref={};
 								 my $feat_name = $gene->{'feat_name'};

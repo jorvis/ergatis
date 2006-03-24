@@ -1,0 +1,11 @@
+#testing script environment variables
+SHELL=/bin/tcsh
+PATH=.:/usr/local/devel/ANNOTATION/workflow-sge:/usr/local/devel/ANNOTATION/workflow-sge/bin:/usr/local/devel/ANNOTATION/workflow-sge/add-ons/bin:/home/sgeworker/bin:/local/n1ge/bin:/local/n1ge/bin/lx26-x86/:/usr/local/devel/ANNOTATION/euk_genome_control/bin:/usr/local/devel/ANNOTATION/EGC_utilities/bin:/usr/local/bin:/usr/local/common:/usr/bin:/bin:/usr/local/packages/tmake/bin:/usr/X11R6/bin:/opt/gnome/bin:/opt/kde3/bin:/home/bwhitty/bin/export/bin:
+PERL5LIB=/usr/local/packages/perl-5.8.5/lib/site_perl/5.8.5
+WF_ROOT=/usr/local/devel/ANNOTATION/workflow-sge
+WF_ROOT_INSTALL=/usr/local/devel/ANNOTATION/workflow-sge
+WF_TEMPLATE=/usr/local/devel/ANNOTATION/workflow-sge/templates
+
+#testing cron jobs
+01    18  *    *    *    perl /usr/local/devel/ANNOTATION/ergatis_test_suite/ergatis_test_init.pl -w /usr/local/devel/ANNOTATION/workflow -i -r /usr/local/scratch/annotation/CHADO_TEST2 pro_test euk_test
+01    08  *    *    *    perl /usr/local/devel/ANNOTATION/ergatis_test_suite/ergatis_test_init.pl -w /usr/local/devel/ANNOTATION/workflow -i -r /usr/local/scratch/annotation/CHADO_TEST2 wait_test
