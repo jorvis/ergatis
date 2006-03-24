@@ -103,3 +103,4 @@ current
 --------------
 -added ngap, nucmer_snps, tmhmm components to Makefile.PL
 -added infernal component
+-added snap component
