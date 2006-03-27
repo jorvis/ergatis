@@ -69,6 +69,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'input_list|i=s',
               'database|d=s',
+              'repeat_file|r=s',
               'delete_existing|x=i',
               'log|l=s',
 			  'help|h') || pod2usage();
@@ -125,9 +126,11 @@ my $asm_feature_delete = $dbh->prepare($qry);
 
 ## prepare a statement for inserting into ORF_attribute
 $qry = "INSERT INTO ORF_attribute (feat_name, att_type, curated, method, date, assignby, " .
-                                  "score, score_desc, score2, score2_desc) " .
-       "VALUES ( ?, 'repeat', 0, ?, GETDATE(), '$user', ?, ?, ?, ? )";
+                                  "score, score_desc, score2, score2_desc, score3, score3_desc) " .
+       "VALUES ( ?, 'repeat', 0, ?, GETDATE(), '$user', ?, ?, ?, ?, ?, ? )";
 my $orf_attribute_insert = $dbh->prepare($qry);
+
+## score3 needs to have name of fasta file searched
 
 ## prepare a statement for deleting from ORF_attribute
 $qry = "DELETE FROM ORF_attribute " .
@@ -241,8 +244,8 @@ sub process_repeat_feature {
     _log("asm_feature_insert->execute($$prog_name, $startpos, $endpos, $feat_name, $$asmbl_id)");
     $asm_feature_insert->execute($$prog_name, $startpos, $endpos, $feat_name, $$asmbl_id);
     
-    _log("orf_attribute_insert->execute( $feat_name, $$prog_name, $score, $score_desc, $score2, $score2_desc )");
-    $orf_attribute_insert->execute( $feat_name, $$prog_name, $score, $score_desc, $score2, $score2_desc );
+    _log("orf_attribute_insert->execute( $feat_name, $$prog_name, $score, $score_desc, $score2, $score2_desc, $options{repeat_file}, 'repeat database used' )");
+    $orf_attribute_insert->execute( $feat_name, $$prog_name, $score, $score_desc, $score2, $score2_desc, $options{repeat_file}, 'repeat database used' );
     
     $twig->purge;
 }
@@ -275,7 +278,7 @@ sub _log {
 sub check_parameters {
     
     ## database and input_list are required
-    unless ( defined $options{database} && $options{input_list} ) {
+    unless ( defined $options{database} && $options{input_list} && $options{repeat_file} ) {
         print STDERR "database and input_list options are required\n\n";
         pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
     }
