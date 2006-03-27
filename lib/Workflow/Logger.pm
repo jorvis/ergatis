@@ -34,11 +34,9 @@ based upon a "debug" level will be provided.
 use strict;
 use File::Basename;
 use Data::Dumper;
-#use base qw(Log::Log4perl);
-#use Log::Log4perl::Level;
+use Log::LogSimple;
 
-
-my $_DEFAULT_LOG_CATEGORY = "Logger";
+my $_DEFAULT_LOG_CATEGORY = "Ergatis";
 my $_IS_INIT=0;
 
 =item new
@@ -83,8 +81,7 @@ B<Returns:> None.
 
 sub _init {
     my $self = shift;
-#    $self->{_DEFAULT_LOG_LEVEL} = $WARN;
-    $self->{_LOGGER_CONF} = $ENV{LOG4PERL_CONF};
+
     $self->{_LOG_LEVEL} = 0; #use this parameter to inc/dec log level from default
     $self->{_MODE} = "clobber"; #set to 'append' to append to file
     $self->{_LOG_FILE} = undef;
@@ -93,7 +90,7 @@ sub _init {
     foreach my $key (keys %arg) {
         $self->{"_$key"} = $arg{$key};
     }
-#    $self->_init_class_loggers();
+    $self->_init_class_loggers();
 }
 
 =item $obj->_init_class_loggers($loglevel)
@@ -109,85 +106,46 @@ B<Returns:>
 sub _init_class_loggers {
     my($self) = @_;
     
-    # make sure that initialization is only done once; this check is relevant under mod_perl
-    if (Log::Log4perl::initialized()) {
-	my $logger = $self->get_logger();
+    # make sure that initialization is only done once
+    if (Log::LogSimple::initialized()) {
 	return;
     }
 
-    if(defined $self->{_LOGGER_CONF}){
-       	Log::Log4perl::init_and_watch($self->{_LOGGER_CONF});
-      }
     #set up defaults for root logger
-    my $logger = Log::Log4perl->get_logger($_DEFAULT_LOG_CATEGORY); 
-    $logger->level($self->{_DEFAULT_LOG_LEVEL});
-    $logger->more_logging($self->{_LOG_LEVEL}) if($self->{_LOG_LEVEL} > 0);
-    
-    my $testopen=1;# = open FILE, ">$self->{_LOG_FILE}";
-#    close FILE;
-    if(defined $self->{_LOG_FILE} && $testopen){
-	# Define a file appender or a screen appender
-	my $file_appender = Log::Log4perl::Appender->new("Log::Log4perl::Appender::File",
-							 mode => $self->{_MODE},
-							 filename  => $self->{_LOG_FILE});
-	
-	my $layout = Log::Log4perl::Layout::PatternLayout->new("%c %d %p %H:%P> %F{1}:%L %M - %m%n");
-	$file_appender->layout($layout);
-	$logger->add_appender($file_appender);
-	$logger->debug('--------------------------') if($logger->is_debug);
-	$logger->debug("INIT_LOGGER $self->{_caller}") if($logger->is_debug);
-	$logger->debug('--------------------------') if($logger->is_debug);
+    my $logsimple = new Log::LogSimple();
+ 
+    $logsimple->more_logging($self->{_LOG_LEVEL});
+
+   
+    if(defined $self->{_LOG_FILE}){
+	$logsimple->set_file_output($self->{_LOG_FILE});
 	chmod 0666,$self->{_LOG_FILE}; # set to world rw to prevent multi-user access issues
-        #XML appender is needed for chainsaw. The XMLLayout Perl module is distributed separately and
-	#does not seem to work out of the box. A new version of Time::HiRes was needed.
-	#use Log::Log4perl::Layout::XMLLayout;
-	#my $xmlfile_appender = Log::Log4perl::Appender->new("Log::Dispatch::File",
-	#						mode => "append",
-	#						filename  => "$self->{_LOG_FILE}.xml");
-	#my $layoutxml = Log::Log4perl::Layout::XMLLayout->new(
-	#						  { LocationInfo => { value => 'TRUE' },
-	#						    Encoding     => { value => 'iso8859-1'}});
-	#$xmlfile_appender->layout($layoutxml);
-	#$logger->add_appender($xmlfile_appender);
     }else{
-	# Use screen appender only if no log file specified
-	my $screen_appender = Log::Log4perl::Appender->new("Log::Log4perl::Appender::Screen");
-	my $layout = Log::Log4perl::Layout::PatternLayout->new("%c %d %p %H:%P> %F{1}:%L %M - %m%n");
-	$screen_appender->layout($layout);
-	$logger->add_appender($screen_appender);
+	# Use default ouput to stderr
+	$logsimple->set_output(*STDERR);
     }
+    
+    my $logger = $logsimple->get_logger($_DEFAULT_LOG_CATEGORY); 
+    $logger->debug('--------------------------') if($logger->is_debug);
+    $logger->debug("INIT_LOGGER $self->{_caller}") if($logger->is_debug);
+    $logger->debug('--------------------------') if($logger->is_debug);
 }
 
 
 sub get_logger {
     my $name = shift;
-#   if(defined $name){
-#	return Log::Log4perl->get_logger($_DEFAULT_LOG_CATEGORY."::".$name);
-#   }
-#   else{
-#	return Log::Log4perl->get_logger($_DEFAULT_LOG_CATEGORY);
-#   }
-
-#    return $name;
-    return new Workflow::Logger();
+    if(defined $name && !ref $name){
+	return Log::LogSimple::get_logger($_DEFAULT_LOG_CATEGORY."::".$name);
+    }
+    else{
+	return Log::LogSimple::get_logger($_DEFAULT_LOG_CATEGORY);
+    }
 }
 
 sub get_default_logfilename{
     #return "/tmp/".basename($0).".$$.log";
     return '/dev/null';
 }
-
-
-sub AUTOLOAD {
-    my ($self, @args) = @_;
-    return 0;
-}
-
-sub logdie{
-    my $arg = shift;
-    die $arg;
-}
-
 
 1;
 
