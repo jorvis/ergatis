@@ -279,7 +279,7 @@ sub alignmentHandler
     foreach my $seqPairRun ( @{$aln->returnBsmlSeqPairRunListR} )
     {
 	my $runscore = $seqPairRun->returnattr( 'runscore' );
-	my $pvalue = $seqPairRun->returnBsmlAttr( 'p_value' );
+	my $pvalue = $seqPairRun->{'BsmlAttr'}->{'p_value'}->[0];
 
 	if( ($runscore > $bestRunScore) && ($pvalue < $options{'pvalcut'}) )
 	{
@@ -324,17 +324,17 @@ sub alignmentHandler
     $lref->[7] = $bestSeqPairRun->returnattr( 'refpos' ) + $bestSeqPairRun->returnattr('runlength');
     $lref->[8] = $bestSeqPairRun->returnattr( 'comppos' );
     $lref->[9] = $bestSeqPairRun->returnattr( 'comppos' ) + $bestSeqPairRun->returnattr('comprunlength');
-    $lref->[10] = $bestSeqPairRun->returnBsmlAttr( 'percent_identity' );
-    $lref->[11] = $bestSeqPairRun->returnBsmlAttr( 'percent_similarity' );
+    $lref->[10] = $bestSeqPairRun->{'BsmlAttr'}->{'percent_identity'}->[0];
+    $lref->[11] = $bestSeqPairRun->{'BsmlAttr'}->{'percent_similarity'}->[0];
     $lref->[12] = $bestSeqPairRun->returnattr( 'runscore' );
-    $lref->[13] = $bestSeqPairRun->returnBsmlAttr( 'chain_number' );
-    $lref->[14] = $bestSeqPairRun->returnBsmlAttr( 'segment_number' );
+    $lref->[13] = $bestSeqPairRun->{'BsmlAttr'}->{'chain_number'}->[0];
+    $lref->[14] = $bestSeqPairRun->{'BsmlAttr'}->{'segment_number'}->[0];
     $lref->[15] = '';
     $lref->[16] = '';
     $lref->[17] = '';
     $lref->[18] = $bestSeqPairRun->returnattr('comprunlength');
     $lref->[19] = $bestSeqPairRun->returnattr('runprob' );
-    $lref->[20] = $bestSeqPairRun->returnBsmlAttr( 'p_value' );
+    $lref->[20] = $bestSeqPairRun->{'BsmlAttr'}->{'p_value'}->[0];
 
    
     if(  $COGInput->{$refseq}->{$compGenome} )

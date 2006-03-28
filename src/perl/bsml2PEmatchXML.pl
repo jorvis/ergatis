@@ -205,8 +205,8 @@ sub alignmentHandler
 	my $seqpairruns = $aln->returnBsmlSeqPairRunListR;
 
 	my @sortedseqpairruns;
-	if($seqpairruns->[0]->returnBsmlAttr($options{'rankfield'})){
-	    @sortedseqpairruns = sort { $a->returnBsmlAttr($options{'rankfield'}) <=> $b->returnBsmlAttr($options{'rankfield'})  } @$seqpairruns;
+	if($seqpairruns->[0]->{'BsmlAttr'}->{$options{'rankfield'}}->[0]){
+	    @sortedseqpairruns = sort { $a->{'BsmlAttr'}->{$options{'rankfield'}}->[0] <=> $b->{'BsmlAttr'}->{$options{'rankfield'}}->[0]  } @$seqpairruns;
 	}
 	elsif($seqpairruns->[0]->returnattr($options{'rankfield'})){
 	    @sortedseqpairruns = sort { $a->returnattr($options{'rankfield'}) <=> $b->returnattr($options{'rankfield'})  } @$seqpairruns;
@@ -226,8 +226,8 @@ sub alignmentHandler
 	
 
 	my $score;
-	if($bestrun->returnBsmlAttr($options{'scorefield'})){
-	   $score = $bestrun->returnBsmlAttr($options{'scorefield'});
+	if($bestrun->{'BsmlAttr'}->{$options{'scorefield'}}->[0]){
+	   $score = $bestrun->{'BsmlAttr'}->{$options{'scorefield'}}->[0];
 	}
 	elsif($bestrun->returnattr($options{'scorefield'})){
 	   $score = $bestrun->returnattr($options{'scorefield'});

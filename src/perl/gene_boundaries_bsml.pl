@@ -517,7 +517,7 @@ sub get_refseq_asmbls{
 
 	if( $seq->returnattr('molecule') eq 'aa' )
 	{
-	    $rhash->{$seq->returnattr('id')} = $seq->returnBsmlAttr('ASSEMBLY');
+	    $rhash->{$seq->returnattr('id')} = $seq->{'BsmlAttr'}->{'ASSEMBLY'}->[0];
 	}
     }
     

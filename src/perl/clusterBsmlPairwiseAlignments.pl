@@ -254,10 +254,23 @@ sub retrieve_polypeptide_pairs {
 							    #
 							    # Retrieve the percent_identity and the p_value from the BSML document
 							    # 
-							    my $pidentity = $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'} if ((exists $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'}) and (defined($alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'})));
-							    $logger->logdie("pidentity was not defined") if (!defined($pidentity));
+							    my $pidentity;
+							    if ((exists $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'}->[0]) 
+								and (defined($alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'}->[0]))){
 
-							    my $pvalue = $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'} if ((exists $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'}) and (defined($alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'})));
+								$pidentity = $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'}->[0] 
+							    }
+								
+							    $logger->logdie("pidentity was not defined") if (!defined($pidentity));
+							    
+							    my $pvalue;
+							    
+							    if ((exists $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'}->[0]) and
+								(defined($alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'}->[0]))){
+
+								$pvalue = $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'}->[0];
+							    }
+
 							    $logger->logdie("pvalue was not defined") if (!defined($pvalue));
 
 							    

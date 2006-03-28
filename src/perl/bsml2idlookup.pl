@@ -190,7 +190,7 @@ sub process_sequence
 		$seqRef->returnattr('identifier');
 	#support for deprecated link of ASSEMBLY attribute
 	$lookup{$seqRef->returnattr('id')} =
-		$seqRef->returnBsmlAttr('ASSEMBLY');
+		$seqRef->{'BsmlAttr'}->{'ASSEMBLY'}->[0];
 	if ($seqRef->returnattr('class') eq 'polypeptide') {
 		my $fasta_file = $seqRef->returnBsmlSeqDataImport->{source};
 		++$protein_fastas{$fasta_file} if length $fasta_file;
