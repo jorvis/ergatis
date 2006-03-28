@@ -231,3 +231,4 @@ nucleotide_insertion					nucleotide_insertion
 nucleotide_deletion						nucleotide_deletion
 indel									indel
 gap										gap
+snoRNA                                  snoRNA
