@@ -112,7 +112,8 @@ use Workflow::Logger;
 use Switch;
 
 #The location of the program
-my $SORTPROG = "/usr/local/scratch/annotation/kgalens/snoscan-0.9b/sort-snos";
+my $SORTPROG = 
+    "/usr/local/devel/ANNOTATION/kgalens/prog/snoscan-0.9b/sort-snos";
 
 my %options = ();
 my $results = GetOptions (\%options, 
