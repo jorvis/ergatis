@@ -53,7 +53,7 @@ sub GenerateBsml
 	my $feat_table = $doc->createAndAddFeatureTable($seq);
 	if ($fasta) {
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $fasta,
-						" $seq_id", $seq_id);
+						'', $seq_id);
 	}
 	while (my ($gene_id, $exons) = each %{$this->{EXONS}}) {
 		my $gene_from = undef;
