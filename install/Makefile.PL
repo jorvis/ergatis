@@ -502,6 +502,14 @@ signalp	:
 	@install workflow/signalp/signalp_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/signalp/signalpconf.ini $(WORKFLOW_DOCS_DIR)  
 
+snoscan	:
+	@echo "Installing snoscan workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/snoscan/snoscan-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/snoscan/snoscan-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/snoscan/snoscan.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/snoscan/snoscan_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/snoscan/snoscanconf.ini $(WORKFLOW_DOCS_DIR) 
+
 snps	:
 	@echo "Installing snps workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/snp/snp-master.ini $(WORKFLOW_DOCS_DIR)
