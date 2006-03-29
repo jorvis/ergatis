@@ -19,6 +19,9 @@ USAGE: nap2bsml.pl
 B<--input,-i> 
     Input btab file from a nap search.
 
+B<--query_file_path,-q>
+	Full path to FASTA file containing query sequence.
+	
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -75,6 +78,7 @@ use BSML::BsmlParserTwig;
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
+			  'query_file_path|q=s',
               'output|o=s',
               'log|l=s',
               'debug=s',
@@ -132,13 +136,15 @@ while (<$ifh>) {
     ## has this query sequence been added to the doc yet?
     if (! exists $seqs_found{$qry_id}) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'assembly');
-        $seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
+      	$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
+		$seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
         $seqs_found{$qry_id} = 1;
     }
     
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'aa', 'polypeptide');
+        $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
         $seqs_found{$sbj_id} = 1;
     }

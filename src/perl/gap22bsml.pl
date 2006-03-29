@@ -19,6 +19,9 @@ USAGE: gap22bsml.pl
 B<--input,-i> 
     Input btab file from a gap2 search.
 
+B<--query_file_path,-q>
+	Full path to FASTA file containing query sequence.
+	
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -76,6 +79,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
+			  'query_file_path|q=s',
               'log|l=s',
               'debug=s',
 			  'help|h') || pod2usage();
@@ -133,6 +137,7 @@ while (<$ifh>) {
     ## has this query sequence been added to the doc yet?
     if (! exists $seqs_found{$qry_id}) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'nucleic_acid');
+		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
         $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
         $seqs_found{$qry_id} = 1;
     }
@@ -140,6 +145,7 @@ while (<$ifh>) {
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'na', 'nucleic_acid');
+		$doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
         $seqs_found{$sbj_id} = 1;
     }
