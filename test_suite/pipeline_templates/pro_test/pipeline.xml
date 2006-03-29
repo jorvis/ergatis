@@ -2,10 +2,7 @@
   <commandSet type="serial">
     <configMapId>start</configMapId>
     <commandSet type="serial">
-      <configMapId>component_legacy2bsml.gba_6615</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_legacy2bsml.gbs_799</configMapId>
+      <configMapId>component_legacy2bsml.default</configMapId>
     </commandSet>
     <commandSet type="serial">
       <configMapId>component_bsml2fasta.multi</configMapId>
