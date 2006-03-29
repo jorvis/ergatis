@@ -43,6 +43,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>Create ardcf scratch</name>
+          <configMapId>create_ardcf_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create evidence scratch</name>
           <configMapId>create_evidence_scratch</configMapId>
         </command>
@@ -186,6 +191,12 @@
             <type>RunUnixCommand</type>
             <name>Process Enzyme Commission Ontology</name>
             <configMapId>parse_ec_onto</configMapId>
+        </command>
+<!-- ARD Custom Feature Ontology -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process ARD Custom Feature Ontology</name>
+            <configMapId>parse_ardcf_onto</configMapId>
         </command>
 <!-- Evidence Ontology -->
         <command>    
