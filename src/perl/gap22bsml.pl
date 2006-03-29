@@ -141,7 +141,6 @@ while (<$ifh>) {
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'na', 'nucleic_acid');
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
-        $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
         $seqs_found{$sbj_id} = 1;
     }
 
