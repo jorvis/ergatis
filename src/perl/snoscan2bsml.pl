@@ -11,7 +11,11 @@ snoscan2bsml.pl - converts snoscan output to BSML
     USAGE: snoscan2bsml.pl 
             --input=/path/to/snoscanfile
             --output=/path/to/output.bsml
-         [  --project=projectName ]
+         [  --project=projectName 
+            --class=class of sequence
+            --degug=integer(level of debug)
+            --fasta_file=input file to snoscan
+         ]
 
 =head1 OPTIONS
 
@@ -110,8 +114,8 @@ my $idcreator = new Papyrus::TempIdCreator();
 #Open the input file (.sorted)
 my $inputFile;
 open (IFH, "<$options{input}")
-    #or $logger->logdie("can't open input file for reading");
-    or die ("Unable to open output file ($!)");
+    or $logger->logdie("can't open input file for reading");
+    #or die ("Unable to open output file ($!)");
 
 #If there was no sorted file made (which is indicated by the
 #words 'No output generated') then switch the sorted to raw
@@ -122,7 +126,7 @@ open (IFH, "<$options{input}")
 if(<IFH> =~ /^No output generated/) {
     $inputFile = $options{input};
     if(!($inputFile =~ s/sorted/raw/)) {
-        die ("Input file: $inputFile\n");
+        $logger->logdie ("Input file: $inputFile\n");
     }
     close(IFH);
     print "Opening $inputFile\n";
@@ -149,8 +153,8 @@ while(<IFH>) {
         #Unique ID = seqId (column1) and loc int (col3)
         #Value is the score of the prediction.  Only keeping
         #high score.
-        if(!(defined($data{"$cols[1]"."$cols[3]"})) 
-           || $data{"$cols[1]"."$cols[3]"} < $cols[2] ){
+        if(!(defined($data{"$cols[1]".";;$cols[3]"})) 
+           || $data{"$cols[1]".";;$cols[3]"} < $cols[2] ){
            $data{"$cols[1]".";;$cols[3]"} =  $cols[2];
        } 
     }
@@ -171,6 +175,11 @@ foreach my $unique (keys %data) {
 
     #Create a feature group
     my $ft = $doc->createAndAddFeatureTable($seq);
+
+    #If an input file was listed add the SeqDataImport
+    if($options{'fasta_file'}) {
+        $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_file}, '', $seqID );
+    }
 
     #Create some variables used in following foreach loop
     my $startNuc;      #Start of predicted snoRNA (interbase)
@@ -215,11 +224,15 @@ foreach my $unique (keys %data) {
         #Link the snoRNA feature to the analysis
         $snoRNA->addBsmlLink('analysis', '#snoscan_analysis', 
                              'computed_by');
+
+        #Add an Attribute element to the feature group in order
+        #to document the bit score of the prediction.
+        $snoRNA->addBsmlAttr("bit_score", $data{$unique});
         
         #Add an interval location element.
         &add_interval_loc($snoRNA, $startNuc, $endNuc);
         
-        #Create a snoRNA feature
+        #Create an exon feature
         $exon = $doc->
             createAndAddFeature($ft,
                                 $idcreator->
@@ -246,10 +259,6 @@ foreach my $unique (keys %data) {
                                         $snoRNA->returnattr('class') );
         $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), 
                                         $exon->returnattr('class') );
-
-        #Add an Attribute element to the feature group in order
-        #to document the bit score of the prediction.
-        $fg->addBsmlAttr("bit_score", $data{$unique});
         
         
     }
@@ -291,18 +300,20 @@ sub check_parameters {
     
     ## make sure input_file exists
     if (! -e "$options{input}") {
-        #$logger->logdie("the input file passed ($options{input_file})".
-		#	"cannot be read or does not exist");
-        die ("The input file does not exist ($options{input})");
+        $logger->logdie("the input file passed ($options{input_file})".
+			"cannot be read or does not exist");
+        #die ("The input file does not exist ($options{input})");
     }
 
     ##Make sure the output file doesn't exist
     if(-e "$options{output}") {
-        die ("The output file already exists");
+        $logger->logdie("The output file already exists");
+        #die ("The output file already exists");
     }
 
     if(!defined($options{'class'})) {
-        die ("The class was not defined");
+        $logger->logdie("The class was not defined");
+        #die ("The class was not defined");
     } 
         
 }
