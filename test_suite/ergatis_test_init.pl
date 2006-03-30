@@ -130,7 +130,7 @@ my $install_root = $cfg->val('init', '$;BIN_DIR$;')
 $install_root =~ s/\/$//; ##strip off trailing slash if it exists
 $install_root =~ s/\/bin$//; 
 
-my $install_hash = md5_base64($install_root);
+my $install_hash = md5_hex($install_root);
 
 my $tmp_path = "/tmp/".$install_hash."_".allNow()."_".$$;
 
