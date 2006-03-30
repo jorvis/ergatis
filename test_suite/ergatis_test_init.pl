@@ -69,6 +69,7 @@ use strict;
 use warnings;
 use Pod::Usage;
 use Cwd qw(getcwd realpath);
+use Sys::Hostname;
 use File::Basename;
 use File::Path;
 use File::Copy;
@@ -78,6 +79,7 @@ use Digest::MD5 qw(md5 md5_hex md5_base64);
 #use lib '/usr/local/packages/perl-5.8.5/lib/site_perl/5.8.5/'; ## PERL5LIB is set in crontab
 
 my $cwd = getcwd(); ## remember cwd
+my $host = hostname();
 
 my %options=();
 GetOptions(\%options, 
@@ -128,7 +130,9 @@ my $install_root = $cfg->val('init', '$;BIN_DIR$;')
 $install_root =~ s/\/$//; ##strip off trailing slash if it exists
 $install_root =~ s/\/bin$//; 
 
-my $tmp_path = "/tmp/".md5_base64($install_root)."_".allNow()."_".$$;
+my $install_hash = md5_base64($install_root);
+
+my $tmp_path = "/tmp/".$install_hash."_".allNow()."_".$$;
 
 ## make the temp checkout path
 mkpath($tmp_path, 1, 0777);
@@ -153,7 +157,7 @@ foreach (@ARGV) {
     print "    - $_\n";
 }
 if (!$options{'ignore-lock'}) {
-if (-e "$exec_path/.lock") {
+if (-e "$exec_path/.lock_$install_hash") {
 	##a lock file exists in the testing directory
 	print "Lock file exists!!!\n";
 	print "  Testing pipeline already running, or previous execution died poorly\n";
@@ -161,7 +165,7 @@ if (-e "$exec_path/.lock") {
 	exit(1);
 } else {
 	##write a lock file
-	open (LOCK, ">$exec_path/.lock") || die "Couldn't write lock file!!!";
+	open (LOCK, ">$exec_path/.lock_$install_hash") || die "Couldn't write lock file!!!";
 	print LOCK allNow();
 	close LOCK;
 }
@@ -268,7 +272,7 @@ rmtree($tmp_path, 1);
 
 if (!$options{'ignore-lock'}) {
 	##remove lock file
-	unlink("$exec_path/.lock");
+	unlink("$exec_path/.lock_$install_hash");
 }
 
 exit(0);
