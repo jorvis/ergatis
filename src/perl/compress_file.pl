@@ -26,7 +26,7 @@ B<--file,-f>
 B<--compress,-c>
     Optional.  If 0, the compression will not be performed.
 
-B<--compress,-c>
+B<--list_file,-s>
     Optional.  Writes a list file of the gzipped file created.
 
 B<--debug,-d> 
