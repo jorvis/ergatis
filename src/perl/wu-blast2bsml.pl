@@ -209,9 +209,9 @@ while( my $result = $in->next_result ) {
 
 	my $cov_qual_stats = {};
 	foreach my $query (keys %{$hsplookup}){
-		print "Query: $query\n";
+		#	print "Query: $query\n";
         foreach my $subject (keys %{$hsplookup->{$query}}) {
-		print "Subject: $subject\n";
+		#	print "Subject: $subject\n";
         	my @hsps = sort {$a->{'pvalue'} <=> $b->{'pvalue'}} @{$hsplookup->{$query}->{$subject}};
         	my $maxhsp;
         	if ($options{'max_hsp_count'} ne "") {
@@ -227,6 +227,7 @@ while( my $result = $in->next_result ) {
 
 			## calculate coverage stuff
 			my $new_subject;
+			@hsp_ref_array = ();
 			for (my $i=0; $i<$maxhsp; $i++) {
 				my @btab = @{$hsps[$i]->{'line'}};
 				$queryid = $btab[0] if ($btab[0] && (!$queryid));
@@ -291,8 +292,8 @@ while( my $result = $in->next_result ) {
 				'percent_coverage_refseq'	=>	sprintf("%.1f",$coverage_arr_ref->[0]),
 				'percent_coverage_compseq'	=>	sprintf("%.1f",$coverage_arr_ref->[1]),
 														};
-				print $queryid." ".$new_subject."\n";
-				print $cov_qual_stats->{$queryid}->{$new_subject}->{'percent_coverage_refseq'}."\n";
+#				print $queryid." ".$new_subject."\n";
+#				print $cov_qual_stats->{$queryid}->{$new_subject}->{'percent_coverage_refseq'}."\n";
 				#
 				#
 				#################################
@@ -494,9 +495,9 @@ sub createAndAddBlastResultLine {
 ## and [1] = target percent coverage
 sub getAvgBlastPPctCoverage {
     my($hsps) = @_;
-    my $qsum = 0;
-    my $tsum = 0;
-    my $numHsps = 0;
+    my $qsum=0;
+    my $tsum=0;
+    my $numHsps=0;
 
     # Group by query and target id
     my $hspsByQuery = &groupByMulti($hsps, ['query_protein_id', 'target_protein_id']);
@@ -530,6 +531,8 @@ sub getAvgBlastPPctCoverage {
 	if ($numHsps == 0) {
 		return undef;
 	} else {
+		#print $qsum." ".$numHsps."\n";
+		#print $tsum." ".$numHsps."\n";
 		return [($qsum/$numHsps*100.0), ($tsum/$numHsps*100.0)];
 	}
 	#return ($numHsps > 0) ? ($sum/($numHsps * 2) * 100.0) : undef;
