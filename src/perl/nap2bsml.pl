@@ -144,7 +144,7 @@ while (<$ifh>) {
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'aa', 'polypeptide');
-        $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
+		$doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
         $seqs_found{$sbj_id} = 1;
     }
