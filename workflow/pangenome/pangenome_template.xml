@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>pangenome Compute</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>pangenome_blast_parse</configMapId>
+            <name>pangenome_blast_parse</name>
+        </command>
+    </commandSet>
+
+</commandSetRoot>
