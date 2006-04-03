@@ -54,10 +54,10 @@ B<--help,-h>
 
 =cut
 
+use Pod::Usage;
 use File::Basename;
 use XML::Twig;
 use Math::Combinatorics;
-use Cwd;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Storable;
 use strict;
