@@ -87,6 +87,7 @@ GetOptions(\%options,
 	"install|i",
 	"repository-root|r=s", 
 	"workflow-path|w=s",
+	"no-run",
 	"ignore-lock",
 #	"branch-ergatis=s",  ##branches are now specified in the installer testing_automated.ini file
 #	"branch-chado=s", 
