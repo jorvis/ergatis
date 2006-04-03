@@ -17,7 +17,7 @@
           <configMapId>create_compute_output</configMapId>
         </command>
         <command>
-          <type>RunDistributedUnixCommand</type>
+          <type>RunDistributedCommand</type>
           <name>Parse genome BSML</name>
           <configMapId>pangenome_query_list</configMapId>
         </command>
@@ -48,7 +48,7 @@
             <configMapId>create_serialized_data_list</configMapId>
         </command>
         <command>
-            <type>RunDistributedUnixCommand</type>
+            <type>RunDistributedCommand</type>
             <name>Do pangenome analysis</name>
             <configMapId>pangenome_do_analysis</configMapId>
         </command>
