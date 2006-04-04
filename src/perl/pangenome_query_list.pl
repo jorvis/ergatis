@@ -61,7 +61,7 @@ use strict;
 
 my %options = ();
 my $results = GetOptions (	\%options,
-                          	'input_list|i=s',
+                          	'input_list|i:s',
               				'output_path|o=s',
               				'debug|d=s',
               				'command_id=s',       ## passed by workflow
