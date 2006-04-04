@@ -88,7 +88,7 @@ if (!-d $options{'output_path'}) {
 	die "must specify output path as a directory";
 }
 
-$options{'output_path'} =~ s/\///;
+$options{'output_path'} =~ s/\/$//;
 
 if (-e $options{'output_path'}."/pangenome.filter.stored") {
 	print STDERR "unserializing filter\n";
