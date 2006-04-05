@@ -40,42 +40,42 @@ sub set_logger_instance{
 sub fatal{
     my($self,$msg) = @_;
     if($self->{_LOG_LEVEL} >= $FATAL || $self->{_logsimpleobj}->{_LOG_LEVEL} >= $FATAL){
-	$self->{_logsimpleobj}->_output($msg,$self->{_name},$FATAL,caller());
+	$self->{_logsimpleobj}->_output($msg,$self->{_name},$FATAL,caller(1));
     }
 }
 
 sub error{
     my($self,$msg) = @_;
     if($self->{_LOG_LEVEL} >= $ERROR || $self->{_logsimpleobj}->{_LOG_LEVEL} >= $ERROR){
-	$self->{_logsimpleobj}->_output($msg,$self->{_name},$ERROR,caller());
+	$self->{_logsimpleobj}->_output($msg,$self->{_name},$ERROR,caller(1));
     }
 }
 
 sub warn{
     my($self,$msg) = @_;
     if($self->{_LOG_LEVEL} >= $WARN || $self->{_logsimpleobj}->{_LOG_LEVEL} >= $WARN){
-	$self->{_logsimpleobj}->_output($msg,$self->{_name},$WARN,caller());
+	$self->{_logsimpleobj}->_output($msg,$self->{_name},$WARN,caller(1));
     }
 }
 
 sub info{
     my($self,$msg) = @_;
     if($self->{_LOG_LEVEL} >= $INFO || $self->{_logsimpleobj}->{_LOG_LEVEL} >= $INFO){
-	$self->{_logsimpleobj}->_output($msg,$self->{_name},$INFO,caller());
+	$self->{_logsimpleobj}->_output($msg,$self->{_name},$INFO,caller(1));
     }
 }
 
 sub debug{
     my($self,$msg) = @_;
     if($self->{_LOG_LEVEL} >= $DEBUG || $self->{_logsimpleobj}->{_LOG_LEVEL} >= $DEBUG){
-	$self->{_logsimpleobj}->_output($msg,$self->{_name},$DEBUG,caller());
+	$self->{_logsimpleobj}->_output($msg,$self->{_name},$DEBUG,caller(1));
     }
 }
 
 sub logdie{
     my($self,$msg) = @_;
-    $self->{_logsimpleobj}->_output($msg,$self->{_name},$FATAL,caller());
-    my($package,$filename,$line,$subroutine) = caller();
+    $self->{_logsimpleobj}->_output($msg,$self->{_name},$FATAL,caller(1));
+    my($package,$filename,$line,$subroutine) = caller(1);
     die "Died with '$msg' at $filename line $line\n";
 }
 
