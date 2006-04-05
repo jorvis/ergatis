@@ -169,7 +169,7 @@ sub readiteratorconf{
 
     my $eltshash;
 
-    open FILE, $listfile or $logger->get_logger()->logdie("Can't open file $listfile");
+    open FILE, $listfile or $logger->logdie("Can't open file $listfile");
 
     my $prevnumelts=-1;
 
@@ -180,7 +180,7 @@ sub readiteratorconf{
         my @elts = split(/,/,$value);
 	    
 	    if(scalar(@elts) == 0){
-		$logger->get_logger()->logdie("Invalid value '$value' for key $key in $listfile");
+		$logger->logdie("Invalid value '$value' for key $key in $listfile");
 	    }
 
 	    my $numelts;
@@ -194,7 +194,7 @@ sub readiteratorconf{
 	    $logger->debug("Size of groups set to $numelts") if($logger->is_debug());
 	    if($prevnumelts != -1){
 		    if($numelts != $prevnumelts){
-		        $logger->get_logger->fatal("Number of elements for $key did not match previous count $prevnumelts");
+		        $logger->fatal("Number of elements for $key did not match previous count $prevnumelts");
 		    }
 	    }
 	    $prevnumelts = $numelts;
