@@ -476,8 +476,8 @@ sub add_file {
     #  exists and is populated.
     my $file = shift;
     
-    ## only do .bsml files
-    return 0 unless ( $file =~ /\.bsml$/ );
+    ## only do .bsml files (and .bsml.gz files)
+    return 0 unless ( $file =~ /\.bsml(\.gz)?$/ );
     
     if (-e $file && -s $file) {
         $logger->debug("Adding file $file for processing") if ($logger->is_debug);
