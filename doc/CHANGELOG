@@ -105,3 +105,5 @@ current
 -added infernal component
 -added snap component and snap2bsml
 -added snoscan component
+-changed bsml2fasta.pl to work on .bsml.gz files
+-added option to not compress raw, btab, or bsml outputs for aat_aa, aat_aa_masked, aat_na, aat_na_masked
