@@ -252,8 +252,8 @@ foreach my $pipe (@ARGV) {
 	
 	#clean out stuff in BSML_ and FASTA_ directories 
     #(but not the previous pipelines, because we want to look at them in the future)
-	doORdie("find  ".$options{'repository-root'}."/BSML_repository/* -type f -exec rm {} \\; ");
-	doORdie("find  ".$options{'repository-root'}."/FASTA_repository/* -type f -exec rm {} \\; ");
+	#doORdie("find  ".$options{'repository-root'}."/BSML_repository/* -type f -exec rm {} \\; ");
+	#doORdie("find  ".$options{'repository-root'}."/FASTA_repository/* -type f -exec rm {} \\; ");
 
     print "\nInstantiating $pipe_name from $pipe\n";
     if (defined($options{'no-run'})) {
