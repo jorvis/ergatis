@@ -20,6 +20,11 @@
              <configMapId>store_config_params</configMapId>
              <name>store_config_params</name>
          </command>
+         <command>    
+             <type>RunUnixCommand</type>
+             <configMapId>compress_raw_output</configMapId>
+             <name>compress_raw_output</name>
+         </command>
          <command>
              <type>RunUnixCommand</type>
              <configMapId>dtd_validation</configMapId>
