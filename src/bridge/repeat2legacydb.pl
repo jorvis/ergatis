@@ -19,6 +19,9 @@ B<--input_list,-i>
     BSML list file from an repeat-generating workflow component run.  Currently tested
     components are:  repeatmasker, trf.
 
+B<--repeat_file,-r> 
+    The full path to the repeat library used.  This will be populated in ORF_attribute.score3
+
 B<--database,-d> 
     Sybase project database ID.
 
@@ -67,12 +70,12 @@ use XML::Twig;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input_list|i=s',
+              'input_list|i=s',
               'database|d=s',
               'repeat_file|r=s',
               'delete_existing|x=i',
               'log|l=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 # display documentation
 if( $options{'help'} ){
@@ -126,7 +129,7 @@ my $asm_feature_delete = $dbh->prepare($qry);
 
 ## prepare a statement for inserting into ORF_attribute
 $qry = "INSERT INTO ORF_attribute (feat_name, att_type, curated, method, date, assignby, " .
-                                  "score, score_desc, score2, score2_desc, score3, score3_desc) " .
+                           "score, score_desc, score2, score2_desc, score3, score3_desc) " .
        "VALUES ( ?, 'repeat', 0, ?, GETDATE(), '$user', ?, ?, ?, ?, ?, ? )";
 my $orf_attribute_insert = $dbh->prepare($qry);
 
@@ -188,20 +191,20 @@ $dbh->disconnect();
 exit;
 
 sub get_latest_id {
-	my ($asm_id, $feat_type) = @_;
+    my ($asm_id, $feat_type) = @_;
 
-	my $stmt = $dbh->prepare("SELECT DISTINCT feat_name " .
-				 "FROM asm_feature " .
-				 "WHERE asmbl_id = ? " .
-                 "AND feat_type = ? ");
-	$stmt->execute($asm_id, $feat_type);
-	my $last_id = "000000";
-	while (my $row = $stmt->fetchrow_arrayref) {
-		my $id = $& if $$row[0] =~ /\d+$/;
-		$last_id = $id if $id > $last_id;
-	}
+    my $stmt = $dbh->prepare("SELECT DISTINCT feat_name " .
+                             "FROM asm_feature " .
+                             "WHERE asmbl_id = ? " .
+                             "AND feat_type = ? ");
+    $stmt->execute($asm_id, $feat_type);
+    my $last_id = "000000";
+    while (my $row = $stmt->fetchrow_arrayref) {
+        my $id = $& if $$row[0] =~ /\d+$/;
+        $last_id = $id if $id > $last_id;
+    }
 
-	return $last_id;
+    return $last_id;
 }
 
 sub process_repeat_feature {
