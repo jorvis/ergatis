@@ -1,0 +1,386 @@
+                                           
+ ------------------------------ -----------
+ CDS                                   7677
+ assembly                                 2
+ exon                                  7677
+ gene                                  7677
+ match                                45721
+ match_part                          125665
+ match_set                            67207
+ polypeptide                          18665
+ rRNA                                    54
+ ribosome_entry_site                   7481
+ signal_peptide                        7471
+ snRNA                                    8
+ tRNA                                   175
+ terminator                            2399
+ transcript                            7677
+
+(15 rows affected)
+                                                               analysis_id 
+	           
+ ------------------------------ ------------------------------ ------------
+	-----------
+ CDS                            BER_analysis                              3
+	       3080
+ CDS                            BER_analysis                              9
+	       1364
+ match                          BER_analysis                              3
+	       3094
+ match                          HMM2_analysis                             4
+	      21665
+ match                          NCBI_COG                                  5
+	       3993
+ match                          PROSITE                                   6
+	       1776
+ match                          BER_analysis                              9
+	       1368
+ match                          HMM2_analysis                            10
+	       9730
+ match                          NCBI_COG                                 11
+	       1696
+ match                          PROSITE                                  12
+	         97
+ match                          jaccard                                  14
+	         72
+ match                          cogs                                     15
+	       1116
+ match                          cogs                                     16
+	       1114
+ match_part                     BER_analysis                              3
+	       3094
+ match_part                     HMM2_analysis                             4
+	      22339
+ match_part                     NCBI_COG                                  5
+	       3993
+ match_part                     PROSITE                                   6
+	       1822
+ match_part                     BER_analysis                              9
+	       1368
+ match_part                     HMM2_analysis                            10
+	       9895
+ match_part                     NCBI_COG                                 11
+	       1696
+ match_part                     PROSITE                                  12
+	        101
+ match_part                     wu-blastp                                13
+	      75951
+ match_part                     pe                                       17
+	       5406
+ match_set                      wu-blastp                                13
+	      61801
+ match_set                      pe                                       17
+	       5406
+ polypeptide                    BER_analysis                              3
+	       2756
+ polypeptide                    HMM2_analysis                             4
+	       8404
+ polypeptide                    NCBI_COG                                  5
+	       5543
+ polypeptide                    PROSITE                                   6
+	       1876
+ polypeptide                    BER_analysis                              9
+	       1167
+ polypeptide                    HMM2_analysis                            10
+	       2237
+ polypeptide                    NCBI_COG                                 11
+	       1816
+ polypeptide                    PROSITE                                  12
+	         71
+ ribosome_entry_site            RBS_analysis                              1
+	       5429
+ ribosome_entry_site            RBS_analysis                              7
+	       2052
+ terminator                     TERM_analysis                             2
+	       1950
+ terminator                     TERM_analysis                             8
+	        449
+
+(37 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ CDS                            percent_GC                            7676
+ assembly                       topology                                 2
+ assembly                       molecule_name                            2
+ assembly                       molecule_type                            2
+ match_part                     PEffect_Cluster_Id                    5406
+ match_part                     PEffect_Cluster_Gap_Count             5406
+ match_part                     PEffect_Cluster_Gene_Count            5406
+ match_part                     p_value                              75951
+ match_part                     percent_coverage_refseq              75951
+ match_part                     percent_coverage_compseq             75951
+ match_part                     percent_similarity                   80408
+ polypeptide                    MW                                    7402
+ polypeptide                    pI                                    7402
+ polypeptide                    transmembrane_coords                  7676
+ polypeptide                    transmembrane_regions                 7676
+ polypeptide                    outer_membrane_protein                7676
+ polypeptide                    lipo_membrane_protein                 7677
+ rRNA                           name                                    33
+ rRNA                           gene_symbol                             33
+ signal_peptide                 c-score                                  1
+ signal_peptide                 s-score                                  1
+ signal_peptide                 HMM_cleavage_site                     1235
+ signal_peptide                 max_cleavage_site_probability         1235
+ signal_peptide                 NN_cleavage_site                      2336
+ signal_peptide                 signal_probability                    7470
+ signal_peptide                 s-mean                                7471
+ signal_peptide                 y-score                               7471
+ snRNA                          name                                     5
+ tRNA                           name                                    95
+ tRNA                           tRNA_anti-codon                        175
+ terminator                     term_direction                        2399
+ terminator                     term_confidence                       2399
+ transcript                     auto_annotate_toggle                   727
+ transcript                     gene_symbol                           1671
+ transcript                     comment                               1887
+ transcript                     auto_comment                          7625
+ transcript                     date                                  7677
+ transcript                     assignby                              7677
+ transcript                     gene_product_name                     7677
+
+(39 rows affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ Bacillus anthracis Ames        b_anthracis_ames                    200903
+ Streptococcus agalactiae 2603V s_agalactiae_2603vr                  91363
+ not known                      not known                            13290
+
+(3 rows affected)
+                                           
+ ------------------------------ -----------
+ EC                                    9238
+ EGAD                                  1118
+ GB                                       4
+ GFF3                                    26
+ GO                                   18256
+ GP                                     874
+ Genbank                               7426
+ MetaCyc                               3954
+ NCBI_gi                               7426
+ OMNI                                  1253
+ PIR                                      4
+ PROSITE                                515
+ Pfam                                  2839
+ RESID                                   11
+ Reactome                              1963
+ SO                                    1015
+ SP                                     670
+ Swiss-Prot                            7367
+ TAIR:TED\                                3
+ TC                                     391
+ TIGR_TIGRFAMS                         2041
+ TIGR_prok:gba                        25719
+ TIGR_prok:gbs                        10219
+ TIGR_role                              268
+ TIGR_roles_order                       122
+ UM-BBD_enzymeID                        451
+ UM-BBD_pathwayID                       109
+ annotation_attributes.ontology         127
+ component.ontology                     155
+ evidence_code                          129
+ go_properties                           24
+ output.ontology                         76
+ owl                                      1
+ relationship                            18
+ synonym_types                            6
+ taxon                                    1
+
+(36 rows affected)
+ name                                                          
+ -------------------------------------------------- -----------
+ EGAD                                                      1118
+ GB                                                           4
+ GP                                                         874
+ OMNI                                                      1253
+ PIR                                                          4
+ PROSITE                                                    515
+ Pfam                                                      2839
+ SP                                                         670
+ TIGR_TIGRFAMS                                             2041
+ TIGR_prok:gba                                            41936
+ TIGR_prok:gbs                                            15709
+
+(11 rows affected)
+ name                                                          
+ -------------------------------------------------- -----------
+ EGAD                                                      1118
+ GB                                                           4
+ GP                                                         874
+ Genbank                                                  37130
+ NCBI_gi                                                  37130
+ OMNI                                                      1253
+ PIR                                                          4
+ PROSITE                                                    515
+ Pfam                                                      2839
+ SP                                                         670
+ Swiss-Prot                                               36935
+ TIGR_TIGRFAMS                                             2041
+ TIGR_prok:gba                                            97148
+ TIGR_prok:gbs                                            38383
+
+(14 rows affected)
+                                           
+ ------------------------------ -----------
+ CDS                                   8924
+ assembly                             48502
+ polypeptide                         468317
+
+(3 rows affected)
+                                           
+ ------------------------------ -----------
+ derives_from                         15354
+ member_of                             7677
+ part_of                             150536
+
+(3 rows affected)
+                               
+	uniquename                                                    
+ ------------------------------
+	-------------------------------------------------- -----------
+ CDS                           
+	gbs_799_assembly                                          2169
+ CDS                           
+	gba_6615_assembly                                         5508
+ exon                          
+	gbs_799_assembly                                          2169
+ exon                          
+	gba_6615_assembly                                         5508
+ gene                          
+	gbs_799_assembly                                          2169
+ gene                          
+	gba_6615_assembly                                         5508
+ polypeptide                   
+	gbs_799_assembly                                          2169
+ polypeptide                   
+	gba_6615_assembly                                         5508
+ rRNA                          
+	gbs_799_assembly                                            21
+ rRNA                          
+	gba_6615_assembly                                           33
+ ribosome_entry_site           
+	gbs_799_assembly                                          2052
+ ribosome_entry_site           
+	gba_6615_assembly                                         5429
+ snRNA                         
+	gbs_799_assembly                                             4
+ snRNA                         
+	gba_6615_assembly                                            4
+ tRNA                          
+	gbs_799_assembly                                            80
+ tRNA                          
+	gba_6615_assembly                                           95
+ terminator                    
+	gbs_799_assembly                                           449
+ terminator                    
+	gba_6615_assembly                                         1950
+ transcript                    
+	gbs_799_assembly                                          2169
+ transcript                    
+	gba_6615_assembly                                         5508
+
+(20 rows affected)
+                                           
+ ------------------------------ -----------
+ assembly                                 2
+ transcript                           17933
+
+(2 rows affected)
+
+	name                                                                    
+                                                                                
+                                                                                
+                       
+	program                                                       
+
+	------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------
+	-------------------------------------------------- -----------
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	BER                                                       8924
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	HMM2                                                     63629
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	NCBI_COG                                                 11378
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	PROSITE                                                   3796
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	RBS                                                       7481
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	TERM                                                      2399
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	cogs                                                      2230
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	jaccard                                                     72
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	pe                                                       10812
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	wu-blastp                                               137752
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	BER                                                       8367
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	HMM2                                                     10641
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	NCBI_COG                                                  7359
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	PROSITE                                                   1947
+
+(14 rows affected)
