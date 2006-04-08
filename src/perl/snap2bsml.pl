@@ -223,7 +223,7 @@ sub add_feature {
     
     $id = $idcreator->new_id( db => $options{project}, so_type => $type, prefix => $options{command_id} );
     $thing = $doc->createAndAddFeature( $ft, $id, '', $idcreator->so_used($type) );
-    $thing->addBsmlLink('analysis', '#snap_analysis');
+    $thing->addBsmlLink('analysis', '#snap_analysis', 'computed_by');
     $thing->addBsmlIntervalLoc($start, $stop, $strand);
 
     $fg->addBsmlFeatureGroupMember( $id, $idcreator->so_used($type) );
@@ -231,7 +231,7 @@ sub add_feature {
     ## if type is a primary_transcript we need to add a gene too
     if ($type eq 'primary_transcript') {
         $thing = $doc->createAndAddFeature( $ft, $current_transcript_id, '', $idcreator->so_used('gene') );
-        $thing->addBsmlLink('analysis', '#snap_analysis');
+        $thing->addBsmlLink('analysis', '#snap_analysis', 'computed_by');
         $thing->addBsmlIntervalLoc($start, $stop, $strand);
         $fg->addBsmlFeatureGroupMember( $current_transcript_id, $idcreator->so_used('gene') );
     }
