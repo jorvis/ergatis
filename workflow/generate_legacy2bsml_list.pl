@@ -79,8 +79,7 @@ my $database_key      = '$;SOURCE_DATABASE$;';
 my $asmbl_id_key      = '$;ASMBL_ID$;';
 my $sequence_type_key = '$;SEQUENCE_TYPE$;';
 my $subflow_key       = '$;SUBFLOW_NAME$;';
-my $euk_key           = '$;EUK$;';
-my $ntprok_key        = '$;NTPROK$;';
+my $organism_key        = '$;SCHEMA_TYPE$;';
 my $include_genefinders_key = '$;INCLUDE_GENEFINDERS$;';
 my $exclude_genefinders_key = '$;EXCLUDE_GENEFINDERS$;';
 
@@ -101,8 +100,7 @@ if (&verify_control_file($options{'control_file'})){
 	    $asmbl_id_key      => [],
 	    $sequence_type_key => [],
 	    $subflow_key       => [],
-	    $euk_key           => [],
-	    $ntprok_key        => [],
+	    $organism_key      => [],
 	    $include_genefinders_key => [],
 	    $exclude_genefinders_key => []
 	};
@@ -183,22 +181,8 @@ sub add_entry_to_conf{
     push( @{$iteratorconf->{$sequence_type_key}}, $sequence_type );
     push( @{$iteratorconf->{$include_genefinders_key}}, $include_genefinders );
     push( @{$iteratorconf->{$exclude_genefinders_key}}, $exclude_genefinders );
+    push( @{$iteratorconf->{$organism_key}}, $organism_type );
 
-    if ($organism_type eq 'ntprok'){
-	# legacy2bsml.pl --ntprok=1 --euk=0
-	push( @{$iteratorconf->{$ntprok_key}}, 1 );
-	push( @{$iteratorconf->{$euk_key}}, 0 );
-    }
-    elsif ($organism_type eq 'euk'){
-	# legacy2bsml.pl --ntprok=0 --euk=1
-	push( @{$iteratorconf->{$ntprok_key}}, 0 );
-	push( @{$iteratorconf->{$euk_key}}, 1 );
-    }
-    elsif ( $organism_type eq 'prok'){
-	# legacy2bsml.pl --ntprok=0 --euk=0
- 	push( @{$iteratorconf->{$ntprok_key}}, 0 );
-	push( @{$iteratorconf->{$euk_key}}, 0 );
-    }
 }
 
 #-------------------------------------------
@@ -312,11 +296,8 @@ sub get_organism_hash {
 
 		$database_type = $database ."_" .$organism_type;
 
-#		print "organism_type '$organism_type' include_genefinder '$include_genefinders' exclude_genefinder '$exclude_genefinders'\n";
-
-
 		if (&verify_organism_type($organism_type, $linectr)){
-
+		    
 		    ($include_genefinders, $exclude_genefinders) = &verify_and_set_genefinders($include_genefinders, $exclude_genefinders, $linectr);
 
 		    
@@ -467,8 +448,8 @@ sub verify_and_set_genefinders {
     elsif ($exclude_genefinder eq 'all'){
 	$include_genefinder = 'none';
     }
-
-
+    
+    
     return ($include_genefinder, $exclude_genefinder);
     
     
