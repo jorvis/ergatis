@@ -9,6 +9,7 @@ repeat2legacydb.pl - load repeat data into the legacy database schema.
 USAGE: repeat2legacydb.pl 
         --input_list=/path/to/somefile.bsml.list
         --database=sma1
+        --repeat_file=/path/to/some/repeat.db
       [ --log=/path/to/some.log 
         --delete_existing=1
       ]
