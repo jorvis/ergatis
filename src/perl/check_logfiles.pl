@@ -97,6 +97,9 @@ BEGIN {
 use Workflow::Logger;
 }
 
+#HACK TO BYPASS SCRIPT#######
+exit;
+############################
 
 $|=1;
 
