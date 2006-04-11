@@ -453,7 +453,7 @@ sub get_db_id
 sub fetch_db_id
 {
 	my $db_name = shift;
-	my $sql = "SELECT id FROM common..search_dbs WHERE name='$db_name'";
+	my $sql = "SELECT min(id) FROM common..search_dbs WHERE name='$db_name'";
 	my $stmt = $dbh->prepare($sql);
 	$stmt->execute;
 	my $rows = $stmt->fetchrow_arrayref;
