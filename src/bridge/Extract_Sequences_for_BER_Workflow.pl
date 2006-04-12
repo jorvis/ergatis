@@ -112,6 +112,14 @@ MAIN:{
 
 ";
 
+=comment
+
+Congressional Research Services report on the Republic of the Marshall Islands Changed Circumstances Petition to Congress [PDF] [order code RL32811], March 14, 2005: this is a middle of the road response from the CRS that takes into account the September 2000 RMI Changed Circumstances petition and the Bush Administration November 2004 response to the CCP.
+
+For demographic information about the people and where they are today, please read Bikini Atoll Facts. For the latest developments with regard to the Bikinians and their attempts to resettle their homeland, please read the Radiological Cleanup and Future and Resettlement Program pages, along with the news articles linked below. 
+
+=cut
+
 
 	die $message if $opt_h || $bad;
 	
@@ -214,10 +222,9 @@ sub Fetch_n_Write {
 			(my $model_name = $model->[0]) =~ s/\.m/_/;
 			my $header = "$dbase.model.$model_name";
 			print {$tblfile} "$header\t$header\n";
-			
-			$start = $start < $ext_ln ? 0 : $start - $ext_ln - 1;
+			$start = $start <= $ext_ln ? 0 : $start - $ext_ln - 1;
 			my $ln = 1 + $end + $ext_ln - $start;
-			my $nucl = substr($asmbl_seq, $start, $ln);
+            my $nucl = substr($asmbl_seq, $start, $ln);
 			&ComplementDNA(\$nucl) || die "\n\nProblems complementing the nucleotide sequence of model $model->[0]\n\n" if $minusstrand;
 		
 			foreach my $seq ($nucl, $prot){
