@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml mepipe muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps pangenome panther pe phat predotar promer region repeatmasker signalp snps snap split_fasta split_multifasta statistics2chado subfeature_mapping targetp tmhmm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genezilla genemark genewise_best_loc genie genscan genscan-plus glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml mepipe muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps pangenome panther pe phat predotar promer region repeatmasker signalp snps snap split_fasta split_multifasta statistics2chado subfeature_mapping targetp tmhmm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -173,6 +173,12 @@ bsml2fasta	:
 	@install workflow/bsml2fasta/bsml2fastaconf.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/bsml2fasta/bsml2fasta-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/bsml2fasta/bsml2fasta-master_template.xml $(WORKFLOW_DOCS_DIR)
+
+build_supercontig	:
+	@echo "Installing build_supercontig workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/build_supercontig/build_supercontigconf.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/build_supercontig/build_supercontig-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/build_supercontig/build_supercontig-master_template.xml $(WORKFLOW_DOCS_DIR)
 
 chado2bsml  :
 	@echo "Installing chado2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
