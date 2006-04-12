@@ -117,7 +117,7 @@ while (<IN>) {
 
 	## pull the blast results data array out of the stored array
 	my $results_ref = shift(@{$temp_ref});
-	@results = (@results, @{$results_ref});
+	push(@results, @{$results_ref});
 
 	## pull the dups hash out of the stored array
 	my $dups_ref = shift(@{$temp_ref});

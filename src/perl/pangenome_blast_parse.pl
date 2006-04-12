@@ -89,10 +89,14 @@ if (!-d $options{'output_path'}) {
 }
 
 $options{'output_path'} =~ s/\/$//;
+my $filter_dir = $options{'output_path'};
+$filter_dir =~ s/\/[^\/]+$//;
 
-if (-e $options{'output_path'}."/pangenome.filter.stored") {
+if (-e "$filter_dir/pangenome.filter.stored") {
 	print STDERR "unserializing filter\n";
-	$filter = retrieve($options{'output_path'}."/pangenome.filter.stored") || die "failed unserializing seq filter";
+	unless($filter = retrieve("$filter_dir/pangenome.filter.stored")) {
+		die "failed unserializing seq filter";
+	}
 	$skip_filter = 0;
 }
 
