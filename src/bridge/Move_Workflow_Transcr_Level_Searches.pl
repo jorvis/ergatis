@@ -41,7 +41,9 @@ MAIN:{
 		$message .= "Option -D (Source directory) is required\n\n" unless $opt_h;
 		++$bad;
 	}
-
+    
+    $opt_D = lc($opt_D);  # It renders this script more tolerant, acepting the name of the database even in upper cases.
+    
 
 # 	my $old_file_kwd =  qr/($opt_D\.model\.(\d+)(\d{5})(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
 	my $new_file_kwd =  qr/($opt_D\.model\.(\d+)_(\d+)(?:\.\d[\d.]+)*)\./ unless $bad;  #avoids complains if $opt_D is not specified
