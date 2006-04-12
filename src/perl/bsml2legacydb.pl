@@ -84,22 +84,23 @@ use Workflow::Logger;
 use DBI;
 use XML::Twig;
 
-my @files	= ();
-my $server	= "SYBTIGR";
-my $db		= undef;
-my %opts	= ();
-my %coords	= ();
-my %asm_ids	= ();
-my @genes	= ();
-my %db_ids	= ();
-my $debug	= 4;
-my $log_file	= Workflow::Logger::get_default_logfilename;
-my $logger	= undef;
-my %id2title	= ();
-my $loader	= $& if $0 =~ /[\w\.\d]+$/;
-my $prog_name	= undef;
-my $db_name = undef;
-my %latest_ids	= ();
+my @files		= ();
+my $server		= "SYBTIGR";
+my $db			= undef;
+my %opts		= ();
+my %coords		= ();
+my %asm_ids		= ();
+my @genes		= ();
+my %db_ids		= ();
+my $debug		= 4;
+my $log_file		= Workflow::Logger::get_default_logfilename;
+my $logger		= undef;
+my %id2title		= ();
+my $loader		= $& if $0 =~ /[\w\.\d]+$/;
+my $prog_name		= undef;
+my $db_name		= undef;
+my %latest_ids		= ();
+my %deleted_evidence	= ();
 
 sub parse_opts;
 sub print_usage;
@@ -178,7 +179,7 @@ sub parse_opts
 
 sub print_usage
 {
-	pod2usage( {-exitval => 1, -verbose => 2, -output => \*STDERR} );
+	pod2usage( {-exitval => 1, -verbose => 2, -output => \*STDOUT} );
 }
 
 sub process_files
@@ -404,6 +405,8 @@ sub process_aln {
 				"from Seq-pair_run")
 			if !$chain_num or !$pct_id or !$pct_sim;
 		my $prog_tag = $prog_name =~ /aat_aa/ ? 'nap' : 'gap2';
+
+		cleanup_evidence_records($asm_id, $prog_tag, $db_id);
         
         $logger->debug("executing evidence insert_stmt: $asm_id.intergenic, $prog_tag, " .
 				      "$subj_id, $query_start, $query_stop, " .
@@ -555,4 +558,21 @@ sub get_latest_id
 		$latest_ids{$asm_id}{$feat_type} = $last_id;
 	}
 	return \($latest_ids{$asm_id}{$feat_type});
+}
+
+sub cleanup_evidence_records
+{
+
+	print "cleanup_evidence_records called\n";
+
+	my ($asm_id, $prog_tag, $db_id) = @_;
+	return if $deleted_evidence{$asm_id}{$prog_tag}{$db_id};
+	my $sql = "DELETE FROM evidence WHERE ev_type='$prog_tag' AND " .
+		  "db='$db_id' AND feat_name='$asm_id.intergenic'";
+
+	print "$sql\n";
+
+	$dbh->do($sql);
+	++$deleted_evidence{$asm_id}{$prog_tag}{$db_id};
+	return $dbh->prepare($sql);
 }
