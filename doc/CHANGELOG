@@ -99,6 +99,10 @@ ergatis-v1r16b1
 -update to legacy2bsml component to require a control file as input
 -reworking of initdb and bsml2chado, mostly to deal with scalability problems
 
+ergatis-v1r16b2
+--------------
+-bug fix release.  aat_aa components point temporarily to a new dps version from bhaas.  will later replace the standard dps.
+
 current
 --------------
 -added ngap, nucmer_snps, tmhmm components to Makefile.PL
