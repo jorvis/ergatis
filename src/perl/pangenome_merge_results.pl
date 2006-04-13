@@ -68,7 +68,6 @@ my $results = GetOptions (	\%options,
 #							'filter_list|f=',
                           	'input_list|i=s',
               				'output_path|o=s',
-							'write_lists',
               				'debug|d=s',
               				'command_id=s',       ## passed by workflow
               				'logconf=s',          ## passed by workflow (not used)
