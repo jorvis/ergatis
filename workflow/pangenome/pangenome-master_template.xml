@@ -49,6 +49,11 @@
         </command>
         <command>
             <type>RunDistributedCommand</type>
+            <name>Merge pangenome data</name>
+            <configMapId>pangenome_merge_results</configMapId>
+        </command>
+        <command>
+            <type>RunDistributedCommand</type>
             <name>Do pangenome analysis</name>
             <configMapId>pangenome_do_analysis</configMapId>
         </command>
