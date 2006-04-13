@@ -25,6 +25,7 @@ use File::Path;
 
 our ($opt_L, $opt_D, $opt_h, $opt_p, $opt_t, $opt_T, $opt_z, $opt_R, $opt_r);
 getopts('L:D:hp:t:T:zRr');
+umask(0000);
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);

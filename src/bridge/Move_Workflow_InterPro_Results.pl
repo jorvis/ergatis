@@ -23,6 +23,7 @@ use File::Path;
 
 our ($opt_L, $opt_D, $opt_R, $opt_r, $opt_h);
 getopts('L:D:hRr');
+umask(0000);
 
 MAIN:{
 	my ($prN) = ($0 =~ /\/?([^\/]+)$/);
