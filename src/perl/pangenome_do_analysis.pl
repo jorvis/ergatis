@@ -1,4 +1,5 @@
-#!/usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -70,7 +71,7 @@ my $results = GetOptions (	\%options,
                           	'input_list|i=s',
               				'output_path|o=s',
 							'output_file|f=s',
-							'write_lists=i',
+							'write_lists',
               				'debug|d=s',
               				'command_id=s',       ## passed by workflow
               				'logconf=s',          ## passed by workflow (not used)
@@ -98,39 +99,25 @@ if (!-e $options{'input_list'}) {
 
 open (IN, $options{'input_list'}) || die "couldn't open input list";
 
-#if (
-
-while (<IN>) {
-	chomp;
-	my $db;
-	my $filename = basename($_);
-	
-	## parse the query database name from the filename
-	if ($filename =~ /^([^_]+)_/) {
-		$db = $1;
-	} else {
-		die "failed parsing db name from $_";
-	}
-
-	## unserialize the stored data
-	my $temp_ref = retrieve($_) || die "failed unserializing $_";
-
-	## pull the blast results data array out of the stored array
-	my $results_ref = shift(@{$temp_ref});
-	push(@results, @{$results_ref});
-
-	## pull the dups hash out of the stored array
-	my $dups_ref = shift(@{$temp_ref});
-	foreach my $key(keys(%{$dups_ref})) {
-		$dups->{$db}->{$key}=1;
-	}
-
-	$temp_ref = undef;
+print STDERR "Reading stored data...\n";
+if (! -e $options{'output_path'}."/pangenome.blast.stored") {
+	die "no stored blast data file found in output dir";
 }
+
+my $temp_ref = retrieve($options{'output_path'}."/pangenome.blast.stored");
+## pull the blast results data array out of the stored array
+my $results_ref = shift(@{$temp_ref});
+@results = @{$results_ref};
+
+## pull the dups hash out of the stored array
+my $dups_ref = shift(@{$temp_ref});
+$dups = $dups_ref;
 
 my %dbs;
 my @genomes;
 my $genes={};
+
+print STDERR "Processing results...\n";
 
 foreach (@results) {
 	if (!defined($genes->{$_->[0]})) {
@@ -148,9 +135,17 @@ my $max = scalar @genomes;
 
 open(RESULT, ">".$output_path."/".$output_file) || die "couldn't open $output_file for writing";
 
+# output the gene counts for single genomes
 foreach (@genomes) {
+	my $genome_dup_count = 0;
 	my $gene_count = scalar keys(%{$genes->{$_}});
-	print RESULT "1\t$gene_count\t$gene_count\n";
+	foreach my $dup_set(keys(%{$dups->{$_}})) {
+			my @dup_genes = split(" ", $dup_set);
+			$genome_dup_count += (scalar(@dup_genes) - 1);
+	}
+	## our output table will take the form:	
+	## genomecount\tcore\tshared\tnew\tcore dup count\tshared dup\tnew dup
+	print RESULT "1\t0\t0\t$gene_count\t0\t0\t$genome_dup_count\n";
 }
 
 my $comp_counter = {};
@@ -165,56 +160,66 @@ for (my $i = 1; $i <= $max; $i++) {
 		my $ref_string = "(".join(",",@reference).")\n";
 		my @comparison_set = @{array_diff(\@genomes, \@reference)};
 		foreach my $comp_genome(@comparison_set) {
-			print STDERR $ref_string."plus\n$comp_genome\n";
-			my $new = 0;
-			my $corecount = 0;
+			my $dup_counts = {};
 			$comp_counter->{$comp_genome}->{$i}++;
 			my $genes_by_category = {};
 			GENE: foreach my $gene(keys(%{$genes->{$comp_genome}})) {
 				my $count = 0;
 
 				foreach my $ref_genome(@reference) {
+					## if the hash value == 1
 					if ($genes->{$comp_genome}->{$gene}->{$ref_genome}) {
 						$count++;
+						## we have a hit
 						$genes_by_category->{$comp_genome}->{'shared'}->{$gene}=1;
 					}
 				}		
+				## if the number of genomes we have hits against is equal to the total
 				if ($count == scalar @reference) {
-					$corecount++;
+					## then this is a core gene
 					$genes_by_category->{$comp_genome}->{'core'}->{$gene}=1;
 				}
+				## if we didn't have any hits at all
 				if ($count == 0) {
-					$new++;
+					## then this is a new (strain specific) gene
 					$genes_by_category->{$comp_genome}->{'new'}->{$gene}=1;
 				}
-								
-				#A## This block requires that a gene have one
-				#A# or more hits to be considered core.
-				#A# The changes below require that to be core it must
-				#A# be in all
-				#A#$count++;
-				#A#foreach my $ref_genome(@reference) {
-				#A#	if ($genes->{$comp_genome}->{$gene}->{$ref_genome}) {
-				#A#		next GENE;
-				#A#	}
-				#A#}
-				#A#$new++;
-#				foreach my $ref_genome(@reference) {
-#					if ($genes->{$comp_genome}->{$gene}->{$ref_genome}) {
-#						$count++;
-#					}
-#				}
-#				if ($count == scalar @reference) {
-#					$corecount++;
-#				}
-#				if ($count == 0) {
-#					$new++;
-#				}
 			}
-#			#A#my $corecount = $count-$new;
-			print STDERR "Core: $corecount New: $new\n";
 			my $rgcount = (scalar @reference) + 1;
-			print RESULT "$rgcount\t$corecount\t$new\n";
+			
+			## process lists to see how many duplicated genes are in each category
+			foreach my $cat(('core', 'shared', 'new')) {
+				$dup_counts->{$comp_genome}->{$cat} = 0;
+				## we'll look at each set of duplicates one at a time
+				foreach my $dup_set(keys(%{$dups->{$comp_genome}})) {
+					my @dup_genes = split(" ", $dup_set);
+					my $dup_count = scalar(@dup_genes);
+					my $dup_counter=0;
+					## for each gene of a duplicate set
+					foreach my $dup(@dup_genes) {
+						## check if it's in the category
+						if ($genes_by_category->{$comp_genome}->{$cat}->{$dup}) {
+							$dup_counter++;
+						}
+					}
+					## check if all of the dups of a set weren't found in the same category
+					if ($dup_counter > 0 && $dup_count != $dup_counter) {
+						print STDERR "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem\n";
+					## and if they are, then add the dup overcount to the total
+					} elsif ($dup_counter == $dup_count) {
+						$dup_counts->{$comp_genome}->{$cat} += ($dup_count - 1);
+					}
+				}
+			}
+			
+			my $core_count     = scalar(keys(%{$genes_by_category->{$comp_genome}->{'core'}}));
+			my $shared_count   = scalar(keys(%{$genes_by_category->{$comp_genome}->{'shared'}}));
+			my $new_count      = scalar(keys(%{$genes_by_category->{$comp_genome}->{'new'}}));
+			my $core_dup_count   = $dup_counts->{$comp_genome}->{'core'};
+			my $shared_dup_count = $dup_counts->{$comp_genome}->{'shared'};
+			my $new_dup_count    = $dup_counts->{$comp_genome}->{'new'};
+			
+			print RESULT "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\n";
 
 			if ($options{'write_lists'}) { 
 			
