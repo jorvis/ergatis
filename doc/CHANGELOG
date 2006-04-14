@@ -103,11 +103,34 @@ ergatis-v1r16b2
 --------------
 -bug fix release.  aat_aa components point temporarily to a new dps version from bhaas.  will later replace the standard dps.
 
-current
+ergatis-v1r17b1
 --------------
--added ngap, nucmer_snps, tmhmm components to Makefile.PL
+-added ngap, nucmer_snps, targetp, tmhmm components to Makefile.PL
 -added infernal component
+-added mepipe component
+-added muscle component
 -added snap component and snap2bsml
 -added snoscan component
+-added pangenome component
 -changed bsml2fasta.pl to work on .bsml.gz files
 -added option to not compress raw, btab, or bsml outputs for aat_aa, aat_aa_masked, aat_na, aat_na_masked
+-index.cgi, pipeline_list.cgi no longer fail when illegal characters appear in error messages
+-workflow_run_dir now configurable in ergatis.ini
+-release SOP updates
+-logger functionality restored using Log::LogSimple
+-repeat2legacydb.pl now supports repeat database name resolution
+-bsml2fasta.pl now supports inclusion/exclusion of sequences by role
+-bsml2legacydb.pl now cleans up previously existing evidence records before load
+-check_logfiles.pl temporarily disabled
+-list_file support added to compress_file.pl
+-AAT components now create Seq-data-import elements and only query Sequence elements get a Link
+-path to augustus executable now configurable in augustus component
+-backupdb, delete_analysis, initdb, subfeature_mapping now manage lockfiles to prevent conflicts
+-dup_list steps on featureprop, featureloc, analysisfeature restored
+-default output directory standardized in legacy2bsml
+-default sharedconf.ini updated
+-all wu-blast components now parse directly from raw output -> bsml
+-minor bug fixes
+
+next
+--------------
