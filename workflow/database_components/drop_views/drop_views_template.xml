@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>create_indices workflow</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>create_index</configMapId>
+            <name>create_index</name>
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>dump_tables workflow</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>dump_table</configMapId>
+            <name>dump_table</name>
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>grant_permissions workflow</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>grant_permission</configMapId>
+            <name>grant_permission</name>
+        </command>
+    </commandSet>
+</commandSetRoot>
