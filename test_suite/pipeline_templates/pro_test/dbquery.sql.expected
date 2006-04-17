@@ -4,10 +4,10 @@
  assembly                                 2
  exon                                  7677
  gene                                  7677
- match                                45721
- match_part                          125665
- match_set                            67207
- polypeptide                          18665
+ match                                46354
+ match_part                          126316
+ match_set                            67225
+ polypeptide                          18742
  rRNA                                    54
  ribosome_entry_site                   7481
  signal_peptide                        7471
@@ -28,7 +28,7 @@
  match                          BER_analysis                              3
 	       3094
  match                          HMM2_analysis                             4
-	      21665
+	      22286
  match                          NCBI_COG                                  5
 	       3993
  match                          PROSITE                                   6
@@ -36,7 +36,7 @@
  match                          BER_analysis                              9
 	       1368
  match                          HMM2_analysis                            10
-	       9730
+	       9742
  match                          NCBI_COG                                 11
 	       1696
  match                          PROSITE                                  12
@@ -50,7 +50,7 @@
  match_part                     BER_analysis                              3
 	       3094
  match_part                     HMM2_analysis                             4
-	      22339
+	      22960
  match_part                     NCBI_COG                                  5
 	       3993
  match_part                     PROSITE                                   6
@@ -58,7 +58,7 @@
  match_part                     BER_analysis                              9
 	       1368
  match_part                     HMM2_analysis                            10
-	       9895
+	       9907
  match_part                     NCBI_COG                                 11
 	       1696
  match_part                     PROSITE                                  12
@@ -66,15 +66,15 @@
  match_part                     wu-blastp                                13
 	      75951
  match_part                     pe                                       17
-	       5406
+	       5424
  match_set                      wu-blastp                                13
 	      61801
  match_set                      pe                                       17
-	       5406
+	       5424
  polypeptide                    BER_analysis                              3
 	       2756
  polypeptide                    HMM2_analysis                             4
-	       8404
+	       8502
  polypeptide                    NCBI_COG                                  5
 	       5543
  polypeptide                    PROSITE                                   6
@@ -82,7 +82,7 @@
  polypeptide                    BER_analysis                              9
 	       1167
  polypeptide                    HMM2_analysis                            10
-	       2237
+	       2230
  polypeptide                    NCBI_COG                                 11
 	       1816
  polypeptide                    PROSITE                                  12
@@ -103,15 +103,15 @@
  assembly                       topology                                 2
  assembly                       molecule_name                            2
  assembly                       molecule_type                            2
- match_part                     PEffect_Cluster_Id                    5406
- match_part                     PEffect_Cluster_Gap_Count             5406
- match_part                     PEffect_Cluster_Gene_Count            5406
+ match_part                     PEffect_Cluster_Id                    5424
+ match_part                     PEffect_Cluster_Gap_Count             5424
+ match_part                     PEffect_Cluster_Gene_Count            5424
  match_part                     p_value                              75951
  match_part                     percent_coverage_refseq              75951
  match_part                     percent_coverage_compseq             75951
  match_part                     percent_similarity                   80408
  polypeptide                    MW                                    7402
- polypeptide                    pI                                    7402
+ polypeptide                    pi                                    7402
  polypeptide                    transmembrane_coords                  7676
  polypeptide                    transmembrane_regions                 7676
  polypeptide                    outer_membrane_protein                7676
@@ -129,11 +129,11 @@
  snRNA                          name                                     5
  tRNA                           name                                    95
  tRNA                           tRNA_anti-codon                        175
- terminator                     term_direction                        2399
- terminator                     term_confidence                       2399
  transcript                     auto_annotate_toggle                   727
- transcript                     gene_symbol                           1671
+ transcript                     gene_symbol                           1679
  transcript                     comment                               1887
+ transcript                     completed_by                          6608
+ transcript                     start_site_editor                     6608
  transcript                     auto_comment                          7625
  transcript                     date                                  7677
  transcript                     assignby                              7677
@@ -142,20 +142,22 @@
 (39 rows affected)
                                                                           
  ------------------------------ ------------------------------ -----------
- Bacillus anthracis Ames        b_anthracis_ames                    200903
+ Bacillus anthracis Ames        b_anthracis_ames                    202205
  Streptococcus agalactiae 2603V s_agalactiae_2603vr                  91363
- not known                      not known                            13290
+ not known                      not known                            13367
 
 (3 rows affected)
                                            
  ------------------------------ -----------
+ ANNFLG                                   5
+ ARDCF                                    4
  EC                                    9238
  EGAD                                  1118
  GB                                       4
  GFF3                                    26
  GO                                   18256
  GP                                     874
- Genbank                               7426
+ Genbank                               7428
  MetaCyc                               3954
  NCBI_gi                               7426
  OMNI                                  1253
@@ -164,12 +166,12 @@
  Pfam                                  2839
  RESID                                   11
  Reactome                              1963
- SO                                    1015
+ SO                                    1026
  SP                                     670
  Swiss-Prot                            7367
  TAIR:TED\                                3
  TC                                     391
- TIGR_TIGRFAMS                         2041
+ TIGR_TIGRFAMS                         2118
  TIGR_prok:gba                        25719
  TIGR_prok:gbs                        10219
  TIGR_role                              268
@@ -179,6 +181,7 @@
  annotation_attributes.ontology         127
  component.ontology                     155
  evidence_code                          129
+ gb_old_locus_tag                      7677
  go_properties                           24
  output.ontology                         76
  owl                                      1
@@ -186,7 +189,7 @@
  synonym_types                            6
  taxon                                    1
 
-(36 rows affected)
+(39 rows affected)
  name                                                          
  -------------------------------------------------- -----------
  EGAD                                                      1118
@@ -197,7 +200,7 @@
  PROSITE                                                    515
  Pfam                                                      2839
  SP                                                         670
- TIGR_TIGRFAMS                                             2041
+ TIGR_TIGRFAMS                                             2118
  TIGR_prok:gba                                            41936
  TIGR_prok:gbs                                            15709
 
@@ -207,7 +210,7 @@
  EGAD                                                      1118
  GB                                                           4
  GP                                                         874
- Genbank                                                  37130
+ Genbank                                                  37132
  NCBI_gi                                                  37130
  OMNI                                                      1253
  PIR                                                          4
@@ -215,23 +218,24 @@
  Pfam                                                      2839
  SP                                                         670
  Swiss-Prot                                               36935
- TIGR_TIGRFAMS                                             2041
+ TIGR_TIGRFAMS                                             2118
  TIGR_prok:gba                                            97148
  TIGR_prok:gbs                                            38383
+ gb_old_locus_tag                                         38385
 
-(14 rows affected)
+(15 rows affected)
                                            
  ------------------------------ -----------
  CDS                                   8924
  assembly                             48502
- polypeptide                         468317
+ polypeptide                         470921
 
 (3 rows affected)
                                            
  ------------------------------ -----------
  derives_from                         15354
  member_of                             7677
- part_of                             150536
+ part_of                             151187
 
 (3 rows affected)
                                
@@ -283,7 +287,7 @@
                                            
  ------------------------------ -----------
  assembly                                 2
- transcript                           17933
+ transcript                           21534
 
 (2 rows affected)
 
@@ -309,7 +313,7 @@
                                                                                 
                                                                                 
                        
-	HMM2                                                     63629
+	HMM2                                                     64895
 
 	computed_by                                                             
                                                                                 
@@ -351,7 +355,7 @@
                                                                                 
                                                                                 
                        
-	pe                                                       10812
+	pe                                                       10848
 
 	computed_by                                                             
                                                                                 
@@ -369,7 +373,7 @@
                                                                                 
                                                                                 
                        
-	HMM2                                                     10641
+	HMM2                                                     10732
 
 	input_of                                                                
                                                                                 

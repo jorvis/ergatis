@@ -4,13 +4,15 @@
  assembly                                 4
  exon                                 20987
  gene                                  3020
+ located_sequence_feature                52
  match                                 8662
- match_part                           45144
- match_set                            21199
+ match_part                           45142
+ match_set                            21197
+ microsatellite                          22
  polypeptide                           6055
  transcript                            3387
 
-(9 rows affected)
+(11 rows affected)
                                                                           
  ------------------------------ ------------------------------ -----------
  CDS                            snap                                     8
@@ -37,10 +39,10 @@
  match                          cogs                                   107
  match                          jaccard                                330
  match                          HMM2_analysis                         8225
- match_part                     pe                                      18
+ match_part                     pe                                      16
  match_part                     HMM2_analysis                        10428
  match_part                     wu-blastp                            34698
- match_set                      pe                                      18
+ match_set                      pe                                      16
  match_set                      wu-blastp                            21181
  polypeptide                    snap                                     8
  polypeptide                    augustus                                 8
@@ -71,14 +73,16 @@
  assembly                       fa_right                                 4
  assembly                       fa_orient                                4
  assembly                       chromosome                               4
+ assembly                       molecule_name                            4
+ located_sequence_feature       comment                                 52
  match                          date                                  8225
  match                          assignby                              8225
  match                          HMM_curated                           8225
  match                          total_score                           8225
  match                          expect_whole                          8225
- match_part                     PEffect_Cluster_Id                      18
- match_part                     PEffect_Cluster_Gap_Count               18
- match_part                     PEffect_Cluster_Gene_Count              18
+ match_part                     PEffect_Cluster_Id                      16
+ match_part                     PEffect_Cluster_Gap_Count               16
+ match_part                     PEffect_Cluster_Gene_Count              16
  match_part                     domain_score                         10428
  match_part                     expect_domain                        10428
  match_part                     p_value                              34698
@@ -86,7 +90,7 @@
  match_part                     percent_coverage_refseq              34698
  match_part                     percent_coverage_compseq             34698
  polypeptide                    MW                                      11
- polypeptide                    pI                                      11
+ polypeptide                    pi                                      11
  transcript                     comment                                  3
  transcript                     gene_structure_curated                   4
  transcript                     auto_comment                             8
@@ -94,17 +98,19 @@
  transcript                     assignby                              3176
  transcript                     gene_product_name                     3176
 
-(32 rows affected)
+(34 rows affected)
                                                                           
  ------------------------------ ------------------------------ -----------
- Brugia malayi                  b_malayi                              1919
- Caenorhabditis briggsae        cba1                                  6771
+ Brugia malayi                  b_malayi                              1993
+ Caenorhabditis briggsae        cba1                                  6767
  Caenorhabditis elegans synteny cea2                                100050
  not known                      not known                             3105
 
 (4 rows affected)
                                            
  ------------------------------ -----------
+ ANNFLG                                   5
+ ARDCF                                    4
  EC                                    9238
  GFF3                                    26
  GO                                   18256
@@ -112,11 +118,11 @@
  Pfam                                  1885
  RESID                                   11
  Reactome                              1963
- SO                                    1015
+ SO                                    1026
  TAIR:TED\                                3
  TC                                     391
  TIGR_TIGRFAMS                          783
- TIGR_euk:bma1                          958
+ TIGR_euk:bma1                          969
  TIGR_euk:cba1                         1791
  TIGR_euk:cea2                        27240
  TIGR_role                              268
@@ -133,17 +139,17 @@
  relationship                            18
  synonym_types                            6
 
-(27 rows affected)
+(29 rows affected)
                                            
  ------------------------------ -----------
- assembly                             34168
- polypeptide                         150178
+ assembly                             34242
+ polypeptide                         150170
 
 (2 rows affected)
                                            
  ------------------------------ -----------
  derives_from                          6774
  member_of                             3387
- part_of                              69518
+ part_of                              69516
 
 (3 rows affected)
