@@ -10,7 +10,7 @@ use File::Basename;
 
 use Getopt::Long qw(:config no_ignore_case);
 use IO::File;
-use MUMer::SnpDataType;
+use MUMmer::SnpDataType;
 
 my $in		= new IO::File->fdopen(fileno(STDIN), "r");
 my $out		= new IO::File("|sort|uniq>/dev/stdout");
@@ -46,13 +46,13 @@ sub extract_data
 	while (my $line = <$in>) {
 		chomp $line;
 		if ($line =~ /^\[/) {
-			MUMer::SnpDataType::SetHeader($line);
+			MUMmer::SnpDataType::SetHeader($line);
 			next;
 		}
 		my @tokens = split /\t/, $line;
 		next if scalar(@tokens) !=
-			MUMer::SnpDataType::GetNumberOfColumns;
-		my $snp = new MUMer::SnpDataType($line);
+			MUMmer::SnpDataType::GetNumberOfColumns;
+		my $snp = new MUMmer::SnpDataType($line);
 		$out->printf("%s\t%d\t%s\t%s\n", $snp->GetQueryId,
 			     $snp->GetQueryPosition,
 			     $snp->GetQueryFrame > 0 ? "+" : "-",
