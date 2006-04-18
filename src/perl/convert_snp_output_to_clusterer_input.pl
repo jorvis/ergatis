@@ -8,7 +8,7 @@ use warnings;
 use IO::File;
 use Getopt::Long qw(:config no_ignore_case);
 
-use MUMer::SnpDataType;
+use MUMmer::SnpDataType;
 
 my $in	= new IO::File->fdopen(fileno(STDIN), "r");
 my $out	= new IO::File->fdopen(fileno(STDOUT), "w");
@@ -42,13 +42,13 @@ sub convert_output
 	while (my $line = <$in>) {
 		chomp $line;
 		if ($line =~ /^\[/) {
-			MUMer::SnpDataType::SetHeader($line);
+			MUMmer::SnpDataType::SetHeader($line);
 			next;
 		}
 		my @tokens = split /\t/, $line;
 		next if scalar(@tokens) !=
-			MUMer::SnpDataType::GetNumberOfColumns;
-		my $snp = new MUMer::SnpDataType($line);
+			MUMmer::SnpDataType::GetNumberOfColumns;
+		my $snp = new MUMmer::SnpDataType($line);
 		my $query_id = $snp->GetQueryId;
 		my $subj_id = $snp->GetSubjectId;
 

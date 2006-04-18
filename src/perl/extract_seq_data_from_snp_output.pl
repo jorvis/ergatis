@@ -51,7 +51,7 @@ sub extract_data
 		}
 		my @tokens = split /\t/, $line;
 		next if scalar(@tokens) !=
-			MUMmer::SnpDataType::GetNumberOfColumns;
+			MUMmer::SnpDataType::GetNumberOfColumns();
 		my $snp = new MUMmer::SnpDataType($line);
 		$out->printf("%s\t%d\t%s\t%s\n", $snp->GetQueryId,
 			     $snp->GetQueryPosition,
