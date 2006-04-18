@@ -9,6 +9,7 @@ my @header	= qw(P1 SUB1 SUB2 P2 BUFF DIST R Q LEN_R LEN_Q CTX_R CTX_Q
 # class methods
 sub GetHeader;
 sub SetHeader;
+sub GetNumberOfColumns;
 sub new;
 
 # instance methods
@@ -76,6 +77,11 @@ sub SetHeader
 			push @header, $col_type;
 		}
 	}
+}
+
+sub GetNumberOfColumns
+{
+	return scalar(@header);
 }
 
 sub new
