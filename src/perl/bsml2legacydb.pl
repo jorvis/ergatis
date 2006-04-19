@@ -101,6 +101,7 @@ my $prog_name		= undef;
 my $db_name		= undef;
 my %latest_ids		= ();
 my %deleted_evidence	= ();
+my %chain_nums		= ();
 
 sub parse_opts;
 sub print_usage;
@@ -351,39 +352,50 @@ sub process_aln {
 	my ($twig, $aln, $asm_id, $prog_name) = @_;
 	my $insert_stmt = prepare_evidence_insert_stmt;
 	my $total_score = 0;
-	foreach my $attr ($aln->children('Attribute')) {
-		$total_score = $attr->att('content') and last
-			if ($attr->att('name') eq 'total_score') or
-			$logger->logdie("Failed to get total_score from " .
-					"Seq-pair-alignment");
+
+	my $prog_tag = $prog_name;
+	if ($prog_tag =~ /aat_aa/) {
+		$prog_tag = 'nap';
 	}
+	elsif ($prog_tag =~ /aat_na/) {
+		$prog_tag = 'gap2';
+	}
+
+	foreach my $attr ($aln->children('Attribute')) {
+		$total_score = attr->att('content') and last
+			if $attr->att('name') eq 'total_score';
+	}
+	$logger->logdie("Failed to get total_score from Seq-pair-alignment")
+		if !$total_score and
+		($prog_tag eq 'nap' or $prog_tag eq 'gap2');
+
 	$logger->logdie("Cannot find compseq for Seq-pair-alignment")
 		if !defined $aln->att('compseq');
 	my $subj_id = $id2title{$aln->att('compseq')} or
 		$logger->logdie("Cannot find id-title mapping for Sequence");
                 
-    if (! defined $db_name ) {
-        $db_name = $1 if $aln->att('compxref') =~ /\/([\w\.\-]+):/ or
-		$logger->logdie("Cannot extract compxref from " .
-				"Seq-pair-alignment");
-    }
+	if (! defined $db_name ) {
+		$db_name = $1 if $aln->att('compxref') =~ /\/([\w\.\-]+):/ or
+			$logger->logdie("Cannot extract compxref from " .
+					"Seq-pair-alignment");
+	}
                 
 	my $db_id = get_db_id($db_name);
-	my $chain_num = 0;
 	my $pct_id = 0;
 	my $pct_sim = 0;
 	foreach my $seq_pair_run ($aln->children('Seq-pair-run')) {
+		my $chain_num = undef;
 		my $score = $seq_pair_run->att('runscore');
 		my $query_start = $seq_pair_run->att('refpos') + 1;
 		my $query_aln_len = $seq_pair_run->att('runlength');
 		#my $query_stop = $query_start + $query_aln_len;  ## generated off-by-one errors
-        my $query_stop = $seq_pair_run->att('refpos') + $query_aln_len;
+		my $query_stop = $seq_pair_run->att('refpos') + $query_aln_len;
 		my $query_comp = $seq_pair_run->att('refcomplement');
 		
-        my $subj_start = $seq_pair_run->att('comppos') + 1;
+		my $subj_start = $seq_pair_run->att('comppos') + 1;
 		my $subj_aln_len = $seq_pair_run->att('comprunlength');
 		#my $subj_stop = $subj_start + $subj_aln_len;  ## generated off-by-one errors
-        my $subj_stop = $seq_pair_run->att('comppos') + $subj_aln_len;
+		my $subj_stop = $seq_pair_run->att('comppos') + $subj_aln_len;
 		my $subj_comp = $seq_pair_run->att('compcomplement');
         
 		swap(\$query_start, \$query_stop) if $query_comp;
@@ -400,20 +412,26 @@ sub process_aln {
 				$pct_sim = $attr->att('content');
 			}
 		}
-		$logger->logdie("Failed to extract either chain_number, " .
-				"percent_identity, or percent_similarity ".
+		$logger->logdie("Failed to extract chain_number from ".
+				"Seq-pair-run")
+			if ($prog_tag eq 'nap' or $prog_tag eq 'gap2') and
+				!$chain_num;
+		$logger->logdie("Failed to extract either " .
+				"percent_identity or percent_similarity ".
 				"from Seq-pair_run")
-			if !$chain_num or !$pct_id or !$pct_sim;
-		my $prog_tag = $prog_name =~ /aat_aa/ ? 'nap' : 'gap2';
-
+			if !$pct_id or !$pct_sim;
+		$chain_num = ++$chain_nums{$subj_id}{$db_id}
+			if !defined $chain_num;
 		cleanup_evidence_records($asm_id, $prog_tag, $db_id);
-        
-        $logger->debug("executing evidence insert_stmt: $asm_id.intergenic, $prog_tag, " .
-				      "$subj_id, $query_start, $query_stop, " .
-				      "$subj_start, $subj_stop, $prog_name, " .
-				      "$pct_id, $pct_sim, $score, $db_id, " .
-				      "$score, $total_score, $chain_num") if $logger->is_debug();
-        
+
+		$logger->debug("executing evidence insert_stmt: " .
+			       "$asm_id.intergenic, $prog_tag, " .
+			       "$subj_id, $query_start, $query_stop, " .
+			       "$subj_start, $subj_stop, $prog_name, " .
+			       "$pct_id, $pct_sim, $score, $db_id, " .
+			       "$score, $total_score, $chain_num")
+			if $logger->is_debug();
+
 		$insert_stmt->execute("$asm_id.intergenic", $prog_tag, 
 				      $subj_id, $query_start, $query_stop,
 				      $subj_start, $subj_stop, $prog_name,
@@ -562,16 +580,10 @@ sub get_latest_id
 
 sub cleanup_evidence_records
 {
-
-	print "cleanup_evidence_records called\n";
-
 	my ($asm_id, $prog_tag, $db_id) = @_;
 	return if $deleted_evidence{$asm_id}{$prog_tag}{$db_id};
 	my $sql = "DELETE FROM evidence WHERE ev_type='$prog_tag' AND " .
 		  "db='$db_id' AND feat_name='$asm_id.intergenic'";
-
-	print "$sql\n";
-
 	$dbh->do($sql);
 	++$deleted_evidence{$asm_id}{$prog_tag}{$db_id};
 	return $dbh->prepare($sql);
