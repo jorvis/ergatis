@@ -303,6 +303,40 @@ sub install_peffect {
 
 }
 
+#--------------------------------------------------
+# install_logcabin()
+#
+#--------------------------------------------------
+sub install_logcabin {
+
+    my ($workingdir, $installdir, $tag) = @_;
+
+    chdir($workingdir);
+
+    my $execstring = "cvs -Q export -kkv -r HEAD -d logcabin logcabin";
+
+    &do_or_die($execstring);
+
+    chdir("logcabin");
+    
+    &do_or_die($execstring);
+    
+    $execstring = "perl Makefile.PL PREFIX=$installdir";
+
+    &do_or_die($execstring);
+
+    $execstring = "make";
+
+    &do_or_die($execstring);
+    
+    $execstring = "make install";
+
+    &do_or_die($execstring);
+
+
+}
+
+
 
 #----------------------------------------------------
 # clear_working_dir()
@@ -322,6 +356,8 @@ sub clear_working_dir {
 	$execstring = "rm -rf $workingdir/cvdata";
 	&do_or_die($execstring);
 	$execstring = "rm -rf $workingdir/ontologies";
+	&do_or_die($execstring);
+	$execstring = "rm -rf $workingdir/logcabin";
 	&do_or_die($execstring);
 }
 	
@@ -375,9 +411,8 @@ sub execute_installation {
 	    $server = $cvshash->{'server'};
         }
 	
-
-
-
+	&install_logcabin($workingdir, $installdir);
+	
 	foreach my $name (sort keys %{$cvshash} ) {
 
 		my $tag = $cvshash->{$name};
