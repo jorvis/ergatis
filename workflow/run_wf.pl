@@ -15,6 +15,7 @@ USAGE:  run_wf.pl
     --ini ini file 
   [ --skiprun
     --nodistib
+	--workflow_root root of workflow install
     --debug debug_level
     --log log_file
   ]
@@ -53,6 +54,7 @@ my $results = GetOptions (\%options,
 			  'template|t=s',
 			  'skiprun=s',
 			  'nodistrib=s',
+  			  'workflow_root:s',
 			  'log|l=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
@@ -70,10 +72,16 @@ if( $options{'help'} ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDERR} );
 }
 
-
 &check_parameters(\%options);
 
-my $wfexec = new Workflow::Run('nodistrib'=>$options{'nodistrib'});
+my $wfexec;
+if ($options{'workflow_root'}) {
+	$wfexec = new Workflow::Run( 'nodistrib'     => $options{'nodistrib'},
+								 'WORKFLOW_ROOT' => $options{'workflow_root'}
+							   );
+} else {
+	$wfexec = new Workflow::Run('nodistrib'=>$options{'nodistrib'});
+}
 
 my $instancexmlfile= "$options{'instance'}";
 
