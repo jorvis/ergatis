@@ -131,10 +131,12 @@ if (defined($options{'execute'})) {
     $ENV{'WF_ROOT'} = $options{'workflow-path'};
     $ENV{'WF_ROOT_INSTALL'} = $options{'workflow-path'};
 
+my $workflow_root = $options{'workflow-path'};
+	
 #    doORdie($options{'workflow-path'}.'/CreateWorkflow -t pipeline.xml -c pipeline.xml.ini -i pipeline.xml.instance --autobuild=false');
 #    doORdie($options{'workflow-path'}.'/RunWorkflow -i pipeline.xml.instance');
-	doORdie($options{'ergatis-install'}."/bin/run_wf --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance");
-	print ($options{'ergatis-install'}."/bin/run_wf --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance\n");
+	doORdie($options{'ergatis-install'}."/bin/run_wf --workflow_root $workflow_root --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance");
+	print ($options{'ergatis-install'}."/bin/run_wf --workflow_root $workflow_root --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance\n");
 }
 
 exit();
