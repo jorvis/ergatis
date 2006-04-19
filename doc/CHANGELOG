@@ -132,5 +132,9 @@ ergatis-v1r17b1
 -all wu-blast components now parse directly from raw output -> bsml
 -minor bug fixes
 
+ergatis-v1r17b2
+--------------
+-bug fix release for nucmer_snps component and dependencies
+
 next
 --------------
