@@ -34,7 +34,7 @@ based upon a "debug" level will be provided.
 use strict;
 use File::Basename;
 use Data::Dumper;
-use Log::LogSimple;
+use Log::Cabin;
 
 my $_DEFAULT_LOG_CATEGORY = "Ergatis";
 my $_IS_INIT=0;
@@ -107,12 +107,12 @@ sub _init_class_loggers {
     my($self) = @_;
     
     # make sure that initialization is only done once
-    if (Log::LogSimple::initialized()) {
+    if (Log::Cabin::initialized()) {
 	return;
     }
 
     #set up defaults for root logger
-    my $logsimple = new Log::LogSimple();
+    my $logsimple = new Log::Cabin();
  
     $logsimple->more_logging($self->{_LOG_LEVEL});
 
@@ -135,10 +135,10 @@ sub _init_class_loggers {
 sub get_logger {
     my $name = shift;
     if(defined $name && !ref $name){
-	return Log::LogSimple::get_logger($_DEFAULT_LOG_CATEGORY."::".$name);
+	return Log::Cabin::get_logger($_DEFAULT_LOG_CATEGORY."::".$name);
     }
     else{
-	return Log::LogSimple::get_logger($_DEFAULT_LOG_CATEGORY);
+	return Log::Cabin::get_logger($_DEFAULT_LOG_CATEGORY);
     }
 }
 
