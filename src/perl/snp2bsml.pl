@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -71,7 +72,7 @@ use strict;
 use warnings qw(all);
 
 use IO::File;
-use BSML::BsmlDoc;
+use BSML::BsmlBuilder;
 use Papyrus::TempIdCreator;
 use Workflow::Logger;
 use Pod::Usage;
@@ -85,6 +86,7 @@ my $db			= undef;
 my $logger		= undef;
 my %seqdata		= ();
 my $RECORD_DELIM	= '//';
+my %seqs_added = ();
 
 &get_opts;
 &parse_data;
@@ -140,7 +142,7 @@ sub init_seqdata
 sub parse_data
 {
 	my $id_creator		= new Papyrus::TempIdCreator;
-	my $doc			= new BSML::BsmlDoc;
+    my $doc			= new BSML::BsmlBuilder();
 	my @indels		= ();
 	my @cluster		= ();
 	while (my $line = <$in>) {
@@ -159,10 +161,19 @@ sub parse_data
 			next;
 		}
 		my $snp = new Sequence::SeqLoc($line);
+
+        if ( ! $seqs_added{$snp->GetId}++ ) {
+            ## assembly should probably not be hard-coded here.
+            my $seq = $doc->createAndAddSequence($snp->GetId(), undef, '', 'dna', 'assembly');
+            $seq->addBsmlLink('analysis', '#nucmer_snps_analysis');
+
+        }
+        
 		$snp->SetSeqData(get_seq_data($snp)) if $snp->GetLength; 
 		push @cluster, $snp;
 	}
 	process_indels($doc, \@indels, $id_creator);
+    
 	$doc->write($out);
 }
 
@@ -171,7 +182,7 @@ sub add_table
 	my ($doc, $cluster, $id_creator, $type) = @_;
 	my $msa_table = $doc->returnBsmlMultipleAlignmentTableR
 			($doc->addBsmlMultipleAlignmentTable);
-	$msa_table->addBsmlLink('analysis', '#snp_analysis', 'computed_by');
+	$msa_table->addBsmlLink('analysis', '#nucmer_snps_analysis', 'computed_by');
 	$msa_table->addattr('molecule-type', $moltype);
 	$msa_table->addattr('id', $id_creator->new_id(db => $db,
 					   	      so_type => $type));
