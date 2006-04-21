@@ -174,9 +174,9 @@ for my $seqid (keys %data) {
         $repeat = $doc->createAndAddFeature($ft, $new_id, '', $idcreator->so_used('tandem_repeat') );
         $repeat->addBsmlLink('analysis', '#trf_analysis', 'computed_by');
         
-        ## add the location of the repeat (all given by RepeatMasker as coords on the forward strand)
+        ## add the location of the repeat (all given by trf as coords are on the forward strand)
         ## 1 is subtracted from each position to give interbase numbering
-        $repeat->addBsmlIntervalLoc( --$$arr[0], --$$arr[1], 0);
+        $repeat->addBsmlIntervalLoc( --$$arr[0], $$arr[1], 0);
         
         ## SO terms for these repeats need to be added as Attributes
         $doc->createAndAddBsmlAttributes( $repeat, 'period_size',        $$arr[2],
