@@ -94,18 +94,18 @@ use BSML::BsmlParserTwig;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
               'project|p=s',
               'log|l=s',
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'debug=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -145,11 +145,10 @@ while (<$ifh>) {
     ## (I think these don't exist anymore in current versions)
     if (( /^\s*sw.*position.*repeat/i) || (/^\s*score.*class.*id/i)) {
 
+        ## set flag which indicates script is parsing older version of repeatmasker output
+        $old_version = 1;
 
-	## set flag which indicates script is parsing older version of repeatmasker output
-	$old_version = 1;
-
-	next;
+        next;
     }
 
     ## let's count the data lines
@@ -170,29 +169,28 @@ while (<$ifh>) {
     
     if (($old_version) && ($colctr == 15)){
 
-	## if we are parsing the old version of input file and the number of columns is fifteen with last column being an integer (ID value)- remove that last column.  it only causes
-	## column ambiguity.
+        ## if we are parsing the old version of input file and the number of columns is fifteen with last column being an integer (ID value)- remove that last column.  it only causes
+        ## column ambiguity.
+        s/(.+)\s+\*\s*$/$1/;
 
-	s/(.+)\s+\*\s*$/$1/;
-
-	$colctr--;
+        $colctr--;
     }
 
 
 
     ## if there are 13 columns, the repeat family must have been missing and we need to adjust.
     if ( $colctr == 13 ) {
-	( $cols[10], $cols[11], $cols[12], $cols[13] ) = ( '', $cols[10], $cols[11], $cols[12] );
-	
-	push( @{$data{$cols[4]}}, \@cols );    
-	
-	## if there are 14 columns, just add.
+    ( $cols[10], $cols[11], $cols[12], $cols[13] ) = ( '', $cols[10], $cols[11], $cols[12] );
+    
+        push( @{$data{$cols[4]}}, \@cols );    
+    
+    ## if there are 14 columns, just add.
     } elsif ( $colctr ==14 ) {
-	push( @{$data{$cols[4]}}, \@cols );
-	
-	## else we have an unrecognized row.
+        push( @{$data{$cols[4]}}, \@cols );
+    
+    ## else we have an unrecognized row.
     } else {
-	$logger->logdie("Could not parse file '$options{'input'}' at file line '$linectr' data line '$datalinectr'.  Number of columns '$colctr'.  The following RepeatMasker line was not recognized and could not be parsed:\n$_\n");
+        $logger->logdie("Could not parse file '$options{'input'}' at file line '$linectr' data line '$datalinectr'.  Number of columns '$colctr'.  The following RepeatMasker line was not recognized and could not be parsed:\n$_\n");
     }
 
 
@@ -215,9 +213,15 @@ for my $seqid (keys %data) {
         $repeat = $doc->createAndAddFeature($ft, $id, '', 'repeat_region');
         $repeat->addBsmlLink('analysis', '#repeatmasker_analysis', 'computed_by');
         
-        ## add the location of the repeat (all given by RepeatMasker as coords on the forward strand)
+        ## add the location of the repeat
         ## 1 is subtracted from each position to give interbase numbering
-        $repeat->addBsmlIntervalLoc( --$$arr[5], --$$arr[6], 0);
+        if ($$arr[8] eq '+') {
+            $repeat->addBsmlIntervalLoc( --$$arr[5], $$arr[6], 0);
+        } elsif ($$arr[8] eq 'C') {
+            $repeat->addBsmlIntervalLoc( --$$arr[5], $$arr[6], 1);
+        } else {
+            $logger->logdie("expected '+' or 'C' in column 9, but found: $$arr[8]");
+        }
         
         ## add the properties of the repeat:
         $doc->createAndAddBsmlAttributes( $repeat, 'matching_repeat',   $$arr[9],
