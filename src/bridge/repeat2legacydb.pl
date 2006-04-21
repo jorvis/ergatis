@@ -228,7 +228,13 @@ sub process_repeat_feature {
     
     my $interval_loc = $elt->first_child('Interval-loc');
     my $startpos     = $interval_loc->{att}->{startpos} + 1;
-    my $endpos       = $interval_loc->{att}->{endpos} + 1;
+    my $endpos       = $interval_loc->{att}->{endpos};
+    
+    ## is the repeat on the reverse strand?
+    if ( $interval_loc->{att}->{complement} ) {
+        ($startpos, $endpos) = ($endpos, $startpos);
+    }
+
     my $feat_name = "$$asmbl_id.repeat" . sprintf("%06d", $$nextid++);
     
     if ($$prog_name eq 'trf') {
