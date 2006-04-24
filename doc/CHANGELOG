@@ -138,3 +138,4 @@ ergatis-v1r17b2
 
 next
 --------------
+-aat_na and aat_na_masked now REALLY allow selective compression of output like aat_aa and aat_aa_masked.
