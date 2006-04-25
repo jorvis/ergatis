@@ -183,6 +183,7 @@ unless ($database && $username && $password && $search_db && $work_dir
     pod2usage();
 }
 
+umask(0000); #write all output files permissibly
 
 ## establish a database connection:
 my $dbproc = DBI->connect("dbi:Sybase:server=SYBTIGR; packetSize=8092",$username, $password) 
@@ -222,13 +223,7 @@ if (! @asmbls_to_process) {
 # check for working directory:
 if (! -d $work_dir) {
     mkdir($work_dir) || die "failed to create work_dir $work_dir because $!";
-} else {
-    # change curr dir to work_dir
-    chdir ($work_dir) or croak "error, cannot cd to $work_dir ";
-    
-}
-
-umask(0000); #write all output files permissibly
+} 
 
 
 ## open file for writing input file listings
@@ -269,7 +264,6 @@ sub prepare_asmbl_data {
         if (!$JUST_PRINT_BEST_LOCATIONS) {
             &prepare_genewise_inputs($asmbl_id, \@best_hits);
         }
-        
     } 
 
     else {
@@ -445,8 +439,9 @@ sub prepare_genewise_inputs {
     my ($asmbl_id, $best_hits_aref) = @_;
     
     ## prepare sequence files
-    if (! -d $asmbl_id) {
-        mkdir ($asmbl_id) or croak "error, couldn't mkdir $asmbl_id in $work_dir "; 
+    my $data_dir = "$work_dir/$asmbl_id";
+    if (! -d $data_dir) {
+        mkdir ($data_dir) or croak "error, couldn't mkdir $data_dir "; 
     }
     
     ## get the genome sequence:    
@@ -505,18 +500,18 @@ sub prepare_genewise_inputs {
         chomp $subseq;
 	
         # write genome entry
-        open (my $fh, ">$asmbl_id/$database.assembly.$asmbl_id.$counter.fsa") or die $!;
+        open (my $fh, ">$data_dir/$database.assembly.$asmbl_id.$counter.fsa") or die $!;
         print $fh ">$database.assembly.$asmbl_id.$lend.$rend\n$subseq\n";
         close $fh;
         
         # write protein entry:
-        open ($fh, ">$asmbl_id/$database.assembly.$asmbl_id.$counter.pep") or die $!;
+        open ($fh, ">$data_dir/$database.assembly.$asmbl_id.$counter.pep") or die $!;
         print $fh $fasta_entry;
         close $fh;
         
         ## add entry in file listing:
-        print $file_list_fh "$work_dir/$asmbl_id/$database.assembly.$asmbl_id.$counter.fsa\n";
-
+        print $file_list_fh "$data_dir/$database.assembly.$asmbl_id.$counter.fsa\n";
+        
     }
 }
     
@@ -559,7 +554,6 @@ sub try_add_chain {
 }
 
 
-####
 sub find_fasta_file {
     my ($protein_db_name) = @_;
     
