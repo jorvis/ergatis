@@ -220,12 +220,12 @@ sub Fetch_n_Write {
             my $nucl = substr($asmbl_seq, $start, $ln);
 			&ComplementDNA(\$nucl) || die "\n\nProblems complementing the nucleotide sequence of model $model->[0]\n\n" if $minusstrand;
 		
-			foreach my $seq ($nucl, $prot){
+			foreach my $seq ($nucl, $model->[3]){
 				$seq =~ s/\W+//g;
 				$seq =~ s/(.{1,60})/$1\n/g;
 			}
 			print {$ntfile} ">$header\n$nucl";
-			print {$aafile} ">$header\n$prot";
+			print {$aafile} ">$header\n$model->[3]";
 			++$written;
 		}
 	}
