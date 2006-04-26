@@ -362,7 +362,7 @@ sub process_aln {
 	}
 
 	foreach my $attr ($aln->children('Attribute')) {
-		$total_score = attr->att('content') and last
+		$total_score = $attr->att('content') and last
 			if $attr->att('name') eq 'total_score';
 	}
 	$logger->logdie("Failed to get total_score from Seq-pair-alignment")
