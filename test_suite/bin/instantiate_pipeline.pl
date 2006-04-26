@@ -51,16 +51,14 @@ bwhitty@tigr.org
 
 =cut
 
+BEGIN {
+use lib '/home/bwhitty/ergatis_test_suite/lib';
+}
 use strict;
 use warnings;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-#use File::Copy;
-#use File::Basename;
 require Workflow::SavedPipeline;
-use lib '/usr/local/devel/ANNOTATION/agussman/ergatis_install/lib/site_perl/5.8.5';
-#use lib '/usr/local/devel/ANNOTATION/agussman/cram/lib/';
-#use lib '/usr/local/devel/ANNOTATION/agussman/cram_co/cram/lib';
 
 my %options = ();
 my $results = GetOptions (\%options,
