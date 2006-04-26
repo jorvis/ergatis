@@ -1,8 +1,4 @@
-#!/usr/local/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+#!/usr/local/packages/perl-5.8.5/bin/perl
 
 =head1  NAME 
 
@@ -14,12 +10,10 @@ USAGE:  adjust_bsml_coordinates.pl
             --map_file=/path/to/somemapfile.bsml
             --map_dir=/or/path/to/somedir
             --list_file=/path/to/somefile.list
+            --input_file=/paht/to/somefile.bsml
             --output_dir=/path/to/somedir
-          [ --output_list=/path/to/somefile.list
-            --output_subdir_size=1000
-            --output_subdir_prefix=fasta
-            --list_file_glob='*.aat_aa.bsml'
-            --filter_ends=1|0
+            --removed_log=/path/to/some/removed.log
+          [ --filter_ends=1|0
             --debug=4
             --log=/path/to/somefile.log
           ]
@@ -35,8 +29,8 @@ B<--map_dir,-d>
 B<--list_file,-i> 
     Path to a list of analysis BSML output files.
 
-B<--list_file_glob,-g> 
-    Use to filter the BSML files considered in --list_file.
+B<--input_file,-n>
+    Path to the input file to be adjusted and searched for overlap
 
 B<--output_list,-u>
     Optional.  If passed, will create an output list with the full paths to each of the 
@@ -45,15 +39,9 @@ B<--output_list,-u>
 B<--output_dir,-o> 
     Directory where output BSML files will be written.
 
-B<--output_subdir_size,-z>
-    If defined, this script will create numbered subdirectories in the output directory, each
-    containing this many sequences files.  Once this limit is reached, another subdirectory
-    is created.
-
-B<--output_subdir_prefix,-x>
-    To be used along with --output_subdir_size, this allows more control of the names of the
-    subdirectories created.  Rather than just incrementing numbers (like 10), each subdirectory 
-    will be named with this prefix (like prefix10).
+B<--removed_log,-r>
+    The log file where duplicate elements will be printed to after
+    removal.
 
 B<--filter_ends,-f> 
     NOT YET IMPLEMENTED
@@ -81,6 +69,11 @@ adjust the coordinates to reflect those in the original input file.  This is don
 a set of BSML output files along with a mapping file.  Read the INPUT section for more
 information.
 
+Additionally, this script will search neighboring fragments of the input_file fragment
+and search for overlapping location specific predictions.  If a prediction is matched
+it is removed from the BSML file.  Also, if a location is contained completely within another,
+the smaller of the locations is removed.
+
 To use this component, you would most likely have used a splitting component previously
 in the pipeline, such as split_fasta, which generates the input maps.
 
@@ -89,7 +82,7 @@ refstart, refend, refpos, start, startpos, endpos, sitepos.
 
 =head1 INPUT
 
-Two types of input files are required to for this to work.  The first is a list of the
+Three types of input files are required to for this to work.  The first is a list of the
 BSML result files from an analysis, defined using --list_file.  The list file should
 look something like this:
 
@@ -144,13 +137,15 @@ resolve.
 
 =head1 CONTACT
 
+    Kevin Galens
+    kgalens@tigr.org
+
     Joshua Orvis
     jorvis@tigr.org
 
 =cut
 
 use strict;
-
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 BEGIN {
@@ -158,6 +153,8 @@ use Workflow::Logger;
 }
 use XML::Twig;
 use File::Basename;
+use SeqLocation::SeqLocation;
+use Data::Dumper;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -166,11 +163,9 @@ my $results = GetOptions (\%options,
                             'map_file|m=s',
                             'map_dir|d=s',
                             'list_file|i=s',
-                            'list_file_glob|g=s',
-                            'output_list|u=s',
+                            'input_file|n=s',
+                            'removed_log|r=s',
                             'output_dir|o=s',
-                            'output_subdir_size|z=s',
-                            'output_subdir_prefix|x=s',
                             'filter_ends|f=s',
                             'debug=s',
                             'log|l=s',
@@ -202,19 +197,22 @@ if (defined $options{map_dir}) {
     }
 }
 
+my $output_dir = $options{output_dir};
+
 ## load the analysis info from the map(s)
 my %analysis;
 my %sequence_map;
 my ($map, $mtwig);
+my $analysisId;
 
 for $map (@maps) {
     $mtwig = XML::Twig->new(
                             twig_roots => {
                                             'Sequence' => \&process_map_sequence,
-                                            #'Analysis' => \&process_map_analysis
+                                            'Analysis' => \&process_map_analysis
                                           }
                            );
-
+    $analysisId=$map;
     $mtwig->parsefile($map);
     $mtwig->purge;  ## free memory
 }
@@ -226,25 +224,13 @@ my @bsml_files;
 open(my $lfh, "<$options{list_file}") || $logger->logdie("can't open list file: $!");
 for (<$lfh>) {
     chomp;
-    ## are we filtering entries in the list file?
-    if (defined $options{list_file_glob}) {
-        next unless (/$options{list_file_glob}/);
-    }
-    
     push @bsml_files, $_;
 }
 
-
 ## open an output list file if the user requested it
 my $olfh;
-if ($options{output_list}) {
-    open($olfh, ">$options{output_list}") || $logger->logdie("can't create $options{output_list} : $!");
-}
 
-## these are used if we are grouping output into subdirectories
-my $sub_dir   = 1;
-my $files_in_dir = 0;
-my $output_dir = $options{output_dir};
+my $spaCounter = 0;
 
 ## loop through each BSML file and adjust coordinates, adding an Analysis element to each
 my $adjustment;
@@ -261,78 +247,80 @@ my %next_chain_num;
 ##  it's ID (after changing the reference back to the original) goes in here.
 my $root_seq_stub;  ## like cpa1.assem.2
 
-for my $bf (@bsml_files) {
-    ## get the filename
-    my $fname = basename($bf);
-    $root_seq_stub = '';
-    
-    ## it is assumed that files are named like featid.analysiscomponent.bsml (eg. cpa1.assem.2.1.aat_aa.bsml)
-    ##  we can pull the source ID from this file then using a regex (here, cpa1.assem.2.1)
-    $fname =~ /(.+)\..+\.bsml/ || $logger->logdie("$fname does not match naming convention.  can't extract id");
-    $feat_id = $1;
+#If we are parsing an adjacent fragment, this flag is one.
+my $adjFlag = 0;
 
-    $logger->debug("using $feat_id as feat_id in file $bf") if ($logger->is_debug);
+#Some constants.  Pseudo enumeration
+my ($CUR, $PREV, $NEXT) = (-1, 0, 1);
 
-    ## get the adjustment
-    $adjustment = $sequence_map{$feat_id}{offset};
+#Open the removed.log file handle.
+my $rFH;
+open($rFH, "> $options{removed_log}") || 
+    $logger->logdie("Unable to open $options{removed_log} ($!)");
 
-    $logger->debug("setting adjustment as $adjustment for $feat_id in file $bf") if ($logger->is_debug);
-    
-    ## are we grouping the output files?
-    if ($options{output_subdir_size}) {
-        $output_dir = "$options{output_dir}/$options{output_subdir_prefix}$sub_dir";
-        
-        ## if the output directory doesn't exist, create it.
-        mkdir($output_dir) unless (-e $output_dir);
-        
-        ## increment the sub_dir label if we've hit our sequence limit
-        $files_in_dir++;
-        $sub_dir++ if ( $files_in_dir == $options{output_subdir_size} );
-    }
-    
-    ## open the input and output files.  how we do this depends on whether the input was zipped or not
-    my $ifh;
-    if ($fname =~ /\.(gz|gzip)$/) {
-        open ($ifh, "<:gzip", $bf)                       || $logger->logdie("can't read zipped input file '$bf': $!");
-        open ($ofh, ">:gzip", "$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
-    } else {
-        open ($ifh, "<$bf")                     || $logger->logdie("can't read input file $bf: $!");
-        open ($ofh, ">$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
-    }
+my @adjSeqLoc;
 
-    my $twig = XML::Twig->new(
-                               twig_roots               => {
-                                                             'Seq-pair-alignment' => \&processSeqPairAlignment,
-                                                             'Aligned-sequence'   => \&processAlignedSequence,
-                                                             'Interval-loc'       => \&processIntervalLoc,
-                                                             'Site-loc'           => \&processSiteLoc,
-                                                             'Analyses'           => \&processAnalyses,
-                                                             'Sequence'           => \&processSequence,
-                                                           },
-                               twig_print_outside_roots => $ofh,
-                               pretty_print => 'indented',
-                             );
-    
-    ## do the parse
-    #$twig->parsefile($bf);
-    $twig->parse($ifh);
-    
-    ## error if we didn't find an analysis
-    if ($analyses_found) {
-        $analyses_found = 0;
-    } else {
-        $logger->error("Analysis element not found in $bf") if ($logger->is_error);
-    }
-    
-    ## mv the temp file over the target (can't read and write to same file)
-    system("mv $output_dir/$fname.part $output_dir/$fname");
-    
-    ## write to the list file, if requested
-    if ($options{output_list}) {
-        print $olfh "$output_dir/$fname\n";
-    }
+my $bf = $options{input_file};
+
+$adjSeqLoc[$PREV] = new SeqLocation::SeqLocation('prev', 'adj');
+$adjSeqLoc[$NEXT] = new SeqLocation::SeqLocation('next', 'adj');
+&findAdjacent($bf, \@bsml_files);
+
+## get the filename
+my $fname = basename($bf);
+$root_seq_stub = '';
+
+## it is assumed that files are named like featid.analysiscomponent.bsml (eg. cpa1.assem.2.1.aat_aa.bsml)
+##  we can pull the source ID from this file then using a regex (here, cpa1.assem.2.1)
+$fname =~ /(.+)\..+\.bsml/ || $logger->logdie("$fname does not match naming convention.  can't extract id");
+$feat_id = $1;
+
+$logger->debug("using $feat_id as feat_id in file $bf") if ($logger->is_debug);
+
+## get the adjustment
+$adjustment = $sequence_map{$feat_id}{offset};
+
+$logger->debug("setting adjustment as $adjustment for $feat_id in file $bf") if ($logger->is_debug);
+
+## open the input and output files.  how we do this depends on whether the input was zipped or not
+my $ifh;
+if ($fname =~ /\.(gz|gzip)$/) {
+    open ($ifh, "<:gzip", $bf)                       || $logger->logdie("can't read zipped input file '$bf': $!");
+    open ($ofh, ">:gzip", "$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
+} else {
+    open ($ifh, "<$bf")                     || $logger->logdie("can't read input file $bf: $!");
+    open ($ofh, ">$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
 }
 
+my $twig = XML::Twig->new(
+                          twig_roots               => {
+                              'Seq-pair-alignment' => \&processSeqPairAlignment,
+                              'Aligned-sequence'   => \&processAlignedSequence,
+                              #'Interval-loc'       => \&processIntervalLoc,
+                              #'Site-loc'           => \&processSiteLoc,
+                              'Analyses'           => \&processAnalyses,
+                              'Sequence'           => \&processSequence,
+                          },
+                          twig_print_outside_roots => $ofh,
+                          pretty_print => 'indented',
+                          );
+
+## do the parse
+#$twig->parsefile($bf);
+print STDERR "adjFlag is now cur:$CUR\n";
+$adjFlag = $CUR;
+$twig->parse($ifh);
+print STDERR "\n\nDone parsing current\n";
+
+## error if we didn't find an analysis
+if ($analyses_found) {
+    $analyses_found = 0;
+} else {
+    $logger->error("Analysis element not found in $bf") if ($logger->is_error);
+}
+
+## mv the temp file over the target (can't read and write to same file)
+system("mv $output_dir/$fname.part $output_dir/$fname");
 
 exit(0);
 
@@ -363,12 +351,20 @@ sub check_parameters {
     if (! $options{output_dir} ) {
         $logger->logdie("output_dir option is required");
     }
+    
+    ## check input file
+    unless ( $options{input_file} && -e $options{input_file} ) {
+        $logger->logdie("input_file either not passed or does not exist");
+    }  
+
+    unless ($options{removed_log}) {
+        $logger->logdie("removed_log is required");
+    }
+    
+    
 
     ## set some defaults
-    $options{filter_ends} = 0 unless ($options{filter_ends});
     $options{output_list} = 0 unless($options{output_list});
-    $options{output_subdir_size}   = 0  unless ($options{output_subdir_size});
-    $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
 
     if(0){
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
@@ -380,7 +376,7 @@ sub process_map_analysis {
     
     for my $Attribute ( $Analysis->children('Attribute') ) {
         ## save each of these
-        $analysis{$map}{$Attribute->{att}->{name}} = $Attribute->{att}->{content};
+        $analysis{$analysisId}{$Attribute->{att}->{name}} = $Attribute->{att}->{content};
     }
 }
 
@@ -405,6 +401,8 @@ sub process_map_sequence {
 
 sub processAlignedSequence { 
     my ($twig, $element) = @_;
+
+    $logger->logdie("This script does not handle the Aligned-sequence tag yet");
     
     ## need to replace any start attributes
     if (defined $element->{att}->{start}) {
@@ -437,28 +435,33 @@ sub processAnalyses {
     $element->print($ofh);
 }
 
-sub processIntervalLoc { 
-    my ($twig, $element) = @_;
+# sub processIntervalLoc { 
+#     my ($twig, $element) = @_;
     
-    ## need to replace any startpos or endpos attributes
-    for my $attribute ( qw(startpos endpos) ) {
-        if (defined $element->{att}->{$attribute}) {
-            $element->{att}->{$attribute} += $adjustment;
-        }
-    }
+#     ## need to replace any startpos or endpos attributes
+#     for my $attribute ( qw(startpos endpos) ) {
+#         if (defined $element->{att}->{$attribute}) {
+#             $element->{att}->{$attribute} += $adjustment;
+#         }
+#     }
     
-    ## don't print if we are within a Feature.  Since Features
-    #   are within a sequence, we'll just print twice.
-    if (($twig->context)[-1] eq 'Feature') {
-        $logger->debug("not printing Interval-loc since it is within a Feature") if ($logger->is_debug);
-    } else {
-        $element->print($ofh);
-    }
-}
+#     ## don't print if we are within a Feature.  Since Features
+#     #   are within a sequence, we'll just print twice.
+#     if (($twig->context)[-1] eq 'Feature') {
+#         $logger->debug("not printing Interval-loc since it is within a Feature") if ($logger->is_debug);
+#     } else {
+#         $element->print($ofh);
+#     }
+# }
 
 sub processSeqPairAlignment {
     my ($twig, $spa) = @_;
     ## spa = SeqPairAligment
+    my %properties = {};
+    my $sprsDeleted = 0;
+    my $totSprs = 0;
+    print STDERR "Working on SPA $spaCounter\r";
+    $spaCounter++;
     
     ## need to switch the IDs in refseq and refxref with the root stub
     for my $attribute ( qw(refseq refxref) ) {
@@ -474,7 +477,13 @@ sub processSeqPairAlignment {
             $spa->{att}->{$attribute} += $adjustment;
         }
     }
+    if(defined $spa->{att}->{compseq}) {
+        $properties{compseq} = $spa->{att}->{compseq};
+    }
     
+    my $sprID = 0;
+    my @sprStats = ();
+
     ## reserve next chain number for this Seq-pair-alignment
     #   this may only be used by some components, such as AAT
     my $chain_num = ++$next_chain_num{$root_seq_stub};
@@ -483,9 +492,45 @@ sub processSeqPairAlignment {
     ##  then check each child Seq-pair-run (spr) for refpos
     ##  (comppos refers to the subject sequence and is skipped)
     for my $spr ( $spa->children('Seq-pair-run') ) {
-    
+        $totSprs++;
+        @sprStats = ($sprID, 'Seq-pair-run');
+
         if (defined $spr->{att}->{refpos}) {
             $spr->{att}->{refpos} += $adjustment;
+            $sprStats[2] = $spr->{att}->{refpos};
+            $sprStats[3] = $sprStats[2] +  $spr->{att}->{runlength};
+        }
+
+        
+        foreach(qw( refcomplement comppos comprunlength compcomplement)) {
+            if(defined($spr->{att}->{$_})) {
+                $properties{$_} = $spr->{att}->{$_};
+            }
+        }
+
+        $sprStats[4] = \%properties;
+
+        #print STDERR "\nFlag :: $adjFlag\nCur :: $CUR\n";
+
+        if(!($adjFlag == $CUR)) {
+            my $sprStart = $spr->{att}->{refpos};
+            my $sprEnd = $sprStart+$spr->{att}->{runlength};
+            $adjSeqLoc[$adjFlag]->addSeqLocation(@sprStats[0..3]);
+            $sprID++;
+        } else {
+            if($adjSeqLoc[$NEXT] && $adjSeqLoc[$NEXT]->checkOverlap(@sprStats[1..4], 'next')) {
+                print STDERR "Found it in next\n\n";
+                $spr->delete();
+                $adjSeqLoc[$NEXT]->removeSeqLocation(@sprStats[0..3]);
+                $spr->print($rFH);
+                $sprsDeleted++;
+            } elsif($adjSeqLoc[$PREV] && $adjSeqLoc[$PREV]->checkOverlap(@sprStats[1..4], 'prev')) {
+                print STDERR "Found in previous\n\n";
+                $spr->delete();
+                $adjSeqLoc[$PREV]->removeSeqLocation(@sprStats[0..3]);
+                $spr->print($rFH);
+                $sprsDeleted++;
+            }
         }
         
         ## check for a chain_number attribute
@@ -496,8 +541,13 @@ sub processSeqPairAlignment {
             }
         }
     }
-    
-    $spa->print($ofh);
+
+    if($adjFlag == $CUR) {
+        if ($sprsDeleted != $totSprs) {
+            $spa->print($ofh); 
+        } 
+        $spa->print($rFH);
+    }
 }
 
 sub processSequence { 
@@ -533,14 +583,99 @@ sub processSequence {
     $element->print($ofh);
 }
 
-sub processSiteLoc { 
-    my ($twig, $element) = @_;
+# sub processSiteLoc { 
+#     my ($twig, $element) = @_;
     
-    ## need to replace any sitepos
-    if (defined $element->{att}->{sitepos}) {
-        $element->{att}->{sitepos} += $adjustment;
+#     ## need to replace any sitepos
+#     if (defined $element->{att}->{sitepos}) {
+#         $element->{att}->{sitepos} += $adjustment;
+#     }
+    
+#     $element->print($ofh);
+# }
+
+sub findAdjacent {
+    my ($infile, $bsmlList) = @_;
+
+    my @prevAndNext;
+
+    #Parse out this number
+    ($infile =~ /.*(\d+)\.(\d+)\.\w+\.bsml/) || $logger->logdie("Could not extract fragment number from $fname");
+    my $fragNo = $2;
+    my $assembl = $1;
+
+    foreach my $bsmlFile(@{$bsmlList}) {
+        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.\w+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
+            print STDERR "Found $bsmlFile\n";
+            $prevAndNext[(($2-$fragNo+1)/2)] = $bsmlFile;
+        }
     }
-    
-    $element->print($ofh);
+
+    if(defined($prevAndNext[$PREV]) ) {
+        $adjSeqLoc[$PREV]->setOverlapRange(&overlap($prevAndNext[$PREV], 'prev'));
+        $adjFlag = $PREV;
+        print STDERR "adjFlag is now PREV:$PREV:$adjFlag\n";
+        print STDERR "Starting to process previous\n";
+        &processAdjacent($prevAndNext[$PREV]);
+    } else {
+        $adjSeqLoc[$PREV] = 0;
+    }
+
+    if(defined($prevAndNext[$NEXT]) ) {
+        $adjSeqLoc[$NEXT]->setOverlapRange(&overlap($prevAndNext[$NEXT], 'next'));
+        $adjFlag = $NEXT;
+        print STDERR "\n\nadjFlag is now NEXT:$NEXT:$adjFlag\n";
+        print STDERR "Starting to process next\n";
+        &processAdjacent($prevAndNext[$NEXT]);
+    } else {
+        $adjSeqLoc[$NEXT] = 0;
+    }
+
 }
 
+sub processAdjacent {
+    my $adjacentFile = shift;
+    my $aFH;
+    my $null;
+    open($null, "> /dev/null");
+
+    #Were only doing SeqPairAlignments for now
+    my $twig = XML::Twig->new(
+                              twig_roots               => {
+                                  'Seq-pair-alignment' => \&processSeqPairAlignment,
+                              },
+                              twig_print_outside_roots => $null,
+                              );
+
+
+    if ($adjacentFile =~ /\.(gz|gzip)$/) {
+        open($aFH, "<:gzip", $adjacentFile) || $logger->logdie("can't read zipped input file '$adjacentFile': $!");
+    } else {
+        open($aFH, "$adjacentFile") || $logger->logdie("can't read zipped input file '$adjacentFile': $!");
+    }
+    
+    $twig->parse($aFH);
+}
+
+sub overlap {
+    my ($file, $adj) = @_;
+    ($file =~ /.*\/(.*)(\d+)\.\w+\.bsml/) 
+        || $logger->logdie("$file doesn't match naming scheme.  Can't use name to find map file\n");
+    my $mapAnID = "$options{map_dir}/$1map.bsml";
+    my $length = $analysis{$mapAnID}{fragment_length};
+    my $overlapLen = $analysis{$mapAnID}{overlap_length};
+    $adjustment = $sequence_map{"$1$2"}{offset};
+    my ($overStart, $overEnd);
+    if($adj eq 'prev') {
+        $overStart = $adjustment+$length-$overlapLen;
+        $overEnd = $adjustment+$length;
+    } elsif($adj eq 'next') {
+        $overStart = $adjustment;
+        $overEnd = $adjustment+$overlapLen;
+    } else {
+        $logger->logdie("overlap requires either prev or next as second argument.  $adj was passed");
+    }
+
+    return($overStart,$overEnd);
+    
+}
