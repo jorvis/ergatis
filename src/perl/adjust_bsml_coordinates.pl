@@ -1,5 +1,14 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
+# eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+#     if 0; # not running under some shell
+# BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+# use lib (@INC,$ENV{"PERL_MOD_DIR"});
+# no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+# no lib ".";
+
+use lib (@INC,'/usr/local/devel/ANNOTATION/ard/testing_manual/lib/site_perl/5.8.5/');
+
 =head1  NAME 
 
 adjust_bsml_coordinates.pl - adjust the positional coordinates within a BSML file
@@ -307,10 +316,8 @@ my $twig = XML::Twig->new(
 
 ## do the parse
 #$twig->parsefile($bf);
-print STDERR "adjFlag is now cur:$CUR\n";
 $adjFlag = $CUR;
 $twig->parse($ifh);
-print STDERR "\n\nDone parsing current\n";
 
 ## error if we didn't find an analysis
 if ($analyses_found) {
@@ -519,13 +526,11 @@ sub processSeqPairAlignment {
             $sprID++;
         } else {
             if($adjSeqLoc[$NEXT] && $adjSeqLoc[$NEXT]->checkOverlap(@sprStats[1..4], 'next')) {
-                print STDERR "Found it in next\n\n";
                 $spr->delete();
                 $adjSeqLoc[$NEXT]->removeSeqLocation(@sprStats[0..3]);
                 $spr->print($rFH);
                 $sprsDeleted++;
-            } elsif($adjSeqLoc[$PREV] && $adjSeqLoc[$PREV]->checkOverlap(@sprStats[1..4], 'prev')) {
-                print STDERR "Found in previous\n\n";
+            } elsif($adjSeqLoc[$PREV] && $adjSeqLoc[$PREV]->checkOverlap(@sprStats[1..4], 'prev')) {                
                 $spr->delete();
                 $adjSeqLoc[$PREV]->removeSeqLocation(@sprStats[0..3]);
                 $spr->print($rFH);
@@ -606,7 +611,6 @@ sub findAdjacent {
 
     foreach my $bsmlFile(@{$bsmlList}) {
         if(($bsmlFile =~ /.*(\d+)\.(\d+)\.\w+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
-            print STDERR "Found $bsmlFile\n";
             $prevAndNext[(($2-$fragNo+1)/2)] = $bsmlFile;
         }
     }
@@ -614,8 +618,6 @@ sub findAdjacent {
     if(defined($prevAndNext[$PREV]) ) {
         $adjSeqLoc[$PREV]->setOverlapRange(&overlap($prevAndNext[$PREV], 'prev'));
         $adjFlag = $PREV;
-        print STDERR "adjFlag is now PREV:$PREV:$adjFlag\n";
-        print STDERR "Starting to process previous\n";
         &processAdjacent($prevAndNext[$PREV]);
     } else {
         $adjSeqLoc[$PREV] = 0;
@@ -624,8 +626,6 @@ sub findAdjacent {
     if(defined($prevAndNext[$NEXT]) ) {
         $adjSeqLoc[$NEXT]->setOverlapRange(&overlap($prevAndNext[$NEXT], 'next'));
         $adjFlag = $NEXT;
-        print STDERR "\n\nadjFlag is now NEXT:$NEXT:$adjFlag\n";
-        print STDERR "Starting to process next\n";
         &processAdjacent($prevAndNext[$NEXT]);
     } else {
         $adjSeqLoc[$NEXT] = 0;
