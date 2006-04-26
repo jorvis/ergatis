@@ -19,6 +19,14 @@ USAGE: iprscan2bsml.pl
 B<--input,-i> 
     Input tab-delimited file from an iprscan search.
 
+B<--query_id,-r>
+	ID of the query sequence.  This allows the creation
+    of a Sequence element in BSML even if there are no matches.
+
+B<--query_file_path,-q>
+	Full path to FASTA file containing query sequence.  This allows the creation
+    of a Sequence element in BSML even if there are no matches.
+
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -83,18 +91,19 @@ it will be overwritten.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
+use File::Basename;
 use XML::Twig;
 
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
+			  'query_id|r=s',
+			  'query_file_path|q=s',
               'log|l=s',
               'debug=s',
 			  'help|h') || pod2usage();
@@ -119,6 +128,12 @@ my $doc = new BSML::BsmlBuilder();
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
 my %seqs_found;
+
+## add the query sequence to the BSML doc
+my $seq = $doc->createAndAddSequence($options{query_id}, $options{query_id}, undef, 'na', 'assembly');
+$doc->createAndAddSeqDataImport($seq, 'fasta', $options{query_file_path}, '', $options{query_id});
+$seq->addBsmlLink('analysis', '#iprscan_analysis', 'input_of');
+$seqs_found{$options{query_id}} = 1;
 
 while (<$ifh>) {
     ## ignore whitespace lines
@@ -146,13 +161,6 @@ while (<$ifh>) {
     ## make sure both of these are valid IDs
     $qry_id =~ s/[^a-zA-Z0-9\.\-\_]/_/g;
     $sbj_id =~ s/[^a-zA-Z0-9\.\-\_]/_/g;
-    
-    ## has this query sequence been added to the doc yet?
-    if (! exists $seqs_found{$qry_id}) {
-        my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'aa', 'polypeptide');
-        $seq->addBsmlLink('analysis', '#iprscan_analysis');
-        $seqs_found{$qry_id} = 1;
-    }
     
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
@@ -228,6 +236,10 @@ sub check_parameters {
 
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
+    
+    unless ($options{query_file_path} && $options{query_id}) { 
+        $logger->logdie("query_file_path and query_id options required!") 
+    }
 
     return 1;
 }
