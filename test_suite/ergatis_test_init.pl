@@ -145,9 +145,14 @@ my $exec_path = dirname(realpath($0));
 my $log_dir = $exec_path."/logs/".allNow();
 
 ## checkout installer script if it hasn't been done already
-unless (-e $exec_path."/bin/ergatis_installer.pl") {
+#unless (-e $exec_path."/bin/ergatis_installer.pl") {
 	checkout_installer();
-}
+#}
+
+## checkout Workflow::SavedPipeline if it doesn't exist in the $exec_path/lib dir
+#unless (-e $exec_path."/lib/Workflow/SavedPipeline.pm") {
+	checkout_workflow_perl_modules();
+#}
 
 print "Executing workflow test\n";
 print "  logs: $log_dir\n";
@@ -160,7 +165,7 @@ foreach (@ARGV) {
 if (!$options{'ignore-lock'}) {
 if (-e "$exec_path/.lock_$install_hash") {
 	##a lock file exists in the testing directory
-	print "Lock file exists!!!\n";
+	print "Lock file exists!!! [.lock_$install_hash]\n";
 	print "  Testing pipeline already running, or previous execution died poorly\n";
 	print "  Manual intervention required\n";
 	exit(1);
@@ -359,5 +364,35 @@ sub checkout_installer {
 	}
 	copy($tmp_path."/installer/ergatis_installer.pl", $exec_path."/bin/ergatis_installer.pl") || die "couldn't copy installer to bin dir.\n";
 	chmod (0777, $exec_path."/bin/ergatis_installer.pl");
+	chdir($exec_path);
+}
+
+sub checkout_workflow_perl_modules {
+	chdir($tmp_path);
+	my $err = system("cvs co ergatis/lib/Workflow");
+	if ($err) {
+		die "Checkout of Workflow::* failed.\n";
+	}
+	$err = system("cvs co logcabin");
+	if ($err) {
+		die "Checkout of Log::Cabin failed.\n";
+	}
+	mkpath($exec_path."/lib/Workflow", 0, 0777);
+	foreach my $file(glob($tmp_path."/ergatis/lib/Workflow/*.pm")) {
+		my $basename = basename($file);
+		copy($tmp_path."/ergatis/lib/Workflow/$basename", $exec_path."/lib/Workflow/$basename") || die "couldn't copy $basename to lib dir.\n";
+		chmod (0777, $exec_path."/lib/Workflow/$basename");
+	}
+	mkpath($exec_path."/lib/Log/Cabin", 0, 0777);
+	foreach my $file(glob($tmp_path."/Log-Cabin/lib/Log/*.pm")) {
+		my $basename = basename($file);
+		copy($tmp_path."/Log-Cabin/lib/Log/$basename", $exec_path."/lib/Log/$basename") || die "couldn't copy $basename to lib dir.\n";
+		chmod (0777, $exec_path."/lib/Log/$basename");
+	}
+	foreach my $file(glob($tmp_path."/Log-Cabin/lib/Log/Cabin/*.pm")) {
+		my $basename = basename($file);
+		copy($tmp_path."/Log-Cabin/lib/Log/Cabin/$basename", $exec_path."/lib/Log/Cabin/$basename") || die "couldn't copy $basename to lib dir.\n";
+		chmod (0777, $exec_path."/lib/Log/Cabin/$basename");
+	}
 	chdir($exec_path);
 }
