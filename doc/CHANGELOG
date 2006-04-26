@@ -136,6 +136,16 @@ ergatis-v1r17b2
 --------------
 -bug fix release for nucmer_snps component and dependencies
 
-next
+ergatis-v1r18b1
 --------------
 -aat_na and aat_na_masked now REALLY allow selective compression of output like aat_aa and aat_aa_masked.
+-Log::Cabin now default logger (used by Workflow::Logger)
+-added Log::Cabin to installer
+-critical fix for Extract_Sequences_for_BER_Workflow.pl (wasn't extracting correct sequences)
+-off-by-one (bsml only) errors corrected in repeatmasker and trf
+-adjust_bsml_coordinates now has overlap removal capabilities
+-SeqLocation::SeqLocation added (for coordinate adjustment support)
+-blast loading support added to bsml2legacydb.pl
+-iprscan2bsml now correctly creates Sequence elements in zero-match files
+-run_wf.pl now accepts WORKFLOW_ROOT argument
+-nucmer_snps: added maxmatch param, delta-filter step
