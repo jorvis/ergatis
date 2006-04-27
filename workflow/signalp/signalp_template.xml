@@ -32,18 +32,33 @@
             <configMapId>store_config_params_hmm</configMapId>
             <name>Store config params for SignalP HMM</name>
         </command>
-<!--
+
 	<command>    
             <type>RunUnixCommand</type>
             <configMapId>compress_raw_output</configMapId>
             <name>compress_raw_output</name>
         </command>
-    
+	<command>    
+            <type>RunUnixCommand</type>
+            <configMapId>compress_gnuplot_output</configMapId>
+            <name>compress_gnuplot_output</name>
+        </command>
+	<command>    
+            <type>RunUnixCommand</type>
+            <configMapId>compress_nn_eps_output</configMapId>
+            <name>compress_nn_eps_output</name>
+        </command>
+	<command>    
+            <type>RunUnixCommand</type>
+            <configMapId>compress_hmm_eps_output</configMapId>
+            <name>compress_hmm_eps_output</name>
+        </command>
+		
         <command>
             <type>RunUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>
--->
+
     </commandSet>
 </commandSetRoot>
