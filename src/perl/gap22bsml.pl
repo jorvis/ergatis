@@ -21,6 +21,9 @@ B<--input,-i>
 
 B<--query_file_path,-q>
 	Full path to FASTA file containing query sequence.
+
+B<--query_id>
+	ID of query sequence
 	
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -80,6 +83,7 @@ my $results = GetOptions (\%options,
 			  'input|i=s',
               'output|o=s',
 			  'query_file_path|q=s',
+  			  'query_id=s',
               'log|l=s',
               'debug=s',
 			  'help|h') || pod2usage();
@@ -188,6 +192,14 @@ while (<$ifh>) {
     $doc->createAndAddBsmlAttribute($run, 'segment_number', $segmentID);
 }
 
+## if there were no results this will create a sequence stub
+my $align = &createAndAddNullResult(
+	   					                doc             => $doc,
+                           				query_name      => $options{'query_id'},
+			                            query_length    => '',
+               				            class			=> 'assembly',
+                        		   );
+
 ## add the analysis element
 $doc->createAndAddAnalysis(
                             id => 'aat_na_analysis',
@@ -218,5 +230,18 @@ sub min {
         return $num1;
     } else {
         return $num2;
+    }
+}
+
+##Adds BSML tags for the case where 
+##the query sequence returned no hits
+sub createAndAddNullResult {
+	my %args = @_;
+    my $doc = $args{'doc'};
+    
+	if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
+        my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'na', $args{'class'} );
+		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
+        $seq->addBsmlLink('analysis', '#' . $options{'analysis_id'}, 'input_of');
     }
 }
