@@ -78,12 +78,10 @@ appropriate titles in the BSML Analysis element.  If not passed, the default 'hm
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -200,13 +198,11 @@ while (<$ifh>) {
     # TIGR02148   1/1     432   525 ..     1    92 []   -33.6      1.1
     # PF06325     1/1     449   682 ..     1   312 []  -198.1      8.5
     my ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval);
-    if (/^(\S+)\s+([0-9]+)\/([0-9]+)\s+(\d+)\s+(\d+).+(\d+)\s+(\d+).+?([0-9\.\-e]+)\s+([0-9\.\-e\+]+)\s*$/) {
+    if (/^(\S+)\s+([0-9]+)\/([0-9]+)\s+(\d+)\s+(\d+).+(\d+)\s+(\d+).+?([0-9\-][0-9\.\-e]+)\s+([0-9\.\-e\+]+)\s*$/) {
 
         $linectr++;
 
         ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-        print "got score $score, eval $eval on model $model\n";
-        
         
         my $run = $doc->createAndAddSequencePairRun(   alignment_pair => $alignments{$model},
                                                        runscore => $score,
@@ -227,7 +223,7 @@ while (<$ifh>) {
     } else {
 
         ## Skip the headers and blank lines
-        next if (/^Model     Domain  Seq-f Seq-t    HMM-f HMM-t      Score  E-value/);
+        next if (/^Model\s+Domain\s+/i);
         next if (/^--------  ------- ----- -----    ----- -----      -----  -------/);
         next if (/^\s*$/);
         
