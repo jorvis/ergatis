@@ -150,7 +150,7 @@ ergatis-v1r18b1
 -run_wf.pl now accepts WORKFLOW_ROOT argument
 -nucmer_snps: added maxmatch param, delta-filter step
 
-ergatis-v1r18b2
+next
 --------------
 -all blast components (both wu- and ncbi- ) make .list files from files with or without trailing .gz in the filename.
 
