@@ -240,11 +240,25 @@ exit();
 
 sub check_parameters {
     
+	## input file is required
+	unless ($options{'input'}) { 
+		pod2usage({-message => "No input file specified!"});
+	}
+	
+	## output file is required
+	unless ($options{'output'}) { 
+		pod2usage({-message => "No output file specified!"});
+	}
+	
     ## make sure input file exists
-    if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
+    if (! -e $options{'input'}) { 
+		pod2usage({-message => "Input file '$options{'input'}' does not exist!"});
+	}
     
     ## make sure output file doesn't exist yet
-    if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
+    if (-e $options{'output'}) {
+		pod2usage({-message => "Can't create '$options{'output'}' because it already exists!"});
+   	}
     
     $options{'project'}    = 'unknown' unless ($options{'project'});
     $options{'command_id'} = '0' unless ($options{'command_id'});
