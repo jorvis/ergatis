@@ -232,3 +232,4 @@ nucleotide_deletion						nucleotide_deletion
 indel									indel
 gap										gap
 snoRNA                                  snoRNA
+located_sequence_feature                located_sequence_feature
