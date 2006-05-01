@@ -154,8 +154,8 @@ foreach my $file (@files) {
 	## format Topology string
 	$tmhmm{'score2'} = join(":", @pos);
 
-	## if the input sequence was discarded we will have # of hash keys = 0
-	## otherwise there will be 4 or 5 depending on whether input setting was plant or animal/yeast
+	## TMHelix regions will be pushed onto @pos, so if scalar(@pos) = 0
+	## there are no predicted TM helices so we won't add anything to the DB
 	if (scalar(@pos) == 0) {
 		_log("no data added for $feat_name");
 	} else {
@@ -186,13 +186,13 @@ sub sequenceHandler {
 	my $sequence = shift;
 	print $sequence->returnattr('id')."\n";
 	## score
-	$tmhmm{'score'} = $sequence->{'BsmlAttr'}->{'tmh_count'};
+	$tmhmm{'score'} = shift(@{$sequence->{'BsmlAttr'}->{'tmh_count'}});
 	## score3
-	$tmhmm{'score3'} = $sequence->{'BsmlAttr'}->{'exp_aa_in_tmh'};
+	$tmhmm{'score3'} = shift(@{$sequence->{'BsmlAttr'}->{'exp_aa_in_tmh'}});
 	## score4
-	$tmhmm{'score4'} = $sequence->{'BsmlAttr'}->{'exp_first_60'};
+	$tmhmm{'score4'} = shift(@{$sequence->{'BsmlAttr'}->{'exp_first_60'}});
 	## score5 
-	$tmhmm{'score5'} = $sequence->{'BsmlAttr'}->{'prob_n_in'};
+	$tmhmm{'score5'} = shift(@{$sequence->{'BsmlAttr'}->{'prob_n_in'}});
 	
 	my $ftbl_list_arr_ref = $sequence->returnBsmlFeatureTableListR();
 	foreach my $ftbl_ref(@{$ftbl_list_arr_ref}) {
