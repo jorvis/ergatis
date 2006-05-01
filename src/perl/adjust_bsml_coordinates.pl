@@ -1,14 +1,5 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-# eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-#     if 0; # not running under some shell
-# BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-# use lib (@INC,$ENV{"PERL_MOD_DIR"});
-# no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-# no lib ".";
-
-use lib (@INC,'/usr/local/devel/ANNOTATION/ard/testing_manual/lib/site_perl/5.8.5/');
-
 =head1  NAME 
 
 adjust_bsml_coordinates.pl - adjust the positional coordinates within a BSML file
@@ -163,7 +154,6 @@ use Workflow::Logger;
 use XML::Twig;
 use File::Basename;
 use SeqLocation::SeqLocation;
-use Data::Dumper;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -273,6 +263,7 @@ my $bf = $options{input_file};
 
 $adjSeqLoc[$PREV] = new SeqLocation::SeqLocation('prev', 'adj');
 $adjSeqLoc[$NEXT] = new SeqLocation::SeqLocation('next', 'adj');
+print STDERR "Finding adjacent\n";
 &findAdjacent($bf, \@bsml_files);
 
 ## get the filename
@@ -305,6 +296,7 @@ my $twig = XML::Twig->new(
                           twig_roots               => {
                               'Seq-pair-alignment' => \&processSeqPairAlignment,
                               'Aligned-sequence'   => \&processAlignedSequence,
+                              'Feature-tables'     => \&processFeatureTables,
                               #'Interval-loc'       => \&processIntervalLoc,
                               #'Site-loc'           => \&processSiteLoc,
                               'Analyses'           => \&processAnalyses,
@@ -368,8 +360,6 @@ sub check_parameters {
         $logger->logdie("removed_log is required");
     }
     
-    
-
     ## set some defaults
     $options{output_list} = 0 unless($options{output_list});
 
@@ -398,6 +388,8 @@ sub process_map_sequence {
         $logger->info("skipping sequence $id - not a tiling_path_fragment") if ($logger->is_info);
         return 0;
     }
+
+    $sequence_map{$id}{length} = $Sequence->{att}->{length};
 
     ## there should only be one Numbering, get the refnum (offset) from it
     my $offset = $Sequence->first_child('Numbering')->{att}->{refnum};
@@ -461,13 +453,124 @@ sub processAnalyses {
 #     }
 # }
 
+sub processFeatureTables {
+    my ($twig, $Featuretables) = @_;
+    my (@featStats);
+
+    my @featStats = ('','Feature','','',{});
+    my %numFeats;
+
+    #When a feature is removed, we must keep record of it for printing and
+    #also to check for its presence in a feature group.
+    my %removedFeats;
+
+    for my $Featuretable($Featuretables->children('Feature-table')) {
+        my $featTableID;
+        if(defined($Featuretable->{att}->{id})) {
+            $featTableID = $Featuretable->{att}->{id};
+            $numFeats{$featTableID} = [0, $Featuretable];
+        } else { 
+            $logger->logdie("No id attribute for Feature-table element");
+        }
+    
+        for my $Feature($Featuretable->children('Feature')) {
+            if(defined($Feature->{att}->{id})) {
+                $featStats[0] = $Feature->{att}->{id};
+                $numFeats{$featTableID}->[0]++;
+            } else {
+                $logger->logdie("No id for Feature element");
+            }
+
+            if(defined($Feature->{att}->{class})) {
+                $featStats[4]->{class} = $Feature->{att}->{class};
+            } else {
+                $logger->logdie("Feature is missing class attribute");
+            }
+
+            my $Intervalloc = $Feature->{first_child};
+
+            $logger->logdie("Could not retrieve Interval-loc") 
+                if(!$Intervalloc);
+
+            foreach my $att(qw/startpos endpos/) {
+                if(defined($Intervalloc->{att}->{$att})) {
+                    $Intervalloc->{att}->{$att} += $adjustment;
+                } else {
+                    $logger->logdie("Interval-loc: $att was not defined");
+                }
+                
+                $featStats[2] = $Intervalloc->{att}->{$att} if($att eq 'startpos');
+                $featStats[3] = $Intervalloc->{att}->{$att} if($att eq 'endpos');
+                
+            }
+
+            $featStats[4]->{complement} = $Intervalloc->{att}->{complement};
+
+            if(!($adjFlag == $CUR)) {
+                $adjSeqLoc[$adjFlag]->addSeqLocation($featStats[0], $featStats[1],$featStats[2],$featStats[3] );
+            } else {
+                if($adjSeqLoc[$PREV] && $adjSeqLoc[$PREV]->checkOverlap(@featStats[1..4],'prev')) {
+                    $removedFeats{$featStats[0]} = [\@featStats, $Feature];
+                    $adjSeqLoc[$PREV]->removeSeqLocation(@featStats[0..3]);
+                } elsif($adjSeqLoc[$NEXT] && $adjSeqLoc[$NEXT]->checkOverlap(@featStats[1..4],'next')) {
+                    $removedFeats{$featStats[0]} = [\@featStats, $Feature];
+                    $adjSeqLoc[$NEXT]->removeSeqLocation(@featStats[0..3]);
+                } 
+            }
+        }
+
+    }
+
+    if($adjFlag == $CUR) {
+        my $numFeaturemems = 0;
+        my $delFeatMems = 0;
+        my @deletedFM;
+
+        foreach my $Featuregroup($Featuretables->children('Feature-group')) {
+            $numFeaturemems = scalar $Featuregroup->children('Feature-group-member');
+            foreach my $Featuregroupmember($Featuregroup->children('Feature-group-member')) {
+                if(defined($Featuregroupmember->{att}->{featref}) &&
+                   defined($removedFeats{$Featuregroupmember->{att}->{featref}}) ) {
+                    push(@deletedFM, $Featuregroupmember);
+                    $delFeatMems++;
+                } else {
+                  #   print STDERR "featxref not defined\n" 
+#                         if(!defined($Featuregroupmember->{att}->{featref}));
+#                     print STDERR "didn't find featxref in removed\n"
+#                         if(defined($removedFeats{$Featuregroupmember->{att}->{featref}}) );
+                }
+            }
+            if($delFeatMems == $numFeaturemems) {
+                $Featuregroup->print($rFH);
+                $Featuregroup->delete();
+            } else {
+                foreach my $delThis(@deletedFM) {
+                    $delThis->print($rFH);
+                    $delThis->delete();
+                }
+            }
+            $delFeatMems = 0;
+            $numFeaturemems = 0;
+            @deletedFM = ();
+                
+        }
+        foreach my $featID(keys %removedFeats) {
+            $removedFeats{$featID}->[1]->print($rFH);
+            $removedFeats{$featID}->[1]->delete();
+        }
+
+    }
+
+
+}
+
 sub processSeqPairAlignment {
     my ($twig, $spa) = @_;
     ## spa = SeqPairAligment
     my %properties = {};
     my $sprsDeleted = 0;
+    my @removedSprs;
     my $totSprs = 0;
-    print STDERR "Working on SPA $spaCounter\r";
     $spaCounter++;
     
     ## need to switch the IDs in refseq and refxref with the root stub
@@ -525,15 +628,21 @@ sub processSeqPairAlignment {
             $adjSeqLoc[$adjFlag]->addSeqLocation(@sprStats[0..3]);
             $sprID++;
         } else {
+          #   print STDERR "In the else at least\n";
+#             print STDERR "next isn't defined\n" if(!$adjSeqLoc[$NEXT]);
+#             print STDERR "prev isn't defined\n" if(!$adjSeqLoc[$PREV]);
+#             print STDERR "@sprStats\n";
+#             print STDERR Dumper($adjSeqLoc[$PREV]);
+#             exit(0);
             if($adjSeqLoc[$NEXT] && $adjSeqLoc[$NEXT]->checkOverlap(@sprStats[1..4], 'next')) {
-                $spr->delete();
                 $adjSeqLoc[$NEXT]->removeSeqLocation(@sprStats[0..3]);
-                $spr->print($rFH);
+                push @removedSprs, $spr; 
+                #$spr->print($rFH);
                 $sprsDeleted++;
-            } elsif($adjSeqLoc[$PREV] && $adjSeqLoc[$PREV]->checkOverlap(@sprStats[1..4], 'prev')) {                
-                $spr->delete();
+            } elsif($adjSeqLoc[$PREV] && $adjSeqLoc[$PREV]->checkOverlap(@sprStats[1..4], 'prev')) { 
                 $adjSeqLoc[$PREV]->removeSeqLocation(@sprStats[0..3]);
-                $spr->print($rFH);
+                push @removedSprs, $spr; 
+                #$spr->print($rFH);
                 $sprsDeleted++;
             }
         }
@@ -548,10 +657,17 @@ sub processSeqPairAlignment {
     }
 
     if($adjFlag == $CUR) {
-        if ($sprsDeleted != $totSprs) {
-            $spa->print($ofh); 
-        } 
-        $spa->print($rFH);
+
+        if ($sprsDeleted == $totSprs) {
+            $spa->print($rFH); 
+        } else {
+            foreach (@removedSprs) {
+                $_->print($rFH);
+                $_->delete();
+            }
+            $spa->print($ofh);
+        }
+
     }
 }
 
@@ -605,17 +721,22 @@ sub findAdjacent {
     my @prevAndNext;
 
     #Parse out this number
-    ($infile =~ /.*(\d+)\.(\d+)\.\w+\.bsml/) || $logger->logdie("Could not extract fragment number from $fname");
+    ($infile =~ /.*(\d+)\.(\d+)\.[\w-]+\.bsml/) 
+        || $logger->logdie("Could not extract fragment number from $infile");
     my $fragNo = $2;
     my $assembl = $1;
 
     foreach my $bsmlFile(@{$bsmlList}) {
-        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.\w+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
+        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-]+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
             $prevAndNext[(($2-$fragNo+1)/2)] = $bsmlFile;
         }
     }
 
+    #print STDERR "@prevAndNext\n";
+    #exit(0);
+
     if(defined($prevAndNext[$PREV]) ) {
+        my @over = &overlap($prevAndNext[$PREV], 'prev');
         $adjSeqLoc[$PREV]->setOverlapRange(&overlap($prevAndNext[$PREV], 'prev'));
         $adjFlag = $PREV;
         &processAdjacent($prevAndNext[$PREV]);
@@ -643,6 +764,7 @@ sub processAdjacent {
     my $twig = XML::Twig->new(
                               twig_roots               => {
                                   'Seq-pair-alignment' => \&processSeqPairAlignment,
+                                  'Feature-tables'     => \&processFeatureTables,
                               },
                               twig_print_outside_roots => $null,
                               );
@@ -659,15 +781,15 @@ sub processAdjacent {
 
 sub overlap {
     my ($file, $adj) = @_;
-    ($file =~ /.*\/(.*)(\d+)\.\w+\.bsml/) 
+    ($file =~ /.*\/(.*)(\d+)\.[\w-]+\.bsml/) 
         || $logger->logdie("$file doesn't match naming scheme.  Can't use name to find map file\n");
     my $mapAnID = "$options{map_dir}/$1map.bsml";
-    my $length = $analysis{$mapAnID}{fragment_length};
+    my $length = $sequence_map{"$1$2"}{length};
     my $overlapLen = $analysis{$mapAnID}{overlap_length};
     $adjustment = $sequence_map{"$1$2"}{offset};
     my ($overStart, $overEnd);
     if($adj eq 'prev') {
-        $overStart = $adjustment+$length-$overlapLen;
+        $overStart = $adjustment+($length-$overlapLen);
         $overEnd = $adjustment+$length;
     } elsif($adj eq 'next') {
         $overStart = $adjustment;
