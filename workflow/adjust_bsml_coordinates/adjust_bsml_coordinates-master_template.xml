@@ -37,6 +37,11 @@
           <configMapId>subflow1</configMapId>
        </commandSet>
 <!--Postprocessing-->
+       <command>
+          <type>RunUnixCommand</type>
+          <name>create bsml list</name>
+          <configMapId>create_bsml_list</configMapId>
+        </command>
 <!--Checksum creation-->
      </commandSet>
 </commandSetRoot>
