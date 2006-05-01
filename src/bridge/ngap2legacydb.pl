@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 
 =head1  NAME
 
@@ -51,17 +51,14 @@ B<--help,-h>
 
 =cut
 
-BEGIN {
-    use Workflow::Logger;
-    use BSML::BsmlReader;
-    use BSML::BsmlParserSerialSearch;
-}
-
 use warnings;
 use strict;
 use DBI;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
+use lib '/usr/local/devel/ANNOTATION/ard/current/lib/site_perl/5.8.5';
+use BSML::BsmlReader;
+use BSML::BsmlParserSerialSearch;
 
 my %options = ();
 my $results = GetOptions (\%options,
