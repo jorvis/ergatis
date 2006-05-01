@@ -70,6 +70,12 @@ sub addSeqLocation {
     my $retval;
 
     
+    print STDERR "Start is not defined\n" 
+        if(!defined($self->{'overlapStart'}));
+    print STDERR "End is not defined\n"
+        if(!defined($self->{'overlapEnd'}));
+    
+    
     if(defined($self->{'overlapStart'}) && defined($self->{'overlapEnd'}) &&
        ($start >= $self->{'overlapStart'} && $start <= $self->{'overlapEnd'}) ||
        ($end <= $self->{'overlapEnd'} && $end >= $self->{'overlapStart'})) {
@@ -79,7 +85,6 @@ sub addSeqLocation {
         
         $self->{'end'}->{$end}->{$start}->{'id'} = $id;
         $self->{'end'}->{$end}->{$start}->{'type'} = $type;
-        
         $retval = 1;
     } else {
         $retval = 0;
@@ -95,7 +100,11 @@ sub checkOverlap {
 
     #Check the start coodinate
     if(defined($self->{'start'}->{$start}) && defined($self->{'start'}->{$start}->{$end})) {
-        $retval = 1;
+        if($seq eq 'next') {
+            $retval = 1;
+        } else {
+            $retval = 0;
+        }
     } elsif(defined($self->{'start'}->{$start}) && $seq eq 'next') {
         foreach my $keyEnd(keys %{ $self->{'start'}->{$start} }) {
             last if($keyEnd > $end &&
@@ -123,8 +132,6 @@ sub compareProperties {
 
     if(defined($pro1) && defined($pro2)) {
 
-        print "\tBoth are defined\n";
-
         foreach my $key1(keys %{$pro1}) {
             if(!defined($pro2->{$key1}) || 
                (defined($pro2->{$key1}) && $pro2->{$key1} ne $pro1->{$key1})) {
@@ -133,15 +140,11 @@ sub compareProperties {
             last unless($retval);
         }
     } elsif(!defined($pro1) && !defined($pro2)) {
-        print "\tBoth are undefined\n";
         $retval = 1;
     } else {
-        print "\tpro1 is defined\n" if(defined($pro1));
-        print "\tpro2 is defined\n" if(defined($pro2));
         $retval = 0;
     }
     
-    print "\tReturning $retval\n";
     return $retval;
 
 }
@@ -162,8 +165,6 @@ sub removeSeqLocation {
     my $retval = 1;
 
     unless(defined($self->{'start'}->{$loc[2]}->{$loc[3]}->{'id'})) {
-        print STDERR Dumper($self->{'start'}->{$loc[2]});
-        print STDERR "\nLooking for $loc[2] and $loc[3]\n";
         $self->{'logger'}->logdie("Does not have ID");
     }
     unless(defined($self->{'start'}->{$loc[2]}->{$loc[3]}->{'type'})) {
