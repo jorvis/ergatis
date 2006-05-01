@@ -11,7 +11,7 @@
             <name>tmhmm</name>
         </command>
 
-<!--
+
         <command>    
             <type>RunLoggedUnixCommand</type>
             <configMapId>tmhmm2bsml</configMapId>
@@ -23,14 +23,12 @@
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
 		</command>
--->
-
-<!--    
+   
         <command>
             <type>RunUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
    	</command>
--->
-    </commandSet>
+
+	</commandSet>
 </commandSetRoot>
