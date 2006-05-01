@@ -153,4 +153,6 @@ ergatis-v1r18b1
 next
 --------------
 -all blast components (both wu- and ncbi- ) make .list files from files with or without trailing .gz in the filename.
+-adjust_bsml_coordinates.pl and the component have been changed to remove duplicate sequence locations in overlap regions.  Works for both Feature and Seq-pair-align elements
+-Updated SeqLocation/SeqLocation.pm to remove erroneous print statements
 
