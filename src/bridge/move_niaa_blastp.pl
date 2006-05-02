@@ -139,7 +139,7 @@ MAIN:{
             next unless /\w/;
             chomp();
             
-            die "\n\nUnrecognized file name: \"$_\" (wrong database?)\n\n" unless /$db\.model\.\d+_\d+(?:\.\d+)\.wu-blastp\.[\w.]+/o;
+            die "\n\nUnrecognized file name: \"$_\" (wrong database?)\n\n" unless /$db\.model\.\d+_\d+(?:\.\d+)?\.wu-blastp\.[\w.]+/o;
         }
         close($list);
     }
