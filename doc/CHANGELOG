@@ -150,9 +150,21 @@ ergatis-v1r18b1
 -run_wf.pl now accepts WORKFLOW_ROOT argument
 -nucmer_snps: added maxmatch param, delta-filter step
 
-next
+ergatis-v1r18b2
+--------------
+-bugfix release
+
+ergatis-v1r19b1
 --------------
 -all blast components (both wu- and ncbi- ) make .list files from files with or without trailing .gz in the filename.
+-added output compression options to signalP component
 -adjust_bsml_coordinates.pl and the component have been changed to remove duplicate sequence locations in overlap regions.  Works for both Feature and Seq-pair-align elements
 -Updated SeqLocation/SeqLocation.pm to remove erroneous print statements
+-bsml2legacydb.pl bugfix (compilation problem)
+-gap2 and nap results now properly get Sequence elements even when there are no hits
+-additional options parsing in tmhmm2bsml.pl
+-ergatis test suite script now checks out the current installer version
+-initdb bugfix (added create_tigr_schemas_scratch and parse_tigr_schemas_onto steps)
 
+next
+--------------
