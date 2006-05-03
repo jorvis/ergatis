@@ -52,7 +52,7 @@ bwhitty@tigr.org
 =cut
 
 BEGIN {
-use lib '/home/bwhitty/ergatis_test_suite/lib';
+use lib '/usr/local/devel/ANNOTATION/ergatis_test_suite/lib';
 }
 use strict;
 use warnings;
