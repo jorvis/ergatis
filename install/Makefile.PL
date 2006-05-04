@@ -111,6 +111,8 @@ adjust_bsml_coordinates	:
 	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinatesconf.ini $(WORKFLOW_DOCS_DIR) 
+    @install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates_template.xml $(WORKFLOW_DOCS_DIR)
+    @install workflow/adjust_bsml_coordinates.ini $(WORKFLOW_DOCS_DIR) 
 
 adjust_btab_coordinates	:
 	@echo "Installing adjust_btab_coordinates workflows in $(WORKFLOW_DOCS_DIR)"
