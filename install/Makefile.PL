@@ -111,8 +111,8 @@ adjust_bsml_coordinates	:
 	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates-master.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinatesconf.ini $(WORKFLOW_DOCS_DIR) 
-@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates_template.xml $(WORKFLOW_DOCS_DIR)
-@install workflow/adjust_bsml_coordinates.ini $(WORKFLOW_DOCS_DIR) 
+	@install workflow/adjust_bsml_coordinates/adjust_bsml_coordinates_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/adjust_bsml_coordinates.ini $(WORKFLOW_DOCS_DIR) 
 
 adjust_btab_coordinates	:
 	@echo "Installing adjust_btab_coordinates workflows in $(WORKFLOW_DOCS_DIR)"
@@ -327,7 +327,7 @@ hmmtigr	:
 	@install workflow/hmmtigr/hmmtigr.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/hmmtigr/hmmtigr_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/hmmtigr/hmmtigrconf.ini $(WORKFLOW_DOCS_DIR)
-	
+
 infernal	:
 	@echo "Installing infernal workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/infernal/infernal-master.ini $(WORKFLOW_DOCS_DIR)
