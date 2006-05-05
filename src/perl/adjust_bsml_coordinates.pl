@@ -1,5 +1,14 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
+# eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+#     if 0; # not running under some shell
+# BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+# use lib (@INC,$ENV{"PERL_MOD_DIR"});
+# no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+# no lib ".";
+
+use lib (@INC,'/usr/local/devel/ANNOTATION/ard/current/lib/site_perl/5.8.5');
+
 =head1  NAME 
 
 adjust_bsml_coordinates.pl - adjust the positional coordinates within a BSML file
@@ -154,6 +163,7 @@ use Workflow::Logger;
 use XML::Twig;
 use File::Basename;
 use SeqLocation::SeqLocation;
+use Data::Dumper;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -294,7 +304,7 @@ if ($fname =~ /\.(gz|gzip)$/) {
 
 my $twig = XML::Twig->new(
                           twig_roots               => {
-                              'Seq-pair-alignment' => \&processSeqPairAlignment,
+                              #'Seq-pair-alignment' => \&processSeqPairAlignment,
                               'Aligned-sequence'   => \&processAlignedSequence,
                               'Feature-tables'     => \&processFeatureTables,
                               #'Interval-loc'       => \&processIntervalLoc,
@@ -352,9 +362,14 @@ sub check_parameters {
     }
     
     ## check input file
-    unless ( $options{input_file} && -e $options{input_file} ) {
-        $logger->logdie("input_file either not passed or does not exist");
-    }  
+    if( !($options{input_file}) || !(-e $options{input_file}) ) {
+        if(!(-e $options{input_file}) && -e $options{input_file}.".gz") {
+            $options{input_file}.=".gz";
+        } else {
+            $logger->logdie("input_file either not passed or does not exist");
+        }
+        
+    } 
 
     unless ($options{removed_log}) {
         $logger->logdie("removed_log is required");
@@ -763,7 +778,7 @@ sub processAdjacent {
     #Were only doing SeqPairAlignments for now
     my $twig = XML::Twig->new(
                               twig_roots               => {
-                                  'Seq-pair-alignment' => \&processSeqPairAlignment,
+                                  #'Seq-pair-alignment' => \&processSeqPairAlignment,
                                   'Feature-tables'     => \&processFeatureTables,
                               },
                               twig_print_outside_roots => $null,
