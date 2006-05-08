@@ -10,5 +10,10 @@
             <configMapId>panther</configMapId>
             <name>panther</name>
         </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>panther2bsml</configMapId>
+            <name>panther2bsml</name>
+        </command>
     </commandSet>
 </commandSetRoot>
