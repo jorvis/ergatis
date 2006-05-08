@@ -162,7 +162,7 @@ while (<$ifh>) {
 
         ## add this model sequence
         my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'polypeptide');
-        $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
+		#$seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
         
         $alignments{$model} = $doc->createAndAddSequencePairAlignment( refseq => $qry_id,
                                                                        refstart => 0,
