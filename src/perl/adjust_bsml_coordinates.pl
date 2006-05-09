@@ -294,7 +294,7 @@ $logger->debug("setting adjustment as $adjustment for $feat_id in file $bf") if 
 
 ## open the input and output files.  how we do this depends on whether the input was zipped or not
 my $ifh;
-if ($fname =~ /\.(gz|gzip)$/) {
+if ($bf =~ /\.(gz|gzip)$/) {
     open ($ifh, "<:gzip", $bf)                       || $logger->logdie("can't read zipped input file '$bf': $!");
     open ($ofh, ">:gzip", "$output_dir/$fname.part") || $logger->logdie("can't create output file: $!");
 } else {
@@ -783,6 +783,10 @@ sub processAdjacent {
                               },
                               twig_print_outside_roots => $null,
                               );
+
+    $adjacentFile.='.gz' unless(-e $adjacentFile);
+
+    $logger->logdie("$adjacentFile doesn't exist") unless(-e $adjacentFile);
 
 
     if ($adjacentFile =~ /\.(gz|gzip)$/) {
