@@ -230,7 +230,6 @@ sub process_files
 sub process_results
 {
 	my ($asm_id, $prog_name) = @_;
-	$prog_name = 'GeneZilla' if $prog_name =~ /genezilla/;
     
 	cleanup_records($asm_id, $prog_name) if !$asm_ids{$asm_id};
 
