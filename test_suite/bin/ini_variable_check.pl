@@ -18,9 +18,9 @@ unless ($options{'ergatis_install_root'} =~ /\/$/) {
 	$options{'ergatis_install_root'} .= "/";
 }
 
-my %exempt_ini_files = {
+my %exempt_ini_files = (
 							'testing_db_compare' => 1,
-						};
+					   );
 
 my $ini_file = basename($options{'ini_template'});
 
