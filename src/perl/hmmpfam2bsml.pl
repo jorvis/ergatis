@@ -1,7 +1,5 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -224,7 +222,7 @@ while (<$ifh>) {
 
         ## Skip the headers and blank lines
         next if (/^Model\s+Domain\s+/i);
-        next if (/^--------  ------- ----- -----    ----- -----      -----  -------/);
+        next if (/^--------\s+-------\s+-----\s+-----\s+-----\s+-----\s+-----\s+-------/);
         next if (/^\s*$/);
         
         ## do nothing if no matches were found
