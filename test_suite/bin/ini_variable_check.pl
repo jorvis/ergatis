@@ -18,6 +18,10 @@ unless ($options{'ergatis_install_root'} =~ /\/$/) {
 	$options{'ergatis_install_root'} .= "/";
 }
 
+my %exempt_ini_files = {
+							'testing_db_compare' => 1,
+						};
+
 my $ini_file = basename($options{'ini_template'});
 
 unless(-e $options{'ini_template'} && $ini_file =~ /^([^\.]+)/) {
@@ -25,6 +29,12 @@ unless(-e $options{'ini_template'} && $ini_file =~ /^([^\.]+)/) {
 }
 my $component = $1;
 my $component_ini = $component."conf.ini";
+
+if ($exempt_ini_files{$component}) {
+	print STDERR "# Skipping processing of $ini_file\n";
+	print STDERR "# Component is exempt from validation checks!\n";
+	exit(0);
+}
 
 unless(-e $options{'ergatis_install_root'}."docs/$component_ini") {
 	die $options{'ergatis_install_root'}." is not a valid ergatis install directory.\n";
