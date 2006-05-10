@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
+
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -202,6 +205,12 @@ sub process_files
         ## open the input file.  how we do this depends on whether the input file
         ##  is compressed.
         my $ifh;
+
+        ## If the file is compressed but the filename in the input_list doesn't reflect
+        ## this, add the extension to the filename variable.
+        $file .= ".gz" if (stat "$file.gz");
+        $file .= ".gzip" if (stat "$file.gzip");
+
         if ($file =~ /\.(gz|gzip)$/) {
             open ($ifh, "<:gzip", $file) || $logger->logdie("can't read zipped input file '$file': $!");
         } else {
@@ -230,6 +239,7 @@ sub process_files
 sub process_results
 {
 	my ($asm_id, $prog_name) = @_;
+	$prog_name = 'GeneZilla' if $prog_name =~ /genezilla/;
     
 	cleanup_records($asm_id, $prog_name) if !$asm_ids{$asm_id};
 
