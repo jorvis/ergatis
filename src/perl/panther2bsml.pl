@@ -177,7 +177,7 @@ close $ifh;
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
-                            id => "$options{search_method}_analysis",
+                            id => "panther_analysis",
                             sourcename => $options{'output'},
                           );
 
