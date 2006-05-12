@@ -101,7 +101,8 @@ sub CreateWorkflow{
                 SYBASE          => '/usr/local/packages/sybase',
                 
                 ## for augustus
-                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/EGC_utilities/AUGUSTUS/augustus.1.8.2/config',
+                #AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
                 #AUGUSTUS_CONFIG_PATH => '/usr/local/annotation/TTA1/augustus/config',
                 #AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/EGC_utilities/AUGUSTUS/augustus/config',
             
@@ -181,7 +182,8 @@ sub RunWorkflow{
                 SYBASE          => '/usr/local/packages/sybase',
 
                 ## for augustus
-                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
+                AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/EGC_utilities/AUGUSTUS/augustus.1.8.2/config',
+                #AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/jorvis/augustus/config',
                 #AUGUSTUS_CONFIG_PATH => '/usr/local/annotation/TTA1/augustus/config',
                 #AUGUSTUS_CONFIG_PATH => '/usr/local/devel/ANNOTATION/EGC_utilities/AUGUSTUS/augustus/config',
 
