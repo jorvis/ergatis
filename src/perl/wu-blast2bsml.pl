@@ -14,7 +14,7 @@ USAGE:  wu-blast2bsml.pl -i blastp.raw -o blastp.bsml -q /path/to/query_file.fsa
 =head1 OPTIONS
 
 B<--input,-i>
-    The input raw blast output from the wu-blastp suite.
+    The input raw blast output from the wu-blast suite.
 
 B<--output,-o>
     The output BSML file name.
@@ -98,6 +98,22 @@ if($options{'pvalue'} eq ""){
     $options{'pvalue'} = 10;
 }
 
+my $ref_molecule = {
+						'wu-blastn' => 'na',
+						'wu-blastp' => 'aa',
+						'wu-blastx' => 'na',
+						'wu-tblastn' => 'aa',
+						'wu-tblastx' => 'na',
+					};
+my $comp_molecule = {
+						'wu-blastn' => 'na',
+						'wu-blastp' => 'aa',
+						'wu-blastx' => 'aa',
+						'wu-tblastn' => 'na',
+						'wu-tblastx' => 'na',
+					};
+
+
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
@@ -106,6 +122,19 @@ if (!defined($options{'class'})){
     $logger->logdie("class was not defined");
 } else {
     $class = $options{'class'};
+}
+
+##determine wu-blast program
+my $blast_program;
+if ($options{'analysis_id'} =~ /^([^_]+)_analysis/) {
+	$blast_program = $1;
+} else {
+	$logger->logdie("analysis_id '$options{analysis_id}' has unexpected structure");
+}
+
+##check that we've got defined molecule types for the analysis program
+unless($ref_molecule->{$blast_program} && $comp_molecule->{$blast_program}) {
+	$logger->logdie("Molecule types for '$options{analysis_id}' are undefined");
 }
 
 ## get a filehandle on the input
@@ -369,7 +398,7 @@ sub createAndAddNullResult {
     my $doc = $args{'doc'};
     
 	if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-        my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
+        my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, $ref_molecule->{$blast_program}, $args{'class'} );
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
         $seq->addBsmlLink('analysis', '#' . $options{'analysis_id'}, 'input_of');
     }
@@ -427,13 +456,13 @@ sub createAndAddBlastResultLine {
     my $seq;
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
+        $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, $ref_molecule->{$blast_program}, $args{'class'} );
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
         $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-		$seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
+		$seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), $comp_molecule->{$blast_program}, $args{'class'} );
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $args{'search_database'}, '', $args{'dbmatch_accession'});
 ## Removed to resolve bug #2671
 ##        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
