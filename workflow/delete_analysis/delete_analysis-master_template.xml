@@ -29,9 +29,6 @@
             <name>revoke_public</name>
             <configMapId>revoke_public</configMapId>
         </command>
-        <commandSet type="parallel">
-            <name>Filter analysis tables</name>
-            <configMapId>empty</configMapId>
             <command>    
                 <type>RunUnixCommand</type>
                 <name>filter_analysis</name>
@@ -62,7 +59,11 @@
                 <name>filter_featureloc</name>
                 <configMapId>filter_featureloc</configMapId>
             </command>   
-       </commandSet>
+            <command>    
+                <type>RunUnixCommand</type>
+                <name>filter_feature_relationship</name>
+                <configMapId>filter_feature_relationship</configMapId>
+            </command>   
        <command>    
            <type>RunUnixCommand</type>
            <name>drop_filters</name>
@@ -88,9 +89,6 @@
            <name>Partition tables</name>
            <configMapId>partition</configMapId>
        </command>
-       <commandSet type="parallel">
-           <name>Load filtered analysis records</name>
-           <configMapId>empty</configMapId>
            <command>    
                <type>RunUnixCommand</type>
                <name>load_analysis</name>
@@ -121,7 +119,11 @@
                <name>load_featureloc</name>
                <configMapId>load_featureloc</configMapId>
            </command>
-       </commandSet>
+           <command>    
+               <type>RunUnixCommand</type>
+               <name>load_feature_relationship</name>
+               <configMapId>load_feature_relationship</configMapId>
+           </command>
 <!--Postprocessing-->
        <command>    
            <type>RunUnixCommand</type>
