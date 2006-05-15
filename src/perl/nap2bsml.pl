@@ -104,7 +104,12 @@ if( $options{'help'} ){
 my $doc = new BSML::BsmlBuilder();
 
 ## open the input file for parsing
-open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
+my $ifh;
+if($options{'input'} =~ /\.gz$/) {
+    open ($ifh, "<:gzip", $options{'input'}) || $logger->logdie("can't open input file for reading");
+} else {
+    open ($ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
+}
 
 ## each chainID = one Seq-pair-alignment
 ## each chain segment = one Seq-pair-run
