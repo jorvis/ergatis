@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/local/packages/perl-5.8.5/bin/perl
+
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -21,9 +24,6 @@ B<--input,-i>
 
 B<--query_file_path,-q>
 	Full path to FASTA file containing query sequence.
-
-B<--query_id>
-	ID of query sequence
 	
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -82,7 +82,6 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
 			  'query_file_path|q=s',
-			  'query_id=s',
               'output|o=s',
               'log|l=s',
               'debug=s',
@@ -191,15 +190,6 @@ while (<$ifh>) {
     $doc->createAndAddBsmlAttribute($run, 'segment_number', $segmentID);
 }
 
-## if there were no results this will create a sequence stub
-my $align = &createAndAddNullResult(
-	   					                doc             => $doc,
-                           				query_name      => $options{'query_id'},
-			                            query_length    => '',
-               				            class			=> 'assembly',
-                        		   );
-								   
-
 ## add the analysis element
 my $analysis = $doc->createAndAddAnalysis(
                             id => 'aat_aa_analysis',
@@ -215,8 +205,12 @@ exit;
 sub check_parameters {
     
     ## make sure input file exists
-    if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
-
+    if (! -e $options{'input'}) { 
+        $logger->logdie("input file $options{'input'} does not exist")
+            unless(-e "$options{input}.gz");
+        $options{'input'}.='.gz';
+    }
+    
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
 
@@ -230,18 +224,5 @@ sub min {
         return $num1;
     } else {
         return $num2;
-    }
-}
-
-##Adds BSML tags for the case where 
-##the query sequence returned no hits
-sub createAndAddNullResult {
-	my %args = @_;
-    my $doc = $args{'doc'};
-    
-	if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-        my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", '', 'na', $args{'class'} );
-		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
-        $seq->addBsmlLink('analysis', '#' . $options{'analysis_id'}, 'input_of');
     }
 }
