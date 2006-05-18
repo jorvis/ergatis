@@ -43,8 +43,8 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>Create ardcf scratch</name>
-          <configMapId>create_ardcf_scratch</configMapId>
+          <name>Create ard scratch</name>
+          <configMapId>create_ard_scratch</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
@@ -201,7 +201,7 @@
         <command>    
             <type>RunUnixCommand</type>
             <name>Process ARD Custom Feature Ontology</name>
-            <configMapId>parse_ardcf_onto</configMapId>
+            <configMapId>parse_ard_onto</configMapId>
         </command>
 <!-- Evidence Ontology -->
         <command>    
