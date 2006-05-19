@@ -120,7 +120,8 @@ foreach my $refseq (keys %tiles) {
 		print "$refseq\t$refpos\t$runlength\t$compseq\t$is_comp\t($supercontig_name)\n";
 
 		#add to supercontig sequence
-		my $seqobj = $doc->returnBsmlSequenceByIDR(${$seqtrack{$compseq}});
+		my $seqobj = $doc->returnBsmlSequenceByIDR($compseq);
+		defined($seqobj) || die "seqobj ($compseq) is not defined";
 		my $seq = $seqobj->subSequence(-1,0,0);
 		$seq =~ s/\s//g;
 		my $seq_len = length($seq);
@@ -261,10 +262,7 @@ sub alignmentHandler {
 	$tiles{$refseq}->{$refpos}->{$runlength}->{$compseq} = $compcomplemnt;
     }
 
-    print " $refseq $compseq ";
-
-    print "\n";
-
+    print " $refseq $compseq \n";
 }
 
 
