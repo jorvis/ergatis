@@ -40,6 +40,7 @@ GetOptions( \%options,
 	    'fasta_output=s',
 	    'analysis_id|a=s',
 	    'scaffold_class=s',
+	    'contig_genome=s',
 	    'help|h' 
 	    ) || pod2usage();
 
@@ -65,6 +66,20 @@ if (! $options{scaffold_class}) {
     $options{scaffold_class} = 'supercontig';
 }
 
+# bug 2693
+# http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=2693
+# create Genome/Organism/Genus+Species tag
+# first word is genus, rest is species
+my $genus = 'Unknown';
+my $species = 'Unknown';
+if ($options{contig_genome}) {
+    my @name_words = split /\s/, $options{contig_genome};
+    $genus = shift(@name_words);
+    $species = join(" ", @name_words);
+#   $species = shift(@name_words);
+}
+print "ORGANISM: ($genus) ($species)\n";
+
 #create output file
 my $fasta_out = $options{'fasta_output'};
 open (my $FFILE, ">$fasta_out") || die "Unable to open for writing $fasta_out";
@@ -83,6 +98,12 @@ $doc->createAndAddAnalysis(
 			   id => $options{analysis_id},
 			   sourcename => $options{bsml_output},
 			   );
+# add the genome object (bug 2693)
+# from Brett's email 5/22
+my $genome = $doc->createAndAddGenome();
+my $organism = $doc->createAndAddOrganism(genome => $genome, species=> $species, genus => $genus );
+#$builder->createAndAddStrain(organism => $organism, database =>$chadoDb, source_database => $annotDb );
+
 
 #obtain alignment info (for building supercontigs) from input bsml
 #obtain sequence info from input bsml
@@ -110,6 +131,9 @@ foreach my $refseq (keys %tiles) {
     #add //Attribute-list/Attribute[@name="SO", content=<class>]
     #presumably class is from SO
     $seqstub->addBsmlAttributeList([{name => 'SO', content=> $options{scaffold_class}}]);
+
+    # link to genome object (bugzilla 2693)
+    $doc->createAndAddLink($seqstub, 'genome', '#'.$genome->{'attr'}->{'id'},);
 
     #build supercontig in order of:
     # 1. start position on reference scaffold
