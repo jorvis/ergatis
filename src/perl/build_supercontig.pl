@@ -105,6 +105,11 @@ foreach my $refseq (keys %tiles) {
  					     $options{scaffold_class} #class
  					     );
     $seqstub->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
+    #bugzilla case 2692
+    #http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=2692
+    #add //Attribute-list/Attribute[@name="SO", content=<class>]
+    #presumably class is from SO
+    $seqstub->addBsmlAttributeList([{name => 'SO', content=> $options{scaffold_class}}]);
 
     #build supercontig in order of:
     # 1. start position on reference scaffold
@@ -229,13 +234,13 @@ sub sequenceHandler {
  				    $seqdataimport->{identifier}                    # //Seq-data-import/@identifier
  				    );
     }  
-    elsif ( my $seqdata = $oldseq->returnSeqData() ){
-	print " SeqData";
-	$seqstub->addBsmlSeqData( $seqdata );
-    }
-#    else {
-#	die "No Seq-data or Seq-data-import found";
+#    elsif ( my $seqdata = $oldseq->returnSeqData() ){
+#	print " SeqData";
+#	$seqstub->addBsmlSeqData( $seqdata );
 #    }
+    else {
+	die "No Seq-data-import found";
+    }
     print "\n";
 
     $seqtrack{$id} = \$oldseq;
