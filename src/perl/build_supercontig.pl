@@ -123,6 +123,9 @@ foreach my $refseq (keys %tiles) {
 		my $seqobj = $doc->returnBsmlSequenceByIDR($compseq);
 		defined($seqobj) || die "seqobj ($compseq) is not defined";
 		my $seq = $seqobj->subSequence(-1,0,0);
+		# subSequence() automatically creates a SeqData to cache the file io
+		# removing SeqData object allows the original SeqDataImport to be in output bsml
+		$seqobj->dropBsmlSeqData();
 		$seq =~ s/\s//g;
 		my $seq_len = length($seq);
 		if ($seq_len < 1) {
