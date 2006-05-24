@@ -1,38 +1,11 @@
 #!/usr/local/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
-=head1  NAME 
-
-
-=head1 SYNOPSIS
-
-USAGE:  
-
-=head1 OPTIONS
-
-=head1 DESCRIPTION
-
-=head1 INPUT
-
-=head1 OUTPUT
-
-=head1 CONTACT
-
-=cut
 
 use strict;
-
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use XML::Twig;
-
+use XML::Parser;
 use Workflow::Logger;
-use BSML::BsmlParserSerialSearch;
-use BSML::BsmlParserTwig;
-use MLDBM "DB_File";
+use DB_File;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -64,9 +37,6 @@ if( $options{'help'} ){
 
 &check_parameters(\%options);
 
-#######
-## gather the list of files we're going to processes.  the user can pass file or
-#  directory names using --bsml_input, which can be a single file, a list of 
 #  filenames, a directory of files, or a list of directories of files (lists are
 #  comma-separated.  it can even be a mixed list of file and dir names.  fancy!
 #  a file containing a list of file/dir names should be passed with --bsml_list.  
@@ -124,26 +94,79 @@ if ( scalar @files == 0 ) {
 
 #######
 ## parse out sequences from each file
-my $mfh;
-my $title;
 
 my %protein_fastas = ();
-
 my %lookup;
 	
-tie %lookup, 'MLDBM', $options{'output'} or $logger->logdie("Can't tie $options{'output'}");
+my $dbtie = tie %lookup, 'DB_File', $options{'output'},  O_RDWR|O_CREAT, 0660, $DB_BTREE or $logger->logdie("Can't tie $options{'output'}");
+
+my $currid;
+my $currclass;
 
 for my $file ( @files ) {
-    my $seqParser = new BSML::BsmlParserSerialSearch
-	(SequenceCallBack => \&process_sequence);
-    $logger->debug("Parsing file $file") if ($logger->debug);
-    $seqParser->parse( $file );
+
+    my $x = new XML::Parser(Style => 'Stream',
+			Handlers => {Start => \&handle_start,
+				     End   => \&handle_end,
+				     Char  => sub {},
+				     Default => sub {},
+				     Init => sub {},
+				     Final => sub {},
+				     Proc => sub {},
+				     Comment => sub {},
+				     CdataStart => sub {},
+				     CdataEnd => sub {},
+				     Unparsed => sub {}
+				     
+				 });
+    $x->parsefile( $file );
 }
 
-&print_fasta_list;
+sub handle_start{
+    my($expat) = shift;
+    my($elt) = shift;
+    
+    if(lc($elt) eq 'sequence'){
+	for(my $i=0;$i<@_;$i+=2){
+	    if(lc($_[$i]) eq 'id'){
+		$currid = $_[$i+1];
+	    }
+	}
+    }
 
+    if(lc($elt) eq 'feature'){
+	for(my $i=0;$i<@_;$i+=2){
+	    if(lc($_[$i]) eq 'id'){
+		if($currid){
+		    $lookup{$_[$i+1]} = $currid;
+		}
+	    }
+	    if(lc($_[$i]) eq 'class'){
+		$currclass = $_[$i+1];
+	    }
+	}
+    }
+    elsif (lc($elt) eq 'seq-data-import'){
+	my $source;
+	my $identifier;
+	for(my $i=0;$i<@_;$i++){
+	    if(lc($_[$i]) eq 'source' && $currclass eq 'polypeptide'){
+		my $fasta_file = $_[$i+1];
+		++$protein_fastas{$fasta_file} if length $fasta_file;
+	    }
+	}
+    }
+}
 
-exit;	    
+sub handle_char{
+    return;
+}
+
+sub handle_end{
+    my($expat) = shift;
+    my($elt) = shift;
+}
+
 
 sub add_file {
     ## adds a file to the list of those to process, checking to make sure it
@@ -214,3 +237,4 @@ sub print_fasta_list
 		print FASTA_OUT "$fasta\n";
 	}
 }
+
