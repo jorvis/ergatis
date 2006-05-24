@@ -43,7 +43,7 @@ use Workflow::Logger;
 use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 }
-use MLDBM "DB_File";
+use DB_File;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -157,7 +157,7 @@ sub build_asmbl_lookup{
     my $reader = shift;
     my %lookup;
     $logger->debug("Reading lookup $reader") if($logger->is_debug());
-    tie %lookup, 'MLDBM', $reader or $logger->logdie("Can't tie $reader");
+    tie %lookup, 'DB_File', $reader, undef, undef, $DB_BTREE or $logger->logdie("Can't tie $reader");
     $logger->debug("Found ".scalar(keys %lookup)." keys") if($logger->is_debug());
     return \%lookup;
 }
