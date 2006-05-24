@@ -101,13 +101,11 @@ the stop coordinates of each terminal CDS is extended 3bp to include the stop co
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
 use BSML::BsmlRepository;
 use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -139,6 +137,12 @@ my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
 my $idcreator = new Papyrus::TempIdCreator();
+
+## different versions of augustus have treated stop codons differently.  only some include
+##  the stop codon as part of the sequence range.  toggle this to 1 if you want the terminal
+##  exon predictions extended 3bp.  this should only be used for those versions of augustus
+##  that don't include the stop codon.
+my $extend_terminal_exon = 1;
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -193,43 +197,7 @@ while (<$ifh>) {
         ## remember this group name
         $last_group_name = $current_group_name;
         
-        ## add 3 bases to the last CDS, if any were found
-        if (scalar @cds) {
-            
-            ## if on the reverse strand, we need to take three from column 2
-            ##   if on the forward add three to column 3
-            ## assumes (obviously) that all CDS in this group are on the same strand
-            if ($cds[-1][3]) {
-                ## here we need to sort the CDS array because the terminal one isn't 
-                ##  explicitly defined and the software can write them in any order.
-                ##  reverse strand, sort descending
-                @cds = sort { $b->[1] <=> $a->[1] } @cds;
-            
-                $logger->debug("manually shifting 3 from reverse CDS coordinate  $cds[-1][1] on $seq_id\n") if $logger->is_debug();
-                $cds[-1][1] -= 3;
-            } else {
-                ## here we need to sort the CDS array because the terminal one isn't 
-                ##  explicitly defined and the software can write them in any order.
-                ##  reverse strand, sort descending
-                @cds = sort { $a->[2] <=> $b->[2] } @cds;
-
-                $logger->debug("manually pushing 3 onto forward CDS coordinate  $cds[-1][2] on $seq_id\n") if $logger->is_debug();
-                $cds[-1][2] += 3;
-            }
-            
-            for my $cd ( @cds ) {
-                &add_feature( @{$cd} );
-            }
-            
-            undef @cds;
-        }
-        
-        ## pull a new gene id
-        $current_transcript_id = $idcreator->new_id( db      => $options{project},
-                                                     so_type => 'gene',
-                                                     prefix  => $options{command_id}
-                                                   );
-        $fg = $doc->createAndAddFeatureGroup( $seq, '', $current_transcript_id );
+        &add_feature_group();
     }
     
     ## adjust both positions so that we are numbering from zero
@@ -264,6 +232,8 @@ while (<$ifh>) {
 
 }
 
+## now handle the last set
+&add_feature_group();
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
@@ -293,6 +263,48 @@ sub add_feature {
         $thing->addBsmlIntervalLoc($start, $stop, $strand);
         $fg->addBsmlFeatureGroupMember( $current_transcript_id, $idcreator->so_used('gene') );
     }
+}
+
+sub add_feature_group {
+    if ( $extend_terminal_exon ) {
+        ## add 3 bases to the last CDS, if any were found
+        if (scalar @cds) {
+
+            ## if on the reverse strand, we need to take three from column 2
+            ##   if on the forward add three to column 3
+            ## assumes (obviously) that all CDS in this group are on the same strand
+            if ($cds[-1][3]) {
+                ## here we need to sort the CDS array because the terminal one isn't 
+                ##  explicitly defined and the software can write them in any order.
+                ##  reverse strand, sort descending
+                @cds = sort { $b->[1] <=> $a->[1] } @cds;
+
+                $logger->debug("manually shifting 3 from reverse CDS coordinate  $cds[-1][1] on $seq_id\n") if $logger->is_debug();
+                $cds[-1][1] -= 3;
+            } else {
+                ## here we need to sort the CDS array because the terminal one isn't 
+                ##  explicitly defined and the software can write them in any order.
+                ##  reverse strand, sort descending
+                @cds = sort { $a->[2] <=> $b->[2] } @cds;
+
+                $logger->debug("manually pushing 3 onto forward CDS coordinate  $cds[-1][2] on $seq_id\n") if $logger->is_debug();
+                $cds[-1][2] += 3;
+            }
+
+            for my $cd ( @cds ) {
+                &add_feature( @{$cd} );
+            }
+
+            undef @cds;
+        }
+    }
+
+    ## pull a new gene id
+    $current_transcript_id = $idcreator->new_id( db      => $options{project},
+                                                 so_type => 'gene',
+                                                 prefix  => $options{command_id}
+                                               );
+    $fg = $doc->createAndAddFeatureGroup( $seq, '', $current_transcript_id );
 }
 
 sub check_parameters {
