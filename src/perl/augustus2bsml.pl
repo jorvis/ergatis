@@ -142,7 +142,7 @@ my $idcreator = new Papyrus::TempIdCreator();
 ##  the stop codon as part of the sequence range.  toggle this to 1 if you want the terminal
 ##  exon predictions extended 3bp.  this should only be used for those versions of augustus
 ##  that don't include the stop codon.
-my $extend_terminal_exon = 1;
+my $extend_terminal_exon = 0;
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
