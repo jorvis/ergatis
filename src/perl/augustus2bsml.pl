@@ -88,8 +88,7 @@ the analysis of a single FASTA sequence.
 
 =head1 OUTPUT
 
-Base positions from the input file are renumbered so that positions start at zero. Also,
-the stop coordinates of each terminal CDS is extended 3bp to include the stop codon.
+Base positions from the input file are renumbered so that positions start at zero.
 
 =head1 CONTACT
 
