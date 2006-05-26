@@ -289,13 +289,15 @@ sub add_feature_group {
                 $logger->debug("manually pushing 3 onto forward CDS coordinate  $cds[-1][2] on $seq_id\n") if $logger->is_debug();
                 $cds[-1][2] += 3;
             }
-
-            for my $cd ( @cds ) {
-                &add_feature( @{$cd} );
-            }
-
-            undef @cds;
         }
+    }
+
+    if ( scalar @cds ) {
+        for my $cd ( @cds ) {
+            &add_feature( @{$cd} );
+        }
+
+        undef @cds;
     }
 
     ## pull a new gene id
