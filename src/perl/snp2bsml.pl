@@ -200,6 +200,7 @@ sub add_table
 		my $loc = $$cluster[$i];
 		my $aln_seq = $aln_summary->returnBsmlAlignedSequenceR
 			      ($aln_summary->addBsmlAlignedSequence);
+		$aln_seq->addattr('name', $loc->GetId);
 		$aln_seq->addattr('seqref', $loc->GetId);
 		$aln_seq->addattr('length',
 			$loc->GetSeqData ? length($loc->GetSeqData) :
