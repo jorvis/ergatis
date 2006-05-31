@@ -126,35 +126,37 @@ for my $file ( @files ) {
     $x->parsefile( $file );
 }
 
+&print_fasta_list;
+
 sub handle_start{
     my($expat) = shift;
     my($elt) = shift;
     
-    if(lc($elt) eq 'sequence'){
+    if($elt eq 'Sequence'){
 	for(my $i=0;$i<@_;$i+=2){
-	    if(lc($_[$i]) eq 'id'){
+	    if($_[$i] eq 'id'){
 		$currid = $_[$i+1];
 	    }
-	}
-    }
-
-    if(lc($elt) eq 'feature'){
-	for(my $i=0;$i<@_;$i+=2){
-	    if(lc($_[$i]) eq 'id'){
-		if($currid){
-		    $lookup{$_[$i+1]} = $currid;
-		}
-	    }
-	    if(lc($_[$i]) eq 'class'){
+	    if($_[$i] eq 'class'){
 		$currclass = $_[$i+1];
 	    }
 	}
     }
-    elsif (lc($elt) eq 'seq-data-import'){
+
+    if($elt eq 'Feature'){
+	for(my $i=0;$i<@_;$i+=2){
+	    if($_[$i] eq 'id'){
+		if($currid){
+		    $lookup{$_[$i+1]} = $currid;
+		}
+	    }
+	}
+    }
+    elsif ($elt eq 'Seq-data-import'){
 	my $source;
 	my $identifier;
 	for(my $i=0;$i<@_;$i++){
-	    if(lc($_[$i]) eq 'source' && $currclass eq 'polypeptide'){
+	    if($_[$i] eq 'source' && $currclass eq 'polypeptide'){
 		my $fasta_file = $_[$i+1];
 		++$protein_fastas{$fasta_file} if length $fasta_file;
 	    }
