@@ -82,6 +82,8 @@ my $subflow_key       = '$;SUBFLOW_NAME$;';
 my $organism_key        = '$;SCHEMA_TYPE$;';
 my $include_genefinders_key = '$;INCLUDE_GENEFINDERS$;';
 my $exclude_genefinders_key = '$;EXCLUDE_GENEFINDERS$;';
+my $alt_database_key = '$;ALT_DATABASE$;';
+my $alt_species_key = '$;ALT_SPECIES$;';
 
 
 my $valid_organism_types = { 'prok'   => 1,
@@ -102,7 +104,10 @@ if (&verify_control_file($options{'control_file'})){
 	    $subflow_key       => [],
 	    $organism_key      => [],
 	    $include_genefinders_key => [],
-	    $exclude_genefinders_key => []
+	    $exclude_genefinders_key => [],
+	    $alt_database_key => [],
+	    $alt_species_key => []
+
 	};
 
 
@@ -145,13 +150,14 @@ sub get_list_from_file{
 
     my $orghash = &get_organism_hash($contents);
 
-
     foreach my $database_type (sort keys %{$orghash} ){ 
 
 	my $database      = $orghash->{$database_type}->{'database'};
 	my $organism_type = $orghash->{$database_type}->{'organism_type'};
 	my $include_genefinders = $orghash->{$database_type}->{'include_genefinders'};
 	my $exclude_genefinders = $orghash->{$database_type}->{'exclude_genefinders'};
+	my $alt_database = $orghash->{$database_type}->{'alt_database'};
+	my $alt_species  = $orghash->{$database_type}->{'alt_species'};
 
 	foreach my $infohash ( @{$orghash->{$database_type}->{'infohash'}} ) {
 
@@ -160,7 +166,7 @@ sub get_list_from_file{
 
 	    my $subflow_name = $database_type . "_" . $asmbl_id;
 
-	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders);
+	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species);
 	}
     }
     
@@ -173,8 +179,8 @@ sub get_list_from_file{
 #-------------------------------------------
 sub add_entry_to_conf{
 
-    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders) = @_;
-
+    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species) = @_;
+    
     push( @{$iteratorconf->{$database_key}}, $database );
     push( @{$iteratorconf->{$asmbl_id_key}}, $asmbl_id );
     push( @{$iteratorconf->{$subflow_key}}, $subflow_name );
@@ -182,6 +188,8 @@ sub add_entry_to_conf{
     push( @{$iteratorconf->{$include_genefinders_key}}, $include_genefinders );
     push( @{$iteratorconf->{$exclude_genefinders_key}}, $exclude_genefinders );
     push( @{$iteratorconf->{$organism_key}}, $organism_type );
+    push( @{$iteratorconf->{$alt_database_key}}, $alt_database );
+    push( @{$iteratorconf->{$alt_species_key}}, $alt_species );
 
 }
 
@@ -285,14 +293,52 @@ sub get_organism_hash {
 	}
 	else{
 
-	    if ($line =~ /^database:(\S+)\s+organism_type:(\S+)\s+include_genefinders:(\S*)\s+exclude_genefinders:(\S*)/){
+	    if ($line =~ /^database:(\S+)\s+organism_type:(\S+)\s+include_genefinders:(\S*)\s+exclude_genefinders:(\S*)\s+alt_database:(\S*)\s+alt_species:(\S*)\s*$/){
 		
 		my $database      = $1;
 		my $organism_type = $2;
 		my $include_genefinders = $3;
 		my $exclude_genefinders = $4;
 
+		my ($alt_database, $alt_species) = &verify_alt_database_and_species($5, $6);
 
+		$database_type = $database ."_" .$organism_type;
+
+		if (&verify_organism_type($organism_type, $linectr)){
+		    
+		    ($include_genefinders, $exclude_genefinders) = &verify_and_set_genefinders($include_genefinders, $exclude_genefinders, $linectr);
+
+		    
+
+		    if (( exists $hash->{$database_type}) &&
+			(defined($hash->{$database_type}))){
+			
+			$logger->warn("This database_type '$database_type' was already encountered in the control file!");
+		    }
+		    else {
+			#
+			# Encountered this organism/database for the first time while processing the control file contents
+			# therefore go ahead and declare the organism's hash attributes
+			#
+			$hash->{$database_type} = { 'database'            => $database,
+						    'asmbl_id_list'       => [],
+						    'infohash'            => [],
+						    'organism_type'       => $organism_type,
+						    'include_genefinders' => $include_genefinders,
+						    'exclude_genefinders' => $exclude_genefinders,
+						    'alt_database'        => $alt_database,
+						    'alt_species'         => $alt_species
+						};
+			
+		    }
+		}
+	    }
+	    elsif ($line =~ /^database:(\S+)\s+organism_type:(\S+)\s+include_genefinders:(\S*)\s+exclude_genefinders:(\S*)/){
+
+		my $database      = $1;
+		my $organism_type = $2;
+		my $include_genefinders = $3;
+		my $exclude_genefinders = $4;
 
 		$database_type = $database ."_" .$organism_type;
 
@@ -323,7 +369,7 @@ sub get_organism_hash {
 		}
 	    }
 	    elsif ($line =~ /^\s*(\d+)\s*sequence_type:(\S*)/){
-
+		
 		&store_asmbl_id_and_sequence_type($database_type, $1, $2, $linectr, $unique_asmbl_id_values, $hash);
 	    }
 	    elsif ($line =~ /^\s*(\d+)\s*/){
@@ -349,9 +395,6 @@ sub get_organism_hash {
 sub store_asmbl_id_and_sequence_type {
     
     my ($database, $asmbl_id, $sequence_type, $linectr, $unique_asmbl_id_values, $hash) = @_;
-
-#    print "database '$database' asmbl_id '$asmbl_id' sequence_type '$sequence_type'\n";
-
 
     $sequence_type = &verify_and_set_sequence_type($sequence_type, $linectr);
     
@@ -448,9 +491,28 @@ sub verify_and_set_genefinders {
     elsif ($exclude_genefinder eq 'all'){
 	$include_genefinder = 'none';
     }
-    
-    
+        
     return ($include_genefinder, $exclude_genefinder);
     
     
+}
+
+
+sub verify_alt_database_and_species {
+    
+    my ($alt_database, $alt_species) = @_;
+ 
+    if ((!defined($alt_database)) ||
+	($alt_database =~ /^\s*$/)){
+	
+	$alt_database = "none";
+    }
+
+    if ((!defined($alt_species)) ||
+	($alt_species =~ /^\s*$/)){
+	
+	$alt_species = "none";
+    }
+
+    return ($alt_database, $alt_species);
 }
