@@ -1,13 +1,9 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-# eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-#     if 0; # not running under some shell
-# BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-# use lib (@INC,$ENV{"PERL_MOD_DIR"});
-# no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-# no lib ".";
-
-use lib (@INC,'/usr/local/devel/ANNOTATION/ard/current/lib/site_perl/5.8.5');
+BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
 
 =head1  NAME 
 
