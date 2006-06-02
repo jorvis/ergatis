@@ -222,7 +222,7 @@ while (<$ifh>) {
 
         ## Skip the headers and blank lines
         next if (/^Model\s+Domain\s+/i);
-        next if (/^--------\s+-------\s+-----\s+-----\s+-----\s+-----\s+-----\s+-------/);
+        next if (/^----/);
         next if (/^\s*$/);
         
         ## do nothing if no matches were found
