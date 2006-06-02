@@ -169,6 +169,7 @@ ergatis-v1r19b1
 ergatis-v1r19b2
 --------------
 -fixed adjust_bsml_coordinates to install all needed files
+-hmmpfam2bsml was failing to parse when match IDs were long.
 
 next
 --------------
