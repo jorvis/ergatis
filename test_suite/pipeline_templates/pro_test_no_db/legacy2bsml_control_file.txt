@@ -1,4 +1,4 @@
-database:gba organism_type:prok include_genefinders: exclude_genefinders:
+database:gba organism_type:prok include_genefinders: exclude_genefinders: alt_database: alt_species:
 6615
-database:gbs organism_type:prok include_genefinders: exclude_genefinders:
+database:gbs organism_type:prok include_genefinders: exclude_genefinders: alt_database: alt_species:
 799

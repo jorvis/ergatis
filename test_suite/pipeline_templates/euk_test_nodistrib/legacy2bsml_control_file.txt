@@ -1,7 +1,7 @@
-database:bma1 organism_type:euk include_genefinders: exclude_genefinders:
+database:bma1 organism_type:euk include_genefinders: exclude_genefinders: alt_database: alt_species:
 14554
-database:cba1 organism_type:euk include_genefinders: exclude_genefinders:
+database:cba1 organism_type:euk include_genefinders: exclude_genefinders: alt_database: alt_species:
 315
 117
-database:cea2 organism_type:euk include_genefinders: exclude_genefinders:
+database:cea2 organism_type:euk include_genefinders: exclude_genefinders: alt_database: alt_species:
 3
