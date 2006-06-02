@@ -166,6 +166,10 @@ ergatis-v1r19b1
 -ergatis test suite script now checks out the current installer version
 -initdb bugfix (added create_tigr_schemas_scratch and parse_tigr_schemas_onto steps)
 
+ergatis-v1r19b2
+--------------
+-fixed adjust_bsml_coordinates to install all needed files
+
 next
 --------------
 -wu-blast2bsml.pl fix to properly set Sequence stub molecule type based on blast program used
