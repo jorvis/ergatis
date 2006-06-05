@@ -15,7 +15,8 @@ USAGE: create_list_file.pl
 =head1	OPTIONS
 
 B<--direcotry,-d>
-	Location of the directory to search
+	Location of the directory to search.  No wild card characters should be
+    used in the directory.
     (Default: current directory)
 
 B<--output_list,-o>
@@ -23,8 +24,8 @@ B<--output_list,-o>
     (Default: standard out)
 
 B<--regex,-r>
-    Regular expression to limit the files searched
-    (Default: *)
+    Regular expression for entire file name (including full path)
+    (Default: finds all files)
 
 B<--include_gz|g>
     This flag tells the script to include .gz extensions in the list
@@ -38,6 +39,8 @@ B<--help,-h>
     regular expression.  By default, all .gz or .gzip extensions are stripped
     off.  Programs using these list files should know to search for .gz|.gzip
     versions.
+
+    **Note: No wild card characters should be used in this option.
 
 =head1	INPUT
 
@@ -67,7 +70,7 @@ use Cwd;
 #GLOBAL VARIABLES##########################################################
 my $directory = getcwd;     #The directory to search
 my $gz = 0;                 #Flag indicating the inclusion of .gz extension
-my $regex = ".*";           #The regular expression to search for
+my $regex = qr/".*"/;           #The regular expression to search for
 my $out;                    #Output file handle
 ###########################################################################
 
@@ -99,7 +102,7 @@ sub check_options {
     $gz = 1 if($options{'include_gz'});
 
     #regular expression setting.  There is no quality check here.
-    $regex = $options{'regex'} if($options{'regex'});
+    $regex = qr/$options{'regex'}/ if($options{'regex'});
 
     #Set the output option to what the user specified or stdout.
     if($options{'output_list'}) {
@@ -115,7 +118,8 @@ sub check_options {
 #name to the $out file handle without the gz (or with .gz if the flag is on).
 sub process {
     my $filename = $File::Find::name;
-    (-f && /$regex/) or return;
+    print "$_\n" if(-f);
+    (-f && $filename =~ /^$regex(\.gz)?$/) or return;
     $filename =~ s/\.(gz|gzip)$// unless($gz);
     print $out $filename."\n";
 }
