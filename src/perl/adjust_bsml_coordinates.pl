@@ -232,7 +232,6 @@ for (<$lfh>) {
     push @bsml_files, $_;
 }
 
-## open an output list file if the user requested it
 my $olfh;
 
 my $spaCounter = 0;
@@ -300,7 +299,7 @@ if ($bf =~ /\.(gz|gzip)$/) {
 
 my $twig = XML::Twig->new(
                           twig_roots               => {
-                              #'Seq-pair-alignment' => \&processSeqPairAlignment,
+                              'Seq-pair-alignment' => \&processSeqPairAlignment,
                               'Aligned-sequence'   => \&processAlignedSequence,
                               'Feature-tables'     => \&processFeatureTables,
                               #'Interval-loc'       => \&processIntervalLoc,
@@ -445,25 +444,6 @@ sub processAnalyses {
     $element->print($ofh);
 }
 
-# sub processIntervalLoc { 
-#     my ($twig, $element) = @_;
-    
-#     ## need to replace any startpos or endpos attributes
-#     for my $attribute ( qw(startpos endpos) ) {
-#         if (defined $element->{att}->{$attribute}) {
-#             $element->{att}->{$attribute} += $adjustment;
-#         }
-#     }
-    
-#     ## don't print if we are within a Feature.  Since Features
-#     #   are within a sequence, we'll just print twice.
-#     if (($twig->context)[-1] eq 'Feature') {
-#         $logger->debug("not printing Interval-loc since it is within a Feature") if ($logger->is_debug);
-#     } else {
-#         $element->print($ofh);
-#     }
-# }
-
 sub processFeatureTables {
     my ($twig, $Featuretables) = @_;
     my (@featStats);
@@ -544,11 +524,6 @@ sub processFeatureTables {
                    defined($removedFeats{$Featuregroupmember->{att}->{featref}}) ) {
                     push(@deletedFM, $Featuregroupmember);
                     $delFeatMems++;
-                } else {
-                  #   print STDERR "featxref not defined\n" 
-#                         if(!defined($Featuregroupmember->{att}->{featref}));
-#                     print STDERR "didn't find featxref in removed\n"
-#                         if(defined($removedFeats{$Featuregroupmember->{att}->{featref}}) );
                 }
             }
             if($delFeatMems == $numFeaturemems) {
@@ -639,12 +614,6 @@ sub processSeqPairAlignment {
             $adjSeqLoc[$adjFlag]->addSeqLocation(@sprStats[0..3]);
             $sprID++;
         } else {
-          #   print STDERR "In the else at least\n";
-#             print STDERR "next isn't defined\n" if(!$adjSeqLoc[$NEXT]);
-#             print STDERR "prev isn't defined\n" if(!$adjSeqLoc[$PREV]);
-#             print STDERR "@sprStats\n";
-#             print STDERR Dumper($adjSeqLoc[$PREV]);
-#             exit(0);
             if($adjSeqLoc[$NEXT] && $adjSeqLoc[$NEXT]->checkOverlap(@sprStats[1..4], 'next')) {
                 $adjSeqLoc[$NEXT]->removeSeqLocation(@sprStats[0..3]);
                 push @removedSprs, $spr; 
@@ -715,30 +684,19 @@ sub processSequence {
     $element->print($ofh);
 }
 
-# sub processSiteLoc { 
-#     my ($twig, $element) = @_;
-    
-#     ## need to replace any sitepos
-#     if (defined $element->{att}->{sitepos}) {
-#         $element->{att}->{sitepos} += $adjustment;
-#     }
-    
-#     $element->print($ofh);
-# }
-
 sub findAdjacent {
     my ($infile, $bsmlList) = @_;
 
     my @prevAndNext;
 
     #Parse out this number
-    ($infile =~ /.*(\d+)\.(\d+)\.[\w-]+\.bsml/) 
+    ($infile =~ /.*(\d+)\.(\d+)\.?[\w-]+\.bsml/) 
         || $logger->logdie("Could not extract fragment number from $infile");
     my $fragNo = $2;
     my $assembl = $1;
 
     foreach my $bsmlFile(@{$bsmlList}) {
-        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-]+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
+        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-]*\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
             $prevAndNext[(($2-$fragNo+1)/2)] = $bsmlFile;
         }
     }
@@ -774,7 +732,7 @@ sub processAdjacent {
     #Were only doing SeqPairAlignments for now
     my $twig = XML::Twig->new(
                               twig_roots               => {
-                                  #'Seq-pair-alignment' => \&processSeqPairAlignment,
+                                  'Seq-pair-alignment' => \&processSeqPairAlignment,
                                   'Feature-tables'     => \&processFeatureTables,
                               },
                               twig_print_outside_roots => $null,
