@@ -165,7 +165,7 @@ sub parse_data
         if ( ! $seqs_added{$snp->GetId}++ ) {
             ## assembly should probably not be hard-coded here.
             my $seq = $doc->createAndAddSequence($snp->GetId(), undef, '', 'dna', 'assembly');
-            $seq->addBsmlLink('analysis', '#nucmer_snps_analysis');
+            $seq->addBsmlLink('analysis', '#nucmer_snps_analysis', 'input_of');
 
         }
         
