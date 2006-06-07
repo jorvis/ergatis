@@ -58,7 +58,7 @@ This script will load the WorkFlow BSML files into the legacy database
 =head1	INPUT
 
 The input is a BSML file.  It will handle BSML data from augustus, genie,
-genezilla, gap2, and nap.
+genezilla, gap2, nap, glimmerHMM, and more.
 
 The name of each assembly is pulled from the BSML file names processed,
 which should be of the format:
