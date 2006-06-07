@@ -213,7 +213,7 @@ sub add_entry_to_conf{
         push( @{$iteratorconf->{'$;ITER_FILE_NAME$;'}}, $iter_file_name );
         push( @{$iteratorconf->{'$;ITER_FILE_BASE$;'}}, $iter_file_base );
         push( @{$iteratorconf->{'$;ITER_FILE_EXT$;'}},  $iter_file_ext );
-        push( @{$iteratorconf->{'$;TIMESTAMP$;'}},      $timestamp );
+        push( @{$iteratorconf->{'$;TIMESTAMP$;'}},      "'$timestamp'" );
 
         ## this should be removed later
         push( @{$iteratorconf->{$keyname}}, $filename );
