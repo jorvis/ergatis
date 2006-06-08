@@ -54,10 +54,10 @@ export LANG
 LC_ALL=C
 export LC_ALL
 
-PERL_MOD_DIR=$instdir/lib/site_perl/5.8.5
+PERL_MOD_DIR=$instdir/lib/site_perl/5.8.8
 export PERL_MOD_DIR
 
-exec /local/platform/perl-5.8.5/bin/perl $instdir/bin/$fname $shell_args    
+exec /local/platform/perl-5.8.8/bin/perl $instdir/bin/$fname $shell_args    
 
 _END_WRAPPER_
    ;
