@@ -54,7 +54,7 @@ export LANG
 LC_ALL=C
 export LC_ALL
 
-PERL_MOD_DIR=$instdir/lib/site_perl/5.8.8
+PERL_MOD_DIR=$instdir/lib/5.8.8
 export PERL_MOD_DIR
 
 exec /usr/local/bin/perl $instdir/bin/$fname $shell_args    
