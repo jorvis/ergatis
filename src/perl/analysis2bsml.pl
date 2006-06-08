@@ -11,7 +11,8 @@ analysis2bsml.pl - add analysis parameters to a BSML result doc
 =head1 SYNOPSIS
 
     USAGE:  analysis2bsml.pl --bsml_file=/path/to/some/output.bsml 
-                             --conf=/path/to/some/pipeline.config 
+                             --conf=/path/to/some/pipeline.config
+                             --ergatis_control_file=/path/to/ergatis_install.ini
                            [ --componenturl=/path/to/some/pipeline.xml ]
                            [ --pipelineurl=/path/to/some/pipeline0.xml ]
                            [ --debug debug_level  ]
@@ -37,6 +38,10 @@ B<--log,-l> Log file
 =item *
 
 B<--help,-h> This help message
+
+=item *
+
+B<--ergatis_control_file,-e> Control file defining software versions for ergatis install.
 
 =item *
 
@@ -75,6 +80,7 @@ my $results = GetOptions (\%options,
 			  'conf|c=s',
 			  'log|l=s',
 			  'debug=s',
+			  'ergatis_control_file|e=s',
 			  'componenturl|u=s',
 			  'pipelineurl|p=s',
 			  'help|h') || pod2usage();
@@ -136,7 +142,10 @@ if (! $research_found) {
     
     ## add the Attributes to the Analysis element
     &add_config_params($analysis);
-    
+   
+	## add software version attributes to the Analysis element
+	add_software_versions($analysis);
+   	
     ## build them together
     $analysis->paste('last_child', $analyses);
     $analyses->paste('last_child', $research);
@@ -248,6 +257,11 @@ sub process_research {
     
     ## add the Attributes to the Analysis element
     &add_config_params($analysis);
+   
+	if (defined($options{'ergatis_control_file'})) {
+		## add software version attributes to the Analysis element
+		add_software_versions($analysis);
+	}
 
     my $sourcename = $analysis->first_child('Attribute',"*[\@name=\"sourcename\"]");
     if($sourcename){
@@ -302,6 +316,56 @@ sub add_config_params {
     }
 }
 
+
+sub add_software_versions {
+    my $analysis = shift;
+
+	my %software_version = ();
+	my %tag_onto = (
+					'prok_prism' 	=> 'prok_prism_version',
+					'coati' 		=> 'coati_version',
+					'euk_prism' 	=> 'euk_prism_version',
+					'chado_prism' 	=> 'chado_prism_version',
+					'shared_prism' 	=> 'shared_prism_version',
+					'bsml' 			=> 'bsml_version',
+					'ergatis' 		=> 'ergatis_version',
+					'ontologies' 	=> 'ontologies_version',
+					'chado_schema' 	=> 'chado_schema_version',
+					'cvdata' 		=> 'cvdata_version',
+					'peffect'		=> 'peffect_version',
+					'server' 		=> 'database_server_name',
+				   );
+
+	open (IN, $options{'ergatis_control_file'}) 
+		|| $logger->logdie("Could not open $options{ergatis_control_file} for reading"); 
+
+	while (<IN>) {
+		chomp;
+		s/\s+//g;
+		if ($_ eq '' || /^#/) {next;}
+		my ($tag, $version) = split('=');
+		if (!defined($tag_onto{$tag})) {
+			$logger->logdie("No ontology term defined for software tag '$tag'.");
+		}
+		if ($version eq '') {
+			$logger->logdie("Software version string for tag '$tag' is empty. Check control file for errors.");
+		}
+		$software_version{$tag_onto{$tag}} = $version;
+	}
+
+    foreach my $name(keys(%software_version)) {
+		my $content = $software_version{$name};
+
+        ## create the new Attribute
+        my $attribute = XML::Twig::Elt->new('Attribute');
+        $attribute->set_att('name', $name);
+        $attribute->set_att('content', $content);
+            
+        ## add it to the Analysis
+	    $attribute->paste('last_child', $analysis);
+	}
+}
+
 sub check_parameters{
     my ($options) = @_;
     
@@ -311,4 +375,7 @@ sub check_parameters{
     if(! -e $options{'conf'}){
 	pod2usage({-exitval => 2,  -message => "Can't read conf file $options{'conf'}", -verbose => 1, -output => \*STDERR});    
     }
+    if(! -e $options{'ergatis_control_file'}){
+		pod2usage({-exitval => 2,  -message => "Can't read ergatis install control file $options{'ergatis_control_file'}", -verbose => 1, -output => \*STDERR});    
+	}
 }
