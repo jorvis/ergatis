@@ -56,12 +56,11 @@ the --log option.
 
 =cut
 
-#use strict;
-#use warnings;
+use strict;
+use warnings;
 use DBI;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-#use XML::Twig;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -280,13 +279,13 @@ sub delete_ALL_features {  ## Be careful... this removes EVERYTHING!!
 
 sub insert_tRNA {
     my ($dbh, $end5, $end3, $aa, $anti_codon, $bound1, $bound2, $score, $asmbl, $ntseq) = @_;
-    my ($att_id, $ret, $prog, $feat_name, @check, $count, $id, $preseq, $seq, @names, $file);
-    my ($zerobuf, $i, $zeros);
+    my ($att_id, $ret, $prog, @check, $count, $id, $preseq, $seq, @names, $file, $feat_name);
+    my ($zerobuf, $i);
     my ($db_query);
     
 	my $zeros = "00000";
    	
-    my $feat_name = "tRNA-" . $aa;
+    $feat_name = "tRNA-" . $aa;
 
     _log("INSERTING $feat_name...\n");
     _log("$end5, $end3, $bound1, $bound2\n");
@@ -303,7 +302,7 @@ sub insert_tRNA {
 	$db_query = $dbh->prepare($query);
 	$db_query->execute("$asmbl.$feat_name", $asmbl);
 	my $row = $db_query->fetchrow_arrayref();
-	my $count = $row->[0];
+	$count = $row->[0];
 	$db_query->finish();
  
     $count++;
@@ -312,7 +311,7 @@ sub insert_tRNA {
     my $feat_name2 = $asmbl.".".$feat_name . "-" . $count;
 
     _log("## pre-tRNA sequence....\n");
-    my $preseq = &cut_seq2($ntseq,$end5,$end3);
+    $preseq = &cut_seq2($ntseq,$end5,$end3);
     my ($exon1_3,$exon2_5)='';
     my ($e1seq,$e2seq)='';
     if ($bound1 != 0) {
@@ -333,8 +332,8 @@ sub insert_tRNA {
     }
     
 	## Prepare tRNA feature loading query	
-    my $query = "insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
-			  . " values (\"?\", ?, ?, \"?\", \"$user\", getdate(), ?, 0,1,\"?\")\n";
+    $query = "insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
+		   . " values (\"?\", ?, ?, \"?\", \"$user\", getdate(), ?, 0,1,\"?\")\n";
   	$db_query = $dbh->prepare($query);
     
 	###### load the feature as type pre-tRNA
@@ -381,7 +380,7 @@ sub insert_tRNA {
     insert_ORFattribute_tRNA_score ($dbh, $att_id, $anti_codon, $score);
 
     ## insert ident
-    my $query = "insert ident (feat_name, com_name) values (\"$feat_name2\", \"$feat_name (anticodon: $anti_codon)\")";
+    $query = "insert ident (feat_name, com_name) values (\"$feat_name2\", \"$feat_name (anticodon: $anti_codon)\")";
 	$db_query = $dbh->prepare($query);
 	$db_query->execute();
 	$db_query->finish();
@@ -389,7 +388,7 @@ sub insert_tRNA {
 
 sub cut_seq2 {
     my($sequence, $end5, $end3) = @_;
-    my($s, $seq_len, $query, $x, $ret);
+    my($s, $seq_len, $query, $x, $ret, $tmp);
     
 	if ($end5 < $end3) {
 	  	$s=substr($sequence, $end5 - 1, $end3 - $end5 + 1);
@@ -403,7 +402,7 @@ sub cut_seq2 {
 
 sub insert_feat_link {
     my($dbh,$child,$parent) = @_;
-    my($query);
+    my($query, $db_query);
     
 	$query = "insert feat_link (parent_feat, child_feat, assignby, datestamp) "
     	   . "values (\"?\", \"?\", \"$user\", getdate())";
@@ -415,7 +414,7 @@ sub insert_feat_link {
 
 sub insert_ORF_attribute {
     my($dbh, $feat_name, $type, $curated, $method) = @_;
-    my($query);
+    my($query, $db_query);
 
     $query = "insert ORF_attribute (feat_name, att_type, curated, method, date, assignby) "
 		   . "values (\"?\",\"?\",?,\"?\",getdate(),\"$user\")";
@@ -439,6 +438,7 @@ sub insert_ORF_attribute {
 
 sub insert_ORFattribute_tRNA_score {
     my ($dbproc, $id, $anti_codon, $score) = @_;
+    my($query, $db_query);
     $query = "update ORF_attribute set "
 		   . "score = \'?\', "
 	       . "score_desc = \'anti-codon\', "
@@ -452,7 +452,7 @@ sub insert_ORFattribute_tRNA_score {
 
 sub get_seq {
     my($dbh, $id) = @_;
-    my($s, $seq_len, @query, @x);
+    my($query, $db_query, $seq_len);
     
     ###### query 1
     $query = "select datalength(sequence) from assembly"
@@ -481,11 +481,11 @@ sub get_seq {
 	$db_query = $dbh->prepare($query);
 	$db_query->execute();
 	
-	$s = $db_query->fetchrow_arrayref();
-	$seq_len = $row->[0];
+	$row = $db_query->fetchrow_arrayref();
+	my $seq = $row->[0];
 	$db_query->finish();
     
-    $s =~ s/\s//g;
-    $s = uc $s;
-    return($s);
+    $seq =~ s/\s//g;
+    $seq = uc $seq;
+    return($seq);
 }
