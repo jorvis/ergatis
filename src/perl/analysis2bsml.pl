@@ -12,7 +12,7 @@ analysis2bsml.pl - add analysis parameters to a BSML result doc
 
     USAGE:  analysis2bsml.pl --bsml_file=/path/to/some/output.bsml 
                              --conf=/path/to/some/pipeline.config
-                             --ergatis_control_file=/path/to/ergatis_install.ini
+                           [ --ergatis_control_file=/path/to/ergatis_install.ini ]
                            [ --componenturl=/path/to/some/pipeline.xml ]
                            [ --pipelineurl=/path/to/some/pipeline0.xml ]
                            [ --debug debug_level  ]
@@ -375,7 +375,7 @@ sub check_parameters{
     if(! -e $options{'conf'}){
 	pod2usage({-exitval => 2,  -message => "Can't read conf file $options{'conf'}", -verbose => 1, -output => \*STDERR});    
     }
-    if(! -e $options{'ergatis_control_file'}){
+    if(defined $options{ergatis_control_file} && ! -e $options{'ergatis_control_file'}){
 		pod2usage({-exitval => 2,  -message => "Can't read ergatis install control file $options{'ergatis_control_file'}", -verbose => 1, -output => \*STDERR});    
 	}
 }
