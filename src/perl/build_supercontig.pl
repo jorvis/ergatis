@@ -8,9 +8,6 @@ no lib ".";
 #or
 #perl -I /usr/local/devel/ANNOTATION/ard/chado-v1r5b1/lib/site_perl/5.8.5/ bin/build_supercontig.pl --bsml_input=/tmp/agussman/tiling.bsml --bsml_output=/tmp/agussman/build.bsml --scaffold_class=ultracontig --fasta_output=/tmp/agussman/build.fsa
 
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 #
 # perldoc goes here
 #
@@ -125,7 +122,7 @@ foreach my $refseq (keys %tiles) {
  					     'dna', #molecule
  					     $options{scaffold_class} #class
  					     );
-    $seqstub->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
+#    $seqstub->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
     #bugzilla case 2692
     #http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=2692
     #add //Attribute-list/Attribute[@name="SO", content=<class>]
