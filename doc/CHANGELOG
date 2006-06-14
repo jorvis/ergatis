@@ -175,3 +175,5 @@ next
 --------------
 -wu-blast2bsml.pl fix to properly set Sequence stub molecule type based on blast program used
 -changed analysis2bsml to store ergatis version tags from an installer control file
+-added gff2bsml component to installer
+-targetp2bsml legacy db loader script
