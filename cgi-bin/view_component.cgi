@@ -404,7 +404,7 @@ sub print_header {
                 subflownamedata.style.display = 'block';
                 get_object(subflowname + '_arrow').src = '/ergatis/arrow_down.gif';
                 get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
-                sendElementUpdateRequest('./subflowgroup_summary.cgi?xml_input=' + subflowfile + '&nocache=' + no_cache_string(), updateSubflowGroup, subflowname);
+                sendElementUpdateRequest('./subflowgroup_summary.cgi?xml_input=' + encodeURIComponent(subflowfile) + '&nocache=' + no_cache_string(), updateSubflowGroup, subflowname);
                 
             } else {
                 subflownamedata.style.display = 'none';
@@ -421,7 +421,7 @@ sub print_header {
                 subflownamedata.style.display = 'block';
                 get_object(subflowname + '_arrow').src = '/ergatis/arrow_down.gif';
                 get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
-                sendElementUpdateRequest('./subflow_summary.cgi?xml_input=' + subflowfile + '&nocache=' + no_cache_string(), updateSubflow, subflowname);
+                sendElementUpdateRequest('./subflow_summary.cgi?xml_input=' + encodeURIComponent(subflowfile) + '&nocache=' + no_cache_string(), updateSubflow, subflowname);
                 
             } else {
                 subflownamedata.style.display = 'none';
