@@ -7,8 +7,11 @@ use CGI qw(:standard);
 use Tree::DAG_Node;
 use Config::IniFiles;
 use Ergatis::Common;
+use Ergatis::ConfigFile;
 
-umask 000;
+umask 0000;
+
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 ## called like: ergatis/new_pipeline.cgi?&root=/usr/local/annotation/AA1/Workflow/pipeline
 ## no trailing slash
@@ -28,8 +31,8 @@ BEGIN {
     }
 }
 
-my $idgen = new Workflow::IdGenerator;
-my $id = $idgen->next_id();
+my $idgen = new Workflow::IdGenerator( id_repository => $ergatis_cfg->val( 'paths', 'global_id_repository') );
+my $id = $idgen->next_id( type => 'pipeline' );
 
 ## create the directory for the pipeline
 if (create_directory("$root/$id")) {
