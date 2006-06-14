@@ -58,6 +58,16 @@ if (! -d "$repository_root/workflow/lock_files" ) {
     }
 }
 
+## make sure it has a 'workflow/project_id_repository' directory
+if (! -d "$repository_root/workflow/project_id_repository" ) {
+    &record_error("directory $repository_root/workflow/project_id_repository not found");
+} else {
+    ## make sure it is writeable
+    if (! -w "$repository_root/workflow/project_id_repository") {
+        &record_error("$repository_root/workflow/project_id_repository not writable");
+    }
+}
+
 ## make sure it has a shared conf file
 if (! -e $shared_conf_path ) {
     &record_error("$shared_conf_path not found");
