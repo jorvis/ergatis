@@ -33,6 +33,10 @@ B<--project,-p>
     Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
     not passed.
 
+B<--id_repository,-r> 
+    Required for creating feature identifiers.  Each project should have
+    its own id_repository directory - use the full path to it here.
+
 B<--help,-h> 
     This help message
 
@@ -84,13 +88,11 @@ We can add these later if anyone thinks they are necessary.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
+use Workflow::IdGenerator;
 use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -98,6 +100,7 @@ my $results = GetOptions (\%options,
               'output|o=s',
               'project|p=s',
               'log|l=s',
+              'id_repository|r=s',
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'debug=s',
@@ -120,7 +123,7 @@ if( $options{'help'} ){
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+my $idcreator = new Workflow::IdGenerator( id_repository => $options{id_repository} );
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -209,7 +212,7 @@ for my $seqid (keys %data) {
     my @elements;
     foreach my $arr ( @{$data{$seqid}} ) {
         ## add the repeat
-        my $id = $idcreator->new_id( db => $options{project}, so_type => 'repeat_region', prefix => $options{command_id} );
+        my $id = $idcreator->next_id( project => $options{project}, type => 'repeat_region' );
         $repeat = $doc->createAndAddFeature($ft, $id, '', 'repeat_region');
         $repeat->addBsmlLink('analysis', '#repeatmasker_analysis', 'computed_by');
         
