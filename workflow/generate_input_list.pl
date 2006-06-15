@@ -89,7 +89,9 @@ my $iteratorconf = {
 };
 
 if ($options{file}) {
-    if(-e $options{file} && -f $options{file}){
+    if( ( -e $options{file} && -f $options{file} ) ||  
+        ( -e "$options{file}.gz" && -f "$options{file}.gz" )
+    ){
         &add_entry_to_conf($iteratorconf, $options{file});
 
     } else {
