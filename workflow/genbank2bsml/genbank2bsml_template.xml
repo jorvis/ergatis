@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>genbank2bsml Compute</name>
+        <configMapId>empty</configMapId>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>genbank2bsml</configMapId>
+            <name>genbank2bsml</name>
+        </command>
+<!-- Remove
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>wu-blast2btab</configMapId>
+            <name>wu-blast2btab</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>wu-blast2bsml</configMapId>
+            <name>wu-blast2bsml</name>
+        </command>
+Removed -->
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>store_config_params</configMapId>
+            <name>store_config_params</name>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <configMapId>dtd_validation</configMapId>
+            <name>DTD validation</name>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>compress_bsml_output</configMapId>
+            <name>compress_bsml_output</name>
+        </command>
+    </commandSet>
+</commandSetRoot>
