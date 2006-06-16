@@ -126,7 +126,8 @@ sub parse_genbank_file {
 	$gbr{'seq_len'} = $seq->length();
 
 	# $gbr{'molecule'} = $seq->molecule();
-	# Placed in Sequence@class
+	# Placed in Sequence@molecule
+	# valid values are: mol-not-set|dna|rna|aa|na|other-mol
 	if ($seq->molecule() =~ /dna/i) {
 	    $gbr{'molecule'} = 'dna';
 	}
@@ -141,39 +142,62 @@ sub parse_genbank_file {
 	}
 
 	# Get expanded "polymer_type" as entered in ard.obo
+	# default is $seq->molecule()
+	# change it if we know by lineage it's something specific (some older records would just have RNA)
 	# cross reference this against $gbr{molecule} for consistency
 	# see bug #3251: http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
 	# taxonomy names taken from http://www.ncbi.nlm.nih.gov/genomes/VIRUSES/vifam.html
-	$gbr{'polymer_type'} = "DNA"; #default
+	# polymer types adapted from genbank list: http://www.bio.net/bionet/mm/genbankb/2001-October/000103.html
+	# 34-36      Blank, ss- (single-stranded), ds- (double-stranded), or
+        #            ms- (mixed-stranded)
+        # 37-42      Blank, DNA, RNA, tRNA (transfer RNA), rRNA (ribosomal RNA), 
+        #            mRNA (messenger RNA), uRNA (small nuclear RNA), snRNA
+	$gbr{'polymer_type'} = $seq->molecule(); #default
 	my $classification = join(" ",$seq->species->classification);
 	if ($classification =~ /dsDNA viruses/) {
-	    # do nothing dsDNA = DNA
+	    # dsDNA = DNA
+	    $gbr{'polymer_type'} = "DNA";
 	}
 	elsif ($classification =~ /dsRNA viruses/) {
-	    $gbr{'polymer_type'} = "dsRNA";
+	    $gbr{'polymer_type'} = "ds-RNA";
 	}
 	elsif ($classification =~ /ssDNA viruses/) {
-	    $gbr{'polymer_type'} = "ssDNA";
+	    $gbr{'polymer_type'} = "ss-DNA";
 	}
 	elsif ($classification =~ /ssRNA negative-strand viruses/) {
-	    $gbr{'polymer_type'} = "ssRNA-";
+	    $gbr{'polymer_type'} = "ss-RNA-";
 	}
 	elsif ($classification =~ /ssRNA positive-strand viruses/) {
-	    $gbr{'polymer_type'} = "ssRNA+";
+	    $gbr{'polymer_type'} = "ss-RNA+";
 	}
-	elsif ($classification =~ /RNA/) {
-	    die "Unable to set polymer_type, unknown RNA in classification ($classification)";
-	}
-	elsif ($classification =~ /DNA/) {
-	    die "Unable to set polymer_type, unknown DNA in classification ($classification)";
-	}
+	# these shouldn't be case-insensitive since they pop up from time to time in words
+	# taking this out because most of the time it fails it's nothing
+# 	elsif ($classification =~ /RNA/) {
+# 	    die "Unable to set polymer_type, unknown RNA in classification ($classification)";
+# 	}
+# 	elsif ($classification =~ /DNA/) {
+# 	    die "Unable to set polymer_type, unknown DNA in classification ($classification)";
+# 	}
 
 	# check for potential misparse
 	if ( ($gbr{'molecule'} eq 'dna') && !($gbr{'polymer_type'} =~ /DNA/) ) {
-	    die "Mismatch between molecule ($gbr{molecule}) and polymer_type ($gbr{polymer_type})";
+	    die "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
 	}
 	if ( ($gbr{'molecule'} eq 'rna') && !($gbr{'polymer_type'} =~ /RNA/) ) {
-	    die "Mismatch between molecule ($gbr{molecule}) and polymer_type ($gbr{polymer_type})";
+	    die "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
+	}
+
+	# Add strand attribute (this may not be used)
+	# direct creation supported via createAndAddExtendedSequence, but this is simpler
+	# valid values are: std-not-set|ss|ds|mixed|std-other
+	if ($gbr{'polymer_type'} eq 'DNA') {
+	    $gbr{'strand'} = "ds";
+	}
+	elsif ($gbr{'polymer_type'} =~ /ss/ ) {
+	    $gbr{'strand'} = "ss";
+	}
+	elsif ($gbr{'polymer_type'} =~ /ds/ ) {
+	    $gbr{'strand'} = "ds";	    
 	}
 
 	#currently unused
@@ -185,8 +209,6 @@ sub parse_genbank_file {
 	#$gbr{'desc'} = $seq->desc();
 	#$seq->moltype() will say dna if the sequence is dna, this is a problem for genbank records
 	#where an rna sequence will be represented as dna
-
-
 	
 	my $anno_collection = $seq->annotation;
 	my @annotations = $anno_collection->get_Annotations(); #or Annotations('comment')
@@ -448,7 +470,6 @@ sub to_bsml {
     $sequence->addBsmlAttributeList([{name => 'SO', content=> $gbr{'component'}}]);
 
     # add expanded ard.obo polymer_type (or SO term, if DNA|RNA)
-    # note that right now I don't know it *could* be RNA, but maybe it will be in the future?
     # see bug #3251 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
     if ($gbr{polymer_type} eq "DNA" || $gbr{polymer_type} eq "RNA") {
 	$doc->createAndAddBsmlAttribute($sequence, 'SO', $gbr{polymer_type});
@@ -456,6 +477,14 @@ sub to_bsml {
     else {
 	$doc->createAndAddBsmlAttribute($sequence, 'ARD', $gbr{polymer_type});
     }
+
+    # Add strand attribute (this may not be used)
+    # direct creation supported via createAndAddExtendedSequence, but this is simpler
+    # valid values are: std-not-set|ss|ds|mixed|std-other
+    if (defined($gbr{strand})) {
+	$sequence->setattr( 'strand', $gbr{strand});
+    }
+
 
     my $link_elem = $doc->createAndAddLink(
 					   $sequence,
