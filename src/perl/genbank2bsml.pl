@@ -23,15 +23,15 @@ my $ofile = $options{output_bsml};
 my %fsa_files; # file names and handlers and for each fasta output file
 
 my %TagCount; #NOTE: rename this or something
-print "Parsing $ifile...\n";
+print "Parsing $ifile\n";
 my %gbr = %{parse_genbank_file($ifile)};
 my $doc = new BSML::BsmlBuilder();
-print "Converting $ifile to bsml... \n";
+print "Converting $ifile to bsml \n";
 &to_bsml(\%gbr, $doc);
 
 #output the BSML
 #my $bsmlfile = "$odir/".$gbr{'gi'}.".bsml";
-print "Outputting bsml to $ofile...\n";
+print "Outputting bsml to $ofile\n";
 $doc->write($ofile);
 chmod (0777, $ofile);
 
@@ -126,6 +126,7 @@ sub parse_genbank_file {
 	$gbr{'seq_len'} = $seq->length();
 
 	# $gbr{'molecule'} = $seq->molecule();
+	# Placed in Sequence@class
 	if ($seq->molecule() =~ /dna/i) {
 	    $gbr{'molecule'} = 'dna';
 	}
@@ -139,6 +140,42 @@ sub parse_genbank_file {
 	    die "Unknown molecule: ".$seq->molecule();
 	}
 
+	# Get expanded "polymer_type" as entered in ard.obo
+	# cross reference this against $gbr{molecule} for consistency
+	# see bug #3251: http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
+	# taxonomy names taken from http://www.ncbi.nlm.nih.gov/genomes/VIRUSES/vifam.html
+	$gbr{'polymer_type'} = "DNA"; #default
+	my $classification = join(" ",$seq->species->classification);
+	if ($classification =~ /dsDNA viruses/) {
+	    # do nothing dsDNA = DNA
+	}
+	elsif ($classification =~ /dsRNA viruses/) {
+	    $gbr{'polymer_type'} = "dsRNA";
+	}
+	elsif ($classification =~ /ssDNA viruses/) {
+	    $gbr{'polymer_type'} = "ssDNA";
+	}
+	elsif ($classification =~ /ssRNA negative-strand viruses/) {
+	    $gbr{'polymer_type'} = "ssRNA-";
+	}
+	elsif ($classification =~ /ssRNA positive-strand viruses/) {
+	    $gbr{'polymer_type'} = "ssRNA+";
+	}
+	elsif ($classification =~ /RNA/) {
+	    die "Unable to set polymer_type, unknown RNA in classification ($classification)";
+	}
+	elsif ($classification =~ /DNA/) {
+	    die "Unable to set polymer_type, unknown DNA in classification ($classification)";
+	}
+
+	# check for potential misparse
+	if ( ($gbr{'molecule'} eq 'dna') && !($gbr{'polymer_type'} =~ /DNA/) ) {
+	    die "Mismatch between molecule ($gbr{molecule}) and polymer_type ($gbr{polymer_type})";
+	}
+	if ( ($gbr{'molecule'} eq 'rna') && !($gbr{'polymer_type'} =~ /RNA/) ) {
+	    die "Mismatch between molecule ($gbr{molecule}) and polymer_type ($gbr{polymer_type})";
+	}
+
 	#currently unused
 	#$gbr{'sub_species'} = $seq->species->sub_species();
 	#$gbr{'variant'} = $seq->species->variant();	
@@ -146,6 +183,10 @@ sub parse_genbank_file {
 	#$gbr{'species'} = $seq->species->species(); #changed to organism parsing
 	#$gbr{'strain'} = $seq->species->strain();
 	#$gbr{'desc'} = $seq->desc();
+	#$seq->moltype() will say dna if the sequence is dna, this is a problem for genbank records
+	#where an rna sequence will be represented as dna
+
+
 	
 	my $anno_collection = $seq->annotation;
 	my @annotations = $anno_collection->get_Annotations(); #or Annotations('comment')
@@ -403,12 +444,18 @@ sub to_bsml {
     chmod(0666, $fastafile);
 
     # add the "secondary types" as  //Attribute-list/Attribute[@name="SO", content=<class>]
-    #presumably class is from SO
+    # presumably class is from SO (not really), content=chromosome|plasmid
     $sequence->addBsmlAttributeList([{name => 'SO', content=> $gbr{'component'}}]);
 
-    # add an SO attribute for rna|dna ??
-    
-
+    # add expanded ard.obo polymer_type (or SO term, if DNA|RNA)
+    # note that right now I don't know it *could* be RNA, but maybe it will be in the future?
+    # see bug #3251 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
+    if ($gbr{polymer_type} eq "DNA" || $gbr{polymer_type} eq "RNA") {
+	$doc->createAndAddBsmlAttribute($sequence, 'SO', $gbr{polymer_type});
+    }
+    else {
+	$doc->createAndAddBsmlAttribute($sequence, 'ARD', $gbr{polymer_type});
+    }
 
     my $link_elem = $doc->createAndAddLink(
 					   $sequence,
