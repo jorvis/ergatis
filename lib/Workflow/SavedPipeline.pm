@@ -79,9 +79,7 @@ use Config::IniFiles;
 use Cwd;
 use File::Basename;
 use File::Copy;
-BEGIN {
 use Workflow::IdGenerator;
-}
 use XML::Twig;
 
 
@@ -91,12 +89,12 @@ use XML::Twig;
                         pipeline_id             => undef,
                         shared_config           => undef,
                         template                => undef,
-		        source                  => undef,
-		        _source_twig            => undef,
+                        source                  => undef,
+                        _source_twig            => undef,
                         _configmapids           => undef,
                         _template_dir           => undef,
                         _repository_root        => undef,
-		        _load_type              => undef,
+                        _load_type              => undef,
                       );
 
     sub new {
@@ -127,16 +125,16 @@ use XML::Twig;
     }
 
     sub load_pipeline {
-	my ($self, %args) = @_;
+    my ($self, %args) = @_;
 
-	if (! $self->{_load_type}) {
-	    $self->{_load_type} = "pipeline";
-	}
-	elsif ( $self->{_load_type} ne "pipeline") {
-	    croak( "Inappropriate object reuse: cannot load pipelines and load templates with the same object");
-	}
+    if (! $self->{_load_type}) {
+        $self->{_load_type} = "pipeline";
+    }
+    elsif ( $self->{_load_type} ne "pipeline") {
+        croak( "Inappropriate object reuse: cannot load pipelines and load templates with the same object");
+    }
         
-	# either source must exist from new or they just passed a source
+    # either source must exist from new or they just passed a source
         if (! defined $self->{source} ) {
             if (exists $args{source}) {
                 $self->{source} = $args{source};
@@ -145,109 +143,109 @@ use XML::Twig;
             }
         }
 
-	#get repository root and pipeline_id of input xml
-	#(this might be incorrect, could result in user overwriting pipeline.xml)
-	#(if write pipeline called on same repository_root, pipeline_id would already be stored)
-	if ( $self->{source} =~ m|(.+/([^/]+))/Workflow/pipeline/(\d+)| ) {
-	    $self->{_repository_root} = $1;
-#	    $project_id = $2;
-	    $self->{pipeline_id} = $3;
-	} else {
-	    croak("failed to extract repository root, project id, or pipeline id from ".$self->{source});
-	}
-	
-	#load pipeline from xml
+    #get repository root and pipeline_id of input xml
+    #(this might be incorrect, could result in user overwriting pipeline.xml)
+    #(if write pipeline called on same repository_root, pipeline_id would already be stored)
+    if ( $self->{source} =~ m|(.+/([^/]+))/Workflow/pipeline/(\d+)| ) {
+        $self->{_repository_root} = $1;
+#        $project_id = $2;
+        $self->{pipeline_id} = $3;
+    } else {
+        croak("failed to extract repository root, project id, or pipeline id from ".$self->{source});
+    }
+    
+    #load pipeline from xml
         $self->{_source_twig} = XML::Twig->new(pretty_print => 'indented');
-	$self->{_source_twig}->parsefile($self->{source}) || croak "unable to parse ".$self->{source};
+    $self->{_source_twig}->parsefile($self->{source}) || croak "unable to parse ".$self->{source};
 
-	#strip it to the barebones
-	$self->_strip_pipeline( $self->{_source_twig}->root );
+    #strip it to the barebones
+    $self->_strip_pipeline( $self->{_source_twig}->root );
 
-	#remove version= if present
-	$self->{_source_twig}->root->strip_att("version");
+    #remove version= if present
+    $self->{_source_twig}->root->strip_att("version");
 
-	#check that all expected component.conf.bld.ini files are present
-	#(not saving configMapIds)
-	foreach my $child ( $self->{_source_twig}->root->descendants("configMapId") ) {
-	    if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
-		my $component = $1;
-		my $token = $2;
-		#check that conf exists
-		my $source_file = $self->{_repository_root}."/Workflow/$component/".$self->{pipeline_id}."_$token/component.conf.bld.ini";
-		unless (-e $source_file) {
-		    croak("component configuration file $source_file not found");
-		}
-	    }
-	}
+    #check that all expected component.conf.bld.ini files are present
+    #(not saving configMapIds)
+    foreach my $child ( $self->{_source_twig}->root->descendants("configMapId") ) {
+        if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
+        my $component = $1;
+        my $token = $2;
+        #check that conf exists
+        my $source_file = $self->{_repository_root}."/Workflow/$component/".$self->{pipeline_id}."_$token/component.conf.bld.ini";
+        unless (-e $source_file) {
+            croak("component configuration file $source_file not found");
+        }
+        }
+    }
     }
 
 
     sub write_template {
-	my ($self, %args) = @_;
-	unless (exists $args{template}) {
-	    croak ("template output directory must be provided");
-	}
+    my ($self, %args) = @_;
+    unless (exists $args{template}) {
+        croak ("template output directory must be provided");
+    }
 
         #print out the pipeline
-	unless (-e $args{template}) {
-	    mkdir($args{template}) || croak( "unable to create tmeplate directory ".$args{template});
-	}
-	open(my $FOUT, ">".$args{template}."/pipeline.xml") || croak("unable to create pipeline.xml in ".$args{template});
-	$self->{_source_twig}->print($FOUT);
-	close($FOUT);
+    unless (-e $args{template}) {
+        mkdir($args{template}) || croak( "unable to create tmeplate directory ".$args{template});
+    }
+    open(my $FOUT, ">".$args{template}."/pipeline.xml") || croak("unable to create pipeline.xml in ".$args{template});
+    $self->{_source_twig}->print($FOUT);
+    close($FOUT);
 
         #copy neccessary .ini files
         #convert from -/PROJECTDIR/Workflow/$component/$pipelineid_$token/component.conf.bld.ini
         #to $template_dir/$component.$token.ini
 
-	#repository_root and pipeline_id should already be defined
-	unless (exists $self->{_repository_root} && exists $self->{pipeline_id}) {
-	    croak("repository_root or pipeline_id not defined");
-	}
+    #repository_root and pipeline_id should already be defined
+    unless (exists $self->{_repository_root} && exists $self->{pipeline_id}) {
+        croak("repository_root or pipeline_id not defined");
+    }
 
-	#copy .ini files
-	foreach my $child ( $self->{_source_twig}->root->descendants("configMapId") ) {
-	    if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
-		my $component = $1;
-		my $token = $2;
-		#copy .ini, setting SHARED_CONFIG = ""
-		my $source_file = $self->{_repository_root}."/Workflow/$component/".$self->{pipeline_id}."_$token/component.conf.bld.ini";
-		my $dest_file = $args{template}."/$component.$token.ini";
-		my $cfg = new Config::IniFiles( -file => $source_file );
-		$cfg->setval( "include $component", '$;SHARED_CONFIG$;', "" );        
-		$cfg->WriteConfig( $dest_file );
-	    }
-	}
+    #copy .ini files
+    foreach my $child ( $self->{_source_twig}->root->descendants("configMapId") ) {
+        if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
+        my $component = $1;
+        my $token = $2;
+        #copy .ini, setting SHARED_CONFIG = ""
+        my $source_file = $self->{_repository_root}."/Workflow/$component/".$self->{pipeline_id}."_$token/component.conf.bld.ini";
+        my $dest_file = $args{template}."/$component.$token.ini";
+        my $cfg = new Config::IniFiles( -file => $source_file );
+        $cfg->setval( "include $component", '$;SHARED_CONFIG$;', "" );        
+        $cfg->WriteConfig( $dest_file );
+        }
+    }
     }
 
     #strip all unwanted tags from the pipeline, 
     #leaving only the "core" tags for saving
     sub _strip_pipeline {
-	my ($self, $n) = @_; #a tag in the pipeline
-	foreach my $child ( $n->children() ) {
-#	    $child->gi eq "commandSetRoot" 
-	    if ($child->gi eq "commandSet")
-	    {
-		my $cmi = $child->first_child("configMapId")->text();
-		#tags we want to keep and search under
-		if ($cmi eq "start" ||
-		    $cmi eq "empty" ||
-		    $cmi =~ /^component_/ ||
-		    $cmi =~ /^pipeline_/ ||
-		    $cmi =~ /^\d+/) 
-		{
-		    $self->_strip_pipeline($child);
-		}
-		else {
-		    $child->delete;
-		}
-	    }
-	    #tags to keep and NOT search under
-	    elsif ($child->gi ne "#PCDATA" && #text in the tag is treated as an element
-		   $child->gi ne "configMapId") { 
-		$child->delete;
-	    }
-	}
+    my ($self, $n) = @_; #a tag in the pipeline
+    foreach my $child ( $n->children() ) {
+#        $child->gi eq "commandSetRoot" 
+        if ($child->gi eq "commandSet")
+        {
+        my $cmi = $child->first_child("configMapId")->text();
+        #tags we want to keep and search under
+        if ($cmi eq "start" ||
+            $cmi eq "empty" ||
+            $cmi =~ /^component_/ ||
+            $cmi =~ /^pipeline_/ ||
+            $cmi =~ /^\d+/) 
+        {
+            $self->_strip_pipeline($child);
+        }
+        else {
+            $child->delete;
+        }
+        }
+        #tags to keep and NOT search under
+        elsif ($child->gi ne "#PCDATA" && #text in the tag is treated as an element
+           $child->gi ne "configMapId") { 
+        $child->delete;
+        }
+    }
     }
 
 
@@ -255,12 +253,12 @@ use XML::Twig;
     sub load_template {
         my ($self, %args) = @_;
 
-   	if (! $self->{_load_type}) {
-	    $self->{_load_type} = "template";
-	}
-	elsif ( $self->{_load_type} ne "template") {
-	    croak( "Inappropriate object reuse: cannot load pipelines and load templates with the same object");
-	}
+       if (! $self->{_load_type}) {
+        $self->{_load_type} = "template";
+    }
+    elsif ( $self->{_load_type} ne "template") {
+        croak( "Inappropriate object reuse: cannot load pipelines and load templates with the same object");
+    }
      
         ## if the template wasn't defined in the constructor, it's required now.
         if (! defined $self->{template} ) {
@@ -298,6 +296,11 @@ use XML::Twig;
             croak("repository_root is a required argument to the write_pipeline method");
         }
         
+        ## global_id_repository is required
+        if (! defined $args{global_id_repository} ) {
+            croak("global_id_repository is a required option when instantiating a pipeline from a template");
+        }
+        
         $self->{_repository_root} = $args{repository_root};
         
         ## was a shared_config passed?
@@ -318,8 +321,8 @@ use XML::Twig;
         
         ## if the pipeline_id is not defined, pull one
         if (! defined $self->{pipeline_id}) {
-            my $idgen = new Workflow::IdGenerator;
-            $self->{pipeline_id} = $idgen->next_id();
+            my $idgen = new Workflow::IdGenerator( id_repository => $args{global_id_repository} );
+            $self->{pipeline_id} = $idgen->next_id( type => 'pipeline' );
         }
         
         ## create the pipeline directory
@@ -465,8 +468,8 @@ XMLfraGMENt
             
             ## if this is a component, parse the name and check that the file exists.
             if ($configmapid =~ /component_(.+?)\.(.+)/) {
-		$self->_add_configmapid( "generate_".$configmapid ); #for command "Generate component"
-		$self->_add_configmapid( "run_".$configmapid ); #for commandset that runs subflow 
+        $self->_add_configmapid( "generate_".$configmapid ); #for command "Generate component"
+        $self->_add_configmapid( "run_".$configmapid ); #for commandset that runs subflow 
                 my ($component_name, $token) = ($1, $2);
 
                 ## file will be named like:
