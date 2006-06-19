@@ -384,6 +384,8 @@ sub to_bsml {
     my $genome = $doc->createAndAddGenome('id' => 99);
     my $genome_id = $genome->{attr}->{id}; # have to track the active genome and propagate through to Link Sequences
 
+    # modified Cross-reference@database to exclude identifier
+    # see bug #3278 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3278
     my %xref;
     $xref{'taxon_id'} = $doc->createAndAddCrossReference(
 						'parent'          => $genome, 
@@ -395,16 +397,16 @@ sub to_bsml {
     #add genbank/refseq accession (distinguish between the two?)
     $xref{'accession'} = $doc->createAndAddCrossReference(
 						'parent'          => $genome, 
-						'database'        => 'NCBI_GenBank:'.$gbr{'accession'},  # //Genome/Cross-reference/@database
-						'identifier'      => $gbr{'accession'},                  # //Genome/Cross-reference/@identifier
-						'identifier-type' => 'genbank flat file'                 # //Genome/Cross-reference/@identifier-type
+						'database'        => 'NCBI_GenBank',     # //Genome/Cross-reference/@database
+						'identifier'      => $gbr{'accession'},  # //Genome/Cross-reference/@identifier
+						'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
 						);
 
     $xref{'gi'} = $doc->createAndAddCrossReference(
 						'parent'          => $genome, 
-						'database'        => 'GI:'.$gbr{'gi'},  # //Genome/Cross-reference/@database
-						'identifier'      => $gbr{'gi'},        # //Genome/Cross-reference/@identifier
-						'identifier-type' => 'gi'               # //Genome/Cross-reference/@identifier-type
+						'database'        => 'GI',       # //Genome/Cross-reference/@database
+						'identifier'      => $gbr{'gi'}, # //Genome/Cross-reference/@identifier
+						'identifier-type' => 'gi'        # //Genome/Cross-reference/@identifier-type
 						);
 
     my $organism = $doc->createAndAddOrganism( 
