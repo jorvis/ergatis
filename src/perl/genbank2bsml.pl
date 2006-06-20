@@ -180,11 +180,25 @@ sub parse_genbank_file {
 # 	}
 
 	# check for potential misparse
+	# changing these to warnings, and having taxonomic classification take priority
+	# see bug #3251 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
 	if ( ($gbr{'molecule'} eq 'dna') && !($gbr{'polymer_type'} =~ /DNA/) ) {
-	    die "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
+	    warn "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
+	    if ($gbr{'polymer_type'} =~ /RNA/) {
+		$gbr{'molecule'} = 'rna';
+	    }
+	    else {
+		die "This is an unreconcialable mismatch";
+	    }
 	}
 	if ( ($gbr{'molecule'} eq 'rna') && !($gbr{'polymer_type'} =~ /RNA/) ) {
-	    die "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
+	    warn "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
+	    if ($gbr{'polymer_type'} =~ /DNA/) {
+		$gbr{'molecule'} = 'dna';
+	    }
+	    else {
+		die "This is an unreconcialable mismatch";
+	    }
 	}
 
 	# Add strand attribute (this may not be used)
@@ -291,6 +305,9 @@ sub parse_genbank_file {
 		    if (exists $gbr{'Features'}->{$feature_group}->{$feature_id}) { die "feature id is not unique!  feature_id: $feature_id"; }
 		    
 		    my $is_complement;
+		    unless (defined($feat_object->strand())) {
+			warn "No strand info for feature ($feature_group $feature_id)";
+		    }
 		    if ($feat_object->strand == 1) {
 			$is_complement = 0;
 		    }
@@ -624,7 +641,7 @@ sub addFeature {
 	    # die if it's some new kind of database I never saw before
 	    my %known_dbxrefs = ( GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
 				  HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
-				  EMBL => 1, GenBank => 1 );
+				  EMBL => 1, GenBank => 1, InterPro = 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1 );
 	    (defined($known_dbxrefs{$database})) || die "Unknown database in dbxref ($database)";
 	    
 	    # mod database to GO xref standard as neccessary
