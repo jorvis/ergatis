@@ -113,6 +113,7 @@ my $pipe_test = Workflow::SavedPipeline-> new(
 	template => $options{'template-dir'}."/pipeline.xml"
 					     );
 $pipe_test->write_pipeline( 
+	global_id_repository => '/usr/local/devel/ANNOTATION/jorvis/global_id_repository',
 	repository_root => $options{'repository-root'} 
                           );
 			  
