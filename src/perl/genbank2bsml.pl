@@ -334,9 +334,18 @@ sub parse_genbank_file {
 			}
 		    }
 
-		    # store all unknown secondary tags (check if its not one of the tags we check for)
+		    # check for db_xrefs, otherwise store it as an unknown tag
 		    foreach my $tag ($feat_object->get_all_tags() ) {
-			unless ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || $tag eq "translation" || $tag eq "transl_table") {
+			if ($tag eq "db_xref") {
+			    # Assuming the possiblity of multiple tags of the same database
+			    foreach ($feat_object->get_tag_values($tag)) {
+				push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{db_xrefs}}, $_);
+			    }
+			}
+			elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || $tag eq "translation" || $tag eq "transl_table") {
+			    # do nothing
+			}
+			else {
 			    ++$TagCount{"unknown_feature_tag_".$tag};
 			}
 		    }
@@ -381,7 +390,7 @@ sub parse_genbank_file {
 sub to_bsml {
     my %gbr = %{$_[0]};
     my $doc = $_[1];
-    my $genome = $doc->createAndAddGenome('id' => 99);
+    my $genome = $doc->createAndAddGenome();
     my $genome_id = $genome->{attr}->{id}; # have to track the active genome and propagate through to Link Sequences
 
     # modified Cross-reference@database to exclude identifier
@@ -394,17 +403,18 @@ sub to_bsml {
 						'identifier-type' => 'taxon_id'         # //Genome/Cross-reference/@identifier-type
 						);
 
-    #add genbank/refseq accession (distinguish between the two?)
+    # add Cross-references
+    # use GO standard database names: http://www.geneontology.org/doc/GO.xrf_abbs
     $xref{'accession'} = $doc->createAndAddCrossReference(
 						'parent'          => $genome, 
-						'database'        => 'NCBI_GenBank',     # //Genome/Cross-reference/@database
+						'database'        => 'GenBank',          # //Genome/Cross-reference/@database
 						'identifier'      => $gbr{'accession'},  # //Genome/Cross-reference/@identifier
 						'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
 						);
 
     $xref{'gi'} = $doc->createAndAddCrossReference(
 						'parent'          => $genome, 
-						'database'        => 'GI',       # //Genome/Cross-reference/@database
+						'database'        => 'NCBI_gi',  # //Genome/Cross-reference/@database
 						'identifier'      => $gbr{'gi'}, # //Genome/Cross-reference/@identifier
 						'identifier-type' => 'gi'        # //Genome/Cross-reference/@identifier-type
 						);
@@ -599,6 +609,57 @@ sub addFeature {
 	my $attribute_feature = $doc->createAndAddBsmlAttribute($feature_group_elem, $feature_tag, $feature_value);
 	if (!defined($attribute_feature)){
 	    die("Could not create <Attribute> element ");
+	}
+    }
+
+    # add any db_xrefs associated with the feature as Cross-references
+    # list of database names taken from http://www.geneontology.org/doc/GO.xrf_abbs
+    if (defined($featref->{db_xrefs})) {
+	foreach (@{$featref->{db_xrefs}}) {
+	    # print "\tdb_xref\t$_\n";
+	    ($_ =~ /(.*):(.*)/) || die "Unable to parse database and identifier from db_xref ($_)";
+	    my $database = $1;
+	    my $identifier = $2;
+
+	    # die if it's some new kind of database I never saw before
+	    my %known_dbxrefs = ( GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
+				  HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
+				  EMBL => 1, GenBank => 1 );
+	    (defined($known_dbxrefs{$database})) || die "Unknown database in dbxref ($database)";
+	    
+	    # mod database to GO xref standard as neccessary
+	    if ($database eq "GI") {
+		$database = "NCBI_gi";
+	    }
+	    elsif ($database eq "Interpro") {
+		$database = "InterPro";
+	    }
+	    elsif ($database eq "UniProtKB") {
+		$database = "UniProt";
+	    }
+	    elsif ($database eq "ECOCYC") {
+		$database = "EcoCyc";
+	    }
+	    elsif ($database eq "COG") {
+		if ($identifier =~ /^COG/) {
+		    $database = "COG_Cluster";
+		}
+		elsif ($identifier =~ /^\d$/) { # single digit
+		    $database = "COG_Pathway";
+		}
+		elsif ($identifier =~ /^\w$/) { # single letter (since not digit)
+		    $database = "COG_Function";
+		}
+		else {
+		    die "Unable to parse COG database from identifier ($identifier)";
+		}
+	    }
+	    $doc->createAndAddCrossReference(
+					     'parent'          => $feature_elem, 
+					     'database'        => $database,          # //Genome/Cross-reference/@database
+					     'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
+#					     'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
+					     );
 	}
     }
 
