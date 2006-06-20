@@ -35,11 +35,8 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 use File::Basename;
-BEGIN {
 use Workflow::Logger;
-use BSML::BsmlReader;
-use BSML::BsmlParserSerialSearch;
-}
+use XML::Parser;
 
 umask(0000);
 
@@ -92,10 +89,31 @@ if($options{'directory'}){
 
 my $genome;
 my $genomelookup = {};
+
+my $funcs = {'Organism'=>
+		 sub {
+		     my ($expat,$elt,%params) = @_;
+		     if(exists $params{'genus'} && $params{'species'}){
+			 $genome = $params{'genus'}.'_'.$params{'species'};
+			 $genome =~ s/\s//g;
+			 $genome =~ s/[^\w\.\-\_]/_/g;
+		     }
+		 }
+	 };
+
 foreach my $file (@{$iteratorconf->{$keyname}}){
-    $logger->debug("Parsing file $file");
-    my $featParser = new BSML::BsmlParserSerialSearch(GenomeCallBack => \&genomeHandler );
-    $featParser->parse($file);
+    my $x = new XML::Parser(Handlers => 
+			    {
+				Start =>
+				    sub {
+					#$_[1] is the name of the element
+					if(exists $funcs->{$_[1]}){
+					    $funcs->{$_[1]}(@_);
+					}
+				    }
+				}
+			    );
+    $x->parsefile( $file );
     $logger->debug("Found genome $genome in file $file");
     if(! exists $genomelookup->{$genome}){
 	$genomelookup->{$genome} = [];
@@ -115,25 +133,6 @@ foreach my $g (keys %$genomelookup){
 exit;
 	
     
-sub genomeHandler{
-    my $bsmlGenome = shift;
-    my $reader = new BSML::BsmlReader;
-    
-    my $rhash = $reader->readGenome( $bsmlGenome );
-
-    if( !defined($rhash->{'strain'}) )
-    {
-	$rhash->{'strain'} = ' ';
-    }
-
-    $genome = $rhash->{'genus'}.'_'.$rhash->{'species'}.'_'.$rhash->{'strain'};
-    $genome =~ s/\s//g;
-    $genome =~ s/[^\w\.\-\_]/_/g;
-}
-					     
-
-
-
 sub get_list_from_file{
     my ($iteratorconf, $f) = @_;
     my @elts;

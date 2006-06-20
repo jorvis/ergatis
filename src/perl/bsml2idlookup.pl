@@ -101,78 +101,57 @@ if ( scalar @files == 0 ) {
 
 my %protein_fastas = ();
 my %lookup;
-	
-my $dbtie = tie %lookup, 'DB_File', $options{'output'},  O_RDWR|O_CREAT, 0660, $DB_BTREE or $logger->logdie("Can't tie $options{'output'}");
+
+$DB_BTREE->{'cachesize'} = 100000000;	
+unlink $options{'output'};
+my $dbtie = tie %lookup, 'DB_File', $options{'output'},  O_RDWR|O_CREAT, 0660, $DB_BTREE 
+    or $logger->logdie("Can't tie $options{'output'}");
 
 my $currid;
 my $currclass;
 
-for my $file ( @files ) {
+my $funcs = {'Feature'=>
+		 sub {
+		     my ($expat,$elt,%params) = @_;
+		     $lookup{$params{'id'}} = $currid;
+		 },
+	     'Sequence'=>
+		 sub {
+		     my ($expat,$elt,%params) = @_;
+		     $currid = $params{'id'};
+		     $currclass = $params{'class'};
+		 },
+	     'Seq-data-import'=>
+		 sub {
+		     my ($expat,$elt,%params) = @_;
+		     if($currclass eq 'polypeptide'){
+			 ++$protein_fastas{$params{'source'}} if length $params{'source'};
+		     }
+		 }
+	 };
 
-    my $x = new XML::Parser(Style => 'Stream',
-			Handlers => {Start => \&handle_start,
-				     End   => \&handle_end,
-				     Char  => sub {},
-				     Default => sub {},
-				     Init => sub {},
-				     Final => sub {},
-				     Proc => sub {},
-				     Comment => sub {},
-				     CdataStart => sub {},
-				     CdataEnd => sub {},
-				     Unparsed => sub {}
-				     
-				 });
+for my $file ( @files ) {
+    my $x = new XML::Parser(Handlers => 
+			    {
+				Start =>
+				    sub {
+					#$_[1] is the name of the element
+					if(exists $funcs->{$_[1]}){
+					    $funcs->{$_[1]}(@_);
+					}
+				    }
+				}
+			    );
     $x->parsefile( $file );
 }
 
-&print_fasta_list;
-
-sub handle_start{
-    my($expat) = shift;
-    my($elt) = shift;
-    
-    if($elt eq 'Sequence'){
-	for(my $i=0;$i<@_;$i+=2){
-	    if($_[$i] eq 'id'){
-		$currid = $_[$i+1];
-	    }
-	    if($_[$i] eq 'class'){
-		$currclass = $_[$i+1];
-	    }
-	}
-    }
-
-    if($elt eq 'Feature'){
-	for(my $i=0;$i<@_;$i+=2){
-	    if($_[$i] eq 'id'){
-		if($currid){
-		    $lookup{$_[$i+1]} = $currid;
-		}
-	    }
-	}
-    }
-    elsif ($elt eq 'Seq-data-import'){
-	my $source;
-	my $identifier;
-	for(my $i=0;$i<@_;$i++){
-	    if($_[$i] eq 'source' && $currclass eq 'polypeptide'){
-		my $fasta_file = $_[$i+1];
-		++$protein_fastas{$fasta_file} if length $fasta_file;
-	    }
-	}
+if ($options{fasta_list}){
+    open FASTA_OUT, ">>$options{fasta_list}" or
+	die "Error writing fasta list $options{fasta_list}: $!";
+    foreach my $fasta (keys %protein_fastas) {
+	print FASTA_OUT "$fasta\n";
     }
 }
-
-sub handle_char{
-    return;
-}
-
-sub handle_end{
-    my($expat) = shift;
-    my($elt) = shift;
-}
-
 
 sub add_file {
     ## adds a file to the list of those to process, checking to make sure it
@@ -211,36 +190,3 @@ sub check_parameters {
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
     }
 }
-
-sub process_sequence
-{
-	my $seqRef = shift;
-	my $seq_id = $seqRef->returnattr('id') ||
-		$seqRef->returnattr('identifier');
-	#support for deprecated link of ASSEMBLY attribute
-	$lookup{$seqRef->returnattr('id')} =
-		$seqRef->{'BsmlAttr'}->{'ASSEMBLY'}->[0];
-	if ($seqRef->returnattr('class') eq 'polypeptide') {
-		my $fasta_file = $seqRef->returnBsmlSeqDataImport->{source};
-		++$protein_fastas{$fasta_file} if length $fasta_file;
-	}
-	if(defined $seqRef &&
-	   defined $seqRef->returnBsmlFeatureTableListR->[0]){
-		my $features = $seqRef->returnBsmlFeatureTableListR->[0]->
-			       returnBsmlFeatureListR();
-		foreach my $feat (@$features){
-			$lookup{$feat->returnattr('id')} = $seq_id;
-		}
-	}
-}
-
-sub print_fasta_list
-{
-	return if (!$options{fasta_list});
-	open FASTA_OUT, ">>$options{fasta_list}" or
-		die "Error writing fasta list $options{fasta_list}: $!";
-	foreach my $fasta (keys %protein_fastas) {
-		print FASTA_OUT "$fasta\n";
-	}
-}
-
