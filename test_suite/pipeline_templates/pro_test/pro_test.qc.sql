@@ -21,7 +21,7 @@ from feature_dbxref fd
 where not exists (
 select 1 
 from feature f 
-where f.feature_id = fd.feature_id )
+where f.feature_id = fd.feature_id );
 
 --
 -- dangling organism records
@@ -35,4 +35,4 @@ select 1
 from feature f 
 where f.organism_id = o.organism_id)
 group by o.genus, o.species
-having count(o.organism_id) > 0
+having count(o.organism_id) > 0;
