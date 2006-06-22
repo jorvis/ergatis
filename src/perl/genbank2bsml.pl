@@ -12,6 +12,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use File::Basename;
 use Bio::SeqIO;
+use Bio::Tools::CodonTable; # for creating CDSs from mRNAs, bug #3300
 use BSML::BsmlBuilder;
 umask(0000);
 
@@ -346,16 +347,20 @@ sub parse_genbank_file {
 			#print $gbr{'Features'}{$feature_group}{$feature_id}{locations}[0]{start}."\n";
 		    }
 
-		    if ($primary_tag eq 'CDS') {
+		    # make a fake translation for mRNAs (see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300)
+		    if ($primary_tag eq 'CDS' || $primary_tag eq 'mRNA') {
 			#store (possibly joined) nucleotide sequence using spliced_seq()
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'spliced_seq'} = $feat_object->spliced_seq->seq();
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'feature_len'} = $feat_object->spliced_seq->length();
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'} = 0; #default null value
-			if ($feat_object->has_tag("translation")) { # in some cases its "psuedo"
-			    $gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'}=join('',$feat_object->get_tag_values("translation"));
-			}
-			else {
-			    die "CDS lacking translation in $feature_group $feature_id";
+
+			if ($primary_tag eq 'CDS') {
+			    if ($feat_object->has_tag("translation")) { # in some cases its "psuedo"
+				$gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'}=join('',$feat_object->get_tag_values("translation"));
+			    }
+			    else {
+				die "CDS lacking translation in $feature_group $feature_id";
+			    }
 			}
 
 			#See bug 2414
@@ -658,9 +663,22 @@ sub to_bsml {
 	}
 	elsif (@{$feature_type{CDS}} > 1) { # use multiple CDSs
 #	    die "Multiple CDSs (".@{$feature_type{CDS}}.") in $feature_group";
-	    foreach my $cds (@{$feature_type{cds}}) {
+	    foreach my $cds (@{$feature_type{CDS}}) {
 		&addFeature($gbr{'Features'}->{$feature_group}->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    }
+	}
+	# create CDS from single mRNA if present
+	# see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
+	elsif (@{$feature_type{mRNA}} == 1) {
+	    my $cds_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}, 'CDS');
+	    $cds_featref->{id} =~ s/mRNA/CDS_from_mRNA/;
+	    # create translation from known transl_table value ($gbr{'transl_table'})
+	    # doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
+	    my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
+	    $cds_featref->{translation} = $codon_table->translate($cds_featref->{spliced_seq});
+
+ 	    my $cds_elem = &addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    $doc->createAndAddBsmlAttribute($cds_elem, "comment", "Derived from mRNA tag");	    
 	}
 	else {
 	    die "Unable to create CDS object in $feature_group";
@@ -687,15 +705,41 @@ sub to_bsml {
 		$exon_featref->{end_type} = $loc->{end_pos_type};
 		my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
-		++ $n_exon;
+		++$n_exon;
 	    }
 	}
-#       right now this isn't implemented because I'm not sure how to handle >1 CDSs
-#	elsif (@{$feature_type{CDS}} > 1) { # otherwise one exon for each CDS
-#          but die if it's more than one
-#	    if ( scalar(@{$gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}{locations}}) > 1) {
-#	    }
-#	}
+	# still trying to figure out multiple CDSs.  See bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
+	elsif (@{$feature_type{CDS}} > 1) { # otherwise one exon for each CDS
+	    my $n_exon = 0;
+	    foreach my $cds (@{$feature_type{CDS}}) {
+		# but die if it's more than one (unlike case of a single CDS)
+		die "Multiple CDSs and $cds is a join in $feature_group" if ( scalar(@{$gbr{'Features'}{$feature_group}{$cds}{locations}}) > 1);
+		my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$cds}, 'exon');
+		$exon_featref->{id} =~ s/CDS/exon_from_CDS/;
+		$exon_featref->{id} =~ s/exon/exon_$n_exon/;
+		my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+		defined($exon_elem) || die "Why wasn't exon_elem created?";
+		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
+		++$n_exon;
+	    }
+	}
+	# what if the CDS was derived from an MRNA, see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
+	elsif (@{$feature_type{mRNA}} == 1) {
+	    # if it's joined, one exon for each segment
+	    my $n_exon = 0;
+	    foreach my $loc (@{$gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}{locations}}) {
+		my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}, 'exon');
+		$exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
+		$exon_featref->{id} =~ s/exon/exon_$n_exon/;
+		$exon_featref->{start} = $loc->{start};
+		$exon_featref->{start_type} = $loc->{start_pos_type};
+		$exon_featref->{end} = $loc->{end};
+		$exon_featref->{end_type} = $loc->{end_pos_type};
+		my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
+		++$n_exon;
+	    }
+	}
 	else {
 	    die "Unable to create exon object in $feature_group";
 	}
