@@ -7,6 +7,8 @@ use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
 
+use lib (@INC, '/usr/local/devel/ANNOTATION/ard/testing_manual/lib/site_perl/5.8.5/');
+
 =head1	NAME
 
     run_hmmsearch.pl - runs hmmsearch using multiple hmms against one seq_file
@@ -145,7 +147,6 @@ foreach my $hmm_file(@hmms) {
         $logger->logdie("Could not find a match for hmm $hmm_file") 
             if($tmp_arr_ref == 0);
         push(@hmms,@{$tmp_arr_ref});
-        print "Added @{$tmp_arr_ref}\n";
         next;
     }
 
@@ -215,11 +216,9 @@ sub parse_parameters {
 #Name:        run_hmmsearch
 #Arguments:   name of an hmm_file
 #Description: Runs the hmmsearch command with given hmm_file against seq_file (global variable).
-#             If the file does not exist, it will call &find_hmm_file to see if it can find it.
 sub run_hmmsearch {
     my $hmm_file = shift;
-    my $system_call = HMMSEARCH." $hmm_file ";
-    print $system_call."\n";
+    my $system_call = HMMSEARCH." $hmm_file $seq_file";
 
     open3(undef,\*OUT,\*ERR,$system_call) ||  #Perl function of the day 2006.21.06
         $logger->logdie("Unable to run $system_call"); 
@@ -234,7 +233,7 @@ sub run_hmmsearch {
         if(@stderr > 0);
 
     print $output_file_handle @stdoutFromHmmsearch;
-    print "//";
+    print $output_file_handle "//\n";
 
 }
 
@@ -247,7 +246,6 @@ sub run_hmmsearch {
 #              was implemented to work with the pre-existing hmm list files.
 sub find_hmm_files {
     my $hmm_file = shift;
-    print "Looking for the string $hmm_file\n";
     my $retval = 0;
     my $retval_array_ref = [];
     my $dir = "";
@@ -264,7 +262,6 @@ sub find_hmm_files {
         if($dir eq "") {
             $logger->logdie("Could not parse the directory from the list file");
         }
-        print "dir $dir :: hmm_file $hmm_file :: hmm_ext $hmm_ext\n";
         push(@{$retval_array_ref}, "$dir/$hmm_file$hmm_ext") if(-e "$dir/$hmm_file$hmm_ext" && $dir ne "");
     }
     
