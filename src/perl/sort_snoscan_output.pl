@@ -113,7 +113,7 @@ use Switch;
 
 #The location of the program
 my $SORTPROG = 
-    "/usr/local/devel/ANNOTATION/kgalens/prog/snoscan-0.9b/sort-snos";
+    "/usr/local/bin/sort-snos";
 
 my %options = ();
 my $results = GetOptions (\%options, 

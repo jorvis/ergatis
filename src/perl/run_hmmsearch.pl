@@ -7,8 +7,6 @@ use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
 
-use lib (@INC, '/usr/local/devel/ANNOTATION/ard/testing_manual/lib/site_perl/5.8.5/');
-
 =head1	NAME
 
     run_hmmsearch.pl - runs hmmsearch using multiple hmms against one seq_file
@@ -36,6 +34,14 @@ B<--hmm_list,-l>
 
 B<--hmm_file,-f>
     The hmm file (if only one is being used).
+
+B<--hmm_dir,-d>
+    A directory of hmm files.
+
+B<--hmm_dir_ext,-e>
+    The extension of hmm files in the directory to be used to search.  Will only be used
+    when --hmm_dir option is provided.  If left blank, the program will try to use all files
+    in that directory.
 
 B<--output_file,-o>
     The file to output the results of all the hmm's in list (or single hmm if hmm_file 
@@ -77,6 +83,9 @@ B<--help,-h>
     sequences) and an hmm file or list file.  For requirements of list file, see Description section
     above.
 
+    The hmm files can be input to this program in three ways.  As a list of files (hmm_list), a single file
+    (hmm_file) or a directory of files (--hmm_dir) with a specified extensions (--hmm_dir_ext).
+
 =head1	OUTPUT
 
     The output of this program involves an output file containing all the hmmsearch results from each
@@ -117,7 +126,7 @@ my $results = GetOptions (\%options,
                           'hmm_list|l=s',
                           'hmm_file|f=s',
                           'hmm_dir|d=s',
-                          'extensions|e=s',
+                          'hmm_dir_ext|e=s',
                           'output_file|o=s',
                           'other_opts|r=s',
                           'help|h'
@@ -156,10 +165,6 @@ foreach my $hmm_file(@hmms) {
 
 exit(0);
 
-
-
-
-
 ##################### SUB-ROUTINES ####################################################
 
 #Name:         parse_parameters
@@ -183,16 +188,17 @@ sub parse_parameters {
             unless(-e $options{hmm_file});
         push(@hmms, $options{hmm_file});
     } elsif($options{hmm_dir} ) {
-        $logger->logdie("The option extension needs to be provided when hmm_dir option is used")
-            unless($options{extension});
-        my $tmp_ext = $options{extension};
+        $logger->logdie("Value passed into hmm_dir option ($options{hmm_dir}) must be a valid directory")
+            unless(-d $options{hmm_dir});
+        my $tmp_ext = "";
+        $tmp_ext = $options{hmm_dir_ext} if($options{hmm_dir_ext});
         opendir(DIR, $options{hmm_dir} ) || $logger->logdie("can't opendir $options{hmm_dir}: $!");
-        @hmms = grep { -f "$options{hmm_dir}/$_" && /.*\.$tmp_ext$/ } readdir(DIR);
+        @hmms = grep { -f "$options{hmm_dir}/$_" && /.*$tmp_ext$/ } readdir(DIR);
         closedir DIR;
         $logger->logdie("No files of extensions $tmp_ext were found in the directory $options{hmm_dir}")
             unless(@hmms > 0);
     }else {
-        $logger->logdie("Either hmm_list or hmm_file option must be passed");
+        $logger->logdie("One of hmm_list, hmm_file, or hmm_dir options must be passed");
     }
 
     # Option seq_file must be provided.
@@ -218,7 +224,7 @@ sub parse_parameters {
 #Description: Runs the hmmsearch command with given hmm_file against seq_file (global variable).
 sub run_hmmsearch {
     my $hmm_file = shift;
-    my $system_call = HMMSEARCH." $hmm_file $seq_file";
+    my $system_call = HMMSEARCH." $hmm_file $seq_file $other_opts";
 
     open3(undef,\*OUT,\*ERR,$system_call) ||  #Perl function of the day 2006.21.06
         $logger->logdie("Unable to run $system_call"); 
