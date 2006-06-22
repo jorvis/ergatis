@@ -236,6 +236,7 @@ sub parse_genbank_file {
  	for my $feat_object ($seq->get_SeqFeatures()) {
 	    my $primary_tag = $feat_object->primary_tag;
 	    ++$FeatureCount{$primary_tag};
+	    
  	    if ($primary_tag eq 'source') {
  		for my $tag ($feat_object->get_all_tags) {
 		    if ($tag eq 'plasmid') {
@@ -270,26 +271,32 @@ sub parse_genbank_file {
 		    $primary_tag eq 'promoter' ||
 		    $primary_tag eq 'exon' ||
 		    #$primary_tag eq 'variation' ||  #this is an example of an IN-BETWEEN tag
-		    $primary_tag eq 'intron'
+		    $primary_tag eq 'intron' ||
+		    $primary_tag eq 'mRNA' ||
+		    $primary_tag eq 'tRNA'
 		    ) {
 		    
 		    # obtain feature group
 		    my $feature_group = '';
 		    my $feature_tag = '';
 		    my $feature_value = '';
-		    if ($feat_object->has_tag("gene")) {
-			$feature_tag = 'gene';
-			$feature_value = join('_',$feat_object->get_tag_values("gene"));
-		    }
-		    elsif ($feat_object->has_tag("locus_tag")) {
+		    # could be multiples of same gene, so look for locus_tag first
+		    if ($feat_object->has_tag("locus_tag")) {
 			$feature_tag = 'locus_tag';
 			$feature_value = join('_',$feat_object->get_tag_values("locus_tag"));
+		    }
+		    elsif ($feat_object->has_tag("gene")) {
+			$feature_tag = 'gene';
+			$feature_value = join('_',$feat_object->get_tag_values("gene"));
 		    }
 		    elsif ($feat_object->has_tag("protein_id")) {
 			$feature_tag = 'protein_id';
 			$feature_value = join('_',$feat_object->get_tag_values("protein_id"));
 		    }
 		    else {
+			#testing skipping unknowns for now
+			#next;
+			#/testing
 			#no way to group feature, so put it in its own feature_group
 			$feature_tag = 'unknown';
 			$feature_value = $ugc;			    
@@ -305,9 +312,6 @@ sub parse_genbank_file {
 		    if (exists $gbr{'Features'}->{$feature_group}->{$feature_id}) { die "feature id is not unique!  feature_id: $feature_id"; }
 		    
 		    my $is_complement;
-		    unless (defined($feat_object->strand())) {
-			warn "No strand info for feature ($feature_group $feature_id)";
-		    }
 		    if ($feat_object->strand == 1) {
 			$is_complement = 0;
 		    }
@@ -315,7 +319,7 @@ sub parse_genbank_file {
 			$is_complement = 1;
 		    }
 		    else {
-			die "unknown feature strand in $feature_id: ".$feat_object->strand; 
+			die "unknown feature strand in $feature_group $feature_id: (".$feat_object->strand.")"; 
 		    }
 
 		    #store information on the feature in the hashref
@@ -330,6 +334,18 @@ sub parse_genbank_file {
 									  feature_tag => $feature_tag,
 									  feature_value => $feature_value
 									};
+
+		    # store locations as an array because there might be more than one of them and how we deal with them
+		    # will be determined by the class and the other members of the feature_group
+		    my @locations = $feat_object->location->each_Location();
+		    foreach my $loc (@locations) {
+			#print $loc->start."\t".$loc->start_pos_type."\t".$loc->end."\t".$loc->end_pos_type."\n";
+			push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{locations}},
+			     {start => $loc->start, start_pos_type => $loc->start_pos_type, 
+			      end => $loc->end, end_pos_type => $loc->end_pos_type});
+			#print $gbr{'Features'}{$feature_group}{$feature_id}{locations}[0]{start}."\n";
+		    }
+
 		    if ($primary_tag eq 'CDS') {
 			#store (possibly joined) nucleotide sequence using spliced_seq()
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'spliced_seq'} = $feat_object->spliced_seq->seq();
@@ -337,6 +353,9 @@ sub parse_genbank_file {
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'} = 0; #default null value
 			if ($feat_object->has_tag("translation")) { # in some cases its "psuedo"
 			    $gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'}=join('',$feat_object->get_tag_values("translation"));
+			}
+			else {
+			    die "CDS lacking translation in $feature_group $feature_id";
 			}
 
 			#See bug 2414
@@ -359,7 +378,8 @@ sub parse_genbank_file {
 				push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{db_xrefs}}, $_);
 			    }
 			}
-			elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || $tag eq "translation" || $tag eq "transl_table") {
+			elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
+			       $tag eq "translation" || $tag eq "transl_table") {
 			    # do nothing
 			}
 			else {
@@ -397,7 +417,6 @@ sub parse_genbank_file {
 		$gbr{'strain'} = $+; #last match
 	    }
 	}
-
     }
     undef($seq_obj);
     return \%gbr;
@@ -514,7 +533,6 @@ sub to_bsml {
 	$sequence->setattr( 'strand', $gbr{strand});
     }
 
-
     my $link_elem = $doc->createAndAddLink(
 					   $sequence,
 					   'genome',        # rel
@@ -528,6 +546,9 @@ sub to_bsml {
     my $feature_table_elem = $doc->createAndAddFeatureTable($sequence);
 
     foreach my $feature_group (keys %{$gbr{'Features'}}) {
+	# testing
+	next if $feature_group =~ /unknown/;
+	#/testing
 	my $feature_group_elem = $doc->createAndAddFeatureGroup(
 								$sequence, #the <Sequence> element containing the feature group
 								undef,                    # id
@@ -535,10 +556,170 @@ sub to_bsml {
 								);
 	die ("Could not create <Feature-group> element for uniquename '$sequence'") if (!defined($feature_group_elem));
 
-	foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {	    
+	#testing
+	#count the number of each parsed feature in each feature group
+	# really this ought to be rewritten with a master feature type list
+	my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => []); #hash of arrays
+	
+	foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {
+
 	    $gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
-	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	} #foreach feature in feature_group
+
+#	    print "$feature\tin\t$feature_group\n";
+	    if ($feature =~ /gene/) {
+		push(@{$feature_type{gene}}, $feature);
+	    }
+	    elsif ($feature =~ /CDS/) {
+		push(@{$feature_type{CDS}}, $feature);
+	    }
+	    elsif ($feature =~ /promoter/) {
+		push(@{$feature_type{promoter}}, $feature);
+	    }
+	    elsif ($feature =~ /exon/) {
+		push(@{$feature_type{exon}}, $feature);
+	    }
+	    elsif ($feature =~ /intron/) {
+		push(@{$feature_type{intron}}, $feature);
+	    }
+	    elsif ($feature =~ /mRNA/) {
+		push(@{$feature_type{mRNA}}, $feature);
+	    }
+	    elsif ($feature =~ /tRNA/) {
+		push(@{$feature_type{tRNA}}, $feature);
+	    }
+	    else {
+		die "Unexpected feature ($feature) in $feature_group";
+	    }
+	}
+	
+	# add gene feature
+	if (@{$feature_type{gene}} == 1) {
+	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    # support for feature_groups of a just a gene and just a genen and a tRNA
+	    # see bug #3298 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3298
+	    if (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 1) {
+		next; # goto next feature_group if this is the only thing (ie don't die)
+	    }
+	    elsif ( (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 2) && (@{$feature_type{tRNA}} == 1 )) {
+		&addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+		next; # if the only other feature is tRNA, add it and head to the next feature_group
+	    }
+	}
+	elsif (@{$feature_type{gene}} > 1) {
+	    die "Multiple gene tags (".@{$feature_type{gene}}.") in feature group $feature_group";
+	}
+	elsif (@{$feature_type{CDS}} == 1) { # 0 genes, but CDS, use CDS
+	    my $gene_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'gene');
+	    $gene_featref->{id} =~ s/CDS/gene_from_CDS/;
+	    my $gene_elem = &addFeature($gene_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    $doc->createAndAddBsmlAttribute($gene_elem, "comment", "Derived from CDS tag");
+	}
+#	elsif (@{$feature_type{CDS}} > 1) { #
+#	}
+	else {
+	    die "Unable to create gene object in $feature_group";
+	}
+
+	# add transcript feature
+	if (@{$feature_type{mRNA}} == 1) {
+	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{class} = 'transcript';
+	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{id} =~ s/mRNA/transcript_from_mRNA/; #no.
+	    my $trans_elem = &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from mRNA tag");
+	}
+	elsif (@{$feature_type{mRNA}} > 1) {
+	    die "Multiple mRNA tags (".@{$feature_type{mRNA}}.") in feature group $feature_group";
+	}
+	elsif (@{$feature_type{gene}} == 1) {
+	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{gene}->[0]}, 'transcript');
+	    $trans_featref->{id} =~ s/gene/transcript_from_gene/;
+	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from gene tag");	    
+	}
+	elsif (@{$feature_type{CDS}} == 1) { # use single CDS
+	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'transcript');
+	    $trans_featref->{id} =~ s/CDS/transcript_from_CDS/;
+	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from CDS tag");
+	}
+#	elsif (@{$feature_type{CDS}} > 1) { # use multiple CDSs
+#	}
+	else {
+	    die "Unable to create transcript object in $feature_group";
+	}
+
+	# add CDS
+	# known bugs: 
+	#  -multiple CDSs are straight up just added
+	#  -CDSs might be joined segments and this is ignored
+	# see bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
+	if (@{$feature_type{CDS}} == 1) { # use single CDS
+	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{CDS}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	}
+	elsif (@{$feature_type{CDS}} > 1) { # use multiple CDSs
+#	    die "Multiple CDSs (".@{$feature_type{CDS}}.") in $feature_group";
+	    foreach my $cds (@{$feature_type{cds}}) {
+		&addFeature($gbr{'Features'}->{$feature_group}->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    }
+	}
+	else {
+	    die "Unable to create CDS object in $feature_group";
+	}
+
+
+	# add exons
+	if (@{$feature_type{exon}} > 0) { # use exons if available
+	    foreach my $exon (@{$feature_type{exon}}) {
+		#check if joined locations?
+		&addFeature($gbr{'Features'}->{$feature_group}->{$exon}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    }
+	}
+	elsif (@{$feature_type{CDS}} == 1) { #otherwise use CDS
+	    # if it's joined, one exon for each segment
+	    my $n_exon = 0;
+	    foreach my $loc (@{$gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}{locations}}) {
+		my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'exon');
+		$exon_featref->{id} =~ s/CDS/exon_from_CDS/;
+		$exon_featref->{id} =~ s/exon/exon_$n_exon/;
+		$exon_featref->{start} = $loc->{start};
+		$exon_featref->{start_type} = $loc->{start_pos_type};
+		$exon_featref->{end} = $loc->{end};
+		$exon_featref->{end_type} = $loc->{end_pos_type};
+		my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
+		++ $n_exon;
+	    }
+	}
+#       right now this isn't implemented because I'm not sure how to handle >1 CDSs
+#	elsif (@{$feature_type{CDS}} > 1) { # otherwise one exon for each CDS
+#          but die if it's more than one
+#	    if ( scalar(@{$gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}{locations}}) > 1) {
+#	    }
+#	}
+	else {
+	    die "Unable to create exon object in $feature_group";
+	}
+
+	# add promoters and introns
+	if (@{$feature_type{promoter}} > 0) { # use promoters if available
+	    foreach my $promoter (@{$feature_type{promoter}}) {
+		#check if joined locations?
+		&addFeature($gbr{'Features'}->{$feature_group}->{$promoter}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    }
+	}
+	if (@{$feature_type{intron}} > 0) { # use introns if available
+	    foreach my $intron (@{$feature_type{intron}}) {
+		#check if joined locations?
+		&addFeature($gbr{'Features'}->{$feature_group}->{$intron}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	    }
+	}
+
+	#/testing
+	
+#	foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {	    
+#	    $gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
+#	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+#	} #foreach feature in feature_group
     } #foreach feature_group
 } #/to_bsml
 
@@ -634,21 +815,16 @@ sub addFeature {
     if (defined($featref->{db_xrefs})) {
 	foreach (@{$featref->{db_xrefs}}) {
 	    # print "\tdb_xref\t$_\n";
-	    ($_ =~ /(.*):(.*)/) || die "Unable to parse database and identifier from db_xref ($_)";
+	    # new usage convention is everything up to the first : is db, everything after (including :) is id
+	    # see bug #3278 comment #3 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3278#c3
+	    ($_ =~ /([^:]*):(.*)/) || die "Unable to parse database and identifier from db_xref ($_)";
 	    my $database = $1;
 	    my $identifier = $2;
 
 	    # die if it's some new kind of database I never saw before
 	    my %known_dbxrefs = ( GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
-
-				  HSSP => 1, PSEUDO => 1, DDBJ => 1, 
-
-				  COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
-
-				  EMBL => 1, GenBank => 1, InterPro => 1, 
-
-				  'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1 )
-;
+				  HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
+				  EMBL => 1, GenBank => 1, InterPro => 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1 );
 	    (defined($known_dbxrefs{$database})) || die "Unknown database in dbxref ($database)";
 	    
 	    # mod database to GO xref standard as neccessary
@@ -695,11 +871,12 @@ sub addFeature {
 	&addSeqToFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem, $feature_elem, $gbr{'molecule'});
 	if ($featref->{'translation'}) {
 	    # create dummy featref for polypeptide
+	    # use copy_featref?
 	    my $poly_featref = {
 				 'id' => $featref->{'id'},
 				 'class' => 'polypeptide',
 				 'is_complement' => $featref->{'is_complement'},
-				 'start' => $featref->{'start'} - 1, #convert to space based coords
+				 'start' => $featref->{'start'},
 				 'end' => $featref->{'end'}, #this should NOT be +1, right?
 				 'feature_tag' => $featref->{'feature_tag'},
 				 'feature_value' => $featref->{'feature_value'},				 
@@ -795,6 +972,40 @@ sub addSeqToFeature {
 }
 
 
+
+# create a copy of a featref
+# inputs: featref, newfeatref, [new class]
+sub copy_featref {
+    my $newfeat;
+    my $featref = shift;
+    my $class = shift;
+    foreach (keys %{$featref}) {
+	$newfeat->{$_} = $featref->{$_};
+    }
+
+    if (defined($class)) {
+	$newfeat->{class} = $class;
+    }
+
+    return $newfeat;
+
+    
+# # 	    my $poly_featref = {
+# # 				 'id' => $featref->{'id'},
+# # 				 'class' => 'polypeptide',
+# # 				 'is_complement' => $featref->{'is_complement'},
+# # 				 'start' => $featref->{'start'} - 1, #convert to space based coords
+# # 				 'end' => $featref->{'end'}, #this should NOT be +1, right?
+# # 				 'feature_tag' => $featref->{'feature_tag'},
+# # 				 'feature_value' => $featref->{'feature_value'},				 
+# # 				 'location_type' => $featref->{'location_type'},
+# # 				 'start_type' => $featref->{'start_type'},
+# # 				 'end_type' => $featref->{'end_type'},
+# # 				 'feature_len' => length($featref->{'translation'}),
+# # 				 'spliced_seq' => $featref->{'translation'}
+# # 				 };
+}
+
 #-------------------------------------------------------------------------
 # fasta_out()
 # taken without remorse from legacy2bsml.pl
@@ -820,77 +1031,77 @@ sub fasta_out {
 #
 # unused
 #
-sub parse_genbank_file_regexp {
-    my $gb_file = shift;
+# sub parse_genbank_file_regexp {
+#     my $gb_file = shift;
 
-    my %gbr;
-    open(File,"<$gb_file") || die "can't open file ($gb_file): $!\n";
-    while (my $line = <File>) {
-	chomp;
-	if($line =~ /\AACCESSION/) {
-	    # We have found the ACCESSION, grab that info and store it in gbr:
-	    my ($check1,$check2,$check3)=split(/\s+/,$line);
-	    $gbr{'accession'} = $check2;
-	}
-	elsif($line =~ /\A\s+ORGANISM/) {
-	    # We have found the ORGANISM, grab that info and store it in gbr:
-	    $gbr{'organism'} = $line;
-	    $gbr{'organism'} =~ s/\A\s+ORGANISM\s+//;
-	    chomp $gbr{'organism'};
-	}
-	elsif ($line =~ /^FEATURES/) {
-	    my $next_line = <File>;
-	    if ($next_line =~ /^\s*source/) {
-		$gbr{'feature'} = 1;
-	    }
-	}
-	elsif($line =~ /\A\s+\/strain/) {
-	    # We have found the strain, grab that info and store it in gbr:
-	    $gbr{'strain'} = $line;
-	    $gbr{'strain'} =~ s/\A\s+\/strain\=//;
-	    $gbr{'strain'} =~ s/\"//g;
-	    $gbr{'strain'} =~ s/\n//g;
-	    chomp $gbr{'strain'};
-	}
-	elsif ($line =~ /\/db_xref=\"taxon\:(\d+)\"/) {
-	    $gbr{'taxon_id'} = $1;
-	}
-	elsif ($line =~ /\/isolate=\"(.+)\"/) {
-	    $gbr{'isolate'} = $1;
-	}
-	elsif ($line =~ /\/serovar=\"(.+)\"/) {
-	    $gbr{'serovar'} = $1;
-	}
-	elsif ($line =~ /\/specific_host=\"(.+)\"/) {
-	    $gbr{'specific_host'} = $1;
-	}
-	elsif ($line =~ /\/note=(.+)/) {
-	    $gbr{'note'} = $1;
-	}
-    } #while $line
-    close(File);
+#     my %gbr;
+#     open(File,"<$gb_file") || die "can't open file ($gb_file): $!\n";
+#     while (my $line = <File>) {
+# 	chomp;
+# 	if($line =~ /\AACCESSION/) {
+# 	    # We have found the ACCESSION, grab that info and store it in gbr:
+# 	    my ($check1,$check2,$check3)=split(/\s+/,$line);
+# 	    $gbr{'accession'} = $check2;
+# 	}
+# 	elsif($line =~ /\A\s+ORGANISM/) {
+# 	    # We have found the ORGANISM, grab that info and store it in gbr:
+# 	    $gbr{'organism'} = $line;
+# 	    $gbr{'organism'} =~ s/\A\s+ORGANISM\s+//;
+# 	    chomp $gbr{'organism'};
+# 	}
+# 	elsif ($line =~ /^FEATURES/) {
+# 	    my $next_line = <File>;
+# 	    if ($next_line =~ /^\s*source/) {
+# 		$gbr{'feature'} = 1;
+# 	    }
+# 	}
+# 	elsif($line =~ /\A\s+\/strain/) {
+# 	    # We have found the strain, grab that info and store it in gbr:
+# 	    $gbr{'strain'} = $line;
+# 	    $gbr{'strain'} =~ s/\A\s+\/strain\=//;
+# 	    $gbr{'strain'} =~ s/\"//g;
+# 	    $gbr{'strain'} =~ s/\n//g;
+# 	    chomp $gbr{'strain'};
+# 	}
+# 	elsif ($line =~ /\/db_xref=\"taxon\:(\d+)\"/) {
+# 	    $gbr{'taxon_id'} = $1;
+# 	}
+# 	elsif ($line =~ /\/isolate=\"(.+)\"/) {
+# 	    $gbr{'isolate'} = $1;
+# 	}
+# 	elsif ($line =~ /\/serovar=\"(.+)\"/) {
+# 	    $gbr{'serovar'} = $1;
+# 	}
+# 	elsif ($line =~ /\/specific_host=\"(.+)\"/) {
+# 	    $gbr{'specific_host'} = $1;
+# 	}
+# 	elsif ($line =~ /\/note=(.+)/) {
+# 	    $gbr{'note'} = $1;
+# 	}
+#     } #while $line
+#     close(File);
 
-    #Clean up parsed data
+#     #Clean up parsed data
 
-    #remove strain information from organism name
-    #sp. and str. are sometimes present in organism previous to strain
-    if (defined $gbr{'strain'} && defined $gbr{'organism'}) {
-	$gbr{'organism'} =~ s/((sp\.)|(str\.))?\s*\Q$gbr{'strain'}\E//;
-    }
+#     #remove strain information from organism name
+#     #sp. and str. are sometimes present in organism previous to strain
+#     if (defined $gbr{'strain'} && defined $gbr{'organism'}) {
+# 	$gbr{'organism'} =~ s/((sp\.)|(str\.))?\s*\Q$gbr{'strain'}\E//;
+#     }
 
-    #If two words in organism, split to genus species
-    #(first word is genus, everything else is species)
-    if (defined $gbr{'organism'}) {
-	my @words = split (/\s/, $gbr{'organism'});
-	$gbr{'words'} = @words;
-	if ($gbr{'words'} == 1) { #one word is probably genus
-	    $gbr{'genus'} = $words[0];
-	    $gbr{'species'} = "";
-	}
-	else { #else, throw it all in species
-	    $gbr{'genus'} = shift @words;
-	    $gbr{'species'} = "@words";
-	}
-    }
-    return \%gbr;
-}
+#     #If two words in organism, split to genus species
+#     #(first word is genus, everything else is species)
+#     if (defined $gbr{'organism'}) {
+# 	my @words = split (/\s/, $gbr{'organism'});
+# 	$gbr{'words'} = @words;
+# 	if ($gbr{'words'} == 1) { #one word is probably genus
+# 	    $gbr{'genus'} = $words[0];
+# 	    $gbr{'species'} = "";
+# 	}
+# 	else { #else, throw it all in species
+# 	    $gbr{'genus'} = shift @words;
+# 	    $gbr{'species'} = "@words";
+# 	}
+#     }
+#     return \%gbr;
+# }
