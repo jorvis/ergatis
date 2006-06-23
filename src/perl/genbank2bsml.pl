@@ -347,7 +347,7 @@ sub parse_genbank_file {
 			#print $gbr{'Features'}{$feature_group}{$feature_id}{locations}[0]{start}."\n";
 		    }
 
-		    # make a fake translation for mRNAs (see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300)
+		    # make a fake translation for mRNAs later (see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300)
 		    if ($primary_tag eq 'CDS' || $primary_tag eq 'mRNA') {
 			#store (possibly joined) nucleotide sequence using spliced_seq()
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'spliced_seq'} = $feat_object->spliced_seq->seq();
@@ -358,9 +358,10 @@ sub parse_genbank_file {
 			    if ($feat_object->has_tag("translation")) { # in some cases its "psuedo"
 				$gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'}=join('',$feat_object->get_tag_values("translation"));
 			    }
-			    else {
-				die "CDS lacking translation in $feature_group $feature_id";
-			    }
+			    # adding support for deriving translation from genomic sequence
+#			    else {
+#				die "CDS lacking translation in $feature_group $feature_id";
+#			    }
 			}
 
 			#See bug 2414
@@ -659,11 +660,23 @@ sub to_bsml {
 	#  -CDSs might be joined segments and this is ignored
 	# see bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
 	if (@{$feature_type{CDS}} == 1) { # use single CDS
+	    # create translation if there isn't one
+	    unless ($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}->{translation}) {
+		my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
+		$gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}->{translation} = $codon_table->translate($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}->{spliced_seq});
+	    }
+
 	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{CDS}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	}
 	elsif (@{$feature_type{CDS}} > 1) { # use multiple CDSs
 #	    die "Multiple CDSs (".@{$feature_type{CDS}}.") in $feature_group";
 	    foreach my $cds (@{$feature_type{CDS}}) {
+		# create translation if there isn't one
+		unless ($gbr{'Features'}{$feature_group}{$cds}->{translation}) {
+		    my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
+		    $gbr{'Features'}{$feature_group}{$cds}->{translation} = $codon_table->translate($gbr{'Features'}{$feature_group}{$cds}->{spliced_seq});
+		}
+
 		&addFeature($gbr{'Features'}->{$feature_group}->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    }
 	}
