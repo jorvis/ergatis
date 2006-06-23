@@ -602,7 +602,9 @@ sub to_bsml {
 	    }
 	}
 	
-	# add gene feature
+	#
+	# add gene
+        #
 	if (@{$feature_type{gene}} == 1) {
 	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    # support for feature_groups of a just a gene and just a genen and a tRNA
@@ -618,29 +620,33 @@ sub to_bsml {
 	elsif (@{$feature_type{gene}} > 1) {
 	    die "Multiple gene tags (".@{$feature_type{gene}}.") in feature group $feature_group";
 	}
-	elsif (@{$feature_type{CDS}} == 1) { # 0 genes, but CDS, use CDS
+	# support for multiple CDSs bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299
+	elsif (@{$feature_type{CDS}} >= 1) { # use CDSs
 	    my $gene_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'gene');
 	    $gene_featref->{id} =~ s/CDS/gene_from_CDS/;
+	    # obtain max span
+	    foreach my $cds (@{$feature_type{CDS}}) {
+		if ($gbr{'Features'}{$feature_group}{$cds}->{start} < $gene_featref->{start}) {
+		    $gene_featref->{start} = $gbr{'Features'}{$feature_group}{$cds}->{start};
+		    $gene_featref->{start_type} = $gbr{'Features'}{$feature_group}{$cds}->{start_type};
+		}
+		if ($gbr{'Features'}{$feature_group}{$cds}->{end} > $gene_featref->{end}) {
+		    $gene_featref->{end} = $gbr{'Features'}{$feature_group}{$cds}->{end};
+		    $gene_featref->{end_type} = $gbr{'Features'}{$feature_group}{$cds}->{end_type};
+		}
+	    }
 	    my $gene_elem = &addFeature($gene_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    $doc->createAndAddBsmlAttribute($gene_elem, "comment", "Derived from CDS tag");
 	}
-#	elsif (@{$feature_type{CDS}} > 1) { #
-#	}
 	else {
 	    die "Unable to create gene object in $feature_group";
 	}
 
-	# add transcript feature
-# 	if (@{$feature_type{mRNA}} == 1) {
-# 	    # change below to use intermediate featref
-# 	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{class} = 'transcript';
-# 	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{id} =~ s/mRNA/transcript_from_mRNA/; #no.
-# 	    my $trans_elem = &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-# 	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from mRNA tag");
-# 	}
+	#
+	# add transcript
+	#
 	# adding support for multiple mRNAs.  See bug #3308 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3308
 	if (@{$feature_type{mRNA}} >= 1) {
-#	    die "Multiple mRNA tags (".@{$feature_type{mRNA}}.") in feature group $feature_group";
 	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}, 'transcript');
 	    $trans_featref->{id} =~ s/mRNA/transcript_from_mRNA/; #no.
 	    # obtain max span
@@ -684,21 +690,14 @@ sub to_bsml {
 	    die "Unable to create transcript object in $feature_group";
 	}
 
-	# add CDS
+	#
+	#  add CDS
+	#
 	# known bugs: 
 	#  -multiple CDSs are straight up just added
 	#  -CDSs might be joined segments and this is kind of ignored
 	# see bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
-	if (@{$feature_type{CDS}} == 1) { # use single CDS
-	    # create translation if there isn't one
-	    unless ($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}->{translation}) {
-		my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
-		$gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}->{translation} = $codon_table->translate($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}->{spliced_seq});
-	    }
-
-	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{CDS}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	}
-	elsif (@{$feature_type{CDS}} > 1) { # use multiple CDSs
+	if (@{$feature_type{CDS}} >= 1) { # use multiple CDSs
 	    foreach my $cds (@{$feature_type{CDS}}) {
 		# create translation if there isn't one
 		unless ($gbr{'Features'}{$feature_group}{$cds}->{translation}) {
@@ -729,7 +728,9 @@ sub to_bsml {
 	}
 
 
-	# add exons	
+	#
+	# add exons
+	#
 	if (@{$feature_type{exon}} > 0) { # use exons if available
 	    foreach my $exon (@{$feature_type{exon}}) {
 		#check if joined locations?
@@ -795,7 +796,9 @@ sub to_bsml {
 	    die "Unable to create exon object in $feature_group";
 	}
 
+	#
 	# add promoters and introns
+	#
 	if (@{$feature_type{promoter}} > 0) { # use promoters if available
 	    foreach my $promoter (@{$feature_type{promoter}}) {
 		#check if joined locations?
