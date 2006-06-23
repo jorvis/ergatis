@@ -177,3 +177,6 @@ next
 -changed analysis2bsml to store ergatis version tags from an installer control file
 -added gff2bsml component to installer
 -targetp2bsml legacy db loader script
+-added psipred component
+-added hmmsearch component
+-fixed to make snoscan install
