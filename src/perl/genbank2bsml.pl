@@ -698,42 +698,49 @@ sub to_bsml {
 	}
 
 
-	# add exons
+	# add exons	
 	if (@{$feature_type{exon}} > 0) { # use exons if available
 	    foreach my $exon (@{$feature_type{exon}}) {
 		#check if joined locations?
 		&addFeature($gbr{'Features'}->{$feature_group}->{$exon}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    }
 	}
-	elsif (@{$feature_type{CDS}} == 1) { #otherwise use CDS
-	    # if it's joined, one exon for each segment
+	# derive from mRNA if present
+	elsif (@{$feature_type{mRNA}} >= 1) {
 	    my $n_exon = 0;
-	    foreach my $loc (@{$gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}{locations}}) {
-		my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'exon');
-		$exon_featref->{id} =~ s/CDS/exon_from_CDS/;
-		$exon_featref->{id} =~ s/exon/exon_$n_exon/;
-		$exon_featref->{start} = $loc->{start};
-		$exon_featref->{start_type} = $loc->{start_pos_type};
-		$exon_featref->{end} = $loc->{end};
-		$exon_featref->{end_type} = $loc->{end_pos_type};
-		my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
-		++$n_exon;
-	    }
+	    foreach my $mrna (@{$feature_type{mRNA}}) {
+		foreach my $loc (@{$gbr{'Features'}{$feature_group}{$mrna}{locations}}) {
+		    my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$mrna}, 'exon');
+		    $exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
+		    $exon_featref->{id} =~ s/exon/exon_$n_exon/;
+		    $exon_featref->{start} = $loc->{start};
+		    $exon_featref->{start_type} = $loc->{start_pos_type};
+		    $exon_featref->{end} = $loc->{end};
+		    $exon_featref->{end_type} = $loc->{end_pos_type};
+		    my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+		    $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
+		    ++$n_exon;
+		}
+	    }	    
 	}
-	# still trying to figure out multiple CDSs.  See bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
-	elsif (@{$feature_type{CDS}} > 1) { # otherwise one exon for each CDS
+	# See bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion of multiple CDSs
+	# Regardless of the number of CDSs, each segment is used as an exon
+	# see bug $3305 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3305
+	elsif (@{$feature_type{CDS}} >= 1) { # otherwise one exon for each CDS fragment
 	    my $n_exon = 0;
 	    foreach my $cds (@{$feature_type{CDS}}) {
-		# but die if it's more than one (unlike case of a single CDS)
-		die "Multiple CDSs and $cds is a join in $feature_group" if ( scalar(@{$gbr{'Features'}{$feature_group}{$cds}{locations}}) > 1);
-		my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$cds}, 'exon');
-		$exon_featref->{id} =~ s/CDS/exon_from_CDS/;
-		$exon_featref->{id} =~ s/exon/exon_$n_exon/;
-		my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-		defined($exon_elem) || die "Why wasn't exon_elem created?";
-		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
-		++$n_exon;
+		foreach my $loc (@{$gbr{'Features'}{$feature_group}{$cds}{locations}}) {
+		    my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$cds}, 'exon');
+		    $exon_featref->{id} =~ s/CDS/exon_from_CDS/;
+		    $exon_featref->{id} =~ s/exon/exon_$n_exon/;
+		    $exon_featref->{start} = $loc->{start};
+		    $exon_featref->{start_type} = $loc->{start_pos_type};
+		    $exon_featref->{end} = $loc->{end};
+		    $exon_featref->{end_type} = $loc->{end_pos_type};
+		    my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+		    $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
+		    ++$n_exon;
+		}
 	    }
 	}
 	# what if the CDS was derived from an MRNA, see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
