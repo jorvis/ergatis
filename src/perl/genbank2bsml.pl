@@ -266,6 +266,11 @@ sub parse_genbank_file {
 		}
 		#/test junk
 		
+		# random testing
+		die "Hey, there are transcript features" if $primary_tag eq 'transcript';
+		#/testing
+
+
 		if ($primary_tag eq 'CDS'  ||
 		    $primary_tag eq 'gene' || 
 		    #$primary_tag eq 'misc_feature' ||  #not supported by chado (not in cvterm)
@@ -562,7 +567,6 @@ sub to_bsml {
 								);
 	die ("Could not create <Feature-group> element for uniquename '$sequence'") if (!defined($feature_group_elem));
 
-	#testing
 	#count the number of each parsed feature in each feature group
 	# really this ought to be rewritten with a master feature type list
 	my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => []); #hash of arrays
@@ -627,14 +631,31 @@ sub to_bsml {
 	}
 
 	# add transcript feature
-	if (@{$feature_type{mRNA}} == 1) {
-	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{class} = 'transcript';
-	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{id} =~ s/mRNA/transcript_from_mRNA/; #no.
-	    my $trans_elem = &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+# 	if (@{$feature_type{mRNA}} == 1) {
+# 	    # change below to use intermediate featref
+# 	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{class} = 'transcript';
+# 	    $gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}->{id} =~ s/mRNA/transcript_from_mRNA/; #no.
+# 	    my $trans_elem = &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{mRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+# 	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from mRNA tag");
+# 	}
+	# adding support for multiple mRNAs.  See bug #3308 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3308
+	if (@{$feature_type{mRNA}} >= 1) {
+#	    die "Multiple mRNA tags (".@{$feature_type{mRNA}}.") in feature group $feature_group";
+	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}, 'transcript');
+	    $trans_featref->{id} =~ s/mRNA/transcript_from_mRNA/; #no.
+	    # obtain max span
+	    foreach my $mrna (@{$feature_type{mRNA}}) {
+		if ($gbr{'Features'}{$feature_group}{$mrna}->{start} < $trans_featref->{start}) {
+		    $trans_featref->{start} = $gbr{'Features'}{$feature_group}{$mrna}->{start};
+		    $trans_featref->{start_type} = $gbr{'Features'}{$feature_group}{$mrna}->{start_type};
+		}
+		if ($gbr{'Features'}{$feature_group}{$mrna}->{end} > $trans_featref->{end}) {
+		    $trans_featref->{end} = $gbr{'Features'}{$feature_group}{$mrna}->{end};
+		    $trans_featref->{end_type} = $gbr{'Features'}{$feature_group}{$mrna}->{end_type};
+		}
+	    }
+	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from mRNA tag");
-	}
-	elsif (@{$feature_type{mRNA}} > 1) {
-	    die "Multiple mRNA tags (".@{$feature_type{mRNA}}.") in feature group $feature_group";
 	}
 	elsif (@{$feature_type{gene}} == 1) {
 	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{gene}->[0]}, 'transcript');
@@ -642,14 +663,23 @@ sub to_bsml {
 	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from gene tag");	    
 	}
-	elsif (@{$feature_type{CDS}} == 1) { # use single CDS
+	elsif (@{$feature_type{CDS}} >= 1) { # use CDSs
 	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'transcript');
 	    $trans_featref->{id} =~ s/CDS/transcript_from_CDS/;
+	    # obtain max span
+	    foreach my $cds (@{$feature_type{CDS}}) {
+		if ($gbr{'Features'}{$feature_group}{$cds}->{start} < $trans_featref->{start}) {
+		    $trans_featref->{start} = $gbr{'Features'}{$feature_group}{$cds}->{start};
+		    $trans_featref->{start_type} = $gbr{'Features'}{$feature_group}{$cds}->{start_type};
+		}
+		if ($gbr{'Features'}{$feature_group}{$cds}->{end} > $trans_featref->{end}) {
+		    $trans_featref->{end} = $gbr{'Features'}{$feature_group}{$cds}->{end};
+		    $trans_featref->{end_type} = $gbr{'Features'}{$feature_group}{$cds}->{end_type};
+		}
+	    }
 	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from CDS tag");
 	}
-#	elsif (@{$feature_type{CDS}} > 1) { # use multiple CDSs
-#	}
 	else {
 	    die "Unable to create transcript object in $feature_group";
 	}
@@ -657,7 +687,7 @@ sub to_bsml {
 	# add CDS
 	# known bugs: 
 	#  -multiple CDSs are straight up just added
-	#  -CDSs might be joined segments and this is ignored
+	#  -CDSs might be joined segments and this is kind of ignored
 	# see bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
 	if (@{$feature_type{CDS}} == 1) { # use single CDS
 	    # create translation if there isn't one
@@ -669,29 +699,30 @@ sub to_bsml {
 	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{CDS}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	}
 	elsif (@{$feature_type{CDS}} > 1) { # use multiple CDSs
-#	    die "Multiple CDSs (".@{$feature_type{CDS}}.") in $feature_group";
 	    foreach my $cds (@{$feature_type{CDS}}) {
 		# create translation if there isn't one
 		unless ($gbr{'Features'}{$feature_group}{$cds}->{translation}) {
 		    my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
 		    $gbr{'Features'}{$feature_group}{$cds}->{translation} = $codon_table->translate($gbr{'Features'}{$feature_group}{$cds}->{spliced_seq});
 		}
-
 		&addFeature($gbr{'Features'}->{$feature_group}->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    }
 	}
-	# create CDS from single mRNA if present
+	# create CDS from mRNA if present
 	# see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
-	elsif (@{$feature_type{mRNA}} == 1) {
-	    my $cds_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}, 'CDS');
-	    $cds_featref->{id} =~ s/mRNA/CDS_from_mRNA/;
-	    # create translation from known transl_table value ($gbr{'transl_table'})
-	    # doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
-	    my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
-	    $cds_featref->{translation} = $codon_table->translate($cds_featref->{spliced_seq});
+	# revised in bug #3308 to create one CDS per mRNA
+	elsif (@{$feature_type{mRNA}} >= 1) {
+	    foreach my $mrna (@{$feature_type{mRNA}}) {
+		my $cds_featref = &copy_featref($gbr{'Features'}{$feature_group}{$mrna}, 'CDS');
+		$cds_featref->{id} =~ s/mRNA/CDS_from_mRNA/;
+		# create translation from known transl_table value ($gbr{'transl_table'})
+		# doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
+		my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
+		$cds_featref->{translation} = $codon_table->translate($cds_featref->{spliced_seq});
 
- 	    my $cds_elem = &addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	    $doc->createAndAddBsmlAttribute($cds_elem, "comment", "Derived from mRNA tag");	    
+		my $cds_elem = &addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+		$doc->createAndAddBsmlAttribute($cds_elem, "comment", "Derived from mRNA tag");
+	    }
 	}
 	else {
 	    die "Unable to create CDS object in $feature_group";
@@ -777,13 +808,6 @@ sub to_bsml {
 		&addFeature($gbr{'Features'}->{$feature_group}->{$intron}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	    }
 	}
-
-	#/testing
-	
-#	foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {	    
-#	    $gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
-#	    &addFeature($gbr{'Features'}->{$feature_group}->{$feature}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#	} #foreach feature in feature_group
     } #foreach feature_group
 } #/to_bsml
 
