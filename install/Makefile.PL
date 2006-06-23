@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genbank2bsml genezilla genemark genewise_best_loc genie genscan genscan-plus gff2bsml glimmerHMM hmmpfam hmmpir hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml mepipe muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps pangenome panther pe phat predotar promer region repeatmasker signalp snps snap split_fasta split_multifasta statistics2chado subfeature_mapping targetp tmhmm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+workflow_install	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genbank2bsml genezilla genemark genewise_best_loc genie genscan genscan-plus gff2bsml glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml mepipe muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps pangenome panther pe phat predotar promer psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping targetp tmhmm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install workflow/shared/default-iterator.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/shared/default-serialiterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -328,6 +328,14 @@ hmmpir	:
 	@install workflow/hmmpir/hmmpir_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/hmmpir/hmmpirconf.ini $(WORKFLOW_DOCS_DIR)
 
+hmmsearch	:
+	@echo "Installing hmmsearch workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/hmmsearch/hmmsearch-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmsearch/hmmsearch-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmsearch/hmmsearch.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/hmmsearch/hmmsearch_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/hmmsearch/hmmsearchconf.ini $(WORKFLOW_DOCS_DIR)
+
 hmmsmart	:
 	@echo "Installing hmmsmart workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/hmmsmart/hmmsmart-master.ini $(WORKFLOW_DOCS_DIR)
@@ -510,6 +518,14 @@ predotar	:
 	@install workflow/predotar/predotar_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/predotar/predotarconf.ini $(WORKFLOW_DOCS_DIR)  
 
+psipred	:
+	@echo "Installing psipred workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/psipred/psipred-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/psipred/psipred-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/psipred/psipred.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/psipred/psipred_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/psipred/psipredconf.ini $(WORKFLOW_DOCS_DIR)  
+
 region	:
 	@echo "Installing region workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/region/region-master.ini $(WORKFLOW_DOCS_DIR)
@@ -555,6 +571,14 @@ snap	:
 	@install workflow/snap/snap.ini $(WORKFLOW_DOCS_DIR)
 	@install workflow/snap/snap_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/snap/snapconf.ini $(WORKFLOW_DOCS_DIR)
+
+snoscan	:
+	@echo "Installing snoscan workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/snoscan/snoscan-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/snoscan/snoscan-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install workflow/snoscan/snoscan.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/snoscan/snoscan_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/snoscan/snoscanconf.ini $(WORKFLOW_DOCS_DIR)
 
 split_fasta	:
 	@echo "Installing split_fasta workflows in $(WORKFLOW_DOCS_DIR)"
