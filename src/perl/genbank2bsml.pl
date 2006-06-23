@@ -123,6 +123,8 @@ sub parse_genbank_file {
 	$gbr{'genus'} = $1;
 	$gbr{'species'} = $2;
 
+	( ($gbr{'genus'}) && ($gbr{'species'}) ) || die "Unable to parse genus/species from organism ($gbr{organism})";
+
 	$gbr{'sequence'} = $seq->seq();
 	$gbr{'seq_len'} = $seq->length();
 
