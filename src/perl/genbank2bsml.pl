@@ -108,7 +108,11 @@ sub parse_genbank_file {
 				   -format => 'genbank');
     }
 
+    # force die on multi-sequence genbank file
+    # see http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3316
+    my $one_seq = 1;
     while (my $seq = $seq_obj->next_seq) {
+	($one_seq) ? $one_seq = 0 : die "Unsupported: multiple records in $gb_file.";
 	$gbr{'component'} = 'chromosome'; #default;
 	$gbr{'strain'} = '';
 
