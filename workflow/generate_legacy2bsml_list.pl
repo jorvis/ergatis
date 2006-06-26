@@ -363,7 +363,10 @@ sub get_organism_hash {
 						    'infohash'            => [],
 						    'organism_type'       => $organism_type,
 						    'include_genefinders' => $include_genefinders,
-						    'exclude_genefinders' => $exclude_genefinders };
+						    'exclude_genefinders' => $exclude_genefinders,
+						    'alt_database'        => 'none',
+						    'alt_species'         => 'none'
+						};
 			
 		    }
 		}
