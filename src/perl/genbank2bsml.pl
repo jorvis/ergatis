@@ -110,9 +110,10 @@ sub parse_genbank_file {
 
     # force die on multi-sequence genbank file
     # see http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3316
-    my $one_seq = 1;
+    my $n_seqs = 0;
     while (my $seq = $seq_obj->next_seq) {
-	($one_seq) ? $one_seq = 0 : die "Unsupported: multiple records in $gb_file.";
+	++$n_seqs;
+	die "Unsupported: multiple records ($n_seqs) in $gb_file." if ($n_seqs > 1);
 	$gbr{'component'} = 'chromosome'; #default;
 	$gbr{'strain'} = '';
 
@@ -433,8 +434,13 @@ sub parse_genbank_file {
 	    if ($gbr{'organism'} =~ m/((sp\.)|(str\.)|(subsp\.))\s*(.*)/) {
 		$gbr{'strain'} = $+; #last match
 	    }
-	}
+	}	
     }
+
+    # die if we didn't actually process any records
+    # see bug #3315 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3315
+    die "No genbank records in $gb_file" if ($n_seqs == 0);
+
     undef($seq_obj);
     return \%gbr;
 }
