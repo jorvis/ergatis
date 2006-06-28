@@ -11,11 +11,6 @@
             <name>Create scratch space</name>
             <configMapId>create_compute_scratch</configMapId>
         </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>create_database_lockfile</name>
-          <configMapId>create_database_lockfile</configMapId>
-        </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
 <!--Processing-->
@@ -135,11 +130,6 @@
            <name>grant_public</name>
            <configMapId>grant_public</configMapId>
        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>remove_database_lockfile</name>
-          <configMapId>remove_database_lockfile</configMapId>
-        </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->
        <command>

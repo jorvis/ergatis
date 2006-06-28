@@ -8,11 +8,6 @@
 <!--Set up output and scratch areas-->
         <command>
           <type>RunUnixCommand</type>
-          <name>create_database_lockfile</name>
-          <configMapId>create_database_lockfile</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_scratch</configMapId>
         </command>
@@ -648,11 +643,6 @@
             <type>RunUnixCommand</type>
             <name>Grant public</name>
             <configMapId>grant_public</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>remove_database_lockfile</name>
-          <configMapId>remove_database_lockfile</configMapId>
         </command>
        <command>
           <type>RunUnixCommand</type>

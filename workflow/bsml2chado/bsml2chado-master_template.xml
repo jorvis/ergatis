@@ -26,11 +26,6 @@
           <name>create_final</name>
           <configMapId>create_final</configMapId>
         </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>create_database_lockfile</name>
-          <configMapId>create_database_lockfile</configMapId>
-        </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
 <!--Iterator steps-->
@@ -398,11 +393,6 @@
             <type>RunUnixCommand</type>
             <configMapId>rebuild_indexes</configMapId>
             <name>rebuild_indexes</name>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>remove_database_lockfile</name>
-          <configMapId>remove_database_lockfile</configMapId>
         </command>
         <command>
             <type>RunUnixCommand</type>
