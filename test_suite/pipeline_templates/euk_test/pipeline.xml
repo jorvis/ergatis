@@ -1,88 +1,110 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd">
   <commandSet type="serial">
     <configMapId>start</configMapId>
-	<!-- 
-	<commandSet type="serial">
-      <configMapId>component_legacy2bsml.cba1_315117</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_legacy2bsml.bma1_14554</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_legacy2bsml.cea2_3</configMapId>
- 	</commandSet>
-  -->
-	<commandSet type="serial">
-      <configMapId>component_legacy2bsml.default</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2fasta.multi</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2fasta.single</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_xdformat.default</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_wu-blastp.default</configMapId>
-    </commandSet>
-    <commandSet type="parallel">
-      <configMapId>29598</configMapId>
-      <commandSet type="serial">
-        <configMapId>29684</configMapId>
-        <commandSet type="serial">
-          <configMapId>component_cogs.default</configMapId>
-        </commandSet>
-        <commandSet type="serial">
-          <configMapId>component_clustalw.clustalw_cogs</configMapId>
-        </commandSet>
+	<commandSet type="parallel">
+      <configMapId>29101</configMapId>
+	  <commandSet type="serial">
+        <configMapId>29102</configMapId>
+		<commandSet type="serial">
+		  <configMapId>component_legacy2bsml.default</configMapId>
+		</commandSet>
+	  </commandSet>
+	  <commandSet type="serial">
+        <configMapId>29103</configMapId>
+		  <commandSet type="serial">
+      	    <configMapId>component_initdb.default</configMapId>
+		  </commandSet>
+		</commandSet>
       </commandSet>
-      <commandSet type="serial">
-        <configMapId>30455</configMapId>
-        <commandSet type="serial">
-          <configMapId>component_jaccard.default</configMapId>
+	  <commandSet type="parallel">
+	    <configMapId>29201</configMapId>
+	    <commandSet type="serial">
+		  <configMapId>29203</configMapId>
+    	  <commandSet type="serial">
+		    <configMapId>component_bsml2chado.legacydata</configMapId>
+		  </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_testing_db_compare.legacydata</configMapId>
+          </commandSet>
+  	    </commandSet>	  
+	    <commandSet type="serial">
+	      <configMapId>29202</configMapId>
+	    <commandSet type="serial">
+      	  <configMapId>component_bsml2fasta.multi</configMapId>
         </commandSet>
         <commandSet type="serial">
-          <configMapId>component_clustalw.clustalw_jaccard</configMapId>
+          <configMapId>component_bsml2fasta.single</configMapId>
         </commandSet>
         <commandSet type="serial">
-          <configMapId>component_cogs.jfcogs</configMapId>
+          <configMapId>component_xdformat.default</configMapId>
         </commandSet>
         <commandSet type="serial">
-          <configMapId>component_clustalw.clustalw_jfcogs</configMapId>
+          <configMapId>component_wu-blastp.default</configMapId>
         </commandSet>
-      </commandSet>
-      <commandSet type="serial">
-        <configMapId>component_pe.default</configMapId>
-      </commandSet>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_initdb.default</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2chado.legacydata</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2chado.wu-blastp</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2chado.clustalw_jaccard</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2chado.clustalw_cogs</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2chado.clustalw_jfcogs</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_bsml2chado.pe</configMapId>
-    </commandSet>
-    <commandSet type="serial">
-      <configMapId>component_backupdb.default</configMapId>
-  	</commandSet>
-    <commandSet type="serial">
-      <configMapId>component_testing_db_compare.default</configMapId>
-    </commandSet>
+        <commandSet type="parallel">
+          <configMapId>29598</configMapId>
+          <commandSet type="serial">
+            <configMapId>29684</configMapId>
+            <commandSet type="serial">
+              <configMapId>component_cogs.default</configMapId>
+            </commandSet>
+            <commandSet type="serial">
+              <configMapId>component_clustalw.clustalw_cogs</configMapId>
+            </commandSet>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>30455</configMapId>
+            <commandSet type="serial">
+              <configMapId>component_jaccard.default</configMapId>
+            </commandSet>
+            <commandSet type="serial">
+              <configMapId>component_clustalw.clustalw_jaccard</configMapId>
+            </commandSet>
+            <commandSet type="serial">
+              <configMapId>component_cogs.jfcogs</configMapId>
+            </commandSet>
+            <commandSet type="serial">
+              <configMapId>component_clustalw.clustalw_jfcogs</configMapId>
+            </commandSet>
+          </commandSet>
+          <commandSet type="serial">
+            <configMapId>component_pe.default</configMapId>
+          </commandSet>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_bsml2chado.wu-blastp</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_testing_db_compare.wu-blastp</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_bsml2chado.clustalw_jaccard</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_testing_db_compare.clustalw_jaccard</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_bsml2chado.clustalw_cogs</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_testing_db_compare.clustalw_cogs</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_bsml2chado.clustalw_jfcogs</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_testing_db_compare.clustalw_jfcogs</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_bsml2chado.pe</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_testing_db_compare.default</configMapId>
+        </commandSet>
+        <commandSet type="serial">
+          <configMapId>component_backupdb.default</configMapId>
+  	    </commandSet>
+	  </commandSet>
+    </commandSet>	  
   </commandSet>
 </commandSetRoot>
