@@ -927,31 +927,38 @@ sub addFeature {
 	    # die if it's some new kind of database I never saw before
 	    my %known_dbxrefs = ( GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
 				  HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
-				  EMBL => 1, GenBank => 1, InterPro => 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1 );
+				  EMBL => 1, GenBank => 1, InterPro => 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1,
+				  dictyBase => 1, FlyBase => 1);
 	    (defined($known_dbxrefs{$database})) || die "Unknown database in dbxref ($database)";
 	    
-	    # mod database to GO xref standard as neccessary
-	    if ($database eq "GI") {
-		$database = "NCBI_gi";
+	    # mod database to GO xref standard as neccessary http://www.geneontology.org/doc/GO.xrf_abbs
+	    if ($database eq 'GI') {
+		$database = 'NCBI_gi';
 	    }
-	    elsif ($database eq "Interpro") {
-		$database = "InterPro";
+	    elsif ($database eq 'Interpro') {
+		$database = 'InterPro';
 	    }
-	    elsif ($database eq "UniProtKB") {
-		$database = "UniProt";
+	    elsif ($database eq 'UniProtKB') {
+		$database = 'UniProt';
 	    }
-	    elsif ($database eq "ECOCYC") {
-		$database = "EcoCyc";
+	    elsif ($database eq 'ECOCYC') {
+		$database = 'EcoCyc';
 	    }
-	    elsif ($database eq "COG") {
+	    elsif ($database eq 'dictyBase') {
+		$database = 'DDB';
+	    }
+	    elsif ($database eq 'FlyBase') {
+		$database = 'FB';
+	    }
+	    elsif ($database eq 'COG') {
 		if ($identifier =~ /^COG/) {
-		    $database = "COG_Cluster";
+		    $database = 'COG_Cluster';
 		}
 		elsif ($identifier =~ /^\d$/) { # single digit
-		    $database = "COG_Pathway";
+		    $database = 'COG_Pathway';
 		}
 		elsif ($identifier =~ /^\w$/) { # single letter (since not digit)
-		    $database = "COG_Function";
+		    $database = 'COG_Function';
 		}
 		else {
 		    die "Unable to parse COG database from identifier ($identifier)";
