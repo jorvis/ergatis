@@ -90,7 +90,7 @@ sub CreateWorkflow{
     
     ## we want to reset the huge ENV so that it doesn't overload XML-RPC
     %ENV = (
-                PATH            => $ENV{PATH},
+	        PATH            => "$ENV{PATH}:$self->{_WORKFLOW_ROOT}/bin:$self->{_WORKFLOW_ROOT}/add-ons/bin",
                 HOST            => $ENV{HOST},
                 USER            => $ENV{USER},
                 GROUP           => $ENV{GROUP},
@@ -171,7 +171,7 @@ sub RunWorkflow{
     
     ## we want to reset the huge ENV so that it doesn't overload XML-RPC
     %ENV = (
-                PATH            => $ENV{PATH},
+	        PATH            => "$ENV{PATH}:$self->{_WORKFLOW_ROOT}/bin:$self->{_WORKFLOW_ROOT}/add-ons/bin",
                 HOST            => $ENV{HOST},
                 USER            => $ENV{USER},
                 GROUP           => $ENV{GROUP},
