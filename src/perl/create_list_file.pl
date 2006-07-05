@@ -13,7 +13,7 @@ USAGE: create_list_file.pl
        [  --directory|d=/path/to/some/directory/
           --output_list|o=/path/output.list
           --regex|r=string regular expression
-          --include_gz|i ]
+          --include_gz|g ]
 
 =head1	OPTIONS
 
