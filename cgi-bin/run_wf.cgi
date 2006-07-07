@@ -12,6 +12,9 @@ use Ergatis::ConfigFile;
 use HTML::Template;
 use Sys::Hostname;
 
+## play nicely
+umask 0000;
+
 ## toggles debugging messages
 my $debugging = 0;
 my $debug_file = '/tmp/ergatis.debug';
