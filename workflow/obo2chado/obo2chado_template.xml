@@ -23,17 +23,17 @@
         <command>
           <type>RunUnixCommand</type>
           <name>Create scratch</name>
-          <configMapId>create_or_scratch</configMapId>
+          <configMapId>create_ro_scratch</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
             <name>Process Ontology</name>
-            <configMapId>parse_or_onto</configMapId>
+            <configMapId>parse_ro_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
             <name>Load Ontology</name>
-            <configMapId>load_or_onto</configMapId>
+            <configMapId>load_ro_onto</configMapId>
         </command>
     </commandSet>
 </commandSetRoot>
