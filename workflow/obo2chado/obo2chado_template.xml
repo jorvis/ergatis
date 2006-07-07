@@ -8,17 +8,32 @@
         <command>
           <type>RunUnixCommand</type>
           <name>Create scratch</name>
-          <configMapId>create_obo_scratch</configMapId>
+          <configMapId>create_ir_scratch</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
             <name>Process Ontology</name>
-            <configMapId>parse_obo_onto</configMapId>
+            <configMapId>parse_ir_onto</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
             <name>Load Ontology</name>
-            <configMapId>load_obo_onto</configMapId>
+            <configMapId>load_ir_onto</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch</name>
+          <configMapId>create_or_scratch</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Process Ontology</name>
+            <configMapId>parse_or_onto</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Load Ontology</name>
+            <configMapId>load_or_onto</configMapId>
         </command>
     </commandSet>
 </commandSetRoot>
