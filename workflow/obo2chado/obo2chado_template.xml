@@ -7,6 +7,11 @@
         <configMapId>empty</configMapId>
         <command>
           <type>RunUnixCommand</type>
+          <name>Count terms</name>
+          <configMapId>obo_term_count</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create scratch</name>
           <configMapId>create_ir_scratch</configMapId>
         </command>
