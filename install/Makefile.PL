@@ -71,7 +71,6 @@ dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
 
 shellwrappers:
-	@install workflow/run_wfmonitor.sh $(PREFIX)/bin
 	@install workflow/create_ber_db.sh $(PREFIX)/bin
 
 aat_aa	:
