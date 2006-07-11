@@ -171,7 +171,7 @@ ergatis-v1r19b2
 -fixed adjust_bsml_coordinates to install all needed files
 -hmmpfam2bsml was failing to parse when match IDs were long.
 
-next
+ergatis-v1r20b1
 --------------
 -wu-blast2bsml.pl fix to properly set Sequence stub molecule type based on blast program used
 -changed analysis2bsml to store ergatis version tags from an installer control file
@@ -180,3 +180,5 @@ next
 -added psipred component
 -added hmmsearch component
 -fixed to make snoscan install
+-replaced MLDBM tied hashes with DB_Tree for performance
+-reimpl of steps of bsml2fasta,cog,jaccard components to use XML::Parser for perf
