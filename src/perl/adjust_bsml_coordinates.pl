@@ -690,13 +690,13 @@ sub findAdjacent {
     my @prevAndNext;
 
     #Parse out this number
-    ($infile =~ /.*(\d+)\.(\d+)\.?[\w-]+\.bsml/) 
+    ($infile =~ /.*(\d+)\.(\d+)\.?[\w-.]+\.bsml/) 
         || $logger->logdie("Could not extract fragment number from $infile");
     my $fragNo = $2;
     my $assembl = $1;
 
     foreach my $bsmlFile(@{$bsmlList}) {
-        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-]*\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
+        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-.]*\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
             $prevAndNext[(($2-$fragNo+1)/2)] = $bsmlFile;
         }
     }
