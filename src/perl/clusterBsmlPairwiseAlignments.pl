@@ -72,11 +72,9 @@ USAGE:  clusterBsmlPairwiseAlignments.pl  -b bsml_list -m match_list -k linkscor
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
+use XML::Parser;
 use Jaccard_coefficient_cluster_resolver;
-use BSML::BsmlParserSerialSearch;
-}
 use Data::Dumper;
 use DB_File;
 
@@ -110,6 +108,7 @@ if( $options{'help'} ){
 
 my $valid_asmbls = build_asmbl_lookup($options{'asmbl_lookup'});
 
+
 my $pairs = &retrieve_polypeptide_pairs(
 				    bsmldoc_list     => &get_list_from_file($options{'bsmlSearchList'}),
 				    percent_identity => $options{'percent_identity'},
@@ -123,7 +122,6 @@ my $pairs = &retrieve_polypeptide_pairs(
 			output     => $options{'outfile'},
 			linkscore => $options{'linkscore'},
 			);
-
 
 
 
@@ -198,6 +196,34 @@ sub produce_cluster_output {
     close OUTFILE;
 }
 
+sub process_alignment{
+    my($polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$pvalue,$pidentity_cutoff,$pvalue_cutoff) = @_;
+    $logger->logdie("compseq was not defined") if (!defined($compseq));
+    $logger->logdie("refseq was not defined")  if (!defined($refseq));
+    $logger->logdie("pidentity was not defined") if (!defined($pidentity));
+    $logger->logdie("pvalue was not defined") if (!defined($pvalue));
+    #
+    # We only keep the polypeptide pairs that meet the following conditions:
+    # 1) the assembly is one in specified assembly list/hash
+    # 2) the percent_identity is above the threshold value
+    # 3) the p_value is above the threshold value
+    #
+    #
+    #
+    if ((exists $polypeptide2assemblyhash->{$compseq}) and (defined($polypeptide2assemblyhash->{$compseq})) and (exists $polypeptide2assemblyhash->{$refseq}) and (defined($polypeptide2assemblyhash->{$refseq}))){
+	
+	#
+	#  pvalue is from blastp bsml file ()
+	#  p_value threshold value
+	
+	
+	if (($pidentity > $pidentity_cutoff) and ($pvalue < $pvalue_cutoff)){
+	    push (@$polypeptidepairs, [$compseq, $refseq]);
+	}
+    }
+    
+}
+
 #-------------------------------------------------------------------------
 # retrieve_polypeptide_pairs()
 #
@@ -233,77 +259,61 @@ sub retrieve_polypeptide_pairs {
     # 3) parse the document
     # 4) retrieve all pairs of polypeptide identifiers for which both polypeptides belong to the same assembly
     #
+    my $compseq = undef;
+    my $refseq = undef;
+    my $pidentity = undef;
+    my $pvalue = undef;
+    
+    my $funcs = {'Seq-pair-alignment'=>
+		     sub {
+			 my ($expat,$elt,%params) = @_;
+			 &process_alignment(\@polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$pvalue,$percent_identity,$p_value) if(defined $compseq && defined $refseq);
+			 $compseq = undef;
+			 $refseq = undef;
+			 $pidentity = undef;
+			 $pvalue = undef;
+			 $compseq = $params{'compseq'} if ((exists $params{'compseq'}) and (defined($params{'compseq'})));
+			 $refseq = $params{'refseq'} if ((exists $params{'refseq'}) and (defined($params{'refseq'})));
+			 
+		     },
+		 'Attribute'=>
+		     sub {
+			 my ($expat,$elt,%params) = @_;
+			 my $index = scalar(@{$expat->{'Context'}}) - 1;
+			 if($expat->{'Context'}->[$index] eq 'Seq-pair-run'){
+			     if($params{'name'} eq 'percent_identity'){
+				 $pidentity = $params{'content'};
+			     }
+			     if($params{'name'} eq 'p_value'){
+				 $pvalue = $params{'content'};
+			     }
+			 }
+		     }
+	     };
+
+    my $x = new XML::Parser(Handlers => 
+                            {
+                                Start =>
+                                    sub {
+                                        #$_[1] is the name of the element
+                                        if(exists $funcs->{$_[1]}){
+                                            $funcs->{$_[1]}(@_);
+                                        }
+                                    }
+                                }
+                            );
+
+
+
     foreach my $bsmldoc (@$bsmldoclist){
 	$logger->logdie("bsmldoc was not defined") if (!defined($bsmldoc));
 
 	$logger->info("Processing bsml document: $bsmldoc");
-    
-	print ("Parsing Seq-pair-alignments for bsml document: $bsmldoc\nAnd extract polypeptide-polypeptide pairs\n");
 	
-	my $bsml_parser = new BSML::BsmlParserSerialSearch(
-							AlignmentCallBack  => sub {
-							    my ($alignment_ref) = @_;
-							    
-
-							    my $compseq = $alignment_ref->{'attr'}->{'compseq'} if ((exists $alignment_ref->{'attr'}->{'compseq'}) and (defined($alignment_ref->{'attr'}->{'compseq'})));
-							    my $refseq = $alignment_ref->{'attr'}->{'refseq'} if ((exists $alignment_ref->{'attr'}->{'refseq'}) and (defined($alignment_ref->{'attr'}->{'refseq'})));
-							    
-							    $logger->logdie("compseq was not defined") if (!defined($compseq));
-							    $logger->logdie("refseq was not defined")  if (!defined($refseq));      
-
-							    #
-							    # Retrieve the percent_identity and the p_value from the BSML document
-							    # 
-							    my $pidentity;
-							    if ((exists $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'}->[0]) 
-								and (defined($alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'}->[0]))){
-
-								$pidentity = $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'percent_identity'}->[0] 
-							    }
-								
-							    $logger->logdie("pidentity was not defined") if (!defined($pidentity));
-							    
-							    my $pvalue;
-							    
-							    if ((exists $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'}->[0]) and
-								(defined($alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'}->[0]))){
-
-								$pvalue = $alignment_ref->{'BsmlSeqPairRuns'}->[0]->{'BsmlAttr'}->{'p_value'}->[0];
-							    }
-
-							    $logger->logdie("pvalue was not defined") if (!defined($pvalue));
-
-							    
-#							    print "compseq:$compseq\t\trefseq:$refseq\n";
-							    
-							    #
-							    # We only keep the polypeptide pairs that meet the following conditions:
-							    # 1) the assembly is one in specified assembly list/hash
-							    # 2) the percent_identity is above the threshold value
-							    # 3) the p_value is above the threshold value
-							    #
-							    #
-							    #
-							    if ((exists $polypeptide2assemblyhash->{$compseq}) and (defined($polypeptide2assemblyhash->{$compseq})) and (exists $polypeptide2assemblyhash->{$refseq}) and (defined($polypeptide2assemblyhash->{$refseq}))){
-								
-								#
-								#  pvalue is from blastp bsml file ()
-								#  p_value threshold value
-
-								
-								if (($pidentity > $percent_identity) and ($pvalue < $p_value)){
-								    push (@polypeptidepairs, [$compseq, $refseq]);# if ($polypeptide2assemblyhash->{$compseq} eq $polypeptide2assemblyhash->{$refseq});
-								}
-							    }
-							    
-							}
-							);
-	
-	$logger->logdie("bsml_parser was not defined") if (!defined($bsml_parser));
-	$bsml_parser->parse($bsmldoc);
-
-
+	$x->parsefile( $bsmldoc );
     }
+
+    &process_alignment(\@polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$pvalue,$percent_identity,$p_value) if(defined $compseq && defined $refseq);
 
     $logger->debug("Polypeptide pairs to be processed:\n") if $logger->is_debug();
 
@@ -326,7 +336,7 @@ sub build_asmbl_lookup{
     my $reader = shift;
     my %lookup;
     $logger->debug("Reading lookup $reader") if($logger->is_debug());
-    tie %lookup, 'DB_File', $reader, undef, undef, $DB_BTREE or $logger->logdie("Can't tie $reader");
+    tie %lookup, 'DB_File', $reader, O_RDWR|O_CREAT, 0660, $DB_BTREE or $logger->logdie("Can't tie $reader $!");
     $logger->debug("Found ".scalar(keys %lookup)." keys") if($logger->is_debug());
     return \%lookup;
 }
