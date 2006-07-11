@@ -1,5 +1,8 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
+eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -159,7 +162,6 @@ use Workflow::Logger;
 use XML::Twig;
 use File::Basename;
 use SeqLocation::SeqLocation;
-use Data::Dumper;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -232,6 +234,7 @@ for (<$lfh>) {
     push @bsml_files, $_;
 }
 
+## open an output list file if the user requested it
 my $olfh;
 
 my $spaCounter = 0;
@@ -277,7 +280,7 @@ $root_seq_stub = '';
 
 ## it is assumed that files are named like featid.analysiscomponent.bsml (eg. cpa1.assem.2.1.aat_aa.bsml)
 ##  we can pull the source ID from this file then using a regex (here, cpa1.assem.2.1)
-$fname =~ /(.+)\..+\.bsml/ || $logger->logdie("$fname does not match naming convention.  can't extract id");
+$fname =~ /(.+\d)\..+\.bsml/ || $logger->logdie("$fname does not match naming convention.  can't extract id");
 $feat_id = $1;
 
 $logger->debug("using $feat_id as feat_id in file $bf") if ($logger->is_debug);
@@ -444,6 +447,25 @@ sub processAnalyses {
     $element->print($ofh);
 }
 
+# sub processIntervalLoc { 
+#     my ($twig, $element) = @_;
+    
+#     ## need to replace any startpos or endpos attributes
+#     for my $attribute ( qw(startpos endpos) ) {
+#         if (defined $element->{att}->{$attribute}) {
+#             $element->{att}->{$attribute} += $adjustment;
+#         }
+#     }
+    
+#     ## don't print if we are within a Feature.  Since Features
+#     #   are within a sequence, we'll just print twice.
+#     if (($twig->context)[-1] eq 'Feature') {
+#         $logger->debug("not printing Interval-loc since it is within a Feature") if ($logger->is_debug);
+#     } else {
+#         $element->print($ofh);
+#     }
+# }
+
 sub processFeatureTables {
     my ($twig, $Featuretables) = @_;
     my (@featStats);
@@ -524,6 +546,11 @@ sub processFeatureTables {
                    defined($removedFeats{$Featuregroupmember->{att}->{featref}}) ) {
                     push(@deletedFM, $Featuregroupmember);
                     $delFeatMems++;
+                } else {
+                  #   print STDERR "featxref not defined\n" 
+#                         if(!defined($Featuregroupmember->{att}->{featref}));
+#                     print STDERR "didn't find featxref in removed\n"
+#                         if(defined($removedFeats{$Featuregroupmember->{att}->{featref}}) );
                 }
             }
             if($delFeatMems == $numFeaturemems) {
@@ -614,6 +641,12 @@ sub processSeqPairAlignment {
             $adjSeqLoc[$adjFlag]->addSeqLocation(@sprStats[0..3]);
             $sprID++;
         } else {
+          #   print STDERR "In the else at least\n";
+#             print STDERR "next isn't defined\n" if(!$adjSeqLoc[$NEXT]);
+#             print STDERR "prev isn't defined\n" if(!$adjSeqLoc[$PREV]);
+#             print STDERR "@sprStats\n";
+#             print STDERR Dumper($adjSeqLoc[$PREV]);
+#             exit(0);
             if($adjSeqLoc[$NEXT] && $adjSeqLoc[$NEXT]->checkOverlap(@sprStats[1..4], 'next')) {
                 $adjSeqLoc[$NEXT]->removeSeqLocation(@sprStats[0..3]);
                 push @removedSprs, $spr; 
@@ -684,19 +717,30 @@ sub processSequence {
     $element->print($ofh);
 }
 
+# sub processSiteLoc { 
+#     my ($twig, $element) = @_;
+    
+#     ## need to replace any sitepos
+#     if (defined $element->{att}->{sitepos}) {
+#         $element->{att}->{sitepos} += $adjustment;
+#     }
+    
+#     $element->print($ofh);
+# }
+
 sub findAdjacent {
     my ($infile, $bsmlList) = @_;
 
     my @prevAndNext;
 
     #Parse out this number
-    ($infile =~ /.*(\d+)\.(\d+)\.?[\w-.]+\.bsml/) 
+    ($infile =~ /.*(\d+)\.(\d+)\.[\w-.]+\.bsml/) 
         || $logger->logdie("Could not extract fragment number from $infile");
     my $fragNo = $2;
     my $assembl = $1;
 
     foreach my $bsmlFile(@{$bsmlList}) {
-        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-.]*\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
+        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-.]+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
             $prevAndNext[(($2-$fragNo+1)/2)] = $bsmlFile;
         }
     }
@@ -742,7 +786,6 @@ sub processAdjacent {
 
     $logger->logdie("$adjacentFile doesn't exist") unless(-e $adjacentFile);
 
-
     if ($adjacentFile =~ /\.(gz|gzip)$/) {
         open($aFH, "<:gzip", $adjacentFile) || $logger->logdie("can't read zipped input file '$adjacentFile': $!");
     } else {
@@ -754,7 +797,7 @@ sub processAdjacent {
 
 sub overlap {
     my ($file, $adj) = @_;
-    ($file =~ /.*\/(.*)(\d+)\.[\w-]+\.bsml/) 
+    ($file =~ /.*\/(.*)(\d+)\.[\w-.]+\.bsml/) 
         || $logger->logdie("$file doesn't match naming scheme.  Can't use name to find map file\n");
     my $mapAnID = "$options{map_dir}/$1map.bsml";
     my $length = $sequence_map{"$1$2"}{length};
