@@ -179,6 +179,19 @@ ergatis-v1r20b1
 -targetp2bsml legacy db loader script
 -added psipred component
 -added hmmsearch component
--fixed to make snoscan install
+-added genbank2bsml component
+-added obo2chado component
+-added tabula_rasa component
+-added snoscan component to installer
 -replaced MLDBM tied hashes with DB_Tree for performance
--reimpl of steps of bsml2fasta,cog,jaccard components to use XML::Parser for perf
+-reimpl of steps of bsml2fasta, cog, jaccard components to use XML::Parser for performance
+-global_id_repository support added to ergatis.ini
+-project_id_repository support added
+-autodetection of compressed input file support added to bsml2legacydb, gap22bsml.pl, nap2bsml.pl
+-repeatmasker component updated to use IdGenerator.pm
+-corrected list file creation to not include .gz extensions in all components
+-backupdb now compresses output
+-updates to build_supercontig
+-updates to bsml2chado
+-updates to delete_analysis
+-updates to initdb
