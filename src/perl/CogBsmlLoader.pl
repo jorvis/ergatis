@@ -63,8 +63,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Workflow::Logger;
-use BSML::BsmlReader;
-use BSML::BsmlParserSerialSearch;
+use XML::Parser;
 
 my %options = ();
 my $results = GetOptions( \%options, 
@@ -95,12 +94,6 @@ if( $options{'help'} ){
 # associative array to translate cds identifiers to polypeptide ids.
 my $cds2Prot = {};
 
-# The alignment parser handles the pairwise alignments encoded in the search directory. The feature parser
-# creates a lookup table mapping polypeptide sequence identifiers to their genome. 
-
-my $alnParser = new BSML::BsmlParserSerialSearch( AlignmentCallBack => \&alignmentHandler );
-my $featParser = new BSML::BsmlParserSerialSearch( FeatureCallBack => \&featureHandler, GenomeCallBack => \&genomeHandler );
-
 # If Jaccard data has been specified, use it for equivalence class filtering
 
 my $jaccardClusterHash = {};  #Associate Jaccard clusters by sequence id
@@ -114,18 +107,61 @@ $options{'bsmlJaccardList'} =~ s/\"//g;
 if( $options{'bsmlJaccardList'} && $options{'bsmlJaccardList'} ne "" )
 {
     if(-e $options{'bsmlJaccardList'}){
-	my $multiAlnParser = new BSML::BsmlParserSerialSearch( MultipleAlignmentCallBack => \&multipleAlignmentHandler );
+
+	my $seqCount=0;
+	my $multihandlers = {'Alignment-summary'=>
+				 sub {
+				     $jaccardClusterCount++;
+				 },
+			     'Aligned-sequence'=>
+				 sub {
+				     my ($expat,$elt,%params) = @_;
+				     my $name = $params{'name'};
+				     $name =~ s/:[\d]*//;
+				     # Associate a SeqId with a Jaccard Cluster ID
+				     $jaccardClusterHash->{$name} = $jaccardClusterCount;
+				     
+				     # If this is the first sequence observed in the Jaccard Cluster
+				     # identify it as the representative sequence and set it as the 
+				     # representative sequence for the Jaccard Cluster ID.
+				     
+				     if( $seqCount == 0 )
+				     {
+					 $jaccardRepSeqHash->{$jaccardClusterCount} = [];
+					 push @{$jaccardRepSeqHash->{$jaccardClusterCount}},$name;
+				     }
+				     else{
+					 push @{$jaccardRepSeqHash->{$jaccardClusterCount}},$name;
+				     }
+				     $seqCount++;
+				 }
+			 };
+	
+	my $multiparser = new XML::Parser(Handlers => 
+					  {
+					      Start =>
+						  sub {
+						      #$_[1] is the name of the element
+						      if(exists $multihandlers->{$_[1]}){
+							  $multihandlers->{$_[1]}(@_);
+						      }
+						  }
+					  }
+					  );
+	
 	open JFILE, "$options{'bsmlJaccardList'}" or $logger->logdie("Can't open file $options{'bsmlJaccardList'}");
 	while(my $bsmlFile=<JFILE>){
 	    chomp $bsmlFile;
 	    $logger->debug("Parsing jaccard file $bsmlFile") if($logger->is_debug());
 	    if(-e $bsmlFile){
-		$multiAlnParser->parse( $bsmlFile );
+		$multiparser->parsefile( $bsmlFile );
 	    }
 	    else{
 		$logger->logdie("Can't read jaccard bsml file $bsmlFile");
 	    }
 	}
+	close JFILE;
+
     }
     else{
 	$logger->logdie("Can't read jaccard list $options{'bsmlJaccardList'}");
@@ -138,15 +174,37 @@ my $geneGenomeMap = {};
 my $genome = '';
 
 # loop through the documents in the model directory to create the polypeptide genome map
+my $genomehandlers = {'Organism'=>
+			  sub {
+			      my ($expat,$elt,%params) = @_;
+			      $genome = $params{'genus'}.':'.$params{'species'}.':'.$params{'strain'};
+			  },
+		      'Feature'=>
+			  sub {
+			      my ($expat,$elt,%params) = @_;
+			      $logger->debug("Adding $params{'id'} lookup with genome $genome");
+			      $geneGenomeMap->{$params{'id'}} = $genome;
+			  }
+		  };
+
+my $genomeparser = new XML::Parser(Handlers => 
+				   {
+				       Start =>
+					   sub {
+					    #$_[1] is the name of the element
+					       if(exists $genomehandlers->{$_[1]}){
+						   $genomehandlers->{$_[1]}(@_);
+					    }
+					}
+				   }
+				   );
 
 foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlModelList'})}){
+    
     $logger->debug("Parsing genome file $bsmlFile") if($logger->is_debug());
-    $featParser->parse( $bsmlFile );
-    $genome = '';
+    $genomeparser->parsefile( $bsmlFile );
+    $genome = undef;
 }
-
-
-open( OUTFILE, ">$options{'outfile'}" ) or $logger->logdie("Can't open file $options{'outfile'}");
 
 #####################################
 
@@ -173,14 +231,136 @@ open( OUTFILE, ">$options{'outfile'}" ) or $logger->logdie("Can't open file $opt
     
 my $COGInput = {};
 
+my %alnparams;
+my $bestRunScore = 0;
+my $isbestrun = 0;
+my $bestSeqPairRun = undef;
+
+my $alnhandlers = {'Seq-pair-alignment'=>
+		     sub {
+			 my ($expat,$elt,%params) = @_;
+			 #Process the previous alignment in file
+			 &process_alignment($alnparams{'compseq'},$alnparams{'compgenome'},
+					    $alnparams{'refseq'},$alnparams{'refgenome'},
+					    $bestRunScore,$bestSeqPairRun,
+					    $COGInput,$jaccardRepSeqHash,$geneGenomeMap) if(keys %alnparams);
+
+			 my $compseq = $params{'compseq'};
+			 my $refseq = $params{'refseq'};
+			 my $compGenome = $geneGenomeMap->{$compseq};
+			 my $refGenome = $geneGenomeMap->{$refseq};
+			 $params{'compgenome'}=$compGenome;
+			 $params{'refgenome'}=$compGenome;
+			 $bestRunScore = 0;
+			 $isbestrun=0;
+			 $bestSeqPairRun = undef;
+			 %alnparams = ();
+			 $logger->debug("Parsing match between $params{'compseq'} $params{'compgenome'} $params{'refseq'} $params{'refgenome'} $isbestrun");
+
+
+			 # self-self alignments are not included 
+			 return if( $compseq eq $refseq );
+			 
+			 if( !( $compGenome )) 
+			 {
+			     $logger->debug("$compseq: compseq not found in gene genome map. skipping.") if($logger->is_debug());
+			     return;
+			 }
+
+			 if( !( $refGenome ) )
+			 {
+			     $logger->debug("$refseq: compseq not found in gene genome map. skipping.") if($logger->is_debug());
+			     return;
+			 }
+			 
+			 # alignments to the same genome are not included in COG clusters
+			 
+			 return if( $compGenome eq $refGenome );
+			 
+			 %alnparams = %params;
+		     },
+		   'Seq-pair-run'=>
+		       sub {
+			   my ($expat,$elt,%params) = @_;
+			   if(keys %alnparams){
+			       my $runscore = $params{'runscore'};
+			       my $runprob = $params{'runprob'};
+			       if( defined $runscore && defined $runprob
+				   && ($runscore > $bestRunScore) && ($runprob < $options{'pvalcut'}) ){
+				   $logger->debug("$alnparams{'compseq'} $alnparams{'refseq'} using run with runscore $runscore $runprob. Previous bestrunscore $bestRunScore. pvalue cutoff $options{'pvalcut'}");
+				   $bestRunScore = $runscore;
+				   $logger->debug("bestrunscore $bestRunScore");
+				   $bestSeqPairRun->{'reflength'} = $alnparams{'reflength'};
+				   $bestSeqPairRun->{'method'} = $alnparams{'method'};
+				   $bestSeqPairRun->{'compxref'} = $alnparams{'compxref'};
+				   $bestSeqPairRun->{'refpos'} = $params{'refpos'};
+				   $bestSeqPairRun->{'runlength'} = $params{'runlength'};
+				   $bestSeqPairRun->{'comppos'} = $params{'comppos'};
+				   $bestSeqPairRun->{'comprunlength'} = $params{'comprunlength'};
+				   $bestSeqPairRun->{'runscore'} = $params{'runscore'};
+				   $bestSeqPairRun->{'runprob'} = $runprob;
+				   $isbestrun=1;
+			       }
+			   }
+		       },
+		   'Attribute'=>
+		       sub {
+			   my ($expat,$elt,%params) = @_;
+			   my $index = scalar(@{$expat->{'Context'}}) - 1;
+			   if($isbestrun && $expat->{'Context'}->[$index] eq 'Seq-pair-run'){
+			       $logger->debug("Dumping parameters for best run $bestRunScore");
+			       if($params{'name'} eq 'p_value'){
+				   $bestSeqPairRun->{'p_value'} = $params{'content'};
+			       }
+			       elsif($params{'name'} eq 'percent_identity'){
+				   $bestSeqPairRun->{'percent_identity'} = $params{'content'};
+			       }
+			       elsif($params{'name'} eq 'percent_similarity'){
+				   $bestSeqPairRun->{'percent_similarity'} = $params{'content'};
+			       }
+			       elsif($params{'name'} eq 'chain_number'){
+				   $bestSeqPairRun->{'chain_number'} = $params{'content'};
+			       }
+			       elsif($params{'name'} eq 'segment_number'){
+				   $bestSeqPairRun->{'segment_number'} = $params{'content'};
+			       }
+			   }
+		       }
+	       };
+
+my $alnparser = new XML::Parser(Handlers => 
+				   {
+				       Start =>
+					   sub {
+					    #$_[1] is the name of the element
+					       if(exists $alnhandlers->{$_[1]}){
+						   
+						   $alnhandlers->{$_[1]}(@_);
+					    }
+					}
+                                }
+				);
+
+
+open( OUTFILE, ">$options{'outfile'}" ) or $logger->logdie("Can't open file $options{'outfile'}");
+
 foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlSearchList'})}){
     
     # builds the COGS input data structure
 
     $logger->debug("Parsing alignment file $bsmlFile") if($logger->is_debug());
-
-    $alnParser->parse( $bsmlFile );
-
+    
+    %alnparams = ();
+    $bestRunScore = 0;
+    $isbestrun = 0;
+    $bestSeqPairRun = undef;
+    $alnparser->parsefile( $bsmlFile );
+    #Process the last alignment in file
+    &process_alignment($alnparams{'compseq'},$alnparams{'compgenome'},
+		       $alnparams{'refseq'},$alnparams{'refgenome'},
+		       $bestRunScore,$bestSeqPairRun,
+		       $COGInput,$jaccardRepSeqHash,$geneGenomeMap) if(keys %alnparams);;
+    
     # print the results
 
     foreach my $k1 ( keys( %{$COGInput} ) )
@@ -200,6 +380,75 @@ foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlSearchList'})}){
 }
 
 
+sub process_alignment{
+    my($compseq,$compGenome,$refseq,$refGenome,$bestRunScore,$bestSeqPairRun,$COGInput,$jaccardRepSeqHash,$geneGenomeMap) = @_;
+    # 
+    if( ! defined $bestSeqPairRun ){
+	$logger->warn("Best run not defined");
+	return;
+    }
+    else{
+# If compseq (or refseq) is defined in a Jaccard equivalence class identify the class by
+# its reference sequence. 
+	
+	if( defined( my $jId = $jaccardClusterHash->{$compseq} ) )
+	{
+	    $logger->debug("Found jaccard cluster $jId for id $compseq. Using $jaccardRepSeqHash->{$jId}->[0] as cluster representative");
+	    $compseq = $jaccardRepSeqHash->{$jId}->[0];
+	}
+	
+	if( defined( my $jId = $jaccardClusterHash->{$refseq} ) )
+	{
+	    $logger->debug("Found jaccard cluster $jId for id $refseq. Using $jaccardRepSeqHash->{$jId}->[0] as cluster representative");
+	    $refseq = $jaccardRepSeqHash->{$jId}->[0];
+	}
+    
+	my $lref = [];
+	
+	$lref->[0] = $refseq;  #query name
+	$lref->[1] = '';       #date
+	$lref->[2] = $bestSeqPairRun->{ 'reflength' }; #query length
+	$lref->[3] = $bestSeqPairRun->{ 'method' }; #program
+	$lref->[4] = $bestSeqPairRun->{ 'compxref' };
+	$lref->[5] = $compseq;
+	$lref->[6] = $bestSeqPairRun->{ 'refpos' };
+	$lref->[7] = $bestSeqPairRun->{ 'refpos' } + $bestSeqPairRun->{'runlength'};
+	$lref->[8] = $bestSeqPairRun->{ 'comppos' };
+	$lref->[9] = $bestSeqPairRun->{ 'comppos' } + $bestSeqPairRun->{'comprunlength'};
+	$lref->[10] = $bestSeqPairRun->{'percent_identity'};
+	$lref->[11] = $bestSeqPairRun->{'percent_similarity'};
+	$lref->[12] = $bestSeqPairRun->{ 'runscore' };
+	$lref->[13] = $bestSeqPairRun->{'chain_number'};
+	$lref->[14] = $bestSeqPairRun->{'segment_number'};
+	$lref->[15] = '';
+	$lref->[16] = '';
+	$lref->[17] = '';
+	$lref->[18] = $bestSeqPairRun->{'comprunlength'};
+	$lref->[19] = $bestSeqPairRun->{'runprob' };
+	$lref->[20] = $bestSeqPairRun->{'p_value'};
+	
+	if($refseq && $compseq){
+	    if(  $COGInput->{$refseq}->{$compGenome} )
+	    {
+		if(  $COGInput->{$refseq}->{$compGenome}->[12] < $bestRunScore )
+		{
+		    $logger->debug("$refseq match to $compGenome with score $bestRunScore is highest scoring match.  Previous high score is $COGInput->{$refseq}->{$compGenome}->[12]");
+		    $COGInput->{$refseq}->{$compGenome} = $lref;
+		}
+	    }
+	    else
+	    {
+		$logger->debug("$refseq match to $compGenome is first match found.");
+		$COGInput->{$refseq}->{$compGenome} = $lref;
+	    }
+	}
+    }
+}
+
+
+#########
+#clip
+########
 sub multipleAlignmentHandler
 {
     my $aln = shift;
@@ -401,6 +650,10 @@ sub featureHandler
 	$geneGenomeMap->{$protId} = $genome;
     }
 } 
+
+###
+#end clip
+###
 
 sub get_list_from_file{
     my($file) = @_;
