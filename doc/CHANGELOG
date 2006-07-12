@@ -199,3 +199,7 @@ ergatis-v1r20b1
 ergatis-v1r20b2
 --------------
 -reverted legacy2bsml and bsml2chado components back to ergatis-v1r19b2 version
+
+ergatis-v1r20b3
+--------------
+-reimpl of cog component script to use XML::Parser for performance boost
