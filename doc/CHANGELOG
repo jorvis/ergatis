@@ -195,3 +195,7 @@ ergatis-v1r20b1
 -updates to bsml2chado
 -updates to delete_analysis
 -updates to initdb
+
+ergatis-v1r20b2
+--------------
+-reverted legacy2bsml and bsml2chado components back to ergatis-v1r19b2 version
