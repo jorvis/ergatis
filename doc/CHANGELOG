@@ -203,3 +203,7 @@ ergatis-v1r20b2
 ergatis-v1r20b3
 --------------
 -reimpl of cog component script to use XML::Parser for performance boost
+
+ergatis-v1r20b4
+------------
+-inclusion of new functionality of legacy2bsml and bsml2chado components, including new checksum strategy for database loading
