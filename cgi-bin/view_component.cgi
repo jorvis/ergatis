@@ -231,7 +231,7 @@ $message
                 <tr><th>start time:</th><td>$start_time</td></tr>
                 <tr><th>end time:</th><td>$end_time</td></tr>
                 <tr><th>duration:</th><td>$runtime</td></tr>
-                <tr><th>grid id:</th><td>$grid_id</td></tr>
+                <tr><th>grid id:</th><td><a href='http://htc.tigr.org/htcservice/request_display.jsp?RequestID=$grid_id'>$grid_id</a></td></tr>
                 <tr><th>execution host:</th><td>$execution_host<a href='http://intranet.tigr.org/cgi-bin/sysadmin/hobbit/bb-hostsvc.sh?HOSTSVC=$hostsrvstr.cpu&IP=0.0.0.0&DISPLAYNAME=$execution_host' target='_blank'>[BB]</a><a href='http://enterprise.tigr.org/ganglia/?m=load_one&r=hour&s=descending&c=Main+Cluster&h=$execution_host&sh=1&hc=4' target='_blank'>[Ganglia]</a></td></tr>
                 <tr><th colspan='2'>xml:</th></tr>
                 <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=$file'>$file</a></td></tr>
