@@ -644,6 +644,11 @@
             <name>Grant public</name>
             <configMapId>grant_public</configMapId>
         </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>store_chado_version</name>
+            <configMapId>store_chado_version</configMapId>
+        </command>
        <command>
           <type>RunUnixCommand</type>
           <name>Check logfiles</name>
