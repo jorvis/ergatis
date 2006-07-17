@@ -4,8 +4,6 @@
 # Sample execution:
 # % panda2gb.pl --query_taxid=83334,83333 --background_taxid=543 --output_dir=/tmp
 
-
-
 # taxon_file has two tab separated columns of comma-delimited taxon_ids
 # the first column is the target set, the second column is the background, e.g.
 # target1, target2, target3      background1, background2
@@ -374,6 +372,8 @@ sub parse_options {
                 'query_taxid|q=s',
 		'background_taxid|b=s'
                 ) || &print_usage("Unprocessable option");
+
+    # check for required parameters
     (defined $options{help}) && print_usage("How to use the program:");
     (defined $options{output_dir}) || print_usage("output_dir required");
     (-r $options{output_dir}) || print_usage("output_dir ($options{outout_dir}) not readable");
@@ -381,6 +381,9 @@ sub parse_options {
     if (defined $options{input_file}) {
 	    (-r $options{input_file}) || print_usage("input_file ($options{input_file}) not readable");
     }
+
+    print "Executing $0 with options\n";
+    foreach (keys %options) { print "  $_: $options{$_}\n";}
  
     return %options;
 }
