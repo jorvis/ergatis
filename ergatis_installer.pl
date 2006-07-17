@@ -304,6 +304,36 @@ sub install_peffect {
 }
 
 #--------------------------------------------------
+# install_ergatis_src_c()
+#
+#--------------------------------------------------
+sub install_ergatis_src_c {
+
+    my ($workingdir, $installdir, $tag) = @_;
+
+    chdir($workingdir);
+
+    my $execstring = "cvs -Q export -kkv -r $tag -d ergatis_c";
+
+    &do_or_die($execstring);
+
+    chdir("ergatis_c");
+
+    chdir("SnpClusterer");
+    $execstring = "make";
+    &do_or_die($execstring);
+    $execstring = "cp SnpClusterer $installdir/bin";
+    &do_or_die($execstring);
+
+
+    chdir("chado_record_uniq");
+    $execstring = "make";
+    &do_or_die($execstring);
+    $execstring = "cp chado_record_uniq $installdir/bin";
+    &do_or_die($execstring);
+}
+
+#--------------------------------------------------
 # install_logcabin()
 #
 #--------------------------------------------------
@@ -471,6 +501,10 @@ sub execute_installation {
 		    my $makeinstallstring = "make install >> autoinstall.log";
 		    
 		    &do_or_die($makeinstallstring);
+
+		    if($name eq 'ergatis'){
+			&install_ergatis_src_c($workingdir, $installdir, "HEAD");
+		    }
 
 		}else{}
 
