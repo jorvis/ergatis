@@ -5,21 +5,6 @@
         <configMapId>empty</configMapId>
          <command>    
             <type>RunUnixCommand</type>
-            <configMapId>clean_fasta_section</configMapId>
-            <name>clean_fasta_section</name>
-        </command>
-         <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>add_translation_table</configMapId>
-            <name>add_translation_table</name>
-        </command>
-         <command>    
-            <type>RunUnixCommand</type>
-            <configMapId>validate_gff3</configMapId>
-            <name>validate_gff3</name>
-        </command>
-         <command>    
-            <type>RunUnixCommand</type>
             <configMapId>gff2bsml</configMapId>
             <name>gff2bsml</name>
         </command>
