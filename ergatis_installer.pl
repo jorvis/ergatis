@@ -313,11 +313,11 @@ sub install_ergatis_src_c {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -kkv -r $tag -d ergatis_c";
+    my $execstring = "cvs -Q export -kkv -r $tag -d ergatis_c ergatis/src/c";
 
     &do_or_die($execstring);
 
-    chdir("ergatis_c");
+    chdir("ergatis_c/src/c");
 
     chdir("SnpClusterer");
     $execstring = "make";
@@ -325,7 +325,8 @@ sub install_ergatis_src_c {
     $execstring = "cp SnpClusterer $installdir/bin";
     &do_or_die($execstring);
 
-
+    chdir($workingdir);
+    chdir("ergatis_c/src/c");
     chdir("chado_record_uniq");
     $execstring = "make";
     &do_or_die($execstring);
