@@ -66,7 +66,6 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'input_list|i=s',
               'database|d=s',
-              'repeat_file|r=s',
               'delete_existing|x=i',
               'log|l=s',
 			  'help|h') || pod2usage();
@@ -170,7 +169,7 @@ sub _log {
 sub check_parameters {
     
     ## database and input_list are required
-    unless ( defined $options{database} && $options{input_list} && $options{repeat_file} ) {
+    unless ( defined $options{database} && $options{input_list} ) { 
         print STDERR "database and input_list options are required\n\n";
         pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
     }

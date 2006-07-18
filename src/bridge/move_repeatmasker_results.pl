@@ -93,6 +93,7 @@ open (my $listfh, $options{input_list}) || die "can't read list file\n";
 
 while (my $infile = <$listfh>) {
     chomp $infile;
+#	print $infile;
     next if ($infile =~ /^\s*$/);
 
     my $asmblid;
