@@ -81,7 +81,7 @@ MAIN:{
 	
 	my $debug = 0;
 	
-	my $mover = '/home/bwhitty/CVS/ergatis/src/bridge/Move_Workflow_Assembly_Searches.pl'; 
+	my $mover = '/home/pamedeo/CVS/cram/src/bridge/Move_Workflow_Assembly_Searches.pl'; 
 	
 	# specific parameters for moving the different kind of results
 	
