@@ -6,7 +6,7 @@ tRNAscan-SE2legacydb.pl - load tRNAscan-SE data into the legacy db
 
 =head1 SYNOPSIS
 
-USAGE: repeat2legacydb.pl 
+USAGE: tRNAscan-SE2legacydb.pl 
         --input_list=/path/to/somefile.raw.list
         --database=aa1
       [ --log=/path/to/some.log 
