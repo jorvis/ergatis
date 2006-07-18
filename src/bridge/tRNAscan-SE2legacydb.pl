@@ -6,7 +6,7 @@ tRNAscan-SE2legacydb.pl - load tRNAscan-SE data into the legacy db
 
 =head1 SYNOPSIS
 
-USAGE: tRNAscan-SE2legacydb.pl 
+USAGE: repeat2legacydb.pl 
         --input_list=/path/to/somefile.raw.list
         --database=aa1
       [ --log=/path/to/some.log 
@@ -66,7 +66,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
 			  'input_list|i=s',
               'database|d=s',
-              'delete_existing|x=i',
+              'delete_existing|x',
               'log|l=s',
 			  'help|h') || pod2usage();
 
@@ -118,7 +118,7 @@ foreach my $file (@files) {
     }
 	
 	## parse the raw file
-	_log("parsing $file\n");
+	_log("parsing $file");
 	my $results_array_ref = parse_trnascan_raw($file);
    
 	## delete existing tRNA info for the assembly
@@ -189,10 +189,7 @@ sub do_deletes {
 		delete_ALL_features($dbh, $asmbl_id, "tRNA");
 		delete_ALL_features($dbh, $asmbl_id, "pre-tRNA");
 		delete_ALL_features($dbh, $asmbl_id, "rna-exon");
-		my $query = "delete feat_link where child_feat like \"?.x%\"";
-		my $db_query = $dbh->prepare($query);
-		$db_query->execute($asmbl_id);
-		$db_query->finish();
+		$dbh->do("delete feat_link where child_feat like \"$asmbl_id.x%\"");
 }
 
 sub delete_ALL_features {  ## Be careful... this removes EVERYTHING!!
@@ -201,78 +198,46 @@ sub delete_ALL_features {  ## Be careful... this removes EVERYTHING!!
    my($query);
    my($db_query);
   
-	_log("Doing '$type' deletes for '$asmbl'...\n");
+	_log("Doing '$type' deletes for '$asmbl'...");
    
-   $query = "delete evidence from asm_feature f, evidence e"
+   $dbh->do("delete evidence from asm_feature f, evidence e"
    		  . " where f.feat_name=e.feat_name"
-   		  . " and f.asmbl_id = ?"
-   		  . " and f.feat_type = \"?\"";
+   		  . " and f.asmbl_id = $asmbl"
+   		  . " and f.feat_type = \"$type\"");
    
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
-		  
-   $query = "delete ORF_attribute from asm_feature f, ORF_attribute o"
+   $dbh->do("delete ORF_attribute from asm_feature f, ORF_attribute o"
    		  . " where f.feat_name=o.feat_name"
-   		  . " and f.asmbl_id = ?"
-   		  . " and f.feat_type = \"?\"";
+   		  . " and f.asmbl_id = $asmbl"
+   		  . " and f.feat_type = \"$type\"");
 
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
-   
-   $query = "delete phys_ev from asm_feature f, phys_ev o"
+   $dbh->do("delete phys_ev from asm_feature f, phys_ev o"
    		  . " where f.feat_name=o.feat_name"
-   		  . " and f.asmbl_id = ?"
-   		  . " and f.feat_type = \"?\"";
+   		  . " and f.asmbl_id = $asmbl"
+   		  . " and f.feat_type = \"$type\"");
    
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
-   
-   $query = "delete ident from asm_feature f, ident i"
+   $dbh->do("delete ident from asm_feature f, ident i"
    		  . " where f.feat_name=i.feat_name"
-   		  . " and f.asmbl_id = ?"
-   		  . " and f.feat_type = \"?\"";
+   		  . " and f.asmbl_id = $asmbl"
+   		  . " and f.feat_type = \"$type\"");
    
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
+   $dbh->do("delete role_link from role_link r, asm_feature a"
+   		  . " where a.asmbl_id = $asmbl"
+   		  . " and a.feat_type = \"$type\""
+   		  . " and a.feat_name = r.feat_name");
    
-   $query = "delete role_link from role_link r, asm_feature a"
-   		  . " where a.asmbl_id = ?"
-   		  . " and a.feat_type = \"?\""
-   		  . " and a.feat_name = r.feat_name";
+   $dbh->do("delete feat_link from feat_link r, asm_feature a"
+   		  . " where a.asmbl_id = $asmbl"
+   		  . " and a.feat_type = \"$type\""
+   		  . " and a.feat_name = r.child_feat");
    
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
+   $dbh->do("delete feat_link from feat_link r, asm_feature a"
+   		  . " where a.asmbl_id = $asmbl"
+   		  . " and a.feat_type = \"$type\""
+   		  . " and a.feat_name = r.parent_feat");
    
-   $query = "delete feat_link from feat_link r, asm_feature a"
-   		  . " where a.asmbl_id = ?"
-   		  . " and a.feat_type = \"?\""
-   		  . " and a.feat_name = r.child_feat";
-   
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
-   
-   $query = "delete feat_link from feat_link r, asm_feature a"
-   		  . " where a.asmbl_id = ?"
-   		  . " and a.feat_type = \"?\""
-   		  . " and a.feat_name = r.parent_feat";
-   
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
-
-   $query = "delete asm_feature from asm_feature"
-	   . " where asm_feature.asmbl_id = ?"
-       . " and asm_feature.feat_type = \"?\"";
-   
-   $db_query = $dbh->prepare($query);
-   $db_query->execute($asmbl, $type);
-   $db_query->finish();
+   $dbh->do("delete asm_feature from asm_feature"
+	   . " where asm_feature.asmbl_id = $asmbl"
+       . " and asm_feature.feat_type = \"$type\"");
    
 }
 
@@ -286,8 +251,8 @@ sub insert_tRNA {
    	
     $feat_name = "tRNA-" . $aa;
 
-    _log("INSERTING $feat_name...\n");
-    _log("$end5, $end3, $bound1, $bound2\n");
+    _log("INSERTING $feat_name...");
+    _log("$end5, $end3, $bound1, $bound2");
     ###### create unique name by checking the molecule 
     ###### (would like to do this project wide, but can't right) now for
     ###### the existance of that tRNA already.  Count the 
@@ -295,11 +260,11 @@ sub insert_tRNA {
     ###### one to generate the new name.
  
     my $query = "select COUNT(feat_name) from asm_feature"
-			  . " where feat_name like \"?%\""
+			  . " where feat_name like ?"
 	    	  . " and asmbl_id = ?";
 
 	$db_query = $dbh->prepare($query);
-	$db_query->execute("$asmbl.$feat_name", $asmbl);
+	$db_query->execute("$asmbl.$feat_name%", $asmbl);
 	my $row = $db_query->fetchrow_arrayref();
 	$count = $row->[0];
 	$db_query->finish();
@@ -309,7 +274,7 @@ sub insert_tRNA {
     my $feat_name1 = $asmbl.".pre-".$feat_name . "-" . $count;
     my $feat_name2 = $asmbl.".".$feat_name . "-" . $count;
 
-    _log("## pre-tRNA sequence....\n");
+    _log("## pre-tRNA sequence....");
     $preseq = &cut_seq2($ntseq,$end5,$end3);
     my ($exon1_3,$exon2_5)='';
     my ($e1seq,$e2seq)='';
@@ -321,25 +286,22 @@ sub insert_tRNA {
 	    	$exon1_3 = $bound1 + 1;
 		    $exon2_5 = $bound2 - 1;
 		}
-		_log("## tRNA sequence....\n");
+		_log("## tRNA sequence....");
 		$e1seq = cut_seq2($ntseq,$end5,$exon1_3);
         $e2seq = cut_seq2($ntseq,$exon2_5,$end3);
 		$seq = $e1seq . $e2seq;
     } else {
-		_log("## tRNA sequence....\n");
+		_log("## tRNA sequence....");
 		$seq = $preseq;
     }
     
-	## Prepare tRNA feature loading query	
-    $query = "insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
-		   . " values (\"?\", ?, ?, \"?\", \"$user\", getdate(), ?, 0,1,\"?\")\n";
-  	$db_query = $dbh->prepare($query);
-    
 	###### load the feature as type pre-tRNA
-	$db_query->execute($feat_name1, $end5, $end3, 'pre-tRNA', $asmbl, $preseq);
+    $dbh->do("insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
+		   . " values (\"$feat_name1\", $end5, $end3, \"pre-tRNA\", \"$user\", getdate(), $asmbl, 0, 1, \"$preseq\")");
     
     ###### load the feature as type tRNA (intron omitted)
-	$db_query->execute($feat_name2, $end5, $end3, 'tRNA', $asmbl, $seq);
+    $dbh->do("insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
+		   . " values (\"$feat_name2\", $end5, $end3, \"tRNA\", \"$user\", getdate(), $asmbl, 0, 1, \"$seq\")");
 	
     ### link the pre-tRNA to the tRNA.
     insert_feat_link($dbh, $feat_name2, $feat_name1);
@@ -351,7 +313,8 @@ sub insert_tRNA {
     my $feat_name3 = $asmbl . ".x". $zerobuf . $NUMBER;
     
     if($bound1 == 0) {
-		$db_query->execute($feat_name3, $end5, $end3, 'rna-exon', $asmbl, $seq);
+    	$dbh->do("insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
+		   	   . " values (\"$feat_name3\", $end5, $end3, \"rna-exon\", \"$user\", getdate(), $asmbl, 0, 1, \"$seq\")");
 	
 		insert_feat_link($dbh, $feat_name3, $feat_name2);
     } else {
@@ -360,16 +323,18 @@ sub insert_tRNA {
 		$zerobuf = substr($zeros, 0, length($zeros) - length($NUMBER));
 		my $feat_name4 = $asmbl . ".x". $zerobuf . $NUMBER;
 	
-		$db_query->execute($feat_name3, $end5, $exon1_3, 'rna-exon', $asmbl, $e1seq);
+    	$dbh->do("insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
+		   	   . " values (\"$feat_name3\", $end5, $exon1_3, \"rna-exon\", \"$user\", getdate(), $asmbl, 0, 1, \"$e1seq\")");
 		
 		insert_feat_link($dbh, $feat_name3,$feat_name2);
 
-		$db_query->execute($feat_name4, $exon2_5, $end3, 'rna-exon', $asmbl, $e2seq);
+    	$dbh->do("insert asm_feature(feat_name, end5, end3, feat_type, assignby, date, asmbl_id, change_log, save_history, sequence)"
+		   	   . " values (\"$feat_name4\", $exon2_5, $end3, \"rna-exon\", \"$user\", getdate(), $asmbl, 0, 1, \"$e2seq\")");
 	
 		insert_feat_link($dbh, $feat_name4, $feat_name2);
     }
     
-	$db_query->finish();
+#	$db_query->finish();
 	
     ###### load the ORF_attribute (link by the "model" tRNA and not pre-tRNA)
     $att_id = insert_ORF_attribute($dbh, $feat_name2, "tRNA", 1, "workflow", "$user");
@@ -379,10 +344,7 @@ sub insert_tRNA {
     insert_ORFattribute_tRNA_score ($dbh, $att_id, $anti_codon, $score);
 
     ## insert ident
-    $query = "insert ident (feat_name, com_name) values (\"$feat_name2\", \"$feat_name (anticodon: $anti_codon)\")";
-	$db_query = $dbh->prepare($query);
-	$db_query->execute();
-	$db_query->finish();
+    $dbh->do("insert ident (feat_name, com_name) values (\"$feat_name2\", \"$feat_name (anticodon: $anti_codon)\")");
 }
 
 sub cut_seq2 {
@@ -403,28 +365,21 @@ sub insert_feat_link {
     my($dbh,$child,$parent) = @_;
     my($query, $db_query);
     
-	$query = "insert feat_link (parent_feat, child_feat, assignby, datestamp) "
-    	   . "values (\"?\", \"?\", \"$user\", getdate())";
+	$dbh->do("insert feat_link (parent_feat, child_feat, assignby, datestamp) "
+    	   . "values (\"$parent\", \"$child\", \"$user\", getdate())");
    
-	$db_query = $dbh->prepare($query);
-	$db_query->execute($parent, $child);
-	$db_query->finish();
 }
 
 sub insert_ORF_attribute {
     my($dbh, $feat_name, $type, $curated, $method) = @_;
     my($query, $db_query);
 
-    $query = "insert ORF_attribute (feat_name, att_type, curated, method, date, assignby) "
-		   . "values (\"?\",\"?\",?,\"?\",getdate(),\"$user\")";
+    $dbh->do("insert ORF_attribute (feat_name, att_type, curated, method, date, assignby) "
+		   . "values (\"$feat_name\",\"$type\",$curated,\"$method\",getdate(),\"$user\")");
     
-	$db_query = $dbh->prepare($query);
-	$db_query->execute($feat_name, $type, $curated, $method);
-	$db_query->finish();
-
 	$query = "select id from ORF_attribute "
-		   . "where feat_name = \"?\" "
-		   . "and att_type = \"?\"";
+		   . "where feat_name = ? "
+		   . "and att_type = ?";
     
 	$db_query = $dbh->prepare($query);
 	$db_query->execute($feat_name, $type);
@@ -436,17 +391,14 @@ sub insert_ORF_attribute {
 }
 
 sub insert_ORFattribute_tRNA_score {
-    my ($dbproc, $id, $anti_codon, $score) = @_;
+    my ($dbh, $id, $anti_codon, $score) = @_;
     my($query, $db_query);
-    $query = "update ORF_attribute set "
-		   . "score = \'?\', "
+    $dbh->do("update ORF_attribute set "
+		   . "score = \'$anti_codon\', "
 	       . "score_desc = \'anti-codon\', "
-	       . "score2 = \'?\', "
+	       . "score2 = \'$score\', "
 	       . "score2_desc = \'cove\' "
-	       . "where id = ?";
-	$db_query = $dbh->prepare($query);
-	$db_query->execute($anti_codon, $score, $id);
-	$db_query->finish();
+	       . "where id = $id");
 }
 
 sub get_seq {
@@ -467,12 +419,9 @@ sub get_seq {
     
     ###### query 2
     if($seq_len ne ""){
-		$query = "set textsize $seq_len";    
-		$db_query = $dbh->prepare($query);
-		$db_query->execute();
-		$db_query->finish();
+		$dbh->do("set textsize $seq_len");    
     } else {
-		_log("ERROR:\tThere is no length associated with the following ASMBL_ID:\t$id\n");
+		_log("ERROR:\tThere is no length associated with the following ASMBL_ID:\t$id");
     }
     ###### query 3
     $query = "select sequence from assembly"
