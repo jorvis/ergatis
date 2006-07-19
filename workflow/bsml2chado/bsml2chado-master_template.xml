@@ -394,11 +394,6 @@
             <configMapId>rebuild_indexes</configMapId>
             <name>rebuild_indexes</name>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <configMapId>gzip_files</configMapId>
-            <name>gzip output files</name>
-        </command>
 <!--Checksum creation-->
 <!--Postprocess permissions-->
      </commandSet>
