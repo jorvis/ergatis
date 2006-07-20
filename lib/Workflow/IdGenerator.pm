@@ -92,6 +92,12 @@ returned as an array reference.  (default = 1)
 Optional.  The IDs returned by this module contain version information.  Use this
 option to overwrite the default version (1).
 
+=item I<max_attempts>
+
+Optional.  This controls how many times the next_id method will attempt to pull 
+the next ID.  Extreme competition or a file problem could cause you to hit
+this limit.  (default = 100)
+
 =back
 
 =back
@@ -239,6 +245,8 @@ umask(0000);
     sub next_id {
         my ($self, %args) = @_;
         my $current_num = undef;
+        my $max_attempts = $args{max_attempts} || 100;
+        my $attempt_count = 0;
 
         ## check some required arguments
         $args{type} || croak "type is a required argument for the next_id method";
@@ -253,11 +261,19 @@ umask(0000);
         ##  a handled failure
         while (1) {
         
+            ## have we tried too many times?
+            if ( $attempt_count == $max_attempts ) {
+                $self->_log("error: failed to pull next_id for type $args{type} after $attempt_count attempts.");
+                croak ("error: failed to pull next_id for type $args{type} after $attempt_count attempts.");
+            }
+            
+            $attempt_count++;
+        
             ## is there a single id file?
             my ($any, $unlocked) = $self->_get_counts_of_type($args{type});
             if ( $any ) {
                 if ( $unlocked != 1 ) {
-                    $self->_log("debug: no individual id file.  restarting\n");
+                    $self->_log("debug: no individual id file for type $args{type}.  restarting\n");
                     sleep(2);
                     next;                
                 }
