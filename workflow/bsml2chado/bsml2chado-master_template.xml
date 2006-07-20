@@ -216,11 +216,6 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>gzip_intermediate_bcp</name>
-          <configMapId>gzip_intermediate_bcp</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
           <name>insert_serial_identifiers</name>
           <configMapId>insert_serial_identifiers</configMapId>
         </command>
