@@ -497,10 +497,17 @@ sub to_bsml {
 	$transl_table = $doc->createAndAddBsmlAttribute($organism, 'genetic_code', $gbr{'transl_table'});
     }
 
-    my $strain_elem = $doc->createAndAddStrain(
-					       'name'     => $gbr{'strain'},
-					       'organism' => $organism
-					       );
+
+    # only add a strain element if there is valid strain info
+    # see bug #3518 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3518
+    die "Strain of just one space!!!" if ($gbr{'strain'} eq ' ');
+    $gbr{'strain'} =~ s/\s+$//;
+    if ($gbr{'strain'}) {
+	my $strain_elem = $doc->createAndAddStrain(
+						   'name'     => $gbr{'strain'},
+						   'organism' => $organism
+						   );
+    }
 
     # class is always assembly
     # chromosome|plasmid will be denoted in the "secondary type" ie an Attribute-list
