@@ -137,7 +137,7 @@ while (<$ifh>) {
 			if (/^-{70}/) {
 				last;
 			}
-			if ($plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)$/) {
+			if ($plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)?$/) {
 			
 				my $result_line = {
 									'name'  => $1,
@@ -151,7 +151,7 @@ while (<$ifh>) {
 									'tplen' => $9,
 					  			  };
 				push (@result_line_ref, $result_line);
-			} elsif (!$plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)$/) {
+			} elsif (!$plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)?$/) {
 			
 				my $result_line = {
 									'name'  => $1,
@@ -178,12 +178,14 @@ my %go_term = 	( 'C' => 'plastid',
 		  'S' => 'extracellular space',
 		  '_' => 'cytoplasm',
 		  '*' => 'cellular component unknown',
+		  '?' => 'cellular component unknown',
 	  	);
 my %go_id =     ( 'C' => 'GO:0009536',
 		  'M' => 'GO:0005739',
 		  'S' => 'GO:0005615',
 		  '_' => 'GO:0005737',
 		  '*' => 'GO:0008372',
+		  '?' => 'GO:0008372',
 	  	);
 
 if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
@@ -205,18 +207,13 @@ if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
 			'aa',
 		   	'polypeptide'
 			);
-#	foreach my $a(('nn','hmm')) {
 	   	$seq->addBsmlLink('analysis', '#targetp_analysis', 'input_of');
-#	}
 	
-		#my $ft;
-		if ($line_ref->{'loc'} ne '*') {
-			#if (!$ft){
-        		my $ft  = $doc->createAndAddFeatureTable($seq);
-			#}
+		if ($line_ref->{'loc'} ne '*' && $line_ref->{'loc'} ne '?') {
+        	my $ft  = $doc->createAndAddFeatureTable($seq);
 			my $new_id = $idcreator->new_id( 
 				db      => $options{project},
-                                so_type => 'transit_peptide',
+                so_type => 'transit_peptide',
 				prefix  => $options{command_id},
                                                         );
         		my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
