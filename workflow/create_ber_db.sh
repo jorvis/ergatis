@@ -45,7 +45,7 @@ fi
 
 if [ "$id_to_fetch" ]
 then
-	$bin_dir/fetch_fasta_from_db.pl -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out
+	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out
 	ec=$?
 	if [ $ec -ne 0 ]
 	then
