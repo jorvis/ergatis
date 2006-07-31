@@ -9,10 +9,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
 use IO::File;
-
-BEGIN {
 use GenePredictionUtils::GeneMarkBsmlGenerator;
-}
 
 use constant
 {
@@ -28,6 +25,7 @@ my $out			= "/dev/stdout";
 my $fasta		= undef;
 my $project		= "unknown";
 my $gene_finder_name	= "GeneMark.hmm";
+my $sequence_id = undef;
 
 &parse_options;
 &create_bsml;
@@ -37,7 +35,7 @@ sub print_usage
 	my $progname = basename($0);
 	die << "END";
 usage: $progname [-input|i <input_genscan_data>] [-output|o <output_bsml>]
-	[-fasta_file|f <fasta_data>] [-project|p <project_name>]
+	[-fasta_file|f <fasta_data>] [-project|p <project_name>] [-sequence_id|s <sequence_id>]
 	[-help|h]
 END
 }
@@ -46,7 +44,7 @@ sub parse_options
 {
 	my %opts = ();
 	GetOptions(\%opts, "input|i=s", "output|o=s", "fasta_file|f=s",
-		   "project|p=s", "help|h");
+		   "project|p=s", "help|h", "sequence_id|s=s");
 	&print_usage if $opts{help};
 	$in->open($opts{input}, "r") or
 		die "Error reading genscan input $opts{input}: $!"
@@ -54,19 +52,16 @@ sub parse_options
 	$out = $opts{output} if $opts{output};
 	$fasta = $opts{fasta_file} if $opts{fasta_file};
 	$project = $opts{project} if $opts{project};
+    $sequence_id = $opts{sequence_id} if $opts{sequence_id};
 }
 
 sub create_bsml
 {
 	my $bsml_generator = new GenePredictionUtils::GeneMarkBsmlGenerator;
 	my %gene_data = ();
-	my $seq_id = undef;
 	while (my $line = <$in>) {
 		chomp $line;
-		if ($line =~ /^Sequence name: ([\w\d\._]+)\s*/) {
-			$seq_id = $1;
-			next;
-		}
+		next if $line =~ /^Sequence name/;
 		next if !length($line);
 		$line =~ s/^\s+//g;
 		my @tokens = split /\s+/, $line;
@@ -80,6 +75,6 @@ sub create_bsml
 			$bsml_generator->AddExon($1, $from, $to);
 		}
 	}
-	$bsml_generator->WriteBsml($out, $seq_id, $project,
+	$bsml_generator->WriteBsml($out, $sequence_id, $project,
 				   $gene_finder_name, $fasta);
 }
