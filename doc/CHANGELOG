@@ -207,3 +207,8 @@ ergatis-v1r20b3
 ergatis-v1r20b4
 ------------
 -inclusion of new functionality of legacy2bsml and bsml2chado components, including new checksum strategy for database loading
+
+ergatis-v1r20b5
+--------------
+-changed IdGenerator.pm to use File::NFSLock, handle sigints and support ID pooling
+-changed genemark component to use new version
