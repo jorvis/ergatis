@@ -16,6 +16,16 @@
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Prepare extended NT database for query polypeptides</name>
+          <configMapId>prepare_ber_extended_nt_db</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Run xdformat on NT db</name>
+          <configMapId>xdformat_nt_db</configMapId>
+        </command>
 <!--Processing-->
 	<command>
           <type>RunUnixCommand</type>
