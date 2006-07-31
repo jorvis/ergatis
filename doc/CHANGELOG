@@ -212,3 +212,5 @@ ergatis-v1r20b5
 --------------
 -changed IdGenerator.pm to use File::NFSLock, handle sigints and support ID pooling
 -changed genemark component to use new version
+-ber component now automatically extracts and prepares required extended nt database
+
