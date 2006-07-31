@@ -13,24 +13,19 @@ IdGenerator.pm - A module for creating unique feature or pipeline IDs.
     ## to get a new pipeline id
     my $pipelineid = $idgen->next_id( type => 'pipeline' );
     
+    ## optional. set the size of the ID pool for any feature types.  (more efficient)
+    $idgen->set_pool_size( exon => 40, transcript => 20 );
+    
     ## get get a single id
     ## we have to specify a project here unless it was specified when calling new
     my $transcript_id = $idgen->next_id( type => 'transcript', project => 'aa1' );
     
-    ## to reserve a range of ids (returns an array ref)
-    my $exon_ids = $idgen->next_id( type => 'exon', project => 'rca1', count => 5 );
-    
 =head1 DESCRIPTION
 
 This is a module for creating unique pipeline/feature IDs for Workflow.  It works
-based on an incremented file method designed to handle simultaneous
-ID requests from multiple processes, users and hosts.  If one process
-tries to pull an ID and the file is already being used, a series of
-tests allows it to wait nicely until the file is available.  We have avoided
-the use of file-locking methods such as flock which do not function
-on NFS.
-
-This file and directory should both be writeable by those who can use the class.
+based on an incremented file method designed to handle simultaneous ID requests 
+from multiple processes, users and hosts over NFS.  The module currently uses
+the File::NFSLock module.
 
 =head1 METHODS
 
@@ -92,13 +87,19 @@ returned as an array reference.  (default = 1)
 Optional.  The IDs returned by this module contain version information.  Use this
 option to overwrite the default version (1).
 
-=item I<max_attempts>
-
-Optional.  This controls how many times the next_id method will attempt to pull 
-the next ID.  Extreme competition or a file problem could cause you to hit
-this limit.  (default = 100)
-
 =back
+
+=item I<$OBJ>->set_pool_size( some_type => N );
+
+This method allows for more efficient ID retrieval by telling the module to pull
+blocks of IDs and then use that pool when calling the next_id() method instead of
+hitting the file system for each request.  This helps to decrease instances of
+heavily locked files and should always be used if possible.  This method can be used
+to set (or overwrite) the pool size for as many feature types as necessary by passing
+the types and values as a hash (key = type, value = pool size).
+
+Unused IDs in a pool are NOT returned to other processes, so you should attempt to
+set a reasonable value here instead of just pooling an arbitrary, overly-large number.
 
 =back
 
@@ -116,7 +117,7 @@ This feature ID indicates version 1 of transcript #14820 in the aa1 project.
 =head1 ID REPOSITORY
 
 It is easy to set up an ID repository, but it must be done prior to using the 
-module.  This prevents random directories from accidentally being used as
+module.  This prevents random directories from being accidentally used as
 ID repositories.  To set up a directory, just do this:
 
     mkdir /path/to/some/id_repository
@@ -126,25 +127,20 @@ The second command will create an empty file that just serves as a marker
 to indicate that the directory is meant for ID generation.  The module will
 take care of any other necessary file and directory structure needs.
 
+This directory will be checked the first time next_id() is called.
+
 =head1 TO DO / IMPROVEMENTS
 
-A lot needs to be done in the way of error handling if a process dies
-prematurely.  This could result in a lock file existing when the process
-responsible for it no longer exists.
+Some signal handling is done to attempt to ensure an ID file isn't left in a locked
+or incomplete state if a process is killed.  The File::NFSLock module does occasionally
+leave some temp and .NFSLock files behind when this happens, but they do not affect
+other processes (in my testing).  More testing and handling could be done here.
 
-Sam found another possible method of doing this which is close to what we are
-doing here.  I'll paste it below in case we want to experiment using link for
-this later.
-
-O_EXCL When used with O_CREAT, if the file already exists it is an error and 
-the open will fail. In this context, a symbolic link exists, regardless of 
-where its points to.  O_EXCL is broken on NFS file  systems,  programs which  
-rely on it for performing locking tasks will contain a race condition.  The
-solution for performing atomic file locking using a lockfile is to create a 
-unique file on the same fs (e.g., incorporating hostname and pid), use link(2) 
-to make a link to the lockfile. If link() returns 0, the lock is successful.  
-Otherwise, use stat(2) on the unique file to check if its link  count  has
-increased to 2, in which case the lock is also successful.
+There are other modules that claim to provide locking functionality, namely
+DotLock and IPC::Locker.  While performance is definitely important, I'm primarily 
+interested in getting something working without any race conditions.  I plan to
+play with these other modules to see if they are equally stable and test
+if they may give a performance advantage.
 
 =head1 AUTHOR
 
@@ -156,8 +152,11 @@ increased to 2, in which case the lock is also successful.
 use strict;
 use warnings;
 use Carp;
-use File::Find;
 use Sys::Hostname;
+use File::NFSLock qw(uncache);
+use Fcntl qw(LOCK_EX);
+
+$|++;
 
 umask(0000);
 
@@ -165,12 +164,16 @@ umask(0000);
 {
 
     my %_attributes = (
-                        current_id  => undef,
-                        id_repository => undef,
-                        logging     => 1,
-                        log_dir     => undef,
-                        _id_file    => undef,
-                        _logfh      => undef,
+                        id_repository           => undef,
+                        logging                 => 1,
+                        log_dir                 => undef,
+                        _id_pending             => undef,
+                        _id_repository_checked  => 0,
+                        _lock                   => undef,
+                        _lock_file              => undef,
+                        _logfh                  => undef,
+                        _pool_sizes             => undef,  # will be hashref
+                        _pools                  => undef,  # will be hashref
                       );
 
     ## class variables
@@ -193,12 +196,8 @@ umask(0000);
         }
         
         ## id_repository is required
-        if ( $args{id_repository} ) {
-            ## make sure it is a valid ID repository
-            unless ( -f "$args{id_repository}/valid_id_repository" ) {
-                croak ("the id repository $args{id_repository} doesn't appear to be valid.  see the documentation for this module");
-            }
-        } else {
+        #   don't check it until the first next_id call
+        if ( ! defined $args{id_repository} ) {
             croak ("id_repository is a required argument for the constructor");
         }
         
@@ -245,8 +244,7 @@ umask(0000);
     sub next_id {
         my ($self, %args) = @_;
         my $current_num = undef;
-        my $max_attempts = $args{max_attempts} || 100;
-        my $attempt_count = 0;
+        my $idfh;  ## filehandle for the ID file
 
         ## check some required arguments
         $args{type} || croak "type is a required argument for the next_id method";
@@ -256,161 +254,142 @@ umask(0000);
             $args{project} || croak "project is a required argument for the next_id method";
             $args{version} = 1 unless ( defined $args{version} );
         }
-    
-        ## we want to keep trying until we're able to get an ID or have
-        ##  a handled failure
-        while (1) {
         
-            ## have we tried too many times?
-            if ( $attempt_count == $max_attempts ) {
-                $self->_log("error: failed to pull next_id for type $args{type} after $attempt_count attempts.");
-                croak ("error: failed to pull next_id for type $args{type} after $attempt_count attempts.");
-            }
-            
-            $attempt_count++;
-        
-            ## is there a single id file?
-            my ($any, $unlocked) = $self->_get_counts_of_type($args{type});
-            if ( $any ) {
-                if ( $unlocked != 1 ) {
-                    $self->_log("debug: no individual id file for type $args{type}.  restarting\n");
-                    sleep(2);
-                    next;                
-                }
-            } else {
-                ## none were found of this type.  initialize
-                $self->_log("debug: no arch for type $args{type} found.  initializing.\n");
-                open(my $newfh, ">$self->{id_repository}/$args{type}.1.id") || croak("failed to initialize id arch file for type $args{type}: $!");
-                $self->{_id_file} = "$self->{id_repository}/$args{type}.1.id";
-            }
-
-            ## are there any locks?
-            ## if so, wait 1
-            if ( $self->_locks_exist ) {
-                $self->_log("debug: existing lock file found.  restarting.\n");
-                sleep(2);
-                next;
-
-            ## if not, try to lock
-            } else {
-                $self->_log("debug: attempting to create " . $self->{_id_file} . ".$$.lock\n");
-
-                ## here we can have this NFS problem:
-                ##      Client sends "rename fileA to fileB"
-                ##      Server responds "ok, did that"
-                ##      (but this response is lost in the network)
-                ##      Client times out
-                ##      Client re-sends "rename fileA to fileB"
-                ##      Server responds "ah!, file 'fileA' not found"
-                ## so if the rename reports as failed, we need to make sure it really did before we try again
-                if (! rename($self->{_id_file}, $self->{_id_file} . ".$host.$$.lock") ) {
-                    ## report failure to lock
-                    $self->_log("error: failed to lock, verifying\n");
-
-                    ## verify that the lock file doesn't exist
-                    if (! -e $self->{_id_file} . ".$host.$$.lock") {
-                        $self->_log("error: verified.  restarting.\n");
-                        sleep(2);
-                        next;
-                    }
-
-                    ## else let it fall through, since it really did work.  NFS reporting problem
-                    $self->_log("debug: not verified.  maybe NFS report was lost.  plowing on.\n");
-                }
-
-                $self->_log("debug: rename " . $self->{_id_file} . ", " . $self->{_id_file} . ".$host.$$.lock successful\n");
-
-                ## if successful, 
-                ## pull id, 
-                if ($self->{_id_file} =~ /$args{type}\.(\d+)\.id/) {
-                    $current_num = $1;
-                    $self->_log("debug: got id $current_num\n");
-                } else {
-                    $self->_log("error: failed to get id from file name, dying.\n");
-                    exit(1);
-                }
-
-                ## create next current_id file,
-                $self->_log("debug: creating new id file " . $self->id_repository() . "/$args{type}." . ($current_num + $args{count}) . ".id\n");
-                open(my $fh, ">" . $self->id_repository() . "/$args{type}." . ($current_num + $args{count}) . ".id") || die "couldn't create next file id\n";
-                close $fh;
-
-                ## delete locked current_id file used.
-                $self->_log("debug: deleting lock file " . $self->{_id_file} . ".$host.$$.lock\n");
-                unlink($self->{_id_file} . ".$host.$$.lock") || die "couldn't unlink " . $self->{_id_file} . ".$host.$$.lock";
-
-                ## finish this iteration
-                $self->_log("debug: finished\n");
-                last;
-            }
+        ## has the id_repository been checked? (jay requested this not be in the constructor)
+        unless ( $self->{_id_repository_checked} ) {
+            $self->_check_id_repository();
         }
         
-        ## return the id we got
-        ## if type is pipeline we just return the numerical portion.
-        my $ids = [];
-
-        if ($args{count} > 1 ) {
-            for ( my $i=0; $i < $args{count}; $i++ ) {
-                if ( $args{type} eq 'pipeline' ) {
-                    push @$ids, $current_num + $i;
-                } else {
-                    push @$ids, "$args{project}.$args{type}." . ($current_num + $i) . ".$args{version}";
-                }
-            }
-            return $ids;
-
+        ## get ID
+        
+        ## from pool
+        if ( defined $self->{_pools}->{ $args{type} } && scalar @{ $self->{_pools}->{ $args{type} } } ) {
+            $current_num = shift @{ $self->{_pools}->{$args{type}} };
+        
+        ## from file system (refresh pool if necessary)
         } else {
-            if ( $args{type} eq 'pipeline' ) {
-                return $current_num;
-            } else {
-                return "$args{project}.$args{type}.$current_num.$args{version}";
+            ## we need to trap interrupts here so we don't leave the ID file in a *bad* state
+            #   i'm doing it locally so in order to minimize messing with any signal trapping the
+            #   the calling script may have.
+            # sub mymethod { local $SIG{INT} = sub { int-like-stuff }; ... rest of method ... }
+            local $SIG{INT} = sub {
+                ## if a lock is open and we have a truncated ID file, we need to write the
+                #   pending ID.
+                if ( defined $self->{_id_pending} ) {
+                    open($idfh, ">$self->{_lock_file}") || croak "can't read file: $!";
+                        print $idfh $self->{_id_pending};
+                    close $idfh;
+                }
+                
+                ## if a lock is open, close it
+                if ( defined $self->{_lock} ) {
+                    $self->{_lock}->unlock();
+                }
+                
+                croak("caught SIGINT. idgen process interrupted");
+            };
+        
+            my $id_file = "$self->{id_repository}/next.$args{type}.id";
+            $self->{_lock_file} = $id_file;
+
+            ## check if the file exists already, else create it
+            if (! -e $id_file ) {
+                $self->_log("no ID file found for type $args{type}.  initializing to 1");
+                open($idfh, ">$id_file") || croak("failed to initialize file $id_file");
+                print $idfh 1;
+                close $idfh;
             }
+
+            ## try to get a lock.
+            if ( $self->{_lock} = new File::NFSLock( $id_file,LOCK_EX,600,10*60 ) ) {
+
+                ## open, read id, set $current_num, close
+                open($idfh, "<$id_file") || croak "can't read file: $!";
+                $current_num = readline $idfh;
+                if (! defined $current_num ) {
+                    $self->{_lock}->unlock();
+                    croak("failed to pull an ID because the file appeared to be empty.  this should NOT happen.");
+                }
+                chomp $current_num;
+                close $idfh;
+                
+                my $id_to_set;
+                
+                ## do we have a pool to refresh?
+                if ( defined $self->{_pool_sizes}->{ $args{type} } ) {
+                    my $pool_size = $self->{_pool_sizes}->{ $args{type} };
+                    $id_to_set = $current_num + $pool_size;
+                    
+                    ## reload the pool
+                    if ( $pool_size > 1 ) {
+                        for ( 1 .. ($pool_size - 1) ) {
+                            push @{ $self->{_pools}->{$args{type}} }, $_ + $current_num;
+                        }
+                    }
+                } else {
+                    $id_to_set = $current_num + 1;
+                }
+                
+                ## open, set id, close
+                $self->{_id_pending} = $id_to_set;
+                open($idfh, ">$id_file") || croak "can't read file: $!";
+                    print $idfh $id_to_set;
+                close $idfh;
+                $self->{_id_pending} = undef;
+                
+                $self->{_lock}->unlock();
+                undef $self->{_lock};
+
+            } else {
+                $self->_log("failed to lock to pull an ID: $File::NFSLock::errstr");
+                croak("failed to lock to pull an ID: $File::NFSLock::errstr");
+            }        
+        }
+        
+        ## format and return the id we got
+        ## if type is pipeline we just return the numerical portion.
+        if ( $args{type} eq 'pipeline' ) {
+            $self->_log("info: got pipeline ID $current_num");
+            return $current_num;
+        } else {
+            $self->_log("info: got ID $args{project}.$args{type}.$current_num.$args{version}");
+            return "$args{project}.$args{type}.$current_num.$args{version}";
         }
         
     }  ## end next_id method block
 
+    sub set_pool_size {
+        my ($self, %args) = @_;
+        
+        for my $type ( keys %args ) {
+            ## the value must be a number
+            if ( $args{$type} !~ /^\d+$/ ) {
+                croak("failed attempt to set pool size for type $type.  value '$args{$type}' must be an integer");
+            }
+            
+            ## it cannot be 0
+            if ( $args{$type} == 0 ) {
+                croak("failed attempt to set pool size for type $type.  value cannot be 0");
+            }
+            
+            $self->_log("setting pool size for type $type to $args{$type}");
+            $self->{_pool_sizes}->{$type} = $args{$type};
+        }
+    }
 
     #####################
     ## private methods ##
     #####################
-    sub _get_counts_of_type {
-        my ($self, $type) = @_;
-        my $found_unlocked = 0;
-        my $found_any = 0;
 
-        find ( {    wanted =>   sub {
-                                    if (/$type\.\d+\.id$/) {
-                                        $found_unlocked++;
-                                        $found_any++;
-                                        $self->{_id_file} = $File::Find::name;
-                                        $self->_log("debug: current id_file seems to be " . $self->{_id_file} . "\n");
-                                    } elsif (/$type\.+/) {
-                                        $found_any++;
-                                    }
-                                }, 
-                    no_chdir => 1
-                }, $self->id_repository()
-             );
-
-        return ($found_any, $found_unlocked);
-    }
+    sub _check_id_repository {
+        my ($self, %args) = @_;
     
-    sub _locks_exist {
-        ## checks to see if there are any locks found within the 
-        ##  lock directory.  returns the number of locks found.
-        my $self = shift;
-        my $locks_found = 0;
-
-        find ( {    wanted =>   sub {
-                                    if (/\.lock$/) {
-                                        $locks_found++;
-                                    }
-                                }, 
-                    no_chdir => 1
-               }, $self->id_repository()
-             );
-
-        return $locks_found;    
+        ## make sure it is a valid ID repository
+        unless ( -f "$self->{id_repository}/valid_id_repository" ) {
+            croak ("the id repository $self->{id_repository} doesn't appear to be valid.  see the documentation for this module");
+        }
+        
+        $self->{_id_repository_checked} = 1;
     }
     
     sub _log {
