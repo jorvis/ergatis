@@ -71,7 +71,7 @@ of the NT sequences are extended by the specified number of bases.
 
 The script creates two output files in the specified directory:
 
-ber.cds.fsa
+ber.nt.fsa
   FASTA sequence file containing extended NT sequences.
   
 ber.mapping.list
@@ -137,6 +137,9 @@ if (!$opt{'username'} || !$opt{'password'}) {
 	$opt{'password'} = 'access';
 }
 $opt{'output_dir'} =~ s/\/$//;
+
+my $cds_path = "$opt{output_dir}/ber.nt.fsa";
+my $mapping_path = $opt{'output_dir'}."/ber.mapping.list";
 
 my @infiles = ();
 
@@ -237,7 +240,6 @@ $query = "select g.uniquename"
 my $find_cds = $dbh->prepare($query);
 
 my @cds_names = ();
-my $mapping_path = $opt{'output_dir'}."/ber.mapping.list";
 open (OUT, ">$mapping_path") || die "couldn't write mapping file to '$mapping_path'";
 foreach my $polypeptide (@sequence_ids) {
 	$find_cds->execute($polypeptide);
@@ -276,7 +278,6 @@ $query = "SELECT residues " .
 
 my $assembly_sequence = $dbh->prepare($query);
 
-my $cds_path = "$opt{output_dir}/ber.cds.fsa";
 
 open(OUT, ">$cds_path") || die "can't create $cds_path: $!";
 
@@ -353,10 +354,8 @@ $assembly_sequence->finish();
 	my $get_asmbl_seq_qry = "SELECT sequence FROM assembly WHERE asmbl_id = ?";
 	my $get_asmbl_seq = $dbh->prepare($get_asmbl_seq_qry);
 
-	my $cds_path = "$opt{output_dir}/ber.cds.fsa";
 	open(CDS, ">$cds_path") || die "can't create $cds_path: $!";
 
-	my $mapping_path = $opt{'output_dir'}."/ber.mapping.list";
 	open (MAPPING, ">$mapping_path") || die "couldn't write mapping file to '$mapping_path'";
 	
 	foreach my $asmbl_id (keys(%{$models})) {
