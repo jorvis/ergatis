@@ -320,11 +320,17 @@ sub process_record {
 ## convert a gene feature hash into BSML
 sub gene_feature_hash_to_bsml {
 	my ($features) = @_;
-
-	my $id_hash = {};
 	
 	my $seq_id = $features->{'_seqid'};
 	delete $features->{'_seqid'};
+
+	my $id_hash = {};
+	my %id_counts;
+	
+	foreach my $type(keys(%{$features})) {
+		$id_counts{$type} = scalar(keys(%{$features->{$type}}));
+	}
+	$idcreator->set_pool_size(%id_counts);
 	
 	my $seq;
 	
