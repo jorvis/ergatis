@@ -1,13 +1,18 @@
+                               
+ ------------------------------
+ Q1: Number of features by type
+
+(1 row affected)
                                            
  ------------------------------ -----------
  CDS                                   7677
  assembly                                 2
  exon                                  7677
  gene                                  7677
- match                                46354
- match_part                          126316
- match_set                            67225
- polypeptide                          18742
+ match                                47328
+ match_part                          127347
+ match_set                            67279
+ polypeptide                          26312
  rRNA                                    54
  ribosome_entry_site                   7481
  signal_peptide                        7471
@@ -17,99 +22,102 @@
  transcript                            7677
 
 (15 rows affected)
+                                                 
+ ------------------------------------------------
+ Q2: Number of features associated with a compute
+
+(1 row affected)
                                                                analysis_id 
 	           
  ------------------------------ ------------------------------ ------------
 	-----------
- CDS                            BER_analysis                              3
-	       3080
- CDS                            BER_analysis                              9
+ CDS                            BER_analysis                              1
 	       1364
- match                          BER_analysis                              3
-	       3094
- match                          HMM2_analysis                             4
-	      22286
- match                          NCBI_COG                                  5
-	       3993
- match                          PROSITE                                   6
-	       1776
- match                          BER_analysis                              9
+ CDS                            BER_analysis                              5
+	       3080
+ match                          BER_analysis                              1
 	       1368
- match                          HMM2_analysis                            10
-	       9742
- match                          NCBI_COG                                 11
+ match                          NCBI_COG                                  2
 	       1696
- match                          PROSITE                                  12
+ match                          PROSITE                                   3
+	       1776
+ match                          HMM2_analysis                             4
+	      22710
+ match                          BER_analysis                              5
+	       3094
+ match                          PROSITE                                   7
 	         97
+ match                          NCBI_COG                                  8
+	       3993
+ match                          HMM2_analysis                            11
+	      10292
  match                          jaccard                                  14
 	         72
  match                          cogs                                     15
 	       1116
  match                          cogs                                     16
 	       1114
- match_part                     BER_analysis                              3
-	       3094
- match_part                     HMM2_analysis                             4
-	      22960
- match_part                     NCBI_COG                                  5
-	       3993
- match_part                     PROSITE                                   6
-	       1822
- match_part                     BER_analysis                              9
+ match_part                     BER_analysis                              1
 	       1368
- match_part                     HMM2_analysis                            10
-	       9907
- match_part                     NCBI_COG                                 11
+ match_part                     NCBI_COG                                  2
 	       1696
- match_part                     PROSITE                                  12
+ match_part                     PROSITE                                   3
+	       1822
+ match_part                     HMM2_analysis                             4
+	      23391
+ match_part                     BER_analysis                              5
+	       3094
+ match_part                     PROSITE                                   7
 	        101
+ match_part                     NCBI_COG                                  8
+	       3993
+ match_part                     HMM2_analysis                            11
+	      10453
  match_part                     wu-blastp                                13
 	      75951
  match_part                     pe                                       17
-	       5424
+	       5478
  match_set                      wu-blastp                                13
 	      61801
  match_set                      pe                                       17
-	       5424
- polypeptide                    BER_analysis                              3
-	       2756
+	       5478
+ polypeptide                    NCBI_COG                                  2
+	       1696
+ polypeptide                    PROSITE                                   3
+	       1363
  polypeptide                    HMM2_analysis                             4
-	       8502
- polypeptide                    NCBI_COG                                  5
-	       5543
- polypeptide                    PROSITE                                   6
-	       1876
- polypeptide                    BER_analysis                              9
-	       1167
- polypeptide                    HMM2_analysis                            10
-	       2230
- polypeptide                    NCBI_COG                                 11
-	       1816
- polypeptide                    PROSITE                                  12
-	         71
- ribosome_entry_site            RBS_analysis                              1
+	       3994
+ polypeptide                    PROSITE                                   7
+	         69
+ polypeptide                    NCBI_COG                                  8
+	       3993
+ polypeptide                    HMM2_analysis                            11
+	       1794
+ ribosome_entry_site            RBS_analysis                              6
 	       5429
- ribosome_entry_site            RBS_analysis                              7
+ ribosome_entry_site            RBS_analysis                             10
 	       2052
- terminator                     TERM_analysis                             2
-	       1950
- terminator                     TERM_analysis                             8
+ terminator                     TERM_analysis                             9
 	        449
+ terminator                     TERM_analysis                            12
+	       1950
 
-(37 rows affected)
+(35 rows affected)
+                                          
+ -----------------------------------------
+ Q3: Number and feature properties by type
+
+(1 row affected)
                                                                           
  ------------------------------ ------------------------------ -----------
  CDS                            percent_GC                            7676
- assembly                       topology                                 2
- assembly                       molecule_name                            2
- assembly                       molecule_type                            2
- match_part                     PEffect_Cluster_Id                    5424
- match_part                     PEffect_Cluster_Gap_Count             5424
- match_part                     PEffect_Cluster_Gene_Count            5424
- match_part                     p_value                              75951
+ match_part                     PEffect_Cluster_Id                    5478
+ match_part                     PEffect_Cluster_Gap_Count             5478
+ match_part                     PEffect_Cluster_Gene_Count            5478
  match_part                     percent_coverage_refseq              75951
  match_part                     percent_coverage_compseq             75951
  match_part                     percent_similarity                   80408
+ match_part                     p_value                              90101
  polypeptide                    MW                                    7402
  polypeptide                    pi                                    7402
  polypeptide                    transmembrane_coords                  7676
@@ -139,105 +147,128 @@
  transcript                     assignby                              7677
  transcript                     gene_product_name                     7677
 
-(39 rows affected)
+(36 rows affected)
+                                   
+ ----------------------------------
+ Q4: Number of features by organism
+
+(1 row affected)
                                                                           
  ------------------------------ ------------------------------ -----------
- Bacillus anthracis Ames        b_anthracis_ames                    202205
- Streptococcus agalactiae 2603V s_agalactiae_2603vr                  91363
- not known                      not known                            13367
+ Bacillus anthracis Ames        b_anthracis_ames                    104259
+ Streptococcus agalactiae 2603V s_agalactiae_2603vr                  42660
+ not known                      not known                            24431
 
 (3 rows affected)
+                                            
+ -------------------------------------------
+ Q5: Number of dbxref records by external db
+
+(1 row affected)
                                            
  ------------------------------ -----------
  ANNFLG                                   5
- ARDCF                                    4
+ ARD                                      7
+ COG_Cluster                           1670
  EC                                    9238
  EGAD                                  1118
  GB                                       4
  GFF3                                    26
  GO                                   18256
  GP                                     874
- Genbank                               7428
+ Genbank                               7426
  MetaCyc                               3954
  NCBI_gi                               7426
  OMNI                                  1253
  PIR                                      4
  PROSITE                                515
- Pfam                                  2839
+ Pfam                                  2917
  RESID                                   11
  Reactome                              1963
- SO                                    1026
+ SO                                    1009
  SP                                     670
  Swiss-Prot                            7367
  TAIR:TED\                                3
  TC                                     391
- TIGR_TIGRFAMS                         2118
- TIGR_prok:gba                        25719
- TIGR_prok:gbs                        10219
+ TIGR_Gba                             24169
+ TIGR_Gbs                              9220
+ TIGR_TIGRFAMS                         2148
  TIGR_role                              268
  TIGR_roles_order                       122
+ TS                                       7
  UM-BBD_enzymeID                        451
  UM-BBD_pathwayID                       109
  annotation_attributes.ontology         127
- component.ontology                     155
+ component.ontology                     167
  evidence_code                          129
  gb_old_locus_tag                      7677
  go_properties                           24
  output.ontology                         76
  owl                                      1
- relationship                            18
+ relationship                            29
  synonym_types                            6
- taxon                                    1
+ taxon                                    2
 
-(39 rows affected)
+(41 rows affected)
+                                                           
+ ----------------------------------------------------------
+ Q5: Number of primary database references for all features
+
+(1 row affected)
  name                                                          
  -------------------------------------------------- -----------
+ COG_Cluster                                               1670
  EGAD                                                      1118
  GB                                                           4
  GP                                                         874
  OMNI                                                      1253
  PIR                                                          4
  PROSITE                                                    515
- Pfam                                                      2839
+ Pfam                                                      2917
  SP                                                         670
- TIGR_TIGRFAMS                                             2118
- TIGR_prok:gba                                            41936
- TIGR_prok:gbs                                            15709
+ TIGR_Gba                                                 40386
+ TIGR_Gbs                                                 15589
+ TIGR_TIGRFAMS                                             2148
 
-(11 rows affected)
+(12 rows affected)
+                                                             
+ ------------------------------------------------------------
+ Q6: Number of secondary database references for all features
+
+(1 row affected)
  name                                                          
  -------------------------------------------------- -----------
- EGAD                                                      1118
- GB                                                           4
- GP                                                         874
- Genbank                                                  37132
- NCBI_gi                                                  37130
- OMNI                                                      1253
- PIR                                                          4
- PROSITE                                                    515
- Pfam                                                      2839
- SP                                                         670
- Swiss-Prot                                               36935
- TIGR_TIGRFAMS                                             2118
- TIGR_prok:gba                                            97148
- TIGR_prok:gbs                                            38383
- gb_old_locus_tag                                         38385
 
-(15 rows affected)
+(0 rows affected)
+                                               
+ ----------------------------------------------
+ Q7: F Number of localizations per feature type
+
+(1 row affected)
                                            
  ------------------------------ -----------
  CDS                                   8924
  assembly                             48502
- polypeptide                         470921
+ polypeptide                         475039
 
 (3 rows affected)
+                                            
+ -------------------------------------------
+ Q8: Number of feature_relationships by type
+
+(1 row affected)
                                            
  ------------------------------ -----------
  derives_from                         15354
  member_of                             7677
- part_of                             151187
+ part_of                             152218
 
 (3 rows affected)
+                                           
+ ------------------------------------------
+ Q9: Number of features by type by sequence
+
+(1 row affected)
                                
 	uniquename                                                    
  ------------------------------
@@ -284,12 +315,21 @@
 	gba_6615_assembly                                         5508
 
 (20 rows affected)
+                                                 
+ ------------------------------------------------
+ Q10: Number of secondary feature_cvterms by type
+
+(1 row affected)
                                            
  ------------------------------ -----------
- assembly                                 2
- transcript                           21534
+ transcript                           21598
 
-(2 rows affected)
+(1 row affected)
+                                   
+ ----------------------------------
+ Q11: analysisfeature relationships
+
+(1 row affected)
 
 	name                                                                    
                                                                                 
@@ -313,7 +353,7 @@
                                                                                 
                                                                                 
                        
-	HMM2                                                     64895
+	HMM2                                                     66846
 
 	computed_by                                                             
                                                                                 
@@ -355,7 +395,7 @@
                                                                                 
                                                                                 
                        
-	pe                                                       10848
+	pe                                                       10956
 
 	computed_by                                                             
                                                                                 
@@ -367,24 +407,24 @@
                                                                                 
                                                                                 
                        
-	BER                                                       8367
+	BER                                                       4444
 
 	input_of                                                                
                                                                                 
                                                                                 
                        
-	HMM2                                                     10732
+	HMM2                                                      5788
 
 	input_of                                                                
                                                                                 
                                                                                 
                        
-	NCBI_COG                                                  7359
+	NCBI_COG                                                  5689
 
 	input_of                                                                
                                                                                 
                                                                                 
                        
-	PROSITE                                                   1947
+	PROSITE                                                   1432
 
 (14 rows affected)
