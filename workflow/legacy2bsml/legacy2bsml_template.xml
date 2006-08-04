@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>legacy2bsml</name>
+        <name>legacyparafam2bsml</name>
         <configMapId>empty</configMapId>
          <command>    
             <type>RunUnixCommand</type>
-            <configMapId>legacy2bsml</configMapId>
-            <name>legacy2bsml</name>
+            <configMapId>legacyparafam2bsml</configMapId>
+            <name>legacyparafam2bsml</name>
         </command>
          <command>    
             <type>RunUnixCommand</type>

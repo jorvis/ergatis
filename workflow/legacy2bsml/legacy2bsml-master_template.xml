@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>legacy2bsml workflow</name>
+        <name>legacyparafam2bsml workflow</name>
         <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
