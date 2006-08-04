@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>legacyparafam2bsml</name>
+        <configMapId>empty</configMapId>
+         <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>legacyparafam2bsml</configMapId>
+            <name>legacyparafam2bsml</name>
+        </command>
+         <command>    
+            <type>RunUnixCommand</type>
+            <configMapId>dtd_validation</configMapId>
+            <name>dtd_validation</name>
+        </command>
+    </commandSet>
+</commandSetRoot>
