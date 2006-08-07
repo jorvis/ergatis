@@ -212,5 +212,10 @@ ergatis-v1r20b5
 --------------
 -changed IdGenerator.pm to use File::NFSLock, handle sigints and support ID pooling
 -changed genemark component to use new version
+
+ergatis-v1r20b6
+--------------
+-BER fixes
+-fixed clustalw component.  was failing when configured to run on non-cog output
 -ber component now automatically extracts and prepares required extended nt database
 -added mreps component
