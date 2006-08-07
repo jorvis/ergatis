@@ -111,6 +111,12 @@ my $doc = new BSML::BsmlBuilder();
 
 $doc->makeCurrentDocument();
 parse_ber_btabs($files);
+
+$doc->createAndAddAnalysis(
+                            id => $options{analysis_id},
+                            sourcename => $options{'output'},
+                          );
+
 $doc->write($options{'output'});
 
 sub parse_ber_btabs {
@@ -141,6 +147,7 @@ sub parse_ber_btabs {
 	    }
 	    my $align = &createAndAddBtabLine(
 					      doc                => $doc,
+                          class              => $class,
 					      query_name         => $btab[0],
 					      date               => $btab[1],
 					      query_length       => $btab[2],
@@ -267,7 +274,7 @@ sub createAndAddBtabLine {
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", '', 'aa', $args{'class'} );
+        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", '', 'aa', 'polypeptide' );
     }
 
     ## see if the dbmatch_header format is recognized.  if so, add some cross-references
