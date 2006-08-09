@@ -251,6 +251,6 @@ sub createAndAddNullResult {
   	if ( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
   		my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", '', 'na', $args{'class'} );
   	    $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
-  	    $seq->addBsmlLink('analysis', '#' . $options{'analysis_id'}, 'input_of');
+  	    $seq->addBsmlLink('analysis', '#aat_aa_analysis' . $options{'analysis_id'}, 'input_of');
 	}
 }
