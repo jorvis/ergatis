@@ -59,7 +59,7 @@ use strict;
 use DBI;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use lib '/usr/local/devel/ANNOTATION/ard/current/lib/site_perl/5.8.5';
+use lib '/usr/local/devel/ANNOTATION/ard/current/lib/5.8.8';
 use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 
