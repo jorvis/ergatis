@@ -219,3 +219,4 @@ ergatis-v1r20b6
 -fixed clustalw component.  was failing when configured to run on non-cog output
 -ber component now automatically extracts and prepares required extended nt database
 -added mreps component
+-added mask_by_analysis component

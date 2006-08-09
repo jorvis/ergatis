@@ -397,6 +397,14 @@ legacyparafam2bsml  :
 	@install workflow/legacyparafam2bsml/legacyparafam2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install workflow/legacyparafam2bsml/legacyparafam2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
 
+mask_by_analysis  :
+	@echo "Installing mask_by_analysis workflows in $(WORKFLOW_DOCS_DIR)"
+	@install workflow/mask_by_analysis/mask_by_analysis.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/mask_by_analysis/mask_by_analysis_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/mask_by_analysis/mask_by_analysis-master.ini $(WORKFLOW_DOCS_DIR)
+	@install workflow/mask_by_analysis/mask_by_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install workflow/mask_by_analysis/mask_by_analysisconf.ini $(WORKFLOW_DOCS_DIR)  
+
 mepipe  :
 	@echo "Installing mepipe workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/mepipe/mepipe.ini $(WORKFLOW_DOCS_DIR)
