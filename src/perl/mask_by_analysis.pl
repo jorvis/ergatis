@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
 
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -76,7 +76,7 @@ my %options = ();
 GetOptions (\%options,
             'input|i=s',
 			'analysis_types|a=s',
-			'feature_types|f=s',
+			'feature_types|f:s',
 			'mask_char|x=s',
 			'output|o=s',
 			'output_bsml|b=s',
@@ -107,6 +107,16 @@ $logger = $logger->get_logger();
 if (!$options{'input'}) {
 	pod2usage("bsml input file name must be provided with --input");
 }
+if (!-e $options{'input'}) {
+	if (-e $options{'input'}.".gz") {
+		$infile = $options{'input'}.".gz";
+	} else {
+		$logger->logdie("input file '$options{input}' doesn't exist");
+	}
+} else {
+	$infile = $options{'input'};
+}
+
 if (!$options{'output'}) {
 	pod2usage("must specify output path with --output");
 }
@@ -138,8 +148,10 @@ if ($options{'feature_types'}) {
 	$feature_types = do_flag_hash($options{'feature_types'});
 }
 
-$infile = $options{'input'};
 $outfile = $options{'output'}."/".$options{'output_bsml'};
+
+my $infh;
+my $outfh;
 
 srand();
 
@@ -151,7 +163,15 @@ my $loc_twig = XML::Twig->new(
 											 }
 						);
 
-$loc_twig->parsefile($infile);
+if ($infile =~ /\.gz$/) {
+	open($infh, "<:gzip", $infile) 
+	 || logger->logdie("couldn't open gzipped input file '$infile'");
+} else {
+   	open($infh, $infile)
+	 || logger->logdie("couldn't open input file '$infile'");
+}	
+$loc_twig->parse($infh);
+close $infh;
 
 ## mask the sequence an build a new BSML document
 my $seq_twig = new XML::Twig(	TwigRoots => {'Sequences' => 1, 'Sequence' => 1, 'Feature-tables' => 0},
@@ -159,11 +179,22 @@ my $seq_twig = new XML::Twig(	TwigRoots => {'Sequences' => 1, 'Sequence' => 1, '
 							);
 					 
 $seq_twig->set_pretty_print('indented');
-  
-open (my $fh, ">".$outfile) || $logger->logdie("couldn't open output file for writing");
-  
-$seq_twig->parsefile($infile);
  
+open ($outfh, ">".$outfile) || $logger->logdie("couldn't open output file for writing");
+  
+if ($infile =~ /\.gz$/) {
+	open($infh, "<:gzip", $infile) 
+	 || logger->logdie("couldn't open gzipped input file '$infile'");
+} else {
+   	open($infh, $infile)
+	 || logger->logdie("couldn't open input file '$infile'");
+}	
+$seq_twig->parse($infh);
+close $infh;
+close $outfh;
+
+exit();
+
 ## deals with seq-pair-alignments
 ## pulls out coordinates for seq-pair-runs
 ## and stores them in mask_regions
@@ -282,10 +313,13 @@ sub sequence_handler {
 		if ($link->{'att'}->{'rel'} eq 'analysis') {
 			## may want to make role a flag option
 			if ($link->{'att'}->{'role'} eq 'input_of') {
-				$link->{'att'}->{'href'} =~ /^#(.*)_analysis$/;
-				my $analysis_id = $1;
-				if ($analysis_types->{$analysis_id}) {
-					$flag = 1;
+				if ($link->{'att'}->{'href'} =~ /^#(.*)_analysis$/) {
+					my $analysis_id = $1;
+					if ($analysis_types->{$analysis_id}) {
+						$flag = 1;
+					}
+				} else {
+					$logger->logdie("couldn't parse analysis type");
 				}
 			}
 		}
@@ -391,7 +425,7 @@ sub sequence_handler {
 							 });
     $analysis_link->paste( 'last_child', $sequence);         
 	
-	$twig->flush($fh);	
+	$twig->flush($outfh);	
 }
 
 ## pull a sequence from a fasta file by sequence id
