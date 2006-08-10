@@ -72,7 +72,9 @@ dirs	:
 
 shellwrappers:
 	@install workflow/create_ber_db.sh $(PREFIX)/bin
-
+	@install workflow/pepstats.sh $(PREFIX)/bin
+	@install workflow/transeq.sh $(PREFIX)/bin
+	
 aat_aa	:
 	@echo "Installing aat_aa workflows in $(WORKFLOW_DOCS_DIR)"
 	@install workflow/aat_aa/aat_aa-master.ini $(WORKFLOW_DOCS_DIR)
