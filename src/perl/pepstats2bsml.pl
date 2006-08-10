@@ -1,4 +1,9 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
+
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 =head1  NAME 
 
 pepstats2bsml.pl - convert EMBOSS pepstats output to BSML
