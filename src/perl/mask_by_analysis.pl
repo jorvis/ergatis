@@ -1,4 +1,4 @@
-#!/local/packages/perl-5.8.8/bin/perl
+#!/usr/local/bin/perl
 
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -70,6 +70,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use XML::Twig;
 use Workflow::Logger;
+use BSML::BsmlBuilder;
 
 $| = 1;
 my %options = ();
@@ -174,14 +175,16 @@ $loc_twig->parse($infh);
 close $infh;
 
 ## mask the sequence an build a new BSML document
-my $seq_twig = new XML::Twig(	TwigRoots => {'Sequences' => 1, 'Sequence' => 1, 'Feature-tables' => 0},
+my $seq_twig = new XML::Twig(	TwigRoots => {
+		'Sequence' => 1,
+											 },
 								TwigHandlers => {'Sequence' => \&sequence_handler}
 							);
 					 
 $seq_twig->set_pretty_print('indented');
  
-open ($outfh, ">".$outfile) || $logger->logdie("couldn't open output file for writing");
-  
+my $doc = new BSML::BsmlBuilder();
+
 if ($infile =~ /\.gz$/) {
 	open($infh, "<:gzip", $infile) 
 	 || logger->logdie("couldn't open gzipped input file '$infile'");
@@ -191,7 +194,8 @@ if ($infile =~ /\.gz$/) {
 }	
 $seq_twig->parse($infh);
 close $infh;
-close $outfh;
+
+$doc->write($outfile);
 
 exit();
 
@@ -326,7 +330,6 @@ sub sequence_handler {
 	}
 
 	unless ($flag) { 
-		$twig->purge();
 		return;
 	}
 
@@ -407,25 +410,21 @@ sub sequence_handler {
 		$logger->logdie("No sequence present in BSML sequence element");
 	}
 
-	## pull the seq-data-import element
-	my $seq_data_import_child = $sequence->first_child('Seq-data-import');
+	my $seq_imp = $sequence->first_child('Seq-data-import');
 	
-	## delete all children of sequence
-	$sequence->cut_children();
-    
-	## paste seq-data-import back
-	$seq_data_import_child->paste('last_child', $sequence);         
-	
-	## add a new analysis link
-	my $analysis_link = new XML::Twig::Elt( 'Link', '');
-	$analysis_link->set_atts({
-								'rel' 	=>	'analysis',
-								'href'	=> 	'#mask_by_analysis_analysis',
-								'role'	=> 	'computed_by',
-							 });
-    $analysis_link->paste( 'last_child', $sequence);         
-	
-	$twig->flush($outfh);	
+	my $bsml_seq = $doc->createAndAddExtendedSequenceN(
+						%{$sequence->{'att'}},
+												      );
+	$doc->createAndAddSeqDataImportN(
+					'seq' => $bsml_seq,
+					%{$seq_imp->{'att'}},
+									);
+	$doc->createAndAddLink(
+							$bsml_seq, 
+							'analysis',
+							'#mask_by_analysis_analysis',
+							'computed_by',
+						  );
 }
 
 ## pull a sequence from a fasta file by sequence id
