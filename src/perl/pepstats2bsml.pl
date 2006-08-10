@@ -106,6 +106,7 @@ my $onto_terms = {
 'A280 Molar Extinction Coefficient' 				=> 'extinction_coefficient_mol',
 'A280 Extinction Coefficient 1mg/ml' 				=> 'extinction_coefficient_mg_ml',
 'Improbability of expression in inclusion bodies' 	=> 'improb_expr_in_inclusion_bodies',
+'Probability of expression in inclusion bodies' 	=> 'prob_expr_in_inclusion_bodies',
 		    	 };
 
 my $doc = new BSML::BsmlBuilder();
