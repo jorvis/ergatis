@@ -81,9 +81,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
-}
 use DBI;
 use XML::Twig;
 
@@ -549,6 +547,7 @@ sub prepare_feat_link_insert_stmt
 sub cleanup_records
 {
 	my ($asm_id, $ev_type) = @_;
+	my @feat_names_for_deletion = ();
 	my $stmt = $dbh->prepare("SELECT p.feat_name " .
 				 "FROM phys_ev p INNER JOIN asm_feature a " .
 				 "ON (p.feat_name=a.feat_name) " .
@@ -556,13 +555,16 @@ sub cleanup_records
 				 "p.ev_type='$ev_type'");
 	$stmt->execute;
 	while (my $row = $stmt->fetchrow_arrayref) {
+		push @feat_names_for_deletion, $$row[0];
+	}
+	foreach my $feat_name (@feat_names_for_deletion) {
 		$dbh->do("DELETE FROM asm_feature " .
-			 "WHERE feat_name='$$row[0]'");
+			 "WHERE feat_name='$feat_name'");
 		$dbh->do("DELETE FROM phys_ev " .
-			 "WHERE feat_name='$$row[0]'");
+			 "WHERE feat_name='$feat_name'");
 		$dbh->do("DELETE FROM feat_link " .
-			 "WHERE parent_feat='$$row[0]' OR " .
-			 "child_feat='$$row[0]'");
+			 "WHERE parent_feat='$feat_name' OR " .
+			 "child_feat='$feat_name'");
 #		print "$$row[0]\n";
 	}
 }
