@@ -220,3 +220,5 @@ ergatis-v1r20b6
 -ber component now automatically extracts and prepares required extended nt database
 -added mreps component
 -added mask_by_analysis component
+-added parse_for_ncRNAs component
+-added 2bsml functionality for infernal component
