@@ -224,3 +224,4 @@ ergatis-v1r20b6
 -added pepstats component
 -added parse_for_ncRNAs component
 -added 2bsml functionality for infernal component
+-added translate_sequence component
