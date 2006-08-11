@@ -3,7 +3,7 @@
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
-
+	
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -40,12 +40,12 @@ my $cds_frame;
 
 my %options = ();
 my $results = GetOptions (\%options,
-						  'transeq_bin',
+						  'transeq_bin=s',
                           'input|i=s',
-						  'class|c=s',
-						  'regions|r=s',
-						  'frame|f=s',
-						  'table|t=i',
+						  'class|c:s',
+						  'regions|r:s',
+						  'frame|f:s',
+						  'table|t:i',
 						  'output|o=s',
 						  'id_repository=s',
 						  'project=s',
@@ -69,6 +69,8 @@ my $id_gen = Workflow::IdGenerator->new('id_repository' => $options{'id_reposito
 if (!$options{'transeq_bin'}) {
 	pod2usage("must provide path to transeq executable with --transeq_bin");
 }
+$transeq_exec = $options{'transeq_bin'};
+
 unless ($options{'input'}) {
 	pod2usage("fasta or bsml input must be provided with --input");
 }
