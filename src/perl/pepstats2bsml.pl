@@ -155,4 +155,12 @@ my $seq = $doc->createAndAddSequence(
 foreach my $att(keys(%{$atts})) {
 	$seq->addBsmlAttr($att, $atts->{$att});
 }
+
+$doc->createAndAddLink(
+						$seq,
+                        'analysis',
+                        '#pepstats_analysis',
+                        'computed_by',
+                      );
+
 $doc->write($options{'output'});
