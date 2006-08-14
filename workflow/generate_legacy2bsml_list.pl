@@ -84,6 +84,7 @@ my $include_genefinders_key = '$;INCLUDE_GENEFINDERS$;';
 my $exclude_genefinders_key = '$;EXCLUDE_GENEFINDERS$;';
 my $alt_database_key = '$;ALT_DATABASE$;';
 my $alt_species_key = '$;ALT_SPECIES$;';
+my $tu_list_key = '$;TU_LIST_FILE$;';
 
 
 my $valid_organism_types = { 'prok'   => 1,
@@ -106,7 +107,8 @@ if (&verify_control_file($options{'control_file'})){
 	    $include_genefinders_key => [],
 	    $exclude_genefinders_key => [],
 	    $alt_database_key => [],
-	    $alt_species_key => []
+	    $alt_species_key => [],
+	    $tu_list_key => []
 
 	};
 
@@ -148,7 +150,7 @@ sub get_list_from_file{
 
     my $contents = &get_file_contents($f);
 
-    my $orghash = &get_organism_hash($contents);
+    my $orghash = &get_organism_hash($contents, $f);
 
     foreach my $database_type (sort keys %{$orghash} ){ 
 
@@ -163,10 +165,11 @@ sub get_list_from_file{
 
 	    my $sequence_type = $infohash->{'sequence_type'};
 	    my $asmbl_id = $infohash->{'asmbl_id'};
-
+	    my $tu_list = $infohash->{'tu_list'};
+	    
 	    my $subflow_name = $database_type . "_" . $asmbl_id;
 
-	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species);
+	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species, $tu_list);
 	}
     }
     
@@ -179,7 +182,7 @@ sub get_list_from_file{
 #-------------------------------------------
 sub add_entry_to_conf{
 
-    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species) = @_;
+    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species, $tu_list) = @_;
     
     push( @{$iteratorconf->{$database_key}}, $database );
     push( @{$iteratorconf->{$asmbl_id_key}}, $asmbl_id );
@@ -190,6 +193,7 @@ sub add_entry_to_conf{
     push( @{$iteratorconf->{$organism_key}}, $organism_type );
     push( @{$iteratorconf->{$alt_database_key}}, $alt_database );
     push( @{$iteratorconf->{$alt_species_key}}, $alt_species );
+    push( @{$iteratorconf->{$tu_list_key}}, $tu_list );
 
 }
 
@@ -268,7 +272,7 @@ sub get_file_contents {
 #---------------------------------------------
 sub get_organism_hash {
 
-    my $contents = shift;
+    my ($contents, $file) = @_;
 
     my $hash = {};
 
@@ -371,13 +375,9 @@ sub get_organism_hash {
 		    }
 		}
 	    }
-	    elsif ($line =~ /^\s*(\d+)\s*sequence_type:(\S*)/){
-		
-		&store_asmbl_id_and_sequence_type($database_type, $1, $2, $linectr, $unique_asmbl_id_values, $hash);
-	    }
 	    elsif ($line =~ /^\s*(\d+)\s*/){
 
-		&store_asmbl_id_and_sequence_type($database_type, $1, undef, $linectr, $unique_asmbl_id_values, $hash);
+		&store_asmbl_id($database_type, $1, $line, $linectr, $unique_asmbl_id_values, $hash, $file);
 	    }
 	    else {
 		$logger->logdie("Could not parse line number '$linectr' - line was '$line'");
@@ -392,41 +392,90 @@ sub get_organism_hash {
 
 
 #------------------------------------------------------
-# store_asmbl_id_and_sequence_type()
+# store_asmbl_id()
 #
 #------------------------------------------------------
-sub store_asmbl_id_and_sequence_type {
+sub store_asmbl_id {
     
-    my ($database, $asmbl_id, $sequence_type, $linectr, $unique_asmbl_id_values, $hash) = @_;
+    my ($database, $asmbl_id, $line, $linectr, $unique_asmbl_id_values, $hash, $file) = @_;
 
-    $sequence_type = &verify_and_set_sequence_type($sequence_type, $linectr);
-    
     if (( exists $unique_asmbl_id_values->{$database}->{$asmbl_id}) && 
 	(defined($unique_asmbl_id_values->{$database}->{$asmbl_id}))){
-	#
-	# At the same time, need to ensure that the asmbl_id values are unique
-	#
 	
-	$logger->warn("asmbl_id '$asmbl_id' for organism '$database' was already stored in the lookup");
+	$logger->logdie("Already processed information for asmbl_id '$asmbl_id' organism '$database'.  Please review legacy2bsml control file '$file'.");
     }
     else {
-	#
-	# Update the unique_asmbl_id_values hash to ensure unique assembly identifiers are processed
-	#
-	$unique_asmbl_id_values->{$database}->{$asmbl_id}++;
+
+	my $sequence_type = 'none';
 	
-	#
-	# Store the next valid asmbl_id in the organism hash
-	#
-	my $infohash = { 'asmbl_id' => $asmbl_id,
-			 'sequence_type' => $sequence_type };
+	my $tu_list_file = 'none';
+
+	my @attributes = split(/\s+/, $line);
+	
+	
+	foreach my $attribute (@attributes){
+
+	    if ($attribute =~ /:/){
+
+		my ($key, $value) = split(/:/, $attribute);
+		
+		if ($key eq 'sequence_type'){
+		    $sequence_type = &verify_and_set_sequence_type($value, $linectr);
+		}
+		elsif ($key eq 'tu_list_file'){
+		    $tu_list_file = &verify_and_set_tu_list_file($value);
+		}
+		else {
+		    $logger->warn("Unrecognized attribute");
+		}
+	    }
+	}
+
+	## Store the next valid asmbl_id in the organism hash
+	my $infohash = { 'asmbl_id'      => $asmbl_id,
+			 'sequence_type' => $sequence_type,
+			 'tu_list'       => $tu_list_file 
+		     };
 	
 	push( @{$hash->{$database}->{'infohash'}}, $infohash);
+
+	## Update the unique_asmbl_id_values hash to ensure unique assembly identifiers are processed
+	$unique_asmbl_id_values->{$database}->{$asmbl_id}++;
+
     }
 }
 
 
+#-----------------------------------------------------
+# verify_and_set_tu_list_file()
+#
+#-----------------------------------------------------
+sub verify_and_set_tu_list_file {
 
+    my ($file) = @_;
+
+    if (-e $file){
+	if (-f $file){
+	    if (-r $file){
+		if (!-z $file){
+		    return $file;
+		}
+		else {
+		    $logger->logdie("file '$file' had zero content");
+		}
+	    }
+	    else {
+		$logger->logdie("file '$file' does not have read permissions");
+	    }
+	}
+	else {
+	    $logger->logdie("file '$file' is not a regular file");
+	}
+    }
+    else {
+	$logger->logdie("file '$file' does not exist");
+    }
+}
 
 
 #-----------------------------------------------------
