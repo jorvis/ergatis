@@ -508,6 +508,9 @@ sub to_bsml {
 	$transl_table = $doc->createAndAddBsmlAttribute($organism, 'genetic_code', $gbr{'transl_table'});
     }
 
+    if($gbr{'molecule_name'}){
+	$doc->createAndAddBsmlAttribute($organism, 'molecule_name', $gbr{'molecule_name'});
+    }
 
     # only add a strain element if there is valid strain info
     # see bug #3518 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3518
