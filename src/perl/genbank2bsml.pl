@@ -149,6 +149,9 @@ sub parse_genbank_file {
 	    die "Unknown molecule: ".$seq->molecule();
 	}
 
+	#Making molecule name unique yet descriptive
+	$gbr{'molecule_name'} = "$gbr{'organism'} $gbr{'accession'}";
+
 	# Get expanded "polymer_type" as entered in ard.obo
 	# default is $seq->molecule()
 	# change it if we know by lineage it's something specific (some older records would just have RNA)
@@ -285,8 +288,8 @@ sub parse_genbank_file {
 		    $primary_tag eq 'exon' ||
 		    #$primary_tag eq 'variation' ||  #this is an example of an IN-BETWEEN tag
 		    $primary_tag eq 'intron' ||
-		    $primary_tag eq 'mRNA' ||
-		    $primary_tag eq 'tRNA'
+		    $primary_tag eq 'mRNA' 
+#||		    $primary_tag eq 'tRNA'
 		    ) {
 		    
 		    # obtain feature group
@@ -366,15 +369,26 @@ sub parse_genbank_file {
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'feature_len'} = $feat_object->spliced_seq->length();
 			$gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'} = 0; #default null value
 
+		
 			if ($primary_tag eq 'CDS') {
 			    if ($feat_object->has_tag("translation")) { # in some cases its "psuedo"
 				$gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'}=join('',$feat_object->get_tag_values("translation"));
 			    }
+			    if ($feat_object->has_tag("product")) { 
+				$gbr{'Features'}->{$feature_group}->{$feature_id}->{'gene_product_name'} = join('',$feat_object->get_tag_values("product"));
+			    }
+			    if ($feat_object->has_tag("note")) { 
+				$gbr{'Features'}->{$feature_group}->{$feature_id}->{'comment'} = join('',$feat_object->get_tag_values("note"));
+			    }
+			    if ($feat_object->has_tag("EC_number")) { 
+				$gbr{'Features'}->{$feature_group}->{$feature_id}->{'ec_number'} = [$feat_object->get_tag_values("EC_number")]
+			    }
+			}
 			    # adding support for deriving translation from genomic sequence
 #			    else {
 #				die "CDS lacking translation in $feature_group $feature_id";
 #			    }
-			}
+		    }
 
 			#See bug 2414
 			#Can assume all CDSs have transl_table?  No.
@@ -386,26 +400,23 @@ sub parse_genbank_file {
 			    ++$TagCount{join('',$feat_object->get_tag_values("transl_table"))};			    
 			    ++$transl_tables{join('',$feat_object->get_tag_values("transl_table"))};
 			}
+
+	    # check for db_xrefs, otherwise store it as an unknown tag
+	    foreach my $tag ($feat_object->get_all_tags() ) {
+		if ($tag eq "db_xref") {
+		    # Assuming the possiblity of multiple tags of the same database
+		    foreach ($feat_object->get_tag_values($tag)) {
+			push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{db_xrefs}}, $_);
 		    }
-
-		    # check for db_xrefs, otherwise store it as an unknown tag
-		    foreach my $tag ($feat_object->get_all_tags() ) {
-			if ($tag eq "db_xref") {
-			    # Assuming the possiblity of multiple tags of the same database
-			    foreach ($feat_object->get_tag_values($tag)) {
-				push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{db_xrefs}}, $_);
-			    }
-			}
-			elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
-			       $tag eq "translation" || $tag eq "transl_table") {
-			    # do nothing
-			}
-			else {
-			    ++$TagCount{"unknown_feature_tag_".$tag};
-			}
-		    }
-
-
+		}
+		elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
+		       $tag eq "translation" || $tag eq "transl_table") {
+		    # do nothing
+		}
+		else {
+		    ++$TagCount{"unknown_feature_tag_".$tag};
+		}
+	    }
 		} #if big || statement
 		else {
 		    # record unknown primary tag
@@ -588,13 +599,27 @@ sub to_bsml {
 
 	#count the number of each parsed feature in each feature group
 	# really this ought to be rewritten with a master feature type list
-	my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => []); #hash of arrays
+	my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => []); #hash of array
+
+	my $gene_product_name;
+	my $ec_numbers;
+	my $comment;
 	
 	foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {
+	    if(ref $gbr{'Features'}->{$feature_group}->{$feature}){
+		$gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
+	    }
 
-	    $gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
+	    if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'}){
+		$gene_product_name = $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'};
+	    }
+	    if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'}){
+		$comment = $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'};
+	    }
+	    if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'}){
+		$ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'};
+	    }
 
-#	    print "$feature\tin\t$feature_group\n";
 	    if ($feature =~ /gene/) {
 		push(@{$feature_type{gene}}, $feature);
 	    }
@@ -655,7 +680,7 @@ sub to_bsml {
 		}
 	    }
 	    my $gene_elem = &addFeature($gene_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	    $doc->createAndAddBsmlAttribute($gene_elem, "comment", "Derived from CDS tag");
+#	    $doc->createAndAddBsmlAttribute($gene_elem, "comment", "Derived from CDS tag");
 	}
 	else {
 	    die "Unable to create gene object in $feature_group";
@@ -680,13 +705,25 @@ sub to_bsml {
 		}
 	    }
 	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from mRNA tag");
+	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
+	    $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
+	    if($ec_numbers){
+		foreach my $ec_number (@$ec_numbers){
+		    $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
+		}
+	    }
 	}
 	elsif (@{$feature_type{gene}} == 1) {
 	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{gene}->[0]}, 'transcript');
 	    $trans_featref->{id} =~ s/gene/transcript_from_gene/;
 	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from gene tag");	    
+	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
+	    $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
+	    if($ec_numbers){
+		foreach my $ec_number (@$ec_numbers){
+		    $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
+		}
+	    }
 	}
 	elsif (@{$feature_type{CDS}} >= 1) { # use CDSs
 	    my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'transcript');
@@ -703,7 +740,13 @@ sub to_bsml {
 		}
 	    }
 	    my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", "Derived from CDS tag");
+	    $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
+	    $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
+	    if($ec_numbers){
+		foreach my $ec_number (@$ec_numbers){
+		    $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
+		}
+	    }
 	}
 	else {
 	    die "Unable to create transcript object in $feature_group";
@@ -739,11 +782,11 @@ sub to_bsml {
 		$cds_featref->{translation} = $codon_table->translate($cds_featref->{spliced_seq});
 
 		my $cds_elem = &addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-		$doc->createAndAddBsmlAttribute($cds_elem, "comment", "Derived from mRNA tag");
+#		$doc->createAndAddBsmlAttribute($cds_elem, "comment", "Derived from mRNA tag");
 	    }
 	}
 	else {
-	    die "Unable to create CDS object in $feature_group";
+	    die "Unable to create CDS object in @{$feature_type{CDS}} @{$feature_type{mRNA}} $feature_group";
 	}
 
 
@@ -769,7 +812,7 @@ sub to_bsml {
 		    $exon_featref->{end} = $loc->{end};
 		    $exon_featref->{end_type} = $loc->{end_pos_type};
 		    my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-		    $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
+#		    $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
 		    ++$n_exon;
 		}
 	    }	    
@@ -789,7 +832,7 @@ sub to_bsml {
 		    $exon_featref->{end} = $loc->{end};
 		    $exon_featref->{end_type} = $loc->{end_pos_type};
 		    my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-		    $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
+#		    $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
 		    ++$n_exon;
 		}
 	    }
@@ -807,7 +850,7 @@ sub to_bsml {
 		$exon_featref->{end} = $loc->{end};
 		$exon_featref->{end_type} = $loc->{end_pos_type};
 		my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
+#		$doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
 		++$n_exon;
 	    }
 	}
