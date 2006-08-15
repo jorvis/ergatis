@@ -375,7 +375,7 @@ for my $file ( @files ) {
 								  return;
 							      }
 							      
-							      if ($options{class_filter} && $options{class_filter} ne $seqRef->returnattr('class')) {
+							      if ($options{class_filter} && lc($options{class_filter}) ne lc($seqRef->returnattr('class'))) {
 								  $logger->debug("Skipping $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
 								  return;
 							      }
@@ -447,7 +447,7 @@ for my $file ( @files ) {
 								 my $feat_id = $feat->{id} || die "didn't get an id";
 								 
 								 ## are we checking for a specific class?
-								 if ($options{class_filter} && $options{class_filter} ne $feat->{class}) {
+								 if ($options{class_filter} && lc($options{class_filter}) ne lc($feat->{class})) {
 								     $logger->debug("Skipping $feat_id of $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
 								     return;
 								 }
