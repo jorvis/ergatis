@@ -6,6 +6,11 @@
       <name>glimmer3 workflow</name>
       <configMapId>empty</configMapId>
 <!--Processing-->
+	<command>    
+            <type>RunUnixCommand</type>
+            <configMapId>train_for_glimmer3</configMapId>
+            <name>train for glimmer3</name>
+        </command>
 	<command>
           <type>RunUnixCommand</type>
           <name>Create iterator list</name>
