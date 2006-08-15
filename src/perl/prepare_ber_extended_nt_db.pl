@@ -323,6 +323,8 @@ $assembly_sequence->finish();
 	$sth->bind_columns(undef, \$max_ln_txt);
 	$sth->fetch();
 	$sth->finish();
+
+	$max_ln_txt = 30000000;
 	
 	die "\n\nProblem fetching max sequence length from legacy db\n\n" unless defined $max_ln_txt;
 	
