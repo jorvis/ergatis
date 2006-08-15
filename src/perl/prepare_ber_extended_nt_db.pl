@@ -389,6 +389,10 @@ $assembly_sequence->finish();
 			if ($minusstrand) {
 				reverseComplementDNA(\$nucl);
 			}
+
+			if (length($nucl) == 0) {
+				die("'$header' had zero length sequence");
+			}
 			
 			$nucl =~ s/\W+//g;
 			$nucl =~ s/(.{1,60})/$1\n/g;
