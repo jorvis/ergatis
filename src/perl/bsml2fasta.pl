@@ -219,32 +219,35 @@ use strict;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use XML::Parser;
-use BSML::Indexer::Fasta;
+
+BEGIN {
 use Workflow::Logger;
-use Data::Dumper;
+use BSML::BsmlReader;
+use BSML::BsmlParserSerialSearch;
+use BSML::BsmlParserTwig;
+}
 
 #######
 ## ubiquitous options parsing and logger creation
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'bsml_input|i=s',
-			  'bsml_list|s=s',
-			  'bsml_file|b=s',        ## deprecated
-			  'bsml_dir|d=s',         ## deprecated
-			  'parse_element|p=s',
-			  'class_filter|c=s',
-			  'role_exclude=s',
-			  'role_include=s',
-			  'type|t=s',             ## deprecated
-			  'output_list|u=s',
-			  'output_subdir_size|z=s',
-			  'output_subdir_prefix|x=s',
-			  'debug=s',
-			  'format|m=s',
-			  'log|l=s',
-			  'output|o=s',
-			  'help|h') || pod2usage();
+                            'bsml_input|i=s',
+                            'bsml_list|s=s',
+                            'bsml_file|b=s',        ## deprecated
+                            'bsml_dir|d=s',         ## deprecated
+                            'parse_element|p=s',
+                            'class_filter|c=s',
+							'role_exclude=s',
+							'role_include=s',
+                            'type|t=s',             ## deprecated
+                            'output_list|u=s',
+                            'output_subdir_size|z=s',
+                            'output_subdir_prefix|x=s',
+                            'debug=s',
+                            'format|m=s',
+                            'log|l=s',
+                            'output|o=s',
+                            'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
@@ -319,7 +322,7 @@ if ( scalar @files == 0 ) {
 ## create an output list if passed
 my $olist_fh;
 if ($options{output_list}) {
-    $logger->debug("Creating output list at $options{output_list}") if ($logger->debug); 
+    $logger->debug("Creating output list at $options{output_list}") if ($logger->debug);
     open($olist_fh, ">$options{output_list}") || $logger->logdie("couldn't create output list $options{output_list} : $!");
 }
 
@@ -332,34 +335,25 @@ my %ids;
 
 ## hash of roles to include
 my %role_include;
-my $include_flag=0;
 foreach (split(",", $options{role_include})) {
 	$role_include{$_} = 1;
 }	
 
 ## hash of roles to exclude
 my %role_exclude;
-my $exclude_flag=0;
 foreach (split(",", $options{role_exclude})) {
 	$role_exclude{$_} = 1;
 }	
 
-
-
 #######
 ## parse out sequences from each file
-my $outputfh;
-my $buffer_var;
-my $featurelookup = {};
-my $sequencelookup = {};
-my $includeflags = {};
-my $excludeflags = {};
-
+my $mfh;
+my $title;
 for my $file ( @files ) {
     my $sfh;
     
-    if ($options{format} eq "multi") { 
-        open ($outputfh, ">$options{output}") || $logger->logdie("Unable to write to file $options{output} due to $!");
+    if ($options{format} eq "multi") {
+        open ($mfh, ">>$options{output}") || $logger->logdie("Unable to write to file $options{output} due to $!");
         $logger->debug("Writing output to multi-fasta file $options{output}") if ($logger->is_debug);
         
         if ($options{output_list}) {
@@ -367,223 +361,115 @@ for my $file ( @files ) {
         }
     }
     
+    if ($options{parse_element} eq 'sequence') {
+	my $seqParser = new BSML::BsmlParserSerialSearch( ReadFeatureTables => 0,
+							  SequenceCallBack =>sub 
+							  {
+							      my $seqRef = shift;
+							      my $seq_id = $seqRef->returnattr('id') || $seqRef->returnattr('identifier');
+							      $title = $seqRef->returnattr('title') || '';
+							      
+							      ## make sure an identifier was found
+							      if (! $seq_id) {
+								  $logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
+								  return;
+							      }
+							      
+							      if ($options{class_filter} && $options{class_filter} ne $seqRef->returnattr('class')) {
+								  $logger->debug("Skipping $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
+								  return;
+							      }
+							      
+								  my $bsml_link_refs = $seqRef->{'BsmlLink'};
+								  
+								  ## check bsml links for exclusion
+								  if ($options{role_exclude}) {
+								    foreach my $link(@{$bsml_link_refs}) {
+								  	  if ($role_exclude{$link->{'role'}}) {
+										$logger->debug("Excluding $seq_id in $file because it's role is ".$link->{'role'}) if ($logger->is_debug);
+								        return;
+								  	  }
+								    }
+							      }
 
-    my $sequenceid;
-    my $featureid;
-    my $charfuncs = {'Seq-data'=>
-			 sub {
-			     my ($expat,$char) = @_;
-			     my $index = scalar(@{$expat->{'Context'}}) - 1;
-			     if($expat->{'Context'}->[$index] eq 'Seq-data'){
-				 $char =~ s/\s+//g;
-				 $sequencelookup->{$sequenceid}->{'seqdata'} = $char;
-			     }
-			 }
-		 };
+								  ## check bsml links for inclusion
+								  my $include_flag = 0;
+								  foreach my $link(@{$bsml_link_refs}) {
+								  	if ($role_include{$link->{'role'}}) {
+								  		$include_flag = 1;
+										last;
+									}
+								  }
+								  if ($options{role_include} && !$include_flag) {
+									$logger->debug("Skipping $seq_id in $file because role(s) are not in inclusion list") if ($logger->is_debug);
+								    return;
+								  }
 
-    my $startfuncs = {'Sequence'=>
-			  sub{
-			      my ($expat,$elt,%params) = @_;
-			      $sequencelookup->{$params{'id'}}->{'class'} = $params{'class'};		
-			      $sequencelookup->{$params{'id'}}->{'title'} = $params{'title'};
-			      $sequenceid = $params{'id'};
-			  },
-		      'Seq-data'=>
-			  sub{
-			      $sequencelookup->{$sequenceid}->{'fasta_header'}=$sequenceid;
-			  },
-		      'Seq-data-import'=>
-			  sub{
-			      my ($expat,$elt,%params) = @_;
-			      $sequencelookup->{$sequenceid}->{'fasta_file'}=$params{'source'};
-			      $sequencelookup->{$sequenceid}->{'fasta_header'}=$params{'identifier'};
-			  },
-		      'Feature'=>
-			  sub{
-			      my ($expat,$elt,%params) = @_;
-			      $featureid = $params{'id'};
-			      $featurelookup->{$params{'id'}}->{'sequence'} = $sequenceid;
-			      $featurelookup->{$params{'id'}}->{'class'} = $params{'class'};		
-			      $featurelookup->{$params{'id'}}->{'title'} = $params{'title'};
-			  },
-		      'Interval-loc'=>
-			  sub{
-			      my ($expat,$elt,%params) = @_;
-			      $featurelookup->{$featureid}->{'startpos'} = $params{'startpos'};
-			      $featurelookup->{$featureid}->{'endpos'} = $params{'endpos'};
-			      $featurelookup->{$featureid}->{'complement'} = $params{'complement'};
-			  },
-		      'Link'=>
-			  sub{
-			      my ($expat,$elt,%params) = @_;
-			      my $index = scalar(@{$expat->{'Context'}}) - 1;
-			      my $parentelt = $expat->{'Context'}->[$index];
-			      if($parentelt eq 'Sequence' || $parentelt eq 'Feature'){
-				  my $objectid = ($parentelt eq 'Feature') ? $featureid : $sequenceid;
-				  if($role_exclude{$params{'role'}}){
-				      $excludeflags->{$objectid} = 1;
-				  }
-				  elsif($role_include{$params{'role'}}){
-				      $excludeflags->{$objectid} = 1;
-				  }
-			      }
-			  },
-		      'Seq-data'=>
-			  sub{
-			      my ($expat,$elt,%params) = @_;
-			      $expat->{'Handlers'}->{'Char'} = sub {
-				  #$_[1] is the name of the element
-				  if(exists $charfuncs->{$_[1]}){
-				      $charfuncs->{$_[1]}(@_);
-				  }
-			      }
-			  }
-		  };
-
-    if($options{parse_element} eq 'sequence'){
-	delete $startfuncs->{'Feature'};
-	delete $startfuncs->{'Interval-loc'};
+							      ## check and make sure we have a sequence, else log error and skip it
+							      ##  (whole sequence is returned with -1 passed as start)
+							      my $reader = new BSML::BsmlReader();
+							      my $seq = $reader->subSequence($seqRef,-1,0,0);
+							      $seq =~ s/\s//g;
+								  
+							      my $id = $seqRef->{'BsmlSeqDataImport'}->{'identifier'};
+							      my $seqdat = $seqRef->returnSeqData();
+							      if (length $seq < 1) {
+								  $logger->error("sequence $seq_id has no length.  cowardly refusing to export anything.") if ($logger->is_error);
+								  next;
+							      }
+							      
+							      write_sequence($id, \$seq);
+							  }); 
+	$logger->debug("Parsing Sequence elements in file $file") if ($logger->debug);
+	$seqParser->parse($file);
     }
-    if(!$options{role_include} && !$options{role_exclude}){
-	delete $startfuncs->{'Link'};
+    elsif ($options{parse_element} eq 'feature') { 
+	my $seqParser = new BSML::BsmlParserSerialSearch(
+							 SequenceCallBack =>sub 
+							 {
+							     my $seqRef = shift; 
+							     my $order = 0; 
+							     my $seq_id = $seqRef->returnattr('id') || $seqRef->returnattr('identifier');
+							     $title = $seqRef->returnattr('title') || '';
+							     
+							     ## make sure an identifier was found
+							     if (! $seq_id) {
+								 $logger->error("Cowardly refusing to create a fasta entry with no header.  add an id or identifier.") if ($logger->is_error);
+								 return;
+							     }
+	    
+							     ## if we are parsing features we need to get all the feature elements within this Sequence.
+							     my $reader = new BSML::BsmlReader();
+							     my $feat_list = $reader->readFeatures($seqRef);
+            
+							     ## read each feature.
+							     foreach my $feat (@$feat_list) {
+								 my $feat_id = $feat->{id} || die "didn't get an id";
+								 
+								 ## are we checking for a specific class?
+								 if ($options{class_filter} && $options{class_filter} ne $feat->{class}) {
+								     $logger->debug("Skipping $feat_id of $seq_id in $file because it does not match the class_filter passed") if ($logger->is_debug);
+								     return;
+								 }
+
+								 my $positions = $feat->{locations}->[0];
+								 
+								 $logger->debug("attempting to extract $positions->{startpos}, $positions->{endpos}, $positions->{complement}") if ($logger->is_debug);
+								 my $seq;
+								 my $feat_seq = $reader->extractSequence( \$seq, $positions->{startpos}, $positions->{endpos}, $positions->{complement} );
+								 
+								 ## now write the sequence
+								 write_sequence($feat_id, \$feat_seq);
+							     }
+							 });
+	$logger->debug("Parsing Sequence and Feature elements in file $file") if ($logger->debug);
+	$seqParser->parse($file);
+						     
     }
-
-    my $x = new XML::Parser(
-			    Handlers => 
-			    {
-				Start =>
-				    sub {
-					#$_[1] is the name of the element
-					if(exists $startfuncs->{$_[1]}){
-					    $startfuncs->{$_[1]}(@_);
-					}
-				    }
-			    });
-    $x->parsefile( $file );
 }
-
-if($options{parse_element} eq 'sequence'){
-    &process_sequences($sequencelookup,$includeflags,$excludeflags);
-}
-elsif($options{parse_element} eq 'feature'){
-    &process_features($featurelookup,$includeflags,$excludeflags);
-}
-
 #######
 ## fin   
 exit;
-
-sub process_sequences{
-    my($sequencelookup,$includeflags,$excludeflags) = @_;
-
-    my $fastafiles = {};
-    foreach my $sequenceid (sort {$a cmp $b} keys %$sequencelookup){
-	if(exists $sequencelookup->{$sequenceid}){
-	    if(! exists $fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}}){
-		$fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}} = [];
-	    }
-	    push @{$fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}}},$sequenceid;
-	}
-	else{
-	    #seq-data
-	    #print fasta record formatted as fasta
-	}
-    }
-
-    foreach my $fasta_file (keys %$fastafiles){
-	my $pos = -1;
-	my $posMax = -1;
-	while (($pos = index( $fasta_file, "\/", $pos)) > -1 ){
-	    $posMax = $pos;
-	    $pos++;
-	}
-	my $fasta_dir = substr( $fasta_file, 0, $posMax ); 
-        #Get fasta index
-	my $indexer = BSML::Indexer::Fasta->new($fasta_file, $fasta_dir);
-	# Check the health of the various indices for the data file.
-	my @check = $indexer->check_indices;
-	# Create the indices if necessary...
-	if ($check[0] == 1) { $indexer->index_entries };
-	if ($check[1] == 1) { $indexer->index_headers };
-	# Get the name of the header index file.
-	my $header_index = $indexer->header_index;
-	my $entry_index = $indexer->entry_index;
- 
-	my (%h, %e);
-	tie %h, 'CDB_File', $header_index or die "tie failed: $!\n";
-	tie %e, 'CDB_File', $entry_index or die "tie failed: $!\n";
-	my $filehandle;
-	open ($filehandle, $fasta_file) or die "Unable to open $fasta_file due to $!";
-
-	foreach my $sequenceid (@{$fastafiles->{$fasta_file}}){
-	    if ($options{class_filter} && (lc($options{class_filter}) ne lc($sequencelookup->{$sequenceid}->{'class'}))) {
-		$logger->debug("Skipping $sequenceid because it does not match the class filter") if ($logger->is_debug);
-		next;
-	    }
-	    if ($options{role_exclude} && ($excludeflags->{$sequenceid})) {
-		$logger->debug("Skipping $sequenceid because it does not match the role exclude filter") if ($logger->is_debug);
-		next;
-	    }
-	    if ($options{role_include} && (!$includeflags->{$sequenceid})) {
-		$logger->debug("Skipping $sequenceid because it does not match the role include filter") if ($logger->is_debug);
-		next;
-	    }
-	    if(! exists $sequencelookup->{$sequenceid}->{'seq-data'}){
-		my $seqdata = undef;
-		if(exists $e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}}){
-		    my ($offset, $length) = split( ',',$e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}});
-		    seek($filehandle, $offset, 0);
-		    read($filehandle, $seqdata, $length);
-		    print $outputfh $seqdata if($outputfh);
-		}
-		else{
-		    $logger->logdie("Can't find offset for $sequenceid in $fasta_file\n");
-		}
-	    }
-	}
-	close $filehandle;
-    }
-}
-
-sub process_feature{
-    my($sequencelookup,$includeflags,$excludeflags) = @_;
-    my $filehandles = {};
-
-    foreach my $sequenceid (keys %$sequencelookup){				
-	if(! exists $sequencelookup->{$sequenceid}->{'seq-data'}){
-	    $sequencelookup->{$sequenceid}->{'seqdata'} = 
-		&parse_multi_fasta($sequencelookup->{$sequenceid}->{'fasta_file'},
-				   $sequencelookup->{$sequenceid}->{'fasta_header'},
-				   $filehandles,undef,1);
-	}
-    }
-    
-    foreach my $featureid (keys %$featurelookup){
-	if ($options{class_filter} && (lc($options{class_filter}) ne lc($featurelookup->{$featureid}->{'class'}))) {
-	    $logger->debug("Skipping $featureid because it does not match the class filter") if ($logger->is_debug);
-	    next;
-	}
-	if ($options{role_exclude} && ($excludeflags->{$featureid})) {
-	    $logger->debug("Skipping $featureid because it does not match the role exclude filter") if ($logger->is_debug);
-	    next;
-	}
-	if ($options{role_include} && (!$includeflags->{$featureid})) {
-	    $logger->debug("Skipping $featureid because it does not match the role include filter") if ($logger->is_debug);
-	    next;
-	}
-	$logger->logdie("No parent sequence $featurelookup->{$featureid}->{'sequence'} provided for feature $featureid") if(! exists $sequencelookup->{$featurelookup->{$featureid}->{'sequence'}});
-	
-	my $featureseqdata = substr( $sequencelookup->{$featurelookup->{$featureid}->{'sequence'}},
-				     $featurelookup->{$featureid}->{'startpos'},
-				     $featurelookup->{$featureid}->{'endpos'} - $featurelookup->{$featureid}->{'startpos'});
-	if($featurelookup->{$featureid}->{'complement'} == 1){
-	    $featureseqdata = &reverse_complement($featureseqdata);
-	}
-	&write_sequence($featureid,$featurelookup->{$featureid}->{'title'},\$featureseqdata);
-    }
-
-}	
-
 
 sub add_file {
     ## adds a file to the list of those to process, checking to make sure it
@@ -681,7 +567,7 @@ sub fasta_out {
 }
 
 sub write_sequence {
-    my ($id, $title, $seqref) = @_;
+    my ($id, $seqref) = @_;
     my $dirpath = '';
 
     ## has this ID already been found?
@@ -692,7 +578,7 @@ sub write_sequence {
     $ids{$id}++;
 
     if ($options{format} eq 'multi') {
-        &fasta_out("$id $title", $seqref, $outputfh);
+        &fasta_out("$id $title", $seqref, $mfh);
 
     } elsif ($options{format} eq 'single') {
         ## the path depends on whether we are using output subdirectories
@@ -729,70 +615,3 @@ sub write_sequence {
 }
 
 
-sub parse_multi_fasta {
-    my $fasta_file = shift;
-    my $specified_header = shift;
-    my $title = shift;
-    my $handles = shift;
-    my $outputfh = shift;
-    my $savesequence = shift;
-
-    if(!exists $handles->{$fasta_file}){
-	# extract the directory from the filepath
-	my $pos = -1;
-	my $posMax = -1;
-	
-	while (($pos = index( $fasta_file, "\/", $pos)) > -1 ){
-	    $posMax = $pos;
-	    $pos++;
-	}
-	
-	my $fasta_dir = substr( $fasta_file, 0, $posMax ); 
-	
-	# try to load the sequence using a pregenerated index through. BSML::FastaIndex
-	
-	my $indexer = BSML::Indexer::Fasta->new($fasta_file, $fasta_dir);
-	
-	# Check the health of the various indices for the data file.
-	my @check = $indexer->check_indices;
-	
-	# Create the indices if necessary...
-	if ($check[0] == 1) { $indexer->index_entries };
-	if ($check[1] == 1) { $indexer->index_headers };
-	
-	# Get the name of the header index file.
-	my $header_index = $indexer->header_index;
-	my $entry_index = $indexer->entry_index;
- 
-	my (%h, %e);
-	tie %h, 'CDB_File', $header_index or die "tie failed: $!\n";
-	tie %e, 'CDB_File', $entry_index or die "tie failed: $!\n";
-	$handles->{$fasta_file}->{'headers'} = \%h;
-	$handles->{$fasta_file}->{'entries'} = \%e;
-
-    }
-    my $fh;
-    open ($fh, $fasta_file) or die "Unable to open $fasta_file due to $!";
-    $handles->{$fasta_file}->{'filehandle'} = $fh;
-    my $filehandle = $handles->{$fasta_file}->{'filehandle'};	
-    my $seqdata = undef;
-
-    if( exists $handles->{$fasta_file}->{'entries'}->{$handles->{$fasta_file}->{'headers'}->{$specified_header}}){
-	my ($offset, $length) = split( ',', $handles->{$fasta_file}->{'entries'}->{$handles->{$fasta_file}->{'headers'}->{$specified_header}});
-    	seek( $filehandle, $offset, 0 );
-	read( $filehandle, $seqdata, $length);
-	print $outputfh $seqdata if($outputfh);
-    }
-    else{
-	$logger->logdie("Can't find offset for $specified_header in $fasta_file\n");
-    }
-    close $fh;
-    return $seqdata;
-}
-
-sub reverse_complement {
-    my($residues) = @_;
-    $residues =~ tr/ATGCYRKMatgcyrkm/TACGRYMKtacgrymk/;
-    $residues = reverse($residues);
-    return $residues;
-}
