@@ -155,6 +155,7 @@ use Carp;
 use Sys::Hostname;
 use File::NFSLock qw(uncache);
 use Fcntl qw(LOCK_EX);
+use POSIX;
 
 $|++;
 
@@ -219,7 +220,7 @@ umask(0000);
             }
 
             open (my $fh, ">>" . $self->log_dir() . "/$host/$$.log") || croak ("can't create log file: $!");
-            print $fh "starting IdGenerator log for process $$\n";
+            print $fh "info: starting IdGenerator log for process $$\n";
             $self->{_logfh} = $fh;
         }
         
@@ -276,8 +277,9 @@ umask(0000);
                 ## if a lock is open and we have a truncated ID file, we need to write the
                 #   pending ID.
                 if ( defined $self->{_id_pending} ) {
-                    open($idfh, ">$self->{_lock_file}") || croak "can't read file: $!";
-                        print $idfh $self->{_id_pending};
+                    sysopen($idfh, $self->{_lock_file}, O_RDWR) || croak "can't read file: $!";
+                        sysseek($idfh, 0, 0);
+                        syswrite($idfh, $self->{_id_pending});
                     close $idfh;
                 }
                 
@@ -293,25 +295,41 @@ umask(0000);
             $self->{_lock_file} = $id_file;
 
             ## check if the file exists already, else create it
+            #  this should rarely happen, so check a few times first in a weak attempt to
+            #  make sure it isn't simply NFS lag/cache issue
             if (! -e $id_file ) {
-                $self->_log("no ID file found for type $args{type}.  initializing to 1");
-                open($idfh, ">$id_file") || croak("failed to initialize file $id_file");
-                print $idfh 1;
-                close $idfh;
+                my $found_later = 0;
+                
+                for ( 1 .. 5 ) {
+                    sleep 1;
+                    
+                    if ( -e $id_file ) {
+                        $found_later = 1;
+                        last;
+                    }
+                }
+                
+                if ( ! $found_later ) {
+                    $self->_log("no ID file found for type $args{type}.  initializing to 1");
+                    sysopen($idfh, $id_file, O_RDWR|O_EXCL|O_CREAT) || croak("failed to initialize file $id_file");
+                        sysseek($idfh, 0, 0);
+                        syswrite($idfh, 1);
+                    close $idfh;
+                }
             }
 
             ## try to get a lock.
             if ( $self->{_lock} = new File::NFSLock( $id_file,LOCK_EX,600,10*60 ) ) {
 
                 ## open, read id, set $current_num, close
-                open($idfh, "<$id_file") || croak "can't read file: $!";
-                $current_num = readline $idfh;
+                sysopen($idfh, $id_file, O_RDWR) || croak "can't read file: $!";
+                sysseek($idfh, 0, 0);
+                sysread($idfh, $current_num, 100);
+                chomp $current_num;
                 if (! defined $current_num ) {
                     $self->{_lock}->unlock();
                     croak("failed to pull an ID because the file appeared to be empty.  this should NOT happen.");
                 }
-                chomp $current_num;
-                close $idfh;
                 
                 my $id_to_set;
                 
@@ -330,10 +348,10 @@ umask(0000);
                     $id_to_set = $current_num + 1;
                 }
                 
-                ## open, set id, close
+                ## set next id, close
                 $self->{_id_pending} = $id_to_set;
-                open($idfh, ">$id_file") || croak "can't read file: $!";
-                    print $idfh $id_to_set;
+                sysseek($idfh, 0, 0);
+                syswrite($idfh, $id_to_set);
                 close $idfh;
                 $self->{_id_pending} = undef;
                 
@@ -364,15 +382,15 @@ umask(0000);
         for my $type ( keys %args ) {
             ## the value must be a number
             if ( $args{$type} !~ /^\d+$/ ) {
-                croak("failed attempt to set pool size for type $type.  value '$args{$type}' must be an integer");
+                croak("fatal: failed attempt to set pool size for type $type.  value '$args{$type}' must be an integer");
             }
             
             ## it cannot be 0
             if ( $args{$type} == 0 ) {
-                croak("failed attempt to set pool size for type $type.  value cannot be 0");
+                croak("fatal: failed attempt to set pool size for type $type.  value cannot be 0");
             }
             
-            $self->_log("setting pool size for type $type to $args{$type}");
+            $self->_log("info: setting pool size for type $type to $args{$type}");
             $self->{_pool_sizes}->{$type} = $args{$type};
         }
     }
@@ -386,7 +404,7 @@ umask(0000);
     
         ## make sure it is a valid ID repository
         unless ( -f "$self->{id_repository}/valid_id_repository" ) {
-            croak ("the id repository $self->{id_repository} doesn't appear to be valid.  see the documentation for this module");
+            croak ("fatal: the id repository $self->{id_repository} doesn't appear to be valid.  see the documentation for this module");
         }
         
         $self->{_id_repository_checked} = 1;
@@ -399,7 +417,7 @@ umask(0000);
         
         ## print the message to the log file, if logging
         if ($self->logging) {
-            print $logfh $msg;
+            print $logfh "$msg\n";
         }
     }
 }
