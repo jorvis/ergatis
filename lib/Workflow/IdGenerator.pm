@@ -294,37 +294,23 @@ umask(0000);
             my $id_file = "$self->{id_repository}/next.$args{type}.id";
             $self->{_lock_file} = $id_file;
 
-            ## check if the file exists already, else create it
-            #  this should rarely happen, so check a few times first in a weak attempt to
-            #  make sure it isn't simply NFS lag/cache issue
-            if (! -e $id_file ) {
-                my $found_later = 0;
-                
-                for ( 1 .. 5 ) {
-                    sleep 1;
-                    
-                    if ( -e $id_file ) {
-                        $found_later = 1;
-                        last;
-                    }
-                }
-                
-                if ( ! $found_later ) {
-                    $self->_log("no ID file found for type $args{type}.  initializing to 1");
-                    sysopen($idfh, $id_file, O_RDWR|O_EXCL|O_CREAT) || croak("failed to initialize file $id_file");
-                        sysseek($idfh, 0, 0);
-                        syswrite($idfh, 1);
-                    close $idfh;
-                }
-            }
-
             ## try to get a lock.
             if ( $self->{_lock} = new File::NFSLock( $id_file,LOCK_EX,600,10*60 ) ) {
+            
+                ## if the file didn't exist yet, only the .NFSLock version will exist.  
+                #   in that case, we need to initialize it.
+                if (! -e $id_file ) {
+                    $self->_log("no ID file found for type $args{type}.  initializing to 1");
+                    sysopen($idfh, $id_file, O_RDWR|O_EXCL|O_CREAT) || croak("failed to initialize file $id_file");
+                    $current_num = 1;
+                ## else just use the exiting one and read the next id
+                } else {
+                    sysopen($idfh, $id_file, O_RDWR) || croak "can't read file: $!";
+                    sysseek($idfh, 0, 0);
+                    sysread($idfh, $current_num, 100);
+                }
 
                 ## open, read id, set $current_num, close
-                sysopen($idfh, $id_file, O_RDWR) || croak "can't read file: $!";
-                sysseek($idfh, 0, 0);
-                sysread($idfh, $current_num, 100);
                 chomp $current_num;
                 if (! defined $current_num ) {
                     $self->{_lock}->unlock();
