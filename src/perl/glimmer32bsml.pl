@@ -13,6 +13,7 @@ glimmer32bsml.pl - convert glimmer3 output to BSML
 USAGE: glimmer32bsml.pl 
         --input=/path/to/glimmer3.output.file 
         --output=/path/to/output.bsml
+        --id_respository=/id_repository
        [ --project=aa1 
          --fasta_file=/path/to/fasta/for/Seq-data-import
        ]
@@ -100,7 +101,7 @@ use Pod::Usage;
 BEGIN {
 use Workflow::Logger;
 use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
+use Workflow::IdGenerator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 }
@@ -110,6 +111,7 @@ my $results = GetOptions (\%options,
               'input|i=s',
               'output|o=s',
               'fasta_file|f=s',
+              'id_respository|r=s',
               'project|p=s',
               'log|l=s',
               'command_id=s',       ## passed by workflow
@@ -138,7 +140,9 @@ my $next_id = 1;
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+my $idcreator = new Workflow::IdGenerator( 'id_respository' => $options{'id_repository'} );
+#Set a pool size
+$idcreator->set_pool_size( 'gene' => 30, 'exon' => 30, 'CDS' => 30 );
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -160,7 +164,7 @@ unless (defined $seq_id) {
 
 ## create this sequence, an analysis link, and a feature table
 my $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
-   $seq->addBsmlLink('analysis', '#glimmer3_analysis', 'input_of');
+$seq->addBsmlLink('analysis', '#glimmer3_analysis', 'input_of');
 my $ft = $doc->createAndAddFeatureTable($seq);
 
 ##  also add a link to the fasta file (Seq-data-import) if requested
@@ -210,17 +214,33 @@ while (<$ifh>) {
         }
 
         $gene = $doc->createAndAddFeature($ft, 
-                                          $idcreator->new_id( db => $options{project},
-                                                              so_type => 'gene',
-                                                              prefix => $options{command_id} ),
+                                          $idcreator->next_id( 'type' => 'gene',
+                                                               'project' => $options{'project'}),
                                           '', 'gene'
                                          );
+        my $cds = $doc->createAndAddFeature($ft,
+                                            $idcreator->next_id( 'type' => 'CDS',
+                                                                 'project' => $options{'project'}),
+                                         '', 'CDS'
+                                         );
+        my $exon = $doc->createAndAddFeature($ft,
+                                             $idcreator->next_id( 'type' => 'exon',
+                                                                  'project' => $options{'project'} ),
+                                             '', 'exon'
+                                             );
         $fg = $doc->createAndAddFeatureGroup( $seq, '', $gene->returnattr('id') );
         $fg->addBsmlFeatureGroupMember( $gene->returnattr('id'), $gene->returnattr('class') );
+        $fg->addBsmlFeatureGroupMember( $cds->returnattr('id'), $cds->returnattr('class') );
+        $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
         $gene->addBsmlLink('analysis', '#glimmer3_analysis', 'computed_by');
+        $cds->addBsmlLink('analysis', '#glimmer3_analysis', 'computed_by');
+        $exon->addBsmlLink('analysis', '#glimmer3_analysis', 'computed_by');
 
         #We may now add the interval loc
         &add_interval_loc($gene, $gene_start, $gene_stop, $gene_dir);
+        &add_interval_loc($cds, $gene_start, $gene_stop, $gene_dir);
+        &add_interval_loc($exon, $gene_start, $gene_stop, $gene_dir);
+        
 
     }
 
