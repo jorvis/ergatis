@@ -1,12 +1,14 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
+use lib (@INC, "/usr/local/devel/ANNOTATION/ard/current/lib/5.8.8/");
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+# eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
+#     if 0; # not running under some shell
+
+# BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+# use lib (@INC,$ENV{"PERL_MOD_DIR"});
+# no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+# no lib ".";
 
 =head1  NAME 
 
@@ -162,6 +164,7 @@ use Workflow::Logger;
 use XML::Twig;
 use File::Basename;
 use SeqLocation::SeqLocation;
+use Data::Dumper;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -271,7 +274,6 @@ my $bf = $options{input_file};
 
 $adjSeqLoc[$PREV] = new SeqLocation::SeqLocation('prev', 'adj');
 $adjSeqLoc[$NEXT] = new SeqLocation::SeqLocation('next', 'adj');
-print STDERR "Finding adjacent\n";
 &findAdjacent($bf, \@bsml_files);
 
 ## get the filename
@@ -494,13 +496,14 @@ sub processFeatureTables {
                 $logger->logdie("No id for Feature element");
             }
 
+
             if(defined($Feature->{att}->{class})) {
                 $featStats[4]->{class} = $Feature->{att}->{class};
             } else {
                 $logger->logdie("Feature is missing class attribute");
             }
 
-            my $Intervalloc = $Feature->{first_child};
+            my $Intervalloc = $Feature->first_child('Interval-loc');
 
             $logger->logdie("Could not retrieve Interval-loc") 
                 if(!$Intervalloc);
@@ -734,16 +737,16 @@ sub findAdjacent {
     my @prevAndNext;
 
     #Parse out this number
-    ($infile =~ /.*(\d+)\.(\d+)\.[\w-.]+\.bsml/) 
+    ($infile =~ /.*\.(\d+)\.(\d+)\.[\w-.]+\.bsml/) 
         || $logger->logdie("Could not extract fragment number from $infile");
     my $fragNo = $2;
     my $assembl = $1;
-
     foreach my $bsmlFile(@{$bsmlList}) {
-        if(($bsmlFile =~ /.*(\d+)\.(\d+)\.[\w-.]+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
+        if(($bsmlFile =~ /.*\.(\d+)\.(\d+)\.[\w-.]+\.bsml/) && $1 == $assembl && ($2-$fragNo)**2 == 1) {
             $prevAndNext[(($2-$fragNo+1)/2)] = $bsmlFile;
         }
     }
+    
 
     #print STDERR "@prevAndNext\n";
     #exit(0);
