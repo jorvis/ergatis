@@ -266,7 +266,7 @@ sub install_bcp_files {
 
     &do_or_die($execstring);
 
-    $execstring = "cp cvdata/contact.out cvdata/pub.out $installdir/docs";
+    $execstring = "cp cvdata/pub.out $installdir/docs";
 
     &do_or_die($execstring);
 }
