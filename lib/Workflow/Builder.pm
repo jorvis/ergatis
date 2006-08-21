@@ -202,7 +202,7 @@ sub _check_subs{
 sub replaceval{
     my($self,$val,$keylookup) = @_;
     if(!(exists $keylookup->{$val})){
-	$self->{_logger}->logdie("Bad key $val in ini file");
+	$self->{_logger}->logdie(" Orphan key ($val) in ini file");
     }
     else{
 	if($val =~ /TOGGLE\$\;$/){
