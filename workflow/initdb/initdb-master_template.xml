@@ -237,378 +237,168 @@
 <!-- Duplication detection and elminitation Step -->
         <command>
           <type>RunUnixCommand</type>
-          <name>create_table_group_list_file</name>
-          <configMapId>create_table_group_list_file</configMapId>
+          <name>collate_all_bcp_files_tableinfo</name>
+          <configMapId>collate_all_bcp_files_tableinfo</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_project</name>
-          <configMapId>dup_list_project</configMapId>
+          <name>collate_all_bcp_files_project</name>
+          <configMapId>collate_all_bcp_files_project</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_project</name>
-            <configMapId>remove_dups_project</configMapId>
+          <type>RunUnixCommand</type>
+          <name>collate_all_bcp_files_db</name>
+          <configMapId>collate_all_bcp_files_db</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_db</name>
-          <configMapId>dup_list_db</configMapId>
+          <name>collate_all_bcp_files_dbxref</name>
+          <configMapId>collate_all_bcp_files_dbxref</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_db</name>
-            <configMapId>remove_dups_db</configMapId>
+          <type>RunUnixCommand</type>
+          <name>collate_all_bcp_files_dbxrefprop</name>
+          <configMapId>collate_all_bcp_files_dbxrefprop</configMapId>
+        </command>
+          <command>
+          <type>RunUnixCommand</type>
+          <name>collate_all_bcp_files_pub</name>
+          <configMapId>collate_all_bcp_files_pub</configMapId>
+        </command>
+          <command>
+          <type>RunUnixCommand</type>
+          <name>collate_all_bcp_files_synonym</name>
+          <configMapId>collate_all_bcp_files_synonym</configMapId>
+        </command>
+          <command>
+          <type>RunUnixCommand</type>
+          <name>collate_all_bcp_files_pubprop</name>
+          <configMapId>collate_all_bcp_files_pubprop</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_cv</name>
-          <configMapId>dup_list_cv</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_cv</name>
-            <configMapId>remove_dups_cv</configMapId>
+          <name>collate_all_bcp_files_pub_relationship</name>
+          <configMapId>collate_all_bcp_files_pub_relationship</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_dbxref</name>
-          <configMapId>dup_list_dbxref</configMapId>
+          <name>collate_all_bcp_files_pub_dbxref</name>
+          <configMapId>collate_all_bcp_files_pub_dbxref</configMapId>
         </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_dbxref</name>
-            <configMapId>remove_dups_dbxref</configMapId>
+         <command>
+          <type>RunUnixCommand</type>
+          <name>collate_all_bcp_files_pubauthor</name>
+          <configMapId>collate_all_bcp_files_pubauthor</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_cvterm</name>
-          <configMapId>dup_list_cvterm</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_cvterm</name>
-            <configMapId>remove_dups_cvterm</configMapId>
+          <name>collate_all_bcp_files_organism</name>
+          <configMapId>collate_all_bcp_files_organism</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_dbxrefprop</name>
-          <configMapId>dup_list_dbxrefprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_dbxrefprop</name>
-            <configMapId>remove_dups_dbxrefprop</configMapId>
+          <name>collate_all_bcp_files_organismprop</name>
+          <configMapId>collate_all_bcp_files_organismprop</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_cvtermprop</name>
-          <configMapId>dup_list_cvtermprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dup_cvtermprop</name>
-            <configMapId>remove_dups_cvtermprop</configMapId>
+          <name>collate_all_bcp_files_organism_dbxref</name>
+          <configMapId>collate_all_bcp_files_organism_dbxref</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_pub</name>
-          <configMapId>dup_list_pub</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_pub</name>
-            <configMapId>remove_dups_pub</configMapId>
+          <name>collate_all_bcp_files_feature</name>
+          <configMapId>collate_all_bcp_files_feature</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_synonym</name>
-          <configMapId>dup_list_synonym</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_synonym</name>
-            <configMapId>remove_dups_synonym</configMapId>
+          <name>collate_all_bcp_files_featureprop</name>
+          <configMapId>collate_all_bcp_files_featureprop</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_pubprop</name>
-          <configMapId>dup_list_pubprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_pubprop</name>
-            <configMapId>remove_dups_pubprop</configMapId>
+          <name>collate_all_bcp_files_feature_pub_files</name>
+          <configMapId>collate_all_bcp_files_feature_pub</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_pub_relationship</name>
-          <configMapId>dup_list_pub_relationship</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_pub_relationship</name>
-            <configMapId>remove_dups_pub_relationship</configMapId>
+          <name>collate_all_bcp_files_featureprop_pub</name>
+          <configMapId>collate_all_bcp_files_featureprop_pub</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_pub_dbxref</name>
-          <configMapId>dup_list_pub_dbxref</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_pub_dbxref</name>
-            <configMapId>remove_dups_pub_dbxref</configMapId>
+          <name>collate_all_bcp_files_feature_synonym</name>
+          <configMapId>collate_all_bcp_files_feature_synonym</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_pubauthor</name>
-          <configMapId>dup_list_pubauthor</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_pubauthor</name>
-            <configMapId>remove_dups_pubauthor</configMapId>
+          <name>collate_all_bcp_files_feature_cvterm</name>
+          <configMapId>collate_all_bcp_files_feature_cvterm</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_organism</name>
-          <configMapId>dup_list_organism</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_organism</name>
-            <configMapId>remove_dups_organism</configMapId>
+          <name>collate_all_bcp_files_feature_cvterm_dbxref</name>
+          <configMapId>collate_all_bcp_files_feature_cvterm_dbxref</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_organismprop</name>
-          <configMapId>dup_list_organismprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_organismprop</name>
-            <configMapId>remove_dups_organismprop</configMapId>
+          <name>collate_all_bcp_files_feature_cvterm_pub</name>
+          <configMapId>collate_all_bcp_files_feature_cvterm_pub</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_organism_dbxref</name>
-          <configMapId>dup_list_organism_dbxref</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_organism_dbxref</name>
-            <configMapId>remove_dups_organism_dbxref</configMapId>
+          <name>collate_all_bcp_files_feature_cvtermprop</name>
+          <configMapId>collate_all_bcp_files_feature_cvtermprop</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_cvtermpath</name>
-          <configMapId>dup_list_cvtermpath</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_cvtermpath</name>
-            <configMapId>remove_dups_cvtermpath</configMapId>
+          <name>collate_all_bcp_files_feature_dbxref</name>
+          <configMapId>collate_all_bcp_files_feature_dbxref</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_cvtermsynonym</name>
-          <configMapId>dup_list_cvtermsynonym</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_cvtermsynonym</name>
-            <configMapId>remove_dups_cvtermsynonym</configMapId>
+          <name>collate_all_bcp_files_featureloc</name>
+          <configMapId>collate_all_bcp_files_featureloc</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_cvterm_relationship</name>
-          <configMapId>dup_list_cvterm_relationship</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_cvterm_relationship</name>
-            <configMapId>remove_dups_cvterm_relationship</configMapId>
+          <name>collate_all_bcp_files_feature_relationship</name>
+          <configMapId>collate_all_bcp_files_feature_relationship</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_cvterm_dbxref</name>
-          <configMapId>dup_list_cvterm_dbxref</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_cvterm_dbxref</name>
-            <configMapId>remove_dups_cvterm_dbxref</configMapId>
+          <name>collate_all_bcp_files_feature_relationship_pub</name>
+          <configMapId>collate_all_bcp_files_feature_relationship_pub</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_feature</name>
-          <configMapId>dup_list_feature</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature</name>
-            <configMapId>remove_dups_feature</configMapId>
+          <name>collate_all_bcp_files_feature_relationshipprop</name>
+          <configMapId>collate_all_bcp_files_feature_relationshipprop</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_featureprop</name>
-          <configMapId>dup_list_featureprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_featureprop</name>
-            <configMapId>remove_dups_featureprop</configMapId>
+          <name>collate_all_bcp_files_feature_relprop_pub</name>
+          <configMapId>collate_all_bcp_files_feature_relprop_pub</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_feature_pub</name>
-          <configMapId>dup_list_feature_pub</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_pub</name>
-            <configMapId>remove_dups_feature_pub</configMapId>
+          <name>collate_all_bcp_files_analysis</name>
+          <configMapId>collate_all_bcp_files_analysis</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_featureprop_pub</name>
-          <configMapId>dup_list_featureprop_pub</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_featureprop_pub</name>
-            <configMapId>remove_dups_featureprop_pub</configMapId>
+          <name>collate_all_bcp_files_analysisprop</name>
+          <configMapId>collate_all_bcp_files_analysisprop</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_feature_synonym</name>
-          <configMapId>dup_list_feature_synonym</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_synonym</name>
-            <configMapId>remove_dups_feature_synonym</configMapId>
+          <name>collate_all_bcp_files_analysisfeature</name>
+          <configMapId>collate_all_bcp_files_analysisfeature</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>dup_list_feature_cvterm</name>
-          <configMapId>dup_list_feature_cvterm</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_cvterm</name>
-            <configMapId>remove_dups_feature_cvterm</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_feature_cvtermprop</name>
-          <configMapId>dup_list_feature_cvtermprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_cvtermprop</name>
-            <configMapId>remove_dups_feature_cvtermprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_feature_dbxref</name>
-          <configMapId>dup_list_feature_dbxref</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_dbxref</name>
-            <configMapId>remove_dups_feature_dbxref</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_featureloc</name>
-          <configMapId>dup_list_featureloc</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_featureloc</name>
-            <configMapId>remove_dups_featureloc</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_feature_relationship</name>
-          <configMapId>dup_list_feature_relationship</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_relationship</name>
-            <configMapId>remove_dups_feature_relationship</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_feature_relationship_pub</name>
-          <configMapId>dup_list_feature_relationship_pub</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_relationship_pub</name>
-            <configMapId>remove_dups_feature_relationship_pub</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_feature_relationshipprop</name>
-          <configMapId>dup_list_feature_relationshipprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_relationshipprop</name>
-            <configMapId>remove_dups_feature_relationshipprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_feature_relprop_pub</name>
-          <configMapId>dup_list_feature_relprop_pub</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_feature_relprop_pub</name>
-            <configMapId>remove_dups_feature_relprop_pub</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_analysis</name>
-          <configMapId>dup_list_analysis</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_analysis</name>
-            <configMapId>remove_dups_analysis</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_analysisprop</name>
-          <configMapId>dup_list_analysisprop</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_analysisprop</name>
-            <configMapId>remove_dups_analysisprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>dup_list_analysisfeature</name>
-          <configMapId>dup_list_analysisfeature</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>remove_dups_analysisfeature</name>
-            <configMapId>remove_dups_analysisfeature</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>make_external_reference_list</name>
-            <configMapId>make_external_reference_list</configMapId>
-        </command>
-        <command>    
-            <type>RunUnixCommand</type>
-            <name>Replace placeholders</name>
-            <configMapId>replace_placeholders</configMapId>
+          <name>insert_serial_identifiers</name>
+          <configMapId>insert_serial_identifiers</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
