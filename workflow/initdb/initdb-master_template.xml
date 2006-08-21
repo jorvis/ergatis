@@ -98,6 +98,11 @@
         </command>
         <command>
           <type>RunUnixCommand</type>
+          <name>Create final scratch</name>
+          <configMapId>create_final_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
           <name>Create relationship aux</name>
           <configMapId>create_rel_aux_scratch</configMapId>
         </command>
