@@ -240,16 +240,6 @@
             <configMapId>parse_tigr_onto</configMapId>
         </command>
 <!-- Duplication detection and elminitation Step -->
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_tableinfo</name>
-          <configMapId>collate_all_bcp_files_tableinfo</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_project</name>
-          <configMapId>collate_all_bcp_files_project</configMapId>
-        </command>
         <command>    
           <type>RunUnixCommand</type>
           <name>collate_all_bcp_files_db</name>
@@ -272,133 +262,38 @@
         </command>
           <command>
           <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_synonym</name>
-          <configMapId>collate_all_bcp_files_synonym</configMapId>
+          <name>collate_all_bcp_files_cv</name>
+          <configMapId>collate_all_bcp_files_cv</configMapId>
         </command>
           <command>
           <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_pubprop</name>
-          <configMapId>collate_all_bcp_files_pubprop</configMapId>
+          <name>collate_all_bcp_files_cvterm</name>
+          <configMapId>collate_all_bcp_files_cvterm</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_pub_relationship</name>
-          <configMapId>collate_all_bcp_files_pub_relationship</configMapId>
+          <name>collate_all_bcp_files_cvterm_dbxref</name>
+          <configMapId>collate_all_bcp_files_cvterm_dbxref</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_pub_dbxref</name>
-          <configMapId>collate_all_bcp_files_pub_dbxref</configMapId>
+          <name>collate_all_bcp_files_cvterm_relationship</name>
+          <configMapId>collate_all_bcp_files_cvterm_relationship</configMapId>
         </command>
          <command>
           <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_pubauthor</name>
-          <configMapId>collate_all_bcp_files_pubauthor</configMapId>
+          <name>collate_all_bcp_files_cvtermsynonym</name>
+          <configMapId>collate_all_bcp_files_cvtermsynonym</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_organism</name>
-          <configMapId>collate_all_bcp_files_organism</configMapId>
+          <name>collate_all_bcp_files_cvtermpath</name>
+          <configMapId>collate_all_bcp_files_cvtermpath</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_organismprop</name>
-          <configMapId>collate_all_bcp_files_organismprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_organism_dbxref</name>
-          <configMapId>collate_all_bcp_files_organism_dbxref</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature</name>
-          <configMapId>collate_all_bcp_files_feature</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_featureprop</name>
-          <configMapId>collate_all_bcp_files_featureprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_pub_files</name>
-          <configMapId>collate_all_bcp_files_feature_pub</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_featureprop_pub</name>
-          <configMapId>collate_all_bcp_files_featureprop_pub</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_synonym</name>
-          <configMapId>collate_all_bcp_files_feature_synonym</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_cvterm</name>
-          <configMapId>collate_all_bcp_files_feature_cvterm</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_cvterm_dbxref</name>
-          <configMapId>collate_all_bcp_files_feature_cvterm_dbxref</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_cvterm_pub</name>
-          <configMapId>collate_all_bcp_files_feature_cvterm_pub</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_cvtermprop</name>
-          <configMapId>collate_all_bcp_files_feature_cvtermprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_dbxref</name>
-          <configMapId>collate_all_bcp_files_feature_dbxref</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_featureloc</name>
-          <configMapId>collate_all_bcp_files_featureloc</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_relationship</name>
-          <configMapId>collate_all_bcp_files_feature_relationship</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_relationship_pub</name>
-          <configMapId>collate_all_bcp_files_feature_relationship_pub</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_relationshipprop</name>
-          <configMapId>collate_all_bcp_files_feature_relationshipprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_feature_relprop_pub</name>
-          <configMapId>collate_all_bcp_files_feature_relprop_pub</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_analysis</name>
-          <configMapId>collate_all_bcp_files_analysis</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_analysisprop</name>
-          <configMapId>collate_all_bcp_files_analysisprop</configMapId>
-        </command>
-        <command>
-          <type>RunUnixCommand</type>
-          <name>collate_all_bcp_files_analysisfeature</name>
-          <configMapId>collate_all_bcp_files_analysisfeature</configMapId>
+          <name>collate_all_bcp_files_cvtermprop</name>
+          <configMapId>collate_all_bcp_files_cvtermprop</configMapId>
         </command>
         <command>
           <type>RunUnixCommand</type>
