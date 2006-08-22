@@ -1,0 +1,5 @@
+database:afu1 organism_type:euk include_genefinders: exclude_genefinders:
+100 tu_list_file:/usr/local/scratch/sundaram/bgz3582/afu1_100_tu.list.txt
+101 
+102 tu_list_file:/usr/local/scratch/sundaram/bgz3582/afu1_102_tu.list.txt
+
