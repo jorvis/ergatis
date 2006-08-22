@@ -1,7 +1,4 @@
-#!/local/packages/perl-5.8.8/bin/perl
-
-eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
+#!/usr/local/bin/perl
 
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -11,21 +8,10 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use Data::Dumper;
 use Workflow::IdGenerator;
 use XML::Twig;
 use BSML::BsmlDoc;
-
-#print Dumper %ENV;
-
-#my $emboss_path = "/usr/local/packages/EMBOSS";
-
-## required environment variables for EMBOSS normally
-## set using 'use emboss;'
-#$ENV{'PATH'} = "$emboss_path/bin:".$ENV{'PATH'};
-#$ENV{'EMBOSS_ACDROOT'} = "$emboss_path/share/EMBOSS/acd";
-#$ENV{'EMBOSS_DATA'} = "$emboss_path/share/EMBOSS/acd";
-#$ENV{'PLPLOT_LIB'} = "$emboss_path/share/EMBOSS";
+#use BSML::BsmlBuilder;
 
 my $transeq_exec;
 my $transeq_flags = ' -warning 1 -error 1 -fatal 1 -die 1';
@@ -36,10 +22,12 @@ my @genes = ();
 
 my $bsml_sequences;
 my $sequence_children;
+my $exon_locs;
 my $cds_locs;
 my $cds_regions;
 my $exon_frame;
 my $cds_frame;
+my $polypeptide_ids;
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -57,9 +45,9 @@ my $results = GetOptions (\%options,
 
 my $fasta_flag = 0;
 					 
-#if ($options{'help'}) {
-#	pod2usage(verbose => 2);
-#}
+if ($options{'help'}) {
+	pod2usage(verbose => 2);
+}
 
 if (!$options{'id_repository'}) {
 	pod2usage("must provided --id_repository");
@@ -107,6 +95,7 @@ if ($options{'table'}) {
 	$transeq_flags .= " -table $options{table}";
 }
 
+#my $doc = new BSML::BsmlBuilder();
 
 if (!$fasta_flag) {
 	## if a bsml document has been provided
@@ -129,13 +118,18 @@ if (!$fasta_flag) {
 	
 	## prepare a hash of strings for the transeq regions flag
 	## for each transcript
-	foreach my $cds(keys(%{$cds_locs})) {
-		my @cds_ref_arr = @{$cds_locs->{$cds}};
+	foreach my $transcript_id(keys(%{$exon_locs})) {
+		$exon_locs->{$transcript_id} = constrain_exons_by_cds(
+										$exon_locs->{$transcript_id}, 
+										$cds_locs->{$transcript_id}->[0],
+										$cds_locs->{$transcript_id}->[1],
+							  								 );
+		my @exon_ref_arr = @{$exon_locs->{$transcript_id}};
 		my @cds_regions = ();
-		foreach my $cds_ref(@cds_ref_arr) {
-			push(@cds_regions, $cds_ref->[0]."-".$cds_ref->[1]);
+		foreach my $exon_ref(@exon_ref_arr) {
+			push(@cds_regions, $exon_ref->[0]."-".$exon_ref->[1]);
 		}
-		$cds_regions->{$cds} = join(",",@cds_regions);
+		$cds_regions->{$transcript_id} = join(",",@cds_regions);
 	}
 
 	my $temp_in_fsa = $options{'output'}."/temp.in.fsa";
@@ -161,7 +155,7 @@ if (!$fasta_flag) {
 			$flags .= " -frame $cds_frame->{$transcript_id}";
 			system($transeq_exec.$flags);
 			my $out_fsa = $options{'output'}."/"."$transcript_id.fsa";
-			my $id_hash = replace_sequence_ids($temp_out_fsa, $out_fsa);
+			my $id_hash = replace_sequence_ids($polypeptide_ids->{$transcript_id}, $temp_out_fsa, $out_fsa);
 			unlink($temp_out_fsa);
 		}
 	}
@@ -189,35 +183,42 @@ if (!$fasta_flag) {
 	my $query_id = get_sequence_id($options{'input'});
 	
 	my $out_fsa = $options{'output'}."/"."$query_id.fsa";
-	my $id_hash = replace_sequence_ids($temp_out_fsa, $out_fsa);
+	my $id_hash = replace_sequence_ids('', $temp_out_fsa, $out_fsa);
 	
 	unlink($temp_out_fsa);
 }
 
+#$doc->write($options{'output'}."/translate_sequence.bsml");
+
 exit();
 
 sub replace_sequence_ids {
-	my ($old_fsa_file,$new_fsa_file) = @_;
+	my ($transcript_id, $old_fsa_file, $new_fsa_file) = @_;
 	
 	my %ids = ();
 	
 	my $count = count_fasta_records($old_fsa_file);
+
+	if ($count > 1 && $transcript_id ne '') {
+		die "Can't assign polypeptide id '$polypeptide_ids->{$transcript_id}' to more than one sequence in '$old_fsa_file'";
+	}
 	
-    unless($count) {
-        $id_gen->set_pool_size('polypeptide' => $count);
-    } else {
-        $id_gen->set_pool_size('polypeptide' => 25);
-    }
+	$id_gen->set_pool_size('polypeptide' => $count);
 	
 	open (IN, $old_fsa_file) || die "couldn't read fsa file";
-	open (OUT, ">".$new_fsa_file) || die "couldn't write fsa file $new_fsa_file.  ($!)";
+	open (OUT, ">".$new_fsa_file) || die "couldn't write fsa file";
 	while (<IN>) {
 		if (/^>[^\s]+_(\d)/) {
-			my $seq_id = $id_gen->next_id(
+			my $seq_id;
+			if ($transcript_id ne '' && defined($polypeptide_ids->{$transcript_id})) {
+				$seq_id = $polypeptide_ids->{$transcript_id};
+			} else {
+				$seq_id = $id_gen->next_id(
     	    		                      'project' => $options{'project'},
         	        		              'type'    => 'polypeptide'
                             		     );
-			$ids{$1} = $seq_id;
+				$ids{$1} = $seq_id;
+			}
 			print OUT ">$seq_id\n";
 		} else {
 			print OUT $_;
@@ -232,7 +233,7 @@ sub replace_sequence_ids {
 sub count_fasta_records {
 	my ($fname) = @_;
 	my $count = 0;
-	open (IN, $fname) || die "couldn't open fasta file for reading ($!)";
+	open (IN, $fname) || die "couldn't open fasta file for reading";
 	while (<IN>) {
 		if (/^>/) {
 			$count++;
@@ -410,7 +411,12 @@ sub process_feat {
 		} else {
 			$exon_frame->{$id} = 1;
 		}
+    } elsif ($feat->att('class') eq 'CDS') {
+    	my $seq_int = $feat->first_child('Interval-loc');
+        my ($start_pos, $end_pos) = ($seq_int->att('startpos') + 1, $seq_int->att('endpos') + 1);
+        push @{$coords{$id}}, $start_pos, $end_pos;
     }
+
     $twig->purge;
 }
 
@@ -421,17 +427,28 @@ sub process_feat_group {
 	my $feat_group_id = $feat_group->{'att'}->{'group-set'};
 	my $count = 0;
 	my $sum = 0;
+	my $polypeptide_flag = 0;
     foreach my $child ($feat_group->children('Feature-group-member')) {
 		if ($child->att('feature-type') eq 'exon') {
         	my $id = $child->att('featref');
             push(@exon_coords,[$coords{$id}->[0], $coords{$id}->[1]]);
 			$sum += $exon_frame->{$id};
 			$count++;
-        }
+        } elsif ($child->att('feature-type') eq 'CDS') {
+        	my $id = $child->att('featref');
+			$cds_locs->{$feat_group_id} = [$coords{$id}->[0], $coords{$id}->[1]];
+		} elsif ($child->att('feature-type') eq 'polypeptide') {
+			if ($polypeptide_flag) {
+				die "Feature-group '$feat_group_id' contains more than one polypeptide feature";
+			}
+			$polypeptide_flag = 1;
+        	my $id = $child->att('featref');
+			$polypeptide_ids->{$feat_group_id} = $id;
+		}
     }
     if (scalar @exon_coords) {
     	@exon_coords = sort { $$a[0] <=> $$b[0]; } @exon_coords;
-		$cds_locs->{$feat_group_id} = \@exon_coords;
+		$exon_locs->{$feat_group_id} = \@exon_coords;
 		if (abs($sum/$count) != 1) {
 			die "transcript '$feat_group_id' has some exons on both strands";
 		} else {
@@ -516,16 +533,37 @@ sub get_regions_substring {
 	my $subseq = '';
 	
 	foreach my $region(@regions) {
-		my ($start, $stop) = ($1, $2) if($region =~ /(-*[^-]+)-(-*[^-]+)/);
+		my ($start, $stop) = split("-", $region);
 		my $len = $stop - $start + 1;
 		$start--;
-        if(!($start < 0 || $stop < 0)) {
-            $subseq .= substr($sequence, $start, $len);
-        } else {
-            $subseq .= substr($sequence, $start, $len);
-            $subseq .= substr($sequence, 0, $stop);
-        }
+		$subseq .= substr($sequence, $start, $len);
 	}
 	
 	return $subseq;
+}
+
+## constrains the exons regions to within boundaries
+## set by the CDS feature 
+sub constrain_exons_by_cds {
+	my ($exon_loc_ref, $cds_start, $cds_end) = @_;
+	
+	my @exon_locs = ();
+	
+	foreach my $exon_ref(@{$exon_loc_ref}) {
+		if ($exon_ref->[1] < $cds_start) {
+			next;
+		}
+		if ($exon_ref->[0] > $cds_end) {
+			next;
+		}
+		if ($exon_ref->[0] < $cds_start) {
+			$exon_ref->[0] = $cds_start;
+		}
+		if ($exon_ref->[1] > $cds_end) {
+			$exon_ref->[1] = $cds_end;
+		}
+		push(@exon_locs, $exon_ref);
+	}
+	
+	return \@exon_locs;
 }
