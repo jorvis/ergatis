@@ -1,53 +1,59 @@
 #!/usr/local/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
 
-=head1  NAME 
 
-glimmer32bsml.pl - convert glimmer3 output to BSML
+=head1 NAME
+
+glimmer32bsml.pl - Creates a bsml document from glimmer3 raw
+    output
 
 =head1 SYNOPSIS
 
-USAGE: glimmer32bsml.pl 
-        --input=/path/to/glimmer3.output.file 
-        --output=/path/to/output.bsml
-        --id_respository=/id_repository
-       [ --project=aa1 
-         --fasta_file=/path/to/fasta/for/Seq-data-import
-       ]
+USAGE: glimmer32bsml.pl
+            --input_list=/path/to/some/glimmer3.raw.list
+            --input_file=/path/to/some/glimmer3.raw
+            --output=/path/to/transterm.bsml
+            --project=aa1
+            --id_repository=/path/to/id_repository
+            --fasta_input=/path/to/glimmer3/input.fsa
+          [ --log=/path/to/file.log
+            --debug=4
+            --help
+          ]
 
 =head1 OPTIONS
 
-B<--input,-i> 
-    .predict file from a glimmer3 scan.
+B<--input_list,-i>
+    Input list of glimmer3 raw output files (.predict)
 
-B<--debug,-d> 
-    Debug level.  Use a large number to turn on verbose debugging. 
+B<--input_file,-f>
+    Input glimmer3 raw file (.predict)
 
-B<--fasta_file,-f>
-    If passed, will create a Seq-data-import element referencing this
-    path.
+B<--output,-o>
+    The output bsml file.
 
-B<--project,-p> 
-    Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
-    not passed.
+B<--project,-p>
+    The project (used for id generation).
 
-B<--log,-l> 
-    Log file
+B<--id_repository,-r>
+    Id repository for use by Workflow::IdGenerator.pm
 
-B<--output,-o> 
-    Output BSML file (will be created, must not exist)
+B<--fasta_input,-a>
+    The input file that was used as input for the glimmer3 run
 
-B<--help,-h> 
-    This help message
+B<--log,-l>
+    Logfile.
 
-=head1   DESCRIPTION
+B<--help,-h>
+    Print this message
+
+=head1  DESCRIPTION
 
 This script is used to convert the output from a glimmer3 search into BSML.
 
-=head1 INPUT
+=head1  INPUT
 
 You define the input file using the --input option.  This file does not need any
 special file extension.  The regular output of glimmer3 looks like this:
@@ -78,8 +84,8 @@ arisons between predictions.
 - The ranges given by glimmer3 differ from those given by glimmer2 because they now
 include the stop codon.
 
-
 =head1 OUTPUT
+
 
 After parsing the input file, a file specified by the --output option is created.  This script
 will fail if it already exists.  The file is created, and temporary IDs are created for
@@ -88,201 +94,208 @@ before any database insertion.
 
 Base positions from the input file are renumbered so that positions start at zero.
 
-=head1 CONTACT
+=head1  CONTACT
 
-    Jason Inman
-    jinman@tigr.org
+    Kevin Galens
+    kgalens@tigr.org
 
 =cut
 
 use strict;
-use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
+use warnings;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-BEGIN {
-use Workflow::Logger;
-use BSML::BsmlRepository;
+use Gene;
+use BSML::GenePredictionBsml;
 use Workflow::IdGenerator;
-use BSML::BsmlBuilder;
-use BSML::BsmlParserTwig;
-}
+use Workflow::Logger;
+
+####### GLOBALS AND CONSTANTS ###########
+my @inputFiles;               #Holds input files
+my $project;                  #The project (ex aa1)
+my $output;                   #Output file
+my $idMaker;                  #The Workflow::IdGenerator
+my $bsml;                     #BSML::BsmlBuilder object object.
+my $data;                     #Holds parsed glimmer3 information
+my $inputFsa;                 #The fasta file input to glimmer3
+my $debug;                    #The debug variable
+########################################
 
 my %options = ();
 my $results = GetOptions (\%options, 
-              'input|i=s',
-              'output|o=s',
-              'fasta_file|f=s',
-              'id_respository|r=s',
-              'project|p=s',
-              'log|l=s',
-              'command_id=s',       ## passed by workflow
-              'logconf=s',          ## passed by workflow (not used)
-              'debug=s',
-              'help|h') || pod2usage();
+                          'input_list|i=s',
+                          'input_file|f=s',
+                          'output|o=s',
+                          'project|p=s',
+                          'id_repository|r=s',
+                          'fasta_input|a=s',
+                          'log|l=s',
+                          'debug=s',
+                          'help|h') || &_pod;
 
+#Setup the logger
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
-# display documentation
-if( $options{'help'} ){
-    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
-}
-
-## make sure all passed options are peachy
+# Check the options.
 &check_parameters(\%options);
 
-## we want to creating ids unique to this document, which will be replaced later.  they must
-##  contain the prefix that will be used to look up a real id, such as ath1.exon.15
-my $next_id = 1;
-
-## we want a new doc
-my $doc = new BSML::BsmlBuilder();
-
-## we're going to generate ids
-my $idcreator = new Workflow::IdGenerator( 'id_respository' => $options{'id_repository'} );
-#Set a pool size
-$idcreator->set_pool_size( 'gene' => 30, 'exon' => 30, 'CDS' => 30 );
-
-## open the input file for parsing
-open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
-
-
-## go forward until we get to the sequence name (id)
-my $seq_id;
-while (<$ifh>) {
-    if ( />(.+)\s*.*$/ ) {
-        $seq_id = $1;
-        last;
-    }
+foreach my $file (@inputFiles) {
+    $data = &parseGlimmer3Data($file);
+    $bsml = &generateBsml($data);
 }
 
-## make sure we found an id
-unless (defined $seq_id) {
-    $logger->logdie("unable to pull seq id from $options{'input'}");
-}
+$bsml->writeBsml($output);
 
-## create this sequence, an analysis link, and a feature table
-my $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
-$seq->addBsmlLink('analysis', '#glimmer3_analysis', 'input_of');
-my $ft = $doc->createAndAddFeatureTable($seq);
+exit(0);
 
-##  also add a link to the fasta file (Seq-data-import) if requested
-if ($options{'fasta_file'}) {
-    $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{'fasta_file'}, '', $seq_id);
-}
+######################## SUB ROUTINES #######################################
+sub parseGlimmer3Data {
+    my ($file) = @_;
+    my $genes;
+    my $foundId = 0;
 
-## now look for datalines (gene defs)
-my (@cols, $fg, $gene);
-my ($gene_start, $gene_stop, $gene_dir);
-
-while (<$ifh>) {
-
-    ## matches lines like "orf00002      430      969  +1     3.91"
-    if (/^\s*.+\s+\d+\s+\d+\s+.+\s+.+$/) {
-        @cols = split();
-
-        ## set the gene start, stop, and direction
-        $gene_start = $cols[1] - 1;
-        $gene_stop = $cols[2] - 1;
-        ($gene_dir   = $cols[3]) =~ s/(.)\d+/$1/;
-
-        # Adjust the start and stop appropriately for strandedness and whether
-        # the origin is being spanned.
-        if ($gene_dir eq '-') {
-            my $tmp = $gene_start;
-            $gene_start = $gene_stop;
-            $gene_stop = $tmp;
-        }
-
-        # If the gene spans the origin, adjust accordingly...
-        if ($gene_stop < $gene_start) {
-
-            ## Get the length.  (Determine the name of the .details file,
-            # grep it for "Sequence Length = " and then parse the number
-            # of bases from that result.)
-            (my $details_file = $options{'input'}) =~ s/predict/detail/;
-            die "Can't find details file!\n" unless (stat $details_file);
-            my $grep_cmd = "grep 'Sequence length' $details_file";
-            my $length = `$grep_cmd`;
-            $length =~ s/Sequence length = //;
-
-            # subtract the length from the start to get the coordinate in
-            # the opposite direction from the origin.
-            $gene_start-= $length;
-
-        }
-
-        $gene = $doc->createAndAddFeature($ft, 
-                                          $idcreator->next_id( 'type' => 'gene',
-                                                               'project' => $options{'project'}),
-                                          '', 'gene'
-                                         );
-        my $cds = $doc->createAndAddFeature($ft,
-                                            $idcreator->next_id( 'type' => 'CDS',
-                                                                 'project' => $options{'project'}),
-                                         '', 'CDS'
-                                         );
-        my $exon = $doc->createAndAddFeature($ft,
-                                             $idcreator->next_id( 'type' => 'exon',
-                                                                  'project' => $options{'project'} ),
-                                             '', 'exon'
-                                             );
-        $fg = $doc->createAndAddFeatureGroup( $seq, '', $gene->returnattr('id') );
-        $fg->addBsmlFeatureGroupMember( $gene->returnattr('id'), $gene->returnattr('class') );
-        $fg->addBsmlFeatureGroupMember( $cds->returnattr('id'), $cds->returnattr('class') );
-        $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
-        $gene->addBsmlLink('analysis', '#glimmer3_analysis', 'computed_by');
-        $cds->addBsmlLink('analysis', '#glimmer3_analysis', 'computed_by');
-        $exon->addBsmlLink('analysis', '#glimmer3_analysis', 'computed_by');
-
-        #We may now add the interval loc
-        &add_interval_loc($gene, $gene_start, $gene_stop, $gene_dir);
-        &add_interval_loc($cds, $gene_start, $gene_stop, $gene_dir);
-        &add_interval_loc($exon, $gene_start, $gene_stop, $gene_dir);
-        
-
-    }
-
-}
-
-## add the analysis element
-$doc->createAndAddAnalysis(
-                            id => 'glimmer3_analysis',
-                            sourcename => $options{'output'},
-                          );
-
-## now write the doc
-$doc->write($options{'output'});
-
-exit;
-
-sub add_interval_loc {
-    my ($feat, $n, $m, $dir) = @_;
+    open(IN, "<$file") or &_die("Unable to open $file");
     
-    ## was it found on the forward or reverse strand?
-    if ($dir eq '+') {
-        $feat->addBsmlIntervalLoc($n, $m, 0);
-    } elsif ($dir eq '-') {
-        $feat->addBsmlIntervalLoc($n, $m, 1);
-    } else {
-        die "Unknown strand direction found!\n";
+    while(<IN>) {
+        if(/^>(.*?)\s/) {
+
+            $foundId = $1;
+
+        } elsif($foundId) {
+
+            my @cols = split(/\s+/,$_);
+             
+            #Create some genes and push them ontot he $genes array
+            my $tmp = new Gene( $idMaker->next_id( 'type' => 'gene',
+                                                   'project' => $project),
+                                $cols[1]-1, $cols[2]-1, ($cols[3] > 0) ? 0 : 1,
+                                $foundId);
+
+            foreach my $type(qw(exon CDS transcript polypeptide)) {
+                my $typeid =$idMaker->next_id( 'type' => $type,
+                                               'project' => $project);
+                $tmp->addFeature($typeid, $cols[1]-1, $cols[2]-1, ($cols[3] > 0) ? 0 : 1,
+                                $type);
+            }
+
+            my $count = $tmp->addToGroup($tmp->getId, { 'all' => 1 });
+            &_die("Nothing was added to group") unless($count);
+
+            push(@{$genes}, $tmp);
+
+        } else {
+            &_die("Didn't find the id");
+        }
     }
 
+    close(IN);
+
+    return $genes;
+
+}
+
+sub generateBsml {
+    my $data = shift;
+
+    #Create the document
+    my $doc = new GenePredictionBsml( 'glimmer3', $inputFsa );
+    
+    foreach my $gene(@{$data}) {
+        $doc->addGene($gene);
+    }
+    
+    my $seqId;
+    open(IN, "< $inputFsa") or &_die("Unable to open $inputFsa");
+    while(<IN>) {
+        #assume it's a single fasta file
+        if(/^>([^\s+]+)/) {
+            $seqId = $1;
+            last;
+        }
+    }
+    close(IN);
+
+    my $addedTo = $doc->setFasta($seqId, $inputFsa);
+    &_die("$seqId was not a sequence associated with the gene") unless($addedTo);
+
+    return $doc;
+    
+    
 }
 
 sub check_parameters {
+    my $options = shift;
+
+    my $error = "";
+
+    &_pod if($options{'help'});
+
+    if($options{'input_list'}) {
+        $error .= "Option input_list ($options{'input_list'}) does not exist\n" 
+            unless(-e $options{'input_list'});
+        open(IN, "< $options{'input_list'}") || &_die("Unable to open $options{'input_list'} ($!)");
+        @inputFiles = <IN>;
+        close(IN);
+    }
+    if($options{'input_file'}) {
+        $error .= "Option input_file ($options{'input_file'}) does not exist\n" unless(-e $options{'input_file'});
+        push(@inputFiles, $options{'input_file'});
+    }
+    unless($options{'input_list'} || $options{'input_file'}) {
+        $error .= "Either option input_list or input_file is required\n";
+    }
+
+    unless($options{'output'}) {
+        $error .= "Option output is required\n";
+    } else {
+        $output = $options{'output'};
+    }
+
+    unless($options{'project'}) {
+        $error .= "Option project is required\n";
+    } else {
+        $project = $options{'project'};
+    }
+
+    unless($options{'id_repository'}) {
+        $error .= "Option id_repository is required.  Please see Workflow::IdGenerator ".
+            "for details.\n";
+    } else {
+        $idMaker = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'} );
+        $idMaker->set_pool_size( 'exon'        => 20,
+                                 'transcript'  => 20,
+                                 'gene'        => 20,
+                                 'polypeptide' => 20,
+                                 'CDS'         => 20 );
+                                 
+    }
+
+    unless($options{'fasta_input'}) {
+        $error .= "Option fasta_input is required\n";
+    } else {
+        $error .= "$options{'fasta_input'} (fasta_input) does not exist\n" 
+            unless(-e $options{'fasta_input'});
+        $inputFsa = $options{'fasta_input'};
+    }
     
-    ## make sure input file exists
-    if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
+    if($options{'debug'}) {
+        $debug = $options{'debug'};
+    }
     
-    ## make sure output file doesn't exist yet
-    if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
+    unless($error eq "") {
+        &_die($error);
+    }
     
-    $options{'fasta_file'} = '' unless ($options{'fasta_file'});
-    $options{'project'}    = 'unknown' unless ($options{'project'});
-    $options{'command_id'} = '' unless ($options{'command_id'});
-    
-    return 1;
 }
 
+sub _pod {   
+    pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
+}
+
+sub _die {
+    my $msg = shift;
+    $logger->logdie($msg);
+}
