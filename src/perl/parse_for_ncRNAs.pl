@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
@@ -120,16 +120,12 @@ sub parseBsml {
     my ($bsmlFile, $rnaFeats) = @_;
     my $onlyFeatures = 0;
     
-    print "BsmlFile::$bsmlFile\n";
 
     my $twig = XML::Twig->new(twig_roots => {
         'Feature'  => sub { &parseFeat(@_, $rnaFeats, \$onlyFeatures) },
         'Seq-pair-alignment' => sub { &parseSpa(@_, $rnaFeats) unless($onlyFeatures); }});
 
     $twig->parsefile($bsmlFile);
-
-   #  print Dumper($rnaFeats);
-#     print scalar (keys %{$rnaFeats})."\n";
    
 }
 
@@ -167,9 +163,16 @@ sub parseSpa {
     $tmpRna->id($idGenerator->next_id( project => $project, type => 'ncRNA' ));
     $tmpRna->class('ncRNA');
     $tmpRna->title($spa->{'att'}->{'compxref'});
+
+    
     
     foreach my $spr($spa->children('Seq-pair-run')) {
-        #Find the highest scoring SPR.
+        unless($spr->{'att'}->{'runscore'}) {
+            $highSpr = $spr;
+            last;
+        }
+
+        #Find the highest scoring SPR. (For the blast output)
         if($spr->{'att'}->{'runscore'} > $max) {
             $max = $spr->{'att'}->{'runscore'};
             $highSpr = $spr;
@@ -225,7 +228,6 @@ sub writeRnaBsmlFile {
     my $ft = $bsmlDoc->createAndAddFeatureTable( $seq );
 
     while(my ($id, $rna) = each(%{$rnaFeats})) {
-        print "Creating feature: ".$rna->id." ".$rna->title." ".$rna->class."\n";
         my $feat = $bsmlDoc->createAndAddFeature($ft, $rna->id, $rna->title, $rna->class);
         $feat->addBsmlLink('analysis', '#parse_for_ncRNA_analysis', 'computed_by');
         my $strand = $rna->start < $rna->end ? 0 : 1;
@@ -254,7 +256,6 @@ sub check_parameters {
         &_die("Either input_list or input_file option must exist");
     }
 
-    print "bsml lists: $options{'bsml_lists'}\n";
 
     if($options{'bsml_lists'}) {
         @bsmlLists = split(/\s/,$options{'bsml_lists'});
