@@ -3,14 +3,63 @@
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
-	
+
+=head1  NAME
+
+translate_sequence.pl  - translates nt fasta or gene describing BSML into polypeptide fasta
+
+=head1 SYNOPSIS
+
+USAGE:  translate_sequence.pl --transeq_bin /path/to/transeq.sh -i [single_sequence.fsa|gene_document.bsml] -o /output/directory [-l /path/to/logfile.log] [--regions s1-e1,s2-e2,...] [--frame 1,2,3,F,-1,-2,-3,R,6] [--table 0] --project project_name --id_repository /path/to/id_repository
+
+=head1 OPTIONS
+
+B<--input,-i>
+    The input single sequence fasta file or gene describing BSML document
+
+B<--output,-o>
+    The output path.
+
+B<--regions,r>
+    Optional regions of sequence to translate (formatted to be compatible with emboss transeq)
+    [flag is ignored for BSML input]
+
+B<--frame,-f>
+    Optional frames to translate (1, 2, 3, F, -1, -2, -3, R, 6)
+	[flag is ignored for BSML input]
+
+B<--table,-t>
+    Optional translation table to use
+
+B<--debug,-d>
+    Debug level.  Use a large number to turn on verbose debugging.
+
+B<--log,-l>
+    Log file
+
+B<--help,-h>
+    This help message
+
+=head1   DESCRIPTION
+
+Translates an input fasta sequence to a polypeptide fasta file using emboss transeq.
+Can also produce fasta formatted polypeptide sequences for genes described in a gene 
+encoding BSML document.
+
+=head1  CONTACT
+        Brett Whitty
+        bwhitty@tigr.org
+
+=cut
+
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
+use Workflow::Logger;
 use Workflow::IdGenerator;
 use XML::Twig;
-use BSML::BsmlDoc;
+#use BSML::BsmlDoc;
 #use BSML::BsmlBuilder;
 
 my $transeq_exec;
@@ -21,6 +70,7 @@ my %id2title = ();
 my @genes = ();
 
 my $bsml_sequences;
+my $bsml_sequences_topology;
 my $sequence_children;
 my $exon_locs;
 my $cds_locs;
@@ -33,15 +83,20 @@ my %options = ();
 my $results = GetOptions (\%options,
 						  'transeq_bin=s',
                           'input|i=s',
-						  'class|c:s',
 						  'regions|r:s',
 						  'frame|f:s',
 						  'table|t:i',
 						  'output|o=s',
 						  'id_repository=s',
 						  'project=s',
-						  'substring',
+                          'log|l=s',
+						  'debug=s',
                           'help|h') || pod2usage();
+
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+                                  'LOG_LEVEL'=>$options{'debug'});
+$logger = $logger->get_logger();
 
 my $fasta_flag = 0;
 					 
@@ -67,7 +122,6 @@ unless ($options{'input'}) {
 }
 
 if ($options{'input'}) {
-
 	unless (-e $options{'input'}) {
 		pod2usage("input file '$options{input}' does not exist");
 	}
@@ -75,7 +129,7 @@ if ($options{'input'}) {
 		$fasta_flag = 1;
 	}
 	if ($fasta_flag && count_fasta_records($options{'input'}) != 1) {
-		die "fasta input file must contain only one sequence record";
+		$logger->logdie("fasta input file must contain only one sequence record");
 	}
 }
 
@@ -86,7 +140,6 @@ $options{'output'} =~ s/\/$//;
 unless (-d $options{'output'}) {
 	pod2usage("specified output path '$options{output}' is not a directory");
 }
-
 
 
 if ($options{'table'}) {
@@ -103,10 +156,14 @@ if (!$fasta_flag) {
 	## transeq on the gene models it encodes
 
 	if ($options{'regions'}) { 
-		print STDERR "WARNING: --regions flag is incompatible with BSML document input and will be ignored\n";
+		 if ($logger->is_debug()) {
+			 $logger->debug("WARNING: --regions flag is incompatible with BSML document input and will be ignored");
+		 }
 	}	
 	if ($options{'frame'}) { 
-		print STDERR "WARNING: --frame flag is incompatible with BSML document input and will be ignored\n";
+		if ($logger->is_debug()) {
+			$logger->debug("WARNING: --frame flag is incompatible with BSML document input and will be ignored");
+		}
 	}	
 	
 	## scan through BSML input doc and find all assembly sequences
@@ -116,49 +173,51 @@ if (!$fasta_flag) {
 	## scan through BSML and pull out interval locs from feature tables	
 	parse_bsml_interval_locs($options{'input'});
 	
-	## prepare a hash of strings for the transeq regions flag
-	## for each transcript
+	## constrain the ranges of the exons to within the cds feature
 	foreach my $transcript_id(keys(%{$exon_locs})) {
 		$exon_locs->{$transcript_id} = constrain_exons_by_cds(
 										$exon_locs->{$transcript_id}, 
 										$cds_locs->{$transcript_id}->[0],
 										$cds_locs->{$transcript_id}->[1],
 							  								 );
-		my @exon_ref_arr = @{$exon_locs->{$transcript_id}};
-		my @cds_regions = ();
-		foreach my $exon_ref(@exon_ref_arr) {
-			push(@cds_regions, $exon_ref->[0]."-".$exon_ref->[1]);
-		}
-		$cds_regions->{$transcript_id} = join(",",@cds_regions);
 	}
 
 	my $temp_in_fsa = $options{'output'}."/temp.in.fsa";
 	my $temp_out_fsa = $options{'output'}."/temp.out.fsa";
+	
 	foreach my $seq_id(keys(%{$sequence_children})) {
 		my $seq = '';
-		if ($options{'substring'}) {
-			$seq = get_sequence($bsml_sequences->{$seq_id});
-		}
+		
+		## retrieve the parent sequence
+		$seq = get_sequence($bsml_sequences->{$seq_id});
+
+		## translate all children
 		foreach my $transcript_id(@{$sequence_children->{$seq_id}}) {
 			my $flags = $transeq_flags;
-			my $nt_fasta = $bsml_sequences->{$seq_id};
-			my $regions_string = $cds_regions->{$transcript_id};
-			if ($options{'substring'}) {
-				$nt_fasta = $temp_in_fsa;
-		   		my $subseq = get_regions_substring($seq, $regions_string);
-				write_seq_to_fasta($nt_fasta, "$seq_id", $subseq);
-			} else {
-				$flags .= " -regions $regions_string";
-			}
-			$flags .= " -sequence $nt_fasta";
+			
+			## get fasta substring sequence
+			my $subseq = get_substring_by_exons($seq, $exon_locs->{$transcript_id});
+			
+			## write the sequence to a temp file
+			write_seq_to_fasta($temp_in_fsa, "$seq_id", $subseq);
+			
+			## transeq flags
+			$flags .= " -sequence $temp_in_fsa";
 			$flags .= " -outseq $temp_out_fsa";
 			$flags .= " -frame $cds_frame->{$transcript_id}";
+
+			## execute transeq
 			system($transeq_exec.$flags);
+			
+			## replace sequence ids in output file
 			my $out_fsa = $options{'output'}."/"."$transcript_id.fsa";
 			my $id_hash = replace_sequence_ids($polypeptide_ids->{$transcript_id}, $temp_out_fsa, $out_fsa);
+
+			## remove temp out file
 			unlink($temp_out_fsa);
 		}
 	}
+	## remove temp in file
 	if (-e $temp_in_fsa) {unlink($temp_in_fsa);}
 	
 } else {
@@ -171,13 +230,16 @@ if (!$fasta_flag) {
 	if ($options{'regions'}) {
 		$transeq_flags .= " -regions $options{regions}";
 	}
+	
 	if (!$options{'frame'}) {
 		$options{'frame'} = '1';
 	} 
+	
 	$transeq_flags .= " -frame $options{frame}";
 	$transeq_flags .= " -sequence $options{input}";
 	$transeq_flags .= " -outseq $temp_out_fsa";
 	
+	## run transeq
 	system($transeq_exec.$transeq_flags);
 
 	my $query_id = get_sequence_id($options{'input'});
@@ -192,6 +254,7 @@ if (!$fasta_flag) {
 
 exit();
 
+## replace the sequence ids in the output fasta file
 sub replace_sequence_ids {
 	my ($transcript_id, $old_fsa_file, $new_fsa_file) = @_;
 	
@@ -200,19 +263,24 @@ sub replace_sequence_ids {
 	my $count = count_fasta_records($old_fsa_file);
 
 	if ($count > 1 && $transcript_id ne '') {
-		die "Can't assign polypeptide id '$polypeptide_ids->{$transcript_id}' to more than one sequence in '$old_fsa_file'";
+		$logger->logdie("Can't assign polypeptide id '$polypeptide_ids->{$transcript_id}' to more than one sequence in '$old_fsa_file'");
 	}
-	
+
+	## maximum number of possible translated frames is 6	
 	$id_gen->set_pool_size('polypeptide' => $count);
 	
-	open (IN, $old_fsa_file) || die "couldn't read fsa file";
-	open (OUT, ">".$new_fsa_file) || die "couldn't write fsa file";
+	open (IN, $old_fsa_file) || $logger->logdie("couldn't open '$old_fsa_file' for reading");
+	open (OUT, ">".$new_fsa_file) || $logger->logdie("couldn't open '$new_fsa_file' for writing");
+
 	while (<IN>) {
 		if (/^>[^\s]+_(\d)/) {
 			my $seq_id;
-			if ($transcript_id ne '' && defined($polypeptide_ids->{$transcript_id})) {
+			## if we've got a transcript id, and it has a corresponding polypeptide id
+			## we'll use it for the sequence id in the fasta header
+			if (defined($transcript_id) && defined($polypeptide_ids->{$transcript_id})) {
 				$seq_id = $polypeptide_ids->{$transcript_id};
 			} else {
+			## otherwise we'll use the id generator
 				$seq_id = $id_gen->next_id(
     	    		                      'project' => $options{'project'},
         	        		              'type'    => 'polypeptide'
@@ -233,7 +301,7 @@ sub replace_sequence_ids {
 sub count_fasta_records {
 	my ($fname) = @_;
 	my $count = 0;
-	open (IN, $fname) || die "couldn't open fasta file for reading";
+	open (IN, $fname) || $logger->logdie("couldn't open '$fname' for reading");
 	while (<IN>) {
 		if (/^>/) {
 			$count++;
@@ -247,7 +315,7 @@ sub count_fasta_records {
 sub get_sequence_id {
 	my ($fname) = @_;
 	my $id = '';
-	open (IN, $fname) || die "couldn't open fasta file for reading";
+	open (IN, $fname) || $logger->logdie("couldn't open '$fname' for reading");
 	while (<IN>) {
 		chomp;
 		if (/^>([^\s]+)/) {
@@ -259,7 +327,6 @@ sub get_sequence_id {
 
 	return $id;
 }
-
 
 sub parse_bsml_sequences {
         my ($file) = @_;
@@ -296,17 +363,25 @@ sub process_sequence {
 	my $source;
 	my $identifier;
 	my $format;
+	my $topology;
 	
 	$seq_id = $sequence->{'att'}->{'id'};
 	$class = $sequence->{'att'}->{'class'};
 	$molecule = $sequence->{'att'}->{'molecule'};
-		
+	$topology = $sequence->{'att'}->{'topology'};	
+	
 	if (!defined($class)) {
-		print STDERR "WARNING: sequence class of '$seq_id' was not defined\n";
+		if ($logger->is_debug()) {$logger->debug("Sequence class of '$seq_id' was not defined");}
 	}
 	if (!defined($molecule) || $molecule eq 'mol-not-set') {
-		print STDERR "WARNING: molecule type of '$seq_id' was not defined\n";
+		if ($logger->is_debug()) {$logger->debug("Molecule type of '$seq_id' was not defined");}
 	}
+	
+	if (defined($topology)) {
+		$bsml_sequences_topology->{$seq_id} = $topology;
+	} else {
+		if ($logger->is_debug()) {$logger->debug("Topology of molecule '$seq_id' was not defined");}
+	}	
 	
 	if ($seq_data_import = $sequence->first_child('Seq-data-import')) {
 		
@@ -315,10 +390,10 @@ sub process_sequence {
 		$format = $seq_data_import->{'att'}->{'format'};
 		
 		unless (-e $source) {
-			die "fasta file referenced in BSML Seq-data-import '$source' doesn't exist";
+			$logger->logdie("fasta file referenced in BSML Seq-data-import '$source' doesn't exist");
 		}
 		unless (defined($identifier)) {
-			die "Seq-data-import for '$seq_id' does not have a value for identifier";
+			$logger->logdie("Seq-data-import for '$seq_id' does not have a value for identifier");
 		}
 		
 		my $seq_count = count_fasta_records($source);
@@ -339,10 +414,10 @@ sub process_sequence {
 				$bsml_sequences->{$seq_id} = $sequence_file;
 				
 			} else {
-				die "couldn't extract sequence for '$seq_id' from Seq-data-import source '$source'";
+				$logger->logdie("couldn't extract sequence for '$seq_id' from Seq-data-import source '$source'");
 			}
 		} else {
-			die "no fasta records found for BSML Seq-data-import '$source' for sequence '$seq_id'";
+			$logger->logdie("no fasta records found for BSML Seq-data-import '$source' for sequence '$seq_id'");
 		}
 			
 		
@@ -359,7 +434,7 @@ sub process_sequence {
 	} else {
 		
 		## there is no Seq-data or Seq-data-import for the sequence
-		die "No sequence present in BSML sequence element";
+		$logger->logdie("No sequence present in BSML sequence element");
 	}
    
 	foreach my $child ($sequence->first_child('Feature-tables')->children('Feature-group')) {
@@ -397,6 +472,7 @@ sub parse_bsml_interval_locs {
 }
 
 
+## handles Feature elements
 sub process_feat {
 	my ($twig, $feat) = @_;
     my $id = $feat->att('id');
@@ -404,7 +480,7 @@ sub process_feat {
     if ($feat->att('class') eq 'exon') {
     	my $seq_int = $feat->first_child('Interval-loc');
     	my $complement = $seq_int->att('complement');
-        my ($start_pos, $end_pos) = ($seq_int->att('startpos') + 1, $seq_int->att('endpos') + 1);
+		my ($start_pos, $end_pos) = ($seq_int->att('startpos'), $seq_int->att('endpos'));
         push @{$coords{$id}}, $start_pos, $end_pos;
        	if ($complement) {
 			$exon_frame->{$id} = -1;	
@@ -413,13 +489,14 @@ sub process_feat {
 		}
     } elsif ($feat->att('class') eq 'CDS') {
     	my $seq_int = $feat->first_child('Interval-loc');
-        my ($start_pos, $end_pos) = ($seq_int->att('startpos') + 1, $seq_int->att('endpos') + 1);
+        my ($start_pos, $end_pos) = ($seq_int->att('startpos'), $seq_int->att('endpos'));
         push @{$coords{$id}}, $start_pos, $end_pos;
     }
 
     $twig->purge;
 }
 
+## handles Feature-group elements
 sub process_feat_group {
     my ($twig, $feat_group) = @_;
     my @exon_coords = ();
@@ -439,7 +516,7 @@ sub process_feat_group {
 			$cds_locs->{$feat_group_id} = [$coords{$id}->[0], $coords{$id}->[1]];
 		} elsif ($child->att('feature-type') eq 'polypeptide') {
 			if ($polypeptide_flag) {
-				die "Feature-group '$feat_group_id' contains more than one polypeptide feature";
+				$logger->logdie("Feature-group '$feat_group_id' contains more than one polypeptide feature");
 			}
 			$polypeptide_flag = 1;
         	my $id = $child->att('featref');
@@ -450,7 +527,7 @@ sub process_feat_group {
     	@exon_coords = sort { $$a[0] <=> $$b[0]; } @exon_coords;
 		$exon_locs->{$feat_group_id} = \@exon_coords;
 		if (abs($sum/$count) != 1) {
-			die "transcript '$feat_group_id' has some exons on both strands";
+			$logger->logdie("transcript '$feat_group_id' has some exons on both strands");
 		} else {
 			$cds_frame->{$feat_group_id} = $sum/$count;
 		}
@@ -459,10 +536,11 @@ sub process_feat_group {
 }
 
 
+## writes sequence to a fasta file
 sub write_seq_to_fasta {
 	my ($file, $header, $sequence) = @_;
 	
-	open (OUT, ">$file") || die "couldn't write fasta file '$file'";
+	open (OUT, ">$file") || $logger->logdie("couldn't write fasta file '$file'");
 		
 	$sequence =~ s/\W+//g;
 	$sequence =~ s/(.{1,60})/$1\n/g;
@@ -471,11 +549,12 @@ sub write_seq_to_fasta {
 	close OUT;
 }
 
+## pulls sequence out of a fasta file by id in header
 sub get_sequence_by_id {
 	my ($fname, $id) = @_;
 	my $seq_id = '';
 	my $sequence = '';
-	open (IN, $fname) || die "couldn't open fasta file for reading";
+	open (IN, $fname) || $logger->logdie("couldn't open fasta file for reading");
 	TOP: while (<IN>) {
 		chomp;
 		if (/^>([^\s]+)/) {
@@ -497,20 +576,19 @@ sub get_sequence_by_id {
 	return $sequence;
 }
 
-
-## return the sequence 
+## return sequence from a fasta file (first sequence only)
 sub get_sequence {
 	my ($fname) = @_; 
 	
 	my $sequence = '';
 	my $flag = 0;
 	
-	open (IN, $fname) || die "couldn't open fasta file for reading";
+	open (IN, $fname) || $logger->logdie("couldn't open fasta file for reading");
 	while (<IN>) {
 		chomp;
 		if (/^>/) {
 			if ($flag) {
-				die "Unexpectedly encountered more than one fasta record in input nt sequence file";
+				$logger->logdie("Unexpectedly encountered more than one fasta record in input nt sequence file");
 			}
 			$flag = 1;
 			next;
@@ -522,24 +600,36 @@ sub get_sequence {
 	return $sequence;
 }
 
-## takes the string that would otherwise be provided to transeq
-## with the regions flag and uses it to return the substring of
-## an input sequence
-sub get_regions_substring {
-	my ($sequence, $regions_string)=@_;
+## prepare substring sequence using the array of exon positions
+sub get_substring_by_exons {
+	my ($sequence, $exon_refs) = @_;
 	
-	my @regions = split(",", $regions_string);
-
 	my $subseq = '';
 	
-	foreach my $region(@regions) {
-		my ($start, $stop) = split("-", $region);
-		my $len = $stop - $start + 1;
-		$start--;
-		$subseq .= substr($sequence, $start, $len);
-	}
+	my @cds_regions = ();
+	foreach my $exon_ref(@{$exon_refs}) {
+		my ($startpos, $endpos) = @{$exon_ref};
+		
+		if ($startpos > $endpos) {
+			## at this point we should have startpos < endpos
+			## if not, this should be resolved at the bsml parsing stage
+		 	$logger->logdie("BSML contains an exon with startpos > endpos");
+		}
 	
+		my $len = $endpos - $startpos;
+		
+		if ($startpos < 0) {
+		## for circular molecules
+			$subseq .= substr($sequence, $startpos, abs($startpos));
+			$subseq .= substr($sequence, 0, $endpos);
+		} else {
+		## otherwise
+			$subseq .= substr($sequence, $startpos, $len);
+		}
+	}
+
 	return $subseq;
+	
 }
 
 ## constrains the exons regions to within boundaries
