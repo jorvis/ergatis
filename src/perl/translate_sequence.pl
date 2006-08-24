@@ -361,7 +361,7 @@ sub process_sequence {
 	my $seq_data_import;
 	my $seq_data;
 	my $source;
-	my $identifier;
+	my $identifier = '';
 	my $format;
 	my $topology;
 	
@@ -392,7 +392,7 @@ sub process_sequence {
 		unless (-e $source) {
 			$logger->logdie("fasta file referenced in BSML Seq-data-import '$source' doesn't exist");
 		}
-		unless (defined($identifier)) {
+		if ($identifier eq '') {
 			$logger->logdie("Seq-data-import for '$seq_id' does not have a value for identifier");
 		}
 		
