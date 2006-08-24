@@ -196,7 +196,7 @@ sub addRnaFeat {
         
         #Is there an overlap (will produce a positive number if so).
         my @sortedBound = sort($tmpRna->start, $tmpRna->end, $addRna->start, $addRna->end);
-        my $ol = abs($tmpRna->start - $tmpRna->end) + abs($addRna->start + $addRna->end)
+        my $ol = abs($tmpRna->start - $tmpRna->end) + abs($addRna->start - $addRna->end)
             - abs($sortedBound[0] - $sortedBound[3]);
         
         #If there is an overlap and also if they are on the same strand.
@@ -225,6 +225,8 @@ sub writeRnaBsmlFile {
     my $class = 'assembly';
     $class = $1 if($asmblId =~ /^.*?\.(\w+)/);
     my $seq = $bsmlDoc->createAndAddSequence( $asmblId, $asmblId, '', 'dna', $class);
+    $bsmlDoc->createAndAddLink($seq, 'analysis', '#parse_for_ncRNA_analysis', 'input_of');
+    $bsmlDoc->createAndAddSeqDataImport( $seq, 'fsa', $inputFiles[0], '', $asmblId);
     my $ft = $bsmlDoc->createAndAddFeatureTable( $seq );
 
     while(my ($id, $rna) = each(%{$rnaFeats})) {
