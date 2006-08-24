@@ -59,6 +59,7 @@ use Pod::Usage;
 use Workflow::Logger;
 use Workflow::IdGenerator;
 use XML::Twig;
+use Data::Dumper;
 #use BSML::BsmlDoc;
 #use BSML::BsmlBuilder;
 
@@ -190,16 +191,24 @@ if (!$fasta_flag) {
 		
 		## retrieve the parent sequence
 		$seq = get_sequence($bsml_sequences->{$seq_id});
-
+	
+		if (length($seq) eq 0) {
+			$logger->logdie("failed to fetch the sequence for '$seq_id'");
+		}
+		
 		## translate all children
 		foreach my $transcript_id(@{$sequence_children->{$seq_id}}) {
 			my $flags = $transeq_flags;
-			
+		
 			## get fasta substring sequence
 			my $subseq = get_substring_by_exons($seq, $exon_locs->{$transcript_id});
 			
+			if (length($subseq) eq 0) {
+				$logger->logdie("failed to fetch the subsequence for '$transcript_id'");
+			}
+		
 			## write the sequence to a temp file
-			write_seq_to_fasta($temp_in_fsa, "$seq_id", $subseq);
+			write_seq_to_fasta($temp_in_fsa, "$transcript_id", $subseq);
 			
 			## transeq flags
 			$flags .= " -sequence $temp_in_fsa";
@@ -481,6 +490,9 @@ sub process_feat {
     	my $seq_int = $feat->first_child('Interval-loc');
     	my $complement = $seq_int->att('complement');
 		my ($start_pos, $end_pos) = ($seq_int->att('startpos'), $seq_int->att('endpos'));
+		if ($start_pos > $end_pos) {
+			$logger->logdie("Feature '$id' startpos > endpos --- BSML usage error");
+		}
         push @{$coords{$id}}, $start_pos, $end_pos;
        	if ($complement) {
 			$exon_frame->{$id} = -1;	
@@ -490,6 +502,9 @@ sub process_feat {
     } elsif ($feat->att('class') eq 'CDS') {
     	my $seq_int = $feat->first_child('Interval-loc');
         my ($start_pos, $end_pos) = ($seq_int->att('startpos'), $seq_int->att('endpos'));
+		if ($start_pos > $end_pos) {
+			$logger->logdie("Feature '$id' startpos > endpos --- BSML usage error");
+		}
         push @{$coords{$id}}, $start_pos, $end_pos;
     }
 
