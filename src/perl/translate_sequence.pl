@@ -221,7 +221,7 @@ if (!$fasta_flag) {
 			
 			## replace sequence ids in output file
 #			my $out_fsa = $options{'output'}."/"."$polypeptide_ids->{$transcript_id}.fsa";
-			$id_hash = replace_sequence_ids($polypeptide_ids->{$transcript_id}, $temp_out_fsa, $options{'output'});
+			$id_hash = replace_sequence_ids($transcript_id, $temp_out_fsa, $options{'output'});
 
 			## remove temp out file
 			unlink($temp_out_fsa);
