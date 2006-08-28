@@ -63,7 +63,7 @@ use Data::Dumper;
 use BSML::BsmlBuilder;
 
 my $transeq_exec;
-my $transeq_flags = ' -warning 1 -error 1 -fatal 1 -die 1';
+my $transeq_flags = ' -warning 1 -error 1 -fatal 1 -die 1 -trim 1';
 
 my %coords = ();
 my %id2title = ();
@@ -148,7 +148,6 @@ if ($options{'table'}) {
 	$transeq_flags .= " -table $options{table}";
 }
 
-my $doc = new BSML::BsmlBuilder();
 
 if (!$fasta_flag) {
 	## if a bsml document has been provided
@@ -188,6 +187,8 @@ if (!$fasta_flag) {
 	my $temp_out_fsa = $options{'output'}."/temp.out.fsa";
 	
 	foreach my $seq_id(keys(%{$sequence_children})) {
+		my $doc = new BSML::BsmlBuilder();
+		
 		my $seq = '';
 		
 		## retrieve the parent sequence
@@ -255,8 +256,8 @@ if (!$fasta_flag) {
 													'identifier' 	=> $key,
 												);
 			}
-			$doc->write($options{'output'}."/$transcript_id.translate_sequence.bsml");
 		}
+		$doc->write($options{'output'}."/$seq_id.translate_sequence.bsml");
 	}
 	## remove temp in file
 	if (-e $temp_in_fsa) {unlink($temp_in_fsa);}
@@ -265,6 +266,8 @@ if (!$fasta_flag) {
 	## otherwise we're just going to run
 	## transeq on the input nt sequence
 	## to generate a polypeptide fasta file
+	
+	my $doc = new BSML::BsmlBuilder();
 	
 	my $id_hash;
 	
