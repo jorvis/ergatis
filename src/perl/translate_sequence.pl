@@ -61,6 +61,7 @@ use Workflow::IdGenerator;
 use XML::Twig;
 use Data::Dumper;
 use BSML::BsmlBuilder;
+use File::Basename;
 
 my $transeq_exec;
 my $transeq_flags = ' -warning 1 -error 1 -fatal 1 -die 1 -trim 1';
@@ -153,6 +154,8 @@ if (!$fasta_flag) {
 	## if a bsml document has been provided
 	## we're going to process it and perform
 	## transeq on the gene models it encodes
+
+	my $input_prefix = basename($options{'input'},".bsml");
 
 	my $id_hash;
 	
@@ -257,7 +260,7 @@ if (!$fasta_flag) {
 												);
 			}
 		}
-		$doc->write($options{'output'}."/$seq_id.translate_sequence.bsml");
+		$doc->write($options{'output'}."/$input_prefix.translate_sequence.bsml");
 	}
 	## remove temp in file
 	if (-e $temp_in_fsa) {unlink($temp_in_fsa);}
@@ -266,6 +269,8 @@ if (!$fasta_flag) {
 	## otherwise we're just going to run
 	## transeq on the input nt sequence
 	## to generate a polypeptide fasta file
+
+	my $input_prefix = basename($options{'input'},".fsa");
 	
 	my $doc = new BSML::BsmlBuilder();
 	
@@ -324,7 +329,7 @@ if (!$fasta_flag) {
 											'identifier' 	=> $key,
 										);
 	}
-	$doc->write($options{'output'}."/$query_id.translate_sequence.bsml");
+	$doc->write($options{'output'}."/$input_prefix.translate_sequence.bsml");
 }
 
 
