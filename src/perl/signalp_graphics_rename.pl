@@ -169,9 +169,9 @@ while (<$in>) {
 		my $analysis = $1;
 		$counter = $2;
 		my $extension = $3;
-	    	$logger->debug("'plot.$analysis.$counter.$extension' will be renamed to '$outprefix.signalp.$analysis.$extension'") if ($logger->is_debug);
+	    	$logger->debug("'plot.$analysis.$counter.$extension' will be renamed to '$outprefix.$analysis.$extension'") if ($logger->is_debug);
 			#$logger->debug("'plot.$analysis.$counter.$extension' will be renamed to '$sequence_id.signalp.$analysis.$extension'") if ($logger->is_debug);
-		$line =~ s/plot.$analysis.$counter.$extension/$outprefix.signalp.$analysis.$extension/;
+		$line =~ s/plot.$analysis.$counter.$extension/$outprefix.$analysis.$extension/;
 		#$line =~ s/plot.$analysis.$counter.$extension/$sequence_id.signalp.$analysis.$extension/;
 		print $out $line;
 		if ($extension eq 'eps' && -e $path_to_files."plot.$analysis.$counter.$extension") {
@@ -180,16 +180,16 @@ while (<$in>) {
 			push(@input_files, $path_to_files."plot.$analysis.$counter.$extension"); 
 	    		$logger->debug("'plot.$analysis.$counter.$extension' was opened for reading") if ($logger->is_debug);
 				#open (my $epsout, ">".$path_to_files."$sequence_id.signalp.$analysis.$extension") || $logger->logdie("couldn't open '$sequence_id.signalp.$analysis.$extension' for writing");
-				open (my $epsout, ">".$path_to_files."$outprefix.signalp.$analysis.$extension") || $logger->logdie("couldn't open '$outprefix.signalp.$analysis.$extension' for writing");
-			push(@output_files, $path_to_files."$outprefix.signalp.$analysis.$extension");
+				open (my $epsout, ">".$path_to_files."$outprefix.$analysis.$extension") || $logger->logdie("couldn't open '$outprefix.$analysis.$extension' for writing");
+			push(@output_files, $path_to_files."$outprefix.$analysis.$extension");
 			#push(@output_files, $path_to_files."$sequence_id.signalp.$analysis.$extension");
-	    		$logger->debug("'$outprefix.signalp.$analysis.$extension' was opened for writing") if ($logger->is_debug);
+	    		$logger->debug("'$outprefix.$analysis.$extension' was opened for writing") if ($logger->is_debug);
 				#$logger->debug("'$sequence_id.signalp.$analysis.$extension' was opened for writing") if ($logger->is_debug);
 			while (my $eps_line = <$epsin>) {
 				if ($eps_line =~ /plot.$analysis.$counter.$extension/) {
-					$eps_line =~ s/plot.$analysis.$counter.$extension/$outprefix.signalp.$analysis.$extension/;
+					$eps_line =~ s/plot.$analysis.$counter.$extension/$outprefix.$analysis.$extension/;
 					#$eps_line =~ s/plot.$analysis.$counter.$extension/$sequence_id.signalp.$analysis.$extension/;
-	    				$logger->debug("found self-reference in 'plot.$analysis.$counter.$extension' and modified to '$outprefix.signalp.$analysis.$extension'") if ($logger->is_debug);
+	    				$logger->debug("found self-reference in 'plot.$analysis.$counter.$extension' and modified to '$outprefix.$analysis.$extension'") if ($logger->is_debug);
 						#$logger->debug("found self-reference in 'plot.$analysis.$counter.$extension' and modified to '$sequence_id.signalp.$analysis.$extension'") if ($logger->is_debug);
 				}
 				print $epsout $eps_line;
@@ -197,15 +197,15 @@ while (<$in>) {
 			close $epsin;
 			close $epsout;
 			#unlink($path_to_files."plot.$analysis.$counter.$extension") || $logger->logdie("couldn't remove 'plot.$analysis.$counter.$extension'");
-	    		$logger->debug("'$outprefix.signalp.$analysis.$extension' wrote successfully") if ($logger->is_debug);
+	    		$logger->debug("'$outprefix.$analysis.$extension' wrote successfully") if ($logger->is_debug);
 				#$logger->debug("'$sequence_id.signalp.$analysis.$extension' wrote successfully") if ($logger->is_debug);
 		} elsif (-e $path_to_files."plot.$analysis.$counter.$extension") {
-			copy($path_to_files."plot.$analysis.$counter.$extension",$path_to_files."$outprefix.signalp.$analysis.$extension") || $logger->logdie("couldn't rename 'plot.$analysis.$counter.$extension' to '$outprefix.signalp.$analysis.$extension'");
+			copy($path_to_files."plot.$analysis.$counter.$extension",$path_to_files."$outprefix.$analysis.$extension") || $logger->logdie("couldn't rename 'plot.$analysis.$counter.$extension' to '$outprefix.$analysis.$extension'");
 			#copy($path_to_files."plot.$analysis.$counter.$extension",$path_to_files."$sequence_id.signalp.$analysis.$extension") || $logger->logdie("couldn't rename 'plot.$analysis.$counter.$extension' to '$sequence_id.signalp.$analysis.$extension'");
 			push(@input_files, $path_to_files."plot.$analysis.$counter.$extension");
-			push(@output_files, $path_to_files."$outprefix.signalp.$analysis.$extension");
+			push(@output_files, $path_to_files."$outprefix.$analysis.$extension");
 			#push(@output_files, $path_to_files."$sequence_id.signalp.$analysis.$extension");
-	    		$logger->debug("renamed 'plot.$analysis.$counter.$extension' to '$outprefix.signalp.$analysis.$extension'") if ($logger->is_debug);
+	    		$logger->debug("renamed 'plot.$analysis.$counter.$extension' to '$outprefix.$analysis.$extension'") if ($logger->is_debug);
 				#$logger->debug("renamed 'plot.$analysis.$counter.$extension' to '$sequence_id.signalp.$analysis.$extension'") if ($logger->is_debug);
 		} else {
 			$logger->logdie("'plot.$analysis.$counter.$extension' is referenced in '".$path_to_files."$infile' but does not exist");
@@ -220,6 +220,10 @@ $logger->debug("processing of '$infile' completed without error") if ($logger->i
 $logger->debug("'$infile' referenced a total of *$counter* distinct sequences") if ($logger->is_debug);
 #unlink($path_to_files.$infile) || $logger->logdie("couldn't remove '$infile' after finishing everything");
 $logger->debug("'$infile' has been renamed to '$outprefix.$insuffix'") if ($logger->is_debug);
+
+if ($counter > 1) {
+	$logger->logdie("'$infile' contains more than 1 fasta record");
+}
 
 my $run_complete = 1;
 exit(0);
