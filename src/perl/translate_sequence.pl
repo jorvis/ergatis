@@ -60,8 +60,7 @@ use Workflow::Logger;
 use Workflow::IdGenerator;
 use XML::Twig;
 use Data::Dumper;
-#use BSML::BsmlDoc;
-#use BSML::BsmlBuilder;
+use BSML::BsmlBuilder;
 
 my $transeq_exec;
 my $transeq_flags = ' -warning 1 -error 1 -fatal 1 -die 1';
@@ -149,13 +148,15 @@ if ($options{'table'}) {
 	$transeq_flags .= " -table $options{table}";
 }
 
-#my $doc = new BSML::BsmlBuilder();
+my $doc = new BSML::BsmlBuilder();
 
 if (!$fasta_flag) {
 	## if a bsml document has been provided
 	## we're going to process it and perform
 	## transeq on the gene models it encodes
 
+	my $id_hash;
+	
 	if ($options{'regions'}) { 
 		 if ($logger->is_debug()) {
 			 $logger->debug("WARNING: --regions flag is incompatible with BSML document input and will be ignored");
@@ -213,17 +214,48 @@ if (!$fasta_flag) {
 			## transeq flags
 			$flags .= " -sequence $temp_in_fsa";
 			$flags .= " -outseq $temp_out_fsa";
-			$flags .= " -frame $cds_frame->{$transcript_id}";
+			$flags .= " -frame '$cds_frame->{$transcript_id}'";
 
 			## execute transeq
 			system($transeq_exec.$flags);
 			
 			## replace sequence ids in output file
-			my $out_fsa = $options{'output'}."/"."$polypeptide_ids->{$transcript_id}.fsa";
-			my $id_hash = replace_sequence_ids($polypeptide_ids->{$transcript_id}, $temp_out_fsa, $out_fsa);
+#			my $out_fsa = $options{'output'}."/"."$polypeptide_ids->{$transcript_id}.fsa";
+			$id_hash = replace_sequence_ids($polypeptide_ids->{$transcript_id}, $temp_out_fsa, $options{'output'});
 
 			## remove temp out file
 			unlink($temp_out_fsa);
+	
+			my $seq = $doc->createAndAddExtendedSequenceN( 	'id' => $transcript_id,
+															'molecule' => 'na',
+															'class' => '',
+														 );
+			$doc->createAndAddSeqDataImportN ( 	'seq' 			=> $seq,
+												'format' 		=> 'bsml',
+											   	'source'		=> $options{'input'},
+												'id'			=> '',
+												'identifier' 	=> $transcript_id,
+											 );
+			$seq->addBsmlLink('analysis', '#translate_sequence', 'input_of');
+			my $ft = $doc->createAndAddFeatureTable($seq);
+
+			foreach my $key(keys(%{$id_hash})) {
+				my $feat = $doc->createAndAddFeature($ft, $key, $key, 'polypeptide');
+				$doc->createAndAddBsmlAttribute($feat, 'reading_frame', $id_hash->{$key}->{'frame'});
+				$feat->addBsmlLink('analysis', '#translate_sequence', 'computed_by');
+				$feat->addBsmlLink('sequence', "#$key");
+				my $transeq = $doc->createAndAddExtendedSequenceN( 	'id' => $key,
+																	'molecule' => 'aa',
+																	'class' => 'polypeptide',
+														 		 );
+				$doc->createAndAddSeqDataImportN( 	'seq' 			=> $transeq,
+													'format' 		=> 'fasta',
+											   		'source'		=> $id_hash->{$key}->{'fsa'},
+													'id'			=> '',
+													'identifier' 	=> $key,
+												);
+			}
+			$doc->write($options{'output'}."/$transcript_id.translate_sequence.bsml");
 		}
 	}
 	## remove temp in file
@@ -233,6 +265,8 @@ if (!$fasta_flag) {
 	## otherwise we're just going to run
 	## transeq on the input nt sequence
 	## to generate a polypeptide fasta file
+	
+	my $id_hash;
 	
 	my $temp_out_fsa = $options{'output'}."/"."temp.polypeptides.fsa";
 
@@ -244,7 +278,7 @@ if (!$fasta_flag) {
 		$options{'frame'} = '1';
 	} 
 	
-	$transeq_flags .= " -frame $options{frame}";
+	$transeq_flags .= " -frame '$options{frame}'";
 	$transeq_flags .= " -sequence $options{input}";
 	$transeq_flags .= " -outseq $temp_out_fsa";
 	
@@ -253,21 +287,51 @@ if (!$fasta_flag) {
 
 	my $query_id = get_sequence_id($options{'input'});
 	
-	my $out_fsa = $options{'output'}."/"."$query_id.fsa";
-	my $id_hash = replace_sequence_ids('', $temp_out_fsa, $out_fsa);
+#	my $out_fsa = $options{'output'}."/"."$query_id.fsa";
+	$id_hash = replace_sequence_ids('', $temp_out_fsa, $options{'output'});
 	
 	unlink($temp_out_fsa);
+	
+	my $seq = $doc->createAndAddExtendedSequenceN( 	'id' => $query_id,
+													'molecule' => 'na',
+													'class' => '',
+												 );
+	$doc->createAndAddSeqDataImportN ( 	'seq' 			=> $seq,
+										'format' 		=> 'fasta',
+									   	'source'		=> $options{'input'},
+										'id'			=> '',
+										'identifier' 	=> $query_id,
+									);
+	$seq->addBsmlLink('analysis', '#translate_sequence', 'input_of');
+	my $ft = $doc->createAndAddFeatureTable($seq);
+
+	foreach my $key(keys(%{$id_hash})) {
+		my $feat = $doc->createAndAddFeature($ft, $key, $key, 'polypeptide');
+		$doc->createAndAddBsmlAttribute($feat, 'reading_frame', $id_hash->{$key}->{'frame'});
+		$feat->addBsmlLink('analysis', '#translate_sequence', 'computed_by');
+		$feat->addBsmlLink('sequence', "#$key");
+		my $transeq = $doc->createAndAddExtendedSequenceN( 	'id' => $key,
+													'molecule' => 'aa',
+													'class' => 'polypeptide',
+												 		 );
+		$doc->createAndAddSeqDataImportN( 	'seq' 			=> $transeq,
+											'format' 		=> 'fasta',
+									   		'source'		=> $id_hash->{$key}->{'fsa'},
+											'id'			=> '',
+											'identifier' 	=> $key,
+										);
+	}
+	$doc->write($options{'output'}."/$query_id.translate_sequence.bsml");
 }
 
-#$doc->write($options{'output'}."/translate_sequence.bsml");
 
 exit();
 
 ## replace the sequence ids in the output fasta file
 sub replace_sequence_ids {
-	my ($transcript_id, $old_fsa_file, $new_fsa_file) = @_;
+	my ($transcript_id, $old_fsa_file, $out_dir) = @_;
 	
-	my %ids = ();
+	my $ids = {};
 	
 	my $count = count_fasta_records($old_fsa_file);
 
@@ -279,8 +343,7 @@ sub replace_sequence_ids {
 	$id_gen->set_pool_size('polypeptide' => $count);
 	
 	open (IN, $old_fsa_file) || $logger->logdie("couldn't open '$old_fsa_file' for reading");
-	open (OUT, ">".$new_fsa_file) || $logger->logdie("couldn't open '$new_fsa_file' for writing");
-
+	my $out_fh;
 	while (<IN>) {
 		if (/^>[^\s]+_(\d)/) {
 			my $seq_id;
@@ -294,17 +357,19 @@ sub replace_sequence_ids {
     	    		                      'project' => $options{'project'},
         	        		              'type'    => 'polypeptide'
                             		     );
-				$ids{$1} = $seq_id;
+				$ids->{$seq_id}->{'frame'} = $1;
 			}
-			print OUT ">$seq_id\n";
+			$ids->{$seq_id}->{'fsa'} = "$out_dir/$seq_id.fsa"; 
+			open ($out_fh, ">$out_dir/$seq_id.fsa") || $logger->logdie("couldn't open '$out_dir/$seq_id.fsa' for writing");
+			print $out_fh ">$seq_id\n";
 		} else {
-			print OUT $_;
+			print $out_fh $_;
 		}
 	}
 	close IN;
-	close OUT;
+	close $out_fh;
 
-	return \%ids;
+	return $ids;
 }
 
 sub count_fasta_records {

@@ -10,7 +10,6 @@
             <configMapId>translate_sequence</configMapId>
             <name>translate_sequence</name>
 		</command>
-<!--
         <command>    
             <type>RunUnixCommand</type>
             <configMapId>store_config_params</configMapId>
@@ -21,6 +20,5 @@
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
 		</command>
--->
     </commandSet>
 </commandSetRoot>
