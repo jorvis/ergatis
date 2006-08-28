@@ -247,8 +247,8 @@ if (!$fasta_flag) {
 				my $feat = $doc->createAndAddFeature($ft, $key, $key, 'polypeptide');
 				$doc->createAndAddBsmlAttribute($feat, 'reading_frame', $id_hash->{$key}->{'frame'});
 				$feat->addBsmlLink('analysis', '#translate_sequence', 'computed_by');
-				$feat->addBsmlLink('sequence', "#$key");
-				my $transeq = $doc->createAndAddExtendedSequenceN( 	'id' => $key,
+				$feat->addBsmlLink('sequence', "#${key}_seq");
+				my $transeq = $doc->createAndAddExtendedSequenceN( 	'id' => $key."_seq",
 																	'molecule' => 'aa',
 																	'class' => 'polypeptide',
 														 		 );
@@ -317,10 +317,10 @@ if (!$fasta_flag) {
 		my $feat = $doc->createAndAddFeature($ft, $key, $key, 'polypeptide');
 		$doc->createAndAddBsmlAttribute($feat, 'reading_frame', $id_hash->{$key}->{'frame'});
 		$feat->addBsmlLink('analysis', '#translate_sequence', 'computed_by');
-		$feat->addBsmlLink('sequence', "#$key");
-		my $transeq = $doc->createAndAddExtendedSequenceN( 	'id' => $key,
-													'molecule' => 'aa',
-													'class' => 'polypeptide',
+		$feat->addBsmlLink('sequence', "#${key}_seq");
+		my $transeq = $doc->createAndAddExtendedSequenceN( 	'id' => $key."_seq",
+															'molecule' => 'aa',
+															'class' => 'polypeptide',
 												 		 );
 		$doc->createAndAddSeqDataImportN( 	'seq' 			=> $transeq,
 											'format' 		=> 'fasta',
