@@ -15,6 +15,7 @@ prepare_for_transterm.pl - creates coordinate files for the tranterm program
 USAGE: prepare_for_transterm.pl
     --input_list=/path/to/some/fsa.list
     --output_dir=/directory/for/output/files
+    --bsml_list=/path/to/bsml/list
     --database=aa1
     --schema=(legacy|chado)
     --pw_file=$EGC_SCRIPTS/password
@@ -29,6 +30,10 @@ B<--input_list,-l>
 
 B<--output_dir,-o>
     Directory to place the output .coords files in.
+
+B<--bsml_list,-b>
+    A list of BSML files that are used to parse gene coordinate information.  If this option is
+    used, the --database, --schema, and --pw_file options are ignored.
     
 B<--database,-d>
     The database in which to look for gene annotation data.
@@ -68,6 +73,13 @@ B<--help,-h>
     
     List of fsa file names.
 
+    If parsing gene information from BSML files (using bsml_input option) the database specific options will
+    be ignored (--database, --schema and --pw_file).   This script looks for a sequence element with an id that matches
+    the base file name (ie. the name of the input fsa file without the .fsa extension) of one of the input fsa files.
+    If a sequence with a matching id is found, the Feature elements with a  class of gene are parsed for the start
+    and stop coordinates.
+    
+
 =head1 Output
 
     Coordinate file in this format
@@ -87,6 +99,8 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Workflow::Logger;
 use DBI;
+use File::Basename;
+use XML::Twig;
 use Data::Dumper;
 
 ###########CONSTANTS AND GLOBALS###################
@@ -99,6 +113,8 @@ my $asmbls = [];
 my $coords;
 my $dbh;
 my $models = [];
+my $getFromDB;
+my @bsmlFiles;
 my ($database, $user, $pass);
 
 ###################################################
@@ -109,6 +125,7 @@ my $results = GetOptions (\%options,
                           'input_list|i=s',
                           'input_file|f=s',
                           'output_dir|o=s',
+                          'bsml_list|b=s',
                           'schema|s=s',
                           'database|d=s',
                           'pw_file|p=s',
@@ -127,17 +144,24 @@ $logger = $logger->get_logger();
 # make sure all passed options are peachy
 &check_parameters(\%options);
 
-#Prepare the database
-$dbh = &prepareDB($database, $user, $pass);
-
-#Prepare the sql statement
-$sql = &prepareSql($schema);
-
 my $seqIds = &getSeqsFromFileNames(\@inputFiles);
 
-$coords = &getCoords($sql, $schema, $dbh);
+if($getFromDB) {
+    #Prepare the database
+    $dbh = &prepareDB($database, $user, $pass);
+    
+    #Prepare the sql statement
+    $sql = &prepareSql($schema);
+    
+    $coords = &getCoords($sql, $schema, $dbh);
+    
+    $coords = &filterCoords($schema, $seqIds, $coords);
 
-$coords = &filterCoords($schema, $seqIds, $coords);
+} else {
+    #Use BSML
+    $coords = &getCoordsFromBsml($seqIds);
+
+}
 
 &printCoordFiles( $coords );
 
@@ -149,7 +173,7 @@ foreach my $a (keys %{$coords}) {
 
 print "$count records retrieved\n";
 
-$dbh->disconnect();
+$dbh->disconnect() if($getFromDB);
 
 
 
@@ -197,12 +221,10 @@ sub getSeqsFromFileNames {
     
     foreach my $file(@{$files}) {
         chomp $file;
-
-        if($file =~ m|.*/(.*)\.fsa$|) {
-            push(@retval, $1);
-        } else {
-            &_die("Unable to parse the file name $file");
-        }
+        my $base;
+        ($base, ,) = fileparse($file, qr/\.fsa/);
+        &_die("Unable to parse the file name $file") unless($base);
+        push(@retval, $base);
     }
     
     return \@retval;
@@ -223,7 +245,7 @@ sub getCoords {
     if($schema eq SCHEMA->{'legacy'}) {
         $sth->bind_columns(\$geneName, \$start, \$stop, \$assembly);
     } elsif($schema eq SCHEMA->{'chado'}) {
-        $sth->bind_columns(\$geneName, \$start, \$stop, \$strand, \$assembly) or &_die("Bad bind");
+        $sth->bind_columns(\$geneName, \$start, \$stop, \$strand, \$assembly);
     }
 
     while($sth->fetch()) {
@@ -231,9 +253,7 @@ sub getCoords {
         if($schema eq SCHEMA->{'chado'}) {
             $retval->{$assembly}->{$geneName}->{'strand'} = $strand;
             if($strand == -1) {
-                my $tmp = $start;
-                $start = $stop;
-                $stop = $tmp;
+                ($start, $stop) = ($stop, $start);
             }
         }
         $retval->{$assembly}->{$geneName}->{'start'} = $start;
@@ -246,11 +266,12 @@ sub getCoords {
     
 }
 
-#Filter the coordinates for only the needed sequences.
+#Filter the coordinates for only the needed sequences (which
+# match the file names passed in)
 sub filterCoords {
     my ($schema, $seqIds, $coords) = @_;
     my $retval;
-
+   
     foreach my $seqId (@{$seqIds}) {
         $seqId = $1 if($seqId =~ /assembly\.(\d+)/ && ($schema eq "legacy"));
         $retval->{$seqId} = $coords->{$seqId};
@@ -258,6 +279,49 @@ sub filterCoords {
 
     return $retval;
 
+}
+
+#Retrieves coordinates from BSML files.
+sub getCoordsFromBsml {
+    my $seqs = shift;
+    my $retval = {};
+    my $twig = new XML::Twig( 'twig_roots' => {'Sequence' => sub { &handleSequence(@_, $seqs, $retval); }});
+
+    #Look through the bsml files to find gene predictions.  Only look at
+    #sequences that are in the $seqs array(ref).
+    foreach my $bsmlFile (@bsmlFiles) {
+        
+        print "Searching through $bsmlFile\n";
+
+        #Parse the bsml file.
+        $twig->parsefile($bsmlFile);
+
+    }
+
+    
+    return $retval;
+
+}
+
+sub handleSequence {
+    my ($twig, $elem, $seqs, $retval) = @_;
+    my $id = $elem->{'att'}->{'id'};
+    print "id :: $id\n";
+    print "@{$seqs}\n";
+    $" = "|";
+    return unless($id =~ /(@{$seqs})/);
+
+    print "I found the id in the seqs array ref\n";
+
+    foreach my $ft(($elem->first_child("Feature-tables"))->children("Feature-table")) {
+        foreach my $feature($ft->children("Feature")) {
+            next unless($feature->{'att'}->{'class'} eq 'gene');
+            my $fLoc = $feature->first_child('Interval-loc');
+            $retval->{$id}->{$feature->{'att'}->{'id'}}->{'start'}  = $fLoc->{'att'}->{'startpos'};
+            $retval->{$id}->{$feature->{'att'}->{'id'}}->{'stop'}  = $fLoc->{'att'}->{'endpos'};
+            $retval->{$id}->{$feature->{'att'}->{'id'}}->{'strand'}  = $fLoc->{'att'}->{'complement'};
+        }
+    }
 }
 
 #Print the coordinates to files.  Each input sequence (fasta) gets its own
@@ -307,23 +371,36 @@ sub check_parameters {
     }
     $output_dir = $options{'output_dir'};
    
-    my @schemas = keys %{&SCHEMA};
-    &_die("schema option must be one of the following: @schemas") unless(exists(SCHEMA->{$options->{'schema'}}));
-    $schema = $options->{'schema'};
+    if($options{'bsml_list'} || $options{'bsml_list'} eq '') {
 
-    if($options->{'pw_file'}) {
-        &_die("$options->{pw_file} does not exist") unless(-e $options->{'pw_file'});
+        &_die("bsml_list $options{bsml_list} does not exist") unless(-e $options{'bsml_list'});
+        open(BL, "< $options{'bsml_list'}") or &_die("Unable to open bsml_list: $options{'bsml_list'} ($!)");
+        chomp(@bsmlFiles = <BL>);
+        close(BL);
+
+        $getFromDB=0;
+
     } else {
-        &_die("option pw_file is required");
-    }
-    open(UP, "< $options->{pw_file}") or &_die("Cannot open $options->{pw_file} ($!)");
-    chomp(($user, $pass) = <UP>);
-    close(UP);
+        $getFromDB=1;
 
-    unless($options->{'database'}) {
-        &_die("option database is required");
+        my @schemas = keys %{&SCHEMA};
+        &_die("schema option must be one of the following: @schemas") unless(exists(SCHEMA->{$options->{'schema'}}));
+        $schema = $options->{'schema'};
+        
+        if($options->{'pw_file'}) {
+            &_die("$options->{pw_file} does not exist") unless(-e $options->{'pw_file'});
+        } else {
+            &_die("option pw_file is required");
+        }
+        open(UP, "< $options->{pw_file}") or &_die("Cannot open $options->{pw_file} ($!)");
+        chomp(($user, $pass) = <UP>);
+        close(UP);
+        
+        unless($options->{'database'}) {
+            &_die("option database is required");
+        }
+        $database = $options->{'database'};
     }
-    $database = $options->{'database'};
 
 }
 
