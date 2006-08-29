@@ -1,5 +1,5 @@
 #!/usr/local/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -13,12 +13,26 @@ tRNAscan-SE2bsml.pl - convert tRNAcan-SE output to BSML
 USAGE: tRNAscan-SE2bsml.pl 
         --input=/path/to/tRNAscanfile 
         --output=/path/to/output.bsml
-      [ --project=aa1 ]
+        --fasta_input=/path/to/fastafile
+        --id_repository=/path/to/id_repository
+        --project=aa1 
+        [ --log=/path/to/logfile 
+          --debug=3
+        ]
 
 =head1 OPTIONS
 
 B<--input,-i> 
     Input file file from a tRNAscan-SE search.
+
+B<--output,-o> 
+    Output BSML file (will be created, must not exist)
+
+B<--fasta_input,-a>
+    The input file that was used as input for the tRNAscan-SE run
+
+B<--id_repository,-r>
+    Path to the project's id repository
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -29,9 +43,6 @@ B<--project,-p>
 
 B<--log,-l> 
     Log file
-
-B<--output,-o> 
-    Output BSML file (will be created, must not exist)
 
 B<--help,-h> 
     This help message
@@ -55,7 +66,7 @@ output looks like:
     51595           13      3488675         3488743         Pseudo  GTA     0       0       22.49
     51595           14      3493468         3493555         Ser     GCT     3493506 3493513 40.19
 
-You can run elimate the headers in the original tRNAscan-SE output file by running 
+You can elimate the headers in the original tRNAscan-SE output file by running 
 tRNAscan-SE using the -b option.  If they are present, they should be ignored by 
 this script.
 
@@ -80,202 +91,290 @@ These need to be included later.
 
 =head1 CONTACT
 
-Joshua Orvis
-jorvis@tigr.org
+    Jason Inman
+    jinman@tigr.org
 
 =cut
 
+use warnings;
 use strict;
+
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
-use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
-use BSML::BsmlBuilder;
-use BSML::BsmlParserTwig;
-}
+use Workflow::IdGenerator;
+use Gene;
+use BSML::GenePredictionBsml;
+
+my $input;      # Input file name
+my $output;     # Output file name
+my $inputFsa;   # fasta input to tRNAscan-SE
+my $project;    # project id
+my $idcreator;  # Workflow::IdGenerator object
+my $bsml;       # BSML::BsmlBuilder object
+my $data;       # parsed tRNAscan-SE data
+my $debug = 4;  # debug value.  defaults to 4 (info)
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
-              'output|o=s',
-              'project|p=s',
-              'log|l=s',
-              'command_id=s',       ## passed by workflow
-              'logconf=s',          ## passed by workflow (not used)
-              'debug=s',
-			  'help|h') || pod2usage();
+                          'input|i=s',
+                          'output|o=s',
+                          'fasta_input|a=s',
+                          'project|p=s',
+                          'log|l=s',
+                          'id_repository|r=s',
+                          'debug=s',
+			  'help|h') || &_pod;
 
+
+# Set up the logger
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
-# display documentation
-if( $options{'help'} ){
-    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
-}
-
 ## make sure all passed options are peachy
 &check_parameters(\%options);
 
-## we want to creating ids unique to this document, which will be replaced later.  they must
-##  contain the prefix that will be used to look up a real id, such as ath1.gen.15
-my $next_id = 1;
+$data = &parse_tRNAscanSE_input( $input );
+$bsml = &generateBsml( $data );
 
-## we want a new doc
-my $doc = new BSML::BsmlBuilder();
+$bsml->writeBsml( $output );
 
-## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+exit (0);
 
-## open the input file for parsing
-open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
+################ SUBS ######################
 
-my %data;
-while (<$ifh>) {
-    my @cols = split;
+sub parse_tRNAscanSE_input {
+# Open the input file and parse the data into an array of gene models.
+    my $infile = shift;
+    my $genes;
+
+    ## open the input file for parsing
+    open (IN,"< $infile") || $logger->logdie("can't open input file for reading");
+
+    ## Strip out uninteresting lines of data from the file
+    my %rawdata;
+    while (<IN>) {
+
+        my @cols = split;
+ 
+        #check whitespace, no warn
+        next if ( /^\s*$/ );
     
-    #check whitespace, no warn
-    next if ( /^\s*$/ );
-    
-    ## make sure we don't parse the tRNAscan-SE output header lines
-    next if ( /^sequence.*bounds.*cove/i ||
-              /^name.*end.*score/i ||
-              /\-\-.*\-\-/);
+        ## make sure we don't parse the tRNAscan-SE output header lines
+        next if ( /^sequence.*bounds.*cove/i ||
+                  /^name.*end.*score/i ||
+                  /\-\-.*\-\-/);
 
-    ## there should be 9 elements in cols, unless we have an unrecognized format.
-    unless (scalar @cols == 9) {
-        $logger->error("the following tRNAscan-SE line was not recognized and could not be parsed:\n$_\n") if ($logger->is_error);
-        next;
+        ## there should be 9 elements in cols, unless we have an unrecognized format.
+        unless (scalar @cols == 9) {
+            $logger->error("the following tRNAscan-SE line was not recognized and could not be parsed:\n$_\n") if ($logger->is_error);
+            next;
+        }
+    
+        ## add this data row to this sequence
+        push( @{$rawdata{shift @cols}}, \@cols );
+
     }
-    
-    ## add this data row to this sequence
-    push( @{$data{shift @cols}}, \@cols );
-}
 
-## loop through each of the matches that we found
-for my $seqid (keys %data) {
-    my $seq = $doc->createAndAddSequence($seqid, undef, undef, 'na', 'assembly');
-       $seq->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'input_of');
-    my $ft  = $doc->createAndAddFeatureTable($seq);
-    my $fg;
-    
-    ## loop through each array reference of this key
-    my $gene;
-    my $trna;
-    my $exon;
-    my @elements;
-    foreach my $arr ( @{$data{$seqid}} ) {
-        ## 1 is subtracted from each position to give interbase numbering
-        $$arr[1]--;     ## tRNA begin
-        $$arr[2]--;     ## Bounds End
+    close IN;
+
+    ## loop through each of the matches that we found and make a entries in the genes array.
+    for my $seqid (keys %rawdata) {
+
+        ## loop through each array reference of this key, adding to the data array as necessary.
+        foreach my $arr ( @{$rawdata{$seqid}} ) {
         
-        ## first we need to add the gene, analysis link and interval loc
-        $gene = $doc->createAndAddFeature($ft, 
-                                          $idcreator->new_id( db      => $options{project},
-                                                              so_type => 'gene',
-                                                              prefix  => $options{command_id}
-                                                   ),
-                                          '', 'gene');
-                                          
-        $gene->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
-        &add_interval_loc( $gene, $$arr[1], $$arr[2] );
-        
-        ## now add a feature group for each of the elements we add, using the gene id for the group-set
-        $fg = $doc->createAndAddFeatureGroup( $seq, '', $gene->returnattr('id') );
-        
-        ## add the gene to the group
-        $fg->addBsmlFeatureGroupMember( $gene->returnattr('id'), $gene->returnattr('class') );
-        
-        ## add the tRNA, analysis link and interval loc
-        $trna = $doc->createAndAddFeature($ft, 
-                                          $idcreator->new_id( db      => $options{project},
-                                                              so_type => 'tRNA',
-                                                              prefix  => $options{command_id}
-                                                   ),
-                                          '', 'tRNA');
-        
-        $trna->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
-        &add_interval_loc( $trna, $$arr[1], $$arr[2] );
-        $fg->addBsmlFeatureGroupMember( $trna->returnattr('id'), $trna->returnattr('class') );
-        
-        ## an exon needs to be added.  the following will eval as true if tRNAscan-SE reported an
-        ##  intron in the sequence, else the entire range is added as an exon.  this seems to limit
-        ##  tRNAscan-SE to only report tRNAs with 0 or 1 intron.
-        if ($$arr[5] && $$arr[6]) {
             ## 1 is subtracted from each position to give interbase numbering
-            $$arr[5]--;     ## Intron Begin
-            $$arr[6]--;     ## Bounds End
-            
-            ## exon1
-            &add_exon_and_cds($ft, $fg, $$arr[1], $$arr[5]);
+            $$arr[1]--;     ## tRNA begin
+            $$arr[2]--;     ## Bounds End
 
-            ## exon2
-            &add_exon_and_cds($ft, $fg, $$arr[6], $$arr[2]);
+            ## Determine strandedness
+            my $complement = ($$arr[1] > $$arr[2]) ? 1 : 0;
+
+            ## First, create the gene model object
+            my $currGene = new Gene ( $idcreator->next_id( 'type' => 'gene',
+                                                           'project' => $project ),
+                                      ($complement) ? $$arr[2] : $$arr[1],
+                                      ($complement) ? $$arr[1] : $$arr[2],
+                                      $complement,
+                                      $seqid
+                                    );
+
+            ## Next, with the same coords, create the tRNA feature
+            $currGene->addFeature( $idcreator->next_id ( 'type' => 'tRNA',
+                                                         'project' => $project ),
+                                   ($complement) ? $$arr[2] : $$arr[1],
+                                   ($complement) ? $$arr[1] : $$arr[2],
+                                   $complement,
+                                   'tRNA'
+                                 );
+
+            ## an exon needs to be added.
+            ##  the following will eval as true if tRNAscan-SE reported an
+            ## intron in the sequence, else the entire range is added as an exon.
+            ##this seems to limit tRNAscan-SE to only report tRNAs with 0 or 1 intron.
+            if ($$arr[5] && $$arr[6]) {
+
+                ## 1 is subtracted from each position to give interbase numbering
+                $$arr[5]--;     ## Intron Begin
+                $$arr[6]--;     ## Bounds End
             
-        } else {
-            ## just add the whole thing as an exon
-            &add_exon_and_cds($ft, $fg, $$arr[1], $$arr[2]);
+                ## exon1
+                &add_exon_and_cds($currGene, $$arr[1], $$arr[5], $complement);
+
+                ## exon2
+                &add_exon_and_cds($currGene, $$arr[6], $$arr[2], $complement);
+            
+            } else {
+                ## just add the whole thing as an exon
+                &add_exon_and_cds($currGene, $$arr[1], $$arr[2], $complement);
+            }
+
+            # Handle Group now:
+            my $count = $currGene->addToGroup( $currGene->getId, { 'all' => 1} );
+            &_die("Nothing was added to group") unless ($count);
+
+            push (@{$genes}, $currGene);
+
         }
     }
+
+    return $genes;
+
 }
 
-## add the analysis element
-my $analysis = $doc->createAndAddAnalysis(
-                            id => 'tRNAscan-SE_analysis',
-                            sourcename => $options{'output'},
-                          );
+sub generateBsml {
 
-## now write the doc
-$doc->write($options{'output'});
+    my $data = shift;
 
-exit;
+    #Create the document
+    my $doc = new GenePredictionBsml( 'tRNAscan-SE', $inputFsa );
+
+    foreach my $gene(@{$data}) {
+        $doc->addGene($gene);
+    }
+
+    my $seqId;
+    open(IN, "< $inputFsa") or &_die("Unable to open $inputFsa");
+    while(<IN>) {
+        #assume it's a single fasta file
+        if(/^>([^\s+]+)/) {
+            $seqId = $1;
+            last;
+        }
+    }
+    close(IN);
+
+    my $addedTo = $doc->setFasta($seqId, $inputFsa);
+    &_die("$seqId was not a sequence associated with the gene") unless($addedTo);
+
+    return $doc;
+
+}
 
 sub add_exon_and_cds {
-    my ($ft, $fg, $start, $stop) = @_;
+# Add an exon and cds to the gene object.  These features should share 
+# start and stop coordinates.
+     my ($gm, $start, $stop, $complement) = @_;
 
-    my $exon = $doc->createAndAddFeature($ft, 
-                                      $idcreator->new_id( db      => $options{project},
-                                                          so_type => 'exon',
-                                                          prefix  => $options{command_id}
-                                               ),
-                                      '', 'exon');
-    $exon->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
-    &add_interval_loc( $exon, $start, $stop );
-    $fg->addBsmlFeatureGroupMember( $exon->returnattr('id'), $exon->returnattr('class') );
-    
-    my $cds = $doc->createAndAddFeature($ft, 
-                                      $idcreator->new_id( db      => $options{project},
-                                                          so_type => 'CDS',
-                                                          prefix  => $options{command_id}
-                                               ),
-                                      '', 'CDS');
-    $cds->addBsmlLink('analysis', '#tRNAscan-SE_analysis', 'computed_by');
-    &add_interval_loc( $cds, $start, $stop );
-    $fg->addBsmlFeatureGroupMember( $cds->returnattr('id'), $cds->returnattr('class') );
-}
+     foreach my $type (qw(exon CDS)) {
+         
+         # Add the exon or CDS to the gene model object
+         $gm->addFeature( $idcreator->next_id( 'type' => $type,
+                                               'project' => $project ),
+                          ($complement) ? $stop : $start,
+                          ($complement) ? $start : $stop,
+                          $complement,
+                          $type
+                        );
 
-sub add_interval_loc {
-    my ($feat, $n, $m) = @_;
-    
-    ## was it found on the forward or reverse strand?
-    if ($n <= $m) {
-        $feat->addBsmlIntervalLoc($n, $m, 0);
-    } else {
-        $feat->addBsmlIntervalLoc($m, $n, 1);
-    }
+     }
+
 }
 
 sub check_parameters {
+# Parse options hash, make sure certain ones exist and have meaningful values.
+# Also take the time to setup some globally used values.
+
+    my $error = '';
+
+    &_pod if $options{'help'}; 
+ 
+    ## make sure input file was given and exists
+    if ($options{'input'}) {
+
+        if (! -e $options{'input'}) {
+            $logger->logdie("input file $options{'input'} does not exist")
+        }
+
+        $input = $options{'input'};
+
+    } else {
+        $error .= "--input_file is a required opttion\n";
+    }
     
-    ## make sure input file exists
-    if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
+    ## make sure output file was given and doesn't exist yet
+    if ($options{'output'}) {
+
+        if (-e $options{'output'}) {
+            $logger->logdie("can't create $options{'output'} because it already exists")
+        }
+
+        $output = $options{'output'};
+
+    } else {
+        $error .= "--output_file is a required option\n";
+    }
+
+    ## Make sure we're given the input fasta
+    if ($options{'fasta_input'}) {
+        $inputFsa = $options{'fasta_input'};
+    } else {
+        $error .= "--fasta_input is a required option\n";
+    } 
+
+    ## We really do need a value for 'project'
+    if ($options{'project'}) {
+        $project = $options{'project'};
+    } else {
+        $error .= "--project is a required option\n";
+    }
     
-    ## make sure output file doesn't exist yet
-    if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
-    
+    ## Now set up the id generator stuff
+    if ($options{'id_repository'}) {
+
+        # we're going to generate ids
+        $idcreator = new Workflow::IdGenerator('id_repository' => $options{'id_repository'});
+
+        # Set the pool size
+        $idcreator->set_pool_size('gene'=>30,'tRNA'=>30,'exon'=>30,'CDS'=>30);
+
+    } else {
+        $error .= "--id_repository is a required option\n";
+    }
+
+    # The debug option is not required... but let's set it up if it's been given
+    if ($options{'debug'}) {
+        $debug = $options{'debug'};
+    }
+
+    &_die($error) if $error;
+
     return 1;
+
+} # END OF check_parameters 
+
+sub _pod {
+# Used to display the perldoc help.
+    pod2usage( {-exitval => 0, -verbose => 2} );
 }
+
+sub _die {
+# Kinda like a hitman, this is called when something needs to DIE.
+    my $msg = shift;
+    $logger->logdie($msg);
+}
+
 
