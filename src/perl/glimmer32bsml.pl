@@ -167,6 +167,8 @@ sub parseGlimmer3Data {
         } elsif($foundId) {
 
             my @cols = split(/\s+/,$_);
+            ($cols[1],$cols[2]) = ($cols[2],$cols[1]) if($cols[1] > $cols[2]);
+                
              
             #Create some genes and push them ontot he $genes array
             my $tmp = new Gene( $idMaker->next_id( 'type' => 'gene',
