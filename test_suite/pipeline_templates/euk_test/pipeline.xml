@@ -16,9 +16,6 @@
 		  </commandSet>
 		</commandSet>
       </commandSet>
-	  <commandSet type="parallel">
-	    <configMapId>29201</configMapId>
-	    <commandSet type="serial">
 		  <configMapId>29203</configMapId>
     	  <commandSet type="serial">
 		    <configMapId>component_bsml2chado.legacydata</configMapId>
@@ -27,6 +24,9 @@
             <configMapId>component_testing_db_compare.legacydata</configMapId>
           </commandSet>
   	    </commandSet>	  
+	    <commandSet type="serial">
+	  <commandSet type="parallel">
+	    <configMapId>29201</configMapId>
 	    <commandSet type="serial">
 	      <configMapId>29202</configMapId>
 	    <commandSet type="serial">

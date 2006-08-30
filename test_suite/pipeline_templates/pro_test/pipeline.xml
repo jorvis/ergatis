@@ -16,6 +16,15 @@
 				    </commandSet>
 			  </commandSet>
 		</commandSet>
+		      <commandSet type="serial">
+        		<configMapId>29003</configMapId>
+				    <commandSet type="serial">
+				      <configMapId>component_bsml2chado.legacydata</configMapId>
+				    </commandSet>
+    				<commandSet type="serial">
+				      <configMapId>component_testing_db_compare.legacydata</configMapId>
+				    </commandSet>
+				</commandSet>
 	    <commandSet type="parallel">
       		<configMapId>29001</configMapId>
 		      <commandSet type="serial">
@@ -96,15 +105,6 @@
       <configMapId>component_backupdb.default</configMapId>
     </commandSet>
   			  </commandSet>
-		      <commandSet type="serial">
-        		<configMapId>29003</configMapId>
-				    <commandSet type="serial">
-				      <configMapId>component_bsml2chado.legacydata</configMapId>
-				    </commandSet>
-    				<commandSet type="serial">
-				      <configMapId>component_testing_db_compare.legacydata</configMapId>
-				    </commandSet>
-				</commandSet>
 			</commandSet>
   </commandSet>
 </commandSetRoot>
