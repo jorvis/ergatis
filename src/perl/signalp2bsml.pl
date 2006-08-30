@@ -297,9 +297,9 @@ foreach my $s(@sequence_ids) {
                                         $result_ref_hash{$s,'nn'}->{$att}
                                        );
         }
-        my $fg = $doc->createAndAddFeatureGroup($seq, '', $signalp_id);
-        $fg->addBsmlFeatureGroupMember($signalp_id, 'signal_peptide');
-        $fg->addBsmlFeatureGroupMember($csite_id, 'cleavage_site');
+#        my $fg = $doc->createAndAddFeatureGroup($seq, '', $signalp_id);
+#        $fg->addBsmlFeatureGroupMember($signalp_id, 'signal_peptide');
+#        $fg->addBsmlFeatureGroupMember($csite_id, 'cleavage_site');
     }
     
     ## create BSML for hmm predictions
@@ -343,9 +343,9 @@ foreach my $s(@sequence_ids) {
                                         'max_cleavage_site_probability', 
                                         $result_ref_hash{$s,'hmm'}->{'max_cleavage_site_probability'}
                                        );
-        my $fg = $doc->createAndAddFeatureGroup($seq, '', $signalp_id);
-        $fg->addBsmlFeatureGroupMember($signalp_id, 'signal_peptide');
-        $fg->addBsmlFeatureGroupMember($csite_id, 'cleavage_site');
+#        my $fg = $doc->createAndAddFeatureGroup($seq, '', $signalp_id);
+#        $fg->addBsmlFeatureGroupMember($signalp_id, 'signal_peptide');
+#        $fg->addBsmlFeatureGroupMember($csite_id, 'cleavage_site');
     }
 }
     
