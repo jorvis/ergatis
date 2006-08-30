@@ -231,3 +231,5 @@ next
 ------------
 -added glimmer3 component
 -changed tRNAscan-SE to use Gene.pm and BSML::GenePredictionsBsml
+-changed aat_aa, aat_aa_masked, aat_na, aat_na_masked to point to elee's dps and dds.
+
