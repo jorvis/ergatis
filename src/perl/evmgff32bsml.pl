@@ -67,7 +67,7 @@ GetOptions (
              'output|o=s'          => \$output,
              'input|i=s'           => \$input,
              'project|p=s'         => \$project,
-			 'id_repository=s'	   => \$id_repository
+             'id_repository=s'     => \$id_repository
            ) || pod2usage();
 
 &pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if ($man);
@@ -101,35 +101,35 @@ my @root_nodes = ();
 open (IN, $input) || die "couldn't open input file '$input'";
 
 while (<IN>) {
-	chomp;
-	
-	if (/^#/) {
-		#process header line
-	} elsif (/^>/ || /^#.*fasta.*/i) {
-		last;
-	} else {
-		my $record = parse_record($_);
+    chomp;
+    
+    if (/^#/) {
+        #process header line
+    } elsif (/^>/ || /^#.*fasta.*/i) {
+        last;
+    } else {
+        my $record = parse_record($_);
 
-		## if it has no parents it's a root node	
-		if (!$record->{'Parent'}) {
-			push(@root_nodes, $record);
-		}
-	
-		## store records in a set of arrays indexed by ID
-		if ($record->{'ID'}) {
-			push(@{$nodes->{$record->{'ID'}}->{'records'}},$record);
-		}
-	}
-	
+        ## if it has no parents it's a root node    
+        if (!$record->{'Parent'}) {
+            push(@root_nodes, $record);
+        }
+    
+        ## store records in a set of arrays indexed by ID
+        if ($record->{'ID'}) {
+            push(@{$nodes->{$record->{'ID'}}->{'records'}},$record);
+        }
+    }
+    
 }
 close IN;
 
 ## populate children for each record
 foreach my $id(keys(%{$nodes})) {
-	foreach my $record(@{$nodes->{$id}->{'records'}}) {
-		$record->{'children'} = $nodes->{$id}->{'children'};
-		delete $nodes->{$id}->{'children'};
-	}
+    foreach my $record(@{$nodes->{$id}->{'records'}}) {
+        $record->{'children'} = $nodes->{$id}->{'children'};
+        delete $nodes->{$id}->{'children'};
+    }
 }
 
 my $gene_nodes = [];
@@ -139,18 +139,18 @@ my $doc = new BSML::BsmlBuilder();
 
 #foreach my $root(@root_nodes) {
 foreach my $root(@{$gene_nodes}) {
-	if ($root->{'_type'} eq 'gene') {
-		my $features = {};
-		process_node($root, $features);
-		$features->{'_seqid'} = $root->{'_seqid'};
-		gene_feature_hash_to_bsml($features);
-	}
+    if ($root->{'_type'} eq 'gene') {
+        my $features = {};
+        process_node($root, $features);
+        $features->{'_seqid'} = $root->{'_seqid'};
+        gene_feature_hash_to_bsml($features);
+    }
 }
 
 # add the analysis element
 $doc->createAndAddAnalysis(
                             id => 'EVM_analysis',
-                           	sourcename => $output,
+                            sourcename => $output,
                           );
 
 $doc->write($output);
@@ -158,14 +158,14 @@ $doc->write($output);
 exit();
 
 sub parse_record {
-	my ($line) = @_;
+    my ($line) = @_;
 
-	my $record = {};
-	my $attrib_hash = {};
-	my $record_id = '';
-	my $parent_id = '';
-	
-	my @cols = split("\t");
+    my $record = {};
+    my $attrib_hash = {};
+    my $record_id = '';
+    my $parent_id = '';
+    
+    my @cols = split("\t");
 
     ## adjust both positions so that we are numbering from zero
     $cols[3]--;
@@ -180,41 +180,41 @@ sub parse_record {
         die("unknown value ($cols[6]) in strand column.  expected + or -.");
     }
 
-	$record->{'_seqid'}		= $cols[0];
-	$record->{'_source'}	= $cols[1];
-	$record->{'_type'} 		= $cols[2];
-	$record->{'_start'}		= $cols[3];
-	$record->{'_end'}		= $cols[4];
-	$record->{'_score'}		= $cols[5];
-	$record->{'_strand'}	= $cols[6];
-	$record->{'_phase'}		= $cols[7];
-	
-	my @attribs = split(";", $cols[8]);
-	foreach my $attrib(@attribs) {
-		my ($type, $val) = split("=", $attrib);
-		my @vals = split(",", $val);
-		$record->{$type}=\@vals;
-	}
+    $record->{'_seqid'}     = $cols[0];
+    $record->{'_source'}    = $cols[1];
+    $record->{'_type'}      = $cols[2];
+    $record->{'_start'}     = $cols[3];
+    $record->{'_end'}       = $cols[4];
+    $record->{'_score'}     = $cols[5];
+    $record->{'_strand'}    = $cols[6];
+    $record->{'_phase'}     = $cols[7];
+    
+    my @attribs = split(";", $cols[8]);
+    foreach my $attrib(@attribs) {
+        my ($type, $val) = split("=", $attrib);
+        my @vals = split(",", $val);
+        $record->{$type}=\@vals;
+    }
 
-	if (!defined($record->{'ID'})) {
-		#print STDERR "no ID defined for record\n";
-	} else {
-		$record->{'ID'} = $record->{'ID'}->[0];
-	}
+    if (!defined($record->{'ID'})) {
+        #print STDERR "no ID defined for record\n";
+    } else {
+        $record->{'ID'} = $record->{'ID'}->[0];
+    }
 
-	if (!defined($record->{'Parent'})) {
-		#print STDERR "no Parent attribute defined for record\n";
-	} else {
-		foreach my $parent(@{$record->{'Parent'}}) {
-			## store record's hash reference as a child of Parent
-			if (!defined($nodes->{$parent}->{'children'})) {
-				$nodes->{$parent}->{'children'}->{$record->{'_type'}} = [];
-			}
-			push (@{$nodes->{$parent}->{'children'}->{$record->{'_type'}}},$record);
-		}
-	}
+    if (!defined($record->{'Parent'})) {
+        #print STDERR "no Parent attribute defined for record\n";
+    } else {
+        foreach my $parent(@{$record->{'Parent'}}) {
+            ## store record's hash reference as a child of Parent
+            if (!defined($nodes->{$parent}->{'children'})) {
+                $nodes->{$parent}->{'children'}->{$record->{'_type'}} = [];
+            }
+            push (@{$nodes->{$parent}->{'children'}->{$record->{'_type'}}},$record);
+        }
+    }
 
-	return $record;
+    return $record;
 }
 
 
@@ -222,194 +222,194 @@ sub parse_record {
 ## and process each record to create a feature hash
 sub process_node {
 
-	my ($node, $features) = @_;
+    my ($node, $features) = @_;
 
-	## hash of keys to ignore when extracting a record hash from a node hash
-	my $ignore_keys = {
-						'children' => 1,
-				      };
-	
-	## build a record hash from values stored in the node hash
-	my $record;
-	foreach my $key(keys %{$node}) {
-		if (!$ignore_keys->{$key}) {
-			$record->{$key} = $node->{$key};
-		}
-	}
-	
-	## process the record hash
-	process_record($record, $features);
-	
-	## process the node's children
-	foreach my $child_type(keys %{$node->{'children'}}) {
-		foreach my $child_record(@{$node->{'children'}->{$child_type}}) {
-				process_node($child_record, $features); 
-		}
-	}
-	
-	return;	
+    ## hash of keys to ignore when extracting a record hash from a node hash
+    my $ignore_keys = {
+                        'children' => 1,
+                      };
+    
+    ## build a record hash from values stored in the node hash
+    my $record;
+    foreach my $key(keys %{$node}) {
+        if (!$ignore_keys->{$key}) {
+            $record->{$key} = $node->{$key};
+        }
+    }
+    
+    ## process the record hash
+    process_record($record, $features);
+    
+    ## process the node's children
+    foreach my $child_type(keys %{$node->{'children'}}) {
+        foreach my $child_record(@{$node->{'children'}->{$child_type}}) {
+                process_node($child_record, $features); 
+        }
+    }
+    
+    return; 
 }
 
 ## process the records and store them in the features hash
 sub process_record {
-	my ($record, $features) = @_;
-	
-	my $feat_type_map = {
-							'gene'	=>	'gene',
-							'CDS'	=>	'CDS',
-							'exon'	=>	'exon',
-							'mRNA'	=>	'transcript',				
-						};
-	
-	
-	if ($record->{'_type'} eq 'CDS') {
-		## CDS records can span lines and must be merged into one CDS feature
-		if (!$record->{'ID'}) {
-			die "CDS feature lacks ID -> bad form!";
-		}
-		if ($features->{'CDS'}->{$record->{'ID'}}) {
-			if ($features->{'CDS'}->{$record->{'ID'}}->{'startpos'} > $record->{'_start'}) {
-				$features->{'CDS'}->{$record->{'ID'}}->{'startpos'} = $record->{'_start'};
-			}
-			if ($features->{'CDS'}->{$record->{'ID'}}->{'endpos'} < $record->{'_end'}) {
-				$features->{'CDS'}->{$record->{'ID'}}->{'endpos'} = $record->{'_end'};
-			}
-		} else {
-			$features->{$feat_type_map->{'CDS'}}->{$record->{'ID'}} = {
-													'complement' 	=> $record->{'_strand'},
-													'startpos'		=> $record->{'_start'},
-													'endpos'		=> $record->{'_end'},
-																	  };
-		}
-		
-	} else {
-		##handle all other feature types	
-		
-		my $feat_type;
-		
-		if (!defined($feat_type_map->{$record->{'_type'}})) {
-			print STDERR "unexpected feature type '$record->{_type}'\n";
-			$feat_type = $record->{'_type'};	
-		} else {
-			$feat_type = $feat_type_map->{$record->{'_type'}};
-		}
+    my ($record, $features) = @_;
+    
+    my $feat_type_map = {
+                            'gene'  =>  'gene',
+                            'CDS'   =>  'CDS',
+                            'exon'  =>  'exon',
+                            'mRNA'  =>  'transcript',               
+                        };
+    
+    
+    if ($record->{'_type'} eq 'CDS') {
+        ## CDS records can span lines and must be merged into one CDS feature
+        if (!$record->{'ID'}) {
+            die "CDS feature lacks ID -> bad form!";
+        }
+        if ($features->{'CDS'}->{$record->{'ID'}}) {
+            if ($features->{'CDS'}->{$record->{'ID'}}->{'startpos'} > $record->{'_start'}) {
+                $features->{'CDS'}->{$record->{'ID'}}->{'startpos'} = $record->{'_start'};
+            }
+            if ($features->{'CDS'}->{$record->{'ID'}}->{'endpos'} < $record->{'_end'}) {
+                $features->{'CDS'}->{$record->{'ID'}}->{'endpos'} = $record->{'_end'};
+            }
+        } else {
+            $features->{$feat_type_map->{'CDS'}}->{$record->{'ID'}} = {
+                                                    'complement'    => $record->{'_strand'},
+                                                    'startpos'      => $record->{'_start'},
+                                                    'endpos'        => $record->{'_end'},
+                                                                      };
+        }
+        
+    } else {
+        ##handle all other feature types    
+        
+        my $feat_type;
+        
+        if (!defined($feat_type_map->{$record->{'_type'}})) {
+            print STDERR "unexpected feature type '$record->{_type}'\n";
+            $feat_type = $record->{'_type'};    
+        } else {
+            $feat_type = $feat_type_map->{$record->{'_type'}};
+        }
 
-		my $id;
-		if (!$record->{'ID'}) {
-			$id = getTempId();
-		} else {
-			$id = $record->{'ID'};
-		}
-		
-		my $title = undef;
-		if ($record->{'Name'}) {
-			$title = shift(@{$record->{'Name'}});
-		}
-		
-		$features->{$feat_type}->{$id} = {	
-					'complement' 	=> $record->{'_strand'},
-					'startpos'		=> $record->{'_start'},
-					'endpos'		=> $record->{'_end'},
-					'title'			=> $title,
-									     };
-	}
-	
+        my $id;
+        if (!$record->{'ID'}) {
+            $id = getTempId();
+        } else {
+            $id = $record->{'ID'};
+        }
+        
+        my $title = undef;
+        if ($record->{'Name'}) {
+            $title = shift(@{$record->{'Name'}});
+        }
+        
+        $features->{$feat_type}->{$id} = {  
+                    'complement'    => $record->{'_strand'},
+                    'startpos'      => $record->{'_start'},
+                    'endpos'        => $record->{'_end'},
+                    'title'         => $title,
+                                         };
+    }
+    
 }
 
 
 ## convert a gene feature hash into BSML
 sub gene_feature_hash_to_bsml {
-	my ($features) = @_;
-	
-	my $seq_id = $features->{'_seqid'};
-	delete $features->{'_seqid'};
+    my ($features) = @_;
+    
+    my $seq_id = $features->{'_seqid'};
+    delete $features->{'_seqid'};
 
-	my $id_hash = {};
-	my %id_counts;
-	
-	foreach my $type(keys(%{$features})) {
-		$id_counts{$type} = scalar(keys(%{$features->{$type}}));
-	}
-	$idcreator->set_pool_size(%id_counts);
-	
-	my $seq;
-	
-	## create a sequence stub for the seq_id if it doesn't exist yet
-	if (!($doc->returnBsmlSequenceByIDR($seq_id))){
+    my $id_hash = {};
+    my %id_counts;
+    
+    foreach my $type(keys(%{$features})) {
+        $id_counts{$type} = scalar(keys(%{$features->{$type}}));
+    }
+    $idcreator->set_pool_size(%id_counts);
+    
+    my $seq;
+    
+    ## create a sequence stub for the seq_id if it doesn't exist yet
+    if (!($doc->returnBsmlSequenceByIDR($seq_id))){
         $seq = $doc->createAndAddSequence( $seq_id, $seq_id, undef, 'dna', '' );
-		#if ($options{'fasta_file'}) {
-		#   $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'fasta_file'}, '', "$features->{_seqid}");
-		#}
+        #if ($options{'fasta_file'}) {
+        #   $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'fasta_file'}, '', "$features->{_seqid}");
+        #}
         $seq->addBsmlLink('analysis', '#EVM', 'input_of');
     } else {
-		$seq = $doc->returnBsmlSequenceByIDR($seq_id);
-	}
+        $seq = $doc->returnBsmlSequenceByIDR($seq_id);
+    }
 
-	my @transcript_id = keys(%{$features->{'transcript'}});
+    my @transcript_id = keys(%{$features->{'transcript'}});
 
-	if (scalar @transcript_id > 1) {
-		print Dumper $features;
-		die "multiple transcripts encountered";
-	}
- 	my $t_id = $idcreator->next_id( 
-									'project' => $project, 
-									'type' => 'transcript' 
-						 		  );
-	
-	$id_hash->{$transcript_id[0]} = $t_id;
-	
-	my $feat_table = $doc->createAndAddFeatureTable($seq);
-	my $feat_group = $doc->createAndAddFeatureGroup($seq, '', $t_id);
+    if (scalar @transcript_id > 1) {
+        print Dumper $features;
+        die "multiple transcripts encountered";
+    }
+    my $t_id = $idcreator->next_id( 
+                                    'project' => $project, 
+                                    'type' => 'transcript' 
+                                  );
     
-	foreach my $type(keys(%{$features})) {
-		
-		foreach my $feat_id(keys(%{$features->{$type}})) {
+    $id_hash->{$transcript_id[0]} = $t_id;
     
-			my $id;
-			if (! defined($id_hash->{$feat_id})) {
-		   		$id = $idcreator->next_id( 
-										'project' => $project, 
-										'type' => $type 
-					 				);
-			} else {
-				$id = $id_hash->{$feat_id};
-			}
-			
-			my $feat = $doc->createAndAddFeature( $feat_table, $id, $feat_id, $type);
+    my $feat_table = $doc->createAndAddFeatureTable($seq);
+    my $feat_group = $doc->createAndAddFeatureGroup($seq, '', $t_id);
+    
+    foreach my $type(keys(%{$features})) {
+        
+        foreach my $feat_id(keys(%{$features->{$type}})) {
+    
+            my $id;
+            if (! defined($id_hash->{$feat_id})) {
+                $id = $idcreator->next_id( 
+                                        'project' => $project, 
+                                        'type' => $type 
+                                    );
+            } else {
+                $id = $id_hash->{$feat_id};
+            }
+            
+            my $feat = $doc->createAndAddFeature( $feat_table, $id, $feat_id, $type);
 
-			$feat->addBsmlLink('analysis', '#EVM', 'computed_by');
+            $feat->addBsmlLink('analysis', '#EVM', 'computed_by');
 
-			$feat->addBsmlIntervalLoc(
-					$features->{$type}->{$feat_id}->{'startpos'},
-					$features->{$type}->{$feat_id}->{'endpos'},
-					$features->{$type}->{$feat_id}->{'complement'},
-									 );
+            $feat->addBsmlIntervalLoc(
+                    $features->{$type}->{$feat_id}->{'startpos'},
+                    $features->{$type}->{$feat_id}->{'endpos'},
+                    $features->{$type}->{$feat_id}->{'complement'},
+                                     );
    
-			$feat_group->addBsmlFeatureGroupMember( $id, $type );
-		}
-		
-	}
-	
+            $feat_group->addBsmlFeatureGroupMember( $id, $type );
+        }
+        
+    }
+    
 }
 
 
 ## traverses an array of node references 
 ## and returns all nodes of the specified type
 sub fetch_node_type {
-	my ($type, $nodes_ref, $found_nodes) = @_;
-	
-	foreach my $node (@{$nodes_ref}) {
-		if ($node->{'_type'} eq $type) {
-			push (@{$found_nodes}, $node);
-		}
-		foreach my $key (keys %{$node->{'children'}}) {
-			fetch_node_type($type, $node->{'children'}->{$key}, $found_nodes);
-		}
-	}
-	
-	return;
+    my ($type, $nodes_ref, $found_nodes) = @_;
+    
+    foreach my $node (@{$nodes_ref}) {
+        if ($node->{'_type'} eq $type) {
+            push (@{$found_nodes}, $node);
+        }
+        foreach my $key (keys %{$node->{'children'}}) {
+            fetch_node_type($type, $node->{'children'}->{$key}, $found_nodes);
+        }
+    }
+    
+    return;
 }
 
 sub getTempId {
-	return "temp_id_".$global_id_counter++;	
+    return "temp_id_".$global_id_counter++; 
 }

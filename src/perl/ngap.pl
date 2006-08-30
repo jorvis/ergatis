@@ -78,14 +78,14 @@ BEGIN {
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
               'project|p=s',
               'log|l=s',
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'debug=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 if (scalar keys(%options) < 1) {
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
@@ -93,17 +93,17 @@ if (scalar keys(%options) < 1) {
 
 ## assign a value to project if it wasn't provided so that tempidcreator won't complain
 if (!defined($options{'project'})) {
-	$options{'project'} = 'null';	
+    $options{'project'} = 'null';   
 }
 ## assign a value to command_id if it wasn't provided so that tempidcreator won't complain
 if (!defined($options{'command_id'})) {
-	$options{'command_id'} = '0';
+    $options{'command_id'} = '0';
 }
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -134,14 +134,14 @@ my %ngaps = ();
 ## Read in FASTA sequences and find Ngaps
 
 while (<IN>) {
-	chomp;
-	if (/^>([^\s]+)/) { 
-		$ngaps{$seq_id} = &find_ngaps(\$seq);
-		$seq = '';
-		$seq_id = $1;
-		next;
-	}
-	$seq .= $_;
+    chomp;
+    if (/^>([^\s]+)/) { 
+        $ngaps{$seq_id} = &find_ngaps(\$seq);
+        $seq = '';
+        $seq_id = $1;
+        next;
+    }
+    $seq .= $_;
 }
 $ngaps{$seq_id} = &find_ngaps(\$seq);
 $seq = '';
@@ -152,44 +152,44 @@ close IN;
 
 foreach $seq_id(keys(%ngaps)) {
     my $seq_stub = $doc->createAndAddSequence(
-												$seq_id, 
-												undef, 
-												undef, 
-												'na', 
-												'assembly'
-											 );
+                                                $seq_id, 
+                                                undef, 
+                                                undef, 
+                                                'na', 
+                                                'assembly'
+                                             );
     $seq_stub->addBsmlLink(
-		   					'analysis', 
-							'#ngap_analysis', 
-							'input_of'
-						  );
+                            'analysis', 
+                            '#ngap_analysis', 
+                            'input_of'
+                          );
     my $feature_table  = $doc->createAndAddFeatureTable($seq_stub);
-	foreach my $ngap_ref(@{$ngaps{$seq_id}}) {
-		my $ngap = $doc->createAndAddFeature(
-											$feature_table, 
-                                        	$idcreator->new_id(
-																db => $options{'project'},
-                                             					so_type => 'gap',
-																prefix  => $options{'command_id'}
-															  ),
-                                          	'',
-											'gap'
-										);
+    foreach my $ngap_ref(@{$ngaps{$seq_id}}) {
+        my $ngap = $doc->createAndAddFeature(
+                                            $feature_table, 
+                                            $idcreator->new_id(
+                                                                db => $options{'project'},
+                                                                so_type => 'gap',
+                                                                prefix  => $options{'command_id'}
+                                                              ),
+                                            '',
+                                            'gap'
+                                        );
                                           
-	    $ngap->addBsmlLink('analysis', '#ngap_analysis', 'computed_by');
-    	$ngap->addBsmlIntervalLoc(
-									$ngap_ref->[0],
-								   	$ngap_ref->[1],
-								   	0
-								 );
-	}
+        $ngap->addBsmlLink('analysis', '#ngap_analysis', 'computed_by');
+        $ngap->addBsmlIntervalLoc(
+                                    $ngap_ref->[0],
+                                    $ngap_ref->[1],
+                                    0
+                                 );
+    }
 }
 
 ## add analysis element
 my $analysis = $doc->createAndAddAnalysis(
-				                            id => 'ngap_analysis',
-                				            sourcename => $options{'output'},
-                          				 );
+                                            id => 'ngap_analysis',
+                                            sourcename => $options{'output'},
+                                         );
 
 ## write the doc
 $doc->write($options{'output'});
@@ -197,20 +197,20 @@ $doc->write($options{'output'});
 exit(0);
 
 sub find_ngaps {
-	my ($seq_ref) = shift @_;
-	my @ngaps = ();
-	
-	while (${$seq_ref} =~ /[N]{1,}/ig) {
-		push (@ngaps, [$-[0],$+[0]]);
-	}
-	return \@ngaps;
+    my ($seq_ref) = shift @_;
+    my @ngaps = ();
+    
+    while (${$seq_ref} =~ /[N]{1,}/ig) {
+        push (@ngaps, [$-[0],$+[0]]);
+    }
+    return \@ngaps;
 }
 
 sub check_parameters {
-    ## check that input and output file parameters were provided	
-	unless (defined($options{'input'}) && defined($options{'output'})) {
-			$logger->logdie("--input and --output are required parameters");
-	}
+    ## check that input and output file parameters were provided    
+    unless (defined($options{'input'}) && defined($options{'output'})) {
+            $logger->logdie("--input and --output are required parameters");
+    }
 
     ## make sure input file exists
     if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }

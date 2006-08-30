@@ -66,19 +66,19 @@ use Workflow::Logger;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
-			  'sequence_id|s=s',
+              'sequence_id|s=s',
               'debug|d=s',
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'project|p=s',
               'log|l=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -107,140 +107,140 @@ my $plant_flag = 0;
 my @result_line_ref;
 while (<$ifh>) {
     chomp;
-	if (/using plant networks/i) {
-		$plant_flag = 1;
-	}
+    if (/using plant networks/i) {
+        $plant_flag = 1;
+    }
     if ($plant_flag && /^cutoff\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)/) {
-    	## the cutoff values used will be added to the analysis block
-		## so we don't really need to parse them here
-		my $ctp_cutoff   = $1;
-		my $mtp_cutoff   = $2;
-		my $sp_cutoff    = $3;
-		my $other_cutoff = $4;
-	} elsif (!$plant_flag && /^cutoff\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)/) {
-    	## the cutoff values used will be added to the analysis block
-		## so we don't really need to parse them here
-		my $mtp_cutoff   = $1;
-		my $sp_cutoff    = $2;
-		my $other_cutoff = $3;
-	}
+        ## the cutoff values used will be added to the analysis block
+        ## so we don't really need to parse them here
+        my $ctp_cutoff   = $1;
+        my $mtp_cutoff   = $2;
+        my $sp_cutoff    = $3;
+        my $other_cutoff = $4;
+    } elsif (!$plant_flag && /^cutoff\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)/) {
+        ## the cutoff values used will be added to the analysis block
+        ## so we don't really need to parse them here
+        my $mtp_cutoff   = $1;
+        my $sp_cutoff    = $2;
+        my $other_cutoff = $3;
+    }
 
-	## skip any lines we're not looking for specifically
-	next if ( ! /^-{70}$/ );
+    ## skip any lines we're not looking for specifically
+    next if ( ! /^-{70}$/ );
 
     ##recognize start of results for an individual sequence
     if (/^-{70}/) {
-		$logger->debug("start of results table found") if($logger->is_debug());  
-		while (<$ifh>) {
-			chomp;
-			
-			if (/^-{70}/) {
-				last;
-			}
-			if ($plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)?$/) {
-			
-				my $result_line = {
-									'name'  => $1,
-									'len'   => $2,
-									'ctp'   => $3,
-									'mtp'   => $4,
-									'sp'    => $5,
-									'other' => $6,
-									'loc'   => $7,
-									'rc'    => $8,
-									'tplen' => $9,
-					  			  };
-				push (@result_line_ref, $result_line);
-			} elsif (!$plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)?$/) {
-			
-				my $result_line = {
-									'name'  => $1,
-									'len'   => $2,
-									'mtp'   => $3,
-									'sp'    => $4,
-									'other' => $5,
-									'loc'   => $6,
-									'rc'    => $7,
-									'tplen' => $8,
-					  			  };
-				push (@result_line_ref, $result_line);
-			} else {
-				if ($plant_flag) {print STDERR "died in plant mode\n";} else {print STDERR "died in nonplant mode\n";}
-				$logger->logdie("failed parsing result line:\n$_\n");
-			}
-		}		
-	}
+        $logger->debug("start of results table found") if($logger->is_debug());  
+        while (<$ifh>) {
+            chomp;
+            
+            if (/^-{70}/) {
+                last;
+            }
+            if ($plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)?$/) {
+            
+                my $result_line = {
+                                    'name'  => $1,
+                                    'len'   => $2,
+                                    'ctp'   => $3,
+                                    'mtp'   => $4,
+                                    'sp'    => $5,
+                                    'other' => $6,
+                                    'loc'   => $7,
+                                    'rc'    => $8,
+                                    'tplen' => $9,
+                                  };
+                push (@result_line_ref, $result_line);
+            } elsif (!$plant_flag && /^(.{20})\s+(\d+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)\s+([^ ]+)?$/) {
+            
+                my $result_line = {
+                                    'name'  => $1,
+                                    'len'   => $2,
+                                    'mtp'   => $3,
+                                    'sp'    => $4,
+                                    'other' => $5,
+                                    'loc'   => $6,
+                                    'rc'    => $7,
+                                    'tplen' => $8,
+                                  };
+                push (@result_line_ref, $result_line);
+            } else {
+                if ($plant_flag) {print STDERR "died in plant mode\n";} else {print STDERR "died in nonplant mode\n";}
+                $logger->logdie("failed parsing result line:\n$_\n");
+            }
+        }       
+    }
 }
 
 ## GO mappings tables for output
-my %go_term = 	( 'C' => 'plastid',
-		  'M' => 'mitochondrion',
-		  'S' => 'extracellular space',
-		  '_' => 'cytoplasm',
-		  '*' => 'cellular component unknown',
-		  '?' => 'cellular component unknown',
-	  	);
+my %go_term =   ( 'C' => 'plastid',
+          'M' => 'mitochondrion',
+          'S' => 'extracellular space',
+          '_' => 'cytoplasm',
+          '*' => 'cellular component unknown',
+          '?' => 'cellular component unknown',
+        );
 my %go_id =     ( 'C' => 'GO:0009536',
-		  'M' => 'GO:0005739',
-		  'S' => 'GO:0005615',
-		  '_' => 'GO:0005737',
-		  '*' => 'GO:0008372',
-		  '?' => 'GO:0008372',
-	  	);
+          'M' => 'GO:0005739',
+          'S' => 'GO:0005615',
+          '_' => 'GO:0005737',
+          '*' => 'GO:0008372',
+          '?' => 'GO:0008372',
+        );
 
 if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
-	$logger->logdie("Sequence ID was provided as an argument, but input file has multiple result lines. Sequence ID will override IDs read from the raw file.");  
+    $logger->logdie("Sequence ID was provided as an argument, but input file has multiple result lines. Sequence ID will override IDs read from the raw file.");  
 }
-		
+        
     foreach my $line_ref(@result_line_ref) {
-		$line_ref->{'name'} =~ s/\s+$//;
-		my $seq_id = '';
-		if ($options{'sequence_id'}) {
-			$seq_id = $options{'sequence_id'};
-		} else {
-			$seq_id = $line_ref->{'name'};
-		}
-    	my $seq = $doc->createAndAddSequence(
-			$seq_id,
-		   	undef, 
-			'', 
-			'aa',
-		   	'polypeptide'
-			);
-	   	$seq->addBsmlLink('analysis', '#targetp_analysis', 'input_of');
-	
-		if ($line_ref->{'loc'} ne '*' && $line_ref->{'loc'} ne '?') {
-        	my $ft  = $doc->createAndAddFeatureTable($seq);
-			my $new_id = $idcreator->new_id( 
-				db      => $options{project},
+        $line_ref->{'name'} =~ s/\s+$//;
+        my $seq_id = '';
+        if ($options{'sequence_id'}) {
+            $seq_id = $options{'sequence_id'};
+        } else {
+            $seq_id = $line_ref->{'name'};
+        }
+        my $seq = $doc->createAndAddSequence(
+            $seq_id,
+            undef, 
+            '', 
+            'aa',
+            'polypeptide'
+            );
+        $seq->addBsmlLink('analysis', '#targetp_analysis', 'input_of');
+    
+        if ($line_ref->{'loc'} ne '*' && $line_ref->{'loc'} ne '?') {
+            my $ft  = $doc->createAndAddFeatureTable($seq);
+            my $new_id = $idcreator->new_id( 
+                db      => $options{project},
                 so_type => 'transit_peptide',
-				prefix  => $options{command_id},
+                prefix  => $options{command_id},
                                                         );
-        		my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
-	   	   	$feature->addBsmlLink('analysis', '#targetp_analysis', 'computed_by');
-			my $attribute_array_ref;
-			push( @{$attribute_array_ref}, { 
-				name    => 'GO',
-		          	content => $go_id{$line_ref->{'loc'}}
-			       }
-	    		    );
-			push( @{$attribute_array_ref}, { 
-				name    => 'IEA',
-		          	content => 'targetp prediction'
-			                               }
-	    		    );
+                my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
+            $feature->addBsmlLink('analysis', '#targetp_analysis', 'computed_by');
+            my $attribute_array_ref;
+            push( @{$attribute_array_ref}, { 
+                name    => 'GO',
+                    content => $go_id{$line_ref->{'loc'}}
+                   }
+                    );
+            push( @{$attribute_array_ref}, { 
+                name    => 'IEA',
+                    content => 'targetp prediction'
+                                           }
+                    );
         $feature->addBsmlAttributeList($attribute_array_ref);
 
 
-			
-			foreach my $k(keys %{$line_ref}) {
-				$doc->createAndAddBsmlAttribute($feature, $k, $line_ref->{$k});
-			}
-		}
-	}
+            
+            foreach my $k(keys %{$line_ref}) {
+                $doc->createAndAddBsmlAttribute($feature, $k, $line_ref->{$k});
+            }
+        }
+    }
    
 my $analysis = $doc->createAndAddAnalysis(
-	                            id => 'targetp_analysis',
+                                id => 'targetp_analysis',
                             sourcename => $options{'output'},
                           );
 
@@ -266,11 +266,11 @@ sub check_parameters {
 ## parse_position parses the position field to give an array containing
 ## start [and stop] sites
 sub parse_position {
-	my ($position) = @_;
-	if ($position =~ /^\s*([^\s]+)\s*$/) {
-		return split("-", $1);
-	} else {
-		return ();
-	}
+    my ($position) = @_;
+    if ($position =~ /^\s*([^\s]+)\s*$/) {
+        return split("-", $1);
+    } else {
+        return ();
+    }
 }
 
