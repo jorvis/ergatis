@@ -1,0 +1,474 @@
+                               
+ ------------------------------
+ Q1: Number of features by type
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ CDS                                   7677
+ assembly                                 2
+ exon                                  7677
+ gene                                  7677
+ match                                45051
+ match_part                           45943
+ pmark_spacer                            30
+ polypeptide                          18857
+ rRNA                                    54
+ ribosome_entry_site                   7481
+ signal_peptide                        7471
+ snRNA                                    8
+ tRNA                                   175
+ terminator                            2399
+ transcript                            7677
+
+(15 rows affected)
+                                                 
+ ------------------------------------------------
+ Q2: Number of features associated with a compute
+
+(1 row affected)
+                                                               analysis_id 
+	           
+ ------------------------------ ------------------------------ ------------
+	-----------
+ CDS                            BER_analysis                              3
+	       4446
+ match                          BER_analysis                              3
+	       4464
+ match                          HMM2_analysis                             4
+	      33025
+ match                          NCBI_COG                                  5
+	       5689
+ match                          PROSITE                                   6
+	       1873
+ match_part                     BER_analysis                              3
+	       4464
+ match_part                     HMM2_analysis                             4
+	      33867
+ match_part                     NCBI_COG                                  5
+	       5689
+ match_part                     PROSITE                                   6
+	       1923
+ polypeptide                    BER_analysis                              3
+	       3925
+ polypeptide                    HMM2_analysis                             4
+	      10858
+ polypeptide                    NCBI_COG                                  5
+	       7359
+ polypeptide                    PROSITE                                   6
+	       1947
+ ribosome_entry_site            RBS_analysis                              1
+	       7481
+ terminator                     TERM_analysis                             2
+	       2399
+
+(15 rows affected)
+                                          
+ -----------------------------------------
+ Q3: Number and feature properties by type
+
+(1 row affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ CDS                            percent_gc                            7676
+ assembly                       topology                                 2
+ assembly                       molecule_name                            2
+ assembly                       molecule_type                            2
+ match_part                     percent_similarity                    4459
+ pmark_spacer                   comment                                 30
+ polypeptide                    MW                                    7402
+ polypeptide                    pI                                    7402
+ polypeptide                    transmembrane_coords                  7676
+ polypeptide                    transmembrane_regions                 7676
+ polypeptide                    outer_membrane_protein                7676
+ polypeptide                    lipo_membrane_protein                 7677
+ rRNA                           name                                    33
+ rRNA                           gene_symbol                             33
+ signal_peptide                 c-score                                  1
+ signal_peptide                 s-score                                  1
+ signal_peptide                 HMM_cleavage_site                     1235
+ signal_peptide                 max_cleavage_site_probability         1235
+ signal_peptide                 NN_cleavage_site                      2336
+ signal_peptide                 signal_probability                    7470
+ signal_peptide                 s-mean                                7471
+ signal_peptide                 y-score                               7471
+ snRNA                          name                                     5
+ tRNA                           name                                    95
+ tRNA                           tRNA_anti-codon                        175
+ transcript                     auto_annotate_toggle                   727
+ transcript                     gene_symbol                           1681
+ transcript                     comment                               1887
+ transcript                     completed_by                          6608
+ transcript                     start_site_editor                     6608
+ transcript                     auto_comment                          7625
+ transcript                     date                                  7677
+ transcript                     assignby                              7677
+ transcript                     gene_product_name                     7677
+
+(34 rows affected)
+                                   
+ ----------------------------------
+ Q4: Number of features by organism
+
+(1 row affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ Bacillus anthracis Ames        b_anthracis_ames                    104319
+ Streptococcus agalactiae 2603V s_agalactiae_2603vr                  42680
+ not known                      not known                            11180
+
+(3 rows affected)
+                                            
+ -------------------------------------------
+ Q5: Number of dbxref records by external db
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ ANNFLG                                   5
+ ARD                                      9
+ COG_Cluster                           1670
+ EC                                    9238
+ EGAD                                  1118
+ GB                                       5
+ GFF3                                    26
+ GO                                   18256
+ GP                                     874
+ Genbank                               7428
+ MetaCyc                               3954
+ NCBI_gi                               7426
+ OMNI                                  1253
+ PIR                                      5
+ PROSITE                                515
+ Pfam                                  2917
+ RESID                                   11
+ Reactome                              1963
+ SO                                    1035
+ SP                                     670
+ Swiss-Prot                            7406
+ TAIR:TED\                                3
+ TC                                     391
+ TIGR_Gba                             24199
+ TIGR_Gbs                              9220
+ TIGR_TIGRFAMS                         2153
+ TIGR_role                              268
+ TIGR_roles_order                       122
+ TS                                       7
+ UM-BBD_enzymeID                        451
+ UM-BBD_pathwayID                       109
+ annotation_attributes.ontology         127
+ component.ontology                     190
+ evidence_code                          129
+ gb_old_locus_tag                      7677
+ go_properties                           24
+ output.ontology                         89
+ owl                                      1
+ relationship                            29
+ synonym_types                            6
+ taxon                                    2
+
+(41 rows affected)
+                                                           
+ ----------------------------------------------------------
+ Q5: Number of primary database references for all features
+
+(1 row affected)
+ name                                                          
+ -------------------------------------------------- -----------
+ COG_Cluster                                               1670
+ EGAD                                                      1118
+ GB                                                           5
+ GP                                                         874
+ OMNI                                                      1253
+ PIR                                                          5
+ PROSITE                                                    515
+ Pfam                                                      2917
+ SP                                                         670
+ TIGR_Gba                                                 40416
+ TIGR_Gbs                                                 15589
+ TIGR_TIGRFAMS                                             2153
+
+(12 rows affected)
+                                                             
+ ------------------------------------------------------------
+ Q6: Number of secondary database references for all features
+
+(1 row affected)
+ name                                                          
+ -------------------------------------------------- -----------
+ COG_Cluster                                               1670
+ EGAD                                                      1118
+ GB                                                           5
+ GP                                                         874
+ Genbank                                                  37132
+ NCBI_gi                                                  37130
+ OMNI                                                      1253
+ PIR                                                          5
+ PROSITE                                                    515
+ Pfam                                                      2917
+ SP                                                         670
+ Swiss-Prot                                               37130
+ TIGR_Gba                                                 95628
+ TIGR_Gbs                                                 37384
+ TIGR_TIGRFAMS                                             2153
+ gb_old_locus_tag                                         38385
+
+(16 rows affected)
+                                               
+ ----------------------------------------------
+ Q7: F Number of localizations per feature type
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ CDS                                   8928
+ assembly                             48532
+ polypeptide                         173060
+
+(3 rows affected)
+                                            
+ -------------------------------------------
+ Q8: Number of feature_relationships by type
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ derives_from                         15354
+ part_of                              70814
+
+(2 rows affected)
+                                           
+ ------------------------------------------
+ Q9: Number of features by type by sequence
+
+(1 row affected)
+                               
+	uniquename                                                              
+                                                                                
+                                                                                
+                       
+	           
+ ------------------------------
+	------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------
+	-----------
+ CDS                           
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	       2169
+ CDS                           
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	       5508
+ exon                          
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	       2169
+ exon                          
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	       5508
+ gene                          
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	       2169
+ gene                          
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	       5508
+ pmark_spacer                  
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	         30
+ polypeptide                   
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	       2169
+ polypeptide                   
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	       5508
+ rRNA                          
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	         21
+ rRNA                          
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	         33
+ ribosome_entry_site           
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	       2052
+ ribosome_entry_site           
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	       5429
+ snRNA                         
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	          4
+ snRNA                         
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	          4
+ tRNA                          
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	         80
+ tRNA                          
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	         95
+ terminator                    
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	        449
+ terminator                    
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	       1950
+ transcript                    
+	gbs_799_assembly                                                        
+                                                                                
+                                                                                
+                       
+	       2169
+ transcript                    
+	gba_6615_assembly                                                       
+                                                                                
+                                                                                
+                       
+	       5508
+
+(21 rows affected)
+                                                 
+ ------------------------------------------------
+ Q10: Number of secondary feature_cvterms by type
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ assembly                                 2
+ transcript                           21533
+
+(2 rows affected)
+                                   
+ ----------------------------------
+ Q11: analysisfeature relationships
+
+(1 row affected)
+
+	name                                                                    
+                                                                                
+                                                                                
+                       
+	program                                                       
+
+	------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------
+	-------------------------------------------------- -----------
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	BER                                                       8928
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	HMM2                                                     66892
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	NCBI_COG                                                 11378
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	PROSITE                                                   3796
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	RBS                                                       7481
+
+	computed_by                                                             
+                                                                                
+                                                                                
+                       
+	TERM                                                      2399
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	BER                                                       8371
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	HMM2                                                     10858
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	NCBI_COG                                                  7359
+
+	input_of                                                                
+                                                                                
+                                                                                
+                       
+	PROSITE                                                   1947
+
+(10 rows affected)

@@ -1,0 +1,177 @@
+                               
+ ------------------------------
+ Q1: Number of features by type
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ CDS                                   3387
+ GATC_rich_region                        52
+ assembly                                 4
+ exon                                 20987
+ gene                                  3020
+ match                                 8345
+ match_part                           10554
+ microsatellite                          22
+ polypeptide                           6110
+ transcript                            3387
+
+(10 rows affected)
+                                                 
+ ------------------------------------------------
+ Q2: Number of features associated with a compute
+
+(1 row affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ CDS                            snap                                     8
+ CDS                            augustus                                 8
+ CDS                            fgenesh                                 11
+ CDS                            combiner                                11
+ CDS                            combiner2                               11
+ CDS                            glimmerHMM                              12
+ CDS                            NGAP                                   150
+ exon                           combiner                                77
+ exon                           snap                                    80
+ exon                           augustus                                81
+ exon                           glimmerHMM                              81
+ exon                           fgenesh                                 84
+ exon                           combiner2                               85
+ exon                           NGAP                                   150
+ gene                           snap                                     8
+ gene                           augustus                                 8
+ gene                           fgenesh                                 11
+ gene                           combiner                                11
+ gene                           combiner2                               11
+ gene                           glimmerHMM                              12
+ gene                           NGAP                                   150
+ match                          HMM2_analysis                         8345
+ match_part                     HMM2_analysis                        10554
+ polypeptide                    snap                                     8
+ polypeptide                    augustus                                 8
+ polypeptide                    fgenesh                                 11
+ polypeptide                    combiner                                11
+ polypeptide                    combiner2                               11
+ polypeptide                    glimmerHMM                              12
+ polypeptide                    NGAP                                   150
+ polypeptide                    HMM2_analysis                         5425
+ transcript                     snap                                     8
+ transcript                     augustus                                 8
+ transcript                     fgenesh                                 11
+ transcript                     combiner                                11
+ transcript                     combiner2                               11
+ transcript                     glimmerHMM                              12
+ transcript                     NGAP                                   150
+
+(38 rows affected)
+                                          
+ -----------------------------------------
+ Q3: Number and feature properties by type
+
+(1 row affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ CDS                            targetP_curated                         11
+ CDS                            signalP_curated                       3176
+ GATC_rich_region               comment                                 52
+ assembly                       comment                                  2
+ assembly                       date                                     4
+ assembly                       length                                   4
+ assembly                       fa_left                                  4
+ assembly                       assignby                                 4
+ assembly                       fa_right                                 4
+ assembly                       fa_orient                                4
+ assembly                       chromosome                               4
+ assembly                       molecule_name                            4
+ match                          date                                  8345
+ match                          assignby                              8345
+ match                          HMM_curated                           8345
+ match                          total_score                           8345
+ match                          expect_whole                          8345
+ match_part                     domain_score                         10554
+ match_part                     expect_domain                        10554
+ microsatellite                 repeat_unit                             22
+ polypeptide                    MW                                      11
+ polypeptide                    pI                                      11
+ transcript                     comment                                  3
+ transcript                     gene_structure_curated                   4
+ transcript                     auto_comment                             8
+ transcript                     date                                  3176
+ transcript                     assignby                              3176
+ transcript                     gene_product_name                     3176
+
+(28 rows affected)
+                                   
+ ----------------------------------
+ Q4: Number of features by organism
+
+(1 row affected)
+                                                                          
+ ------------------------------ ------------------------------ -----------
+ Brugia malayi                  b_malayi                              1726
+ Caenorhabditis briggsae        cba1                                  3150
+ Caenorhabditis elegans synteny cea2                                 48269
+ not known                      not known                             2723
+
+(4 rows affected)
+                                            
+ -------------------------------------------
+ Q5: Number of dbxref records by external db
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ ANNFLG                                   5
+ ARD                                      9
+ EC                                    9238
+ GFF3                                    26
+ GO                                   18256
+ MetaCyc                               3954
+ Pfam                                  1883
+ RESID                                   11
+ Reactome                              1963
+ SO                                    1035
+ TAIR:TED\                                3
+ TC                                     391
+ TIGR_Bma1                              969
+ TIGR_Cba1                             1791
+ TIGR_Cea2                            27240
+ TIGR_TIGRFAMS                          840
+ TIGR_role                              268
+ TIGR_roles_order                       122
+ TS                                       7
+ UM-BBD_enzymeID                        451
+ UM-BBD_pathwayID                       109
+ annotation_attributes.ontology         127
+ cea2                                     2
+ component.ontology                     190
+ evidence_code                          129
+ go_properties                           24
+ output.ontology                         89
+ owl                                      1
+ relationship                            29
+ synonym_types                            6
+
+(30 rows affected)
+                                             
+ --------------------------------------------
+ Q6: Number of localizations per feature type
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ assembly                             34242
+ polypeptide                          37798
+
+(2 rows affected)
+                                            
+ -------------------------------------------
+ Q7: Number of feature_relationships by type
+
+(1 row affected)
+                                           
+ ------------------------------ -----------
+ derives_from                          6774
+ part_of                              34928
+
+(2 rows affected)

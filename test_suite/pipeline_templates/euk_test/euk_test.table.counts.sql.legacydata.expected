@@ -1,0 +1,235 @@
+ tableinfo  
+ -----------
+           0
+
+(1 row affected)
+ project    
+ -----------
+           0
+
+(1 row affected)
+ db         
+ -----------
+          30
+
+(1 row affected)
+ dbxref     
+ -----------
+       69168
+
+(1 row affected)
+ cv         
+ -----------
+          15
+
+(1 row affected)
+ cvterm     
+ -----------
+       24146
+
+(1 row affected)
+ cvterm_relationship
+ -------------------
+               30124
+
+(1 row affected)
+ cvtermpath 
+ -----------
+           0
+
+(1 row affected)
+ cvtermsynonym
+ -------------
+          8289
+
+(1 row affected)
+ cvterm_dbxref
+ -------------
+         16644
+
+(1 row affected)
+ cvtermprop 
+ -----------
+        4100
+
+(1 row affected)
+ dbxrefprop 
+ -----------
+           6
+
+(1 row affected)
+ organism   
+ -----------
+           4
+
+(1 row affected)
+ organism_dbxref
+ ---------------
+               3
+
+(1 row affected)
+ organismprop
+ ------------
+            6
+
+(1 row affected)
+ pub        
+ -----------
+           1
+
+(1 row affected)
+ pub_relationship
+ ----------------
+                0
+
+(1 row affected)
+ pub_dbxref 
+ -----------
+           0
+
+(1 row affected)
+ pubauthor  
+ -----------
+           0
+
+(1 row affected)
+ pubprop    
+ -----------
+           0
+
+(1 row affected)
+ feature    
+ -----------
+       55868
+
+(1 row affected)
+ featureloc 
+ -----------
+       72040
+
+(1 row affected)
+ feature_pub
+ -----------
+           0
+
+(1 row affected)
+ featureprop
+ -----------
+       75693
+
+(1 row affected)
+ featureprop_pub
+ ---------------
+               0
+
+(1 row affected)
+ feature_dbxref
+ --------------
+          75130
+
+(1 row affected)
+ feature_relationship
+ --------------------
+                41702
+
+(1 row affected)
+ feature_relationship_pub
+ ------------------------
+                        0
+
+(1 row affected)
+ feature_relationshipprop
+ ------------------------
+                        0
+
+(1 row affected)
+ feature_relprop_pub
+ -------------------
+                   0
+
+(1 row affected)
+ feature_cvterm
+ --------------
+           3149
+
+(1 row affected)
+ feature_cvtermprop
+ ------------------
+               9459
+
+(1 row affected)
+ feature_cvterm_dbxref
+ ---------------------
+                     0
+
+(1 row affected)
+ feature_cvterm_pub
+ ------------------
+                  0
+
+(1 row affected)
+ synonym    
+ -----------
+           0
+
+(1 row affected)
+ feature_synonym
+ ---------------
+               0
+
+(1 row affected)
+ analysis   
+ -----------
+          11
+
+(1 row affected)
+ analysisprop
+ ------------
+            4
+
+(1 row affected)
+ analysisfeature
+ ---------------
+           25806
+
+(1 row affected)
+ phylotree  
+ -----------
+           0
+
+(1 row affected)
+ phylotree_pub
+ -------------
+             0
+
+(1 row affected)
+ phylonode  
+ -----------
+           0
+
+(1 row affected)
+ phylonode_dbxref
+ ----------------
+                0
+
+(1 row affected)
+ phylonode_pub
+ -------------
+             0
+
+(1 row affected)
+ phylonode_organism
+ ------------------
+                  0
+
+(1 row affected)
+ phylonodeprop
+ -------------
+             0
+
+(1 row affected)
+ phylonode_relationship
+ ----------------------
+                      0
+
+(1 row affected)

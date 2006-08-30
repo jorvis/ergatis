@@ -1,0 +1,31 @@
+                                                
+ -----------------------------------------------
+ Q1: Checking featureloc records where fmin>fmax
+
+(1 row affected)
+            
+ -----------
+           0
+
+(1 row affected)
+                                                 
+ ------------------------------------------------
+ Q2: Checking for dangling feature_dbxref records
+
+(1 row affected)
+            
+ -----------
+           0
+
+(1 row affected)
+                                           
+ ------------------------------------------
+ Q3: Checking for dangling organism records
+
+(1 row affected)
+ genus                                             
+	species                                                       
+ --------------------------------------------------
+	-------------------------------------------------- -----------
+
+(0 rows affected)
