@@ -1,5 +1,10 @@
 #!/usr/local/bin/perl
 
+BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 =head1 NAME
 
 MSF2Bsml.pl - Convert a multiple sequence alignment file (such as clustalw) to BSML.
