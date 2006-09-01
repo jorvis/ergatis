@@ -1,4 +1,5 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -173,20 +174,22 @@ while (<$ifh>) {
 }
 
 ## GO mappings tables for output
-my %go_term =   ( 'C' => 'plastid',
-          'M' => 'mitochondrion',
-          'S' => 'extracellular space',
-          '_' => 'cytoplasm',
-          '*' => 'cellular component unknown',
-          '?' => 'cellular component unknown',
-        );
-my %go_id =     ( 'C' => 'GO:0009536',
-          'M' => 'GO:0005739',
-          'S' => 'GO:0005615',
-          '_' => 'GO:0005737',
-          '*' => 'GO:0008372',
-          '?' => 'GO:0008372',
-        );
+my %go_term = ( 
+                'C' => 'plastid',
+                'M' => 'mitochondrion',
+                'S' => 'extracellular space',
+                '_' => 'cytoplasm',
+                '*' => 'cellular component unknown',
+                '?' => 'cellular component unknown',
+              );
+my %go_id = ( 
+                'C' => 'GO:0009536',
+                'M' => 'GO:0005739',
+                'S' => 'GO:0005615',
+                '_' => 'GO:0005737',
+                '*' => 'GO:0008372',
+                '?' => 'GO:0008372',
+            );
 
 if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
     $logger->logdie("Sequence ID was provided as an argument, but input file has multiple result lines. Sequence ID will override IDs read from the raw file.");  
@@ -212,26 +215,32 @@ if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
         if ($line_ref->{'loc'} ne '*' && $line_ref->{'loc'} ne '?') {
             my $ft  = $doc->createAndAddFeatureTable($seq);
             my $new_id = $idcreator->new_id( 
-                db      => $options{project},
-                so_type => 'transit_peptide',
-                prefix  => $options{command_id},
-                                                        );
-                my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
+                                                db      => $options{project},
+                                                so_type => 'transit_peptide',
+                                                prefix  => $options{command_id},
+                                           );
+            my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
             $feature->addBsmlLink('analysis', '#targetp_analysis', 'computed_by');
-            my $attribute_array_ref;
-            push( @{$attribute_array_ref}, { 
-                name    => 'GO',
-                    content => $go_id{$line_ref->{'loc'}}
-                   }
-                    );
-            push( @{$attribute_array_ref}, { 
-                name    => 'IEA',
-                    content => 'targetp prediction'
-                                           }
-                    );
-        $feature->addBsmlAttributeList($attribute_array_ref);
-
-
+            my $endpos = 0;
+            if ($line_ref->{'tplen'} > 0) {
+                $endpos = $line_ref->{'tplen'};
+            }
+            $feature->addBsmlIntervalLoc('0', $endpos);
+             delete($line_ref->{'name'});  
+             delete($line_ref->{'len'});  
+             delete($line_ref->{'tplen'});  
+#            my $attribute_array_ref;
+#            push( @{$attribute_array_ref}, { 
+#                                            name    => 'GO',
+#                                            content => $go_id{$line_ref->{'loc'}}
+#                                           }
+#                );
+#            push( @{$attribute_array_ref}, { 
+#                                            name    => 'IEA',
+#                                            content => 'targetp prediction'
+#                                           }
+#               );
+#            $feature->addBsmlAttributeList($attribute_array_ref);
             
             foreach my $k(keys %{$line_ref}) {
                 $doc->createAndAddBsmlAttribute($feature, $k, $line_ref->{$k});
@@ -240,9 +249,9 @@ if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
     }
    
 my $analysis = $doc->createAndAddAnalysis(
-                                id => 'targetp_analysis',
-                            sourcename => $options{'output'},
-                          );
+                                            id          =>  'targetp_analysis',
+                                            sourcename  =>  $options{'output'},
+                                         );
 
 ## now write the doc
 $doc->write($options{'output'});
