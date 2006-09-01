@@ -179,7 +179,21 @@ foreach my $file (@files) {
                                                              },
                                               },
                              );
-    $twig->parsefile($file);
+    
+    my $ifh;
+    if (-e "$file.gz") {
+        $file .= ".gz";
+    } elsif (-e "$file.gzip") {
+        $file .= ".gzip";
+    }
+    
+    if ($file =~ /\.(gz|gzip)$/) {
+        open ($ifh, "<:gzip", $file);
+    } else {
+        open ($ifh, "<$file");
+    }
+    $twig->parse($ifh);
+    close $ifh;
 }
 
 ## clean up
@@ -238,8 +252,8 @@ sub process_repeat_feature {
     my $feat_name = "$$asmbl_id.repeat" . sprintf("%06d", $$nextid++);
     
     if ($$prog_name eq 'trf') {
-        $score       = 'tandem';
-        $score_desc  = 'class';   
+        $score       = &get_attribute($elt, 'consensus_text');
+        $score_desc  = 'consensus text';   
         $score2      = &get_attribute($elt, 'raw_score');
         $score2_desc = 'score';
     } elsif ($$prog_name eq 'repeatmasker') {
