@@ -61,7 +61,7 @@ use BSML::BsmlBuilder;
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
 use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
+use Workflow::IdGenerator;
 use Pod::Usage;
 use Workflow::Logger;
 
@@ -74,6 +74,7 @@ my $results = GetOptions (\%options,
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'project|p=s',
+              'id_repository=s'
               'log|l=s',
               'help|h') || pod2usage();
 
@@ -98,7 +99,7 @@ my $next_id = 1;
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+my $idcreator = new Workflow::IdGenerator( id_repository => $options{'id_repository'});
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -214,10 +215,9 @@ if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
     
         if ($line_ref->{'loc'} ne '*' && $line_ref->{'loc'} ne '?') {
             my $ft  = $doc->createAndAddFeatureTable($seq);
-            my $new_id = $idcreator->new_id( 
-                                                db      => $options{project},
-                                                so_type => 'transit_peptide',
-                                                prefix  => $options{command_id},
+            my $new_id = $idcreator->next_id( 
+                                                project => $options{project},
+                                                type    => 'transit_peptide',
                                            );
             my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
             $feature->addBsmlLink('analysis', '#targetp_analysis', 'computed_by');
