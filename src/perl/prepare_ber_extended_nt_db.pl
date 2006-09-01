@@ -19,6 +19,7 @@ USAGE: prepare_ber_extended_nt_db.pl
            --bsml_source_file
            --bsml_source_dir
            --output_dir|-o
+           --lookup_db
            --database|-d
            --server|-s                    SYBTIGR
            --username|-u                  access
@@ -49,6 +50,9 @@ B<--temp_dir,-t>
 B<--extend_by,-e>
     Number of bases to extend the nucleotide sequences by (default 300).
 
+B<--lookup_db>
+    Where the id lookup file should be.
+
 B<--database,-d>
     Name of database from which to extract sequences.
 
@@ -73,6 +77,9 @@ Prepares a database of extended NT sequences that correspond to
 a list of query polypeptide sequences. The start and end positions
 of the NT sequences are extended by the specified number of bases.
 
+Also creates an id lookup for later stages (bsml creation).  This
+link the predicted features back to the parent sequence. 
+
 =head1 OUTPUT
 
 The script creates two output files in the specified directory:
@@ -83,6 +90,11 @@ ber.nt.fsa
 ber.mapping.list
   Mapping list that maps the query polypeptide IDs to the
   NT sequence IDs.
+
+lookup_db
+    A persistent hash created using the DB_File module. 
+    Can be accessed using some polypeptide id with the
+    value being the parent sequence id.
 
 =head1 CONTACT
 
@@ -100,6 +112,7 @@ use Workflow::Logger;
 use DBI;
 use File::Find;
 use XML::Twig;
+use DB_File;
 use Data::Dumper;
 
 my %opt;
@@ -119,6 +132,7 @@ GetOptions ( \%opt,
              'bsml_source_file:s',
              'bsml_source_dir:s',
              'extend_by|e=i',
+             'lookup_db=s',
              'help|h',
              'man|m',
              ) || pod2usage();
@@ -153,6 +167,9 @@ if (!defined($opt{'is_chado'}) && !$bsml_input_flag) {
 if (!$opt{'extend_by'}) {
     $opt{'extend_by'}=300;
 }
+if (!$opt{'lookup_db'}) {
+    pod2usage("must specifiy lookup_db output with --lookup_db");
+}
 if (!$opt{'server'}) {
     $opt{'server'} = 'SYBTIGR';
 }
@@ -173,6 +190,12 @@ my $bsml_cds_strand;
 my $bsml_sequences;
 my $bsml_mapping;
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+## Used to make id lookup table
+my %idLookup;
+tie(%idLookup, 'DB_File', $opt{'lookup_db'}) or
+    $logger->logdie("Could not open $opt{lookup_db} ($!)");
+##^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 my @infiles = get_input_files();
 
@@ -223,6 +246,8 @@ if ($bsml_input_flag) {
         do_extract_from_legacy($dbh, @sequence_ids);
     }
 }
+
+untie %idLookup;
 
 exit();
 
@@ -484,6 +509,7 @@ sub do_extract_bsml_sequences {
         }
         
         foreach my $cds_id(keys(%{$extract_hash->{$asmbl_id}})) {
+            $idLookup{$cds_id} = $asmbl_id;
             my $extended_cds = get_extended_sequence(
                                                         $asmbl_seq, 
                                                         $bsml_cds_locs->{$cds_id}->[0], 
