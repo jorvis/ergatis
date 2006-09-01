@@ -227,9 +227,47 @@ ergatis-v1r20b6
 -added translate_sequence component
 -added transterm and ps_scan components
 
-next
-------------
--added glimmer3 component
+ergatis-v1r20b7
+--------------
 -changed tRNAscan-SE to use Gene.pm and BSML::GenePredictionsBsml
 -changed aat_aa, aat_aa_masked, aat_na, aat_na_masked to point to elee's dps and dds.
+
+ergatis-v1r21b1
+--------------
+-added glimmer3 component
+-added legacyparafam2bsml component
+-added mask_by_analysis component
+-added mreps component
+-added parse_for_ncRNAs component
+-added pepstats component
+-added ps_scan component
+-added ps_scan component
+-added ps_scan component
+-added Chado::Gene module
+-C source for Bsml2Asn1 added
+-C source for Bsml2Asn1 added
+-C source for chado_record_uniq added
+-MSF2Bsml now also incorporates newick trees from dnd files into BSML
+-added bsml2agp.pl script
+-added evmgff32bsml.pl script
+-BER component now uses  persistant hash which can be used to lookup parent sequence id's for CDS features
+-BER component can read source data from db or existing BSML files.
+-genbank2bsml now supports parsing product(gene_product_name), ec_number, molecule name and note(comment)
+-glimmer32bsml updated to chado gene encoding, uses IdGenerator
+-signalp component updated to use IdGenerator and improved BSML encoding
+-tRNAscan-SE component updated to use IdGenerator and chado gene encoding
+-targetp component updated to use IdGenerator and improved BSML encoding
+-test pipeline refactoring
+-lots more nifty things that I'll comment on later.
+
+
+
+
+
+
+
+
+
+
+
 
