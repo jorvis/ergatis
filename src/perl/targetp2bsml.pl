@@ -74,7 +74,7 @@ my $results = GetOptions (\%options,
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'project|p=s',
-              'id_repository=s'
+              'id_repository=s',
               'log|l=s',
               'help|h') || pod2usage();
 
