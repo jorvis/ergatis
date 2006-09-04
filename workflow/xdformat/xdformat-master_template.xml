@@ -8,8 +8,13 @@
 <!--Preprocessing-->
     	<command>
           <type>RunUnixCommand</type>
-          <name>create_compute_scratch</name>
+          <name>create scratch directory</name>
           <configMapId>create_compute_scratch</configMapId>
+        </command>
+    	<command>
+          <type>RunUnixCommand</type>
+          <name>create output directory</name>
+          <configMapId>create_compute_output</configMapId>
         </command>
 <!--Processing-->
     	<command>
