@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+      <name>testing_die_if_empty workflow</name>
+      <configMapId>empty</configMapId>
+      <command>
+          <type>RunUnixCommand</type>
+          <name>testing_die_if_empty</name>
+          <configMapId>testing_die_if_empty</configMapId>
+      </command>
+     </commandSet>
+</commandSetRoot>
+
+
