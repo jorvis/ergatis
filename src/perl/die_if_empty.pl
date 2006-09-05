@@ -52,8 +52,8 @@ use Workflow::Logger;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-                          'input_list|i=s',
-                          'input_file|f=s',
+                          'input_list|i:s',
+                          'input_file|f:s',
                           'log|l=s',
                           'debug|d=s',
                           'not',
@@ -65,7 +65,8 @@ my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 $logger = $logger->get_logger();
 
 my @files;
-my $empty_flag;
+my $empty_count=0;
+my $nonempty_count=0;
 
 ## display documentation
 if( $options{'help'} || scalar keys(%options) == 0 ){
@@ -99,16 +100,16 @@ if ($options{'input_file'}) {
 
 foreach my $file(@files) {
     if (-z $file) {
-        $empty_flag = 1;
+        $empty_count++;
         if ($logger->is_debug) { $logger->debug("file '$file' is empty");}
     } else {
+        $nonempty_count++;
         if ($logger->is_debug) { $logger->debug("file '$file' is not empty");}
     }
-
 }
 
-if ($options{'not'} && !$empty_flag) {
+if      ( $options{'not'}   &&    $nonempty_count   > 0) {
     $logger->logdie("one or more of the specified files were not empty");
-} elsif (!$options{'not'} && $empty_flag) {
+} elsif (!$options{'not'}   &&    $empty_count      > 0) {
     $logger->logdie("one or more of the specified files were empty");
 }
