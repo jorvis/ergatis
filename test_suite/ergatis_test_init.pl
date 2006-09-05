@@ -22,15 +22,15 @@ B<--no-run,-n>
     (For verification purposes to prevent running malformed pipelines.)
    
 B<--ignore-lock>
-	Disable the lock file system that prevents running multiple instances of this script from the same directory.
-	ONLY use this flag if you can be sure that your test pipelines are configured with an ergatis install path, 
+    Disable the lock file system that prevents running multiple instances of this script from the same directory.
+    ONLY use this flag if you can be sure that your test pipelines are configured with an ergatis install path, 
     repository root, and database where there is no risk of collision with other testing pipelines.
  
 B<--repository-root,-r>
     Repository root in which to create and run the test pipeline instance(s).
 
 B<--workflow-path,-w>
-	Path to workflow executables (optional)	
+    Path to workflow executables (optional) 
 
 B<--man,-m>
     Display the pod2usage page for this utility.
@@ -83,18 +83,18 @@ my $host = hostname();
 
 my %options=();
 GetOptions(\%options, 
-#	"ergatis-target|t=s", #read from sharedconf.ini
-	"install|i",
-	"repository-root|r=s", 
-	"workflow-path|w=s",
-	"no-run",
-	"ignore-lock",
-#	"branch-ergatis=s",  ##branches are now specified in the installer testing_automated.ini file
-#	"branch-chado=s", 
-#	"branch-prism=s",
-#	"branch-bsml=s",
-	"man|m",
-	"help|h",
+#   "ergatis-target|t=s", #read from sharedconf.ini
+    "install|i",
+    "repository-root|r=s", 
+    "workflow-path|w=s",
+    "no-run",
+    "ignore-lock",
+#   "branch-ergatis=s",  ##branches are now specified in the installer testing_automated.ini file
+#   "branch-chado=s", 
+#   "branch-prism=s",
+#   "branch-bsml=s",
+    "man|m",
+    "help|h",
 ) || pod2usage();
 
 if( $options{'man'} ){
@@ -106,17 +106,17 @@ if( $options{'help'} ){
 
 #my $repository_root;
 unless (defined($options{'repository-root'})) {
-	print "USAGE ERROR: Must provide a repository root!\n";
-   	pod2usage( {-exitval=>1, -verbose => 1, -output => \*STDOUT} );
+    print "USAGE ERROR: Must provide a repository root!\n";
+    pod2usage( {-exitval=>1, -verbose => 1, -output => \*STDOUT} );
 }
-unless (-d $options{'repository-root'}) {	
-   	print "Repository root '".$options{'repository-root'}."' invalid:\n$!\n";
- 	pod2usage();
+unless (-d $options{'repository-root'}) {   
+    print "Repository root '".$options{'repository-root'}."' invalid:\n$!\n";
+    pod2usage();
 }
 $options{'repository-root'} =~ s/\/$//;
 
 if (!defined($options{'workflow-path'})) {
-	$options{'workflow-path'} = '/usr/local/devel/ANNOTATION/workflow';
+    $options{'workflow-path'} = '/usr/local/devel/ANNOTATION/workflow';
 }
 
 #my $install_root = $options{'ergatis-target'};
@@ -124,8 +124,8 @@ if (!defined($options{'workflow-path'})) {
 ## read the install_root directory from the sharedconf.ini file 
 ## in the repository root directory we have been provided
 my $cfg = Config::IniFiles->new( -file => $options{'repository-root'}."/workflow_config_files/sharedconf.ini")
-	|| print_usage("Repository root (".$options{'repository-root'}.") did not contain a valid workflow_config_files/sharedconf.ini");
-	  
+    || print_usage("Repository root (".$options{'repository-root'}.") did not contain a valid workflow_config_files/sharedconf.ini");
+      
 my $install_root = $cfg->val('init', '$;BIN_DIR$;') 
     || print_usage($options{'repository-root'}."/workflow_config_files/sharedconf.ini does not contain a valid BIN_DIR");
 $install_root =~ s/\/$//; ##strip off trailing slash if it exists
@@ -146,12 +146,12 @@ my $log_dir = $exec_path."/logs/".allNow();
 
 ## checkout installer script if it hasn't been done already
 #unless (-e $exec_path."/bin/ergatis_installer.pl") {
-	checkout_installer();
+    checkout_installer();
 #}
 
 ## checkout Workflow::SavedPipeline if it doesn't exist in the $exec_path/lib dir
 #unless (-e $exec_path."/lib/Workflow/SavedPipeline.pm") {
-	checkout_workflow_perl_modules();
+    checkout_workflow_perl_modules();
 #}
 
 print "Executing workflow test\n";
@@ -164,16 +164,16 @@ foreach (@ARGV) {
 }
 if (!$options{'ignore-lock'}) {
 if (-e "$exec_path/.lock_$install_hash") {
-	##a lock file exists in the testing directory
-	print "Lock file exists!!! [.lock_$install_hash]\n";
-	print "  Testing pipeline already running, or previous execution died poorly\n";
-	print "  Manual intervention required\n";
-	exit(1);
+    ##a lock file exists in the testing directory
+    print "Lock file exists!!! [.lock_$install_hash]\n";
+    print "  Testing pipeline already running, or previous execution died poorly\n";
+    print "  Manual intervention required\n";
+    exit(1);
 } else {
-	##write a lock file
-	open (LOCK, ">$exec_path/.lock_$install_hash") || die "Couldn't write lock file!!!";
-	print LOCK allNow();
-	close LOCK;
+    ##write a lock file
+    open (LOCK, ">$exec_path/.lock_$install_hash") || die "Couldn't write lock file!!!";
+    print LOCK allNow();
+    close LOCK;
 }
 }
 
@@ -181,41 +181,41 @@ mkpathORdie($log_dir); #should make have no echo??
 
 if ($options{'install'}) {
 
-	open(STDOUT, ">$log_dir/ergatis_install.stdout")|| die "can't create $log_dir/ergatis_install.stdout: $!";
+    open(STDOUT, ">$log_dir/ergatis_install.stdout")|| die "can't create $log_dir/ergatis_install.stdout: $!";
     open(STDERR, ">$log_dir/ergatis_install.stderr")|| die "can't create $log_dir/ergatis_install.stderr: $!";      
 
-	my $dir_name = basename($install_root);
-	unless (-e $install_root."/../$dir_name.ini") {
-		die $dir_name.".ini must exist in ".realpath($install_root."/../");
-	}
-	
-	doORdie("$exec_path/bin/ergatis_installer.pl -i $install_root -w $tmp_path -U sgc --init --controlfile $install_root/../$dir_name.ini");
-	#print("$exec_path/bin/ergatis_installer.pl -i $install_root -w $tmp_path -U sgc --init --controlfile $install_root/../$dir_name.ini\n");
-	
-	print STDOUT "Copying testing-specific docs to ergatis install...\n";	
-	foreach my $file (glob("$exec_path/docs/*")) {
-		copy($file, "$install_root/docs");
-	}	
+    my $dir_name = basename($install_root);
+    unless (-e $install_root."/../$dir_name.ini") {
+        die $dir_name.".ini must exist in ".realpath($install_root."/../");
+    }
+    
+    doORdie("$exec_path/bin/ergatis_installer.pl -i $install_root -w $tmp_path -U sgc --init --controlfile $install_root/../$dir_name.ini");
+    #print("$exec_path/bin/ergatis_installer.pl -i $install_root -w $tmp_path -U sgc --init --controlfile $install_root/../$dir_name.ini\n");
+    
+    print STDOUT "Copying testing-specific docs to ergatis install...\n";   
+    foreach my $file (glob("$exec_path/docs/*")) {
+        copy($file, "$install_root/docs");
+    }   
     close(STDOUT);
     close(STDERR);
 
-	#### TEMP FIX FOR UMASK PROBLEM
-	## change to install root
-	chdir($install_root);
-	## do a recursive chmod
-	rchmod();
-	## change back to cwd
-	chdir($cwd);
-	####
-	
+    #### TEMP FIX FOR UMASK PROBLEM
+    ## change to install root
+    chdir($install_root);
+    ## do a recursive chmod
+    rchmod();
+    ## change back to cwd
+    chdir($cwd);
+    ####
+    
 }
 
 #run each saved pipeline template passed as an argument
 foreach my $pipe (@ARGV) {
-	my @badini = ();
-	my $exitflag = 0;
+    my @badini = ();
+    my $exitflag = 0;
     if (!(-d $pipe) && (-d "$exec_path/pipeline_templates/$pipe")) {
-		$pipe = "$exec_path/pipeline_templates/$pipe";
+        $pipe = "$exec_path/pipeline_templates/$pipe";
     }
     $pipe =~ s/\/$//;
     my $pipe_name = basename($pipe);
@@ -223,53 +223,54 @@ foreach my $pipe (@ARGV) {
     #
     # Run pipeline
     #
-	open(STDOUT, ">$log_dir/$pipe_name.pipe.stdout")|| die "can't create $log_dir/$pipe_name.pipe.stdout: $!";
+    open(STDOUT, ">$log_dir/$pipe_name.pipe.stdout")|| die "can't create $log_dir/$pipe_name.pipe.stdout: $!";
     open(STDERR, ">$log_dir/$pipe_name.pipe.stderr")|| die "can't create $log_dir/$pipe_name.pipe.stdout: $!";
 
-	## $pipe must contain a pipeline.xml file
-	unless (-e $pipe."/pipeline.xml") {
-		print STDERR "No pipeline.xml in $pipe --- skipping";
-		next;
-	}
+    ## $pipe must contain a pipeline.xml file
+    unless (-e $pipe."/pipeline.xml") {
+        print STDERR "No pipeline.xml in $pipe --- skipping";
+        next;
+    }
 
-	foreach my $inifile(glob("$pipe/*.ini")) {
-		my $exitval = system("$exec_path/bin/ini_variable_check.pl -i $inifile -e $install_root");
-		$exitval = $exitval / 256;
-		if ($exitval != 0) {
-			#print STDERR "Invalid ini file structure in '".basename($inifile)."'.\n";
-			print STDERR "Error found validating ini file structure of '$inifile'.\n";
-			push(@badini, basename($inifile));
-			if ($exitval > 1) {
-				print STDERR "This error is a critical error.\n";
-				$exitflag = 1;
-			} else {
-				print STDERR "Error should not interfere with execution of pipeline.\n"
-			}
-		}
-	}
+    foreach my $inifile(glob("$pipe/*.ini")) {
+        my $exitval = system("$exec_path/bin/ini_variable_check.pl -i $inifile -e $install_root");
+        $exitval = $exitval / 256;
+        if ($exitval != 0) {
+            #print STDERR "Invalid ini file structure in '".basename($inifile)."'.\n";
+            print STDERR "Error found validating ini file structure of '$inifile'.\n";
+            push(@badini, basename($inifile));
+            if ($exitval > 1) {
+                print STDERR "This error is a critical error.\n";
+                $exitflag = 1;
+            } else {
+                print STDERR "Error should not interfere with execution of pipeline.\n"
+            }
+        }
+    }
 
-	## if any of the ini files had invalid structure, skip the run
-	if ($exitflag) {
-		print STDERR "Skipping execution of pipeline '$pipe_name' due to invalid structure in:\n";
-		print STDERR join(",", @badini)."\n";
-		next;
-	}
-	
-	#clean out stuff in BSML_ and FASTA_ directories 
+    ## if any of the ini files had invalid structure, skip the run
+    if ($exitflag) {
+        print STDERR "Skipping execution of pipeline '$pipe_name' due to invalid structure in:\n";
+        print STDERR join(",", @badini)."\n";
+        next;
+    }
+    
+    #clean out stuff in BSML_ and FASTA_ directories 
     #(but not the previous pipelines, because we want to look at them in the future)
-	#doORdie("find  ".$options{'repository-root'}."/BSML_repository/* -type f -exec rm {} \\; ");
-	#doORdie("find  ".$options{'repository-root'}."/FASTA_repository/* -type f -exec rm {} \\; ");
+    #doORdie("find  ".$options{'repository-root'}."/BSML_repository/* -type f -exec rm {} \\; ");
+    #doORdie("find  ".$options{'repository-root'}."/FASTA_repository/* -type f -exec rm {} \\; ");
 
     print "\nInstantiating $pipe_name from $pipe\n";
     if (defined($options{'no-run'})) {
-    	doORdie("perl $exec_path/bin/instantiate_pipeline.pl --ergatis-install=$install_root --workflow-path=".$options{'workflow-path'}." --template-dir $pipe --repository-root ".$options{'repository-root'});
+        doORdie("perl $exec_path/bin/instantiate_pipeline.pl --ergatis-install=$install_root --workflow-path=".$options{'workflow-path'}." --template-dir $pipe --repository-root ".$options{'repository-root'});
     } else {
-		doORdie("perl $exec_path/bin/instantiate_pipeline.pl --ergatis-install=$install_root --workflow-path=".$options{'workflow-path'}." --execute --template-dir $pipe --repository-root ".$options{'repository-root'});
+        print("perl $exec_path/bin/instantiate_pipeline.pl --ergatis-install=$install_root --workflow-path=".$options{'workflow-path'}." --execute --template-dir $pipe --repository-root ".$options{'repository-root'}."\n");
+        doORdie("perl $exec_path/bin/instantiate_pipeline.pl --ergatis-install=$install_root --workflow-path=".$options{'workflow-path'}." --execute --template-dir $pipe --repository-root ".$options{'repository-root'});
     }
     close(STDOUT);
     close(STDERR);
-		
-	## DATABASE QUERY STEP WILL NOW BE ADDED AS LAST STEP TO A SAVED PIPELINE
+        
+    ## DATABASE QUERY STEP WILL NOW BE ADDED AS LAST STEP TO A SAVED PIPELINE
 
 }
 
@@ -277,8 +278,8 @@ foreach my $pipe (@ARGV) {
 rmtree($tmp_path, 1);
 
 if (!$options{'ignore-lock'}) {
-	##remove lock file
-	unlink("$exec_path/.lock_$install_hash");
+    ##remove lock file
+    unlink("$exec_path/.lock_$install_hash");
 }
 
 exit(0);
@@ -315,84 +316,84 @@ sub print_usage {
 }
 
 sub mkpathORdie {
-	my $dir = shift;
-	eval {mkpath($dir, 1, 0777)};
-	if ($@) {
-		print STDERR "Couldn't create $dir: $@";
-		exit(1);
-	}
+    my $dir = shift;
+    eval {mkpath($dir, 1, 0777)};
+    if ($@) {
+        print STDERR "Couldn't create $dir: $@";
+        exit(1);
+    }
 }
 
 sub rmtreeORdie {
-	my $dir = shift;
-	eval {rmtree($dir, 1)};
-	if ($@) {
-		print STDERR "Couldn't remove $dir: $@";
-		exit(1);
-	}
+    my $dir = shift;
+    eval {rmtree($dir, 1)};
+    if ($@) {
+        print STDERR "Couldn't remove $dir: $@";
+        exit(1);
+    }
 }
 
 
 ## recursive chmod
 sub rchmod {
-	dochmod();
-	foreach my $item(glob("*")) {
-		if (-d $item) {
-			chdir($item);
-			rchmod();
-			chdir(".."); 
-		}
-	}
+    dochmod();
+    foreach my $item(glob("*")) {
+        if (-d $item) {
+            chdir($item);
+            rchmod();
+            chdir(".."); 
+        }
+    }
 }
 
 ## does chmod on everything in the current directory
 sub dochmod {
-	foreach my $item(glob("*")) {
-	if (-x $item || -d $item) {
-    	chmod(0777, $item);
-	} else {
-		chmod(0666, $item);
-		}
-	}
+    foreach my $item(glob("*")) {
+    if (-x $item || -d $item) {
+        chmod(0777, $item);
+    } else {
+        chmod(0666, $item);
+        }
+    }
 }
 
 sub checkout_installer {
-	chdir($tmp_path);
-	my $err = system("cvs co -d installer ergatis/ergatis_installer.pl");
-	if ($err) {
-		die "Checkout of installer script failed.\n";
-	}
-	copy($tmp_path."/installer/ergatis_installer.pl", $exec_path."/bin/ergatis_installer.pl") || die "couldn't copy installer to bin dir.\n";
-	chmod (0777, $exec_path."/bin/ergatis_installer.pl");
-	chdir($exec_path);
+    chdir($tmp_path);
+    my $err = system("cvs co -d installer ergatis/ergatis_installer.pl");
+    if ($err) {
+        die "Checkout of installer script failed.\n";
+    }
+    copy($tmp_path."/installer/ergatis_installer.pl", $exec_path."/bin/ergatis_installer.pl") || die "couldn't copy installer to bin dir.\n";
+    chmod (0777, $exec_path."/bin/ergatis_installer.pl");
+    chdir($exec_path);
 }
 
 sub checkout_workflow_perl_modules {
-	chdir($tmp_path);
-	my $err = system("cvs co ergatis/lib/Workflow");
-	if ($err) {
-		die "Checkout of Workflow::* failed.\n";
-	}
-	$err = system("cvs co logcabin");
-	if ($err) {
-		die "Checkout of Log::Cabin failed.\n";
-	}
-	mkpath($exec_path."/lib/Workflow", 0, 0777);
-	foreach my $file(glob($tmp_path."/ergatis/lib/Workflow/*.pm")) {
-		my $basename = basename($file);
-		copy($tmp_path."/ergatis/lib/Workflow/$basename", $exec_path."/lib/Workflow/$basename") || die "couldn't copy $basename to lib dir.\n";
-		chmod (0777, $exec_path."/lib/Workflow/$basename");
-	}
-	mkpath($exec_path."/lib/Log/Cabin", 0, 0777);
-	foreach my $file(glob($tmp_path."/Log-Cabin/lib/Log/*.pm")) {
-		my $basename = basename($file);
-		copy($tmp_path."/Log-Cabin/lib/Log/$basename", $exec_path."/lib/Log/$basename") || die "couldn't copy $basename to lib dir.\n";
-		chmod (0777, $exec_path."/lib/Log/$basename");
-	}
-	foreach my $file(glob($tmp_path."/Log-Cabin/lib/Log/Cabin/*.pm")) {
-		my $basename = basename($file);
-		copy($tmp_path."/Log-Cabin/lib/Log/Cabin/$basename", $exec_path."/lib/Log/Cabin/$basename") || die "couldn't copy $basename to lib dir.\n";
-		chmod (0777, $exec_path."/lib/Log/Cabin/$basename");
-	}
-	chdir($exec_path);
+    chdir($tmp_path);
+    my $err = system("cvs co ergatis/lib/Workflow");
+    if ($err) {
+        die "Checkout of Workflow::* failed.\n";
+    }
+    $err = system("cvs co logcabin");
+    if ($err) {
+        die "Checkout of Log::Cabin failed.\n";
+    }
+    mkpath($exec_path."/lib/Workflow", 0, 0777);
+    foreach my $file(glob($tmp_path."/ergatis/lib/Workflow/*.pm")) {
+        my $basename = basename($file);
+        copy($tmp_path."/ergatis/lib/Workflow/$basename", $exec_path."/lib/Workflow/$basename") || die "couldn't copy $basename to lib dir.\n";
+        chmod (0777, $exec_path."/lib/Workflow/$basename");
+    }
+    mkpath($exec_path."/lib/Log/Cabin", 0, 0777);
+    foreach my $file(glob($tmp_path."/Log-Cabin/lib/Log/*.pm")) {
+        my $basename = basename($file);
+        copy($tmp_path."/Log-Cabin/lib/Log/$basename", $exec_path."/lib/Log/$basename") || die "couldn't copy $basename to lib dir.\n";
+        chmod (0777, $exec_path."/lib/Log/$basename");
+    }
+    foreach my $file(glob($tmp_path."/Log-Cabin/lib/Log/Cabin/*.pm")) {
+        my $basename = basename($file);
+        copy($tmp_path."/Log-Cabin/lib/Log/Cabin/$basename", $exec_path."/lib/Log/Cabin/$basename") || die "couldn't copy $basename to lib dir.\n";
+        chmod (0777, $exec_path."/lib/Log/Cabin/$basename");
+    }
+    chdir($exec_path);
 }
