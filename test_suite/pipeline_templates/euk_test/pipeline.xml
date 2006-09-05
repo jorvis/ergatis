@@ -1,36 +1,36 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd">
   <commandSet type="serial">
     <configMapId>start</configMapId>
-	<commandSet type="parallel">
+    <commandSet type="parallel">
       <configMapId>29101</configMapId>
-	  <commandSet type="serial">
+      <commandSet type="serial">
         <configMapId>29102</configMapId>
-		<commandSet type="serial">
-		  <configMapId>component_legacy2bsml.default</configMapId>
-		</commandSet>
-	  </commandSet>
-	  <commandSet type="serial">
-        <configMapId>29103</configMapId>
-		  <commandSet type="serial">
-      	    <configMapId>component_initdb.default</configMapId>
-		  </commandSet>
-		</commandSet>
+        <commandSet type="serial">
+          <configMapId>component_legacy2bsml.default</configMapId>
+        </commandSet>
       </commandSet>
-		  <configMapId>29203</configMapId>
-    	  <commandSet type="serial">
-		    <configMapId>component_bsml2chado.legacydata</configMapId>
-		  </commandSet>
+      <commandSet type="serial">
+        <configMapId>29103</configMapId>
+          <commandSet type="serial">
+            <configMapId>component_initdb.default</configMapId>
+          </commandSet>
+        </commandSet>
+      </commandSet>
+          <configMapId>29203</configMapId>
+          <commandSet type="serial">
+            <configMapId>component_bsml2chado.legacydata</configMapId>
+          </commandSet>
           <commandSet type="serial">
             <configMapId>component_testing_db_compare.legacydata</configMapId>
           </commandSet>
-  	    </commandSet>	  
-	    <commandSet type="serial">
-	  <commandSet type="parallel">
-	    <configMapId>29201</configMapId>
-	    <commandSet type="serial">
-	      <configMapId>29202</configMapId>
-	    <commandSet type="serial">
-      	  <configMapId>component_bsml2fasta.multi</configMapId>
+        </commandSet>     
+        <commandSet type="serial">
+      <commandSet type="parallel">
+        <configMapId>29201</configMapId>
+        <commandSet type="serial">
+          <configMapId>29202</configMapId>
+        <commandSet type="serial">
+          <configMapId>component_bsml2fasta.multi</configMapId>
         </commandSet>
         <commandSet type="serial">
           <configMapId>component_bsml2fasta.single</configMapId>
@@ -103,8 +103,11 @@
         </commandSet>
         <commandSet type="serial">
           <configMapId>component_backupdb.default</configMapId>
-  	    </commandSet>
-	  </commandSet>
-    </commandSet>	  
+        </commandSet>
+      </commandSet>
+    </commandSet>     
   </commandSet>
+    <commandSet type="serial">
+      <configMapId>component_testing_die_if_empty.default</configMapId>
+    </commandSet>
 </commandSetRoot>
