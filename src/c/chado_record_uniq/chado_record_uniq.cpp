@@ -20,8 +20,6 @@ void uniq(TFiles &files, FILE *out)
     size_t buf_size = BUF_SIZE;
     char *buf = reinterpret_cast<char *>(malloc(sizeof(char) * buf_size));
     ssize_t num_read = 0;
-    auto_ptr<vector<char> > prevBuf(new vector<char>());
-    auto_ptr<vector<char> > currBuf(new vector<char>());
     char delim[] = {0, '\n'};
     if (!buf) {
         perror("Cannot allocate buffer");
@@ -29,16 +27,11 @@ void uniq(TFiles &files, FILE *out)
     }
     for (TFiles::iterator i = files.begin(); i != files.end(); ++i) {
         while ((num_read = getline(&buf, &buf_size, *i)) >= 0) {
-            if (num_read < static_cast<ssize_t>(sizeof(delim))) {
-                currBuf = prevBuf;
-            }
-            copy(buf, buf + num_read, back_inserter(*currBuf));
             if (newRecord) {
-                string cksum(currBuf->begin(), currBuf->begin() + 32);
+                string cksum(buf, buf + 32);
                 if (!written.count(cksum)) {
                     written.insert(cksum);
-                    fwrite(&currBuf->at(0), sizeof(char),
-                           currBuf->size(), out);
+                    fwrite(buf, sizeof(char), num_read, out);
                     validRecord = true;
                 }
                 else {
@@ -47,14 +40,16 @@ void uniq(TFiles &files, FILE *out)
             }
             else {
                 if (validRecord) {
-                    fwrite(&currBuf->at(0), sizeof(char),
-                           currBuf->size(), out);
+                    fwrite(buf, sizeof(char), num_read, out);
                 }
             }
-            newRecord = memcmp(&*(currBuf->end() - sizeof(delim)),
-                               delim, sizeof(delim)) == 0;
-            prevBuf = currBuf;
-            currBuf = auto_ptr<vector<char> >(new vector<char>());
+            if (num_read >= sizeof(delim)) {
+                newRecord = memcmp((buf + num_read) - sizeof(delim), 
+                                   delim, sizeof(delim)) == 0;
+            }
+            else {
+                newRecord = 0;
+            }
         }
     }
     free(buf);
