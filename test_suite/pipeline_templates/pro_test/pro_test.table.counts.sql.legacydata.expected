@@ -15,7 +15,7 @@
 (1 row affected)
  dbxref     
  -----------
-      110981
+      110983
 
 (1 row affected)
  cv         
@@ -25,12 +25,12 @@
 (1 row affected)
  cvterm     
  -----------
-       24146
+       24148
 
 (1 row affected)
  cvterm_relationship
  -------------------
-               30124
+               30126
 
 (1 row affected)
  cvtermpath 
