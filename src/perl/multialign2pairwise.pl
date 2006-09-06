@@ -154,6 +154,7 @@ sub generateSeqPairs {
 
 	    $seq_run->setattr( 'runscore', $args{'runscore'} );
 	    $seq_run->setattr( 'runprob', $args{'runprop'});
+        $seq_run->setattr( 'class', 'match_part' );
 	    return $alignment_pair;
 	}
 
@@ -174,6 +175,7 @@ sub generateSeqPairs {
 
     $alignment_pair->setattr( 'refseq', "$args{'refseq'}" )                                 if (defined ($args{'refseq'}));
     $alignment_pair->setattr( 'compseq', "$args{'compseq'}" )                         if (defined ($args{'compseq'}));
+    $alignment_pair->setattr( 'class', 'match' );
 
     BSML::BsmlDoc::BsmlSetAlignmentLookup( "$args{'refseq'}", "$args{'compseq'}", $alignment_pair );
 
@@ -181,6 +183,7 @@ sub generateSeqPairs {
 
     $seq_run->setattr( 'runscore', $args{'runscore'} );
     $seq_run->setattr( 'runprob', $args{'runprob'} );
+    $seq_run->setattr( 'class', 'match_part' );
 
     return $alignment_pair;
 

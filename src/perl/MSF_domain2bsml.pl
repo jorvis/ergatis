@@ -127,7 +127,8 @@ while( my $file = readdir(DIR)) {
 	    next;
 	}
 
-	my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'});
+	my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'},
+                                                             'class'         => 'match');
 	$table->addattr( 'id', $domain_id );
 
 	my $summary = $builder->createAndAddAlignmentSummary( 'multipleAlignmentTable' => $table,

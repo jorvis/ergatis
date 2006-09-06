@@ -149,7 +149,8 @@ if ($MSF_alignments->{'mol_type'} eq 'polypeptide') {
 }
 
 if (keys %$MSF_alignments > 1) {   #skip empty msf files
-    my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'});
+    my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'},
+                                                             'class' => 'match' );
     
     if ( defined $options{dnd_file} ) {
         open(my $dnd_fh, "<$options{dnd_file}") || die "can't read DND file: $!\n";

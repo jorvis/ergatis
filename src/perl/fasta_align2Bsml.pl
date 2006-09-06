@@ -115,7 +115,8 @@ while( my $file = readdir(DIR)) {
 	#my $fam_name = $1;
 	my $mult_alignment = process_fasta_alignment_file("$ali_dir/$file");
 	next if(keys %$mult_alignment < 1);   #skip empty alignment files
-	my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $molecule_type);
+	my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $molecule_type,
+                                                             'class'         => 'match' );
 	$table->addattr( 'id', $domain_id );
 
 	my $summary = $builder->createAndAddAlignmentSummary( 'multipleAlignmentTable' => $table,
