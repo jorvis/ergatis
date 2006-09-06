@@ -322,6 +322,7 @@ sub do_extract_from_chado {
     foreach my $cds_name (@cds_names) {
         $cds_features->execute($cds_name);
         while ( my $row = $cds_features->fetchrow_hashref ) {
+            $idLookup{$row->{'uniquename'}} = $row->{'srcfeature_id'};
             $cds_loc->{$row->{'srcfeature_id'}}->{$row->{'uniquename'}}->{'fmin'} = $row->{'fmin'};
             $cds_loc->{$row->{'srcfeature_id'}}->{$row->{'uniquename'}}->{'fmax'} = $row->{'fmax'};
             $cds_loc->{$row->{'srcfeature_id'}}->{$row->{'uniquename'}}->{'strand'} = $row->{'strand'};
@@ -400,6 +401,10 @@ sub do_extract_from_legacy {
         if ($seq_id =~ /^[^\.]+\.model\.(\d+)_(\d+)/) {
             my $model_name = "$1.m$2";
             my $asmbl_id = $1;
+
+            #Fill the idLookup database
+            $idLookup{$seq_id} = "$1.assembly.$2" if($seq_id =~ /^([^\.]+)\.model\.(\d+)_\d+/);
+
             my ($end5, $end3);
             $get_models->execute($model_name);
             $get_models->bind_columns(undef, \$end5, \$end3);
