@@ -134,6 +134,7 @@ while (<$ifh>) {
                                                                        method => 'hmmpir',
                                                                        compseq => $sbj_id,
                                                                        compxref => ":$sbj_id",
+                                                                       class => 'match'
                                                                      );        
         
         last;
@@ -168,7 +169,8 @@ while (<$ifh>) {
                                                        refpos => min($qry_start, $qry_stop) - 1,
                                                        refcomplement => 0,
                                                        comppos => min($sbj_start, $sbj_stop) - 1,
-                                                       compcomplement => 0
+                                                       compcomplement => 0,
+                                                       class => 'match_part'
                                                    );
                                                    
         ## add other attributes of the run

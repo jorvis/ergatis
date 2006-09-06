@@ -284,10 +284,7 @@ sub createAndAddFrameshift {
         $feat->addBsmlLink('analysis', '#'.$options{'analysis_id'}, 'computed_by');
         $feat->addBsmlIntervalLoc($start, $end, $strand);
 
-        ###HERE##       
-        #Finish making the features
-        #Make sure it works
-        #Then change the ini/conf files
+       
         
     }
 
@@ -339,6 +336,7 @@ sub createAndAddBtabLine {
 
 	    $seq_run->setattr( 'runscore', $args{'bit_score'} )                                  if (defined ($args{'bit_score'}));
 	    $seq_run->setattr( 'runprob', $args{'e_value'} )                                     if (defined ($args{'e_value'}));
+        $seq_run->setattr( 'class', 'match_part' );
 
 	    $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
 	    $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
@@ -385,6 +383,7 @@ sub createAndAddBtabLine {
     $alignment_pair->setattr( 'method', $args{'blast_program'} )         if (defined ($args{'blast_program'}));
 
     $alignment_pair->setattr( 'compxref', $args{'search_database'}.':'.$args{'dbmatch_accession'} )  if ((defined ($args{'search_database'})) and (defined ($args{'dbmatch_accession'})));
+    $alignment_pair->setattr( 'class', 'match' );
 
     my $seq_run = $alignment_pair->returnBsmlSeqPairRunR( $alignment_pair->addBsmlSeqPairRun() );
 
@@ -409,6 +408,7 @@ sub createAndAddBtabLine {
     
     $seq_run->setattr( 'runscore', $args{'bit_score'} )                                    if (defined  ($args{'bit_score'}));
     $seq_run->setattr( 'runprob', $args{'e_value'} )                                       if (defined  ($args{'e_value'}));
+    $seq_run->setattr( 'class', 'match_part' );
 
     $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
     $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));

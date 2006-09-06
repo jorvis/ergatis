@@ -179,6 +179,7 @@ foreach my $refseq (keys %tiles) {
 								  refseq => $supercontig_name,
 								  compseq => $compseq,
 								  method=> 'tiling',
+                                  class => 'match'
 								  );
 		$aln->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
  		my $run = $doc->createAndAddSequencePairRun(
@@ -188,7 +189,8 @@ foreach my $refseq (keys %tiles) {
                                             refcomplement => 0, #ref sequence is never complement
                                             comppos => 0,       #always entire contig
                                             comprunlength => $seq_len,
-					    compcomplement => $is_comp );
+					    compcomplement => $is_comp,
+                                                    class => 'match_part');
 		#by definition these are 100%
 		$run->addBsmlAttr( 'percent_identity', '100.00');
 		$run->addBsmlAttr( 'percent_coverage', '100.00');

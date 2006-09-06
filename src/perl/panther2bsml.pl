@@ -137,6 +137,7 @@ while (<$ifh>) {
 	my $seqPairAlignment = $doc->createAndAddSequencePairAlignment( refseq => $query_id,
 																   	refstart => 0,
                                                                    	compseq => $results[1],
+                                                                    class => 'match',
                                                                   );
     
 	## add a link element inside this seq-pair-alignment
@@ -164,6 +165,7 @@ while (<$ifh>) {
                                                        refcomplement => 0,
                                                        comppos => 0,
                                                        compcomplement => 0,
+                                                       class => 'match_part'
                                                    );
         ## add other attributes of the run
         $doc->createAndAddBsmlAttributes(	$run, 

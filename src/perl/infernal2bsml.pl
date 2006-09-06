@@ -230,8 +230,8 @@ sub addSeqPair {
             $doc->createAndAddSequencePairAlignment( refseq   => $match->{'seqId'},
                                                      compseq  => $match->{'cmId'},
                                                      complength => "",
-                                                     class => "",
-                                                     refstart => 0);
+                                                     class => "match",
+                                                     refstart => 0,);
     }
     
     my $spr = $doc->createAndAddSequencePairRun(alignment_pair => 
@@ -243,6 +243,7 @@ sub addSeqPair {
                                                 refcomplement => $match->{'strand'},
                                                 comppos => 0,
                                                 compcomplement => 0,
+                                                class => 'match_part'
                                                 );
 
     $doc->createAndAddBsmlAttribute($spr, bit_score => $match->{'bit_score'});

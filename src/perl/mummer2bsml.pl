@@ -159,18 +159,19 @@ sub parse_mummer_collapsed_coords {
 	$ref_start--;	
 
 	my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'        => $ref_name,
-							   'compseq'       => $qry_name,
-                                                           'complength'    => $qry_asmbl_length,
-                                                           'reflength'     => $ref_asmbl_length,
-							   'class'         => $class
-							 ); 
+                                                       'compseq'       => $qry_name,
+                                                       'complength'    => $qry_asmbl_length,
+                                                       'reflength'     => $ref_asmbl_length,
+                                                       'class'         => 'match'
+                                                       ); 
 	my $s = $doc->createAndAddSequencePairRun( 'alignment_pair'   => $aln,
-						   'refpos'           => $ref_start,
-						   'refcomplement'    => 0,
-						   'runlength'        => $ref_length,
-						   'comppos'          => $qry_start,
-						   'comprunlength'    => $qry_length,
-						   'compcomplement'   => $complement
+                                               'refpos'           => $ref_start,
+                                               'refcomplement'    => 0,
+                                               'runlength'        => $ref_length,
+                                               'comppos'          => $qry_start,
+                                               'comprunlength'    => $qry_length,
+                                               'compcomplement'   => $complement,
+                                               'class'            => 'match_part'
                                                   );
     }
 }

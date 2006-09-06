@@ -204,9 +204,10 @@ while (my $line = <TILINGS>) {
 	    }
 
 	    my $aln = $doc->createAndAddSequencePairAlignment(
-                                         refseq => clean_id($ref_id),
-					 compseq => clean_id($tile_id),
-					 method=> 'tiling',
+                                                          refseq => clean_id($ref_id),
+                                                          compseq => clean_id($tile_id),
+                                                          method=> 'tiling',
+                                                          class => 'match'
                                          );
 	    $aln->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
 
@@ -219,7 +220,8 @@ while (my $line = <TILINGS>) {
                                            comppos => 0,
                                            #comprunlength => $tile_sequence->returnattr( 'length' ),
                                            comprunlength => $tile_length,
-                                           compcomplement => $tile_is_complement );
+                                           compcomplement => $tile_is_complement,
+                                                    class => 'match_part');
 
 	    #add percent_identity and percent_coverage Attributes
 	    $run->addBsmlAttr( 'percent_identity', $percent_identity);

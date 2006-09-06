@@ -135,7 +135,8 @@ foreach my $query_name (keys %$seq_pair){
 		    my $seq = $doc->returnBsmlSequenceByIDR($dbmatch_accession);
 		}
 		my $aln = $doc->createAndAddSequencePairAlignment( 'refseq'  => $query_name,
-								   'compseq' => $dbmatch_accession 
+                                                           'compseq' => $dbmatch_accession ,
+                                                           'class'   => 'match'
 								   );
 
 	    $aln->addBsmlLink('analysis', '#pe_analysis', 'computed_by');	
@@ -151,6 +152,7 @@ foreach my $query_name (keys %$seq_pair){
 								   'runscore'       => $run->{'runscore'},
 								   'refcomplement' => 0,
 								   'compcomplement' => 0,
+                                                       'class' => 'match_part'
 								   );
 			#additional attributes
 			$s->addBsmlAttr( 'PEffect_Cluster_Id',  $run->{'PEffect_Cluster_Id'} );

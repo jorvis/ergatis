@@ -186,7 +186,8 @@ while (<$ifh>) {
                                                    refpos => min($cols[6], $cols[7]) - 1,
                                                    refcomplement => $cols[17] eq 'Minus' ? 1 : 0,
                                                    comppos => min($cols[8], $cols[9]) - 1,
-                                                   compcomplement => 0
+                                                   compcomplement => 0,
+                                                   class => 'match_part'
                                                );
     
     $doc->createAndAddBsmlAttribute($run, 'percent_identity', $cols[10]);

@@ -207,7 +207,8 @@ while (<$ifh>) {
                                                    refpos => $cols[6] - 1,
                                                    refcomplement => 0,
                                                    comppos => 0,
-                                                   compcomplement => 0
+                                                   compcomplement => 0,
+                                                   class => 'match'
                                                );
     
     if ( $cols[8] ne 'NA' ) {
