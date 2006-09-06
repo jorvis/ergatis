@@ -226,7 +226,7 @@ sub writeRnaBsmlFile {
     $class = $1 if($asmblId =~ /^.*?\.(\w+)/);
     my $seq = $bsmlDoc->createAndAddSequence( $asmblId, $asmblId, '', 'dna', $class);
     $bsmlDoc->createAndAddLink($seq, 'analysis', '#parse_for_ncRNA_analysis', 'input_of');
-    $bsmlDoc->createAndAddSeqDataImport( $seq, 'fsa', $inputFiles[0], '', $asmblId);
+    $bsmlDoc->createAndAddSeqDataImport( $seq, 'fasta', $inputFiles[0], '', $asmblId);
     my $ft = $bsmlDoc->createAndAddFeatureTable( $seq );
 
     while(my ($id, $rna) = each(%{$rnaFeats})) {
