@@ -261,7 +261,9 @@ ergatis-v1r21b1
 -lots more nifty things that I'll comment on later.
 
 
-
+next
+--------------
+-removed check_repository.pl because BSML_repository deprecated.
 
 
 
