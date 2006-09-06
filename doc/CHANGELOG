@@ -260,6 +260,9 @@ ergatis-v1r21b1
 -test pipeline refactoring
 -lots more nifty things that I'll comment on later.
 
+ergatis-v1r21b2
+--------------
+-fixed chado_record_uniq bug which caused incorrect clustal alignment strings to be loaded.
 
 next
 --------------
