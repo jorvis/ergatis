@@ -64,12 +64,16 @@ use Workflow::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
+use Workflow::IdGenerator;
+use DB_File;
 
+my %lookupDb;
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'btab_dir|b=s', 
 			  'btab_file|f=s',
 			  'bsml_dir|d=s', 
+              'lookup_db=s',
 			  'output|o=s', 
 			  'max_hsp_count|m=s',
 			  'pvalue|p=s', 
@@ -77,6 +81,8 @@ my $results = GetOptions (\%options,
 			  'debug=s',
 			  'class|c=s',
 			  'analysis_id=s',
+              'project=s',
+              'id_repository=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -108,6 +114,8 @@ if( $options{'help'} ){
 my $files = &get_btab_files($options{'btab_dir'},$options{'btab_file'});
 
 my $doc = new BSML::BsmlBuilder();
+my %featTables;
+my $idGenerator;
 
 $doc->makeCurrentDocument();
 parse_ber_btabs($files);
@@ -138,6 +146,7 @@ sub parse_ber_btabs {
 	    $btab[5] =~ s/\|//g;   #get rid of trailing |
 	    $query_id = $btab[0];	    
 	    my $match_name = $btab[5];
+        &createAndAddFrameshift($btab[19], $btab[0]) if($btab[19]);
 	    splice(@btab, 19, 1);
 	    
 	    for (my $i=0;$i<scalar(@btab);$i++){
@@ -210,7 +219,83 @@ sub check_parameters{
 	exit 5;
     } 
 
+    unless($options{'lookup_db'}) {
+        $logger->logdie("lookup_db option is required.  (Created by prepare_ber_extended_nt_db)");
+    }
+    tie(%lookupDb, 'DB_File', $options{'lookup_db'}) or
+        $logger->logdie("Could not tie hash to $options{'lookup_db'}.  ($!)");
+
+    unless($options{'project'}) {
+        $logger->logdie("Option project was no specified");
+    }
+
+    if($options{'id_repository'}) {
+        $logger->logdie("id_repository does not exist") unless(-d $options{'id_repository'});
+    } else {
+        $logger->logdie("option id_repository is required.");
+    }
+    $idGenerator = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'} );
+    $idGenerator->set_pool_size( 'frameshift_mutation' => 25 );
+
     return 1;
+}
+
+sub createAndAddFrameshift {
+    my ($fsString,$modelId) = @_;
+
+    my @frameShifts = split(/:/,$fsString);
+    $logger->logdie("Could not parse frameshift information from string ($fsString)") unless(@frameShifts);
+
+    $logger->logdie("Model id: ($modelId) does not exist in the lookup_db ($options{lookup_db})") 
+        unless(exists($lookupDb{$modelId}));
+
+    my $seqId = $lookupDb{$modelId};
+    my $seq;
+ 
+
+    #Check to see if the sequence has already been added.
+    unless( $doc->returnBsmlSequenceByIDR( $seqId ) ){
+	    $seq = $doc->createAndAddSequence( $seqId, $seqId, '', 'na', 'assembly' );
+		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+    }
+
+    #Check to see if said sequence object has a feature table object
+    unless(exists($featTables{$seqId})) {
+        $featTables{$seqId} = $doc->createAndAddFeatureTable($seq);
+    }
+
+    #Now add the frameshifts
+    foreach my $fs (@frameShifts) {
+        my ($start, $end) = ($1, $2) if($fs =~ /(.+)-(.+)/);
+        $logger->logdie("Could not parse frameshift data ($fs)")
+            unless($start && $end);
+
+        ($start--, $end--);
+        my $strand = 0;
+        
+        if($start > $end) {
+            ($end, $start) = ($start, $end);
+            $strand = 1;
+        }
+        
+        my $fId = $idGenerator->next_id('type' => 'frameshift_mutation', 'project' => $options{'project'});
+        my $feat = $doc->createAndAddFeature($featTables{$seqId}, $fId, $fId, 'frameshift_mutation');
+
+        $feat->addBsmlLink('analysis', '#'.$options{'analysis_id'}, 'computed_by');
+        $feat->addBsmlIntervalLoc($start, $end, $strand);
+
+        ###HERE##       
+        #Finish making the features
+        #Make sure it works
+        #Then change the ini/conf files
+        
+    }
+
+    
+
+    
+
+    
 }
 
 sub createAndAddBtabLine {
