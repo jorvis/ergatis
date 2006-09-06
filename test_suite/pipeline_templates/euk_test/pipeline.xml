@@ -106,8 +106,8 @@
         </commandSet>
       </commandSet>
     </commandSet>     
-  </commandSet>
     <commandSet type="serial">
       <configMapId>component_testing_die_if_empty.default</configMapId>
     </commandSet>
+  </commandSet>
 </commandSetRoot>
