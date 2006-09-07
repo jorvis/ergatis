@@ -72,12 +72,10 @@ it will be overwritten.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Workflow::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -154,6 +152,7 @@ while (<$ifh>) {
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'aa', 'polypeptide');
+        $seq->addBsmlAttr( 'defline', "$cols[5] $cols[15]" );
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
         $seqs_found{$sbj_id} = 1;
