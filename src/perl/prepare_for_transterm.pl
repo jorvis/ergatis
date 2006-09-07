@@ -95,7 +95,7 @@ B<--help,-h>
 =cut
 
 use strict;
-use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Workflow::Logger;
 use DBI;
@@ -159,6 +159,7 @@ if($getFromDB) {
 
 } else {
     #Use BSML
+    print "Using BSML input\n";
     $coords = &getCoordsFromBsml($seqIds);
 
 }
@@ -306,20 +307,19 @@ sub getCoordsFromBsml {
 sub handleSequence {
     my ($twig, $elem, $seqs, $retval) = @_;
     my $id = $elem->{'att'}->{'id'};
-    print "id :: $id\n";
-    print "@{$seqs}\n";
+    #print "id :: $id\n";
+    #print "@{$seqs}\n";
     $" = "|";
     return unless($id =~ /(@{$seqs})/);
-
-    print "I found the id in the seqs array ref\n";
 
     foreach my $ft(($elem->first_child("Feature-tables"))->children("Feature-table")) {
         foreach my $feature($ft->children("Feature")) {
             next unless($feature->{'att'}->{'class'} eq 'gene');
             my $fLoc = $feature->first_child('Interval-loc');
-            $retval->{$id}->{$feature->{'att'}->{'id'}}->{'start'}  = $fLoc->{'att'}->{'startpos'};
-            $retval->{$id}->{$feature->{'att'}->{'id'}}->{'stop'}  = $fLoc->{'att'}->{'endpos'};
-            $retval->{$id}->{$feature->{'att'}->{'id'}}->{'strand'}  = $fLoc->{'att'}->{'complement'};
+            my $fId = $feature->{'att'}->{'id'};
+            $retval->{$id}->{$fId}->{'start'}  = $fLoc->{'att'}->{'startpos'};
+            $retval->{$id}->{$fId}->{'stop'}  = $fLoc->{'att'}->{'endpos'};
+            $retval->{$id}->{$fId}->{'strand'}  = $fLoc->{'att'}->{'complement'};
         }
     }
 }
@@ -332,7 +332,7 @@ sub printCoordFiles {
     foreach my $asmbl (keys %{$crds}) {
         my $asmblId = $asmbl;
         $asmblId = "$database.assembly.$asmblId" if($schema eq "legacy");
-        print "Making file $asmblId.coords\n";
+        print "Making file $output_dir/$asmblId.coords\n";
         open(OUT, "> $output_dir/$asmblId.coords") or 
             &_die("Unable to open $output_dir/$asmblId.coords for writing ($!)");
 
@@ -371,7 +371,7 @@ sub check_parameters {
     }
     $output_dir = $options{'output_dir'};
    
-    if($options{'bsml_list'} || $options{'bsml_list'} eq '') {
+    if($options{'bsml_list'}) {
 
         &_die("bsml_list $options{bsml_list} does not exist") unless(-e $options{'bsml_list'});
         open(BL, "< $options{'bsml_list'}") or &_die("Unable to open bsml_list: $options{'bsml_list'} ($!)");
