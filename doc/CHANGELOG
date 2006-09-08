@@ -264,15 +264,11 @@ ergatis-v1r21b2
 --------------
 -fixed chado_record_uniq bug which caused incorrect clustal alignment strings to be loaded.
 
+ergatis-v1r21b3
+--------------
+-bugfix release for ber
+
 next
 --------------
 -removed check_repository.pl because BSML_repository deprecated.
-
-
-
-
-
-
-
-
-
+-fixed typo ber-master.ini
