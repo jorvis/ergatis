@@ -85,6 +85,7 @@ my $exclude_genefinders_key = '$;EXCLUDE_GENEFINDERS$;';
 my $alt_database_key = '$;ALT_DATABASE$;';
 my $alt_species_key = '$;ALT_SPECIES$;';
 my $tu_list_key = '$;TU_LIST_FILE$;';
+my $model_list_key = '$;MODEL_LIST_FILE$;';
 
 
 my $valid_organism_types = { 'prok'   => 1,
@@ -108,7 +109,8 @@ if (&verify_control_file($options{'control_file'})){
 	    $exclude_genefinders_key => [],
 	    $alt_database_key => [],
 	    $alt_species_key => [],
-	    $tu_list_key => []
+	    $tu_list_key => [],
+	    $model_list_key => []
 
 	};
 
@@ -166,10 +168,11 @@ sub get_list_from_file{
 	    my $sequence_type = $infohash->{'sequence_type'};
 	    my $asmbl_id = $infohash->{'asmbl_id'};
 	    my $tu_list = $infohash->{'tu_list'};
+	    my $model_list = $infohash->{'model_list'};
 	    
 	    my $subflow_name = $database_type . "_" . $asmbl_id;
 
-	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species, $tu_list);
+	    &add_entry_to_conf($iconf, $database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species, $tu_list, $model_list);
 	}
     }
     
@@ -182,7 +185,7 @@ sub get_list_from_file{
 #-------------------------------------------
 sub add_entry_to_conf{
 
-    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species, $tu_list) = @_;
+    my($iteratorconf,$database, $asmbl_id, $subflow_name, $sequence_type, $organism_type, $include_genefinders, $exclude_genefinders, $alt_database, $alt_species, $tu_list, $model_list) = @_;
     
     push( @{$iteratorconf->{$database_key}}, $database );
     push( @{$iteratorconf->{$asmbl_id_key}}, $asmbl_id );
@@ -194,6 +197,7 @@ sub add_entry_to_conf{
     push( @{$iteratorconf->{$alt_database_key}}, $alt_database );
     push( @{$iteratorconf->{$alt_species_key}}, $alt_species );
     push( @{$iteratorconf->{$tu_list_key}}, $tu_list );
+    push( @{$iteratorconf->{$model_list_key}}, $model_list );
 
 }
 
@@ -410,6 +414,8 @@ sub store_asmbl_id {
 	
 	my $tu_list_file = 'none';
 
+	my $model_list_file = 'none';
+
 	my @attributes = split(/\s+/, $line);
 	
 	
@@ -425,6 +431,9 @@ sub store_asmbl_id {
 		elsif ($key eq 'tu_list_file'){
 		    $tu_list_file = &verify_and_set_tu_list_file($value);
 		}
+		elsif ($key eq 'model_list_file'){
+		    $model_list_file = &verify_and_set_tu_list_file($value);
+		}
 		else {
 		    $logger->warn("Unrecognized attribute");
 		}
@@ -434,7 +443,8 @@ sub store_asmbl_id {
 	## Store the next valid asmbl_id in the organism hash
 	my $infohash = { 'asmbl_id'      => $asmbl_id,
 			 'sequence_type' => $sequence_type,
-			 'tu_list'       => $tu_list_file 
+			 'tu_list'       => $tu_list_file,
+			 'model_list'    => $model_list_file 
 		     };
 	
 	push( @{$hash->{$database}->{'infohash'}}, $infohash);
