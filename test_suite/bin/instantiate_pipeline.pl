@@ -64,11 +64,11 @@ my %options = ();
 my $results = GetOptions (\%options,
               'template-dir|d=s',
               'repository-root|r=s',
-			  'ergatis-install|e=s',
-	      	  'execute|x',
-		  	  'workflow-path|w=s',
+              'ergatis-install|e=s',
+              'execute|x',
+              'workflow-path|w=s',
               'help|h',
-	          'man|m',
+              'man|m',
                          ) || pod2usage();
 
 # display documentation
@@ -98,7 +98,7 @@ unless (-d $options{'repository-root'}) {
 }
 
 if (!defined($options{'workflow-path'})) {
-	$options{'workflow-path'} = '/usr/local/devel/ANNOTATION/workflow';
+    $options{'workflow-path'} = '/usr/local/devel/ANNOTATION/workflow';
 }
 
 $options{'template-dir'} =~ s/\/$//;
@@ -110,13 +110,13 @@ umask(0000);
 
 #make a pipeline from a saved template
 my $pipe_test = Workflow::SavedPipeline-> new( 
-	template => $options{'template-dir'}."/pipeline.xml"
-					     );
+    template => $options{'template-dir'}."/pipeline.xml"
+                         );
 $pipe_test->write_pipeline( 
-	global_id_repository => '/usr/local/devel/ANNOTATION/jorvis/global_id_repository',
-	repository_root => $options{'repository-root'} 
+    global_id_repository => '/usr/local/devel/ANNOTATION/jorvis/global_id_repository',
+    repository_root => $options{'repository-root'} 
                           );
-			  
+              
 my $pipeline_id = $pipe_test->pipeline_id();
 
 print "\nPipeline_ID of newly exported WorkFlow: $pipeline_id\n";
@@ -131,11 +131,11 @@ if (defined($options{'execute'})) {
     $ENV{'WF_ROOT_INSTALL'} = $options{'workflow-path'};
 
 my $workflow_root = $options{'workflow-path'};
-	
+    
 #    doORdie($options{'workflow-path'}.'/CreateWorkflow -t pipeline.xml -c pipeline.xml.ini -i pipeline.xml.instance --autobuild=false');
 #    doORdie($options{'workflow-path'}.'/RunWorkflow -i pipeline.xml.instance');
-	doORdie($options{'ergatis-install'}."/bin/run_wf --workflow_root $workflow_root --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance");
-	print ($options{'ergatis-install'}."/bin/run_wf --workflow_root $workflow_root --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance\n");
+    doORdie($options{'ergatis-install'}."/bin/run_wf --workflow_root $workflow_root --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance");
+    print ($options{'ergatis-install'}."/bin/run_wf --workflow_root $workflow_root --template $pipeline_ini_path/pipeline.xml --ini $pipeline_ini_path/pipeline.xml.ini --instance $pipeline_ini_path/pipeline.xml.instance\n");
 }
 
 exit();
