@@ -510,7 +510,7 @@ sub createAndAddBlastResultLine {
     $seq_run->setattr( 'compcomplement', 0 );
     $seq_run->setattr( 'runscore', $args{'bit_score'} )                                    if (defined  ($args{'bit_score'}));
     $seq_run->setattr( 'runprob', $args{'e_value'} )                                       if (defined  ($args{'e_value'}));
-    $seq_run->setattr( 'class', 'match_part'
+    $seq_run->setattr( 'class', 'match_part');
     $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
     $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));
     $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )                   if (defined ($args{'percent_coverage_refseq'}));   
