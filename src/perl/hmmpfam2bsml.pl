@@ -15,6 +15,8 @@ USAGE: hmmpfam2bsml.pl
         --input=/path/to/somefile.hmmpfam.raw 
         --output=/path/to/somefile.hmmpfam.bsml
       [ --search_method=hmmpfam
+        --fasta_input=/path/to/hmmpfam/input.fsa
+        --gzip_output=1
         --log=/path/to/some.log
         --debug=4 
         --help
@@ -31,6 +33,14 @@ B<--output,-o>
 B<--search_method,-m> 
     Optional. Search method used with hmmpfam.  default is 'hmmpfam' but others
     include 'hmmsmart', 'hmmpir', etc.
+
+B<--fasta_input,-f>
+    Optional.  If included, will make a seq data import element and include the 
+    defline with the sequences.
+
+B<--gzip_output,-g>
+    Optional.  If given a non-zero value, will compress the output and give the output
+    file a .gz extension.  If the file already contains one, it won't add another.
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -81,11 +91,16 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
+my $defline;
+my $fasta_input;
+
 my %options = ();
 my $results = GetOptions (\%options, 
               'input|i=s',
               'output|o=s',
               'search_method|m=s',
+              'fasta_input|f=s',
+              'gzip_output|g=s',
               'log|l=s',
               'debug=s',
               'help|h') || pod2usage();
@@ -142,6 +157,9 @@ unless ($qry_id)        { $logger->logdie("Query sequence definition not found i
 ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
 my $seq = $doc->createAndAddSequence($qry_id, $qry_id_orig, undef, 'aa', 'polypeptide');
    $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
+$logger->logdie("Couldn't parse identifier out of $defline\n") unless(!$defline || $defline =~ /([^\s])\s/);
+$doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $1) if($options{'fasta_input'});
+$doc->createAndAddBsmlAttribute($seq, 'defline', $defline) if($defline);
 
 ## for each model matched, create a Seq-pair-alignment and record the overall score and
 ## overall E-value
@@ -211,9 +229,9 @@ while (<$ifh>) {
                                                        refcomplement => 0,
                                                        comppos => min($sbj_start, $sbj_stop) - 1,
                                                        compcomplement => 0,
-                                                       class => 'match_part'
                                                    );
         ## add other attributes of the run
+        $doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
         $doc->createAndAddBsmlAttributes($run, 
                                             e_value    => $eval,
                                             domain_num => $domain_num,
@@ -246,7 +264,7 @@ $doc->createAndAddAnalysis(
                           );
 
 ## now write the doc
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $options{gzip_output});
 
 exit;
 
@@ -261,6 +279,19 @@ sub check_parameters {
 
     ## handle defaults
     $options{'search_method'} = 'hmmpfam' unless ( $options{'search_method'} );
+
+    if($options{'fasta_input'}) {
+        open(IN, "< $options{fasta_input}") or
+            $logger->logdie("Unable to open $options{fasta_input} ($!)");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $1;
+            }
+        }
+
+        $fasta_input = $options{'fasta_input'};
+    }
 
     return 1;
 }
