@@ -13,7 +13,9 @@ hmmpir2bsml.pl - convert hmmpir raw output to BSML
 USAGE: hmmpir2bsml.pl 
         --input=/path/to/somefile.hmmpir.raw 
         --output=/path/to/somefile.hmmpir.bsml
-      [ --log=/path/to/some.log
+      [ --fasta_input=/path/to/hmmpir/input.fsa
+        --gzip_output=1
+        --log=/path/to/some.log
         --debug=4 
         --help
       ]
@@ -25,6 +27,12 @@ B<--input,-i>
 
 B<--output,-o> 
     Output BSML file
+
+B<--fasta_input,-f>
+    Optional.  The input file used in the hmmpir run that created the raw file.
+
+B<--gzip_output,-g>
+    Optional.  Compress the bsml output if a non-zero value.
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -73,10 +81,16 @@ use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 }
 
+my $gzip;
+my $fasta_input;
+my $defline;
+
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
+              'fasta_input|f=s',
+              'gzip_output|g=s',
               'log|l=s',
               'debug=s',
 			  'help|h') || pod2usage();
@@ -121,6 +135,10 @@ while (<$ifh>) {
         ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
         my $seq = $doc->createAndAddSequence($qry_id, $qry_id_orig, undef, 'aa', 'polypeptide');
            $seq->addBsmlLink('analysis', "\#hmmpir_analysis");
+        my $identifier = '';
+        $identifier = $1 if($defline =~ /^([^\s]+)/ && $fasta_input);
+        $doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier) if($fasta_input);
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
 
         ## add the subject sequence file to the doc
         ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
@@ -174,10 +192,12 @@ while (<$ifh>) {
                                                    );
                                                    
         ## add other attributes of the run
+        $doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
         $doc->createAndAddBsmlAttributes($run, 
                                             e_value    => $eval,
                                             domain_num => $domain_num,
-                                            domain_of  => $domain_of
+                                            domain_of  => $domain_of,
+                                            
                                         );
     }
 }
@@ -191,7 +211,7 @@ $doc->createAndAddAnalysis(
                           );
 
 ## now write the doc
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $gzip);
 
 exit;
 
@@ -203,6 +223,28 @@ sub check_parameters {
 
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
+
+    ## check for fasta_input and if found, parse the defline
+    if ($options{'fasta_input'}) {
+        open(IN, "< $options{fasta_input}") or
+            $logger->logdie("Could not open $options{'fasta_input'} ($!)");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $_;
+                last;
+            }
+        }
+        close(IN);
+
+        $fasta_input = $options{'fasta_input'};
+    }
+
+    if($options{'gzip_output'}) {
+        $gzip = 1;
+    } else {
+        $gzip = 0;
+    }
 
     return 1;
 }
