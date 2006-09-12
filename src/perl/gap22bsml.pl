@@ -84,6 +84,7 @@ my $results = GetOptions (\%options,
               'output|o=s',
 			  'query_file_path|q=s',
   			  'query_id=s',
+              'gzip_output|g=s',
               'log|l=s',
               'debug=s',
 			  'help|h') || pod2usage();
@@ -98,6 +99,9 @@ if( $options{'help'} ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
 }
 
+my $defline;
+my $input;
+
 ## make sure all passed options are peachy
 &check_parameters(\%options);
 
@@ -106,10 +110,10 @@ my $doc = new BSML::BsmlBuilder();
 
 ## open file for reading
 my $ifh;
-if($options{'input'} =~ /\.gz$/) {
-     open ($ifh, "<:gzip", $options{'input'}) || $logger->logdie("can't open input file for reading");
+if($input =~ /\.gz$/) {
+     open ($ifh, "<:gzip", $input) || $logger->logdie("can't open input file for reading ($!)");
 } else {
-     open ($ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
+     open ($ifh, $input) || $logger->logdie("can't open input file for reading ($!)");
 }
 ## each chain segment = one Seq-pair-run
 
@@ -144,6 +148,7 @@ while (<$ifh>) {
     ## has this query sequence been added to the doc yet?
     if (! exists $seqs_found{$qry_id}) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'nucleic_acid');
+        $doc->createAndAddBsmlAttribute($seq, 'defline', $defline) if($defline);
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
         $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
         $seqs_found{$qry_id} = 1;
@@ -152,6 +157,7 @@ while (<$ifh>) {
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'na', 'nucleic_acid');
+        my $subDefline = &getSubDefline($cols[4]);
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
         $seqs_found{$sbj_id} = 1;
@@ -187,9 +193,8 @@ while (<$ifh>) {
                                                    refcomplement => $cols[17] eq 'Minus' ? 1 : 0,
                                                    comppos => min($cols[8], $cols[9]) - 1,
                                                    compcomplement => 0,
-                                                   class => 'match_part'
                                                );
-    
+    $doc->createAndAddBsmlAttribute($run, 'class', 'match_part');
     $doc->createAndAddBsmlAttribute($run, 'percent_identity', $cols[10]);
     $doc->createAndAddBsmlAttribute($run, 'percent_similarity', $cols[11]);
     $doc->createAndAddBsmlAttribute($run, 'chain_number', $chainID);
@@ -211,7 +216,7 @@ $doc->createAndAddAnalysis(
                           );
 
 ## now write the doc
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $options{'gzip_output'});
 
 exit;
 
@@ -219,10 +224,35 @@ exit;
 sub check_parameters {
     
     ## make sure input file exists
-    if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
+    if (! -e $options{'input'}) { 
+        if(-e $options{'input'}.".gz") {
+            $input = $options{'input'}.".gz";
+        } else {
+            $logger->logdie("input file $options{'input'} does not exist");
+        }
+    }
     
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
+
+    ## record the defline
+    if ( $options{'query_file_path'} ) {
+        open(IN, "$options{query_file_path}") or 
+            $logger->logdie("Couldn't open $options{query_file_path} ($!)");
+        
+        ## assume there's only one sequence in the file.
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $1;
+                last;
+            }
+        }
+        close(IN);
+
+    }
+
+
     
     return 1;
 }
@@ -245,7 +275,26 @@ sub createAndAddNullResult {
     
 	if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
         my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'na', $args{'class'} );
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', "$defline");
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
         $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
     }
+}
+
+sub getSubDefline {
+    my $filename = shift;
+    my $retval;
+
+    open(IN, "< $filename") or 
+        $logger->logdie("Unable to open $filename ($!)");
+
+    while(<IN>) {
+        if(/^>/) {
+            $retval = $_;
+            last;
+        }
+    }
+
+    return $retval;
+
 }
