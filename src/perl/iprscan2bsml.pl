@@ -13,6 +13,8 @@ iprscan2bsml.pl - convert iprscan btab output to BSML
 USAGE: iprscan2bsml.pl 
     --input=/path/to/somefile.iprscan.raw 
     --output=/path/to/somefile.iprscan.bsml
+  [ --fasta_input=/path/to/iprscan/input.fsa
+    --gzip_output=1 ]
 
 =head1 OPTIONS
 
@@ -29,6 +31,10 @@ B<--query_file_path,-q>
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
+
+B<--gzip_output,-g>
+    Optional.  Non-zero value will give you a compressed bsml file. If output
+    does not contain a .gz extension, it will be added automatically.
 
 B<--log,-l> 
     Log file
@@ -98,10 +104,17 @@ use BSML::BsmlParserTwig;
 use File::Basename;
 use XML::Twig;
 
+my $gzip;
+my $fasta_input;
+my $defline;
+my $identifier;
+
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
+              'fasta_input|f=s',
+              'gzip_output|g=s',
 			  'query_id|r=s',
 			  'query_file_path|q=s',
               'log|l=s',
@@ -133,6 +146,7 @@ my %seqs_found;
 my $seq = $doc->createAndAddSequence($options{query_id}, $options{query_id}, undef, 'na', 'assembly');
 $doc->createAndAddSeqDataImport($seq, 'fasta', $options{query_file_path}, '', $options{query_id});
 $seq->addBsmlLink('analysis', '#iprscan_analysis', 'input_of');
+$doc->createAndAddBsmlAttribute( $seq, 'defline', $defline) if($defline);
 $seqs_found{$options{query_id}} = 1;
 
 while (<$ifh>) {
@@ -208,8 +222,9 @@ while (<$ifh>) {
                                                    refcomplement => 0,
                                                    comppos => 0,
                                                    compcomplement => 0,
-                                                   class => 'match'
                                                );
+
+    $doc->createAndAddBsmlAttribute($run, 'class', 'match_part');
     
     if ( $cols[8] ne 'NA' ) {
         $doc->createAndAddBsmlAttribute($run, 'e_value', $cols[8]);
@@ -226,7 +241,7 @@ $doc->createAndAddBsmlAttribute( $analysis, 'version', 'current' );
 $doc->createAndAddBsmlAttribute( $analysis, 'algorithm', 'iprscan' );
 
 ## now write the doc
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $gzip);
 
 exit;
 
@@ -241,6 +256,28 @@ sub check_parameters {
     unless ($options{query_file_path} && $options{query_id}) { 
         $logger->logdie("query_file_path and query_id options required!") 
     }
+    
+    ## do we want compressed output?
+    if($options{'gzip_output'}) {
+        $gzip = 1;
+    } else {
+        $gzip = 0;
+    }    
+
+    ## store some options if the fasta_input file was included
+    if($options{'query_file_path'}) {
+        $fasta_input = $options{'query_file_path'};
+        open(IN, "< $fasta_input") or
+            $logger->logdie("Could not open $fasta_input ($!)");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $1;
+                $identifier = $1 if($defline =~ /^([^\s]+)/);
+            }
+        }
+        close(IN);
+    } 
 
     return 1;
 }
