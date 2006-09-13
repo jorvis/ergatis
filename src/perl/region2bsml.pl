@@ -10,7 +10,7 @@ region2bsml - Convert gene_boundaries(region) output to BSML
 
 =head1 SYNOPSIS
 
-USAGE: region2bsml -r region_file -o output_file [--debug debug_level] [--log log_file] [--help]
+USAGE: region2bsml -r region_file -o output_file [--gzip_output 1] [--debug debug_level] [--log log_file] [--help]
 
 =head1 DESCRIPTION
 
@@ -28,10 +28,11 @@ use BSML::BsmlBuilder;
 use Log::Log4perl qw(get_logger :levels :easy);
 use Pod::Usage;
 
-my ($region,$output_file,$debug,$log,$help,$class);
+my ($region,$output_file,$debug,$log,$help,$class,$gzip_output);
 my $results = GetOptions (
 			  'region|r=s' => \$region,
 			  'output|o=s' => \$output_file,
+              'gzip_output|g=s' => \$gzip_output,
 			  'debug|D=s'  => \$debug,
 			  'log|l=s'    => \$log,
 			  'help|?|h'   => \$help,
@@ -102,12 +103,12 @@ while (my $line = <IN>) {
 	    my $query_align_length = abs($refend-$refstart);
 	    my $match_align_length = abs($compend-$compstart);
 	    $doc->createAndAddSequencePairRun('alignment_pair' => $align, 
-					      'refpos' => $refstart, 
-					      'runlength' =>$query_align_length,
-					      'complement' => 0,
-                                              'comppos'=> $compstart, 
-					      'comprunlength'=>$match_align_length,
-					      'compcomplement'=>$complement);
+                                          'refpos' => $refstart, 
+                                          'runlength' =>$query_align_length,
+                                          'complement' => 0,
+                                          'comppos'=> $compstart, 
+                                          'comprunlength'=>$match_align_length,
+                                          'compcomplement'=>$complement);
         } else {
 	    $logger->info("Bad match line: $line");
         }
@@ -115,7 +116,7 @@ while (my $line = <IN>) {
 }
 
 # write the altered file to disk
-$doc->write( $output_file );
+$doc->write( $output_file, '', $gzip_output );
 chmod 0666, $output_file;
 $logger->info("Wrote output file $output_file");
 
