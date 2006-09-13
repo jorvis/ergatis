@@ -24,6 +24,10 @@ B<--log,-l> Log file
 
 =item *
 
+B<--gzip_output,-g> Optional.  Compresses bsml output.
+
+=item *
+
 B<--class,-c> ref/comp sequence class type. Default is 'assembly'
 
 =item *
@@ -47,12 +51,18 @@ use BSML::BsmlBuilder;
 use BSML::BsmlParserSerialSearch;
 }
 
+my $qfPath;
+my $defline;
+my $identifier;
+
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'file|f=s',
 			  'bsml_repository|b=s',
+              'query_file_path|q=s',
 			  'output|o=s',
 			  'num_hits|n=s',
+              'gzip_output|g=s',
 			  'log|l=s',
 			  'debug=s',
 			  'class|c=s',
@@ -129,6 +139,8 @@ foreach my $query_name (keys %$seq_pair){
 		if( !( $doc->returnBsmlSequenceByIDR($query_name) )){
 		    $doc->createAndAddSequence($query_name,$query_name,$aalookup->{$query_name}->{'length'}, 'aa', $class );
 		    my $seq = $doc->returnBsmlSequenceByIDR($query_name);
+            $seq->addBsmlAttr('defline', $defline) if($defline);
+            $doc->createAndAddSeqDataImport( $seq, 'fasta', $qfPath, '', $identifier) if($qfPath && $identifier);
 		}
 		if( !( $doc->returnBsmlSequenceByIDR($dbmatch_accession) )){
 		    $doc->createAndAddSequence($dbmatch_accession,$dbmatch_accession,$aalookup->{$dbmatch_accession}->{'length'}, 'aa', $class );
@@ -152,9 +164,9 @@ foreach my $query_name (keys %$seq_pair){
 								   'runscore'       => $run->{'runscore'},
 								   'refcomplement' => 0,
 								   'compcomplement' => 0,
-                                                       'class' => 'match_part'
 								   );
 			#additional attributes
+            $s->addBsmlAttr( 'class', 'match_part');
 			$s->addBsmlAttr( 'PEffect_Cluster_Id',  $run->{'PEffect_Cluster_Id'} );
 			$s->addBsmlAttr( 'PEffect_Cluster_Gap_Count', $run->{'PEffect_Cluster_Gap_Count'} );
 			$s->addBsmlAttr( 'PEffect_Cluster_Gene_Count', $run->{'PEffect_Cluster_Gene_Count'} );
@@ -172,7 +184,7 @@ $doc->createAndAddAnalysis(
 			   sourcename => $options{'output'},
 			   );
 
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $options{'gzip_output'});
 
 sub get_aa_lookup{
     my($repository) = @_;
@@ -204,6 +216,21 @@ sub get_aa_lookup{
 
 sub check_parameters{
     my ($options) = @_;
+
+    if($options{'query_file_path'}) {
+        $qfPath = $options{'query_file_path'};
+        open(IN, "< $qfPath") or 
+            $logger->logdie("Unable to open query_file_path $options{'query_file_path'} ($!)");
+        while(<IN>) {
+            if(/^>(.*)/) {
+                $defline = $1;
+                $identifier = $1 if($defline =~ /^([^\s]+)/);
+                last;
+            }
+        }
+        close(IN);
+
+    }
     
     if(0){
 	pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
