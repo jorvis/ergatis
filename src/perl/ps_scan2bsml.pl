@@ -37,6 +37,13 @@ B<--analysis_id,-a>
 B<--id_repository,-r>
     Used to make the ids (See Workflow::IdGenerator for details)
 
+B<--query_file_path,-g>
+    Path to the query file (input fasta file) for ps_scan.
+
+B<--gzip_output,-g>
+    A non-zero value will result in compressed bsml output.  If no .gz is on the end of the bsml output name, one will
+    be added.
+
 B<--log,-l>
     In case you wanted a log file.
 
@@ -84,6 +91,9 @@ my $debug;
 my $analysis_id;
 my $idMaker;
 my $fasta_file;
+my $gzip;
+my $defline;
+my $identifier;
 ########################################
 
 my %options = ();
@@ -93,6 +103,8 @@ my $results = GetOptions (\%options,
                           'project|p=s',
                           'analysis_id|a=s',
                           'id_repository|r=s',
+                          'query_file_path|q=s',
+                          'gzip_output|g=s',
                           'fasta_file|f=s',
                           'log|l=s',
                           'debug=s',
@@ -109,9 +121,7 @@ $logger = $logger->get_logger();
 
 my $data = &parsePs_scanData($inputFile);
 my $bsml = &generateBsml($data);
-$bsml->write($output);
-
-exit(0);
+$bsml->write($output,'', $gzip);
 
 ######################## SUB ROUTINES #######################################
 sub parsePs_scanData {
@@ -167,7 +177,8 @@ sub generateBsml {
         #Create the seq object
         $seqObj = $doc->createAndAddSequence($seq, $seq, '', 'aa', 'polypeptide');
         $doc->createAndAddLink($seqObj, 'analysis', '#'.$analysis_id.'_analysis', 'input_of');
-        $doc->createAndAddSeqDataImport($seqObj, 'fasta', $fasta_file, '', $seq);
+        $doc->createAndAddSeqDataImport($seqObj, 'fasta', $fasta_file, '', $identifier);
+        $doc->createAndAddBsmlAttribute( $seqObj, 'defline', $defline);
 
         foreach my $proDomain(keys %{$data->{$seq}}) {
 
@@ -193,10 +204,10 @@ sub generateBsml {
                                 'comppos'        => 0,
                                 'comprunlength'  => length($match->{'match'}),
                                 'compcomplement' => 0,
-                                'class'          => 'match_part'
                                 );   
 
                 my $sprObj = $doc->createAndAddSequencePairRun(%sprArgs);
+                $doc->createAndAddBsmlAttribute($sprObj, 'class', 'match_part');
             }
 
 
@@ -251,15 +262,32 @@ sub check_parameters {
         #$idMaker->set_pool_size( 
     }
 
-    unless($options{'fasta_file'}) {
+    unless($options{'query_file_path'}) {
         $error .= "Option fasta_file is required\n";
     } else {
-        $fasta_file = $options{'fasta_file'};
+        $fasta_file = $options{'query_file_path'};
+        open(IN, "< $fasta_file") or
+            &_die("Unable to open $fasta_file ($!)");
+        while(<IN>) {
+            if(/^>(.*)/) {
+                $defline = $1;
+                $identifier = $1 if($defline =~ /^([^\s])/);
+            }
+        }
+        close(IN);
     }
     
     if($options{'debug'}) {
         $debug = $options{'debug'};
     }
+
+    if($options{'gzip_output'}) {
+        $gzip = 1;
+    } else {
+        $gzip = 0;
+    }
+
+    
     
     unless($error eq "") {
         &_die($error);
