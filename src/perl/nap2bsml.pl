@@ -35,6 +35,9 @@ B<--log,-l>
 B<--output,-o> 
     Output BSML file
 
+B<--qzip_output,-g>
+    Optional.  A non-zero value will make compressed output.
+
 B<--help,-h> 
     This help message
 
@@ -77,12 +80,15 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
+my $qfDefline;
+
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
 			  'query_file_path|q=s',
 			  'query_id=s',
               'output|o=s',
+              'gzip_output|g=s',
               'log|l=s',
               'debug=s',
 			  'help|h') || pod2usage();
@@ -146,6 +152,7 @@ while (<$ifh>) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'assembly');
       	$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
 		$seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
+        $seq->addBsmlAttr('defline', $qfDefline) if($qfDefline);
         $seqs_found{$qry_id} = 1;
     }
     
@@ -188,9 +195,8 @@ while (<$ifh>) {
                                                    refcomplement => $cols[17] eq 'Minus' ? 1 : 0,
                                                    comppos => min($cols[8], $cols[9]) - 1,
                                                    compcomplement => 0,
-                                                   class => 'match_part'
                                                );
-    
+    $doc->createAndAddBsmlAttribute($run, 'class', 'match_part');
     $doc->createAndAddBsmlAttribute($run, 'percent_identity', $cols[10]);
     $doc->createAndAddBsmlAttribute($run, 'percent_similarity', $cols[11]);
     $doc->createAndAddBsmlAttribute($run, 'chain_number', $chainID);
@@ -212,7 +218,7 @@ my $analysis = $doc->createAndAddAnalysis(
                           );
 
 ## now write the doc
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $options{'gzip_output'});
 
 exit;
 
@@ -228,6 +234,19 @@ sub check_parameters {
     
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
+
+    if($options{'query_file_path'}) {
+        open(IN, "< $options{'query_file_path'}") or 
+            $logger->logdie("cannot open $options{query_file_path}");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $qfDefline = $1;
+                last;
+            }
+        }
+        close(IN);
+    }
 
     return 1;
 }
