@@ -424,6 +424,8 @@ sub createAndAddBlastResultLine {
         #add a new BsmlSeqPairRun to the alignment pair and return
         my $seq_run = $alignment_pair->returnBsmlSeqPairRunR( $alignment_pair->addBsmlSeqPairRun() );
 
+        $doc->createAndAddBsmlAttribute($seq_run, 'class', 'match_part');
+
         if( $args{'start_query'} > $args{'stop_query'} ) {
             $seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
             $seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
@@ -440,7 +442,6 @@ sub createAndAddBlastResultLine {
         $seq_run->setattr( 'compcomplement', 0 );
         $seq_run->setattr( 'runscore', $args{'bit_score'} )                                  if (defined ($args{'bit_score'}));
         $seq_run->setattr( 'runprob', $args{'e_value'} )                                     if (defined ($args{'e_value'}));
-        $seq_run->setattr( 'class', 'match_part' );
         $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
         $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
         $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )                 if (defined ($args{'percent_coverage_refseq'}));   
@@ -494,6 +495,8 @@ sub createAndAddBlastResultLine {
 
     my $seq_run = $alignment_pair->returnBsmlSeqPairRunR( $alignment_pair->addBsmlSeqPairRun() );
 
+    $doc->createAndAddBsmlAttribute($seq_run, 'class', 'match_part');
+    
     if( $args{'start_query'} > $args{'stop_query'} ) {
         $seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
         $seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
@@ -510,7 +513,6 @@ sub createAndAddBlastResultLine {
     $seq_run->setattr( 'compcomplement', 0 );
     $seq_run->setattr( 'runscore', $args{'bit_score'} )                                    if (defined  ($args{'bit_score'}));
     $seq_run->setattr( 'runprob', $args{'e_value'} )                                       if (defined  ($args{'e_value'}));
-    $seq_run->setattr( 'class', 'match_part');
     $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
     $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));
     $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )                   if (defined ($args{'percent_coverage_refseq'}));   
