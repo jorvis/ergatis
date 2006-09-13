@@ -21,7 +21,7 @@ B<--input_list,-i>
     components are:  repeatmasker, trf.
 
 B<--repeat_file,-r> 
-    The full path to the repeat library used.  This will be populated in ORF_attribute.score3
+    The full path to the repeat library used.  This will be populated in ORF_attribute.score3  Note:  If loading trf results, enter 'trf' for this parameter.
 
 B<--database,-d> 
     Sybase project database ID.
