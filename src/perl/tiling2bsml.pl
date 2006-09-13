@@ -30,6 +30,10 @@ B<--tilingPath,-t> [REQUIRED] file containing tiling path data from show_tiling
 
 B<--bsml_repository,-b> [REQUIRED] filepath to the bsml repository
 
+=tiem *
+
+B<--gzip_output,-g> [OPTIONAL] a non-zero value will result in compressed bsml output
+
 =item *
 
 B<--output,-o> [REQUIRED] output BSML file containing coverage information
@@ -75,6 +79,7 @@ GetOptions( \%options,
 	    'tilingPath|t=s', 
 	    'referencePath|r=s',
 	    'queryPath|q=s',
+        'gzip_output|g=s',
 	    'outFile|o=s',
 	    'reference_class=s',
 	    'query_class=s',
@@ -95,8 +100,21 @@ if( !( $options{'tilingPath'} ) ) {
 if( !( $options{'referencePath'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
 }
+
+
+my ($defline, $identifier);
 if( !( $options{'queryPath'} ) ) {
     pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
+} else {
+    open(IN, "$options{'queryPath'}") or
+       die("Cannot open $options{'queryPath'} ($!)");
+    while(<IN>) {
+        if(/^>(.*)/) {
+            $defline = $1;
+            $identifier = $1 if($defline =~ /^([^\s])/);
+        }
+    }
+    close(IN);
 }
 
 if( !( $options{'outFile'} ) ) {
@@ -115,6 +133,13 @@ if( !( $options{'query_class'} ) ) {
 if (! $options{analysis_id}) {
     $options{analysis_id} = 'unknown_analysis';
 }
+
+my $gzip_output;
+if($options{'gzip_output'}){
+    $gzip_output = $options{'gzip_output'};
+}
+
+
 
 # The output of show_tiling is tab deliminted with the following fields
 # 0 - start in ref
@@ -268,6 +293,7 @@ sub predefineSequences {
  				    $id                    # //Seq-data-import/@identifier
  				    );
 	$seqstub->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+        $seqstub->addBsmlAttr('defline', $defline);
 
 	#bugzilla case 2692
 	#http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=2692
