@@ -1,5 +1,73 @@
 #!/usr/local/bin/perl
 
+=head1 NAME
+
+infernal.pl - Turns infernal raw output into bsml. 
+
+=head1 SYNOPSIS
+
+USAGE: template.pl
+            --input_file=/path/to/some/transterm.raw
+            --output=/path/to/transterm.bsml
+            --project=aa1
+            --id_repository=/some/id_repository/dir
+            --query_file_path=/input/file.fsa
+            --gzip_output=1
+          [ --log=/path/to/file.log
+            --debug=4
+            --help
+          ]
+
+=head1 OPTIONS
+
+B<--input_file,-i>
+    The input file (should be prosite scan output)
+
+B<--output,-o>
+    Where the output bsml file should be
+
+B<--project,-p>
+    Used in id generation.  It's the first token in the id.  (Ex. project.class.number.version)
+
+B<--id_repository,-r>
+    Used to make the ids (See Workflow::IdGenerator for details)
+
+B<--query_file_path,-g>
+    Path to the query file (input fasta file) for infernal.
+
+B<--gzip_output,-g>
+    A non-zero value will result in compressed bsml output.  If no .gz is on the end of the bsml output name, one will
+    be added.
+
+B<--log,-l>
+    In case you wanted a log file.
+
+B<--debug,-d>
+    There are no debug statements in this program.  Sorry.
+
+B<--help,-h>
+    Displays this message.
+
+=head1  DESCRIPTION
+
+    Reads in infernal output and produces a bsml representation of the matches.  
+
+=head1  INPUT
+
+    The raw output of infernal.  
+
+=head1  OUTPUT
+
+    Generates a BSML document representing the ps_scan matches.
+
+=head1  CONTACT
+
+    Kevin Galens
+    kgalens@tigr.org
+
+=cut
+
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -19,20 +87,24 @@ my $output;
 my $doc = new BSML::BsmlBuilder();    #Bsml Builder object
 my $idMaker;                          #Id generator object
 my $project;
+my $gzip;
+my $defline;
 ############################################
 
 
 #Get the options.
 my $results = GetOptions (\%options, 
-			  'input|i=s',
-              'output|o=s',
-              'project|p=s',
-              'id_repository|r=s',
-              'log|l=s',
-              'command_id=s',       ## passed by workflow
-              'logconf=s',          ## passed by workflow (not used)
-              'debug=s',
-			  'help|h') || pod2usage();
+                          'input|i=s',
+                          'output|o=s',
+                          'project|p=s',
+                          'id_repository|r=s',
+                          'query_file_path|q=s',
+                          'gzip_output|g=s',
+                          'log|l=s',
+                          'command_id=s',       ## passed by workflow
+                          'logconf=s',          ## passed by workflow (not used)
+                          'debug=s',
+                          'help|h') || pod2usage();
 
 
 #Make the logger
@@ -54,10 +126,7 @@ my $rawStructure = &parseInfernalRaw($input);
 &createBsml($rawStructure);
 
 #Write the bsml file.
-$doc->write($output);
-
-#Return zero.
-exit(0);
+$doc->write($output, '', $gzip);
 
 ###################################### SUBROUTINES ################################
 
@@ -204,6 +273,7 @@ sub addQuerySeq {
             $doc->createAndAddSequence($match->{'seqId'},undef, 
                                        undef, 'dna', 'assembly');
         $querySeqs->{$match->{'seqId'}}->addBsmlLink('analysis', '#infernal_analysis', 'input_of');
+        $querySeqs->{$match->{'seqId'}}->addBsmlAttr('defline', $defline);
         $fts->{$match->{'seqId'}} = 
             $doc->createAndAddFeatureTable($querySeqs->{$match->{'seqId'}});
     }
@@ -243,9 +313,9 @@ sub addSeqPair {
                                                 refcomplement => $match->{'strand'},
                                                 comppos => 0,
                                                 compcomplement => 0,
-                                                class => 'match_part'
                                                 );
 
+    $doc->createAndAddBsmlAttribute($spr, 'class', 'match_part');
     $doc->createAndAddBsmlAttribute($spr, bit_score => $match->{'bit_score'});
 
 
@@ -306,6 +376,21 @@ sub check_parameters {
         &_die("project option is required");
     }
     $project = $options{'project'};
+
+    #If the query file path was given, parse out the definition line.
+    if($options{'query_file_path'}) {
+        open(IN, "<$options{query_file_path}") or
+            &_die("Unable to open $options{query_file_path}");
+        
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $1;
+                last;
+            }
+        }
+        close(IN);
+    }
 
 }
 
