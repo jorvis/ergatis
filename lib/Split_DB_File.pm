@@ -14,7 +14,7 @@ sub TIEHASH
 {
 	my $class = shift;
 	my $this = {};
-	$this->{db_size} = 1e6;
+	$this->{db_size} = 500000;
 	$this->{db_name} = shift;
 	$this->{dbs} = [];
 	$this->{idx} = 0;
