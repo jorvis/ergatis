@@ -15,6 +15,7 @@ USAGE: panther2bsml.pl
         --input=/path/to/somefile.panther.raw 
         --output=/path/to/somefile.panther.bsml
 		--query_path=/path/to/query.fasta.fsa
+        --gzip_output=1
       [ --log=/path/to/some.log
         --debug=4 
         --help
@@ -30,6 +31,10 @@ B<--output,-o>
 
 B<--query_path,-q> 
     Full path to query sequence file used for Panther run.
+
+B<--gzip_output,-g>
+    A non-zero will result in compressed bsml output.  If there is not a .gz extension 
+    on the output file name, one will be added.
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -77,11 +82,14 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
+my $defline;
+
 my %options = ();
 my $results = GetOptions (\%options, 
               'input|i=s',
               'output|o=s',
 			  'query_file_path|q=s',
+              'gzip_output|g=s',
               'log|l=s',
               'debug=s',
               'help|h') || pod2usage();
@@ -121,8 +129,9 @@ $query_id =~ s/[^a-zA-Z0-9\.\-\_]/_/g;
 ## add the query sequence file to the doc
 ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
 my $seq = $doc->createAndAddSequence($query_id, $query_id_orig, undef, 'aa', 'polypeptide');
-   $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $query_id);
-   $seq->addBsmlLink('analysis', "#panther_analysis", 'input_of');
+$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $query_id);
+$seq->addBsmlLink('analysis', "#panther_analysis", 'input_of');
+$seq->addBsmlAttr('defline', $defline);
 
 my @panther_results = ();
 while (<$ifh>) {
@@ -165,9 +174,9 @@ while (<$ifh>) {
                                                        refcomplement => 0,
                                                        comppos => 0,
                                                        compcomplement => 0,
-                                                       class => 'match_part'
                                                    );
         ## add other attributes of the run
+        $doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
         $doc->createAndAddBsmlAttributes(	$run, 
 											domain_num => $seg_counter,
 											domain_of  => $seg_total,
@@ -184,7 +193,7 @@ $doc->createAndAddAnalysis(
                           );
 
 ## now write the doc
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $options{'gzip_output'});
 
 exit;
 
@@ -195,6 +204,20 @@ sub check_parameters {
 
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
+
+    ## if the query fasta file was given, parse out the header line (defline).
+    if($options{'query_path'}) {
+        open(IN, "< $options{query_path}") or
+            $logger->logdie("Unable to open $options{query_file} ($!)");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $1;
+                last;
+            }
+        }
+        close(IN);
+    }
 
     return 1;
 }
