@@ -13,7 +13,9 @@ trf2bsml.pl - convert Tandem Repeat Finder (trf) output to BSML
 USAGE: trf2bsml.pl 
             --input=/path/to/somefile.dat 
             --output=/path/to/output.bsml
-          [ --project=aa1 ]
+           [--fasta_input=/path/to/trf/input.fsa
+            --gzip_output=1
+            --project=aa1 ]
 
 =head1 OPTIONS
 
@@ -32,6 +34,13 @@ B<--output,-o>
 B<--project,-p>
     Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
     not passed.
+
+B<--gzip_output,-g>
+    [OPTIONAL] A non-zero value will result in compressed bsml output.  If there is no .gz extension on
+    the output file name, one will be added.
+
+B<--fasta_input,-f>
+    [OPTIONAL] The file used as input for the trf run.
 
 B<--help,-h> 
     This help message
@@ -88,11 +97,18 @@ use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 }
 
+my $defline;
+my $identifier;
+my $gzip;
+my $fasta_input;
+
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'input|i=s',
               'output|o=s',
               'debug|d=s',
+              'gzip_output|g=s',
+              'fasta_input|f=s',
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'project|p=s',
@@ -157,6 +173,8 @@ while (<$ifh>) {
 for my $seqid (keys %data) {
     my $seq = $doc->createAndAddSequence($seqid, undef, '', 'dna', 'assembly');
        $seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
+    $seq->addBsmlAttr('defline', $defline);
+    $doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier);
     my $ft  = $doc->createAndAddFeatureTable($seq);
     my $fg;
     
@@ -217,6 +235,23 @@ sub check_parameters {
     
     $options{'project'}    = 'unknown' unless ($options{'project'});
     $options{'command_id'} = '0' unless ($options{'command_id'});
+
+    if($options{'fasta_input'}) {
+        $fasta_input = $options{'fasta_input'};
+        open(IN, "< $fasta_input") or
+            $logger->logdie("Unable to open $fasta_input ($!)");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/){
+                $defline = $1;
+                $identifier = $1 if($defline =~ /^([^\s]+)/);
+                last;
+            }
+        }
+        close(IN);
+    }
+
+    $gzip = ($options{'gzip_output'}) ? 1 : 0;
     
     return 1;
 }
