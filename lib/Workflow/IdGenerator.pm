@@ -390,7 +390,7 @@ umask(0000);
     
         ## make sure it is a valid ID repository
         unless ( -f "$self->{id_repository}/valid_id_repository" ) {
-            croak ("fatal: the id repository $self->{id_repository} doesn't appear to be valid.  see the documentation for this module");
+            croak ("fatal: Can't find file $self->{id_repository}/valid_id_repository.  the id repository $self->{id_repository} doesn't appear to be valid.  see the documentation for this module");
         }
         
         $self->{_id_repository_checked} = 1;
