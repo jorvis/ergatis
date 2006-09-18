@@ -72,19 +72,24 @@ my $results = GetOptions (\%options,
               'btab_dir|b=s', 
               'btab_file|f=s',
               'bsml_dir|d=s', ## deprecated.  keeping for backward compat (for now)
+              'query_file_path|q=s',
               'output|o=s', 
               'max_hsp_count|m=s',
               'pvalue|p=s', 
               'log|l=s',
               'debug=s',
               'class|c=s',
-	      'gzip|z',
+	          'gzip|z',
               'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
                   'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
+
+if($options{'help'}) {
+    pod2usage();
+}
 
 if($options{'pvalue'} eq ""){
     $options{'pvalue'} = 10;
@@ -98,6 +103,24 @@ else{
     $class = $options{'class'};
 }
 
+# This is used for SeqDataImport and also
+# for creating the defline Bsml Attribute for
+# the query sequence (bug 3781).
+my ($defline, $qFPath, $identifier);
+if($options{'query_file_path'}) {
+    $qFPath = $options{'query_file_path'};
+    open(IN, "< $qFPath") or
+        $logger->logdie("Unable to open query fasta file $qFPath ($!)");
+    while(<IN>) {
+        chomp;
+        if(/^>(.*)/) {
+            $defline = $1;
+            $identifier = $1 if($defline =~ /^(\S+)/);
+        }
+
+    }
+    close(IN);
+}
 
 
 # display documentation
@@ -384,7 +407,7 @@ sub createAndAddBtabLine {
         $seq_run->setattr( 'compcomplement', 0 );
         $seq_run->setattr( 'runscore', $args{'bit_score'} )                                  if (defined ($args{'bit_score'}));
         $seq_run->setattr( 'runprob', $args{'e_value'} )                                     if (defined ($args{'e_value'}));
-        $seq_run->setattr( 'class', 'match_part' );
+        $seq_run->addBsmlAttr( 'class', 'match_part' );
         $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
         $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
         $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )              	 if (defined ($args{'percent_coverage_refseq'}));   
@@ -403,11 +426,15 @@ sub createAndAddBtabLine {
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
         $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
         $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline );
+        $doc->createAndAddSeqDataImport( $seq, 'fasta', $qFPath, '', $identifier) if(defined($qFPath) && defined($identifier));
+        
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
 		$seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
-## Removed to resolve bug #2671
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', "$args{orig_dbmatch_accession} $args{dbmatch_header}" );
+##        Removed to resolve bug #2671
 ##        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
 
