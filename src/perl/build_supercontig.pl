@@ -38,6 +38,7 @@ GetOptions( \%options,
 	    'analysis_id|a=s',
 	    'scaffold_class=s',
 	    'contig_genome=s',
+        'gzip_output|g=s',
 	    'help|h' 
 	    ) || pod2usage();
 
@@ -189,9 +190,10 @@ foreach my $refseq (keys %tiles) {
                                             refcomplement => 0, #ref sequence is never complement
                                             comppos => 0,       #always entire contig
                                             comprunlength => $seq_len,
-					    compcomplement => $is_comp,
-                                                    class => 'match_part');
+					    compcomplement => $is_comp,);
+
 		#by definition these are 100%
+        $run->addBsmlAttr( 'class', 'match_part');
 		$run->addBsmlAttr( 'percent_identity', '100.00');
 		$run->addBsmlAttr( 'percent_coverage', '100.00');
 
@@ -218,7 +220,7 @@ foreach my $refseq (keys %tiles) {
 }
 
 #output results
-$doc->write( $options{'bsml_output'} );
+$doc->write( $options{'bsml_output'}, '', $options{'gzip_output'} );
 chmod(0666, $options{'bsml_output'});
 chmod(0666, $fasta_out);
 
