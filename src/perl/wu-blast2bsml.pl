@@ -22,6 +22,10 @@ B<--output,-o>
 B<--query_file_path,-q>
     The full path to the query FASTA file (used to populate refxref)
     [When used in workflow should be passed ITER_FILE_PATH]
+
+B<--gzip_output,-g>
+    Compress the bsml output.  If there is not .gz extension on the the output file
+    one will be added (optional).
     
 B<--max_hsp_count,-m> Maximum number of HSPs stored per alignment (optional)
 
@@ -67,19 +71,19 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 }
-
+my $defline;
 my %options = ();
 my $results = GetOptions (\%options, 
                           'input|i=s',
                           'output|o=s',
                           'query_file_path|q=s',
+                          'gzip_output|g=s',
                           'log|l=s',
                           'debug|d=s',
                           'analysis_id|a=s',
                           'bsml_dir|d=s', ## deprecated.  keeping for backward compat (for now)
                           'max_hsp_count|m=s',
                           'pvalue|p=s', 
-                          'log|l=s',
                           'debug=s',
                           'class|c=s',
                           'help|h') || pod2usage();
@@ -387,7 +391,7 @@ $doc->createAndAddAnalysis(
                             sourcename => $options{'output'},
                           );
 
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $options{'gzip_output'});
 
 exit(0);
 
@@ -401,6 +405,7 @@ sub createAndAddNullResult {
         my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, $ref_molecule->{$blast_program}, $args{'class'} );
         $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
         $seq->addBsmlLink('analysis', '#' . $options{'analysis_id'}, 'input_of');
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
     }
 }
 
@@ -652,6 +657,17 @@ sub check_parameters {
     }
     if (! $options{'query_file_path'}) {
         $options{'query_file_path'} = '';
+    } else {
+        open(IN, "< $options{query_file_path}") or
+            $logger->logdie("Unable to open query_file $options{query_file_path} ($!)");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $1;
+                last;
+            }
+        }
+        close(IN);
     }
 }
 
