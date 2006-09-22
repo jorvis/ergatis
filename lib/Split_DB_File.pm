@@ -15,12 +15,12 @@ sub TIEHASH
 	my $class = shift;
 	my $this = {};
 	$this->{db_size} = 500000;
-	$this->{db_name} = shift;
+	$this->{db_name} = shift || die "Database filename is required";
 	$this->{dbs} = [];
 	$this->{idx} = 0;
 	@{$this->{opts}} = @_;
 	bless $this, $class;
-	$this->create_hash();
+	$this->init_hash();
 	return $this;
 }
 
@@ -120,6 +120,21 @@ sub create_hash
 		$this->{db_name} . ".$chunk" : undef;
 	tie %hash, "DB_File", $filename, @{$this->{opts}};
 	push @{$this->{dbs}}, [\%hash, 0];
+}
+
+sub init_hash
+{
+	my $this = shift;
+	my $search_path = $this->{db_name} . ".*[0-9]";
+	#try loading any existing databases
+	while (my $existing_db = glob($search_path)) {
+		my %hash;
+		tie %hash, "DB_File", $existing_db, @{$this->{opts}};
+		#store existing database plus its size
+		push @{$this->{dbs}}, [\%hash, scalar(keys(%hash))];
+	}
+	#if no previous database found, create a new one
+	$this->create_hash() if (!scalar(@{$this->{dbs}}));
 }
 
 sub fetch_db
