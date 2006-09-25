@@ -40,7 +40,7 @@ then
 		id_to_fetch=`grep "${prot_id//\./\\\.}	" $id_map | cut -f2`
 	fi
 else
-	id_to_fetch=`cut -f6 $hits | sort | uniq`
+	id_to_fetch=`cut -f6 $hits | sort -u | perl -pe 's/\n/ /g'`
 fi
 
 if [ "$id_to_fetch" ]
