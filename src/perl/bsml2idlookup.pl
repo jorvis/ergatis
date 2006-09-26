@@ -23,6 +23,7 @@ my $results = GetOptions (\%options,
                             'bsml_file|b=s',        ## deprecated
                             'bsml_dir|d=s',         ## deprecated
                             'output_file|o=s',
+                            'output_format=s', #tie[default],tab
                             'debug=s',
                             'log|l=s',
                             'output|o=s',
@@ -102,18 +103,32 @@ if ( scalar @files == 0 ) {
 my %protein_fastas = ();
 my %lookup;
 
-$DB_BTREE->{'cachesize'} = 100000000;	
-unlink $options{'output'};
-my $dbtie = tie %lookup, 'DB_File', $options{'output'},  O_RDWR|O_CREAT, 0660, $DB_BTREE 
-    or $logger->logdie("Can't tie $options{'output'}");
+if($options{output_format} eq 'tie'){
+    $DB_BTREE->{'cachesize'} = 100000000;	
+    unlink $options{'output'};
+    my $dbtie = tie %lookup, 'DB_File', $options{'output'},  O_RDWR|O_CREAT, 0660, $DB_BTREE 
+	or $logger->logdie("Can't tie $options{'output'}");
+}
+elsif($options{output_format} eq 'tab'){
+    open OUTFILE,">$options{'output'}" or $logger->logdie("Can't open output file $options{'output'}");
+}
+else{
+    $logger->logdie("Invalid output format $options{output_format}. Valid formats are 'tie' and 'tab'");
+}
 
 my $currid;
 my $currclass;
+my $is_tiedoutput = ($options{output_format} eq 'tie') ? 1 : 0;
 
 my $funcs = {'Feature'=>
 		 sub {
 		     my ($expat,$elt,%params) = @_;
-		     $lookup{$params{'id'}} = $currid;
+		     if($is_tiedoutput){
+			 $lookup{$params{'id'}} = $currid;
+		     }
+		     else{
+			 print OUTFILE "$params{'id'} $currid\n";
+		     }
 		 },
 	     'Sequence'=>
 		 sub {
@@ -153,6 +168,10 @@ if ($options{fasta_list}){
     }
 }
 
+if($options{output_format} eq 'tab'){
+    close OUTFILE;
+}
+
 sub add_file {
     ## adds a file to the list of those to process, checking to make sure it
     #  exists and is populated.
@@ -184,6 +203,13 @@ sub check_parameters {
     ## output is required
     unless ( $options{output} ) {
         $logger->logdie("You must specify an output directory or file with --output");
+    }
+
+    if(!exists $options{output_format}){
+	$options{output_format} = 'tie';
+    }
+    else{
+	$logger->logdie("Invalid output format $options{output_format}. Valid formats are 'tie' and 'tab'") if($options{output_format} ne 'tie' && $options{output_format} ne 'tab');
     }
 
     if(0){
