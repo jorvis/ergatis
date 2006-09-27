@@ -11,8 +11,8 @@ use IO::File;
 use Blast::BlastHitDataType;
 
 my %p_values	=	();
-my $praze_btab	=	new IO::File->fdopen(fileno(STDIN), "r");
-my $out		=	new IO::File->fdopen(fileno(STDOUT), "w");
+my $praze_btab	=	*STDIN;
+my $out		=	*STDOUT;
 
 &parse_options;
 &add_pvalues;
@@ -33,10 +33,10 @@ sub parse_options
 		   "output|o=s", "help|h");
 	print_usage if $opts{help};
 	initialize_pvalues($opts{blast_btab}) if $opts{blast_btab};
-	$praze_btab->open($opts{praze_btab}) or
+	$praze_btab = new IO::File($opts{praze_btab}) or
 		die "Error reading praze btab data $opts{praze_btab}: $!"
 		if $opts{praze_btab};
-	$out->open($opts{output}, "w") or
+	$out = new IO::File($opts{output}, "w") or
 		die "Error writing to $opts{output}: $!"
 		if $opts{output};
 }

@@ -95,8 +95,8 @@ my $max_pval			= 1;
 my $max_num_hits		= POSIX::INT_MAX;
 my $max_num_hits_per_region	= 0;
 my $min_num_experimental	= 0;
-my $in				= new IO::File->fdopen(0, "r");
-my $out				= new IO::File->fdopen(1, "w");
+my $in				= *STDIN;
+my $out				= *STDOUT;
 my @hits			= ();
 
 &get_options;
@@ -120,8 +120,12 @@ sub get_options
 		   "min_num_experimental|V=i",
 		   "help|h") or &print_usage;
 	&print_usage if $opts{help};
-	$in->open($opts{input}, "r") if $opts{input};
-	$out->open($opts{output}, "w") if $opts{output};
+	$in = new IO::File($opts{input}, "r") ||
+		die "Error accessing input $opts{input}: $!"
+		if $opts{input};
+	$out = new IO::File($opts{output}, "w") ||
+		die "Error writing output $opts{output}: $!"
+		if $opts{output};
 	$min_bit_score = $opts{min_bit_score} if defined $opts{min_bit_score};
 	$min_raw_score = $opts{min_raw_score} if defined $opts{min_raw_score};
 	$min_pct_id = $opts{min_pct_id} if defined $opts{min_pct_id};
