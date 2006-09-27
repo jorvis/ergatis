@@ -479,17 +479,19 @@ sub process_sequences{
 
     my $fastafiles = {};
     foreach my $sequenceid (sort {$a cmp $b} keys %$sequencelookup){
-	if(exists $sequencelookup->{$sequenceid}){
+	if(exists $sequencelookup->{$sequenceid}->{'fasta_file'}){
 	    if(! exists $fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}}){
 		$fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}} = [];
 	    }
 	    push @{$fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}}},$sequenceid;
 	}
 	else{
-	    #seq-data
-	    #print fasta record formatted as fasta
-	    &write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
-			    $sequencelookup->{$sequenceid}->{'title'},$sequencelookup->{$sequenceid}->{'seqdata'});
+	    if(exists $sequencelookup->{$sequenceid}->{'seqdata'}){
+		#seq-data
+		#print fasta record formatted as fasta
+		&write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
+				$sequencelookup->{$sequenceid}->{'title'},$sequencelookup->{$sequenceid}->{'seqdata'});
+	    }
 	}
     }
 
@@ -756,6 +758,7 @@ sub parse_multi_fasta {
     }
     my $fasta_dir = substr( $fasta_file, 0, $posMax ); 
     #Get fasta index
+
     my $indexer = BSML::Indexer::Fasta->new($fasta_file, $fasta_dir);
     # Check the health of the various indices for the data file.
     my @check = $indexer->check_indices;
