@@ -115,8 +115,18 @@
         </command>
         <command>    
             <type>RunUnixCommand</type>
+            <name>Drop all chado_mart views</name>
+            <configMapId>drop_all_chado_mart_views</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
             <name>Create all tables</name>
             <configMapId>create_all_tables</configMapId>
+        </command>
+        <command>    
+            <type>RunUnixCommand</type>
+            <name>Create all chado_mart views</name>
+            <configMapId>create_all_chado_mart_views</configMapId>
         </command>
         <command>    
             <type>RunUnixCommand</type>
