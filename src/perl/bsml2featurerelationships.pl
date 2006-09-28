@@ -32,12 +32,12 @@ my $results = GetOptions (\%options,
                             'bsml_list|s=s',
                             'bsml_file|b=s',        ## deprecated
                             'bsml_dir|d=s',         ## deprecated
-			    'output_order|t=s',    #eg. "polypeptide,cds". default alphabetical
-			    'add_assembly',
+                            'output_order|t=s',     #eg. "polypeptide,cds". default alphabetical
+                            'add_assembly|a=s',
                             'debug=s',
                             'log|l=s',
                             'output|o=s',
-			    'fasta_list=s',
+                            'fasta_list=s',
                             'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
@@ -175,8 +175,10 @@ for my $file ( @files ) {
     $x->parsefile( $file );
 }
 
+print "Opened the output file for writing\n";
 open OUTFILE,">$options{'output'}" or $logger->logdie("Can't open output file $options{'output'}");
 
+print "There are ".@groups." groups\n";
 foreach my $group (@groups){
     my @outline;
     my @types = keys %$group;
@@ -199,6 +201,7 @@ foreach my $group (@groups){
     if(exists $lookup{$vals[0]} && $options{add_assembly}){
 	push @outline,$lookup{$vals[0]};
     }
+    print "Printing to file\n";
     print OUTFILE join("\t",@outline),"\n";
 }
 close OUTFILE;
