@@ -1,12 +1,13 @@
 package Split_DB_File;
 
 use warnings;
+use strict;
 
 use DB_File;
 
 require Exporter;
 
-push @ISA, qw(Exporter);
+push @DB_File::ISA, qw(Exporter);
 
 our @EXPORT = @DB_File::EXPORT;
 
@@ -63,9 +64,9 @@ sub DELETE
 sub CLEAR
 {
 	my $this = shift;
-	foreach my $db (@{$this->{$db}}) {
-		foreach my $key (keys %{$db}) {
-			delete $db->{$key};
+	foreach my $db (@{$this->{dbs}}) {
+		foreach my $key (keys %{$db->[0]}) {
+			delete $db->[0]->{$key};
 		}
 	}
 }
