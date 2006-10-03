@@ -7,7 +7,7 @@ use DB_File;
 
 require Exporter;
 
-push @DB_File::ISA, qw(Exporter);
+our @ISA = qw(Exporter);
 
 our @EXPORT = @DB_File::EXPORT;
 
