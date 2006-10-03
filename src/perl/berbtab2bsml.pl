@@ -30,7 +30,16 @@ B<--btab_dir,-b> [REQUIRED] Dir containing btab files
 
 =item *
 
-B<--max_hsp_count,-m> [REQUIRED] Maximum number of HSPs stored per alignment
+B<--max_hsp_count> [REQUIRED] Maximum number of HSPs stored per alignment
+
+=item *
+
+B<--gzip_output> [OPTIONAL] A non-zero value will result in compressed bsml output.  A .gz
+    extension will be added to the output file name if it doesn't already exist.
+
+=item *
+
+B<--query_file_path,-q> [OPTIONAL] The input fasta file to ber.
     
 =item *
 
@@ -65,16 +74,17 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 use Workflow::IdGenerator;
-use DB_File;
 
 my %lookupDb;
 my %options = ();
+my $gzip = 0;
 my $results = GetOptions (\%options, 
 			  'btab_dir|b=s', 
 			  'btab_file|f=s',
 			  'bsml_dir|d=s', 
-              'lookup_db=s',
+              'mapping_file=s',
 			  'output|o=s', 
+              'gzip_output=s',
 			  'max_hsp_count|m=s',
 			  'pvalue|p=s', 
 			  'log|l=s',
@@ -219,11 +229,21 @@ sub check_parameters{
 	exit 5;
     } 
 
-    unless($options{'lookup_db'}) {
-        $logger->logdie("lookup_db option is required.  (Created by prepare_ber_extended_nt_db)");
+    unless($options{'mapping_file'}) {
+        $logger->logdie("mapping_file option is requred.");
+    } else {
+        $logger->logdie("Mapping_file ($options{mapping_file} does not exist")
+            unless(-e $options{'mapping_file'});
+        open(IN, "<", $options{'mapping_file'}) or 
+            $logger->logdie("Unable to open mapping file $options{mapping_file} ($!)");
+        while( my ($prot, $cds, $asm) = split(/\t/, <IN>) ) {
+            chomp($asm);
+            $lookupDb{$cds} = $asm;
+        }
+
+        close(IN);
     }
-    tie(%lookupDb, 'DB_File', $options{'lookup_db'}) or
-        $logger->logdie("Could not tie hash to $options{'lookup_db'}.  ($!)");
+  
 
     unless($options{'project'}) {
         $logger->logdie("Option project was no specified");
@@ -251,7 +271,6 @@ sub createAndAddFrameshift {
 
     my $seqId = $lookupDb{$modelId};
     my $seq;
- 
 
     #Check to see if the sequence has already been added.
     unless( $doc->returnBsmlSequenceByIDR( $seqId ) ){
@@ -336,8 +355,8 @@ sub createAndAddBtabLine {
 
 	    $seq_run->setattr( 'runscore', $args{'bit_score'} )                                  if (defined ($args{'bit_score'}));
 	    $seq_run->setattr( 'runprob', $args{'e_value'} )                                     if (defined ($args{'e_value'}));
-        $seq_run->setattr( 'class', 'match_part' );
 
+        $seq_run->addBsmlAttr( 'class', 'match_part' );
 	    $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
 	    $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
 	    $seq_run->addBsmlAttr( 'chain_number', $args{'chain_number'} )                       if (defined ($args{'chain_number'}));
@@ -408,8 +427,8 @@ sub createAndAddBtabLine {
     
     $seq_run->setattr( 'runscore', $args{'bit_score'} )                                    if (defined  ($args{'bit_score'}));
     $seq_run->setattr( 'runprob', $args{'e_value'} )                                       if (defined  ($args{'e_value'}));
-    $seq_run->setattr( 'class', 'match_part' );
 
+    $seq_run->addBsmlAttr( 'class', 'match_part');
     $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
     $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));
     $seq_run->addBsmlAttr( 'chain_number', $args{'chain_number'} )                         if (defined  ($args{'chain_number'}));
