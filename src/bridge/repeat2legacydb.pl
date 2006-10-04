@@ -303,7 +303,7 @@ sub check_parameters {
     
     ## database and input_list are required
     unless ( defined $options{database} && $options{input_list} && $options{repeat_file} ) {
-        print STDERR "database and input_list options are required\n\n";
+        print STDERR "database, input_list and repeat_file options are required\n\n";
         pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
     }
     
