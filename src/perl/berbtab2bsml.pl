@@ -153,7 +153,7 @@ sub parse_ber_btabs {
 	    next if($btab[3] ne 'praze');
 	    next if( !($btab[13] > 0) || !($btab[14] > 0) );
 	    next if(!$btab[0] or !$btab[5]);
-	    $btab[5] =~ s/\|//g;   #get rid of trailing |
+	    #$btab[5] =~ s/\|//g;   #get rid of trailing |
 	    $query_id = $btab[0];	    
 	    my $match_name = $btab[5];
         &createAndAddFrameshift($btab[19], $btab[0]) if($btab[19]);
@@ -319,9 +319,13 @@ sub createAndAddBtabLine {
     my %args = @_;
     my $doc = $args{'doc'};
 
-    #determine if the query name and the dbmatch name are a unique pair in the document
+    
+    my $nice_id = $args{'dbmatch_accession'};
+    $nice_id =~ s/\|/_/g;
 
-    my $alignment_pair_list = BSML::BsmlDoc::BsmlReturnAlignmentLookup( "$args{'query_name'}", "$args{'dbmatch_accession'}" );
+    #determine if the query name and the dbmatch name are a unique pair in the document
+    
+    my $alignment_pair_list = BSML::BsmlDoc::BsmlReturnAlignmentLookup( "$args{'query_name'}", "$nice_id" );
 
     my $alignment_pair = '';
     if( $alignment_pair_list )
@@ -374,9 +378,11 @@ sub createAndAddBtabLine {
 	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
 		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
+
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", '', 'aa', 'polypeptide' );
+        $seq = $doc->createAndAddSequence( "$nice_id", "$args{'dbmatch_header'}", '', 'aa', 'polypeptide' );
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $args{'dbmatch_accession'} );
     }
 
     ## see if the dbmatch_header format is recognized.  if so, add some cross-references
@@ -390,9 +396,9 @@ sub createAndAddBtabLine {
 	$alignment_pair->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
 
     $alignment_pair->setattr( 'refseq', "$args{'query_name'}" )                                 if (defined ($args{'query_name'}));
-    $alignment_pair->setattr( 'compseq', "$args{'dbmatch_accession'}" )                         if (defined ($args{'dbmatch_accession'}));
+    $alignment_pair->setattr( 'compseq', "$nice_id" )                         if (defined ($args{'dbmatch_accession'}));
     
-    BSML::BsmlDoc::BsmlSetAlignmentLookup( "$args{'query_name'}", "$args{'dbmatch_accession'}", $alignment_pair );
+    BSML::BsmlDoc::BsmlSetAlignmentLookup( "$args{'query_name'}", "$nice_id", $alignment_pair );
 
     $alignment_pair->setattr( 'refxref', ':'.$args{'query_name'})        if (defined ($args{'query_name'}));                     
     $alignment_pair->setattr( 'refstart', 0 );
