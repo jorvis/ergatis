@@ -310,7 +310,22 @@ sub retrieve_polypeptide_pairs {
 
 	$logger->info("Processing bsml document: $bsmldoc");
 	
-	$x->parsefile( $bsmldoc );
+	if (!(-e $bsmldoc) && -e "$bsmldoc.gz") {
+            $bsmldoc .= ".gz";
+        }
+        if(-e $bsmldoc){
+            my $ifh;
+            if ($bsmldoc =~ /\.(gz|gzip)$/) {
+                open ($ifh, "<:gzip", $bsmldoc) || die "can't read input file $bsmldoc: $!";
+            } else {
+                open ($ifh, "<$bsmldoc") || die "can't read input file $bsmldoc: $!";
+            }
+            $x->parse( $ifh );
+            close $ifh;
+        }
+        else{
+        $logger->logdie("Can't read jaccard bsml file $bsmldoc");
+        }
     }
 
     &process_alignment(\@polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$pvalue,$percent_identity,$p_value) if(defined $compseq && defined $refseq);
