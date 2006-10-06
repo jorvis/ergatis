@@ -157,7 +157,23 @@ for my $file ( @files ) {
 				    }
 				}
 			    );
-    $x->parsefile( $file );
+    
+    if (!(-e $file) && -e "$file.gz") {
+	$file .= ".gz";
+    }
+    if(-e $file){
+	my $ifh;
+	if ($file =~ /\.(gz|gzip)$/) {
+	    open ($ifh, "<:gzip", $file) || $logger->logdie("can't read input file $file: $!");
+	} else {
+	    open ($ifh, "<$file") || $logger->logdie("can't read input file $file: $!");
+	}
+	$x->parse( $ifh );
+	close $ifh;
+    }
+    else{
+        $logger->logdie("Can't read jaccard bsml file $file");
+    }
 }
 
 if ($options{fasta_list}){
