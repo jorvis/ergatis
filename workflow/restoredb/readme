@@ -1,0 +1,56 @@
+The restoredb workflow component is executed when we need to restore a
+chado database from BCP files.
+
+The workflow will execute the following atomic steps:
+
+mkdir_compute_scratch
+mkdir_revoke_permissions
+mkdir_drop_tables
+mkdir_create_tables
+mkdir_partition_tables
+mkdir_load_tables
+mkdir_create_indices
+mkdir_grant_permissions
+revoke_permissions
+drop_tables
+create_tables
+partition_tables
+load_tables
+create_indices
+grant_permissions
+
+The mkdir_* steps simply create directories for capturing the stdout, stderr
+and log files produced when the main steps are executed.
+
+revoke_permissions will read the appropriate DDL and execute statements that
+will revoke all permissions on all chado tables to public.
+
+drop_tables will read the appropriate DDL and execute statements that will
+result in all tables being dropped.
+
+create_tables will read the appropriate DDL and execute statements that will
+result in the creation of all tables.
+
+partition_tables will read the appropriate DDL and execute statements that will
+result in the partitioning of select chado tables.
+
+load_tables will result in the invocation of chadoloader.pl.  This script will
+load the contents of the BCP files into the target chado database using the 
+appropriate bulkcopy mechanisms available.
+
+create_indices will read the appropriate DDL and execute statements that will
+result in the creation of all indices and constraints for all chado tables.
+
+grant_permissions will read the appropriate DDL and execute statements that
+will grant all permissions on all chado tables to public.
+
+One of the notable features of the restoredb workflow is that the particular
+chado database/project can be changed to another chado version e.g. from
+chado-v1r7b1 to chado-v1r8b1.  This is accomplished by setting the 
+input workflow component variable $;CHADO_SCHEMA_VERSION$;.
+Immediately following the execution of this workflow, the project's
+sharedconf.ini should point to the CHADO_SCHEMA_VERSION directory.
+
+To-do:
+Workflow testing.  These steps have been executed as part of other workflow components.
+PostgreSQL Prism API support for sql2Chado.pl and chadoloader.pl.
