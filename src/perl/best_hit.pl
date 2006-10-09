@@ -21,7 +21,7 @@ no lib ".";
 # other proteins in that input cluster will be added to the 
 # output also.
 
-require "getopts.pl";
+use Getopt::Std;
 $usage = <<_MESSAGE_;
 Usage:
 best_hit.pl [options] > output_file
@@ -29,21 +29,29 @@ best_hit.pl [options] > output_file
     -h     help                                    print this message
     -c     cutoff             default = 0.0001     best hits with an e-value above this cutoff will be ignored
     -i     input file                              input btab file
+    -j     Jaccard coefficient cutoff	default = 0.5
 _MESSAGE_
 
-&Getopts('Dhi:c:');
-die "$usage\n" if ($opt_h == 1);
+#jaccard cutoff to cut edges
+my $jc_cutoff = 0.5;
 
-$DEBUG = $opt_D;
+my %opts = ();
+&getopts('Dhi:c:j:', \%opts);
 
-$cutoff = (length($opt_c) == 0) ? 0.0001 : $opt_c;
+$jc_cutoff = $opts{j} if defined $opts{j};
+
+die "$usage\n" if ($opts{h} == 1);
+
+$DEBUG = $opts{D};
+
+$cutoff = (length($opts{c}) == 0) ? 0.0001 : $opts{c};
 
 $DEBUG && print ("DEBUG is ON, cutoff is $cutoff\n");
 
 my %jaccard;
 
 ## open the input btab file
-open(my $ifh, "<$opt_i") || die "can't open input file: $!";
+open(my $ifh, "<$opts{i}") || die "can't open input file: $!";
 
 # first load all the best hits data
 while ($btab = <$ifh>) {
@@ -89,9 +97,16 @@ local (%cogs) = ();
 local ($next_cog) = 1;
 local (%prot2cog) = ();
 
+my %bidirect_best_hits = ();
+
 foreach $bidirect (keys(%all_best_hits))        {
   if ($all_best_hits{$bidirect}->{'to_score'} && $all_best_hits{$bidirect}->{'from_score'})     {
       ($front, $back) = split (/\.\./,$bidirect);
+
+	#store bidirectional best hits edge information
+	push @{$bidirect_best_hits{$front}}, $back;
+	push @{$bidirect_best_hits{$back}}, $front;
+      
       ($found1, $found2) = &search_cogs(\%cogs, \%prot2cog, $front, $back);
     if ($found2 > $found1) {       # make sure $found2 < $found1
         ($found1, $found2) = ($found2, $found1);
@@ -121,24 +136,26 @@ foreach $bidirect (keys(%all_best_hits))        {
 
 $DEBUG && print ("============================\n");
 
+#id for each cog
+my $cog_id = 0;
+
 foreach $key (keys %cogs)      {
     $n =  $cogs{$key}->{'size'};
     $perfect = $n * ($n - 1) / 2;
     # JC: note that the reported size does NOT include any Jaccard members that get printed below.
     # Don't want to change this without first checking that no downstream analysis relies on the incorrect counts.
-    print("COG = $key, size $n, connections = $cogs{$key}->{'connectivity'}, perfect = $perfect;\n");
     *return_array = $cogs{$key}->{'listPtr'};
-    foreach $term (sort @return_array)    {
-	if(exists $jaccard{$term}){
-	    my @jmembers = split(/\,/,$jaccard{$term});
-	    foreach my $member (@jmembers){
-		print "\t$member\n";
+    my %subclusters = ();
+    #remove any edges that do not pass $jc_cutoff
+    foreach my $term (sort @return_array) {
+	    foreach my $neighbor (@{$bidirect_best_hits{$term}}) {
+		    my $jc = get_jc_score($term, $neighbor);
+		    push @{$subclusters{$term}}, $neighbor
+			    if $jc >= $jc_cutoff;
 	    }
-	}
-	else{
-	    print "\t$term\n";
-	}
     }
+    #print each subcluster
+    print_subclusters(\%subclusters, \$cog_id);
 
     # HERE, COULD TEST CLOSURE UNDER TRANSITIVITY
 
@@ -207,11 +224,64 @@ sub merge_cogs {
     delete $cogs->{$key2};
 }
 
+#calculate the Jaccard coefficient for each pair of neighboring nodes
+sub get_jc_score
+{
+	my ($id1, $id2) = @_;
+	my %intersect = ();
+	my %union = ($id1 => 1, $id2 => 1);
+	foreach my $neighbor (@{$bidirect_best_hits{$id1}}) {
+		++$intersect{$neighbor} if defined $union{$neighbor};
+		++$union{$neighbor};
+	}
+	foreach my $neighbor (@{$bidirect_best_hits{$id2}}) {
+		++$intersect{$neighbor} if defined $union{$neighbor};
+		++$union{$neighbor};
+	}
+	return scalar(keys(%intersect)) / scalar(keys(%union));
+}
 
+#print each subcluster
+sub print_subclusters
+{
+	my ($subclusters, $cog_id) = @_;
+	my %written = ();
+	foreach my $key (keys %$subclusters) {
+		next if defined $written{$key};
+		my $size = 0;
+		my $num_edges = 0;
+		my @nodes = ();
+		++$$cog_id;
+		process_subcluster($key, $subclusters, \%written, \$num_edges,
+				\$size, \@nodes);
+		print "COG = $$cog_id, size $size, connections = $num_edges, ",
+		      "perfect = ", ($size * ($size - 1) / 2), ";\n";
+		foreach my $node (@nodes) {
+			if (exists $jaccard{$node}) {
+				my @members = split /\,/, $jaccard{$node};
+				foreach my $member (@members) {
+					print "\t$member\n";
+				}
+			}
+			else {
+				print "\t$node\n";
+			}
+		}
+	}
+}
 
-
-
-
-
-
-
+#do a depth-first (recursive) traversal of each subcluster
+sub process_subcluster
+{
+	my ($key, $subclusters, $written, $num_edges, $size, $nodes) = @_;
+	return if defined $$written{$key};
+	push @$nodes, $key;
+	++$$size;
+	++$$written{$key};
+	my $subcluster = $subclusters->{$key};
+	$$num_edges += scalar(@{$subcluster}) / 2;
+	foreach my $neighbor (@{$subcluster}) {
+		process_subcluster($neighbor, $subclusters, $written,
+				$num_edges, $size, $nodes);
+	}
+}
