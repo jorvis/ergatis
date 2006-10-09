@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>restoredb workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_compute_scratch</name>
+         <configMapId>mkdir_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_revoke_permissions</name>
+          <configMapId>mkdir_revoke_permissions</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_drop_tables</name>
+          <configMapId>mkdir_drop_tables</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_create_tables</name>
+          <configMapId>mkdir_create_tables</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_partition_tables</name>
+          <configMapId>mkdir_partition_tables</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_load_tables</name>
+          <configMapId>mkdir_load_tables</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_create_indices</name>
+          <configMapId>mkdir_create_indices</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mkdir_grant_permissions</name>
+          <configMapId>mkdir_grant_permissions</configMapId>
+        </command>
+<!--Preprocess permissions-->
+        <command>    
+           <type>RunUnixCommand</type>
+           <name>revoke_permissions</name>
+           <configMapId>revoke_permissions</configMapId>
+        </command>   
+<!--Preprocessing-->
+<!--Processing-->
+        <command>    
+           <type>RunUnixCommand</type>
+           <name>drop_tables</name>
+           <configMapId>drop_tables</configMapId>
+        </command>   
+        <command>    
+           <type>RunUnixCommand</type>
+           <name>create_tables</name>
+           <configMapId>create_tables</configMapId>
+        </command>   
+        <command>    
+           <type>RunUnixCommand</type>
+           <name>partition_tables</name>
+           <configMapId>partition_tables</configMapId>
+        </command>   
+        <command>    
+           <type>RunUnixCommand</type>
+           <name>load_tables</name>
+           <configMapId>load_tables</configMapId>
+        </command>
+        <command>    
+	   <type>RunUnixCommand</type>
+           <name>create_indices</name>
+           <configMapId>create_indices</configMapId>
+        </command>   
+<!--Postprocessing-->
+<!--Checksum creation-->
+<!--Postprocess permissions-->
+        <command>    
+           <type>RunUnixCommand</type>
+           <name>grant_permissions</name>
+           <configMapId>grant_permissions</configMapId>
+        </command>   
+     </commandSet>
+</commandSetRoot>
+
+
