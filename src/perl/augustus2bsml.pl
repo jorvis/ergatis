@@ -13,6 +13,7 @@ augustus2bsml.pl - convert augustus GFF (modified) output to BSML
 USAGE: augustus2bsml.pl 
         --input=/path/to/augustus.output.file.raw 
         --output=/path/to/output.bsml
+        --id_repository=/path/to/someids
       [ --project=aa1 
         --fasta_file=/path/to/somefile.fsa 
       ]
@@ -32,6 +33,11 @@ B<--fasta_file,-f>
 B<--project,-p> 
     Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
     not passed.
+
+B<--id_repository,-r>
+    Required for creating feature identifiers.  Each project should have
+    its own id_repository directory - use the full path to it here.  This
+    is used by the IdGenerator.pm module.
 
 B<--log,-l> 
     Log file
@@ -101,8 +107,8 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Workflow::Logger;
+use Workflow::IdGenerator;
 use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
@@ -112,9 +118,8 @@ my $results = GetOptions (\%options,
               'output|o=s',
               'fasta_file|f=s',
               'project|p=s',
+              'id_repository|r=s',
               'log|l=s',
-              'command_id=s',       ## passed by workflow
-              'logconf=s',          ## passed by workflow (not used)
               'debug=s',
 			  'help|h') || pod2usage();
 
@@ -135,7 +140,7 @@ if( $options{'help'} ){
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+my $idcreator = new Workflow::IdGenerator( id_repository => $options{id_repository} );
 
 ## different versions of augustus have treated stop codons differently.  only some include
 ##  the stop codon as part of the sequence range.  toggle this to 1 if you want the terminal
@@ -165,6 +170,10 @@ while (<$ifh>) {
     ##  explicit groupings in the last column.
     next if ($cols[2] eq 'gene' || $cols[2] eq 'transcript');
     
+    ## skip the 'tts' and 'tss' features.  they don't even have the correct
+    ## number of columns.
+    next if ($cols[2] eq 'tts' || $cols[2] eq 'tss');
+    
     ## has the sequence been defined yet?  it's in the first column
     ##  this should happen on the first row only
     unless ($seq_id) {
@@ -186,7 +195,7 @@ while (<$ifh>) {
     if ($cols[8] =~ /transcript_id \".+\"\; gene_id \"(.+)\"/) {
         $current_group_name = $1;
     } else {
-        $logger->logdie("column 9 on line $. in unrecognized format");
+        $logger->logdie("column 9 on line $. in unrecognized format ($cols[8])");
     }
 
     ## if column 9 (group) is defined and is different than the last one we need to
@@ -212,19 +221,29 @@ while (<$ifh>) {
         $logger->logdie("unknown value ($cols[6]) in strand column.  expected + or -.");
     }
     
-
     ## handle each of the types we know about
     if ($cols[2] eq 'initial' || $cols[2] eq 'internal' || $cols[2] eq 'terminal' || $cols[2] eq 'single') {
         &add_feature('exon', $cols[3], $cols[4], $cols[6] );
+
     } elsif ($cols[2] eq 'intron') {
         &add_feature('intron', $cols[3], $cols[4], $cols[6] );
+
     } elsif ($cols[2] eq 'CDS') {
         #&add_feature('CDS', $cols[3], $cols[4], $cols[6] );
         push @cds, [ 'CDS', $cols[3], $cols[4], $cols[6] ];
+
     } elsif ($cols[2] eq 'start_codon') {
         &add_feature('start_codon', $cols[3], $cols[4], $cols[6] );
+
     } elsif ($cols[2] eq 'stop_codon') {
         &add_feature('stop_codon', $cols[3], $cols[4], $cols[6] );
+
+    } elsif ($cols[2] eq "3'-UTR") {
+        &add_feature('three_prime_UTR', $cols[3], $cols[4], $cols[6] );
+
+    } elsif ($cols[2] eq "5'-UTR") {
+        &add_feature('five_prime_UTR', $cols[3], $cols[4], $cols[6] );
+
     } else {
         $logger->logdie("unrecognized type: $cols[2]");
     }
@@ -248,19 +267,19 @@ exit;
 sub add_feature {
     my ($type, $start, $stop, $strand) = @_;
     
-    $id = $idcreator->new_id( db => $options{project}, so_type => $type, prefix => $options{command_id} );
-    $thing = $doc->createAndAddFeature( $ft, $id, '', $idcreator->so_used($type) );
+    $id = $idcreator->next_id( project => $options{project}, type => $type );
+    $thing = $doc->createAndAddFeature( $ft, $id, '', $type );
     $thing->addBsmlLink('analysis', '#augustus_analysis', 'computed_by');
     $thing->addBsmlIntervalLoc($start, $stop, $strand);
 
-    $fg->addBsmlFeatureGroupMember( $id, $idcreator->so_used($type) );
+    $fg->addBsmlFeatureGroupMember( $id, $type );
     
     ## if type is a primary_transcript we need to add a gene too
     if ($type eq 'primary_transcript') {
-        $thing = $doc->createAndAddFeature( $ft, $current_transcript_id, '', $idcreator->so_used('gene') );
+        $thing = $doc->createAndAddFeature( $ft, $current_transcript_id, '', 'gene' );
         $thing->addBsmlLink('analysis', '#augustus_analysis', 'computed_by');
         $thing->addBsmlIntervalLoc($start, $stop, $strand);
-        $fg->addBsmlFeatureGroupMember( $current_transcript_id, $idcreator->so_used('gene') );
+        $fg->addBsmlFeatureGroupMember( $current_transcript_id, 'gene' );
     }
 }
 
@@ -301,21 +320,32 @@ sub add_feature_group {
     }
 
     ## pull a new gene id
-    $current_transcript_id = $idcreator->new_id( db      => $options{project},
-                                                 so_type => 'gene',
-                                                 prefix  => $options{command_id}
+    $current_transcript_id = $idcreator->next_id( project => $options{project},
+                                                 type    => 'gene',
                                                );
     $fg = $doc->createAndAddFeatureGroup( $seq, '', $current_transcript_id );
 }
 
 sub check_parameters {
     
+    ## required params
+    my @required = qw( input id_repository );
+    for ( @required ) {
+        if (! defined $options{$_}) {
+            $logger->logdie( "$_ is a required option" );
+        }
+    }
+    
     ## make sure input file exists
     if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
     
+    ## id repository passed must exist
+    if (! -d $options{id_repository}) {
+        $logger->logdie("id repository passed ($options{id_repository}) doesn't exist or is not a directory.");
+    }
+    
     $options{'fasta_file'} = '' unless ($options{'fasta_file'});
     $options{'project'}    = 'unknown' unless ($options{'project'});
-    $options{'command_id'} = '0' unless ($options{'command_id'});
     
     return 1;
 }
