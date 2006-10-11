@@ -137,7 +137,7 @@ while (my $infile = <$listfh>) {
     ## make sure there is a directory for this asmbl id
     if (! -d "$options{repository_root}/asmbls/$asmblid" ) {
         ## we want this to die, since this should have been made already and
-        ## may indicate a problem.
+        ## may indicate a problem.  the $EGC_SCRIPTS/ensure_asmbl_dir.dbi
         _log("ERROR: no asmbl directory found for $asmblid, expected $options{repository_root}/asmbls/$asmblid");
         exit(1);
     }
@@ -208,6 +208,10 @@ while (my $infile = <$listfh>) {
     ## open the input and output files.  how we open the input file depends on whether
     ## it is compressed.
     my $ifh;
+    if ( ! -e $infile && -e "$infile.gz" ) {
+        $infile .= '.gz';
+    }
+    
     if ($infile =~ /\.(gz|gzip)$/) {
         open ($ifh, "<:gzip", $infile) || die "can't read input file $infile: $!";
     } else {
