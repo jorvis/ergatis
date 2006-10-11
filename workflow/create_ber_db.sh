@@ -37,7 +37,7 @@ then
 	prot_id=`cut -f1 $hits | head -1`
 	if [ $prot_id ]
 	then
-		id_to_fetch=`grep "${prot_id//\./\\\.}	" $id_map | cut -f2`
+		id_to_fetch=`grep "${prot_id//\./\\\.}	" $id_map | cut -f2 | sort -u`
 	fi
 else
 	id_to_fetch=`cut -f6 $hits | sort -u | perl -pe 's/\n/ /g'`
