@@ -53,5 +53,5 @@ then
 		exit $ec
 	fi
 else
-	touch $out
+	exit 1
 fi
