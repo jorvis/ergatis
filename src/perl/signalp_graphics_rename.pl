@@ -249,8 +249,14 @@ sub check_parameters{
     }
     
     ## make sure the input path exists
-    if (! -d $options{'path'}){
-        $logger->logdie("input path $options{path} doesn't exist");
+    if (! -d $options{'input_path'}){
+        $logger->logdie("input path $options{input_path} doesn't exist");
+    }
+    
+
+    ## make sure the input path exists
+    if (! -d $options{'output_path'}){
+        $logger->logdie("output path $options{output_path} doesn't exist");
     }
     
     ## handle some defaults
