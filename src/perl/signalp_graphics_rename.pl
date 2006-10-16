@@ -237,8 +237,11 @@ exit(0);
 sub check_parameters{
     my ($options) = @_;
     
-    if ($options{'path'} eq ""){
-        pod2usage({-exitval => 2,  -message => "--path option missing", -verbose => 1, -output => \*STDERR});    
+    if ($options{'input_path'} eq ""){
+        pod2usage({-exitval => 2,  -message => "--input_path option missing", -verbose => 1, -output => \*STDERR});    
+    }
+    if ($options{'output_path'} eq ""){
+        pod2usage({-exitval => 2,  -message => "--output_path option missing", -verbose => 1, -output => \*STDERR});    
     }
     
     if ($options{'output_prefix'} eq ""){
