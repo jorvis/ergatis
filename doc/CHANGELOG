@@ -275,3 +275,4 @@ next
 -added bsml2featurerelationships.pl component
 -added promote_gene_prediction.pl component
 -removed prepare_for_ber step from ber component.  BER component now takes a formatted nucleotide database, wu-blastp output, a mapping_file (prot, cds, asmbl), and a formatted protein database (used in the wu-blast run), which are all created outside of the core component prior to running.
+-signalp component changed to use TMP_DIR for temporary output to prevent rare error condition
