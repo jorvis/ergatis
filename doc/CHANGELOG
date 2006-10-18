@@ -268,8 +268,9 @@ ergatis-v1r21b3
 --------------
 -bugfix release for ber
 
-next
+ergatis-v1r22b1
 --------------
+-121 files, 5572 cvs diff lines
 -removed check_repository.pl because BSML_repository deprecated.
 -fixed typo ber-master.ini
 -added bsml2featurerelationships.pl component
@@ -277,8 +278,18 @@ next
 -removed prepare_for_ber step from ber component.  BER component now takes a formatted nucleotide database, wu-blastp output, a mapping_file (prot, cds, asmbl), and a formatted protein database (used in the wu-blast run), which are all created outside of the core component prior to running.
 -signalp component changed to use TMP_DIR for temporary output to prevent rare error condition
 -corrections in targetP legacy loader
--multiple alignment table now has class match (none previously)
+-multiple alignment tables now have class match (none previously)
 -changed augustus2bsml to support new output features.  now uses IdGenerator
 -blast alignment tables changed to classes 'match' and 'match_part'
 -blast output now includes Attribute element with name=defline
-
+-changed best_hit.pl to support Jaccard coefficient score edge pruning
+-bsml2fasta performance changes
+-bsml2idlookup.pl now supports tabbed output and gzipped bsml parsing
+-supercontig documents now have match and match_part classes in alignment sections
+-gap22bsml, nap2bsml now have gzip input/output support
+-hmmpfam2bsml, hmmpir2bsml, panther2bsml have gzip input support, fasta SeqDataImport linking
+-infernal2bsml, iprscan2bsml, pe2bsml, tiling2bsml, trf2bsml have gzip output support, creates defline Attribute entries
+-code cleanup in the test suite, updates of default component confs
+-legacy2bsml now has support for filtering by model list file
+-initdb component changed to add chado_mart object manipulation support
+-clustalw now points at custom version allowing longer sequence IDs
