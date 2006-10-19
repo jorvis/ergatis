@@ -293,3 +293,7 @@ ergatis-v1r22b1
 -legacy2bsml now has support for filtering by model list file
 -initdb component changed to add chado_mart object manipulation support
 -clustalw now points at custom version allowing longer sequence IDs
+
+next
+----
+-fixed ber bug preventing model coordinate extraction on assemblies over 30mb
