@@ -378,14 +378,14 @@ sub do_extract_from_legacy {
 
     ## set textsize to maximum length of assemblies
     my $max_ln_txt;
-    my $query = "SELECT MAX(length) FROM clone_info WHERE is_public = 1";
+    my $query = "SELECT MAX(DATALENGTH(sequence)) FROM assembly";
     my $sth = $dbh->prepare($query);
     $sth->execute();
     $sth->bind_columns(undef, \$max_ln_txt);
     $sth->fetch();
     $sth->finish();
 
-    $max_ln_txt = 30000000;
+    #$max_ln_txt = 30000000;
     
     die "\n\nProblem fetching max sequence length from legacy db\n\n" unless defined $max_ln_txt;
     
