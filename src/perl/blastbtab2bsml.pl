@@ -164,7 +164,7 @@ sub parse_blast_btabs {
     while(my $line = <BTAB>) {
         chomp($line);
         my @btab = split("\t", $line);
-        if(($btab[20] < $options{'pvalue'}) && ($btab[0] ne "") && ($btab[5] ne "")){
+        if(($btab[20] <= $options{'pvalue'}) && ($btab[0] ne "") && ($btab[5] ne "")){
         if(!(exists $hsplookup->{$btab[0]}->{$btab[5]})){
             $hsplookup->{$btab[0]}->{$btab[5]} = [];
         }
