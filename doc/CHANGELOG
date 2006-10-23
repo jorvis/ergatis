@@ -297,3 +297,4 @@ ergatis-v1r22b1
 next
 ----
 -fixed ber bug preventing model coordinate extraction on assemblies over 30mb
+-fixed bugs with pvalue filtering and sequence stub writing in wu-blastp

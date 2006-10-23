@@ -157,10 +157,9 @@ my @hsp_ref_array;
 
 # parse each blast record:
 while( my $result = $in->next_result ) {
-    my $hit_counter = 0;
+    my $hsp_counter = 0;
     # parse each hit per record.
     while( my $hit = $result->next_hit ) {
-        $hit_counter++;
         # a hit consists of one or more HSPs
         while( my $hsp = $hit->next_hsp ) {
             my @x;
@@ -212,8 +211,9 @@ while( my $result = $in->next_result ) {
             if(($x[20] < $options{'pvalue'}) && ($x[0] ne "") && ($x[5] ne "")){
                 ## pvalue is less than cutoff parameter
                 ##      so process btab line
+                $hsp_counter++;
                 
-                if(($x[20] < $options{'pvalue'}) && ($x[0] ne "") && ($x[5] ne "")){
+                if(($x[20] <= $options{'pvalue'}) && ($x[0] ne "") && ($x[5] ne "")){
                     if(!(exists $hsplookup->{$x[0]}->{$x[5]})){
                         $hsplookup->{$x[0]}->{$x[5]} = [];
                     }
@@ -230,7 +230,7 @@ while( my $result = $in->next_result ) {
 
         }
     }
-    if ($hit_counter == 0) {
+    if ($hsp_counter == 0) {
         my $align = &createAndAddNullResult(
                                             doc             => $doc,
                                             query_name      => $result->query_name(),
