@@ -82,9 +82,9 @@ sub process_command {
         ## else it must be a parameter of the command
         } else {
             ## if the command type is RunUnixCommand and the key doesn't start with
-            ##  the string '--', we need to add it.  this should be fixed later.
+            ##  the string '-', we need to add it.  this should be fixed later.
             ##  since workflow does it, we have to do it
-            if ($type eq 'RunUnixCommand' && $key !~ /^\-\-/) {
+            if ($type eq 'RunUnixCommand' && $key !~ /^\-/) {
                 $key = '--' . $key;
             }
             
