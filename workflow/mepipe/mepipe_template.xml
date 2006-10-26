@@ -6,38 +6,38 @@
         <name>mepipe Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>mepipe_prepare_input</configMapId>
             <name>Prepare ME Pipeline Input</name>
 		</command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>mepipe_create_tree</configMapId>
             <name>Create Tree</name>
 		</command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>mepipe_run_paml_w0_1</configMapId>
 			<name>Run PAML w=0.1</name>
 		</command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>mepipe_run_paml_w1_5</configMapId>
 			<name>Run PAML w=1.5</name>
 		</command>
 	<!--
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>compress_raw_output</configMapId>
             <name>compress_raw_output</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>

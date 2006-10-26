@@ -6,17 +6,17 @@
         <name>Nucmer Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>NUCmer</configMapId>
             <name>NUCmer</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>delta-filter</configMapId>
             <name>delta-filter</name>
     	</command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>show-snps</configMapId>
             <name>show-snps</name>
     	</command>

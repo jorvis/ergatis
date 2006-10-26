@@ -7,55 +7,55 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Archive compute output</name>
          <configMapId>archive_output</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
 <!--Preprocess permissions-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Set workflowdocs permissions</name>
           <configMapId>set_workflowdocs_permissions</configMapId>
         </command>
 <!--Preprocessing-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>copy the contig file to the temp directory</name>
           <configMapId>copy_contig_to_temp</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>copy the qual file to the temp directory</name>
           <configMapId>copy_qual_to_temp</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>copy the seq file to the temp directory</name>
           <configMapId>copy_seq_to_temp</configMapId>
         </command>
 <!--Processing-->
 	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
 	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow1</configMapId>
         </command>
@@ -66,38 +66,38 @@
 <!--Postprocessing-->
 <!--Checksum creation-->
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create file list for checksums</name>
           <configMapId>create_checksum_file_list</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Generate checksums</name>
           <configMapId>create_checksum</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create file list for checksums.sum</name>
           <configMapId>create_checksum_sum_file_list</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create checksums.sum</name>
           <configMapId>create_checksum_sum</configMapId>
        </command>
 <!--Postprocess permissions-->
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Set workflowdocs permissions</name>
           <configMapId>set_workflowdocs_permissions</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Set permissions for scratch area</name>
           <configMapId>set_scratch_permissions</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Set permissions for output</name>
           <configMapId>set_output_permissions</configMapId>
        </command>

@@ -6,82 +6,82 @@
         <name>aat_na_masked Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dds</configMapId>
             <name>dds</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>ext</configMapId>
             <name>ext</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>ext_collapse</configMapId>
             <name>ext_collapse</name>
         </command>    
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>filter</configMapId>
             <name>filter</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>gap2</configMapId>
             <name>gap2</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>remove_raw_dds_output</configMapId>
             <name>remove_raw_dds_output</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>remove_raw_ext_output</configMapId>
             <name>remove_raw_ext_output</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>remove_raw_ext_collapsed_output</configMapId>
             <name>remove_raw_ext_collapsed_output</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>remove_raw_filter_output</configMapId>
             <name>remove_raw_filter_output</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>touch_btab</configMapId>
             <name>touch_btab</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>gap22bsml</configMapId>
             <name>gap22bsml</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>compress_gap2_btab</configMapId>
             <name>compress_gap2_btab</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>compress_gap2</configMapId>
             <name>compress_gap2</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>compress_bsml</configMapId>
             <name>compress_bsml</name>
         </command>

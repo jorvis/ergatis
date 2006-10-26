@@ -6,7 +6,7 @@
         <name>genewise_best_loc Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>genewise</configMapId>
             <name>genewise</name>
         </command>

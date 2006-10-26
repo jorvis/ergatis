@@ -7,129 +7,129 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create cache dir space</name>
          <configMapId>create_cache_dir</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_dupdir</name>
           <configMapId>create_dupdir</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create component scratch</name>
           <configMapId>create_component_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create rel scratch</name>
           <configMapId>create_rel_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create ec scratch</name>
           <configMapId>create_ec_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create ard scratch</name>
           <configMapId>create_ard_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create evidence scratch</name>
           <configMapId>create_evidence_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create goprop scratch</name>
           <configMapId>create_goprop_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create tigr scratch</name>
           <configMapId>create_tigr_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create anno scratch</name>
           <configMapId>create_anno_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create annotation flags scratch</name>
           <configMapId>create_annflg_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create gff3 scratch</name>
           <configMapId>create_gff3_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create so scratch</name>
           <configMapId>create_so_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create so-aux scratch</name>
           <configMapId>create_so_aux_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create go scratch</name>
           <configMapId>create_go_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_tigr_schemas_scratch</name>
           <configMapId>create_tigr_schemas_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output scratch</name>
           <configMapId>create_output_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create final scratch</name>
           <configMapId>create_final_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create relationship aux</name>
           <configMapId>create_rel_aux_scratch</configMapId>
         </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Drop all tables</name>
             <configMapId>drop_all_tables</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Drop all chado_mart views</name>
             <configMapId>drop_all_chado_mart_views</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Create all tables</name>
             <configMapId>create_all_tables</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Create all chado_mart views</name>
             <configMapId>create_all_chado_mart_views</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Partition tables</name>
             <configMapId>partition</configMapId>
         </command>
@@ -137,202 +137,202 @@
 <!--Processing steps-->
 <!-- TIGR_roles ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>load_pub_table</name>
             <configMapId>load_pub_table</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Relation Typedef Ontology</name>
             <configMapId>parse_rel_onto</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Load Relation Typedef Ontology</name>
             <configMapId>load_rel_onto</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Auxiliary Relation Typedef Ontology</name>
             <configMapId>parse_aux_rel_onto</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Load Auxiliary Relation Typedef Ontology</name>
             <configMapId>load_aux_rel_onto</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Restore indexes constraints</name>
             <configMapId>rebuild_indexes1</configMapId>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>File-cache the queries</name>
             <configMapId>cache_queries</configMapId>
         </command>
 <!-- Annotation_attributes Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Annotation Ontology</name>
             <configMapId>parse_anno_onto</configMapId>
         </command>
 <!-- Annotation Flag Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Annotation Flag Ontology</name>
             <configMapId>parse_annflg_onto</configMapId>
         </command>
 <!-- gff3_attributes Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process GFF3_attributes Ontology</name>
             <configMapId>parse_gff3_onto</configMapId>
         </command>
 <!-- Component Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Component Ontology</name>
             <configMapId>parse_comp_onto</configMapId>
         </command>
 <!-- Output Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Output Ontology</name>
             <configMapId>parse_output_onto</configMapId>
         </command>
 <!-- EC Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Enzyme Commission Ontology</name>
             <configMapId>parse_ec_onto</configMapId>
         </command>
 <!-- ARD Custom Feature Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process ARD Custom Feature Ontology</name>
             <configMapId>parse_ard_onto</configMapId>
         </command>
 <!-- Evidence Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Evidence Ontology</name>
             <configMapId>parse_evidence_onto</configMapId>
         </command>
 <!-- Gene Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Gene Ontology</name>
             <configMapId>parse_go_onto</configMapId>
         </command>
 <!-- TIGR Schema Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>parse_tigr_schemas_onto</name>
             <configMapId>parse_tigr_schemas_onto</configMapId>
         </command>
 <!-- Go Properties Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process GO Properties Ontology</name>
             <configMapId>parse_go_properties_onto</configMapId>
         </command>
 <!-- Sequence Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Sequence Ontology</name>
             <configMapId>parse_so_onto</configMapId>
         </command>
 <!-- TIGR Roles Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process TIGR Roles Ontology</name>
             <configMapId>parse_tigr_onto</configMapId>
         </command>
 <!-- Duplication detection and elminitation Step -->
         <command>    
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_db</name>
           <configMapId>collate_all_bcp_files_db</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_dbxref</name>
           <configMapId>collate_all_bcp_files_dbxref</configMapId>
         </command>
         <command>    
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_dbxrefprop</name>
           <configMapId>collate_all_bcp_files_dbxrefprop</configMapId>
         </command>
           <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_pub</name>
           <configMapId>collate_all_bcp_files_pub</configMapId>
         </command>
           <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_cv</name>
           <configMapId>collate_all_bcp_files_cv</configMapId>
         </command>
           <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_cvterm</name>
           <configMapId>collate_all_bcp_files_cvterm</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_cvterm_dbxref</name>
           <configMapId>collate_all_bcp_files_cvterm_dbxref</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_cvterm_relationship</name>
           <configMapId>collate_all_bcp_files_cvterm_relationship</configMapId>
         </command>
          <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_cvtermsynonym</name>
           <configMapId>collate_all_bcp_files_cvtermsynonym</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_cvtermpath</name>
           <configMapId>collate_all_bcp_files_cvtermpath</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_cvtermprop</name>
           <configMapId>collate_all_bcp_files_cvtermprop</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>insert_serial_identifiers</name>
           <configMapId>insert_serial_identifiers</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>drop_indexes2</configMapId>
             <name>drop_indexes2</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>load_tables</configMapId>
             <name>load_tables</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>rebuild_indexes2</configMapId>
             <name>rebuild_indexes2</name>
         </command>
 <!-- Auxiliary Sequence Ontology -->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Process Auxiliary Sequence Ontology</name>
             <configMapId>parse_aux_so_onto</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>load_aux_so_onto</configMapId>
             <name>load_aux_so_onto</name>
         </command>
@@ -340,17 +340,17 @@
 <!--Checksum creation-->
 <!--Postprocess permissions-->
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>Grant public</name>
             <configMapId>grant_public</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>store_chado_version</name>
             <configMapId>store_chado_version</configMapId>
         </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Check logfiles</name>
           <configMapId>check_logfiles</configMapId>
        </command>

@@ -6,7 +6,7 @@
         <name>split_fasta Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>split_fasta</configMapId>
             <name>split_fasta</name>
         </command>

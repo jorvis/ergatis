@@ -6,72 +6,72 @@
         <name>BER Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>filter_hits</configMapId>
             <name>filter_hits</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>filter_additional_hits</configMapId>
             <name>filter_additional_hits</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>append_to_filtered_hits</configMapId>
             <name>append_to_filtered_hits</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>create_mini_db</configMapId>
             <name>create_mini_db</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>append_to_mini_db</configMapId>
             <name>append_to_mini_db</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>create_nuc_db</configMapId>
             <name>create_nuc_db</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>praze</configMapId>
             <name>praze</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>fix_praze_output</configMapId>
             <name>fix_praze_output</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>rename_fixed_praze_output</configMapId>
             <name>rename_fixed_praze_output</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>berbtab2bsml</configMapId>
             <name>berbtab2bsml</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>compress_raw_output</configMapId>
             <name>compress_raw_output</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>
 <!--        <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>xsd_validation</configMapId>
             <name>XML schema validation</name>
         </command>-->

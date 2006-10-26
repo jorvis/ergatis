@@ -26,17 +26,17 @@
         <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_compute_scratch</name>
           <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_compute_output</name>
           <configMapId>create_compute_output</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_fastadir</name>
           <configMapId>create_fastadir</configMapId>
         </command>
@@ -44,17 +44,17 @@
 <!--Preprocessing-->
 <!--Iterator steps-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
       	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow1</configMapId>
         </command>
@@ -67,17 +67,17 @@
 <!--Postprocess permissions-->
 <!--Check logfiles-->
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_fasta_list_file</name>
           <configMapId>create_fasta_list_file</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_bsml_list_file</name>
           <configMapId>create_bsml_list_file</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>check_logfiles</name>
           <configMapId>check_logfiles</configMapId>
        </command>

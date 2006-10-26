@@ -6,27 +6,27 @@
         <name>infernal Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>infernal</configMapId>
             <name>infernal</name>
         </command>
 	<command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>infernal2bsml</configMapId>
             <name>infernal2bsml</name>
         </command>
 	<command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
         </command>
 	<command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>
 	<command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>rename_file</configMapId>
             <name>rename file</name>
         </command>

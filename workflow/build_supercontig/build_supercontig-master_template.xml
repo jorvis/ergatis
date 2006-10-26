@@ -7,32 +7,32 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output repository</name>
          <configMapId>create_compute_output</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Execute build_supercontig</name>
          <configMapId>build_supercontig</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create bsml list</name>
           <configMapId>create_bsml_list</configMapId>
         </command>
         <command>    
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <configMapId>store_config_params</configMapId>
            <name>store_config_params</name>
         </command>
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <configMapId>dtd_validation</configMapId>
            <name>DTD validation</name>
         </command>

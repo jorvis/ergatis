@@ -6,78 +6,78 @@
         <name>iprscan Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>blastprodom</configMapId>
             <name>blastprodom</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>coils</configMapId>
             <name>coils</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>hmmpir</configMapId>
             <name>hmmpir</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>hmmpfam</configMapId>
             <name>hmmpfam</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>hmmsmart</configMapId>
             <name>hmmsmart</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>hmmtigr</configMapId>
             <name>hmmtigr</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>fprintscan</configMapId>
             <name>fprintscan</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>scanregexp</configMapId>
             <name>scanregexp</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>profilescan</configMapId>
             <name>profilescan</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>superfamily</configMapId>
             <name>superfamily</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>seg</configMapId>
             <name>seg</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>combine_raw_output</configMapId>
             <name>combine_raw_output</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>iprscan2bsml</configMapId>
             <name>iprscan2bsml</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
         </command>
 <!--
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>

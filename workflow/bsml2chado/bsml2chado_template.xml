@@ -5,17 +5,17 @@
         <name>bsml2chado workflow</name>
         <configMapId>empty</configMapId>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
           <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>bsml2chado</configMapId>
             <name>Run bsml2chado</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>appendbcp</configMapId>
             <name>appendbcp</name>
         </command>

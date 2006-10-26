@@ -5,28 +5,28 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
       <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_scratch_source</name>
           <configMapId>create_scratch_source</configMapId>
       </command>
       <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_zero_scratch_source</name>
           <configMapId>create_zero_scratch_source</configMapId>
       </command>
       <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_scratch_target</name>
           <configMapId>create_scratch_target</configMapId>
       </command>
       <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_zero_scratch_target</name>
           <configMapId>create_zero_scratch_target</configMapId>
        </command>
 <!--Preprocess permissions-->
        <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>revoke_public_1</name>
            <configMapId>revoke_public_1</configMapId>
        </command>
@@ -36,253 +36,253 @@
            <name>Backup database 1 tables</name>
            <configMapId>empty</configMapId>
            <command>    
-	       <type>RunUnixCommand</type>
+	       <type>RunJavaUnixCommand</type>
                <name>tableinfo_1</name>
                <configMapId>tableinfo_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>project_1</name>
                <configMapId>project_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>db_1</name>
                <configMapId>db_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cv_1</name>
                <configMapId>cv_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>dbxref_1</name>
                <configMapId>dbxref_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvterm_1</name>
                <configMapId>cvterm_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>dbxrefprop_1</name>
                <configMapId>dbxrefprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvtermprop_1</name>
                <configMapId>cvtermprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pub_1</name>
                <configMapId>pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>synonym_1</name>
                <configMapId>synonym_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pubprop_1</name>
                <configMapId>pubprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pub_relationship_1</name>
                <configMapId>pub_relationship_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pub_dbxref_1</name>
                <configMapId>pub_dbxref_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pubauthor_1</name>
                <configMapId>pubauthor_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>organism_1</name>
                <configMapId>organism_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>organismprop_1</name>
                <configMapId>organismprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>organism_dbxref_1</name>
                <configMapId>organism_dbxref_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvtermpath_1</name>
                <configMapId>cvtermpath_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvtermsynonym_1</name>
                <configMapId>cvtermsynonym_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvterm_relationship_1</name>
                <configMapId>cvterm_relationship_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvterm_dbxref_1</name>
                <configMapId>cvterm_dbxref_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_1</name>
                <configMapId>feature_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>featureprop_1</name>
                <configMapId>featureprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_pub_1</name>
                <configMapId>feature_pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>featureprop_pub_1</name>
                <configMapId>featureprop_pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_synonym_1</name>
                <configMapId>feature_synonym_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvterm_1</name>
                <configMapId>feature_cvterm_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvterm_dbxref_1</name>
                <configMapId>feature_cvterm_dbxref_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvterm_pub_1</name>
                <configMapId>feature_cvterm_pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvtermprop_1</name>
                <configMapId>feature_cvtermprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_dbxref_1</name>
                <configMapId>feature_dbxref_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>featureloc_1</name>
                <configMapId>featureloc_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relationship_1</name>
                <configMapId>feature_relationship_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relationship_pub_1</name>
                <configMapId>feature_relationship_pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relationshipprop_1</name>
                <configMapId>feature_relationshipprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relprop_pub_1</name>
                <configMapId>feature_relprop_pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>analysis_1</name>
                <configMapId>analysis_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>analysisprop_1</name>
                <configMapId>analysisprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>analysisfeature_1</name>
                <configMapId>analysisfeature_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylotree_1</name>
                <configMapId>phylotree_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylotree_pub_1</name>
                <configMapId>phylotree_pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_1</name>
                <configMapId>phylonode_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_dbxref_1</name>
                <configMapId>phylonode_dbxref_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_pub_1</name>
                <configMapId>phylonode_pub_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_organism_1</name>
                <configMapId>phylonode_organism_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonodeprop_1</name>
                <configMapId>phylonodeprop_1</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_relationship_1</name>
                <configMapId>phylonode_relationship_1</configMapId>
            </command>   
     </commandSet>
     <command>
-        <type>RunUnixCommand</type>
+        <type>RunJavaUnixCommand</type>
         <name>archive_bcp_files_1</name>
         <configMapId>archive_bcp_files_1</configMapId>
     </command>
     <command>
-        <type>RunUnixCommand</type>
+        <type>RunJavaUnixCommand</type>
         <name>grant_public_1</name>
         <configMapId>grant_public_1</configMapId>
     </command>
     <command>
-        <type>RunUnixCommand</type>
+        <type>RunJavaUnixCommand</type>
         <name>revoke_public_2</name>
         <configMapId>revoke_public_2</configMapId>
     </command>
@@ -290,237 +290,237 @@
         <name>Backup database 2 tables</name>
         <configMapId>empty</configMapId>
         <command>    
-	    <type>RunUnixCommand</type>
+	    <type>RunJavaUnixCommand</type>
             <name>tableinfo_2</name>
             <configMapId>tableinfo_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>project_2</name>
             <configMapId>project_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>db_2</name>
             <configMapId>db_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>cv_2</name>
             <configMapId>cv_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>dbxref_2</name>
             <configMapId>dbxref_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>cvterm_2</name>
             <configMapId>cvterm_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>dbxrefprop_2</name>
             <configMapId>dbxrefprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>cvtermprop_2</name>
             <configMapId>cvtermprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>pub_2</name>
             <configMapId>pub_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>synonym_2</name>
             <configMapId>synonym_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>pubprop_2</name>
             <configMapId>pubprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>pub_relationship_2</name>
             <configMapId>pub_relationship_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>pub_dbxref_2</name>
             <configMapId>pub_dbxref_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>pubauthor_2</name>
             <configMapId>pubauthor_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>organism_2</name>
             <configMapId>organism_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>organismprop_2</name>
             <configMapId>organismprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>organism_dbxref_2</name>
             <configMapId>organism_dbxref_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>cvtermpath_2</name>
             <configMapId>cvtermpath_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>cvtermsynonym_2</name>
             <configMapId>cvtermsynonym_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>cvterm_relationship_2</name>
             <configMapId>cvterm_relationship_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>cvterm_dbxref_2</name>
             <configMapId>cvterm_dbxref_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_2</name>
             <configMapId>feature_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>featureprop_2</name>
             <configMapId>featureprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_pub_2</name>
             <configMapId>feature_pub_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>featureprop_pub_2</name>
             <configMapId>featureprop_pub_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_synonym_2</name>
             <configMapId>feature_synonym_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_cvterm_2</name>
             <configMapId>feature_cvterm_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_cvterm_dbxref_2</name>
             <configMapId>feature_cvterm_dbxref_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_cvterm_pub_2</name>
             <configMapId>feature_cvterm_pub_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_cvtermprop_2</name>
             <configMapId>feature_cvtermprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_dbxref_2</name>
             <configMapId>feature_dbxref_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>featureloc_2</name>
             <configMapId>featureloc_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_relationship_2</name>
             <configMapId>feature_relationship_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_relationship_pub_2</name>
             <configMapId>feature_relationship_pub_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_relationshipprop_2</name>
             <configMapId>feature_relationshipprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>feature_relprop_pub_2</name>
             <configMapId>feature_relprop_pub_2</configMapId>
          </command>   
          <command>    
-             <type>RunUnixCommand</type>
+             <type>RunJavaUnixCommand</type>
              <name>analysis_2</name>
              <configMapId>analysis_2</configMapId>
          </command>   
          <command>    
-             <type>RunUnixCommand</type>
+             <type>RunJavaUnixCommand</type>
              <name>analysisprop_2</name>
              <configMapId>analysisprop_2</configMapId>
          </command>   
          <command>    
-             <type>RunUnixCommand</type>
+             <type>RunJavaUnixCommand</type>
              <name>analysisfeature_2</name>
              <configMapId>analysisfeature_2</configMapId>
          </command>   
          <command>    
-             <type>RunUnixCommand</type>
+             <type>RunJavaUnixCommand</type>
              <name>phylotree_2</name>
              <configMapId>phylotree_2</configMapId>
          </command>   
          <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>phylotree_pub_2</name>
             <configMapId>phylotree_pub_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>phylonode_2</name>
             <configMapId>phylonode_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>phylonode_dbxref_2</name>
             <configMapId>phylonode_dbxref_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>phylonode_pub_2</name>
             <configMapId>phylonode_pub_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>phylonode_organism_2</name>
             <configMapId>phylonode_organism_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>phylonodeprop_2</name>
             <configMapId>phylonodeprop_2</configMapId>
         </command>   
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <name>phylonode_relationship_2</name>
             <configMapId>phylonode_relationship_2</configMapId>
         </command>   
@@ -529,42 +529,42 @@
 <!--Checksum creation-->
 <!--Postprocess permissions-->
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>archive_bcp_files_2</name>
            <configMapId>archive_bcp_files_2</configMapId>
         </command>
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>drop_target_tables</name>
            <configMapId>drop_target_tables</configMapId>
         </command>
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>create_all_tables</name>
            <configMapId>create_all_tables</configMapId>
         </command>
         <command> 
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>partition</name>
            <configMapId>partition</configMapId>
         </command>
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>load_tables</name>
            <configMapId>load_tables</configMapId>
         </command>
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>rebuild_indexes</name>
            <configMapId>rebuild_indexes</configMapId>
         </command>
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>grant_public_2</name>
            <configMapId>grant_public_2</configMapId>
         </command>
         <command>
-           <type>RunUnixCommand</type>
+           <type>RunJavaUnixCommand</type>
            <name>check_logfiles</name>
            <configMapId>check_logfiles</configMapId>
         </command>

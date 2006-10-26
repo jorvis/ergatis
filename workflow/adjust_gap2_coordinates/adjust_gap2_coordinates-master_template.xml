@@ -7,12 +7,12 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output directory</name>
          <configMapId>create_output_directory</configMapId>
         </command>

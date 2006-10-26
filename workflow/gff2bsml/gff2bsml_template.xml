@@ -4,7 +4,7 @@
         <name>gff2bsml</name>
         <configMapId>empty</configMapId>
          <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>gff2bsml</configMapId>
             <name>gff2bsml</name>
         </command>

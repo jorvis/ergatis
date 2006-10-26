@@ -5,7 +5,7 @@
         <name>partition_tables workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>partition_table</configMapId>
             <name>partition_table</name>
         </command>

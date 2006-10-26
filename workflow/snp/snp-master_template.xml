@@ -7,13 +7,13 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
 <!--Preprocess permissions-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Set workflowdocs permissions</name>
           <configMapId>set_workflowdocs_permissions</configMapId>
         </command> 
@@ -23,72 +23,72 @@
            <name>run snps pipeline</name>
            <configMapId>empty</configMapId>
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>make_reference_fasta</name>
                     <configMapId>make_reference_fasta</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>make_query_fasta</name>
                     <configMapId>make_query_fasta</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>nucmer</name>
                     <configMapId>nucmer</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>show_tiling</name>
                     <configMapId>show_tiling</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>snp_extract_fasta</name>
                     <configMapId>snp_extract_fasta</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>mummer</name>
                     <configMapId>mummer</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>mgaps</name>
                     <configMapId>mgaps</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>combineMUMS</name>
                     <configMapId>combineMUMS</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>SNP_Analysis</name>
                     <configMapId>SNP_Analysis</configMapId>
                 </command>  
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>store_config_parameters</name>
                     <configMapId>store_config_parameters</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>dtd_validation</name>
                     <configMapId>dtd_validation</configMapId>
                 </command>   
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>create_checksum_file_list</name>
                     <configMapId>create_checksum_file_list</configMapId>
                 </command>
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>create_checksum</name>
                     <configMapId>create_checksum</configMapId>
                 </command>      
                 <command>    
-                    <type>RunUnixCommand</type>
+                    <type>RunJavaUnixCommand</type>
                     <name>set_output_permissions</name>
                     <configMapId>set_output_permissions</configMapId>
                 </command>   
@@ -97,12 +97,12 @@
 <!--Checksum creation-->
 <!--Postprocess permissions-->
        <command>        
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Set workflowdocs permissions</name>
           <configMapId>set_workflowdocs_permissions</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Set permissions for scratch area</name>
           <configMapId>set_scratch_permissions</configMapId>
        </command>

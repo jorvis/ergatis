@@ -5,7 +5,7 @@
         <name>grant_permissions workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>grant_permission</configMapId>
             <name>grant_permission</name>
         </command>

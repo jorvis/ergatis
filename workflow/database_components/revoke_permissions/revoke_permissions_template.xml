@@ -5,7 +5,7 @@
         <name>revoke_permissions workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>revoke_permissions</configMapId>
             <name>revoke_permissions</name>
         </command>

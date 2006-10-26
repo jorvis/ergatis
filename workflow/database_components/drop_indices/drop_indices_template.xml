@@ -5,7 +5,7 @@
         <name>drop_indices workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>drop_index</configMapId>
             <name>drop_index</name>
         </command>

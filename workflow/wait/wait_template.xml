@@ -6,7 +6,7 @@
         <name>Wait Compute</name>
         <configMapId>empty</configMapId>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>do_wait</configMapId>
             <name>Wait</name>
         </command>        

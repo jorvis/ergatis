@@ -6,7 +6,7 @@
         <name>targetp Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>targetp</configMapId>
             <name>Run targetp</name>
         </command>
@@ -17,19 +17,19 @@
         </command>
 
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>Store config params for TargetP</name>
         </command>
 <!--
 	<command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>compress_raw_output</configMapId>
             <name>compress_raw_output</name>
         </command>
     
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
         </command>

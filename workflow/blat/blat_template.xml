@@ -6,7 +6,7 @@
         <name>blat Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>blat</configMapId>
             <name>blat</name>
         </command>

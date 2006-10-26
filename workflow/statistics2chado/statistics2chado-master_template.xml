@@ -27,37 +27,37 @@
         <name>statistics2chado workflow</name>
       <configMapId>empty</configMapId>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>truncate_stats_tables</name>
           <configMapId>truncate_stats_tables</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>populate_stats_tables</name>
           <configMapId>populate_stats_tables</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>update_stats_tables_statistics</name>
           <configMapId>update_stats_tables_statistics</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>grant_select_stats_tables</name>
           <configMapId>grant_select_stats_tables</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>check_logfiles</name>
           <configMapId>check_logfiles</configMapId>
         </command>

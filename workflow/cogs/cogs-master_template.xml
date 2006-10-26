@@ -7,24 +7,24 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
 <!--Preprocess permissions-->
 <!--Preprocessing-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>generate_match_input</name>
           <configMapId>generate_match_input</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>generate_asmbl_input</name>
           <configMapId>generate_asmbl_input</configMapId>
         </command>
@@ -47,7 +47,7 @@
 <!--Postprocessing-->
 <!--Checksum creation-->
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Merge fasta list files</name>
           <configMapId>merge_fasta_list_files</configMapId>
        </command>

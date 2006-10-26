@@ -7,12 +7,12 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create zero scratch space</name>
          <configMapId>create_zero_scratch</configMapId>
         </command>
@@ -20,477 +20,477 @@
 <!--Preprocessing-->
 <!--Processing-->
            <command>    
-	       <type>RunUnixCommand</type>
+	       <type>RunJavaUnixCommand</type>
                <name>all_auxiliary_tables</name>
                <configMapId>all_auxiliary_tables</configMapId>
            </command>   
            <command>    
-	       <type>RunUnixCommand</type>
+	       <type>RunJavaUnixCommand</type>
                <name>tableinfo</name>
                <configMapId>tableinfo</configMapId>
            </command>   
            <command>    
-	       <type>RunUnixCommand</type>
+	       <type>RunJavaUnixCommand</type>
                <name>gzip_tableinfo</name>
                <configMapId>gzip_tableinfo</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>project</name>
                <configMapId>project</configMapId>
            </command>   
            <command>    
-	       <type>RunUnixCommand</type>
+	       <type>RunJavaUnixCommand</type>
                <name>gzip_project</name>
                <configMapId>gzip_project</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>db</name>
                <configMapId>db</configMapId>
            </command>
            <command>    
-	       <type>RunUnixCommand</type>
+	       <type>RunJavaUnixCommand</type>
                <name>gzip_db</name>
                <configMapId>gzip_db</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cv</name>
                <configMapId>cv</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_cv</name>
                <configMapId>gzip_cv</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>dbxref</name>
                <configMapId>dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_dbxref</name>
                <configMapId>gzip_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvterm</name>
                <configMapId>cvterm</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_cvterm</name>
                <configMapId>gzip_cvterm</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>dbxrefprop</name>
                <configMapId>dbxrefprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_dbxrefprop</name>
                <configMapId>gzip_dbxrefprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvtermprop</name>
                <configMapId>cvtermprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_cvtermprop</name>
                <configMapId>gzip_cvtermprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pub</name>
                <configMapId>pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_pub</name>
                <configMapId>gzip_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>synonym</name>
                <configMapId>synonym</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_synonym</name>
                <configMapId>gzip_synonym</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pubprop</name>
                <configMapId>pubprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_pubprop</name>
                <configMapId>gzip_pubprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pub_relationship</name>
                <configMapId>pub_relationship</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_pub_relationship</name>
                <configMapId>gzip_pub_relationship</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pub_dbxref</name>
                <configMapId>pub_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_pub_dbxref</name>
                <configMapId>gzip_pub_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>pubauthor</name>
                <configMapId>pubauthor</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_pubauthor</name>
                <configMapId>gzip_pubauthor</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>organism</name>
                <configMapId>organism</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_organism</name>
                <configMapId>gzip_organism</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>organismprop</name>
                <configMapId>organismprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_organismprop</name>
                <configMapId>gzip_organismprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>organism_dbxref</name>
                <configMapId>organism_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_organism_dbxref</name>
                <configMapId>gzip_organism_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvtermpath</name>
                <configMapId>cvtermpath</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_cvtermpath</name>
                <configMapId>gzip_cvtermpath</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvtermsynonym</name>
                <configMapId>cvtermsynonym</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_cvtermsynonym</name>
                <configMapId>gzip_cvtermsynonym</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvterm_relationship</name>
                <configMapId>cvterm_relationship</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_cvterm_relationship</name>
                <configMapId>gzip_cvterm_relationship</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>cvterm_dbxref</name>
                <configMapId>cvterm_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_cvterm_dbxref</name>
                <configMapId>gzip_cvterm_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature</name>
                <configMapId>feature</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature</name>
                <configMapId>gzip_feature</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>featureprop</name>
                <configMapId>featureprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_featureprop</name>
                <configMapId>gzip_featureprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_pub</name>
                <configMapId>feature_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_pub</name>
                <configMapId>gzip_feature_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>featureprop_pub</name>
                <configMapId>featureprop_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_featureprop_pub</name>
                <configMapId>gzip_featureprop_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_synonym</name>
                <configMapId>feature_synonym</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_synonym</name>
                <configMapId>gzip_feature_synonym</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvterm</name>
                <configMapId>feature_cvterm</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_cvterm</name>
                <configMapId>gzip_feature_cvterm</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvterm_dbxref</name>
                <configMapId>feature_cvterm_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_cvterm_dbxref</name>
                <configMapId>gzip_feature_cvterm_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvterm_pub</name>
                <configMapId>feature_cvterm_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_cvterm_pub</name>
                <configMapId>gzip_feature_cvterm_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_cvtermprop</name>
                <configMapId>feature_cvtermprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_cvtermprop</name>
                <configMapId>gzip_feature_cvtermprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_dbxref</name>
                <configMapId>feature_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_dbxref</name>
                <configMapId>gzip_feature_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>featureloc</name>
                <configMapId>featureloc</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_featureloc</name>
                <configMapId>gzip_featureloc</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relationship</name>
                <configMapId>feature_relationship</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_relationship</name>
                <configMapId>gzip_feature_relationship</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relationship_pub</name>
                <configMapId>feature_relationship_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_relationship_pub</name>
                <configMapId>gzip_feature_relationship_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relationshipprop</name>
                <configMapId>feature_relationshipprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_relationshipprop</name>
                <configMapId>gzip_feature_relationshipprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>feature_relprop_pub</name>
                <configMapId>feature_relprop_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_feature_relprop_pub</name>
                <configMapId>gzip_feature_relprop_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>analysis</name>
                <configMapId>analysis</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_analysis</name>
                <configMapId>gzip_analysis</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>analysisprop</name>
                <configMapId>analysisprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_analysisprop</name>
                <configMapId>gzip_analysisprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>analysisfeature</name>
                <configMapId>analysisfeature</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_analysisfeature</name>
                <configMapId>gzip_analysisfeature</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylotree</name>
                <configMapId>phylotree</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylotree</name>
                <configMapId>gzip_phylotree</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylotree_pub</name>
                <configMapId>phylotree_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylotree_pub</name>
                <configMapId>gzip_phylotree_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode</name>
                <configMapId>phylonode</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylonode</name>
                <configMapId>gzip_phylonode</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_dbxref</name>
                <configMapId>phylonode_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylonode_dbxref</name>
                <configMapId>gzip_phylonode_dbxref</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_pub</name>
                <configMapId>phylonode_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylonode_pub</name>
                <configMapId>gzip_phylonode_pub</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_organism</name>
                <configMapId>phylonode_organism</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylonode_organism</name>
                <configMapId>gzip_phylonode_organism</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonodeprop</name>
                <configMapId>phylonodeprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylonodeprop</name>
                <configMapId>gzip_phylonodeprop</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>phylonode_relationship</name>
                <configMapId>phylonode_relationship</configMapId>
            </command>   
            <command>    
-               <type>RunUnixCommand</type>
+               <type>RunJavaUnixCommand</type>
                <name>gzip_phylonode_relationship</name>
                <configMapId>gzip_phylonode_relationship</configMapId>
            </command>   
@@ -498,12 +498,12 @@
 <!--Checksum creation-->
 <!--Postprocess permissions-->
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>check_logfiles</name>
           <configMapId>check_logfiles</configMapId>
        </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>archive_bcp_files</name>
           <configMapId>archive_bcp_files</configMapId>
        </command>

@@ -6,27 +6,27 @@
         <name>PEffect compute</name>
         <configMapId>empty</configMapId>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>make_asmbl_lookup</name>
           <configMapId>make_asmbl_lookup</configMapId>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>make_pe_match_xml</configMapId>
             <name>make_pe_match_xml</name>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>peffect</configMapId>
             <name>peffect</name>
         </command>        
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>pe2bsml</configMapId>
             <name>pe2bsml</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>Store configuration</name>
         </command>

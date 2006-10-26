@@ -7,17 +7,17 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Archive compute output</name>
          <configMapId>archive_output</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
@@ -25,17 +25,17 @@
 <!--Preprocessing-->
 <!--Processing-->
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
  	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
         </command>
        <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow1</configMapId>
         </command>

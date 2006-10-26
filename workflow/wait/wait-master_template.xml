@@ -8,17 +8,17 @@
 <!--Preprocessing-->
 <!--Processing-->
 	    <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
 	    <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow1</configMapId>
         </command>

@@ -5,7 +5,7 @@
         <name>drop_tables workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>drop_table</configMapId>
             <name>drop_table</name>
         </command>

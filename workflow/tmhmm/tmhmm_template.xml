@@ -6,7 +6,7 @@
         <name>TMHMM Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
 			<configMapId>tmhmm</configMapId>
             <name>tmhmm</name>
         </command>
@@ -19,13 +19,13 @@
         </command>
 
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>store_config_params</configMapId>
             <name>store_config_params</name>
 		</command>
    
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>DTD validation</name>
    	</command>

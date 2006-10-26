@@ -5,7 +5,7 @@
         <name>create_indices workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>create_index</configMapId>
             <name>create_index</name>
         </command>

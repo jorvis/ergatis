@@ -5,7 +5,7 @@
         <name>load_tables workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>load_table</configMapId>
             <name>load_table</name>
         </command>

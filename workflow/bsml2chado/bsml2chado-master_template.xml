@@ -7,22 +7,22 @@
       <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create output repository</name>
           <configMapId>create_compute_output</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create dupdir</name>
           <configMapId>create_dupdir</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_final</name>
           <configMapId>create_final</configMapId>
         </command>
@@ -30,22 +30,22 @@
 <!--Preprocessing-->
 <!--Iterator steps-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>File-cache the queries</name>
           <configMapId>cache_queries</configMapId>
         </command>
       	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow1</configMapId>
         </command>
@@ -55,182 +55,182 @@
         </commandSet>
 <!--Postprocessing-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_tableinfo</name>
           <configMapId>collate_all_bcp_files_tableinfo</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_project</name>
           <configMapId>collate_all_bcp_files_project</configMapId>
         </command>
         <command>    
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_db</name>
           <configMapId>collate_all_bcp_files_db</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_dbxref</name>
           <configMapId>collate_all_bcp_files_dbxref</configMapId>
         </command>
         <command>    
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_dbxrefprop</name>
           <configMapId>collate_all_bcp_files_dbxrefprop</configMapId>
         </command>
           <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_pub</name>
           <configMapId>collate_all_bcp_files_pub</configMapId>
         </command>
           <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_synonym</name>
           <configMapId>collate_all_bcp_files_synonym</configMapId>
         </command>
           <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_pubprop</name>
           <configMapId>collate_all_bcp_files_pubprop</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_pub_relationship</name>
           <configMapId>collate_all_bcp_files_pub_relationship</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_pub_dbxref</name>
           <configMapId>collate_all_bcp_files_pub_dbxref</configMapId>
         </command>
          <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_pubauthor</name>
           <configMapId>collate_all_bcp_files_pubauthor</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_organism</name>
           <configMapId>collate_all_bcp_files_organism</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_organismprop</name>
           <configMapId>collate_all_bcp_files_organismprop</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_organism_dbxref</name>
           <configMapId>collate_all_bcp_files_organism_dbxref</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature</name>
           <configMapId>collate_all_bcp_files_feature</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_featureprop</name>
           <configMapId>collate_all_bcp_files_featureprop</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_pub_files</name>
           <configMapId>collate_all_bcp_files_feature_pub</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_featureprop_pub</name>
           <configMapId>collate_all_bcp_files_featureprop_pub</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_synonym</name>
           <configMapId>collate_all_bcp_files_feature_synonym</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_cvterm</name>
           <configMapId>collate_all_bcp_files_feature_cvterm</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_cvterm_dbxref</name>
           <configMapId>collate_all_bcp_files_feature_cvterm_dbxref</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_cvterm_pub</name>
           <configMapId>collate_all_bcp_files_feature_cvterm_pub</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_cvtermprop</name>
           <configMapId>collate_all_bcp_files_feature_cvtermprop</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_dbxref</name>
           <configMapId>collate_all_bcp_files_feature_dbxref</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_featureloc</name>
           <configMapId>collate_all_bcp_files_featureloc</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_relationship</name>
           <configMapId>collate_all_bcp_files_feature_relationship</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_relationship_pub</name>
           <configMapId>collate_all_bcp_files_feature_relationship_pub</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_relationshipprop</name>
           <configMapId>collate_all_bcp_files_feature_relationshipprop</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_feature_relprop_pub</name>
           <configMapId>collate_all_bcp_files_feature_relprop_pub</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_analysis</name>
           <configMapId>collate_all_bcp_files_analysis</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_analysisprop</name>
           <configMapId>collate_all_bcp_files_analysisprop</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>collate_all_bcp_files_analysisfeature</name>
           <configMapId>collate_all_bcp_files_analysisfeature</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>insert_serial_identifiers</name>
           <configMapId>insert_serial_identifiers</configMapId>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>drop_indexes</configMapId>
             <name>drop_indexes</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>load_tables</configMapId>
             <name>load_tables</name>
         </command>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>rebuild_indexes</configMapId>
             <name>rebuild_indexes</name>
         </command>

@@ -5,7 +5,7 @@
         <name>unpartition_tables workflow</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>unpartition_table</configMapId>
             <name>unpartition_table</name>
         </command>

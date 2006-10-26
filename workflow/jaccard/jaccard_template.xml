@@ -6,27 +6,27 @@
         <name>COGs compute</name>
         <configMapId>empty</configMapId>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>generate_asmbl_input</name>
           <configMapId>generate_asmbl_input</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>make_asmbl_lookup</name>
           <configMapId>make_asmbl_lookup</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>generate_clusters</name>
           <configMapId>generate_clusters</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>jaccard2fasta</name>
           <configMapId>jaccard2fasta</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create fasta list</name>
           <configMapId>create_fasta_list</configMapId>
         </command>

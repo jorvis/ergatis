@@ -4,12 +4,12 @@
         <name>legacy2bsml</name>
         <configMapId>empty</configMapId>
          <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>legacy2bsml</configMapId>
             <name>legacy2bsml</name>
         </command>
          <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>dtd_validation</configMapId>
             <name>dtd_validation</name>
         </command>

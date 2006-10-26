@@ -7,13 +7,13 @@
       <configMapId>empty</configMapId>
 <!--Preprocessing-->
     	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>create_database_dir</name>
           <configMapId>create_database_dir</configMapId>
         </command>
 <!--Processing-->
     	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>formatdb</name>
           <configMapId>formatdb</configMapId>
         </command>

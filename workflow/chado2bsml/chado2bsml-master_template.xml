@@ -7,17 +7,17 @@
         <configMapId>empty</configMapId>
 <!--Set up output and scratch areas-->
          <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create scratch space</name>
          <configMapId>create_compute_scratch</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Archive BSML_repository</name>
          <configMapId>archive_bsml_repository</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>remove_bsml_gene_model_docs</name>
          <configMapId>remove_bsml_gene_model_docs</configMapId>
         </command>
@@ -25,32 +25,32 @@
 <!--Preprocessing-->
 <!--Processing-->
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Generate genomic fasta</name>
           <configMapId>generate_asmbl_fasta</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Run chado2bsml</name>
           <configMapId>chado2bsml</configMapId>
         </command>	
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Run generate_jaccard_organism_asmbl_files</name>
           <configMapId>generate_jaccard_organism_asmbl_files</configMapId>
         </command>	
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterator list</name>
           <configMapId>create_iterator_list_subflow1</configMapId>
         </command>
 	<command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
         </command>
         <command>
-          <type>RunUnixCommand</type>
+          <type>RunJavaUnixCommand</type>
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow1</configMapId>
         </command>

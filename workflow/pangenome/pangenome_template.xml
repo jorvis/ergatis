@@ -6,7 +6,7 @@
         <name>pangenome Compute</name>
         <configMapId>empty</configMapId>
         <command>    
-            <type>RunUnixCommand</type>
+            <type>RunJavaUnixCommand</type>
             <configMapId>pangenome_blast_parse</configMapId>
             <name>pangenome_blast_parse</name>
         </command>
