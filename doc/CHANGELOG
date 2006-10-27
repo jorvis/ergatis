@@ -298,3 +298,6 @@ next
 ----
 -fixed ber bug preventing model coordinate extraction on assemblies over 30mb
 -fixed bugs with pvalue filtering and sequence stub writing in wu-blastp
+-fixed GenePredictionBsmlDoc.pm bug not printing empty Sequence stubs on no hit input.
+-added gzip (reading/writing) support to transterm2bsml and component files
+-added defline attribute output to transterm2bsml.pl
