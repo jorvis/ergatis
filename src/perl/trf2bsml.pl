@@ -169,12 +169,14 @@ while (<$ifh>) {
     }
 }
 
+my $seq = $doc->createAndAddSequence($identifier, undef, '', 'dna', 'assembly');
+$seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
+$seq->addBsmlAttr('defline', $defline);
+$doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier);
+
 ## loop through each of the matches that we found
 for my $seqid (keys %data) {
-    my $seq = $doc->createAndAddSequence($seqid, undef, '', 'dna', 'assembly');
-       $seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
-    $seq->addBsmlAttr('defline', $defline);
-    $doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier);
+  
     my $ft  = $doc->createAndAddFeatureTable($seq);
     my $fg;
     
@@ -221,7 +223,7 @@ my $analysis = $doc->createAndAddAnalysis(
                           );
 
 ## now write the doc
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $gzip);
 
 exit;
 
