@@ -66,7 +66,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 BEGIN {
     require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
+    import Ergatis::Logger;
 }
 use File::Basename;
 
@@ -187,11 +187,11 @@ sub set_logger {
 
     my ($options) = @_;
 
-    my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-    my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+    my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+    my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				      'LOG_LEVEL'=>$options{'debug'});
 
-    my $logger = Workflow::Logger::get_logger();
+    my $logger = Ergatis::Logger::get_logger();
 
 
     return $logger;

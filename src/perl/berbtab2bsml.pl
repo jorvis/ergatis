@@ -69,7 +69,7 @@ use English;
 use File::Basename;
 use File::Path;
 use Pod::Usage;
-use Workflow::Logger;
+use Ergatis::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
@@ -95,8 +95,8 @@ my $results = GetOptions (\%options,
               'id_repository=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 

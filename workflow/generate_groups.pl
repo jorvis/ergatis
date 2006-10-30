@@ -94,7 +94,7 @@ but broken up into sections of work.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use Workflow::Logger;
+use Ergatis::Logger;
 use IO::File;
 
 umask(0000);
@@ -110,10 +110,10 @@ my $results = GetOptions (\%options,
 			  'debug=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 # display documentation
 if( $options{'help'} ){

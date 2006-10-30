@@ -67,7 +67,7 @@ use Data::Dumper;
 use File::Basename;
 use Pod::Usage;
 BEGIN {
-use Workflow::Logger;
+use Ergatis::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
@@ -88,10 +88,10 @@ my $results = GetOptions (\%options,
 			  'log|l=s',
 			  'help|?|h');
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 # display documentation
 if( $options{'help'} ){

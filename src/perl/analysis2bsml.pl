@@ -68,7 +68,7 @@ use Pod::Usage;
 use File::Basename;
 
 BEGIN {
-use Workflow::Logger;
+use Ergatis::Logger;
 }
 use XML::Twig;
 use Config::IniFiles;
@@ -85,10 +85,10 @@ my $results = GetOptions (\%options,
 			  'pipelineurl|p=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 # display documentation
 if( $options{'help'} ){
