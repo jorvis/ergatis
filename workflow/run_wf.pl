@@ -45,7 +45,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Workflow::Logger;
-use Workflow::Run;
+use Ergatis::Run;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -76,11 +76,11 @@ if( $options{'help'} ){
 
 my $wfexec;
 if ($options{'workflow_root'}) {
-	$wfexec = new Workflow::Run( 'nodistrib'     => $options{'nodistrib'},
+	$wfexec = new Ergatis::Run( 'nodistrib'     => $options{'nodistrib'},
 								 'WORKFLOW_ROOT' => $options{'workflow_root'}
 							   );
 } else {
-	$wfexec = new Workflow::Run('nodistrib'=>$options{'nodistrib'});
+	$wfexec = new Ergatis::Run('nodistrib'=>$options{'nodistrib'});
 }
 
 my $instancexmlfile= "$options{'instance'}";

@@ -228,7 +228,7 @@ foreach my $workflow (@workflows){
 
     #invoke master instance
     if(!($options{'skiprun'})){
-	my $wfexec = new Workflow::Run();
+	my $wfexec = new Ergatis::Run();
 	my $runlogfile = "$instancexmlfile.run.log";
 	my $runoutfile = "$instancexmlfile.run.out";
 	$logger->get_logger()->debug("Running instance file $instancexmlfile") if($logger->get_logger()->is_debug());
