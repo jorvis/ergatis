@@ -95,7 +95,7 @@ use Data::Dumper;
 use XML::Twig;
 
 BEGIN {
-use Ergatis::Logger;
+use Workflow::Logger;
 }
 
 
@@ -135,10 +135,10 @@ if (!defined($log4perl)){
     $log4perl = "/tmp/gatekeeper.pl.log";
 }
 
-my $mylogger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
+my $mylogger = new Workflow::Logger('LOG_FILE'=>$log4perl,
 				    'LOG_LEVEL'=>$debug_level);
 
-my $logger = Ergatis::Logger::get_logger(__PACKAGE__);
+my $logger = Workflow::Logger::get_logger(__PACKAGE__);
 
 my $errorctr=0;
 

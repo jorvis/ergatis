@@ -81,7 +81,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
-use Ergatis::Logger;
+use Workflow::Logger;
 use DBI;
 use XML::Twig;
 
@@ -94,7 +94,7 @@ my %asm_ids		= ();
 my @genes		= ();
 my %db_ids		= ();
 my $debug		= 4;
-my $log_file		= Ergatis::Logger::get_default_logfilename;
+my $log_file		= Workflow::Logger::get_default_logfilename;
 my $logger		= undef;
 my %id2title		= ();
 my $loader		= $& if $0 =~ /[\w\.\d]+$/;
@@ -172,9 +172,9 @@ sub parse_opts
 			print_usage if $val;
 		}
 	}
-	$logger = new Ergatis::Logger('LOG_FILE' => $log_file,
+	$logger = new Workflow::Logger('LOG_FILE' => $log_file,
 				       'LOG_LEVEL' => $debug);
-	$logger = Ergatis::Logger::get_logger;
+	$logger = Workflow::Logger::get_logger;
 	$logger->logdie("No input(s) provided") if !scalar(@files);
 	$logger->logdie("No database provided") if !$db;
 }

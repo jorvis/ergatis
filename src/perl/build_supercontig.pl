@@ -25,7 +25,7 @@ umask(0000);
 
 
 use BSML::BsmlBuilder;
-use Ergatis::Logger;
+use Workflow::Logger;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlParserTwig;
 

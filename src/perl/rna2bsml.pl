@@ -75,7 +75,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Data::Dumper;
 BEGIN {
-use Ergatis::Logger;
+use Workflow::Logger;
 use BSML::BsmlBuilder;
 }
 

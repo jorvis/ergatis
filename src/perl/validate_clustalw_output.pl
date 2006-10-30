@@ -60,7 +60,7 @@ use Pod::Usage;
 use Data::Dumper;
 use Log::Log4perl qw(get_logger);
 BEGIN {
-use Ergatis::Logger;
+use Workflow::Logger;
 }
 
 
@@ -96,10 +96,10 @@ $debug_level = 5;
 # initialize the logger
 #
 $log4perl = "/tmp/validate_clustalw_output.pl.log" if (!defined($log4perl));
-my $mylogger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
+my $mylogger = new Workflow::Logger('LOG_FILE'=>$log4perl,
 				 'LOG_LEVEL'=>$debug_level);
 
-my $logger = Ergatis::Logger::get_logger(__PACKAGE__);
+my $logger = Workflow::Logger::get_logger(__PACKAGE__);
 
 
 

@@ -82,7 +82,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 BEGIN {
-use Ergatis::Logger;
+use Workflow::Logger;
 use BSML::BsmlRepository;
 use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
@@ -101,8 +101,8 @@ my $results = GetOptions (\%options,
               'debug=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 

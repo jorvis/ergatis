@@ -74,7 +74,7 @@ use warnings qw(all);
 use IO::File;
 use BSML::BsmlBuilder;
 use Papyrus::TempIdCreator;
-use Ergatis::Logger;
+use Workflow::Logger;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case);
 use Sequence::SeqLoc;
@@ -101,7 +101,7 @@ sub get_opts
 	my %opts	= ();
 	my $input_file	= '/dev/stdin';
 	my $output_file	= '/dev/stdout';
-	my $log_file	= Ergatis::Logger::get_default_logfilename;
+	my $log_file	= Workflow::Logger::get_default_logfilename;
 	my $debug	= 4;
 	GetOptions(\%opts,
 		   'in|i=s', 'out|o=s', 'database|d=s',
@@ -113,7 +113,7 @@ sub get_opts
 	$db = $opts{database} if $opts{database};
 	$log_file = $opts{log} if $opts{log};
 	$debug = $opts{debug} if $opts{debug};
-	$logger = new Ergatis::Logger('LOG_FILE'	=> $log_file,
+	$logger = new Workflow::Logger('LOG_FILE'	=> $log_file,
 				       'LOG_LEVEL'	=> $debug)->
 		  get_logger;
 	$in = new IO::File($input_file, "r") or

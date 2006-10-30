@@ -108,7 +108,7 @@ If --generate_out,-g is specified as 0(zero), no output is generated and sort-sn
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Ergatis::Logger;
+use Workflow::Logger;
 use Switch;
 
 #The location of the program
@@ -134,8 +134,8 @@ my $results = GetOptions (\%options,
                           'debug|d=s',
                           'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$options{'debug'});
 
 $logger = $logger->get_logger();

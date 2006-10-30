@@ -40,7 +40,7 @@ use PEffect::PEffectXML;
 use File::Basename;
 use File::Path;
 use Pod::Usage;
-use Ergatis::Logger;
+use Workflow::Logger;
 use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 use BSML::BsmlParserTwig;
@@ -58,10 +58,10 @@ my $results = GetOptions (\%options,
 			  'help|h') || pod2usage();
 
 
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Ergatis::Logger::get_logger();
+$logger = Workflow::Logger::get_logger();
 
 # display documentation
 if( $options{'help'} ){

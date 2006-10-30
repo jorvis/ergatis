@@ -61,7 +61,7 @@ use BSML::BsmlParserTwig;
 use BSML::BsmlRepository;
 use Papyrus::TempIdCreator;
 use Pod::Usage;
-use Ergatis::Logger;
+use Workflow::Logger;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -74,8 +74,8 @@ my $results = GetOptions (\%options,
               'log|l=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
