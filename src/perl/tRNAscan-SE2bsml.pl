@@ -103,7 +103,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Workflow::Logger;
 use Workflow::IdGenerator;
-use Gene;
+use Chado::Gene;
 use BSML::GenePredictionBsml;
 
 my $input;      # Input file name
@@ -194,7 +194,7 @@ sub parse_tRNAscanSE_input {
             my $complement = ($$arr[1] > $$arr[2]) ? 1 : 0;
 
             ## First, create the gene model object
-            my $currGene = new Gene ( $idcreator->next_id( 'type' => 'gene',
+            my $currGene = new Chado::Gene ( $idcreator->next_id( 'type' => 'gene',
                                                            'project' => $project ),
                                       ($complement) ? $$arr[2] : $$arr[1],
                                       ($complement) ? $$arr[1] : $$arr[2],
@@ -250,7 +250,7 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $doc = new GenePredictionBsml( 'tRNAscan-SE', $inputFsa );
+    my $doc = new BSML::GenePredictionBsml( 'tRNAscan-SE', $inputFsa );
 
     foreach my $gene(@{$data}) {
         $doc->addGene($gene);
