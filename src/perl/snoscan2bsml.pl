@@ -105,6 +105,10 @@ if( $options{'help'} ){
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
+unless($options{'compress_bsml_output'}) {
+    $options{'compress_bsml_output'} = 0;
+}
+
 #Create a new BSML document
 my $doc = new BSML::BsmlBuilder();
 
@@ -113,7 +117,15 @@ my $idcreator = new Papyrus::TempIdCreator();
 
 #Open the input file (.sorted)
 my $inputFile;
-open (IFH, "<$options{input}")
+
+#The fasta file header line (Bug 3781)
+my $defline;
+
+#Should be able to handle gzip input without hassle (Bug 2591)
+my $mode = "<";
+$mode = "<:gzip" if($options{'input'} =~ /\.gz$/);
+
+open (IFH, $mode, "$options{input}")
     or $logger->logdie("can't open input file for reading");
     #or die ("Unable to open output file ($!)");
 
@@ -179,6 +191,7 @@ foreach my $unique (keys %data) {
     #If an input file was listed add the SeqDataImport
     if($options{'fasta_file'}) {
         $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_file}, '', $seqID );
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline );
     }
 
     #Create some variables used in following foreach loop
@@ -271,7 +284,7 @@ my $analysis = $doc->createAndAddAnalysis( id=> 'snoscan_analysis',
                                            );
 
 #Write everything to the BSML document
-$doc->write($options{'output'});
+$doc->write($options{'output'},, $options{'compress_bsml_output'});
 
 exit;
 
@@ -297,6 +310,14 @@ sub check_parameters {
 		   -verbose => 1, -output => \*STDERR}); 
 	
     }
+
+    #If the files input doesn't exist, check for the gzipped version.
+    #Bug 2591
+    unless(-e $options{'input'}) {
+        if(-e $options{'input'}.".gz") {
+            $options{'input'} .= ".gz";
+        }
+    }
     
     ## make sure input_file exists
     if (! -e "$options{input}") {
@@ -315,6 +336,30 @@ sub check_parameters {
         $logger->logdie("The class was not defined");
         #die ("The class was not defined");
     } 
+
+    #Parse the defline out of the fasta file.  And save it for later.
+    if($options{'fasta_input'}) {
+        my $mod = "<";
+        if($options{'fasta_input'} =~ /\.gz$/) {
+            $mod = "<:gzip";
+        } elsif(!-e $options{'fasta_input'} && -e $options{'fasta_input'}.".gz") {
+            $mod = "<:gzip";
+        }
+
+        open(IN, $mod, $options{'fasta_input'}) or
+            $logger->logdie("Unable to open $options{'fasta_input'} ($!)");
+        while(<IN>) {
+            chomp;
+            if(/^>(.*)/) {
+                $defline = $1;
+                #Assume it's a single fasta file
+                last;
+            }
+        }
+        close(IN);
+    } else {
+        $logger->logdie("Option fasta_input is required");
+    }
         
 }
 
