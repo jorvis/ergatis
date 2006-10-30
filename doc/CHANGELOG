@@ -303,3 +303,5 @@ next
 -added defline attribute output to transterm2bsml.pl
 -added gzip (reading/writing) support to tmhmm2bsml.pl and component files
 -added defline attribute output to tmhmm2bsml.pl
+-added gzip (reading/writing) support to snoscan2bsml.pl and component files
+-added defline attribute output to snoscan2bsml.pl
