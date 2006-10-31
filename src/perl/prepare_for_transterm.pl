@@ -312,6 +312,8 @@ sub handleSequence {
     $" = "|";
     return unless($id =~ /(@{$seqs})/);
 
+    $retval->{$id} = {};
+
     my $featTable = $elem->first_child("Feature-tables");
     if($featTable) {
         foreach my $ft($featTable->children("Feature-table")) {
@@ -336,16 +338,21 @@ sub printCoordFiles {
         my $asmblId = $asmbl;
         $asmblId = "$database.assembly.$asmblId" if($schema eq "legacy");
         print "Making file $output_dir/$asmblId.coords\n";
-        open(OUT, "> $output_dir/$asmblId.coords") or 
-            &_die("Unable to open $output_dir/$asmblId.coords for writing ($!)");
-
-        foreach my $geneName(keys %{$crds->{$asmbl}}) {
-            print OUT $geneName." ".$crds->{$asmbl}->{$geneName}->{'start'}.
-                " ".$crds->{$asmbl}->{$geneName}->{'stop'}." ".$asmblId."\n";
+       
+        
+        if(scalar (keys %{$crds->{$asmbl}}) == 0) {
+            system("touch $output_dir/$asmblId.coords");
+        } else {
+            
+            open(OUT, "> $output_dir/$asmblId.coords") or 
+                &_die("Unable to open $output_dir/$asmblId.coords for writing ($!)");
+            foreach my $geneName(keys %{$crds->{$asmbl}}) {
+                print OUT $geneName." ".$crds->{$asmbl}->{$geneName}->{'start'}.
+                    " ".$crds->{$asmbl}->{$geneName}->{'stop'}." ".$asmblId."\n";
+            }
+            close(OUT);
         }
-
-        close(OUT);
-
+        
     }
    
 }
