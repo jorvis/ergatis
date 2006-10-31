@@ -519,9 +519,12 @@ sub process_sequence {
         $logger->logdie("No sequence present in BSML sequence element");
     }
    
-    foreach my $child ($sequence->first_child('Feature-tables')->children('Feature-group')) {
-        #$feature_parent_seq->{$child->{'att'}->{'group-set'}} = $seq_id;
-        push(@{$sequence_children->{$seq_id}}, $child->{'att'}->{'group-set'});
+    my $featTable = $sequence->first_child('Feature-tables');
+    if($featTable) {
+        foreach my $child ($featTable->children('Feature-group')) {
+            #$feature_parent_seq->{$child->{'att'}->{'group-set'}} = $seq_id;
+            push(@{$sequence_children->{$seq_id}}, $child->{'att'}->{'group-set'});
+        }
     }
         
     $twig->purge;
