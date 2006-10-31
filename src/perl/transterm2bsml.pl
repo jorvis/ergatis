@@ -239,7 +239,7 @@ sub generateBsml {
             $class = $1 if($seq =~ /\w+\.(\w+)\./);
             
             my $seqObj = $doc->createAndAddSequence( $seq, $seq, $data->{$seq}->{'length'}, 'dna', $class );
-            $doc->createAndAddSeqDataImport( $seqObj, 'fasta', $inputFasta, $seq, $seq );
+            $doc->createAndAddSeqDataImport( $seqObj, 'fasta', $inputFasta, '', $seq );
             $doc->createAndAddLink( $seqObj, 'analysis', '#transterm_analysis', 'input_of' );
             $doc->createAndAddBsmlAttribute( $seqObj, 'defline', $defline );
             my $featTable = $doc->createAndAddFeatureTable($seqObj);
@@ -250,7 +250,7 @@ sub generateBsml {
                 next if($key eq 'length');                
                 
                 my $id = $idMaker->next_id( 'type' => 'terminator', 'project' => $project );
-                my $feat = $doc->createAndAddFeature( $featTable, $seq, $seq, 'terminator');
+                my $feat = $doc->createAndAddFeature( $featTable, $id, $id, 'terminator');
                 $feat->addBsmlLink('analysis', '#transterm_analysis', 'computed_by');
                 $feat->addBsmlIntervalLoc($data->{$file}->{$seq}->{$key}->{'start'},
                                           $data->{$file}->{$seq}->{$key}->{'stop'},
