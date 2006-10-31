@@ -142,6 +142,7 @@ my $debug;
 my $idMaker;
 my $inputFasta;
 my $compressOutput;
+my $defline;
 ########################################
 
 my %options = ();
