@@ -312,14 +312,17 @@ sub handleSequence {
     $" = "|";
     return unless($id =~ /(@{$seqs})/);
 
-    foreach my $ft(($elem->first_child("Feature-tables"))->children("Feature-table")) {
-        foreach my $feature($ft->children("Feature")) {
-            next unless($feature->{'att'}->{'class'} eq 'gene');
-            my $fLoc = $feature->first_child('Interval-loc');
-            my $fId = $feature->{'att'}->{'id'};
-            $retval->{$id}->{$fId}->{'start'}  = $fLoc->{'att'}->{'startpos'};
-            $retval->{$id}->{$fId}->{'stop'}  = $fLoc->{'att'}->{'endpos'};
-            $retval->{$id}->{$fId}->{'strand'}  = $fLoc->{'att'}->{'complement'};
+    my $featTable = $elem->first_child("Feature-tables");
+    if($featTable) {
+        foreach my $ft($featTable->children("Feature-table")) {
+            foreach my $feature($ft->children("Feature")) {
+                next unless($feature->{'att'}->{'class'} eq 'gene');
+                my $fLoc = $feature->first_child('Interval-loc');
+                my $fId = $feature->{'att'}->{'id'};
+                $retval->{$id}->{$fId}->{'start'}  = $fLoc->{'att'}->{'startpos'};
+                $retval->{$id}->{$fId}->{'stop'}  = $fLoc->{'att'}->{'endpos'};
+                $retval->{$id}->{$fId}->{'strand'}  = $fLoc->{'att'}->{'complement'};
+            }
         }
     }
 }
