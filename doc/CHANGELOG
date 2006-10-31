@@ -305,4 +305,5 @@ next
 -added defline attribute output to tmhmm2bsml.pl
 -added gzip (reading/writing) support to snoscan2bsml.pl and component files
 -added defline attribute output to snoscan2bsml.pl
--fixed bug in translate_sequence.pl that would die if there was no Feature-tables element in the input bsml
+-fixed bug in translate_sequence.pl that would die if there were no Feature-tables element in the input bsml
+-fixed bug in prepare_for_transterm that would die if there were no Feature-tables element in the input bsml
