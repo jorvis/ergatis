@@ -88,7 +88,6 @@ ergatis-v1r16b1
 -added more XML based views to the viewer
 -various upgrades to viewer
 -changed GROUPCOUNT references to GROUP_SIZE in all components
-<<<<<<< CHANGELOG
 -added blat component
 -changed ergatis_installer to use cvs export with keyword expansion instead of cvs co 
 -added support for 'nodistrib' configuration option to all components. This flag is useful for testing components locally on a machine.  Setting the flag changes all distributed steps to local steps and all parallel commandsets to serial command sets.
