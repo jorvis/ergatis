@@ -331,7 +331,7 @@ sub findFile {
     my $fileFlag = 0; 
     print "Searching with $seqID\n";
     foreach my $file (@seqList) {
-        if($file =~ /$seqID/) {
+        if($file =~ /$seqID\./) {
             $fileFound = $file;
             print $fileFound."\n";
             $fileFlag++;
