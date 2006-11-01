@@ -88,6 +88,7 @@ ergatis-v1r16b1
 -added more XML based views to the viewer
 -various upgrades to viewer
 -changed GROUPCOUNT references to GROUP_SIZE in all components
+<<<<<<< CHANGELOG
 -added blat component
 -changed ergatis_installer to use cvs export with keyword expansion instead of cvs co 
 -added support for 'nodistrib' configuration option to all components. This flag is useful for testing components locally on a machine.  Setting the flag changes all distributed steps to local steps and all parallel commandsets to serial command sets.
@@ -294,8 +295,32 @@ ergatis-v1r22b1
 -initdb component changed to add chado_mart object manipulation support
 -clustalw now points at custom version allowing longer sequence IDs
 
-next
-----
+eragatis-v2r1b1
+---------------
+**Major restructuring of architecture for simplification and added scalability**
+Highlights
+-Support for multiple iterators and iterator names (example default name: i1)
+-New script create_iterator_groups to batch input sets and includes a max batch size setting to limit batch sizes and automatically create add'l batches as needed. This provides add'l scalability by limiting the size of an individual group XML file.
+-Removal of workflow INI from all components and pipeline steps. Reduces number of files maintained per component and simplifies generation of component and pipeline XML.Components and pipelines now fully descripted in workflow XML
+-No longer using workflow iterators in order to reduce nesting of workflow XML and avoid "shell"XML files 
+-RunUnixCommand is now an alias for RunJavaUnixCommand. Commands are forked from within Java w/o workflow adding an add'l perl wrapper
+-RunUnixCommands now use <executable> tag instead of <param>command</param>
+-Renamed ergatis conf file
+Eg. waitconf.ini -> wait.config
+-Renamed master template
+Eg. wait-master_template.xml -> wait.xml
+-Renamed iterator template
+Eg. wait_temlate.xml -> wait.i1.xml
+wait-master_template.xml -> wait.xml
+-Cleanup of deprecated files in workflow/shared (batch*.xml/ini,default*.xml/ini)
+-Move all perl/shell scripts from workflow/ to src/perl
+-New script replace_template_keys is used to replace config keys in template XML and build iterated subflows
+-changed conf file headings to remove component name. The component name was unnecessary and complicates parsing
+[input wait] --> [input]
+[output wait] --> [output]
+-Deprecated scripts generate_subflow,run_pipeline,generate_groups,generate_input_list
+
+** other changes **
 -fixed ber bug preventing model coordinate extraction on assemblies over 30mb
 -fixed bugs with pvalue filtering and sequence stub writing in wu-blastp
 -fixed GenePredictionBsmlDoc.pm bug not printing empty Sequence stubs on no hit input.
@@ -306,4 +331,7 @@ next
 -added gzip (reading/writing) support to snoscan2bsml.pl and component files
 -added defline attribute output to snoscan2bsml.pl
 -fixed bug in translate_sequence.pl that would die if there were no Feature-tables element in the input bsml
--fixed bug in prepare_for_transterm that would die if there were no Feature-tables element in the input bsml
+-fixed bug in prepare_for_transterm that would die if there were no Feature-tables element in the input bsml=======
+
+next
+----
