@@ -225,8 +225,8 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use XML::Parser;
 use BSML::Indexer::Fasta;
-use Workflow::Logger;
 use Data::Dumper;
+use Ergatis::Logger;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -251,10 +251,10 @@ my $results = GetOptions (\%options,
 			  'output|o=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 ## display documentation
 if( $options{'help'} ){
