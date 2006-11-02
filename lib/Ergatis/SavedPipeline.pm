@@ -53,9 +53,10 @@ $component_name.$token.user.config files will be copied into save dir)
 
 =item I<$OBJ>->write_pipeline()
 
-Creates a ready-to-execute pipeline xml (not instance xml) in the defined project
+Creates a ready-to-execute pipeline xml in the defined project
 space.  You must pass a repository_root parameter to this method.  You may optionally
 pass a shared_config parameter, else it will derive it from the repository root.
+Returns an Ergatis::Pipeline object.
 
 
 =back
@@ -82,6 +83,7 @@ use File::Copy;
 use Ergatis::IdGenerator;
 use XML::Twig;
 use Ergatis::Logger;
+use Ergatis::Pipeline;
 
 
 ## class data and methods
@@ -90,12 +92,13 @@ use Ergatis::Logger;
                         pipeline_id             => undef,
                         shared_config           => undef,
                         template                => undef,
-		        source                  => undef,
-		        _source_twig            => undef,
+                        source                  => undef,
+                        instance_path           => undef,  # instance xml
+                        _source_twig            => undef,
                         _commandnames           => undef,
                         _template_dir           => undef,
                         _repository_root        => undef,
-		        _load_type              => undef,
+                        _load_type              => undef,
                       );
 
     sub new {
@@ -360,7 +363,8 @@ use Ergatis::Logger;
         }
         
         ## create the pipeline XML
-        return $self->_create_pipeline_xml( $pipeline_dir );
+        $self->{instance_path} = $self->_create_pipeline_xml( $pipeline_dir );
+        return Ergatis::Pipeline->new( id => $self->{pipeline_id}, path => $self->{instance_path} );
         
     } ## end write_pipeline sub
     
