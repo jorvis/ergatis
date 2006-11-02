@@ -53,8 +53,8 @@ print $tmpl->output;
 # usage: $string = prettydate( [$time_t] );
 # omit parameter for current time/date
 sub pretty_date_time {
-   @_ = localtime(shift || time);
-   return(sprintf("%04d%02d%02d%02d%02d%02d", $_[5]+1900, $_[4]+1, $_[3], @_[2,1], @_[0]));
+   my @parts = localtime(shift || time);
+   return(sprintf("%04d%02d%02d%02d%02d%02d", $parts[5]+1900, $parts[4]+1, $parts[3], $parts[2], $parts[1], $parts[0]));
 } 
 
 sub temp_pipeline_id {
