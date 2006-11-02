@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="remote-serial">
+    <state>incomplete</state>
+    <name>Grouped subflow</name>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create_group_output_dir</name>
+      <state>incomplete</state>
+      <param>  
+	<key>command</key>
+	<value>mkdir</value>
+      </param>
+      <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;GROUP_NUMBER$;</arg>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create_group_tmp_dir</name>
+      <state>incomplete</state>
+      <param>  
+	<key>command</key>
+	<value>mkdir</value>
+      </param>
+      <arg>-p -m 777 $;TMP_DIR$;/$;GROUP_NUMBER$;</arg>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>replace_template_keys</name>
+      <executable>$;BIN_DIR$;/replace_template_keys</executable>
+      <state>incomplete</state>
+      <param>  
+	<key>--template_xml</key>
+	<value>$;ITERATOR_XML$;</value>
+      </param>
+      <param>  
+	<key>--component_conf</key>
+	<value>$;COMPONENT_CONFIG$;</value>
+      </param>
+      <param>  
+	<key>--iterator_list_dir</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;</value>
+      </param>
+      <param>  
+	<key>--iterator_list</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter</value>
+      </param>
+      <param>  
+	<key>--iterator_list_key</key>
+	<value>ITER_XML</value>
+      </param>
+      <param>  
+	<key>--iterator_output_xml</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.xml</value>
+      </param>
+      <param>  
+	<key>--distribopts</key>
+	<value>maxparallelcommands=1</value>
+      </param>
+    </command>
+    <commandSet type="parallel">
+      <state>incomplete</state>
+      <name>Iterator:$;ITERATOR_TOKEN$; group:$;GROUP_NUMBER$; subflows</name>
+      <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.xml</fileName>
+    </commandSet>
+  </commandSet>
+</commandSetRoot>
+
