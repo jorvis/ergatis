@@ -66,13 +66,16 @@ if(exists $options{'iterator_list'}){
     }
     my $distrib;
     my $maxpar;
+    my $cstype;
     if($options{'distribopts'}){
 	if($options{'distribopts'} =~ /nodistrib=1/i){
 	    $distrib = "parallel";
 	    $maxpar = "<maxParallelCmds>1</maxParallelCmds>";
+	    $cstype = "serial";
 	}
 	else{
 	    $distrib = "parallel";
+	    $cstype = "remote-serial";
 	}
 	if($options{'distribopts'} =~ /maxparallelcommands=1/i){
 	    $maxpar = "<maxParallelCmds>1</maxParallelCmds>";
@@ -86,7 +89,7 @@ if(exists $options{'iterator_list'}){
                  $maxpar\n";
     for(my $i=0;$i<@iterator_output_list;$i++){
 	my $file = $iterator_output_list[$i];
-	print FILE "<commandSet type=\"serial\">
+	print FILE "<commandSet type=\"$cstype\">
                      <state>incomplete</state>
                      <id>$i</id>
                      <fileName>$file</fileName>
@@ -147,7 +150,7 @@ sub replacekeys{
 	    &import_xml($file,$keys,*OUTPUTFILE);
 	    $line = '';
 	}
-	else ( $line !~ /^\;/ && $line !~ /^\#/ ) {
+	elsif( $line !~ /^\;/ && $line !~ /^\#/ ) {
 	    $line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
         }
 	print OUTPUTFILE $line;
