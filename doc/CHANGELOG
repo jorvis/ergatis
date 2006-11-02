@@ -334,3 +334,4 @@ wait-master_template.xml -> wait.xml
 
 next
 ----
+-added component lipoprotein_motif to Makefile.PL
