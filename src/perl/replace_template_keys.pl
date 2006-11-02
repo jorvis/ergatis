@@ -84,9 +84,11 @@ if(exists $options{'iterator_list'}){
                 <commandSet type=\"$distrib\">
                  <state>incomplete</state>
                  $maxpar\n";
-    foreach my $file (@iterator_output_list){
+    for(my $i=0;$i<@iterator_output_list;$i++){
+	my $file = $iterator_output_list[$i];
 	print FILE "<commandSet type=\"serial\">
                      <state>incomplete</state>
+                     <id>$i</id>
                      <fileName>$file</fileName>
                     </commandSet>\n";
     }
@@ -139,8 +141,14 @@ sub replacekeys{
     open( OUTPUTFILE, "+>$outputfile") or $logger->logdie("Could not open output template file $outputfile");
     while( my $line = <INPUTFILE> ){
         ## don't replace vals on comment lines
-        if ( $line !~ /^\;/ && $line !~ /^\#/ ) {
-	    $line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;
+	if($line =~ /\<INCLUDE/){
+	    my($file,$keys) = ($line =~ /file=(\w+)\s+keys=([\$;\w]+)/);
+	    $logger->debug("Include file $file using keys $keys") if($logger->is_debug());
+	    &import_xml($file,$keys,*OUTPUTFILE);
+	    $line = '';
+	}
+	else ( $line !~ /^\;/ && $line !~ /^\#/ ) {
+	    $line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
         }
 	print OUTPUTFILE $line;
     }
@@ -197,6 +205,23 @@ sub add_keys{
 	}
     }
 
+}
+
+sub import_xml{
+    my($file,$keys,$outfh) = @_;
+    my $subs;
+    my @keys = split(/,/,$keys);
+    foreach my $k (@keys){
+	my($tok,$val) = split(/=/,$k);
+	$subs->{$tok} = $val;
+    }
+    open FILE, "$file" or $logger->logdie("Can't open file $file");
+    while(my $line=<FILE>){
+	if ( $line !~ /^\;/ && $line !~ /^\#/ ) {
+	    $line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;
+        }
+	print $outfh $line;
+    }
 }
 
 1;
