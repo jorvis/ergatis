@@ -219,6 +219,7 @@ if (!$fasta_flag) {
             $flags .= " -sequence $temp_in_fsa";
             $flags .= " -outseq $temp_out_fsa";
             $flags .= " -frame '$cds_frame->{$transcript_id}'";
+            $flags .= " -clean";
 
             ## execute transeq
             system($transeq_exec.$flags);
