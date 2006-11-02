@@ -43,6 +43,7 @@ foreach my $file (@files){
       <command>
       <type>RunDistributedCommand</type>
       <name>run group</name>
+      <id>$;GROUP_NUMBER$;</id>
       <state>incomplete</state>
       <executable>$options{'runcmd'}</executable>
       <param>  
