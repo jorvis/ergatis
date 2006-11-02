@@ -74,10 +74,10 @@ umask(0000);
     
     sub run {
         ## path must be defined and exist to run
-        if (! defined $self->{path} ) {
+        if (! defined $_[0]->{path} ) {
             croak("failed to run pipeline: no path set yet.");
-        } elsif (! -f $self->{path} ) {
-            croak("failed to run pipeline: pipeline file $self->{path} doesn't exist");
+        } elsif (! -f $_[0]->{path} ) {
+            croak("failed to run pipeline: pipeline file $_[0]->{path} doesn't exist");
         }
         
         
