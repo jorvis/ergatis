@@ -144,15 +144,21 @@ sub replacekeys{
     open( OUTPUTFILE, "+>$outputfile") or $logger->logdie("Could not open output template file $outputfile");
     while( my $line = <INPUTFILE> ){
         ## don't replace vals on comment lines
+	if( $line !~ /^\;/ && $line !~ /^\#/ ) {
+	    if($line =~ /\<INCLUDE/){
+		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs,1)/ge;	    
+	    }
+	    else{
+		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
+	    }
+        }
 	if($line =~ /\<INCLUDE/){
-	    my($file,$keys) = ($line =~ /file=(\w+)\s+keys=([\$;\w]+)/);
-	    $logger->debug("Include file $file using keys $keys") if($logger->is_debug());
+	    my($file) = ($line =~ /file="([\/\w\.\_]+)"/);
+	    my($keys) = ($line =~ /keys="([\.\_\$;\w]+)"/);
+	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
 	    &import_xml($file,$keys,*OUTPUTFILE);
 	    $line = '';
 	}
-	elsif( $line !~ /^\;/ && $line !~ /^\#/ ) {
-	    $line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
-        }
 	print OUTPUTFILE $line;
     }
     close INPUTFILE;
@@ -161,9 +167,14 @@ sub replacekeys{
 
 
 sub replaceval{
-    my($val,$keylookup) = @_;
+    my($val,$keylookup,$ignore) = @_;
     if(!(exists $keylookup->{$val})){
-	$logger->logdie("Bad key $val in template file");
+	if($ignore){
+	    return $val;
+	}
+	else{
+	    $logger->logdie("Bad key $val in template file");
+	}
     }
     else{
 	if($val =~ /TOGGLE\$\;$/){
@@ -216,7 +227,7 @@ sub import_xml{
     my @keys = split(/,/,$keys);
     foreach my $k (@keys){
 	my($tok,$val) = split(/=/,$k);
-	$subs->{$tok} = $val;
+	$subs->{'$;'.$tok.'$;'} = $val;
     }
     open FILE, "$file" or $logger->logdie("Can't open file $file");
     while(my $line=<FILE>){

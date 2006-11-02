@@ -22,7 +22,7 @@
     </command>
     <!--Processing-->
     <!--Iterator-->
-    <INCLUDE file="iterator_template.xml" keys="$;ITERATOR_KEY$;=$;ITERATOR1$;">
+    <INCLUDE file="$;WORKFLOWDOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_KEY$;=ITERATOR1">
     <!--Postprocessing-->
   </commandSet>
 </commandSetRoot>
