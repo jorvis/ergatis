@@ -1,3 +1,5 @@
+var inputs = new Array();
+
 // constructor for an Input object
 function Input() {
     this.input_type = '';

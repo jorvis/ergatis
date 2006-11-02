@@ -5,6 +5,8 @@
     light blue:    rgb(133,143,158);
     lightest blue: rgb(198,196,197);
     dark green:    rgb(73,138,92);
+    go green:      rgb(119,188,96);
+    error red:     rgb(225,0,0);
 */
 
 body {
@@ -35,7 +37,19 @@ div#content_container {
 div#page_container {
     min-width: 700px;
 }
-
+div.pipeline_marker {
+    width: 300px;
+    border: 1px solid rgb(150,150,150);
+    background-color: rgb(220, 220, 220); 
+    background-color: rgb(73,81,92);   
+    color: rgb(255,255,255);
+    font-size: 110%;
+    letter-spacing: 1px;
+    font-weight: bold;
+    padding: 3px 3px 3px 10px;
+    margin-bottom: 15px;
+    clear: both;
+}
 div.warning_container,
 div.error_container {
     border: 2px solid rgb(200,0,0);
@@ -100,48 +114,3 @@ table, td {
     font-size: 100%;
 }
 
-
-
-
-
-
-
-
-
-
-
-/*
-
-
-span.button {
-    border: 1px solid rgb(131,150,145);
-    background-color: rgb(230,230,230);
-    padding: 0;
-    margin-right: 0.3em;
-}
-
-span.button a {
-    padding: 0.5em;
-    font-weight: bold;
-    color: rgb(0,0,0);
-}
-
-span.button:hover {
-    cursor: pointer;
-}
-
-img.navbutton {
-    border: none;
-    margin: 5px 3px 0px 0px;
-    padding: 0px;
-}
-
-th {
-    text-align: left;
-    padding-right: 10px;
-}
-td {
-    padding-right: 15px;
-}
-
-*/

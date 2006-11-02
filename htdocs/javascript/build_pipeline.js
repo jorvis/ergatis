@@ -2,8 +2,6 @@
 var color_invalid    = 'rgb(255,150,150)';
 var color_incomplete = 'rgb(230,230,230)';
 
-var inputs = new Array();
-
 var next_set_num = 0;
 var new_input_fields_row;
 var no_input_message_row;

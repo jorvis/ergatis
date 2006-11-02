@@ -107,19 +107,6 @@ div.component_progress_image {
     height: 10px;
     width: 500px;
 }
-div.pipeline_marker {
-    width: 300px;
-    border: 1px solid rgb(150,150,150);
-    background-color: rgb(220, 220, 220); 
-    background-color: rgb(73,81,92);   
-    color: rgb(255,255,255);
-    font-size: 110%;
-    letter-spacing: 1px;
-    font-weight: bold;
-    padding: 3px 3px 3px 10px;
-    margin-bottom: 15px;
-    clear: both;
-}
 div.timer {
     float: right;
     color: rgb(150,150,150);

@@ -29,8 +29,9 @@ if (! -d $build_directory ) {
 ## load all of these into a hash so they can be replaced.
 my %component_vars;
 for ( $q->param ) {
-    /${component_id}_(.+)/;
-    $component_vars{'$;' . $1 . '$;'} = $q->param($_);
+    if ( /${component_id}_(.+)/ ) {
+        $component_vars{'$;' . $1 . '$;'} = $q->param($_);
+    }
 }
 
 ## loop through each element of the template and replace with the user's settings.

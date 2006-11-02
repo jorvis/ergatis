@@ -5,14 +5,13 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
 use Ergatis::ConfigFile;
+use Ergatis::SavedPipeline;
 use XML::Writer;
 
 my $q = new CGI;
 
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
-
-my $pipeline_id = 12345;
 
 ## fetch a hashref of all the parameters, since we'll potentially be
 ##  querying a lot of them
@@ -83,10 +82,12 @@ while ( $next_sibling ne 'pipeline_root_panel' ) {
 }
 
 $writer->endTag('commandSet'); ## root 'start' command set
-
 $writer->endTag("commandSetRoot");
-
 $writer->end;
+
+## instantiate the pipeline from the template
+my $pipeline = new Workflow::SavedPipeline( template => $build_pipeline_path );
+$pipeline->write_pipeline( repository_root => $$qvars{repository_root} );
 
 ## now redirect to a monitor page
 print $q->redirect(-uri => url_dir_path($q) . "view_pipeline.cgi?instance=$build_pipeline_path" );
