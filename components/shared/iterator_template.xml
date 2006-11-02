@@ -30,7 +30,7 @@
     </param>
     <param>
       <key>--output_iter_list</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_KEY$;.iter</value>
+      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_KEY$;/$;ITERATOR_KEY$;.iter</value>
     </param>
     <param>
       <key>--group_size_limit</key>
@@ -56,7 +56,7 @@
     </param>
     <param>  
       <key>--iterator_list</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_KEY$;.iter</value>
+      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_KEY$;/$;ITERATOR_KEY$;.iter</value>
     </param>
     <param>  
       <key>--iterator_list_key</key>
