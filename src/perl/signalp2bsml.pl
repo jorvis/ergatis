@@ -59,13 +59,11 @@ bwhitty@tigr.org
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
-use Workflow::Logger;
+use Ergatis::Logger;
 use BSML::BsmlRepository;
 use Workflow::IdGenerator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -79,9 +77,9 @@ my $results = GetOptions (\%options,
               'log|l=s',
               'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
-                  'LOG_LEVEL'=>$options{'debug'});
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation

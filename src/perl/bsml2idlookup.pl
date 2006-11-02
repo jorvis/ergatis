@@ -7,9 +7,12 @@ no lib ".";
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use XML::Parser;
-use Workflow::Logger;
-use DB_File;
+use XML::Twig;
+
+use Ergatis::Logger;
+use BSML::BsmlParserSerialSearch;
+use BSML::BsmlParserTwig;
+use MLDBM "DB_File";
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -30,10 +33,10 @@ my $results = GetOptions (\%options,
 			    'fasta_list|f=s',
                             'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 ## display documentation
 if( $options{'help'} ){

@@ -17,6 +17,7 @@
           <configMapId>create_compute_output</configMapId>
         </command>
 <!--Processing-->
+    <!--
 	<command>
           <type>RunJavaUnixCommand</type>
           <name>Create iterator list</name>
@@ -27,8 +28,13 @@
           <name>Create groups</name>
           <configMapId>create_groups_subflow1</configMapId>
         </command>
-        <command>
+	<command><!-- testing this one -->
           <type>RunJavaUnixCommand</type>
+          <name>Create iterator groups</name>
+          <configMapId>create_iterator_groups_subflow1</configMapId>
+        </command>
+    <command>
+          <type>RunUnixCommand</type>
           <name>Create iterative subflow</name>
           <configMapId>create_iterative_subflow1</configMapId>
         </command>

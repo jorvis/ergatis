@@ -81,28 +81,26 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
-use Workflow::Logger;
+use Ergatis::Logger;
 use DBI;
 use XML::Twig;
 
-my @files		= ();
-my $server		= "SYBTIGR";
-my $db			= undef;
-my %opts		= ();
-my %coords		= ();
-my %asm_ids		= ();
-my @genes		= ();
-my %db_ids		= ();
-my $debug		= 4;
-my $log_file		= Workflow::Logger::get_default_logfilename;
-my $logger		= undef;
-my %id2title		= ();
-my $loader		= $& if $0 =~ /[\w\.\d]+$/;
-my $prog_name		= undef;
-my $db_name		= undef;
-my %latest_ids		= ();
-my %deleted_evidence	= ();
-my %chain_nums		= ();
+my @files	= ();
+my $server	= "SYBTIGR";
+my $db		= undef;
+my %opts	= ();
+my %coords	= ();
+my %asm_ids	= ();
+my @genes	= ();
+my %db_ids	= ();
+my $debug	= 4;
+my $log_file	= Ergatis::Logger::get_default_logfilename;
+my $logger	= undef;
+my %id2title	= ();
+my $loader	= $& if $0 =~ /[\w\.\d]+$/;
+my $prog_name	= undef;
+my $db_name = undef;
+my %latest_ids	= ();
 
 sub parse_opts;
 sub print_usage;
@@ -172,9 +170,9 @@ sub parse_opts
 			print_usage if $val;
 		}
 	}
-	$logger = new Workflow::Logger('LOG_FILE' => $log_file,
+	$logger = new Ergatis::Logger('LOG_FILE' => $log_file,
 				       'LOG_LEVEL' => $debug);
-	$logger = Workflow::Logger::get_logger;
+	$logger = Ergatis::Logger::get_logger;
 	$logger->logdie("No input(s) provided") if !scalar(@files);
 	$logger->logdie("No database provided") if !$db;
 }
