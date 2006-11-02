@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::Common;
 use Ergatis::ConfigFile;
 use HTML::Template;
 
@@ -55,10 +56,16 @@ if ($action eq 'delete') {
     
     &fork_and_action('archive_pipeline_in_place.pl', $message_header, $message, $log_file);
 
-} else {
-    $message_header = "archive/deletion failure";
-    $message = "unhandled action: $action.  It hasn't been coded yet?";
-    &print_page( $message_header, $message );
+} elsif ( $action eq 'archive_to_location' ) {
+
+    $log_file = "$temp_space/ergatis.pipeline.$pipeline_id.archive_to_location.log";
+
+    $message_header = "archiving pipeline $pipeline_id";
+    $message = "<p>Archival of pipeline $pipeline_id has started and will run in the background. " .
+               "It may take several minutes.</p><p>A log file is being written to $log_file</p>";
+    
+    &fork_and_action('archive_pipeline_to_location.pl', $message_header, $message, $log_file);
+
 }
 
 sub fork_and_action {
@@ -83,7 +90,11 @@ sub fork_and_action {
         if (! $gpid) {
             
             ## We're in the grandchild.
-            my $result = `./bin/$script --pipeline_id=$pipeline_id --repository_root=$repository_root -o=$process_output --log=$log --lock_file=$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock`;
+            if ( $action eq 'archive_to_location' ) {
+                `./bin/$script --pipeline_id=$pipeline_id --repository_root=$repository_root -o=$process_output --log=$log --lock_file=$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock --archive_root=$archive_root`;
+            } else {
+                `./bin/$script --pipeline_id=$pipeline_id --repository_root=$repository_root -o=$process_output --log=$log --lock_file=$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock`;
+            }
             exit;
         }
         
@@ -96,9 +107,14 @@ sub fork_and_action {
 sub print_page {
     my ( $header, $msg ) = @_;
     
-    $tmpl->param( REPOSITORY_ROOT => $repository_root );
+#    $tmpl->param( REPOSITORY_ROOT => $repository_root );
     $tmpl->param( MESSAGE_HEADER => $header );
     $tmpl->param( MESSAGE => $msg );
+
+    $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
+    $tmpl->param( SUBMENU_LINKS       => [
+                                            { label => 'pipeline list', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" },
+                                         ] );
 
     print $tmpl->output;
 }

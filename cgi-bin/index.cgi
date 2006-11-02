@@ -4,6 +4,7 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Data::Dumper;
+use Ergatis::Common;
 use Ergatis::ConfigFile;
 use HTML::Template;
 use Monitor;
@@ -26,7 +27,7 @@ my $tmpl = HTML::Template->new( filename => 'templates/index.tmpl',
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
-my $temp_space          = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
+my $temp_space = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
 
 ## an MD5 is used on the project list so that many installations can
 ## share the same storable object.
@@ -77,6 +78,10 @@ $tmpl->param( RUNNING_PIPELINES   => $running_pipelines );
 $tmpl->param( ACTIVE_PIPELINES    => $active_pipelines );
 $tmpl->param( ACTIVE_PIPELINE_AGE => $active_pipeline_age );
 $tmpl->param( CACHE_FILE_AGE      => int($cache_file_age * 1440) );
+$tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
+$tmpl->param( SUBMENU_LINKS       => [
+                                        { label => 'update cache', is_last => 1, url => './index.cgi?update_cache=1' },
+                                     ] );
 
 print $tmpl->output;
 
@@ -121,7 +126,12 @@ sub get_pipeline_lists {
             }
 
             my $twig = new XML::Twig;
-            $twig->parse($pipeline_file_fh);
+            
+            ## this would otherwise die if the pipeline file is 0 bytes
+            if (! eval { $twig->parse($pipeline_file_fh) } ) {
+                ## note, this would be better handled with some message showing that the file empty
+                next;
+            }
 
             my $commandSetRoot = $twig->root;
             my $commandSet = $commandSetRoot->first_child('commandSet');
@@ -183,7 +193,7 @@ sub get_pipeline_lists {
                             label           => $label,
                             project_url     => "./pipeline_list.cgi?repository_root=$repository_root",
                             pipeline_id     => $pipeline_id,
-                            pipeline_url    => "./view_workflow_pipeline.cgi?instance=$pipeline_file",
+                            pipeline_url    => "./view_pipeline.cgi?instance=$pipeline_file",
                             state           => $state,
                             last_mod        => $last_mod,
                             last_mod_secs   => $last_mod_secs,

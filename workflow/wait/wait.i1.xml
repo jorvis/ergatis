@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="serial">
+    <name>Wait Compute</name>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Wait</name>
+      <state>incomplete</state>
+      <param>  
+	<key>command</key>
+	<value>$;BIN_DIR$;/spin_wait</value>
+      </param>
+      <param>  
+	<key>--time</key>
+	<value>$;TIME$;</value>
+      </param>
+    </command>    
+  </commandSet>
+</commandSetRoot>

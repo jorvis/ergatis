@@ -3,16 +3,24 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::Common;
+use Ergatis::ConfigFile;
+use HTML::Template;
 
 my $q = new CGI;
 
 print $q->header( -type => 'text/html' );
 
+my $tmpl = HTML::Template->new( filename => 'templates/view_formatted_ini_source.tmpl',
+                                die_on_bad_params => 1,
+                              );
+
+## read the ergatis config file
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+
 ## will be like:
 ## /usr/local/scratch/annotation/TTA1/Workflow/wu-blastp/20724_AllGroup.niaa/component.conf.bld.ini
 my $file = $q->param("file") || die "pass file";
-
-pageHeader();
 
 ## don't do it if the file doesn't end in .ini or .conf or config
 if ($file !~ /\.ini$/ && $file !~ /\.conf$/ && $file !~ /\.config$/) {
@@ -20,99 +28,59 @@ if ($file !~ /\.ini$/ && $file !~ /\.conf$/ && $file !~ /\.config$/) {
     quitNicely("i decline to show this type of file.");
 }
 
-print "<pre>";
+my $sections = [];
 
 ## open the file and print it to the screen.
 open (my $ifh, "<$file") || quitNicely("couldn't open file $file");
 
-while (my $line = readline $ifh) {
-    chomp $line;
-    my ($url, $var);
+my $ini = new Ergatis::ConfigFile( -file => $file );
 
-    ## colorize any comments
-    if ($line =~ /^[\#\;]/) {
-        $line = '<span class="comment">' . $line . '</span>';
-    }
+for my $section ( $ini->Sections ) {
+    my $parameters = [];
     
-    ## colorize variables
-    my $newline = $line;
-    while ($line =~ /\$\;(\w+)\$\;/g) {
-        $var = $1;
-        $newline =~ s|\$\;$var\$\;|\$\;<span class="inivar">$var</span>\$\;|;
-    }
-    $line = $newline;
-    
-    
-    ## embolden section headers
-    if ($line =~ /^\[/) {
-        $line = '<span class="inihead">' . $line . '</span>';
-    }
+    for my $parameter ( $ini->Parameters($section) ) {
+        my $value = $ini->val($section, $parameter);
+        my $url;
+        
+        ## get any comment and format
+        my $comment = $ini->GetParameterComment($section, $parameter);
+        $comment =~ s/^\;*(.*)/$1/;
+        $comment =~ s/\;\;/<br>&nbsp;/g;
+        
+        ## look for any linkable xml
+        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
+            $url = $1;
+            $value =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
+        }
 
-    ## look for any linkable xml
-    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
-        $url = $1;
-        $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
+        ## look for any linkable ini
+        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))(?![\./])^i ) {
+            $url = $1;
+            $value =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
+        }
+
+        ## look for any linkable lists
+        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)(?![\./])^i ) {
+            $url = $1;
+            $value =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+        }
+        
+        push @$parameters, { parameter => $parameter, value => $value, comment => $comment };
     }
     
-    ## look for any linkable ini
-    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))(?![\./])^i ) {
-        $url = $1;
-        $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
-    }
-    
-    ## look for any linkable lists
-    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)(?![\./])^i ) {
-        $url = $1;
-        $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
-    }
-    
-    print "$line\n";
+    push @$sections, { section => $section, parameters => $parameters };
 }
 
-my %h;
-map { $h{$_} = 1 } ('perl.c', 'sv.c', 'hv.c', 'av.c');
-for ('perl.c', 'sv.c', 'hv.c', 'av.c') { $h{$_} = 1 } 
+$tmpl->param( FILE                => $file );
+$tmpl->param( SECTIONS            => $sections );
 
+$tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
+$tmpl->param( SUBMENU_LINKS       => [
+                                        { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file" },
+                                     ] );
 
-print "</pre>";
-print "</body></html>";
+print $tmpl->output;
 
-sub pageHeader {
-    print <<heADerStuff;
-
-<html>
-<head>
-    <style type="text/css">
-        #file {
-            background-color: rgb(0,0,150);
-            color: rgb(255,255,255);
-            font-family: verdana, helvetica, arial, sans-serif;
-            font-size: 10px;
-            font-weight: bold;
-            padding: 5px 0px 5px 10px;
-        }
-        span.comment {
-            background-color: rgb(200,200,200);
-        }
-        span.inihead {
-            font-weight: bold;
-        }
-        span.inivar {
-            color: rgb(0,75,0);
-        }
-        a {
-            font-weight: bold;
-        }
-    </style>
-</head>
-<body>
-
-<div id="file">
-    $file
-</div>
-
-heADerStuff
-}
 
 sub quitNicely {
     my $msg = shift;

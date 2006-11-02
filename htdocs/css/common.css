@@ -1,37 +1,17 @@
+/*
+    colors:
+    dark blue:     rgb(73,81,92);       used
+    medium blue:   rgb(107,115,123);
+    light blue:    rgb(133,143,158);
+    lightest blue: rgb(198,196,197);
+    dark green:    rgb(73,138,92);
+*/
+
 body {
-    font: small verdana, sans-serif; 
-    margin: 0px;
-    padding: 0px;
+    font: small verdana, sans-serif;
+    margin: 0;
+    padding: 5px;
     background-color: rgb(255,255,255);
-    line-height: 150%;
-}
-
-table, td {
-    font-size: 100%;
-}
-
-#bannertop {
-    height: 36px;
-    margin: 0px;
-    padding: 0px;
-    background-color: rgb(76,109,143);
-}
-
-#bannertop img {
-    border: none;
-}
-
-#bannerbottom {
-    background-color: rgb(229,229,220);
-    border-bottom: 1px solid rgb(131,150,145);
-}
-
-#bannerbottom div.buttons {
-    margin-left: 5px;
-}
-
-#page_content {
-    margin: 10px;
 }
 
 a {
@@ -39,10 +19,21 @@ a {
     color: rgb(0,100,0);
     cursor: pointer;
 }
+dd {
+    margin-bottom: 10px;
+}
+div {
+    margin: 0;
+    padding: 0;
+}
 
-div.button_container {
-    padding-top: 15px;
-    padding-bottom: 15px;
+div#content_container {
+    clear: both;
+    padding: 10px;
+    line-height: 140%;
+}
+div#page_container {
+    min-width: 700px;
 }
 
 div.warning_container,
@@ -51,6 +42,76 @@ div.error_container {
     margin: 15px;
     padding: 10px;
 }
+dt {
+    font-weight: bold;
+}
+h1, h2, h3 {
+    color: rgb(73,81,92);
+}
+
+h1 {
+    font-size: 120%;
+}
+
+h2 {
+    font-size: 100%;
+    border-bottom: 1px dotted rgb(150,150,150);
+    padding-bottom: 5px;
+    margin-top: 0;
+}
+
+h3 {
+    margin: 5px 0px 7px 0px;
+    font-size: 100%;
+}
+
+h3.warning {
+    margin-top: 30px;
+    color: rgb(200,0,0);
+}
+
+hr {
+    margin: 1em 0em;
+    height: 1px;
+}
+
+input, select {
+    border: 1px solid rgb(131,150,145);
+    padding-left: 3px;
+    font-family: verdana, sans-serif;
+    font-size: 8pt;
+}
+
+span.state {
+    font-weight: bold;
+}
+
+span.complete    { color: rgb(0,200,0); }
+span.incomplete  { color: rgb(75,75,75); }
+span.failed      { color: rgb(200,0,0); }
+span.pending     { color: rgb(200,200,0); }
+span.error       { color: rgb(200,0,0); }
+span.running     { color: rgb(0,0,200); }
+span.waiting     { color: rgb(200,200,0); }
+span.interrupted { color: rgb(200,0,200); }
+span.unknown     { color: rgb(0,0,0); }
+
+table, td {
+    font-size: 100%;
+}
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 
 span.button {
     border: 1px solid rgb(131,150,145);
@@ -69,63 +130,10 @@ span.button:hover {
     cursor: pointer;
 }
 
-h1 {
-    color: rgb(76,109,143);
-    font-size: 140%;
-}
-
-h2 {
-    color: rgb(76,109,143);
-    font-size: 110%;
-    border-bottom: 1px dotted rgb(150,150,150);
-    padding-bottom: 5px;
-    margin-top: 0;
-}
-
-h3 {
-    color: rgb(76,109,143);
-    margin: 5px 0px 7px 0px;
-    font-size: 110%;
-}
-
-h3.warning {
-    margin-top: 30px;
-    color: rgb(200,0,0);
-}
-
-input, select {
-    border: 1px solid rgb(131,150,145);
-    padding-left: 3px;
-    font-family: verdana, sans-serif;
-    font-size: 8pt;
-}
-
 img.navbutton {
     border: none;
     margin: 5px 3px 0px 0px;
     padding: 0px;
-}
-
-span.state {
-    font-weight: bold;
-}
-
-span.complete    { color: rgb(0,200,0); }
-span.incomplete  { color: rgb(75,75,75); }
-span.failed      { color: rgb(200,0,0); }
-span.pending     { color: rgb(200,200,0); }
-span.error       { color: rgb(200,0,0); }
-span.running     { color: rgb(0,0,200); }
-span.waiting     { color: rgb(200,200,0); }
-span.interrupted { color: rgb(200,0,200); }
-span.unknown     { color: rgb(0,0,0); }
-
-table.pipeline_list {
-    width: 100%;
-}
-
-table.pipeline_list th {
-    text-align: left;
 }
 
 th {
@@ -135,3 +143,5 @@ th {
 td {
     padding-right: 15px;
 }
+
+*/

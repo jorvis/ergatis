@@ -1,0 +1,17 @@
+<h1 class='subflowgroup_label'>analysis group elements</h1>
+<TMPL_LOOP NAME=ELEMENTS>
+<div id='<TMPL_VAR NAME=NAME>_bar' class='subflowbar'>
+    <div class='leftside'>
+        <img id='<TMPL_VAR NAME=NAME>_arrow' class='expander' src='/ergatis/arrow_right.gif' onclick='toggle_subflow_display("<TMPL_VAR NAME=NAME>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
+        <img id='<TMPL_VAR NAME=NAME>_img' class='status' src='/ergatis/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
+        <TMPL_VAR NAME=NAME>
+    </div>
+    <div class='rightside'>
+        <img class='reloader' src='/ergatis/reload_blue.png' onclick='reload_subflow("<TMPL_VAR NAME=NAME>", "<TMPL_VAR NAME=FILE>")' alt='reload' title='reload'>
+    </div>
+</div>
+<TMPL_IF NAME=MESSAGE>
+<div class='messageblock'><TMPL_VAR NAME=MESSAGE></div>
+</TMPL_IF>
+<div id='<TMPL_VAR NAME=NAME>_data' class='subflowdata'></div>
+</TMPL_LOOP> <!-- end elements loop -->

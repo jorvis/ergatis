@@ -1,26 +1,39 @@
+
 #project_list_container {
-    float: left;
     width: 100px;
+    float: left;
 }
 
-dl#project_list dd {
-    display: none;
+ul#project_list {
+    margin: 0;
+    padding: 0 0 0 5px;
+    list-style: none;
+}
+
+a.project_link {
+    position:relative; /*this is the key*/
+    z-index:24; 
+    text-decoration: none;
+}
+
+a.project_link:hover {
+    z-index:25; 
+}
+
+a.project_link span {
+    color: rgb(0,0,0);
+    display: none
+}
+
+a.project_link:hover span {
+    display:block;
+    position:absolute;
+    top: 1em; 
+    left: 8em; 
     border: 1px solid rgb(100,100,100);
-    width: 30em;
+    padding: 2px 5px 2px 5px;
     background-color: rgb(230,230,230);
-    padding: 0.8em;
-    margin-left: 8em;
-    margin-top: -3em;
     opacity: 0.9;
-}
-
-/* no chance of this working in IE 4-6.  too bad. */
-dl#project_list dt:hover + dd.project_path {
-    display: block;
-}
-
-dd.project_path:hover {
-    display: block;
 }
 
 input#repository_root_field {
@@ -33,7 +46,6 @@ span.header_note {
     font-size: 70%;
     color: rgb(0,100,0);
 }
-
 
 #watched_pipeline_container,
 #running_pipeline_container,

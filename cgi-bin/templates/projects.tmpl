@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis</title>
+    <!-- style -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/projects.css">
+    <!-- functionality -->
+    <script type="text/javascript" src="/ergatis/javascript/common.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/table_methods.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/projects.js"></script>
+</head>
+
+<body class='projects'>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='content_container'>
+        <h2>projects</h2>
+        <p>
+            Here you'll find information on each of the projects currently registered.
+        </p>
+
+        <!-- if you change the default text within this input box you'll need to change clear_filter() too -->
+        filter: <input type='text' id='filter' name='filter' value='enter filter term' onclick='clear_filter()' onkeyup="filter_projects(this.value)">
+
+        <div class='project_info_container'>
+            <table id='project_info'>
+                <tr>
+                    <th>project</th>
+                    <th>root</th>
+                    <th>codebase</th>
+                </tr>
+                <TMPL_LOOP NAME=PROJECTS>
+                <tr>
+                    <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
+                    <td><TMPL_VAR NAME=REPOSITORY_ROOT></td>
+                    <td><TMPL_VAR NAME=ERGATIS_DIR></td>
+                </tr>
+                </TMPL_LOOP>
+            </table>
+            <div id='no_matches'>
+                no rows matched your filter.
+            </div>
+        </div>
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
+
+</body>
+
+</html>

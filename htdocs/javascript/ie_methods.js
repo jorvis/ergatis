@@ -10,19 +10,23 @@
         contains()
         insertAdjacentText()
         insertAdjacentHTML()
+            examples: 
+            foo.insertAdjacentHTML('BeforeBegin', '<bar>');
+            foo.insertAdjacentHTML('AfterBegin', '<bar>');
+            foo.insertAdjacentHTML('BeforeEnd', '<bar>');
         insertAdjacentElement()
 */
 
 if(self.Node&&self.Node.prototype){
-Node.prototype.removeNode=remove_Node;
-Node.prototype.replaceNode=replace_Node;
-Node.prototype.swapNode=swap_Node;
-Element.prototype.applyElement=apply_Element;
-Element.prototype.contains=_contains;
-Element.prototype.insertAdjacentText=insertAdj_Text;
-Element.prototype.insertAdjacentHTML=insertAdj_HTML;
-Element.prototype.insertAdjacentElement=insertAdj_El;
-Element.prototype.insert__Adj=insert__Adj;
+    Node.prototype.removeNode=remove_Node;
+    Node.prototype.replaceNode=replace_Node;
+    Node.prototype.swapNode=swap_Node;
+    Element.prototype.applyElement=apply_Element;
+    Element.prototype.contains=_contains;
+    Element.prototype.insertAdjacentText=insertAdj_Text;
+    Element.prototype.insertAdjacentHTML=insertAdj_HTML;
+    Element.prototype.insertAdjacentElement=insertAdj_El;
+    Element.prototype.insert__Adj=insert__Adj;
 }
 
 function remove_Node(a1){
@@ -37,7 +41,9 @@ p.insertBefore(df,this)
 return p?p.removeChild(this):this;
 }
 
-function replace_Node(a1){return this.parentNode.replaceChild(a1,this)}
+function replace_Node(a1) {
+    return this.parentNode.replaceChild(a1,this);
+}
 
 function swap_Node(a1){
 var p=a1.parentNode;

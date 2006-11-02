@@ -3,11 +3,21 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::Common;
+use Ergatis::ConfigFile;
 use File::Basename;
+use HTML::Template;
 
 my $q = new CGI;
 
 print $q->header( -type => 'text/html' );
+
+my $tmpl = HTML::Template->new( filename => 'templates/view_formatted_xml_source.tmpl',
+                                die_on_bad_params => 1,
+                              );
+
+## read the ergatis config file
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 ## will be like:
 ## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
@@ -18,8 +28,6 @@ if ( ! -e $file && -e "$file.gz" ) {
     $file .= '.gz';
 }
 
-pageHeader();
-
 ## don't do it if the file doesn't end in .xml or .instance
 if ($file !~ /\.xml$/ && 
     $file !~ /\.instance$/ && 
@@ -29,22 +37,7 @@ if ($file !~ /\.xml$/ &&
     quitNicely("i decline to show this type of file.");
 }
 
-## give colors as rgb values or hexidecimal
-my %colors = (
-                complete    => 'rgb(0,200,0)',      ## green
-                incomplete  => 'rgb(75,75,75)',     ## dark grey
-                failed      => 'rgb(200,0,0)',      ## red
-                pending     => 'rgb(200,200,0)',    ## yellow
-                errors      => 'rgb(200,0,0)',      ## red
-                error       => 'rgb(200,0,0)',      ## red
-                running     => 'rgb(0,0,200)',      ## blue
-                waiting     => 'rgb(200,200,0)',    ## yellow
-                interrupted => 'rgb(200,0,200)',    ## purple
-                total       => 'rgb(0,0,0)',        ## black 
-             );
 my $progress_image_width = 500;
-
-print "<div id='sourcecode'>";
 
 ## open the file and print it to the screen.
 my $ifh;
@@ -59,9 +52,11 @@ if ($file =~ /\.gz$/) {
 my %states;
 my $overall_state = 0;
 my $found_states = 0;
+my $has_multiple_states = 0;
 my $within_status_box = 0;
 my $command_count = 0;
 my @xmlfiles;
+my $display_source = '';
 
 while (my $line = readline $ifh) {
     my ($tag, $url, $word);
@@ -78,9 +73,12 @@ while (my $line = readline $ifh) {
         $within_status_box = 0;
         $found_states = 1;
     } elsif ($within_status_box && (! $found_states) && $line =~ /\<(.+?)\>(\d+)/) {
-        if ($2) {
-            $states{$1} += $2;
-            $command_count += $2 unless ($1 eq 'total');
+        my $state = $1;
+        $state = 'error' if $state eq 'errors';  ## workflow doesn't always match states exactly.
+    
+        if ($2 && $state ne 'total') {
+            $states{$state} += $2;
+            $command_count += $2;
         }
     }
     
@@ -109,7 +107,7 @@ while (my $line = readline $ifh) {
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
-	push @xmlfiles,$url;
+        push @xmlfiles,$url;
     }
     
     ## look for any linkable ini
@@ -120,12 +118,10 @@ while (my $line = readline $ifh) {
 
     ## look for any linkable log/stderr/sdtout
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:log|stderr|stdout))(?![\./])^i ) {
-	if(-z $url){
-	    $url = $1;
-	    $line =~ s|$url|<a href="./view_formatted_log_source.cgi?file=$url">$url</a>|;
-	}
-	else{
-	}
+        if(-z $url){
+            $url = $1;
+            $line =~ s|$url|<a href="./view_formatted_log_source.cgi?file=$url">$url</a>|;
+        }
     }
 
     ## look for any linkable lists
@@ -137,159 +133,84 @@ while (my $line = readline $ifh) {
     ##match any other files
     if ( $line =~ m|(?<!\$\;)(/[/a-z0-9_\-\.]+)\&|i ) {
         $url = $1;
-	if(-f $url){
-	    $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
-	}
+        if(-f $url){
+            $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+        }
     }
 
     ## look for any execution hosts
     if ( $line =~ m|executionHost</span>\&gt\;(.+?)&lt;|i ) {
-	my $ehost = $1; 
-	my $hostsrvstr = join(',',split(/\./,$ehost));
-        $line =~ s|$ehost|<a href="http://intranet.tigr.org/cgi-bin/sysadmin/hobbit/bb-hostsvc.sh?HOSTSVC=$hostsrvstr.cpu&IP=0.0.0.0&DISPLAYNAME=$ehost">$ehost</a>|;
+        my $ehost = $1; 
+        my $hostsrvstr = join(',',split(/\./,$ehost));
+        $line =~ s|$ehost|<a href="http://intranet.tigr.org/cgi-bin/sysadmin/hobbit/bb-hostsvc.sh?HOSTSVC=$hostsrvstr.cpu&amp;IP=0.0.0.0&amp;DISPLAYNAME=$ehost">$ehost</a>|;
     }
     
-    print $line;
+    $display_source .= $line;
 }
 
-print "</div>";
+my $state_elements = [];
+my $linked_files = [];
+my $list_limit = 10;
+my $unshown_file_count = 0;
 
 if (scalar keys %states) {
 
-    ## build the "image" div contents that represent the different states
-    my $status_image = '';
-    for my $status (sort keys %states) {
-        ## don't include 'total' states
-        next if ($status eq 'total');
-    
-        ## each status gives a percentage of the total command_count
-        $status_image .= '<div class="status_bar_portion" style="width: ' . 
-                           int( ($states{$status} / $command_count) * $progress_image_width) . 'px; background-color: ' . 
-                           ($colors{$status} || 'rgb(0,0,0)') . ';">' . "</div>\n";
-    }
-
     ## build the line that lists each status and its count
-    my $status_list_line = '<li>states: ';
-
-    for my $status (sort keys %states) {
-        $status_list_line .= "$status (<span style='color:$colors{$status};'>$states{$status}</span>), ";
-    }
-
-    ## take off the trailing comma
-    if ($status_list_line =~ /(.+)\,\s*$/) {
-        $status_list_line = $1;
-    }
-
-    $status_list_line .= "</li>\n";
-
-    my $xmlline;
-    my $listlimit=10;
-    foreach my $xml (splice(@xmlfiles,0,$listlimit)){
-	my @stats = stat $xml; 
-	my $kb = sprintf("%.1f", $stats[7]/1024);
-	my $file = basename($xml);
-	$xmlline .= "<a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$xml'>$file</a> <i>$kb kb</i><br>";
-    }
-    if(scalar(@xmlfiles)  > $listlimit){
-	$xmlline .= "<i>Plus ".(scalar(@xmlfiles)-$listlimit)." others...</i><br>";
-    }
-
-    print <<StateBox;
-   <div id='summary'>
-        <ul class='component'>
-            <li><div class="component_progress_image">$status_image</div></li>
-            <li>state: <span style='color: $colors{$overall_state}'>$overall_state</span></li>
-            $status_list_line
-       </ul>
-    <div id='xmlfiles'>
-        <ul class='component'>
-	<li>       Linked XML files</li>
-	$xmlline
-       </ul>
-     </div>
-   </div>
+    ## at the same time we can calculate the width of each state for the progress bar
+    my $state_count = scalar keys %states;
+    my $width_used = 0;  
+    my $states_handled = 0;
    
+    for my $status (sort keys %states) {
+        ## each status gives a percentage of the total command_count
+        my $width = int( ($states{$status} / $command_count) * $progress_image_width);
+        $width_used += $width;
+        $states_handled++;
+        
+        ## if this is the last state and there are unused pixels in the bar, just tag
+        ## the unused ones onto this color so we don't have a gap
+        if ( $states_handled == $state_count && $width_used < $progress_image_width ) {
+            $width += $progress_image_width - $width_used;
+        }
 
-StateBox
+        push @$state_elements, { state => $status, count => $states{$status}, width => $width };
+    }
+
+    if ($state_count > 1) {
+        $has_multiple_states = 1;
+    }
+
+    for (my $i=0; $i<=$#xmlfiles; $i++) {
+        if ( $i == $list_limit ) {
+            $unshown_file_count = $#xmlfiles - $i + 1;
+            last;
+        }
+        
+        my @stats = stat $xmlfiles[$i]; 
+        
+        push @$linked_files, {
+                                url => "./view_formatted_xml_source.cgi?file=$xmlfiles[$i]",
+                                label => basename($xmlfiles[$i]),
+                                size => sprintf("%.1f", $stats[7]/1024) . ' kb',
+                             };
+    }
 }
 
-print "</body></html>";
+$tmpl->param( FILE                => $file );
+$tmpl->param( DISPLAY_SOURCE      => $display_source );
+$tmpl->param( STATE_ELEMENTS      => $state_elements );
+$tmpl->param( LINKED_FILES        => $linked_files );
+$tmpl->param( OVERALL_STATE       => $overall_state );
+$tmpl->param( HAS_MULTIPLE_STATES => $has_multiple_states );
+$tmpl->param( UNSHOWN_FILE_COUNT  => $unshown_file_count );
 
-sub pageHeader {
-    print <<heADerStuff;
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" --"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"-->
-<html>
-<head>
-    <style type="text/css">
-        body {
-            font-family: verdana, helvetica, arial, sans-serif;
-            font-size: 10px;        
-        }
-        #file {
-            background-color: rgb(0,0,150);
-            color: rgb(255,255,255);
-            font-weight: bold;
-            padding: 5px 0px 5px 10px;
-        }
-        span.comment {
-            background-color: rgb(200,200,200);
-        }
-        span.tag {
-            color: rgb(100,100,100);
-        }
-        a {
-            font-weight: bold;
-        }
-        li {
-            list-style-type: none; 
-            clear: left;
-        }
-        ul {
-            width: 525px;
-            padding-left: 5px;
-            padding-bottom: 5px;
-            margin-left: 20px;
-        }
-        ul.component {
-            border: 1px solid rgb(150,150,150);
-            margin-bottom: 5px;
-        }
-        div.component_progress_image {
-            border: 1px solid black;
-            padding: 0px;
-            margin: 0px;
-            height: 10px;
-            width: 500px;
-            margin-top: 10px;
-        }
-        div.status_bar_portion {
-            border: none;
-            padding: 0px;
-            margin: 0px;
-            height: 10px;
-            float: left;
-        }
-        #sourcecode {
-            padding-left: 10px;
-            margin-top: 10px;
-            white-space: pre;
-        }
-    </style>
-    <script type="text/javascript">
-        function displaySummary() {
-            // we want to get the summary and display it before the sourcecode div
-            document.getElementById("sourcecode").parentNode.insertBefore(document.getElementById("summary"), document.getElementById("sourcecode"));
-        }
-    </script>
-</head>
-<body onLoad="javascript: displaySummary();">
+$tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
+$tmpl->param( SUBMENU_LINKS       => [
+                                        { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file" },
+                                     ] );
 
-<div id="file">
-    $file
-</div>
+print $tmpl->output;
 
-heADerStuff
-}
 
 sub quitNicely {
     my $msg = shift;

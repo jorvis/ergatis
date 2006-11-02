@@ -1,0 +1,14 @@
+div#no_matches {
+    display: none;
+    margin-left: 10px;
+}
+table#project_info {
+    border: 0;
+    border-collapse: collapse;
+    margin: 10px 0 0 10px;
+    width: 100%;
+}
+table#project_info th {
+    text-align: left;
+    padding-right: 10px;
+}

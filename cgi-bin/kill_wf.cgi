@@ -56,7 +56,7 @@ if($childtokill[3] > 1){
 if ($count != 1 || $childtokill[3] eq '') {
     print header();
     print "<html><body>";
-    print "Attempting to kill process $execuser\@$hostname:$pid. Error signalling process with pid $pid; manual intervention may be required<br><a href='./view_workflow_pipeline.cgi?instance=$instancexml'>[view workflow]</a><br><i>Debug information follows</i><br>";
+    print "Attempting to kill process $execuser\@$hostname:$pid. Error signalling process with pid $pid; manual intervention may be required<br><a href='./view_pipeline.cgi?instance=$instancexml'>[view workflow]</a><br><i>Debug information follows</i><br>";
     print "Detected workflow processes: ",join(',',@childtokill),"<br>";
     print "<hr>";
     foreach my $p ( @{$t->table} ){
@@ -66,7 +66,7 @@ if ($count != 1 || $childtokill[3] eq '') {
     print "</body></html";
     exit(1);
 } else {
-    print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");
+    print redirect(-uri=>"./view_pipeline.cgi?instance=$instancexml");
     exit(0);
 }
 print header();

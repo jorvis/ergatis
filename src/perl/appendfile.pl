@@ -41,7 +41,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 use File::Basename;
 BEGIN {
-use Workflow::Logger;
+use Ergatis::Logger;
 }
 
 umask(0000);
@@ -59,10 +59,10 @@ my $results = GetOptions (\%options,
 
 
 
-my $log4perl = $options{'log4perl'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$log4perl,
+my $log4perl = $options{'log4perl'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
 				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 
 #

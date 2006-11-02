@@ -1,0 +1,31 @@
+<div id='<TMPL_VAR NAME=NAME>_bar' class='subflowgroupbar'>
+    <div class='leftside'>
+        <img id='<TMPL_VAR NAME=NAME>_arrow' class='expander' src='/ergatis/arrow_right.gif' onclick='toggle_subflowgroup_display("<TMPL_VAR NAME=NAME>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
+        <img class='status' src='/ergatis/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
+        <span class='minor'>group <TMPL_VAR NAME=GROUP_NUM></span>
+    </div>
+    <div class='rightside'>
+        <span class='infolabel' id='<TMPL_VAR NAME=NAME>_infolabel' onclick='toggle_group_info("<TMPL_VAR NAME=NAME>")'>show group info</span>
+    </div>
+</div>
+<TMPL_IF NAME=MESSAGE>
+<div class='messageblock'>
+    return value: <TMPL_VAR NAME=RET_VALUE><br>
+    message: <TMPL_VAR NAME=MESSAGE>
+</div>
+</TMPL_IF>
+<div id='<TMPL_VAR NAME=NAME>_info' class='subflowinfo'>
+    <table class='cmd_stats'>
+        <tr><th>workflow id:</th><td><TMPL_VAR NAME=WORKFLOW_ID></td></tr>
+        <tr><th>state:</th><td><TMPL_VAR NAME=STATE></td></tr>
+        <tr><th>start time:</th><td><TMPL_VAR NAME=START_TIME></td></tr>
+        <tr><th>end time:</th><td><TMPL_VAR NAME=END_TIME></td></tr>
+        <tr><th>duration:</th><td><TMPL_VAR NAME=RUN_TIME></td></tr>
+        <tr><th>grid id:</th><td><TMPL_VAR NAME=GRID_ID></td></tr>
+        <tr><th>execution host:</th><td><TMPL_VAR NAME=EXECUTION_HOST><a href='http://intranet.tigr.org/cgi-bin/sysadmin/hobbit/bb-hostsvc.sh?HOSTSVC=<TMPL_VAR NAME=HOSTSRVSTR>.cpu&amp;IP=0.0.0.0&amp;DISPLAYNAME=<TMPL_VAR NAME=EXECUTION_HOST>'>[BB]</a><a href='http://enterprise.tigr.org/ganglia/?m=load_one&amp;r=hour&amp;s=descending&amp;c=Main+Cluster&amp;h=<TMPL_VAR NAME=EXECUTION_HOST>&amp;sh=1&amp;hc=4'>[Ganglia]</a></td></tr>
+        <tr><th colspan='2'>xml:</th></tr>
+        <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=FILE>'><TMPL_VAR NAME=FILE></a></td></tr>
+    </table>
+</div>
+<div id='<TMPL_VAR NAME=NAME>_data' class='subflowgroupdata'></div>
+

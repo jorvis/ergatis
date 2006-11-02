@@ -5,105 +5,109 @@
 
 <head>
     <meta http-equiv="Content-Language" content="en-us">
-    <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2">
     <link rel='stylesheet' type='text/css' href='/ergatis/css/common.css'>
+    <link rel='stylesheet' type='text/css' href='/ergatis/css/header.css'>
     <link rel='stylesheet' type='text/css' href='/ergatis/css/monitor.css'>
     <title>ergatis | pipeline list</title>
 </head>
 
-<body>
+<body class='pipelines'>
 
-<div id='bannertop'>
-    <a href='/cgi-bin/ergatis/index.cgi'><img src='/ergatis/banner_main.png' alt='main banner'></a>
-</div>
-<div id='bannerbottom'>
-    <div id='pipelinesummary'>
-        <div class='pipelinestat'><strong>repository root:</strong> <TMPL_VAR NAME=REPOSITORY_ROOT></div>
-        <TMPL_IF NAME=DISPLAY_CODEBASE><div class='pipelinestat'><strong>codebase:</strong> <TMPL_VAR NAME=ERGATIS_DIR></div></TMPL_IF>
-        <br>
-        <div class='pipelinestat'><strong>quota:</strong> <TMPL_VAR NAME=QUOTA_STRING></div>
-        <div id='pipelinecommands'>
-            <a href='./new_pipeline.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
-            <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='info_container'>
+        <ul id='info_elements'>
+            <li><span class='info_label'>repository root:</span> <TMPL_VAR NAME=REPOSITORY_ROOT></li>
+            <TMPL_IF NAME=DISPLAY_CODEBASE>
+            <li><span class='info_label'>codebase:</span> <TMPL_VAR NAME=ERGATIS_DIR></li>
+            </TMPL_IF>
+            <li><span class='info_label'>project quota:</span> <TMPL_VAR NAME=QUOTA_STRING></li>
+        </ul>
+    </div>
+
+    <div id='content_container'>
+
+        <TMPL_IF NAME=ERRORS_FOUND>
+        <div class='error_container'>
+            <h3>ERROR:</h3>
+        <TMPL_LOOP NAME=ERROR_MSGS>
+            <TMPL_VAR NAME=MSG><br>
+        </TMPL_LOOP>
         </div>
+        <TMPL_ELSE>
+
+        <div id='pipelinelist'>
+            <h2>pipeline list</h2>
+            <TMPL_IF NAME=PIPELINE_COUNT>
+            <table class='pipeline_list'>
+                <tr>
+                    <th>id</th>
+                    <th>state</th>
+                    <th>user</th>
+                    <th>contents</th>
+                    <th>last mod</th>
+                    <th>run time</th>
+                    <th>actions</th>
+                </tr>
+            <TMPL_LOOP NAME=PIPELINES>
+                <tr>
+                    <td><TMPL_VAR NAME=PIPELINE_ID></td>
+                    <td class='pipeline_state'>
+                        <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                        <TMPL_IF NAME=ERROR_MESSAGE>
+                        <div>
+                            <span class='error_message_header'>top-level error message</span>
+                            <hr>
+                            <TMPL_VAR NAME=ERROR_MESSAGE>
+                        </div>
+                        </TMPL_IF>
+                    </td>
+                    <td><TMPL_VAR NAME=PIPELINE_USER></td>
+                    <td class='component_review'>
+                    <TMPL_IF NAME=LINKS_ENABLED>
+                        <a href='<TMPL_VAR NAME=VIEW_LINK>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a>
+                    <TMPL_ELSE>
+                        <TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL>
+                    </TMPL_IF>
+                        <div>
+                            <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
+                            <hr/>
+                        <TMPL_IF NAME=COMPONENT_COUNT>
+                        <TMPL_LOOP NAME=COMPONENTS>
+                            <TMPL_IF NAME=ERROR_COUNT>
+                            <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+                            <TMPL_ELSE>
+                            <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                            </TMPL_IF> <!-- ERROR_COUNT if -->
+                        </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
+                        <TMPL_ELSE>
+                            no components found
+                        </TMPL_IF>
+                        </div>
+                    </td>
+                    <td><TMPL_VAR NAME=LAST_MOD></td>
+                    <td><TMPL_VAR NAME=RUN_TIME></td>
+                    <td class='actions'>
+                    <TMPL_IF NAME=LINKS_ENABLED>
+                        <a href='<TMPL_VAR NAME=VIEW_LINK>'>view</a>
+                        <a href='<TMPL_VAR NAME=EDIT_LINK>'>edit</a>
+                        <a href='<TMPL_VAR NAME=ARCHIVE_LINK>'>archive/delete</a>
+                    <TMPL_ELSE>
+                        <a class='disabled'>view</a>
+                    </TMPL_IF>
+                    </td>
+                </tr>
+            </TMPL_LOOP>
+            </table>
+            </TMPL_IF> <!-- if PIPELINE_COUNT -->
+        </div> <!-- end pipelinelist -->
+
+        </TMPL_IF> <!-- if ERRORS_FOUND -->
     </div>
 </div>
-<TMPL_IF NAME=ERRORS_FOUND>
-<div class='error_container'>
-    <h3>ERROR:</h3>
-<TMPL_LOOP NAME=ERROR_MSGS>
-    <TMPL_VAR NAME=MSG><br>
-</TMPL_LOOP>
-</div>
-<TMPL_ELSE>
-
-<div id='pipelinelist'>
-    <h1>pipeline list</h1>
-    <TMPL_IF NAME=PIPELINE_COUNT>
-    <table id='pipelinetable'>
-        <tr>
-            <th>pipeline id</th>
-            <th>state</th>
-            <th>user</th>
-            <th>last mod</th>
-            <th>run time</th>
-            <th>contents</th>
-            <th>actions</th>
-        </tr>
-    <TMPL_LOOP NAME=PIPELINES>
-        <tr>
-            <td><TMPL_VAR NAME=PIPELINE_ID></td>
-            <td class='pipeline_state'>
-                <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
-                <TMPL_IF NAME=ERROR_MESSAGE>
-                <div>
-                    <span class='error_message_header'>top-level error message</span>
-                    <hr>
-                    <TMPL_VAR NAME=ERROR_MESSAGE>
-                </div>
-                </TMPL_IF>
-            </td>
-            <td><TMPL_VAR NAME=PIPELINE_USER></td>
-            <td><TMPL_VAR NAME=LAST_MOD></td>
-            <td><TMPL_VAR NAME=RUN_TIME></td>
-            <td class='component_review'>
-            <TMPL_IF NAME=LINKS_ENABLED>
-                <a href='<TMPL_VAR NAME=VIEW_LINK>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a>
-            <TMPL_ELSE>
-                <TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL>
-            </TMPL_IF>
-                <div>
-                    <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
-                    <hr/>
-                <TMPL_IF NAME=COMPONENT_COUNT>
-                <TMPL_LOOP NAME=COMPONENTS>
-                    <TMPL_IF NAME=ERROR_COUNT>
-                    <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
-                    <TMPL_ELSE>
-                    <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
-                    </TMPL_IF> <!-- ERROR_COUNT if -->
-                </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
-                <TMPL_ELSE>
-                    no components found
-                </TMPL_IF>
-                </div>
-            </td>
-            <td>
-            <TMPL_IF NAME=LINKS_ENABLED>
-                <a href='<TMPL_VAR NAME=VIEW_LINK>'><img class='navbutton' src='/ergatis/button_blue_view.png' alt='view' title='view'></a>
-                <a href='<TMPL_VAR NAME=EDIT_LINK>'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
-                <a href='<TMPL_VAR NAME=ARCHIVE_LINK>'><img class='navbutton' src='/ergatis/button_blue_delete.png' alt='delete' title='delete'></a>
-            <TMPL_ELSE>
-                <img class='navbutton' src='/ergatis/button_grey_view.png' alt='view' title='view'>
-            </TMPL_IF>
-            </td>
-        </tr>
-    </TMPL_LOOP>
-    </table>
-    </TMPL_IF> <!-- if PIPELINE_COUNT -->
-</div> <!-- end pipelinelist -->
-
-</TMPL_IF> <!-- if ERRORS_FOUND -->
 
 </body>
 

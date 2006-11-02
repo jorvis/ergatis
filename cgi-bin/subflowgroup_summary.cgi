@@ -4,11 +4,16 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use File::Basename;
+use HTML::Template;
 use XML::Twig;
 
 my $q = new CGI;
 
 print $q->header( -type => 'text/html' );
+
+my $tmpl = HTML::Template->new( filename => 'templates/subflowgroup_summary.tmpl',
+                                die_on_bad_params => 1,
+                              );
 
 my $xml_input = $q->param("xml_input") || die "pass xml_input";
 
@@ -30,8 +35,6 @@ my $parent_commandset = $sg_twig->root->first_child('commandSet');
 ## the subflowNgroupsN.xml file will only have one command
 my $command = $parent_commandset->first_child('command');
 
-print "    <h1>analysis group elements</h1>\n";
-
 ## we need to parse through the params to get the output xml
 ##  perhaps later we can build the command too
 ## the subflow_subflowNgroupsN.xml file
@@ -47,20 +50,29 @@ if ($ssg_file =~ /\.gz/) {
     open($ssg_file_fh, "<$ssg_file") || die "can't read $ssg_file: $!";       
 }
 
+my $elements = [];
+
 my $ssg_twig = XML::Twig->new( twig_roots => {
                                     'commandSet/commandSet' => \&process_iterated_commandset,
                                },
                );
 $ssg_twig->parse($ssg_file_fh);
 
+$tmpl->param( ELEMENTS => $elements );
 
+print $tmpl->output;
 
 sub process_iterated_commandset {
     my ($twig, $commandset) = @_;
-    
     my $file = $commandset->first_child('fileName')->text();
-    my $name = basename($file, ('.xml', '.gz'));
-    my $state = $commandset->first_child('state')->text();
+    
+    my %props = (
+                    file    => $file,
+                    name    => basename($file, ('.xml', '.gz')),
+                    state   => $commandset->first_child('state')->text(),
+                    message => '',
+                );
+    
     
     ## check for any messages
     my $msg_html = '';
@@ -70,25 +82,12 @@ sub process_iterated_commandset {
             
             ## don't display it if it is just a 'finished' message
             unless ( $msg =~ /Command set with name.+ finished/i ) {
-                $msg_html = "<div class='messageblock'>$msg</div>\n";
+                $props{message} = "<div class='messageblock'>$msg</div>\n";
             }
         }
     }
-    
-    print <<SubFlowFile;
-    <div id='${name}_bar' class='subflowbar'>
-        <div class='leftside'>
-            <img id='${name}_arrow' class='expander' src='/ergatis/arrow_right.gif' onclick='toggle_subflow_display("$name", "$file");' alt='expand' title='expand'>
-            <img id='${name}_img' class='status' src='/ergatis/status_$state.png' title='$state' alt='$state'>
-            $name
-        </div>
-        <div class='rightside'>
-            <img class='reloader' src='/ergatis/reload_blue.png' onclick='reload_subflow("$name", "$file")' alt='reload' title='reload'>
-        </div>
-    </div>
-    $msg_html
-    <div id='${name}_data' class='subflowdata' style='display: none;'></div>
-SubFlowFile
+
+    push @$elements, \%props;   
 
     $twig->purge;
 }

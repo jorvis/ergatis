@@ -5,167 +5,157 @@
 
 <head>
     <meta http-equiv="Content-Language" content="en-us">
-    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="./rss_pipeline_list.cgi">
     <title>ergatis</title>
-    <!-- bring in the styles -->
     <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/monitor.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/index.css">
 </head>
 
-<body>
+<body class='pipelines'>
 
-<div id='bannertop'>
-    <a href='/cgi-bin/ergatis/index.cgi'><img src='/ergatis/banner_main.png' alt='main banner'></a>
-</div>
-<div id='bannerbottom'>
-    <div class='buttons'>
-        <a href=''><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline_list'></a>
-        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
-    </div>
-</div>
+<div id='page_container'>
 
-<div id='page_content'>
+<TMPL_INCLUDE NAME="header.tmpl">
 
-    <div id='project_list_container'>
-        <h2>project list</h2>
-        <dl id='project_list'>
-        <TMPL_LOOP NAME=REGISTERED_PROJECTS>
-            <dt><a href='./pipeline_list.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>'><TMPL_VAR NAME=LABEL></a></dt>
-            <dd class='project_path'><TMPL_VAR NAME=REPOSITORY_ROOT></dd>
-        </TMPL_LOOP>
-        </dl>
-    </div>
-    
-    <!--
-    <div id='watched_pipeline_container'>
-        <h2>watched pipelines</h2>
-        <p>
-            not yet implemented
-        <p>  
-    </div>
-    -->
-    
-    <div id='running_pipeline_container'>
-        <h2>
-            running pipelines 
-            <span class='header_note'><a href='./index.cgi?update_cache=1'>cached from <TMPL_VAR NAME=CACHE_FILE_AGE> min ago</a></span>
-        </h2>
-        <table class='pipeline_list'>
-            <tr>
-                <th>project</th>
-                <th>pipeline id</th>
-                <th>state</th>
-                <th>user</th>
-                <th>contents</th>
-                <th>last mod</th>
-                <th>run time</th>
-            </tr>
-        <TMPL_LOOP NAME=RUNNING_PIPELINES>
-            <tr>
-                <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
-                <td><a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
-                <td class='pipeline_state'>
-                    <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
-                    <TMPL_IF NAME=ERROR_MESSAGE>
-                    <div>
-                        <span class='error_message_header'>top-level error message</span>
-                        <hr>
-                        <TMPL_VAR NAME=ERROR_MESSAGE>
-                    </div>
-                    </TMPL_IF>
-                </td>
-                <td><TMPL_VAR NAME=PIPELINE_USER></td>
-                <td class='component_review'>
-                    <a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
-                    <div>
-                        <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
-                        <hr/>
-                    <TMPL_IF NAME=COMPONENT_COUNT>
-                    <TMPL_LOOP NAME=COMPONENTS>
-                        <TMPL_IF NAME=ERROR_COUNT>
-                        <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+    <div id='content_container'>
+
+        <div id='project_list_container'>
+            <h2>project list</h2>
+            <ul id='project_list'>
+            <TMPL_LOOP NAME=REGISTERED_PROJECTS>
+                <li>
+                    <a class='project_link' href='./pipeline_list.cgi?repository_root=<TMPL_VAR NAME=REPOSITORY_ROOT>'><TMPL_VAR NAME=LABEL><span><TMPL_VAR NAME=REPOSITORY_ROOT></span></a>
+                </li>
+            </TMPL_LOOP>
+            </ul>
+        </div>
+
+        <div id='running_pipeline_container'>
+            <h2>
+                running pipelines 
+                <span class='header_note'><a href='./index.cgi?update_cache=1'>cached from <TMPL_VAR NAME=CACHE_FILE_AGE> min ago</a></span>
+                <!--<img id='rss_feed' src='/ergatis/images/rss.gif' alt='rss feed'>-->
+            </h2>
+            <table class='pipeline_list'>
+                <tr>
+                    <th>project</th>
+                    <th>pipeline id</th>
+                    <th>state</th>
+                    <th>user</th>
+                    <th>contents</th>
+                    <th>last mod</th>
+                    <th>run time</th>
+                </tr>
+            <TMPL_LOOP NAME=RUNNING_PIPELINES>
+                <tr>
+                    <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
+                    <td><a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
+                    <td class='pipeline_state'>
+                        <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                        <TMPL_IF NAME=ERROR_MESSAGE>
+                        <div>
+                            <span class='error_message_header'>top-level error message</span>
+                            <hr>
+                            <TMPL_VAR NAME=ERROR_MESSAGE>
+                        </div>
+                        </TMPL_IF>
+                    </td>
+                    <td><TMPL_VAR NAME=PIPELINE_USER></td>
+                    <td class='component_review'>
+                        <a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
+                        <div>
+                            <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
+                            <hr/>
+                        <TMPL_IF NAME=COMPONENT_COUNT>
+                        <TMPL_LOOP NAME=COMPONENTS>
+                            <TMPL_IF NAME=ERROR_COUNT>
+                            <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+                            <TMPL_ELSE>
+                            <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                            </TMPL_IF> <!-- ERROR_COUNT if -->
+                        </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
                         <TMPL_ELSE>
-                        <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
-                        </TMPL_IF> <!-- ERROR_COUNT if -->
-                    </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
-                    <TMPL_ELSE>
-                        no components found
-                    </TMPL_IF>
-                    </div>
-                </td>
-                <td><TMPL_VAR NAME=LAST_MOD></td>
-                <td><TMPL_VAR NAME=RUN_TIME></td>
-            </tr>
-        </TMPL_LOOP>
-        </table>        
-    </div>
+                            no components found
+                        </TMPL_IF>
+                        </div>
+                    </td>
+                    <td><TMPL_VAR NAME=LAST_MOD></td>
+                    <td><TMPL_VAR NAME=RUN_TIME></td>
+                </tr>
+            </TMPL_LOOP>
+            </table>        
+        </div>
 
-    <div id='other_active_pipelines_container'>
-        <h2>
-            other active pipelines 
-            <span class='header_note'>within last <TMPL_VAR NAME=ACTIVE_PIPELINE_AGE> hours</span>
-        </h2>
-        <table class='pipeline_list'>
-            <tr>
-                <th>project</th>
-                <th>pipeline id</th>
-                <th>state</th>
-                <th>user</th>
-                <th>contents</th>
-                <th>last mod</th>
-                <th>run time</th>
-            </tr>
-        <TMPL_LOOP NAME=ACTIVE_PIPELINES>
-            <tr>
-                <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
-                <td><a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
-                <td class='pipeline_state'>
-                    <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
-                    <TMPL_IF NAME=ERROR_MESSAGE>
-                    <div>
-                        <span class='error_message_header'>top-level error message</span>
-                        <hr>
-                        <TMPL_VAR NAME=ERROR_MESSAGE>
-                    </div>
-                    </TMPL_IF>
-                </td>
-                <td><TMPL_VAR NAME=PIPELINE_USER></td>
-                <td class='component_review'>
-                    <a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
-                    <div>
-                        <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
-                        <hr/>
-                    <TMPL_IF NAME=COMPONENT_COUNT>
-                    <TMPL_LOOP NAME=COMPONENTS>
-                        <TMPL_IF NAME=ERROR_COUNT>
-                        <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+        <div id='other_active_pipelines_container'>
+            <h2>
+                other active pipelines 
+                <span class='header_note'>within last <TMPL_VAR NAME=ACTIVE_PIPELINE_AGE> hours</span>
+            </h2>
+            <table class='pipeline_list'>
+                <tr>
+                    <th>project</th>
+                    <th>pipeline id</th>
+                    <th>state</th>
+                    <th>user</th>
+                    <th>contents</th>
+                    <th>last mod</th>
+                    <th>run time</th>
+                </tr>
+            <TMPL_LOOP NAME=ACTIVE_PIPELINES>
+                <tr>
+                    <td><a href='<TMPL_VAR NAME=PROJECT_URL>'><TMPL_VAR NAME=LABEL></a></td>
+                    <td><a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
+                    <td class='pipeline_state'>
+                        <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                        <TMPL_IF NAME=ERROR_MESSAGE>
+                        <div>
+                            <span class='error_message_header'>top-level error message</span>
+                            <hr>
+                            <TMPL_VAR NAME=ERROR_MESSAGE>
+                        </div>
+                        </TMPL_IF>
+                    </td>
+                    <td><TMPL_VAR NAME=PIPELINE_USER></td>
+                    <td class='component_review'>
+                        <a href='<TMPL_VAR NAME=PIPELINE_URL>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a><br>
+                        <div>
+                            <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
+                            <hr/>
+                        <TMPL_IF NAME=COMPONENT_COUNT>
+                        <TMPL_LOOP NAME=COMPONENTS>
+                            <TMPL_IF NAME=ERROR_COUNT>
+                            <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+                            <TMPL_ELSE>
+                            <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                            </TMPL_IF> <!-- ERROR_COUNT if -->
+                        </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
                         <TMPL_ELSE>
-                        <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
-                        </TMPL_IF> <!-- ERROR_COUNT if -->
-                    </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
-                    <TMPL_ELSE>
-                        no components found
-                    </TMPL_IF>
-                    </div>
-                </td>
-                <td><TMPL_VAR NAME=LAST_MOD></td>
-                <td><TMPL_VAR NAME=RUN_TIME></td>
-            </tr>
-        </TMPL_LOOP>
-        </table>   
-    </div>
+                            no components found
+                        </TMPL_IF>
+                        </div>
+                    </td>
+                    <td><TMPL_VAR NAME=LAST_MOD></td>
+                    <td><TMPL_VAR NAME=RUN_TIME></td>
+                </tr>
+            </TMPL_LOOP>
+            </table>   
+        </div>
 
-    <div id='custom_list_container'>
-        <h2>custom pipeline list</h2>
-        <form method='get' action='/cgi-bin/ergatis/pipeline_list.cgi'>
-            <p>
-                repository root: <input id='repository_root_field' type='text' name='repository_root' value='/usr/local/annotation'>
-            </p>
-        </form>
-    </div>
+        <div id='custom_list_container'>
+            <h2>custom pipeline list</h2>
+            <form method='get' action='/cgi-bin/ergatis/pipeline_list.cgi'>
+                <p>
+                    repository root: <input id='repository_root_field' type='text' name='repository_root' value='/usr/local/annotation'>
+                </p>
+            </form>
+        </div>
 
-</div>
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
 
 </body>
 

@@ -1,0 +1,11 @@
+<h1 class='subflow_label'>analysis steps</h1>
+<TMPL_IF NAME=SUBFLOW_FOUND>
+<span class='hidden' id='<TMPL_VAR NAME=SUBFLOW_NAME>_state'><TMPL_VAR NAME=SUBFLOW_STATE></span>
+<TMPL_LOOP NAME=ELEMENTS>
+<TMPL_IF NAME=IS_COMMAND>                                                                                                 
+    <TMPL_INCLUDE NAME="command_list_element.tmpl">
+</TMPL_IF> <!-- end is_command conditional -->
+</TMPL_LOOP> <!-- end elements loop -->
+<TMPL_ELSE>
+    <div class='command'>steps not yet available</div>
+</TMPL_IF>

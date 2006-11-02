@@ -94,7 +94,7 @@ use Pod::Usage;
 use Data::Dumper;
 use Log::Log4perl qw(get_logger);
 BEGIN {
-use Workflow::Logger;
+use Ergatis::Logger;
 }
 
 #HACK TO BYPASS SCRIPT#######
@@ -134,10 +134,10 @@ $debug_level = 5;
 # initialize the logger
 #
 $log4perl = "/tmp/check_logfiles.pl.log" if (!defined($log4perl));
-my $mylogger = new Workflow::Logger('LOG_FILE'=>$log4perl,
+my $mylogger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
 				 'LOG_LEVEL'=>$debug_level);
 
-my $logger = Workflow::Logger::get_logger(__PACKAGE__);
+my $logger = Ergatis::Logger::get_logger(__PACKAGE__);
 
 
 $logger->info("Processing the following list of log4perl logfiles: '$filelist'");    

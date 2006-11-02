@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::Common;
 use Ergatis::ConfigFile;
 use HTML::Template;
 use Monitor;
@@ -197,7 +198,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
         }
     }
     
-    my $view_link = "./view_workflow_pipeline.cgi?instance=$pipeline_file";
+    my $view_link = "./view_pipeline.cgi?instance=$pipeline_file";
     my $edit_link = "./show_pipeline.cgi?xmltemplate=$pipeline_file&amp;edit=1";
     
     $pipelines{$pipeline_id} = { 
@@ -239,6 +240,10 @@ sub print_template {
     $tmpl->param( QUOTA_STRING     => $quotastring );
     $tmpl->param( ERGATIS_DIR      => $ergatis_dir );
     $tmpl->param( DISPLAY_CODEBASE => $display_codebase );
+    $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
+    $tmpl->param( SUBMENU_LINKS       => [
+                                            { label => 'new pipeline', is_last => 1, url => "./build_pipeline.cgi?repository_root=$repository_root" },
+                                         ] );
 
     ## print the template
     print $tmpl->output();

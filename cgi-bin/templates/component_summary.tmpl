@@ -1,0 +1,49 @@
+<li>
+    <div class="component_label"><b>component:</b> <TMPL_VAR NAME=UL_ID></div>
+    <div class="timer" id="<TMPL_VAR NAME=UL_ID>_timer_label">update in <span id='<TMPL_VAR NAME=UL_ID>_counter'>10</span>s</div>
+</li>
+<li>
+    <div class="component_progress_image">
+        <TMPL_LOOP NAME=STATE_ELEMENTS>
+        <!-- ignore: <TMPL_VAR NAME=COUNT> -->
+        <div class="status_bar_portion <TMPL_VAR NAME=STATE>" style="width: <TMPL_VAR NAME=WIDTH>px;"></div>
+        </TMPL_LOOP>
+    </div>
+</li>
+<li>
+    <b>overall state</b>: <span class='<TMPL_VAR NAME=COMPONENT_STATE>'><TMPL_VAR NAME=COMPONENT_STATE></span>
+    <TMPL_IF NAME=ACTION_COUNT><b>actions</b>: <TMPL_VAR NAME=ACTION_COUNT></TMPL_IF>
+</li>
+<TMPL_IF NAME=HAS_MULTIPLE_STATES>
+<li>
+    <b>states</b>: 
+    <TMPL_LOOP NAME=STATE_ELEMENTS>
+    <span class='<TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span> (<TMPL_VAR NAME=COUNT>)<!-- <TMPL_VAR NAME=WIDTH> -->
+    </TMPL_LOOP>
+</li>
+</TMPL_IF>
+<TMPL_IF NAME=CURRENT_STEP>
+<li><b>current step</b>: <TMPL_VAR NAME=CURRENT_STEP></li>
+</TMPL_IF>
+<TMPL_IF NAME=RUNTIME>
+<li><b>runtime</b>: <TMPL_VAR NAME=RUNTIME></li>
+</TMPL_IF>
+<TMPL_IF NAME=MESSAGES_LINE>
+<li class="messages"><b>messages:</b><br><TMPL_VAR NAME=MESSAGES_LINE></li>
+</TMPL_IF>
+<li class="actions">
+    <TMPL_IF NAME=PIPELINE_EXISTS>
+    <a href='./view_component.cgi?pipeline_xml=<TMPL_VAR NAME=PIPELINE>'>view</a> 
+    <a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=PIPELINE>'>xml</a>
+    <TMPL_ELSE> 
+    <a class='disabled'>view</a> 
+    <a class='disabled'>xml</a>    
+    </TMPL_IF>
+    <a href='./view_formatted_ini_source.cgi?file=<TMPL_VAR NAME=COMPONENT_CONFIG>'>config</a>
+    <a onclick="requestComponentUpdate('<TMPL_VAR NAME=PIPELINE>', '<TMPL_VAR NAME=UL_ID>', '<TMPL_VAR NAME=PARENT_PIPELINE>')">update</a>
+    <a onclick="stopAutoUpdate('<TMPL_VAR NAME=UL_ID>')">stop updates</a>
+</li>
+<li><!-- this only exists because I have no other element to use for clearing --></li>
+<li class="pass_values">
+    <span id="<TMPL_VAR NAME=UL_ID>_continue_update"><TMPL_VAR NAME=UPDATE_INTERVAL></span>
+</li>

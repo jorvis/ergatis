@@ -6,53 +6,40 @@ use CGI::Carp qw(fatalsToBrowser);
 
 my $q = new CGI;
 
-print $q->header( -type => 'text/html' );
+print $q->header( -type => 'text/plain' );
 
 ## will be like:
 my $file = $q->param("file") || die "pass file";
 
-pageHeader();
+## the file may have been compressed
+if ( ! -e $file && -e "$file.gz" ) {
+    $file .= '.gz';
+}
 
 ## only print certain file types (for minor security)
-
-print "<pre>";
+if ($file !~ /\.xml$/ && 
+    $file !~ /\.instance$/ && 
+    $file !~ /\.bsml$/ &&
+    $file !~ /\.gz$/ && 
+    $file !~ /\.ini/ &&
+    $file !~ /\.log/ &&
+    $file !~ /\.config/ &&
+    $file !~ /\.list/ ) {
+    print STDERR "skipped display of $file in source viewer\n";
+    quitNicely("i decline to show this type of file.");
+}
 
 ## open the file and print it to the screen.
-open (my $ifh, "<$file") || quitNicely("couldn't open file $file");
+my $ifh;
+if ($file =~ /\.gz$/) {
+    open($ifh, "<:gzip", $file) || quitNicely("couldn't open compressed file $file: $!");
+} else {
+    open($ifh, "<$file") || quitNicely("couldn't open file $file");
+}
 
 while (my $line = readline $ifh) {
     ## just print it    
     print $line;
-}
-
-print "</pre>";
-print "</body></html>";
-
-sub pageHeader {
-    print <<heADerStuff;
-
-<html>
-<head>
-    <style type="text/css">
-        body {
-            font-family: verdana, helvetica, arial, sans-serif;
-            font-size: 10px;
-        }
-        #file {
-            background-color: rgb(0,0,150);
-            color: rgb(255,255,255);
-            font-weight: bold;
-            padding: 5px 0px 5px 10px;
-        }
-    </style>
-</head>
-<body>
-
-<div id="file">
-    $file
-</div>
-
-heADerStuff
 }
 
 sub quitNicely {

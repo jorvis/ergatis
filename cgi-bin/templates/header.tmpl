@@ -1,0 +1,39 @@
+    <div id='page_header'>
+        <div id='quick_links_container'>
+            <ul id='quick_links'>
+            <TMPL_LOOP NAME=QUICK_LINKS>
+            <TMPL_IF NAME=IS_LAST>
+                <li class='last'><a href='<TMPL_VAR NAME=URL>'><TMPL_VAR NAME=LABEL></a></li>
+            <TMPL_ELSE>
+                <li><a href='<TMPL_VAR NAME=URL>'><TMPL_VAR NAME=LABEL></a></li>
+            </TMPL_IF>
+            </TMPL_LOOP>
+            </ul>
+        </div>
+        <div id='title_container'>
+            <span id='page_title'>ergatis</span>
+            <span id='page_slogan'>workflow creation and monitoring interface</span>
+        </div>
+    </div>
+
+    <div id='primary_nav_container'>
+        <ul id='primary_nav_elements'>
+            <li id='nav_pipelines'><a href="./index.cgi">pipelines</a></li>
+            <li id='nav_projects'><a href="./projects.cgi">projects</a></li>
+            <li id='nav_documentation'><a href="./documentation.cgi">documentation</a></li>
+            <li id='nav_admin'><a href="./admin.cgi">admin</a></li>
+        </ul>
+    </div>
+
+    <div id='sub_nav_container'>
+        <ul id='sub_nav_elements'>
+            <li><a href='./index.cgi'>home</a></li>
+        <TMPL_LOOP NAME=SUBMENU_LINKS>
+        <TMPL_IF NAME=IS_LAST>
+            <li class='last'><a href='<TMPL_VAR NAME=URL>'><TMPL_VAR NAME=LABEL></a></li>
+        <TMPL_ELSE>
+            <li><a href='<TMPL_VAR NAME=URL>'><TMPL_VAR NAME=LABEL></a></li>
+        </TMPL_IF>
+        </TMPL_LOOP>
+        </ul>
+    </div>

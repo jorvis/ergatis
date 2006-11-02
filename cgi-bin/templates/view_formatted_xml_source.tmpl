@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis - xml source viewer</title>
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/monitor.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/source_viewer.css">
+</head>
+
+<body>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='content_container'>
+        <h2>formatted source viewer: <TMPL_VAR NAME=FILE></h2>
+
+        <ul class="component">
+            <li>
+                state: <span class='<TMPL_VAR NAME=OVERALL_STATE>'><TMPL_VAR NAME=OVERALL_STATE></span>
+            </li>
+            <li>
+                <div class="component_progress_image">
+                    <TMPL_LOOP NAME=STATE_ELEMENTS>
+                    <!-- ignore: <TMPL_VAR NAME=COUNT> -->
+                    <div class="status_bar_portion <TMPL_VAR NAME=STATE>" style="width: <TMPL_VAR NAME=WIDTH>px;"></div>
+                    </TMPL_LOOP>
+                </div>
+            </li>
+            <TMPL_IF NAME=HAS_MULTIPLE_STATES>
+            <li>
+                <b>states</b>: 
+                <TMPL_LOOP NAME=STATE_ELEMENTS>
+                <span class='<TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span> (<TMPL_VAR NAME=COUNT>)<!-- <TMPL_VAR NAME=WIDTH> -->
+                </TMPL_LOOP>
+            </li>
+            </TMPL_IF>
+        </ul>
+        
+        <ul class='linked_files'>
+            <li class='header'>linked xml files</li>
+        <TMPL_LOOP NAME=LINKED_FILES>
+            <li><a href='<TMPL_VAR NAME=URL>'><TMPL_VAR NAME=LABEL></a> <span class='filesize'><TMPL_VAR NAME=SIZE></span></li>
+        </TMPL_LOOP>
+        <TMPL_IF NAME=UNSHOWN_FILE_COUNT>
+            <li>(<TMPL_VAR NAME=UNSHOWN_FILE_COUNT> files not shown)</li>
+        </TMPL_IF>
+        </ul>
+
+        <div class='source_container'>
+<TMPL_VAR NAME=DISPLAY_SOURCE>
+        </div>
+        
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
+
+</body>
+
+</html>

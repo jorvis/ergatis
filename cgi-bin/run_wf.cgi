@@ -102,7 +102,7 @@ if( ($inifile ne "") && ($template ne "") ) {
         while(! (-e $instancexml)){
             sleep 3;
         }
-        print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");    
+        print redirect(-uri=>"./view_pipeline.cgi?instance=$instancexml");    
         exit;
     } else {
         close STDOUT;
@@ -148,7 +148,7 @@ if( ($inifile ne "") && ($template ne "") ) {
         while(! (-e $instancexml)){
             sleep 3;
         }
-        print redirect(-uri=>"./view_workflow_pipeline.cgi?instance=$instancexml");    
+        print redirect(-uri=>"./view_pipeline.cgi?instance=$instancexml");    
         exit;
     } else {
         close STDOUT;

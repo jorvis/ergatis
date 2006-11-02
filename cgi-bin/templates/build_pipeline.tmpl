@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis</title>
+    <!-- style -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/build_pipeline.css">
+    <!-- functionality -->
+    <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/moo/prototype.lite.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/moo/moo.fx.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/moo/moo.fx.pack.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/Input.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/TreeNode.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/Component.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/build_pipeline.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/ie_methods.js'></script>
+</head>
+
+<body class='pipelines'>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='content_container'>
+        <h2>pipeline builder</h2>
+        
+        <div id='input_list_container'>
+            <h3>input</h3>
+            <table id='input_list'>
+                <tr>
+                    <th>label</th>
+                    <th>input</th>
+                    <th>type</th>
+                </tr>
+                <tr id='no_input_message'>
+                    <td colspan='3'>no inputs defined yet</td>
+                </tr>
+                <tr id='new_input_fields_row'>
+                    <td><input type='text' id='new_label' name='new_label'></td>
+                    <td><input type='text' id='new_input' name='new_input' size='50'></td>
+                    <td>
+                        <select id='new_input_type' name='new_input_type'>
+                            <option value='input_file'>single file
+                            <option value='input_list' selected>file list
+                            <option value='input_dir'>directory of files
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id='input_controls_container'>
+            <a id='start_control' onclick="startNewInput()"><img src='/ergatis/images/icon_add_round_green.png' alt='add input'>add input</a>
+            <a id='save_control' onclick="saveNewInput()"><img src='/ergatis/images/bullet_disk.png' alt='add input'>save new input</a>
+            <a id='cancel_control' onclick="cancelNewInput()"><img src='/ergatis/images/bullet_delete.png' alt='add input'>cancel</a>
+        </div>
+        
+        <div id='build_area'>
+            <div class='pipeline_marker'>start</div>
+            
+            <div class='serial' id='pipeline_root'>
+                <ul class='add_panel' id='pipeline_root_panel'>
+                    <li class='comp'><a onclick="addComponentStub('pipeline_root')">add component</a></li>
+                    <li class='serial'><a onclick="addSerialSet('pipeline_root')">add serial group</a></li>
+                    <li class='parallel'><a onclick="addParallelSet('pipeline_root')">add parallel group</a></li>
+                </ul>
+            </div>
+            
+            <div id='end_pipeline_marker' class='pipeline_marker'>end</div>
+        </div>
+        
+    </div> <!-- end content_container -->
+    <!--
+        Everything below is used either for passing data into this page or as
+        containers for submitting data to downstream scripts.  None should be
+        visible to the user unless debugging.
+    -->
+    <form name='pipeline' action='./run_pipeline.cgi' method='POST'>
+    <div id='variables'>
+        <input name='repository_root' id='repository_root' value='<TMPL_VAR NAME=REPOSITORY_ROOT>'>
+        <input name='build_directory' id='build_directory' value='<TMPL_VAR NAME=BUILD_DIRECTORY>'>
+        <select name='available_component_list' id='available_component_list'>
+            <option value='' selected>please choose</option>
+        <TMPL_LOOP NAME=COMPONENTS>
+            <option value='<TMPL_VAR NAME=NAME>'><TMPL_VAR NAME=NAME></option>
+        </TMPL_LOOP>
+        </select>
+    </div>
+    <div id='locators'>
+        <input type='text' class='locator' id='pipeline_root_up' name='pipeline_root_up' value=''>
+        <input type='text' class='locator' id='pipeline_root_down' name='pipeline_root_down' value='pipeline_root_panel'>
+        <input type='text' class='locator' id='pipeline_root_panel_up' name='pipeline_root_panel_up' value='pipeline_root'>
+        <input type='text' class='locator' id='pipeline_root_panel_down' name='pipeline_root_panel_down' value=''>
+    </div>
+    </form>
+
+</div> <!-- end page_container -->
+<div id='debug_box'>&nbsp;</div>
+
+</body>
+
+</html>

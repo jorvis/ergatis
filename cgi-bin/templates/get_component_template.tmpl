@@ -1,23 +1,31 @@
-<h3><TMPL_VAR NAME=COMPONENT_NAME> configuration</h3>
-<hr />
-
 <TMPL_IF NAME=COMPONENT_FOUND>
-<table>
-    <TMPL_LOOP NAME=COMPONENT_OPTIONS>
-    <tr>
-        <td><TMPL_VAR NAME=LABEL></td>
-        <td><input type='text' name='<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td>
+<table class='config_table' id='c<TMPL_VAR NAME=COMPONENT_NUM>_config_table'>
+    <TMPL_LOOP NAME=SECTIONS>
+    <tr class='config_section' colspan='2'>
+        <td><TMPL_VAR NAME=NAME></td>
     </tr>
-    </TMPL_LOOP>
+    <TMPL_LOOP NAME=PARAMETERS>
+    <tr>
+        <td id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
+        <TMPL_IF NAME=SELECTABLE>
+        <td class="<TMPL_VAR NAME=SECTION>">
+            <select class='input_selector' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>'></select>
+            <input class='select_shadow' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
+        </td>
+        <TMPL_ELSE>
+        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
+        </TMPL_IF> 
+    </tr>
+    </TMPL_LOOP> <!-- end parameters loop -->
+    </TMPL_LOOP> <!-- end sections loop -->
 </table>
 <TMPL_ELSE>
-Component configuration file not found.  This shouldn't happen.  Please hit cancel
-and try again or contact an administrator.
+Component configuration file not found.  This shouldn't happen.  Please try again or contact 
+an administrator.
 </TMPL_IF>
 
 <div class='button_container'>
 <TMPL_IF NAME=COMPONENT_FOUND>
-    <span class='button' onclick=''>save</span>
+    <div class='button' id='c<TMPL_VAR NAME=COMPONENT_NUM>_save' onclick='saveComponentConfig("c<TMPL_VAR NAME=COMPONENT_NUM>")'>save</div>
 </TMPL_IF>
-    <span class='button' onclick='javascript:cancelNewConfiguration()'>cancel</span>
 </div>

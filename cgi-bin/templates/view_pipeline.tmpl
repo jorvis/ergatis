@@ -1,0 +1,58 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-2">
+    <title><TMPL_VAR NAME=PAGE_TITLE></title>
+    <!-- styles -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/monitor.css">
+    <!-- functionality -->
+    <script type="text/javascript" src="/ergatis/javascript/view_pipeline.js"></script>
+
+</head>
+
+<body class='pipelines'>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='info_container'>
+        <ul id='info_elements'>
+            <li id='pipeline'><TMPL_VAR NAME=PIPELINE_FILE></li>
+            <li id='starttime'><span class='info_label'>start:</span> <TMPL_VAR NAME=START_TIME></li>
+            <li><span class='info_label'>end:</span> <TMPL_VAR NAME=END_TIME></li>
+            <li><span class='info_label'>last mod:</span> <TMPL_VAR NAME=LAST_MOD_TIME></li>
+            <li id='state'><span class='info_label'>state:</span> <TMPL_VAR NAME=PIPELINE_STATE></li>
+            <li><span class='info_label'>user:</span> <TMPL_VAR NAME=USER></li>
+            <li><span class='info_label'>runtime:</span> <TMPL_VAR NAME=RUNTIME></li>
+            <li><span class='info_label'>retries:</span> <TMPL_VAR NAME=RETRIES></li>
+            <li><span class='info_label'>exec host:</span> <a href='http://<TMPL_VAR NAME=HOST_NAME>:8080/cgi-bin/ergatis/view_pipeline.cgi?instance=<TMPL_VAR NAME=PIPELINE_FILE>'><TMPL_VAR NAME=EXEC_USER>@<TMPL_VAR NAME=HOST_NAME></a>:<TMPL_VAR NAME=PID></li>
+            <li id='project'><span class='info_label'>project:</span> <span id='projectid'><TMPL_VAR NAME=PROJECT></span></li>
+            <li><span class='info_label'>quota:</span> <TMPL_VAR NAME=QUOTA_STRING></li>
+            <li><span class='info_label'>pipeline id:</span> <TMPL_VAR NAME=PIPELINE_ID></li>
+        </ul>
+    </div>
+
+    <div id='content_container'>
+
+        <div class='timer' id='pipeline_timer_label'></div>
+
+        <div class='pipeline_marker'>start</div>
+        
+<TMPL_VAR NAME=COMPONENT_HTML>
+    
+        <div class='pipeline_marker'>end</div>
+
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
+
+</body>
+
+</html>

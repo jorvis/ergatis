@@ -3,14 +3,20 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-use XML::Twig;
 use Date::Manip;
+use Ergatis::ConfigFile;
+use HTML::Template;
 use Monitor;
 use POSIX;
+use XML::Twig;
 
 my $q = new CGI;
 
 print $q->header( -type => 'text/html' );
+
+my $tmpl = HTML::Template->new( filename => 'templates/component_summary.tmpl',
+                                die_on_bad_params => 1,
+                              );
 
 ## will be like:
 ## /usr/local/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
@@ -23,31 +29,24 @@ my $ul_id = $q->param("ul_id") || die "pass ul_id";
 ## will be like:
 ## /usr/local/annotation/AA1/Workflow/pipeline/29671/pipeline.xml.instance
 my $parent_pipeline = $q->param("parent_pipeline") || '';
+my $pipeline_exists = 0;
 
 my $progress_image_width = 500;
 my $component_state = 'unknown';
 my $command_count = 0;
+
 my %states;
+my $has_multiple_states = 0;
+my @state_elements;
+
 my @messages;
 my %message_counts;
+my $messages_line = '';
 #time variables
-my ($start_time, $end_time, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
+my ($start_time, $end_time, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 0);
 my $got_time_info = 0;
-my $current_step;
-
-## give colors as rgb values or hexidecimal
-my %colors = (
-                complete    => 'rgb(0,200,0)',      ## green
-                incomplete  => 'rgb(75,75,75)',     ## dark grey
-                failed      => 'rgb(200,0,0)',      ## red
-                pending     => 'rgb(200,200,0)',    ## yellow
-                errors      => 'rgb(200,0,0)',      ## red
-                error       => 'rgb(200,0,0)',      ## red
-                running     => 'rgb(0,0,200)',      ## blue
-                waiting     => 'rgb(200,200,0)',    ## yellow
-                interrupted => 'rgb(200,0,200)',    ## purple
-                total       => 'rgb(0,0,0)',        ## black 
-             );
+my $current_step = '';
+my $update_interval = 61;
 
 ## we can parse some information out of the standardized instance file path
 ##  like: /usr/local/scratch/annotation/EHA1/Workflow/iprscan/30835_default/pipeline.xml
@@ -58,10 +57,11 @@ if ($pipeline =~ m|(.+/(.+)/Workflow/(.+?)/(\d+)_(.+?))/pipeline.xml|) {
     ($project, $component, $pipelineid, $token) = ($2, $3, $4, $5);
 } else {
     print "invalid instance file path format";
-    exit;
+    exit(1);
 }
 
 if (-e $pipeline || -e "$pipeline.gz") {
+    $pipeline_exists = 1;
     
     my $pipeline_fh;
     if ($pipeline =~ /\.gz/) {
@@ -76,31 +76,13 @@ if (-e $pipeline || -e "$pipeline.gz") {
        $twig->parse($pipeline_fh);
     my $commandSetRoot = $twig->root;
     parseCommandSet( $commandSetRoot->first_child('commandSet'), $pipeline );
-
-    ## build the line that lists each status and its count
-    my $status_list_line = '';
-    if (scalar keys %states > 1) {
-        $status_list_line = '<li>states: ';
-        
-        for my $status (sort keys %states) {
-            $status_list_line .= "$status (<span style='color:$colors{$status};'>$states{$status}</span>), ";
-        }
-        
-        ## take off the trailing comma
-        if ($status_list_line =~ /(.+)\,\s*$/) {
-            $status_list_line = $1;
-        }
-        
-        $status_list_line .= "</li>\n";
-    }
-
-    ## build the "image" div contents that represent the different states
-    my $status_image = '';
     
-    ## these will be used to stretch the div to the full width, if necessary
-    my $width_used = 0;  
+    ## build the line that lists each status and its count
+    ## at the same time we can calculate the width of each state for the progress bar
     my $state_count = scalar keys %states;
+    my $width_used = 0;  
     my $states_handled = 0;
+   
     for my $status (sort keys %states) {
         ## each status gives a percentage of the total command_count
         my $width = int( ($states{$status} / $command_count) * $progress_image_width);
@@ -112,15 +94,18 @@ if (-e $pipeline || -e "$pipeline.gz") {
         if ( $states_handled == $state_count && $width_used < $progress_image_width ) {
             $width += $progress_image_width - $width_used;
         }
-        
-        $status_image .= "<div class='status_bar_portion' style='width: ${width}px; background-color: " . 
-                           ($colors{$status} || 'rgb(0,0,0)') . ";'></div>\n";
+
+        push @state_elements, { state => $status, count => $states{$status}, width => $width };
     }
 
+    if ($state_count > 1) {
+        $has_multiple_states = 1;
+    }
+    
     ## build the messages line, if there are any
     my $messages_line = '';
     if (scalar @messages) {
-        $messages_line = '<li class="messages"><b>messages:</b><br>';
+
         for my $msg (@messages) {
             ## show a counter if a message happened more than once
             if ($message_counts{$msg} > 1) {
@@ -129,54 +114,81 @@ if (-e $pipeline || -e "$pipeline.gz") {
                 $messages_line .= "$msg<br>";
             }
         }
-        $messages_line .= "</li>\n";
     }
     
-    ## build the current step line, if we know it
-    my $current_step_line = '';
-    if ( $current_step ) {
-        ## "Run subflow" just means its on the distributed step.  make a nicer display
-        if ( $current_step eq 'Run subflow' ) {
-            $current_step = 'running distributed jobs';
-        }
-    
-        $current_step_line = "current step: $current_step<br />";
+    ## "Run subflow" just means its on the distributed step.  make it more descriptive
+    if ( $current_step eq 'Run subflow' ) {
+        $current_step = 'running distributed jobs';
     }
     
     ## we can adjust the default update interval here depending on what
     ##  state the component is in
-    my $update_interval = 61;
     if ($component_state eq 'complete') {
         $update_interval = 0;
     } elsif ($component_state eq 'running') {
         $update_interval = 31;
     }
 
-    ## print the component summary HTML
-    print <<ComPONENTSummary;
-    <h1><div class="component_label"><b>component</b>: $ul_id</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
-    <li><div class="component_progress_image">$status_image</div></li>
-    <li>state: <span style='color: $colors{$component_state}'>$component_state</span> actions: $command_count</li>
-    $status_list_line
-    $current_step_line
-    <b>runtime</b>: $runtime<br />
-    $messages_line
-    <li class="actions">
-        <a href="./view_component.cgi?pipeline_xml=$pipeline"><img class='navbutton' src='/ergatis/button_blue_view.png' alt='view' title='view'></a>
-        <a href="./view_formatted_xml_source.cgi?file=$pipeline" target="_blank"><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='xml' title='xml'></a>
-        <a href="./view_formatted_ini_source.cgi?file=$component_conf_varreplaced" target="_blank"><img class='navbutton' src='/ergatis/button_blue_config.png' alt='config' title='config'></a> 
-        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/ergatis/button_blue_update.png' alt='update' title='update'></a>
-        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/ergatis/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
-    </li>
-    <li class="pass_values">
-        <span id="${ul_id}_continue_update">$update_interval</span>
-    </li>
-ComPONENTSummary
-
 } else {
-    ## print the incomplete component summary HTML
-    printIncompleteSummary();
+    ## all we have here is the component state
+    $component_state = 'incomplete';
+    push @state_elements, { state => $component_state, count => 1, width => $progress_image_width };        
+
+    ## if the pipeline.xml doesn't exist, we need to check for errors during the component creation.
+    ## we can only do this if the user passed the parent pipeline
+    if ($parent_pipeline) {
+    
+        my $parent_pipeline_fh;
+        if ($parent_pipeline =~ /\.gz/) {
+            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline") || die "can't read $parent_pipeline: $!"; 
+        } elsif ( -e "$parent_pipeline.gz" ) {
+            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline.gz") || die "can't read $parent_pipeline: $!"; 
+        } else {
+            open($parent_pipeline_fh, "<$parent_pipeline") || die "can't read $parent_pipeline: $!";       
+        }
+    
+        my $twig = new XML::Twig;
+           $twig->parse($parent_pipeline_fh);
+        my $commandSetRoot = $twig->root;
+        my $parentCommandSet = $commandSetRoot->first_child('commandSet');
+        
+        ## find the commandSet for this component
+        foreach my $commandSet ( $parentCommandSet->children('commandSet') ) {
+            ## have we found it?
+            if ( $commandSet->first_child('configMapId')->text() eq "component_$ul_id" ) {
+                ## if it has a status, see if there are any messages;
+                if ( $commandSet->first_child('status') ) {
+                    
+                    if ( $commandSet->first_child('status')->first_child('message') ) {
+                        $messages_line .= $commandSet->first_child('status')->first_child('message')->text();
+                    }
+                }
+                
+                last;
+            }
+        }
+    }
 }
+
+## if the component hasn't started yet, only the component.conf.bld.ini file will exist.  
+$tmpl->param( ACTION_COUNT => $command_count );
+$tmpl->param( COMPONENT_CONFIG => -e $component_conf_varreplaced ? $component_conf_varreplaced : $component_conf_nonvarreplaced );
+$tmpl->param( COMPONENT_STATE => $component_state );
+$tmpl->param( CURRENT_STEP => $current_step );
+$tmpl->param( HAS_MULTIPLE_STATES => $has_multiple_states );
+$tmpl->param( MESSAGES_LINE => $messages_line );
+$tmpl->param( PARENT_PIPELINE => $parent_pipeline );
+$tmpl->param( PIPELINE => $pipeline );
+$tmpl->param( PIPELINE_EXISTS => $pipeline_exists );
+$tmpl->param( RUNTIME => $runtime );
+$tmpl->param( STATE_ELEMENTS => \@state_elements );
+$tmpl->param( UL_ID => $ul_id );
+$tmpl->param( UPDATE_INTERVAL => $update_interval );
+
+
+print $tmpl->output;
+
+exit(0);
 
 sub parseCommandSet {
     my ($commandSet, $fileparsed) = @_;
@@ -286,72 +298,5 @@ sub parseComponentSubflow {
     my $commandSetRoot = $twig->root;
     
     parseCommandSet( $commandSetRoot->first_child('commandSet'), $groupsXML );
-}
-
-
-
-
-sub printIncompleteSummary {
-    ## if the pipeline.xml doesn't exist, we need to check for errors during the component creation.
-    ## we can only do this if the user passed the parent pipeline
-    my $messages_line = '';
-    if ($parent_pipeline) {
-    
-        my $parent_pipeline_fh;
-        if ($parent_pipeline =~ /\.gz/) {
-            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline") || die "can't read $parent_pipeline: $!"; 
-        } elsif ( -e "$parent_pipeline.gz" ) {
-            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline.gz") || die "can't read $parent_pipeline: $!"; 
-        } else {
-            open($parent_pipeline_fh, "<$parent_pipeline") || die "can't read $parent_pipeline: $!";       
-        }
-    
-        my $twig = new XML::Twig;
-           $twig->parse($parent_pipeline_fh);
-        my $commandSetRoot = $twig->root;
-        my $parentCommandSet = $commandSetRoot->first_child('commandSet');
-        
-        ## find the commandSet for this component
-        foreach my $commandSet ( $parentCommandSet->children('commandSet') ) {
-            ## have we found it?
-            if ( $commandSet->first_child('configMapId')->text() eq "component_$ul_id" ) {
-                ## if it has a status, see if there are any messages;
-                if ( $commandSet->first_child('status') ) {
-                    $messages_line .= '<li class="messages"><b>messages:</b><br>';
-                    
-                    if ( $commandSet->first_child('status')->first_child('message') ) {
-                        $messages_line .= $commandSet->first_child('status')->first_child('message')->text();
-                    }
-
-                    $messages_line .= "</li>\n";
-                }
-                
-                last;
-            }
-        }
-    }
-
-    ## if the component config file exists, display a button link for it.  else display the disabled button.
-    my $config_html_link = "<img class='navbutton' src='/ergatis/button_grey_config.png' alt='config' title='config'>";
-    if ( -e $component_conf_nonvarreplaced ) {
-        $config_html_link = "<a href='./view_formatted_ini_source.cgi?file=$component_conf_nonvarreplaced' target='_blank'><img class='navbutton' src='/ergatis/button_blue_config.png' alt='config' title='config'></a> ";
-    }
-
-    print <<ComponentNOTyetCreated;
-    <h1><div class="component_label"><b>component</b>: $ul_id</div><div class="timer" id="${ul_id}_timer_label">update in <span id='${ul_id}_counter'>10</span>s</div></h1>
-    <li><div class="component_progress_image"><div class="status_bar_portion" style="width: 500px; background-color: $colors{incomplete}"></div></div></li>
-    <li>state: <span style='color: $colors{incomplete}'>incomplete</span></li>
-    $messages_line
-    <li class="actions">
-        <img class='navbutton' src='/ergatis/button_grey_view.png' alt='view' title='view'> 
-        <img class='navbutton' src='/ergatis/button_grey_xml.png' alt='xml' title='xml'>  
-        $config_html_link
-        <a onclick="requestComponentUpdate('$pipeline', '$ul_id')"><img class='navbutton' src='/ergatis/button_blue_update.png' alt='update' title='update'></a>
-        <a onclick="stopAutoUpdate('$ul_id')"><img class='navbutton' src='/ergatis/button_blue_stop_update.png' alt='stop update' title='stop update'></a>
-    </li>
-    <li class="pass_values">
-        <span id="${ul_id}_continue_update">60</span>
-    </li>
-ComponentNOTyetCreated
 }
 

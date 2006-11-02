@@ -44,40 +44,50 @@ sub component_count_hash {
 sub process_command {
     my ($twig, $command) = @_;
     
-    my $name  = $command->first_child('name')->text;
-    my $state = $command->first_child('state')->text;
-    my $id    = $command->first_child('id')->text;
+    my %cmd_props = ( 
+                      command_string => 'unknown',
+                      is_command => 1, 
+                      return_value => 'unknown',
+                      stderr => 'not defined',
+                      stdout => 'not defined',
+                      message => '',
+                    );
+    
+    $cmd_props{name}  = $command->first_child('name')->text;
+    $cmd_props{state} = $command->first_child('state')->text;
+    $cmd_props{id}    = $command->first_child('id')->text;
     my $type  = $command->first_child('type')->text;
 
-    my ($start_time, $end_time, $run_time) = time_info($command);
+    ($cmd_props{start_time}, $cmd_props{end_time}, $cmd_props{run_time} ) = time_info($command);
     
     ## can we get a return value?
-    my $return_value = 'unknown';
     if ( $command->first_child('status') && $command->first_child('status')->first_child('retValue') ) {
-         $return_value = $command->first_child('status')->first_child('retValue')->text;
+         $cmd_props{return_value} = $command->first_child('status')->first_child('retValue')->text;
+    }
+
+    ## if there is a status and a message, grab it
+    if ( $command->first_child('status') && $command->first_child('status')->first_child('message') ) {
+        $cmd_props{message} = $command->first_child('status')->first_child('message')->text;
     }
 
     ## can we build a command line string?
-    my $command_string = 'unknown';
     my $command_args = '';
     my $arg = '';
-    my $stderr = 'not defined';
-    my $stdout = 'not defined';
     for my $param ( $command->children('param') ) {
         my $key   = $param->first_child('key')->text;
         my $value = $param->first_child('value')->text;
         
         ## is this the command?
         if ($key eq 'command') {
-            $command_string = $value;
+            $cmd_props{command_string} = $value;
         
         ## is this stdout?
         } elsif ($key eq 'stdout') {
-            $stdout = $value;
+            $cmd_props{stdout} = $value;
             
         ## is this stderr?
         } elsif ($key eq 'stderr') {
-            $stderr = $value;
+            $cmd_props{stderr} = $value;
             
         ## else it must be a parameter of the command
         } else {
@@ -98,79 +108,11 @@ sub process_command {
     }
     
     ## finish the command string build
-    $command_string = "$command_string $command_args $arg";
-
-    print <<CommAnD;
-    <div class='command'>
-        <div class='leftside'>
-            <img class='status' src='/ergatis/status_$state.png' title='$state' alt='$state'>
-            $name
-        </div>
-        <div class='rightside'>
-            <span class='minor'>$run_time</span>
-            <span class='infolabel' id='${id}_infolabel'   onclick='toggle_cmd_info("$id")'>show info</span>
-        </div>
-    </div>
-    <div class='cmdinfo' id='$id' style='display: none;'>
-        <table>
-            <tr>
-                <th>workflow id:</th><td>$id</td>
-            </tr>
-            <tr>
-                <th>state:</th><td>$state</td>
-            </tr>
-            <tr>
-                <th>start time:</th><td>$start_time</td>
-            </tr>
-            <tr>
-                <th>end time:</th><td>$end_time</td>
-            </tr>
-            <tr>
-                <th>duration:</th><td>$run_time</td>
-            </tr>
-            <tr>
-                <th>return value:</th><td>$return_value</td>
-            </tr>
-            <tr>
-                <th>stdout:</th><td>$stdout</td>
-            </tr>
-            <tr>
-                <th>stderr:</th><td>$stderr</td>
-            </tr>
-            <tr>
-                <th colspan='2'>command:</th>
-            </tr>
-            <tr>
-                <td colspan='2'>$command_string</td>
-            </tr>
-        </table>
-    </div>
-CommAnD
-
-    my $ret_value = 'unknown';
-    my $message = '';
-    
-    ## if there is a status and a message, grab it
-    if ( $command->first_child('status') ) {
-        if ( $command->first_child('status')->first_child('retValue') ) {
-            $ret_value = $command->first_child('status')->first_child('retValue')->text;
-        }
-        
-        if ( $command->first_child('status')->first_child('message') ) {
-            $message = $command->first_child('status')->first_child('message')->text;
-        }
-        
-        if ( $message ) {
-            print <<messageBLOCK;
-        <div class='messageblock'>
-            return value: $ret_value<br>
-            message: $message
-        </div>
-messageBLOCK
-        }
-    }
+    $cmd_props{command_string} = "$cmd_props{command_string} $command_args $arg";
 
     $twig->purge;
+    
+    return %cmd_props;
 }
 
 sub quota_string {
