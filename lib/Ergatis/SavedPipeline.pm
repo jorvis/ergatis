@@ -317,7 +317,7 @@ use Ergatis::Logger;
         }
         
         ## Workflow/pipeline root must exist
-        my $pipeline_root = $args{repository_root} . "$self->{_pipeline_dir}";
+        my $pipeline_root = $args{repository_root} . "/$self->{_pipeline_dir}";
         if (! -d $pipeline_root) {
             croak( "$pipeline_root does not exist" );
         }
