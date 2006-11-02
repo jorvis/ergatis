@@ -67,9 +67,9 @@ dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
 
 shellwrappers:
-	@install src/perl/create_ber_db.sh $(PREFIX)/bin
-	@install src/perl/pepstats.sh $(PREFIX)/bin
-	@install src/perl/transeq.sh $(PREFIX)/bin
+	@install bin/create_ber_db.sh $(PREFIX)/bin
+	@install bin/pepstats.sh $(PREFIX)/bin
+	@install bin/transeq.sh $(PREFIX)/bin
 
 aat_aa	:
 	@echo "Installing aat_aa workflows in $(WORKFLOW_DOCS_DIR)"
