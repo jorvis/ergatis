@@ -37,15 +37,15 @@ then
 	prot_id=`cut -f1 $hits | head -1`
 	if [ $prot_id ]
 	then
-		id_to_fetch=`grep $prot_id $id_map | cut -f2`
+		id_to_fetch=`grep "${prot_id//\./\\\.}	" $id_map | cut -f2 | sort -u`
 	fi
 else
-	id_to_fetch=`cut -f6 $hits | sort | uniq`
+	id_to_fetch=`cut -f6 $hits | sort -u | perl -pe 's/\n/ /g'`
 fi
 
 if [ "$id_to_fetch" ]
 then
-	$bin_dir/fetch_fasta_from_db.pl -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out
+	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out
 	ec=$?
 	if [ $ec -ne 0 ]
 	then
@@ -53,5 +53,5 @@ then
 		exit $ec
 	fi
 else
-	touch $out
+	exit 1
 fi
