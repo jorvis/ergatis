@@ -55,13 +55,13 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install	: dirs shellwrappers wait
+ergatis_install : dirs shellwrappers wait
 
-ergatis_install_last	: dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genbank2bsml genezilla genemark genewise_best_loc genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh genbank2bsml genezilla genemark genewise_best_loc genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 	@install component/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install component/shared/groups_template.xml $(WORKFLOW_DOCS_DIR)
-        @install component/shared/project.config $(WORKFLOW_DOCS_DIR)
+	@install component/shared/project.config $(WORKFLOW_DOCS_DIR)
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -520,7 +520,7 @@ pangenome	:
 	@install component/pangenome/pangenome.ini $(WORKFLOW_DOCS_DIR)
 	@install component/pangenome/pangenome_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install component/pangenome/pangenomeconf.ini $(WORKFLOW_DOCS_DIR)  
-	
+
 panther	:
 	@echo "Installing panther workflows in $(WORKFLOW_DOCS_DIR)"
 	@install component/panther/panther-master.ini $(WORKFLOW_DOCS_DIR)
@@ -714,7 +714,7 @@ transterm	:
 	@install component/transterm/transterm.ini $(WORKFLOW_DOCS_DIR)
 	@install component/transterm/transterm_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install component/transterm/transtermconf.ini $(WORKFLOW_DOCS_DIR) 
-	
+
 tmhmm	:
 	@echo "Installing tmhmm workflows in $(WORKFLOW_DOCS_DIR)"
 	@install component/tmhmm/tmhmm-master.ini $(WORKFLOW_DOCS_DIR)
@@ -722,7 +722,7 @@ tmhmm	:
 	@install component/tmhmm/tmhmm.ini $(WORKFLOW_DOCS_DIR)
 	@install component/tmhmm/tmhmm_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install component/tmhmm/tmhmmconf.ini $(WORKFLOW_DOCS_DIR)  
-	
+
 tRNAscan-SE	:
 	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
 	@install component/tRNAscan-SE/tRNAscan-SE-master.ini $(WORKFLOW_DOCS_DIR)
