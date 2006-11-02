@@ -8,10 +8,7 @@
       <type>RunUnixCommand</type>
       <name>Wait</name>
       <state>incomplete</state>
-      <param>  
-	<key>command</key>
-	<value>$;BIN_DIR$;/spin_wait</value>
-      </param>
+      <executable>$;BIN_DIR$;/spin_wait</executable>
       <param>  
 	<key>--time</key>
 	<value>$;TIME$;</value>
