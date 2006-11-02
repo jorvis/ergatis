@@ -125,7 +125,10 @@ use Ergatis::Logger;
 	else{
 	    $self->{_logger}->warn("No template or pipeline specified");
 	}
-        
+        $self->{_pipeline_dir} = "workflow/runtime/pipeline";
+        $self->{_component_dir} = "workflow/runtime";
+        $self->{_project_conf} = "workflow/project.config";
+
         return $self;
     }
 
@@ -151,7 +154,7 @@ use Ergatis::Logger;
 	#get repository root and pipeline_id of input xml
 	#(this might be incorrect, could result in user overwriting pipeline.xml)
 	#(if write pipeline called on same repository_root, pipeline_id would already be stored)
-	if ( $self->{source} =~ m|(.+/([^/]+))/workflow/pipeline/(\d+)| ) {
+	if ( $self->{source} =~ m|(.+/([^/]+))/$self->{_pipeline_dir}/(\d+)| ) {
 	    $self->{_repository_root} = $1;
 #	    $project_id = $2;
 	    $self->{pipeline_id} = $3;
@@ -176,7 +179,7 @@ use Ergatis::Logger;
 		my $component = $1;
 		my $token = $2;
 		#check that conf exists
-		my $source_file = $self->{_repository_root}."/workflow/$component/".$self->{pipeline_id}."_$token/$component.$token.user.config";
+		my $source_file = $self->{_repository_root}."/$self->{_component_dir}/$component/".$self->{pipeline_id}."_$token/$component.$token.user.config";
 		unless (-e $source_file) {
 		    croak("component configuration file $source_file not found");
 		}
@@ -214,7 +217,7 @@ use Ergatis::Logger;
 		my $component = $1;
 		my $token = $2;
 		#copy .ini, setting SHARED_CONFIG = ""
-		my $source_file = $self->{_repository_root}."/workflow/$component/".$self->{pipeline_id}."_$token/$component.$token.user.config";
+		my $source_file = $self->{_repository_root}."/$self->{_component_dir}/$component/".$self->{pipeline_id}."_$token/$component.$token.user.config";
 		my $dest_file = $args{template}."/$component.$token.ini";
 		my $cfg = new Config::IniFiles( -file => $source_file );
 		$cfg->setval( "include $component", '$;SHARED_CONFIG$;', "" );        
@@ -310,11 +313,11 @@ use Ergatis::Logger;
 
         ## if the shared_config hasn't been defined, derive it
         if (! defined $self->{shared_config} ) {
-            $self->{shared_config} = $args{repository_root} . "/workflow_config_files/sharedconf.ini";
+            $self->{shared_config} = $args{repository_root} . "/$self->{_project_conf}";
         }
         
         ## Workflow/pipeline root must exist
-        my $pipeline_root = $args{repository_root} . '/workflow/pipeline';
+        my $pipeline_root = $args{repository_root} . "$self->{_pipeline_dir}";
         if (! -d $pipeline_root) {
             croak( "$pipeline_root does not exist" );
         }
@@ -340,7 +343,7 @@ use Ergatis::Logger;
             ## only do the components
             if ($commandname =~ /component_(.+?)\.(.+)/) {
                 my ($component_name, $token) = ($1, $2);
-                my $outputdir = "$args{repository_root}/workflow/$component_name";
+                my $outputdir = "$args{repository_root}/$self->{_component_dir}/$component_name";
 		$self->{_logger}->debug("Writing to parent outputdir $outputdir");        
                 ## create the component directory
                 $self->_create_dir($outputdir);
@@ -408,11 +411,11 @@ use Ergatis::Logger;
       <executable>$bin_dir/replace_config_keys</executable>
       <param>  
 	<key>--template_conf</key>
-	<value>$repository_root/workflow/$component_name/${pipeline_id}_$token/$component_name.$token.user.config</value>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/$component_name.$token.user.config</value>
       </param>
       <param>  
 	<key>--output_conf</key>
-	<value>$repository_root/workflow/$component_name/${pipeline_id}_$token/$component_name.$token.final.config</value>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/$component_name.$token.final.config</value>
       </param>   
       <param>
 	<key>--keys</key>
@@ -426,7 +429,7 @@ use Ergatis::Logger;
       <executable>$bin_dir/replace_template_keys</executable>
       <param>  
 	<key>--component_conf</key>
-	<value>$repository_root/workflow/$component_name/${pipeline_id}_$token/$component_name.$token.final.config</value>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/$component_name.$token.final.config</value>
       </param> 
       <param>  
 	<key>--template_xml_conf_key</key>
@@ -434,13 +437,13 @@ use Ergatis::Logger;
       </param>   
       <param>  
 	<key>--output_xml</key>
-	<value>$repository_root/workflow/$component_name/${pipeline_id}_$token/component.xml</value>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</value>
       </param>   
     </command>
     <commandSet type="serial">
       <name>$component_name</name>
       <state>incomplete</state>
-      <fileName>$repository_root/workflow/$component_name/${pipeline_id}_$token/component.xml</fileName>
+      <fileName>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</fileName>
     </commandSet>
   </commandSet>
 XMLfraGMENt
