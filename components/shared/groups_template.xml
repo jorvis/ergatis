@@ -52,17 +52,17 @@
       </param>
       <param>  
 	<key>--iterator_output_xml</key>
-	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.xml</value>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</value>
       </param>
       <param>  
 	<key>--distribopts</key>
-	<value>maxparallelcommands=1</value>
+	<value>nodistrib=1</value>
       </param>
     </command>
     <commandSet type="parallel">
       <state>incomplete</state>
       <name>Iterator:$;ITERATOR_TOKEN$; group:$;GROUP_NUMBER$; subflows</name>
-      <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.xml</fileName>
+      <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</fileName>
     </commandSet>
   </commandSet>
 </commandSetRoot>

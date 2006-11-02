@@ -68,34 +68,11 @@
     </param>
     <param>  
       <key>--keys</key>
-      <value>ITERATOR_TOKEN=$;ITERATOR_KEY$;,ITERATOR_XML=$;ITERATOR_KEY$;_XML$;</value>
+      <value>ITERATOR_TOKEN=$;ITERATOR_KEY$;,ITERATOR_XML=$;ITERATOR_XML$;</value>
     </param>
     <param>  
       <key>--distribopts</key>
       <value>nodistrib=$;NODISTRIB$;</value>
-    </param>
-  </command>
-  <!--The following command can be deprecated once Workflow supports distributed-->
-  <command>
-    <type>RunJavaUnixCommand</type>
-    <state>incomplete</state>
-    <name>create_distributed_iterator_xml</name>
-    <executable>$;BIN_DIR$;/create_distributed_iterator_xml</executable>
-    <param>  
-      <key>--input_xml</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_KEY$;/$;ITERATOR_KEY$;.xml</value>
-    </param>
-    <param>  
-      <key>--output_xml</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_KEY$;/$;ITERATOR_KEY$;.xml</value>
-    </param>    
-    <param>  
-      <key>--runcmd</key>
-      <value>$;BIN_DIR$;/run_wf</value>
-    </param>    
-    <param>  
-      <key>--nodistrib</key>
-      <value>$;NODISTRIB$;</value>
     </param>
   </command>
   <commandSet type="parallel">

@@ -77,9 +77,6 @@ if(exists $options{'iterator_list'}){
 	    $distrib = "parallel";
 	    $cstype = "remote-serial";
 	}
-	if($options{'distribopts'} =~ /maxparallelcommands=1/i){
-	    $maxpar = "<maxParallelCmds>1</maxParallelCmds>";
-	}
     }
     open FILE, ">$options{'iterator_output_xml'}" or $logger->logdie("Can't open file $options{'iterator_output_xml'}");
     print FILE "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -154,9 +151,9 @@ sub replacekeys{
         }
 	if($line =~ /\<INCLUDE/){
 	    my($file) = ($line =~ /file="([\/\w\.\_]+)"/);
-	    my($keys) = ($line =~ /keys="([\.\_\$;\w]+)"/);
+	    my($keys) = ($line =~ /keys="(.*)"/);
 	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
-	    &import_xml($file,$keys,*OUTPUTFILE);
+	    &import_xml($file,$keys,$subs,*OUTPUTFILE);
 	    $line = '';
 	}
 	print OUTPUTFILE $line;
@@ -173,7 +170,7 @@ sub replaceval{
 	    return $val;
 	}
 	else{
-	    $logger->logdie("Bad key $val in template file");
+	    $logger->logdie("Bad key $val in template file. ignore:$ignore");
 	}
     }
     else{
@@ -222,12 +219,11 @@ sub add_keys{
 }
 
 sub import_xml{
-    my($file,$keys,$outfh) = @_;
-    my $subs;
+    my($file,$keys,$subs,$outfh) = @_;
     my @keys = split(/,/,$keys);
     foreach my $k (@keys){
 	my($tok,$val) = split(/=/,$k);
-	$subs->{'$;'.$tok.'$;'} = $val;
+	$subs->{$tok} = $subs->{'$;'.$val.'$;'};
     }
     open FILE, "$file" or $logger->logdie("Can't open file $file");
     while(my $line=<FILE>){
@@ -236,6 +232,7 @@ sub import_xml{
         }
 	print $outfh $line;
     }
+    close FILE;
 }
 
 1;
