@@ -25,7 +25,7 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $display_codebase = $ergatis_cfg->val( 'settings', 'display_codebase') || 0;
 
 my $pipeline_root = "$repository_root/Workflow/pipeline";
-my $shared_conf_path = "$repository_root/workflow_config_files/sharedconf.ini";
+my $shared_conf_path = "$repository_root/workflow/project.config";
 my $errors_found  = 0;
 my $error_msgs = [];
 my %pipelines;

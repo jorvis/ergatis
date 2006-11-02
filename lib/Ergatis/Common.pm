@@ -13,7 +13,7 @@ This is just a collection of commonly used methods.  No classes.
 
 =over 4
 
-finds the sharedconf.ini file within the passed repository root and
+finds the project.config file within the passed repository root and
 extracts the desired parameter, returning it as a string.
 
 =back
@@ -22,7 +22,7 @@ extracts the desired parameter, returning it as a string.
 sub get_project_conf_param {
     my ($repository_root, $section, $parameter) = @_;
     
-    my $cfg = new Config::IniFiles( -file => "$repository_root/workflow_config_files/sharedconf.ini" );
+    my $cfg = new Config::IniFiles( -file => "$repository_root/workflow/project.config" );
     
     return $cfg->val( $section, $parameter );
 }

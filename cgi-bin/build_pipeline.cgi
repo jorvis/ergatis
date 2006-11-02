@@ -19,7 +19,7 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $build_area = $ergatis_cfg->val( 'paths', 'pipeline_build_area' ) || die "failed to determine pipeline_build_area";
 
 my $repository_root = $q->param('repository_root') || die "need a repository root";
-my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow_config_files/sharedconf.ini" );
+my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
 my $workflowdocs_dir = $shared_cfg->val( 'init', '$;WORKFLOWDOCS_DIR$;' );
 
 ## make sure the build area exists

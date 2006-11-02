@@ -19,7 +19,7 @@ Ergatis::ConfigFile.pm - A class for parsing ergatis config files.
 =head1 DESCRIPTION
 
 This class is a subclass of Config::IniFiles, and adds the ability to import 
-include files (like sharedconf.ini) and do variable replacement.
+include files (like project.config) and do variable replacement.
 
 =head1 METHODS
 

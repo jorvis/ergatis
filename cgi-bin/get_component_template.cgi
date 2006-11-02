@@ -19,7 +19,7 @@ if (defined $q->param('component_num')) {
     croak('need a component num');
 }
 
-my $shared_cfg = new Config::IniFiles( -file => "$repository_root/workflow_config_files/sharedconf.ini" );
+my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
 my $workflowdocs_dir = $shared_cfg->val( 'init', '$;WORKFLOWDOCS_DIR$;' );
 
 my $tmpl = HTML::Template->new( filename => 'templates/get_component_template.tmpl',

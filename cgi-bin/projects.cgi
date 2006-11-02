@@ -27,7 +27,7 @@ for my $project ( $ergatis_cfg->Parameters('projects') ) {
         ergatis_dir         => '?',
     };
     
-    my $shared_cfg_path = "$$project_data{repository_root}/workflow_config_files/sharedconf.ini";
+    my $shared_cfg_path = "$$project_data{repository_root}/workflow/project.config";
     
     ## make sure it exists
     if ( -e $shared_cfg_path ) {

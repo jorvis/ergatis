@@ -11,7 +11,7 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 my $repository_root = $q->param('repository_root') || die "need a repository root";
-my $shared_cfg = new Config::IniFiles( -file => "$repository_root/workflow_config_files/sharedconf.ini" );
+my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
 my $workflowdocs_dir = $shared_cfg->val( 'init', '$;WORKFLOWDOCS_DIR$;' );
 
 ## path to the analysis ontology which contains the component list.

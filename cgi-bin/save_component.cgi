@@ -18,7 +18,7 @@ my $build_directory = $q->param('build_directory') || die "need a build director
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
-my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow_config_files/sharedconf.ini" );
+my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
 my $docs_dir = $shared_cfg->val('init', '$;WORKFLOWDOCS_DIR$;') || die "failed to determine workflowdocs_dir";
 
 ## if the build directory doesn't exist yet, create it
