@@ -86,7 +86,6 @@ my $ergatis_dir = $shared_conf->val('project', '$;ERGATIS_DIR$;') || 'unknown';
 foreach my $pipeline_id ( readdir $rdh ) {
     next unless ( $pipeline_id =~ /^\d+$/ );
     
-    print STDERR "parsing pipeline id $pipeline_id\n";
     $pipeline_count++;
 
     my $state = 'unknown';
