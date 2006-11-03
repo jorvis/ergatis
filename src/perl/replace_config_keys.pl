@@ -10,10 +10,6 @@ use Ergatis::Logger;
 use Getopt::Long;
 
 my %options;
-# Installation directories are pulled from environment for now
-my $WorkflowDocsDir = $ENV{'WORKFLOW_DOCS_DIR'};
-my $BinDir = $ENV{'WORKFLOW_WRAPPERS_DIR'};
-my $SchemaDocsDir = $ENV{'SCHEMA_DOCS_DIR'};
 
 my $results = GetOptions (\%options, 
                           'template_conf|t=s', 
@@ -32,18 +28,24 @@ $logger = $logger->get_logger();
 
 my $origcfg = new Config::IniFiles( -file => $options{'template_conf'});
 #Import Included files
-$origcfg = &import_includes($origcfg);
-#Add add'l keys specified via --keys
+my $included = {};
+$origcfg = &import_includes($origcfg,$included);
 
-&add_keys($origcfg,'init',split(/,/,$options{'keys'}));
+#Add add'l keys specified via --keys
+&add_keys($origcfg,'project',split(/,/,$options{'keys'}));
+
 #Perform initial key replacement
 my $cfg = &replace_keys($origcfg);
 
 #Init section is composed of required parameters
-&check_parameters($cfg,'init');
+&check_parameters($cfg,'project');
 #Write the output location of this file as key $;COMPONENT_CONFIG$;
-$cfg->setval('workflowdocs','$;COMPONENT_CONFIG$;',$options{'output_conf'});
-&check_parameters($cfg,'workflowdocs');
+my $ret = $cfg->setval('component','$;COMPONENT_CONFIG$;',$options{'output_conf'});
+if(!$ret){
+    $logger->logdie("Couldn't add key \$;COMPONENT_CONFIG\$;= $options{'output_conf'}to section [component]");
+}
+&check_parameters($cfg,'component');
+
 #Perform second key replacement for nested keys
 my $finalcfg = &replace_keys($cfg);
 $finalcfg->WriteConfig($options{'output_conf'});
@@ -57,7 +59,7 @@ sub check_parameters{
     my($cfg,$section) = @_;
     foreach my $param ($cfg->Parameters($section)){
 	if($cfg->val( $section, $param) eq ""){
-	    $logger->logdie("Required parameter $param is missing (".$cfg->val( $section, $param).").  Check init section of configuration file.\n\n");
+	    $logger->logdie("Required parameter $param is missing (".$cfg->val( $section, $param).").  Check [$section] section of configuration file.\n\n");
 	}
 	else{
 	    $logger->debug("Required parameter $param=".$cfg->val( $section, $param)) if($logger->is_debug());
@@ -76,10 +78,13 @@ sub replace_keys{
 	foreach my $param (@parameters){
 	    my $value = $cfg->val($section,$param);
 	    
-        ## take spaces off front and back of value, leaving internal ones
+	    ## take spaces off front and back of value, leaving internal ones
 	    $value =~ s/^\s*(.+?)\s*$/$1/;
 	    
-        $cfg->setval($section,$param,$value);
+	    my $ret = $cfg->setval($section,$param,$value);
+	    if(!$ret){
+		$logger->logdie("Couldn't add key $param=$value to section [$section]");
+	    }
 	    $allkeys->{$param}->{'value'} = $value;
 	    $allkeys->{$param}->{'section'} = $section;
 	    $logger->debug("Scanning $value for key $param in section [ $section ] as candidate for replacement") if($logger->is_debug());
@@ -89,6 +94,7 @@ sub replace_keys{
 	    }
 	}
     }
+    #Now that we've obtained all possible values, expand...
 
     foreach my $key (keys %$checkvalues){
 	my $value = $checkvalues->{$key};
@@ -134,7 +140,7 @@ sub checkvalue{
 }
 
 sub import_includes{
-    my($cfg) = @_;
+    my($cfg,$included) = @_;
     my @includes = $cfg->GroupMembers("include");
     push @includes,"include";
     $logger->debug("Looking for [include] sections...found:".@includes) if($logger->is_debug());
@@ -145,15 +151,17 @@ sub import_includes{
 	foreach my $param (@parameters){
 	    my $includefile = $cfg->val($member,$param);
 	    $logger->debug("Found includefile $includefile in section [ $member ] with key $param") if($logger->is_debug());
-	    $includefile =~ s/\$;WORKFLOWDOCS_DIR\$;/$WorkflowDocsDir/g;
-	    $logger->debug("Set includefile=$includefile using \$;WORKFLOWDOCS_DIR\$;=$WorkflowDocsDir") if($logger->is_debug());
 	    if(-e $includefile){
-		my $newcfg = new Config::IniFiles( -file => $includefile, 
-						   -import => $currcfg);
-		$currcfg = $newcfg;
+		if(!$included->{$includefile}){
+		    my $newcfg = new Config::IniFiles( -file => $includefile, 
+						       -import => $currcfg);
+		    $included->{$includefile} = 1;
+		    #Supports nesting of includes
+		    $currcfg = &import_includes($newcfg,$included);
+		}
 	    }
 	    else{
-		$logger->logdie("Can't find included config file $includefile");
+		$logger->logdie("Can't find included config file in $member $param $includefile");
 	    }
 	}
     }
@@ -166,6 +174,9 @@ sub add_keys{
     foreach my $kv (@keys){
 	my($key,$value) = split(/=/,$kv);
 	$logger->debug("Adding user defined key $key=$value in section [$section]") if($logger->is_debug());
-	$cfg->setval($section,'$;'.$key.'$;',$value);
+	my $ret = $cfg->setval($section,'$;'.$key.'$;',$value);
+	if(!$ret){
+	    $logger->logdie("Couldn't add key \$;$key\$;=$value to section [$section]");
+	}
     }
 }
