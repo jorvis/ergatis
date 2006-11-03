@@ -9,7 +9,7 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 ## will be like:
-## /usr/local/scratch/annotation/TTA1/Workflow/wu-blastp/20724_AllGroup.niaa/component.conf.bld.ini
+## /usr/local/scratch/annotation/TTA1/workflow/runtime/wu-blastp/20724_AllGroup.niaa/component.conf.bld.ini
 my $file = $q->param("file") || die "pass file";
 
 pageHeader();

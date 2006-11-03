@@ -20,7 +20,7 @@ my $tmpl = HTML::Template->new( filename => 'templates/view_formatted_xml_source
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 ## will be like:
-## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
+## /usr/local/scratch/annotation/TGA1/workflow/runtime/split_fasta/29134_test2/pipeline.xml
 my $file = $q->param("file") || die "pass file";
 
 ## the file may have been compressed
