@@ -33,10 +33,10 @@ my $temp_space = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space n
 ## share the same storable object.
 my $cfg_md5 = $ergatis_cfg->project_list_md5();
 
-my $table_cache_update_time = $ergatis_cfg->val( 'settings', 'pipeline_list_cache_time' ) || 10;  # in minutes
+my $table_cache_update_time = $ergatis_cfg->val( 'display_settings', 'pipeline_list_cache_time' ) || 10;  # in minutes
    $table_cache_update_time /= ( 60 * 24 );  ## convert to number of days (usually a decimal)
 
-my $active_pipeline_age = $ergatis_cfg->val( 'settings', 'active_pipeline_age') || 24;
+my $active_pipeline_age = $ergatis_cfg->val( 'display_settings', 'active_pipeline_age') || 24;
 
 ## build the project list
 my $registered_projects = [];

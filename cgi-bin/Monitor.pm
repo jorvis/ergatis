@@ -124,7 +124,7 @@ sub quota_string {
     ## need to see if the user has this enabled
     my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
     
-    if ( $ergatis_cfg->val('settings', 'enable_quota_lookup') ) {
+    if ( $ergatis_cfg->val('display_settings', 'enable_quota_lookup') ) {
 
         if ($repository_root =~ m|^/usr/local/annotation/|) {
             $string = `/usr/local/common/getquota -N $repository_root`;

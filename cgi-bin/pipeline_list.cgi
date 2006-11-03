@@ -22,7 +22,7 @@ my $repository_root = $q->param("repository_root") || die "pass a repository roo
 my $quotastring = &quota_string($repository_root);
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
-my $display_codebase = $ergatis_cfg->val( 'settings', 'display_codebase') || 0;
+my $display_codebase = $ergatis_cfg->val( 'display_settings', 'display_codebase') || 0;
 
 my $pipeline_root = "$repository_root/workflow/runtime/pipeline";
 my $shared_conf_path = "$repository_root/workflow/project.config";
