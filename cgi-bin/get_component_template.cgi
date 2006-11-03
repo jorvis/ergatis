@@ -45,6 +45,7 @@ if ( -e $component_ini ) {
         ## any sections to skip?
         next if $section eq 'workflowdocs';
         next if $section eq 'include';
+        next if $section eq 'component';
        
         push @$sections, { name => $section };
         
