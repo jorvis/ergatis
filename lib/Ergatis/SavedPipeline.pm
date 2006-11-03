@@ -90,6 +90,7 @@ use Ergatis::Pipeline;
 {
     my %_attributes = (
                         pipeline_id             => undef,
+                        pipeline_token             => undef,
                         shared_config           => undef,
                         template                => undef,
                         source                  => undef,
@@ -223,7 +224,10 @@ use Ergatis::Pipeline;
 		my $source_file = $self->{_repository_root}."/$self->{_component_dir}/$component/".$self->{pipeline_id}."_$token/$component.$token.user.config";
 		my $dest_file = $args{template}."/$component.$token.ini";
 		my $cfg = new Config::IniFiles( -file => $source_file );
-		$cfg->setval( "include $component", '$;SHARED_CONFIG$;', "" );        
+		my $ret = $cfg->setval("include", '$;PROJECT_CONFIG$;', "" );        
+		if(!$ret){
+		    croak("can't set \$;PROJECT_CONFIG\$; in section [include]");
+		}
 		$cfg->WriteConfig( $dest_file );
 	    }
 	}
@@ -389,6 +393,16 @@ use Ergatis::Pipeline;
                 my $component_twig = $self->_create_component_twig( $component_name, $token );
                 $component_twig->replace( $commandname_elt->parent );
             }
+	}
+	foreach my $commandname_elt ( $twig->getElementsByTagName('commandSet') ) {
+	    if(!$commandname_elt->has_children("name")){
+		 my $name= XML::Twig::Elt->new('name'=>$commandname_elt->att("type"));
+		 $name->paste( first_child=>$commandname_elt);
+	    }
+	    elsif($commandname_elt->has_children("name")->text() eq 'start'){
+		my $name= XML::Twig::Elt->new('name'=>"start pipeline:$self->{pipeline_token}");
+		$name->replace( $commandname_elt->has_children("name") );
+	    }
         }
         
         ## write the twig out to the target directory
@@ -529,7 +543,19 @@ XMLfraGMENt
                                        );
         
         ## set the shared conf
-        $cfg->setval( "include", '$;SHARED_CONFIG$;', $self->{shared_config} );
+        my $ret = $cfg->setval( "include", '$;PROJECT_CONFIG$;', $self->{shared_config} );
+	if(!$ret){
+	    croak("can't set \$;PROJECT_CONFIG\$; in section [include] $self->{shared_config} $self->{_template_dir}/$component_name.$token.config");
+	}
+	if($self->{pipeline_token} ne ''){
+	    my $ret = $cfg->setval("component",'$;PIPELINE_TOKEN$;');
+	    if(!$ret){
+		$ret = $cfg->newval("component",'$;PIPELINE_TOKEN$;');
+		if(!$ret){
+		    croak("can't set \$;PIPELINE_TOKEN\$; in section [component]");
+		}
+	    }
+	}
 	$self->{_logger}->debug("Writing to config file $outputdir/$component_name.$token.user.config");        
         ## write it into the proper directory
         $cfg->WriteConfig( "$outputdir/$component_name.$token.user.config" );
