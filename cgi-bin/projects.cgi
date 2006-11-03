@@ -34,7 +34,7 @@ for my $project ( $ergatis_cfg->Parameters('projects') ) {
         my $shared_cfg = new Ergatis::ConfigFile( -file => $shared_cfg_path );
 
         if ( defined $shared_cfg ) {
-            $$project_data{ergatis_dir} = $shared_cfg->val('init', '$;ERGATIS_DIR$;');
+            $$project_data{ergatis_dir} = $shared_cfg->val('project', '$;ERGATIS_DIR$;');
         }
     }
 

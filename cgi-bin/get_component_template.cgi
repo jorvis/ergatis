@@ -21,7 +21,7 @@ if (defined $q->param('component_num')) {
 }
 
 my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
-my $workflowdocs_dir = $shared_cfg->val( 'init', '$;WORKFLOWDOCS_DIR$;' );
+my $workflowdocs_dir = $shared_cfg->val( 'project', '$;DOCS_DIR$;' );
 
 my $tmpl = HTML::Template->new( filename => 'templates/get_component_template.tmpl',
                                 die_on_bad_params => 1,

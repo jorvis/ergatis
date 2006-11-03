@@ -81,7 +81,7 @@ if ( scalar @{$error_msgs} ) {
 
 ## pull the ergatis dir from the shared conf file
 my $shared_conf = new Ergatis::ConfigFile( -file => $shared_conf_path );
-my $ergatis_dir = $shared_conf->val('init', '$;ERGATIS_DIR$;') || 'unknown';
+my $ergatis_dir = $shared_conf->val('project', '$;ERGATIS_DIR$;') || 'unknown';
 
 foreach my $pipeline_id ( readdir $rdh ) {
     next unless ( $pipeline_id =~ /^\d+$/ );
