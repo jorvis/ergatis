@@ -42,15 +42,11 @@ if ( -e $component_ini ) {
     
     ## it's possible that later the first dd could be comments and the second the value
     for my $section ( $component_cfg->Sections() ) {
-        ## config group is up to a whitepace
-        $section =~ /^(.+?)\s+/;
-        my $section_name = $1;
-
         ## any sections to skip?
-        next if $section_name eq 'workflowdocs';
-        next if $section_name eq 'include';
+        next if $section eq 'workflowdocs';
+        next if $section eq 'include';
        
-        push @$sections, { name => $section_name };
+        push @$sections, { name => $section };
         
         
         for my $parameter ( $component_cfg->Parameters($section) ) {
@@ -67,13 +63,13 @@ if ( -e $component_ini ) {
                                                         pretty_label => $pretty_label, 
                                                         value => $component_cfg->val($section, $parameter),
                                                         selectable => 1,
-                                                        section => $section_name };            
+                                                        section => $section };            
             } else {
                 push @{$$sections[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
                                                         value => $component_cfg->val($section, $parameter),
                                                         selectable => 0,
-                                                        section => $section_name };
+                                                        section => $section };
             }                
         }
     }
