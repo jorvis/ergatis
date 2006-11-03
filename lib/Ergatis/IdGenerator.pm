@@ -115,9 +115,9 @@ umask(0000);
 
     my %_attributes = (
                         current_id  => undef,
-                        id_dir      => '/usr/local/devel/ANNOTATION/jorvis/id_generation',
+                        id_dir      => '/usr/local/devel/ANNOTATION/jorvis/global_id_repository/',
                         logging     => 1,
-                        log_dir     => '/usr/local/devel/ANNOTATION/jorvis/id_generation/logs',
+                        log_dir     => '/usr/local/devel/ANNOTATION/jorvis/global_id_repository/logs',
                         _id_file    => undef,
                         _logfh      => undef,
                       );
