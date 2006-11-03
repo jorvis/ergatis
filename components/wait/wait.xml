@@ -7,14 +7,14 @@
     <name>Wait workflow</name>
     <!--Preprocessing-->
     <command>
-      <type>RunJavaUnixCommand</type>
+      <type>RunUnixCommand</type>
       <name>create_output_dir</name>
       <state>incomplete</state>
       <executable>mkdir</executable>
       <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
     </command>
     <command>
-      <type>RunJavaUnixCommand</type>
+      <type>RunUnixCommand</type>
       <name>create_tmp_dir</name>
       <state>incomplete</state>
       <executable>mkdir</executable>
@@ -22,7 +22,7 @@
     </command>
     <!--Processing-->
     <!--Iterator-->
-    <INCLUDE file="$;WORKFLOWDOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_KEY$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+    <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_KEY$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
     <!--Postprocessing-->
   </commandSet>
 </commandSetRoot>

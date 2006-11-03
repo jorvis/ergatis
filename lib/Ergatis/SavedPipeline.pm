@@ -327,7 +327,7 @@ use Ergatis::Pipeline;
         
         ## if the pipeline_id is not defined, pull one
         if (! defined $self->{pipeline_id}) {
-            my $idgen = new Ergatis::IdGenerator( id_repository => $args{id_repository) );
+            my $idgen = new Ergatis::IdGenerator( id_repository => $args{id_repository} );
             $self->{pipeline_id} = $idgen->next_id( type => 'pipeline' );
 	        $self->{_logger}->debug("Retrieved pipeline id $self->{pipeline_id}");
         }
@@ -402,6 +402,9 @@ use Ergatis::Pipeline;
         my ($self, $component_name, $token) = @_;
         my $pipeline_id         = $self->pipeline_id();
         my $bin_dir             = $self->_get_bin_dir();
+	if(! -d $bin_dir){
+	    $self->{_logger}->logdie("Can't find directory $bin_dir\n");
+	}
         my $repository_root     = $self->{_repository_root};
         
         my $xmlfragment = <<XMLfraGMENt;
@@ -409,7 +412,7 @@ use Ergatis::Pipeline;
     <state>incomplete</state>
     <name>$component_name.$token</name>
     <command>
-      <type>RunJavaUnixCommand</type>
+      <type>RunUnixCommand</type>
       <name>replace_config_keys</name>
       <state>incomplete</state>
       <executable>$bin_dir/replace_config_keys</executable>
@@ -427,7 +430,7 @@ use Ergatis::Pipeline;
       </param>
     </command>
     <command>
-      <type>RunJavaUnixCommand</type>
+      <type>RunUnixCommand</type>
       <name>replace_template_keys</name>
       <state>incomplete</state>
       <executable>$bin_dir/replace_template_keys</executable>
@@ -462,7 +465,7 @@ XMLfraGMENt
         my $self = shift;
         
         my $cfg = new Config::IniFiles( -file => $self->{shared_config} );
-        return $cfg->val('init', '$;BIN_DIR$;');
+        return $cfg->val('project', '$;BIN_DIR$;');
     }
     
     sub _add_commandname {
