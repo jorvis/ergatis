@@ -1,0 +1,166 @@
+a#save_control,
+a#cancel_control {
+    display: none;
+}
+div#build_area {
+    /* this helps prevent screen wobble when a config is expanded that
+       is longer than the visible page
+    */
+    margin-bottom: 1000px;
+}
+div.button_container {
+    float: left;
+    padding: 10px 0 0 15px;
+}
+div.button_container div.button {
+    float: left;
+}
+div.button {
+    border: 1px solid rgb(0,0,0);
+    background-color: rgb(200,200,200);
+    padding: 1px 5px 1px 5px;
+}
+div.component {
+    clear: both;
+    border: 1px solid rgb(150,150,150);
+    width: 700px;
+    margin: 10px 0 10px 0;
+    padding: 5px 5px 15px 5px;
+    overflow: hidden;
+}
+div#component_list_container {
+    display: none;
+}
+div.component_nav_buttons {
+    float: right;
+    border-left: 1px dotted rgb(150,150,150);
+    border-bottom: 1px dotted rgb(150,150,150);
+}
+div.component_nav_buttons img {
+    padding-left: 3px;    
+}
+div.component_status {
+    float: right;
+    font-weight: bold;
+    color: rgb(225,0,0);
+    font-size: 90%;
+}
+div.config_expander {
+    border-bottom: 1px dotted rgb(150,150,150);
+    margin-top: 15px;
+}
+div.config_expander img {
+    margin-right: 5px;
+}
+div#input_controls_container {
+    margin-bottom: 30px;
+    font-size: 80%;
+}
+div#input_controls_container img {
+    margin: 4px 1px 0 4px;
+}
+div#end_pipeline_marker {
+    margin-top: 15px;
+}
+div.serial,
+div.parallel {
+    clear: both;
+    padding-left: 30px;
+}
+div.parallel {
+    border-left: 1px solid rgb(73,81,92);
+}
+div#variables {
+    display: none;
+}
+h3 {
+    margin-top: 0;
+    padding-top: 0;
+}
+input.select_shadow {
+    display: none;
+}
+.locator {
+    font-weight: bold;
+    color: rgb(100,100,100);
+    /* comment this next line out if you want to see pointer boxes on each component/set */
+    display: none;  
+}
+span.component_name {
+    font-weight: bold;
+}
+table.config_table {
+    padding-left: 5px;
+}
+table.config_table td {
+    padding-left: 10px;
+}
+table.config_table th {
+    font-weight: bold;
+    text-align: left;
+    color: rgb(73,81,92);
+    padding: 10px 0 5px 0;
+}
+table.config_table input {
+    border: none;
+    border-bottom: 1px solid rgb(150,150,150);
+    background-color: rgb(230,230,230);
+    width: 500px;
+}
+table.config_table select {
+    border-bottom: 1px solid rgb(150,150,150);
+    background-color: rgb(230,230,230);   
+}
+table#input_list {
+    border-collapse: collapse;
+    border: 1px solid rgb(175,175,175);
+    width: 95%;
+    margin: 0;
+    padding: 0;
+}
+table#input_list th {
+    border-bottom: 1px solid rgb(175,175,175);
+    color: rgb(73,138,92);
+    text-align: left;
+    padding-left: 10px;
+}
+table#input_list td {
+    font-size: 85%;
+    padding-left: 4px;
+    border-top: 1px solid rgb(175,175,175);
+}
+tr.config_section {
+    font-weight: bold;
+    padding-top: 20px;
+}
+tr#new_input_fields_row {
+    display: none;
+}
+tr#new_input_fields_row input,
+tr#new_input_fields_row select {
+    border: 1px solid rgb(200,200,200);
+    /* the following color needs to be synchronized with  the clearNewInput() function */
+    background-color: rgb(230,230,230);
+}
+ul.add_panel {
+    clear: both;
+    margin: 0 0 0 15px;
+    padding: 0;
+    font-size: 85%;
+}
+ul.add_panel li {
+    float: left;
+    padding: 0 10px 0 0;
+    margin: 0 10px 10px 15px;
+}
+ul.add_panel li.comp {
+    list-style-image: url('/ergatis/images/icon_component_add.png');
+}
+ul.add_panel li.serial {
+    list-style-image: url('/ergatis/images/icon_serial.png');
+}
+ul.add_panel li.parallel {
+    list-style-image: url('/ergatis/images/icon_parallel.png');
+}
+
+
