@@ -37,7 +37,7 @@ $logger = $logger->get_logger();
 my $cfg = new Config::IniFiles( -file => $options{'component_conf'});
 #Add add'l keys specified via --keys
 
-&add_keys($cfg,'init',split(/,/,$options{'keys'}));
+&add_keys($cfg,'component',split(/,/,$options{'keys'}));
 
 my $replacevals = &parseconf($cfg);
 
@@ -98,13 +98,13 @@ if(exists $options{'iterator_list'}){
 }
 else{
     if($options{'template_xml_conf_key'}){
-	my $templatexml = $cfg->val('workflowdocs','$;'.$options{'template_xml_conf_key'}.'$;');
+	my $templatexml = $cfg->val('component','$;'.$options{'template_xml_conf_key'}.'$;');
 	
 	if(!$templatexml){
-	    $logger->logdie("Can't find key in component config $options{'component_conf'} [init] $options{'template_xml_conf_key'}");     
+	    $logger->logdie("Can't find key in component config $options{'component_conf'} [component] $options{'template_xml_conf_key'}");     
 	}	    
 	if(! -e $templatexml){
-	    $logger->logdie("Can't find referenced xml file ($templatexml) in component config $options{'component_conf'} [init] $options{'template_xml_conf_key'}");     
+	    $logger->logdie("Can't find referenced xml file ($templatexml) in component config $options{'component_conf'} [component] $options{'template_xml_conf_key'}");     
 	
 	}
 	&replacekeys($replacevals,$templatexml,$options{'output_xml'});
