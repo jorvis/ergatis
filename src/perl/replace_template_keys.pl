@@ -90,6 +90,9 @@ if(exists $options{'iterator_list'}){
                      <state>incomplete</state>
                      <id>$i</id>
                      <fileName>$file</fileName>
+                     <dceSpec type=\"sge\">
+                        <OS>linux</OS>
+                     </dceSpec>
                     </commandSet>\n";
     }
     print FILE "</commandSet>
