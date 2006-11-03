@@ -4,6 +4,7 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Config::IniFiles;
+use Ergatis::ConfigFile;
 use HTML::Template;
 
 my $q = new CGI;
