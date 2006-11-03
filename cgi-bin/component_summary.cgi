@@ -19,7 +19,7 @@ my $tmpl = HTML::Template->new( filename => 'templates/component_summary.tmpl',
                               );
 
 ## will be like:
-## /usr/local/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
+## /usr/local/annotation/TGA1/workflow/runtime/split_fasta/29134_test2/pipeline.xml
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 
 ## will be like:
@@ -27,7 +27,7 @@ my $pipeline = $q->param("pipeline") || die "pass pipeline";
 my $ul_id = $q->param("ul_id") || die "pass ul_id";
 
 ## will be like:
-## /usr/local/annotation/AA1/Workflow/pipeline/29671/pipeline.xml.instance
+## /usr/local/annotation/AA1/workflow/runtime/pipeline/29671/pipeline.xml.instance
 my $parent_pipeline = $q->param("parent_pipeline") || '';
 my $pipeline_exists = 0;
 
@@ -49,9 +49,9 @@ my $current_step = '';
 my $update_interval = 61;
 
 ## we can parse some information out of the standardized instance file path
-##  like: /usr/local/scratch/annotation/EHA1/Workflow/iprscan/30835_default/pipeline.xml
+##  like: /usr/local/scratch/annotation/EHA1/workflow/runtime/iprscan/30835_default/pipeline.xml
 my ($root_dir, $project, $component, $token, $pipelineid, $component_conf_varreplaced, $component_conf_nonvarreplaced);
-if ($pipeline =~ m|(.+/(.+)/Workflow/(.+?)/(\d+)_(.+?))/pipeline.xml|) {
+if ($pipeline =~ m|(.+/(.+)/workflow/runtime/(.+?)/(\d+)_(.+?))/pipeline.xml|) {
     $component_conf_nonvarreplaced = "$1/component.conf.bld.ini";
     $component_conf_varreplaced = "$1/pipeline.config";
     ($project, $component, $pipelineid, $token) = ($2, $3, $4, $5);

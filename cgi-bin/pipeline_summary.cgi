@@ -20,12 +20,12 @@ print $q->header( -type => 'text/html' );
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 my $project;
 my $pipelineid;
-if ( $pipeline =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
+if ( $pipeline =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
     $repository_root = $1;
     $project = $2;
     $pipelineid = $3;
 } else {
-    die "failed to extract a repository_root from $pipeline.  expected a Workflow subdirectory somewhere."
+    die "failed to extract a repository_root from $pipeline.  expected a workflow/runtime subdirectory somewhere."
 }
 
 my ($pid,$hostname,$execuser,$retries) = &parselockfile("$repository_root/workflow/lock_files/pid.$pipelineid");
@@ -35,7 +35,7 @@ $hostname = "unknown" if(!$hostname);
 
 my $twig = new XML::Twig;
 
-if ($pipeline =~ /(.+)\/Workflow/ ) {
+if ($pipeline =~ /(.+)\/workflow\/runtime/ ) {
     $repository_root = $1;
 }
 

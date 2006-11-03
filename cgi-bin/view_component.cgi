@@ -58,7 +58,7 @@ if ( $parent_commandset->first_child('parentFileName') ) {
 my $project = '?';
 my $repository_root = '';
 my $pipeline_id = '';
-if ( $parent_pipeline =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)| ) {
+if ( $parent_pipeline =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)| ) {
     $repository_root = $1;
     $project = $2;
     $pipeline_id = $3;

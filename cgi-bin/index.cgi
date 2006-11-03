@@ -94,15 +94,15 @@ sub get_pipeline_lists {
         my $repository_root = $_->{repository_root};
 
         ## CATCH WARNING HERE LATER
-        next unless ( -d "$repository_root/Workflow/pipeline" );
+        next unless ( -d "$repository_root/workflow/runtime/pipeline" );
 
         ## open the pipeline dir
-        opendir ( my $idh, "$repository_root/Workflow/pipeline" ) || die "can't read directory $repository_root/Workflow/pipeline: $!";
+        opendir ( my $idh, "$repository_root/workflow/runtime/pipeline" ) || die "can't read directory $repository_root/workflow/runtime/pipeline: $!";
 
         for my $pipeline_id ( readdir $idh ) {
             my $state = '';
             my $last_mod = '';
-            my $pipeline_file = "$repository_root/Workflow/pipeline/$pipeline_id/pipeline.xml.instance";
+            my $pipeline_file = "$repository_root/workflow/runtime/pipeline/$pipeline_id/pipeline.xml.instance";
             
             ## it may have been compressed
             if (! -e $pipeline_file ) {

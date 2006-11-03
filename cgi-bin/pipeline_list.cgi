@@ -24,7 +24,7 @@ my $quotastring = &quota_string($repository_root);
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $display_codebase = $ergatis_cfg->val( 'settings', 'display_codebase') || 0;
 
-my $pipeline_root = "$repository_root/Workflow/pipeline";
+my $pipeline_root = "$repository_root/workflow/runtime/pipeline";
 my $shared_conf_path = "$repository_root/workflow/project.config";
 my $errors_found  = 0;
 my $error_msgs = [];
@@ -33,7 +33,7 @@ my $pipeline_count = 0;
 
 ## make sure the directory exists
 if (! -e $pipeline_root) {
-    &record_error("$pipeline_root not found.  enter a repository root that contains a Workflow directory.");
+    &record_error("$pipeline_root not found.  enter a repository root that contains a workflow directory.");
     &print_template();
 }
 
@@ -85,6 +85,8 @@ my $ergatis_dir = $shared_conf->val('init', '$;ERGATIS_DIR$;') || 'unknown';
 
 foreach my $pipeline_id ( readdir $rdh ) {
     next unless ( $pipeline_id =~ /^\d+$/ );
+    
+    print STDERR "parsing pipeline id $pipeline_id\n";
     $pipeline_count++;
 
     my $state = 'unknown';
@@ -96,8 +98,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $component_count = 0;
     my $component_aref = [];
     my $component_label = ' components';
-    my $pipeline_file = "$repository_root/Workflow/pipeline/$pipeline_id/pipeline.xml";  ## may be modified below
-    my $is_instance = 0;
+    my $pipeline_file = "$repository_root/workflow/runtime/pipeline/$pipeline_id/pipeline.xml";  ## may be modified below
     my $archive_link = "./archive_pipeline_form.cgi?repository_root=$repository_root&amp;pipeline_id=$pipeline_id";
     my $links_enabled = 1;
     my $error_message = 0;
@@ -115,22 +116,14 @@ foreach my $pipeline_id ( readdir $rdh ) {
     
     } else {
 
-        ## if the pipeline.xml.instance exists, just process it
-        if (-e "$pipeline_file.instance" ) {
-            $pipeline_file .= '.instance';
-            $is_instance = 1;
-        
-        } elsif ( -e "$pipeline_file.instance.gz" ) {
-            $pipeline_file .= '.instance.gz';
-            $is_instance = 1;
-        
-        ## elsif only the pipeline.xml exists, we can do less
-        } elsif ( -e "$repository_root/Workflow/pipeline/$pipeline_id/pipeline.xml" ) {
-            $is_instance = 0;
+        ## if only the pipeline.xml exists, we can do less
+        if (! -e $pipeline_file ) {
 
-        ## else don't have enough info to go one, skip it.
-        } else {
-            next;
+            if ( -e "$pipeline_file.gz" ) {
+                $pipeline_file .= '.gz';
+            } else {
+                next;
+            }
         }
 
         if (! -s $pipeline_file ) {
@@ -161,9 +154,6 @@ foreach my $pipeline_id ( readdir $rdh ) {
 
         my $filestat = stat($pipeline_file);
         $pipeline_user = getpwuid($filestat->uid);
-        #$last_mod = time - $filestat->mtime;
-        #$last_mod = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${last_mod} seconds")) ) ));
-        #$last_mod = localtime( $filestat->mtime );
         $last_mod = $filestat->mtime;
         
         ## depending on the state, grab the top-level error message if there is one

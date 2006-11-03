@@ -86,7 +86,7 @@ $writer->endTag("commandSetRoot");
 $writer->end;
 
 ## instantiate the pipeline from the template
-my $pipeline = new Workflow::SavedPipeline( template => $build_pipeline_path );
+my $pipeline = new Ergatis::SavedPipeline( template => $build_pipeline_path );
 $pipeline->write_pipeline( repository_root => $$qvars{repository_root} );
 
 ## now redirect to a monitor page

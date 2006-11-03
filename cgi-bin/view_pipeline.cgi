@@ -40,15 +40,14 @@ if (! -f $xml_input ) {
 }
 
 ## extract the project
-if ( $xml_input =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
+if ( $xml_input =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
     $repository_root = $1;
     $project = $2;
     $pipelineid = $3;
 } else {
-    die "failed to extract a repository_root from $xml_input.  expected a Workflow subdirectory somewhere."
+    die "failed to extract a repository_root from $xml_input.  expected a workflow/runtime subdirectory somewhere."
 }
 
-#my ($pid,$hostname,$execuser,$retries) = &parselockfile("$repository_root/workflow/lock_files/pid.$pipelineid");
 my %lockfile_info = &parse_pipeline_run_lock_file( "$repository_root/workflow/lock_files/pid.$pipelineid" );
 
 my $file = $xml_input;

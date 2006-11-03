@@ -8,7 +8,9 @@ use strict;
 
 sub component_count_hash {
     my $pipeline_file = shift;
-    my %components;
+    my %components; # = ( 'wu-blastp' => {count => 5} );
+
+    #return %components;
 
     my $ifh;
     if ($pipeline_file =~ /\.gz/) {
@@ -17,25 +19,26 @@ sub component_count_hash {
         open($ifh, "<$pipeline_file") || die "can't read $pipeline_file: $!";       
     }
 
+    my $t = XML::Twig->new();
+       $t->parse($ifh);
 
-    my $t = XML::Twig->new( twig_roots => {
-                                'commandSet' => sub {
-                                                      my ($t, $elt) = @_;
-                                                      
-                                                          if ($elt->first_child('configMapId')->text() =~ /^component_(.+?)\./) {
-                                                              $components{$1}{count}++;
-                                                              
-                                                              if ( $elt->has_child('state') ) {
-                                                                  my $state = $elt->first_child('state')->text;
-                                                                  if ( $state eq 'error' || $state eq 'failed' ) {
-                                                                      $components{$1}{error_count}++;
-                                                                  }
-                                                              }
-                                                          }
-                                                      },
-                                          },
-                          );
-    $t->parse($ifh);
+    my $first_cs = $t->root->first_child('commandSet') || die "failed to pull the first commandSet";
+    
+    ## each command set under the first is a component
+    for my $cs ( $first_cs->children('commandSet') ) {
+        if ( $cs->first_child('name')->text =~ /(.+?)\./ ) {
+            my $component_name = $1;
+            $components{$component_name}{count}++;
+            
+            if ( $cs->has_child('state') ) {
+                my $state = $cs->first_child('state')->text;
+                
+                if ( $state eq 'error' || $state eq 'failed' ) {
+                    $components{$component_name}{error_count}++;
+                }
+            }            
+        }
+    }
     
     return %components;
 }
