@@ -327,9 +327,9 @@ use Ergatis::Pipeline;
         
         ## if the pipeline_id is not defined, pull one
         if (! defined $self->{pipeline_id}) {
-            my $idgen = new Ergatis::IdGenerator;
-            $self->{pipeline_id} = $idgen->next_id();
-	    $self->{_logger}->debug("Retrieved pipeline id $self->{pipeline_id}");
+            my $idgen = new Ergatis::IdGenerator( id_repository => $args{id_repository) );
+            $self->{pipeline_id} = $idgen->next_id( type => 'pipeline' );
+	        $self->{_logger}->debug("Retrieved pipeline id $self->{pipeline_id}");
         }
 
         
