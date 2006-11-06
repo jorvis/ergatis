@@ -1,7 +1,7 @@
   <!--Begin iterator twig-->
   <command>
     <type>RunUnixCommand</type>
-    <name>Create iterator $;ITERATOR_KEY$; groupings</name>
+    <name>create iterator $;ITERATOR_KEY$; groupings</name>
     <state>incomplete</state>
     <executable>$;BIN_DIR$;/create_iterator_groups</executable>
     <param>
@@ -39,7 +39,7 @@
   </command>
   <command>
     <type>RunUnixCommand</type>
-    <name>replace_template_keys</name>
+    <name>replace template keys</name>
     <state>incomplete</state>
     <executable>$;BIN_DIR$;/replace_template_keys</executable>
     <param>  
@@ -77,7 +77,7 @@
   </command>
   <commandSet type="parallel">
     <state>incomplete</state>
-    <name>Iterator $;ITERATOR1$;</name>
+    <name>iterator $;ITERATOR1$;</name>
     <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;/$;ITERATOR1$;.xml</fileName>
   </commandSet>
   <!--End iterator twig-->

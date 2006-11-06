@@ -4,10 +4,10 @@
 				xsi:schemaLocation='commandSet.xsd'>
   <commandSet type="serial">
     <state>incomplete</state>
-    <name>Grouped subflow</name>
+    <name>grouped subflow</name>
     <command>
       <type>RunUnixCommand</type>
-      <name>create_group_output_dir</name>
+      <name>create group output directory</name>
       <state>incomplete</state>
       <param>  
 	<key>command</key>
@@ -17,7 +17,7 @@
     </command>
     <command>
       <type>RunUnixCommand</type>
-      <name>create_group_tmp_dir</name>
+      <name>create group temp directory</name>
       <state>incomplete</state>
       <param>  
 	<key>command</key>
@@ -27,7 +27,7 @@
     </command>
     <command>
       <type>RunUnixCommand</type>
-      <name>replace_template_keys</name>
+      <name>replace template keys</name>
       <executable>$;BIN_DIR$;/replace_template_keys</executable>
       <state>incomplete</state>
       <param>  
@@ -61,7 +61,7 @@
     </command>
     <commandSet type="parallel">
       <state>incomplete</state>
-      <name>Iterator:$;ITERATOR_TOKEN$; group:$;GROUP_NUMBER$; subflows</name>
+      <name>iterator:$;ITERATOR_TOKEN$; group:$;GROUP_NUMBER$; subflows</name>
       <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</fileName>
     </commandSet>
   </commandSet>
