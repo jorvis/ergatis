@@ -270,6 +270,7 @@ for my $group ( @groups ) {
     }
 
     $group_num++;
+    print $group_fh "\n";
 }
 
 print $gif_fh '$;ITERATOR_INI$;=';
