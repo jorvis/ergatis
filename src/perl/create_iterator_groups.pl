@@ -261,17 +261,14 @@ for my $group ( @groups ) {
         print $group_fh ',' unless ( ++$a_pos == scalar @$group );
     }
 
-    ## THESE TWO TO BE DEPRECATED
-    ## SUBFLOW_NAME (should be replaced by ITER_FILE_BASE)
-    print $group_fh "\n", '$;SUBFLOW_NAME$;=';
+    ## GROUP_NUMBER
+    print $group_fh "\n", '$;GROUP_NUMBER$;=';
     $a_pos = 0;
     for my $nameref ( @$group ) {
-        print $group_fh "$$nameref";
+        print $group_fh "$group_num";
         print $group_fh ',' unless ( ++$a_pos == scalar @$group );
     }
-    ## ext_FILE
-    #push @{$iteration_variables{'$;' . uc($ext) . '_FILE$;'}}, $input;
-   
+
     $group_num++;
 }
 
