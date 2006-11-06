@@ -31,7 +31,7 @@ if (! -d $build_area) {
 my @components;
 opendir(my $idh, $workflowdocs_dir) || die "can't read component directory ($workflowdocs_dir): $!";
 while ( my $thing = readdir $idh ) {
-    if ( $thing =~ /(.+).config/ ) {
+    if ( $thing =~ /(.+).config$/ ) {
         push @components, { name => $1 };
     }
 }
