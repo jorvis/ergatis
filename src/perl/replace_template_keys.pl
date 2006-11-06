@@ -41,52 +41,61 @@ my $cfg = new Config::IniFiles( -file => $options{'component_conf'});
 
 my $replacevals = &parseconf($cfg);
 
-if(exists $options{'iterator_list'}){
+if (exists $options{'iterator_list'}) {
     my $iteratorconf = &parseiteratorconf($options{'iterator_list'});
     my $outputfiles;
     my @iterator_output_list;
-    if(!exists $iteratorconf->{'$;'.$options{'iterator_list_key'}.'$;'}){
-	$logger->logdie("Can't find key $options{'iterator_list_key'} in $options{'iterator_list'}");
+    
+    if (!exists $iteratorconf->{'$;'.$options{'iterator_list_key'}.'$;'}) {
+        $logger->logdie("Can't find key $options{'iterator_list_key'} in $options{'iterator_list'}");
+    } else {
+        $outputfiles = $iteratorconf->{'$;'.$options{'iterator_list_key'}.'$;'};
     }
-    else{
-	$outputfiles = $iteratorconf->{'$;'.$options{'iterator_list_key'}.'$;'};
+    
+    if (! -d $options{'iterator_list_dir'}) {
+        $logger->logdie("$options{'iterator_list_dir'} is not a valid output directory");
     }
-    if(! -d $options{'iterator_list_dir'}){
-	$logger->logdie("$options{'iterator_list_dir'} is not a valid output directory");
+    
+    $options{'iterator_list_dir'} .= "/" if ($options{'iterator_list_dir'} !~ /\/$/);
+    
+    for (my $i=0; $i < @$outputfiles; $i++) {
+        my %ireplacevals = %$replacevals;
+        
+        foreach my $key (keys %$iteratorconf){
+            $ireplacevals{$key} = $iteratorconf->{$key}->[$i];
+        }
+        
+        my $outputfile = $options{'iterator_list_dir'}.$outputfiles->[$i];
+        push @iterator_output_list,$outputfile;
+        &replacekeys(\%ireplacevals,$options{'template_xml'},$outputfile);
     }
-    $options{'iterator_list_dir'} .= "/" if($options{'iterator_list_dir'} !~ /\/$/);
-    for(my $i=0;$i<@$outputfiles;$i++){
-	my %ireplacevals = %$replacevals;
-	foreach my $key (keys %$iteratorconf){
-	    $ireplacevals{$key} = $iteratorconf->{$key}->[$i];
-	}
-	my $outputfile = $options{'iterator_list_dir'}.$outputfiles->[$i];
-	push @iterator_output_list,$outputfile;
-	&replacekeys(\%ireplacevals,$options{'template_xml'},$outputfile);
-    }
+    
     my $distrib;
     my $maxpar;
     my $cstype;
-    if($options{'distribopts'}){
-	if($options{'distribopts'} =~ /nodistrib=1/i){
-	    $distrib = "parallel";
-	    $maxpar = "<maxParallelCmds>1</maxParallelCmds>";
-	    $cstype = "serial";
-	}
-	else{
-	    $distrib = "parallel";
-	    $cstype = "remote-serial";
-	}
+    if ($options{'distribopts'}) {
+        if ($options{'distribopts'} =~ /nodistrib=1/i) {
+            $distrib = "parallel";
+            $maxpar = "<maxParallelCmds>1</maxParallelCmds>";
+            $cstype = "serial";
+        } else {
+            $distrib = "parallel";
+            $cstype = "remote-serial";
+        }
     }
+    
     open FILE, ">$options{'iterator_output_xml'}" or $logger->logdie("Can't open file $options{'iterator_output_xml'}");
     print FILE "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                 <commandSetRoot xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation='commandSet.xsd'>
                 <commandSet type=\"$distrib\">
                  <state>incomplete</state>
                  $maxpar\n";
+                 
     for(my $i=0;$i<@iterator_output_list;$i++){
-	my $file = $iterator_output_list[$i];
-	print FILE "<commandSet type=\"$cstype\">
+        my $file = $iterator_output_list[$i];
+        my $name = $iteratorconf->{'$;ITER_FILE_NAME$;'}->[$i] || '';
+        print FILE "<commandSet type=\"$cstype\">
+                     <name>$name</name>
                      <state>incomplete</state>
                      <id>$i</id>
                      <fileName>$file</fileName>
