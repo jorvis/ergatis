@@ -3,10 +3,10 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 				xsi:schemaLocation='commandSet.xsd'>
   <commandSet type="serial">
-    <name>Wait Compute</name>
+    <name>wait compute</name>
     <command>
       <type>RunUnixCommand</type>
-      <name>Wait</name>
+      <name>wait</name>
       <state>incomplete</state>
       <executable>$;BIN_DIR$;/spin_wait</executable>
       <param>  

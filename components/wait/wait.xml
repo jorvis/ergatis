@@ -4,18 +4,18 @@
 				xsi:schemaLocation='commandSet.xsd'>
   <commandSet type="serial">
     <state>incomplete</state>
-    <name>Wait workflow</name>
+    <name>wait workflow</name>
     <!--Preprocessing-->
     <command>
       <type>RunUnixCommand</type>
-      <name>create_output_dir</name>
+      <name>create output directory</name>
       <state>incomplete</state>
       <executable>mkdir</executable>
       <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
     </command>
     <command>
       <type>RunUnixCommand</type>
-      <name>create_tmp_dir</name>
+      <name>create temp directory</name>
       <state>incomplete</state>
       <executable>mkdir</executable>
       <arg>-p -m 777 $;TMP_DIR$;</arg>
