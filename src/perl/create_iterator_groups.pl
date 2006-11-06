@@ -279,6 +279,7 @@ print $gif_fh '$;GROUP_XML$;=';
 print $gif_fh join(',',@group_output_files),"\n";
 print $gif_fh '$;GROUP_NUMBER$;=';
 print $gif_fh join(',',@group_numbers),"\n";
+close $group_fh;
 close $gif_fh;
 
 exit(0);
