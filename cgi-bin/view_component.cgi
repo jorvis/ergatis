@@ -99,14 +99,10 @@ foreach my $child ( $parent_commandset->children() ) {
         
             push @$elements, { is_command => 0 };
         
-            ## customize the label for this
-            if ( $child->first_child('name')->text() eq 'Iterated subflow' ) {
-                $$elements[-1]->{subflow_label} = 'input analysis groups';
-            } else {
-                $$elements[-1]->{subflow_label} = $child->first_child('name')->text();
-            }
+            ## set a label for this
+            $$elements[-1]->{subflow_label} = $child->first_child('name')->text();
             
-            &parse_groups_xml( $child->first_child('fileName')->text() );
+            &parse_iterator_xml( $child->first_child('fileName')->text() );
         }
     }
 }
@@ -142,7 +138,7 @@ exit(0);
 
 
 
-sub parse_groups_xml {
+sub parse_iterator_xml {
     my $filename = shift;
     
     ## it may have been compressed
@@ -154,8 +150,8 @@ sub parse_groups_xml {
         }
     }
     
-    ## make sure this is a groups.xml file
-    if ( $filename !~ /groups.xml/ ) {
+    ## make sure this is a iN.xml file
+    if ( $filename !~ /i\d+.xml/ ) {
         $component_html .= "            <div>unable to handle $filename</div>\n";
         return;
     }
@@ -171,7 +167,7 @@ sub parse_groups_xml {
     
     ## create the twig
     my $twig = XML::Twig->new( twig_roots => {
-                                    'command' => \&process_subflowgroup,
+                                    'commandSet' => \&process_subflowgroup,
                                }
                              );
     $twig->parse($filename_fh);
@@ -179,8 +175,13 @@ sub parse_groups_xml {
 }
 
 sub process_subflowgroup {
-    my ($twig, $command) = @_;
+    my ($twig, $commandSet) = @_;
    
+    ## within the iN.xml file, each commandSet with a fileName defines a gN.xml file.
+    
+    ## do nothing unless this commandSet has a file-based subflow
+    return unless $commandSet->has_child('fileName');
+    
     my %sg_props = (
                       execution_host => '',
                       file => '',
@@ -193,55 +194,49 @@ sub process_subflowgroup {
                       workflow_id => '?',
                    );
     
-    ## need to parse through the params to get the one that references the
-    ##  instance file descriptor
-    for my $param ( $command->children('param') ) {
-        ## it will have a key element --instance
-        if ( $param->first_child('key')->text() eq '--instance' ) {
-            $sg_props{file} = $param->first_child('value')->text();
-        }
-    }
+    ## get the pointer to the gN file
+    $sg_props{file} = $commandSet->first_child('fileName')->text();
     
-    ## pull the name out of the subflow_file:
-    if ( $sg_props{file} =~ /subflow(\d+)groups(\d+).xml/ ) {
-        $sg_props{name} = "subflow$1groups$2";
+    ## pull the group number out of the file name:
+    if ( $sg_props{file} =~ m|i(\d+)/g\d+/g(\d+).xml| ) {
+        $sg_props{name} = "$1$2";
         $sg_props{group_num} = $2;
     }
     
     ## get the state, if it has one
-    if ( $command->first_child('state') ) {
-        $sg_props{state} = $command->first_child('state')->text();
+    if ( $commandSet->first_child('state') ) {
+        $sg_props{state} = $commandSet->first_child('state')->text();
     }
     
     ## grab data from the dceSpec if it has one
-    if ( $command->first_child('dceSpec') ) {
-        if ( $command->first_child('dceSpec')->first_child('executionHost') ) {
-            $sg_props{execution_host} = $command->first_child('dceSpec')->first_child('executionHost')->text();
+    if ( $commandSet->first_child('dceSpec') ) {
+        if ( $commandSet->first_child('dceSpec')->first_child('executionHost') ) {
+            $sg_props{execution_host} = $commandSet->first_child('dceSpec')->first_child('executionHost')->text();
         }
         
-        if ( $command->first_child('dceSpec')->first_child('jobID') ) {
-            $sg_props{grid_id} = $command->first_child('dceSpec')->first_child('jobID')->text();
+        if ( $commandSet->first_child('dceSpec')->first_child('jobID') ) {
+            $sg_props{grid_id} = $commandSet->first_child('dceSpec')->first_child('jobID')->text();
         }
     }
     
-    if ( $command->first_child('id') ) {
-        $sg_props{workflow_id} = $command->first_child('id')->text();
+    if ( $commandSet->first_child('id') ) {
+        $sg_props{workflow_id} = $commandSet->first_child('id')->text();
     }
     
-    ( $sg_props{start_time}, $sg_props{end_time}, $sg_props{run_time} ) = &time_info($command);
+    ( $sg_props{start_time}, $sg_props{end_time}, $sg_props{run_time} ) = &time_info($commandSet);
     
     ## if there is a status and a message, grab it
-    if ( $command->first_child('status') ) {
-        if ( $command->first_child('status')->first_child('retValue') ) {
-            $sg_props{ret_value} = $command->first_child('status')->first_child('retValue')->text;
+    if ( $commandSet->first_child('status') ) {
+        if ( $commandSet->first_child('status')->first_child('retValue') ) {
+            $sg_props{ret_value} = $commandSet->first_child('status')->first_child('retValue')->text;
         }
         
-        if ( $command->first_child('status')->first_child('message') ) {
-            $sg_props{message} = $command->first_child('status')->first_child('message')->text;
+        if ( $commandSet->first_child('status')->first_child('message') ) {
+            $sg_props{message} = $commandSet->first_child('status')->first_child('message')->text;
         }
         
-        ## don't include 'command finished' messages
-        $sg_props{message} =~ s/command finished//;
+        ## don't include 'command set ... finished' messages
+        $sg_props{message} =~ s/command set .* finished//i;
     }
 
     $sg_props{hostsrvstr} = join(',',split(/\./,$sg_props{execution_host}));

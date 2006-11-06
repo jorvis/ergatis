@@ -136,39 +136,46 @@ exit(0);
 sub parseCommandSet {
     my ($commandSet) = @_;
    
-    my $configMapId = $commandSet->first_child('configMapId')->text();
+    my $commandSet_name = $commandSet->first_child('name')->text();
     my $type = $commandSet->{att}->{type};
 
-    if ( $configMapId =~ /^component_(.+)/) {
+    ## there are three cases here.  it's either the start, a set, or a component
+    ## check for the pipeline start
+    if ( $commandSet_name =~ /^start pipeline:(.*)/ ) {
+        parseCommandSetChildren( $commandSet );
+    
+    ## serial or parallel sets will be named 'serial' or 'parallel'
+    } elsif ( $commandSet_name eq 'serial' || $commandSet_name eq 'parallel' ) {
+
+        $component_html .= "<ul class='$type'>\n";
+
+        ## some special elements are needed for parallel sets
+        if ($type eq 'parallel') {
+            $component_html .= "    <h1 class='commandset_type'>parallel group</h1>\n";
+        } else {
+            $component_html .= "    <h1 class='commandset_type'>serial group</h1>\n";
+        }
+
+        ## look at each child.
+        parseCommandSetChildren( $commandSet );
+        $component_html .= "</ul>\n";
+
+    } elsif ( $commandSet_name =~ /^((.+?)\.(.+))/) {
         my $filebased_subflow = '';
         my $name_token = $1;
-        my $user_msg = 'state: wait for update';
+
+        ## this should be changed to 0 if the interface shouldn't auto-update the 
+        #   box for this component.
         my $do_auto_update = 1;
+        my $user_msg = 'state: wait for update';
         
-        ## here we need to get the information out of the file-based subflow
-        #  each component commandSet will have one command to create the subflow
-        #  and then a commandSet reference with a <fileName> that references
-        #  the external file-based subflow.  Check and make sure the generation
-        #  of the component was ok, then grab the reference to the file-based
-        #  subflow so it can be parsed.
-        my $generation_command = $commandSet->first_child('command') || 0;
-        if ( $generation_command ) {
-            my $generation_command_status = $generation_command->first_child('status') || 0;
-        
-            if ( $generation_command_status ) {
-                if ( $generation_command_status->has_child('retValue') && 
-                     $generation_command_status->first_child('retValue')->text() != 0 ) {
-                     
-                     $do_auto_update = 0;
-                     $user_msg = "there was an error generating this component";
-                     
-                     if ( $generation_command_status->has_child('message') ) {
-                        $user_msg .= '<br>' . $generation_command_status->first_child('message')->text();
-                     }
-                }
-            }
-        }
-        
+        ## this is a component, so the XML here will consist of the following:
+        #   command: replace_config_keys
+        #   command: replace_template_keys
+        #   commandSet: has a file-based subflow that is the component.xml
+
+        ## TODO: check the replace_config_keys step
+        ## TODO: check the replace_template_keys step
         
         my $subcommandSet = $commandSet->first_child('commandSet') || 0;
         if ( $subcommandSet ) {
@@ -197,28 +204,6 @@ ComponeNTBlock
         if ( $do_auto_update ) {
             $component_html .= "<script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token&parent_pipeline=$xml_input', updateComponent, '$name_token', '$filebased_subflow', '$xml_input');</script>\n";
         }
-
-    ## configMapId is just numeric when we have a serial or parallel command set grouping
-    ##  also handle imported pipelines here, which have a serial root
-    } elsif ( $configMapId =~ /^\d+$/ || $configMapId =~ /^pipeline_\d+$/ ) {
-
-        $component_html .= "<ul class='$type'>\n";
-
-        ## some special elements are needed for parallel sets
-        if ($type eq 'parallel') {
-            $component_html .= "    <h1 class='commandset_type'>parallel group</h1>\n";
-        } else {
-            $component_html .= "    <h1 class='commandset_type'>serial group</h1>\n";
-        }
-
-        ## look at each child.
-        parseCommandSetChildren( $commandSet );
-        $component_html .= "</ul>\n";
-
-    
-    } elsif ($configMapId eq 'start') {
-        
-        parseCommandSetChildren( $commandSet );
     }
 }
 

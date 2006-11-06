@@ -19,7 +19,7 @@ my $tmpl = HTML::Template->new( filename => 'templates/component_summary.tmpl',
                               );
 
 ## will be like:
-## /usr/local/annotation/TGA1/workflow/runtime/split_fasta/29134_test2/pipeline.xml
+## /usr/local/annotation/TGA1/workflow/runtime/split_fasta/29134_test2/component.xml
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 
 ## will be like:
@@ -27,7 +27,7 @@ my $pipeline = $q->param("pipeline") || die "pass pipeline";
 my $ul_id = $q->param("ul_id") || die "pass ul_id";
 
 ## will be like:
-## /usr/local/annotation/AA1/workflow/runtime/pipeline/29671/pipeline.xml.instance
+## /usr/local/annotation/AA1/workflow/runtime/pipeline/29671/pipeline.xml
 my $parent_pipeline = $q->param("parent_pipeline") || '';
 my $pipeline_exists = 0;
 
@@ -49,12 +49,12 @@ my $current_step = '';
 my $update_interval = 61;
 
 ## we can parse some information out of the standardized instance file path
-##  like: /usr/local/scratch/annotation/EHA1/workflow/runtime/iprscan/30835_default/pipeline.xml
+##  like: /usr/local/scratch/annotation/EHA1/workflow/runtime/iprscan/30835_default/component.xml
 my ($root_dir, $project, $component, $token, $pipelineid, $component_conf_varreplaced, $component_conf_nonvarreplaced);
-if ($pipeline =~ m|(.+/(.+)/workflow/runtime/(.+?)/(\d+)_(.+?))/pipeline.xml|) {
-    $component_conf_nonvarreplaced = "$1/component.conf.bld.ini";
-    $component_conf_varreplaced = "$1/pipeline.config";
+if ($pipeline =~ m|(.+/(.+)/workflow/runtime/(.+?)/(\d+)_(.+?))/component.xml|) {
     ($project, $component, $pipelineid, $token) = ($2, $3, $4, $5);
+    $component_conf_nonvarreplaced = "$1/$component.$token.user.config";
+    $component_conf_varreplaced = "$1/$component.$token.final.config";
 } else {
     print "invalid instance file path format";
     exit(1);
@@ -116,9 +116,9 @@ if (-e $pipeline || -e "$pipeline.gz") {
         }
     }
     
-    ## "Run subflow" just means its on the distributed step.  make it more descriptive
-    if ( $current_step eq 'Run subflow' ) {
-        $current_step = 'running distributed jobs';
+    ## "Iterator" just means its on the distributed step.  make it more descriptive
+    if ( $current_step =~ /Iterator (.+)/i ) {
+        $current_step = 'running distributed jobs (iterator $1)';
     }
     
     ## we can adjust the default update interval here depending on what
@@ -130,47 +130,13 @@ if (-e $pipeline || -e "$pipeline.gz") {
     }
 
 } else {
+    ## if the component.xml doesn't exist, that file-based subflow step in the pipeline.xml
+    #    hasn't started yet.  pipeline_summary.cgi should take care of those levels.
     ## all we have here is the component state
     $component_state = 'incomplete';
     push @state_elements, { state => $component_state, count => 1, width => $progress_image_width };        
-
-    ## if the pipeline.xml doesn't exist, we need to check for errors during the component creation.
-    ## we can only do this if the user passed the parent pipeline
-    if ($parent_pipeline) {
-    
-        my $parent_pipeline_fh;
-        if ($parent_pipeline =~ /\.gz/) {
-            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline") || die "can't read $parent_pipeline: $!"; 
-        } elsif ( -e "$parent_pipeline.gz" ) {
-            open($parent_pipeline_fh, "<:gzip", "$parent_pipeline.gz") || die "can't read $parent_pipeline: $!"; 
-        } else {
-            open($parent_pipeline_fh, "<$parent_pipeline") || die "can't read $parent_pipeline: $!";       
-        }
-    
-        my $twig = new XML::Twig;
-           $twig->parse($parent_pipeline_fh);
-        my $commandSetRoot = $twig->root;
-        my $parentCommandSet = $commandSetRoot->first_child('commandSet');
-        
-        ## find the commandSet for this component
-        foreach my $commandSet ( $parentCommandSet->children('commandSet') ) {
-            ## have we found it?
-            if ( $commandSet->first_child('configMapId')->text() eq "component_$ul_id" ) {
-                ## if it has a status, see if there are any messages;
-                if ( $commandSet->first_child('status') ) {
-                    
-                    if ( $commandSet->first_child('status')->first_child('message') ) {
-                        $messages_line .= $commandSet->first_child('status')->first_child('message')->text();
-                    }
-                }
-                
-                last;
-            }
-        }
-    }
 }
 
-## if the component hasn't started yet, only the component.conf.bld.ini file will exist.  
 $tmpl->param( ACTION_COUNT => $command_count );
 $tmpl->param( COMPONENT_CONFIG => -e $component_conf_varreplaced ? $component_conf_varreplaced : $component_conf_nonvarreplaced );
 $tmpl->param( COMPONENT_STATE => $component_state );
@@ -229,7 +195,7 @@ sub parseCommandSet {
         $state = $commandSet->first_child('state')->text();
     }
 
-    ## we don't want this to happen within groups.xml, only the parent pipeline.xml
+    ## we don't want this to happen within groups.xml, only the parent component.xml
     if (! $got_time_info) {
         ($start_time, $end_time, $runtime) = &time_info( $commandSet );
         $got_time_info++;
@@ -247,10 +213,8 @@ sub parseCommandSet {
         }
     }
     
-    ## this is a terrible way to do this, as it doubles the memory required for
-    ##  the twig.  it's functional, but needs to be replaced.
-    ## don't look into the groups.xml here (yet).
-    if ($fileparsed !~ /groups.xml/ ) {
+    ## don't look into the gN.xml here (yet).
+    if ($fileparsed !~ /g\d.xml/ ) {
         my $text = $commandSet->sprint;
         while ( $text =~ m|<message>(.*?)</message>|g) {
             my $msg = $1;
