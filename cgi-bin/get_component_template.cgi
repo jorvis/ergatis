@@ -28,7 +28,9 @@ my $tmpl = HTML::Template->new( filename => 'templates/get_component_template.tm
                                 global_vars => 1
                               );
 
-my %selectable_labels = ( INPUT_FILE_LIST => 1, INPUT_FILE => 1, INPUT_DIRECTORY => 1 );
+my %selectable_labels = ( INPUT_FILE_LIST => 1, INPUT_FILE => 1, INPUT_DIRECTORY => 1,
+                          QUERY_BSML_FILE_LIST => 1, QUERY_BSML_FILE => 1, QUERY_BSML_DIRECTORY => 1,
+                          MATCH_BSML_FILE_LIST => 1, MATCH_BSML_FILE => 1, MATCH_BSML_DIRECTORY => 1, );
 
 my $component_found = 0;
 my $component_ini = "$workflowdocs_dir/${component_name}.config";
