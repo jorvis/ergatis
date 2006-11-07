@@ -6,14 +6,14 @@
         <name>wu-blastp workflow</name>
         <!--Preprocessing-->
         <command>
-            <type>RunJavaUnixCommand</type>
+            <type>RunUnixCommand</type>
             <name>create output directory</name>
             <state>incomplete</state>
             <executable>mkdir</executable>
             <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
         </command>
         <command>
-            <type>RunJavaUnixCommand</type>
+            <type>RunUnixCommand</type>
             <name>create temp directory</name>
             <state>incomplete</state>
             <executable>mkdir</executable>
