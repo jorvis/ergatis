@@ -13,7 +13,7 @@
 	<key>command</key>
 	<value>mkdir</value>
       </param>
-      <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;GROUP_NUMBER$;</arg>
+      <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;</arg>
     </command>
     <command>
       <type>RunUnixCommand</type>
@@ -23,7 +23,7 @@
 	<key>command</key>
 	<value>mkdir</value>
       </param>
-      <arg>-p -m 777 $;TMP_DIR$;/$;GROUP_NUMBER$;</arg>
+      <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;</arg>
     </command>
     <command>
       <type>RunUnixCommand</type>
