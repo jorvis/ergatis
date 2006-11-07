@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>split_multifasta compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>split_multifasta</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/split_multifasta</executable>
+            <param>  
+                <key>--input_file</key>
+                <value>$;ITER_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TMP_DIR$;/i1/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.list</value>
+            </param>
+            <param>  
+                <key>--output_file_prefix</key>
+                <value>'$;ITER_FILE_BASE$;_'</value>
+            </param>
+            <param>  
+                <key>--seqs_per_file</key>
+                <value>$;SEQS_PER_FILE$;</value>
+            </param>
+            <param>  
+                <key>--output_subdir_size</key>
+                <value>$;FILES_PER_DIRECTORY$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
