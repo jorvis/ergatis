@@ -86,7 +86,7 @@ if (exists $options{'iterator_list'}) {
     
     open FILE, ">$options{'iterator_output_xml'}" or $logger->logdie("Can't open file $options{'iterator_output_xml'}");
     print FILE "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                <commandSetRoot xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation='commandSet.xsd'>
+                <commandSetRoot type=\"instance\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation='commandSet.xsd'>
                 <commandSet type=\"$distrib\">
                  <state>incomplete</state>
                  $maxpar\n";
