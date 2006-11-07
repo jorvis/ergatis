@@ -69,7 +69,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use XML::Twig;
-use Ergatis;:Logger;
+use Ergatis::Logger;
 use BSML::BsmlBuilder;
 
 $| = 1;
@@ -100,8 +100,8 @@ if ($options{'help'}){
 	pod2usage(verbose => 2);
 }
 
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 

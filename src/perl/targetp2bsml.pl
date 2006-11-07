@@ -61,9 +61,9 @@ use BSML::BsmlBuilder;
 use BSML::BsmlReader;
 use BSML::BsmlParserTwig;
 use BSML::BsmlRepository;
-use Workflow::IdGenerator;
+use Ergatis::IdGenerator;
 use Pod::Usage;
-use Ergatis;:Logger;
+use Ergatis::Logger;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -78,8 +78,8 @@ my $results = GetOptions (\%options,
               'log|l=s',
               'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
                   'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -99,7 +99,7 @@ my $next_id = 1;
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Workflow::IdGenerator( id_repository => $options{'id_repository'});
+my $idcreator = new Ergatis::IdGenerator( id_repository => $options{'id_repository'});
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");

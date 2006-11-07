@@ -61,7 +61,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Ergatis::Logger;
 use BSML::BsmlRepository;
-use Workflow::IdGenerator;
+use Ergatis::IdGenerator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
@@ -98,7 +98,7 @@ my $next_id = 1;
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Workflow::IdGenerator( id_repository => $options{'id_repository'});
+my $idcreator = new Ergatis::IdGenerator( id_repository => $options{'id_repository'});
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");

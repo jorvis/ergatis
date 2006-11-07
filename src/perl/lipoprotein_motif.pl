@@ -32,7 +32,7 @@ B<--output,-o>
     Output bsml of predictions
 
 B<--id_repository,-r>
-    Valid id_repository (See Workflow::IdGenerator for details)
+    Valid id_repository (See Ergatis::IdGenerator for details)
 
 B<--project,-p>
     Used for id generation, passed into IdGenerator
@@ -76,8 +76,8 @@ B<--help,-h>
 use strict;
 use warnings;
 use Pod::Usage;
-use Workflow::IdGenerator;
-use Ergatis;:Logger;
+use Ergatis::IdGenerator;
+use Ergatis::Logger;
 use BSML::BsmlBuilder;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
@@ -107,8 +107,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -250,7 +250,7 @@ sub checkOptions {
     }
 
     if($opt->{'id_repository'} && $opt->{'project'}) {
-        $idMaker = new Workflow::IdGenerator( 'id_repository' => $opt->{'id_repository'} );
+        $idMaker = new Ergatis::IdGenerator( 'id_repository' => $opt->{'id_repository'} );
         $idMaker->set_pool_size( 'signal_peptide' => 25 );
         $project = $opt->{'project'};
     } else {

@@ -99,7 +99,7 @@ use Data::Dumper;
 use XML::Twig;
 
 BEGIN {
-use Ergatis;:Logger;
+use Ergatis::Logger;
 }
 
 
@@ -477,10 +477,10 @@ sub set_logger {
 	$log4perl = "/tmp/notify_database_users.pl.log";
     }
     
-    my $mylogger = new Ergatis;:Logger('LOG_FILE'=>$log4perl,
+    my $mylogger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
 					'LOG_LEVEL'=>$debug_level);
     
-    my $logger = Ergatis;:Logger::get_logger(__PACKAGE__);
+    my $logger = Ergatis::Logger::get_logger(__PACKAGE__);
     
     return $logger;
 }

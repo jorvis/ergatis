@@ -22,8 +22,8 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use BSML::BsmlBuilder;
-use Ergatis;:Logger;
-use Workflow::IdGenerator;
+use Ergatis::Logger;
+use Ergatis::IdGenerator;
 use Class::Struct;
 use XML::Twig;
 use Data::Dumper;
@@ -58,8 +58,8 @@ my $results = GetOptions (\%options,
                           'debug|d=s',
                           'help|h') || &_pod;
 
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -266,10 +266,10 @@ sub check_parameters {
     }
 
     unless($options{'id_repository'}) {
-        &_die("Option id_repository is required for id creation.  See Workflow::IdGenerator ".
+        &_die("Option id_repository is required for id creation.  See Ergatis::IdGenerator ".
               "for id_repository information.");
     }
-    $idGenerator = new Workflow::IdGenerator( id_repository => "$options{'id_repository'}" );
+    $idGenerator = new Ergatis::IdGenerator( id_repository => "$options{'id_repository'}" );
 
     unless($options{'project'}) {
         &_die("Option project is required for id creation.");

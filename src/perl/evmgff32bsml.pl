@@ -57,7 +57,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Data::Dumper;
 use BSML::BsmlBuilder;
-use Workflow::IdGenerator;
+use Ergatis::IdGenerator;
 
 my ($input, $help, $man, $output, $project, $id_repository);
 
@@ -92,7 +92,7 @@ if (!$id_repository) {
 
 $project =~ tr/A-Z/a-z/;
 
-my $idcreator = Workflow::IdGenerator->new('id_repository' => $id_repository);
+my $idcreator = Ergatis::IdGenerator->new('id_repository' => $id_repository);
 
 my $global_id_counter=0;
 my $nodes = {};

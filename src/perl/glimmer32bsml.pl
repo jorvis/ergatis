@@ -38,7 +38,7 @@ B<--project,-p>
     The project (used for id generation).
 
 B<--id_repository,-r>
-    Id repository for use by Workflow::IdGenerator.pm
+    Id repository for use by Ergatis::IdGenerator.pm
 
 B<--fasta_input,-a>
     The input file that was used as input for the glimmer3 run
@@ -107,14 +107,14 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Gene;
 use BSML::GenePredictionBsml;
-use Workflow::IdGenerator;
-use Ergatis;:Logger;
+use Ergatis::IdGenerator;
+use Ergatis::Logger;
 
 ####### GLOBALS AND CONSTANTS ###########
 my @inputFiles;               #Holds input files
 my $project;                  #The project (ex aa1)
 my $output;                   #Output file
-my $idMaker;                  #The Workflow::IdGenerator
+my $idMaker;                  #The Ergatis::IdGenerator
 my $bsml;                     #BSML::BsmlBuilder object object.
 my $data;                     #Holds parsed glimmer3 information
 my $inputFsa;                 #The fasta file input to glimmer3
@@ -134,8 +134,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -263,10 +263,10 @@ sub check_parameters {
     }
 
     unless($options{'id_repository'}) {
-        $error .= "Option id_repository is required.  Please see Workflow::IdGenerator ".
+        $error .= "Option id_repository is required.  Please see Ergatis::IdGenerator ".
             "for details.\n";
     } else {
-        $idMaker = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'} );
+        $idMaker = new Ergatis::IdGenerator( 'id_repository' => $options{'id_repository'} );
         $idMaker->set_pool_size( 'exon'        => 20,
                                  'transcript'  => 20,
                                  'gene'        => 20,

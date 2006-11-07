@@ -43,7 +43,7 @@ B<--output_bsml,-o>
     [REQUIRED] The output bsml file.
 
 B<--id_respository,-r>
-    [REQUIRED] A valid id_repository for use with Workflow::IdGenerator.pm (see IdGenerator perldoc
+    [REQUIRED] A valid id_repository for use with Ergatis::IdGenerator.pm (see IdGenerator perldoc
     for more details).
 
 B<--project,-p>
@@ -95,8 +95,8 @@ B<--help,-h>
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Ergatis;:Logger;
-use Workflow::IdGenerator;
+use Ergatis::Logger;
+use Ergatis::IdGenerator;
 use XML::Twig;
 use File::Copy;
 
@@ -118,8 +118,8 @@ if( $options{'help'} ){
 }
 
 #Create logger stuff.
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -347,7 +347,7 @@ sub check_parameters {
 
     #Make sure the id_repository was included
     if($opt->{'id_repository'}) {
-        $idMaker = new Workflow::IdGenerator(  'id_repository' => $options{'id_repository'} );
+        $idMaker = new Ergatis::IdGenerator(  'id_repository' => $options{'id_repository'} );
         $idMaker->set_pool_size( 'exon'        => 40,
                                  'transcript'  => 40,
                                  'gene'        => 40,

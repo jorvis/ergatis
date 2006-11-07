@@ -73,7 +73,7 @@ use Ergatis::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-use Workflow::IdGenerator;
+use Ergatis::IdGenerator;
 
 my %lookupDb;
 my %options = ();
@@ -254,7 +254,7 @@ sub check_parameters{
     } else {
         $logger->logdie("option id_repository is required.");
     }
-    $idGenerator = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'} );
+    $idGenerator = new Ergatis::IdGenerator( 'id_repository' => $options{'id_repository'} );
     $idGenerator->set_pool_size( 'frameshift_mutation' => 25 );
 
     return 1;

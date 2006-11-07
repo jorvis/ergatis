@@ -88,7 +88,7 @@ We can add these later if anyone thinks they are necessary.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use Workflow::IdGenerator;
+use Ergatis::IdGenerator;
 use Ergatis::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
@@ -123,7 +123,7 @@ if( $options{'help'} ){
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Workflow::IdGenerator( id_repository => $options{id_repository} );
+my $idcreator = new Ergatis::IdGenerator( id_repository => $options{id_repository} );
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");

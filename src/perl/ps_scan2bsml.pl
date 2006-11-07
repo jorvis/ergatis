@@ -35,7 +35,7 @@ B<--analysis_id,-a>
     Analysis id.  Should most likely by ps_scan_analysis.
 
 B<--id_repository,-r>
-    Used to make the ids (See Workflow::IdGenerator for details)
+    Used to make the ids (See Ergatis::IdGenerator for details)
 
 B<--query_file_path,-g>
     Path to the query file (input fasta file) for ps_scan.
@@ -79,8 +79,8 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use BSML::BsmlBuilder;
-use Ergatis;:Logger;
-use Workflow::IdGenerator;
+use Ergatis::Logger;
+use Ergatis::IdGenerator;
 use Data::Dumper;
 
 ####### GLOBALS AND CONSTANTS ###########
@@ -111,8 +111,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -258,7 +258,7 @@ sub check_parameters {
     unless($options{'id_repository'}) {
         $error .= "Option id_repository is required\n";
     } else {
-        $idMaker = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'});
+        $idMaker = new Ergatis::IdGenerator( 'id_repository' => $options{'id_repository'});
         #$idMaker->set_pool_size( 
     }
 

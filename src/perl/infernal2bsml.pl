@@ -30,7 +30,7 @@ B<--project,-p>
     Used in id generation.  It's the first token in the id.  (Ex. project.class.number.version)
 
 B<--id_repository,-r>
-    Used to make the ids (See Workflow::IdGenerator for details)
+    Used to make the ids (See Ergatis::IdGenerator for details)
 
 B<--query_file_path,-g>
     Path to the query file (input fasta file) for infernal.
@@ -75,8 +75,8 @@ no lib ".";
 use strict;
 use warnings;
 use BSML::BsmlBuilder;
-use Workflow::IdGenerator;
-use Ergatis;:Logger;
+use Ergatis::IdGenerator;
+use Ergatis::Logger;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 #use Pod::Usage;
 
@@ -108,8 +108,8 @@ my $results = GetOptions (\%options,
 
 
 #Make the logger
-my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
-my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -367,9 +367,9 @@ sub check_parameters {
     #the id_repository should be passed (perhaps it should also exist, but whatever).
     unless($options{'id_repository'}) {
         &_die("option id_repository is required (for id generation).".
-              " See Workflow::IdGenerator for more information");
+              " See Ergatis::IdGenerator for more information");
     }
-    $idMaker = new Workflow::IdGenerator( id_repository => "$options{'id_repository'}" );
+    $idMaker = new Ergatis::IdGenerator( id_repository => "$options{'id_repository'}" );
     
     #Project option must be passed
     unless($options{'project'}) {
