@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>jaccard compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>generate asmbl input</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/generate_input_list</executable>
+            <param>  
+                <key>--filelist</key>
+                <value>'$;GLIST_FILE$;'</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>=$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.input.list</value>
+            </param>
+            <arg>--listfiles</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>make asmbl lookup</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bsml2idlookup</executable>
+            <param>  
+                <key>--bsml_list</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.input.list</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.lookup</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>generate clusters</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/clusterBsmlPairwiseAlignments</executable>
+            <param>  
+                <key>--bsmlSearchList</key>
+                <value>$;TMP_DIR$;/match.input.list</value>
+            </param>
+            <param>  
+                <key>--asmbl_lookup</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.lookup</value>
+            </param>
+            <param>  
+                <key>--log</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.cluster.log</value>
+            </param>
+            <param>  
+                <key>--linkscore</key>
+                <value>$;LINKSCORE$;</value>
+            </param>
+            <param>  
+                <key>--percent_identity</key>
+                <value>$;PIDENTITY_CUTOFF$;</value>
+            </param>
+            <param>  
+                <key>--p_value</key>
+                <value>$;PVALCUT$;</value>
+            </param>
+            <param>  
+                <key>--outfile</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.jkcluster.out</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>jaccard2fasta</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/CogProteinFasta</executable>
+            <param>  
+                <key>--cogFile</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.jkcluster.out</value>
+            </param>
+            <param>  
+                <key>--bsmlModelList</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.input.list</value>
+            </param>
+            <param>  
+                <key>--outputDir</key>
+                <value>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;</value>
+            </param>
+            <param>  
+                <key>--maxCogSeqCount</key>
+                <value>$;MAX_MULTI_ALIGNMENT$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create fasta list</name>
+            <state>incomplete</state>
+            <executable>find</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$; -name '*.fsa'</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;NAME$;.fsa.list</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
