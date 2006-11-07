@@ -8,7 +8,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use XML::Parser;
-use Workflow::Logger;
+use Ergatis;:Logger;
 
 #Example invocation
 #/usr/local/devel/ANNOTATION/ard/current/lib/ bsml2featurerelationships.pl --bsml_file /usr/local/annotation/PATHEMA/output_repository/legacy2bsml/2663_b_anthracis/gba_6615_assembly.prok.bsml --output=/tmp/test --output_order=gene,polypeptide,cds --add_assembly 
@@ -40,10 +40,10 @@ my $results = GetOptions (\%options,
                             'fasta_list=s',
                             'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis;:Logger::get_default_logfilename();
+my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis;:Logger::get_logger();
 
 ## display documentation
 if( $options{'help'} ){

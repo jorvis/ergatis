@@ -108,7 +108,7 @@ use warnings;
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Workflow::Logger;
+use Ergatis;:Logger;
 use DBI;
 use File::Find;
 use XML::Twig;
@@ -141,8 +141,8 @@ if ($opt{'help'} || $opt{'man'}) {
     pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDOUT} );
 }
 
-my $logfile = $opt{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $opt{'log'} || Ergatis;:Logger::get_default_logfilename();
+my $logger = new Ergatis;:Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$opt{'debug'});
 $logger = $logger->get_logger();
 
