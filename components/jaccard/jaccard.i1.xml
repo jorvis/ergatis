@@ -39,7 +39,7 @@
             <executable>$;BIN_DIR$;/clusterBsmlPairwiseAlignments</executable>
             <param>  
                 <key>--bsmlSearchList</key>
-                <value>$;TMP_DIR$;/match.input.list</value>
+                <value>$;MATCH_BSML_FILE_LIST$;</value>
             </param>
             <param>  
                 <key>--asmbl_lookup</key>
@@ -96,7 +96,7 @@
             <arg>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$; -name '*.fsa'</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;NAME$;.fsa.list</value>
+                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.fsa.list</value>
             </param>
         </command>
     </commandSet>

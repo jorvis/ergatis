@@ -22,43 +22,20 @@
         <!--Processing-->
         <command>
             <type>RunUnixCommand</type>
-            <name>generate match input</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/generate_input_list</executable>
-            <param>  
-                <key>--filelist</key>
-                <value>'$;MATCH_BSML_FILE_LIST$;'</value>
-            </param>
-            <param>  
-                <key>--file</key>
-                <value>'$;MATCH_BSML_FILE$;'</value>
-            </param>
-            <param>  
-                <key>--directory</key>
-                <value>'$;MATCH_BSML_DIRECTORY$;'</value>
-            </param>
-            <param>  
-                <key>--output</key>
-                <value>$;TMP_DIR$;/match.input.list</value>
-            </param>
-            <arg>--listfiles</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
             <name>generate organism list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/generate_list_by_genome</executable>
             <param>  
                 <key>--filelist</key>
-                <value>'$;QUERY_BSML_FILE_LIST$;'</value>
+                <value>'$;INPUT_FILE_LIST$;'</value>
             </param>
             <param>  
                 <key>--file</key>
-                <value>'$;QUERY_BSML_FILE$;'</value>
+                <value>'$;INPUT_FILE$;'</value>
             </param>
             <param>  
                 <key>--directory</key>
-                <value>'$;QUERY_BSML_DIRECTORY$;'</value>
+                <value>'$;INPUT_DIRECTORY$;'</value>
             </param>
             <param>  
                 <key>--output_dir</key>
@@ -87,7 +64,7 @@
             </param>
             <param>  
                 <key>--glob</key>
-                <value>'*/*.$;NAME$;.fsa.list'</value>
+                <value>'*/*.$;COMPONENT_NAME$;.fsa.list'</value>
             </param>
         </command>
     </commandSet>
