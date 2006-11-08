@@ -30,7 +30,8 @@ my $writer = new XML::Writer( OUTPUT => $ofh,
 
 $writer->startTag('commandSetRoot', 
                         'xmlns:xsi' => 'http://www.w3.org/2001/XMLSchema-instance',
-                        'xsi:schemaLocation' => 'commandSet.xsd' );
+                        'xsi:schemaLocation' => 'commandSet.xsd',
+                        'type' => 'instance' );
 
 $writer->startTag('commandSet', type => 'serial');
 $writer->startTag('state');
