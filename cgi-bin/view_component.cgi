@@ -46,22 +46,22 @@ my $parent_commandset = $twig->root->first_child('commandSet');
 my $component_state = $parent_commandset->first_child('state')->text || 'unknown';
 
 my $component_name = 'component';
-if ( $parent_commandset->first_child('name')->text =~ /(.+) workflow/) {
-    $component_name = $1;
+my $project = '?';
+my $repository_root = '';
+my $pipeline_id = '';
+my $output_token = '';
+
+if ( $pipeline_xml =~ m|(.+/(.+?))/workflow/runtime/(.+?)/(\d+)_(.+?)/| ) {
+    $repository_root = $1;
+    $project = $2;
+    $component_name = $3;
+    $pipeline_id = $4;
+    $output_token = $5;
 }
 
 my $parent_pipeline = '';
 if ( $parent_commandset->first_child('parentFileName') ) {
     $parent_pipeline = $parent_commandset->first_child('parentFileName')->text;
-}
-
-my $project = '?';
-my $repository_root = '';
-my $pipeline_id = '';
-if ( $parent_pipeline =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)| ) {
-    $repository_root = $1;
-    $project = $2;
-    $pipeline_id = $3;
 }
 
 my %lockfile_info = &parse_pipeline_run_lock_file( "$repository_root/workflow/lock_files/pid.$pipeline_id" );
@@ -129,6 +129,8 @@ $tmpl->param( PAGE_TITLE          => "$project|$component_name|$state" );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'pipeline view', is_last => 0, url => "./view_pipeline.cgi?instance=$parent_pipeline" },
+                                        { label => 'view configuration', is_last => 0, url => 
+                                        "./view_formatted_ini_source.cgi?file=$repository_root/workflow/runtime/$component_name/${pipeline_id}_$output_token/$component_name.$output_token.final.config" },
                                         { label => 'view xml', is_last => 1, url => "./view_formatted_xml_source.cgi?file=$pipeline_xml" },
                                      ] );
 
