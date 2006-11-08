@@ -32,6 +32,12 @@ test -z $db_format && echo "No db format provided" && print_usage
 test -z $bin_dir && echo "No bin directory provided" && print_usage
 test $protein == 'F' -a -z "$id_map" && echo "No protein/nucleotide map provided" && print_usage
 
+if [ -f $hits ] && [ ! -s $hits ]
+then
+	touch $out
+	exit 0
+fi
+
 if [ $protein == 'F' ]
 then
 	prot_id=`cut -f1 $hits | head -1`
