@@ -25,63 +25,57 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $display_codebase = $ergatis_cfg->val( 'display_settings', 'display_codebase') || 0;
 
 my $pipeline_root = "$repository_root/workflow/runtime/pipeline";
-my $shared_conf_path = "$repository_root/workflow/project.config";
+my $project_conf_path = "$repository_root/workflow/project.config";
 my $errors_found  = 0;
 my $error_msgs = [];
 my %pipelines;
 my $pipeline_count = 0;
 
-## make sure the directory exists
-if (! -e $pipeline_root) {
-    &record_error("$pipeline_root not found.  enter a repository root that contains a workflow directory.");
+## make sure it has a project conf file, else throw the warning and quit
+if (! -e $project_conf_path ) {
+    &record_error("$project_conf_path not found");
     &print_template();
+}
+
+## pull the ergatis dir from the shared conf file
+my $project_conf = new Ergatis::ConfigFile( -file => $project_conf_path );
+
+#################
+## check for some required variables in the project.config
+my @required_vars = ( '$;PROJECT$;', '$;REPOSITORY_ROOT$;', '$;TMP_DIR$;', '$;PROJECT_ID_REPOSITORY$;',
+                      '$;ERGATIS_DIR$;', '$;LIB_DIR$;', '$;BIN_DIR$;', '$;DOCS_DIR$;' );
+               
+for my $var ( @required_vars ) {
+    if (! defined $project_conf->val( 'project', $var ) ) {
+        &record_error("$var not defined in project's configuration file");
+    }
+}
+
+#################
+## a check a selection of required, writeable directories
+my @required_dirs = ( $pipeline_root, "$repository_root/workflow", "$repository_root/workflow/runtime",
+                      "$repository_root/workflow/lock_files", "$repository_root/workflow/project_id_repository" );
+
+for my $dir ( @required_dirs ) {
+    if (! -d $dir ) {
+        &record_error("directory $dir not found");
+    } else {
+        ## make sure it is writeable
+        if (! -w $dir) {
+            &record_error("$dir not writable");
+        }
+    }
 }
 
 my $rdh;
 if (! opendir $rdh, "$pipeline_root" ) {
     &record_error("can't open pipeline root directory: $!");
-    &print_template();
-}
-
-## make sure it has a 'workflow' directory
-if (! -d "$repository_root/workflow" ) {
-    &record_error("directory $repository_root/workflow not found");
-}
-
-## make sure it has a 'workflow/lock_files' directory
-if (! -d "$repository_root/workflow/lock_files" ) {
-    &record_error("directory $repository_root/workflow/lock_files not found");
-
-} else {
-    ## make sure it is writeable
-    if (! -w "$repository_root/workflow/lock_files") {
-        &record_error("$repository_root/workflow/lock_files not writable");
-    }
-}
-
-## make sure it has a 'workflow/project_id_repository' directory
-if (! -d "$repository_root/workflow/project_id_repository" ) {
-    &record_error("directory $repository_root/workflow/project_id_repository not found");
-} else {
-    ## make sure it is writeable
-    if (! -w "$repository_root/workflow/project_id_repository") {
-        &record_error("$repository_root/workflow/project_id_repository not writable");
-    }
-}
-
-## make sure it has a shared conf file
-if (! -e $shared_conf_path ) {
-    &record_error("$shared_conf_path not found");
 }
 
 ## quit and throw the template if there were errors.
-if ( scalar @{$error_msgs} ) {
-    &print_template();
-}
+&print_template() if scalar @{$error_msgs};
 
-## pull the ergatis dir from the shared conf file
-my $shared_conf = new Ergatis::ConfigFile( -file => $shared_conf_path );
-my $ergatis_dir = $shared_conf->val('project', '$;ERGATIS_DIR$;') || 'unknown';
+my $ergatis_dir = $project_conf->val('project', '$;ERGATIS_DIR$;');
 
 foreach my $pipeline_id ( readdir $rdh ) {
     next unless ( $pipeline_id =~ /^\d+$/ );
