@@ -1,3 +1,9 @@
+div.bsml_container {
+    white-space: pre;
+}
+
 span.term {
     font-weight: bold;
 }
+
+
