@@ -20,11 +20,11 @@ B<--input,-i>
     Input btab file from a gap2 search.
 
 B<--query_file_path,-q>
-	Full path to FASTA file containing query sequence.
+    Full path to FASTA file containing query sequence.
 
 B<--query_id>
-	ID of query sequence
-	
+    ID of query sequence
+    
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -80,18 +80,18 @@ use BSML::BsmlParserTwig;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
-			  'query_file_path|q=s',
-  			  'query_id=s',
+              'query_file_path|q=s',
+              'query_id=s',
               'gzip_output|g=s',
               'log|l=s',
               'debug=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -99,8 +99,8 @@ if( $options{'help'} ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
 }
 
+my $input = $options{'input'};
 my $defline;
-my $input;
 
 ## make sure all passed options are peachy
 &check_parameters(\%options);
@@ -149,7 +149,7 @@ while (<$ifh>) {
     if (! exists $seqs_found{$qry_id}) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'nucleic_acid');
         $doc->createAndAddBsmlAttribute($seq, 'defline', $defline) if($defline);
-		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
         $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
         $seqs_found{$qry_id} = 1;
     }
@@ -158,7 +158,7 @@ while (<$ifh>) {
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'na', 'nucleic_acid');
         my $subDefline = &getSubDefline($cols[4]);
-		$doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
         $seqs_found{$sbj_id} = 1;
     }
@@ -203,11 +203,11 @@ while (<$ifh>) {
 
 ## if there were no results this will create a sequence stub
 my $align = &createAndAddNullResult(
-	   					                doc             => $doc,
-                           				query_name      => $options{'query_id'},
-			                            query_length    => '',
-               				            class			=> 'assembly',
-                        		   );
+                                        doc             => $doc,
+                                        query_name      => $options{'query_id'},
+                                        query_length    => '',
+                                        class           => 'assembly',
+                                   );
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
@@ -270,13 +270,13 @@ sub min {
 ##Adds BSML tags for the case where 
 ##the query sequence returned no hits
 sub createAndAddNullResult {
-	my %args = @_;
+    my %args = @_;
     my $doc = $args{'doc'};
     
-	if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
+    if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
         my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'na', $args{'class'} );
         $doc->createAndAddBsmlAttribute( $seq, 'defline', "$defline");
-		$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
         $seq->addBsmlLink('analysis', '#aat_na_analysis', 'input_of');
     }
 }
