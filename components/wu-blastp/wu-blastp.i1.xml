@@ -81,11 +81,11 @@
             </param>
             <param>  
                 <key>--componenturl</key>
-                <value>$;WORKFLOW_REPOSITORY$;/pipeline.xml</value>
+                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
             </param>
             <param>  
                 <key>--pipelineurl</key>
-                <value>$;REPOSITORY_ROOT$;/Workflow/pipeline/pipeline$;PIPELINEID$;.xml</value>
+                <value>$;REPOSITORY_ROOT$;/workflow/runtime/pipeline/$;PIPELINEID$;/pipeline.xml</value>
             </param>
             <param>  
                 <key>--analysis_id</key>
