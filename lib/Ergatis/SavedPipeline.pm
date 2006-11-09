@@ -440,7 +440,7 @@ use Ergatis::Pipeline;
       </param>   
       <param>
 	<key>--keys</key>
-        <value>PIPELINEID=$pipeline_id</value>
+        <value>PIPELINEID=$pipeline_id,PIPELINE_XML=$repository_root/$self->{_pipeline_dir}/$self->{pipeline_id}/pipeline.xml,COMPONENT_XML=$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</value>
       </param>
     </command>
     <command>
