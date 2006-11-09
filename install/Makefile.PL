@@ -57,7 +57,7 @@ sub MY::postamble {
 
 ergatis_install : dirs shellwrappers wait wu-blastp
 
-	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
+    	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/groups_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/project.config.example $(WORKFLOW_DOCS_DIR)
 	@install components/shared/software.config $(WORKFLOW_DOCS_DIR)
@@ -66,6 +66,7 @@ ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_mas
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
+	mkdir -p $(WORKFLOW_DOCS_DIR)/documentation
 
 shellwrappers:
 	@install bin/create_ber_db.sh $(PREFIX)/bin
@@ -773,7 +774,7 @@ wu-blastp	:
 	@install components/wu-blastp/wu-blastp.xml $(WORKFLOW_DOCS_DIR)
 	@install components/wu-blastp/wu-blastp.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/wu-blastp/wu-blastp.config $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastp/wu-blastp.tmpl $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastp/wu-blastp.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 	
 wu-blastx	:
 	@echo "Installing wu-blastx workflows in $(WORKFLOW_DOCS_DIR)"
