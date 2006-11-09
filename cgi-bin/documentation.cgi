@@ -40,7 +40,7 @@ if ( -e $doc_path ) {
     $page_tmpl->param( ARTICLE_DISPLAY => display_version($article) );
     $page_tmpl->param( PAGE => $page );
     $page_tmpl->param( PAGE_DISPLAY => display_version($page) );
-    $page_tmpl->param( DOC_PATH = $doc_path );
+    $page_tmpl->param( DOC_PATH => $doc_path );
 }
 
 
