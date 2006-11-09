@@ -24,7 +24,9 @@ if ($file !~ /\.xml$/ &&
     $file !~ /\.ini/ &&
     $file !~ /\.log/ &&
     $file !~ /\.config/ &&
-    $file !~ /\.list/ ) {
+    $file !~ /\.list/ &&
+    $file !~ /\.stderr/ &&
+    $file !~ /\.stdout/ ) {
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }
