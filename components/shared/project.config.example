@@ -16,8 +16,5 @@ $;BIN_DIR$;=/usr/local/devel/ANNOTATION/ard/testing_manual/bin
 $;DOCS_DIR$;=/usr/local/devel/ANNOTATION/ard/testing_manual/docs
 $;DEBUG$;=0
 
-;the following keys are replaced at runtime by the invocation script
-$;PIPELINEID$;=
-
 [include]
 $;SOFTWARE_CONFIG$;=/usr/local/devel/ANNOTATION/ard/testing_manual/software.config
