@@ -13,7 +13,7 @@
 	<key>command</key>
 	<value>mkdir</value>
       </param>
-      <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;</arg>
+      <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
     </command>
     <command>
       <type>RunUnixCommand</type>
@@ -23,7 +23,7 @@
 	<key>command</key>
 	<value>mkdir</value>
       </param>
-      <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;</arg>
+      <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
     </command>
     <command>
       <type>RunUnixCommand</type>
@@ -39,20 +39,20 @@
 	<value>$;COMPONENT_CONFIG$;</value>
       </param>
       <param>  
-	<key>--iterator_list_dir</key>
-	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;</value>
+	<key>--output_dir</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
       </param>
       <param>  
 	<key>--iterator_list</key>
-	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter</value>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter</value>
       </param>
       <param>  
-	<key>--iterator_list_key</key>
-	<value>ITER_XML</value>
+	<key>--output_xml</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</value>
       </param>
       <param>  
-	<key>--iterator_output_xml</key>
-	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</value>
+        <key>--keys</key>
+        <value>ITERATOR_NAME=$;ITERATOR_NAME$;</value>
       </param>
       <param>  
 	<key>--distribopts</key>
@@ -61,8 +61,8 @@
     </command>
     <commandSet type="parallel">
       <state>incomplete</state>
-      <name>iterator:$;ITERATOR_TOKEN$; group:$;GROUP_NUMBER$; subflows</name>
-      <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_TOKEN$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</fileName>
+      <name>iterator:$;ITERATOR_NAME$; group:$;GROUP_NUMBER$; subflows</name>
+      <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</fileName>
     </commandSet>
   </commandSet>
 </commandSetRoot>
