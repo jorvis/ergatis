@@ -32,7 +32,7 @@ my $included = {};
 $origcfg = &import_includes($origcfg,$included);
 
 #Add add'l keys specified via --keys
-&add_keys($origcfg,'project',split(/,/,$options{'keys'}));
+&add_keys($origcfg,'component',split(/,/,$options{'keys'}));
 
 #Perform initial key replacement
 my $cfg = &replace_keys($origcfg);
@@ -42,7 +42,7 @@ my $cfg = &replace_keys($origcfg);
 #Write the output location of this file as key $;COMPONENT_CONFIG$;
 my $ret = $cfg->setval('component','$;COMPONENT_CONFIG$;',$options{'output_conf'});
 if(!$ret){
-    $logger->logdie("Couldn't add key \$;COMPONENT_CONFIG\$;= $options{'output_conf'}to section [component]");
+    $logger->logdie("Couldn't add key \$;COMPONENT_CONFIG\$;=$options{'output_conf'}to section [component]");
 }
 &check_parameters($cfg,'component');
 
