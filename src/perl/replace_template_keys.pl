@@ -20,10 +20,8 @@ my $results = GetOptions (\%options,
                           'output_xml|o=s', 
 			  'component_conf|c=s',
 			  #opts for replacing keys in an iterator list
-                          'iterator_list_dir|o=s',
-                          'iterator_output_xml|x=s',
+                          'output_dir|o=s',
                           'iterator_list|l=s', 
-                          'iterator_list_key|e=s', 
 			  'distribopts|d=s',
                           'log=s',
                           'debug=s', 
@@ -42,21 +40,21 @@ my $cfg = new Config::IniFiles( -file => $options{'component_conf'});
 my $replacevals = &parseconf($cfg);
 
 if (exists $options{'iterator_list'}) {
-    my $iteratorconf = &parseiteratorconf($options{'iterator_list'});
+    my ($iteratorconf,$iterator_list_key) = &parseiteratorconf($options{'iterator_list'});
     my $outputfiles;
     my @iterator_output_list;
     
-    if (!exists $iteratorconf->{'$;'.$options{'iterator_list_key'}.'$;'}) {
-        $logger->logdie("Can't find key $options{'iterator_list_key'} in $options{'iterator_list'}");
+    if (!exists $iteratorconf->{$iterator_list_key}) {
+        $logger->logdie("Can't find key $iterator_list_key in $options{'iterator_list'}");
     } else {
-        $outputfiles = $iteratorconf->{'$;'.$options{'iterator_list_key'}.'$;'};
+        $outputfiles = $iteratorconf->{$iterator_list_key};
     }
     
-    if (! -d $options{'iterator_list_dir'}) {
-        $logger->logdie("$options{'iterator_list_dir'} is not a valid output directory");
+    if (! -d $options{'output_dir'}) {
+        $logger->logdie("$options{'output_dir'} is not a valid output directory");
     }
     
-    $options{'iterator_list_dir'} .= "/" if ($options{'iterator_list_dir'} !~ /\/$/);
+    $options{'output_dir'} .= "/" if ($options{'output_dir'} !~ /\/$/);
     
     for (my $i=0; $i < @$outputfiles; $i++) {
         my %ireplacevals = %$replacevals;
@@ -65,7 +63,7 @@ if (exists $options{'iterator_list'}) {
             $ireplacevals{$key} = $iteratorconf->{$key}->[$i];
         }
         
-        my $outputfile = $options{'iterator_list_dir'}.$outputfiles->[$i];
+        my $outputfile = $options{'output_dir'}.$iteratorconf->{$iterator_list_key}->[$i].".xml";
         push @iterator_output_list,$outputfile;
         &replacekeys(\%ireplacevals,$options{'template_xml'},$outputfile);
     }
@@ -84,7 +82,7 @@ if (exists $options{'iterator_list'}) {
         }
     }
     
-    open FILE, ">$options{'iterator_output_xml'}" or $logger->logdie("Can't open file $options{'iterator_output_xml'}");
+    open FILE, ">$options{'output_xml'}" or $logger->logdie("Can't open file $options{'output_xml'}");
     print FILE "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                 <commandSetRoot type=\"instance\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation='commandSet.xsd'>
                 <commandSet type=\"$distrib\">
@@ -93,7 +91,7 @@ if (exists $options{'iterator_list'}) {
                  
     for(my $i=0;$i<@iterator_output_list;$i++){
         my $file = $iterator_output_list[$i];
-        my $name = $iteratorconf->{'$;ITER_FILE_NAME$;'}->[$i] || '';
+        my $name = $iteratorconf->{$iteratorconf->{$iterator_list_key}->[$i]}->[$i] || '';
         print FILE "<commandSet type=\"$cstype\">
                      <name>$name</name>
                      <state>incomplete</state>
@@ -155,13 +153,16 @@ sub replacekeys{
         ## don't replace vals on comment lines
 	if( $line !~ /^\;/ && $line !~ /^\#/ ) {
 	    if($line =~ /\<INCLUDE/){
-		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs,1)/ge;	    
+		$line =~ s/(\$;[\w_]+\$;)([^=])/&replaceval($1,$subs).$2/ge;
 	    }
 	    else{
 		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
 	    }
         }
 	if($line =~ /\<INCLUDE/){
+	    if($line !~ />/){
+		$logger->logdie("<INCLUDE> directive must be contained on a single line");
+	    }
 	    my($file) = ($line =~ /file="([\/\w\.\_]+)"/);
 	    my($keys) = ($line =~ /keys="(.*)"/);
 	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
@@ -176,22 +177,13 @@ sub replacekeys{
 
 
 sub replaceval{
-    my($val,$keylookup,$ignore) = @_;
+    my($val,$keylookup) = @_;
     if(!(exists $keylookup->{$val})){
-	if($ignore){
-	    return $val;
-	}
-	else{
-	    $logger->logdie("Bad key $val in template file. ignore:$ignore");
-	}
+	$logger->logdie("Bad key $val in template file");
     }
     else{
-	if($val =~ /TOGGLE\$\;$/){
-	    my $val =  ($keylookup->{$val} =~ /\S/) ? $keylookup->{$val} : "";
-	}
-	else{
-	    return $keylookup->{$val};
-	}
+	$logger->debug("Replacing $val with $keylookup->{$val}");
+	return $keylookup->{$val};
     }
 }
 
@@ -200,19 +192,27 @@ sub parseiteratorconf{
     my $iteratorconf = {};
 
     open FILE, $listfile or $logger->logdie("Can't open file $listfile");
+    my @keys;
+    my $linenum=0;
     while(my $line=<FILE>){
 	chomp $line;
-	my($key,$value)=split(/=/,$line);
-	my @elts = split(/,/,$value);
-	if(! (exists $iteratorconf->{$key})){
-	    $iteratorconf->{$key} = [];
+	if($linenum==0){
+	    @keys = split(/,/,$line);
+	    foreach my $key (@keys){
+		$iteratorconf->{$key} = [];
+	    }
 	}
-	foreach my $elt (@elts){
-	    push( @{$iteratorconf->{$key}}, $elt );
+	else{
+	    my @elts = split(/,/,$line);
+	    for(my $i=0;$i<(@elts);$i++){
+		push( @{$iteratorconf->{$keys[$i]}}, $elts[$i] );
+	    }
 	}
+	$linenum++;
     }
     close FILE;
-    return $iteratorconf;
+    #make first key the name of the iterator
+    return ($iteratorconf,$keys[0]);
 }
 
 sub add_keys{
@@ -235,13 +235,33 @@ sub import_xml{
     my @keys = split(/,/,$keys);
     foreach my $k (@keys){
 	my($tok,$val) = split(/=/,$k);
-	$subs->{$tok} = $subs->{'$;'.$val.'$;'};
+	if(exists $subs->{'$;'.$val.'$;'}){
+	    $subs->{$tok} = $subs->{'$;'.$val.'$;'};
+	}
+	else{
+	    $subs->{$tok} = $val;
+	}
     }
     open FILE, "$file" or $logger->logdie("Can't open file $file");
     while(my $line=<FILE>){
-	if ( $line !~ /^\;/ && $line !~ /^\#/ ) {
-	    $line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;
+	if( $line !~ /^\;/ && $line !~ /^\#/ ) {
+	    if($line =~ /\<INCLUDE/){
+		$line =~ s/(\$;[\w_]+\$;)([^=])/&replaceval($1,$subs).$2/ge;
+	    }
+	    else{
+		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
+	    }
         }
+	if($line =~ /\<INCLUDE/){
+	    if($line !~ />/){
+		$logger->logdie("<INCLUDE> directive must be contained on a single line");
+	    }
+	    my($file) = ($line =~ /file="([\/\w\.\_]+)"/);
+	    my($keys) = ($line =~ /keys="(.*)"/);
+	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
+	    &import_xml($file,$keys,$subs,*OUTPUTFILE);
+	    $line = '';
+	}
 	print $outfh $line;
     }
     close FILE;
