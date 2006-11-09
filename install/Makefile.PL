@@ -760,6 +760,7 @@ wait	:
 	@echo "Installing wait workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/wait/wait.xml $(WORKFLOW_DOCS_DIR)
 	@install components/wait/wait.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wait/wait.i2.xml $(WORKFLOW_DOCS_DIR)
 	@install components/wait/wait.config $(WORKFLOW_DOCS_DIR)
 
 wu-blastn	:
