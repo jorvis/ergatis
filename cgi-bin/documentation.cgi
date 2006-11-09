@@ -11,11 +11,38 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 my $tmpl = HTML::Template->new( filename => 'templates/documentation.tmpl',
-                                die_on_bad_params => 1,
+                                die_on_bad_params => 0,
                               );
 
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+
+my $article = $q->param('article') || 'main';
+my $page = $q->param('page') || 'index';
+my $doc_path = "templates/documentation/$article/$page.tmpl";
+
+my $page_tmpl;
+
+if ( -e $doc_path ) {
+    $page_tmpl = HTML::Template->new( filename => $doc_path,
+                                      die_on_bad_params => 0 );
+} else {
+    $page_tmpl = HTML::Template->new( filename => 'templates/documentation/main/not_found.tmpl',
+                                      die_on_bad_params => 0 );
+    $page_tmpl->param( ARTICLE => $article );
+    $page_tmpl->param( ARTICLE_DISPLAY => display_version($article) );
+    $page_tmpl->param( PAGE => $page );
+    $page_tmpl->param( PAGE_DISPLAY => display_version($page) );
+}
+
+
+## populate the parent template
+$tmpl->param( ARTICLE => $article );
+$tmpl->param( ARTICLE_DISPLAY => display_version($article) );
+$tmpl->param( PAGE => $page );
+$tmpl->param( PAGE_DISPLAY => display_version($page) );
+$tmpl->param( IS_INDEX => $page eq 'index' ? 1 : 0 );
+$tmpl->param( DOC_CONTENT => $page_tmpl->output() );
 
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
@@ -24,3 +51,9 @@ $tmpl->param( SUBMENU_LINKS       => [
 
 print $tmpl->output;
 
+
+sub display_version {
+    my $str = shift;
+    $str =~ s/_/ /g;
+    return $str;
+}

@@ -10,6 +10,7 @@
     <!-- bring in the styles -->
     <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/documentation.css">
 </head>
 
 <body class='documentation'>
@@ -19,40 +20,13 @@
 <TMPL_INCLUDE NAME="header.tmpl">
 
     <div id='content_container'>
-        <h2>documentation</h2>
-        <p>
-            I'm just throwing some notes here to get an idea of the sort of documents I want to be
-            available.  The only one that is currently available is the component documentation.  Later
-            versions of this page will probably not look much like this.
-        </p>
-        <dl>
-            <dt><a>overview</a></dt>
-            <dd>
-                Not yet available. 
-            </dd>
-            <dt><a href='http://jorvis-lx:8080/egc.components.html'>component documentation</a></dt>
-            <dd>
-                Here you'll find the documentation for each of the workflow components available within
-                ergatis, along with the progess notes of those under development.  This currently links
-                to an external file which should soon be reformatted and incorporated within the ergatis
-                CVS area.
-            </dd>
-            <dt><a>component creation tutorial</a></dt>
-            <dd>
-                Not yet available.  This should be a technical tutorial demonstrating how to create a
-                workflow component for ergatis.
-            </dd>
-            <dt><a>directory structure convention</a></dt>
-            <dd>
-                Not yet available.  This should be a technical tutorial demonstrating how to create a
-                workflow component for ergatis.
-            </dd>
-            <dt><a>pipeline creation tutorial</a></dt>
-            <dd>
-                Not yet available.  This should be a technical tutorial demonstrating how to create a
-                pipeline with ergatis.
-            </dd>
-        </dl>
+    <TMPL_IF NAME=IS_INDEX>
+        <h2><a href='./documentation.cgi'>documentation</a> - <a href='./documentation.cgi?article=<TMPL_VAR NAME=ARTICLE>'><TMPL_VAR NAME=ARTICLE_DISPLAY></a></h2>
+    <TMPL_ELSE>
+        <h2><a href='./documentation.cgi'>documentation</a> - <a href='./documentation.cgi?article=<TMPL_VAR NAME=ARTICLE>'><TMPL_VAR NAME=ARTICLE_DISPLAY></a> : <TMPL_VAR NAME=PAGE_DISPLAY></h2>
+    </TMPL_IF>
+
+<TMPL_VAR NAME=DOC_CONTENT>
         
     </div> <!-- end content_container -->
 
