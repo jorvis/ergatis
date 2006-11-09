@@ -211,7 +211,7 @@ for my $group ( @groups ) {
 	print $group_fh $line,",$group_num\n";
     }
     close $group_fh;
-    print $gif_fh "g$group_num/g$group_num.xml,$group_file,$group_num\n";
+    print $gif_fh "g$group_num/g$group_num,$group_file,$group_num\n";
     $group_num++;
 }
 
