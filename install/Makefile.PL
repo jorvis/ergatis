@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers wait
+ergatis_install : dirs shellwrappers wait wu-blastp
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/groups_template.xml $(WORKFLOW_DOCS_DIR)
@@ -770,12 +770,11 @@ wu-blastn	:
 
 wu-blastp	:
 	@echo "Installing wu-blastp workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/wu-blastp/wu-blastp-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastp/wu-blastp-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastp/wu-blastp.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastp/wu-blastp_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/wu-blastp/wu-blastpconf.ini $(WORKFLOW_DOCS_DIR)
-
+	@install components/wu-blastp/wu-blastp.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastp/wu-blastp.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastp/wu-blastp.config $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastp/wu-blastp.tmpl $(WORKFLOW_DOCS_DIR)
+	
 wu-blastx	:
 	@echo "Installing wu-blastx workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/wu-blastx/wu-blastx-master.ini $(WORKFLOW_DOCS_DIR)
