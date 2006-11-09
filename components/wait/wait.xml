@@ -23,7 +23,7 @@
     <!--Processing-->
     <!--Iterator-->
     <!--Example file iterator include using "file_iterator_template.xml" which requires -->
-    <!--configuration key names $;INPUT_FILE_LIST$;,$;INPUT_FILE_$;,$;INPUT_DIRECTORY$;-->
+    <!--configuration key names INPUT_FILE_LIST,INPUT_FILE,INPUT_DIRECTORY-->
     <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
     <!--Example of general iterator that accepts an $;ITERATOR_LIST$; file and -->
     <!--can be used for iterators besides files.  Requires command to build -->

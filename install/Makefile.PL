@@ -58,6 +58,7 @@ sub MY::postamble {
 ergatis_install : dirs shellwrappers wait wu-blastp
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
+	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/groups_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/project.config.example $(WORKFLOW_DOCS_DIR)
 	@install components/shared/software.config $(PREFIX)
