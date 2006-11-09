@@ -19,7 +19,14 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 my $article = $q->param('article') || 'main';
 my $page = $q->param('page') || 'index';
-my $doc_path = "templates/documentation/$article/$page.tmpl";
+my $ergatis_dir = $ergatis_cfg->val('paths', 'default_ergatis_dir' );
+my $doc_path;
+
+if ( $article eq 'components' ) {
+    $doc_path = "$ergatis_dir/docs/documentation/$page.tmpl";
+} else {
+    $doc_path = "templates/documentation/$article/$page.tmpl";
+}
 
 my $page_tmpl;
 
@@ -33,6 +40,7 @@ if ( -e $doc_path ) {
     $page_tmpl->param( ARTICLE_DISPLAY => display_version($article) );
     $page_tmpl->param( PAGE => $page );
     $page_tmpl->param( PAGE_DISPLAY => display_version($page) );
+    $page_tmpl->param( DOC_PATH = $doc_path );
 }
 
 
