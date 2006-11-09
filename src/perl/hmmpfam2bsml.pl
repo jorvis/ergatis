@@ -157,7 +157,8 @@ unless ($qry_id)        { $logger->logdie("Query sequence definition not found i
 ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
 my $seq = $doc->createAndAddSequence($qry_id, $qry_id_orig, undef, 'aa', 'polypeptide');
    $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
-$logger->logdie("Couldn't parse identifier out of $defline\n") unless(!$defline || $defline =~ /([^\s])\s/);
+my $identifier = $1 if($defline =~ /^(\S+)/);
+$logger->logdie("Couldn't parse identifier out of $defline\n") unless($identifier);
 $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $1) if($options{'fasta_input'});
 $doc->createAndAddBsmlAttribute($seq, 'defline', $defline) if($defline);
 
