@@ -810,9 +810,9 @@ wu-tblastx	:
 
 xdformat	:
 	@echo "Installing xdformat workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/xdformat/xdformat-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/xdformat/xdformat-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/xdformat/xdformatconf.ini $(WORKFLOW_DOCS_DIR) 
+	@install components/xdformat/xdformat.xml $(WORKFLOW_DOCS_DIR)
+	@install components/xdformat/xdformat.config $(WORKFLOW_DOCS_DIR)
+	@install components/xdformat/xdformat.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 
 
