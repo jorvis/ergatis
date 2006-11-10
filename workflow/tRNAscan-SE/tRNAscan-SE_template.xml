@@ -11,7 +11,7 @@
             <name>tRNAscan-SE</name>
         </command>
         <command>    
-            <type>RunLoggedUnixCommand</type>
+            <type>RunUnixCommand</type>
             <configMapId>tRNAscan-SE2bsml</configMapId>
             <name>tRNAscan-SE2bsml</name>
         </command>
