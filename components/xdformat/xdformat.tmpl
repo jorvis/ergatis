@@ -1,0 +1,51 @@
+<!-- component documentation -->
+
+<p>
+    Licensed WU BLAST 2.0 supports the eXtended Database Format (XDF), a power user's dream in many ways 
+    for working with peptide and nucleotide sequences. Both the NCBI BLAST 2.0 database format and the NCBI 
+    implementation of the BLAST search algorithm are restricted to sequences under 16 Mbp in length, 
+    whereas human genome contigs exceeded 25 Mbp in the previous century (Hattori et al., 2000) and 
+    extend to several tens of megabytes today. In contrast, XDF can accurately store individual sequences 
+    of up to 1 Gbp (billion bp) with ambiguity codes intact. Other BLAST software, such as the NCBI's, 
+    limits database files to 2 gigabytes, whereas WU BLAST's XDF supports databases (and database files) 
+    of virtually unlimited size -- provided of course that the underlying operating system supports 
+    these so-called 'large files', which most modern operating systems do.
+</p>
+<h3>references</h3>
+<p>
+    <a href='http://blast.wustl.edu/blast/README.html'>http://blast.wustl.edu/blast/README.html</a>
+</p>
+<h3>input</h3>
+<p>
+    This program accepts FASTA files as input.  It can be a collection of FASTA files, a single FASTA file 
+    containing multiple sequences, or any combination.  Nucleic acid or polypeptide sequences can be used, 
+    but not mixed.
+</p>
+<h3>implemented options</h3>
+<ul class='options'>
+    <li>-p - read/write/append/index an XDF protein sequence database</li>
+    <li>-n - read/write/append/index an XDF nucleotide sequence database</li>
+    <li>-o name - create XDF database files with the basename "name".  This options is required when creating a database from multiple FASTA input files.
+    <li>-I - index sequence identifiers while formatting database.  This recognizes any of the following identifier formats:<br>
+        <blockquote>
+            gi|integer<br>
+            dbj|accession|locus<br>
+
+            emb|accession|locus<br>
+            gb|accession|locus<br>
+            gp|accession|locus<br>
+            sp|accession|name<br>
+            pir|entry|name<br>
+            ref|accession|name<br>
+
+            pdb|entry|chain<br>
+            lcl|string<br>
+            gnl|domain|identifier
+        </blockquote>
+    </li>
+    <li>-O# - bytes precision for file offsets.  The default (4) supports database files up to 4GB in size.  Specifying -O5 provides sufficient precision for database 256 times larger.
+</ul>
+<h3>bsml output</h3>
+<p>
+    This component does not generate BSML output.
+</p>
