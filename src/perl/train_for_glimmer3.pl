@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
+eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 use lib(@INC, "/usr/local/devel/ANNOTATION/ard/current/lib/5.8.8");
 
@@ -72,7 +75,7 @@ you should document which tables and columns are affected.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Ergatis::Logger;
+use Workflow::Logger;
 
 ########GLOBALS#############
 use constant BUILD_ICM => '/usr/local/devel/ANNOTATION/glimmer/glimmer3.01/bin/build-icm';
@@ -115,7 +118,7 @@ unless($training_seqs || $icm_file) {
     close(IN);
 
     $training_seqs = &makeTrainingFile($tmp_dir, \@inputFiles);
-                                      
+    &changeIds($training_seqs);
 
 }
 
@@ -132,22 +135,48 @@ exit(0);
 sub makeTrainingFile {
     my ($tmp_dir, $inputFiles) = @_;
     my $outFile = "$tmp_dir/tmpFile.seqs";
+
+    if(-e $outFile) {
+        system("rm $outFile");
+    }
     
     foreach my $file(@{$inputFiles}) {
         chomp $file;
+        print "Running:\n long-orfs $file > $tmp_dir/out.coords\n\n";
         system("long-orfs $file > $tmp_dir/out.coords");
+        print "Running:\n extract $file $tmp_dir/out.coords >> $outFile\n";
         system("extract $file $tmp_dir/out.coords >> $outFile")
     }
 
+    print "Running:\n rm -f $tmp_dir/out.coords\n";
     system("rm -f $tmp_dir/out.coords");
 
     return $outFile;
 
 }
 
+sub changeIds {
+    my $file = shift;
+    open(IN, "<$file") or $logger->logdie("Can't open $file");
+    open(OUT, ">$file.tmp") or $logger->logdie("Can't open $file.tmp ($!)");
+    my $count = 0;
+    while(my $line = <IN>) {
+        if($line =~ /^T/) {
+            $line =~ s/^T\S+/$count/;
+            $count++;
+        }
+        print OUT $line;
+        
+    }
+    close(IN);
+    close(OUT);
+    system("mv $file.tmp $file");
+}
+
 sub makeIcmFile {
     my ($output) = @_;
     
+    print "Running\n ".BUILD_ICM." $output < $training_seqs\n";
     my $cmd = BUILD_ICM." $output < $training_seqs";
 
     system($cmd);
@@ -177,6 +206,8 @@ sub check_parameters {
     }
     $tmp_dir = $options{'tmp_dir'};
     $tmp_dir =~ s/\/$//;
+
+    system("mkdir $tmp_dir") unless(-d $tmp_dir);
 
     if(-e $output) {
         $dontCreate == 1;
