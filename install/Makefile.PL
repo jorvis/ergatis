@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers wait wu-blastp
+ergatis_install : dirs shellwrappers formatdb jaccard ncbi-blastp split_multifasta wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -394,13 +394,11 @@ iprscan	:
 	@install components/iprscan/iprscan_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/iprscan/iprscanconf.ini $(WORKFLOW_DOCS_DIR)
 
-jaccard  :
+jaccard	:
 	@echo "Installing jaccard workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/jaccard/jaccard.ini $(WORKFLOW_DOCS_DIR)
-	@install components/jaccard/jaccard_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/jaccard/jaccard-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/jaccard/jaccard-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/jaccard/jaccardconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/jaccard/jaccard.xml $(WORKFLOW_DOCS_DIR)
+	@install components/jaccard/jaccard.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/jaccard/jaccard.config $(WORKFLOW_DOCS_DIR)
 
 legacy2bsml  :
 	@echo "Installing legacy2bsml workflows in $(WORKFLOW_DOCS_DIR)"
