@@ -66,7 +66,7 @@ ul#nav_tree li li li.over ul {
 
 /* add the arrow */
 ul#nav_tree li.menuparent { 
-    background: transparent url('/ergatis/arrow_right_thin.gif') right center no-repeat; 
+    background: transparent url('/ergatis/images/arrow_right_thin.gif') right center no-repeat; 
 }
 
 /* change the background color on hovered nodes */
