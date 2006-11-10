@@ -467,11 +467,9 @@ ncbi-blastn	:
 
 ncbi-blastp	:
 	@echo "Installing ncbi-blastp workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ncbi-blastp/ncbi-blastp-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastp/ncbi-blastp-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastp/ncbi-blastp.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastp/ncbi-blastp_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/ncbi-blastp/ncbi-blastpconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastp/ncbi-blastp.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastp/ncbi-blastp.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastp/ncbi-blastp.config $(WORKFLOW_DOCS_DIR)
 
 ncbi-blastx	:
 	@echo "Installing ncbi-blastx workflows in $(WORKFLOW_DOCS_DIR)"
@@ -672,11 +670,9 @@ split_fasta	:
 
 split_multifasta	:
 	@echo "Installing split_multifasta workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/split_multifasta/split_multifasta-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/split_multifasta/split_multifasta-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/split_multifasta/split_multifasta.ini $(WORKFLOW_DOCS_DIR)
-	@install components/split_multifasta/split_multifasta_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/split_multifasta/split_multifastaconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/split_multifasta/split_multifasta.xml $(WORKFLOW_DOCS_DIR)
+	@install components/split_multifasta/split_multifasta.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/split_multifasta/split_multifasta.config $(WORKFLOW_DOCS_DIR)
 
 statistics2chado	:
 	@echo "Installing statistics2chado workflows in $(WORKFLOW_DOCS_DIR)"
