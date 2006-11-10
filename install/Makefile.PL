@@ -642,20 +642,6 @@ signalp	:
 	@install components/signalp/signalp_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/signalp/signalpconf.ini $(WORKFLOW_DOCS_DIR)  
 
-snoscan	:
-	@echo "Installing snoscan workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/snoscan/snoscan-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/snoscan/snoscan-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/snoscan/snoscan.ini $(WORKFLOW_DOCS_DIR)
-	@install components/snoscan/snoscan_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/snoscan/snoscanconf.ini $(WORKFLOW_DOCS_DIR) 
-
-snps	:
-	@echo "Installing snps workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/snp/snp-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/snp/snp-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/snp/snpconf.ini $(WORKFLOW_DOCS_DIR)
-
 snap	:
 	@echo "Installing snap workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/snap/snap-master.ini $(WORKFLOW_DOCS_DIR)
@@ -670,7 +656,13 @@ snoscan	:
 	@install components/snoscan/snoscan-master_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/snoscan/snoscan.ini $(WORKFLOW_DOCS_DIR)
 	@install components/snoscan/snoscan_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/snoscan/snoscanconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/snoscan/snoscanconf.ini $(WORKFLOW_DOCS_DIR) 
+
+snps	:
+	@echo "Installing snps workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/snp/snp-master.ini $(WORKFLOW_DOCS_DIR)
+	@install components/snp/snp-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install components/snp/snpconf.ini $(WORKFLOW_DOCS_DIR)
 
 split_fasta	:
 	@echo "Installing split_fasta workflows in $(WORKFLOW_DOCS_DIR)"
