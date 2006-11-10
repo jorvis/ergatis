@@ -335,3 +335,4 @@ wait-master_template.xml -> wait.xml
 next
 ----
 -added component lipoprotein_motif to Makefile.PL
+-changed "RunLoggedUnixCommand" to "RunUnixCommand" for tRNAscan-SE2bsml step intRNAscan-SE_template.xml
