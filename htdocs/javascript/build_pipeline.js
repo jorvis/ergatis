@@ -464,6 +464,13 @@ function selectComponentConfig( component_num ) {
     // function won't stomp over earlier requests
     var component_name = getObject( 'c' + component_num + '_selector' ).value;
     
+    // if the name is '' it's because they chose the 'please choose' option.  
+    //  don't attempt to fetch anything.  just shrink the display
+    if ( isEmpty( component_name ) ) {
+        components[component_id].config_view.hide();
+        return;
+    }
+    
     // set the name of the component
     components[component_id].name = component_name;
 
