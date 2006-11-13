@@ -13,7 +13,7 @@
             <input class='select_shadow' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
         </td>
         <TMPL_ELSE>
-        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
+        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
         </TMPL_IF> 
     </tr>
     </TMPL_LOOP> <!-- end parameters loop -->
@@ -26,6 +26,7 @@ an administrator.
 
 <div class='button_container'>
 <TMPL_IF NAME=COMPONENT_FOUND>
-    <div class='button' id='c<TMPL_VAR NAME=COMPONENT_NUM>_save' onclick='saveComponentConfig("c<TMPL_VAR NAME=COMPONENT_NUM>")'>save</div>
+    <div class='button save' id='c<TMPL_VAR NAME=COMPONENT_NUM>_save' onclick='saveComponentConfig("c<TMPL_VAR NAME=COMPONENT_NUM>")'>save</div>
+    <div class='button edit' id='c<TMPL_VAR NAME=COMPONENT_NUM>_edit' onclick='makeComponentEditable("c<TMPL_VAR NAME=COMPONENT_NUM>")'>edit</div>
 </TMPL_IF>
 </div>

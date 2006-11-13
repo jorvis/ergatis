@@ -297,6 +297,40 @@ function getComponent( component_id ) {
     return 0;
 }
 
+function makeComponentEditable( component_id ) {
+    // display the save button
+    getObject(component_id + '_save').style.display = 'block';
+    
+    // set focus on the save button
+    getObject(component_id + '_save').focus()
+    
+    // hide the edit button
+    getObject(component_id + '_edit').style.display = 'none';
+    
+    // mark it as unconfigured
+    components[component_id].setConfigured(false);
+    
+    var config_table = getObject(component_id + '_config_table');
+    
+    // make all the input boxes editable and add the background color
+    var input_boxes = config_table.getElementsByTagName('input');
+    for ( var i=0; i<input_boxes.length; i++ ) {
+        // output token is the only one that isn't editable
+        if ( input_boxes[i].name.search( /_OUTPUT_TOKEN/ ) == -1 ) {
+            //  this color must correspond to the table.config_table input entry in build_pipeline.css
+            input_boxes[i].style.backgroundColor = 'rgb(230,230,230)';
+            input_boxes[i].removeAttribute('readonly');
+        }
+    }
+    
+    // redisplay any select boxes and hide the shadow input boxes
+    var select_boxes = config_table.getElementsByTagName('select');
+    for ( var i=0; i<select_boxes.length; i++ ) {
+        select_boxes[i].style.display = 'inline';
+        getObject( select_boxes[i].name + '_shadow' ).style.display = 'none';
+    }
+}
+
 function makeComponentUneditable( component_id ) {
 
     // remove the component select box so the user can't change it.
@@ -308,20 +342,21 @@ function makeComponentUneditable( component_id ) {
     // hide the save button
     getObject(component_id + '_save').style.display = 'none';
     
+    // display the edit button
+    getObject(component_id + '_edit').style.display = 'block';
+    
     var config_table = getObject(component_id + '_config_table');
     
     // make all input boxes read-only and remove their background color
     var input_boxes = config_table.getElementsByTagName('input');
     for ( var i=0; i<input_boxes.length; i++ ) {
         input_boxes[i].style.backgroundColor = 'rgb(255,255,255)';
-        input_boxes[i].setAttribute('readonly', 1);
+        input_boxes[i].setAttribute('readonly', true);
     }
     
     // hide select boxes by cloning the value into a shadow input box and swapping visibility (hack, hack, hack)
     var select_boxes = config_table.getElementsByTagName('select');
     for ( var i=0; i<select_boxes.length; i++ ) {
-        // select_boxes[i].style.backgroundColor = 'rgb(255,255,255)';
-        // select_boxes[i].setAttribute('disabled', 1);
         select_boxes[i].style.display = 'none';
         getObject( select_boxes[i].name + '_shadow' ).value = select_boxes[i].options[ select_boxes[i].selectedIndex ].innerHTML;
         getObject( select_boxes[i].name + '_shadow' ).style.display = 'inline';
@@ -348,7 +383,6 @@ function saveComponentConfig( component_id ) {
     var conflicts_found = 0;
     
     for (cid in components) {
-    
         if ( components[cid].name == component_name && components[cid].token == token ) {
             conflicts_found++;
             break;
@@ -362,46 +396,65 @@ function saveComponentConfig( component_id ) {
 
     var outputs = getElementsByClassName(getObject( component_id + '_config_table' ), 'td', 'output')
 
-    // set some component properties
-    components[component_id].token = token;
-
-    addComponentInfo(component_id, component_name, token);
-
-    // get each TD of the output class and add each as a new input
-    for ( var i = 0; i < outputs.length; i++ ) {
-        var parameter_name  = outputs[i].firstChild.name;
-        var parameter_label = getObject(parameter_name + '_label').innerHTML;
-        var parameter_type  = 'unknown';
-        var parameter_value = outputs[i].firstChild.value;
+    // either we're saving an edit, or this is the first configuration.
+    if ( components[component_id].configured ) {
         
-        // skip the output token
-        if ( parameter_label == 'output token' ) {
-            continue;
+        // we can't currently save a component that has already been configured.
+        // see bug case 4092
+        if ( components[component_id].configured ) {
+            alert("can't currently save a component that has already been configured.");
+            return;
         }
         
-        // have to determine the parameter type, if possible, using a regex on the label
-        if ( parameter_label.search( /list/ ) > -1 ) {
-            parameter_type = 'list';
-        } else if ( parameter_label.search( /directory/ ) > -1 ) {
-            parameter_type = 'directory';
-        } else if ( parameter_label.search( /file/ ) > -1 ) {
-            parameter_type = 'file';
-        }
-        
-        // some variables need to be replaced in the value if present
-        //  this makes them cross-component compatable
-        parameter_value = parameter_value.replace(/\$\;NAME\$\;/g, components[component_id].name);
-        parameter_value = parameter_value.replace(/\$\;OUTPUT_TOKEN\$\;/g, components[component_id].token);
-        
-        var new_input = new Input();
-        new_input.input_label = components[component_id].name + ' (' + token + ') ' + parameter_label;
-        new_input.input_value = parameter_value;
-        new_input.input_type  = parameter_type;
+    } else {
+        // set some component properties
+        components[component_id].token = token;
 
-        // save this new input in the inputs array
-        inputs[ inputs.length ] = new_input;
-        
-        addInputRow( new_input );
+        addComponentInfo(component_id, component_name, token);
+
+        var output_directory = '';
+        if ( getObject( component_id + '_OUTPUT_DIRECTORY' ) ) {
+            output_directory = getObject( component_id + '_OUTPUT_DIRECTORY' ).value;
+            components[component_id].output_directory = output_directory;
+        }
+
+        // get each TD of the output class and add each as a new input
+        for ( var i = 0; i < outputs.length; i++ ) {
+            var parameter_name  = outputs[i].firstChild.name;
+            var parameter_label = getObject(parameter_name + '_label').innerHTML;
+            var parameter_type  = 'unknown';
+            var parameter_value = outputs[i].firstChild.value;
+
+            // skip the output token
+            if ( parameter_label == 'output token' ) {
+                continue;
+            }
+
+            // have to determine the parameter type, if possible, using a regex on the label
+            if ( parameter_label.search( /list/ ) > -1 ) {
+                parameter_type = 'list';
+            } else if ( parameter_label.search( /directory/ ) > -1 ) {
+                parameter_type = 'directory';
+            } else if ( parameter_label.search( /file/ ) > -1 ) {
+                parameter_type = 'file';
+            }
+
+            // some variables need to be replaced in the value if present
+            //  this makes them cross-component compatable
+            parameter_value = parameter_value.replace(/\$\;OUTPUT_DIRECTORY\$\;/g, output_directory);
+            parameter_value = parameter_value.replace(/\$\;COMPONENT_NAME\$\;/g, components[component_id].name);
+            parameter_value = parameter_value.replace(/\$\;OUTPUT_TOKEN\$\;/g, components[component_id].token);
+
+            var new_input = new Input();
+            new_input.input_label = components[component_id].name + ' (' + token + ') ' + parameter_label;
+            new_input.input_value = parameter_value;
+            new_input.input_type  = parameter_type;
+
+            // save this new input in the inputs array
+            inputs[ inputs.length ] = new_input;
+
+            addInputRow( new_input );
+        }
     }
 
     // shrink it
