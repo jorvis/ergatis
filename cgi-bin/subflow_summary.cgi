@@ -45,14 +45,6 @@ if ($subflow_found) {
                                                                 my ($t, $elt) = @_;
                                                                 $subflow_state = $elt->text;
                                                               },
-    #                                'commandSet/startTime' => sub {
-    #                                                            my ($t, $elt) = @_;
-    #                                                            $subflow_start = $elt->text;
-    #                                                          },
-    #                                'commandSet/endTime'   => sub {
-    #                                                            my ($t, $elt) = @_;
-    #                                                            $subflow_end = $elt->text;
-    #                                                          },
                                     'command'              => sub {
                                                                 my ($t, $elt) = @_;
                                                                 my %parts = &process_command($t, $elt);
@@ -67,7 +59,5 @@ $tmpl->param( SUBFLOW_NAME  => $subflow_name );
 $tmpl->param( SUBFLOW_STATE => $subflow_state );
 $tmpl->param( SUBFLOW_FOUND => $subflow_found );
 $tmpl->param( ELEMENTS      => $elements );
-#$tmpl->param( SUBFLOW_START => $subflow_start );
-#$tmpl->param( SUBFLOW_END   => $subflow_end );
 
 print $tmpl->output;
