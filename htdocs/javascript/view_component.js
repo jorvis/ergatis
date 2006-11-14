@@ -4,11 +4,11 @@ function toggle_subflowgroup_display(subflowname, subflowfile) {
     // is it visible?
     if ( subflownamedata.style.display == 'block' ) {
         subflownamedata.style.display = 'none';
-        get_object(subflowname + '_arrow').src = '/ergatis/arrow_right.gif';
+        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_right.gif';
         get_object(subflowname + '_data').innerHTML = '';
     } else {
         subflownamedata.style.display = 'block';
-        get_object(subflowname + '_arrow').src = '/ergatis/arrow_down.gif';
+        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_down.gif';
         get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
         sendElementUpdateRequest('./subflowgroup_summary.cgi?xml_input=' + encodeURIComponent(subflowfile) + '&nocache=' + no_cache_string(), updateSubflowGroup, subflowname);
     }
@@ -21,11 +21,11 @@ function toggle_subflow_display(subflowname, subflowfile) {
     // is it visible?
     if ( subflownamedata.style.display == 'block' ) {
         subflownamedata.style.display = 'none';
-        get_object(subflowname + '_arrow').src = '/ergatis/arrow_right.gif';
+        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_right.gif';
         get_object(subflowname + '_data').innerHTML = '';
     } else {
         subflownamedata.style.display = 'block';
-        get_object(subflowname + '_arrow').src = '/ergatis/arrow_down.gif';
+        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_down.gif';
         get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
         sendElementUpdateRequest('./subflow_summary.cgi?xml_input=' + encodeURIComponent(subflowfile) + '&nocache=' + no_cache_string(), updateSubflow, subflowname);
     }
