@@ -72,6 +72,7 @@ my $quotastring = &quota_string($repository_root);
 my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', 'unknown', 'n/a');
 
 ($starttime, $endtime, $runtime) = &time_info($parent_commandset);
+$state = $parent_commandset->first_child('state')->text;
 
 my $filestat = stat($pipeline_xml);
 my $user = getpwuid($filestat->uid);
