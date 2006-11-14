@@ -102,7 +102,12 @@
                 </tr>
             </TMPL_LOOP>
             </table>
+            <TMPL_ELSE> <!-- else PIPELINE_COUNT -->
+            <p>
+                no pipelines found
+            </p>
             </TMPL_IF> <!-- if PIPELINE_COUNT -->
+            
         </div> <!-- end pipelinelist -->
 
         </TMPL_IF> <!-- if ERRORS_FOUND -->
