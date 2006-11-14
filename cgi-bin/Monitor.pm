@@ -48,13 +48,17 @@ sub process_command {
     my %cmd_props = ( 
                       command_string => 'unknown',
                       is_command => 1, 
+                      message => '',
+                      name => 'unknown',
                       return_value => 'unknown',
                       stderr => 'not defined',
                       stdout => 'not defined',
-                      message => '',
                     );
     
-    $cmd_props{name}  = $command->first_child('name')->text;
+    if ( $command->has_child('name') ) {
+        $cmd_props{name}  = $command->first_child('name')->text;
+    }
+    
     $cmd_props{state} = $command->first_child('state')->text;
     $cmd_props{id}    = $command->first_child('id')->text;
     my $type  = $command->first_child('type')->text;
@@ -72,18 +76,20 @@ sub process_command {
     }
 
     ## can we build a command line string?
+    
+    ## the command itself is within an <executable> element
+    if ( $command->has_child('executable') ) {
+        $cmd_props{command_string} = $command->first_child('executable')->text;
+    }
+    
     my $command_args = '';
     my $arg = '';
     for my $param ( $command->children('param') ) {
         my $key   = $param->first_child('key')->text;
         my $value = $param->first_child('value')->text;
         
-        ## is this the command?
-        if ($key eq 'command') {
-            $cmd_props{command_string} = $value;
-        
-        ## is this stdout?
-        } elsif ($key eq 'stdout') {
+        ## catch stderr and stdout
+        if ($key eq 'stdout') {
             $cmd_props{stdout} = $value;
             
         ## is this stderr?
