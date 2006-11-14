@@ -195,26 +195,31 @@ sub parseCommandSet {
         $state = $commandSet->first_child('state')->text();
     }
 
-    ## we don't want this to happen within groups.xml, only the parent component.xml
+    ## we don't want this to happen within gN.xml, only the parent component.xml
     if (! $got_time_info) {
         ($start_time, $end_time, $runtime) = &time_info( $commandSet );
         $got_time_info++;
     }
 
-    ## all iterative components will have a commandSet to parse (file-based subflow)
-    my $subflowCommandSet = $commandSet->first_child("commandSet") || 0;
-    if ($subflowCommandSet) {
-        ## this command set should contain a fileName element
-        my $fileName = $subflowCommandSet->first_child("fileName") || 0;
-        if ($fileName) {
-            if (-e $fileName->text || -e $fileName->text . '.gz') {
-                parseComponentSubflow($fileName->text);
+    ## all iterative components will have at least one commandSet to parse (file-based subflow iN.xml)
+    #   don't do this if the file being parsed IS an gN.xml file.  that would give fulle
+    #   command resolution but it too expensive for now.
+    if ( $fileparsed =~ /[gi]\d+.xml/ || $fileparsed =~ /component.xml/) {
+        for my $subflowCommandSet ( $commandSet->children('commandSet') ) {
+            ## this command set should contain a fileName element
+            my $fileName = $subflowCommandSet->first_child("fileName") || 0;
+            if ($fileName) {
+                if (-e $fileName->text || -e $fileName->text . '.gz') {
+                    parseComponentSubflow($fileName->text);
+                }
             }
         }
+    } else {
+        print STDERR "skipping $fileparsed\n";
     }
     
     ## don't look into the gN.xml here (yet).
-    if ($fileparsed !~ /g\d.xml/ ) {
+    if ($fileparsed !~ /g\d+.xml/ ) {
         my $text = $commandSet->sprint;
         while ( $text =~ m|<message>(.*?)</message>|g) {
             my $msg = $1;
@@ -245,7 +250,7 @@ sub parseCommandSet {
 
 
 sub parseComponentSubflow {
-    ## currently this file should be the component's groups.xml
+    ## currently this file should be the component's iN.xml
     my ($groupsXML) = @_;
     
     my $groupsXML_fh;

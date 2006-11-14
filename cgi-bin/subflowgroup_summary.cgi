@@ -5,6 +5,7 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use File::Basename;
 use HTML::Template;
+use Monitor;
 use XML::Twig;
 
 my $q = new CGI;
@@ -12,9 +13,10 @@ my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
 my $tmpl = HTML::Template->new( filename => 'templates/subflowgroup_summary.tmpl',
-                                die_on_bad_params => 1,
+                                die_on_bad_params => 0,
                               );
 
+## file will be like: $proj_dir/workflow/runtime/wu-blastp/5407_test/i1/g1/g1.xml
 my $xml_input = $q->param("xml_input") || die "pass xml_input";
 
 my $xml_input_fh;
@@ -26,43 +28,55 @@ if ($xml_input =~ /\.gz/) {
     open($xml_input_fh, "<$xml_input") || die "can't read $xml_input: $!";       
 }
 
-## the subflowNgroupsN.xml file is always small, so we can DOM parse
+## slow DOM parse
 my $sg_twig = XML::Twig->new();
    $sg_twig->parse($xml_input_fh);
 
 my $parent_commandset = $sg_twig->root->first_child('commandSet');
 
-## the subflowNgroupsN.xml file will only have one command
-my $command = $parent_commandset->first_child('command');
-
-## we need to parse through the params to get the output xml
-##  perhaps later we can build the command too
-## the subflow_subflowNgroupsN.xml file
-my $commandset = $parent_commandset->first_child('commandSet');
-my $ssg_file = $commandset->first_child('fileName')->text();
-
-my $ssg_file_fh;
-if ($ssg_file =~ /\.gz/) {
-    open($ssg_file_fh, "<:gzip", "$ssg_file") || die "can't read $ssg_file: $!"; 
-} elsif ( ! -e $ssg_file && -e "$ssg_file.gz" ) {
-    open($ssg_file_fh, "<:gzip", "$ssg_file.gz") || die "can't read $ssg_file: $!"; 
-} else {
-    open($ssg_file_fh, "<$ssg_file") || die "can't read $ssg_file: $!";       
-}
-
 my $elements = [];
 
-my $ssg_twig = XML::Twig->new( twig_roots => {
-                                    'commandSet/commandSet' => \&process_iterated_commandset,
-                               },
-               );
-$ssg_twig->parse($ssg_file_fh);
+## the gN.xml file will have a series of commands for things like directory creation and variable
+#   replacement, then a file-based subflow pointing to the gN.iter.xml
+
+for my $child ( $parent_commandset->children() ) {
+    ## if it's a command, just parse the attributes and pass to the template
+    if ( $child->gi eq 'command' ) {
+        push @$elements, { &process_command( $sg_twig, $child ), is_command => 1 };
+        
+    } elsif ( $child->gi eq 'commandSet' ) {
+        process_gN_iter_xml( $child );
+    }
+}
+
 
 $tmpl->param( ELEMENTS => $elements );
-
 print $tmpl->output;
 
-sub process_iterated_commandset {
+exit(0);
+
+sub process_gN_iter_xml {
+    my $commandSet = shift;
+    my $gN_file = $commandSet->first_child('fileName')->text();
+    
+    my $gN_fh;
+    if ($gN_file =~ /\.gz/) {
+        open($gN_fh, "<:gzip", "$gN_file") || die "can't read $gN_file: $!"; 
+    } elsif ( ! -e $gN_file && -e "$gN_file.gz" ) {
+        open($gN_fh, "<:gzip", "$gN_file.gz") || die "can't read $gN_file: $!"; 
+    } else {
+        open($gN_fh, "<$gN_file") || die "can't read $gN_file: $!";
+    }
+    
+    my $twig = XML::Twig->new( twig_roots => {
+                                        'commandSet/commandSet' => \&process_gN_commandSet,
+                                   },
+                   );
+    $twig->parse($gN_fh);
+}
+
+
+sub process_gN_commandSet {
     my ($twig, $commandset) = @_;
     my $file = $commandset->first_child('fileName')->text();
     
@@ -71,6 +85,7 @@ sub process_iterated_commandset {
                     name    => basename($file, ('.xml', '.gz')),
                     state   => $commandset->first_child('state')->text(),
                     message => '',
+                    is_command => 0,
                 );
     
     

@@ -1,5 +1,8 @@
 <h1 class='subflowgroup_label'>analysis group elements</h1>
 <TMPL_LOOP NAME=ELEMENTS>
+<TMPL_IF NAME=IS_COMMAND>
+    <TMPL_INCLUDE NAME="command_list_element.tmpl">
+<TMPL_ELSE>
 <div id='<TMPL_VAR NAME=NAME>_bar' class='subflowbar'>
     <div class='leftside'>
         <img id='<TMPL_VAR NAME=NAME>_arrow' class='expander' src='/ergatis/images/arrow_right.gif' onclick='toggle_subflow_display("<TMPL_VAR NAME=NAME>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
@@ -14,4 +17,5 @@
 <div class='messageblock'><TMPL_VAR NAME=MESSAGE></div>
 </TMPL_IF>
 <div id='<TMPL_VAR NAME=NAME>_data' class='subflowdata'></div>
+</TMPL_IF>
 </TMPL_LOOP> <!-- end elements loop -->
