@@ -251,7 +251,9 @@ while (<$ifh>) {
 }
 
 ## now handle the last set
-&add_feature_group();
+if (scalar @cds) {
+    &add_feature_group();
+}
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
