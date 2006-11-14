@@ -84,7 +84,7 @@ function updateSubflow (sometext, subflowname) {
 
     // update the subflow image
     subflowstateimg = get_object(subflowname + '_img');
-    subflowstateimg.src   = '/ergatis/status_' + subflowstate + '.png';
+    subflowstateimg.src   = '/ergatis/images/status_' + subflowstate + '.png';
     subflowstateimg.title = subflowstate;
     subflowstateimg.alt   = subflowstate;
 
