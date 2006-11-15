@@ -7,6 +7,7 @@ var color_moving = 'rgb(230,230,230)';
 function Component( component_id ) {
     // set the attributes of this object
     this.configured = false;
+    this.configured_before = false;
     this.token = 'not yet set';
     this.name = 'unknown';
     this.id = component_id;
@@ -19,24 +20,12 @@ function Component( component_id ) {
     this.checkArrows   = check_arrows;
     this.moveUp        = graphically_move_component_up;
     this.moveDown      = graphically_move_component_down;
+    this.saveToDisk    = save_to_disk;
     this.setConfigured = set_configured;
     this._move_up      = move_component_up;
     this._move_down    = move_component_down;
     
     components.length++;
-}
-
-function set_configured( flag ) {
-    var stat_ref = getObject(this.id + '_status');
-    
-    if ( flag == true ) {
-        this.configured = true;
-        stat_ref.innerHTML = '';
-    } else {
-        this.configured = false;
-        stat_ref.innerHTML = 'not configured';
-        stat_ref.style.color = 'rgb(225,0,0)';
-    }
 }
 
 /*
@@ -147,7 +136,73 @@ function move_component_down() {
     window.setTimeout( "getObject('" + this.id + "').style.backgroundColor = 'rgb(255,255,255)'", 300 );
 }
 
+function save_to_disk() {
+    var form_name = this.id + '_form';
+    var component_id = this.id;
 
+    function ajaxBindCallback() {
+        // progressive transitions are from 0 .. 4
+        if (ajaxRequest.readyState == 4) {
+            // 200 is the successful response code
+            if (ajaxRequest.status == 200) {
+                ajaxCallback ( component_id, ajaxRequest.responseText );
+            } else {
+                // error handling here
+                alert("there was a problem saving the component configuration");
+            }
+        }
+    }
+
+    var ajaxRequest = null;
+    var ajaxCallback = _save_to_disk_handler;
+    var url = './save_component.cgi';
+    var form_string = 'repository_root=' + escape(repository_root) + '&' + 
+                      'component_name=' + escape( this.name ) + '&' +
+                      'component_id=' + this.id + '&' +
+                      'build_directory=' + escape( build_directory ) + '&' +
+                      formData2QueryString( document.forms[form_name] );
+
+    // bind the call back, then do the request
+    if (window.XMLHttpRequest) {
+        // mozilla, firefox, etc will get here
+        ajaxRequest = new XMLHttpRequest();
+        ajaxRequest.onreadystatechange = ajaxBindCallback;
+        ajaxRequest.open("POST", url , true);
+        ajaxRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        ajaxRequest.setRequestHeader("Connection", "close");
+        ajaxRequest.send( form_string );
+        
+    } else if (window.ActiveXObject) {
+        // IE, of course, has its own way
+        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+
+        if (ajaxRequest) {
+            ajaxRequest.onreadystatechange = ajaxBindCallback;
+            ajaxRequest.open("POST", url , true);
+            ajaxRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            ajaxRequest.setRequestHeader("Connection", "close");
+            ajaxRequest.send( form_string );
+        }
+    }
+}
+
+function _save_to_disk_handler( component_id, ajax_resp_text ) {
+    components[component_id].setConfigured(true);
+}
+
+function set_configured( flag ) {
+    var stat_ref = getObject(this.id + '_status');
+    
+    if ( flag == true ) {
+        this.configured = true;
+        this.configured_before = true;
+        stat_ref.innerHTML = '';
+    } else {
+        this.configured = false;
+        stat_ref.innerHTML = 'not configured';
+        stat_ref.style.color = 'rgb(225,0,0)';
+    }
+}
 
 
 

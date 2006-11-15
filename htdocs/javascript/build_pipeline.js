@@ -12,6 +12,9 @@ var pipeline_root_node;
 var pipeline_root_panel_node;
     
 window.onload = function() {
+    // make sure the form is reset here.
+    document.pipeline.reset();
+
     // all pipelines start with at least these two nodes
     pipeline_root_node = new TreeNode('pipeline_root', 'root');
     pipeline_root_panel_node = new TreeNode('pipeline_root_panel', 'panel');
@@ -97,22 +100,6 @@ function addComponentStub( set_root ) {
     }
 }
 
-function addInputRow( input ) {
-    var new_row = getObject('input_list').insertRow( getObject('input_list').rows.length - 1 );
-    
-    // new_label column
-    var new_cell = new_row.insertCell(0);
-    new_cell.innerHTML = input.input_label;
-    
-    new_cell = new_row.insertCell(1);
-    new_cell.innerHTML = input.input_value;
-    
-    new_cell = new_row.insertCell(2);
-    new_cell.innerHTML = input.input_type;
-
-    getObject('no_input_message').style.display = 'none';
-    updateInputLists();
-}
 
 /* a 'locator' can be considered an edge in a doubly-linked list used
    here to keep track of each element's position in the pipeline layout.
@@ -285,18 +272,6 @@ function clearNewInput() {
     getObject('new_input_fields_row').style.display = 'none';
 }
 
-// get a component by it's ID (like c3) rather than just it's number
-function getComponent( component_id ) {
-    for (var i=0; i < components.length; i++) {
-        if ( components[i].id == component_id ) {
-            return components[i];
-        }
-    }
-    
-    getObject('debug_box').innerHTML += "returning 0 because I couldn't find a component with id " + component_id + '<br>';
-    return 0;
-}
-
 function makeComponentEditable( component_id ) {
     // display the save button
     getObject(component_id + '_save').style.display = 'block';
@@ -334,10 +309,12 @@ function makeComponentEditable( component_id ) {
 function makeComponentUneditable( component_id ) {
 
     // remove the component select box so the user can't change it.
-    var name_span = document.createElement("span");
-    name_span.setAttribute('class', 'component_name');
-    name_span.innerHTML = components[component_id].name + ' (' + components[component_id].token + ')';
-    getObject(component_id + '_selector').replaceNode( name_span );
+    if (! components[component_id].configured_before ) {
+        var name_span = document.createElement("span");
+        name_span.setAttribute('class', 'component_name');
+        name_span.innerHTML = components[component_id].name + ' (' + components[component_id].token + ')';
+        getObject(component_id + '_selector').replaceNode( name_span );
+    }
     
     // hide the save button
     getObject(component_id + '_save').style.display = 'none';
@@ -380,82 +357,76 @@ function saveComponentConfig( component_id ) {
     // make sure no other components of the same name in this pipeline have the same output token
     var token = document.getElementsByName(component_id + '_OUTPUT_TOKEN')[0].value;
     var component_name = components[component_id].name;
-    var conflicts_found = 0;
     
-    for (cid in components) {
-        if ( components[cid].name == component_name && components[cid].token == token ) {
-            conflicts_found++;
-            break;
+    if (! components[component_id].configured_before ) { 
+        for (cid in components) {
+            if ( components[cid].name == component_name && components[cid].token == token ) {
+                alert("another component of the same name and output token already exists.");
+                return 1;
+            }
         }
-    }
-    
-    if ( conflicts_found > 0 ) {
-        alert("another component of the same name and output token already exists.");
-        return 1;
     }
 
     var outputs = getElementsByClassName(getObject( component_id + '_config_table' ), 'td', 'output')
 
-    // either we're saving an edit, or this is the first configuration.
-    if ( components[component_id].configured ) {
-        
-        // we can't currently save a component that has already been configured.
-        // see bug case 4092
-        if ( components[component_id].configured ) {
-            alert("can't currently save a component that has already been configured.");
-            return;
-        }
-        
-    } else {
+    if (! components[component_id].configured_before ) {
         // set some component properties
         components[component_id].token = token;
 
         addComponentInfo(component_id, component_name, token);
+    } 
+    
+    var output_directory = '';
+    if ( getObject( component_id + '_OUTPUT_DIRECTORY' ) ) {
+        output_directory = getObject( component_id + '_OUTPUT_DIRECTORY' ).value;
+        components[component_id].output_directory = output_directory;
+    }
 
-        var output_directory = '';
-        if ( getObject( component_id + '_OUTPUT_DIRECTORY' ) ) {
-            output_directory = getObject( component_id + '_OUTPUT_DIRECTORY' ).value;
-            components[component_id].output_directory = output_directory;
+    // get each TD of the output class and add each as an input
+    for ( var i = 0; i < outputs.length; i++ ) {
+        var parameter_name  = outputs[i].firstChild.name;
+       
+        var parameter_label = getObject(parameter_name + '_label').innerHTML;
+        var parameter_type  = 'unknown';
+        var parameter_value = outputs[i].firstChild.value;
+
+        // skip the output token
+        if ( parameter_label == 'output token' ) {
+            continue;
         }
 
-        // get each TD of the output class and add each as a new input
-        for ( var i = 0; i < outputs.length; i++ ) {
-            var parameter_name  = outputs[i].firstChild.name;
-            var parameter_label = getObject(parameter_name + '_label').innerHTML;
-            var parameter_type  = 'unknown';
-            var parameter_value = outputs[i].firstChild.value;
+        // have to determine the parameter type, if possible, using a regex on the label
+        if ( parameter_label.search( /list/ ) > -1 ) {
+            parameter_type = 'list';
+        } else if ( parameter_label.search( /directory/ ) > -1 ) {
+            parameter_type = 'directory';
+        } else if ( parameter_label.search( /file/ ) > -1 ) {
+            parameter_type = 'file';
+        }
 
-            // skip the output token
-            if ( parameter_label == 'output token' ) {
-                continue;
-            }
-
-            // have to determine the parameter type, if possible, using a regex on the label
-            if ( parameter_label.search( /list/ ) > -1 ) {
-                parameter_type = 'list';
-            } else if ( parameter_label.search( /directory/ ) > -1 ) {
-                parameter_type = 'directory';
-            } else if ( parameter_label.search( /file/ ) > -1 ) {
-                parameter_type = 'file';
-            }
-
-            // some variables need to be replaced in the value if present
-            //  this makes them cross-component compatable
-            parameter_value = parameter_value.replace(/\$\;OUTPUT_DIRECTORY\$\;/g, output_directory);
-            parameter_value = parameter_value.replace(/\$\;COMPONENT_NAME\$\;/g, components[component_id].name);
-            parameter_value = parameter_value.replace(/\$\;OUTPUT_TOKEN\$\;/g, components[component_id].token);
-
-            var new_input = new Input();
+        // some variables need to be replaced in the value if present
+        //  this makes them cross-component compatable
+        parameter_value = parameter_value.replace(/\$\;OUTPUT_DIRECTORY\$\;/g, output_directory);
+        parameter_value = parameter_value.replace(/\$\;COMPONENT_NAME\$\;/g, components[component_id].name);
+        parameter_value = parameter_value.replace(/\$\;OUTPUT_TOKEN\$\;/g, components[component_id].token);
+        
+        if ( components[component_id].configured_before ) {
+            // only value can change here.
+            inputs[parameter_name].updateValue( 'input_list', parameter_value );
+            
+        } else {
+            var new_input = new Input( parameter_name );
+            
             new_input.input_label = components[component_id].name + ' (' + token + ') ' + parameter_label;
             new_input.input_value = parameter_value;
             new_input.input_type  = parameter_type;
+            new_input.input_source = component_name + '.' + token;
 
-            // save this new input in the inputs array
-            inputs[ inputs.length ] = new_input;
-
-            addInputRow( new_input );
+            new_input.addTo( 'input_list' );
         }
     }
+
+    updateInputLists();
 
     // shrink it
     toggleConfigVisibility( component_id );
@@ -464,7 +435,7 @@ function saveComponentConfig( component_id ) {
     makeComponentUneditable( component_id );
     
     // now save the component conf
-    storeComponentConfigToDisk( component_id );
+    components[component_id].saveToDisk();
 }
 
 
@@ -476,6 +447,7 @@ function saveNewInput() {
     new_input.input_label = getObject('new_label').value;
     new_input.input_value = getObject('new_input').value;
     new_input.input_type  = getObject('new_input_type').value;
+    new_input.input_source = 'manual';
     
     // make sure both a label and value were defined
     var form_ok = 1;
@@ -501,12 +473,9 @@ function saveNewInput() {
         form_ok = 1;
         return 1;
     }
-
-    // save this new input in the inputs array
-    inputs[ inputs.length ] = new_input;
     
-    addInputRow( new_input );
-    
+    new_input.addTo('input_list');
+    updateInputLists();
     clearNewInput();
 }
 
@@ -579,61 +548,12 @@ function startNewInput() {
     getObject('new_label').focus();
 }
 
-function storeComponentConfigToDisk( component_id ) {
-    var form_name = component_id + '_form';
-
-    function ajaxBindCallback() {
-        // progressive transitions are from 0 .. 4
-        if (ajaxRequest.readyState == 4) {
-            // 200 is the successful response code
-            if (ajaxRequest.status == 200) {
-                // could add the component name here too if we later allow multiple configuration windows.
-                ajaxCallback ( component_id, ajaxRequest.responseText );
-            } else {
-                // error handling here
-                alert("there was a problem saving the component configuration");
-            }
-        }
-    }
-
-    var ajaxRequest = null;
-    var ajaxCallback = updateComponentState;
-    var url = './save_component.cgi';
-    var form_string = 'repository_root=' + escape(repository_root) + '&' + 
-                      'component_name=' + escape( components[component_id].name ) + '&' +
-                      'component_id=' + component_id + '&' +
-                      'build_directory=' + escape( build_directory ) + '&' +
-                      formData2QueryString( document.forms[form_name] );
-
-    // bind the call back, then do the request
-    if (window.XMLHttpRequest) {
-        // mozilla, firefox, etc will get here
-        ajaxRequest = new XMLHttpRequest();
-        ajaxRequest.onreadystatechange = ajaxBindCallback;
-        ajaxRequest.open("POST", url , true);
-        ajaxRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        ajaxRequest.setRequestHeader("Connection", "close");
-        ajaxRequest.send( form_string );
-        
-    } else if (window.ActiveXObject) {
-        // IE, of course, has its own way
-        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
-
-        if (ajaxRequest) {
-            ajaxRequest.onreadystatechange = ajaxBindCallback;
-            ajaxRequest.open("POST", url , true);
-            ajaxRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            ajaxRequest.setRequestHeader("Connection", "close");
-            ajaxRequest.send( form_string );
-        }
-    }
-
-}
 
 // toggles the visibility of the component configuration
 function toggleConfigVisibility( component_id ) {
     components[component_id].config_view.toggle();
 }
+
 
 // this should be called once the background request finishes parsing the template.
 function updateConfigContainer( component_num, config_html ) {
@@ -647,10 +567,6 @@ function updateConfigContainer( component_num, config_html ) {
     components[component_id].config_view.toggle();
 }
 
-function updateComponentState( component_id, ajax_resp_text ) {
-    components[component_id].setConfigured(true);
-    // alert('component store call successful');
-}
 
 // makes sure all component select menus reflect the current options in the input list
 function updateInputLists() {
@@ -666,8 +582,10 @@ function updateInputLists() {
             }
         
             input_lists[i].innerHTML = '<option value="">please choose</option>';
-            for ( j = 0; j < inputs.length; j++ ) {
-                input_lists[i].innerHTML += '<option value="' + inputs[j].input_value + '">' + inputs[j].input_label + '</option>';
+            for ( id in inputs ) {
+                if ( inputs[id] instanceof Input ) {
+                    input_lists[i].innerHTML += '<option value="' + inputs[id].input_value + '">' + inputs[id].input_label + '</option>';
+                }
             }
             
             // retain the previous value of the select box after rebuilding
