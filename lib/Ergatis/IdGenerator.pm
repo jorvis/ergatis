@@ -153,8 +153,6 @@ use strict;
 use warnings;
 use Carp;
 use Sys::Hostname;
-use File::NFSLock qw(uncache);
-use Fcntl qw(LOCK_EX);
 use POSIX;
 
 $|++;
@@ -170,8 +168,7 @@ umask(0000);
                         log_dir                 => undef,
                         _id_pending             => undef,
                         _id_repository_checked  => 0,
-                        _lock                   => undef,
-                        _lock_file              => undef,
+                        _fh                     => undef,
                         _logfh                  => undef,
                         _pool_sizes             => undef,  # will be hashref
                         _pools                  => undef,  # will be hashref
@@ -277,79 +274,57 @@ umask(0000);
                 ## if a lock is open and we have a truncated ID file, we need to write the
                 #   pending ID.
                 if ( defined $self->{_id_pending} ) {
-                    sysopen($idfh, $self->{_lock_file}, O_RDWR) || croak "can't read file: $!";
-                        sysseek($idfh, 0, 0);
-                        syswrite($idfh, $self->{_id_pending});
-                    close $idfh;
+                        sysseek($self->{_fh}, 0, 0);
+                        syswrite($self->{_fh}, $self->{_id_pending});
+                        close $self->{_fh};
                 }
                 
                 ## if a lock is open, close it
-                if ( defined $self->{_lock} ) {
-                    $self->{_lock}->unlock();
-                }
+                $self->_unlock();
                 
                 croak("caught SIGINT. idgen process interrupted");
             };
         
-            my $id_file = "$self->{id_repository}/next.$args{type}.id";
-            $self->{_lock_file} = $id_file;
+        my $id_file = "$self->{id_repository}/next.$args{type}.id";
+        sysopen($self->{_fh}, $id_file, O_RDWR|O_CREAT) ||
+            croak("failed to initialize file $id_file");
+        $self->_lock();
 
-            ## try to get a lock.
-            if ( $self->{_lock} = new File::NFSLock( $id_file,LOCK_EX,600,10*60 ) ) {
-            
-                ## if the file didn't exist yet, only the .NFSLock version will exist.  
-                #   in that case, we need to initialize it.
-                if (! -e $id_file ) {
-                    $self->_log("no ID file found for type $args{type}.  initializing to 1");
-                    sysopen($idfh, $id_file, O_RDWR|O_EXCL|O_CREAT) || croak("failed to initialize file $id_file");
-                    $current_num = 1;
-                ## else just use the exiting one and read the next id
-                } else {
-                    sysopen($idfh, $id_file, O_RDWR) || croak "can't read file: $!";
-                    sysseek($idfh, 0, 0);
-                    sysread($idfh, $current_num, 100);
-                }
+        sysseek($self->{_fh}, 0, 0);
+        sysread($self->{_fh}, $current_num, 100);
+        $current_num = 1 if !$current_num;
+        chomp $current_num;
 
-                ## open, read id, set $current_num, close
-                chomp $current_num;
-                if (! defined $current_num ) {
-                    $self->{_lock}->unlock();
-                    croak("failed to pull an ID because the file appeared to be empty.  this should NOT happen.");
-                }
-                
-                my $id_to_set;
-                
-                ## do we have a pool to refresh?
-                if ( defined $self->{_pool_sizes}->{ $args{type} } ) {
-                    my $pool_size = $self->{_pool_sizes}->{ $args{type} };
-                    $id_to_set = $current_num + $pool_size;
-                    
+        my $id_to_set;
+
+            ## do we have a pool to refresh?
+        if ( defined $self->{_pool_sizes}->{ $args{type} } ) {
+            my $pool_size = $self->{_pool_sizes}->{ $args{type} };
+            $id_to_set = $current_num + $pool_size;
+
                     ## reload the pool
-                    if ( $pool_size > 1 ) {
-                        for ( 1 .. ($pool_size - 1) ) {
-                            push @{ $self->{_pools}->{$args{type}} }, $_ + $current_num;
-                        }
-                    }
-                } else {
-                    $id_to_set = $current_num + 1;
+            if ( $pool_size > 1 ) {
+                for ( 1 .. ($pool_size - 1) ) {
+                    push @{ $self->{_pools}->{$args{type}} },
+                     $_ + $current_num;
                 }
-                
-                ## set next id, close
-                $self->{_id_pending} = $id_to_set;
-                sysseek($idfh, 0, 0);
-                syswrite($idfh, $id_to_set);
-                close $idfh;
-                $self->{_id_pending} = undef;
-                
-                $self->{_lock}->unlock();
-                undef $self->{_lock};
-
-            } else {
-                $self->_log("failed to lock to pull an ID: $File::NFSLock::errstr");
-                croak("failed to lock to pull an ID: $File::NFSLock::errstr");
-            }        
+            }
+        } else {
+            $id_to_set = $current_num + 1;
         }
-        
+                
+        ## set next id, close
+        $self->{_id_pending} = $id_to_set;
+        sysseek($self->{_fh}, 0, 0);
+        syswrite($self->{_fh}, $id_to_set);
+
+        $self->{_id_pending} = undef;
+        $self->_unlock();
+        close $self->{_fh};
+        undef $self->{_fh};
+
+    }
+
         ## format and return the id we got
         ## if type is pipeline we just return the numerical portion.
         if ( $args{type} eq 'pipeline' ) {
@@ -405,6 +380,22 @@ umask(0000);
         if ($self->logging) {
             print $logfh "$msg\n";
         }
+    }
+
+    sub _lock
+    {
+        my $self = shift;
+        my $fl = pack("s s l l i", F_WRLCK, SEEK_SET, 0, 0, 0);
+        fcntl($self->{_fh}, F_SETLKW, $fl) ||
+            die "Error locking file: $!";
+    }
+
+    sub _unlock
+    {
+        my $self = shift;
+        my $fl = pack("s s l l i", F_UNLCK, SEEK_SET, 0, 0, 0);
+        fcntl($self->{_fh}, F_SETLK, $fl) ||
+            die "Error unlocking file: $!";
     }
 }
 
