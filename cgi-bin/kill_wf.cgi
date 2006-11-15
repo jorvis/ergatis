@@ -19,72 +19,18 @@ if(! -d $ergatis_cfg->val('paths','workflow_run_dir')){
     die "Invalid workflow_run_dir in ergatis.ini : " . $ergatis_cfg->val('paths','workflow_run_dir');
 }
 
-my $rundir = $ergatis_cfg->val('paths','workflow_run_dir');
-my $repository_root;
-my $project;
-my $pipelineid;
+my $workflow_root = $ergatis_cfg->val('paths', 'workflow_root');
 
-if ( $instancexml =~ m|(.+/(.+?))/Workflow/pipeline/(\d+)/| ) {
-    $repository_root = $1;
-    $project = $2;
-    $pipelineid = $3;
-} else {
-    die "failed to extract a repository_root from $instancexml.  expected a Workflow subdirectory somewhere."
-}
+## these WF_ definitions are usually kept in the $workflow_root/exec.tcsh file,
+#   which we're not executing.
+$ENV{WF_ROOT} = $workflow_root;
+$ENV{WF_ROOT_INSTALL} = $workflow_root;
+$ENV{WF_TEMPLATE} = "$workflow_root/templates";
+$ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
 
-my ($pid,$hostname,$execuser) = &parselockfile("$repository_root/workflow/lock_files/pid.$pipelineid");
+## weak attempt to make this a little safer
+$instancexml =~ s|[^a-z0-9\.\_\-\/]||ig;
 
-my $t = new Proc::ProcessTable;
-my $parentpids = {};
-$parentpids->{$pid} = 0;
-my @childtokill;
-push @childtokill,$pid;
-foreach my $p ( @{$t->table} ){
-    if(exists $parentpids->{$p->{ppid}}){
-	$parentpids->{$p->{pid}} = $p->{ppid};
-	if($p->{ppid} eq $childtokill[$#childtokill]){
-	    push @childtokill,$p->{pid};
-	}
-    }
-}
-my $count;
-
-if($childtokill[3] > 1){
-    $count = kill 15, $childtokill[3];
-}
-
-if ($count != 1 || $childtokill[3] eq '') {
-    print header();
-    print "<html><body>";
-    print "Attempting to kill process $execuser\@$hostname:$pid. Error signalling process with pid $pid; manual intervention may be required<br><a href='./view_pipeline.cgi?instance=$instancexml'>[view workflow]</a><br><i>Debug information follows</i><br>";
-    print "Detected workflow processes: ",join(',',@childtokill),"<br>";
-    print "<hr>";
-    foreach my $p ( @{$t->table} ){
-	print "Pid: $p->{pid} parent pid: $p->{ppid} cmdline: $p->{cmndline}<br>";
-    }
-
-    print "</body></html";
-    exit(1);
-} else {
-    print redirect(-uri=>"./view_pipeline.cgi?instance=$instancexml");
-    exit(0);
-}
-print header();
-print "<html><body>Can't find process for instance $instancexml.  Manual intervention required</body></html>";
-exit;
-
-sub parselockfile{
-    my($file) = @_;
-    if(-e $file){
-	open FILE, "$file" or die "Can't open lock file $file";
-	my(@elts) = <FILE>;
-	close FILE;
-	chomp(@elts);
-	my $pid = $elts[0];
-	my $hostname = $elts[1];
-	my $getpwuid = $elts[2];
-	return ($pid,$hostname,$getpwuid);
-    }
-    return undef;
-}
+print redirect(-uri=>"./view_pipeline.cgi?instance=$instancexml");
+exit(0);
 

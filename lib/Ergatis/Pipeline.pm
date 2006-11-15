@@ -39,6 +39,7 @@ Returns the ID of a given pipeline.
 
 use strict;
 use Carp;
+use Sys::Hostname;
 
 umask(0000);
 
@@ -48,7 +49,7 @@ umask(0000);
     my %_attributes = (
                         path  => undef,
                         id    => undef,
-                        debug => 1,
+                        debug => 0,
                         debug_file => '/tmp/ergatis.run.debug',
                       );
 
@@ -134,10 +135,10 @@ umask(0000);
                 print $debugfh "got past the POSIX section\n" if $self->{debug};
 
                 $self->_setup_environment( ergatis_cfg => $args{ergatis_cfg} );
+                $self->_write_lock_file();
 
                 ##debug
                 print $debugfh "got past ENV setup section\n" if $self->{debug};
-
 
                 my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} -l $self->{path}.log --logconf=" . $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
@@ -184,9 +185,6 @@ umask(0000);
     sub _setup_environment {
         my ($self, %args) = @_;
 
-        ## open the debugging file if needed
-        #open (my $debugfh, ">>$self->{debug_file}2") if $self->{debug};
-
         ## remove the apache SERVER variables from the environment
         for my $k (keys %ENV) {
             if ($k =~ /^SERVER_/ ) {
@@ -200,12 +198,42 @@ umask(0000);
         $ENV{SGE_EXECD_PORT} = $args{ergatis_cfg}->val('grid', 'sge_execd_port');
         $ENV{SGE_ARCH} = $args{ergatis_cfg}->val('grid', 'sge_arch');
 
+        ## these WF_ definitions are usually kept in the $workflow_root/exec.tcsh file,
+        #   which we're not executing.
         $ENV{WF_ROOT} = $args{ergatis_cfg}->val('paths', 'workflow_root');
-        $ENV{WF_ROOT_INSTALL} = $args{ergatis_cfg}->val('paths', 'workflow_root');
+        $ENV{WF_ROOT_INSTALL} = $ENV{WF_ROOT};
+        $ENV{WF_TEMPLATE} = "$ENV{WF_ROOT}/templates";
 
         $ENV{SYBASE} = '/usr/local/packages/sybase';
         $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
+    }
+    
+    sub _write_lock_file {
+        my $self = shift;
+        
+        ## derive the lockfile path
+        $self->{path} =~ m|(.+/workflow)/runtime/|;
+        my $lock_path = "$1/lock_files/pid." . $self->{id};
+        
+        my $retry_count = 0;
+        
+        if (-e $lock_path) {
+            open(my $lock_fh, "<$lock_path");
+            my @rows = <$lock_fh>;
+            $retry_count += $rows[-1];
+            close $lock_fh;
+        }
+        
+        ## don't die here if we can't open.  this is often called within
+        #   a grandchild process with almost no hope of error recovery.  If this
+        #   file doesn't exist it can be handled elsewhere
+        open(my $lock_fh, ">$lock_path") || return 0;
+        
+        print $lock_fh "$$\n",
+                       hostname(), "\n",
+                       getpwuid($<), "\n",
+                       $retry_count;
     }
 }
 
