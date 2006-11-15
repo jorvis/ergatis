@@ -21,11 +21,17 @@ B<--input,-i>
     Input btab file from a nap search.
 
 B<--query_file_path,-q>
-	Full path to FASTA file containing query sequence.
+    Full path to FASTA file containing query sequence.
 
 B<--query_id>
-	ID of query sequence
-	
+    ID of query sequence
+
+B<--cutoff_identity> 
+    Filter results on % identity (exclude < cutoff). 
+
+B<--cutoff_similarity> 
+    Filter results on % similarity (exclude < cutoff). 
+     
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -84,18 +90,20 @@ my $qfDefline;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
-			  'query_file_path|q=s',
-			  'query_id=s',
+              'input|i=s',
+              'query_file_path|q=s',
+              'query_id=s',
               'output|o=s',
               'gzip_output|g=s',
+              'cutoff_identity:s',
+              'cutoff_similarity:s',
               'log|l=s',
               'debug=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -135,7 +143,14 @@ while (<$ifh>) {
         $logger->error("the following nap btab line was not recognized and could not be parsed (should have 19 columns, actually has " . scalar(@cols) . "):\n$_\n") if ($logger->is_error);
         next;
     }
-    
+       
+    if ($options{'cutoff_identity'} && $cols[10] < $options{'cutoff_identity'}) {
+        next;
+    }
+    if ($options{'cutoff_similarity'} && $cols[11] < $options{'cutoff_similarity'}) {
+        next;
+    }
+ 
     my ($qry_id, $sbj_id) = ($cols[0], $cols[5]);
     
     ## the qry ID only counts up to the first whitespace
@@ -150,8 +165,8 @@ while (<$ifh>) {
     ## has this query sequence been added to the doc yet?
     if (! exists $seqs_found{$qry_id}) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'assembly');
-      	$doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
-		$seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $cols[0]);
+        $seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
         $seq->addBsmlAttr('defline', $qfDefline) if($qfDefline);
         $seqs_found{$qry_id} = 1;
     }
@@ -160,7 +175,7 @@ while (<$ifh>) {
     if (! exists $seqs_found{$sbj_id}) {
         my $seq = $doc->createAndAddSequence($sbj_id, $cols[5], undef, 'aa', 'polypeptide');
         $seq->addBsmlAttr( 'defline', "$cols[5] $cols[15]" );
-		$doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $cols[4], '', $cols[5]);
         $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $cols[5]);
         $seqs_found{$sbj_id} = 1;
     }
@@ -205,12 +220,12 @@ while (<$ifh>) {
 
 ## if there were no results this will create a sequence stub
 my $align = &createAndAddNullResult(
-										doc 			=> $doc,
-  	                                    query_name      => $options{'query_id'},
-  	                                    query_length    => '',
-  	                                    class           => 'assembly',
-  	                               );
-  	 
+                                        doc             => $doc,
+                                        query_name      => $options{'query_id'},
+                                        query_length    => '',
+                                        class           => 'assembly',
+                                   );
+     
 ## add the analysis element
 my $analysis = $doc->createAndAddAnalysis(
                             id => 'aat_aa_analysis',
@@ -264,12 +279,12 @@ sub min {
 ##Adds BSML tags for the case where
 ##the query sequence returned no hits
 sub createAndAddNullResult {
-	my %args = @_;
-  	my $doc = $args{'doc'};
-  	 
-  	if ( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-  		my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", '', 'na', $args{'class'} );
-  	    $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
-  	    $seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
-	}
+    my %args = @_;
+    my $doc = $args{'doc'};
+     
+    if ( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
+        my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", '', 'na', $args{'class'} );
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
+        $seq->addBsmlLink('analysis', '#aat_aa_analysis', 'input_of');
+    }
 }
