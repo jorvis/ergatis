@@ -99,8 +99,6 @@ my $component_html = '';
 parseCommandSet( $commandSet );
 
 
-
-
 $tmpl->param( PIPELINE_FILE       => $file );
 $tmpl->param( START_TIME          => $starttime );
 $tmpl->param( END_TIME            => $endtime );
@@ -121,8 +119,7 @@ $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'pipeline list', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" },
                                         { label => 'new pipeline', is_last => 0, url => "./build_pipeline.cgi?repository_root=$repository_root" },
-                                        { label => 'rerun', is_last => 0, url => "./run_wf.cgi?instancexml=$file&validate=0&pipelineid=$pipelineid" },
-                                        { label => 'edit', is_last => 0, url => "./show_pipeline.cgi?xmltemplate=$file&edit=1" },
+                                        { label => 'rerun', is_last => 0, url => "./run_pipeline.cgi?pipeline_xml=$file&pipeline_id=$pipelineid&rerun=1" },
                                         { label => 'kill', is_last => 0, url => "./kill_wf.cgi?instancexml=$file" },
                                         { label => 'view xml', is_last => 1, url => "./view_formatted_xml_source.cgi?file=$file" },
                                      ] );
