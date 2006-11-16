@@ -56,8 +56,8 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use Ergatis::Logger;
-use Ergatis::IdGenerator;
+use Workflow::Logger;
+use Workflow::IdGenerator;
 use XML::Twig;
 use Data::Dumper;
 use BSML::BsmlBuilder;
@@ -94,8 +94,8 @@ my $results = GetOptions (\%options,
                           'debug=s',
                           'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -111,7 +111,7 @@ if (!$options{'id_repository'}) {
 if (!$options{'project'}) {
     pod2usage("project name must be provided with --project");
 }
-my $id_gen = Ergatis::IdGenerator->new('id_repository' => $options{'id_repository'});
+my $id_gen = Workflow::IdGenerator->new('id_repository' => $options{'id_repository'});
 
 if (!$options{'transeq_bin'}) {
     pod2usage("must provide path to transeq executable with --transeq_bin");
@@ -521,6 +521,7 @@ sub process_sequence {
     }
    
     my $featTable = $sequence->first_child('Feature-tables');
+    $sequence_children->{$seq_id} = [];
     if($featTable) {
         foreach my $child ($featTable->children('Feature-group')) {
             #$feature_parent_seq->{$child->{'att'}->{'group-set'}} = $seq_id;
