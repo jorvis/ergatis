@@ -182,7 +182,6 @@ foreach my $pipeline_id ( readdir $rdh ) {
     }
     
     my $view_link = "./view_pipeline.cgi?instance=$pipeline_file";
-    my $edit_link = "./show_pipeline.cgi?xmltemplate=$pipeline_file&amp;edit=1";
     
     $pipelines{$pipeline_id} = { 
                         pipeline_id     => $pipeline_id,
@@ -194,7 +193,6 @@ foreach my $pipeline_id ( readdir $rdh ) {
                         component_count => $component_count,
                         component_label => $component_label,
                         view_link       => $view_link,
-                        edit_link       => $edit_link,
                         archive_link    => $archive_link,
                         links_enabled   => $links_enabled,
                         error_message   => $error_message,
