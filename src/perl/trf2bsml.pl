@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
+eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -90,7 +93,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 BEGIN {
-use Ergatis::Logger;
+use Workflow::Logger;
 use BSML::BsmlRepository;
 use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
@@ -115,8 +118,8 @@ my $results = GetOptions (\%options,
               'log|l=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -169,14 +172,20 @@ while (<$ifh>) {
     }
 }
 
-my $seq = $doc->createAndAddSequence($identifier, undef, '', 'dna', 'assembly');
-$seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
-$seq->addBsmlAttr('defline', $defline);
-$doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier);
-
 ## loop through each of the matches that we found
+if(scalar (keys %data) == 0) {
+    my $seqid = $1 if($defline =~ /(\S+)/);
+    my $seq = $doc->createAndAddSequence($seqid, undef, '', 'dna', 'assembly');
+       $seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
+    $seq->addBsmlAttr('defline', $defline);
+    $doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier);
+}
+
 for my $seqid (keys %data) {
-  
+    my $seq = $doc->createAndAddSequence($seqid, undef, '', 'dna', 'assembly');
+       $seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
+    $seq->addBsmlAttr('defline', $defline);
+    $doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier);
     my $ft  = $doc->createAndAddFeatureTable($seq);
     my $fg;
     
@@ -223,7 +232,7 @@ my $analysis = $doc->createAndAddAnalysis(
                           );
 
 ## now write the doc
-$doc->write($options{'output'}, '', $gzip);
+$doc->write($options{'output'});
 
 exit;
 
