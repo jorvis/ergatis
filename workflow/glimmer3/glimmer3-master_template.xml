@@ -6,6 +6,16 @@
       <name>glimmer3 workflow</name>
       <configMapId>empty</configMapId>
 <!--Processing-->
+	<command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output repository</name>
+          <configMapId>create_compute_output</configMapId>
+        </command>
 	<command>    
             <type>RunUnixCommand</type>
             <configMapId>train_for_glimmer3</configMapId>
