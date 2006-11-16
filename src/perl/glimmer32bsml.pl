@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
+eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -38,7 +41,7 @@ B<--project,-p>
     The project (used for id generation).
 
 B<--id_repository,-r>
-    Id repository for use by Ergatis::IdGenerator.pm
+    Id repository for use by Workflow::IdGenerator.pm
 
 B<--fasta_input,-a>
     The input file that was used as input for the glimmer3 run
@@ -105,20 +108,21 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Gene;
+use Chado::Gene;
 use BSML::GenePredictionBsml;
-use Ergatis::IdGenerator;
-use Ergatis::Logger;
+use Workflow::IdGenerator;
+use Workflow::Logger;
 
 ####### GLOBALS AND CONSTANTS ###########
 my @inputFiles;               #Holds input files
 my $project;                  #The project (ex aa1)
 my $output;                   #Output file
-my $idMaker;                  #The Ergatis::IdGenerator
+my $idMaker;                  #The Workflow::IdGenerator
 my $bsml;                     #BSML::BsmlBuilder object object.
 my $data;                     #Holds parsed glimmer3 information
 my $inputFsa;                 #The fasta file input to glimmer3
 my $debug;                    #The debug variable
+my $length;
 ########################################
 
 my %options = ();
@@ -134,8 +138,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -167,19 +171,32 @@ sub parseGlimmer3Data {
         } elsif($foundId) {
 
             my @cols = split(/\s+/,$_);
-            ($cols[1],$cols[2]) = ($cols[2],$cols[1]) if($cols[1] > $cols[2]);
+            
+            if($cols[3] > 0 && $cols[1] > $cols[2]) {
+                die("Couldn't find this id $foundId in length hash") 
+                    unless(defined($length->{$foundId}));
+                $cols[1]  = 0 - (($length->{$foundId} - $cols[1]) - 1);
+            } elsif( $cols[3] < 0 && $cols[1] > $cols[2]) {
+                ($cols[1], $cols[2]) = ($cols[2], $cols[1]);
+            } elsif( $cols[3] < 0 && $cols[1] < $cols[2]) {
+                 die("Couldn't find this id $foundId in length hash") 
+                     unless(defined($length->{$foundId}));
+                 $cols[2]  = 0 - (($length->{$foundId} - $cols[1]) - 1);
+                 ($cols[1], $cols[2]) = ($cols[2], $cols[1]);
+             }
                 
-             
+            
+
             #Create some genes and push them ontot he $genes array
-            my $tmp = new Gene( $idMaker->next_id( 'type' => 'gene',
+            my $tmp = new Chado::Gene( $idMaker->next_id( 'type' => 'gene',
                                                    'project' => $project),
-                                $cols[1]-1, $cols[2]-1, ($cols[3] > 0) ? 0 : 1,
+                                $cols[1]-1, $cols[2], ($cols[3] > 0) ? 0 : 1,
                                 $foundId);
 
             foreach my $type(qw(exon CDS transcript polypeptide)) {
                 my $typeid =$idMaker->next_id( 'type' => $type,
                                                'project' => $project);
-                $tmp->addFeature($typeid, $cols[1]-1, $cols[2]-1, ($cols[3] > 0) ? 0 : 1,
+                $tmp->addFeature($typeid, $cols[1]-1, $cols[2], ($cols[3] > 0) ? 0 : 1,
                                 $type);
             }
 
@@ -263,10 +280,10 @@ sub check_parameters {
     }
 
     unless($options{'id_repository'}) {
-        $error .= "Option id_repository is required.  Please see Ergatis::IdGenerator ".
+        $error .= "Option id_repository is required.  Please see Workflow::IdGenerator ".
             "for details.\n";
     } else {
-        $idMaker = new Ergatis::IdGenerator( 'id_repository' => $options{'id_repository'} );
+        $idMaker = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'} );
         $idMaker->set_pool_size( 'exon'        => 20,
                                  'transcript'  => 20,
                                  'gene'        => 20,
@@ -281,6 +298,28 @@ sub check_parameters {
         $error .= "$options{'fasta_input'} (fasta_input) does not exist\n" 
             unless(-e $options{'fasta_input'});
         $inputFsa = $options{'fasta_input'};
+
+        #Find the length of the sequence
+        open(IN, "<$options{'fasta_input'}") or 
+            $logger->logdie("Can't open $options->{'fasta_input'}");
+        my $seq = "";
+        my $curId;
+        while(<IN>) {
+            chomp;
+            if(/^>(\S+)/) {
+                if(defined($curId)) {
+                    $length->{$curId} = length($seq);
+                    $seq = "";
+                }
+                $curId = $1;
+            } else {
+                $seq.= $_;
+            }
+                
+        }
+
+        $length->{$curId} = length($seq);
+        close(IN);
     }
     
     if($options{'debug'}) {
