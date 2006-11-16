@@ -6,10 +6,10 @@ use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
 use Ergatis::Common;
 use Ergatis::ConfigFile;
+use Ergatis::Monitor;
 use File::Basename;
 use File::stat;
 use HTML::Template;
-use Monitor;
 use POSIX;
 use XML::Twig;
 

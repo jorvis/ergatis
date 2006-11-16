@@ -5,8 +5,8 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
 use Ergatis::ConfigFile;
+use Ergatis::Monitor;
 use HTML::Template;
-use Monitor;
 use XML::Twig;
 
 my $q = new CGI;

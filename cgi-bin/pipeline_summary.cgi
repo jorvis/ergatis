@@ -4,8 +4,8 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
+use Ergatis::Monitor;
 use File::stat;
-use Monitor;
 use POSIX;
 use XML::Twig;
 

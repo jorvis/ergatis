@@ -3,9 +3,9 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::Monitor;
 use File::Basename;
 use HTML::Template;
-use Monitor;
 use XML::Twig;
 
 my $q = new CGI;
