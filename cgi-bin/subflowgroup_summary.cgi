@@ -49,7 +49,6 @@ for my $child ( $parent_commandset->children() ) {
     }
 }
 
-
 $tmpl->param( ELEMENTS => $elements );
 print $tmpl->output;
 
@@ -58,6 +57,12 @@ exit(0);
 sub process_gN_iter_xml {
     my $commandSet = shift;
     my $gN_file = $commandSet->first_child('fileName')->text();
+    
+    if (! -e $gN_file && ! -e "$gN_file.gz" ) {
+        ## we're not currently checking this return at all, but it prevents
+        #   errors in attempting to parse a file that wasn't created.
+        return 0;
+    }
     
     my $gN_fh;
     if ($gN_file =~ /\.gz/) {
@@ -73,6 +78,8 @@ sub process_gN_iter_xml {
                                    },
                    );
     $twig->parse($gN_fh);
+    
+    return 1;
 }
 
 
