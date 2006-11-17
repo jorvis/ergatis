@@ -48,8 +48,6 @@ if ( $xml_input =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
     die "failed to extract a repository_root from $xml_input.  expected a workflow/runtime subdirectory somewhere."
 }
 
-my %lockfile_info = &parse_pipeline_run_lock_file( "$repository_root/workflow/lock_files/pid.$pipelineid" );
-
 my $file = $xml_input;
 
 my $ifh;
@@ -106,10 +104,6 @@ $tmpl->param( LAST_MOD_TIME       => $lastmodtime );
 $tmpl->param( PIPELINE_STATE      => $state );
 $tmpl->param( USER                => $user );
 $tmpl->param( RUNTIME             => $runtime );
-$tmpl->param( RETRIES             => $lockfile_info{retries} );
-$tmpl->param( EXEC_USER           => $lockfile_info{execuser} );
-$tmpl->param( HOST_NAME           => $lockfile_info{hostname} );
-$tmpl->param( PID                 => $lockfile_info{pid} );
 $tmpl->param( PROJECT             => $project );
 $tmpl->param( QUOTA_STRING        => $quotastring );
 $tmpl->param( PIPELINE_ID         => $pipelineid );
@@ -217,23 +211,5 @@ sub parseCommandSetChildren {
     }
 }
 
-
-sub parselockfile {
-    my($file) = @_;
-    
-    if(-e $file){
-        open FILE, "$file" or die "Can't open lock file $file";
-        my(@elts) = <FILE>;
-        close FILE;
-        chomp(@elts);
-        my $pid = $elts[0];
-        my $hostname = $elts[1];
-        my $getpwuid = $elts[2];
-        my $retries = $elts[3];
-        return ($pid,$hostname,$getpwuid,$retries);
-    }
-    
-    return qw( ? unknown unknown ? );
-}
 
 exit;

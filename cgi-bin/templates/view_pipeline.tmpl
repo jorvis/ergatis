@@ -29,13 +29,11 @@
             <li><span class='info_label'>end:</span> <TMPL_VAR NAME=END_TIME></li>
             <li><span class='info_label'>last mod:</span> <TMPL_VAR NAME=LAST_MOD_TIME></li>
             <li id='state'><span class='info_label'>state:</span> <TMPL_VAR NAME=PIPELINE_STATE></li>
+            <li><span class='info_label'>pipeline id:</span> <TMPL_VAR NAME=PIPELINE_ID></li>
             <li><span class='info_label'>user:</span> <TMPL_VAR NAME=USER></li>
             <li><span class='info_label'>runtime:</span> <TMPL_VAR NAME=RUNTIME></li>
-            <li><span class='info_label'>retries:</span> <TMPL_VAR NAME=RETRIES></li>
-            <li><span class='info_label'>exec host:</span> <a href='http://<TMPL_VAR NAME=HOST_NAME>:8080/cgi-bin/ergatis/view_pipeline.cgi?instance=<TMPL_VAR NAME=PIPELINE_FILE>'><TMPL_VAR NAME=EXEC_USER>@<TMPL_VAR NAME=HOST_NAME></a>:<TMPL_VAR NAME=PID></li>
             <li id='project'><span class='info_label'>project:</span> <span id='projectid'><TMPL_VAR NAME=PROJECT></span></li>
             <li><span class='info_label'>quota:</span> <TMPL_VAR NAME=QUOTA_STRING></li>
-            <li><span class='info_label'>pipeline id:</span> <TMPL_VAR NAME=PIPELINE_ID></li>
         </ul>
     </div>
 
