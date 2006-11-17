@@ -194,6 +194,7 @@ sub parseiteratorconf{
     open FILE, $listfile or $logger->logdie("Can't open file $listfile");
     my @keys;
     my $linenum=0;
+    my $uniquekeys = {};
     while(my $line=<FILE>){
 	chomp $line;
 	if($linenum==0){
@@ -205,6 +206,14 @@ sub parseiteratorconf{
 	else{
 	    my @elts = split(/,/,$line);
 	    for(my $i=0;$i<(@elts);$i++){
+		#make sure first element is globally unique
+		#or will cause problems
+		if($i==0){
+		    if(exists $uniquekeys->{$elts[$i]}){
+			$logger->logdie("Found duplicate key $elts[$i] in first column. First column must be a unique identifier");
+		    }
+		    $uniquekeys->{$elts[$i]} = 1;
+		}
 		push( @{$iteratorconf->{$keys[$i]}}, $elts[$i] );
 	    }
 	}
