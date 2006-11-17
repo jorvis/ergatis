@@ -76,11 +76,9 @@ shellwrappers:
 
 aat_aa	:
 	@echo "Installing aat_aa workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/aat_aa/aat_aa-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa/aat_aa-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa/aat_aa.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa/aat_aa_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/aat_aa/aat_aaconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/aat_aa/aat_aa.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_aa/aat_aa.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_aa/aat_aa.config $(WORKFLOW_DOCS_DIR)
 
 aat_aa_masked	:
 	@echo "Installing aat_aa_masked workflows in $(WORKFLOW_DOCS_DIR)"
