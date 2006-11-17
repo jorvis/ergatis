@@ -9,7 +9,7 @@
         <td id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
         <TMPL_IF NAME=SELECTABLE>
         <td class="<TMPL_VAR NAME=SECTION>">
-            <select class='input_selector' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>'></select>
+            <select class='input_selector' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>'></select>
             <input class='select_shadow' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
         </td>
         <TMPL_ELSE>
