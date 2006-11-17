@@ -65,17 +65,35 @@ function update_value( tbl_id, new_val ) {
         for ( component_id in components ) {
             //LEFT OFF HERE AND NEED TO CHECK IF THIS LOOP IS GETTING ENTERED AT ALL
             if ( components[component_id] instanceof Component ) {
-                var input_elements = getObject(component_id).getElementsByTagName('input');
+                debug("checking component " + component_id);
                 var changes_made = 0;
-
-                for (var i=0; i<input_elements.length; i++) {
+                
+                // check each of the input elements
+                var input_elements = getObject(component_id).getElementsByTagName('input');
+                for (var i=0; i < input_elements.length; i++) {
+                    debug(" checking element id " + input_elements[i].getAttribute('id') + ' - ' + input_elements[i].value);
                     if ( input_elements[i].value == old_val ) {
                         input_elements[i].value = new_val;
                         changes_made++;
                     }
                 }
-
+                
+                // check each of the select elements
+                var select_elements = getObject(component_id).getElementsByTagName('select');
+                for ( var select_num=0; select_num < select_elements.length; select_num++ ) {
+                    debug(" checking element id " + select_elements[select_num].getAttribute('id') );
+                    
+                    for ( var option_num=0; option_num < select_elements[select_num].options.length; option_num++ ) {
+                        debug(" &nbsp; &nbsp; checking select option value=" + select_elements[select_num].options[option_num].value + ' label=' + select_elements[select_num].options[option_num].text);
+                        if ( select_elements[select_num].options[option_num].value == old_val ) {
+                            select_elements[select_num].options[option_num].value = new_val;
+                            changes_made++;
+                        }
+                    }
+                }
+                
                 if (changes_made) {
+                    debug("calling save on component" + component_id);
                     components[component_id].saveToDisk();
                 }
             }
