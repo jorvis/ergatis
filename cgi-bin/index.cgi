@@ -102,7 +102,7 @@ sub get_pipeline_lists {
         for my $pipeline_id ( readdir $idh ) {
             my $state = '';
             my $last_mod = '';
-            my $pipeline_file = "$repository_root/workflow/runtime/pipeline/$pipeline_id/pipeline.xml.instance";
+            my $pipeline_file = "$repository_root/workflow/runtime/pipeline/$pipeline_id/pipeline.xml";
             
             ## it may have been compressed
             if (! -e $pipeline_file ) {
