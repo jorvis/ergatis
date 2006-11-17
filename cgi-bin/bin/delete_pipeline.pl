@@ -42,9 +42,9 @@ B<--help,-h>
 This script is used to delete a pipeline and all its associated output.  This
 is based on pipeline_id and repository root.  Deleted folders include (in order):
 
-    $repository_root/Workflow/*/$pipelineid_*
+    $repository_root/workflow/runtime/*/$pipelineid_*
     $repository_root/output_repository/*/$pipelineid_*
-    $repository_root/Workflow/pipeline/$pipelineid
+    $repository_root/workflow/runtime/pipeline/$pipelineid
 
 
 =head1 INPUT
@@ -105,7 +105,7 @@ if (defined $options{log}) {
     autoflush $logfh 1;
 }
 
-my $wf_dir = "$options{repository_root}/Workflow";
+my $wf_dir = "$options{repository_root}/workflow/runtime";
 opendir( my $wfdh, $wf_dir );
 
 ## get the things in the workflow directory (except the pipeline)
@@ -162,8 +162,8 @@ sub check_parameters {
     }
     
     ## make sure the repository root has a Workflow directory
-    unless ( -d "$options{repository_root}/Workflow" ) {
-        print STDERR "\n\nthe repository root passed doesn't contain an asmbls directory.\n\n";
+    unless ( -d "$options{repository_root}/workflow/runtime" ) {
+        print STDERR "\n\nthe repository root passed doesn't contain a workflow/runtime directory.\n\n";
         exit(1);
     }
     

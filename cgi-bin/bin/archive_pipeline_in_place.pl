@@ -43,9 +43,9 @@ This script is used to archive a pipeline and, optionally, all its associated ou
 This is based on pipeline_id and repository root.  The contents of the following
 folders will be compressed in place (in order):
 
-    $repository_root/Workflow/*/$pipelineid_*
+    $repository_root/workflow/runtime/*/$pipelineid_*
     $repository_root/output_repository/*/$pipelineid_*
-    $repository_root/Workflow/pipeline/$pipelineid
+    $repository_root/workflow/runtime/pipeline/$pipelineid
 
 
 =head1 INPUT
@@ -106,7 +106,7 @@ if (defined $options{log}) {
     autoflush $logfh 1;
 }
 
-my $wf_dir = "$options{repository_root}/Workflow";
+my $wf_dir = "$options{repository_root}/workflow/runtime";
 opendir( my $wfdh, $wf_dir );
 
 ## get the things in the workflow directory (except the pipeline)
@@ -162,9 +162,9 @@ sub check_parameters {
         pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
     }
     
-    ## make sure the repository root has a Workflow directory
-    unless ( -d "$options{repository_root}/Workflow" ) {
-        print STDERR "\n\nthe repository root passed doesn't contain an asmbls directory.\n\n";
+    ## make sure the repository root has a workflow directory
+    unless ( -d "$options{repository_root}/workflow/runtime" ) {
+        print STDERR "\n\nthe repository root passed doesn't contain a workflow/runtime directory.\n\n";
         exit(1);
     }
     
