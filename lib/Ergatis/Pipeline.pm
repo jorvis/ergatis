@@ -135,7 +135,6 @@ umask(0000);
                 print $debugfh "got past the POSIX section\n" if $self->{debug};
 
                 $self->_setup_environment( ergatis_cfg => $args{ergatis_cfg} );
-                $self->_write_lock_file();
 
                 ##debug
                 print $debugfh "got past ENV setup section\n" if $self->{debug};
@@ -209,32 +208,6 @@ umask(0000);
         $ENV{LD_LIBRARY_PATH} = '';
     }
     
-    sub _write_lock_file {
-        my $self = shift;
-        
-        ## derive the lockfile path
-        $self->{path} =~ m|(.+/workflow)/runtime/|;
-        my $lock_path = "$1/lock_files/pid." . $self->{id};
-        
-        my $retry_count = 0;
-        
-        if (-e $lock_path) {
-            open(my $lock_fh, "<$lock_path");
-            my @rows = <$lock_fh>;
-            $retry_count += $rows[-1];
-            close $lock_fh;
-        }
-        
-        ## don't die here if we can't open.  this is often called within
-        #   a grandchild process with almost no hope of error recovery.  If this
-        #   file doesn't exist it can be handled elsewhere
-        open(my $lock_fh, ">$lock_path") || return 0;
-        
-        print $lock_fh "$$\n",
-                       hostname(), "\n",
-                       getpwuid($<), "\n",
-                       $retry_count;
-    }
 }
 
 1==1;
