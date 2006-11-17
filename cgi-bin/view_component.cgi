@@ -129,6 +129,7 @@ $tmpl->param( ELEMENTS            => $elements );
 $tmpl->param( PAGE_TITLE          => "$project|$component_name|$state" );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
+                                        { label => 'pipeline list', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" },
                                         { label => 'pipeline view', is_last => 0, url => "./view_pipeline.cgi?instance=$parent_pipeline" },
                                         { label => 'view configuration', is_last => 0, url => 
                                         "./view_formatted_ini_source.cgi?file=$repository_root/workflow/runtime/$component_name/${pipeline_id}_$output_token/$component_name.$output_token.final.config" },
