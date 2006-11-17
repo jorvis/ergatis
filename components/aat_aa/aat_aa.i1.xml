@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>aat_aa compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dps</name>
+            <state>incomplete</state>
+            <executable>$;DPS_EXEC$;</executable>
+            <arg>$;I_FILE_PATH$; $;DATABASE_PATH$; $;MATRIX$; $;DPS_OPTS$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>ext</name>
+            <state>incomplete</state>
+            <executable>$;EXT_EXEC$;</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw $;EXT_OPTS$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>ext collapse</name>
+            <state>incomplete</state>
+            <executable>$;EXT_COLLAPSE_EXEC$;</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>filter</name>
+            <state>incomplete</state>
+            <executable>$;FILTER_EXEC$;</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed $;FILTER_OPTS$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>relocate query seq</name>
+            <state>incomplete</state>
+            <executable>cp</executable>
+            <arg>$;I_FILE_PATH$; $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>nap</name>
+            <state>incomplete</state>
+            <executable>$;NAP_EXEC$;</executable>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; $;DATABASE_PATH_FOR_NAP$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw $;MATRIX$; $;NAP_OPTS$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.raw</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>remove temp query seq</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>remove raw dps output</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>remove raw ext output</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>remove raw ext collapsed output</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>remove raw filter output</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>ensure btab existence</name>
+            <state>incomplete</state>
+            <executable>touch</executable>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>relocate btab</name>
+            <state>incomplete</state>
+            <executable>mv</executable>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>nap2bsml</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/nap2bsml</executable>
+            <param>  
+                <key>--input</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--query_file_path</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--query_id</key>
+                <value>$;I_FILE_BASE$;</value>
+            </param>
+            <param>  
+                <key>--gzip_output</key>
+                <value>$;COMPRESS_BSML_OUTPUT$;</value>
+            </param>
+            <param>  
+                <key>--cutoff_identity</key>
+                <value>'$;CUTOFF_IDENTITY$;'</value>
+            </param>
+            <param>  
+                <key>--cutoff_similarity</key>
+                <value>'$;CUTOFF_SIMILARITY$;'</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>compress nap btab</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/compress_file</executable>
+            <param>  
+                <key>--file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab</value>
+            </param>
+            <param>  
+                <key>--compress</key>
+                <value>$;COMPRESS_BTAB_OUTPUT$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>compress nap</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/compress_file</executable>
+            <param>  
+                <key>--file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.raw</value>
+            </param>
+            <param>  
+                <key>--compress</key>
+                <value>$;COMPRESS_NAP_OUTPUT$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>store config params</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <param>  
+                <key>--ergatis_control_file</key>
+                <value>$;ERGATIS_DIR$;.ini</value>
+            </param>
+            <param>  
+                <key>--conf</key>
+                <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>  
+                <key>--bsml_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--componenturl</key>
+                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
+            </param>
+            <param>  
+                <key>--pipelineurl</key>
+                <value>$;PIPELINE_XML$;</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
