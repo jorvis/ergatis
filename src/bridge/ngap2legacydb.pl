@@ -28,12 +28,12 @@ B<--log,-d>
 
 B<--debug>
     optional. Will display verbose status messages to STDERR if logging is disabled.
-	
+    
 B<--help,-h>
     This help message/documentation.
 
 =head1   DESCRIPTION
-	
+    
     This script will remove all existing NGAP results from a project database, and load the contents of input BSML files.
 
 =head1 INPUT
@@ -56,19 +56,19 @@ use strict;
 use DBI;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use lib '/usr/local/devel/ANNOTATION/ard/current/lib/site_perl/5.8.5';
+use lib '/usr/local/devel/ANNOTATION/ard/current/lib/5.8.8';
 use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 
 my %options = ();
 my $results = GetOptions (\%options,
-            			  'input_list|i=s',
- 			              'server|s=s',
- 			              'database|d=s',
-			              'log|l=s',
-						  'debug',
+                          'input_list|i=s',
+                          'server|s=s',
+                          'database|d=s',
+                          'log|l=s',
+                          'debug',
                           'help|h',
-					     ) || pod2usage();
+                         ) || pod2usage();
 
 # display documentation
 if( $options{'help'} ){
@@ -86,13 +86,13 @@ if (defined($options{'log'})) {
 }
 
 unless (-e $options{'input_list'}) {
-	log_die("input list '".$options{'input_list'}."' does not exist.");
+    log_die("input list '".$options{'input_list'}."' does not exist.");
 }
 
 my $parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&sequenceHandler,
-											   ReadFeatureTables => 1
-										     );
-											 
+                                               ReadFeatureTables => 1
+                                             );
+                                             
 my $seq_id = '';
 my %ngaps = ();
 ## used to track database query error state
@@ -105,39 +105,39 @@ close IN;
 my $dbh = connectToDb($options{'server'},'Sybase','egc','egcpwd',$options{'database'});
 
 foreach my $bsml_file(@bsml_files) {
-	chomp $bsml_file;
-	unless (-e $bsml_file) {
-		log_error("BSML input file '$bsml_file' does not exist");
-		next;
-	}
-	
-	$parser->parse($bsml_file) || log_die("failed parsing '$bsml_file'");
-	foreach my $asmbl_id(keys(%ngaps)) {
-		delete_gene_predictions($dbh, $asmbl_id, "NGAP");
-		foreach my $ngap(@{$ngaps{$asmbl_id}}) {
-			## load forward pair
-			loadModelPair($dbh, $asmbl_id, $ngap->[0], $ngap->[1]);
-			## load reverse pair
-			loadModelPair($dbh, $asmbl_id, $ngap->[1], $ngap->[0]);
-		}
-	}
+    chomp $bsml_file;
+    unless (-e $bsml_file) {
+        log_error("BSML input file '$bsml_file' does not exist");
+        next;
+    }
+    
+    $parser->parse($bsml_file) || log_die("failed parsing '$bsml_file'");
+    foreach my $asmbl_id(keys(%ngaps)) {
+        delete_gene_predictions($dbh, $asmbl_id, "NGAP");
+        foreach my $ngap(@{$ngaps{$asmbl_id}}) {
+            ## load forward pair
+            loadModelPair($dbh, $asmbl_id, $ngap->[0], $ngap->[1]);
+            ## load reverse pair
+            loadModelPair($dbh, $asmbl_id, $ngap->[1], $ngap->[0]);
+        }
+    }
 }
 
 ## Reads NGAP position information from BSML sequence elements
 sub sequenceHandler {
-	my $sequence = shift;
-	$ngaps{$sequence->returnattr('id')} = [];
-	my $ftbl_list_arr_ref = $sequence->returnBsmlFeatureTableListR();
-	foreach my $ftbl_ref(@{$ftbl_list_arr_ref}) {
-		my $feat_list_arr_ref = $ftbl_ref->returnBsmlFeatureListR();
-		foreach my $feat_ref(@{$feat_list_arr_ref}) {
-				my $iloc_list_arr_ref = $feat_ref->returnBsmlIntervalLocListR();
-				foreach my $iloc_ref(@{$iloc_list_arr_ref}) {
-					push(@{$ngaps{$sequence->returnattr('id')}}, [$iloc_ref->{'startpos'}, $iloc_ref->{'endpos'}]);
-				}
-		}
-	}
-	return;
+    my $sequence = shift;
+    $ngaps{$sequence->returnattr('id')} = [];
+    my $ftbl_list_arr_ref = $sequence->returnBsmlFeatureTableListR();
+    foreach my $ftbl_ref(@{$ftbl_list_arr_ref}) {
+        my $feat_list_arr_ref = $ftbl_ref->returnBsmlFeatureListR();
+        foreach my $feat_ref(@{$feat_list_arr_ref}) {
+                my $iloc_list_arr_ref = $feat_ref->returnBsmlIntervalLocListR();
+                foreach my $iloc_ref(@{$iloc_list_arr_ref}) {
+                    push(@{$ngaps{$sequence->returnattr('id')}}, [$iloc_ref->{'startpos'}, $iloc_ref->{'endpos'}]);
+                }
+        }
+    }
+    return;
 }
 
 ## This sub was taken from the original NGAP loader script
@@ -157,9 +157,9 @@ sub loadModelPair {
 
 ## This sub is taken from Egc_library.pm
 sub getNextName {
-   	my($dbproc, $id, $type) = @_;
+    my($dbproc, $id, $type) = @_;
     my($query, $num, $zerobuf, $zeros, $name, %char);
-	
+    
     $char{'exon'}='e';
     $char{'model'}='m';
     $char{'TU'}='t';
@@ -172,15 +172,15 @@ sub getNextName {
     $char{'trf'} = 'trf';
     $char{'rna-exon'} = 'x';
     if (!exists $char{$type}) {
-		$char{$type} = lc $type;
+        $char{$type} = lc $type;
     }
 
     $num = &getMaxNo($dbproc, $id, $type);
     $num++;
     $zeros= 5 - length($num);
     for (my $i=0; $i<$zeros; $i++){
-		$zerobuf .= "0";
-	}
+        $zerobuf .= "0";
+    }
 
     $name = $id . ".".$char{$type}.$zerobuf.$num;
     return($name);
@@ -200,8 +200,8 @@ sub getMaxNo {
     
     my $feat_name = &first_result_sql($dbproc, $query);
     if ($feat_name) {
-	$feat_name =~ /\D(\d+)$/ or die "ERROR, feat_name $feat_name lacks required trailing numbers.\n";
-	$num = $1;
+    $feat_name =~ /\D(\d+)$/ or die "ERROR, feat_name $feat_name lacks required trailing numbers.\n";
+    $num = $1;
     }
     
     return($num);
@@ -213,22 +213,22 @@ sub insert_asm_feature {
     my($query,$statementHandle,@row,$i,$result);
 
     $query = "insert asm_feature (feat_name, asmbl_id, feat_type, end5, end3, date, "
-	         . "feat_method, assignby, change_log, save_history) "	
-			 . "values (\"$feat_name\", $asmbl_id, \"$feat_type\", $end5, $end3, "
-	         . "getdate(), \"$method\", \"$assignby\", $change_log, $save_history)";
+             . "feat_method, assignby, change_log, save_history) "  
+             . "values (\"$feat_name\", $asmbl_id, \"$feat_type\", $end5, $end3, "
+             . "getdate(), \"$method\", \"$assignby\", $change_log, $save_history)";
     
     log_this("query: $query\n");
     
-    &do_sql($dbproc, $query);	
+    &do_sql($dbproc, $query);   
     
     unless ($QUERYFAIL) {
-		$query = "select feat_id "
-		       . "from asm_feature "
-	           . "where feat_name = \"$feat_name\" "
-	   		   . "and feat_type = \"$feat_type\"";
-		log_this(print "QUERY: $query\n");
-		$result = &single_sql($dbproc, $query);
-		return($result);
+        $query = "select feat_id "
+               . "from asm_feature "
+               . "where feat_name = \"$feat_name\" "
+               . "and feat_type = \"$feat_type\"";
+        log_this(print "QUERY: $query\n");
+        $result = &single_sql($dbproc, $query);
+        return($result);
     }
 }
 
@@ -238,19 +238,19 @@ sub insert_phys_ev {
     my($query, $id);
     
     $query = "insert phys_ev (feat_name, ev_type, assignby, datestamp) "
-	. "values (\"$feat_name\",\"$ev\", \"$by\", getdate())";
+    . "values (\"$feat_name\",\"$ev\", \"$by\", getdate())";
     
     log_this("query: $query\n");
     &do_sql($dbproc, $query);
     
     unless ($QUERYFAIL) {
-		$query = "select id "
-	    	   . "from phys_ev "
-			   . "where feat_name = \"$feat_name\" "
-			   . "and ev_type = \"$ev\"";
-		log_this("query: $query\n");
-		$id = &single_sql($dbproc, $query);
-		return($id);
+        $query = "select id "
+               . "from phys_ev "
+               . "where feat_name = \"$feat_name\" "
+               . "and ev_type = \"$ev\"";
+        log_this("query: $query\n");
+        $id = &single_sql($dbproc, $query);
+        return($id);
     }
 }
 
@@ -260,14 +260,14 @@ sub insert_feat_link {
     my($query, $new_id);
     
     if ($tdate eq "now") {
-		$query = "insert feat_link (parent_feat,child_feat,assignby,datestamp) "
-	    	   . "values (\"$parent\",\"$child\",\"$assignby\",getdate())";
+        $query = "insert feat_link (parent_feat,child_feat,assignby,datestamp) "
+               . "values (\"$parent\",\"$child\",\"$assignby\",getdate())";
     } else {
-		if ($tdate eq ""){
-			$tdate = "Aug 2 1968";
-		}
-		$query = "insert feat_link (parent_feat,child_feat,assignby,datestamp) "
-	    	   . "values (\"$parent\",\"$child\",\"$assignby\",\"$tdate\")";
+        if ($tdate eq ""){
+            $tdate = "Aug 2 1968";
+        }
+        $query = "insert feat_link (parent_feat,child_feat,assignby,datestamp) "
+               . "values (\"$parent\",\"$child\",\"$assignby\",\"$tdate\")";
     }
     log_this("query: $query\n");
     $new_id = &do_sql($dbproc,$query);
@@ -278,34 +278,34 @@ sub delete_gene_predictions {
     my ($dbproc, $asmbl_id, $ev_type) = @_;
     ## gather model and exon feat_names
     my $query = "select a_model.feat_name, a_exon.feat_name \n"
-			  . "from asm_feature a_model, asm_feature a_exon, feat_link f, phys_ev p_exon, phys_ev p_model \n"
-	          . "where a_model.feat_name = f.parent_feat and a_model.feat_type = \"model\" \n"
-	          . "and a_model.feat_name = p_model.feat_name and p_model.ev_type = \"$ev_type\" \n"
-	          . "and a_model.asmbl_id = $asmbl_id and a_exon.asmbl_id = $asmbl_id \n"
-			  . "and f.child_feat = a_exon.feat_name and a_exon.feat_type = \"exon\" \n"
-			  . "and a_exon.feat_name = p_exon.feat_name and p_exon.ev_type = \"$ev_type\" \n";
+              . "from asm_feature a_model, asm_feature a_exon, feat_link f, phys_ev p_exon, phys_ev p_model \n"
+              . "where a_model.feat_name = f.parent_feat and a_model.feat_type = \"model\" \n"
+              . "and a_model.feat_name = p_model.feat_name and p_model.ev_type = \"$ev_type\" \n"
+              . "and a_model.asmbl_id = $asmbl_id and a_exon.asmbl_id = $asmbl_id \n"
+              . "and f.child_feat = a_exon.feat_name and a_exon.feat_type = \"exon\" \n"
+              . "and a_exon.feat_name = p_exon.feat_name and p_exon.ev_type = \"$ev_type\" \n";
 
     my (@results) = &do_sql ($dbproc, $query);
     my %models;
     foreach my $result(@results) {
-		my ($model_feat_name, $exon_feat_name) = split (/\t/, $result);
-		$models{$model_feat_name}->{$exon_feat_name} = 1;
+        my ($model_feat_name, $exon_feat_name) = split (/\t/, $result);
+        $models{$model_feat_name}->{$exon_feat_name} = 1;
     }
     foreach my $model(keys %models) {
-		#delete model info
-		my $query = "delete from asm_feature where feat_name = \"$model\" \n";
-		&runMod ($dbproc, $query);
-		$query = "delete from feat_link where parent_feat = \"$model\" or child_feat = \"$model\" \n";
-		&runMod ($dbproc, $query);
-		$query = "delete from phys_ev where feat_name = \"$model\" \n";
-		&runMod ($dbproc, $query);
-		## rid exons 
-		foreach my $exon (keys %{$models{$model}}) {
-		    my $query = "delete asm_feature where feat_name = \"$exon\" and not exists (select * from phys_ev where asm_feature.feat_name = phys_ev.feat_name and phys_ev.ev_type != \"$ev_type\")\n";
-	    	&runMod ($dbproc, $query);
-		    $query = "delete phys_ev where feat_name = \"$exon\" and ev_type = \"$ev_type\" \n";
-		    &runMod ($dbproc, $query);
-		}
+        #delete model info
+        my $query = "delete from asm_feature where feat_name = \"$model\" \n";
+        &runMod ($dbproc, $query);
+        $query = "delete from feat_link where parent_feat = \"$model\" or child_feat = \"$model\" \n";
+        &runMod ($dbproc, $query);
+        $query = "delete from phys_ev where feat_name = \"$model\" \n";
+        &runMod ($dbproc, $query);
+        ## rid exons 
+        foreach my $exon (keys %{$models{$model}}) {
+            my $query = "delete asm_feature where feat_name = \"$exon\" and not exists (select * from phys_ev where asm_feature.feat_name = phys_ev.feat_name and phys_ev.ev_type != \"$ev_type\")\n";
+            &runMod ($dbproc, $query);
+            $query = "delete phys_ev where feat_name = \"$exon\" and ev_type = \"$ev_type\" \n";
+            &runMod ($dbproc, $query);
+        }
     }
 }
 
@@ -315,7 +315,7 @@ sub runMod {
     my($statementHandle,$result);
 
     log_this("$query\nValues: @values\n");
-	$result = &first_result_sql($dbproc, $query, undef, @values);
+    $result = &first_result_sql($dbproc, $query, undef, @values);
     return($result);
 }
 
@@ -403,27 +403,27 @@ sub connectToDb {
 
 ## log or display messages
 sub log_this {
-	if (defined($options{'log'})) {
-		print LOG $_[0]."\n";
-	} elsif (defined($options{'debug'})) {
-		print STDERR $_[0]."\n";
-	}
+    if (defined($options{'log'})) {
+        print LOG $_[0]."\n";
+    } elsif (defined($options{'debug'})) {
+        print STDERR $_[0]."\n";
+    }
 }
 
 ## non-fatal error logging
 sub log_error {
-		log_this("ERROR: ".$_[0]."\n");
+        log_this("ERROR: ".$_[0]."\n");
 }
 
 ## fatal error log and die
 sub log_die {
-	if (defined($options{'log'})) {
-		log_this("FATAL ERROR:".$_[0]."\n");
-		close LOG;
-	} else {
-		log_this("FATAL ERROR:".$_[0]."\n");
-	}
-	die();
+    if (defined($options{'log'})) {
+        log_this("FATAL ERROR:".$_[0]."\n");
+        close LOG;
+    } else {
+        log_this("FATAL ERROR:".$_[0]."\n");
+    }
+    die();
 }
 
 ## check that the options provided are ok
