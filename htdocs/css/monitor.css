@@ -65,7 +65,7 @@ li#state,
 li#project {
     clear: both;
 }
-li#starttime {
+li#pipeline_starttime {
     margin-top: 5px;
 }
 li#pipeline {

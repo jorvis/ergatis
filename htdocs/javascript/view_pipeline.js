@@ -1,6 +1,15 @@
 var timers = new Array();
 var parent_pipeline = 'X';
 
+var pipeline_update_req;
+
+// this is how long it will take to do the first pipeline update
+timers['pipeline'] = 11;
+
+window.onload = function() {
+    pipelineCountdown();
+}
+
 function requestComponentUpdate (subflow, ul_id, p_pipeline) {
     // change border color to show we've started an update
     document.getElementById(ul_id).style.borderColor = 'black';
@@ -117,12 +126,10 @@ function updateComponent (sometext, component, pipeline, updateinterval) {
     document.getElementById(component).style.borderColor = 'rgb(150,150,150)';
 }
 
-var pipeline_update_req;
-timers['pipeline'] = 31;
 
 function getPipelineUpdate(url) {
     // set the border and label to show update
-    document.getElementById('pipelinesummary').style.borderColor = 'black';
+    document.getElementById('info_container').style.borderColor = 'black';
 
     // Internet Explorer
     try { pipeline_update_req = new ActiveXObject("Msxml2.XMLHTTP"); }
@@ -149,18 +156,18 @@ function processPipelineUpdate() {
     if (pipeline_update_req.readyState == 4 && pipeline_update_req.status == 200) {
 
         // write the contents of the div 
-        document.getElementById('pipelinesummary').innerHTML = pipeline_update_req.responseText;
+        document.getElementById('info_container').innerHTML = pipeline_update_req.responseText;
 
         // update the page title
         //  title should be like "project|state pipeline view"
         document.title = document.getElementById('projectid').innerHTML + '|' + 
-                         document.getElementById('pipelinestate').innerHTML + '|pipeline';
+                         document.getElementById('pipeline_state').innerHTML + '|pipeline';
 
         // set the border back
-        document.getElementById('pipelinesummary').style.borderColor = 'rgb(150,150,150)';
+        document.getElementById('info_container').style.borderColor = 'rgb(150,150,150)';
 
         // if the state is not complete, continue checking
-        if ( document.getElementById('pipelinestate').innerHTML != 'complete' ) {
+        if ( document.getElementById('pipeline_state').innerHTML != 'complete' ) {
             timers['pipeline'] = 31;
             pipelineCountdown();
         }

@@ -7,10 +7,7 @@ use Date::Manip;
 use Ergatis::Common;
 use Ergatis::ConfigFile;
 use Ergatis::Monitor;
-use File::Basename;
-use File::stat;
 use HTML::Template;
-use POSIX;
 use XML::Twig;
 
 

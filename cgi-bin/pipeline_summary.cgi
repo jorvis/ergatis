@@ -5,8 +5,7 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Date::Manip;
 use Ergatis::Monitor;
-use File::stat;
-use POSIX;
+use HTML::Template;
 use XML::Twig;
 
 my $q = new CGI;
@@ -14,8 +13,9 @@ my $repository_root;
 
 print $q->header( -type => 'text/html' );
 
-## will be like:
-## /usr/local/scratch/annotation/TGA1/Workflow/split_fasta/29134_test2/pipeline.xml
+my $tmpl = HTML::Template->new( filename => 'templates/pipeline_summary.tmpl',
+                                die_on_bad_params => 1,
+                              );
 
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 my $project;
@@ -27,11 +27,6 @@ if ( $pipeline =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
 } else {
     die "failed to extract a repository_root from $pipeline.  expected a workflow/runtime subdirectory somewhere."
 }
-
-my ($pid,$hostname,$execuser,$retries) = &parselockfile("$repository_root/workflow/lock_files/pid.$pipelineid");
-$pid = "" if(!$pid);
-$execuser = "unknown" if(!$execuser);
-$hostname = "unknown" if(!$hostname);
 
 my $twig = new XML::Twig;
 
@@ -74,49 +69,15 @@ $lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("tod
 ## quota information (only works if in /usr/local/annotation/SOMETHING)
 my $quotastring = &quota_string($repository_root);
 
-print <<PipelineSummarY;
-    <div id='pipeline'>$pipeline</div>
-        <div class='pipelinestat' id='pipelinestart'><strong>start:</strong> $starttime</div>
-        <div class='pipelinestat' id='pipelineend'><strong>end:</strong> $endtime</div>
-        <div class='pipelinestat' id='pipelinelastmod'><strong>last mod:</strong> $lastmodtime</div><br>
-        <div class='pipelinestat'><strong>state:</strong> <span id='pipelinestate'>$state</span></div>
-        <div class='pipelinestat' id='pipelineuser'><strong>user:</strong> $user</div>
-        <div class='pipelinestat' id='pipelineruntime'><strong>runtime:</strong> $runtime</div>
-        <div class='pipelinestat' id='pipelineretry'><strong>retries:</strong> $retries</div>
-        <div class='pipelinestat' id='pipelineexec'><strong>exec host:</strong> <a href='http:$hostname:8080/ergatis/view_pipeline.cgi?instance=$pipeline'>$execuser\@$hostname</a>:$pid</div><br>
-        <div class='pipelinestat'><strong>project:</strong> <span id='projectid'>$project</span></div>
-        <div class='pipelinestat' id='projectquota'><strong>quota:</strong> $quotastring</div>
-        <div class='pipelinestat' id='pipelineid'><strong>pipeline id:</strong> $pipelineid</div>
-    <div class='timer' id='pipeline_timer_label'></div>
-    <div id='pipelinecommands'>
-        <a href='./pipeline_list.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_pipeline_list.png' alt='pipeline list' title='pipeline list'></a>
-        <a href='./new_pipeline.cgi?repository_root=$repository_root'><img class='navbutton' src='/ergatis/button_blue_new.png' alt='new' title='new'></a>
-        <a href='./run_wf.cgi?instancexml=$pipeline&validate=0&pipelineid=$pipelineid'><img class='navbutton' src='/ergatis/button_blue_rerun.png' alt='rerun' title='rerun'></a>  
-        <a href='./show_pipeline.cgi?xmltemplate=$pipeline&edit=1'><img class='navbutton' src='/ergatis/button_blue_edit.png' alt='edit' title='edit'></a>
-        <a href='./kill_wf.cgi?instancexml=$pipeline'><img class='navbutton' src='/ergatis/button_blue_kill.png' alt='kill' title='kill'></a>
-        <a href='http://htc.tigr.org/antware/cgi-bin/sgestatus.cgi'><img class='navbutton' src='/ergatis/button_blue_grid_info.png' alt='grid info' title='grid info'></a>
-        <a href='/cgi-bin/ergatis/view_formatted_xml_source.cgi?file=$pipeline'><img class='navbutton' src='/ergatis/button_blue_xml.png' alt='View XML' title='View XML'></a>
-    </div>
-PipelineSummarY
+$tmpl->param( PIPELINE_FILE       => $pipeline );
+$tmpl->param( START_TIME          => $starttime );
+$tmpl->param( END_TIME            => $endtime );
+$tmpl->param( LAST_MOD_TIME       => $lastmodtime );
+$tmpl->param( PIPELINE_STATE      => $state );
+$tmpl->param( USER                => $user );
+$tmpl->param( RUNTIME             => $runtime );
+$tmpl->param( PROJECT             => $project );
+$tmpl->param( QUOTA_STRING        => $quotastring );
+$tmpl->param( PIPELINE_ID         => $pipelineid );
 
-
-
-
-
-
-
-sub parselockfile{
-    my($file) = @_;
-    if(-e $file){
-	open FILE, "$file" or die "Can't open lock file $file";
-	my(@elts) = <FILE>;
-	close FILE;
-	chomp(@elts);
-	my $pid = $elts[0];
-	my $hostname = $elts[1];
-	my $getpwuid = $elts[2];
-	my $retries = $elts[3];
-	return ($pid,$hostname,$getpwuid,$retries);
-    }
-    return undef;
-}
+print $tmpl->output;
