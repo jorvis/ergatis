@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>wu-blastp</name>
             <state>incomplete</state>
-            <executable>/usr/local/common/blastp</executable>
+            <executable>$;BLASTP_EXEC$;</executable>
             <arg>$;DATABASE_PATH$; $;I_FILE_PATH$; -E $;EXPECT$; -matrix $;MATRIX$; -wordmask $;FILTER$; -B $;DATABASE_MATCHES$; -V $;DESCRIPTIONS$; -gspmax $;GSPMAX$; -shortqueryok -novalidctxok -cpus 1 $;OTHER_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
