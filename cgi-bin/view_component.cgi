@@ -64,8 +64,6 @@ if ( $parent_commandset->first_child('parentFileName') ) {
     $parent_pipeline = $parent_commandset->first_child('parentFileName')->text;
 }
 
-my %lockfile_info = &parse_pipeline_run_lock_file( "$repository_root/workflow/lock_files/pid.$pipeline_id" );
-
 ## quota information (only works if in /usr/local/annotation/SOMETHING)
 my $quotastring = &quota_string($repository_root);
 
@@ -115,10 +113,6 @@ $tmpl->param( LAST_MOD_TIME       => $lastmodtime );
 $tmpl->param( PIPELINE_STATE      => $state );
 $tmpl->param( USER                => $user );
 $tmpl->param( RUNTIME             => $runtime );
-$tmpl->param( RETRIES             => $lockfile_info{retries} );
-$tmpl->param( EXEC_USER           => $lockfile_info{execuser} );
-$tmpl->param( HOST_NAME           => $lockfile_info{hostname} );
-$tmpl->param( PID                 => $lockfile_info{pid} );
 $tmpl->param( PROJECT             => $project );
 $tmpl->param( QUOTA_STRING        => $quotastring );
 $tmpl->param( PIPELINE_ID         => $pipeline_id );
