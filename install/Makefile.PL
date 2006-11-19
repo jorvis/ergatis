@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa clustalw formatdb jaccard ncbi-blastp split_multifasta tRNAscan-SE wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa clustalw formatdb jaccard ncbi-blastp repeatmasker split_multifasta tRNAscan-SE wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -618,13 +618,11 @@ region	:
 	@install components/region/region_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/region/regionconf.ini $(WORKFLOW_DOCS_DIR)  
 
-repeatmasker :
+repeatmasker	:
 	@echo "Installing repeatmasker workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/repeatmasker/repeatmasker-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/repeatmasker/repeatmasker-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/repeatmasker/repeatmasker.ini $(WORKFLOW_DOCS_DIR)
-	@install components/repeatmasker/repeatmasker_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/repeatmasker/repeatmaskerconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/repeatmasker/repeatmasker.xml $(WORKFLOW_DOCS_DIR)
+	@install components/repeatmasker/repeatmasker.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/repeatmasker/repeatmasker.config $(WORKFLOW_DOCS_DIR)
 
 signalp	:
 	@echo "Installing signalp workflows in $(WORKFLOW_DOCS_DIR)"
