@@ -1,4 +1,4 @@
-package Gene;
+package Chado::Gene;
 
 =head1 NAME
 
@@ -82,18 +82,19 @@ use Data::Dumper;
 
 #######A Data Structure Definition####################
  struct( Feature => {
-        'id'       => '$',
-        'start'    => '$',
-        'stop'     => '$',
-        'strand'   => '$',
-        'type'     => '$',
-        'children' => '*%',  #<-- Example of how we can store relationships.
+        'id'        => '$',
+        'start'     => '$',
+        'stop'      => '$',
+        'strand'    => '$',
+        'type'      => '$',
+        'attribute' => '*%',
+        'children'  => '*%',  #<-- Example of how we can store relationships.
     });
 ##########################################################
 
 
 ############Constructor############################################
-=item new Gene( $id, $start, $stop $strand, $seqId );
+=item new Gene( $id, $start, $stop $strand, $seqId, $score );
 
 B<Description:> Creates a gene object with an id.
 
@@ -103,6 +104,7 @@ B<Parameters:>
     $stop - end nucleotide of the gene
     $strand - 0 (forward) or 1 (reverse)
     $seqId - an identifier for the nucleotide sequence on which the gene is located 
+    $score - the score of the gene (if predicted).
 
 B<Returns:> a gene object reference
 
@@ -327,6 +329,27 @@ sub getFeatures {
     return $retval;
 }
 
+=item $gene->addFeatureScore($featId, $scoreType, $value);
+
+B<Description:> Sets the score type for a feature
+
+B<Parameters:> $featId - The id of the feature to associate the score with
+               $scoreType - The type of score (ex. p-value, bit_score, etc.)
+                            Should be found in an ontology
+               $value - The actual score.
+
+B<Returns:> Returns the id of the feature to which the score was added.
+    
+=cut
+
+sub addFeatureScore {
+    my ($self, $featId, $scoreType, $value) = @_;
+    my $filter = { 'id' => $featId };
+    my $feature = $self->filterFunction( $filter );
+    $feature->attribute($scoreType, $value);
+    return $feature->id();
+}
+
 #################ID manipulation#############################################
 =item $gene->getId;
 
@@ -510,7 +533,8 @@ sub setSeqId {
 =item $gene->addToGroup($groupID[, $filter]);
 
 B<Description:> Add a pre-existing feature to specified group identified by 
-    group id.  If the group does not exist, it will be created.
+    group id.  If the group does not exist, it will be created.  If filter is
+    not passed, all features will be added to the group.
 
 B<Parameters:> $groupID - Identifier of the group
                $filter - see format in Gene.pm perldoc (hash ref)
@@ -549,7 +573,7 @@ sub createGroup {
     #Creates a gene group
     my ($self, $groupID, $filter) = @_;  
     $filter = {'all' => 1} unless($filter);
-    return $self->addToGroup($groupID, $filter);
+    return $self->addGenesToGroup($groupID, $filter);
 }
 
 =item $gene->removeFromGroup($groupID[, $filter]);
@@ -600,6 +624,9 @@ sub getGroup {
     return [values %{$self->{'groups'}->{$groupId}}];    
 }
 
+
+######################Printing Options################################
+
 =item $gene->printGroup($groupID);
 
 B<Description:> Prints all members of a specified group
@@ -610,7 +637,6 @@ B<Returns:> The number of features printed
 
 =cut
 
-######################Printing Options################################
 sub printGroup {
     my ($self, $groupID) = @_;
     &printFeatures([values %{$self->{'groups'}->{$groupID}}]);
@@ -719,7 +745,8 @@ sub _init {
          $self->{'start'},
          $self->{'stop'},
          $self->{'strand'},
-         $self->{'seq'}) = @params;       
+         $self->{'seq'},
+         $self->{'score'}) = @params;       
     }
     
 }
