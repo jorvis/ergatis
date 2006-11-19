@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers formatdb jaccard ncbi-blastp split_multifasta wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa clustalw formatdb jaccard ncbi-blastp split_multifasta tRNAscan-SE wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -196,11 +196,9 @@ chado2bsml  :
 
 clustalw	:
 	@echo "Installing clustalw workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/clustalw/clustalw-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/clustalw/clustalw-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/clustalw/clustalw.ini $(WORKFLOW_DOCS_DIR)
-	@install components/clustalw/clustalw_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/clustalw/clustalwconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/clustalw/clustalw.xml $(WORKFLOW_DOCS_DIR)
+	@install components/clustalw/clustalw.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/clustalw/clustalw.config $(WORKFLOW_DOCS_DIR)
 
 cogs	:
 	@echo "Installing cogs workflows in $(WORKFLOW_DOCS_DIR)"
@@ -726,11 +724,9 @@ tmhmm	:
 
 tRNAscan-SE	:
 	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/tRNAscan-SE/tRNAscan-SE-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tRNAscan-SE/tRNAscan-SE-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/tRNAscan-SE/tRNAscan-SE.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tRNAscan-SE/tRNAscan-SE_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/tRNAscan-SE/tRNAscan-SEconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/tRNAscan-SE/tRNAscan-SE.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tRNAscan-SE/tRNAscan-SE.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tRNAscan-SE/tRNAscan-SE.config $(WORKFLOW_DOCS_DIR)
 
 tiling  :
 	@echo "Installing tiling workflows in $(WORKFLOW_DOCS_DIR)"
