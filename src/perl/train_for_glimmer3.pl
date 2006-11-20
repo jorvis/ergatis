@@ -75,7 +75,7 @@ you should document which tables and columns are affected.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use Workflow::Logger;
+use Ergatis::Logger;
 
 ########GLOBALS#############
 use constant BUILD_ICM => '/usr/local/devel/ANNOTATION/glimmer/glimmer3.01/bin/build-icm';
