@@ -101,8 +101,8 @@ use strict;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use Workflow::Logger;
-use Workflow::IdGenerator;
+use Ergatis::Logger;
+use Ergatis::IdGenerator;
 use Chado::Gene;
 use BSML::GenePredictionBsml;
 use BSML::BsmlBuilder;
@@ -111,7 +111,7 @@ my $input;      # Input file name
 my $output;     # Output file name
 my $fasta_input;   # fasta input to tRNAscan-SE
 my $project;    # project id
-my $idcreator;  # Workflow::IdGenerator object
+my $idcreator;  # Ergatis::IdGenerator object
 my $bsml;       # BSML::BsmlBuilder object
 my $data;       # parsed tRNAscan-SE data
 my $debug = 4;  # debug value.  defaults to 4 (info)
@@ -129,8 +129,8 @@ my $results = GetOptions (\%options,
 
 
 # Set up the logger
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -258,7 +258,7 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $doc = new GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
+    my $doc = new BSML::GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
 
     foreach my $gene(@{$data}) {
         $doc->addGene($gene);
@@ -354,7 +354,7 @@ sub check_parameters {
     if ($options{'id_repository'}) {
 
         # we're going to generate ids
-        $idcreator = new Workflow::IdGenerator('id_repository' => $options{'id_repository'});
+        $idcreator = new Ergatis::IdGenerator('id_repository' => $options{'id_repository'});
 
         # Set the pool size
         $idcreator->set_pool_size('gene'=>30,'tRNA'=>30,'exon'=>30,'CDS'=>30);
