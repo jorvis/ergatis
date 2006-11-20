@@ -101,7 +101,7 @@ if (!defined($options{'command_id'})) {
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -130,20 +130,21 @@ my $seq_id = '';
 my %ngaps = ();
 
 ## Read in FASTA sequences and find Ngaps
-
 while (<IN>) {
     chomp;
-    if (/^>([^\s]+)/) { 
-        $ngaps{$seq_id} = &find_ngaps(\$seq);
+    if (/^>([^\s]+)/) {
+        if ($seq ne '') {
+            $ngaps{$seq_id} = &find_ngaps(\$seq);
+        }
         $seq = '';
         $seq_id = $1;
-        next;
+    } else {
+        $seq .= $_;
     }
-    $seq .= $_;
 }
-$ngaps{$seq_id} = &find_ngaps(\$seq);
-$seq = '';
-$seq_id = '';
+if ($seq ne '') {
+    $ngaps{$seq_id} = &find_ngaps(\$seq);
+}
 close IN;
 
 ## Write BSML output file
@@ -161,18 +162,22 @@ foreach $seq_id(keys(%ngaps)) {
                             '#ngap_analysis', 
                             'input_of'
                           );
+
     my $feature_table  = $doc->createAndAddFeatureTable($seq_stub);
     foreach my $ngap_ref(@{$ngaps{$seq_id}}) {
+        unless ($feature_table) {
+            $feature_table = $doc->createAndAddFeatureTable($seq_stub);
+        }
         my $ngap = $doc->createAndAddFeature(
-                                            $feature_table, 
-                                            $idcreator->new_id(
-                                                                db => $options{'project'},
-                                                                so_type => 'gap',
-                                                                prefix  => $options{'command_id'}
-                                                              ),
-                                            '',
-                                            'gap'
-                                        );
+                                                $feature_table, 
+                                                $idcreator->new_id(
+                                                                    db => $options{'project'},
+                                                                    so_type => 'gap',
+                                                                    prefix  => $options{'command_id'}
+                                                                  ),
+                                                '',
+                                                'gap'
+                                            );
                                           
         $ngap->addBsmlLink('analysis', '#ngap_analysis', 'computed_by');
         $ngap->addBsmlIntervalLoc(
