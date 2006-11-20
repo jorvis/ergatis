@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa clustalw formatdb jaccard ncbi-blastp repeatmasker split_multifasta tRNAscan-SE wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa clustalw formatdb jaccard ncbi-blastp ngap repeatmasker split_multifasta trf tRNAscan-SE wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -493,11 +493,9 @@ ncbi-tblastx	:
 
 ngap	:
 	@echo "Installing ngap workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ngap/ngap-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ngap/ngap-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ngap/ngap.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ngap/ngap_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/ngap/ngapconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/ngap/ngap.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ngap/ngap.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ngap/ngap.config $(WORKFLOW_DOCS_DIR)  
 
 nucmer	:
 	@echo "Installing nucmer workflows in $(WORKFLOW_DOCS_DIR)"
@@ -696,6 +694,14 @@ targetp	:
 	@install components/targetp/targetp_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/targetp/targetpconf.ini $(WORKFLOW_DOCS_DIR)  
 
+tmhmm	:
+	@echo "Installing tmhmm workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/tmhmm/tmhmm-master.ini $(WORKFLOW_DOCS_DIR)
+	@install components/tmhmm/tmhmm-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tmhmm/tmhmm.ini $(WORKFLOW_DOCS_DIR)
+	@install components/tmhmm/tmhmm_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/tmhmm/tmhmmconf.ini $(WORKFLOW_DOCS_DIR)  
+
 translate_sequence	:
 	@echo "Installing translate_sequence workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/translate_sequence/translate_sequence-master.ini $(WORKFLOW_DOCS_DIR)
@@ -712,20 +718,6 @@ transterm	:
 	@install components/transterm/transterm_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/transterm/transtermconf.ini $(WORKFLOW_DOCS_DIR) 
 
-tmhmm	:
-	@echo "Installing tmhmm workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/tmhmm/tmhmm-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tmhmm/tmhmm-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/tmhmm/tmhmm.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tmhmm/tmhmm_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/tmhmm/tmhmmconf.ini $(WORKFLOW_DOCS_DIR)  
-
-tRNAscan-SE	:
-	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/tRNAscan-SE/tRNAscan-SE.xml $(WORKFLOW_DOCS_DIR)
-	@install components/tRNAscan-SE/tRNAscan-SE.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/tRNAscan-SE/tRNAscan-SE.config $(WORKFLOW_DOCS_DIR)
-
 tiling  :
 	@echo "Installing tiling workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/tiling/tiling-master.ini $(WORKFLOW_DOCS_DIR)
@@ -734,11 +726,15 @@ tiling  :
 
 trf	:
 	@echo "Installing trf workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/trf/trf-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/trf/trf-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/trf/trf.ini $(WORKFLOW_DOCS_DIR)
-	@install components/trf/trf_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/trf/trfconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/trf/trf.xml $(WORKFLOW_DOCS_DIR)
+	@install components/trf/trf.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/trf/trf.config $(WORKFLOW_DOCS_DIR)
+
+tRNAscan-SE	:
+	@echo "Installing tRNAscan-SE workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/tRNAscan-SE/tRNAscan-SE.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tRNAscan-SE/tRNAscan-SE.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tRNAscan-SE/tRNAscan-SE.config $(WORKFLOW_DOCS_DIR)
 
 wait	:
 	@echo "Installing wait workflows in $(WORKFLOW_DOCS_DIR)"
