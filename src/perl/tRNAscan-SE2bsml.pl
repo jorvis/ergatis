@@ -101,16 +101,17 @@ use strict;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-use Ergatis::Logger;
-use Ergatis::IdGenerator;
+use Workflow::Logger;
+use Workflow::IdGenerator;
 use Chado::Gene;
 use BSML::GenePredictionBsml;
+use BSML::BsmlBuilder;
 
 my $input;      # Input file name
 my $output;     # Output file name
-my $inputFsa;   # fasta input to tRNAscan-SE
+my $fasta_input;   # fasta input to tRNAscan-SE
 my $project;    # project id
-my $idcreator;  # Ergatis::IdGenerator object
+my $idcreator;  # Workflow::IdGenerator object
 my $bsml;       # BSML::BsmlBuilder object
 my $data;       # parsed tRNAscan-SE data
 my $debug = 4;  # debug value.  defaults to 4 (info)
@@ -128,18 +129,25 @@ my $results = GetOptions (\%options,
 
 
 # Set up the logger
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 ## make sure all passed options are peachy
 &check_parameters(\%options);
 
-$data = &parse_tRNAscanSE_input( $input );
-$bsml = &generateBsml( $data );
+# Use the Gene.pm module if there exists a non-empty input
+# otherwise just dump an 'empty' bsml file.
+if (-s $input) {
+    $data = &parse_tRNAscanSE_input( $input );
+    $bsml = &generateBsml( $data );
+    $bsml->writeBsml( $output );
+} else {
+    $bsml = &makeEmptyBsml;
+    $bsml->write( $output );
+}
 
-$bsml->writeBsml( $output );
 
 exit (0);
 
@@ -250,14 +258,14 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $doc = new BSML::GenePredictionBsml( 'tRNAscan-SE', $inputFsa );
+    my $doc = new GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
 
     foreach my $gene(@{$data}) {
         $doc->addGene($gene);
     }
 
     my $seqId;
-    open(IN, "< $inputFsa") or &_die("Unable to open $inputFsa");
+    open(IN, "< $fasta_input") or &_die("Unable to open $fasta_input");
     while(<IN>) {
         #assume it's a single fasta file
         if(/^>([^\s+]+)/) {
@@ -267,7 +275,7 @@ sub generateBsml {
     }
     close(IN);
 
-    my $addedTo = $doc->setFasta($seqId, $inputFsa);
+    my $addedTo = $doc->setFasta($seqId, $fasta_input);
     &_die("$seqId was not a sequence associated with the gene") unless($addedTo);
 
     return $doc;
@@ -330,7 +338,7 @@ sub check_parameters {
 
     ## Make sure we're given the input fasta
     if ($options{'fasta_input'}) {
-        $inputFsa = $options{'fasta_input'};
+        $fasta_input = $options{'fasta_input'};
     } else {
         $error .= "--fasta_input is a required option\n";
     } 
@@ -346,7 +354,7 @@ sub check_parameters {
     if ($options{'id_repository'}) {
 
         # we're going to generate ids
-        $idcreator = new Ergatis::IdGenerator('id_repository' => $options{'id_repository'});
+        $idcreator = new Workflow::IdGenerator('id_repository' => $options{'id_repository'});
 
         # Set the pool size
         $idcreator->set_pool_size('gene'=>30,'tRNA'=>30,'exon'=>30,'CDS'=>30);
@@ -365,6 +373,47 @@ sub check_parameters {
     return 1;
 
 } # END OF check_parameters 
+
+sub makeEmptyBsml {
+# Create a BSML doc that contains no genes, just the input sequence and links
+# to the anlaysis.
+
+    my $doc = new BSML::BsmlBuilder();
+   
+    $doc->makeCurrentDocument();
+
+    my $seqId;
+    my $length;
+    my $sequence;
+    my $defline;
+
+    open(IN, "< $fasta_input") or &_die("Unable to open $fasta_input");
+    while(<IN>) {
+        chomp;
+        #assume it's a single fasta file
+        if (/^>([^\s+]+)/) {
+            $seqId = $1;
+            $defline = $_;
+        } else {
+            $sequence .= $_;
+        }
+    }
+    close(IN);
+    $length = length($sequence);
+ 
+    my $seq = $doc->createAndAddSequence($seqId, $seqId, $length, 'na', 'assembly');
+    
+    $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $seqId);
+
+    $seq->addBsmlLink('analysis','#tRNAscan-SE_analysis', 'input_of');
+
+    $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline); 
+
+    $doc->createAndAddAnalysis(id => 'tRNAscan-SE_analysis', sourcename =>$output);
+
+    return $doc;
+
+}
 
 sub _pod {
 # Used to display the perldoc help.
