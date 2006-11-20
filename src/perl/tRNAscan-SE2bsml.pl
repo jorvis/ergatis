@@ -202,7 +202,7 @@ sub parse_tRNAscanSE_input {
             my $complement = ($$arr[1] > $$arr[2]) ? 1 : 0;
 
             ## First, create the gene model object
-            my $currGene = new Chado::Gene ( $idcreator->next_id( 'type' => 'gene',
+            my $currGene = new Gene ( $idcreator->next_id( 'type' => 'gene'
                                                            'project' => $project ),
                                       ($complement) ? $$arr[2] : $$arr[1],
                                       ($complement) ? $$arr[1] : $$arr[2],
@@ -258,7 +258,7 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $doc = new BSML::GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
+    my $doc = new GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
 
     foreach my $gene(@{$data}) {
         $doc->addGene($gene);
