@@ -60,6 +60,8 @@ use lib '/usr/local/devel/ANNOTATION/ard/current/lib/5.8.8';
 use BSML::BsmlReader;
 use BSML::BsmlParserSerialSearch;
 
+use Data::Dumper;
+
 my %options = ();
 my $results = GetOptions (\%options,
                           'input_list|i=s',
@@ -93,10 +95,10 @@ my $parser = new BSML::BsmlParserSerialSearch( SequenceCallBack => \&sequenceHan
                                                ReadFeatureTables => 1
                                              );
                                              
-my $seq_id = '';
-my %ngaps = ();
 ## used to track database query error state
 my $QUERYFAIL = 0;
+my %ngaps;
+my $seq_id;
 
 open (IN, $options{'input_list'}) || log_die("could not open input list '".$options{'input_list'}."' for reading");
 my @bsml_files = <IN>;
@@ -105,19 +107,32 @@ close IN;
 my $dbh = connectToDb($options{'server'},'Sybase','egc','egcpwd',$options{'database'});
 
 foreach my $bsml_file(@bsml_files) {
+    %ngaps = ();
+    $seq_id = '';
+    
     chomp $bsml_file;
+    
     unless (-e $bsml_file) {
         log_error("BSML input file '$bsml_file' does not exist");
         next;
     }
+   
+    log_this("processing '$bsml_file'\n");
     
-    $parser->parse($bsml_file) || log_die("failed parsing '$bsml_file'");
-    foreach my $asmbl_id(keys(%ngaps)) {
+    $parser->parse($bsml_file);
+
+    foreach my $assembly(keys(%ngaps)) {
+        log_this("storing N-gaps for assembly '$assembly'\n");
+        $assembly =~ /$options{database}\.assembly\.(\d+)/i || die "sequence identifier '$assembly' has unsupported format";
+        my $asmbl_id = $1;
+        log_this("deleting gene predictions for assembly '$asmbl_id'\n");
         delete_gene_predictions($dbh, $asmbl_id, "NGAP");
-        foreach my $ngap(@{$ngaps{$asmbl_id}}) {
+        foreach my $ngap(@{$ngaps{$assembly}}) {
             ## load forward pair
+            log_this("loading forward pair\n");
             loadModelPair($dbh, $asmbl_id, $ngap->[0], $ngap->[1]);
             ## load reverse pair
+            log_this("loading reverse pair\n");
             loadModelPair($dbh, $asmbl_id, $ngap->[1], $ngap->[0]);
         }
     }
@@ -147,16 +162,18 @@ sub loadModelPair {
     log_this("Loading up the model...\n");
     my $model_feat_name = &getNextName ($dbproc, $asmbl_id, "model");
     &insert_asm_feature($dbproc, $model_feat_name, $asmbl_id, "model", $coord1, $coord2, $by, "workflow", 0, 0);
+    log_this("insert_phys_ev($dbproc, $model_feat_name, \"NGAP\", $by);");
     &insert_phys_ev($dbproc, $model_feat_name, "NGAP", $by);
     log_this("Loading up exon...\n");
     my $exon_feat_name = &getNextName ($dbproc, $asmbl_id, "exon");
     &insert_asm_feature($dbproc, $exon_feat_name, $asmbl_id, "exon", $coord1, $coord2, $by, "workflow", 0,0);
     &insert_phys_ev($dbproc, $exon_feat_name, "NGAP", $by);
-    &insert_feat_link($dbproc, $exon_feat_name, $model_feat_name, "egc", "now");
+    &insert_feat_link($dbproc, $exon_feat_name, $model_feat_name, $by, "now");
 }
 
 ## This sub is taken from Egc_library.pm
 sub getNextName {
+    
     my($dbproc, $id, $type) = @_;
     my($query, $num, $zerobuf, $zeros, $name, %char);
     
@@ -173,11 +190,13 @@ sub getNextName {
     $char{'rna-exon'} = 'x';
     if (!exists $char{$type}) {
         $char{$type} = lc $type;
-    }
+    } 
 
     $num = &getMaxNo($dbproc, $id, $type);
+
     $num++;
     $zeros= 5 - length($num);
+    $zerobuf = '';
     for (my $i=0; $i<$zeros; $i++){
         $zerobuf .= "0";
     }
@@ -226,7 +245,7 @@ sub insert_asm_feature {
                . "from asm_feature "
                . "where feat_name = \"$feat_name\" "
                . "and feat_type = \"$feat_type\"";
-        log_this(print "QUERY: $query\n");
+        log_this("QUERY: $query\n");
         $result = &single_sql($dbproc, $query);
         return($result);
     }
@@ -361,7 +380,7 @@ sub do_sql {
             $QUERYFAIL = 0; #initialize
             eval {
                 $statementHandle->execute(@values) || print STDERR "failed query: $query\nValues: @values\n";
-                if($statementHandle->{syb_more_results} ne "") {
+                if(defined($statementHandle->{syb_more_results}) && $statementHandle->{syb_more_results} ne "") {
                     while ( @row = $statementHandle->fetchrow() ) {
                         push(@results,join($delimeter,@row));
                     }
@@ -373,7 +392,7 @@ sub do_sql {
                 $QUERYFAIL = 1;
             }
             
-        } while ($statementHandle->errstr() =~ /deadlock|Insufficient amount of memory/);
+        } while (defined($statementHandle->errstr()) && $statementHandle->errstr() =~ /deadlock|Insufficient amount of memory/);
         #release the statement handle resources
         $statementHandle->finish;
     }
