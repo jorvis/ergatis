@@ -3,11 +3,9 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-use Date::Manip;
 use Ergatis::ConfigFile;
 use Ergatis::Monitor;
 use HTML::Template;
-use POSIX;
 use XML::Twig;
 
 my $q = new CGI;
@@ -17,6 +15,10 @@ print $q->header( -type => 'text/html' );
 my $tmpl = HTML::Template->new( filename => 'templates/component_summary.tmpl',
                                 die_on_bad_params => 1,
                               );
+
+## setting while testing.  if true, the parser will go down the the most finite command level
+#   this takes too long on larger command sets, so i'm using it for testing now.
+my $max_command_resolution = 0;
 
 ## will be like:
 ## /usr/local/annotation/TGA1/workflow/runtime/split_fasta/29134_test2/component.xml
@@ -172,20 +174,16 @@ sub parseCommandSet {
     ##  one command each here (mostly for parsing speed purposes)
     foreach my $command ( $commandSet->children('command') ) {
 
-        if ( $command->first_child('state') ) {
-           my $state = $command->first_child('state')->text();
-        
-            ## increase the count for this state
-            $states{ $state }++;            
-            
-            ## if the state is running note it
-            if ( $state eq 'running' ) {
-                $current_step = $command->first_child('name')->text();
-            }
-            
-        } else {
-            ## state may not have been created yet (this should be rare)
-            $states{unknown}++;
+        ## all commands should have a state already, so I'll not check here.  this may
+        #   need to be changed.
+        my $state = $command->first_child('state')->text();
+
+        ## increase the count for this state
+        $states{ $state }++;            
+
+        ## if the state is running note it
+        if ( $state eq 'running' ) {
+            $current_step = $command->first_child('name')->text();
         }
 
         $command_count++;
@@ -202,70 +200,175 @@ sub parseCommandSet {
     }
 
     ## all iterative components will have at least one commandSet to parse (file-based subflow iN.xml)
-    #   don't do this if the file being parsed IS an gN.xml file.  that would give fulle
-    #   command resolution but it too expensive for now.
-    if ( $fileparsed =~ /[gi]\d+.xml/ || $fileparsed =~ /component.xml/) {
+    #   these will be linked via fileName elements withinin commandSets
+    if ( $fileparsed =~ /component.xml/) {
         for my $subflowCommandSet ( $commandSet->children('commandSet') ) {
             ## this command set should contain a fileName element
             my $fileName = $subflowCommandSet->first_child("fileName") || 0;
             if ($fileName) {
                 if (-e $fileName->text || -e $fileName->text . '.gz') {
-                    parseComponentSubflow($fileName->text);
+                    parseIteratorFile($fileName->text);
                 }
             }
         }
-    } else {
-        print STDERR "skipping $fileparsed\n";
     }
     
-    ## don't look into the gN.xml here (yet).
-    if ($fileparsed !~ /g\d+.xml/ ) {
-        my $text = $commandSet->sprint;
-        while ( $text =~ m|<message>(.*?)</message>|g) {
-            my $msg = $1;
-            
-            ## don't do anything with empty messages
-            next unless length $msg > 0;
-            
-            ## don't include the "Command set with name: ? finished" messages
-            next if ($msg =~ /Command set with name\:.+?finished/i);
-            ## don't include "Job terminated." messages
-            next if ($msg =~ /^Job terminated\.$/i);
-            ## don't include "command finished" messages
-            next if ($msg eq 'command finished');
+    my $text = $commandSet->sprint;
+    while ( $text =~ m|<message>(.*?)</message>|g) {
+        my $msg = $1;
 
-            ## can we simplify this message?
-            if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
-                $msg = $1;
-            }
+        ## don't do anything with empty messages
+        next unless length $msg > 0;
 
-            $msg =~ s/\</\&lt\;/g;
-            $msg =~ s/\>/\&gt\;/g;
-            
-            ## add this to the messages array if it hasn't been seen yet.
-            push @messages, $msg unless $message_counts{$msg}++;
+        ## don't include the "Command set with name: ? finished" messages
+        next if ($msg =~ /Command set with name\:.+?finished/i);
+        ## don't include "Job terminated." messages
+        next if ($msg =~ /^Job terminated\.$/i);
+        ## don't include "command finished" messages
+        next if ($msg eq 'command finished');
+
+        ## can we simplify this message?
+        if ($msg =~ /SystemCommandProcessor line \d+\. (.+)/) {
+            $msg = $1;
         }
+
+        $msg =~ s/\</\&lt\;/g;
+        $msg =~ s/\>/\&gt\;/g;
+
+        ## add this to the messages array if it hasn't been seen yet.
+        push @messages, $msg unless $message_counts{$msg}++;
     }
 }
 
 
-sub parseComponentSubflow {
-    ## currently this file should be the component's iN.xml
-    my ($groupsXML) = @_;
+sub parseIteratorFile {
+    ## this file should be the component's iN.xml
+    my ($iN_xml) = @_;
     
-    my $groupsXML_fh;
-    if ($groupsXML =~ /\.gz/) {
-        open($groupsXML_fh, "<:gzip", "$groupsXML") || die "can't read $groupsXML: $!"; 
-    } elsif ( ! -e $groupsXML && -e "$groupsXML.gz" ) {
-        open($groupsXML_fh, "<:gzip", "$groupsXML.gz") || die "can't read $groupsXML: $!"; 
+    my $iN_xml_fh;
+    if ($iN_xml =~ /\.gz/) {
+        open($iN_xml_fh, "<:gzip", "$iN_xml") || die "can't read $iN_xml: $!"; 
+    } elsif ( ! -e $iN_xml && -e "$iN_xml.gz" ) {
+        open($iN_xml_fh, "<:gzip", "$iN_xml.gz") || die "can't read $iN_xml: $!"; 
     } else {
-        open($groupsXML_fh, "<$groupsXML") || die "can't read $groupsXML: $!";       
+        open($iN_xml_fh, "<$iN_xml") || die "can't read $iN_xml: $!";       
     }
     
-    my $twig = new XML::Twig;
-       $twig->parse($groupsXML_fh);
-    my $commandSetRoot = $twig->root;
-    
-    parseCommandSet( $commandSetRoot->first_child('commandSet'), $groupsXML );
+    ## all the commandSet elements in the iN.xml file will reference groups (gN.xml) files
+    #   via fileName elements
+    my $twig = XML::Twig->new(
+                    twig_roots => {
+                        'commandSet/fileName' => sub {
+                                                     parseGroupFile( $_[1]->text );
+                                                     $_[0]->purge();
+                                                 },
+                    },
+               );
+    $twig->parse($iN_xml_fh);
 }
+
+
+sub parseGroupFile {
+    ## this file should be a single gN.xml file
+    #   it will have both commands and commandSets.  the commands should simply
+    #   be counted by the commandSets reference gN.iter.xml files via fileName elements
+    my ($gN_xml) = @_;
+    
+    my $gN_xml_fh;
+    if ($gN_xml =~ /\.gz/) {
+        open($gN_xml_fh, "<:gzip", "$gN_xml") || die "can't read $gN_xml: $!"; 
+    } elsif ( ! -e $gN_xml && -e "$gN_xml.gz" ) {
+        open($gN_xml_fh, "<:gzip", "$gN_xml.gz") || die "can't read $gN_xml: $!"; 
+    } else {
+        open($gN_xml_fh, "<$gN_xml") || die "can't read $gN_xml: $!";       
+    }
+    
+    my $twig;
+    
+    if ( $max_command_resolution ) {
+    
+        $twig = XML::Twig->new(
+                    twig_roots => {
+                        'command/state' => sub {
+                                               $states{ $_[1]->text }++;
+                                               $command_count++;
+                                               $_[0]->purge();
+                                           },
+                        'commandSet/fileName' => sub {
+                                                     if ( -e $_[1]->text ) {
+                                                        parseGroupIterFile( $_[1]->text );
+                                                     }
+                                                     
+                                                     $_[0]->purge();
+                                                 },
+                    },
+         );
+    } else { 
+    
+        $twig = XML::Twig->new(
+                    twig_roots => {
+                        'command/state' => sub {
+                                               $states{ $_[1]->text }++;
+                                               $command_count++;
+                                               $_[0]->purge();
+                                           },
+                        'commandSet/state' => sub {
+                                                       $states{ $_[1]->text }++;
+                                                       $command_count++;
+                                                       $_[0]->purge();
+                                                  },
+                    },
+         );
+    }
+    $twig->parse($gN_xml_fh);
+}
+
+sub parseGroupIterFile {
+    ## this file will be a single gN.iter.xml file
+    #   it is made up of only commandSets, each referencing one of the iterated files.
+    #   for command counts, we need to only look at the status elements of each.
+    my ($gN_iter_xml) = @_;
+    
+    my $gN_iter_xml_fh;
+    if ($gN_iter_xml =~ /\.gz/) {
+        open($gN_iter_xml_fh, "<:gzip", "$gN_iter_xml") || die "can't read $gN_iter_xml: $!"; 
+    } elsif ( ! -e $gN_iter_xml && -e "$gN_iter_xml.gz" ) {
+        open($gN_iter_xml_fh, "<:gzip", "$gN_iter_xml.gz") || die "can't read $gN_iter_xml: $!"; 
+    } else {
+        open($gN_iter_xml_fh, "<$gN_iter_xml") || die "can't read $gN_iter_xml: $!";       
+    }
+    
+    return;
+    
+    my $twig = XML::Twig->new(
+                    twig_roots => {
+                        'commandSet/status' => sub {
+                                                    my ($t, $elt) = @_;
+                                                    
+                                                    for my $status ( $elt->children ) {
+                                                        my $gi = $status->gi;
+                                                        
+                                                        next if ( $gi eq 'total' || $gi eq 'message' );
+                                                        if ( $status->text ) {
+                                                            $states{ $status->gi } += $status->text;
+                                                            $command_count += $status->text;
+                                                        }
+                                                    }
+                                                    
+                                                    $t->purge();
+                                               },
+                    },
+               );
+    $twig->parse($gN_iter_xml_fh);
+}
+
+
+
+
+
+
+
+
+
+
 
