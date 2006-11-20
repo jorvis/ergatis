@@ -2,7 +2,7 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>repeatmasker compute</name>
+        <name>trf compute</name>
         <command>
             <type>RunUnixCommand</type>
             <name>trf</name>
