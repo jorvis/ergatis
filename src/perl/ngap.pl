@@ -163,7 +163,7 @@ foreach $seq_id(keys(%ngaps)) {
                             'input_of'
                           );
 
-    my $feature_table  = $doc->createAndAddFeatureTable($seq_stub);
+    my $feature_table;
     foreach my $ngap_ref(@{$ngaps{$seq_id}}) {
         unless ($feature_table) {
             $feature_table = $doc->createAndAddFeatureTable($seq_stub);
