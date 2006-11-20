@@ -12,7 +12,8 @@ and output location options.
 =head1 SYNOPSIS
 
 USAGE: trf2bsml.pl 
-            --input=/path/to/somefile.dat 
+            --input=/path/to/somefile.dat
+            --trf_exec=/usr/local/bin/trf
           [ --output_dir=/path/to/output.bsml ]
             --match=2
             --mismatch=7
@@ -52,6 +53,9 @@ B<--minscore,-n>
 
 B<--maxperiod,-a>
     maximum period size to report.
+
+B<--trf_exec,-f>
+    path to the trf executable.
 
 B<--other_opts,-t>
     This should be put in quotes.  Acceptable options are:
@@ -100,9 +104,7 @@ If not passed, /tmp will be used.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Ergatis::Logger;
-}
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -116,6 +118,7 @@ my $results = GetOptions (\%options,
               'minscore|n=s',
               'maxperiod|a=s',
               'other_opts|t=s',
+              'trf_exec|f=s',
               'debug|d=s',
               'log|l=s',
 			  'help|h') || pod2usage();
@@ -140,7 +143,7 @@ my $starting_dir = `pwd`;
 chdir($options{output_dir}) || $logger->logdie("can't cd to temp space $options{output_dir}");
 
 ## run the command
-my $cmd = "/usr/local/bin/trf $options{input} $options{match} $options{mismatch} $options{delta} $options{pm} $options{pi} $options{minscore} $options{maxperiod} $options{other_opts}";
+my $cmd = "$options{trf_exec} $options{input} $options{match} $options{mismatch} $options{delta} $options{pm} $options{pi} $options{minscore} $options{maxperiod} $options{other_opts}";
 system($cmd);
 
 ## from the author: trf returns the number of sequences processed.  failures are reported
@@ -155,6 +158,11 @@ chdir($starting_dir);
 exit(0);
 
 sub check_parameters {
+    
+    ## trf_exec is required
+    unless ( $options{trf_exec} ) {
+        $logger->logdie("--trf_exec is a required option");
+    }
     
     ## make sure input file exists
     if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
