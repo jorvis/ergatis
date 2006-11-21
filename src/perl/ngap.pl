@@ -13,9 +13,13 @@ ngap.pl - find N-gap positions in nucleotide sequences
 USAGE: ngap.pl 
         --input=/path/to/fasta_file.fsa
         --output=/path/to/output.bsml
+        --id_repository=/path/to/some/repository
       [ --project=aa1 ]
 
 =head1 OPTIONS
+
+B<--id_repository,-r> 
+    Path to the project's ID repository, for use by the IdGenerator module. 
 
 B<--input,-i> 
     Input FASTA or multi-FASTA format file.
@@ -69,8 +73,8 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Ergatis::Logger;
+use Ergatis::IdGenerator;
 use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
@@ -78,10 +82,9 @@ my %options = ();
 my $results = GetOptions (\%options, 
               'input|i=s',
               'output|o=s',
+              'id_repository|r=s',
               'project|p=s',
               'log|l=s',
-              'command_id=s',       ## passed by workflow
-              'logconf=s',          ## passed by workflow (not used)
               'debug=s',
               'help|h') || pod2usage();
 
@@ -120,7 +123,7 @@ my $next_id = 1;
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+my $idcreator = new Ergatis::IdGenerator( id_repository => $options{id_repository} );
 
 ## open the input file for parsing
 open (IN, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -164,16 +167,19 @@ foreach $seq_id(keys(%ngaps)) {
                           );
 
     my $feature_table;
+    
+    ## for more efficient ID generation
+    $idcreator->set_pool_size( gap => scalar @{$ngaps{$seq_id}} );
+    
     foreach my $ngap_ref(@{$ngaps{$seq_id}}) {
         unless ($feature_table) {
             $feature_table = $doc->createAndAddFeatureTable($seq_stub);
         }
         my $ngap = $doc->createAndAddFeature(
                                                 $feature_table, 
-                                                $idcreator->new_id(
-                                                                    db => $options{'project'},
-                                                                    so_type => 'gap',
-                                                                    prefix  => $options{'command_id'}
+                                                $idcreator->next_id(
+                                                                    project => $options{'project'},
+                                                                    type => 'gap'
                                                                   ),
                                                 '',
                                                 'gap'
@@ -210,16 +216,16 @@ sub find_ngaps {
 }
 
 sub check_parameters {
-    ## check that input and output file parameters were provided    
-    unless (defined($options{'input'}) && defined($options{'output'})) {
-            $logger->logdie("--input and --output are required parameters");
+    ## check required options
+    my @required = qw( input output id_repository );
+    for ( @required ) {
+        unless ( defined $options{$_} ) {
+                $logger->logdie("--$_ is a required parameter");
+        }
     }
 
     ## make sure input file exists
     if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
-    
-    ## make sure output file doesn't exist yet
-    if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
     
     return 1;
 }
