@@ -6,7 +6,10 @@ var next_set_num = 0;
 var new_input_fields_row;
 var no_input_message_row;
 var repository_root;
+
+// set in the ergatis.ini file
 var build_directory;
+var builder_animations = true;
 
 var pipeline_root_node;
 var pipeline_root_panel_node;
@@ -20,6 +23,10 @@ window.onload = function() {
     pipeline_root_panel_node = new TreeNode('pipeline_root_panel', 'panel');
     pipeline_root_node.setNodeBelow(pipeline_root_panel_node);
     pipeline_root_panel_node.setNodeAbove(pipeline_root_node);
+
+    if ( getObject('builder_animations').value == 0 ) {
+        builder_animations = false;
+    }
 
     new_input_fields_row = new fx.Combo('new_input_fields_row', {duration: 400});
     new_input_fields_row.hide();

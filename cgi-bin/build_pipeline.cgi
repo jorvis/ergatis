@@ -46,6 +46,7 @@ $tmpl->param( SUBMENU_LINKS       => [
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
 $tmpl->param( COMPONENTS => \@components );
 $tmpl->param( BUILD_DIRECTORY => "$build_area/" .temp_pipeline_id() );
+$tmpl->param( BUILDER_ANIMATIONS => $ergatis_cfg->val( 'display_settings', 'builder_animations' ) || 0 );
 
 print $tmpl->output;
 

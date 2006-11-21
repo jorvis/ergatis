@@ -13,8 +13,20 @@ function Component( component_id ) {
     this.id = component_id;
     this.node = new TreeNode(this.id, 'component');
     
-    this.config_view = new fx.Combo( component_id + '_config', {duration: 400});
-    this.config_view.hide();
+    if ( builder_animations ) {
+        // if animations are turned on, we'll use moo.fx
+        this.config_view = new fx.Combo( component_id + '_config', {duration: 400});
+        this.config_view.hide();
+    } else {
+        // else we'll roll our own and just toggle visibility via CSS
+        this.config_view = new Object();
+        this.config_view.component = this;
+        this.config_view.hide = _hide;
+        this.config_view.show = _show;
+        this.config_view.toggle = _toggle;
+        
+        this.config_view.hide();
+    }
     
     // object methods
     this.checkArrows   = check_arrows;
@@ -26,6 +38,25 @@ function Component( component_id ) {
     this._move_down    = move_component_down;
     
     components.length++;
+}
+
+function _hide() {
+    getObject( this.component.id + '_config' ).style.display = 'none';
+    this.visible = false;
+}
+
+function _show() {
+    getObject( this.component.id + '_config' ).style.display = 'block';
+    this.visible = true;
+}
+
+function _toggle() {
+    if ( this.visible == true ) {
+        this.hide();
+        
+    } else {
+        this.show();
+    }
 }
 
 /*
