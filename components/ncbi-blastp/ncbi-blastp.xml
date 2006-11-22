@@ -21,7 +21,7 @@
         </command>
         <!--Processing-->
         <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_KEY$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
         <!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>

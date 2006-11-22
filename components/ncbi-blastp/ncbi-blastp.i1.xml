@@ -8,10 +8,10 @@
             <name>ncbi-blastp</name>
             <state>incomplete</state>
             <executable>$;BLASTALL_EXEC$;</executable>
-            <arg>-p blastp -i $;ITER_FILE_PATH$; -d $;DATABASE_PATH$; -e $;EXPECT$; -F '$;FILTER$;' -b $;DATABASE_MATCHES$; -v $;DESCRIPTIONS$; -M $;MATRIX$; $;OTHER_OPTS$;</arg>
+            <arg>-p blastp -i $;I_FILE_PATH$; -d $;DATABASE_PATH$; -e $;EXPECT$; -F '$;FILTER$;' -b $;DATABASE_MATCHES$; -v $;DESCRIPTIONS$; -M $;MATRIX$; $;OTHER_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>
         </command>
         <command>
@@ -21,11 +21,11 @@
             <executable>$;BIN_DIR$;/wu-blast2btab</executable>
             <param>  
                 <key>--input</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>
             <param>  
                 <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
             </param>
         </command>
         <command>
@@ -35,11 +35,11 @@
             <executable>$;BIN_DIR$;/blastbtab2bsml</executable>
             <param>  
                 <key>--btab_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
             </param>
             <param>  
                 <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
             </param>
             <param>  
                 <key>--pvalue</key>
@@ -48,6 +48,14 @@
             <param>  
                 <key>--class</key>
                 <value>protein</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>ncbi-blastp_analysis</value>
+            </param>
+            <param>  
+                <key>--query_file_path</key>
+                <value>$;I_FILE_PATH$;</value>
             </param>
         </command>
         <command>
@@ -65,7 +73,7 @@
             </param>
             <param>  
                 <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
             </param>
             <param>  
                 <key>--componenturl</key>
@@ -87,7 +95,7 @@
             <executable>$;BIN_DIR$;/compress_file</executable>
             <param>  
                 <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>
             <param>  
                 <key>--compress</key>
@@ -95,7 +103,7 @@
             </param>
             <param>  
                 <key>--list_file</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.raw.list</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw.list</value>
             </param>
         </command>
         <command>
@@ -107,7 +115,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
         </command>
     </commandSet>
 </commandSetRoot>
