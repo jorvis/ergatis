@@ -10,7 +10,7 @@
             <executable>$;BIN_DIR$;/split_multifasta</executable>
             <param>  
                 <key>--input_file</key>
-                <value>$;ITER_FILE_PATH$;</value>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
                 <key>--output_dir</key>
@@ -18,11 +18,11 @@
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;TMP_DIR$;/i1/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.list</value>
+                <value>$;TMP_DIR$;/i1/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.list</value>
             </param>
             <param>  
                 <key>--output_file_prefix</key>
-                <value>'$;ITER_FILE_BASE$;_'</value>
+                <value>'$;I_FILE_BASE$;_'</value>
             </param>
             <param>  
                 <key>--seqs_per_file</key>
