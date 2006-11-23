@@ -21,14 +21,15 @@ B<--input_list,-i>
     components are:  repeatmasker, trf.
 
 B<--repeat_file,-r> 
-    The full path to the repeat library used.  This will be populated in ORF_attribute.score3  Note:  If loading trf results, enter 'trf' for this parameter.
+    The full path to the repeat library used.  This will be populated in ORF_attribute.score3  
+    Note:  If loading trf results, enter 'trf' for this parameter.
 
 B<--database,-d> 
     Sybase project database ID.
 
 B<--delete_existing,-x> 
     optional.  will first delete any existing repeats for this repeat type for each
-    assembly passed.
+    assembly passed where the match is on the same repeat_file.
 
 B<--log,-d> 
     optional.  will create a log file with summaries of all actions performed.
@@ -122,10 +123,10 @@ my $qry = "INSERT INTO asm_feature (feat_type, feat_method, end5, end3, assignby
 my $asm_feature_insert = $dbh->prepare($qry);
 
 ## prepare a statement for deleting from asm_feature
-$qry = "DELETE FROM asm_feature " .
-          "WHERE feat_type = 'repeat' " .
-          "   AND feat_method = ? " .
-          "   AND asmbl_id = ? ";
+$qry = qq{
+    DELETE FROM asm_feature
+    WHERE feat_name = ? 
+};
 my $asm_feature_delete = $dbh->prepare($qry);
 
 ## prepare a statement for inserting into ORF_attribute
@@ -137,11 +138,22 @@ my $orf_attribute_insert = $dbh->prepare($qry);
 ## score3 needs to have name of fasta file searched
 
 ## prepare a statement for deleting from ORF_attribute
-$qry = "DELETE FROM ORF_attribute " .
-          "WHERE feat_name LIKE ? " .
-          "  AND att_type = 'repeat' " .
-          "  AND method = ?";
+$qry = qq{
+    DELETE FROM ORF_attribute
+    WHERE feat_name = ?
+};
 my $orf_attribute_delete = $dbh->prepare($qry);
+
+## prepare a statement to fetch any feat_names from a previous, similar search
+$qry = qq{
+    SELECT feat_name 
+    FROM ORF_attribute
+    WHERE att_type = 'repeat'
+    AND feat_name LIKE ?
+    AND method = ?
+    AND score3 = ?
+};
+my $previous_orf_selection = $dbh->prepare($qry);
 
 foreach my $file (@files) {
     _log("processing $file");
@@ -161,11 +173,15 @@ foreach my $file (@files) {
     
     ## are we deleting?
     if ( $options{delete_existing} ) {
-        _log("deleting $prog_name entries from asm_feature where asmbl_id = $asmbl_id");
-        $asm_feature_delete->execute( $prog_name, $asmbl_id );
+        $previous_orf_selection->execute( "$asmbl_id.repeat%", $prog_name, $options{repeat_file} );
         
-        _log("deleting $prog_name entries from ORF_attribute where feat_name like $asmbl_id.repeat%");
-        $orf_attribute_delete->execute( "$asmbl_id.repeat%", $prog_name );
+        while ( my $res = $previous_orf_selection->fetchrow_hashref ) {
+            _log("deleting previous match from asm_feature ( $res->{feat_name} )");
+            $asm_feature_delete->execute( $res->{feat_name} );
+
+            _log("deleting previous match from ORF_attribute ( $res->{feat_name} )");
+            $orf_attribute_delete->execute( $res->{feat_name} );     
+        }
     }
     
     ## get the latest database ID
@@ -201,6 +217,7 @@ $asm_feature_insert->finish();
 $asm_feature_delete->finish();
 $orf_attribute_insert->finish();
 $orf_attribute_delete->finish();
+$previous_orf_selection->finish();
 $dbh->disconnect();
 
 exit;
