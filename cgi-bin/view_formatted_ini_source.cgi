@@ -43,9 +43,7 @@ for my $section ( $ini->Sections ) {
         my $url;
         
         ## get any comment and format
-        my $comment = $ini->GetParameterComment($section, $parameter);
-        $comment =~ s/^\;*(.*)/$1/;
-        $comment =~ s/\;\;/<br>&nbsp;/g;
+        my $comment = $ini->get_comment_html($section, $parameter);
         
         ## look for any linkable xml
         if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {

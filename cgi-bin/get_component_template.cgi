@@ -3,7 +3,6 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
-use Config::IniFiles;
 use Ergatis::ConfigFile;
 use HTML::Template;
 
@@ -40,7 +39,7 @@ my $sections = [];
 if ( -e $component_ini ) {
     
     ## read this config file
-    my $component_cfg = new Config::IniFiles( -file => $component_ini );
+    my $component_cfg = new Ergatis::ConfigFile( -file => $component_ini );
     
     ## it's possible that later the first dd could be comments and the second the value
     for my $section ( $component_cfg->Sections() ) {
@@ -66,13 +65,15 @@ if ( -e $component_ini ) {
                                                         pretty_label => $pretty_label, 
                                                         value => $component_cfg->val($section, $parameter),
                                                         selectable => 1,
-                                                        section => $section };            
+                                                        section => $section,
+                                                        comment => $component_cfg->get_comment_html($section, $parameter) };            
             } else {
                 push @{$$sections[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
                                                         value => $component_cfg->val($section, $parameter),
                                                         selectable => 0,
-                                                        section => $section };
+                                                        section => $section,
+                                                        comment => $component_cfg->get_comment_html($section, $parameter) };
             }                
         }
     }

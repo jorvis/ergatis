@@ -48,16 +48,16 @@
                     <td><input type='text' id='new_input' name='new_input' size='50'></td>
                     <td>
                         <select id='new_input_type' name='new_input_type'>
-                            <option value='input_file'>single file
-                            <option value='input_list' selected>file list
-                            <option value='input_dir'>directory of files
+                            <option value='file'>file
+                            <option value='list' selected>list
+                            <option value='directory'>directory
                         </select>
                     </td>
                 </tr>
             </table>
         </div>
         <div id='input_controls_container'>
-            <a id='start_control' onclick="startNewInput()"><img src='/ergatis/images/icon_add_round_green.png' alt='add input'>add input</a>
+            <a id='start_control' onclick="startNewInput()"><img src='/ergatis/images/icon_add_round_green.png' alt='add input'>add new input</a>
             <a id='save_control' onclick="saveNewInput()"><img src='/ergatis/images/bullet_disk.png' alt='add input'>save new input</a>
             <a id='cancel_control' onclick="cancelNewInput()"><img src='/ergatis/images/bullet_delete.png' alt='add input'>cancel</a>
         </div>

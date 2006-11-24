@@ -5,6 +5,11 @@
         <td><TMPL_VAR NAME=NAME></td>
     </tr>
     <TMPL_LOOP NAME=PARAMETERS>
+    <TMPL_IF NAME=COMMENT>
+    <tr class='comment'>
+        <td>&nbsp;</td><td><TMPL_VAR NAME=COMMENT></td>
+    </tr>
+    </TMPL_IF>
     <tr>
         <td id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
         <TMPL_IF NAME=SELECTABLE>

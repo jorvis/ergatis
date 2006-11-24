@@ -19,7 +19,8 @@ Ergatis::ConfigFile.pm - A class for parsing ergatis config files.
 =head1 DESCRIPTION
 
 This class is a subclass of Config::IniFiles, and adds the ability to import 
-include files (like project.config) and do variable replacement.
+include files (like project.config), do variable replacement and other methods
+described below.
 
 =head1 METHODS
 
@@ -28,6 +29,12 @@ include files (like project.config) and do variable replacement.
 =item I<PACKAGE>->new( file => I<'/path/to/some.ini'> )
 
 Returns a newly created "Ergatis::ConfigFile" object.
+
+=item I<$OBJ>->get_comment( )
+
+Retrieve the comment on any section/param formatted as a text string.  This filters
+any embedded metadata from the comment field that would normally be returned
+vai the standard Config::IniFiles methods.
 
 =item I<$OBJ>->import_includes( )
 
@@ -58,6 +65,24 @@ use Carp;
 use Digest::MD5 qw(md5_hex);
 use base qw(Config::IniFiles);
 
+sub get_comment {
+    my ($self, $section, $param) = @_;
+    
+    my $comment = $self->GetParameterComment($section, $param) || '';
+    $comment =~ s/^\;*(.*)/$1/;
+    $comment =~ s/\;\;/\n/g;
+    
+    return $comment || '';
+}
+
+sub get_comment_html {
+    my ($self, $section, $param) = @_;
+    
+    my $comment = $self->get_comment($section, $param);
+    $comment =~ s/\n /<br>&nbsp;/g;
+    
+    return $comment || '';
+}
 
 ## does not delete the included variables (maybe it should.)
 sub import_includes {
