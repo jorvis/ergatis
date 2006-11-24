@@ -14,7 +14,8 @@ USAGE:  fasta2bsml.pl
         --fasta_input=/path/to/fileORdir | --fasta_list=/path/to/file
         --format=multi|single
         --output=/path/to/somefile.fsa   | /path/to/somedir
-      [ --output_list=/path/to/somefile.list
+      [ --class=assembly
+        --output_list=/path/to/somefile.list
         --output_subdir_size=20000
         --output_subdir_prefix='somename'
         --debug=debug_level 
@@ -22,6 +23,9 @@ USAGE:  fasta2bsml.pl
       ]
 
 =head1 OPTIONS
+
+B<--class,-c> 
+    Sets the class attribute of each Sequence element created.  Default = assembly.
 
 B<--fasta_input,-i> 
     Input files or folders.  Can be a comma-separated list of mixed input types.
@@ -209,6 +213,7 @@ my %options = ();
 my $results = GetOptions (\%options,
                           'fasta_input|i=s',
                           'fasta_list|s=s',
+                          'class|c=s',
                           'fasta_dir|d=s',      ## deprecated
                           'fasta_file|f=s',     ## deprecated
                           'output|o=s',
@@ -330,7 +335,7 @@ for my $file ( @files ) {
             $doc = new BSML::BsmlBuilder;
         }
          
-        my $seq_element = $doc->createAndAddSequence( $id, $seqs{$seqid}{h}, length($seqs{$seqid}{s}) );
+        my $seq_element = $doc->createAndAddSequence( $id, $seqs{$seqid}{h}, length($seqs{$seqid}{s}), undef, $options{class} );
         $logger->debug("adding id $id to the bsml doc") if ($logger->is_debug);
         $doc->createAndAddSeqData( $seq_element, $seqs{$seqid}{s} );
         
@@ -421,10 +426,7 @@ sub check_parameters {
 
     $options{output_subdir_size}   = 0  unless ($options{output_subdir_size});
     $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
-
-    if(0){
-        pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
-    }
+    $options{class} = 'assembly' unless $options{class};
 }
 
 sub loadMultiSequence {
