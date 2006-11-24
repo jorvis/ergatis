@@ -202,10 +202,8 @@ The following will be created:
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-BEGIN {
 use Ergatis::Logger;
 use BSML::BsmlBuilder;
-}
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -335,6 +333,9 @@ for my $file ( @files ) {
         my $seq_element = $doc->createAndAddSequence( $id, $seqs{$seqid}{h}, length($seqs{$seqid}{s}) );
         $logger->debug("adding id $id to the bsml doc") if ($logger->is_debug);
         $doc->createAndAddSeqData( $seq_element, $seqs{$seqid}{s} );
+        
+        ## record the defline
+        $doc->createAndAddBsmlAttribute( $seq_element, 'defline', $seqs{$seqid}{h} );
         
         ## write this doc if we're in single mode.  the only thing we can use is the id,
         #  which needs to be made safe first.
