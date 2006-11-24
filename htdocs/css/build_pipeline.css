@@ -115,6 +115,11 @@ table.config_table select {
     border-bottom: 1px solid rgb(150,150,150);
     background-color: rgb(230,230,230);   
 }
+table.config_table tr.comment {
+    color: rgb(125,125,125);
+    font-size: 90%;
+
+}
 table#input_list {
     border-collapse: collapse;
     border: 1px solid rgb(175,175,175);
