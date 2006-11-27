@@ -279,6 +279,11 @@ function clearNewInput() {
     getObject('new_input_fields_row').style.display = 'none';
 }
 
+function deleteInput( input_id ) {
+    inputs[input_id].delete();
+    updateInputLists();
+}
+
 function makeComponentEditable( component_id ) {
     // display the save button
     getObject(component_id + '_save').style.display = 'block';
@@ -390,6 +395,7 @@ function saveComponentConfig( component_id ) {
     }
 
     // get each TD of the output class and add each as an input
+    //  or update it if it already exists
     for ( var i = 0; i < outputs.length; i++ ) {
         var parameter_name  = outputs[i].firstChild.name;
        
@@ -417,7 +423,8 @@ function saveComponentConfig( component_id ) {
         parameter_value = parameter_value.replace(/\$\;COMPONENT_NAME\$\;/g, components[component_id].name);
         parameter_value = parameter_value.replace(/\$\;OUTPUT_TOKEN\$\;/g, components[component_id].token);
         
-        if ( components[component_id].configured_before ) {
+        // if the input hasn't been deleted and this component has been configured before
+        if ( inputs[parameter_name] && components[component_id].configured_before ) {
             // only value can change here.
             inputs[parameter_name].updateValue( 'input_list', parameter_value );
             
