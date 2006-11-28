@@ -18,7 +18,7 @@
             <type>RunUnixCommand</type>
             <name>glimmerHMM2bsml</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/fgenesh2bsml</executable>
+            <executable>$;BIN_DIR$;/glimmerHMM2bsml</executable>
             <param>  
                 <key>--input</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.glimmerHMM.raw</value>
