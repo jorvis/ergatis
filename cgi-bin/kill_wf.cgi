@@ -1,15 +1,8 @@
 #!/usr/local/bin/perl
 
 use strict;
-
-use XML::Twig;
-
 use CGI qw(:standard);
-
-use File::Find;
-use File::Basename;
 use Ergatis::ConfigFile;
-use Proc::ProcessTable;
 
 my $instancexml = param('instancexml');
 
@@ -30,6 +23,8 @@ $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PAT
 
 ## weak attempt to make this a little safer
 $instancexml =~ s|[^a-z0-9\.\_\-\/]||ig;
+
+`$ENV{WF_ROOT}/KillWorkflow -i $instancexml &`;
 
 print redirect(-uri=>"./view_pipeline.cgi?instance=$instancexml");
 exit(0);
