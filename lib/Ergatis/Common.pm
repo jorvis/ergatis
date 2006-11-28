@@ -1,6 +1,7 @@
 use strict;
-use Config::IniFiles;
+use Ergatis::ConfigFile;
 use File::Find;
+use HTML::Template;
 
 =head1 DESCRIPTION
 
@@ -22,7 +23,7 @@ extracts the desired parameter, returning it as a string.
 sub get_project_conf_param {
     my ($repository_root, $section, $parameter) = @_;
     
-    my $cfg = new Config::IniFiles( -file => "$repository_root/workflow/project.config" );
+    my $cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
     
     return $cfg->val( $section, $parameter );
 }
@@ -85,42 +86,45 @@ sub get_quick_links {
     return $quick_links;
 }
 
-=head2 parse_pipeline_run_lock_file ( lock_file_path )
+=head2 print_error_page( %args )
 
 =over 4
 
-reads a pipeline running lock file and returns a hash the values contained within
-it, such as pid, hostname, execuser and retry count.
+throws generic error handling page.  allows you to pass an error message and links for
+continuation.  example:
+
+    print_error_page( ergatis_cfg => $ergatis_cfg,
+          message => "The pipeline passed couldn't be found ($xml_input).  " .
+                     "It may have been deleted or there could be a network (NFS) problem.",
+          links => [ 
+                        { label => "$project pipeline list", 
+                          is_last => 0, 
+                          url => "./pipeline_list.cgi?repository_root=$repository_root" },
+                        { label => 'try again', 
+                          is_last => 1, 
+                          url => "./view_pipeline.cgi?instance=$xml_input" },
+                   ],
+    );
+
+This assumes that you've printed a header already within the calling CGI and that you'll
+perform an explicit exit() afterwards (as appropriate).
 
 =back
 
 =cut
+sub print_error_page {
+    my %args = @_;
+    
+    my $tmpl = HTML::Template->new( filename => 'templates/error.tmpl',
+                                    die_on_bad_params => 0,
+                                  );
 
-sub parse_pipeline_run_lock_file {
-    my $lock_file = shift;
-    
-    ## set defaults
-    my %parts = ( 
-                  pid => '?',
-                  hostname => 'unknown',
-                  execuser => 'unknown',
-                  retries => '?',
-                );
-    
-    if(-e $lock_file){
-        open FILE, "$lock_file" or die "Can't open lock file $lock_file";
-        my(@elts) = <FILE>;
-        close FILE;
-        chomp(@elts);
-        $parts{pid} = $elts[0];
-        $parts{hostname} = $elts[1];
-        $parts{execuser} = $elts[2];
-        $parts{retries} = $elts[3];
-        
-        return %parts;
-    }
-    
-    return %parts;
+    $tmpl->param( MESSAGE => $args{message} );    
+    $tmpl->param( QUICK_LINKS         => &get_quick_links($args{ergatis_cfg}) );
+    $tmpl->param( SUBMENU_LINKS       => $args{links} );
+
+    print $tmpl->output;
 }
+
 
 1==1;
