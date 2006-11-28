@@ -45,7 +45,7 @@ while (my $line = <$template_fh>) {
     chomp $line;
     
     ## if this isn't a comment and has an X = Y pattern
-    if ( $line !~ /^\;/ && $line =~ /^\s*(.+?)\s*\=\s*(.+?)\s*$/ ) {
+    if ( $line !~ /^\;/ && $line =~ /^\s*(.+?)\s*\=\s*(.*?)\s*$/ ) {
         my ($key, $val) = ($1, $2);
         
         if ( exists $component_vars{$key} ) {
