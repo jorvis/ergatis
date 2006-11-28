@@ -21,20 +21,11 @@ my $tmpl = HTML::Template->new( filename => 'templates/view_pipeline.tmpl',
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
-my $repository_root;
 my $xml_input = $q->param("instance") || die "pass instance";
 
+my $repository_root;
 my $project = '?';
 my $pipelineid;
-
-## make sure the file exists, check for .gz version
-if (! -f $xml_input ) {
-    if (-f "$xml_input.gz") {
-        $xml_input .= '.gz';
-    } else {
-        die "$xml_input doesn't exist";
-    }
-}
 
 ## extract the project
 if ( $xml_input =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
@@ -43,6 +34,32 @@ if ( $xml_input =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
     $pipelineid = $3;
 } else {
     die "failed to extract a repository_root from $xml_input.  expected a workflow/runtime subdirectory somewhere."
+}
+
+## make sure the file exists, check for .gz version
+if (! -f $xml_input ) {
+    if (-f "$xml_input.gz") {
+        $xml_input .= '.gz';
+    } else {
+        print_error_page( ergatis_cfg => $ergatis_cfg,
+                          message => "The pipeline passed couldn't be found ($xml_input).  " .
+                                     "It may have been deleted or there could be a network (NFS) problem.",
+                          links => [ 
+                                        { label => "$project pipeline list", is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" },
+                                        { label => 'try again', is_last => 1, url => "./view_pipeline.cgi?instance=$xml_input" },
+                                   ],
+                        );
+        exit(0);
+    }
+}
+
+## make sure the file exists, check for .gz version
+if (! -f $xml_input ) {
+    if (-f "$xml_input.gz") {
+        $xml_input .= '.gz';
+    } else {
+        die "$xml_input doesn't exist";
+    }
 }
 
 my $file = $xml_input;
