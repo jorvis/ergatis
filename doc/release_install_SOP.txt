@@ -248,6 +248,16 @@ cd install
 ./ergatis_installer.pl -U sgc --installdir=/usr/local/devel/ANNOTATION/ard/testing_manual --controlfile=/usr/local/devel/ANNOTATION/ard/testing_manual.ini --workingdir=/tmp/testing_manual --chmod
 
 
+Installing with a pre-v2 version of ergatis
+--------------------------------------
+the same instructions as above still apply except you make two changes.
+
+1. when you check out the ergatis_installer.pl script, specifify -r ergatis-v2r1-premerge-1
+2. within the .ini file you create listing each software component and their version numbers, change ergatis=?? to ergatis_old=??
+
+everything else should be the same.
+
+
 About
 -----
 
