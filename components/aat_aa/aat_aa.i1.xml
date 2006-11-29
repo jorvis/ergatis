@@ -11,7 +11,7 @@
             <arg>$;I_FILE_PATH$; $;DATABASE_PATH$; $;MATRIX$; $;DPS_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw</value>
             </param>
         </command>
         <command>
@@ -19,10 +19,10 @@
             <name>ext</name>
             <state>incomplete</state>
             <executable>$;EXT_EXEC$;</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw $;EXT_OPTS$;</arg>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw $;EXT_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</value>
             </param>
         </command>
         <command>
@@ -30,10 +30,10 @@
             <name>ext collapse</name>
             <state>incomplete</state>
             <executable>$;EXT_COLLAPSE_EXEC$;</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</value>
             </param>
         </command>
         <command>
@@ -41,10 +41,10 @@
             <name>filter</name>
             <state>incomplete</state>
             <executable>$;FILTER_EXEC$;</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed $;FILTER_OPTS$;</arg>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed $;FILTER_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</value>
             </param>
         </command>
         <command>
@@ -59,7 +59,7 @@
             <name>nap</name>
             <state>incomplete</state>
             <executable>$;NAP_EXEC$;</executable>
-            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; $;DATABASE_PATH_FOR_NAP$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw $;MATRIX$; $;NAP_OPTS$;</arg>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; $;DATABASE_PATH_FOR_NAP$; $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw $;MATRIX$; $;NAP_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.raw</value>
@@ -77,28 +77,28 @@
             <name>remove raw dps output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>remove raw ext output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>remove raw ext collapsed output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>remove raw filter output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
