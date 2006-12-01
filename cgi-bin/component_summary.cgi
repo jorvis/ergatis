@@ -118,9 +118,9 @@ if (-e $pipeline || -e "$pipeline.gz") {
         }
     }
     
-    ## "Iterator" just means its on the distributed step.  make it more descriptive
-    if ( $current_step =~ /Iterator (.+)/i ) {
-        $current_step = 'running distributed jobs (iterator $1)';
+    ## "iterator" just means its on the distributed step.  make it more descriptive
+    if ( $current_step =~ /^iterator /i ) {
+        $current_step = "running distributed jobs ($current_step)";
     }
     
     ## we can adjust the default update interval here depending on what
@@ -203,6 +203,10 @@ sub parseCommandSet {
     #   these will be linked via fileName elements withinin commandSets
     if ( $fileparsed =~ /component.xml/) {
         for my $subflowCommandSet ( $commandSet->children('commandSet') ) {
+            if ( $subflowCommandSet->first_child('state')->text() eq 'running' ) {
+                $current_step = $subflowCommandSet->first_child('name')->text();
+            }
+        
             ## this command set should contain a fileName element
             my $fileName = $subflowCommandSet->first_child("fileName") || 0;
             if ($fileName) {
@@ -262,7 +266,7 @@ sub parseIteratorFile {
                                                      parseGroupFile( $_[1]->text );
                                                      $_[0]->purge();
                                                  },
-                        'commandSet/state' => sub {
+                        'commandSet/commandSet/state' => sub {
                                                    $states{ $_[1]->text }++;
                                                    $command_count++;
                                               },
