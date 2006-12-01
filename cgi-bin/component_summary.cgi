@@ -262,6 +262,10 @@ sub parseIteratorFile {
                                                      parseGroupFile( $_[1]->text );
                                                      $_[0]->purge();
                                                  },
+                        'commandSet/state' => sub {
+                                                   $states{ $_[1]->text }++;
+                                                   $command_count++;
+                                              },
                     },
                );
     $twig->parse($iN_xml_fh);
@@ -304,7 +308,7 @@ sub parseGroupFile {
                     },
          );
     } else { 
-    
+        
         $twig = XML::Twig->new(
                     twig_roots => {
                         'command/state' => sub {
@@ -312,11 +316,6 @@ sub parseGroupFile {
                                                $command_count++;
                                                $_[0]->purge();
                                            },
-                        'commandSet/state' => sub {
-                                                       $states{ $_[1]->text }++;
-                                                       $command_count++;
-                                                       $_[0]->purge();
-                                                  },
                     },
          );
     }
