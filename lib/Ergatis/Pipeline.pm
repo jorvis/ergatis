@@ -206,6 +206,12 @@ umask(0000);
         $ENV{SYBASE} = '/usr/local/packages/sybase';
         $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
+        
+        ## some application-specific env vars
+        ############
+        
+        ## for the htab.pl script within the hmmpfam component
+        $ENV{HMM_SCRIPTS} = '/usr/local/devel/ANNOTATION/hmm/bin';
     }
     
 }
