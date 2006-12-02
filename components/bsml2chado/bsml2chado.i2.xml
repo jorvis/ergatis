@@ -1,0 +1,28 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="serial">
+    <name>collate bcp files</name>
+      <command>
+	<type>RunUnixCommand</type>
+	<name>collate bcp files</name>
+	<state>incomplete</state>
+	<executable>/usr/bin/find</executable>
+	<arg>$;TMP_DIR$; -name $;I_TABLE_NAME$;.out -type f -exec cat {} \; | $;BIN_DIR$;/chado_record_uniq -o $;TMP_DIR$;/$;I_TABLE_NAME$;.bcp.out</arg>
+	<param>
+	    <key>
+		stderr
+	    </key>
+	    <param>
+		$;WORKFLOW_REPOSITORY$;/tableinfo.stderr
+	    </param>
+	</param>
+	<param>
+	    <key>
+		stdout
+	    </key>
+	    <value>
+		$;WORKFLOW_REPOSITORY$;/tableinfo.stdout
+	    </value>
+	</param>
+    </command>
+  </commandSet>
+</commandSetRoot>
