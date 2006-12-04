@@ -100,6 +100,7 @@ my $results = GetOptions (\%options,
               'output_iter_list|r=s',
               'group_size_limit|z=i',
               'output_directory|o=s',
+              'randomize|s=s',
               'log=s',
               'debug=s',
               'help|h') || pod2usage();
@@ -137,7 +138,7 @@ $logger->debug("gathering input") if $logger->is_debug();
 &skim_iterator_list( $options{input_iter_list}, $input_skim, $iterator_names );
 my $input_element_count = scalar(@$input_skim);
 #shuffle lines
-&fisher_yates_shuffle($input_skim);
+&fisher_yates_shuffle($input_skim) if($options{'randomize'});
 
 ## calculate the number of groups we'll need to have.  
 my $group_count = 0; 
@@ -169,7 +170,7 @@ $logger->debug("actual group count was $group_count") if $logger->is_debug;
 $logger->debug("attempting to create output_iter_list: $options{output_iter_list}") if $logger->is_debug;
 
 open(my $gif_fh, ">$options{output_iter_list}") || die "can't create output_iter_list: $!";
-print $gif_fh '$;GROUP_XML$;,$;ITERATOR_LIST$;,$;GROUP_NUMBER$;',"\n";
+print $gif_fh '$;GROUP_XML$;\t$;ITERATOR_LIST$;\t$;GROUP_NUMBER$;',"\n";
 open(my $iter_file, "$options{input_iter_list}") or $logger->logdie("Can't open file $options{input_iter_list}");
 
 ##########
@@ -201,17 +202,17 @@ for my $group ( @groups ) {
     open(my $group_fh, ">$group_file") || $logger->logdie( "failed to create group file $group_file\n" );
     
     ## print iterator names
-    print $group_fh join(',',@$iterator_names),',$;GROUP_NUMBER$;',"\n";
+    print $group_fh join('\t',@$iterator_names),'\t$;GROUP_NUMBER$;',"\n";
     ## elements of the group
     for my $elt ( @$group ) {
 	## seek to byte offset for the line
 	seek($iter_file,$elt,0);
 	my $line = <$iter_file>;
 	chomp $line;
-	print $group_fh $line,",$group_num\n";
+	print $group_fh $line,"\t$group_num\n";
     }
     close $group_fh;
-    print $gif_fh "g$group_num/g$group_num,$group_file,$group_num\n";
+    print $gif_fh "g$group_num/g$group_num\t$group_file\t$group_num\n";
     $group_num++;
 }
 
@@ -227,7 +228,7 @@ sub skim_iterator_list{
     while(my $line=<FILE>){
 	chomp $line;
 	if($linenum==0){
-	    @$iterator_names = split(/,/,$line);
+	    @$iterator_names = split(/\t/,$line);
 	}
 	elsif($line =~ /\S/){
 	    push @$iterator_elts,$currpos;
