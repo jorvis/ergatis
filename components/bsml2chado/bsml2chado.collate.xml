@@ -12,7 +12,7 @@
 		stderr
 	    </key>
 	    <param>
-		$;WORKFLOW_REPOSITORY$;/tableinfo.stderr
+		$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_TABLE_NAME$;.stderr
 	    </param>
 	</param>
 	<param>
@@ -20,7 +20,7 @@
 		stdout
 	    </key>
 	    <value>
-		$;WORKFLOW_REPOSITORY$;/tableinfo.stdout
+		$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_TABLE_NAME$;.stdout
 	    </value>
 	</param>
     </command>

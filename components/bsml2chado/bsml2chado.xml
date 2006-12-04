@@ -75,24 +75,24 @@
 	</command>
 	<!--Processing-->
 	<!--Iterator-->
-	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML"/>
+	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_TIMESTAMP$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>create_table_iterator_list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/create_tables.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
-		<value>$;TMP_DIR$;/tables.list</value>
+		<value>$;WORKFLOW_REPOSITORY$;/collatetables.list</value>
 	    </param>
 	</command>
 	<!--Iterator-->
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML;$;ITERATOR_LIST$;=$;TMP_DIR$;/tables.list"/> 
-	<command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML;$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/collatetables.list,$;NODISTRIB$;=1"/> 
+	1<command>
 	    <type>RunUnixCommand</type>
 	    <name>extract_checksums</name>
 	    <state>incomplete</state>
@@ -214,61 +214,52 @@
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>drop indices</name>
+	    <name>Drop indexes</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/sql2Chado</executable>
-	    <param><key>--username</key><value>chado_admin</value></param>
-	    <param><key>--password</key><value>chado_admin99</value></param>
-	    <param><key>--database</key><value>$;DATABASE$;</value></param>
-	    <param><key>--server</key><value>$;SERVER$;</value></param>
-	    <param><key>--action</key><value>dropindexes</value></param>
-	    <param><key>--testmode</key><value>$;SKIP_LOAD$;</value></param>
-	    <param><key>--indexmanip</key><value>$;REFRESH_INDEXES$;</value></param>
-	    <param><key>--debug_level</key><value>$;DEBUG$;</value></param>
-	    <param><key>--file</key><value>$;DOCS_DIR$;/drop_indexes.ddl</value></param>
-	    <param><key>--log4perl</key><value>$;WORKFLOW_REPOSITORY$;/dropindex.log</value></param>
-	    <param><key>stdout</key><value>$;WORKFLOW_REPOSITORY$;/dropindex.stdout</value></param>
-	    <param><key>stderr</key><value>$;WORKFLOW_REPOSITORY$;/dropindex.stderr</value></param>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
+            <param>
+		<key>stdin</key>
+		<value>$;DOCS_DIR$;/drop_indexes.ddl</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;WORKFLOW_REPOSITORY$;/drop_indexes.list</value>
+	    </param>
 	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/drop_indexes.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>load tables</name>
+	    <name>list bcp files</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/chadoloader</executable>
-	    <param><key>--username</key><value>chado_admin
-		<param><key>--password</key><value>chado_admin99</value></param>
-		<param><key>--database</key><value>$;DATABASE$;</value></param>
-		<param><key>--server</key><value>$;SERVER$;</value></param>
-		<param><key>--bcpmode</key><value>in</value></param>
-		<param><key>--batchsize</key><value>$;BCP_BATCH_SIZE$;</value></param>
-		<param><key>--directory</key><value>$;OUTPUT_DIRECTORY$;</value></param>
-		<param><key>--abort</key><value>0</value></param>
-		<param><key>--debug_level</key><value>$;DEBUG$;</value></param>
-		<param><key>--testmode</key><value>$;SKIP_LOAD$;</value></param>
-		<param><key>--ignore_empty_bcp</key><value>1</value></param>
-		<param><key>--gzip_bcp </key><value> $;GZIP_BCP$;</value></param>
-		<param><key>--logfile</key><value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.log</value></param>
-		<param><key>stdout</key><value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stdout</value></param>
-		<param><key>stderr</key><value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stderr</value></param>
-</command>
+	    <executable>$;BIN_DIR$;/bcpdir2iterator</executable>
+	    <param>
+		<key>--bcp_directory</key>
+		<value>$;OUTPUT_DIRECTORY$;</value>
+	    </param>
+	    <param>
+		<key>--bcp_extension</key>
+		<value>bcp.out</value>
+	    </param>
+	    <param>
+		<key>--output_iterator_list</key>
+		<value>$;WORKFLOW_REPOSITORY$;/bcp.out.list</value>
+	    </param>
+	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/bcp.out.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>rebuild indices</name>
+	    <name>Rebuild indexes</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/sql2Chado</executable>
-	    <param><key>--username</key><value>chado_admin</value></param>
-	    <param><key>--password</key><value>chado_admin99</value></param>
-	    <param><key>--database</key><value>$;DATABASE$;</value></param>
-	    <param><key>--server</key><value>$;SERVER$;</value></param>
-	    <param><key>--action</key><value>createindexes</value></param>
-	    <param><key>--testmode</key><value>$;SKIP_LOAD$;</value></param>
-	    <param><key>--indexmanip</key><value>$;REFRESH_INDEXES$;</value></param>
-	    <param><key>--debug_level</key><value>$;DEBUG$;</value></param>
-	    <param><key>--file</key><value>$;DOCS_DIR$;/create_indexes.ddl</value></param>
-	    <param><key>--log4perl</key><value>$;WORKFLOW_REPOSITORY$;/createindex.log</value></param>
-	    <param><key>stdout</key><value>$;WORKFLOW_REPOSITORY$;/createindex.stdout</value></param>
-	    <param><key>stderr</key><value>$;WORKFLOW_REPOSITORY$;/createindex.stderr</value></param>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
+            <param>
+		<key>stdin</key>
+		<value>$;DOCS_DIR$;/create_indexes.ddl</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;WORKFLOW_REPOSITORY$;/create_indexes.list</value>
+	    </param>
 	</command>
-
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;,$;WORKFLOW_REPOSITORY$;/create_indexes.list,$;NODISTRIB$;=1"/>
     </commandSet>
 </commandSetRoot>

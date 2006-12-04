@@ -31,6 +31,10 @@
 		<value>$;I_FILE_PATH$;</value>
 	    </param>
 	    <param>
+		<key>--timestamp</key>
+		<value>$;I_TIMESTAMP$;</value>
+	    </param>
+	    <param>
 		<key>--debug_level</key>
 		<value>$;DEBUG$;</value>
 	    </param>
