@@ -85,7 +85,7 @@
             </param>
             <param>  
                 <key>--outputfile</key>
-                <value>$;TMP_DIR$;/$;DATABASE$;.$;WFID$;.btab</value>
+                <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab</value>
             </param>
             <param>  
                 <key>--pvalcut</key>
@@ -108,7 +108,7 @@
             <name>best hit</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/best_hit</executable>
-	    <arg>-i $;TMP_DIR$;/$;DATABASE$;.$;WFID$;.btab -j $;JACCARD_CUTOFF$;</arg>
+	    <arg>-i $;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab -j $;JACCARD_CUTOFF$;</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/besthit.stdout</value>
@@ -128,7 +128,7 @@
             <executable>$;BIN_DIR$;/CogProteinFasta</executable>
 	     <param>  
                 <key>--cogFile</key>
-                <value>$;TMP_DIR$;/$;DATABASE$;.$;WFID$;.cog</value>
+                <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
             </param>
 	     <param>  
                 <key>--bsmlModelList</key>
