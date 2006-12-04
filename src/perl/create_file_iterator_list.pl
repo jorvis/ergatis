@@ -89,6 +89,7 @@ my $results = GetOptions (\%options,
 			  'input_file_list|l=s',
 			  'input_directory|d=s',
 			  'input_directory_extension=s',
+			  'timestamp=s',
 			  'log=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
@@ -125,15 +126,21 @@ my $input_element_count = &gather_input_elements( $input_elements );
 
 open(my $out_fh, ">$options{output_iter_list}") || die "can't create output_iter_list: $!";
 
-print $out_fh '$;I_FILE_BASE$;,$;I_FILE_NAME$;,$;I_FILE_PATH$;,$;I_FILE_EXT$;,$;I_DIR$;',"\n";
+print $out_fh '$;I_FILE_BASE$;\t$;I_FILE_NAME$;\t$;I_FILE_PATH$;\t$;I_FILE_EXT$;\t$;I_DIR$;',"\n";
 
+my $timestamp;
+if($options{'timestamp'}){
+    $timestamp = &get_datetime();
+}
 for my $nameref (keys %$input_elements){
     print $out_fh 
-	"$nameref,",
-	"$nameref.$input_elements->{ $nameref }[1],",
-	"$id2dir->{  $input_elements->{ $nameref }[0]  }/$nameref.$input_elements->{ $nameref }[1],",
-	"$input_elements->{ $nameref }[1],",
-	"$id2dir->{  $input_elements->{ $nameref }[0]  }\n";
+	"$nameref\t",
+	"$nameref.$input_elements->{ $nameref }[1]\t",
+	"$id2dir->{  $input_elements->{ $nameref }[0]  }/$nameref.$input_elements->{ $nameref }[1]\t",
+	"$input_elements->{ $nameref }[1]\t",
+	"$id2dir->{  $input_elements->{ $nameref }[0]  }";
+    print $out_fh "\t$timestamp" if($options{'timestamp'});
+    print "\n";	
 }
 
 close $out_fh;
@@ -278,3 +285,31 @@ sub check_parameters {
     
 }
 
+#---------------------------------------------
+# get_sybase_datetime()
+#
+#---------------------------------------------
+sub get_datetime {
+
+
+# perl localtime   = Tue Apr  1 18:31:09 2003
+# sybase getdate() = Apr  2 2003 10:15AM
+
+    my $datetime = localtime;
+    #                  Day of Week                        Month of Year                                       Day of Month  Hour      Mins     Seconds    Year   
+    if ($datetime =~ /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)[\s]+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+([\d]{1,2})\s+([\d]{2}):([\d]{2}):[\d]{2}\s+([\d]{4})$/){
+	my $hour = $4;
+	my $ampm = "AM";
+	if ($4 ge "13"){
+	    $hour = $4 - 12;
+	    $ampm = "PM";
+	}
+	$datetime = "$2  $3 $6  $hour:$5$ampm";
+    }
+    else{
+	$logger->logdie("Could not parse datetime");
+    }
+
+    return $datetime;
+    
+}
