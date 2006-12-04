@@ -10,11 +10,11 @@
             <executable>$;BIN_DIR$;/generate_input_list</executable>
             <param>  
                 <key>--filelist</key>
-                <value>'$;GLIST_FILE$;'</value>
+                <value>'$;I_GENOME_LIST_FILE$;'</value>
             </param>
             <param>  
                 <key>--output</key>
-                <value>=$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.input.list</value>
+                <value>=$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.input.list</value>
             </param>
             <arg>--listfiles</arg>
         </command>
@@ -25,11 +25,11 @@
             <executable>$;BIN_DIR$;/bsml2idlookup</executable>
             <param>  
                 <key>--bsml_list</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.input.list</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.input.list</value>
             </param>
             <param>  
                 <key>--output</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.lookup</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.lookup</value>
             </param>
         </command>
         <command>
@@ -43,11 +43,11 @@
             </param>
             <param>  
                 <key>--asmbl_lookup</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.lookup</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.lookup</value>
             </param>
             <param>  
                 <key>--log</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.cluster.log</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.cluster.log</value>
             </param>
             <param>  
                 <key>--linkscore</key>
@@ -63,7 +63,7 @@
             </param>
             <param>  
                 <key>--outfile</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.jkcluster.out</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
             </param>
         </command>
         <command>
@@ -73,15 +73,15 @@
             <executable>$;BIN_DIR$;/CogProteinFasta</executable>
             <param>  
                 <key>--cogFile</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.jkcluster.out</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
             </param>
             <param>  
                 <key>--bsmlModelList</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.asmbl.input.list</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.input.list</value>
             </param>
             <param>  
                 <key>--outputDir</key>
-                <value>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;</value>
             </param>
             <param>  
                 <key>--maxCogSeqCount</key>
@@ -93,10 +93,10 @@
             <name>create fasta list</name>
             <state>incomplete</state>
             <executable>find</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$; -name '*.fsa'</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$; -name '*.fsa'</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/i1/g$;GROUP_NUMBER$;/$;ITER_FILE_BASE$;.$;COMPONENT_NAME$;.fsa.list</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.$;COMPONENT_NAME$;.fsa.list</value>
             </param>
         </command>
     </commandSet>
