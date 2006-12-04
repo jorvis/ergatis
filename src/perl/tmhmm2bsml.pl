@@ -28,6 +28,11 @@ B<--fasta_input>
 B<--compress_bsml_output>
     Will create gzipped output
 
+B<--id_repository,-r>
+    Required for creating feature identifiers.  Each project should have
+    its own id_repository directory - use the full path to it here.  This
+    is used by the IdGenerator.pm module.
+
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -74,26 +79,25 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
+use Ergatis::IdGenerator;
 use Pod::Usage;
 use Ergatis::Logger;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
               'debug|d=s',
-              'command_id=s',       ## passed by workflow
-              'logconf=s',          ## passed by workflow (not used)
+              'id_repository|r=s',
               'fasta_input=s',
               'compress_bsml_output=s',
               'project|p=s',
               'log|l=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -116,20 +120,20 @@ my $next_id = 1;
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+my $idgen = Ergatis::IdGenerator->new( id_repository => $options{id_repository} );
 
 ## recognized output result data term mappings
 my %result_term = (
-					'Length' 					=> 'length',
-					'Number of predicted TMHs'	=> 'tmh_count',
-					'Exp number of AAs in TMHs' => 'exp_aa_in_tmh',
-					'Exp number, first 60 AAs'  => 'exp_first_60',
-					'Total prob of N-in'		=> 'prob_n_in',
-				   );
+                    'Length'                     => 'length',
+                    'Number of predicted TMHs'    => 'tmh_count',
+                    'Exp number of AAs in TMHs' => 'exp_aa_in_tmh',
+                    'Exp number, first 60 AAs'  => 'exp_first_60',
+                    'Total prob of N-in'        => 'prob_n_in',
+                   );
 ## recognized results qualifier term mappings
 my %qualifier = (
-					'POSSIBLE N-term signal sequence' => 'n_term_signal',
-				);
+                    'POSSIBLE N-term signal sequence' => 'n_term_signal',
+                );
 
 ## open the input file for parsing (even if it's gziped (bug 2591))
 my $mode = "<";
@@ -146,52 +150,52 @@ my $skip_flag = 0;
 #my $line;
 while (my $line = <$ifh>) {
     chomp $line;
-	## skip lines until we hit #'s 
-	if ($skip_flag && !($line =~ /^#/)) {
-			next;
-	}
-	if ($line =~ /^# ([^ ]+) ([^:]+):\s+([^ ]+)$/) {
-		$skip_flag = 0;
-		my $seq_id = $1;
-		my $term = $2;
-		my $value = $3;
-		if (defined($result_term{$term})) {
-			if (!defined($property_hash{$seq_id})) {
-				$property_hash{$seq_id} = [];
-			}
-			push(@{$property_hash{$seq_id}}, [$seq_id, $result_term{$term}, $value]);
-			## We may want to use these in the output later
-			#print STDERR $result_term{$term};
-		} else {
-			die "unrecognized result term";
-		}
-	} elsif ($line =~ /^# ([^ ]+) (.*)$/) {
-		$skip_flag = 0;
-		my $seq_id = $1;
-		my $term = $2;
-		if (defined($qualifier{$term})) {
-			## We may want to use these in the output later
-			#print STDERR $qualifier{$term}."\n";
-			if (!defined($qualifier_hash{$seq_id})) {
-				$qualifier_hash{$seq_id} = {};
-			}
-			#push(@{$qualifier_hash{$seq_id}}, [$seq_id, $result_term{$term}, $value]);
-			$qualifier_hash{$seq_id}->{$qualifier{$term}} = 1;
-		} else {
-			die "unrecognized qualifier term";
-		}
-	}
-	if ($line =~ /^([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+(\d+)\s+(\d+)/) {
-		my $id = $1;
-		my $model = $2;
-		my $state = $3;
-		my $start = $4;
-		my $end = $5;
-		if (!defined($segment_hash{$id})) {
-			$segment_hash{$id} = [];
-		}
-		push(@{$segment_hash{$id}}, [$id, $model, $state, $start, $end]);
-	}
+    ## skip lines until we hit #'s 
+    if ($skip_flag && !($line =~ /^#/)) {
+            next;
+    }
+    if ($line =~ /^# ([^ ]+) ([^:]+):\s+([^ ]+)$/) {
+        $skip_flag = 0;
+        my $seq_id = $1;
+        my $term = $2;
+        my $value = $3;
+        if (defined($result_term{$term})) {
+            if (!defined($property_hash{$seq_id})) {
+                $property_hash{$seq_id} = [];
+            }
+            push(@{$property_hash{$seq_id}}, [$seq_id, $result_term{$term}, $value]);
+            ## We may want to use these in the output later
+            #print STDERR $result_term{$term};
+        } else {
+            die "unrecognized result term";
+        }
+    } elsif ($line =~ /^# ([^ ]+) (.*)$/) {
+        $skip_flag = 0;
+        my $seq_id = $1;
+        my $term = $2;
+        if (defined($qualifier{$term})) {
+            ## We may want to use these in the output later
+            #print STDERR $qualifier{$term}."\n";
+            if (!defined($qualifier_hash{$seq_id})) {
+                $qualifier_hash{$seq_id} = {};
+            }
+            #push(@{$qualifier_hash{$seq_id}}, [$seq_id, $result_term{$term}, $value]);
+            $qualifier_hash{$seq_id}->{$qualifier{$term}} = 1;
+        } else {
+            die "unrecognized qualifier term";
+        }
+    }
+    if ($line =~ /^([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+(\d+)\s+(\d+)/) {
+        my $id = $1;
+        my $model = $2;
+        my $state = $3;
+        my $start = $4;
+        my $end = $5;
+        if (!defined($segment_hash{$id})) {
+            $segment_hash{$id} = [];
+        }
+        push(@{$segment_hash{$id}}, [$id, $model, $state, $start, $end]);
+    }
 }
 
 #print $segment_hash{$id}->[0]->[0];
@@ -199,61 +203,58 @@ while (my $line = <$ifh>) {
 #die();
 
 foreach my $s(keys(%segment_hash)) {
-   	my $seq = $doc->createAndAddSequence($s, $defline, '', 'aa', 'polypeptide');
+    my $seq = $doc->createAndAddSequence($s, $defline, '', 'aa', 'polypeptide');
     $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
-    $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_input}, $s, $s );
-   	$seq->addBsmlLink('analysis', '#tmhmm_analysis', 'input_of');
-	
-	foreach my $prop_ref(@{$property_hash{$s}}) {
-		$doc->createAndAddBsmlAttribute($seq, $prop_ref->[1], $prop_ref->[2]);
-	}
-	
-	my $feature_table;
-	$feature_table  = $doc->createAndAddFeatureTable($seq);
-								   
-	if ($qualifier_hash{$s}->{'n_term_signal'}) {							   
-		my $new_id = $idcreator->new_id( db      => $options{project},
-			                             so_type => 'signal_peptide',
-										 prefix  => $options{command_id},
-									   );
-		my $signalp = $doc->createAndAddFeature($feature_table, 
-			                                    $new_id, 
-												'', 
-												'signal_peptide'
-											   );
-										   
-	 	$signalp->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
-	}
-	
-	my $new_id = $idcreator->new_id( db      => $options{project},
-       	                             so_type => 'located_sequence_feature',
-									 prefix  => $options{command_id},
-               	                   );
+    $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_input}, $s . '_seq', $s );
+       $seq->addBsmlLink('analysis', '#tmhmm_analysis', 'input_of');
+    
+    foreach my $prop_ref(@{$property_hash{$s}}) {
+        $doc->createAndAddBsmlAttribute($seq, $prop_ref->[1], $prop_ref->[2]);
+    }
+    
+    my $feature_table;
+    $feature_table  = $doc->createAndAddFeatureTable($seq);
+                                   
+    if ($qualifier_hash{$s}->{'n_term_signal'}) {                               
+        my $new_id = $idgen->next_id( project => $options{project},
+                                      type => 'signal_peptide',
+                                     );
+        my $signalp = $doc->createAndAddFeature($feature_table, 
+                                                $new_id, 
+                                                '', 
+                                                'signal_peptide'
+                                               );
+                                           
+         $signalp->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
+    }
+    
+    ## this makes ID pulling more efficient
+    if ( scalar @{$segment_hash{$s}} ) {
+        $idgen->set_pool_size( located_sequence_feature => scalar @{$segment_hash{$s}} );
+    }
 
-	foreach my $tm_ref(@{$segment_hash{$s}}) {
-		my $tm = $doc->createAndAddFeature(
-											$feature_table, 
-                                        	$idcreator->new_id(
-																db => $options{'project'},
-                                             					so_type => 'located_sequence_feature',
-																prefix  => $options{'command_id'}
-															  ),
-                                          	$tm_ref->[2], ## state
-											'located_sequence_feature'
-										);
+    foreach my $tm_ref( @{$segment_hash{$s}} ) {
+        my $tm = $doc->createAndAddFeature(
+                                            $feature_table, 
+                                            $idgen->next_id( project => $options{'project'},
+                                                             type => 'located_sequence_feature',
+                                                           ),
+                                            $tm_ref->[2], ## state
+                                            'located_sequence_feature'
+                                        );
                                           
-	    $tm->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
-    	$tm->addBsmlIntervalLoc(
-									$tm_ref->[3] - 1, ## start
-								   	$tm_ref->[4], ## end
-								   	0
-								 );
-	}
+        $tm->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
+        $tm->addBsmlIntervalLoc(
+                                    $tm_ref->[3] - 1, ## start
+                                       $tm_ref->[4], ## end
+                                       0
+                                 );
+    }
 
 }
     
 ## add the analysis element
-	my $analysis = $doc->createAndAddAnalysis(
+    my $analysis = $doc->createAndAddAnalysis(
                             id => 'tmhmm_analysis',
                             sourcename => $options{'output'},
                           );
@@ -264,17 +265,15 @@ $doc->write($options{'output'},,$gzip);
 exit();
 
 sub check_parameters {
+
+    ## required params
+    my @required = qw( input output id_repository );
+    for ( @required ) {
+        if (! defined $options{$_}) {
+            $logger->logdie( "$_ is a required option" );
+        }
+    }
     
-	## input file is required
-	unless ($options{'input'}) { 
-		pod2usage({-message => "No input file specified!"});
-	} 
-	
-	## output file is required
-	unless ($options{'output'}) { 
-		pod2usage({-message => "No output file specified!"});
-	}
-	
     ## make sure input file exists
     if (! -e $options{'input'}) {
         unless(-e $options{'input'}.".gz") {
@@ -282,13 +281,8 @@ sub check_parameters {
         } else {
             pod2usage({-message => "Input file '$options{'input'}' does not exist!"});
         }
-	} 
+    } 
     
-    ## make sure output file doesn't exist yet
-    if (-e $options{'output'}) {
-		pod2usage({-message => "Can't create '$options{'output'}' because it already exists!"});
-   	}
-
     ## make sure the fasta input was provided. (Bug 3781)
     if($options{'fasta_input'}) {
         $fastaFile = $options{'fasta_input'};
@@ -296,7 +290,7 @@ sub check_parameters {
             or pod2usage({-message => "Could not open fasta_input $fastaFile ($!)"});
         while(<IN>) {
             chomp;
-            if(/^(>.*)/) {
+            if(/^>(.*)/) {
                 $defline = $1;
                 last;
             }
@@ -320,11 +314,11 @@ sub check_parameters {
 ## parse_position parses the position field to give an array containing
 ## start [and stop] sites
 sub parse_position {
-	my ($position) = @_;
-	if ($position =~ /^\s*([^\s]+)\s*$/) {
-		return split("-", $1);
-	} else {
-		return ();
-	}
+    my ($position) = @_;
+    if ($position =~ /^\s*([^\s]+)\s*$/) {
+        return split("-", $1);
+    } else {
+        return ();
+    }
 }
 
