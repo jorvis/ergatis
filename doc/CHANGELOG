@@ -338,3 +338,5 @@ next
 -changed "RunLoggedUnixCommand" to "RunUnixCommand" for tRNAscan-SE2bsml step intRNAscan-SE_template.xml
 -fixed bug in train_for_glimmer3 creating a situation where id collisions could occur, creating a lower unique orf count in the prediction
 -changed tRNAscan-SE2bsml.pl to handle input files with zero size.
+
+-added ergatis v2 initdb artifacts under ergatis/components/initidb (sundaram)
