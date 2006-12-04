@@ -25,7 +25,7 @@
 	    <arg>-p -m 777 $;TMP_DIR$;/cache_dir</arg>
 	</command>
 	<command>
-	    <type>RunJavaUnixCommand</type>
+	    <type>RunUnixCommand</type>
 	    <name>Cache primary keys</name>
 	    <executable>$;BIN_DIR$;/queries2Chado</executable>
 	    <param>
@@ -93,7 +93,7 @@
 	<!--Iterator-->
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML;$;ITERATOR_LIST$;=$;TMP_DIR$;/tables.list"/> 
 	<command>
-	    <type>RunJavaUnixCommand</type>
+	    <type>RunUnixCommand</type>
 	    <name>extract_checksums</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/extract_checksums</executable>
@@ -119,7 +119,7 @@
 	    </param>
 	</command>
 	<command>
-	    <type>RunJavaUnixCommand</type>
+	    <type>RunUnixCommand</type>
 	    <name>sort checksums</name>
 	    <state>incomplete</state>
 	    <executable>sort</executable>
@@ -134,7 +134,7 @@
 	    </param>
 	</command>
 	<command>
-	    <type>RunJavaUnixCommand</type>
+	    <type>RunUnixCommand</type>
 	    <name>assign primary keys</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/assign_pks</executable>
@@ -168,7 +168,7 @@
 	    </param>
 	</command> 
 	<command>
-	    <type>RunJavaUnixCommand</type>
+	    <type>RunUnixCommand</type>
 	    <name>sort checksums by file offset</name>
 	    <state>incomplete</state>
 	    <executable>sort</executable>
@@ -183,7 +183,7 @@
 	    </param>
 	</command>
 	<command>
-	    <type>RunJavaUnixCommand</type>
+	    <type>RunUnixCommand</type>
 	    <name>replace checksums</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/replace_checksums</executable>
@@ -212,5 +212,63 @@
 		<value>$;WORKFLOW_REPOSITORY$;/replace_checksums.stderr</value>
 	    </param>
 	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>drop indices</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/sql2Chado</executable>
+	    <param><key>--username</key><value>chado_admin</value></param>
+	    <param><key>--password</key><value>chado_admin99</value></param>
+	    <param><key>--database</key><value>$;DATABASE$;</value></param>
+	    <param><key>--server</key><value>$;SERVER$;</value></param>
+	    <param><key>--action</key><value>dropindexes</value></param>
+	    <param><key>--testmode</key><value>$;SKIP_LOAD$;</value></param>
+	    <param><key>--indexmanip</key><value>$;REFRESH_INDEXES$;</value></param>
+	    <param><key>--debug_level</key><value>$;DEBUG$;</value></param>
+	    <param><key>--file</key><value>$;DOCS_DIR$;/drop_indexes.ddl</value></param>
+	    <param><key>--log4perl</key><value>$;WORKFLOW_REPOSITORY$;/dropindex.log</value></param>
+	    <param><key>stdout</key><value>$;WORKFLOW_REPOSITORY$;/dropindex.stdout</value></param>
+	    <param><key>stderr</key><value>$;WORKFLOW_REPOSITORY$;/dropindex.stderr</value></param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>load tables</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/chadoloader</executable>
+	    <param><key>--username</key><value>chado_admin
+		<param><key>--password</key><value>chado_admin99</value></param>
+		<param><key>--database</key><value>$;DATABASE$;</value></param>
+		<param><key>--server</key><value>$;SERVER$;</value></param>
+		<param><key>--bcpmode</key><value>in</value></param>
+		<param><key>--batchsize</key><value>$;BCP_BATCH_SIZE$;</value></param>
+		<param><key>--directory</key><value>$;OUTPUT_DIRECTORY$;</value></param>
+		<param><key>--abort</key><value>0</value></param>
+		<param><key>--debug_level</key><value>$;DEBUG$;</value></param>
+		<param><key>--testmode</key><value>$;SKIP_LOAD$;</value></param>
+		<param><key>--ignore_empty_bcp</key><value>1</value></param>
+		<param><key>--gzip_bcp </key><value> $;GZIP_BCP$;</value></param>
+		<param><key>--logfile</key><value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.log</value></param>
+		<param><key>stdout</key><value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stdout</value></param>
+		<param><key>stderr</key><value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stderr</value></param>
+</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>rebuild indices</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/sql2Chado</executable>
+	    <param><key>--username</key><value>chado_admin</value></param>
+	    <param><key>--password</key><value>chado_admin99</value></param>
+	    <param><key>--database</key><value>$;DATABASE$;</value></param>
+	    <param><key>--server</key><value>$;SERVER$;</value></param>
+	    <param><key>--action</key><value>createindexes</value></param>
+	    <param><key>--testmode</key><value>$;SKIP_LOAD$;</value></param>
+	    <param><key>--indexmanip</key><value>$;REFRESH_INDEXES$;</value></param>
+	    <param><key>--debug_level</key><value>$;DEBUG$;</value></param>
+	    <param><key>--file</key><value>$;DOCS_DIR$;/create_indexes.ddl</value></param>
+	    <param><key>--log4perl</key><value>$;WORKFLOW_REPOSITORY$;/createindex.log</value></param>
+	    <param><key>stdout</key><value>$;WORKFLOW_REPOSITORY$;/createindex.stdout</value></param>
+	    <param><key>stderr</key><value>$;WORKFLOW_REPOSITORY$;/createindex.stderr</value></param>
+	</command>
+
     </commandSet>
 </commandSetRoot>
