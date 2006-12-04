@@ -1,68 +1,72 @@
-  <!--Begin iterator twig-->
-    <command>
+<!--Begin iterator twig-->
+<command>
     <type>RunUnixCommand</type>
     <name>create iterator $;ITERATOR_NAME$; groupings</name>
     <state>incomplete</state>
     <executable>$;BIN_DIR$;/create_iterator_groups</executable>
     <param>
-      <key>--input_iter_list</key>
-      <value>$;ITERATOR_LIST$;</value>
+	<key>--input_iter_list</key>
+	<value>$;ITERATOR_LIST$;</value>
     </param>
     <param>
-      <key>--group_count</key>
-      <value>$;GROUP_COUNT$;</value>
+	<key>--group_count</key>
+	<value>$;GROUP_COUNT$;</value>
     </param>
     <param>
-      <key>--output_directory</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;</value>
+	<key>--output_directory</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;</value>
     </param>
     <param>
-      <key>--output_iter_list</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.iter</value>
+	<key>--output_iter_list</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.iter</value>
     </param>
     <param>
-      <key>--group_size_limit</key>
-      <value>1000</value>
+	<key>--group_size_limit</key>
+	<value>1000</value>
     </param>
-  </command>
-  <command>
+    <param>
+	<key>--randomize</key>
+	<value>'$;ITERATOR_RANDOM$;'</value>
+    </param>
+</command>
+<command>
     <type>RunUnixCommand</type>
     <name>replace template keys</name>
     <state>incomplete</state>
     <executable>$;BIN_DIR$;/replace_template_keys</executable>
     <param>  
-      <key>--template_xml</key>
-      <value>$;DOCS_DIR$;/groups_template.xml</value>
+	<key>--template_xml</key>
+	<value>$;DOCS_DIR$;/groups_template.xml</value>
     </param>
     <param>  
-      <key>--component_conf</key>
-      <value>$;COMPONENT_CONFIG$;</value>
+	<key>--component_conf</key>
+	<value>$;COMPONENT_CONFIG$;</value>
     </param>
     <param>  
-      <key>--output_dir</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;</value>
+	<key>--output_dir</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;</value>
     </param>
     <param>  
-      <key>--iterator_list</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.iter</value>
+	<key>--iterator_list</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.iter</value>
     </param>
     <param>  
-      <key>--output_xml</key>
-      <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml</value>
+	<key>--output_xml</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml</value>
     </param>
     <param>  
-      <key>--keys</key>
-      <value>ITERATOR_NAME=$;ITERATOR_NAME$;,ITERATOR_XML=$;ITERATOR_XML$;</value>
+	<key>--keys</key>
+	<value>ITERATOR_NAME=$;ITERATOR_NAME$;,ITERATOR_XML=$;ITERATOR_XML$;</value>
     </param>
     <param>  
-      <key>--distribopts</key>
-      <value>nodistrib=$;NODISTRIB$;</value>
+	<key>--distribopts</key>
+	<value>nodistrib=$;NODISTRIB$;</value>
     </param>
-  </command>
-  <commandSet type="parallel">
+</command>
+<commandSet type="parallel">
     <state>incomplete</state>
     <name>iterator $;ITERATOR1$;</name>
     <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml</fileName>
-  </commandSet>
-  <!--End iterator twig-->
-  
+</commandSet>
+<!--End iterator twig-->
+
