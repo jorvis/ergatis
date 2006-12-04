@@ -165,6 +165,12 @@ sub replacekeys{
 	    }
 	    my($file) = ($line =~ /file="([\/\w\.\_]+)"/);
 	    my($keys) = ($line =~ /keys="(.*)"/);
+	    if($keys !~ /ITERATOR_RANDOM/){
+		$keys .= ',$;ITERATOR_RANDOM$;=0'
+	    }
+	    if($keys !~ /ITERATOR_TIMESTAMP/){
+		$keys .= ',$;ITERATOR_TIMESTAMP$;=0'
+	    }
 	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
 	    &import_xml($file,$keys,$subs,*OUTPUTFILE);
 	    $line = '';
@@ -198,13 +204,13 @@ sub parseiteratorconf{
     while(my $line=<FILE>){
 	chomp $line;
 	if($linenum==0){
-	    @keys = split(/,/,$line);
+	    @keys = split(/\t/,$line);
 	    foreach my $key (@keys){
 		$iteratorconf->{$key} = [];
 	    }
 	}
 	else{
-	    my @elts = split(/,/,$line);
+	    my @elts = split(/\t/,$line);
 	    for(my $i=0;$i<(@elts);$i++){
 		#make sure first element is globally unique
 		#or will cause problems
@@ -267,6 +273,12 @@ sub import_xml{
 	    }
 	    my($file) = ($line =~ /file="([\/\w\.\_]+)"/);
 	    my($keys) = ($line =~ /keys="(.*)"/);
+	    if($keys !~ /ITERATOR_RANDOM/){
+		$keys .= ',$;ITERATOR_RANDOM$;=0'
+	    }
+	    if($keys !~ /ITERATOR_TIMESTAMP/){
+		$keys .= ',$;ITERATOR_TIMESTAMP$;=0'
+	    }
 	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
 	    &import_xml($file,$keys,$subs,*OUTPUTFILE);
 	    $line = '';
