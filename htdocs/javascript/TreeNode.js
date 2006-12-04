@@ -7,16 +7,26 @@ function TreeNode( node_id, node_type ) {
     this.up = undefined;
     this.down = undefined;
     this.domref = undefined;
-    //this.contents = undefined;
     
     nodes[this.id] = this;
     
     // create the dom pointer if it exists
     this.domref = getObject( this.id ) || undefined;
 
+    this.delete = delete_node;
     this.setNodeAbove = set_node_above;
     this.setNodeBelow = set_node_below;
     this.setNodeNeighbors = set_node_neighbors;
+}
+
+function delete_node() {
+    var up_ref = getObject( this.id + '_up' );
+    up_ref.parentNode.removeChild( up_ref );
+    
+    var down_ref = getObject( this.id + '_down' );
+    down_ref.parentNode.removeChild( down_ref );
+    
+    delete nodes[ this.id ];
 }
 
 function set_node_above( target ) {
@@ -33,6 +43,7 @@ function set_node_below( target ) {
     this.down = target;
 
     // then the html element
+//    debug("pointing " + this.id + "_down = " + this.down.id);
     getObject( this.id + '_down').value = this.down.id;
     
 }

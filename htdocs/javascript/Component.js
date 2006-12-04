@@ -30,6 +30,7 @@ function Component( component_id ) {
     
     // object methods
     this.checkArrows   = check_arrows;
+    this.delete        = delete_component;
     this.moveUp        = graphically_move_component_up;
     this.moveDown      = graphically_move_component_down;
     this.saveToDisk    = save_to_disk;
@@ -83,6 +84,53 @@ function check_arrows() {
     }
 }
 
+/*
+    After adding a component the interface should support removing it.  How
+    involved this is depends on whether the user has saved the component or not.
+
+    If not saved:
+    - visually remove the component container (DOM, not CSS)
+    - correct any pointers in the pipeline on adjacent components/sets
+    - remove component from javascript data structures.
+
+    If saved:
+    - perform each of those above
+    - remove any input elements created by this saved component
+    - check all other components in the pipeline for use of any of these saved
+    input elements.  if found, mark them as incomplete and prevent pipeline
+    execution until resolved.
+    - handle the saved file in the build area?  It would be cleaner if we do this,
+    but it doesn't hurt anything by remaining since it wouldn't be referenced in
+    the skeleton template and would get overridden if the user configured another
+    with the same name:token.
+*/
+function delete_component() {
+    // shift focus elsewhere
+
+    // visually remove the component container
+    var component_ref = getObject( this.id );
+    component_ref.parentNode.removeChild( component_ref );
+    
+    // correct any pointers in the pipeline on adjacent components/sets
+    var node_originally_above  = this.node.up;
+    var node_originally_below  = this.node.down;
+    
+    node_originally_above.setNodeBelow( node_originally_below );
+    node_originally_below.setNodeAbove( node_originally_above );
+    
+    if ( node_originally_below.type == 'component' ) {
+        components[node_originally_below.id].checkArrows();
+    }
+    
+    if ( node_originally_above.type == 'component' ) {
+        components[node_originally_above.id].checkArrows();
+    }
+    
+    this.node.delete();
+    
+    // remove component from javascript data structures
+    delete components[ this.id ];
+}
 
 // if javascript only had a synchronous function like setTimeout we wouldn't have to do this!
 function graphically_move_component_up() {

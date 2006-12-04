@@ -66,6 +66,9 @@ function addComponentStub( set_root ) {
                 "<img id='" + component_id + "_arrow_down_disabled' src='/ergatis/images/icon_arrow_down_disabled.png' alt='cannot move component down'>" +
                 "<img id='" + component_id + "_arrow_down'src='/ergatis/images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()'>" +
             "</div>" +
+            "<div class='component_action_buttons'>" +
+                "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].delete()'>" +
+            "</div>" +
             "component<span class='locator'> (" + component_id + ")</span>: <select name='available_components' onChange='selectComponentConfig(" + '"' + component_num + '"' + ")' id='" + component_id + "_selector'></select>" +
             "<div id='" + component_id + "_expander' class='config_expander' onClick='toggleConfigVisibility(" + '"' + component_id + '"' + ")'>" +
                 "<div class='component_status' id='" + component_id + "_status'>not configured</div>" +
@@ -88,8 +91,7 @@ function addComponentStub( set_root ) {
     var component = components[component_id];
     
     // set the nodes on either side of this one
-    component.node.setNodeAbove( nodes[node_above] );
-    component.node.setNodeBelow( nodes[node_below] );
+    component.node.setNodeNeighbors( nodes[node_above], nodes[node_below] );
 
     // the node below should now point up to this component, and the node above should point down to it
     component.node.down.setNodeAbove( component.node );

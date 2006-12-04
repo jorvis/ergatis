@@ -35,13 +35,20 @@ div.component {
 div#component_list_container {
     display: none;
 }
-div.component_nav_buttons {
+div.component_nav_buttons,
+div.component_action_buttons {
     float: right;
     border-left: 1px dotted rgb(150,150,150);
     border-bottom: 1px dotted rgb(150,150,150);
 }
-div.component_nav_buttons img {
+div.component_nav_buttons img,
+div.component_action_buttons img {
     padding-left: 3px;    
+}
+div.component_action_buttons {
+    margin-right: 30px;
+    border-right: 1px dotted rgb(150,150,150);
+    padding-right: 5px;
 }
 div.component_status {
     float: right;
@@ -88,7 +95,7 @@ input.select_shadow {
     font-weight: bold;
     color: rgb(100,100,100);
     /* comment this next line out if you want to see pointer boxes on each component/set */
-    display: none;  
+    display: none;
 }
 span.component_name {
     font-weight: bold;
