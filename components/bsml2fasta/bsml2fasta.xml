@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>bsml2fasta workflow</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>bsml2fasta</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bsml2fasta</executable>
+            <param>  
+                <key>--bsml_input</key>
+                <value>'$;INPUT_FILE$;'</value>
+            </param>
+            <param>  
+                <key>--bsml_list</key>
+                <value>'$;INPUT_FILE_LIST$;'</value>
+            </param>
+            <param>  
+                <key>--class_filter</key>
+                <value>'$;CLASS_FILTER$;'</value>
+            </param>
+            <param>  
+                <key>--format</key>
+                <value>'$;FORMAT$;'</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>'$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE$;'</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>'$;OUTPUT_LIST$;'</value>
+            </param>
+            <param>  
+                <key>--parse_element</key>
+                <value>'$;PARSE_ELEMENT$;'</value>
+            </param>
+            <param>  
+                <key>--output_subdir_size</key>
+                <value>$;OUTPUT_SUBDIR_SIZE$;</value>
+            </param>
+            <param>  
+                <key>--role_exclude</key>
+                <value>'$;ROLE_EXCLUDE$;'</value>
+            </param>
+            <param>  
+                <key>--role_include</key>
+                <value>'$;ROLE_INCLUDE$;'</value>
+            </param>
+            <param>  
+                <key>--bp_extension</key>
+                <value>'$;BP_EXTENSION$;'</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
