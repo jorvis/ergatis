@@ -340,3 +340,5 @@ next
 -changed tRNAscan-SE2bsml.pl to handle input files with zero size.
 
 -added ergatis v2 initdb artifacts under ergatis/components/initidb (sundaram)
+-added ergatis v2 legacy2bsml artifacts under ergatis/components/legacy2bsml (sundaram)
+-added create_legacy2bsml_iterator_list.pl for (ergatis v2) under ergatis/src/perl (sundaram)
