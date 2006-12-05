@@ -14,7 +14,7 @@ panther2bsml.pl - convert panther raw output to BSML
 USAGE: panther2bsml.pl 
         --input=/path/to/somefile.panther.raw 
         --output=/path/to/somefile.panther.bsml
-		--query_path=/path/to/query.fasta.fsa
+		--query_file_path=/path/to/query.fasta.fsa
         --gzip_output=1
       [ --log=/path/to/some.log
         --debug=4 
@@ -29,7 +29,7 @@ B<--input,-i>
 B<--output,-o> 
     Output BSML file
 
-B<--query_path,-q> 
+B<--query_file_path,-q> 
     Full path to query sequence file used for Panther run.
 
 B<--gzip_output,-g>
@@ -206,8 +206,8 @@ sub check_parameters {
     if (! $options{'output'}) { $logger->logdie("output option required!") }
 
     ## if the query fasta file was given, parse out the header line (defline).
-    if($options{'query_path'}) {
-        open(IN, "< $options{query_path}") or
+    if($options{'query_file_path'}) {
+        open(IN, "< $options{query_file_path}") or
             $logger->logdie("Unable to open $options{query_file} ($!)");
         while(<IN>) {
             chomp;
