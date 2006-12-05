@@ -89,7 +89,7 @@ my $results = GetOptions (\%options,
 			  'input_file_list|l=s',
 			  'input_directory|d=s',
 			  'input_directory_extension=s',
-			  'timestamp=s',
+			  'timestamp|t=s',
 			  'log=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
@@ -126,12 +126,15 @@ my $input_element_count = &gather_input_elements( $input_elements );
 
 open(my $out_fh, ">$options{output_iter_list}") || die "can't create output_iter_list: $!";
 
-print $out_fh '$;I_FILE_BASE$;',"\t",'$;I_FILE_NAME$;',"\t",'$;I_FILE_PATH$;',"\t",'$;I_FILE_EXT$;',"\t",'$;I_DIR$;',"\n";
+print $out_fh '$;I_FILE_BASE$;',"\t",'$;I_FILE_NAME$;',"\t",'$;I_FILE_PATH$;',"\t",'$;I_FILE_EXT$;',"\t",'$;I_DIR$;';
 
 my $timestamp;
 if($options{'timestamp'}){
+    print $out_fh "\t",'$;I_TIMESTAMP$;';
     $timestamp = &get_datetime();
 }
+print $out_fh "\n";
+
 for my $nameref (keys %$input_elements){
     print $out_fh 
 	"$nameref\t",
