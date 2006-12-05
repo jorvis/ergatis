@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa clustalw formatdb jaccard ncbi-blastp ngap repeatmasker split_multifasta trf tRNAscan-SE wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap repeatmasker split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -82,11 +82,9 @@ aat_aa	:
 
 aat_aa_masked	:
 	@echo "Installing aat_aa_masked workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/aat_aa_masked/aat_aa_masked-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa_masked/aat_aa_masked-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa_masked/aat_aa_masked.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa_masked/aat_aa_masked_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/aat_aa_masked/aat_aa_maskedconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/aat_aa_masked/aat_aa_masked.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_aa_masked/aat_aa_masked.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_aa_masked/aat_aa_masked.config $(WORKFLOW_DOCS_DIR)
 
 aat_na	:
 	@echo "Installing aat_na workflows in $(WORKFLOW_DOCS_DIR)"
@@ -170,9 +168,8 @@ bsml2chado_fast  :
 
 bsml2fasta	:
 	@echo "Installing bsml2fasta workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/bsml2fasta/bsml2fastaconf.ini $(WORKFLOW_DOCS_DIR)
-	@install components/bsml2fasta/bsml2fasta-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/bsml2fasta/bsml2fasta-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install components/bsml2fasta/bsml2fasta.xml $(WORKFLOW_DOCS_DIR)
+	@install components/bsml2fasta/bsml2fasta.config $(WORKFLOW_DOCS_DIR)
 
 bsml2featurerelationships	:
 	@echo "Installing bsml2featurerelationships workflows in $(WORKFLOW_DOCS_DIR)"
@@ -234,13 +231,11 @@ fasta2bsml	:
 	@install components/fasta2bsml/fasta2bsml-master.ini $(WORKFLOW_DOCS_DIR)
 	@install components/fasta2bsml/fasta2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)
 
-fgenesh  :
+fgenesh	:
 	@echo "Installing fgenesh workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/fgenesh/fgenesh-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/fgenesh/fgenesh-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/fgenesh/fgenesh.ini $(WORKFLOW_DOCS_DIR)
-	@install components/fgenesh/fgenesh_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/fgenesh/fgeneshconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/fgenesh/fgenesh.xml $(WORKFLOW_DOCS_DIR)
+	@install components/fgenesh/fgenesh.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/fgenesh/fgenesh.config $(WORKFLOW_DOCS_DIR) 
 
 formatdb	:
 	@echo "Installing formatdb workflows in $(WORKFLOW_DOCS_DIR)"
@@ -256,13 +251,11 @@ genbank2bsml  :
 	@install components/genbank2bsml/genbank2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/genbank2bsml/genbank2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
 
-genemark  :
+genemark	:
 	@echo "Installing genemark workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/genemark/genemark-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/genemark/genemark-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/genemark/genemark.ini $(WORKFLOW_DOCS_DIR)
-	@install components/genemark/genemark_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/genemark/genemarkconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/genemark/genemark.xml $(WORKFLOW_DOCS_DIR)
+	@install components/genemark/genemark.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/genemark/genemark.config $(WORKFLOW_DOCS_DIR)
 
 genewise_best_loc	:
 	@echo "Installing genewise_best_loc workflows in $(WORKFLOW_DOCS_DIR)"
@@ -322,19 +315,15 @@ glimmer3	:
 
 glimmerHMM	:
 	@echo "Installing glimmerHMM workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/glimmerHMM/glimmerHMM-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/glimmerHMM/glimmerHMM-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/glimmerHMM/glimmerHMM.ini $(WORKFLOW_DOCS_DIR)
-	@install components/glimmerHMM/glimmerHMM_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/glimmerHMM/glimmerHMMconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/glimmerHMM/glimmerHMM.xml $(WORKFLOW_DOCS_DIR)
+	@install components/glimmerHMM/glimmerHMM.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/glimmerHMM/glimmerHMM.config $(WORKFLOW_DOCS_DIR)
 
 hmmpfam	:
 	@echo "Installing hmmpfam workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/hmmpfam/hmmpfam-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/hmmpfam/hmmpfam-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/hmmpfam/hmmpfam.ini $(WORKFLOW_DOCS_DIR)
-	@install components/hmmpfam/hmmpfam_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/hmmpfam/hmmpfamconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/hmmpfam/hmmpfam.xml $(WORKFLOW_DOCS_DIR)
+	@install components/hmmpfam/hmmpfam.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/hmmpfam/hmmpfam.config $(WORKFLOW_DOCS_DIR)
 
 hmmpir	:
 	@echo "Installing hmmpir workflows in $(WORKFLOW_DOCS_DIR)"
@@ -376,11 +365,12 @@ infernal	:
 	@install components/infernal/infernal_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/infernal/infernalconf.ini $(WORKFLOW_DOCS_DIR)
 
-initdb  :
+initdb	:
 	@echo "Installing initdb workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/initdb/initdb-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/initdb/initdb-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/initdb/initdbconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/initdb/initdb.xml $(WORKFLOW_DOCS_DIR)
+	@install components/initdb/initdb.i1.xml $(WORKFLOW_DOCS_DIR)
+    @install components/initdb/initdb.i2.xml $(WORKFLOW_DOCS_DIR)
+	@install components/initdb/initdb.config $(WORKFLOW_DOCS_DIR)
 
 iprscan	:
 	@echo "Installing iprscan workflows in $(WORKFLOW_DOCS_DIR)"
@@ -389,6 +379,11 @@ iprscan	:
 	@install components/iprscan/iprscan.ini $(WORKFLOW_DOCS_DIR)
 	@install components/iprscan/iprscan_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/iprscan/iprscanconf.ini $(WORKFLOW_DOCS_DIR)
+
+j_ortholog_clusters	:
+	@echo "Installing j_ortholog_clusters workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/j_ortholog_clusters/j_ortholog_clusters.xml $(WORKFLOW_DOCS_DIR)
+	@install components/j_ortholog_clusters/j_ortholog_clusters.config $(WORKFLOW_DOCS_DIR)
 
 jaccard	:
 	@echo "Installing jaccard workflows in $(WORKFLOW_DOCS_DIR)"
@@ -530,11 +525,9 @@ pangenome	:
 
 panther	:
 	@echo "Installing panther workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/panther/panther-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/panther/panther-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/panther/panther.ini $(WORKFLOW_DOCS_DIR)
-	@install components/panther/panther_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/panther/pantherconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/panther/panther.xml $(WORKFLOW_DOCS_DIR)
+	@install components/panther/panther.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/panther/panther.config $(WORKFLOW_DOCS_DIR) 
 
 parse_for_ncRNAs	:
 	@echo "Installing parse_for_ncRNAs workflows in $(WORKFLOW_DOCS_DIR)"
@@ -554,11 +547,9 @@ pe	:
 
 pepstats	:
 	@echo "Installing pepstats workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/pepstats/pepstats-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/pepstats/pepstats-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/pepstats/pepstats.ini $(WORKFLOW_DOCS_DIR)
-	@install components/pepstats/pepstats_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/pepstats/pepstatsconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/pepstats/pepstats.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pepstats/pepstats.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pepstats/pepstats.config $(WORKFLOW_DOCS_DIR)
 
 phat	:
 	@echo "Installing phat workflows in $(WORKFLOW_DOCS_DIR)"
@@ -568,6 +559,12 @@ phat	:
 	@install components/phat/phat_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/phat/phatconf.ini $(WORKFLOW_DOCS_DIR)  
 
+predotar	:
+	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/predotar/predotar.xml $(WORKFLOW_DOCS_DIR)
+	@install components/predotar/predotar.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/predotar/predotar.config $(WORKFLOW_DOCS_DIR)
+
 promer	:
 	@echo "Installing promer workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/promer/promer-master.ini $(WORKFLOW_DOCS_DIR)
@@ -575,14 +572,6 @@ promer	:
 	@install components/promer/promer.ini $(WORKFLOW_DOCS_DIR)
 	@install components/promer/promer_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/promer/promerconf.ini $(WORKFLOW_DOCS_DIR)  
-
-predotar	:
-	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/predotar/predotar-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/predotar/predotar-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/predotar/predotar.ini $(WORKFLOW_DOCS_DIR)
-	@install components/predotar/predotar_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/predotar/predotarconf.ini $(WORKFLOW_DOCS_DIR)  
 
 promote_gene_prediction	:
 	@echo "Installing promote_gene_prediction workflows in $(WORKFLOW_DOCS_DIR)"
@@ -688,19 +677,15 @@ tabula_rasa	:
 
 targetp	:
 	@echo "Installing targetp workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/targetp/targetp-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/targetp/targetp-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/targetp/targetp.ini $(WORKFLOW_DOCS_DIR)
-	@install components/targetp/targetp_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/targetp/targetpconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/targetp/targetp.xml $(WORKFLOW_DOCS_DIR)
+	@install components/targetp/targetp.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/targetp/targetp.config $(WORKFLOW_DOCS_DIR) 
 
 tmhmm	:
 	@echo "Installing tmhmm workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/tmhmm/tmhmm-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tmhmm/tmhmm-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/tmhmm/tmhmm.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tmhmm/tmhmm_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/tmhmm/tmhmmconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/tmhmm/tmhmm.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tmhmm/tmhmm.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tmhmm/tmhmm.config $(WORKFLOW_DOCS_DIR)
 
 translate_sequence	:
 	@echo "Installing translate_sequence workflows in $(WORKFLOW_DOCS_DIR)"
