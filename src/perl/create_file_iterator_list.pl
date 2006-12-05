@@ -126,7 +126,7 @@ my $input_element_count = &gather_input_elements( $input_elements );
 
 open(my $out_fh, ">$options{output_iter_list}") || die "can't create output_iter_list: $!";
 
-print $out_fh '$;I_FILE_BASE$;\t$;I_FILE_NAME$;\t$;I_FILE_PATH$;\t$;I_FILE_EXT$;\t$;I_DIR$;',"\n";
+print $out_fh '$;I_FILE_BASE$;',"\t",'$;I_FILE_NAME$;',"\t",'$;I_FILE_PATH$;',"\t",'$;I_FILE_EXT$;',"\t",'$;I_DIR$;',"\n";
 
 my $timestamp;
 if($options{'timestamp'}){
@@ -140,7 +140,7 @@ for my $nameref (keys %$input_elements){
 	"$input_elements->{ $nameref }[1]\t",
 	"$id2dir->{  $input_elements->{ $nameref }[0]  }";
     print $out_fh "\t$timestamp" if($options{'timestamp'});
-    print "\n";	
+    print $out_fh "\n";	
 }
 
 close $out_fh;

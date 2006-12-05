@@ -170,7 +170,7 @@ $logger->debug("actual group count was $group_count") if $logger->is_debug;
 $logger->debug("attempting to create output_iter_list: $options{output_iter_list}") if $logger->is_debug;
 
 open(my $gif_fh, ">$options{output_iter_list}") || die "can't create output_iter_list: $!";
-print $gif_fh '$;GROUP_XML$;\t$;ITERATOR_LIST$;\t$;GROUP_NUMBER$;',"\n";
+print $gif_fh '$;GROUP_XML$;',"\t",'$;ITERATOR_LIST$;',"\t",'$;GROUP_NUMBER$;',"\n";
 open(my $iter_file, "$options{input_iter_list}") or $logger->logdie("Can't open file $options{input_iter_list}");
 
 ##########
@@ -202,7 +202,7 @@ for my $group ( @groups ) {
     open(my $group_fh, ">$group_file") || $logger->logdie( "failed to create group file $group_file\n" );
     
     ## print iterator names
-    print $group_fh join('\t',@$iterator_names),'\t$;GROUP_NUMBER$;',"\n";
+    print $group_fh join("\t",@$iterator_names),"\t",'$;GROUP_NUMBER$;',"\n";
     ## elements of the group
     for my $elt ( @$group ) {
 	## seek to byte offset for the line
