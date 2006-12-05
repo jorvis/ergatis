@@ -65,7 +65,7 @@
 </command>
 <commandSet type="parallel">
     <state>incomplete</state>
-    <name>iterator $;ITERATOR1$;</name>
+    <name>iterator $;ITERATOR_NAME$;</name>
     <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml</fileName>
 </commandSet>
 <!--End iterator twig-->
