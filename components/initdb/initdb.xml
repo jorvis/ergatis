@@ -22,7 +22,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create revoke permissions DDL list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/revoke_permissions.ddl</value>
@@ -38,7 +38,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create drop chado tables DDL list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/drop_chado_tables.ddl</value>
@@ -54,7 +54,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create drop chado-mart table DDL list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/drop_chado_mart_tables.ddl</value>
@@ -70,7 +70,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create create chado table DDL list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/create_tables.ddl</value>
@@ -86,7 +86,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create create chado-mart table DDL list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/create_chado_mart_tables.ddl</value>
@@ -102,7 +102,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create partition table DDL list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/partition_tables.ddl</value>
@@ -177,7 +177,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create create indices and constraints iterator list file</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/create_indices.ddl</value>
@@ -193,7 +193,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create iterator list for granting permissions on all chado tables</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/grant_permissions.ddl</value>
@@ -209,7 +209,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create iterator list for granting permissions on all chado-mart tables</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/parse_table_names.pl</executable>
+	    <executable>$;BIN_DIR$;/create_file_iterator_lists.pl</executable>
             <param>
 		<key>stdin</key>
 		<value>$;DOCS_DIR$;/grant_chado_mart_permissions.ddl</value>
