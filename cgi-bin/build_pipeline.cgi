@@ -41,7 +41,8 @@ while ( my $thing = readdir $idh ) {
 
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
-                                        { label => 'run pipeline', is_last => 1, url => 'javascript:checkAndRunPipeline()' },
+                                        { label => 'run pipeline', is_last => 0, url => 'javascript:checkAndRunPipeline()' },
+                                        { label => 'save pipeline', is_last => 1, url => 'javascript:document.pipeline.execute.value=0;checkAndRunPipeline()' },
                                      ] );
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
 $tmpl->param( COMPONENTS => \@components );

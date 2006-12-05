@@ -105,7 +105,7 @@ if ( $$qvars{rerun} ) {
 
 }
 
-$pipeline->run( ergatis_cfg => $ergatis_cfg );
+$pipeline->run( ergatis_cfg => $ergatis_cfg ) if($$qvars{'execute'});
 
 ## now redirect to a monitor page
 print $q->redirect( -uri => url_dir_path($q) . "view_pipeline.cgi?instance=" . $pipeline->path() );
