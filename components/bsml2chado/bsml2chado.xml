@@ -91,7 +91,7 @@
 	    </param>
 	</command>
 	<!--Iterator-->
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML;$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/collatetables.list,$;NODISTRIB$;=1"/> 
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML;,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/collatetables.list,$;NODISTRIB$;=1"/> 
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>extract_checksums</name>
@@ -260,6 +260,6 @@
 		<value>$;WORKFLOW_REPOSITORY$;/create_indexes.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;,$;WORKFLOW_REPOSITORY$;/create_indexes.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/create_indexes.list,$;NODISTRIB$;=1"/>
     </commandSet>
 </commandSetRoot>
