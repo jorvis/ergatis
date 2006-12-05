@@ -380,6 +380,8 @@ sub clear_working_dir {
 	
 	my $execstring = "rm -rf $workingdir/*_install";
 	&do_or_die($execstring);
+	my $execstring = "rm -rf $workingdir/ergatis_c";
+	&do_or_die($execstring);
 	$execstring = "rm -rf $workingdir/chado_schema";
 	&do_or_die($execstring);
 	$execstring = "rm -rf $workingdir/peffect";
