@@ -22,7 +22,7 @@
             <type>RunUnixCommand</type>
             <name>predotar2bsml</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/panther2bsml</executable>
+            <executable>$;BIN_DIR$;/predotar2bsml</executable>
             <param>  
                 <key>--input</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
