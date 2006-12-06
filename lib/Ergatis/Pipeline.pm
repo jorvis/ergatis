@@ -212,6 +212,9 @@ umask(0000);
         
         ## for the htab.pl script within the hmmpfam component
         $ENV{HMM_SCRIPTS} = '/usr/local/devel/ANNOTATION/hmm/bin';
+        
+        ## for the genewise component
+        $ENV{WISECONFIGDIR} = '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg';
     }
     
 }
