@@ -104,8 +104,9 @@ if ( $$qvars{rerun} ) {
                                                        id_repository => $global_id_repository );
 
 }
-
-$pipeline->run( ergatis_cfg => $ergatis_cfg ) if($$qvars{'execute'});
+unless ( exists $$qvars{skip_run} && $$qvars{skip_run} == 1 ) {
+    $pipeline->run( ergatis_cfg => $ergatis_cfg );
+}
 
 ## now redirect to a monitor page
 print $q->redirect( -uri => url_dir_path($q) . "view_pipeline.cgi?instance=" . $pipeline->path() );
