@@ -5,15 +5,15 @@
 	<type>RunUnixCommand</type>
 	<name>collate bcp files</name>
 	<state>incomplete</state>
-	<executable>/usr/bin/find</executable>
-	<arg>$;TMP_DIR$; -name $;I_TABLE_NAME$;.out -type f -exec cat {} \; | $;BIN_DIR$;/chado_record_uniq -o $;TMP_DIR$;/$;I_TABLE_NAME$;.bcp.out</arg>
+	<executable>$;BIN_DIR$;/cat_files</executable>
+	<arg>--extension=$I_TABLE_NAME.out --list_file=$;TMP_DIR$;/tables.list | $;BIN_DIR$;/chado_record_uniq -o $;TMP_DIR$;/$;I_TABLE_NAME$;.bcp.out</arg>
 	<param>
 	    <key>
 		stderr
 	    </key>
-	    <param>
-		$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_TABLE_NAME$;.stderr
-	    </param>
+	    <value>
+		$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_TABLE_NAME$;.stdout
+	    </value>
 	</param>
 	<param>
 	    <key>

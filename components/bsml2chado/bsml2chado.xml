@@ -78,20 +78,57 @@
 	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_TIMESTAMP$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>create_table_iterator_list</name>
+	    <name>list bcp files</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
-            <param>
-		<key>stdin</key>
-		<value>$;DOCS_DIR$;/create_tables.ddl</value>
-	    </param>
+	    <executable>/usr/bin/find</executable>
+	    <arg>$;TMP_DIR$;/parse -name ".out" -type f</arg>
 	    <param>
-		<key>stdout</key>    
-		<value>$;WORKFLOW_REPOSITORY$;/collatetables.list</value>
+		<key>
+		    stdout
+		</key>
+		<value>
+		    $;TMP_DIR$;/tables.out
+		</value>
+	    </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>list bcp files</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/bin/perl</executable>
+	    <arg>-ne 's/.*\/([\w_]+).out/$1/;print '| sort | uniq</arg>
+	    <param>
+		<key>
+		    stdin
+		</key>
+		<value>
+		    $;TMP_DIR$;/tables.out
+		</value>
+		<key>
+		    stdout
+		</key>
+		<value>
+		    $;TMP_DIR$;/collatetables.list.tmp
+		</value>
+	    </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>creat collate list</name>
+	    <state>incomplete</state>
+	    <executable>echo </executable>
+	    <arg>'$;I_TABLE_NAME$;' | cat - $;TMP_DIR$;/collatetables.list.tmp</arg>
+	    <param>
+		<key>
+		    stdout
+		</key>
+		<value>
+		    $;TMP_DIR$;/collatetables.list
+		</value>
 	    </param>
 	</command>
 	<!--Iterator-->
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML;,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/collatetables.list,$;NODISTRIB$;=1"/> 
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/collatetables.list,$;NODISTRIB$;=5"/> 
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>extract_checksums</name>
@@ -99,7 +136,7 @@
 	    <executable>$;BIN_DIR$;/extract_checksums</executable>
 	    <param>
 		<key>--bcp_dir</key>
-		<value>$;TMP_DIR$;/checksum_bcp</value>
+		<value>$;TMP_DIR$;/</value>
 	    </param>
 	    <param>
 		<key>--bcp_extension</key>
@@ -123,14 +160,14 @@
 	    <name>sort checksums</name>
 	    <state>incomplete</state>
 	    <executable>sort</executable>
-	    <arg>-k1,1 -k2,2n -T $TMP_DIR</arg>
+	    <arg>-k1,1 -k2,2n -T $;TMP_DIR$;</arg>
 	    <param>
 		<key>stdin</key>
-		<value>$;WORKFLOW_REPOSITORY$;/checksums.out</value>
+		<value>$;TMP_DIR$;/checksums.out</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;WORKFLOW_REPOSITORY$;/checksums.out.sorted</value>
+		<value>$;TMP_DIR$;/checksums.out.sorted</value>
 	    </param>
 	</command>
 	<command>
@@ -155,16 +192,16 @@
 		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
-		<key>--debug_level</key>
+		<key>--debug</key>
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
 		<key>--checksum_file</key>
-		<value>$;WORKFLOW_REPOSITORY$;/checksums.out.sorted</value>
+		<value>$;TMP_DIR$;/checksums.out.sorted</value>
 	    </param>
 	    <param>
 		<key>--output_file</key>
-		<value>$;WORKFLOW_REPOSITORY$;/checksums.out.sorted.pks</value>
+		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
 	    </param>
 	</command> 
 	<command>
@@ -172,14 +209,14 @@
 	    <name>sort checksums by file offset</name>
 	    <state>incomplete</state>
 	    <executable>sort</executable>
-	    <arg>-k1,1 -k2,2n -T $TMP_DIR</arg>
+	    <arg>-k1,1 -k2,2n -T $;TMP_DIR$;</arg>
 	    <param>
 		<key>stdin</key>
-		<value>$;WORKFLOW_REPOSITORY$;/checksums.out.sorted.pks</value>
+		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;WORKFLOW_REPOSITORY$;/checksums.out.sorted.pks.offsets</value>
+		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
 	    </param>
 	</command>
 	<command>
@@ -201,15 +238,15 @@
 	    </param>
 	    <param>
 		<key>--checksum_file</key>
-		<value>$;WORKFLOW_REPOSITORY$;/checksums.out.sorted.pks.offsets</value>
+		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;WORKFLOW_REPOSITORY$;/replace_checksums.stdout</value>
+		<value>$;TMP_DIR$;/replace_checksums.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;WORKFLOW_REPOSITORY$;/replace_checksums.stderr</value>
+		<value>$;TMP_DIR$;/replace_checksums.stderr</value>
 	    </param>
 	</command>
 	<command>
@@ -223,10 +260,10 @@
 	    </param>
 	    <param>
 		<key>stdout</key>    
-		<value>$;WORKFLOW_REPOSITORY$;/drop_indexes.list</value>
+		<value>$;TMP_DIR$;/drop_indexes.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/drop_indexes.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_indexes.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>list bcp files</name>
@@ -242,10 +279,10 @@
 	    </param>
 	    <param>
 		<key>--output_iterator_list</key>
-		<value>$;WORKFLOW_REPOSITORY$;/bcp.out.list</value>
+		<value>$;TMP_DIR$;/bcp.out.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/bcp.out.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bcp.out.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Rebuild indexes</name>
@@ -257,9 +294,9 @@
 	    </param>
 	    <param>
 		<key>stdout</key>    
-		<value>$;WORKFLOW_REPOSITORY$;/create_indexes.list</value>
+		<value>$;TMP_DIR$;/create_indexes.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/create_indexes.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list,$;NODISTRIB$;=1"/>
     </commandSet>
 </commandSetRoot>

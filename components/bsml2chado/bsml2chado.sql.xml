@@ -1,6 +1,6 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-	<name>Revoke permissions iterator</name>
+	<name>Execute SQL</name>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <state>incomplete</state>
@@ -23,12 +23,12 @@
 		<value>$;SERVER$;</value>
 	    </param>
 	    <param>
-		<key>--logfile</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_SQLNUM;.log</value>
+		<key>--log</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_SQLNUM$;.log</value>
 	    </param>
 	    <param>
 		<key>--sql</key>
-		<value>$;I_SQL$;</value>
+		<value>"$;I_SQL$;"</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
