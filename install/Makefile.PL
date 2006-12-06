@@ -376,7 +376,7 @@ initdb	:
 	@echo "Installing initdb workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/initdb/initdb.xml $(WORKFLOW_DOCS_DIR)
 	@install components/initdb/initdb.i1.xml $(WORKFLOW_DOCS_DIR)
-    @install components/initdb/initdb.i2.xml $(WORKFLOW_DOCS_DIR)
+	@install components/initdb/initdb.i2.xml $(WORKFLOW_DOCS_DIR)
 	@install components/initdb/initdb.config $(WORKFLOW_DOCS_DIR)
 
 iprscan	:
