@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap repeatmasker split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado runsql bsml2fasta clustalw fgenesh formatdb genemark glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap repeatmasker split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -152,11 +152,18 @@ ber	:
 
 bsml2chado  :
 	@echo "Installing bsml2chado workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/bsml2chado/bsml2chado.ini $(WORKFLOW_DOCS_DIR)
-	@install components/bsml2chado/bsml2chado_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/bsml2chado/bsml2chado-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/bsml2chado/bsml2chado-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/bsml2chado/bsml2chadoconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/bsml2chado/bsml2chado.config $(WORKFLOW_DOCS_DIR)
+	@install components/bsml2chado/bsml2chado.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/bsml2chado/bsml2chado.parse.xml $(WORKFLOW_DOCS_DIR)
+	@install components/bsml2chado/bsml2chado.sql.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/bsml2chado/bsml2chado.load.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/bsml2chado/bsml2chado.collate.xml $(WORKFLOW_DOCS_DIR)  
+
+runsql  :
+	@echo "Installing runsql workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/runsql/runsql.config $(WORKFLOW_DOCS_DIR)
+	@install components/runsql/runsql.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/runsql/runsql.sql.xml $(WORKFLOW_DOCS_DIR)  
 
 bsml2chado_fast  :
 	@echo "Installing bsml2chado_fast workflows in $(WORKFLOW_DOCS_DIR)"
