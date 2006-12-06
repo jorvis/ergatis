@@ -72,11 +72,12 @@ if (exists $options{'iterator_list'}) {
     my $maxpar;
     my $cstype;
     if ($options{'distribopts'}) {
-        if ($options{'distribopts'} =~ /nodistrib=1/i) {
+        if ($options{'distribopts'} =~ /nodistrib=(\d+)/i && $1>0) {
             $distrib = "parallel";
-            $maxpar = "<maxParallelCmds>1</maxParallelCmds>";
+            $maxpar = "<maxParallelCmds>$1</maxParallelCmds>";
             $cstype = "serial";
-        } else {
+	}
+	else {
             $distrib = "parallel";
             $cstype = "remote-serial";
         }
