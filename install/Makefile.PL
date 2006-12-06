@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado runsql bsml2fasta clustalw fgenesh formatdb genemark glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap repeatmasker split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado runsql bsml2fasta clustalw fgenesh formatdb genemark glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard ncbi-blastp ngap repeatmasker split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
