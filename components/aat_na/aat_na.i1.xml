@@ -11,22 +11,22 @@
             <arg>$;I_FILE_PATH$; $;DATABASE_PATH$; $;DDS_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dds.raw</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dds.raw</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dds.stderr</value>
             </param>
         </command>
-        
-        
-        
-        
         <command>
             <type>RunUnixCommand</type>
             <name>ext</name>
             <state>incomplete</state>
             <executable>$;EXT_EXEC$;</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dds.raw $;EXT_OPTS$;</arg>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dds.raw $;EXT_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</value>
             </param>
         </command>
         <command>
@@ -34,10 +34,10 @@
             <name>ext collapse</name>
             <state>incomplete</state>
             <executable>$;EXT_COLLAPSE_EXEC$;</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</value>
             </param>
         </command>
         <command>
@@ -45,89 +45,66 @@
             <name>filter</name>
             <state>incomplete</state>
             <executable>$;FILTER_EXEC$;</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed $;FILTER_OPTS$;</arg>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed $;FILTER_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</value>
-            </param>
-        </command>
-
-
-        <command>
-            <type>RunUnixCommand</type>
-            <name>relocate query seq</name>
-            <state>incomplete</state>
-            <executable>cp</executable>
-            <arg>$;I_FILE_PATH$; $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>nap</name>
-            <state>incomplete</state>
-            <executable>$;NAP_EXEC$;</executable>
-            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; $;DATABASE_PATH_FOR_NAP$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw $;MATRIX$; $;NAP_OPTS$;</arg>
-            <param>  
-                <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.raw</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</value>
             </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>remove temp query seq</name>
+            <name>gap2</name>
             <state>incomplete</state>
-            <executable>rm</executable>
-            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+            <executable>$;GAP2_EXEC$;</executable>
+            <arg>$;I_FILE_PATH$; $;GAP2_DATABASE_PATH$; $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gap2.btab $;GAP2_OPTS$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gap2.raw</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>remove raw dps output</name>
+            <name>remove raw dds output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dps.raw</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dds.raw</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>remove raw ext output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.raw</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>remove raw ext collapsed output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ext.collapsed</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>remove raw filter output</name>
             <state>incomplete</state>
             <executable>rm</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</arg>
+            <arg>-f $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.raw</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>ensure btab existence</name>
             <state>incomplete</state>
             <executable>touch</executable>
-            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gap2.btab</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>relocate btab</name>
+            <name>gap22bsml</name>
             <state>incomplete</state>
-            <executable>mv</executable>
-            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>nap2bsml</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/nap2bsml</executable>
+            <executable>$;BIN_DIR$;/gap22bsml</executable>
             <param>  
                 <key>--input</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gap2.btab</value>
             </param>
             <param>  
                 <key>--output</key>
@@ -145,23 +122,15 @@
                 <key>--gzip_output</key>
                 <value>$;COMPRESS_BSML_OUTPUT$;</value>
             </param>
-            <param>  
-                <key>--cutoff_identity</key>
-                <value>'$;CUTOFF_IDENTITY$;'</value>
-            </param>
-            <param>  
-                <key>--cutoff_similarity</key>
-                <value>'$;CUTOFF_SIMILARITY$;'</value>
-            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>compress nap btab</name>
+            <name>compress gap2 btab</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/compress_file</executable>
             <param>  
                 <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.btab</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gap2.btab</value>
             </param>
             <param>  
                 <key>--compress</key>
@@ -170,16 +139,16 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>compress nap</name>
+            <name>compress gap2</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/compress_file</executable>
             <param>  
                 <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.nap.raw</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gap2.raw</value>
             </param>
             <param>  
                 <key>--compress</key>
-                <value>$;COMPRESS_NAP_OUTPUT$;</value>
+                <value>$;COMPRESS_GAP2_OUTPUT$;</value>
             </param>
         </command>
         <command>
