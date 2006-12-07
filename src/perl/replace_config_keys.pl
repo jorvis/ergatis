@@ -153,11 +153,36 @@ sub import_includes{
 	    $logger->debug("Found includefile $includefile in section [ $member ] with key $param") if($logger->is_debug());
 	    if(-e $includefile){
 		if(!$included->{$includefile}){
-		    my $newcfg = new Config::IniFiles( -file => $includefile, 
-						       -import => $currcfg);
-		    $included->{$includefile} = 1;
-		    #Supports nesting of includes
-		    $currcfg = &import_includes($newcfg,$included);
+		    if($includefile =~ /software.config$/){
+			my $softcfg = new Config::IniFiles( -file => $includefile);
+			my $newcfg = new Config::IniFiles(  -import => $currcfg);
+			my $componentname = $cfg->val("component",'$;COMPONENT_NAME$;');
+			$componentname =~ s/\s//g;
+			foreach my $section ($softcfg->Sections()){
+			    if($section =~ /^common/){
+				$newcfg->AddSection($section);
+				foreach my $p ($softcfg->Parameters($section)){
+				    $newcfg->newval($section,$p,$softcfg->val($section,$p));
+				}
+			    }
+			    elsif($section =~ /component $componentname$/){
+				$newcfg->AddSection($section);
+				foreach my $p ($softcfg->Parameters($section)){
+				    $newcfg->newval($section,$p,$softcfg->val($section,$p));
+				}
+			    }
+			}
+			$included->{$includefile} = 1;
+			#Supports nesting of includes
+			$currcfg = &import_includes($newcfg,$included);
+		    }
+		    else{
+			my $newcfg = new Config::IniFiles( -file => $includefile, 
+							   -import => $currcfg);
+			$included->{$includefile} = 1;
+			#Supports nesting of includes
+			$currcfg = &import_includes($newcfg,$included);
+		    }
 		}
 	    }
 	    else{
