@@ -1,6 +1,9 @@
 #!/usr/local/packages/perl-5.8.5/bin/perl
 
-use lib (@INC, "/usr/local/devel/ANNOTATION/ard/current/lib/5.8.8/");
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 
 # eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
 #     if 0; # not running under some shell

@@ -68,7 +68,6 @@ USAGE:  rna2bsml -D database -G genus -S species -f infile [-d debug_level] [-h]
     
 =cut
 
-use lib "shared";
 use strict;
 use Log::Log4perl qw(get_logger :levels :easy);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
