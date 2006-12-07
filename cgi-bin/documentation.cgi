@@ -15,15 +15,17 @@ my $tmpl = HTML::Template->new( filename => 'templates/documentation.tmpl',
                               );
 
 ## read the ergatis config file
-my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => 'ergatis.ini' );
 
 my $article = $q->param('article') || 'main';
 my $page = $q->param('page') || 'index';
 my $ergatis_dir = $ergatis_cfg->val('paths', 'default_ergatis_dir' );
 my $doc_path;
 
-if ( $article eq 'components' ) {
+## either getting a component documentation list, or 
+if ( $article eq 'components' && $page ne 'index' ) {
     $doc_path = "$ergatis_dir/docs/documentation/$page.tmpl";
+    
 } else {
     $doc_path = "templates/documentation/$article/$page.tmpl";
 }
@@ -33,6 +35,14 @@ my $page_tmpl;
 if ( -e $doc_path ) {
     $page_tmpl = HTML::Template->new( filename => $doc_path,
                                       die_on_bad_params => 0 );
+                                      
+    if ( $article eq 'components' && $page eq 'index' ) {
+        my $component_sections = generate_component_list();
+        $page_tmpl->param( COMPONENT_SECTIONS => $component_sections );
+        $page_tmpl->param( SECTION_COUNT => scalar @$component_sections );
+        $page_tmpl->param( ERGATIS_DIR => $ergatis_dir );
+    }
+    
 } else {
     $page_tmpl = HTML::Template->new( filename => 'templates/documentation/main/not_found.tmpl',
                                       die_on_bad_params => 0 );
@@ -65,3 +75,41 @@ sub display_version {
     $str =~ s/_/ /g;
     return $str;
 }
+
+sub generate_component_list {
+    my %sections;
+
+    opendir(my $idh, "$ergatis_dir/docs") || die "can't read component directory ($ergatis_dir/docs): $!";
+    while ( my $thing = readdir $idh ) {
+        if ( $thing =~ /(.+).config$/ ) {
+            my $component_name = $1;
+            my $status = $ergatis_cfg->component_status( $component_name );
+        
+            if ( -e "$ergatis_dir/docs/$component_name.tmpl" ) {
+                push @{$sections{documented}}, { name => $component_name, 
+                                                 documented => 1, 
+                                                 disabled => $status eq 'disabled' ? 1 : 0
+                                               };
+            } else {
+                push @{$sections{undocumented}}, { name => $component_name, 
+                                                   documented => 0, 
+                                                   disabled => $status eq 'disabled' ? 1 : 0
+                                                 };
+            }
+        }
+    }
+
+    my $return_sections = [];
+
+    foreach my $section ( sort keys %sections ) {
+        push @$return_sections, { section => $section, components => $sections{$section} };
+    }
+
+    return $return_sections;
+}
+
+
+
+
+
+
