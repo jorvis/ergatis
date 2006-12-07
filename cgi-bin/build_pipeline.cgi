@@ -32,7 +32,11 @@ my @components;
 opendir(my $idh, $workflowdocs_dir) || die "can't read component directory ($workflowdocs_dir): $!";
 while ( my $thing = readdir $idh ) {
     if ( $thing =~ /(.+).config$/ ) {
-        push @components, { name => $1 };
+        my $component_name = $1;
+        
+        if ( $ergatis_cfg->component_status($component_name) ne 'disabled' ) {
+            push @components, { name => $component_name };
+        }
     }
 }
 

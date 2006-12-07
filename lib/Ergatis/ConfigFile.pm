@@ -65,6 +65,16 @@ use Carp;
 use Digest::MD5 qw(md5_hex);
 use base qw(Config::IniFiles);
 
+sub component_status {
+    my ($self, $component) = @_;
+    
+    if ( $self->val('disabled_components', $component) ) {
+        return 'disabled';
+    } else {
+        return 'enabled';
+    }
+}
+
 sub get_comment {
     my ($self, $section, $param) = @_;
     

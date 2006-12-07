@@ -7,4 +7,7 @@ span.term {
     font-weight: bold;
 }
 
-
+li.disabled,
+span.crossed {
+    text-decoration: line-through;
+}
