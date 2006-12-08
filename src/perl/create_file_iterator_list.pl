@@ -118,8 +118,12 @@ my $id2dir = {};
 my $dir2id = {};
 my $next_directory_id = 0;
 
-# structure like $$input_elements{'somename.fsa'} = [ directory id, ext ]
-my $input_elements = {};
+# structure like @$input_elements['somename.fsa',directory id, ext ]
+# needs to be an array so input order is preserved. 
+# previous version used a hash. an array simplies the code a great deal anyway
+my $input_elements = [];
+#keep track of basename and die if multiple files with same basename
+my $elements_check = {};
 
 $logger->debug("gathering input") if $logger->is_debug();
 my $input_element_count = &gather_input_elements( $input_elements );
@@ -135,13 +139,13 @@ if($options{'timestamp'}){
 }
 print $out_fh "\n";
 
-for my $nameref (keys %$input_elements){
+for my $elt (@$input_elements){
     print $out_fh 
-	"$nameref\t",
-	"$nameref.$input_elements->{ $nameref }[1]\t",
-	"$id2dir->{  $input_elements->{ $nameref }[0]  }/$nameref.$input_elements->{ $nameref }[1]\t",
-	"$input_elements->{ $nameref }[1]\t",
-	"$id2dir->{  $input_elements->{ $nameref }[0]  }";
+	"$elt->[0]\t",
+	"$elt->[0].$elt->[2]\t",
+	"$id2dir->{$elt->[1]}/$elt->[0].$elt->[2]\t",
+	"$elt->[2]\t",
+	"$id2dir->{$elt->[1]}";
     print $out_fh "\t$timestamp" if($options{'timestamp'});
     print $out_fh "\n";	
 }
@@ -187,10 +191,10 @@ sub add_element {
     my $directory_id;
 
     ## we can't have encountered this name already
-    if ( exists $$input_elements{ $$parts[2] } ) {
+    if ( exists $$elements_check{ $$parts[2] } ) {
         $logger->logdie("found duplicate basename in input set: $$parts[2]");
     }
-    
+    $elements_check->{$parts->[2]}=1;
     ## make sure we have an ID for this directory.  else create one
     if ( exists $$dir2id{ $$parts[0] } ) {
         $directory_id = $$dir2id{ $$parts[0] };
@@ -203,7 +207,7 @@ sub add_element {
     }
     
     ## store the file info
-    $$input_elements{ $$parts[2] } = [ $directory_id, $$parts[3] ];
+    push @$input_elements, [$$parts[2],$directory_id, $$parts[3] ];
 }
 
 sub gather_input_elements {
