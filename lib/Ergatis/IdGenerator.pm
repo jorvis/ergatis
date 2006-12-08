@@ -177,6 +177,9 @@ umask(0000);
     ## class variables
     my $host = hostname();
 
+    ## workaround Perl's F_SETLKW bug
+    my $f_setlkw = 7;
+
     sub new {
         my ($class, %args) = @_;
         
@@ -386,7 +389,7 @@ umask(0000);
     {
         my $self = shift;
         my $fl = pack("s s l l i", F_WRLCK, SEEK_SET, 0, 0, 0);
-        fcntl($self->{_fh}, F_SETLKW, $fl) ||
+        fcntl($self->{_fh}, $f_setlkw, $fl) ||
             die "Error locking file: $!";
     }
 
