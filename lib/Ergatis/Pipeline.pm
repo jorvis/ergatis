@@ -138,14 +138,16 @@ umask(0000);
 
                 ##debug
                 print $debugfh "got past ENV setup section\n" if $self->{debug};
-
-                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} -l $self->{path}.log --logconf=" . $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
-
-                if ( $self->{debug} ) {
-                    #use Data::Dumper;
-                    #print $debugfh Dumper(\%ENV);
-                    print $debugfh "preparing to run $runstring\n";
+                
+                my $marshal_interval_opt = '';
+                if ( $args{ergatis_cfg}->val('workflow_settings', 'marshal_interval') ) {
+                   $marshal_interval_opt = "-m " . $args{ergatis_cfg}->val('workflow_settings', 'marshal_interval');
                 }
+                
+                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} -l $self->{path}.log $marshal_interval_opt --logconf=" . 
+                                $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
+
+                print $debugfh "preparing to run $runstring\n" if $self->{debug};
 
                 my $rc = 0xffff & system($runstring);
 
