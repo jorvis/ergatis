@@ -263,7 +263,7 @@
 		<value>$;TMP_DIR$;/drop_indexes.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_indexes.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_indexes.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>list bcp files</name>
@@ -282,7 +282,7 @@
 		<value>$;TMP_DIR$;/bcp.out.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bcp.out.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bcp.out.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Rebuild indexes</name>
@@ -297,6 +297,6 @@
 		<value>$;TMP_DIR$;/create_indexes.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
     </commandSet>
 </commandSetRoot>
