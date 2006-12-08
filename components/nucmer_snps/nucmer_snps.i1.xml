@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="serial">
+    <name>nucmer SNPs compute</name>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>NUCmer</name>
+      <state>incomplete</state>
+      <executable>/usr/local/common/nucmer</executable>
+      <param>
+        <key>--prefix</key>
+        <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;</value>
+      </param>
+      <param>
+        <key>--breaklen</key>
+        <value>$;BREAKLEN$;</value>
+      </param>
+      <param>
+        <key>--mincluster</key>
+        <value>$;MINCLUSTER$;</value>
+      </param>
+      <param>
+        <key>--diagfactor</key>
+        <value>$;DIAGFACTOR$;</value>
+      </param>
+      <param>
+        <key>--maxgap</key>
+        <value>$;MAXGAP$;</value>
+      </param>
+      <param>
+        <key>--minmatch</key>
+        <value>$;MINMATCH$;</value>
+      </param>
+      <arg>--maxmatch $;I_FILE_PATH1$; $;I_FILE_PATH2$;</arg>
+    </command>    
+    <command>
+      <type>RunUnixCommand</type>
+      <name>delta-filter</name>
+      <state>incomplete</state>
+      <executable>/usr/local/common/delta-filter</executable>
+      <param>
+        <key>stdout</key>
+        <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;.filtered.delta</value>
+      </param>
+      <arg>-r $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;.delta</arg>
+    </command>    
+    <command>
+      <type>RunUnixCommand</type>
+      <name>show-snps</name>
+      <state>incomplete</state>
+      <executable>/usr/local/common/show-snps</executable>
+      <param>
+        <key>stdout</key>
+        <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;.$;COMPONENT_NAME$;.snps</value>
+      </param>
+      <arg>-Tl $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;.filtered.delta</arg>
+    </command>    
+  </commandSet>
+</commandSetRoot>

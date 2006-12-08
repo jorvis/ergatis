@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="serial">
+    <state>incomplete</state>
+    <name>wait workflow</name>
+    <!--Preprocessing-->
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create output directory</name>
+      <state>incomplete</state>
+      <executable>mkdir</executable>
+      <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create temp directory</name>
+      <state>incomplete</state>
+      <executable>mkdir</executable>
+      <arg>-p -m 777 $;TMP_DIR$;</arg>
+    </command>
+    <!--Processing-->
+    <!--Iterator-->
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create_pairwise_iterator_list</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/create_pairwise_iterator_list</executable>
+      <param>
+    <key>--input_file_list</key>
+    <value>$;INPUT_FILE_LIST$;</value>
+      </param>
+      <param>
+    <key>--output_iter_list</key>
+    <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list</value>
+      </param>
+    </command>
+    <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list">
+    <!--Postprocessing-->
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Create SNPs list</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/create_list_file</executable>
+      <param>
+          <key>--regex</key>
+          <value>".*.$;COMPONENT_NAME$;.snps"</value>
+      </param>
+      <param>
+          <key>--directory</key>
+          <value>$;OUTPUT_DIRECTORY$;</value>
+      </param>
+      <param>
+          <key>--output_list</key>
+          <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.snps.list</value>
+      </param>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Merge snps files</name>
+      <state>incomplete</state>
+      <executable>/usr/bin/find</executable>
+      <arg>$;OUTPUT_DIRECTORY$; -regex ".*.$;COMPONENT_NAME$;.snps" -exec cat '{}' \;</arg>
+      <param>
+          <key>stdout</key>
+          <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.snps</value>
+      </param>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Extract sequence data from snps</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/extract_seq_data_from_snp_output</executable>
+      <arg>-i $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.snps -o $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.snps.seq</arg>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Convert snps to clusterer</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/convert_snp_output_to_clusterer_input</executable>
+      <arg>-i $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.snps -o $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster</arg>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Run SNP Clusterer</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/SnpClusterer</executable>
+      <arg>-i $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster -o $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.merged</arg>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Create BSML</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/snp2bsml</executable>
+      <arg>-i $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.merged -o $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.bsml -d $;PROJECT$; -s $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.snps.seq</arg>
+    </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>store config params</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <param>  
+                <key>--ergatis_control_file</key>
+                <value>$;ERGATIS_DIR$;.ini</value>
+            </param>
+            <param>  
+                <key>--conf</key>
+                <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>  
+                <key>--bsml_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.bsml</value>
+            </param>
+            <param>  
+                <key>--componenturl</key>
+                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
+            </param>
+            <param>  
+                <key>--pipelineurl</key>
+                <value>$;PIPELINE_XML$;</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.bsml</arg>
+        </command>
+           <command>
+            <type>RunUnixCommand</type>
+            <name>create bsml list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.bsml"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;BSML_OUTPUT_LIST$;</value>
+            </param>
+        </command>        
+  </commandSet>
+</commandSetRoot>
