@@ -442,6 +442,14 @@ use Ergatis::Pipeline;
 	<key>--keys</key>
         <value>PIPELINEID=$pipeline_id,PIPELINE_XML=$repository_root/$self->{_pipeline_dir}/$self->{pipeline_id}/pipeline.xml,COMPONENT_XML=$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</value>
       </param>
+      <param>
+	<key>stdout</key>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_config_keys.stdout</value>
+      </param> 
+      <param>
+	<key>stderr</key>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_config_keys.stderr</value>
+       </param>
     </command>
     <command>
       <type>RunUnixCommand</type>
@@ -459,7 +467,15 @@ use Ergatis::Pipeline;
       <param>  
 	<key>--output_xml</key>
 	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</value>
-      </param>   
+      </param>
+      <param>
+	<key>stdout</key>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_template_keys.stdout</value>
+       </param> 
+      <param>
+	<key>stderr</key>
+	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_template_keys.stderr</value>
+       </param> 
     </command>
     <commandSet type="serial">
       <name>$component_name</name>
