@@ -6,7 +6,7 @@
 	    <state>incomplete</state>
 	    <name>Create temporary obo2chado output directory</name>
 	    <executable>mkdir</executable>
-	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
+	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
         </command>
 	<command>
 	    <type>RunUnixCommand</type>
