@@ -17,22 +17,6 @@
 	    <executable>mkdir</executable>
 	    <arg>-p -m 777 $;TMP_DIR$;</arg>
 	</command>
-	<!--Iterator1 for revoking all permissions -->
-	<command>
-	    <type>RunUnixCommand</type>
-	    <name>Revoke permissions list</name>
-	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
-            <param>
-		<key>stdin</key>
-		<value>$;DOCS_DIR$;/revoke_all_public.ddl</value>
-	    </param>
-	    <param>
-		<key>stdout</key>    
-		<value>$;TMP_DIR$;/revoke_all_public.list</value>
-	    </param>
-	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/revoke_all_public.list"/> 
 	<!--Iterator2 for dropping all chado tables -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -48,7 +32,7 @@
 		<value>$;TMP_DIR$;/drop_tables.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_tables.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=droptables,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_tables.list,$;NODISTRIB$;=1"/>
 	<!--Iterator3 for dropping all chado-mart tables -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -64,7 +48,7 @@
 		<value>$;TMP_DIR$;/drop_views.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_views.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=dropviews,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_views.list,$;NODISTRIB$;=1"/>
 	<!--Iterator4 for creating all chado tables -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -77,10 +61,10 @@
 	    </param>
 	    <param>
 		<key>stdout</key>    
-		<value>$;TMP_DIR$;/create_tables.ddl</value>
+		<value>$;TMP_DIR$;/create_tables.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_tables.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=createtables,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_tables.list,$;NODISTRIB$;=1"/>
 	<!--Iterator5 for creating all views -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -93,10 +77,10 @@
 	    </param>
 	    <param>
 		<key>stdout</key>    
-		<value>$;TMP_DIR$;/create_views.ddl</value>
+		<value>$;TMP_DIR$;/create_views.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML$;ITERATOR_LIST$;=$;TMP_DIR$;/create_views.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=createviews,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_views.list,$;NODISTRIB$;=1"/>
 	<!--Iterator6 for partitioning appropriate chado tables -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -109,14 +93,14 @@
 	    </param>
 	    <param>
 		<key>stdout</key>    
-		<value>$;TMP_DIR$;/partition_tables.ddl</value>
+		<value>$;TMP_DIR$;/partition_tables.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML$;ITERATOR_LIST$;=$;TMP_DIR$;/partition_tables.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=partitiontables,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/partition_tables.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunJavaUnixCommand</type>
 	    <name>Load pub record</name>
-	    <executable>$;BIN_DIR$;/chadoloader</executable>
+	    <executable>$;BIN_DIR$;/flatFileToChado</executable>
 	    <param>
 		<key>--database</key>
 		<value>$;DATABASE$;</value>
@@ -124,6 +108,10 @@
 	    <param>	  
 		<key>--server</key>
 		<value>$;SERVER$;</value>
+	    </param>
+	    <param>	  
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
 	    </param>
 	    <param>
 		<key>--username</key>
@@ -136,6 +124,10 @@
 	    <param>
 		<key>--debug_level</key>
 		<value>$;DEBUG$;</value>
+	    </param>
+	    <param>
+		<key>--bcp_ext</key>
+		<value>out</value>
 	    </param>
 	    <param>
 		<key>--bcpmode</key>
@@ -151,15 +143,11 @@
 	    </param>
 	    <param>
 		<key>--infile</key>
-		<value>$;WORKFLOWDOCS_DIR$;/pub.out</value>
-	    </param>
-	    <param>
-		<key>--abort</key>
-		<value>1</value>
+		<value>$;DOCS_DIR$;/pub.out</value>
 	    </param>
 	    <param>
 		<key>--infile</key>
-		<value>$;WORKFLOWDOCS_DIR$;/pub.out</value>
+		<value>$;DOCS_DIR$;/pub.out</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
@@ -182,14 +170,14 @@
 	    </param>
 	    <param>
 		<key>--output_iter_list</key>
-		<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;.list</value>
+		<value>$;WORKFLOW_REPOSITORY$;/obo.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=parseobo,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/obo.list,$;NODISTRIB$;=1"/>
 	<!--Iterator8 for creating all indices and constraints -->
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>Partition tables list</name>
+	    <name>Create indexes list</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
@@ -201,7 +189,7 @@
 		<value>$;TMP_DIR$;/create_indexes.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=createindexes,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list,$;NODISTRIB$;=1"/>
 	<!--Iterator9 for granting all permissions on all chado tables -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -217,7 +205,7 @@
 		<value>$;TMP_DIR$;/grant_all_public.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/grant_all_public.list"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=grantpermiss,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/grant_all_public.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunJavaUnixCommand</type>
 	    <name>Store chado revision number</name>
