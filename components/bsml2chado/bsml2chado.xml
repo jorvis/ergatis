@@ -81,7 +81,7 @@
 	    <name>list bcp files</name>
 	    <state>incomplete</state>
 	    <executable>/usr/bin/find</executable>
-	    <arg>$;TMP_DIR$;/parse -name ".out" -type f</arg>
+	    <arg>$;TMP_DIR$;/parse -name "*.out" -type f</arg>
 	    <param>
 		<key>
 		    stdout
@@ -93,17 +93,11 @@
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>list bcp files</name>
+	    <name>trim dups files</name>
 	    <state>incomplete</state>
-	    <executable>/usr/local/bin/perl</executable>
-	    <arg>-ne 's/.*\/([\w_]+).out/$1/;print '| sort | uniq</arg>
+	    <executable>cat</executable>
+	    <arg> $;TMP_DIR$;/tables.out | /usr/local/bin/perl -ne 's/.*\/([\w_]+).out/$1/;print '| sort | uniq</arg>
 	    <param>
-		<key>
-		    stdin
-		</key>
-		<value>
-		    $;TMP_DIR$;/tables.out
-		</value>
 		<key>
 		    stdout
 		</key>
@@ -114,10 +108,10 @@
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>creat collate list</name>
+	    <name>create tables list</name>
 	    <state>incomplete</state>
-	    <executable>echo </executable>
-	    <arg>'$;I_TABLE_NAME$;' | cat - $;TMP_DIR$;/collatetables.list.tmp</arg>
+	    <executable>echo</executable>
+	    <arg>-e "\0044;I_TABLE_NAME\0044;" | cat - $;TMP_DIR$;/collatetables.list.tmp</arg>
 	    <param>
 		<key>
 		    stdout
@@ -128,7 +122,7 @@
 	    </param>
 	</command>
 	<!--Iterator-->
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/collatetables.list,$;NODISTRIB$;=5"/> 
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/collatetables.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=1"/> 
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>extract_checksums</name>
