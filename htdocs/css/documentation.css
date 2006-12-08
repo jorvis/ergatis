@@ -3,6 +3,10 @@ div.bsml_container {
     background-color: rgb(230,230,230);
 }
 
+dl {
+    margin-left: 25px;
+}
+
 span.term {
     font-weight: bold;
 }
