@@ -58,6 +58,14 @@
 	<key>--distribopts</key>
 	<value>nodistrib=1</value>
       </param>
+      <param>
+	  <key>stdout</key>
+	  <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/replace_template_keys.stdout</value>
+      </param>
+      <param>
+	  <key>stderr</key>
+	  <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/replace_template_keys.stderr</value>
+      </param>
     </command>
     <commandSet type="parallel">
       <state>incomplete</state>
