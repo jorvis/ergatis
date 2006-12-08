@@ -342,3 +342,5 @@ next
 -added ergatis v2 initdb artifacts under ergatis/components/initidb (sundaram)
 -added ergatis v2 legacy2bsml artifacts under ergatis/components/legacy2bsml (sundaram)
 -added create_legacy2bsml_iterator_list.pl for (ergatis v2) under ergatis/src/perl (sundaram)
+-added create_pairwise_iterator_list.pl for doing pairwise iteration on sets of input sequences
+-updated nucmer_snps component to ergatis v2
