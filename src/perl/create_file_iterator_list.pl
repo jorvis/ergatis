@@ -134,7 +134,7 @@ print $out_fh '$;I_FILE_BASE$;',"\t",'$;I_FILE_NAME$;',"\t",'$;I_FILE_PATH$;',"\
 
 my $timestamp;
 if($options{'timestamp'}){
-    print $out_fh "\t",'$;I_TIMESTAMP$;';
+    print $out_fh "\t",'\"$;I_TIMESTAMP$;\"';
     $timestamp = &get_datetime();
 }
 print $out_fh "\n";
