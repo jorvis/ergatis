@@ -134,7 +134,7 @@ print $out_fh '$;I_FILE_BASE$;',"\t",'$;I_FILE_NAME$;',"\t",'$;I_FILE_PATH$;',"\
 
 my $timestamp;
 if($options{'timestamp'}){
-    print $out_fh "\t",'\"$;I_TIMESTAMP$;\"';
+    print $out_fh "\t",'$;I_TIMESTAMP$;';
     $timestamp = &get_datetime();
 }
 print $out_fh "\n";
@@ -146,7 +146,7 @@ for my $elt (@$input_elements){
 	"$id2dir->{$elt->[1]}/$elt->[0].$elt->[2]\t",
 	"$elt->[2]\t",
 	"$id2dir->{$elt->[1]}";
-    print $out_fh "\t$timestamp" if($options{'timestamp'});
+    print $out_fh "\t\"$timestamp\"" if($options{'timestamp'});
     print $out_fh "\n";	
 }
 
