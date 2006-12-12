@@ -23,7 +23,7 @@ $logger = $logger->get_logger();
 
 open FILE,"$options{'list_file'}" or $logger->logdie("Can't open file\n");
 while(my $line=<FILE>){
-    if($line =~ /$options{'extension'}$/){
+    if($line =~ /[\/\.]$options{'extension'}$/){
 	chomp $line;
 	print `cat $line`;
     }
