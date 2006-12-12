@@ -40,7 +40,7 @@
 	  </param>
 	  <param>
 	      <key>--infile</key>
-	      <value>$;I_BCPFILE$;</value>
+	      <value>$;I_BCP_FILE$;</value>
 	  </param>
 	  <param>
 	      <key>--debug_level</key>
