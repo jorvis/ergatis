@@ -32,7 +32,7 @@
 	    </param>
 	    <param>
 		<key>--timestamp</key>
-		<value>$;I_TIMESTAMP$;</value>
+		<value>"$;I_TIMESTAMP$;"</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
