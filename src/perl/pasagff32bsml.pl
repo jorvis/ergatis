@@ -1,5 +1,10 @@
 #!/usr/local/bin/perl
 
+BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 =head1 NAME
 
 pasagff32bsml.pl
@@ -78,13 +83,13 @@ if (!$output){
     pod2usage("output BSML filename was not defined with --output");
 }
 
-if (!$project) {
-        pod2usage("You must specify a project name with --project");
-}
+#if (!$project) {
+#        pod2usage("You must specify a project name with --project");
+#}
 
-if (!$id_repository) {
-    pod2usage("You must specify an id repository with --id_repository");
-}
+#if (!$id_repository) {
+#    pod2usage("You must specify an id repository with --id_repository");
+#}
 
 if ($mapping) {
     unless (-e $mapping) {
@@ -96,7 +101,7 @@ $project =~ tr/A-Z/a-z/;
 
 $analysis = 'pasa_'.$analysis;
 
-my $idcreator = Ergatis::IdGenerator->new('id_repository' => $id_repository);
+#my $idcreator = Ergatis::IdGenerator->new('id_repository' => $id_repository);
 
 my $global_id_counter=0;
 my $nodes = {};
