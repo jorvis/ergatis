@@ -25,7 +25,7 @@ function Input( input_id ) {
     // methods
     this.addTo = add_to;
     this.updateValue = update_value;
-    this.delete = delete_input;
+    this.remove = remove_input;
     
     inputs.length++;
     inputs[ input_id ] = this;
@@ -46,12 +46,12 @@ function add_to( tbl_id ) {
     new_cell.innerHTML = this.input_type;
 
     new_cell = new_row.insertCell(3);
-    new_cell.innerHTML = '<a onClick="deleteInput(' + "'" + this.id + "'" + ')"><img src="/ergatis/images/trashcan.png"></a>';
+    new_cell.innerHTML = '<a onClick="removeInput(' + "'" + this.id + "'" + ')"><img src="/ergatis/images/trashcan.png"></a>';
 
     getObject('no_input_message').style.display = 'none';
 }
 
-function delete_input( ) {
+function remove_input( ) {
         // update any components using this value, including input/select elements
         //  if they match, reset the value and mark the component as not configured
         for ( component_id in components ) {

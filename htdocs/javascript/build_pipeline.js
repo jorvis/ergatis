@@ -67,7 +67,7 @@ function addComponentStub( set_root ) {
                 "<img id='" + component_id + "_arrow_down'src='/ergatis/images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()'>" +
             "</div>" +
             "<div class='component_action_buttons'>" +
-                "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].delete()'>" +
+                "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()'>" +
             "</div>" +
             "component<span class='locator'> (" + component_id + ")</span>: <select name='available_components' onChange='selectComponentConfig(" + '"' + component_num + '"' + ")' id='" + component_id + "_selector'></select>" +
             "<div id='" + component_id + "_expander' class='config_expander' onClick='toggleConfigVisibility(" + '"' + component_id + '"' + ")'>" +
@@ -281,8 +281,8 @@ function clearNewInput() {
     getObject('new_input_fields_row').style.display = 'none';
 }
 
-function deleteInput( input_id ) {
-    inputs[input_id].delete();
+function removeInput( input_id ) {
+    inputs[input_id].remove();
     updateInputLists();
 }
 

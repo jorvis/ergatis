@@ -13,13 +13,13 @@ function TreeNode( node_id, node_type ) {
     // create the dom pointer if it exists
     this.domref = getObject( this.id ) || undefined;
 
-    this.delete = delete_node;
+    this.remove = remove_node;
     this.setNodeAbove = set_node_above;
     this.setNodeBelow = set_node_below;
     this.setNodeNeighbors = set_node_neighbors;
 }
 
-function delete_node() {
+function remove_node() {
     var up_ref = getObject( this.id + '_up' );
     up_ref.parentNode.removeChild( up_ref );
     

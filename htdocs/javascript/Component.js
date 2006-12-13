@@ -30,7 +30,7 @@ function Component( component_id ) {
     
     // object methods
     this.checkArrows   = check_arrows;
-    this.delete        = delete_component;
+    this.remove        = remove_component;
     this.moveUp        = graphically_move_component_up;
     this.moveDown      = graphically_move_component_down;
     this.saveToDisk    = save_to_disk;
@@ -104,7 +104,7 @@ function check_arrows() {
     the skeleton template and would get overridden if the user configured another
     with the same name:token.
 */
-function delete_component() {
+function remove_component() {
     // shift focus elsewhere
 
     // visually remove the component container
@@ -126,7 +126,7 @@ function delete_component() {
         components[node_originally_above.id].checkArrows();
     }
     
-    this.node.delete();
+    this.node.remove();
     
     // remove component from javascript data structures
     delete components[ this.id ];
