@@ -85,7 +85,7 @@ if ($options{log}) {
 my $cfg = new Config::IniFiles( -file => $options{pipeline_config} );
 
 ## get the variables from the conf file
-my $search_db       = $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )   || die "couldn't find SEARCH_DB in config file";
+my $search_db       = $cfg->val( 'parameters', '$;SEARCH_DB$;' )   || die "couldn't find SEARCH_DB in config file";
 
 ## holds the assembly ids to process
 my @asmbl_ids;
@@ -105,8 +105,8 @@ if ( $cfg->val( 'input genewise_best_loc', '$;ASMBL_LIST_FILE$;' ) ) {
         }
     }
     
-} elsif ( $cfg->val( 'input genewise_best_loc', '$;ASMBL_ID$;' ) ) {
-    push @asmbl_ids, $cfg->val( 'input genewise_best_loc', '$;ASMBL_ID$;' );
+} elsif ( $cfg->val( 'input', '$;ASMBL_ID$;' ) ) {
+    push @asmbl_ids, $cfg->val( 'input', '$;ASMBL_ID$;' );
     
 } else {
     die "ASMBL_LIST_FILE or ASMBL_ID not defined in pipeline.config";
