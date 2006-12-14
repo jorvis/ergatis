@@ -178,6 +178,7 @@ umask(0000);
     my $host = hostname();
 
     ## workaround Perl's F_SETLKW bug
+    my $f_setlk = 6;
     my $f_setlkw = 7;
 
     sub new {
@@ -397,7 +398,7 @@ umask(0000);
     {
         my $self = shift;
         my $fl = pack("s s l l i", F_UNLCK, SEEK_SET, 0, 0, 0);
-        fcntl($self->{_fh}, F_SETLK, $fl) ||
+        fcntl($self->{_fh}, $f_setlk, $fl) ||
             die "Error unlocking file: $!";
     }
 }
