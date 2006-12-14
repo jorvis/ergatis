@@ -212,8 +212,8 @@ sub process_subflowgroup {
             $sg_props{execution_host} = $commandSet->first_child('dceSpec')->first_child('executionHost')->text();
         }
         
-        if ( $commandSet->first_child('dceSpec')->first_child('jobID') ) {
-            $sg_props{grid_id} = $commandSet->first_child('dceSpec')->first_child('jobID')->text();
+        if ( $commandSet->first_child('dceSpec')->first_child('gridID') ) {
+            $sg_props{grid_id} = $commandSet->first_child('dceSpec')->first_child('gridID')->text();
         }
     }
     
