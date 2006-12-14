@@ -156,19 +156,22 @@ sub parse_iterator_xml {
     
     my ($component_start_time, $component_end_time, $component_state);
     
-    my $filename_fh;
-    if ($filename =~ /\.gz/) {
-        open($filename_fh, "<:gzip", "$filename") || die "can't read $filename: $!"; 
-    } else {
-        open($filename_fh, "<$filename") || die "can't read $filename: $!";       
+    if ( -e $filename ) {
+
+        my $filename_fh;
+        if ($filename =~ /\.gz/) {
+            open($filename_fh, "<:gzip", "$filename") || die "can't read $filename: $!"; 
+        } else {
+            open($filename_fh, "<$filename") || die "can't read $filename: $!";       
+        }
+
+        ## create the twig
+        my $twig = XML::Twig->new( twig_roots => {
+                                        'commandSet' => \&process_subflowgroup,
+                                   }
+                                 );
+        $twig->parse($filename_fh);
     }
-    
-    ## create the twig
-    my $twig = XML::Twig->new( twig_roots => {
-                                    'commandSet' => \&process_subflowgroup,
-                               }
-                             );
-    $twig->parse($filename_fh);
     
 }
 
