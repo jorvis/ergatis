@@ -28,7 +28,7 @@
             <executable>$;BIN_DIR$;/signalp_graphics_rename</executable>
             <param>  
                 <key>--input_path</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;_FILE_BASE$;</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
             </param>
             <param>  
                 <key>--output_path</key>
