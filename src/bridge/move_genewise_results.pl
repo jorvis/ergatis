@@ -84,9 +84,9 @@ if ($options{log}) {
 my $cfg = new Config::IniFiles( -file => $options{pipeline_config} );
 
 ## get the variables from the conf file
-my $search_db       = $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )   || die "couldn't find SEARCH_DB in config file";
-my $input_file_list = $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' )  || die "couldn't find INPUT_FILE_LIST in config file";
-my $raw_output_list = $cfg->val( 'output genewise_best_loc', '$;RAW_OUTPUT_LIST$;' ) || die "couldn't find RAW_OUTPUT_LIST in config file";
+my $search_db       = $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )   || $cfg->val( 'parameters', '$;SEARCH_DB$;' ) || die "couldn't find SEARCH_DB in config file";
+my $input_file_list = $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' )  || $cfg->val( 'input', '$;INPUT_FILE_LIST$;' ) || die "couldn't find INPUT_FILE_LIST in config file";
+my $raw_output_list = $cfg->val( 'output genewise_best_loc', '$;RAW_OUTPUT_LIST$;' ) || $cfg->val( 'output', '$;RAW_OUTPUT_LIST$;' ) || die "couldn't find RAW_OUTPUT_LIST in config file";
 
 ## for each of the files defined in the input_file_list we want to copy the .fsa and .pep files
 ##  to the standard legacy output directory structure.
