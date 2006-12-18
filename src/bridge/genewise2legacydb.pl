@@ -85,19 +85,19 @@ if ($options{log}) {
 my $cfg = new Config::IniFiles( -file => $options{pipeline_config} );
 
 ## get the variables from the conf file
-my $search_db       = $cfg->val( 'parameters', '$;SEARCH_DB$;' )   || die "couldn't find SEARCH_DB in config file";
+my $search_db       = $cfg->val( 'parameters', '$;SEARCH_DB$;' ) || $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )  || die "couldn't find SEARCH_DB in config file";
 
 ## holds the assembly ids to process
 my @asmbl_ids;
 
 ## did the user specify a list of assembly ids, or just a single one?
-if ( $cfg->val( 'input genewise_best_loc', '$;ASMBL_LIST_FILE$;' ) ) {
-    my $asmbl_list_file = $cfg->val( 'input genewise_best_loc', '$;ASMBL_LIST_FILE$;' );
+if ( $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' ) ) {
+    my $asmbl_list_file = $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;ASMBL_FILE_LIST$;' )  || die "couldn't find ASMBL_FILE_LIST in config file";
     
     print $logfh "processing asmbl list file $asmbl_list_file\n" if $logfh;
     
     ## open the list file and get each asmbl id
-    open (my $lfh, $asmbl_list_file) || die "couldn't read input ASMBL_LIST_FILE: $!";
+    open (my $lfh, $asmbl_list_file) || die "couldn't read input ASMBL_LIST_FILE ($asmbl_list_file): $!";
     while (<$lfh>) {
         chomp;
         if ( /^\s*(\d+)\s*$/ ) {
@@ -105,8 +105,9 @@ if ( $cfg->val( 'input genewise_best_loc', '$;ASMBL_LIST_FILE$;' ) ) {
         }
     }
     
-} elsif ( $cfg->val( 'input', '$;ASMBL_ID$;' ) ) {
-    push @asmbl_ids, $cfg->val( 'input', '$;ASMBL_ID$;' );
+} elsif ( $cfg->val( 'input', '$;ASMBL_ID$;' ) || $cfg->val( 'input genewise_best_loc', '$;ASMBL_ID$;' )  ) {
+    my $aId = $cfg->val( 'input', '$;ASMBL_ID$;' ) || $cfg->val( 'input genewise_best_loc', '$;ASMBL_ID$;'  ) || die "couldn't read input ASMBL_ID";
+    push @asmbl_ids, $aId;
     
 } else {
     die "ASMBL_LIST_FILE or ASMBL_ID not defined in pipeline.config";
