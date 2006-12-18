@@ -14,7 +14,7 @@
             <type>RunUnixCommand</type>
             <name>Run signalp</name>
             <state>incomplete</state>
-            <executable>/usr/local/bin/signalp<executable>
+            <executable>/usr/local/bin/signalp</executable>
             <arg>-t $;ORGANISM_TYPE$; -m $;PREDICTION_METHOD$; -trunc $;TRUNCATED_LENGTH$; -graphics $;GRAPHICS_MODE$; -d $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; -f summary $;OTHER_OPTS$; $;I_FILE_PATH$;</arg>
             <param>  
                 <key>stdout</key>
