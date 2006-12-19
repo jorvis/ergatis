@@ -619,11 +619,10 @@ repeatmasker	:
 
 signalp	:
 	@echo "Installing signalp workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/signalp/signalp-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/signalp/signalp-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/signalp/signalp.ini $(WORKFLOW_DOCS_DIR)
-	@install components/signalp/signalp_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/signalp/signalpconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/signalp/signalp.xml $(WORKFLOW_DOCS_DIR)
+	@install components/signalp/signalp.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/signalp/signalp.config $(WORKFLOW_DOCS_DIR)
+	@install components/signalp/signalp.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 snap	:
 	@echo "Installing snap workflows in $(WORKFLOW_DOCS_DIR)"
