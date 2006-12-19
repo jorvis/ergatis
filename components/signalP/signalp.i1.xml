@@ -36,7 +36,7 @@
             </param>
             <param>  
                 <key>--output_prefix</key>
-                <value>$;I_FILE_BASE$;.$;COMPONENT_NAME$;/</value>
+                <value>$;I_FILE_BASE$;.$;COMPONENT_NAME$;</value>
             </param>
             <param>  
                 <key>--debug</key>
