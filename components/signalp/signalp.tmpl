@@ -1,0 +1,148 @@
+<p>
+"SignalP predicts the presence  and  location of signal peptide  cleavage sites
+in  amino acid  sequences  from  different organisms:  Gram-positive bacteria,
+Gram-negative bacteria,  and eukaryotes.  The method incorporates a prediction
+of  cleavage sites and  a signal peptide/non-signal peptide  prediction  based
+on a combination of  several artificial neural networks.  It also incorporates
+predictions done by a hidden Markov model specifically designed to distinguish
+between signal peptides, non-secretory proteins, and (for eukaryotes only)
+uncleaved signal anchors."
+</p>
+<h3>reference</h3>
+<p>
+    Bendtsen JD, Nielsen H, von Heijne G, Brunak S.
+    Improved prediction of signal peptides: SignalP 3.0. 
+    J Mol Biol. 2004 Jul 16;340(4):783-95.
+    PMID: <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=pubmed&dopt=Abstract&list_uids=15174128&query_hl=2'>15223320</a>
+</p>
+<h3>input</h3>
+<p>
+Input is amino acid sequence(s) in FASTA format.
+</p>
+<h3>implemented options</h3>
+<p>
+Organism type [-t]: 'euk', 'gram-', 'gram+'<br/>
+Prediction method [-m]: 'nn', 'hmm', 'nn+hmm'(default)<br/>
+Graphics mode [-graphics]: 'gif', 'eps', 'gif+eps', 'ps'<br/>
+Truncate sequence to length 'X' from n-terminus [-trunc]: 'X'<br/>
+</p>
+<h3>output</h3>
+<p>
+Raw output is formatted as provided by the "-f summary" option.
+Example output:
+</p>
+<p class="code">
+*********************** SignalP 3.0 predictions ***********************
+Using neural networks (NN) and hidden Markov models (HMM) trained on eukaryotes
+
+----------------------------------------------------------------------
+>bma1.model.12480_00113
+
+SignalP-NN result:
+>bma1.model.12480_001  length = 552
+# Measure  Position  Value  Cutoff  signal peptide?
+  max. C    19       0.784   0.32   YES
+  max. Y    19       0.763   0.33   YES
+  max. S    12       0.967   0.87   YES
+  mean S     1-18    0.826   0.48   YES
+       D     1-18    0.794   0.43   YES
+# Most likely cleavage site between pos. 18 and 19: VGA-IV
+
+SignalP-HMM result:
+>bma1.model.12480_00113
+Prediction: Signal peptide
+Signal peptide probability: 0.599
+Signal anchor probability: 0.000
+Max cleavage site probability: 0.442 between pos. 18 and 19
+</p>
+<p>
+Also produced, depending on the option selected for graphics output, are graphics files to accompany each sequence analysis. The following files may be produced:<br/>
+FILE_PREFIX.signalp.gnu (a gnuplot script file used to generate gif+ps files)<br/>
+FILE_PREFIX.signalp.gif<br/>
+FILE_PREFIX.signalp.eps<br/>
+FILE_PREFIX.signalp.ps<br/>
+Note that there is an either/or relationship between producing GIF/EPS and PS files.
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;?xml version="1.0"?&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+
+    &lt;Sequences&gt;
+      &lt;Sequence class="polypeptide" id="bma1.model.12483_00025" molecule="aa"&gt;
+        &lt;Feature-tables&gt;
+          &lt;Feature-table id="Bsml0"&gt;
+            &lt;Feature class="signal_peptide" id="ir.sma1.signal_peptide.84173453.
+1"&gt;
+              &lt;Attribute name="maxc_signal_peptide" content="YES"&gt;&lt;/Attribute&gt;
+
+              &lt;Attribute name="d_signal_peptide" content="YES"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="d_pos" content="1-21"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxy_value" content="0.813"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="cleavage_site_position" content="21-22"&gt;&lt;/Attribu
+te&gt;
+              &lt;Attribute name="means_cutoff" content="0.48"&gt;&lt;/Attribute&gt;
+
+              &lt;Attribute name="maxs_signal_peptide" content="YES"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="means_value" content="0.959"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxy_pos" content="22"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="means_pos" content="1-21"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="d_value" content="0.886"&gt;&lt;/Attribute&gt;
+
+              &lt;Attribute name="d_cutoff" content="0.43"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxs_pos" content="13"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="means_signal_peptide" content="YES"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxs_cutoff" content="0.87"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxc_cutoff" content="0.32"&gt;&lt;/Attribute&gt;
+
+              &lt;Attribute name="maxy_cutoff" content="0.33"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxs_value" content="0.996"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxc_pos" content="22"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxc_value" content="0.894"&gt;&lt;/Attribute&gt;
+              &lt;Attribute name="maxy_signal_peptide" content="YES"&gt;&lt;/Attribute&gt;
+
+              &lt;Link rel="analysis" href="#signalp_nn_analysis" role="created_by"
+&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="signal_peptide" id="ir.sma1.signal_peptide.84173453.
+2"&gt;
+              &lt;Attribute name="signal_peptide_probability" content="1.000"&gt;&lt;/Att
+ribute&gt;
+              &lt;Attribute name="cleavage_site_position" content="21-22"&gt;&lt;/Attribu
+te&gt;
+
+              &lt;Attribute name="max_cleavage_site_probability" content="0.977"&gt;&lt;/
+Attribute&gt;
+              &lt;Attribute name="signal_anchor_probability" content="0.000"&gt;&lt;/Attr
+ibute&gt;
+              &lt;Attribute name="prediction" content="Signal peptide"&gt;&lt;/Attribute&gt;
+              &lt;Link rel="analysis" href="#signalp_hmm_analysis" role="created_by
+"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+
+          &lt;/Feature-table&gt;
+        &lt;/Feature-tables&gt;
+        &lt;Link rel="analysis" href="#signalp_nn_analysis" role="input_of"&gt;&lt;/Link&gt;
+        &lt;Link rel="analysis" href="#signalp_hmm_analysis" role="input_of"&gt;&lt;/Link
+&gt;
+      &lt;/Sequence&gt;
+
+    &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="signalp_nn_analysis"&gt;
+                .... (and all the config file params)
+      &lt;/Analysis&gt;
+
+      &lt;Analysis id="signalp_hmm_analysis"&gt;
+                .... (and all the config file params)
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+
+</div>
