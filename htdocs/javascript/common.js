@@ -111,14 +111,6 @@ function debug( msg ) {
  *    (e.g., thisVar=asdf,qwer,zxcv)
  * @returns query-string style String of variable-value pairs
  */
- /*
-    NOTE
-    
-    I changed each of the encodeURI() methods in this function to escape()
-    because encodeURI() wasn't appropriate for passing paths or ; symbols
-    
-    -- joshua orvis
- */
 function formData2QueryString(docForm, formatOpts) {
   
   var opts = formatOpts || {};
@@ -136,7 +128,7 @@ function formData2QueryString(docForm, formatOpts) {
       case 'password':
       case 'textarea':
       case 'select-one':
-        str += formElem.name + '=' + escape(formElem.value) + '&'
+        str += formElem.name + '=' + encodeURIComponent(formElem.value) + '&'
         break;
         
       // Multi-option select
@@ -147,15 +139,15 @@ function formData2QueryString(docForm, formatOpts) {
           if(currOpt.selected) {
             if (opts.collapseMulti) {
               if (isSet) {
-                str += ',' + escape(currOpt.value);
+                str += ',' + encodeURIComponent(currOpt.value);
               }
               else {
-                str += formElem.name + '=' + escape(currOpt.value);
+                str += formElem.name + '=' + encodeURIComponent(currOpt.value);
                 isSet = true;
               }
             }
             else {
-              str += formElem.name + '=' + escape(currOpt.value) + '&';
+              str += formElem.name + '=' + encodeURIComponent(currOpt.value) + '&';
             }
           }
         }
@@ -167,7 +159,7 @@ function formData2QueryString(docForm, formatOpts) {
       // Radio buttons
       case 'radio':
         if (formElem.checked) {
-          str += formElem.name + '=' + escape(formElem.value) + '&'
+          str += formElem.name + '=' + encodeURIComponent(formElem.value) + '&'
         }
         break;
         
@@ -181,10 +173,10 @@ function formData2QueryString(docForm, formatOpts) {
               str = str.substr(0, str.length - 1);
             }
             // Append value as comma-delimited string
-            str += ',' + escape(formElem.value);
+            str += ',' + encodeURIComponent(formElem.value);
           }
           else {
-            str += formElem.name + '=' + escape(formElem.value);
+            str += formElem.name + '=' + encodeURIComponent(formElem.value);
           }
           str += '&';
           lastElemName = formElem.name;
