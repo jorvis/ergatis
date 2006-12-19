@@ -345,5 +345,5 @@ next
 -added create_pairwise_iterator_list.pl for doing pairwise iteration on sets of input sequences
 -updated nucmer_snps component to ergatis v2
 -updated genewise2legacydb script for changes in ergatis v2 genewise.*.config format
--added ergatis 2.0 compliant signalP component
+-added ergatis 2.0 compliant signalp component
 -fixed move_genewise_results and genewise2legacydb to accept both v1 and v2 config files.
