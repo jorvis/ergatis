@@ -34,7 +34,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.raw\(.gz\)?"</value>
+                <value>".*\.raw"</value>
             </param>
             <param>  
                 <key>--output_list</key>
@@ -70,7 +70,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.gnu\(.gz\)?"</value>
+                <value>".*\.gnu"</value>
             </param>
             <param>  
                 <key>--output_list</key>
@@ -88,7 +88,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.\(nn\|hmm\).gif"</value>
+                <value>".*\.(nn|hmm).gif"</value>
             </param>
             <param>
                 <key>--output_list</key>
@@ -106,7 +106,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.\(nn\|hmm\).eps\(.gz\)?"</value>
+                <value>".*\.(nn|hmm).eps"</value>
             </param>
             <param>
                 <key>--output_list</key>
@@ -124,7 +124,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.ps\(.gz\)?"</value>
+                <value>".*\.ps"</value>
             </param>
             <param>
                 <key>--output_list</key>
