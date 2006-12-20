@@ -85,6 +85,9 @@ B<--num_tiers,-n>
 B<--JUST_PRINT_BEST_LOCATIONS>
     The best matches are reported to stdout.  No files are written.
 
+B<--DUMP_CHAIN_STATS>
+    All AAT alignments retrieved from the database are printed to a file \$asmbl_id.chain_stats.
+
 
 =head1 DESCRIPTION
 
@@ -143,7 +146,8 @@ use Carp;
 
 #option processing
 my ($database, $username, $password, $search_db, $work_dir,
-    $asmbl_id, $asmbl_file, $file_list, $help, $verbose, $JUST_PRINT_BEST_LOCATIONS);
+    $asmbl_id, $asmbl_file, $file_list, $help, $verbose, $JUST_PRINT_BEST_LOCATIONS,
+    $DUMP_CHAIN_STATS);
 
 # default settings.
 my $DEFAULT_FILE_LIST = "genewise.input_file_listing";
@@ -169,7 +173,8 @@ my $MIN_PERCENT_CHAIN_ALIGN = 70; #minimum percent of the protein sequence found
              'num_tiers|n=i' => \$num_tiers,
 
              'JUST_PRINT_BEST_LOCATIONS' => \$JUST_PRINT_BEST_LOCATIONS,
-
+             'DUMP_CHAIN_STATS' => \$DUMP_CHAIN_STATS,
+             
 	     ) || pod2usage();
 
 if ($help) {
@@ -339,7 +344,9 @@ sub get_best_location_hits {
                                       m_rend => $m_rend,
                                       score => $match_score,
                                       orient => $orient,
-                                      accession => $acc };
+                                      accession => $acc,
+                                      chainID => $chainID,
+                                  };
         }
     }
     
@@ -347,7 +354,24 @@ sub get_best_location_hits {
         return (); # no alignments found in database
     }
     
-    
+    if ($DUMP_CHAIN_STATS) {
+        
+        open (my $fh, ">$asmbl_id.chain_stats") or die $!;
+        my @alignment_chains = sort {$a->{lend}<=>$b->{lend}} values %alignments;
+        foreach my $chain (@alignment_chains) {
+            my ($lend, $rend, $m_lend, $m_rend, $score, $orient, $accession, $chainID) = ($chain->{lend},
+                                                                                          $chain->{rend},
+                                                                                          $chain->{m_lend},
+                                                                                          $chain->{m_rend},
+                                                                                          $chain->{score},
+                                                                                          $chain->{orient},
+                                                                                          $chain->{accession},
+                                                                                          $chain->{chainID});
+            print $fh "$lend-$rend\[$orient]\t$m_lend-$m_rend\t$accession\t$chainID\t$score\n";
+        }
+        close $fh;
+    }
+        
     ## Store only the single best non-overlapping match for each strand
     my @top_strand_tiers;
     my @bottom_strand_tiers;
@@ -387,8 +411,8 @@ sub get_best_location_hits {
             
         };
         if ($@) {
-            print STDERR "Error trying to extract protein and determine length for entry $prot_acc\n";
-            next;
+            ## This is no longer tolerated.  We must be able to retrieve the relevant proteins from the fasta database.
+            die "Error trying to extract protein and determine length for entry $prot_acc\n";
         }
         
         
@@ -476,8 +500,8 @@ sub prepare_genewise_inputs {
         };
 
         if ($@) {
-            print STDERR "Error, couldn't retrieve fasta entry $accession from $protein_fasta_file\n";
-            next;
+            ## no longer tolerated.  It's essential that this works.
+            die "Error, couldn't retrieve fasta entry $accession from $protein_fasta_file\n";
         }
         
 
