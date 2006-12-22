@@ -13,7 +13,8 @@ my $q = new CGI;
 
 print $q->header( -type => 'text/html' );
 my $tmpl = HTML::Template->new( filename => 'templates/pipeline_list.tmpl',
-                                die_on_bad_params => 1,
+                                die_on_bad_params => 0,
+                                global_vars => 1
                               );
 
 my $repository_root = $q->param("repository_root") || die "pass a repository root";
@@ -30,6 +31,7 @@ my $errors_found  = 0;
 my $error_msgs = [];
 my %pipelines;
 my $pipeline_count = 0;
+my %components;
 
 ## make sure it has a project conf file, else throw the warning and quit
 if (! -e $project_conf_path ) {
@@ -76,6 +78,9 @@ if (! opendir $rdh, "$pipeline_root" ) {
 &print_template() if scalar @{$error_msgs};
 
 my $ergatis_dir = $project_conf->val('project', '$;ERGATIS_DIR$;');
+
+## views are either component or pipeline (how the list is organized)
+my $view = $q->param('view') || 'pipeline';
 
 foreach my $pipeline_id ( readdir $rdh ) {
     next unless ( $pipeline_id =~ /^\d+$/ );
@@ -165,19 +170,25 @@ foreach my $pipeline_id ( readdir $rdh ) {
         
         ## this is done as a new twig parse since elements can be nested
         ## at any level.
-        my %components = &component_count_hash( $pipeline_file );
+        if ( $view eq 'component' ) {
+            $component_aref = &component_info_aref( $pipeline_file );
 
-        foreach my $component (sort keys %components) {
-            $component_count += $components{$component}{count};
-            push @$component_aref, { name => $component, 
-                                     count => $components{$component}{count},
-                                     error_count => $components{$component}{error_count},
-                                   };
-        }
+        } else {
+        
+            my %pipeline_components = &component_count_hash( $pipeline_file );
 
-        ## reformat component_count to include a label
-        if ($component_count == 1) {
-            $component_label = ' component';
+            foreach my $component (sort keys %pipeline_components) {
+                $component_count += $pipeline_components{$component}{count};
+                push @$component_aref, { name => $component, 
+                                         count => $pipeline_components{$component}{count},
+                                         error_count => $pipeline_components{$component}{error_count},
+                                       };
+            }
+
+            ## reformat component_count to include a label
+            if ($component_count == 1) {
+                $component_label = ' component';
+            }
         }
     }
     
@@ -189,7 +200,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
                         last_mod        => $last_mod,
                         run_time        => $run_time,
                         pipeline_user   => $pipeline_user,
-                        components      => \@$component_aref,
+                        components      => $component_aref,
                         component_count => $component_count,
                         component_label => $component_label,
                         view_link       => $view_link,
@@ -201,30 +212,74 @@ foreach my $pipeline_id ( readdir $rdh ) {
 
 ## sort the pipelines
 my @pipelines_sorted;
+my @components_sorted;
 
-for my $pipeline ( sort { $pipelines{$b}{last_mod} cmp $pipelines{$a}{last_mod} } keys %pipelines ) {
-    $pipelines{$pipeline}{last_mod} = localtime( $pipelines{$pipeline}{last_mod} );
-    push @pipelines_sorted, $pipelines{$pipeline};
+if ( $view eq 'component' ) {
+    
+    ## transformation into data structure passable to HTML::Template
+    for my $pipeline ( %pipelines ) {
+        next if (! exists $pipelines{$pipeline}{components});
+    
+        for my $component_ref ( @{$pipelines{$pipeline}{components}} ) {
+
+            push @{$components{ $$component_ref{name} }}, {
+                pipeline_id   => $pipelines{$pipeline}{pipeline_id},
+                pipeline_user => $pipelines{$pipeline}{pipeline_user},
+                pipeline_view_link => $pipelines{$pipeline}{view_link},
+                component_state => $$component_ref{state} || 'unknown',
+                component_token => $$component_ref{token} || 'unknown',
+                component_run_time => $$component_ref{run_time},
+                component_view_link => "./view_component.cgi?pipeline_xml=$repository_root/workflow/runtime/$$component_ref{name}/$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/component.xml",
+            };
+            
+            if ( -e "$repository_root/workflow/runtime/$$component_ref{name}/$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/$$component_ref{name}.$$component_ref{token}.final.config" ) {
+                $components{ $$component_ref{name} }[-1]{component_config_link} = "./view_formatted_ini_source.cgi?file=$repository_root/workflow/runtime/$$component_ref{name}/$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/$$component_ref{name}.$$component_ref{token}.final.config";
+            } else {
+                $components{ $$component_ref{name} }[-1]{component_config_link} = "./view_formatted_ini_source.cgi?file=$repository_root/workflow/runtime/$$component_ref{name}/$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/$$component_ref{name}.$$component_ref{token}.user.config";
+            }
+        }
+    }
+    
+    ## second stage
+    for ( sort keys %components ) {
+        push @components_sorted, { name => $_, instances => $components{$_} };
+    }
+    
+} else {
+
+    for my $pipeline ( sort { $pipelines{$b}{last_mod} cmp $pipelines{$a}{last_mod} } keys %pipelines ) {
+        $pipelines{$pipeline}{last_mod} = localtime( $pipelines{$pipeline}{last_mod} );
+        push @pipelines_sorted, $pipelines{$pipeline};
+    }
 }
 
 ## populate the template
 &print_template();
 
 sub print_template {
+    my $submenu_links = [
+                            { label => 'new pipeline', is_last => 0, url => "./build_pipeline.cgi?repository_root=$repository_root" },
+                        ];
+
+    if ( $view eq 'component' ) {
+        $tmpl->param( COMPONENTS        => \@components_sorted );
+        push @$submenu_links, { label => 'view by pipeline', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" };
+    } else {
+        $tmpl->param( PIPELINES        => \@pipelines_sorted );
+        push @$submenu_links, { label => 'view by component', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root&view=component" };
+    }
 
     ## populate the template with the values that will always be passed.
     $tmpl->param( ERRORS_FOUND     => $errors_found );
     $tmpl->param( REPOSITORY_ROOT  => $repository_root );
     $tmpl->param( ERROR_MSGS       => $error_msgs );
-    $tmpl->param( PIPELINES        => \@pipelines_sorted );
     $tmpl->param( PIPELINE_COUNT   => $pipeline_count );
     $tmpl->param( QUOTA_STRING     => $quotastring );
     $tmpl->param( ERGATIS_DIR      => $ergatis_dir );
     $tmpl->param( DISPLAY_CODEBASE => $display_codebase );
-    $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
-    $tmpl->param( SUBMENU_LINKS       => [
-                                            { label => 'new pipeline', is_last => 1, url => "./build_pipeline.cgi?repository_root=$repository_root" },
-                                         ] );
+    $tmpl->param( COMPONENT_VIEW   => $view eq 'component' ? 1 : 0 );
+    $tmpl->param( QUICK_LINKS      => &get_quick_links($ergatis_cfg) );
+    $tmpl->param( SUBMENU_LINKS    => $submenu_links );
 
     ## print the template
     print $tmpl->output();

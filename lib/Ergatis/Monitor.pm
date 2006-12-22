@@ -10,8 +10,6 @@ sub component_count_hash {
     my $pipeline_file = shift;
     my %components; # = ( 'wu-blastp' => {count => 5} );
 
-    #return %components;
-
     my $ifh;
     if ($pipeline_file =~ /\.gz/) {
         open($ifh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
@@ -39,6 +37,44 @@ sub component_count_hash {
     $t->parse($ifh);
     
     return %components;
+}
+
+
+sub component_info_aref {
+    my $pipeline_file = shift;
+    my @components;
+
+    my $ifh;
+    if ($pipeline_file =~ /\.gz/) {
+        open($ifh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
+    } else {
+        open($ifh, "<$pipeline_file") || die "can't read $pipeline_file: $!";       
+    }
+
+    my $t = XML::Twig->new( twig_roots => {
+                                'commandSet' => sub {
+                                                      my ($t, $elt) = @_;
+                                                      
+                                                          if ($elt->first_child('name') && $elt->first_child('name')->text() =~ /^(.+?)\.(.+)/) {
+                                                              push @components, { name => $1, token => $2 };
+                                                              
+                                                              if ( $elt->has_child('state') ) {
+                                                                  $components[-1]{state} = $elt->first_child('state')->text;
+                                                                  
+                                                                  if ( $components[-1]{state} eq 'error' || $components[-1]{state} eq 'failed' ) {
+                                                                      $components[-1]{error_count}++;
+                                                                  }
+                                                              }
+                                                              
+                                                              ($components[-1]{start_time}, $components[-1]{end_time}, 
+                                                               $components[-1]{run_time} ) = &time_info( $elt );
+                                                          }
+                                                      },
+                                          },
+                          );
+    $t->parse($ifh);
+    
+    return \@components;
 }
 
 

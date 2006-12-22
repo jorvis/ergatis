@@ -1,0 +1,35 @@
+<h2>pipeline list (grouped by component)</h2>
+<TMPL_IF NAME=PIPELINE_COUNT>
+
+    <table class='pipeline_list'>
+        <tr>
+            <th class='token'>token</th>
+            <th>state</th>
+            <th>pipeline id</th>
+            <th>user</th>
+            <th>runtime</th>
+            <th>&nbsp;<th>
+        </tr>
+    <TMPL_LOOP NAME=COMPONENTS>
+        <tr>
+            <td class='component' colspan='5'><strong><TMPL_VAR NAME=NAME></strong></td>
+        </tr>
+        <TMPL_LOOP NAME=INSTANCES>
+        <tr>
+            <td class='token'><a href='<TMPL_VAR NAME=COMPONENT_VIEW_LINK>'><TMPL_VAR NAME=COMPONENT_TOKEN></a></td>
+            <td><span class='state <TMPL_VAR NAME=COMPONENT_STATE>'><TMPL_VAR NAME=COMPONENT_STATE></span></td>
+            <td><a href='<TMPL_VAR NAME=PIPELINE_VIEW_LINK>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
+            <td><TMPL_VAR NAME=PIPELINE_USER></td>
+            <td><TMPL_VAR NAME=COMPONENT_RUN_TIME></td>
+            <td><a href='<TMPL_VAR NAME=COMPONENT_CONFIG_LINK>'>view config</a></td>
+        </tr>
+        </TMPL_LOOP>
+        
+    </TMPL_LOOP> <!-- end components loop -->
+    </table>
+
+<TMPL_ELSE> <!-- else PIPELINE_COUNT -->
+<p>
+    no pipelines found
+</p>
+</TMPL_IF> <!-- if PIPELINE_COUNT -->
