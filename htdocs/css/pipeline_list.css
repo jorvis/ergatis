@@ -1,0 +1,8 @@
+table.pipeline_list td.component {
+    color: rgb(73,81,92);
+}
+
+table.pipeline_list tr th.token,
+table.pipeline_list tr td.token {
+    padding-left: 30px;
+}
