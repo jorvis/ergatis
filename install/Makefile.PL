@@ -648,11 +648,9 @@ snps	:
 
 split_fasta	:
 	@echo "Installing split_fasta workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/split_fasta/split_fasta-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/split_fasta/split_fasta-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/split_fasta/split_fasta.ini $(WORKFLOW_DOCS_DIR)
-	@install components/split_fasta/split_fasta_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/split_fasta/split_fastaconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/split_fasta/split_fasta.xml $(WORKFLOW_DOCS_DIR)
+	@install components/split_fasta/split_fasta.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/split_fasta/split_fasta.config $(WORKFLOW_DOCS_DIR)
 
 split_multifasta	:
 	@echo "Installing split_multifasta workflows in $(WORKFLOW_DOCS_DIR)"
