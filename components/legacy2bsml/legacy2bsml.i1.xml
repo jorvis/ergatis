@@ -4,6 +4,13 @@
 	<command>
 	    <type>RunUnixCommand</type>
 	    <state>incomplete</state>
+	    <name>Create the FASTA output directory</name>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;FASTA_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/legacy2bsml</executable>
 	    <name>legacy2bsml</name>
 	    <param>
@@ -27,16 +34,16 @@
 		<value>$;MODE$;</value>
 	    </param>
 	    <param>
+		<key>--bsml_doc_name</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
+	    </param>
+	    <param>
 		<key>--log4perl</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.legacy2bsml.pl.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.legacy2bsml.pl.log</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
 		<value>$;DEBUG$;</value>
-	    </param>
-	    <param>
-		<key>--outdir</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
 	    </param>
 	    <param>
 		<key>--fastadir</key>
@@ -84,7 +91,7 @@
 	    </param>
 	    <param>
 		<key>--project</key>
-		<value>$;DATABASE$;</value>
+		<value>$;PROJECT$;</value>
 	    </param>
 	    <param>
 		<key>--no_die_null_sequences</key>
@@ -104,7 +111,7 @@
 	    <state>incomplete</state>
 	    <name>DTD validation</name>
 	    <executable>$;BIN_DIR$;/dtdValid.pl</executable>
-	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</arg>
+	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</arg>
 	</command>
     </commandSet>
 </commandSetRoot>
