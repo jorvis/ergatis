@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>split_multifasta workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <!--Processing-->
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+        <!--Postprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>merge list files</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/merge_lists</executable>
+            <param>  
+                <key>--input_dir</key>
+                <value>$;TMP_DIR$;/i1</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;OUTPUT_LIST$;</value>
+            </param>
+            <param>  
+                <key>--glob</key>
+                <value>'*.$;COMPONENT_NAME$;.list'</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
