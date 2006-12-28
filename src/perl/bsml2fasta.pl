@@ -261,6 +261,8 @@ if( $options{'help'} ){
     pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
 }
 
+my $iscircular = 0;
+
 &check_parameters(\%options);
 
 #######
@@ -395,6 +397,7 @@ for my $file ( @files ) {
 			      $sequencelookup->{$params{'id'}}->{'class'} = $params{'class'};		
 			      $sequencelookup->{$params{'id'}}->{'title'} = $params{'title'};
 			      $sequenceid = $params{'id'};
+                  $iscircular = 1 if($params{'topology'} && $params{'topology'} eq 'circular');
 			  },
 		      'Seq-data'=>
 			  sub{
@@ -583,11 +586,23 @@ sub process_features{
 	    next;
 	}
 	$logger->logdie("No parent sequence $featurelookup->{$featureid}->{'sequence'} provided for feature $featureid") if(! exists $sequencelookup->{$featurelookup->{$featureid}->{'sequence'}}->{'seqdata'});
-	
+
+    my $start = $featurelookup->{$featureid}->{'startpos'} - $options{'bp_extension'};
+
+    unless($iscircular) {
+        $start = 0 if($start < 0);
+    }
+
 	my $featureseqdata = substr( $sequencelookup->{$featurelookup->{$featureid}->{'sequence'}}->{'seqdata'},
-				     $featurelookup->{$featureid}->{'startpos'} - $options{'bp_extension'},
+                                 $start,
 				     ($featurelookup->{$featureid}->{'endpos'} - $featurelookup->{$featureid}->{'startpos'}
 				      + $options{'bp_extension'} + $options{'bp_extension'}));
+
+    $featureseqdata = substr( $sequencelookup->{$featurelookup->{$featureid}->{'sequence'}}->{'seqdata'},
+                              0, ($featurelookup->{$featureid}->{'endpos'} + $options{'bp_extension'}))
+        if($iscircular && $start < 0);
+
+    
 	if($featurelookup->{$featureid}->{'complement'} == 1){
 	    $featureseqdata = &reverse_complement($featureseqdata);
 	}
