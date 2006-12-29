@@ -90,10 +90,6 @@
 		<value>$;MODEL_LIST_FILE$;</value>
 	    </param>
 	    <param>
-		<key>--project</key>
-		<value>$;PROJECT$;</value>
-	    </param>
-	    <param>
 		<key>--no_die_null_sequences</key>
 		<value>$;NO_DIE_NULL_SEQUENCES$;</value>
 	    </param>
