@@ -89,6 +89,7 @@ sub process_command {
                       return_value => 'unknown',
                       stderr => 'not defined',
                       stdout => 'not defined',
+                      id => 'unknown',
                     );
     
     if ( $command->has_child('name') ) {
@@ -96,7 +97,11 @@ sub process_command {
     }
     
     $cmd_props{state} = $command->first_child('state')->text;
-    $cmd_props{id}    = $command->first_child('id')->text;
+    
+    if ( $command->has_child('id') ) {
+        $cmd_props{id}    = $command->first_child('id')->text;
+    }
+    
     my $type  = $command->first_child('type')->text;
 
     ($cmd_props{start_time}, $cmd_props{end_time}, $cmd_props{run_time} ) = time_info($command);
