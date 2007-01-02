@@ -38,6 +38,11 @@ B<--dnd_file,-d>
     Optional.  The full path to a dnd (tree) file corresponding to the given alignment.
     If passed, this will store the newick tree as a string in BSML.
 
+B<--fastafile>
+    Optional.  The full path to the multifasta input file containing the sequences that
+    were aligned to generate the MSF file. Will be used to populate Seq-data-import in
+    Sequence elements if provided.
+    
 B<--debug> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -116,6 +121,7 @@ use BSML::BsmlBuilder;
 my %options = ();
 my $results = GetOptions (\%options, 
               'msffile|f=s',
+              'fastafile=s',
               'dnd_file|d=s',
               'output|o=s',
               'analysis_conf|a=s',
@@ -147,6 +153,11 @@ if ($MSF_alignments->{'mol_type'} eq 'polypeptide') {
 } else {
     $MSF_alignments->{'mol_type'} = 'nucleotide';
 }
+
+my $seq_molecule = {
+                        'polypeptide' => 'aa',
+                        'nucleotide'  => 'na',
+                   };
 
 if (keys %$MSF_alignments > 1) {   #skip empty msf files
     my $table = $builder->createAndAddMultipleAlignmentTable('molecule-type' => $MSF_alignments->{'mol_type'},
@@ -192,6 +203,31 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
 
         $logger->logdie("align_length was not defined") if (!defined($align_length));
 
+        ## Add sequence stub
+        if(!($builder->returnBsmlSequenceByIDR($seq))){
+            my $seq_stub = $builder->createAndAddSequence( 
+                                $seq,           #id
+                                $seq,           #title
+                                '',             #length
+                                $seq_molecule->{$MSF_alignments->{'mol_type'}}, #molecule
+                                $MSF_alignments->{'mol_type'},                  #class
+                                                         );
+            if ($options{'fastafile'}) {
+                $builder->createAndAddSeqDataImport(
+                                    $seq_stub, 
+                                    'fasta', 
+                                    $options{'fastafile'}, 
+                                    '', 
+                                    $seq
+                                                   );
+            }
+            $seq->addBsmlLink('analysis', '#' . $analysis_name , 'input_of');
+        }
+
+        ####### THIS BLOCK OF CODE SEEMS TO BE OBSOLETE DUE TO IDGENERATOR
+        ##
+        ##
+        
         #IMPORTANT!!!!
         #In order to ensure that each seq in a multiple sequence alignment is truly
         #unique, the seq-name and name will be in the form "polypeptide_accession:seqnum"
@@ -206,6 +242,10 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
             $alignment =~ s/_[^_\s]+\s/_polypeptide /g;
         }
 
+        ##
+        ##
+        ###### END BLOCK
+        
         $builder->createAndAddAlignedSequence(
                               'alignmentSummary' => $summary,
                               'seqnum'           => $seqnum,
