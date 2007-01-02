@@ -144,7 +144,7 @@ umask(0000);
                    $marshal_interval_opt = "-m " . $args{ergatis_cfg}->val('workflow_settings', 'marshal_interval');
                 }
                 
-                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} -l $self->{path}.log $marshal_interval_opt --logconf=" . 
+                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} -l $self->{path}.log $marshal_interval_opt --init-heap=100m --max-heap=1024m --logconf=" . 
                                 $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
                 print $debugfh "preparing to run $runstring\n" if $self->{debug};

@@ -131,7 +131,7 @@ if( ($inifile ne "") && ($template ne "") ) {
             my $createexecstr = "$ENV{'WF_ROOT'}/CreateWorkflow -debug -i $instancexml -t $template -c $inifile --delayedbuild=true --autobuild=false > $instancexml.create.out 2>&1";
             system("$createexecstr");
 
-            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow -i $instancexml --logconf=".$ergatis_cfg->val('paths','workflow_log4j')." > $instancexml.run.out 2>&1";
+            my $runexecstr = "$ENV{'WF_ROOT'}/RunWorkflow --init-heap=100m --max-heap=1024m -i $instancexml --logconf=".$ergatis_cfg->val('paths','workflow_log4j')." > $instancexml.run.out 2>&1";
 
         &writelockfile($lockfile);
             
