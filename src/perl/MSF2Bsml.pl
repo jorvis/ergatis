@@ -154,9 +154,13 @@ if ($MSF_alignments->{'mol_type'} eq 'polypeptide') {
     $MSF_alignments->{'mol_type'} = 'nucleotide';
 }
 
+my $seq_class = {
+                        'protein'       => 'polypeptide',
+                        'nucleotide'    => 'nucleotide',
+                   };
 my $seq_molecule = {
-                        'polypeptide' => 'aa',
-                        'nucleotide'  => 'na',
+                        'protein'       => 'aa',
+                        'nucleotide'    => 'na',
                    };
 
 if (keys %$MSF_alignments > 1) {   #skip empty msf files
@@ -210,7 +214,7 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
                                 $seq,           #title
                                 '',             #length
                                 $seq_molecule->{$MSF_alignments->{'mol_type'}}, #molecule
-                                $MSF_alignments->{'mol_type'},                  #class
+                                $seq_class->{$MSF_alignments->{'mol_type'}},                  #class
                                                          );
             if ($options{'fastafile'}) {
                 $builder->createAndAddSeqDataImport(
@@ -221,7 +225,7 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
                                     $seq
                                                    );
             }
-            $seq->addBsmlLink('analysis', '#' . $analysis_name , 'input_of');
+            $seq_stub->addBsmlLink('analysis', '#' . $analysis_name , 'input_of');
         }
 
         ####### THIS BLOCK OF CODE SEEMS TO BE OBSOLETE DUE TO IDGENERATOR
