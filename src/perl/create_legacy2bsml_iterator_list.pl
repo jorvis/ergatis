@@ -208,7 +208,7 @@ sub output_lists {
     '$;EXCLUDE_GENEFINDERS$;' . "\t".
     '$;ALT_DATABASE$;' . "\t".
     '$;ALT_SPECIES$;' . "\t".
-    '$;TU_LIST_FILE;' . "\t".
+    '$;TU_LIST_FILE$;' . "\t".
     '$;MODEL_LIST_FILE$;' . "\n";
 
     foreach my $arrayRef (@{$iteratorconf}){
