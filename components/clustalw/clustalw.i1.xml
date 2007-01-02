@@ -56,6 +56,10 @@
                 <key>--dnd_file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.dnd</value>
             </param>
+            <param>  
+                <key>--fastafile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
