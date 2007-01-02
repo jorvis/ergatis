@@ -1,0 +1,235 @@
+<!-- component documentaion -->
+<p>
+    The iprscan wrapper is a useful tool that allows you to run an entire suite of useful
+    tools without much interaction.  While this is useful when running a quick screen manually,
+    there are some drawbacks.  First, you lose access to most of the tuning options of each
+    individual program that you run.  Second, the available output formats when using this
+    tool do not include the regular alignment text files that each component normally generates, so
+    you are limited in the amount of result data you can parse and store.
+</p>
+
+<h3>references<h3>
+<p>
+Nicola J. Mulder, et. al.
+</p>
+<h3>implementation</h3>
+<p>
+    We have implemented this component because of its ease of use, but we also plan to create 
+    individual components for each of the analysis tools within iprscan, so that users can pick
+    and choose as desired.
+</p>
+<p>
+    The current executable is located in:
+    /usr/local/devel/ANNOTATION/elee/iprscan/4.1/iprscan/bin/iprscan.sh
+</p>
+<p>
+    The entire suite of tools can be run like:
+    <br><br>
+    iprscan.sh -cli -i ../test.seq -nocrc -iprlookup -goterms -format txt
+</p>
+<p>
+    This suite includes the following tools:
+    <ul>
+        <li>blastprodom</li>
+
+        <li>coils</li>
+        <li>hmmpir</li>
+        <li>hmmsmart</li>
+        <li>fprintscan</li>
+        <li>scanregexp</li>
+        <li>profilescan</li>
+
+        <li>superfamily</li>
+        <li>seg</li>
+        <li>hmmtigr</li>
+        <li>hmmpfam</li>
+    </ul>
+</p>
+<p>
+    The iprscan executable (perl) has the following usage:
+
+</p>
+<p class=code>
+    usage: iprscan -cli [-email &lt;addr&gt;] [-appl &lt;name&gt; ...] [-nocrc]
+        [-seqtype p|n] [-trlen &lt;N&gt;] [-trtable &lt;table&gt;] [-goterms]
+        -i &lt;seqfile&gt; -o &lt;output file&gt;\n
+        -i &lt;seqfile&gt;      Your sequence file (mandatory).
+        -o &lt;output file&gt;  The output file where to write results (optional), default is STDOUT.
+        -email &lt;addr&gt;     Submitter email address (required for non-interactive).
+        -appl &lt;name&gt;      Application(s) to run (optional), default is all.
+        -nocrc            Don't perform CRC64 check, default is on.
+        -seqtype &lt;type&gt;   Sequence type: n for DNA/RNA, p for protein (default).
+        -trlen &lt;n&gt;        Transcript length threshold (20-150).
+        -trtable &lt;table&gt;  Codon table number.
+        -goterms          Show GO terms if iprlookup option is also given
+        -iprlookup        Switch on the InterPro lookup for results
+        -format &lt;format&gt;  Output results format (raw, txt, html, xml(default), ebixml(EBI header on top of xml))
+        -verbose          Print messages during run
+        
+
+</p>
+<p>
+    This is a really cool tool, from which you can run the entire suite of programs or just individual
+    ones using the --appl option.  There are some problems though, the largest being that you don't
+    seem to have access to all the detailed options of the individual programs.  We're going for
+    greater transparency here, so I'd rather call the individual programs in the suite rather than
+    "iprscan -appl " over and over again.
+</p>
+<p>
+    Brian got a tool from the author to show the individual commands that were being run when you run
+    the iprscan pipeline.  They are:
+</p>
+<p class=code>
+Tool [blastprodom] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/ProDomBlast3i.pl 
+    -P /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/blast 
+    -p blastp 
+    -d /usr/local/devel/ANNOTATION/iprscan_4.0/data/prodom.ipr 
+    -s /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq 
+    -h 0 -f
+ 
+Tool [coils] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/ncoils 
+    -c -m /usr/local/devel/ANNOTATION/iprscan_4.0/data/new_coil.mat
+ 
+Tool [hmmpir] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/iterator.pl 
+    -i /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq 
+    -o /usr/local/devel/ANNOTATION/iprscan_4.0/tmp/20050328/iprscan-20050328-08491549/chunk_1/iprscan-20050328-08491549-hmmpir-cnk1.output 
+    -c \"/usr/local/devel/ANNOTATION/iprscan_4.0/bin/pirsf.pl -i %infile -pirsf /usr/local/devel/ANNOTATION/iprscan_4.0/data/pirsf.dat -sfhmm /usr/local/devel/ANNOTATION/iprscan_4.0/data/sf_hmm -subsf /usr/local/devel/ANNOTATION/iprscan_4.0/data/sf_hmm_sub -h /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/hmmpfam\"
+ 
+Tool [hmmpfam] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/hmmpfam 
+    --cpu 1 
+    --acc 
+    -E 20.000000 
+    -A 100 
+    --cut_ga /usr/local/devel/ANNOTATION/iprscan_4.0/data/Pfam 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq
+ 
+Tool [hmmsmart] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/hmmpfam 
+    --cpu 1 
+    --acc 
+    -E 0.010000 
+    -A 100 
+    -Z 350000 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/data/smart.HMMs 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq
+ 
+Tool [hmmtigr] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/hmmpfam 
+    --cpu 1 
+    --acc 
+    -E 20.000000 
+    -A 100 
+    --cut_tc 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/data/TIGRFAMs_HMM.LIB 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq
+ 
+Tool [fprintscan] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/FingerPRINTScan 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/data/prints.pval 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq 
+    -e 0.0001 
+    -fj -a 
+    -o 15 
+    | /usr/local/devel/ANNOTATION/iprscan_4.0/bin/FingerPRINTSparser.pl 
+    -d /usr/local/devel/ANNOTATION/iprscan_4.0/data/FingerPRINTSparser.db
+ 
+Tool [scanregexp] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/scanregexpf.pl 
+    -pattern /usr/local/devel/ANNOTATION/iprscan_4.0/data/prosite.patterns 
+    -confirm /usr/local/devel/ANNOTATION/iprscan_4.0/data/confirm.patterns
+ 
+Tool [profilescan] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/ps_scan.pl 
+    -d /usr/local/devel/ANNOTATION/iprscan_4.0/data/prosite_prerelease.prf 
+    --pfscan /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/pfscan 
+    -s 
+    -o gff
+ 
+Tool [superfamily] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/superfamily.pl 
+    -i /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq 
+    -o /usr/local/devel/ANNOTATION/iprscan_4.0/tmp/20050328/iprscan-20050328-08491549/chunk_1/iprscan-20050328-08491549-superfamily-cnk1.output 
+    -t /usr/local/devel/ANNOTATION/iprscan_4.0/tmp/tmp 
+    -m /usr/local/devel/ANNOTATION/iprscan_4.0/data/superfamily.hmm 
+    -d /usr/local/devel/ANNOTATION/iprscan_4.0/data/superfamily.tab 
+    -a /usr/local/devel/ANNOTATION/iprscan_4.0/data/superfamily.acc 
+    -p /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/hmmpfam 
+    -s /usr/local/devel/ANNOTATION/iprscan_4.0/bin 
+    -e 0.02 
+    -r y
+ 
+Tool [seg] : /usr/local/devel/ANNOTATION/iprscan_4.0/bin/binaries/seg 
+    /usr/local/devel/ANNOTATION/iprscan_4.0/test.seq
+</p>
+<p>
+    INSTALLATION NOTE:
+    <br><br>
+    Note that during installation we modified the file INSTALL_DIR/conf/localenv.sh from:
+
+</p>
+<p class=code>
+    #!/bin/sh
+
+    rhost=[%host.exec]
+    ihost=`hostname`
+
+    echo "[%toolexitcode]"
+
+    case $rhost in
+        $ihost*)
+            [%cmd] ;;
+        *)
+            rsh $rhost "[%cmd]";;
+
+    esac
+
+    exit 0
+</p>
+<p>
+    to:
+</p>
+<p class=code>
+    #!/bin/sh
+
+    #rhost=[%host.exec]
+    ihost=`hostname`
+    # hack added by bhaas, always run on localhost, for use with cluster
+    rhost=$ihost
+
+    echo "[%toolexitcode]"
+
+    [%cmd]
+
+    exit 0
+</p>
+<p>
+    Also, iprscan was returning 0 on ALL events, even failures.  This was fixed by going into
+    the library Tools.pm and the iprscan script and modifying the exit values where necessary.
+    The author is going to change this behavior in the next version.
+</p>
+
+<p>
+    Ed has since done extensive rewrites of portions of the code, which will need to be detailed
+    here.
+</p>
+<h3>default output</h3>
+<p>
+    The native output from iprscan is a tab-delimited format as described in the example below
+    (taken from the documentation):
+</p>
+<p class="code">
+    ------
+    NF00181542      0A5FDCE74AB7C3AD        272     HMMPIR  PIRSF001424     Prephenate dehydratase  1       270     6.5e-141        T       06-Oct-2004         IPR008237       Prephenate dehydratase with ACT region  Molecular Function:prephenate dehydratase activity (GO:0004664), Biological Process:L-phenylalanine biosynthesis (GO:0009094)
+    ------
+
+    Where: NF00181542:             is the id of the input sequence.
+           27A9BBAC0587AB84:       is the crc64 (checksum) of the proteic sequence (supposed to be unique).
+           272:                    is the length of the sequence (in AA).
+           HMMPIR:                 is the anaysis method launched.
+           PIRSF001424:            is the database members entry for this match.
+           Prephenate dehydratase: is the database member description for the entry.
+           1:                      is the start of the domain match.
+           270:                    is the end of the domain match.
+           6.5e-141:               is the evalue of the match (reported by member database anayling method).
+           T:                      is the status of the match (T: true, ?: unknown).
+           06-Oct-2004:            is the date of the run.
+           IPR008237:              is the corresponding InterPro entry (if iprlookup requested by the user).
+           Prephenate dehydratase with ACT region:                           is the description of the InterPro entry.
+           Molecular Function:prephenate dehydratase activity (GO:0004664):  is the GO (gene ontology) description for the InterPro entry.
+</p>
+
+

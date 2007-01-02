@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>iprscan compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>blastprodom</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl blastprodom -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.blastprodom.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>coils</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl coils -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.coils.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>hmmpir</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl hmmpir -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.hmmpir.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>hmmpfam</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl hmmpfam -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.hmmpfam.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>hmmsmart</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl hmmsmart -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.hmmsmart.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>hmmtigr</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl hmmtigr -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.hmmtigr.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>fprintscan</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl fprintscan -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fprintscan.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>scanregexp</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl scanregexp -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.scanregexp.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>profilescan</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl profilescan -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.profilescan.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>superfamily</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl superfamily -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.superfamily.raw</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>seg</name>
+            <state>incomplete</state>
+            <executable>$;IPRSCAN_EXEC$;</executable>
+            <arg>-cli -nocrc -iprlookup -goterms -appl seg -seqtype $;SEQ_TYPE$; -format raw -i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.seg.raw</arg>
+        </command>
+<!-- end of iprscan calls -->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>combine raw output</name>
+            <state>incomplete</state>
+            <executable>find</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/ -type f -regex '.*$;I_FILE_BASE$;.*.raw' ! -regex '.*$;I_FILE_BASE$;.*.$;COMPONENT_NAME$;.raw' -exec cat {} \;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>iprscan2bsml</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/iprscan2bsml</executable>
+            <param>  
+                <key>--query_file_path</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--input</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--gzip_output</key>
+                <value>$;COMPRESS_BSML_OUTPUT$;</value>
+            </param>
+            <param>
+                <key>--query_id</key>
+                <value>$;I_FILE_BASE$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>store config params</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <param>  
+                <key>--ergatis_control_file</key>
+                <value>$;ERGATIS_DIR$;.ini</value>
+            </param>
+            <param>  
+                <key>--conf</key>
+                <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>  
+                <key>--bsml_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--componenturl</key>
+                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
+            </param>
+            <param>  
+                <key>--pipelineurl</key>
+                <value>$;PIPELINE_XML$;</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
