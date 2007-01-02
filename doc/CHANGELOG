@@ -348,3 +348,6 @@ next
 -added ergatis 2.0 compliant signalp component
 -fixed move_genewise_results and genewise2legacydb to accept both v1 and v2 config files.
 -made split_fasta into a version 2 component and changed the install script.
+-added sequence stub creation to MSF2Bsml
+-updated clustalw component xml to support populating Seq-data-import in bsml sequence stubs
+
