@@ -56,7 +56,6 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use BSML::BsmlBuilder;
-#use Ergatis::IdGenerator;
 
 my ($input, $help, $man, $output, $project, $id_repository, $analysis, $mapping);
 
@@ -65,9 +64,7 @@ GetOptions (
              'man|m'               => \$man,
              'output|o=s'          => \$output,
              'input|i=s'           => \$input,
-#             'project|p=s'         => \$project,
-#             'id_repository=s'     => \$id_repository,
-             'analysis=s'          => \$analysis,
+             'analysis:s'          => \$analysis,
              'mapping:s'           => \$mapping,
            ) || pod2usage();
 
@@ -83,14 +80,6 @@ if (!$output){
     pod2usage("output BSML filename was not defined with --output");
 }
 
-#if (!$project) {
-#        pod2usage("You must specify a project name with --project");
-#}
-
-#if (!$id_repository) {
-#    pod2usage("You must specify an id repository with --id_repository");
-#}
-
 if ($mapping) {
     unless (-e $mapping) {
         pod2usage("Specified mapping file does not exist");
@@ -99,9 +88,11 @@ if ($mapping) {
 
 $project =~ tr/A-Z/a-z/;
 
-$analysis = 'pasa_'.$analysis;
-
-#my $idcreator = Ergatis::IdGenerator->new('id_repository' => $id_repository);
+if ($analysis) {
+    $analysis = 'pasa_'.$analysis.'_analysis';
+} else {
+    $analysis = 'pasa_analysis';
+}
 
 my $global_id_counter=0;
 my $nodes = {};
@@ -221,9 +212,9 @@ foreach my $chain(@chains) {
                                         $chain->{'refseq'},  # query sequence
                                         '',                  # length 
                                         'dna',               # mol-type
-                                        '',                  # class 
+                                        'assembly',          # class 
                                             );
-        $seq->addBsmlLink('analysis', '#'.$analysis.'_analysis', 'input_of');
+        $seq->addBsmlLink('analysis', '#'.$analysis, 'input_of');
     }
     if( !( $doc->returnBsmlSequenceByIDR($chain->{'compseq'}) )){
         my $seq = $doc->createAndAddSequence(
@@ -231,9 +222,9 @@ foreach my $chain(@chains) {
                                         $chain->{'compseq'},    #subject id
                                         '',                     #length
                                         'dna',                  #mol-type
-                                        '',                     #class
+                                        'processed_transcript', #class
                                                 );
-        $seq->addBsmlLink('analysis', '#'.$analysis.'_analysis', 'input_of');   
+        $seq->addBsmlLink('analysis', '#'.$analysis, 'input_of');   
         $doc->createAndAddCrossReference(
                         'parent'          => $seq,
                         'database'        => $chain->{'compdatabase'},
@@ -251,7 +242,7 @@ foreach my $chain(@chains) {
                                         'class'     => 'match',
                                         'method'    => 'PASA',
                                                      );
-    $aln->addBsmlLink('analysis', '#'.$analysis.'_analysis', 'computed_by');   
+    $aln->addBsmlLink('analysis', '#'.$analysis, 'computed_by');   
     
     my $spr_count = scalar(@{$chain->{'refpos'}});
     
@@ -281,7 +272,7 @@ foreach my $chain(@chains) {
 
 # add the analysis element
 $doc->createAndAddAnalysis(
-                            id => $analysis.'_analysis',
+                            id => $analysis,
                             sourcename => $output,
                           );
 
