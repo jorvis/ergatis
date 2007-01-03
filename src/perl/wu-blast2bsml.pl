@@ -240,7 +240,7 @@ while( my $result = $in->next_result ) {
     }
 }
 
-    my $cov_qual_stats = {};
+    my $qual_stats = {};
     foreach my $query (keys %{$hsplookup}){
         #   print "Query: $query\n";
         foreach my $subject (keys %{$hsplookup->{$query}}) {
@@ -270,7 +270,7 @@ while( my $result = $in->next_result ) {
                     }
                 }
                 my $orig_dbmatch_accession = $btab[5];
-                $btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
+                #$btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
 
                 $new_subject = $btab[5];
                 
@@ -304,6 +304,7 @@ while( my $result = $in->next_result ) {
                                 'target_protein_id' => $btab[5],
                                 'significance'      => $btab[20],
                                 'percent_identity'  => $btab[10],
+                                'percent_similarity'=> $btab[11],
                                 'query_seqlen'      => $btab[2],
                                 'target_seqlen'     => $btab[18],
                                 'query_fmin'        => $qfmin,
@@ -315,18 +316,19 @@ while( my $result = $in->next_result ) {
                               };
                 push (@hsp_ref_array, $hsp_ref);
             }
-            if (!defined($cov_qual_stats->{$queryid})) {
-               $cov_qual_stats->{$queryid} = {};
+            if (!defined($qual_stats->{$queryid})) {
+               $qual_stats->{$queryid} = {};
             }
             
             my $coverage_arr_ref = &getAvgBlastPPctCoverage(\@hsp_ref_array);
-        
-            $cov_qual_stats->{$queryid}->{$new_subject} = {
+            my $id_sim_arr_ref = &getAvgBlastPIdSim(\@hsp_ref_array); 
+            
+            $qual_stats->{$queryid}->{$new_subject} = {
                 'percent_coverage_refseq'   =>  sprintf("%.1f",$coverage_arr_ref->[0]),
                 'percent_coverage_compseq'  =>  sprintf("%.1f",$coverage_arr_ref->[1]),
+                'percent_identity'          =>  sprintf("%.1f",$id_sim_arr_ref->[0]),
+                'percent_similarity'        =>  sprintf("%.1f",$id_sim_arr_ref->[1]),
                                                         };
-#               print $queryid." ".$new_subject."\n";
-#               print $cov_qual_stats->{$queryid}->{$new_subject}->{'percent_coverage_refseq'}."\n";
                 #
                 #
                 #################################
@@ -347,7 +349,7 @@ while( my $result = $in->next_result ) {
                 ##  but the original needs to be passed to createAndAddBtabLine so it can
                 ##  be recognized and parsed
                 my $orig_dbmatch_accession = $btab[5];
-                $btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
+                #$btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
 
                 my $align = &createAndAddBlastResultLine(
                               doc                => $doc,
@@ -371,10 +373,12 @@ while( my $result = $in->next_result ) {
                               hit_length         => $btab[18],
                               e_value            => $btab[19],
                               p_value            => $btab[20],
-                              percent_coverage_refseq    => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_refseq'},
-                              percent_coverage_compseq       => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_compseq'},
-                              class              => $class,
-                              orig_dbmatch_accession => $orig_dbmatch_accession
+                              percent_coverage_refseq    => $qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_refseq'},
+                              percent_coverage_compseq   => $qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_compseq'},
+                              percent_identity_total     => $qual_stats->{$btab[0]}->{$btab[5]}->{'percent_identity'},
+                              percent_similarity_total   => $qual_stats->{$btab[0]}->{$btab[5]}->{'percent_similarity'},
+                              class                      => $class,
+                              orig_dbmatch_accession     => $orig_dbmatch_accession
                                                     );
 
                 my $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
@@ -385,7 +389,7 @@ while( my $result = $in->next_result ) {
             }
         }
     }
-            
+    
 $doc->createAndAddAnalysis(
                             id => $options{analysis_id},
                             sourcename => $options{'output'},
@@ -402,10 +406,30 @@ sub createAndAddNullResult {
     my $doc = $args{'doc'};
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-        my $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, $ref_molecule->{$blast_program}, $args{'class'} );
-        $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
-        $seq->addBsmlLink('analysis', '#' . $options{'analysis_id'}, 'input_of');
-        $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
+        my $seq = $doc->createAndAddSequence(
+                            "$args{'query_name'}", 
+                            "$args{'query_name'}",
+                            $args{'query_length'}, 
+                            $ref_molecule->{$blast_program}, 
+                            $args{'class'}
+                                            );
+        $doc->createAndAddSeqDataImport(
+                            $seq, 
+                            'fasta', 
+                            $options{'query_file_path'}, 
+                            '', 
+                            $args{'query_name'}
+                                       );
+        $seq->addBsmlLink(
+                            'analysis', 
+                            '#' . $options{'analysis_id'}, 
+                            'input_of'
+                         );
+        $doc->createAndAddBsmlAttribute( 
+                            $seq, 
+                            'defline', 
+                            $defline
+                         );
     }
 }
 
@@ -432,28 +456,79 @@ sub createAndAddBlastResultLine {
         $doc->createAndAddBsmlAttribute($seq_run, 'class', 'match_part');
 
         if( $args{'start_query'} > $args{'stop_query'} ) {
-            $seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
-            $seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
-            $seq_run->setattr( 'refcomplement', 1 );
+            $seq_run->setattr( 
+                                'refpos', 
+                                $args{'stop_query'}-1 
+                             );
+            $seq_run->setattr( 
+                                'runlength', 
+                                $args{'start_query'} - $args{'stop_query'} + 1 
+                             );
+            $seq_run->setattr(
+                                'refcomplement', 
+                                1 
+                             );
         } else {
-            $seq_run->setattr( 'refpos', $args{'start_query'}-1 );
-            $seq_run->setattr( 'runlength', $args{'stop_query'} - $args{'start_query'} + 1 );
-            $seq_run->setattr( 'refcomplement', 0 );
+            $seq_run->setattr( 
+                                'refpos', 
+                                $args{'start_query'}-1
+                             );
+            $seq_run->setattr(
+                                'runlength', 
+                                $args{'stop_query'} - $args{'start_query'} + 1
+                             );
+            $seq_run->setattr( 
+                                'refcomplement', 
+                                0 
+                             );
         }
 
         #the database sequence is always 5' to 3'
-        $seq_run->setattr( 'comppos', $args{'start_hit'} -1 )                                if (defined ($args{'start_hit'}));
-        $seq_run->setattr( 'comprunlength', $args{'stop_hit'} - $args{'start_hit'} + 1 )     if ((defined ($args{'start_hit'})) and (defined ($args{'stop_hit'})));
-        $seq_run->setattr( 'compcomplement', 0 );
-        $seq_run->setattr( 'runscore', $args{'bit_score'} )                                  if (defined ($args{'bit_score'}));
-        $seq_run->setattr( 'runprob', $args{'e_value'} )                                     if (defined ($args{'e_value'}));
-        $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
-        $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
-        $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )                 if (defined ($args{'percent_coverage_refseq'}));   
-        $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )                       if (defined ($args{'percent_coverage_compseq'}));   
-        $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
-        $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
+        $seq_run->setattr(
+            'comppos', 
+            $args{'start_hit'} -1
+                         ) if (defined ($args{'start_hit'}));
+        $seq_run->setattr(
+            'comprunlength', 
+            $args{'stop_hit'} - $args{'start_hit'} + 1
+                         ) if ((defined ($args{'start_hit'})) and (defined ($args{'stop_hit'})));
+        $seq_run->setattr( 
+            'compcomplement', 
+            0 
+                         );
+        $seq_run->setattr(
+            'runscore', 
+            $args{'bit_score'} 
+                         ) if (defined ($args{'bit_score'}));
+        $seq_run->setattr(
+            'runprob', 
+            $args{'e_value'} 
+                         ) if (defined ($args{'e_value'}));
+        $seq_run->addBsmlAttr( 
+            'percent_identity', 
+            $args{'percent_identity'}
+                             ) if (defined ($args{'percent_identity'}));   
+        $seq_run->addBsmlAttr( 
+            'percent_similarity', 
+            $args{'percent_similarity'}
+                             ) if (defined ($args{'percent_similarity'}));
 
+        ## add hsp percent coverage stats
+        $seq_run->addBsmlAttr( 
+            'percent_coverage_refseq', 
+            sprintf("%.1f", $args{'runlength'} / $args{'query_length'})
+                             ) if (defined ($args{'runlength'}) && defined($args{'query_length'}));
+                             
+        $seq_run->addBsmlAttr(
+            'percent_coverage_compseq', 
+            sprintf("%.1f", $args{'comprunlength'} / $args{'hit_length'})
+                             ) if (defined ($args{'comprunlength'}) && defined($args{'hit_length'}));
+        ## ^^
+        
+        $seq_run->addBsmlAttr(
+            'p_value', 
+            $args{'p_value'}
+                             ) if (defined ($args{'p_value'}));
 
         return $alignment_pair;
     }
@@ -463,70 +538,250 @@ sub createAndAddBlastResultLine {
     my $seq;
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, $ref_molecule->{$blast_program}, $args{'class'} );
-        $doc->createAndAddSeqDataImport($seq, 'fasta', $options{'query_file_path'}, '', $args{'query_name'});
-        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+        $seq = $doc->createAndAddSequence( 
+                        "$args{'query_name'}", 
+                        "$args{'query_name'}", 
+                        $args{'query_length'}, 
+                        $ref_molecule->{$blast_program}, 
+                        $args{'class'}
+                                         );
+        $doc->createAndAddSeqDataImport(
+                        $seq, 
+                        'fasta', 
+                        $options{'query_file_path'}, 
+                        '', 
+                        $args{'query_name'}
+                                       );
+        $seq->addBsmlLink(
+                        'analysis', 
+                        '#' . $options{analysis_id}, 
+                        'input_of'
+                         );
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), $comp_molecule->{$blast_program}, $args{'class'} );
-        $doc->createAndAddSeqDataImport($seq, 'fasta', $args{'search_database'}, '', $args{'dbmatch_accession'});
-## Removed to resolve bug #2671
-##        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+        $seq = $doc->createAndAddSequence(
+                        "$args{'dbmatch_accession'}", 
+                        "$args{'dbmatch_header'}", 
+                        ($args{'hit_length'} || 0), 
+                        $comp_molecule->{$blast_program}, 
+                        $args{'class'} 
+                                         );
+        $doc->createAndAddSeqDataImport(
+                        $seq, 
+                        'fasta', 
+                        $args{'search_database'}, 
+                        '', 
+                        $args{'dbmatch_accession'}
+                                       );
     }
 
     ## see if the dbmatch_header format is recognized.  if so, add some cross-references
     if (defined $args{'dbmatch_header'}) {
-        $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $args{orig_dbmatch_accession} );
+        $doc->createAndAddCrossReferencesByParse( 
+                    sequence => $seq, 
+                    string => $args{orig_dbmatch_accession}
+                                                );
     }
     
     $alignment_pair = $doc->returnBsmlSeqPairAlignmentR( $doc->addBsmlSeqPairAlignment() );
     
     ## to the alignment pair, add a Link to the analysis
-    $alignment_pair->addBsmlLink('analysis', '#' . $options{analysis_id}, 'computed_by');
+    $alignment_pair->addBsmlLink(
+                            'analysis', 
+                            '#' . $options{analysis_id},
+                            'computed_by'
+                                );
 
-    $alignment_pair->setattr( 'refseq', "$args{'query_name'}" )                                 if (defined ($args{'query_name'}));
-    $alignment_pair->setattr( 'compseq', "$args{'dbmatch_accession'}" )                         if (defined ($args{'dbmatch_accession'}));
+    $alignment_pair->setattr( 
+                            'refseq', 
+                            "$args{'query_name'}"
+                            ) if (defined ($args{'query_name'}));
+    $alignment_pair->setattr(
+                            'compseq', 
+                            "$args{'dbmatch_accession'}"
+                            ) if (defined ($args{'dbmatch_accession'}));
     
-    BSML::BsmlDoc::BsmlSetAlignmentLookup( "$args{'query_name'}", "$args{'dbmatch_accession'}", $alignment_pair );
+    BSML::BsmlDoc::BsmlSetAlignmentLookup( 
+                            "$args{'query_name'}", 
+                            "$args{'dbmatch_accession'}", 
+                            $alignment_pair
+                                         );
 
-    $alignment_pair->setattr( 'refxref', $options{'query_file_path'}.':'.$args{'query_name'})        if (defined ($args{'query_name'}));                     
-    $alignment_pair->setattr( 'refstart', 0 );
-    $alignment_pair->setattr( 'refend', $args{'query_length'} )          if (defined ($args{'query_length'}));
-    $alignment_pair->setattr( 'reflength', $args{'query_length'} )       if (defined ($args{'query_length'}));
-    $alignment_pair->setattr( 'method', $args{'blast_program'} )         if (defined ($args{'blast_program'}));
-    $alignment_pair->setattr( 'compxref', $args{'search_database'}.':'.$args{'dbmatch_accession'} )  if ((defined ($args{'search_database'})) and (defined ($args{'dbmatch_accession'})));
-    $alignment_pair->setattr( 'class', 'match');
+    $alignment_pair->setattr(
+                            'refxref', 
+                            $options{'query_file_path'}.':'.$args{'query_name'}
+                            ) if (defined ($args{'query_name'}));                     
+    $alignment_pair->setattr(
+                            'refstart',
+                            0
+                            );
+    $alignment_pair->setattr(
+                            'refend',
+                            $args{'query_length'}
+                            ) if (defined ($args{'query_length'}));
+    $alignment_pair->setattr(
+                            'reflength',
+                            $args{'query_length'}
+                            ) if (defined ($args{'query_length'}));
+    $alignment_pair->setattr(
+                            'method',
+                            $args{'blast_program'}
+                            ) if (defined ($args{'blast_program'}));
+    $alignment_pair->setattr(
+                            'compxref',
+                            $args{'search_database'}.':'.$args{'dbmatch_accession'} 
+                            ) if ((defined ($args{'search_database'})) and (defined ($args{'dbmatch_accession'})));
+    $alignment_pair->setattr(
+                            'class',
+                            'match'
+                            );
+
+    ## add average percent coverage values to alignment pair
+    $alignment_pair->addBsmlAttr(
+                            'percent_coverage_refseq', 
+                            $args{'percent_coverage_refseq'}
+                                ) if (defined ($args{'percent_coverage_refseq'}));   
+    $alignment_pair->addBsmlAttr(
+                            'percent_coverage_compseq', 
+                            $args{'percent_coverage_compseq'}
+                                ) if (defined ($args{'percent_coverage_compseq'}));   
+    
+    ## add percent identity and similarity values to alignment pair
+    $alignment_pair->addBsmlAttr(
+                            'percent_identity', 
+                            $args{'percent_identity_total'}
+                                ) if (defined ($args{'percent_identity_total'}));   
+    $alignment_pair->addBsmlAttr(
+                            'percent_similarity', 
+                            $args{'percent_similarity_total'}
+                                ) if (defined ($args{'percent_similarity_total'}));   
 
     my $seq_run = $alignment_pair->returnBsmlSeqPairRunR( $alignment_pair->addBsmlSeqPairRun() );
 
     $doc->createAndAddBsmlAttribute($seq_run, 'class', 'match_part');
     
     if( $args{'start_query'} > $args{'stop_query'} ) {
-        $seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
-        $seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
-        $seq_run->setattr( 'refcomplement', 1 );
+        $seq_run->setattr(
+                        'refpos', 
+                        $args{'stop_query'}-1
+                         );
+        $seq_run->setattr(
+                        'runlength', 
+                        $args{'start_query'} - $args{'stop_query'} + 1
+                         );
+        $seq_run->setattr(
+                        'refcomplement', 
+                        1 
+                         );
     } else {
-        $seq_run->setattr( 'refpos', $args{'start_query'} -1);
-        $seq_run->setattr( 'runlength', $args{'stop_query'} - $args{'start_query'} + 1 );
-        $seq_run->setattr( 'refcomplement', 0 );
+        $seq_run->setattr(
+                        'refpos', 
+                        $args{'start_query'} -1
+                         );
+        $seq_run->setattr(
+                        'runlength', 
+                        $args{'stop_query'} - $args{'start_query'} + 1
+                         );
+        $seq_run->setattr(
+                        'refcomplement', 
+                        0
+                         );
     }
 
     #the database sequence is always 5' to 3'
-    $seq_run->setattr( 'comppos', $args{'start_hit'} -1)                                   if (defined  ($args{'start_hit'}));
-    $seq_run->setattr( 'comprunlength', ($args{'stop_hit'} - $args{'start_hit'} + 1))      if ((defined ($args{'start_hit'})) and (defined ($args{'stop_hit'})));
-    $seq_run->setattr( 'compcomplement', 0 );
-    $seq_run->setattr( 'runscore', $args{'bit_score'} )                                    if (defined  ($args{'bit_score'}));
-    $seq_run->setattr( 'runprob', $args{'e_value'} )                                       if (defined  ($args{'e_value'}));
-    $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
-    $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));
-    $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )                   if (defined ($args{'percent_coverage_refseq'}));   
-    $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )                         if (defined ($args{'percent_coverage_compseq'}));   
-    $seq_run->addBsmlAttr( 'chain_number', $args{'chain_number'} )                         if (defined  ($args{'chain_number'}));
-    $seq_run->addBsmlAttr( 'segment_number', $args{'segment_number'} )                     if (defined  ($args{'segment_number'}));
-    $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                   if (defined  ($args{'p_value'}));
+    $seq_run->setattr(
+                    'comppos', 
+                    $args{'start_hit'} -1
+                     ) if (defined  ($args{'start_hit'}));
+    $seq_run->setattr(
+                    'comprunlength',
+                    ($args{'stop_hit'} - $args{'start_hit'} + 1)
+                     ) if ((defined ($args{'start_hit'})) and (defined ($args{'stop_hit'})));
+    $seq_run->setattr(
+                    'compcomplement', 
+                    0
+                     );
+    $seq_run->setattr(
+                    'runscore',
+                    $args{'bit_score'}
+                     ) if (defined  ($args{'bit_score'}));
+    $seq_run->setattr( 
+                    'runprob',
+                    $args{'e_value'}
+                     ) if (defined  ($args{'e_value'}));
+    $seq_run->addBsmlAttr(
+                    'percent_identity', 
+                    $args{'percent_identity'}
+                         ) if (defined  ($args{'percent_identity'}));
+    $seq_run->addBsmlAttr(
+                    'percent_similarity', 
+                    $args{'percent_similarity'}
+                         ) if (defined  ($args{'percent_similarity'}));
+    
+    ## add hsp percent coverage stats
+    $seq_run->addBsmlAttr( 
+        'percent_coverage_refseq', 
+        sprintf("%.1f", $args{'runlength'} / $args{'query_length'})
+                         ) if (defined ($args{'runlength'}) && defined($args{'query_length'}));
+                             
+    $seq_run->addBsmlAttr(
+        'percent_coverage_compseq', 
+        sprintf("%.1f", $args{'comprunlength'} / $args{'hit_length'})
+                         ) if (defined ($args{'comprunlength'}) && defined($args{'hit_length'}));
+    ## ^^
+        
+    $seq_run->addBsmlAttr(
+                    'chain_number',
+                    $args{'chain_number'}
+                         ) if (defined  ($args{'chain_number'}));
+    $seq_run->addBsmlAttr(
+                    'segment_number',
+                    $args{'segment_number'}
+                         ) if (defined  ($args{'segment_number'}));
+    $seq_run->addBsmlAttr(
+                    'p_value',
+                    $args{'p_value'}
+                         ) if (defined  ($args{'p_value'}));
 
     return $alignment_pair;
+}
+
+sub getAvgBlastPIdSim {
+    my($hsps) = @_;
+    my $sim_sum=0;
+    my $id_sum=0;
+    my $q_len_sum=0;
+    my $numHsps = 0;
+    
+    # Group by query and target id
+    my $hspsByQuery = &groupByMulti($hsps, ['query_protein_id', 'target_protein_id']);
+
+    foreach my $queryId (keys %$hspsByQuery) {
+        my $hspsByTarget = $hspsByQuery->{$queryId};
+
+        foreach my $subjId (keys %$hspsByTarget) {
+            my $shsps = $hspsByTarget->{$subjId};
+#            my $querySeqLen = $shsps->[0]->{'query_seqlen'};
+#            my $targetSeqLen = $shsps->[0]->{'target_seqlen'};
+            
+            foreach my $hsp(@{$shsps}) {
+                ++$numHsps;
+                my $q_seg_len = $hsp->{'query_fmax'} - $hsp->{'query_fmin'};
+                $q_len_sum += $q_seg_len;
+                $sim_sum += $hsp->{'percent_similarity'} * $q_seg_len;
+                $id_sum += $hsp->{'percent_identity'} * $q_seg_len;
+            }
+        }
+    }
+    
+    if ($numHsps == 0) {
+        return undef;
+    } else {
+        return [($id_sum/$q_len_sum), ($sim_sum/$q_len_sum)];
+    }
+            
+    
 }
 
 ## Returns an array reference where 
@@ -570,11 +825,8 @@ sub getAvgBlastPPctCoverage {
     if ($numHsps == 0) {
         return undef;
     } else {
-        #print $qsum." ".$numHsps."\n";
-        #print $tsum." ".$numHsps."\n";
         return [($qsum/$numHsps*100.0), ($tsum/$numHsps*100.0)];
     }
-    #return ($numHsps > 0) ? ($sum/($numHsps * 2) * 100.0) : undef;
 }
 
 # Generalized version of groupBy 
