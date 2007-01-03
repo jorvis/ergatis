@@ -350,4 +350,4 @@ next
 -made split_fasta into a version 2 component and changed the install script.
 -added sequence stub creation to MSF2Bsml
 -updated clustalw component xml to support populating Seq-data-import in bsml sequence stubs
-
+-modified wu-blast2bsml.pl to write average percent_identity and percent_similarity for Seq-pair-alignments, and relocated percent_coverage_refseq/compseq Attributes to Seq-pair-alignment
