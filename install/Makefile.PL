@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark genewise glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap repeatmasker runsql signalp split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark genewise glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap phat repeatmasker runsql signalp split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -557,11 +557,9 @@ pepstats	:
 
 phat	:
 	@echo "Installing phat workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/phat/phat-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/phat/phat-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/phat/phat.ini $(WORKFLOW_DOCS_DIR)
-	@install components/phat/phat_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/phat/phatconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/phat/phat.xml $(WORKFLOW_DOCS_DIR)
+	@install components/phat/phat.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/phat/phat.config $(WORKFLOW_DOCS_DIR) 
 
 predotar	:
 	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
