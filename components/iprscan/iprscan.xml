@@ -52,7 +52,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.raw"</value>
+                <value>".*iprscan\.raw"</value>
             </param>
             <param>  
                 <key>--output_list</key>
