@@ -61,6 +61,7 @@
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stderr</value>
 	    </param>
+	    <arg>--ignore_relationships</arg>
         </command>
 	<command>
 	    <type>RunUnixCommand</type>
@@ -180,6 +181,7 @@
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stderr</value>
 	    </param>
+	    <arg>--relationships_only</arg>
         </command>
 	<command>
 	    <type>RunUnixCommand</type>
