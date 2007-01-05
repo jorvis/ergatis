@@ -2,11 +2,11 @@
 
 =head1  NAME 
 
-move_hmmpfam_results.pl - load hmmpfam data into the legacy filesystem schema.
+move_hmmpfam_results.pl - moving hmmpfam data into the legacy filesystem schema.
 
 =head1 SYNOPSIS
 
-USAGE: move_iprscan_results.pl 
+USAGE: move_hmmpfam_results.pl 
         --input_list=/path/to/hmmpfam.htab.list
         --repository_root=/usr/local/annotation/AA1
       [ --tu_list=/path/to/output.tu.list
@@ -63,6 +63,16 @@ The input is a list of htab files from an hmmpfam workflow component run.
 =head1 OUTPUT
 
 This is a file migration script.  There is no other output unless you use the --log option.
+
+=head1 LOADING DATA INTO THE LEGACYDB
+
+This script does not provide this functionality directly, but is required as an 
+initial step.  After you've migrated the results, you can load them like this:
+
+    $EGC_SCRIPTS/hmm2_search.condor.dbi -D bma1 -L model_names.list -p $EGC_SCRIPTS/egc_password -x
+
+The -x is important there, as it tells the script just to load data and not actually 
+launch any search commands. (Brian's script)
 
 =head1 CONTACT
 
