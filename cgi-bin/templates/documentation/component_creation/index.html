@@ -1,0 +1,58 @@
+<p>
+    This document describes the process of creating a new component to run in Ergatis.  If you 
+    just want to run an existing component you're in the wrong place.
+</p>
+<h3>what is a component?</h3>
+<p>
+    When you build an analysis pipeline with ergatis each 'piece' of the pipeline is known as
+    a component.  Usually this corresponds to some analysis tool, such as blastp, glimmerHMM
+    or clustalw but can also be involved in more mundane tasks such as file format conversion
+    or splitting a multi-fasta file into individual files.  Any executable program or script
+    (or series of them) can become a component in ergatis, assuming it meets a few easy criteria.
+</p>
+<h3>can my script or program become a component?</h3>
+<p>
+    There are only a few criteria that must be met for a script/program to become an ergatis
+    component.  These are mostly limitations of the underlying Workflow Engine but are pretty
+    intuitive and don't usually cause many problems.
+</p>
+<dl>
+    <dt>path resolution</dt>
+    <dd>
+        <p>
+            This will be true for almost everything, but anything you try to execute must resolve to
+            a file someplace on the file system.  This really only means that you can't execute built-in
+            shell commands such as ls, cd, pwd as steps in an ergatis component.
+        </p>
+    </dd>
+    <dt>return value</dt>
+    <dd>
+        <p>
+            Ergatis tracks each command in your pipeline and displays each possible state, including
+            whether it has completed for failed.  The only way it can do this is by relying on the 
+            return value of the script or program executed.  Following the unix/linux convention, a return
+            value of 0 means success and any other value indicates failure.
+        </p>
+        <p>
+            As an example, this means that if you write a perl script and want to make a component out
+            of it, you need to check and make sure that any error checking you perform in your script
+            should exit like exit(1).  Many people commonly simply print to STDERR followed by an
+            exit() call, which returns 0 by default.  Ergatis would then assume that command was 
+            successful and the next step in the pipeline would be executed.
+        </p>
+    </dd>
+    <dt>no process forking</dt>
+    <dd>
+        <p>
+            This is more of a best practice than it is a hard rule, but since ergatis takes care of
+            distributing your analysis sequences or steps across a compute cluster, and your grid
+            management software handles the placement of the job, the script you execute should not
+            fork processes or submit other jobs once placed on a grid slot.  This would cause you to
+            use more slots on a node than expected and wreak havoc on the jobs of others.
+        </p>
+        <p>
+            If you execute any scripts that have multi-processor options, such as blast or hmmpfam, 
+            make sure to hard-code these options to 1 when you build your component.
+        </p>
+    </dd>
+</dl>
