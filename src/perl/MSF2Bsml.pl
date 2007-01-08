@@ -271,6 +271,7 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
 $builder->createAndAddAnalysis(
                id => $analysis_name,
                sourcename => $options{'output'},
+               algorithm => $options{msffile} =~ /\.clw/ ? 'clustalw' : 'unknown'
                );
 
 $builder->write( $options{'output'} );
