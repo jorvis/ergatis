@@ -352,3 +352,5 @@ next
 -updated clustalw component xml to support populating Seq-data-import in bsml sequence stubs
 -modified wu-blast2bsml.pl to write average percent_identity and percent_similarity for Seq-pair-alignments, and relocated percent_coverage_refseq/compseq Attributes to Seq-pair-alignment
 -added wu-blast_btab2legacy.pl
+-added ergatis 2.0 wu-tblastn component
+-added ergatis 2.0 pangenome component
