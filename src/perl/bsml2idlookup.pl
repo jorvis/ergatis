@@ -7,12 +7,9 @@ no lib ".";
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use XML::Twig;
-
+use XML::Parser;
 use Ergatis::Logger;
-use BSML::BsmlParserSerialSearch;
-use BSML::BsmlParserTwig;
-use MLDBM "DB_File";
+use DB_File;
 
 #######
 ## ubiquitous options parsing and logger creation
