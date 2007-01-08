@@ -10,9 +10,10 @@ compress_file.pl - wrapper to gzip an output file
 
 =head1 SYNOPSIS
 
-USAGE: augustus2bsml.pl 
+USAGE: compress_file.pl 
         --file=/path/to/some.file 
-      [ --compress=1
+      [ --output=/path/to/output
+        --compress=1
         --list_file=/path/to/some.list
         --log=/path/to/some.log
         --debug=4
@@ -83,6 +84,7 @@ my $results = GetOptions (\%options,
 			  'file|f=s',
 			  'compress|c=s',
               'list_file|s=s',
+			  'output|o=s',
 			  'log|l=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
@@ -104,12 +106,20 @@ my $return_status = 0;
 ## we're only going to compress if the user requested it
 if ($options{compress}) {
     $logger->debug("preparing to compress file $options{file}") if ($logger->is_debug);
-    system("gzip -f $options{file}");
+    if($options{output}){
+	system("gzip -c -f $options{file} > $options{output}");
+    }
+    else{
+	system("gzip -f $options{file}");
+    }
     
     ## was it successful?
     $return_status = $? >> 8;
     $logger->debug("return status was $return_status") if ($logger->is_debug);
 } else {
+    if($options{output}){
+	system("cp $options{file} $options{output}");
+    }
     $logger->debug("skipping compression of file $options{file} because --compress=$options{compress}") if ($logger->is_debug);
 }
 
