@@ -41,9 +41,9 @@
                 <key>--output</key>
                 <value>$;WORKFLOW_REPOSITORY$;/match.input.list</value>
             </param>
-	    <arg>--listfiles</arg>
+        <arg>--listfiles</arg>
         </command>
-	<command>
+        <command>
             <type>RunUnixCommand</type>
             <name>create temp directory</name>
             <state>incomplete</state>
@@ -64,9 +64,9 @@
                 <key>--output</key>
                 <value>$;WORKFLOW_REPOSITORY$;/asmbl.input.list</value>
             </param>
-	    <arg>--listfiles</arg>
+            <arg>--listfiles</arg>
         </command>
-	<command>
+        <command>
             <type>RunDistributedCommand</type>
             <name>parse bsml input</name>
             <state>incomplete</state>
@@ -99,16 +99,16 @@
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/bsml2cogbtab.stderr</value>
             </param>
-	    <dceSpec>
-		<os>linux</os>
-	    </dceSpec>
+            <dceSpec type="sge">
+                <os>linux</os>
+            </dceSpec>
         </command>
-	<command>
+        <command>
             <type>RunDistributedCommand</type>
             <name>best hit</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/best_hit</executable>
-	    <arg>-i $;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab -j $;JACCARD_CUTOFF$;</arg>
+            <arg>-i $;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab -j $;JACCARD_CUTOFF$;</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/besthit.stdout</value>
@@ -117,39 +117,40 @@
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/besthit.stderr</value>
             </param>
-	    <dceSpec>
-		<os>linux</os>
-	    </dceSpec>
-	</command>
-	 <command>
+            <dceSpec type="sge">
+                <os>linux</os>
+            </dceSpec>
+        </command>
+        <command>
             <type>RunUnixCommand</type>
             <name>cogs2fasta</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/CogProteinFasta</executable>
-	     <param>  
+            <param>  
                 <key>--cogFile</key>
                 <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
             </param>
-	     <param>  
+            <param>  
                 <key>--bsmlModelList</key>
                 <value>$;WORKFLOW_REPOSITORY$;/asmbl.input.list</value>
             </param>
-	     <param>  
+            <param>  
                 <key>--outputDir</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
-	     <param>  
+            <param>  
                 <key>--maxCogSeqCount</key>
                 <value>$;MAX_MULTI_ALIGNMENT$;</value>
             </param>
-	     <param>  
+            <param>  
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/CogProteinFasta.stdout</value>
             </param>
-	     <param>  
+            <param>  
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/CogProteinFasta.stderr</value>
             </param>
+        </command>
         <!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
