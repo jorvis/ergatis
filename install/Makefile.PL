@@ -156,6 +156,7 @@ bsml2chado  :
 	@install components/bsml2chado/bsml2chado.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/bsml2chado/bsml2chado.parse.xml $(WORKFLOW_DOCS_DIR)
 	@install components/bsml2chado/bsml2chado.sql.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/bsml2chado/bsml2chado.sqlforce.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/bsml2chado/bsml2chado.load.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/bsml2chado/bsml2chado.collate.xml $(WORKFLOW_DOCS_DIR)  
 
