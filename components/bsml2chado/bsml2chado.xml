@@ -215,6 +215,13 @@
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;/final</arg>
+	</command>
+        <command>
+	    <type>RunUnixCommand</type>
 	    <name>replace checksums</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/replace_checksums</executable>
@@ -224,7 +231,7 @@
 	    </param>
 	    <param>
 		<key>--output_dir</key>
-		<value>$;OUTPUT_DIRECTORY$;</value>
+		<value>$;TMP_DIR$;/final</value>
 	    </param>
 	    <param>
 		<key>--bcp_extension</key>
@@ -265,7 +272,7 @@
 	    <executable>$;BIN_DIR$;/bcpdir2iterator</executable>
 	    <param>
 		<key>--bcp_directory</key>
-		<value>$;OUTPUT_DIRECTORY$;</value>
+		<value>$;TMP_DIR$;/final</value>
 	    </param>
 	    <param>
 		<key>--bcp_extension</key>
