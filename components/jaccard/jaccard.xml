@@ -43,11 +43,11 @@
             </param>
             <param>  
                 <key>--output_iter_list</key>
-                <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;/$;ITERATOR1$;.list</value>
+                <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list</value>
             </param>
         </command>
         <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;/$;ITERATOR1$;.list">
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list">
         <!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
