@@ -38,11 +38,11 @@
                 <value>'$;INPUT_DIRECTORY$;'</value>
             </param>
             <param>  
-                <key>--output_iterator_keys</key>
-                <value>I_GENOME,I_GENOME_LIST_FILE</value>
+                <key>--output_dir</key>
+                <value>$;TMP_DIR$;</value>
             </param>
             <param>  
-                <key>--output_iterator_list</key>
+                <key>--output_iter_list</key>
                 <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;/$;ITERATOR1$;.list</value>
             </param>
         </command>
