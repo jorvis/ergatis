@@ -77,8 +77,6 @@ my $user = getpwuid($filestat->uid);
 $lastmodtime = time - $filestat->mtime;
 $lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
 
-my $component_html = "<div id='workflowcontainer'>\n";
-
 my $elements = [];
 
 ## look at each of the children of the root
@@ -116,7 +114,6 @@ $tmpl->param( RUNTIME             => $runtime );
 $tmpl->param( PROJECT             => $project );
 $tmpl->param( QUOTA_STRING        => $quotastring );
 $tmpl->param( PIPELINE_ID         => $pipeline_id );
-#$tmpl->param( COMPONENT_HTML      => $component_html );
 
 $tmpl->param( ELEMENTS            => $elements );
 
@@ -143,15 +140,7 @@ sub parse_iterator_xml {
     if (! -e $filename) {
         if (-e "$filename.gz") {
             $filename .= '.gz';
-        } else {
-            $component_html .= "            <div>not yet created</div>\n";    
         }
-    }
-    
-    ## make sure this is a iN.xml file
-    if ( $filename !~ /i\d+.xml/ ) {
-        $component_html .= "            <div>unable to handle $filename</div>\n";
-        return;
     }
     
     my ($component_start_time, $component_end_time, $component_state);
@@ -199,7 +188,7 @@ sub process_subflowgroup {
     $sg_props{file} = $commandSet->first_child('fileName')->text();
     
     ## pull the group number out of the file name:
-    if ( $sg_props{file} =~ m|i(\d+)/g\d+/g(\d+).xml| ) {
+    if ( $sg_props{file} =~ m|(\w+)/g\d+/g(\d+).xml| ) {
         $sg_props{name} = "$1$2";
         $sg_props{group_num} = $2;
     }
