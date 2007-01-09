@@ -90,6 +90,10 @@
 		<key>--exclude_classes</key>
 		<value>$;EXCLUDE_CLASSES$;</value>
 	    </param>
+        <param>
+            <key>stderr</key>
+            <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+        </param>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
