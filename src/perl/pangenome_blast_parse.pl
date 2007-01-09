@@ -104,20 +104,18 @@ my $input_prefix = basename($options{'input'},".bsml");
 
 my $ifh;
 
-if (-e $options{'input'} && $options{'input'} !~ /\.gz$/){
-    open ($ifh, $options{'input'}) || die("Could not open file '$options{'input'}: $!");
+if (-e $options{'input'}.".gz" ) {
+    $options{'input'} .= ".gz";
+} elsif (-e $options{'input'}.".gzip") {
+    $options{'input'} .= ".gzip";
+}
+if ($options{'input'} =~ /\.(gz|gzip)$/) {
+    open ($ifh, "<:gzip", $options{'input'}) || die "couldn't open '$options{input}' for reading: $!";
 } else {
-    if ($options{'input'} !~ /\.gz$/ && -e $options{'input'}.".gz"){
-        $options{'input'} .= ".gz";
-    }
-    if($options{'input'} =~ /\.gz$/ && -e $options{'input'}){
-        open ($ifh, "<:gzip", $options{'input'}) || die("Could not open zipped file '$options{'input'}': $!");
-    } else {
-        die("Could not open file '$options{'input'}: $!");
-    }
+    open ($ifh, "<".$options{'input'}) || die "couldn't open '$options{input}' for reading: $!";
 }
 
-$twig->parsefile($ifh);
+$twig->parse($ifh);
 
 close $ifh;
 
@@ -164,10 +162,10 @@ sub processSeqPairAlignment {
     my $all_seg_p_ident = sprintf("%.1f", $pident_sum / $len_total * 100);
     my $all_seg_p_sim = sprintf("%.1f", $psim_sum / $len_total * 100);
 
-    $query_id =~ /^([^_]+)_(.*)_[^_]+$/ || die "couldn't parse out db and sequence id from query\n$query_id";
-    my($qdb, $qprot) = ($1, $2);
-    $subject_id =~ /^([^_]+)_(.*)_[^_]+$/ || die "couldn't parse out db and sequence id from subject";
-    my($sdb, $sprot) = ($1, $2);
+    $query_id =~ /^(([^_]+)\..*)$/ || die "couldn't parse out db and sequence id from query\n$query_id";
+    my($qdb, $qprot) = ($2, $1);
+    $subject_id =~ /^(([^_]+)\..*)$/ || die "couldn't parse out db and sequence id from subject";
+    my($sdb, $sprot) = ($2, $1);
     
     if ($skip_filter || ($filter->{$qdb}->{$qprot} && $filter->{$sdb}->{$sprot})) {
     #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
