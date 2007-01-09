@@ -27,11 +27,11 @@
             <executable>$;BIN_DIR$;/CogBsmlLoader</executable>
             <param>  
                 <key>--bsmlSearchList</key>
-                <value>$;WORKFLOW_REPOSITORY$;/match.input.list</value>
+                <value>$;MATCH_BSML_FILE_LIST$;</value>
             </param>
             <param>  
                 <key>--bsmlModelList</key>
-                <value>$;WORKFLOW_REPOSITORY$;/asmbl.input.list</value>
+                <value>$;QUERY_BSML_FILE_LIST$;</value>
             </param>
             <param>  
                 <key>--bsmlJaccardList</key>
@@ -86,7 +86,7 @@
             </param>
             <param>  
                 <key>--bsmlModelList</key>
-                <value>$;WORKFLOW_REPOSITORY$;/asmbl.input.list</value>
+                <value>$;QUERY_BSML_FILE_LIST$;</value>
             </param>
             <param>  
                 <key>--outputDir</key>
