@@ -85,7 +85,7 @@ sub generate_component_list {
             my $component_name = $1;
             my $status = $ergatis_cfg->component_status( $component_name );
         
-            if ( -e "$ergatis_dir/docs/$component_name.tmpl" ) {
+            if ( -e "$ergatis_dir/docs/documentation/$component_name.tmpl" ) {
                 push @{$sections{documented}}, { name => $component_name, 
                                                  documented => 1, 
                                                  disabled => $status eq 'disabled' ? 1 : 0
