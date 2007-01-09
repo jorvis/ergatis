@@ -65,7 +65,7 @@
             <arg>-i $;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab -j $;JACCARD_CUTOFF$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/besthit.stdout</value>
+                <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
             </param>
             <param>  
                 <key>stderr</key>
