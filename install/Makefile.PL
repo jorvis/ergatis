@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark genewise glimmerHMM hmmpfam initdb j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap phat repeatmasker runsql signalp split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark genewise glimmerHMM hmmpfam initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome phat repeatmasker runsql signalp split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -381,11 +381,10 @@ initdb	:
 
 iprscan	:
 	@echo "Installing iprscan workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/iprscan/iprscan-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/iprscan/iprscan-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/iprscan/iprscan.ini $(WORKFLOW_DOCS_DIR)
-	@install components/iprscan/iprscan_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/iprscan/iprscanconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/iprscan/iprscan.xml $(WORKFLOW_DOCS_DIR)
+	@install components/iprscan/iprscan.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/iprscan/iprscan.config $(WORKFLOW_DOCS_DIR)
+	@install components/iprscan/iprscan.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 j_ortholog_clusters	:
 	@echo "Installing j_ortholog_clusters workflows in $(WORKFLOW_DOCS_DIR)"
@@ -520,14 +519,14 @@ obo2chado	:
 	@install components/obo2chado/obo2chado.ini $(WORKFLOW_DOCS_DIR)
 	@install components/obo2chado/obo2chado_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/obo2chado/obo2chadoconf.ini $(WORKFLOW_DOCS_DIR)  
+
 pangenome	:
 	@echo "Installing pangenome workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/pangenome/pangenome-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/pangenome/pangenome-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/pangenome/pangenome.ini $(WORKFLOW_DOCS_DIR)
-	@install components/pangenome/pangenome_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/pangenome/pangenomeconf.ini $(WORKFLOW_DOCS_DIR)  
-
+	@install components/pangenome/pangenome.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome/pangenome.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome/pangenome.config $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome/pangenome.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+    
 panther	:
 	@echo "Installing panther workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/panther/panther.xml $(WORKFLOW_DOCS_DIR)
@@ -753,11 +752,10 @@ wu-blastx	:
 
 wu-tblastn	:
 	@echo "Installing wu-tblastn workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/wu-tblastn/wu-tblastn-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-tblastn/wu-tblastn-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/wu-tblastn/wu-tblastn.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-tblastn/wu-tblastn_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/wu-tblastn/wu-tblastnconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/wu-tblastn/wu-tblastn.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wu-tblastn/wu-tblastn.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wu-tblastn/wu-tblastn.config $(WORKFLOW_DOCS_DIR)
+	@install components/wu-tblastn/wu-tblastn.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 wu-tblastx	:
 	@echo "Installing wu-tblastx workflows in $(WORKFLOW_DOCS_DIR)"
