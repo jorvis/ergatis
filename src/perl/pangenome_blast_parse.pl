@@ -117,6 +117,10 @@ if (-e $options{'input'} && $options{'input'} !~ /\.gz$/){
     }
 }
 
+$twig->parsefile($ifh);
+
+close $ifh;
+
 @dups_temp = sort(@dups_temp);
 
 if (scalar(@dups_temp) > 1) {
