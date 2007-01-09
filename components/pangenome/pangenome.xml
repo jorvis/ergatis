@@ -33,9 +33,6 @@
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
-            <dceSpec>
-                <os>linux</os>
-            </dceSpec>
         </command>
         <!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
@@ -71,9 +68,6 @@
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
-            <dceSpec>
-                <os>linux</os>
-            </dceSpec>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -92,9 +86,6 @@
                 <key>--write_lists</key>
                 <value>$;WRITE_LISTS$;</value>
             </param>
-            <dceSpec>
-                <os>linux</os>
-            </dceSpec>
         </command>
     </commandSet>
 </commandSetRoot>
