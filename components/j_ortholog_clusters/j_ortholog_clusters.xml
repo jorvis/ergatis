@@ -38,7 +38,7 @@
                 <value>'$;JACCARD_OUTPUT_LIST$;'</value>
             </param>
             <param>  
-                <key>--outputfile</key>
+                <key>--outfile</key>
                 <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab</value>
             </param>
             <param>  
