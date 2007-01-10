@@ -5,6 +5,13 @@
         <name>clustalw compute</name>
         <command>
             <type>RunUnixCommand</type>
+            <name>relocate query file</name>
+            <state>incomplete</state>
+            <executable>cp</executable>
+            <arg>$;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
             <name>clustalw</name>
             <state>incomplete</state>
             <executable>$;CLUSTALW_EXEC$;</executable>
@@ -14,7 +21,7 @@
             </param>
             <param>  
                 <key>-infile</key>
-                <value>$;I_FILE_PATH$;</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;</value>
             </param>
             <param>  
                 <key>-outfile</key>
@@ -54,7 +61,7 @@
             </param>
             <param>  
                 <key>--dnd_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.dnd</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.dnd</value>
             </param>
             <param>  
                 <key>--fastafile</key>
