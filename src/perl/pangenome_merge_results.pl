@@ -12,7 +12,7 @@ pangenome_merge_results_pl - Performs the merging of BLAST results to create pan
 
 USAGE: pangenome_merge_results.pl
         --input_list=/path/to/pangenome.stored.list
-		--output=/path/to/output.list
+        --output=/path/to/output.list
       [ --log=/path/to/some/log ]
 
 =head1 OPTIONS
@@ -37,8 +37,8 @@ B<--help,-h>
 
 =head1   DESCRIPTION
 
-	The pangenome analysis script creates an array of BLAST results data which is then
-	processed to create pangenome data.
+    The pangenome analysis script creates an array of BLAST results data which is then
+    processed to create pangenome data.
 
 =head1 INPUT
 
@@ -64,57 +64,57 @@ use strict;
 my @results = ();
 my $dups = {};
 my %options = ();
-my $results = GetOptions (	\%options,
-#							'filter_list|f=',
-                          	'input_list|i=s',
-              				'output_path|o=s',
-              				'debug|d=s',
-              				'command_id=s',       ## passed by workflow
-              				'logconf=s',          ## passed by workflow (not used)
-              				'log|l=s',
-              				'help|h',
-		  				 ) || pod2usage();
+my $results = GetOptions (  \%options,
+#                           'filter_list|f=',
+                            'input_list|i=s',
+                            'output_path|o=s',
+                            'debug|d=s',
+                            'command_id=s',       ## passed by workflow
+                            'logconf=s',          ## passed by workflow (not used)
+                            'log|l=s',
+                            'help|h',
+                         ) || pod2usage();
 
 
 my $output_path = $options{'output_path'};
 $output_path =~ s/\/$//;
 if ($output_path eq '') {
-	$output_path = '.';
+    $output_path = '.';
 }
 
 if (!-e $options{'input_list'}) {
-	die "must specify an input list which exists";
+    die "must specify an input list which exists";
 }
 
 open (IN, $options{'input_list'}) || die "couldn't open input list";
 
 print STDERR "Reading stored data...\n";
 while (<IN>) {
-	chomp;
-	my $db;
-	my $filename = basename($_);
-	
-	## parse the query database name from the filename
-	if ($filename =~ /^([^_]+)_/) {
-		$db = $1;
-	} else {
-		die "failed parsing db name from $_";
-	}
+    chomp;
+    my $db;
+    my $filename = basename($_);
+    
+    ## parse the query database name from the filename
+    if ($filename =~ /^([^\.]+)\./) {
+        $db = $1;
+    } else {
+        die "failed parsing db name from $_";
+    }
 
-	## unserialize the stored data
-	my $temp_ref = retrieve($_) || die "failed unserializing $_";
+    ## unserialize the stored data
+    my $temp_ref = retrieve($_) || die "failed unserializing $_";
 
-	## pull the blast results data array out of the stored array
-	my $results_ref = shift(@{$temp_ref});
-	push(@results, @{$results_ref});
+    ## pull the blast results data array out of the stored array
+    my $results_ref = shift(@{$temp_ref});
+    push(@results, @{$results_ref});
 
-	## pull the dups hash out of the stored array
-	my $dups_ref = shift(@{$temp_ref});
-	foreach my $key(keys(%{$dups_ref})) {
-		$dups->{$db}->{$key}=1;
-	}
+    ## pull the dups hash out of the stored array
+    my $dups_ref = shift(@{$temp_ref});
+    foreach my $key(keys(%{$dups_ref})) {
+        $dups->{$db}->{$key}=1;
+    }
 
-	$temp_ref = undef;
+    $temp_ref = undef;
 }
 
 store([\@results, $dups], $options{'output_path'}."/pangenome.blast.stored") || die "couldn't serialize results";
