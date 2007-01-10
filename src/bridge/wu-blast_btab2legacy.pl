@@ -423,7 +423,7 @@ sub get_asmbl_id {
 
     my $filename = shift;
 
-    if ($filename =~ /$project_db\.assembly\.(\d+).*btab$/) {
+    if ($filename =~ /$project_db\.\w+\.(\d+).*btab$/) {
         return $1;
     } else {
         &_die ("Bad filename: Can't extract asmbl_id from: $filename\n");
