@@ -106,7 +106,7 @@ while( my $line = <INPUTCOGS> )
 		    foreach my $seq ( @{$list} )
 		    {
 			print OUTFILE ">$seq\n";
-			print OUTFILE "A\n";
+			print OUTFILE "X\n";
 		    }
 		    close( OUTFILE );
 		}
