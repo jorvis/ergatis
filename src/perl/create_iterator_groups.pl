@@ -96,7 +96,7 @@ use Ergatis::Logger;
 my %options = ();
 my $results = GetOptions (\%options, 
               'input_iter_list|i=s',
-              'group_count|g=i',
+              'group_count|g=s',
               'output_iter_list|r=s',
               'group_size_limit|z=i',
               'output_directory|o=s',
@@ -142,6 +142,26 @@ my $input_element_count = scalar(@$input_skim);
 
 ## calculate the number of groups we'll need to have.  
 my $group_count = 0; 
+
+if($options{group_count} =~ /(\d+)\+/){
+    $options{group_count} = $1;
+    my $sgestatus = `qstat -q default.q -f | grep lx26`;
+    my @lines = split(/\n/,$sgestatus);
+    my $totalslots;
+    my $totalrunning;
+    foreach my $line (@lines){
+	  my @x = split(/\s+/,$line);
+	  my($used,$tot) = ($x[2] =~ /(\d+)\/(\d+)/);
+	  $totalslots+=$tot;
+	  $totalrunning+=$used;
+      }
+    my $free = $totalslots-$totalrunning;
+    print STDERR "Free $free\n";
+    if($free > $options{group_count}){
+	$options{group_count} = $free;
+    }
+    print STDERR "Using $options{group_count}\n";
+}
 
 ## is there 1 or 0 elements per group?
 if ( $input_element_count <= $options{group_count} ) {
@@ -263,7 +283,7 @@ sub check_parameters {
     }
     
     ## make sure group count is greater than 0
-    unless ( $options{group_count} > 0 ) {
+    unless ( $options{group_count} =~ /\d+\+/ || $options{group_count} > 0 ) {
         print STDERR "--group_count must be greater than 0\n\n";
         exit(1);
     }
