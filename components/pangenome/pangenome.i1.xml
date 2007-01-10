@@ -16,6 +16,9 @@
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+            </dceSpec>
         </command>
     </commandSet>
 </commandSetRoot>
