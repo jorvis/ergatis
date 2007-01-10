@@ -73,7 +73,7 @@
 	  </param>
 	  <param>
 	      <key>--output</key>
-	      <value>$;OUTPUT_REPOSITORY$;/$;I_BCP_FILE_BASE$;</value>
+	      <value>$;OUTPUT_DIRECTORY$;/$;I_BCP_FILE_BASE$;</value>
 	  </param>
 	  <param>
 	      <key>--compress</key>
