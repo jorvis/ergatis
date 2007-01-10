@@ -125,7 +125,7 @@ if (scalar(@dups_temp) > 1) {
     $dups{join(" ", @dups_temp)} = 1;
 }
 
-store([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
+nstore([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
 exit(0);
 

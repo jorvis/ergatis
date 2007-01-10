@@ -117,7 +117,7 @@ while (<IN>) {
     $temp_ref = undef;
 }
 
-store([\@results, $dups], $options{'output_path'}."/pangenome.blast.stored") || die "couldn't serialize results";
+nstore([\@results, $dups], $options{'output_path'}."/pangenome.blast.stored") || die "couldn't serialize results";
 
 exit(0);
 
