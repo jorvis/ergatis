@@ -12,7 +12,6 @@ print $q->header( -type => 'text/plain' );
 my $repository_root = $q->param('repository_root') || die "need a repository root";
 my $component_name = $q->param('component_name') || die "need a component name";
 my $component_id = $q->param('component_id') || die "need a component id";
-my $output_token = $q->param($component_id . '_OUTPUT_TOKEN');
 my $build_directory = $q->param('build_directory') || die "need a build directory";
 
 ## read the ergatis config file
@@ -25,6 +24,10 @@ my $docs_dir = $shared_cfg->val('project', '$;DOCS_DIR$;') || die "failed to det
 if (! -d $build_directory ) {
     mkdir( $build_directory ) || die "can't create build directory $build_directory: $!";
 }
+
+## make sure the output token doesn't have any leading or trailing whitespace
+$q->param($component_id . '_OUTPUT_TOKEN') =~ /^\s*(.+?)\s*$/;
+my $output_token = $1;
 
 ## load all of these into a hash so they can be replaced.
 my %component_vars;
@@ -55,7 +58,7 @@ while (my $line = <$template_fh>) {
         my ($key, $val) = ($1, $2);
         
         if ( exists $component_vars{$key} ) {
-            print $user_fh "$key = $component_vars{$key}\n";
+            print $user_fh "$key=$component_vars{$key}\n";
             
         } else {
             print $user_fh "$line\n";
