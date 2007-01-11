@@ -389,10 +389,17 @@ while( my $result = $in->next_result ) {
             }
         }
     }
+
+my $algorithm = $options{analysis_id};
+if ( $options{analysis_id} =~ /(.+)_analysis/ ) {
+    $algorithm = $1;
+}
     
 $doc->createAndAddAnalysis(
                             id => $options{analysis_id},
                             sourcename => $options{'output'},
+                            algorithm => $algorithm,
+                            program => $algorithm,
                           );
 
 $doc->write($options{'output'}, '', $options{'gzip_output'});
