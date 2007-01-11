@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>split_multifasta compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>adjust_bsml_coordinates</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/adjust_bsml_coordinates</executable>
+	    <param>  
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--list_file</key>
+                <value>$;BSML_LIST$;</value>
+            </param>
+            <param>  
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--map_dir</key>
+                <value>$;MAP_DIR$;</value>
+            </param>
+            <param>  
+                <key>--removed_log</key>
+                <value>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_removed.log</value>
+            </param>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;GROUP_NUMBER$;/$;I_FILE_NAME$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
