@@ -365,6 +365,12 @@ my $sequencelookup = {};
 my $includeflags = {};
 my $excludeflags = {};
 
+if ($options{format} eq "multi") { 
+    if ($options{output_list}) {
+	print $olist_fh "$options{output}\n";
+    }
+}
+
 for my $file ( @files ) {
     my $sfh;
     
@@ -372,9 +378,6 @@ for my $file ( @files ) {
         open ($multioutputfh, ">$options{output}") || $logger->logdie("Unable to write to file $options{output} due to $!");
         $logger->debug("Writing output to multi-fasta file $options{output}") if ($logger->is_debug);
         
-        if ($options{output_list}) {
-            print $olist_fh "$options{output}\n";
-        }
     }
     
 
