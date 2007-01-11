@@ -60,24 +60,26 @@
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stderr</value></param>
+	      <value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stderr</value>
+      </param>
       </command>
       <command>
-	  <type>RunUnixCommand</type>
-	  <name>load tables</name>
-	  <state>incomplete</state>
-	  <executable>$;BIN_DIR$;/compress_file</executable>
-          <param>
-	      <key>--file</key>
-	      <value>$;I_BCP_FILE$;</value>
-	  </param>
-	  <param>
-	      <key>--output</key>
-	      <value>$;OUTPUT_DIRECTORY$;/$;I_BCP_FILE_BASE$;</value>
-	  </param>
-	  <param>
-	      <key>--compress</key>
-	      <value>$;GZIP_BCP$;</value>
-	  </param>
+	      <type>RunUnixCommand</type>
+	      <name>load tables</name>
+	      <state>incomplete</state>
+	      <executable>$;BIN_DIR$;/compress_file</executable>
+              <param>
+	          <key>--file</key>
+	          <value>$;I_BCP_FILE$;</value>
+	      </param>
+	      <param>
+	          <key>--output</key>
+	          <value>$;OUTPUT_DIRECTORY$;/$;I_BCP_FILE_BASE$;</value>
+	      </param>
+	      <param>
+	          <key>--compress</key>
+	          <value>$;GZIP_BCP$;</value>
+	      </param>
+      </command>
   </commandSet>
 </commandSetRoot>
