@@ -272,7 +272,7 @@ sub import_xml{
 	    if($line !~ />/){
 		$logger->logdie("<INCLUDE> directive must be contained on a single line");
 	    }
-	    my($file) = ($line =~ /file="([\/\w\.\_]+)"/);
+	    my($file) = ($line =~ /file="(.+?)"/);
 	    my($keys) = ($line =~ /keys="(.*)"/);
 	    if($keys !~ /ITERATOR_RANDOM/){
 		$keys .= ',$;ITERATOR_RANDOM$;=0'
