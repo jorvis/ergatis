@@ -27,7 +27,7 @@
 	    <type>RunUnixCommand</type>
             <name>create bsml list</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/generate_input_list</executable>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
 	        <key>--regex</key>
                 <value>".*.bsml"</value>
