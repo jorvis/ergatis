@@ -1,9 +1,5 @@
 #!/usr/local/bin/perl
 
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME
 
 pangenome_blast_parse.pl - Parses BLAST BSML output files and extracts data needed for pangenome analysis.
@@ -55,7 +51,7 @@ B<--help,-h>
 
 use File::Basename;
 use Pod::Usage;
-use Storable;
+use Storable qw(nstore retrieve);
 use XML::Twig;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use strict;

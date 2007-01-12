@@ -1,9 +1,5 @@
 #!/usr/local/bin/perl
 
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME
 
 pangenome_query_list.pl - Prepare a list of polypeptide and assembly sequence IDs from the set of pangenome BSML input files.
@@ -12,7 +8,7 @@ pangenome_query_list.pl - Prepare a list of polypeptide and assembly sequence ID
 
 USAGE: pangenome_query_list.pl
         --input_list=/path/to/somefile.bsml.list
-		--output=/path/to/output.list
+        --output=/path/to/output.list
       [ --log=/path/to/some/log ]
 
 =head1 OPTIONS
@@ -34,9 +30,9 @@ B<--help,-h>
 
 =head1   DESCRIPTION
 
-	This script is used to extract the list of all query polypeptide and assembly sequence ids from a set of 
-	input BSML files that were used in the pangenome analysis pipeline. You can provide a list of BSML
-	documents representing a subset of the complete set of genomes used to perform the blast queries if desired.
+    This script is used to extract the list of all query polypeptide and assembly sequence ids from a set of 
+    input BSML files that were used in the pangenome analysis pipeline. You can provide a list of BSML
+    documents representing a subset of the complete set of genomes used to perform the blast queries if desired.
 
 =head1 INPUT
 
@@ -54,51 +50,51 @@ B<--help,-h>
 =cut
 
 use Pod::Usage;
-use Storable;
+use Storable qw(nstore retrieve);
 use XML::Twig;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use strict;
 
 my %options = ();
-my $results = GetOptions (	\%options,
-                          	'input_list|i:s',
-              				'output_path|o=s',
-              				'debug|d=s',
-              				'command_id=s',       ## passed by workflow
-              				'logconf=s',          ## passed by workflow (not used)
-              				'log|l=s',
-              				'help|h',
-		  				 ) || pod2usage();
+my $results = GetOptions (  \%options,
+                            'input_list|i:s',
+                            'output_path|o=s',
+                            'debug|d=s',
+                            'command_id=s',       ## passed by workflow
+                            'logconf=s',          ## passed by workflow (not used)
+                            'log|l=s',
+                            'help|h',
+                         ) || pod2usage();
 
 $options{'output_path'} =~ s/\/$//;
 
 unless(-d $options{'output_path'}) {
-	die "must provide output directory as argument";
+    die "must provide output directory as argument";
 }
 
 if ($options{'input_list'} eq '') {
-	## when no input list is provided, we will not filter the results
-	exit();
+    ## when no input list is provided, we will not filter the results
+    exit();
 }
 
 my %sequence_hash = ();
 
 my $twig = XML::Twig->new(
-							twig_roots  => { 
-											'Sequence' => \&processSequence
-										   }
+                            twig_roots  => { 
+                                            'Sequence' => \&processSequence
+                                           }
                          );
-						 
+                         
 open (LIST, $options{'input_list'}) || die "couldn't open input list for reading";
 
 while (<LIST>) {
-	chomp;
-	print STDERR "File: $_\n";
-	if (-e $_) {
-		$twig->parsefile($_);
-	} else {
-		die "specified input file does not exist";
-	}
+    chomp;
+    print STDERR "File: $_\n";
+    if (-e $_) {
+        $twig->parsefile($_);
+    } else {
+        die "specified input file does not exist";
+    }
 }
 
 store(\%sequence_hash, $options{'output_path'}."/pangenome.filter.stored");
@@ -110,16 +106,16 @@ sub processSequence {
     
     my $class = $feat->{'att'}->{'class'};
     my $id = $feat->{'att'}->{'id'};
-	if ($class eq 'polypeptide') {
-		my @seqdataimport = $feat->children('Seq-data-import');
-		my @link = $feat->children('Link');
-		if ($link[0]->{'att'}->{'rel'} ne 'analysis') {
-			my $seq_id = $seqdataimport[0]->{'att'}->{'identifier'};
-			$seq_id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse seq-data-import id for '$id'\n";
-			$sequence_hash{$1}{$2} = 1;
-		}
-	} elsif ($class eq 'assembly') {
-		$id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse db and seq id from '$id'\n";
-		$sequence_hash{$1}{$2} = 1;
-	}
+    if ($class eq 'polypeptide') {
+        my @seqdataimport = $feat->children('Seq-data-import');
+        my @link = $feat->children('Link');
+        if ($link[0]->{'att'}->{'rel'} ne 'analysis') {
+            my $seq_id = $seqdataimport[0]->{'att'}->{'identifier'};
+            $seq_id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse seq-data-import id for '$id'\n";
+            $sequence_hash{$1}{$2} = 1;
+        }
+    } elsif ($class eq 'assembly') {
+        $id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse db and seq id from '$id'\n";
+        $sequence_hash{$1}{$2} = 1;
+    }
 }
