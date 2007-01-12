@@ -38,7 +38,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;GROUP_NUMBER$;/$;I_FILE_NAME$;</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;</arg>
         </command>
     </commandSet>
 </commandSetRoot>
