@@ -2,7 +2,7 @@
   <commandSet type="serial">
     <name>collate bcp files</name>
       <command>
-	<type>RunUnixCommand</type>
+	<type>RunDistributedCommand</type>
 	<name>collate and remove dups</name>
 	<state>incomplete</state>
 	<executable>$;BIN_DIR$;/cat_files</executable>
