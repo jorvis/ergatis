@@ -6,6 +6,8 @@ use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
 use Ergatis::ConfigFile;
 
+umask(0000);
+
 my $q = new CGI;
 print $q->header( -type => 'text/plain' );
 
