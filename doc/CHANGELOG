@@ -354,3 +354,4 @@ next
 -added wu-blast_btab2legacy.pl
 -added ergatis 2.0 wu-tblastn component
 -added ergatis 2.0 pangenome component
+-fix to wu-blast2bsml.pl to correct percent_coverage_refseq/compseq addition to Seq-pair-runs bug
