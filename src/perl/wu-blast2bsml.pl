@@ -71,6 +71,7 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 }
+
 my $defline;
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -523,13 +524,13 @@ sub createAndAddBlastResultLine {
         ## add hsp percent coverage stats
         $seq_run->addBsmlAttr( 
             'percent_coverage_refseq', 
-            sprintf("%.1f", $args{'runlength'} / $args{'query_length'})
-                             ) if (defined ($args{'runlength'}) && defined($args{'query_length'}));
+            sprintf("%.1f", $seq_run->{'attr'}->{'runlength'} / $args{'query_length'} * 100)
+                             ) if (defined ($seq_run->{'attr'}->{'runlength'}) && defined($args{'query_length'}));
                              
         $seq_run->addBsmlAttr(
             'percent_coverage_compseq', 
-            sprintf("%.1f", $args{'comprunlength'} / $args{'hit_length'})
-                             ) if (defined ($args{'comprunlength'}) && defined($args{'hit_length'}));
+            sprintf("%.1f", $seq_run->{'attr'}->{'comprunlength'} / $args{'hit_length'} * 100)
+                             ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'hit_length'}));
         ## ^^
         
         $seq_run->addBsmlAttr(
@@ -729,13 +730,13 @@ sub createAndAddBlastResultLine {
     ## add hsp percent coverage stats
     $seq_run->addBsmlAttr( 
         'percent_coverage_refseq', 
-        sprintf("%.1f", $args{'runlength'} / $args{'query_length'})
-                         ) if (defined ($args{'runlength'}) && defined($args{'query_length'}));
+        sprintf("%.1f", $seq_run->{'attr'}->{'runlength'} / $args{'query_length'} * 100)
+                         ) if (defined ($seq_run->{'attr'}->{'runlength'}) && defined($args{'query_length'}));
                              
     $seq_run->addBsmlAttr(
         'percent_coverage_compseq', 
-        sprintf("%.1f", $args{'comprunlength'} / $args{'hit_length'})
-                         ) if (defined ($args{'comprunlength'}) && defined($args{'hit_length'}));
+        sprintf("%.1f", $seq_run->{'attr'}->{'comprunlength'} / $args{'hit_length'} * 100)
+                         ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'hit_length'}));
     ## ^^
         
     $seq_run->addBsmlAttr(
