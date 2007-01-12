@@ -65,7 +65,7 @@
       </command>
       <command>
 	      <type>RunUnixCommand</type>
-	      <name>load tables</name>
+	      <name>compress bcp file</name>
 	      <state>incomplete</state>
 	      <executable>$;BIN_DIR$;/compress_file</executable>
               <param>
