@@ -124,8 +124,8 @@
 	<!--Iterator-->
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/collatetables.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=1"/> 
 	<command>
-	    <type>RunUnixCommand</type>
-	    <name>extract_checksums</name>
+	    <type>RunDistributedCommand</type>
+	    <name>extract checksums</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/extract_checksums</executable>
 	    <param>
@@ -148,9 +148,12 @@
 		<key>stderr</key>
 		<value>$;WORKFLOW_REPOSITORY$;/extract_checksums.stderr</value>
 	    </param>
+        <dceSpec type="sge">
+            <os>linux</os>
+        </dceSpec>
 	</command>
 	<command>
-	    <type>RunUnixCommand</type>
+	    <type>RunDistributedCommand</type>
 	    <name>sort checksums</name>
 	    <state>incomplete</state>
 	    <executable>sort</executable>
@@ -163,9 +166,12 @@
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/checksums.out.sorted</value>
 	    </param>
+        <dceSpec type="sge">
+            <os>linux</os>
+        </dceSpec>
 	</command>
 	<command>
-	    <type>RunUnixCommand</type>
+	    <type>RunDistributedCommand</type>
 	    <name>assign primary keys</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/assign_pks</executable>
@@ -197,9 +203,12 @@
 		<key>--output_file</key>
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
 	    </param>
+        <dceSpec type="sge">
+            <os>linux</os>
+        </dceSpec>
 	</command> 
 	<command>
-	    <type>RunUnixCommand</type>
+	    <type>RunDistributedCommand</type>
 	    <name>sort checksums by file offset</name>
 	    <state>incomplete</state>
 	    <executable>sort</executable>
@@ -212,6 +221,9 @@
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
 	    </param>
+        <dceSpec type="sge">
+            <os>linux</os>
+        </dceSpec>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
@@ -221,7 +233,7 @@
 	    <arg>-p -m 777 $;TMP_DIR$;/final</arg>
 	</command>
         <command>
-	    <type>RunUnixCommand</type>
+	    <type>RunDistributedCommand</type>
 	    <name>replace checksums</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/replace_checksums</executable>
@@ -249,6 +261,9 @@
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/replace_checksums.stderr</value>
 	    </param>
+        <dceSpec type="sge">
+            <os>linux</os>
+        </dceSpec>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
