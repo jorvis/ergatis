@@ -195,6 +195,11 @@ div.subflowgroupbar {
     float: left;
     clear: left;
 }
+div#display_filters {
+    clear: left;
+    padding-left: 450px;
+    font-size: 80%;
+}
 div.leftside {
     float: left;
 }
@@ -247,6 +252,18 @@ table.cmd_stats {
 table.cmd_stats th {
     text-align: left;
 }
-
+ul#state_counts {
+    float: left;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+ul#state_counts li {
+    float: left;
+    margin-left: 10px;
+}
+ul#state_counts li span {
+    text-decoration: underline;
+}
 /* component overview section end *
 *********************************/

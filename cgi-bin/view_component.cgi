@@ -50,6 +50,7 @@ my $project = '?';
 my $repository_root = '';
 my $pipeline_id = '';
 my $output_token = '';
+my %states;
 
 if ( $pipeline_xml =~ m|(.+/(.+?))/workflow/runtime/(.+?)/(\d+)_(.+?)/| ) {
     $repository_root = $1;
@@ -87,6 +88,7 @@ foreach my $child ( $parent_commandset->children() ) {
         
         my %parts = &process_command($twig, $child);
         push @{$elements}, \%parts;
+        push @{$states{ $parts{state} }}, $parts{id};
     
     ## if it is a commandSet, it should be a file-based subflow
     } elsif ($child->gi eq 'commandSet') {
@@ -104,6 +106,21 @@ foreach my $child ( $parent_commandset->children() ) {
     }
 }
 
+## reformat the states into data structure for HTML::Template
+my $state_counts;
+my $state_ids;
+for my $state ( keys %states ) {
+    push @{$state_counts}, { name => $state, 
+                             count => scalar @{$states{$state}},
+                           };
+                           
+    for my $id ( @{$states{$state}} ) {
+        push @{$state_ids}, { name => $state,
+                              id => $id
+                            };
+    }
+}
+
 $tmpl->param( PIPELINE_FILE       => $pipeline_xml );
 $tmpl->param( START_TIME          => $starttime );
 $tmpl->param( END_TIME            => $endtime );
@@ -114,6 +131,8 @@ $tmpl->param( RUNTIME             => $runtime );
 $tmpl->param( PROJECT             => $project );
 $tmpl->param( QUOTA_STRING        => $quotastring );
 $tmpl->param( PIPELINE_ID         => $pipeline_id );
+$tmpl->param( STATE_COUNTS        => $state_counts );
+$tmpl->param( STATE_IDS           => $state_ids );
 
 $tmpl->param( ELEMENTS            => $elements );
 
@@ -196,6 +215,7 @@ sub process_subflowgroup {
     ## get the state, if it has one
     if ( $commandSet->first_child('state') ) {
         $sg_props{state} = $commandSet->first_child('state')->text();
+        push @{$states{ $sg_props{state} }}, $sg_props{name};
     }
     
     ## grab data from the dceSpec if it has one

@@ -12,7 +12,15 @@
     <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/monitor.css">
     <!-- functionality -->
+    <script type="text/javascript" src="/ergatis/javascript/common.js"></script>
     <script type="text/javascript" src="/ergatis/javascript/view_component.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/StateCollection.js"></script>
+    <script type='text/javascript'>
+        elementsByState = new StateCollection();
+        <TMPL_LOOP NAME=STATE_IDS>
+        elementsByState['<TMPL_VAR NAME=NAME>'].push( '<TMPL_VAR NAME=ID>' );
+        </TMPL_LOOP>
+    </script>
 </head>
 
 <body class='pipelines'>
@@ -23,6 +31,17 @@
 
     <div id='info_container'>
 <TMPL_INCLUDE NAME="pipeline_summary.tmpl">
+    </div>
+    <div id='display_filters'>
+        display filters:
+        <ul id='state_counts'>
+            <TMPL_LOOP NAME=STATE_COUNTS>
+            <li id='<TMPL_VAR NAME=NAME>_state_count'>
+                <span class='<TMPL_VAR NAME=NAME>' onclick='show_state("<TMPL_VAR NAME=NAME>", elementsByState)'><TMPL_VAR NAME=NAME></span> (<TMPL_VAR NAME=COUNT>)
+            </li>
+            </TMPL_LOOP>
+            <li> - <span onclick='show_state("all", elementsByState)'>show all</span></li>
+        </ul>
     </div>
 
     <div id='content_container'>
@@ -36,7 +55,9 @@
             <TMPL_INCLUDE NAME="command_list_element.tmpl">
         <TMPL_ELSE>
             <div class='subflow'>
-                <h1 class='subflow_label'><TMPL_VAR NAME=SUBFLOW_LABEL></h1>
+                <h1 class='subflow_label'>
+                    <TMPL_VAR NAME=SUBFLOW_LABEL>
+                </h1>
                 <TMPL_LOOP NAME=SG_PROPS>
                     <TMPL_INCLUDE NAME="commandset_list_element.tmpl">
                 </TMPL_LOOP>

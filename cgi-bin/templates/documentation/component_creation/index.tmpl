@@ -22,7 +22,8 @@
         <p>
             This will be true for almost everything, but anything you try to execute must resolve to
             a file someplace on the file system.  This really only means that you can't execute built-in
-            shell commands such as ls, cd, pwd as steps in an ergatis component.
+            shell commands such as ls, cd, pwd as steps in an ergatis component.  Full paths should 
+            always be used.
         </p>
     </dd>
     <dt>return value</dt>
@@ -38,7 +39,7 @@
             of it, you need to check and make sure that any error checking you perform in your script
             should exit like exit(1).  Many people commonly simply print to STDERR followed by an
             exit() call, which returns 0 by default.  Ergatis would then assume that command was 
-            successful and the next step in the pipeline would be executed.
+            successful and the next step in the pipeline would be executed.  This would be Very Bad.
         </p>
     </dd>
     <dt>no process forking</dt>
@@ -56,3 +57,4 @@
         </p>
     </dd>
 </dl>
+

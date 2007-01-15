@@ -1,4 +1,4 @@
-<div class='command'>
+<div class='command' id='<TMPL_VAR NAME=ID>_bar'>
     <div class='leftside'>
         <img class='status' src='/ergatis/images/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
         <TMPL_VAR NAME=NAME>
@@ -8,7 +8,7 @@
         <span class='infolabel' id='<TMPL_VAR NAME=ID>_infolabel' onclick='toggle_cmd_info("<TMPL_VAR NAME=ID>")'>show info</span>
     </div>
 </div>
-<div class='cmdinfo' id='<TMPL_VAR NAME=ID>'>
+<div class='cmdinfo' id='<TMPL_VAR NAME=ID>_info'>
     <table class='cmd_stats'>
         <tr>
             <th>workflow id:</th><td><TMPL_VAR NAME=ID></td>
@@ -48,3 +48,4 @@
     message: <TMPL_VAR NAME=MESSAGE>
 </div>
 </TMPL_IF>
+

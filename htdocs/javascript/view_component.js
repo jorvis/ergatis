@@ -1,3 +1,18 @@
+function show_state( state2display, collection ) {
+    // first display them all in case they were already filtered
+
+    for ( state in collection ) {
+
+        for ( var i=0; i < collection[state].length; i++ ) {
+            if ( state == state2display || state2display == 'all') {
+                getObject( collection[state][i] + '_bar').style.display = '';
+            } else {
+                getObject( collection[state][i] + '_bar').style.display = 'none';
+            }
+        }
+    }
+}
+
 function toggle_subflowgroup_display(subflowname, subflowfile) {
     subflownamedata = get_object(subflowname + "_data");
 
@@ -108,7 +123,7 @@ function toggle_group_info(subflowname) {
 }
 
 function toggle_cmd_info(cmd_id) {
-    cmdinfoblock = get_object(cmd_id);
+    cmdinfoblock = get_object(cmd_id + '_info');
 
     // if the command info block is visible, hide it
     if ( cmdinfoblock.style.display == 'block' ) {
