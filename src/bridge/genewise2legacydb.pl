@@ -92,7 +92,7 @@ my @asmbl_ids;
 
 ## did the user specify a list of assembly ids, or just a single one?
 if ( $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' ) ) {
-    my $asmbl_list_file = $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;ASMBL_FILE_LIST$;' )  || die "couldn't find ASMBL_FILE_LIST in config file";
+    my $asmbl_list_file = $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;ASMBL_LIST_FILE$;' )  || die "couldn't find ASMBL_LIST_FILE in config file";
     
     print $logfh "processing asmbl list file $asmbl_list_file\n" if $logfh;
     
