@@ -66,10 +66,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use File::Basename;
-
-BEGIN {
 use Ergatis::Logger;
-}
 use XML::Twig;
 use Config::IniFiles;
 
@@ -254,6 +251,14 @@ sub process_research {
             $analysis->set_att('id', $options{'analysis_id'});
         }
     }
+
+    ## make sure the sourcename is only the path to the output directory, not the output file itself.
+    for my $attribute ( $analysis->children('Attribute') ) {
+        if ( $attribute->att('name') eq 'sourcename' ) {
+            $attribute->set_att('content',dirname(dirname($attribute->att('content'))));
+            last;
+        }
+    }
     
     ## add the Attributes to the Analysis element
     &add_config_params($analysis);
@@ -262,11 +267,6 @@ sub process_research {
 		## add software version attributes to the Analysis element
 		add_software_versions($analysis);
 	}
-
-    my $sourcename = $analysis->first_child('Attribute',"*[\@name=\"sourcename\"]");
-    if($sourcename){
-	$sourcename->set_att('content',dirname(dirname($sourcename->att('content'))));
-    }
     
     ## add the analysis element to the Analyses element
     $analysis->paste('last_child', $analyses) if ($analysis_not_found);
