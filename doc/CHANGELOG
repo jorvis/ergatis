@@ -355,3 +355,4 @@ next
 -added ergatis 2.0 wu-tblastn component
 -added ergatis 2.0 pangenome component
 -fix to wu-blast2bsml.pl to correct percent_coverage_refseq/compseq addition to Seq-pair-runs bug
+-added soft masking option to mask_by_analysis
