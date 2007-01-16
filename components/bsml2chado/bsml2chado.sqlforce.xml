@@ -35,6 +35,10 @@
 		<value>1</value>
 	    </param>
 	    <param>
+		<key>--exec</key>
+		<value>$;REFRESH_INDEXES$;</value>
+	    </param>
+	    <param>
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_SQLNUM$;.stdout</value>
 	    </param>
