@@ -358,3 +358,4 @@ next
 -added soft masking option to mask_by_analysis
 -bsml2fasta.pl will now not extend beyond the start site unless the topology of the molecule is circular.
 -train_for_glimmer3_iteration.pl has been checked in.  This component links multiple iterations of glimmer3.
+-promote_gene_prediction component: Project paramter now configurable through the ergatis interface.
