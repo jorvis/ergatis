@@ -347,7 +347,7 @@ next
 -updated genewise2legacydb script for changes in ergatis v2 genewise.*.config format
 -added ergatis 2.0 compliant signalp component
 -fixed move_genewise_results and genewise2legacydb to accept both v1 and v2 config files.
--made split_fasta into a version 2 component and changed the install script.
+-made split_fasta into a version 2 component and changed the install script. 
 -added sequence stub creation to MSF2Bsml
 -updated clustalw component xml to support populating Seq-data-import in bsml sequence stubs
 -modified wu-blast2bsml.pl to write average percent_identity and percent_similarity for Seq-pair-alignments, and relocated percent_coverage_refseq/compseq Attributes to Seq-pair-alignment
@@ -356,3 +356,5 @@ next
 -added ergatis 2.0 pangenome component
 -fix to wu-blast2bsml.pl to correct percent_coverage_refseq/compseq addition to Seq-pair-runs bug
 -added soft masking option to mask_by_analysis
+-bsml2fasta.pl will now not extend beyond the start site unless the topology of the molecule is circular.
+-train_for_glimmer3_iteration.pl has been checked in.  This component links multiple iterations of glimmer3.
