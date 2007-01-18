@@ -47,7 +47,7 @@
             </param>
             <param>  
                 <key>--class</key>
-                <value>protein</value>
+                <value>dna</value>
             </param>
             <param>  
                 <key>--analysis_id</key>
