@@ -1,8 +1,5 @@
 #!/usr/local/bin/perl
 
-#promote_gene_prediction --input_bsml gms.contig.1.mask_by_analysis.glimmer3.bsml --polypeptide_fasta translate_sequence.fsa.list --cds_fasta gms.contig.1.CDS.fsa --output_bsml whatever --id_repository id_repository/ --project prok
-
-
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -33,11 +30,13 @@ B<--input_bsml,-i>
 
 B<--cds_fasta,-c>
     [REQUIRED] The CDS multifasta file or list of individual fasta files which contain sequence information
-    pertaining to the gene predictions found in the input_bsml file.
+    pertaining to the gene predictions found in the input_bsml file.  Will also take a comma separated list 
+    of multi-fasta or list files.
 
 B<--polypeptide_fasta,-p>
     [REQUIRED] The polypeptide multifasta file or list of individual fasta files which contain sequence
-    information for the predicted polypeptides in input_bsml.
+    information for the predicted polypeptides in input_bsml. Will also take a comma separated list 
+    of multi-fasta or list files.
 
 B<--output_bsml,-o>
     [REQUIRED] The output bsml file.
@@ -99,6 +98,8 @@ use Ergatis::Logger;
 use Ergatis::IdGenerator;
 use XML::Twig;
 use File::Copy;
+use File::Find;
+use Data::Dumper;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -129,8 +130,7 @@ use constant CDS  => 1;
 use constant MAP => { 'CDS' => 1, 'polypeptide' => 0 };
 my $input_bsml;
 my ($output_bsml_fh, $output_bsml_file);
-my @fasta_formats = ('list', 'list');
-my @seqDataImports;
+my %seqDataImportMap;
 my @fastaInputs;
 my $idMaker;
 my $project;
@@ -152,8 +152,6 @@ my $twig = new XML::Twig( 'twig_roots' =>
                             },
                           'twig_print_outside_roots' => $output_bsml_fh,
                           'pretty_print' => 'indented' );
-
-
 $twig->parsefile($input_bsml);
 
 close($output_bsml_fh);
@@ -167,15 +165,17 @@ sub gatherAndAdd {
     my ($twig, $sequence) = @_;
     my %old2newId;
 
-    my $featTable = $sequence->first_child('Feature-tables')->first_child( 'Feature-table' );
-    $logger->logdie("Couldn't parse out feature table") unless($featTable);
-    my @featElems = $featTable->children('Feature');
+	my $fTables = $sequence->first_child('Feature-tables');
+	my $featTable;
+	$featTable = $fTables->first_child('Feature-table') if($fTables);
 
-    $logger->logdie("There were no feature elements in sequence ".$sequence->att('id')."\n") unless(@featElems > 1);
+    my @featElems;
+	@featElems = $featTable->children('Feature') if($featTable);
 
     #Cycle through the feature elements and remove the link elements.
     #Also, if the feature is of class CDS or polypeptide, add it as a sequence element.
     foreach my $featElem (@featElems) {
+
 
         #Remove the link element (which links this feature to the analysis which we are deleting)
         my $link = $featElem->first_child('Link');
@@ -184,7 +184,8 @@ sub gatherAndAdd {
 
         #Create a new id for the feature
         my $newFeatId = $idMaker->next_id( 'type' => $featElem->att('class'), 'project' => $project );
-        $old2newId{$featElem->att('id')} = $newFeatId;
+        my $oldId = $featElem->att('id');
+        $old2newId{$oldId} = $newFeatId;
         $featElem->set_att( 'id', $newFeatId );
 
         #If the sequence is not in the mapping constant (the classes of features to turn into 
@@ -203,13 +204,14 @@ sub gatherAndAdd {
         $newSeq->paste( 'before', $sequence );
 
         #Create the Seq-data-import element and retrieve its source from getSeqDataImport.
-        my $source = &getSeqDataImportFile( MAP->{$featElem->att('class')}, $featElem->att('id') );
+        my $source = $seqDataImportMap{ $oldId };
+        $logger->logdie("Could not find the fasta file that contains sequence for ".$featElem->att('id')) 
+            unless($source);
         my $seqDataImport = 
             new XML::Twig::Elt( 'Seq-data-import', 
                                 { 
-                                    'source' => &getSeqDataImportFile( MAP->{$featElem->att('class')}, 
-                                                                       $featElem->att('id')  ),
-                                    'identifier' => $featElem->att('id'),
+                                    'source' => $source,
+                                    'identifier' => $oldId,
                                     'format' => 'fasta',
                                     'id' => 'Bsml_SDI'.$sdiId } );
         $seqDataImport->paste( $newSeq );
@@ -233,8 +235,10 @@ sub gatherAndAdd {
 
     #This section replaces all the ids in the feature group and feature group members which reference the 
     #Feature elements (whose ids just changed).
-    my @featGroups = $sequence->first_child('Feature-tables')->children('Feature-group');
-    $logger->logdie('There were no feature groups found') unless(@featGroups);
+	my $featTables;
+    $featTables = $sequence->first_child('Feature-tables');
+	my @featGroups;
+	@featGroups = $featTables->children('Feature-group') if($featTables); 
 
     #In each feature group are feature group members.  The old fgm (feature-group-member) ids are the keys
     #to look up the new ids in %old2newId.
@@ -257,45 +261,66 @@ sub gatherAndAdd {
     
 }
 
-#A function that finds the fasta file related to a sequence.  
-#If the id is init, will determine if we have a list or a multifasta
-#file for the cds_fasta or polypeptide_fasta.
-sub getSeqDataImportFile {
-    my ($class, $id) = @_;
-    my $retval = 1;
+#Takes an input file, list, or directory.  Finds fasta files, then finds deflines.  Parses identifiers
+#out of defline and maps these back to the originating file.  Ex.
+#
+#   file.fsa                                Data Structure:
+#   >prok.polypeptide.1                     $seqDataImportMap{'prok.polypeptide.1'} = 'file.fsa';
+#   SEQUENCESEQUENCESEQUENCE...
+sub setSeqDataImport {
+    my $input = shift;
+    my $format = 3;  #0 = fsa, 1 = list, 2 = dir;
 
-    #Parse out file names if it's a list
-    if( $id eq 'init' && $fasta_formats[$class] eq 'list' ) {
-        open(IN, "< $options{cds_fasta}") or 
-            $logger->logdie("Unable to open $options{cds_fasta} ($!)");
+    $format = 2 if(-d $input);
+
+    #Is $file a list or fasta file?
+    open(IN, "<$input") or $logger->logdie("Unable to open $input ($!)");
+    my $format = ((my $tmp = <IN>) =~ /^>/) ? 1 : 0;
+    seek(IN, 0, 0);
+
+    if($format == 1) {
         while(<IN>) {
-            push(@{$seqDataImports[$class]}, $_);
-        }
-        close(IN);
-
-    } elsif( $id eq 'init' ) {
-        $seqDataImports[$class] = $fastaInputs[$class];
-
-    } else {
+            next unless(/^>(\S*)/);
+            $seqDataImportMap{$1} = $input;
+        } 
         
-        #If we aren't init'ing.
-        if( $fasta_formats[$class] eq 'list' ) {
-
-            foreach my $file ( @{$seqDataImports[$class]} ) {
-                if($file =~ /($id)/) {
-                    $retval = $file;
-                    last;
-                }
+    } elsif($format == 0) {
+        while(my $fsaFile = <IN>) {
+            chomp $fsaFile;
+            open(FSA, "< $fsaFile") or $logger->logdie("Unable to open $fsaFile ($!)");
+            while(my $line = <FSA>) {
+                chomp $line;
+                next unless($line =~ /^>(\S*)/);
+                $seqDataImportMap{$1} = $fsaFile;
             }
 
-        } else {
-            $retval = $seqDataImports[$class];
+            close(FSA);
         }
-
+    } elsif($format == 2) {
+        
+        #If we were given a directory
+        find( \&wanted, $input );
+            
+    } else {
+        $logger->logdie("Could not determine the format of input $input");
     }
 
-    return $retval;
-        
+    close(IN);
+}
+
+sub wanted {
+    return unless($File::Find::name =~ /.*fsa/);
+    my $fsaFile = $File::Find::name;
+    
+    open(IN, "<$fsaFile") or $logger->logdie("Unable to open $fsaFile ($!)");
+    
+    while(my $line = <IN>) {
+        next unless($line =~ /^>(\S*)/);
+        $seqDataImportMap{$1} = $File::Find::name;
+    }
+
+    close(IN);
+    
 }
 
 #Check Parameters and set variables.  Set up the state of the program.
@@ -313,25 +338,20 @@ sub check_parameters {
 
     #Make sure the cds_fasta was included
     if($opt->{'cds_fasta'}) {
-        $errStr .= "Option cds_fasta ($opt->{cds_fasta}) does not exist\n" unless( -e $opt->{'cds_fasta'} );
-        $fastaInputs[CDS] = $opt->{'cds_fasta'};
-        open(IN, "< $fastaInputs[CDS]") or $logger->logdie("Could not open $fastaInputs[CDS] ($!)");
-        $fasta_formats[CDS] = 'multi' if((my $tmp = <IN>) =~ /^>/);
-        &getSeqDataImportFile( CDS, 'init' );       
-        close(IN);
+        my @inputs = split(/,/, $opt->{'cds_fasta'});
+        foreach my $input ( @inputs ) {
+            &setSeqDataImport( $input );
+        }
     } else {
         $errStr .= "Option cds_fasta is required\n";
     }
 
     #Make sure the polypeptide_fasta was included
     if($opt->{'polypeptide_fasta'}) {
-        $errStr .= "Option polypeptide_fasta ($opt->{polypeptide_fasta}) does not exist\n" 
-            unless( -e $opt->{'polypeptide_fasta'} );
-        $fastaInputs[POLY] = $opt->{'polypeptide_fasta'};
-        open(IN, "< ".$fastaInputs[POLY]) or $logger->logdie("Could not open ".$fastaInputs[POLY]." ($!)");
-        $fasta_formats[POLY] = 'multi' if((my $tmp = <IN>) =~ /^>/);
-        &getSeqDataImportFile( POLY, 'init' );
-        close(IN);
+        my @inputs = split(/,/, $opt->{'polypeptide_fasta'});
+        foreach my $input ( @inputs ) {
+            &setSeqDataImport( $input );
+        }
     } else {
         $errStr .= "Option polypeptide_fasta is required\n";
     }
