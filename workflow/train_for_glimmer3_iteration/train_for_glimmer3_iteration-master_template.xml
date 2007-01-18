@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+      <name>train_for_glimmer3_iteration workflow</name>
+      <configMapId>empty</configMapId>
+<!--Set up output and scratch areas-->
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create scratch space</name>
+         <configMapId>create_compute_scratch</configMapId>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>Create output repository</name>
+          <configMapId>create_compute_output</configMapId>
+        </command>
+<!--Processing-->
+	<command>
+          <type>RunUnixCommand</type>
+          <name>train for glimmer3 iteration</name>
+          <configMapId>train_for_glimmer3_iteration</configMapId>
+        </command>
+<!--Checksum creation-->
+     </commandSet>
+</commandSetRoot>
