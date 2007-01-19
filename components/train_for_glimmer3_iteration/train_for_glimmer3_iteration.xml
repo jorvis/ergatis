@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>wu-blastp workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>train for glimmer3 iteration</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/train_for_glimmer3_iteration</executable>
+            <param>
+	    	<key>--input_predict_list</key>
+		<value>$;INPUT_PREDICT_LIST$;</value>
+	    </param>
+	    <param>
+	    	<key>--input_fasta_list</key>
+		<value>$;INPUT_FASTA_LIST$;</value>
+	    </param>
+	    <param>
+	    	<key>--output_pwm</key>
+		<value>$;OUTPUT_PWM$;</value>
+	    </param>
+	    <param>
+	    	<key>--tmp_dir</key>
+		<value>$;TMP_DIR$;</value>
+	    </param>
+	    <param>
+	    	<key>--conf_ini_file</key>
+		<value>$;REPOSITORY_ROOT$;/workflow/glimmer3/$;PIPELINEID$;_$;GLIMMER_OUTPUT_TOKEN$;/$;COMPONENT_NAME$;_$;OUTPUT_TOKEN$;.user.config</value>
+	    </param>	   
+        </command>
+    </commandSet>
+</commandSetRoot>
