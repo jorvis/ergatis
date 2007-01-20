@@ -15,11 +15,11 @@
 	    <executable>$;BIN_DIR$;/obov1p2tochado</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;USERNAME$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
 		<key>--database</key>
@@ -51,7 +51,7 @@
 	    </param>
 	    <param>
 		<key>--cache_dir</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
@@ -70,11 +70,11 @@
 	    <executable>$;BIN_DIR$;/flatFileToChado</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;USERNAME$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
 		<key>--database</key>
@@ -135,11 +135,11 @@
 	    <executable>$;BIN_DIR$;/obov1p2tochado</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;USERNAME$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
 		<key>--database</key>
@@ -171,7 +171,7 @@
 	    </param>
 	    <param>
 		<key>--cache_dir</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
@@ -190,11 +190,11 @@
 	    <executable>$;BIN_DIR$;/flatFileToChado</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;USERNAME$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
 		<key>--database</key>
