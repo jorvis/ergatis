@@ -10,6 +10,24 @@
 // are we dealing with an unruly browser that needs hand-holding?
 var IE = (navigator.appName == "Microsoft Internet Explorer") ? true : false;
 
+/*
+    clearInput simply clears the value of an input element inputId if, optionally, its 
+    current value is clearVal.  this  allows you to have text boxes with initial values like
+    'enter text here', which you can pass to this function to clear upon first entry.
+    
+    sets the element's value to empty string.
+    
+    - jorvis
+*/
+function clearInput( inputId, clearVal ) {
+    if ( isEmpty(clearVal) ) {
+        getObject(inputId).value = '';
+        
+    } else if ( getObject(inputId).value == clearVal ) {
+        getObject(inputId).value = '';
+    }
+}
+
 
 /*
     getElementsByClassName written by Jonathan Snook, http://www.snook.ca/jonathan
