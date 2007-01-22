@@ -141,10 +141,6 @@ while (<$ifh>) {
         $qry_id = $1;
     }
     
-    ## make sure both of these are valid IDs
-    $qry_id =~ s/[^a-zA-Z0-9\.\-\_]/_/g;
-    $sbj_id =~ s/[^a-zA-Z0-9\.\-\_]/_/g;
-    
     ## has this query sequence been added to the doc yet?
     if (! exists $seqs_found{$qry_id}) {
         my $seq = $doc->createAndAddSequence($qry_id, $cols[0], undef, 'na', 'nucleic_acid');
