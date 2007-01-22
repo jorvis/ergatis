@@ -13,7 +13,7 @@ var builder_animations = true;
 
 var pipeline_root_node;
 var pipeline_root_panel_node;
-    
+
 window.onload = function() {
     // make sure the form is reset here.
     document.pipeline.reset();
@@ -255,6 +255,7 @@ function cancelNewInput() {
 
 function checkAndRunPipeline() {
     if ( checkPipeline() ) {
+        getObject('instantiate').value = 1;
         document.pipeline.submit();
     } else {
         // TODO: redirect the user to a div containing the error messages
@@ -366,6 +367,26 @@ function printNodes() {
     }
 }
 
+function saveBuildProgress(  ) {
+    // display 'saving' label
+    getObject('save_progress_label').innerHTML = 'saving pipeline build progress';
+    getObject('save_progress_label').style.display = 'block';
+
+    // save every component
+    for (cid in components) {
+        if ( components[cid].id ) {
+            components[cid].saveToDisk();        
+        }
+    }
+    
+    // save pipeline layout
+    savePipelineLayout();
+    
+    // display 'pipeline build progress saved' label
+    getObject('save_progress_label').innerHTML = 'pipeline build progress saved';
+    window.setTimeout( "getObject('save_progress_label').style.display = 'none'", 3000);
+}
+
 function saveComponentConfig( component_id ) {
 
     // make sure no other components of the same name in this pipeline have the same output token
@@ -447,11 +468,14 @@ function saveComponentConfig( component_id ) {
     // shrink it
     toggleConfigVisibility( component_id );
 
+    // jump to the top of the page
+    window.scrollTo(0,0);
+
     // change the UI for this component so it's not editable.
     makeComponentUneditable( component_id );
     
-    // now save the component conf
-    components[component_id].saveToDisk();
+    // save the current pipeline build
+    saveBuildProgress();
 }
 
 
@@ -493,6 +517,54 @@ function saveNewInput() {
     new_input.addTo('input_list');
     updateInputLists();
     clearNewInput();
+}
+
+function _save_pipeline_layout_handler( ajax_resp_text ) {
+    // error handling code needs to go here
+}
+
+function savePipelineLayout() {
+
+    function ajaxBindCallback() {
+        // progressive transitions are from 0 .. 4
+        if (ajaxRequest.readyState == 4) {
+            // 200 is the successful response code
+            if (ajaxRequest.status == 200) {
+                ajaxCallback ( ajaxRequest.responseText );
+            } else {
+                // error handling here
+                alert("there was a problem saving the pipeline layout");
+            }
+        }
+    }
+
+    var ajaxRequest = null;
+    var ajaxCallback = _save_pipeline_layout_handler;
+    var url = './run_pipeline.cgi';
+    var form_string = formData2QueryString( document.forms['pipeline'] );
+
+    // bind the call back, then do the request
+    if (window.XMLHttpRequest) {
+        // mozilla, firefox, etc will get here
+        ajaxRequest = new XMLHttpRequest();
+        ajaxRequest.onreadystatechange = ajaxBindCallback;
+        ajaxRequest.open("POST", url , true);
+        ajaxRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        ajaxRequest.setRequestHeader("Connection", "close");
+        ajaxRequest.send( form_string );
+        
+    } else if (window.ActiveXObject) {
+        // IE, of course, has its own way
+        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+
+        if (ajaxRequest) {
+            ajaxRequest.onreadystatechange = ajaxBindCallback;
+            ajaxRequest.open("POST", url , true);
+            ajaxRequest.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            ajaxRequest.setRequestHeader("Connection", "close");
+            ajaxRequest.send( form_string );
+        }
+    }
 }
 
 function selectComponentConfig( component_num ) {
