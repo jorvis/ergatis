@@ -30,6 +30,11 @@ described below.
 
 Returns a newly created "Ergatis::ConfigFile" object.
 
+=item I<$OBJ>->component_status( )
+
+If the ergatis.ini file is parsed this method can be used to check whether a component
+is disabled.  Pass in the component name and it will return either 'enabled' or 'disabled'.
+
 =item I<$OBJ>->get_comment( )
 
 Retrieve the comment on any section/param formatted as a text string.  This filters
@@ -92,6 +97,38 @@ sub get_comment_html {
     $comment =~ s/\n /<br>&nbsp;/g;
     
     return $comment || '';
+}
+
+sub import_form_data {
+    my ($self, $q) = @_;
+    
+    ## load the form data into a hash, unencoding the values
+    my %form_vars;
+    for ( $q->param ) {
+        ## all variables will be entirely uppercase
+        next if ( /[a-z]/ );
+    
+        ## decode the value
+        my $value = $q->param($_);
+        $value =~ s/\+/ /g;
+        $value =~ s/%([\dA-Fa-f]{2})/pack("C", hex($1))/eg;
+        $form_vars{$_} = $value;
+    }
+    
+    for my $section ( $self->Sections ) {
+        for my $param ( $self->Parameters($section) ) {
+            ## if the param is like $;FOO$; take off the $; for the comparison.  we
+            ##  don't pass those in forms.
+            my $param_comp = $param;
+            if ( $param =~ /\$\;(.+)\$\;/ ) {
+                $param_comp = $1;
+            }
+        
+            if ( exists $form_vars{$param_comp} ) {
+                $self->setval( $section, $param, $form_vars{$param_comp} );
+            }
+        }
+    }
 }
 
 ## does not delete the included variables (maybe it should.)
