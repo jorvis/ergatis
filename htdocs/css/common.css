@@ -95,6 +95,13 @@ input, select {
     font-family: verdana, sans-serif;
 }
 
+span.button {
+    border: 1px solid rgb(0,0,0);
+    background-color: rgb(200,200,200);
+    padding: 1px 5px 1px 5px;
+    cursor: pointer;
+}
+
 span.state {
     font-weight: bold;
 }
