@@ -73,6 +73,19 @@ div#input_controls_container img {
 div#end_pipeline_marker {
     margin-top: 15px;
 }
+div#save_progress_label {
+    display: none;
+    position: fixed;
+    opacity: 0.8;
+    top: 0;
+    left: 300px;
+    border: 1px solid rgb(220,220,220); 
+    background-color: rgb(150,150,150);
+    padding: 2px 20px;
+    color: rgb(255,255,255);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
 div.serial,
 div.parallel {
     clear: both;
@@ -100,33 +113,6 @@ input.select_shadow {
 span.component_name {
     font-weight: bold;
 }
-table.config_table {
-    padding-left: 5px;
-}
-table.config_table td {
-    padding-left: 10px;
-}
-table.config_table th {
-    font-weight: bold;
-    text-align: left;
-    color: rgb(73,81,92);
-    padding: 10px 0 5px 0;
-}
-table.config_table input {
-    border: none;
-    border-bottom: 1px solid rgb(150,150,150);
-    background-color: rgb(230,230,230);
-    width: 500px;
-}
-table.config_table select {
-    border-bottom: 1px solid rgb(150,150,150);
-    background-color: rgb(230,230,230);   
-}
-table.config_table tr.comment {
-    color: rgb(125,125,125);
-    font-size: 90%;
-
-}
 table#input_list {
     border-collapse: collapse;
     border: 1px solid rgb(175,175,175);
@@ -147,10 +133,6 @@ table#input_list td {
 }
 th.action_icons {
     width: 25px;
-}
-tr.config_section {
-    font-weight: bold;
-    padding-top: 20px;
 }
 tr#new_input_fields_row {
     display: none;
