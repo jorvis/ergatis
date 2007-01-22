@@ -1,0 +1,67 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis</title>
+    <!-- bring in the styles -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/create_project.css">
+    <!-- functionality -->
+    <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/create_project.js'></script>
+</head>
+
+<body class='admin'>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='content_container'>
+        <h2>create a project</h2>
+        <form name='create_pipeline' action='./create_project.cgi' method='post'>
+        <input type='hidden' name='user_attempted' value='1'>
+        <p>
+            This form is used to create a new project area where you can run new pipelines.  Enter
+            the path where you want the project area to be created.  The directory you enter should exist
+            already and all necessary files and directories necessary will be created inside it.
+        </p>
+        <input id='repository_root' name='repository_root' value='<TMPL_VAR NAME=REPOSITORY_ROOT>' onfocus='clearInput("repository_root", "<TMPL_VAR NAME=ENTER_MSG>")'>
+        <span class='button' onclick='document.create_pipeline.submit()'>create project</span>
+        </form>
+        
+        <ol id='project_creation_steps'>
+        <TMPL_LOOP NAME=STEPS>
+            <TMPL_IF NAME=COMPLETE>
+            <li class='complete'><TMPL_VAR NAME=DESCRIPTION></li>
+            <TMPL_ELSE>
+                <TMPL_IF NAME=FAILED>
+                    <li class='failed'><TMPL_VAR NAME=DESCRIPTION><br><span class='failed'><TMPL_VAR NAME=FAILED_MSG></span></li>
+                <TMPL_ELSE>
+                    <li class='incomplete'><TMPL_VAR NAME=DESCRIPTION></li>
+                </TMPL_IF>
+            </TMPL_IF>
+        </TMPL_LOOP>
+        </ol>
+        <TMPL_IF NAME=ALL_GOOD>
+            <p>
+                <strong>Almost finished.</strong>  You now need to configure the project config file:
+            </p>
+            <span class='button'><a href='./edit_config.cgi?config=<TMPL_VAR NAME=PROJECT_CONFIG>'>configure project config file</a></span>
+        <TMPL_ELSE>
+            <TMPL_IF NAME=USER_ATTEMPTED>
+            <span class='button' onclick='document.create_pipeline.submit()'>try again</span>
+            </TMPL_IF>
+        </TMPL_IF>
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
+
+</body>
+
+</html>

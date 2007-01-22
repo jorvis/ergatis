@@ -1,0 +1,75 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis</title>
+    <!-- bring in the styles -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/config_file.css">
+    <!-- functionality -->
+    <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
+</head>
+
+<body>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='content_container'>
+    <TMPL_IF NAME=SAVE>
+        <h2>configuration saved</h2>
+        <p>
+            The following configuration file has been written:
+        </p>
+        <p>
+            <TMPL_VAR NAME=CONFIG>
+        </p>
+        <p>
+            <a href='./edit_config.cgi?config=<TMPL_VAR NAME=CONFIG>'>go back to edit view</a>
+        </p>
+    <TMPL_ELSE>
+        <h2>edit config file</h2>
+        <form name='save_config' action='./edit_config.cgi' method='post'>
+        <input type='hidden' name='save' value='1'>
+        <input type='hidden' name='config' value='<TMPL_VAR NAME=CONFIG>'>
+        <p>
+            <TMPL_VAR NAME=CONFIG>
+        </p>
+        <table class='config_table'>
+            <TMPL_LOOP NAME=SECTIONS>
+            <tr class='config_section' colspan='2'>
+                <td><TMPL_VAR NAME=NAME></td>
+            </tr>
+            <TMPL_LOOP NAME=PARAMETERS>
+            <TMPL_IF NAME=COMMENT>
+            <tr class='comment'>
+                <td>&nbsp;</td><td><TMPL_VAR NAME=COMMENT></td>
+            </tr>
+            </TMPL_IF>
+            <tr>
+                <td ><TMPL_VAR NAME=PRETTY_LABEL></td>
+                <td class="<TMPL_VAR NAME=SECTION>">
+                    <input type='text' name='<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'>
+                </td> 
+            </tr>
+            </TMPL_LOOP> <!-- end parameters loop -->
+            </TMPL_LOOP> <!-- end sections loop -->
+        </table>
+        <p>
+            <span class='button' onclick='document.save_config.submit()'>save configuration</span>
+        </p>
+        </form>
+    </TMPL_IF>
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
+
+</body>
+
+</html>
