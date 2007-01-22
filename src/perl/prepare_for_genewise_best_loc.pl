@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -11,10 +12,8 @@ prepare_for_geneWise.dbi
 =head1 SYNOPSIS
 
 USAGE: prepare_for_geneWise.dbi
-           --Database|-D                  aa1 
-           --username|-u                  access 
-           --password|-p                  access
-           --search_db|-s                 AllGroup.niaa
+           --project|-p                   aa1 
+           --bsml_list|-i                 aat_aa.bsml.list
            --work_dir|-w                  working_directory
          [ --asmbl_id|-a                  24832 
            --asmbl_file|-A                list_of_asmbl_ids 
@@ -141,13 +140,12 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use DBI;
 use Pod::Usage;
 use CdbTools;
-use Data::Dumper;
 use Carp;
+use XML::Twig;
 
 #option processing
-my ($database, $username, $password, $search_db, $work_dir,
-    $asmbl_id, $asmbl_file, $file_list, $help, $verbose, $JUST_PRINT_BEST_LOCATIONS,
-    $DUMP_CHAIN_STATS);
+my ($database, $work_dir, $bsml_list, $file_list, $help, $verbose,
+    $JUST_PRINT_BEST_LOCATIONS, $DUMP_CHAIN_STATS);
 
 # default settings.
 my $DEFAULT_FILE_LIST = "genewise.input_file_listing";
@@ -157,13 +155,9 @@ my $num_tiers = 2; # only the two best matches per location is extracted.
 my $MIN_PERCENT_CHAIN_ALIGN = 70; #minimum percent of the protein sequence found to align to the genome
 
 &GetOptions (
-             'Database|D=s' => \$database,
-             'username|u=s' => \$username,
-             'password|p=s' => \$password,
-             'search_db|s=s' => \$search_db,
+             'project|p=s' => \$database,
              'work_dir|w=s' => \$work_dir,
-             'asmbl_id|a=s' => \$asmbl_id,
-             'asmbl_file|A=s' => \$asmbl_file,
+             'bsml_list|i=s' => \$bsml_list,
              'file_list|f=s' => \$file_list,
              'help|h' => \$help,
              'verbose|v' => \$verbose,
@@ -175,61 +169,46 @@ my $MIN_PERCENT_CHAIN_ALIGN = 70; #minimum percent of the protein sequence found
              'JUST_PRINT_BEST_LOCATIONS' => \$JUST_PRINT_BEST_LOCATIONS,
              'DUMP_CHAIN_STATS' => \$DUMP_CHAIN_STATS,
              
-	     ) || pod2usage();
+         ) || pod2usage();
 
 if ($help) {
     pod2usage();
 }
 
-unless ($database && $username && $password && $search_db && $work_dir 
-	&& ($asmbl_id || $asmbl_file)
-	) {
+unless ( $database && $work_dir && $bsml_list
+    ) {
     carp "** Missing required options. **\n\n";
     pod2usage();
 }
 
 umask(0000); #write all output files permissibly
 
-## establish a database connection:
-my $dbproc = DBI->connect("dbi:Sybase:server=SYBTIGR; packetSize=8092",$username, $password) 
-    || croak "couldn't establish a database connection\n\n";
-$dbproc->{RaiseError} = 1; # don't tolerate faulty db interactions
-$dbproc->do("use $database");
-$dbproc->do("set textsize 50000000");
-
-## find search_db file:
-my $protein_fasta_file = &find_fasta_file ($search_db) or die "Error, cannot find fasta file for $search_db";
-
-# get db_id:
-my $db_id = &get_db_id($search_db);
-
 # track the protein alignment lengths:
 my %prot_acc_to_prot_length;
 
-
-## get list of asmbls to process
-my @asmbls_to_process;
-if ($asmbl_id) {
-    @asmbls_to_process = ($asmbl_id);
-} else {
-    open (my $fh, $asmbl_file) or croak ("cannot open $asmbl_file ");
-    while (<$fh>) {
-        # should be whitespace delimited
-	    while (/(\d+)/g) {
-            my $asmbl = $1;
-            push (@asmbls_to_process, $asmbl);
-	    }
-	}
+## populate array of bsml files to process
+my @bsml_files;
+open (my $fh, $bsml_list) || die "cannot open '$bsml_list': $!";
+while (<$fh>) {
+    chomp;
+    if (! -e $_) {
+        if (-e $_.".gz") {
+            push(@bsml_files, $_.".gz");
+        } else {
+            die "specified bsml input file '$_' doesn't exist";
+        }
+    } else {
+        push(@bsml_files, $_);
+    }
 }
-if (! @asmbls_to_process) {
-    croak "error, do not have any asmbl_ids to process ";
+if (! @bsml_files) {
+    croak "error, do not have any bsml input files to process ";
 }
 
 # check for working directory:
 if (! -d $work_dir) {
     mkdir($work_dir) || die "failed to create work_dir $work_dir because $!";
 } 
-
 
 ## open file for writing input file listings
 if (! $file_list) {
@@ -241,12 +220,52 @@ if (! $JUST_PRINT_BEST_LOCATIONS) {
     open ($file_list_fh, ">$file_list") or croak ("cannot write to $file_list ");
 }
 
-# get the pep and genome seqs for each location on each asmbl_id
-foreach my $asmbl_id (@asmbls_to_process) {
-    &prepare_asmbl_data($asmbl_id);
+## use XML::Twig to parse the BSML
+my $twig = new XML::Twig(   
+                            TwigHandlers => {
+                                              'Sequence'           => \&seq_handler,
+                                              'Seq-pair-alignment' => \&seq_pair_align_handler,
+                                            }
+                        );
+
+
+## stores alignment data (replaces db queries)
+my $asmbl_data = {};
+## stores assembly sequences
+my $asmbl_seq = {};
+## stores subject db path
+my %subject_db;
+
+foreach my $bsml_file(@bsml_files) {
+
+    my $infh;
+    if ($bsml_file =~ /\.gz$/) {
+        open($infh, "<:gzip", $bsml_file) 
+         || die("couldn't open gzipped input file '$bsml_file': $!");
+    } else {
+        open($infh, $bsml_file)
+         || die("couldn't open input file '$bsml_file': $!");
+    }   
+    $twig->parse($infh);
+    close $infh;
+
 }
 
-#$length_fetch->finish();
+my $protein_fasta_file;
+if (scalar(keys(%subject_db)) > 1) {
+    die "BSML files contained results from searches against more than one database";
+} else {
+    $protein_fasta_file = (keys(%subject_db))[0];
+}
+
+if (! -s $protein_fasta_file) {
+    die "Subject database '$protein_fasta_file' doesn't appear to exist";
+}
+
+# get the pep and genome seqs for each location on each asmbl_id
+foreach my $asmbl(keys(%{$asmbl_data})) {
+    &prepare_asmbl_data($asmbl);
+}
 
 if (! $JUST_PRINT_BEST_LOCATIONS) {
     close $file_list_fh;
@@ -254,18 +273,56 @@ if (! $JUST_PRINT_BEST_LOCATIONS) {
 
 exit(0);
 
+sub seq_pair_align_handler {
+    my ($twig, $seq_pair_alignment) = @_;
+
+    my $seq_id = $seq_pair_alignment->{'att'}->{'refseq'};
+   
+    my $assembly_id = get_assembly_id($seq_id);
+    my ($comp_db, $comp_id) = split(":",  $seq_pair_alignment->{'att'}->{'compxref'});
+    
+    if (! $comp_db || ! $comp_id) {
+        die "failed parsing subject database and/or identifier from compxref '$seq_pair_alignment->{att}->{compxref}'";
+    }
+   
+    $subject_db{$comp_db} = 1;
+    
+    foreach my $seq_pair_run($seq_pair_alignment->children('Seq-pair-run')) {
+   
+        my $chain_id = get_attribute($seq_pair_run, 'chain_number');
+        my $pct_id = get_attribute($seq_pair_run, 'percent_identity');
+        my $pct_sim = get_attribute($seq_pair_run, 'percent_similarity');
+       
+        my $orient = ($seq_pair_run->{'att'}->{'refcomplement'}) ? '-' : '+';
+        
+        push(@{$asmbl_data->{$assembly_id}}, 
+                #$acc, $lend, $rend, $m_lend, $m_rend, $chainID, $per_id, $per_sim, $orient
+             [
+                $comp_id,
+                $seq_pair_run->{'att'}->{'refpos'} + 1, 
+                $seq_pair_run->{'att'}->{'runlength'} + $seq_pair_run->{'att'}->{'refpos'},
+                $seq_pair_run->{'att'}->{'comppos'} + 1, 
+                $seq_pair_run->{'att'}->{'comprunlength'} + $seq_pair_run->{'att'}->{'comppos'},
+                $chain_id,
+                $pct_id,
+                $pct_sim,
+                $orient,
+             ]
+            );
+    }
+}
 
 ####
 sub prepare_asmbl_data {
     my ($asmbl_id) = @_;
     
-    print "Processing asmbl_id: $asmbl_id\n" if $verbose;
+    print "Processing assembly: $asmbl_id\n" if $verbose;
     
     ## retrieve best hits and genome locations
     my @best_hits = &get_best_location_hits($asmbl_id);
     
     if (@best_hits) {
-		
+        
         if (!$JUST_PRINT_BEST_LOCATIONS) {
             &prepare_genewise_inputs($asmbl_id, \@best_hits);
         }
@@ -281,38 +338,30 @@ sub prepare_asmbl_data {
 sub get_best_location_hits {
     my ($asmbl_id) = @_;
     
-    ## get the alignments out of the database:
-    my $query = qq{select distinct e.accession, e.end5, e.end3, e.m_lend, e.m_rend, e.chainID, e.per_id from evidence e where feat_name like "$asmbl_id.%" and db = "$db_id" and e.ev_type = 'nap' order by e.chainID};
-    
-    print "Query: $query\n" if $verbose;
-    
-    my $sth = $dbproc->prepare($query);
-    $sth->execute();
-    
     ## Populate data structure:
     
     my %alignments; #key on chainID
     # chain struct:
     #    m_lend, m_rend, lend, rend, score, accession, orient
     
-    while (my @row = $sth->fetchrow_array()) {
-        my ($acc, $end5, $end3, $m_lend, $m_rend, $chainID, $per_id) = @row;
+    foreach my $row_ref(@{$asmbl_data->{$asmbl_id}}) {
+       
+        my ($acc, $lend, $rend, $m_lend, $m_rend, $chainID, $per_id, $per_sim, $orient) = @{$row_ref};
+       
+        print join("\t", @{$row_ref})."\n";
         
         unless ($chainID) {
-            carp "Error, no chainID stored for @row\n";
+            carp "Error, no chainID stored for @{$row_ref}\n";
             next;
         }
         
         $chainID = $acc . "," . $chainID;
         
-        my ($lend, $rend) = sort {$a<=>$b} ($end5, $end3);
         my $match_length = $m_rend - $m_lend + 1;
         
         if ($match_length < 50) { next;} # avoid shorties that falsely extend alignment chains.
         
         my $match_score = $match_length * $per_id/100;
-        
-        #print "$acc\t$end5-$end3\t$m_lend-$m_rend\t$per_id\n";
         
         if (my $chain = $alignments{$chainID}) {
             # increment score
@@ -335,8 +384,7 @@ sub get_best_location_hits {
         } else {
             # create chain entry:
             
-            if ($end5 == $end3) { next; } # don't store single coord feature
-            my $orient = ($end5 < $end3) ? '+' : '-';
+            if ($lend == $rend) { next; } # don't store single coord feature
             
             $alignments{$chainID} = { lend => $lend,
                                       rend => $rend,
@@ -464,21 +512,12 @@ sub prepare_genewise_inputs {
     
     ## prepare sequence files
     my $data_dir = "$work_dir/$asmbl_id";
+    
     if (! -d $data_dir) {
         mkdir ($data_dir) or croak "error, couldn't mkdir $data_dir "; 
     }
     
-    ## get the genome sequence:    
-    my $query = qq{select sequence from assembly where asmbl_id = $asmbl_id};
-    
-    ## need to set textsize here
-    
-    my $sth = $dbproc->prepare($query);
-    $sth->execute();
-    my ($genome_seq) = $sth->fetchrow_array;
-    $sth->finish;
-    
-    my $genome_seq_length = length($genome_seq);
+    my $genome_seq_length = length($asmbl_seq->{$asmbl_id});
     
     my $counter = 0;
     
@@ -494,14 +533,14 @@ sub prepare_genewise_inputs {
                                                                             $chain->{score},
                                                                             $chain->{orient});
         
-		my $fasta_entry;
+        my $fasta_entry;
         eval {
             $fasta_entry = cdbyank($accession, $protein_fasta_file);
         };
 
         if ($@) {
             ## no longer tolerated.  It's essential that this works.
-            die "Error, couldn't retrieve fasta entry $accession from $protein_fasta_file\n";
+            die "cdbyank error retrieving '$accession' from '$protein_fasta_file'";
         }
         
 
@@ -514,15 +553,18 @@ sub prepare_genewise_inputs {
             $rend = $genome_seq_length;
         }
         
-        my $subseq = substr($genome_seq, $lend -1, $rend - $lend + 1);
+        my $subseq = substr($asmbl_seq->{$asmbl_id}, $lend -1, $rend - $lend + 1);
         
         if ($orient eq '-') {
             $subseq = &reverse_complement($subseq);
             ($lend, $rend) = ($rend, $lend);
         }
-        $subseq =~ s/(\w{60})/$1\n/g;
+
+        $subseq =~ s/\W+//g;
+        $subseq =~ s/(.{1,60})/$1\n/g;
+
         chomp $subseq;
-	
+    
         # write genome entry
         open (my $fh, ">$data_dir/$database.assembly.$asmbl_id.$counter.fsa") or die $!;
         print $fh ">$database.assembly.$asmbl_id.$lend.$rend\n$subseq\n";
@@ -577,47 +619,6 @@ sub try_add_chain {
     }
 }
 
-
-sub find_fasta_file {
-    my ($protein_db_name) = @_;
-    
-    my $DB = uc $database;
-    
-    foreach my $loc_dir ( "/usr/local/annotation/$DB/CustomDB",
-                          "/usr/local/db/common",
-                          "/usr/local/db/panda/AllGroup/",
-                          "/usr/local/annotation/ACLA1/CustomDB") {
-        my $candidate_filename = $loc_dir . "/$protein_db_name";
-        if (-s $candidate_filename) {
-            return ($candidate_filename);
-        }
-    }
-    
-    return (undef);
-}
-
-
-
-####
-sub get_db_id {
-    my ($search_db_token) = @_;
-    
-    ## entry must exist in the common..search_dbs table.
-    
-    my $query = qq{select id from common..search_dbs where name = "$search_db_token" and iscurrent = 1};
-    print "QUERY: $query\n\n" if $verbose; 
-    my $sth = $dbproc->prepare($query);
-    $sth->execute();
-    my ($db_id) = $sth->fetchrow_array();
-    $sth->finish;
-    
-    if (! $db_id) {
-        croak "Error, couldn't find an entry in the common..search_dbs table for $search_db_token ";
-    }
-    return ($db_id);
-}
-
-
 ####
 sub dump_feats {
     my @feats = @_;
@@ -666,3 +667,138 @@ sub get_protein_length_via_accession {
     }
 }
 
+## deals with sequence elements and makes sure that
+## we have sequence for the assemblies
+sub seq_handler {
+    my ($twig, $sequence) = @_;
+    
+    my $seq_id;
+    my $seq_data_import;
+    my $seq_data;
+    my $source;
+    my $identifier;
+    my $format;
+    
+    ## choose whether we want to deal with this sequence element
+    ## based on the contents of its analysis link
+    my @links = $sequence->children('Link');
+    unless (@links) {
+        return;
+    }
+    foreach my $link(@links) {
+        if ($link->{'att'}->{'rel'} eq 'analysis') {
+            ## may want to make role a flag option
+            if ($link->{'att'}->{'role'} ne 'input_of') {
+                return;
+            }
+        }
+    }
+
+    $seq_id = $sequence->{'att'}->{'id'};
+   
+    ## parse assembly id from seq id
+    my $assembly_id = get_assembly_id($seq_id);
+    
+    if ($seq_data_import = $sequence->first_child('Seq-data-import')) {
+        ## sequence is referenced via seq-data-import
+
+        $source = $seq_data_import->{'att'}->{'source'};
+        $identifier = $seq_data_import->{'att'}->{'identifier'};
+        $format = $seq_data_import->{'att'}->{'format'};
+        
+        ## we only support pulling sequences from fasta files right now
+        ## but get_sequence_by_id could be modified to support other formats 
+        if (defined($format) && $format ne 'fasta') {
+            die("unsupported seq-data-import format '$format' found");
+        }
+        
+        unless (-e $source) {
+            die("fasta file referenced in BSML Seq-data-import '$source' doesn't exist");
+        }
+        unless (defined($identifier)) {
+            die("Seq-data-import for '$seq_id' does not have a value for identifier");
+        }
+        
+        my $seq = '';
+        eval {
+            $seq = cdbyank($identifier, $source);
+        };
+        if ($@) {
+            die "cdbyank failed for fasta entry '$identifier' from '$source'";
+        }
+ 
+#        my $seq = get_sequence_by_id($source, $identifier);
+            
+        if (length($seq) > 0) {
+            $asmbl_seq->{$assembly_id} = $seq;
+        } else {
+            die("couldn't fetch sequence for '$seq_id' from Seq-data-import source '$source'");
+        }
+        
+    } elsif ($seq_data = $sequence->first_child('Seq-data')) {
+        ## sequence is in the BSML
+        $asmbl_seq->{$assembly_id} = $seq_data->text();
+    } else {
+        ## there is no Seq-data or Seq-data-import for the sequence
+        die("No sequence present in BSML sequence element for '$seq_id'");
+    }
+}
+
+## pull a sequence from a fasta file by sequence id
+## where the sequence id is the header string up to
+## the first whitespace char
+sub get_sequence_by_id {
+    my ($fname, $id) = @_;
+    my $seq_id = '';
+    my $sequence = '';
+    open (IN, $fname) || die("couldn't open fasta file for reading");
+    TOP: while (<IN>) {
+        chomp;
+        if (/^>([^\s]+)/) {
+            $seq_id = $1;
+            if ($seq_id eq $id) {
+                while (<IN>) {
+                    chomp;
+                    if (/^>/) {
+                        last TOP;
+                    } else {
+                        $sequence .= $_;
+                    }
+                }
+            }   
+        }
+    }
+    close IN;
+
+    return $sequence;
+}
+
+## parses out the assembly id from a sequence id 
+sub get_assembly_id {
+    my ($seq_id) = @_;
+
+    if ($seq_id =~ /^[^\.]+\.assembly\.(\d+)/) {
+        return $1;
+    } else {
+        die "Couldn't parse assembly id from sequence identifier '$seq_id'";
+        return undef;
+    }
+}
+
+sub get_attribute {
+    my ($elt, $name) = @_;
+    my $att = undef;
+
+    for my $attribute ( $elt->children('Attribute') ) {
+        if ( $attribute->{att}->{name} eq $name ) {
+            $att = $attribute->{att}->{content};
+            last;
+        }
+    }
+
+    if (defined $att) {
+        return $att;
+    } else {
+        die "failed to extract $name from attributes";
+    }
+}
