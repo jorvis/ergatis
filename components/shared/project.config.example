@@ -1,20 +1,37 @@
-;project configuration file.  These parameters will be used for all subflows.
-;all these parameters are required.
+;; This is the project configuration file.  All options are required.
 [project]
-;eg. chado_test
-$;PROJECT$;=chado_test
-;eg /usr/local/annotation/CHADO_TEST
-$;REPOSITORY_ROOT$;=/usr/local/annotation/CHADO_TEST
 
+;; Usually the name or abbreviation for a project.
+$;PROJECT$;=test
+
+;; The root of your project directory, under which should exist the 'workflow' directory
+$;REPOSITORY_ROOT$;=/usr/local/annotation/TEST
+
+;; This area will be used as temporary space for the project.  It should be cleaned out
+;;  regularly, usually by some cron job.
 $;TMP_DIR$;=/usr/local/scratch/$;DATABASE$;/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;
 
-;; these must each be full paths - no variable references or tokens.
-$;PROJECT_ID_REPOSITORY$;=/usr/local/annotation/BOOMANO/workflow/project_id_repository
-$;ERGATIS_DIR$;=/usr/local/devel/ANNOTATION/ard/testing_manual
-$;LIB_DIR$;=/usr/local/devel/ANNOTATION/ard/testing_manual/lib
-$;BIN_DIR$;=/usr/local/devel/ANNOTATION/ard/testing_manual/bin
-$;DOCS_DIR$;=/usr/local/devel/ANNOTATION/ard/testing_manual/docs
+;; All variables below must be full paths - no variable references or tokens.
+
+;; This should be the path to the id repository under the 'workflow' directory for your project.
+$;PROJECT_ID_REPOSITORY$;=/usr/local/annotation/TEST/workflow/project_id_repository
+
+;; The ergatis scripts and libraries should be found here.
+$;ERGATIS_DIR$;=/usr/local/devel/ANNOTATION/ard/current
+
+;; Path to the ergatis lib directory, usually under the ERGATIS_DIR
+$;LIB_DIR$;=/usr/local/devel/ANNOTATION/ard/current/lib
+
+;; Path to the ergatis bin directory, usually under the ERGATIS_DIR
+$;BIN_DIR$;=/usr/local/devel/ANNOTATION/ard/current/bin
+
+;; Path to the ergatis docs directory, usually under the ERGATIS_DIR
+$;DOCS_DIR$;=/usr/local/devel/ANNOTATION/ard/current/docs
+
+;; Default debug setting
 $;DEBUG$;=0
 
 [include]
-$;SOFTWARE_CONFIG$;=/usr/local/devel/ANNOTATION/ard/testing_manual/software.config
+;; Path to the software config file.  It contains the path to the binary for each component as
+;;  well as common data paths.
+$;SOFTWARE_CONFIG$;=/usr/local/devel/ANNOTATION/ard/current/software.config
