@@ -79,7 +79,7 @@
             </param>
             <param>  
                 <key>--conf</key>
-                <value>$;COMPONENT_CONFIG$;</value>
+                <value>$;ANALYSIS_CONF$;</value>
             </param>
             <param>  
                 <key>--bsml_file</key>
@@ -95,7 +95,7 @@
             </param>
             <param>  
                 <key>--analysis_id</key>
-                <value>$;COMPONENT_NAME$;_analysis</value>
+                <value>first</value>
             </param>
         </command>
         <command>
