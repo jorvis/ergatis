@@ -5,9 +5,9 @@ function show_state( state2display, collection ) {
 
         for ( var i=0; i < collection[state].length; i++ ) {
             if ( state == state2display || state2display == 'all') {
-                getObject( collection[state][i] + '_bar').style.display = '';
+                getObject( 'id' + collection[state][i] + '_bar').style.display = '';
             } else {
-                getObject( collection[state][i] + '_bar').style.display = 'none';
+                getObject( 'id' + collection[state][i] + '_bar').style.display = 'none';
             }
         }
     }

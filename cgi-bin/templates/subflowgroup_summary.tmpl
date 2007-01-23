@@ -3,19 +3,19 @@
 <TMPL_IF NAME=IS_COMMAND>
     <TMPL_INCLUDE NAME="command_list_element.tmpl">
 <TMPL_ELSE>
-<div id='<TMPL_VAR NAME=NAME>_bar' class='subflowbar'>
+<div id='<TMPL_VAR NAME=ID>_bar' class='subflowbar'>
     <div class='leftside'>
-        <img id='<TMPL_VAR NAME=NAME>_arrow' class='expander' src='/ergatis/images/arrow_right.gif' onclick='toggle_subflow_display("<TMPL_VAR NAME=NAME>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
-        <img id='<TMPL_VAR NAME=NAME>_img' class='status' src='/ergatis/images/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
+        <img id='id<TMPL_VAR NAME=ID>_arrow' class='expander' src='/ergatis/images/arrow_right.gif' onclick='toggle_subflow_display("id<TMPL_VAR NAME=ID>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
+        <img id='id<TMPL_VAR NAME=ID>_img' class='status' src='/ergatis/images/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
         <TMPL_VAR NAME=NAME>
     </div>
     <div class='rightside'>
-        <img class='reloader' src='/ergatis/images/reload_blue.png' onclick='reload_subflow("<TMPL_VAR NAME=NAME>", "<TMPL_VAR NAME=FILE>")' alt='reload' title='reload'>
+        <img class='reloader' src='/ergatis/images/reload_blue.png' onclick='reload_subflow("id<TMPL_VAR NAME=ID>", "<TMPL_VAR NAME=FILE>")' alt='reload' title='reload'>
     </div>
 </div>
 <TMPL_IF NAME=MESSAGE>
 <div class='messageblock'><TMPL_VAR NAME=MESSAGE></div>
 </TMPL_IF>
-<div id='<TMPL_VAR NAME=NAME>_data' class='subflowdata'></div>
+<div id='id<TMPL_VAR NAME=ID>_data' class='subflowdata'></div>
 </TMPL_IF>
 </TMPL_LOOP> <!-- end elements loop -->

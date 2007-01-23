@@ -1,11 +1,11 @@
-<div id='<TMPL_VAR NAME=NAME>_bar' class='subflowgroupbar'>
+<div id='id<TMPL_VAR NAME=WORKFLOW_ID>_bar' class='subflowgroupbar'>
     <div class='leftside'>
-        <img id='<TMPL_VAR NAME=NAME>_arrow' class='expander' src='/ergatis/images/arrow_right.gif' onclick='toggle_subflowgroup_display("<TMPL_VAR NAME=NAME>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
+        <img id='id<TMPL_VAR NAME=WORKFLOW_ID>_arrow' class='expander' src='/ergatis/images/arrow_right.gif' onclick='toggle_subflowgroup_display("id<TMPL_VAR NAME=WORKFLOW_ID>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
         <img class='status' src='/ergatis/images/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
         <span class='minor'>group <TMPL_VAR NAME=GROUP_NUM></span>
     </div>
     <div class='rightside'>
-        <span class='infolabel' id='<TMPL_VAR NAME=NAME>_infolabel' onclick='toggle_group_info("<TMPL_VAR NAME=NAME>")'>show group info</span>
+        <span class='infolabel' id='id<TMPL_VAR NAME=WORKFLOW_ID>_infolabel' onclick='toggle_group_info("id<TMPL_VAR NAME=WORKFLOW_ID>")'>show group info</span>
     </div>
 </div>
 <TMPL_IF NAME=MESSAGE>
@@ -14,8 +14,9 @@
     message: <TMPL_VAR NAME=MESSAGE>
 </div>
 </TMPL_IF>
-<div id='<TMPL_VAR NAME=NAME>_info' class='subflowinfo'>
+<div id='id<TMPL_VAR NAME=WORKFLOW_ID>_info' class='subflowinfo'>
     <table class='cmd_stats'>
+        <!-- <TMPL_VAR NAME=NAME> -->
         <tr><th>workflow id:</th><td><TMPL_VAR NAME=WORKFLOW_ID></td></tr>
         <tr><th>state:</th><td><TMPL_VAR NAME=STATE></td></tr>
         <tr><th>start time:</th><td><TMPL_VAR NAME=START_TIME></td></tr>
@@ -27,5 +28,5 @@
         <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=FILE>'><TMPL_VAR NAME=FILE></a></td></tr>
     </table>
 </div>
-<div id='<TMPL_VAR NAME=NAME>_data' class='subflowgroupdata'></div>
+<div id='id<TMPL_VAR NAME=WORKFLOW_ID>_data' class='subflowgroupdata'></div>
 
