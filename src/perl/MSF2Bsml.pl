@@ -146,6 +146,7 @@ my $builder = new BSML::BsmlBuilder;
 $logger->logdie("builder was not defined") if (!defined($builder));
 
 my $analysis_name = &get_analysis_name($options{analysis_conf});
+my $analysis_id = $analysis_name . '_analysis';
 my $MSF_alignments = process_MSF_file("$options{msffile}");
 
 if ($MSF_alignments->{'mol_type'} eq 'polypeptide') {
@@ -190,7 +191,7 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
     
     my $aln = $builder->createAndAddSequenceAlignment( 'multipleAlignmentTable' => $table );
     $logger->logdie("aln was not defined") if (!defined($aln));
-    $table->addBsmlLink('analysis', '#'."$analysis_name", 'computed_by');
+    $table->addBsmlLink('analysis', '#'."$analysis_id", 'computed_by');
     my $seqnum=0;
     my $sequences_tag;
     
@@ -225,7 +226,7 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
                                     $seq
                                                    );
             }
-            $seq_stub->addBsmlLink('analysis', '#' . $analysis_name , 'input_of');
+            $seq_stub->addBsmlLink('analysis', '#' . $analysis_id , 'input_of');
         }
 
         ####### THIS BLOCK OF CODE SEEMS TO BE OBSOLETE DUE TO IDGENERATOR
@@ -270,14 +271,18 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
 my $algorithm = 'unknown';
 my $program = 'unknown';
 
-if ( $options{msffile} =~ /\.clw/ ) {
+if ($analysis_name) {
+    $algorithm = $analysis_name;
+    $program = $analysis_name;
+
+} elsif ( $options{msffile} =~ /\.clw/ ) {
     $algorithm = 'clustalw';
     $program = 'clustalw';
 }
 
 ## add the analysis element
 $builder->createAndAddAnalysis(
-    id => $analysis_name,
+    id => $analysis_id,
     sourcename => $options{'output'},
     algorithm => $algorithm,
     program => $program
@@ -366,19 +371,10 @@ sub process_MSF_file {
 sub get_analysis_name{
     my($conf) = @_;
     my $analysis_name = "clustalw_analysis";
+    
     if(-e $conf){
-    my $cfg = new Config::IniFiles( -file => $conf);
-    my @sections = $cfg->Sections();
-    my $name;
-    for my $section (@sections) {
-        $name = $cfg->val($section,'$;NAME$;');
-        if($name ne ""){
-        last;
-        }
-    }
-    if($name ne ""){
-        $analysis_name = $name."_analysis";
-    }
+        my $cfg = new Config::IniFiles( -file => $conf);
+        $analysis_name = $cfg->val( 'component', '$;COMPONENT_NAME$;' ) || $analysis_name;
     }
     return $analysis_name;
 }
