@@ -25,32 +25,16 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/prepare_for_genewise_best_loc</executable>
             <param>  
-                <key>--Database</key>
+                <key>--bsml_list</key>
+                <value>$;BSML_INPUT_LIST$;</value>
+            </param>
+            <param>  
+                <key>--project</key>
                 <value>$;PROJECT$;</value>
-            </param>
-            <param>  
-                <key>--username</key>
-                <value>$;USERNAME$;</value>
-            </param>
-            <param>  
-                <key>--password</key>
-                <value>$;PASSWORD$;</value>
-            </param>
-            <param>  
-                <key>--search_db</key>
-                <value>$;SEARCH_DB$;</value>
             </param>
             <param>  
                 <key>--work_dir</key>
                 <value>$;WORK_DIR$;</value>
-            </param>
-            <param>  
-                <key>--asmbl_id</key>
-                <value>'$;ASMBL_ID$;'</value>
-            </param>
-            <param>  
-                <key>--asmbl_file</key>
-                <value>'$;ASMBL_LIST_FILE$;'</value>
             </param>
             <param>  
                 <key>--PADDING_LENGTH</key>
