@@ -28,8 +28,8 @@ B<--debug,-d> Debug level.  Use a large number to turn on verbose debugging.
 =item *
 
 B<--analysis_id,-a> Analysis id (optional).  If given, will be the id attribute for the Analysis
-element created or appended to.  If not given, the Analysis element will be created with
-no id attribute.
+element created or appended to.  If the value 'first' is passed, the first Analysis element will
+be used.  If not given, the Analysis element will be created with no id attribute.
 
 =item *
 
@@ -223,10 +223,10 @@ sub process_research {
         $analyses = XML::Twig::Elt->new('Analyses');
         $analyses_not_found = 1;
     }elsif(! defined($options{'analysis_id'}) ) {
-	my $analysis = $analyses->first_child('Analysis');
-	if($analysis){
-	    $options{'analysis_id'} = $analysis->att('id');
-	}
+	    my $analysis = $analyses->first_child('Analysis');
+	    if($analysis){
+	        $options{'analysis_id'} = $analysis->att('id');
+	    }
     }
     
     ## does Analyses contain any Analysis elements?
@@ -235,6 +235,12 @@ sub process_research {
         
         ## do any of them match the id we were looking for?
         for ( $analyses->children('Analysis') ) {
+            if ( $options{analysis_id} eq 'first' ) {
+                $analysis = $_;
+                $analysis_not_found = 0;
+                last;            
+            }
+        
             if ( $_->att('id') eq $options{'analysis_id'} ) {
                 $analysis = $_;
                 $analysis_not_found = 0;
