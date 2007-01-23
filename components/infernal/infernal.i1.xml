@@ -100,24 +100,6 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>compress raw output</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/compress_file</executable>
-            <param>  
-                <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
-            </param>
-            <param>  
-                <key>--compress</key>
-                <value>$;COMPRESS_RAW_OUTPUT$;</value>
-            </param>
-            <param>  
-                <key>--list_file</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw.list</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
             <name>dtd validation</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/dtdValid.pl</executable>
