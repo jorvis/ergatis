@@ -362,3 +362,4 @@ next
 -interface: added project creation support
 -interface: added config file editor
 -interface: fixed duplicate node ID bug
+-added DESCRIPTION variable to all component config files
