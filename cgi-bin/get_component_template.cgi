@@ -33,7 +33,7 @@ my %selectable_labels = ( INPUT_FILE_LIST => 1, INPUT_FILE => 1, INPUT_DIRECTORY
 
 my $component_found = 0;
 my $component_ini = "$workflowdocs_dir/${component_name}.config";
-my $sections = [];
+my %sections = { basic => [], advanced => [] };
 
 ## make sure the configuration exists.
 if ( -e $component_ini ) {
@@ -44,11 +44,15 @@ if ( -e $component_ini ) {
     ## it's possible that later the first dd could be comments and the second the value
     for my $section ( $component_cfg->Sections() ) {
         ## any sections to skip?
-        next if $section eq 'workflowdocs';
-        next if $section eq 'include';
-        next if $section eq 'component';
+#        next if $section eq 'workflowdocs';
+#        next if $section eq 'include';
+#        next if $section eq 'component';
+        my $section_type = 'basic';
+        if ($section =~ /workflowdocs|include|component/) {
+            $section_type = 'advanced';
+        }
        
-        push @$sections, { name => $section };
+        push @{$sections{$section_type}}, { name => $section };
         
         
         for my $parameter ( $component_cfg->Parameters($section) ) {
@@ -61,14 +65,14 @@ if ( -e $component_ini ) {
                $pretty_label =~ s/_/ /g;
             
             if ( exists $selectable_labels{$label} ) {
-                push @{$$sections[-1]->{parameters}}, { label => $label, 
+                push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
                                                         value => $component_cfg->val($section, $parameter),
                                                         selectable => 1,
                                                         section => $section,
                                                         comment => $component_cfg->get_comment_html($section, $parameter) };            
             } else {
-                push @{$$sections[-1]->{parameters}}, { label => $label, 
+                push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
                                                         value => $component_cfg->val($section, $parameter),
                                                         selectable => 0,
@@ -83,7 +87,8 @@ if ( -e $component_ini ) {
 
 $tmpl->param( COMPONENT_FOUND => $component_found );
 ## $tmpl->param( COMPONENT_NAME    => $component_name );
-$tmpl->param( SECTIONS => $sections );
+$tmpl->param( BASIC_SECTIONS => $sections{basic} );
+$tmpl->param( ADVANCED_SECTIONS => $sections{advanced} );
 $tmpl->param( COMPONENT_NUM => $component_num );
 
 print $tmpl->output;

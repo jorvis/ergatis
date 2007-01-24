@@ -61,18 +61,20 @@ function addComponentStub( set_root ) {
         "<div class='component' id='" + component_id + "'>" +
             "<form method='post' id='" + component_id + "_form' name='" + component_id + "_form'>" +
             "<div class='component_nav_buttons'>" +
-                "<img id='" + component_id + "_arrow_up_disabled' src='/ergatis/images/icon_arrow_up_disabled.png' alt='cannot move component up'>" +
-                "<img id='" + component_id + "_arrow_up' src='/ergatis/images/icon_arrow_up.png' alt='move component up' onClick='components[" + '"' + component_id + '"' + "].moveUp()'>" +
-                "<img id='" + component_id + "_arrow_down_disabled' src='/ergatis/images/icon_arrow_down_disabled.png' alt='cannot move component down'>" +
-                "<img id='" + component_id + "_arrow_down'src='/ergatis/images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()'>" +
+                "<img id='" + component_id + "_arrow_up_disabled' src='/ergatis/images/icon_arrow_up_disabled.png' alt='cannot move component up' title='cannot move component up'>" +
+                "<img id='" + component_id + "_arrow_up' src='/ergatis/images/icon_arrow_up.png' alt='move component up' onClick='components[" + '"' + component_id + '"' + "].moveUp()' alt='move component up' title='move component up'>" +
+                "<img id='" + component_id + "_arrow_down_disabled' src='/ergatis/images/icon_arrow_down_disabled.png' alt='cannot move component down' title='cannot move component down'>" +
+                "<img id='" + component_id + "_arrow_down' src='/ergatis/images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()' alt='move component_down' title='move component down'>" +
             "</div>" +
             "<div class='component_action_buttons'>" +
-                "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()'>" +
+                "<img id='" + component_id + "_magnify_plus' src='/ergatis/images/icon_magnify_plus.png' onClick='components[" + '"' + component_id + '"' + "].advancedView()' alt='advanced view' title='advanced view'>" +
+                "<img id='" + component_id + "_magnify_minus' src='/ergatis/images/icon_magnify_minus.png' onClick='components[" + '"' + component_id + '"' + "].basicView()' alt='basic view' title='basic view'>" +
+                "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()' alt='delete component' title='delete component'>" +
             "</div>" +
             "component<span class='locator'> (" + component_id + ")</span>: <select name='available_components' onChange='selectComponentConfig(" + '"' + component_num + '"' + ")' id='" + component_id + "_selector'></select>" +
             "<div id='" + component_id + "_expander' class='config_expander' onClick='toggleConfigVisibility(" + '"' + component_id + '"' + ")'>" +
                 "<div class='component_status' id='" + component_id + "_status'>not configured</div>" +
-                "<img src='/ergatis/images/arrow_right.gif' alt='toggle configuration'>configuration" +
+                "<img id='" + component_id + "_toggler' src='/ergatis/images/arrow_right.gif' alt='toggle configuration'>configuration" +
             "</div>" +
             "<div id='" + component_id + "_config>component not yet chosen</div>" +
             "</form>" +
@@ -107,6 +109,9 @@ function addComponentStub( set_root ) {
     if (component.node.down.type == 'component') {
         components[component.node.down.id].checkArrows();
     }
+    
+    // make sure the component is in basic view
+    component.basicView();
 }
 
 
@@ -621,7 +626,6 @@ function selectComponentConfig( component_num ) {
             ajaxRequest.send();
         }
     }
-
 }
 
 
@@ -653,6 +657,9 @@ function updateConfigContainer( component_num, config_html ) {
     
     components[component_id].config_view.hide();
     components[component_id].config_view.toggle();
+    
+    // make sure the component is in basic view
+    components[component_id].basicView();
 }
 
 

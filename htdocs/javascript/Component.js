@@ -29,6 +29,8 @@ function Component( component_id ) {
     }
     
     // object methods
+    this.advancedView  = advanced_view;
+    this.basicView     = basic_view;
     this.checkArrows   = check_arrows;
     this.remove        = remove_component;
     this.moveUp        = graphically_move_component_up;
@@ -42,11 +44,17 @@ function Component( component_id ) {
 }
 
 function _hide() {
+    // point the arrow to the right
+    getObject(this.component.id + '_toggler').src = '/ergatis/images/arrow_right.gif';
+    
     getObject( this.component.id + '_config' ).style.display = 'none';
     this.visible = false;
 }
 
 function _show() {
+     // point the arrow down
+    getObject(this.component.id + '_toggler').src = '/ergatis/images/arrow_down.gif';
+
     getObject( this.component.id + '_config' ).style.display = 'block';
     this.visible = true;
 }
@@ -57,6 +65,32 @@ function _toggle() {
         
     } else {
         this.show();
+    }
+}
+
+function advanced_view() {
+    // hide the advanced view button
+    getObject(this.id + '_magnify_plus').style.display = 'none';
+    
+    // show the basic button
+    getObject(this.id + '_magnify_minus').style.display = 'inline';
+    
+    // display the advanced section
+    if ( getObject(this.id + '_ct_advanced') ) {
+        getObject(this.id + '_ct_advanced').style.display = '';
+    }
+}
+
+function basic_view() {
+    // hide the basic view button
+    getObject(this.id + '_magnify_minus').style.display = 'none';
+    
+    // display the advanced view button
+    getObject(this.id + '_magnify_plus').style.display = 'inline';
+    
+    // hide the advanced section
+    if ( getObject(this.id + '_ct_advanced') ) {
+        getObject(this.id + '_ct_advanced').style.display = 'none';
     }
 }
 
