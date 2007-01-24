@@ -66,7 +66,6 @@ these sequence files.
         bwhitty@tigr.org
 
 =cut
-
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -165,12 +164,12 @@ my $outfh;
 srand();
 
 ## find all interval-locs and seq-pair-runs
-my $loc_twig = XML::Twig->new(
-                            twig_handlers => {
-                                'Seq-pair-alignment' => \&seqpair_handler,
-                                'Feature'            => \&feature_handler,
-                                             }
-                        );
+my $loc_twig = new XML::Twig(
+                                TwigHandlers => {
+                                    'Seq-pair-alignment' => \&seqpair_handler,
+                                    'Feature'            => \&feature_handler,
+                                                }
+                            );
 
 if ($infile =~ /\.gz$/) {
     open($infh, "<:gzip", $infile) 
@@ -178,15 +177,20 @@ if ($infile =~ /\.gz$/) {
 } else {
     open($infh, $infile)
      || logger->logdie("couldn't open input file '$infile'");
-}   
+}
+
 $loc_twig->parse($infh);
+
 close $infh;
 
 ## mask the sequence an build a new BSML document
-my $seq_twig = new XML::Twig(   TwigRoots => {
-        'Sequence' => 1,
+my $seq_twig = new XML::Twig(   
+                                TwigRoots => {
+                                    'Sequence' => 1,
                                              },
-                                TwigHandlers => {'Sequence' => \&sequence_handler}
+                                TwigHandlers => {
+                                    'Sequence' => \&sequence_handler,
+                                                }
                             );
                      
 $seq_twig->set_pretty_print('indented');
@@ -200,12 +204,12 @@ if ($infile =~ /\.gz$/) {
     open($infh, $infile)
      || logger->logdie("couldn't open input file '$infile'");
 }   
+
 $seq_twig->parse($infh);
+
 close $infh;
 
 $doc->write($outfile);
-
-exit();
 
 ## deals with seq-pair-alignments
 ## pulls out coordinates for seq-pair-runs
@@ -340,11 +344,19 @@ sub sequence_handler {
     unless ($flag) { 
         return;
     }
-
+    
     $seq_id = $sequence->{'att'}->{'id'};
     $class = $sequence->{'att'}->{'class'};
     $molecule = $sequence->{'att'}->{'molecule'};
     
+    my @attribs = $sequence->children('Attribute');
+    my $defline = undef;
+    foreach my $attrib(@attribs) {
+        if ($attrib->{'att'}->{'name'} eq 'defline') {
+            $defline = $attrib->{'att'}->{'content'};
+        }
+    }
+
     my $sequence_file = $options{'output'}."/$seq_id.mask_by_analysis.fsa";
     
     if (!defined($class)) {
@@ -383,12 +395,18 @@ sub sequence_handler {
         }
         
         my $seq = get_sequence_by_id($source, $identifier);
-            
+        
         if (length($seq) > 0) {
 
+            print "masking '$seq_id'\n";
+            
             $seq = mask_sequence($seq, $mask_regions->{$seq_id}, $mask_char);
             
-            write_seq_to_fasta($sequence_file, $seq_id, $seq);
+            if ($defline) {
+                write_seq_to_fasta($sequence_file, $defline, $seq);
+            } else {
+                write_seq_to_fasta($sequence_file, $seq_id, $seq);
+            }
 
             $seq_data_import->{'att'}->{'source'} = $sequence_file;
             
@@ -398,9 +416,15 @@ sub sequence_handler {
         
     } elsif ($seq_data = $sequence->first_child('Seq-data')) {
         ## sequence is in the BSML
+        print "masking '$seq_id'\n";
+        
         my $seq = mask_sequence($seq_data->text(), $mask_regions->{$seq_id}, $mask_char);
         
-        write_seq_to_fasta($sequence_file, $seq_id, $seq);
+        if ($defline) {
+            write_seq_to_fasta($sequence_file, $defline, $seq);
+        } else {
+            write_seq_to_fasta($sequence_file, $seq_id, $seq);
+        }
         
         $seq_data->delete();
         
@@ -433,6 +457,10 @@ sub sequence_handler {
                             '#mask_by_analysis_analysis',
                             'computed_by',
                           );
+    if ($defline) {
+        $doc->createAndAddBsmlAttribute( $bsml_seq, 'defline', $defline );
+    }
+ 
 }
 
 ## pull a sequence from a fasta file by sequence id
@@ -496,7 +524,7 @@ sub mask_sequence {
             $logger->logdie("mask_sequence was passed len < 0: start=$start len=$len\n");
         }
         if (($start + $len) > length($seq)) {
-            $logger->logdie("mask_sequence was passed start + len > length(seq): start=$start len=$len seqlen=".length($seq)."\n");
+            $logger->logdie("mask_sequence was passed start + len > length(seq): start=$start len=$len seqlen=".length($seq));
         }
         
         ## if the random flag, mask with random NTs
