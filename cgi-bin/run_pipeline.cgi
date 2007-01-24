@@ -20,6 +20,11 @@ my $global_id_repository = $ergatis_cfg->val('paths', 'global_id_repository') ||
 my $qvars = $q->Vars;
 my $pipeline;
 
+## handle some defaults
+$$qvars{skip_run} = 0 unless ( exists $$qvars{skip_run} );
+$$qvars{skip_instantiation} = 0 unless ( exists $$qvars{skip_instantiation} );
+
+
 ## we're either creating a new pipeline, or re-running
 if ( $$qvars{rerun} ) {
     $pipeline = Ergatis::Pipeline->new( path => $$qvars{pipeline_xml},
@@ -98,7 +103,7 @@ if ( $$qvars{rerun} ) {
 
     close $ofh;
 
-    unless ( exists $$qvars{skip_instantiation} && $$qvars{skip_instantiation} == 1 ) {
+    unless ( $$qvars{skip_instantiation} == 1 ) {
         ## instantiate the pipeline from the template
         my $pipeline_template = new Ergatis::SavedPipeline( template => $build_pipeline_path );
         $pipeline = $pipeline_template->write_pipeline( repository_root => $$qvars{repository_root},
@@ -106,7 +111,8 @@ if ( $$qvars{rerun} ) {
     }
 
 }
-unless ( exists $$qvars{skip_run} && $$qvars{skip_run} == 1 ) {
+
+unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
     $pipeline->run( ergatis_cfg => $ergatis_cfg );
 }
 

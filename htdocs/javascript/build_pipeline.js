@@ -545,11 +545,13 @@ function savePipelineLayout() {
 
     var ajaxRequest = null;
     var ajaxCallback = _save_pipeline_layout_handler;
-    var url = './run_pipeline.cgi?skip_instantiation=1';
+    var url = './run_pipeline.cgi';
     var skip_run_old_val = document.pipeline.skip_run.value; 
     document.pipeline.skip_run.value = 1;
+    document.pipeline.skip_instantiation.value = 1;
     var form_string = formData2QueryString( document.forms['pipeline'] );
     document.pipeline.skip_run.value = skip_run_old_val;
+    document.pipeline.skip_instantiation.value = 0;
 
     // bind the call back, then do the request
     if (window.XMLHttpRequest) {
