@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -235,9 +235,8 @@ delete_analysis  :
 
 fasta2bsml	:
 	@echo "Installing fasta2bsml workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/fasta2bsml/fasta2bsmlconf.ini $(WORKFLOW_DOCS_DIR)
-	@install components/fasta2bsml/fasta2bsml-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/fasta2bsml/fasta2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install components/fasta2bsml/fasta2bsml.config $(WORKFLOW_DOCS_DIR)
+	@install components/fasta2bsml/fasta2bsml.xml $(WORKFLOW_DOCS_DIR)
 
 fgenesh	:
 	@echo "Installing fgenesh workflows in $(WORKFLOW_DOCS_DIR)"
