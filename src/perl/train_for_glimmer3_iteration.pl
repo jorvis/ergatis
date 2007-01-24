@@ -186,7 +186,7 @@ sub storeStartCodonUsageResult {
 
     my $val;
     $val = $cfg->setval('input glimmer3', '$;START_CODON_USAGE$;', $str);               #Ergatis v1
-    $val = $cfg->setval('parameters', '$;START_CODON_USAGE$;', $srt) unless($val);      #Ergatis v2
+    $val = $cfg->setval('parameters', '$;START_CODON_USAGE$;', $str) unless($val);      #Ergatis v2
     $logger->logdie("Cannot set value of \$;START_CODON_USAGE\$; in $confIniFile to $str") unless($val);
     $cfg->WriteConfig($confIniFile);
 }
