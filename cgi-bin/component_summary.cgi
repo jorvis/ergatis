@@ -176,7 +176,10 @@ sub parseCommandSet {
 
         ## all commands should have a state already, so I'll not check here.  this may
         #   need to be changed.
-        my $state = $command->first_child('state')->text();
+        my $state = 'unknown';
+        if ( $command->has_child('state') ) {
+            $state = $command->first_child('state')->text();
+        }
 
         ## increase the count for this state
         $states{ $state }++;            
