@@ -17,8 +17,8 @@
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
             <param>  
-                <key>--output_bsml</key>
-                <value>$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+                <key>--output_prefix</key>
+                <value>$;I_FILE_BASE$;.$;COMPONENT_NAME$;</value>
             </param>
             <param>  
                 <key>--analysis_types</key>
@@ -39,6 +39,10 @@
             <param>  
                 <key>--softmask</key>
                 <value>'$;SOFTMASK$;'</value>
+            </param>
+            <param>  
+                <key>--multifasta</key>
+                <value>'$;MULTIFASTA$;'</value>
             </param>
         </command>
         <command>
