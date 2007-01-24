@@ -112,9 +112,28 @@ my $files = &get_btab_files($options{'btab_dir'},$options{'btab_file'});
 
 my $doc = new BSML::BsmlBuilder();
 
+my $deflines = get_deflines($options{'query_file_path'});
+
 #generate lookups
 $doc->makeCurrentDocument();
 parse_blast_btabs($files);
+
+## create sequence stubs for input sequences with null output
+foreach my $seq_id(keys(%{$deflines})) {
+    if(!($doc->returnBsmlSequenceByIDR($seq_id))){
+        my $seq = $doc->createAndAddSequence( 
+                                                $seq_id, 
+                                                $seq_id, 
+                                                '',     # length
+                                                '',   # molecule 
+                                                '',     # class
+                                            );
+        
+        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $deflines->{$seq_id} );
+        $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{'query_file_path'}, '', $seq_id);
+    }
+}
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
@@ -402,10 +421,10 @@ sub createAndAddBtabLine {
     my $seq;
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
+        $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, '', $args{'class'} );
         $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
         
-        my $defline = get_defline($args{'query_name'}, $options{'query_file_path'});
+        my $defline = $deflines->{$args{'query_name'}};
         $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline );
         
         if ($options{'query_file_path'}) {
@@ -415,7 +434,7 @@ sub createAndAddBtabLine {
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
+        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), '', $args{'class'} );
         $doc->createAndAddBsmlAttribute( $seq, 'defline', "$args{orig_dbmatch_accession} $args{dbmatch_header}" );
     }
 
@@ -580,10 +599,12 @@ sub mergeOverlappingIntervals {
 }
 
 
-## retrieve defline from a fasta file by seq_id
-sub get_defline {
-    my ($seq_id, $fasta_file) = @_;
+## retrieve deflines from a fasta file
+sub get_deflines {
+    my ($fasta_file) = @_;
 
+    my $deflines = {};
+    
     open (IN, $fasta_file)
       || $logger->logdie("Failed opening '$fasta_file' for reading");
 
@@ -592,15 +613,15 @@ sub get_defline {
             next;
         }
         chomp;
-        if (/^>($seq_id.*)$/) {
-            return $1;
+        if (/^>((\S+).*)$/) {
+            $deflines->{$2} = $1;
         } 
     }
-
     close IN;
     
-    $logger->logwarn("defline lookup failed for '$seq_id' in '$fasta_file'");
-    
-    return undef;
-    
+    if (scalar(keys(%{$deflines})) < 1) {
+        $logger->logwarn("defline lookup failed for '$fasta_file'");
+    }
+
+    return $deflines;
 }
