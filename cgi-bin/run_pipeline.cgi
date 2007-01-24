@@ -98,10 +98,12 @@ if ( $$qvars{rerun} ) {
 
     close $ofh;
 
-    ## instantiate the pipeline from the template
-    my $pipeline_template = new Ergatis::SavedPipeline( template => $build_pipeline_path );
-    $pipeline = $pipeline_template->write_pipeline( repository_root => $$qvars{repository_root},
-                                                       id_repository => $global_id_repository );
+    unless ( exists $$qvars{skip_instantiation} && $$qvars{skip_instantiation} == 1 ) {
+        ## instantiate the pipeline from the template
+        my $pipeline_template = new Ergatis::SavedPipeline( template => $build_pipeline_path );
+        $pipeline = $pipeline_template->write_pipeline( repository_root => $$qvars{repository_root},
+                                                        id_repository => $global_id_repository );
+    }
 
 }
 unless ( exists $$qvars{skip_run} && $$qvars{skip_run} == 1 ) {
