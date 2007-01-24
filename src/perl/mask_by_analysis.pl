@@ -362,6 +362,8 @@ sub sequence_handler {
         }
     }
 
+    my $fasta_header = ($defline) ? $defline : $seq_id;
+    
     my $sequence_file;
     if ($options{'multifasta'}) {
         $append_file = 1;
@@ -411,11 +413,7 @@ sub sequence_handler {
 
             $seq = mask_sequence($seq, $mask_regions->{$seq_id}, $mask_char);
             
-            if ($defline) {
-                write_seq_to_fasta($sequence_file, $defline, $seq, $append_file);
-            } else {
-                write_seq_to_fasta($sequence_file, $seq_id, $seq, $append_file);
-            }
+            write_seq_to_fasta($sequence_file, $fasta_header, $seq, $append_file);
 
             $seq_data_import->{'att'}->{'source'} = $sequence_file;
             
@@ -427,11 +425,7 @@ sub sequence_handler {
         ## sequence is in the BSML
         my $seq = mask_sequence($seq_data->text(), $mask_regions->{$seq_id}, $mask_char);
         
-        if ($defline) {
-            write_seq_to_fasta($sequence_file, $defline, $seq, $append_file);
-        } else {
-            write_seq_to_fasta($sequence_file, $seq_id, $seq, $append_file);
-        }
+        write_seq_to_fasta($sequence_file, $fasta_header, $seq, $append_file);
         
         $seq_data->delete();
         
