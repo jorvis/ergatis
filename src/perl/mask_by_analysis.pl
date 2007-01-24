@@ -20,8 +20,8 @@ B<--input,-i>
 B<--output,-o>
     The output path.
 
-B<--output_bsml,-b>
-    Output BSML file name.
+B<--output_prefix,-b>
+    Output file name prefix (for BSML and multifasta output).
 
 B<--mask_char,-x>
     The character to mask with (default = X).
@@ -38,6 +38,9 @@ B<--random>
 
 B<--softmask>
     Soft-mask the sequence.    
+
+B<--multifasta>
+    Output a multifasta file of masked sequences instead of single sequence files.    
 
 B<--log,-l>
     Log file
@@ -82,9 +85,10 @@ GetOptions (\%options,
             'feature_types|f:s',
             'mask_char|x=s',
             'output|o=s',
-            'output_bsml|b=s',
+            'output_prefix|p=s',
             'random:i',
             'softmask:i',
+            'multifasta:i',
             'log|l=s',
             'debug|d=i',
             'help|h') || pod2usage();
@@ -124,8 +128,8 @@ if (!-e $options{'input'}) {
 if (!$options{'output'}) {
     pod2usage("must specify output path with --output");
 }
-if (!$options{'output_bsml'}) {
-    pod2usage("must specify output bsml file name with --output_bsml");
+if (!$options{'output_prefix'}) {
+    pod2usage("must specify output file name prefix with --output_prefix");
 }
 
 $options{'output'} =~ s/\/$//;
@@ -156,7 +160,7 @@ if ($options{'feature_types'}) {
     $feature_types = do_flag_hash($options{'feature_types'});
 }
 
-$outfile = $options{'output'}."/".$options{'output_bsml'};
+$outfile = $options{'output'}."/".$options{'output_prefix'}.".bsml";
 
 my $infh;
 my $outfh;
@@ -318,7 +322,8 @@ sub sequence_handler {
     my $source;
     my $identifier;
     my $format;
-    
+   
+    my $append_file = 0; 
     
     my $flag = 0;
     
@@ -357,7 +362,13 @@ sub sequence_handler {
         }
     }
 
-    my $sequence_file = $options{'output'}."/$seq_id.mask_by_analysis.fsa";
+    my $sequence_file;
+    if ($options{'multifasta'}) {
+        $append_file = 1;
+        $sequence_file = $options{'output'}."/".$options{'output_prefix'}.".fsa";
+    } else {
+        $sequence_file = $options{'output'}."/$seq_id.mask_by_analysis.fsa";
+    }
     
     if (!defined($class)) {
         if ($logger->is_debug()) {$logger->debug("WARNING: sequence class of '$seq_id' was not defined\n");}
@@ -398,14 +409,12 @@ sub sequence_handler {
         
         if (length($seq) > 0) {
 
-            print "masking '$seq_id'\n";
-            
             $seq = mask_sequence($seq, $mask_regions->{$seq_id}, $mask_char);
             
             if ($defline) {
-                write_seq_to_fasta($sequence_file, $defline, $seq);
+                write_seq_to_fasta($sequence_file, $defline, $seq, $append_file);
             } else {
-                write_seq_to_fasta($sequence_file, $seq_id, $seq);
+                write_seq_to_fasta($sequence_file, $seq_id, $seq, $append_file);
             }
 
             $seq_data_import->{'att'}->{'source'} = $sequence_file;
@@ -416,14 +425,12 @@ sub sequence_handler {
         
     } elsif ($seq_data = $sequence->first_child('Seq-data')) {
         ## sequence is in the BSML
-        print "masking '$seq_id'\n";
-        
         my $seq = mask_sequence($seq_data->text(), $mask_regions->{$seq_id}, $mask_char);
         
         if ($defline) {
-            write_seq_to_fasta($sequence_file, $defline, $seq);
+            write_seq_to_fasta($sequence_file, $defline, $seq, $append_file);
         } else {
-            write_seq_to_fasta($sequence_file, $seq_id, $seq);
+            write_seq_to_fasta($sequence_file, $seq_id, $seq, $append_file);
         }
         
         $seq_data->delete();
@@ -494,10 +501,15 @@ sub get_sequence_by_id {
 
 ## writes a nicely formatted fasta file
 sub write_seq_to_fasta {
-    my ($file, $header, $sequence) = @_;
+    my ($file, $header, $sequence, $append) = @_;
+
     
-    open (OUT, ">$file") || $logger->logdie("couldn't write fasta file '$file'");
-        
+    if ($append) {
+        open (OUT, ">>$file") || $logger->logdie("couldn't write fasta file '$file': $!");
+    } else {
+        open (OUT, ">$file") || $logger->logdie("couldn't write fasta file '$file': $!");
+    }    
+    
     $sequence =~ s/\W+//g;
     $sequence =~ s/(.{1,60})/$1\n/g;
         
