@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark genewise glimmerHMM hmmpfam initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome phat repeatmasker runsql signalp split_multifasta targetp tmhmm trf tRNAscan-SE wait wu-blastp wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -63,7 +63,7 @@ ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta 
 	@install components/shared/project.config.example $(WORKFLOW_DOCS_DIR)
 	@install components/shared/software.config $(PREFIX)
 
-ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -313,11 +313,9 @@ gff2bsml	:
 
 glimmer3	:
 	@echo "Installing glimmer3 workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/glimmer3/glimmer3-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/glimmer3/glimmer3-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/glimmer3/glimmer3.ini $(WORKFLOW_DOCS_DIR)
-	@install components/glimmer3/glimmer3_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/glimmer3/glimmer3conf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/glimmer3/glimmer3.config $(WORKFLOW_DOCS_DIR)
+	@install components/glimmer3/glimmer3.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/glimmer3/glimmer3.xml $(WORKFLOW_DOCS_DIR)
 
 glimmerHMM	:
 	@echo "Installing glimmerHMM workflows in $(WORKFLOW_DOCS_DIR)"
@@ -365,11 +363,9 @@ hmmtigr	:
 
 infernal	:
 	@echo "Installing infernal workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/infernal/infernal-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/infernal/infernal-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/infernal/infernal.ini $(WORKFLOW_DOCS_DIR)
-	@install components/infernal/infernal_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/infernal/infernalconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/infernal/infernal.config $(WORKFLOW_DOCS_DIR)
+	@install components/infernal/infernal.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/infernal/infernal.xml $(WORKFLOW_DOCS_DIR)
 
 initdb	:
 	@echo "Installing initdb workflows in $(WORKFLOW_DOCS_DIR)"
@@ -535,11 +531,9 @@ panther	:
 
 parse_for_ncRNAs	:
 	@echo "Installing parse_for_ncRNAs workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/parse_for_ncRNAs/parse_for_ncRNA-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/parse_for_ncRNAs/parse_for_ncRNA-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/parse_for_ncRNAs/parse_for_ncRNA.ini $(WORKFLOW_DOCS_DIR)
-	@install components/parse_for_ncRNAs/parse_for_ncRNA_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/parse_for_ncRNAs/parse_for_ncRNAconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/parse_for_ncRNAs/parse_for_ncRNA.config $(WORKFLOW_DOCS_DIR)
+	@install components/parse_for_ncRNAs/parse_for_ncRNA.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/parse_for_ncRNAs/parse_for_ncRNA.xml $(WORKFLOW_DOCS_DIR)  
 
 pe	:
 	@echo "Installing pe workflows in $(WORKFLOW_DOCS_DIR)"
@@ -686,6 +680,11 @@ tmhmm	:
 	@install components/tmhmm/tmhmm.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/tmhmm/tmhmm.config $(WORKFLOW_DOCS_DIR)
 
+train_for_glimmer3_iteration	:
+	@echo "Installing train_for_glimmer3_iteration workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/train_for_glimmer3_iteration/train_for_glimmer3_iteration.xml $(WORKFLOW_DOCS_DIR)
+	@install components/train_for_glimmer3_iteration/train_for_glimmer3_iteration.config $(WORKFLOW_DOCS_DIR)
+
 translate_sequence	:
 	@echo "Installing translate_sequence workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/translate_sequence/translate_sequence-master.ini $(WORKFLOW_DOCS_DIR)
@@ -729,11 +728,9 @@ wait	:
 
 wu-blastn	:
 	@echo "Installing wu-blastn workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/wu-blastn/wu-blastn-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastn/wu-blastn-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastn/wu-blastn.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastn/wu-blastn_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/wu-blastn/wu-blastnconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastn/wu-blastn.config $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastn/wu-blastn.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastn/wu-blastn.xml $(WORKFLOW_DOCS_DIR)
 
 wu-blastp	:
 	@echo "Installing wu-blastp workflows in $(WORKFLOW_DOCS_DIR)"
