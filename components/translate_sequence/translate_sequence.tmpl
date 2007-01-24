@@ -1,0 +1,23 @@
+<!-- component documentation -->
+
+<p>
+    This component will translate sequence from a single format fasta file or a polypeptide describing BSML document (ex. gene prediction output).  
+    Uses Emboss' transeq.
+</p>
+<h3>References</h3>
+<p>
+
+    Rice P, Longden I, Bleasby A. (2000)
+    EMBOSS: the European Molecular Biology Open Software Suite.
+    Trends Genet 2000 Jun;16(6):276-7.
+    <a href='http://www.ebi.ac.uk/emboss/transeq/'>http://www.ebi.ac.uk/emboss/transeq/</a>
+</p>
+<h3>Input</h3>
+<p>
+   Translate_sequence will take a single sequence fasta file (nucleic acid) and translate.  Translate_sequence will also take a BSML document.
+   Using the Seq-Data[-Import] element, translate_sequence will pull nucleic acid information and translate the specified intervals.     
+</p>
+<h3>implemented options</h3>
+<p>
+    Please see $;BIN_DIR$;/translate_sequence.pl for option explanations.
+</p>
