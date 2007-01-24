@@ -365,3 +365,5 @@ next
 -added DESCRIPTION variable to all component config files
 -corrected infernal, wu-blastn, parse_for_ncRNA, glimmer3, and train_for_glimmer3_iteration in Makefile.PL to properly install as verion 2 components.
 -removed infernal, wu-blastn, parse_for_ncRNA, glimmer3, and train_for_glimmer3_iteration from ergatis/workflow/ cvs directory
+-fixed blastbtab2bsml defline/identifier bug for multifasta input
+-updated mask_by_analysis to support optional multifasta file output, and to maintain deflines for masked fasta output
