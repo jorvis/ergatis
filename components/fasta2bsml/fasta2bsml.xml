@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>fasta2bsml workflow</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>fasta2bsml</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/fasta2bsml</executable>
+            <param>  
+                <key>--fasta_input</key>
+                <value>'$;INPUT_FILE$;'</value>
+            </param>
+            <param>  
+                <key>--fasta_list</key>
+                <value>'$;INPUT_FILE_LIST$;'</value>
+            </param>
+            <param>  
+                <key>--format</key>
+                <value>'$;FORMAT$;'</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>'$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE$;'</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>'$;OUTPUT_LIST$;'</value>
+            </param>
+            <param>  
+                <key>--output_subdir_size</key>
+                <value>$;OUTPUT_SUBDIR_SIZE$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
