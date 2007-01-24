@@ -1,4 +1,5 @@
-#!/usr/local/packages/perl-5.8.5/bin/perl
+#!/usr/local/bin/perl
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -76,7 +77,7 @@ my $results = GetOptions (\%options,
               'log|l=s',
               'debug=s',
               'class|c=s',
-	          'gzip|z',
+              'gzip|z',
               'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -99,26 +100,6 @@ if (!defined($options{'class'})){
 else{
     $class = $options{'class'};
 }
-
-# This is used for SeqDataImport and also
-# for creating the defline Bsml Attribute for
-# the query sequence (bug 3781).
-my ($defline, $qFPath, $identifier);
-if($options{'query_file_path'}) {
-    $qFPath = $options{'query_file_path'};
-    open(IN, "< $qFPath") or
-        $logger->logdie("Unable to open query fasta file $qFPath ($!)");
-    while(<IN>) {
-        chomp;
-        if(/^>(.*)/) {
-            $defline = $1;
-            $identifier = $1 if($defline =~ /^(\S+)/);
-        }
-
-    }
-    close(IN);
-}
-
 
 # display documentation
 if( $options{'help'} ){
@@ -173,91 +154,91 @@ sub parse_blast_btabs {
         }
     }
     close BTAB;
-	
-	## This block prepares an array of HSP data structured so that we can use
-	## existing subs taken from Sybil::Util to calculate coverage/identity info
-	my $cov_qual_stats = {};
-	my @hsp_ref_array = ();
-	my $new_subject = '';
-	foreach my $query (keys %$hsplookup) {
+    
+    ## This block prepares an array of HSP data structured so that we can use
+    ## existing subs taken from Sybil::Util to calculate coverage/identity info
+    my $cov_qual_stats = {};
+    my @hsp_ref_array = ();
+    my $new_subject = '';
+    foreach my $query (keys %$hsplookup) {
         foreach my $subject (keys %{$hsplookup->{$query}}){
-        	my @hsps = sort {$a->{'pvalue'} <=> $b->{'pvalue'}} @{$hsplookup->{$query}->{$subject}};
-        	my $maxhsp;
-        	if($options{'max_hsp_count'} ne ""){
-            	$maxhsp = ($options{'max_hsp_count'}<scalar(@hsps)) ? $options{'max_hsp_count'} : scalar(@hsps);
-        	} else {
-            	$maxhsp = scalar(@hsps);
-        	}
-    	    my $queryid;
-	    	for(my $i=0;$i<$maxhsp;$i++){
-            	my $line = $hsps[$i]->{'line'};
-		        my @btab = split("\t", $line);
-		        $queryid = $btab[0] if($btab[0] && (!$queryid));
+            my @hsps = sort {$a->{'pvalue'} <=> $b->{'pvalue'}} @{$hsplookup->{$query}->{$subject}};
+            my $maxhsp;
+            if($options{'max_hsp_count'} ne ""){
+                $maxhsp = ($options{'max_hsp_count'}<scalar(@hsps)) ? $options{'max_hsp_count'} : scalar(@hsps);
+            } else {
+                $maxhsp = scalar(@hsps);
+            }
+            my $queryid;
+            for(my $i=0;$i<$maxhsp;$i++){
+                my $line = $hsps[$i]->{'line'};
+                my @btab = split("\t", $line);
+                $queryid = $btab[0] if($btab[0] && (!$queryid));
 
-        	    for (my $i=0;$i<scalar(@btab);$i++){
-			    	if ($btab[$i] eq 'N/A'){
-            		    $btab[$i] = undef;
-			        }
-            	}
-				
-            	my $orig_dbmatch_accession = $btab[5];
-		        $btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
+                for (my $i=0;$i<scalar(@btab);$i++){
+                    if ($btab[$i] eq 'N/A'){
+                        $btab[$i] = undef;
+                    }
+                }
+                
+                my $orig_dbmatch_accession = $btab[5];
+                $btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
 
-				$new_subject = $btab[5];
-				
-				my $qfmin = $btab[6];
-				my $qfmax = $btab[7];
-				my $qstrand = 0;
-				my $tfmin = $btab[8];
-				my $tfmax = $btab[9];
-				my $tstrand = 0;
-					
-				## if query positions are on the reverse strand
-				if ($btab[6] > $btab[7]) {
-						$qfmin = $btab[7];
-						$qfmax = $btab[6];
-						$qstrand = 1;
-				}
-				
-				## if target positions are on the reverse strand
-				if ($btab[8] > $btab[9]) {
-						$tfmin = $btab[9];
-						$tfmax = $btab[8];
-						$tstrand = 1;
-				}
-				
-				## transform the start positions to interbase 
-				$qfmin = $qfmin - 1;
-				$tfmin = $tfmin - 1;	
-					
-				my $hsp_ref = { 
-								'query_protein_id' 	=> $btab[0],
-								'target_protein_id'	=> $btab[5],
-								'significance' 		=> $btab[20],
-								'percent_identity'	=> $btab[10],
-								'query_seqlen'		=> $btab[2],
-								'target_seqlen'		=> $btab[18],
-								'query_fmin'		=> $qfmin,
-								'query_fmax'		=> $qfmax,
-								'query_strand'		=> $btab[17],
-								'target_fmin'		=> $tfmin,
-								'target_fmax'		=> $tfmax,
-								'target_strand'		=> $tstrand, ## target strand is not captured in btab 
-							  };
-				push (@hsp_ref_array, $hsp_ref);
-			}
-			if (!defined($cov_qual_stats->{$query})) {
-			   $cov_qual_stats->{$query} = {};
-		    }
-			
-	 		my $coverage_arr_ref = &getAvgBlastPPctCoverage(\@hsp_ref_array);
-		
-			$cov_qual_stats->{$query}->{$new_subject} = {
-				'percent_coverage_refseq'	=>	sprintf("%.1f",$coverage_arr_ref->[0]),
-				'percent_coverage_compseq'		=>	sprintf("%.1f",$coverage_arr_ref->[1]),
-														};
-		}
-	}
+                $new_subject = $btab[5];
+                
+                my $qfmin = $btab[6];
+                my $qfmax = $btab[7];
+                my $qstrand = 0;
+                my $tfmin = $btab[8];
+                my $tfmax = $btab[9];
+                my $tstrand = 0;
+                    
+                ## if query positions are on the reverse strand
+                if ($btab[6] > $btab[7]) {
+                        $qfmin = $btab[7];
+                        $qfmax = $btab[6];
+                        $qstrand = 1;
+                }
+                
+                ## if target positions are on the reverse strand
+                if ($btab[8] > $btab[9]) {
+                        $tfmin = $btab[9];
+                        $tfmax = $btab[8];
+                        $tstrand = 1;
+                }
+                
+                ## transform the start positions to interbase 
+                $qfmin = $qfmin - 1;
+                $tfmin = $tfmin - 1;    
+                    
+                my $hsp_ref = { 
+                                'query_protein_id'  => $btab[0],
+                                'target_protein_id' => $btab[5],
+                                'significance'      => $btab[20],
+                                'percent_identity'  => $btab[10],
+                                'query_seqlen'      => $btab[2],
+                                'target_seqlen'     => $btab[18],
+                                'query_fmin'        => $qfmin,
+                                'query_fmax'        => $qfmax,
+                                'query_strand'      => $btab[17],
+                                'target_fmin'       => $tfmin,
+                                'target_fmax'       => $tfmax,
+                                'target_strand'     => $tstrand, ## target strand is not captured in btab 
+                              };
+                push (@hsp_ref_array, $hsp_ref);
+            }
+            if (!defined($cov_qual_stats->{$query})) {
+               $cov_qual_stats->{$query} = {};
+            }
+            
+            my $coverage_arr_ref = &getAvgBlastPPctCoverage(\@hsp_ref_array);
+        
+            $cov_qual_stats->{$query}->{$new_subject} = {
+                'percent_coverage_refseq'   =>  sprintf("%.1f",$coverage_arr_ref->[0]),
+                'percent_coverage_compseq'      =>  sprintf("%.1f",$coverage_arr_ref->[1]),
+                                                        };
+        }
+    }
 
     foreach my $query (keys %$hsplookup){
         foreach my $subject (keys %{$hsplookup->{$query}}){
@@ -310,8 +291,8 @@ sub parse_blast_btabs {
                               hit_length         => $btab[18],
                               e_value            => $btab[19],
                               p_value            => $btab[20],
-							  percent_coverage_refseq	 => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_refseq'},
-							  percent_coverage_compseq		 => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_compseq'},
+                              percent_coverage_refseq    => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_refseq'},
+                              percent_coverage_compseq       => $cov_qual_stats->{$btab[0]}->{$btab[5]}->{'percent_coverage_compseq'},
                               class              => $class,
                               orig_dbmatch_accession => $orig_dbmatch_accession
                               );
@@ -407,8 +388,8 @@ sub createAndAddBtabLine {
         $seq_run->addBsmlAttr( 'class', 'match_part' );
         $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )               if (defined ($args{'percent_identity'}));   
         $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )           if (defined ($args{'percent_similarity'}));
-        $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )              	 if (defined ($args{'percent_coverage_refseq'}));   
-        $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )           		     if (defined ($args{'percent_coverage_compseq'}));   
+        $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )                 if (defined ($args{'percent_coverage_refseq'}));   
+        $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )                       if (defined ($args{'percent_coverage_compseq'}));   
         $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
         $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
 
@@ -423,16 +404,19 @@ sub createAndAddBtabLine {
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
         $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
         $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+        
+        my $defline = get_defline($args{'query_name'}, $options{'query_file_path'});
         $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline );
-        $doc->createAndAddSeqDataImport( $seq, 'fasta', $qFPath, '', $identifier) if(defined($qFPath) && defined($identifier));
+        
+        if ($options{'query_file_path'}) {
+            $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{'query_file_path'}, '', "$args{'query_name'}");
+        }
         
     }
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
-		$seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
+        $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), 'aa', $args{'class'} );
         $doc->createAndAddBsmlAttribute( $seq, 'defline', "$args{orig_dbmatch_accession} $args{dbmatch_header}" );
-##        Removed to resolve bug #2671
-##        $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
 
     ## see if the dbmatch_header format is recognized.  if so, add some cross-references
@@ -452,7 +436,7 @@ sub createAndAddBtabLine {
 
     $alignment_pair->setattr( 'refxref', ':'.$args{'query_name'})        if (defined ($args{'query_name'}));                     
     $alignment_pair->setattr( 'refstart', 0 );
-    $alignment_pair->setattr( 'refend', $args{'query_length'} )   		 if (defined ($args{'query_length'}));
+    $alignment_pair->setattr( 'refend', $args{'query_length'} )          if (defined ($args{'query_length'}));
     $alignment_pair->setattr( 'reflength', $args{'query_length'} )       if (defined ($args{'query_length'}));
     $alignment_pair->setattr( 'method', $args{'blast_program'} )         if (defined ($args{'blast_program'}));
     $alignment_pair->setattr( 'class', 'match' );
@@ -479,8 +463,8 @@ sub createAndAddBtabLine {
     $seq_run->addBsmlAttr( 'class', 'match_part' );
     $seq_run->addBsmlAttr( 'percent_identity', $args{'percent_identity'} )                 if (defined  ($args{'percent_identity'}));
     $seq_run->addBsmlAttr( 'percent_similarity', $args{'percent_similarity'} )             if (defined  ($args{'percent_similarity'}));
-    $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )               	   if (defined ($args{'percent_coverage_refseq'}));   
-    $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )               		   if (defined ($args{'percent_coverage_compseq'}));   
+    $seq_run->addBsmlAttr( 'percent_coverage_refseq', $args{'percent_coverage_refseq'} )                   if (defined ($args{'percent_coverage_refseq'}));   
+    $seq_run->addBsmlAttr( 'percent_coverage_compseq', $args{'percent_coverage_compseq'} )                         if (defined ($args{'percent_coverage_compseq'}));   
     $seq_run->addBsmlAttr( 'chain_number', $args{'chain_number'} )                         if (defined  ($args{'chain_number'}));
     $seq_run->addBsmlAttr( 'segment_number', $args{'segment_number'} )                     if (defined  ($args{'segment_number'}));
     $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                   if (defined  ($args{'p_value'}));
@@ -502,37 +486,37 @@ sub getAvgBlastPPctCoverage {
     my $hspsByQuery = &groupByMulti($hsps, ['query_protein_id', 'target_protein_id']);
 
     foreach my $queryId (keys %$hspsByQuery) {
-		my $hspsByTarget = $hspsByQuery->{$queryId};
+        my $hspsByTarget = $hspsByQuery->{$queryId};
 
-		foreach my $subjId (keys %$hspsByTarget) {
-	    	++$numHsps;
-		    my $shsps = $hspsByTarget->{$subjId};
-		    my $querySeqLen = $shsps->[0]->{'query_seqlen'};
-	    	my $targetSeqLen = $shsps->[0]->{'target_seqlen'};
+        foreach my $subjId (keys %$hspsByTarget) {
+            ++$numHsps;
+            my $shsps = $hspsByTarget->{$subjId};
+            my $querySeqLen = $shsps->[0]->{'query_seqlen'};
+            my $targetSeqLen = $shsps->[0]->{'target_seqlen'};
 
-		    my @queryIntervals = map { {'fmin' => $_->{'query_fmin'}, 'fmax' => $_->{'query_fmax'}, 'strand' => $_->{'query_strand'}} } @$shsps;
-	   		my @targetIntervals = map { {'fmin' => $_->{'target_fmin'}, 'fmax' => $_->{'target_fmax'}, 'strand' => $_->{'target_strand'}} } @$shsps;
+            my @queryIntervals = map { {'fmin' => $_->{'query_fmin'}, 'fmax' => $_->{'query_fmax'}, 'strand' => $_->{'query_strand'}} } @$shsps;
+            my @targetIntervals = map { {'fmin' => $_->{'target_fmin'}, 'fmax' => $_->{'target_fmax'}, 'strand' => $_->{'target_strand'}} } @$shsps;
 
-		    my $mergedQueryIntervals = &mergeOverlappingIntervals(\@queryIntervals);
-		    my $mergedTargetIntervals = &mergeOverlappingIntervals(\@targetIntervals);
+            my $mergedQueryIntervals = &mergeOverlappingIntervals(\@queryIntervals);
+            my $mergedTargetIntervals = &mergeOverlappingIntervals(\@targetIntervals);
 
-	   		my $queryHitLen = 0;
-	    	my $targetHitLen = 0;
+            my $queryHitLen = 0;
+            my $targetHitLen = 0;
 
-		    map { $queryHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedQueryIntervals;
-		    map { $targetHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedTargetIntervals;
+            map { $queryHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedQueryIntervals;
+            map { $targetHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedTargetIntervals;
 
-	   		$qsum += $queryHitLen / $querySeqLen;
-	    	$tsum += $targetHitLen / $targetSeqLen;
-		}
+            $qsum += $queryHitLen / $querySeqLen;
+            $tsum += $targetHitLen / $targetSeqLen;
+        }
     }
 
-	if ($numHsps == 0) {
-		return undef;
-	} else {
-		return [($qsum/$numHsps*100.0), ($tsum/$numHsps*100.0)];
-	}
-	#return ($numHsps > 0) ? ($sum/($numHsps * 2) * 100.0) : undef;
+    if ($numHsps == 0) {
+        return undef;
+    } else {
+        return [($qsum/$numHsps*100.0), ($tsum/$numHsps*100.0)];
+    }
+    #return ($numHsps > 0) ? ($sum/($numHsps * 2) * 100.0) : undef;
 }
 
 # Generalized version of groupBy 
@@ -542,20 +526,20 @@ sub groupByMulti {
     my $groups = {};
 
     foreach my $a (@$arrayref) {
-		my @keyValues = map { $a->{$_} } @$keyFields;
-		my $hash = $groups;
+        my @keyValues = map { $a->{$_} } @$keyFields;
+        my $hash = $groups;
 
-		for (my $i = 0;$i < $nKeys;++$i) {
-	    	my $kv = $keyValues[$i];
+        for (my $i = 0;$i < $nKeys;++$i) {
+            my $kv = $keyValues[$i];
 
-	    	if ($i < ($nKeys-1)) {
-				$hash->{$kv} = {} if (!defined($hash->{$kv}));
-				$hash = $hash->{$kv};
-	    	} else {
-				$hash->{$kv} = [] if (!defined($hash->{$kv}));
-				push(@{$hash->{$kv}}, $a);
-		    }
-		}
+            if ($i < ($nKeys-1)) {
+                $hash->{$kv} = {} if (!defined($hash->{$kv}));
+                $hash = $hash->{$kv};
+            } else {
+                $hash->{$kv} = [] if (!defined($hash->{$kv}));
+                push(@{$hash->{$kv}}, $a);
+            }
+        }
     }
     return $groups;
 }
@@ -575,22 +559,48 @@ sub mergeOverlappingIntervals {
     my $current = undef;
 
     foreach my $i (@sorted) {
-		if (!defined($current)) {
-			# case 1: no current interval
-	    	$current = $i;
-		} else {
-			# case 2: compare current interval to interval $i
-			if ($i->{'fmin'} > $current->{'fmax'}) {   
-	    		# case 2a: no overlap
-				push(@$merged, $current);
-				$current = $i;
-		    } elsif ($i->{'fmax'} > $current->{'fmax'}) {
-			    # case 2b: overlap, with $i ending to the right of $current
-				$current->{'fmax'} = $i->{'fmax'};
-	    	}
-		}
+        if (!defined($current)) {
+            # case 1: no current interval
+            $current = $i;
+        } else {
+            # case 2: compare current interval to interval $i
+            if ($i->{'fmin'} > $current->{'fmax'}) {   
+                # case 2a: no overlap
+                push(@$merged, $current);
+                $current = $i;
+            } elsif ($i->{'fmax'} > $current->{'fmax'}) {
+                # case 2b: overlap, with $i ending to the right of $current
+                $current->{'fmax'} = $i->{'fmax'};
+            }
+        }
     }
     push(@$merged, $current) if (defined($current));
 
-	return $merged;
+    return $merged;
+}
+
+
+## retrieve defline from a fasta file by seq_id
+sub get_defline {
+    my ($seq_id, $fasta_file) = @_;
+
+    open (IN, $fasta_file)
+      || $logger->logdie("Failed opening '$fasta_file' for reading");
+
+    while (<IN>) {
+        unless (/^>/) {
+            next;
+        }
+        chomp;
+        if (/^>($seq_id.*)$/) {
+            return $1;
+        } 
+    }
+
+    close IN;
+    
+    $logger->logwarn("defline lookup failed for '$seq_id' in '$fasta_file'");
+    
+    return undef;
+    
 }
