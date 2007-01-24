@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked bsml2chado bsml2fasta clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked bsml2chado bsml2fasta clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -88,19 +88,15 @@ aat_aa_masked	:
 
 aat_na	:
 	@echo "Installing aat_na workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/aat_na/aat_na-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_na/aat_na-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/aat_na/aat_na.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_na/aat_na_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/aat_na/aat_naconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/aat_na/aat_na.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_na/aat_na.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_na/aat_na.config $(WORKFLOW_DOCS_DIR)
 
 aat_na_masked	:
 	@echo "Installing aat_na_masked workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/aat_na_masked/aat_na_masked-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_na_masked/aat_na_masked-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/aat_na_masked/aat_na_masked.ini $(WORKFLOW_DOCS_DIR)
-	@install components/aat_na_masked/aat_na_masked_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/aat_na_masked/aat_na_maskedconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/aat_na_masked/aat_na_masked.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_na_masked/aat_na_masked.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/aat_na_masked/aat_na_masked.config $(WORKFLOW_DOCS_DIR)
 
 adjust_bsml_coordinates	:
 	@echo "Installing adjust_bsml_coordinates workflows in $(WORKFLOW_DOCS_DIR)"
