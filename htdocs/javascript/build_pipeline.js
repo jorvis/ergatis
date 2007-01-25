@@ -67,8 +67,10 @@ function addComponentStub( set_root ) {
                 "<img id='" + component_id + "_arrow_down' src='/ergatis/images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()' alt='move component_down' title='move component down'>" +
             "</div>" +
             "<div class='component_action_buttons'>" +
+                "<img id='" + component_id + "_magnify_plus_disabled' src='/ergatis/images/icon_magnify_plus_disabled.png'>" +
                 "<img id='" + component_id + "_magnify_plus' src='/ergatis/images/icon_magnify_plus.png' onClick='components[" + '"' + component_id + '"' + "].advancedView()' alt='advanced view' title='advanced view'>" +
                 "<img id='" + component_id + "_magnify_minus' src='/ergatis/images/icon_magnify_minus.png' onClick='components[" + '"' + component_id + '"' + "].basicView()' alt='basic view' title='basic view'>" +
+                "<img id='" + component_id + "_copy' src='/ergatis/images/icon_copy.png' onClick='components[" + '"' + component_id + '"' + "].copy()' alt='copy component' title='copy component'>" +
                 "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()' alt='delete component' title='delete component'>" +
             "</div>" +
             "component<span class='locator'> (" + component_id + ")</span>: <select name='available_components' onChange='selectComponentConfig(" + '"' + component_num + '"' + ")' id='" + component_id + "_selector'></select>" +
@@ -111,7 +113,7 @@ function addComponentStub( set_root ) {
     }
     
     // make sure the component is in basic view
-    component.basicView();
+    component.clearConfig();
 }
 
 
@@ -587,6 +589,7 @@ function selectComponentConfig( component_num ) {
     // if the name is '' it's because they chose the 'please choose' option.  
     //  don't attempt to fetch anything.  just shrink the display
     if ( isEmpty( component_name ) ) {
+        components[component_id].clearConfig();
         components[component_id].config_view.hide();
         return;
     }

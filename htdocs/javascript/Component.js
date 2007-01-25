@@ -32,6 +32,8 @@ function Component( component_id ) {
     this.advancedView  = advanced_view;
     this.basicView     = basic_view;
     this.checkArrows   = check_arrows;
+    this.clearConfig   = clear_config;
+    this.copy          = copy_me;
     this.remove        = remove_component;
     this.moveUp        = graphically_move_component_up;
     this.moveDown      = graphically_move_component_down;
@@ -71,6 +73,7 @@ function _toggle() {
 function advanced_view() {
     // hide the advanced view button
     getObject(this.id + '_magnify_plus').style.display = 'none';
+    getObject(this.id + '_magnify_plus_disabled').style.display = 'none';
     
     // show the basic button
     getObject(this.id + '_magnify_minus').style.display = 'inline';
@@ -84,6 +87,7 @@ function advanced_view() {
 function basic_view() {
     // hide the basic view button
     getObject(this.id + '_magnify_minus').style.display = 'none';
+    getObject(this.id + '_magnify_plus_disabled').style.display = 'none';
     
     // display the advanced view button
     getObject(this.id + '_magnify_plus').style.display = 'inline';
@@ -116,6 +120,16 @@ function check_arrows() {
         getObject(this.id + '_arrow_down').style.display = 'inline';
         getObject(this.id + '_arrow_down_disabled').style.display = 'none';
     }
+}
+
+function clear_config() {
+    getObject(this.id + '_magnify_plus').style.display = 'none';
+    getObject(this.id + '_magnify_minus').style.display = 'none'
+    getObject(this.id + '_magnify_plus_disabled').style.display = '';
+}
+
+function copy_me() {
+    alert('this feature not yet ready');
 }
 
 /*
