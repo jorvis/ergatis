@@ -297,11 +297,12 @@ sub addSeqPair {
 
     unless($spas->{$match->{'seqId'}.$match->{'cmId'}}) {
         $spas->{$match->{'seqId'}.$match->{'cmId'}} = 
-            $doc->createAndAddSequencePairAlignment( refseq   => $match->{'seqId'},
+            my $aln = $doc->createAndAddSequencePairAlignment( refseq   => $match->{'seqId'},
                                                      compseq  => $match->{'cmId'},
                                                      complength => "",
                                                      class => "match",
                                                      refstart => 0,);
+            $aln->addBsmlLink('analysis', '#infernal_analysis', 'computed_by');
     }
     
     my $spr = $doc->createAndAddSequencePairRun(alignment_pair => 
