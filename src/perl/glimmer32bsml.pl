@@ -18,7 +18,6 @@ USAGE: glimmer32bsml.pl
             --input_list=/path/to/some/glimmer3.raw.list
             --input_file=/path/to/some/glimmer3.raw
             --output=/path/to/transterm.bsml
-            --project=aa1
             --id_repository=/path/to/id_repository
             --fasta_input=/path/to/glimmer3/input.fsa
           [ --log=/path/to/file.log
@@ -36,9 +35,6 @@ B<--input_file,-f>
 
 B<--output,-o>
     The output bsml file.
-
-B<--project,-p>
-    The project (used for id generation).
 
 B<--id_repository,-r>
     Id repository for use by Workflow::IdGenerator.pm
@@ -167,6 +163,9 @@ sub parseGlimmer3Data {
         if(/^>(.*?)\s/) {
 
             $foundId = $1;
+            $project = $1 if($foundId =~ /^(\w+?)\./);
+            $logger->logdie("Could not parse project name out of id $foundId.")
+                unless($project);
 
         } elsif($foundId) {
 
@@ -271,12 +270,6 @@ sub check_parameters {
         $error .= "Option output is required\n";
     } else {
         $output = $options{'output'};
-    }
-
-    unless($options{'project'}) {
-        $error .= "Option project is required\n";
-    } else {
-        $project = $options{'project'};
     }
 
     unless($options{'id_repository'}) {
