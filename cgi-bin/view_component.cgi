@@ -215,7 +215,6 @@ sub process_subflowgroup {
     ## get the state, if it has one
     if ( $commandSet->first_child('state') ) {
         $sg_props{state} = $commandSet->first_child('state')->text();
-        push @{$states{ $sg_props{state} }}, $sg_props{name};
     }
     
     ## grab data from the dceSpec if it has one
@@ -231,6 +230,7 @@ sub process_subflowgroup {
     
     if ( $commandSet->first_child('id') ) {
         $sg_props{workflow_id} = $commandSet->first_child('id')->text();
+        push @{$states{ $sg_props{state} }}, $sg_props{workflow_id};
     }
     
     ( $sg_props{start_time}, $sg_props{end_time}, $sg_props{run_time} ) = &time_info($commandSet);
