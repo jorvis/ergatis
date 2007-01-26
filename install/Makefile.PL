@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked bsml2chado bsml2fasta clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked bsml2chado bsml2fasta clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -566,6 +566,12 @@ phat	:
 	@install components/phat/phat.xml $(WORKFLOW_DOCS_DIR)
 	@install components/phat/phat.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/phat/phat.config $(WORKFLOW_DOCS_DIR) 
+
+promote_gene_prediction	:
+	@echo "Installing promote_gene_prediction workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/promote_gene_prediction/promote_gene_prediction.xml $(WORKFLOW_DOCS_DIR)
+	@install components/promote_gene_prediction/promote_gene_prediction.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/promote_gene_prediction/promote_gene_prediction.config $(WORKFLOW_DOCS_DIR) 
 
 predotar	:
 	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
