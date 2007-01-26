@@ -367,4 +367,6 @@ next
 -removed infernal, wu-blastn, parse_for_ncRNA, glimmer3, and train_for_glimmer3_iteration from ergatis/workflow/ cvs directory
 -fixed blastbtab2bsml defline/identifier bug for multifasta input
 -updated mask_by_analysis to support optional multifasta file output, and to maintain deflines for masked fasta output
+-committed fasta2bsml v2 component
 -fixed blastbtab2bsml to write sequences stubs for sequences with null blast results
+-added auto_annotate and auto_gene_curation to install script
