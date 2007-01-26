@@ -22,16 +22,16 @@
 	    <type>RunUnixCommand</type>
 	    <name>create_file_iterator_list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/create_file_iterator_list</executable>
+	    <executable>$;BIN_DIR$;/create_iterator_list</executable>
 	    <param>
-		<key>--input_file</key>
-		<value>$;CV_ID$;</value>
+		<key>--input_list</key>
+		<value>$;CV_IDS$;</value>
 	    </param>
 	    <param>
 		<key>--output_iter_list</key>
 		<value>$;WORKFLOW_REPOSITORY$;/cv_id.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=process,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/cv_id.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=process,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/cv_id.list,$;NODISTRIB$;=1"/>
     </commandSet>
 </commandSetRoot>
