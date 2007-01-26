@@ -1,0 +1,63 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<name>Backup tables to flat file</name>
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <state>incomplete</state>
+	    <name>Backup the table to flat file</name>
+	    <executable>$;BIN_DIR$;/flatFileToChado</executable>
+	    <param>
+		<key>--username</key>
+		<value>$;USERNAME$;</value>
+	    </param>
+	    <param>
+		<key>--password</key>
+		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>	  
+		<key>--database_type</key>
+		<value>$;DATABASE_TYPE$;</value>
+	    </param>
+	    <param>
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	    </param>
+	    <param>
+		<key>--debug_level</key>
+		<value>5</value>
+	    </param>
+	    <param>
+		<key>--table</key>
+		<value>$;TABLE$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;OUTPUT_DIRECTORY$;flatFileToChado.pl.$;TABLE$;.log</value>
+	    </param>
+	    <param>
+		<key>--directory</key>
+		<value>$;OUTPUT_DIRECTORY$;</value>
+	    </param>
+	    <param>
+		<key>--bcpmode</key>
+		<value>out</value>
+	    </param>
+	    <param>
+		<key>--bcp_ext</key>
+		<value>out</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/flatFileToChado.pl.$;TABLE$;.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;OUTPUT_DIRECTORY$;/flatFileToChado.pl.$;TABLE$;.stderr</value>
+	    </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
