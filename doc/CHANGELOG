@@ -372,3 +372,4 @@ next
 -added auto_annotate and auto_gene_curation to install script
 -made promote_gene_prediciton a v2 component
 -made auto_gene_curation a v2 component
+-made bsml2featurerelatiopnships a v2 component
