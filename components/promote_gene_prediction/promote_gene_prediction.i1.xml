@@ -2,7 +2,7 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>wu-blastp compute</name>
+        <name>promote gene prediction compute</name>
         <command>
             <type>RunUnixCommand</type>
             <name>promote gene prediction</name>
