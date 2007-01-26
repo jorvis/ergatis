@@ -35,8 +35,12 @@
 		<value>$;TABLE$;</value>
 	    </param>
 	    <param>
+		<key>--batchsize</key>
+		<value>$;BATCHSIZE$;</value>
+	    </param>
+	    <param>
 		<key>--logfile</key>
-		<value>$;OUTPUT_DIRECTORY$;flatFileToChado.pl.$;TABLE$;.log</value>
+		<value>$;OUTPUT_DIRECTORY$;/$;TABLE$;.log</value>
 	    </param>
 	    <param>
 		<key>--directory</key>
