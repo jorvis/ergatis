@@ -370,3 +370,4 @@ next
 -committed fasta2bsml v2 component
 -fixed blastbtab2bsml to write sequences stubs for sequences with null blast results
 -added auto_annotate and auto_gene_curation to install script
+-made promote_gene_prediciton a v2 component
