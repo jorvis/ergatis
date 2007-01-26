@@ -63,7 +63,7 @@ ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked b
 	@install components/shared/project.config.example $(WORKFLOW_DOCS_DIR)
 	@install components/shared/software.config $(PREFIX)
 
-ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -131,6 +131,23 @@ augustus	:
 	@install components/augustus/augustus.ini $(WORKFLOW_DOCS_DIR)
 	@install components/augustus/augustus_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/augustus/augustusconf.ini $(WORKFLOW_DOCS_DIR)
+
+auto_annotate	:
+	@echo "Installing auto_annotate workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/auto_annotate/auto_annotate-master.ini $(WORKFLOW_DOCS_DIR)
+	@install components/auto_annotate/auto_annotate-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install components/auto_annotate/auto_annotate.ini $(WORKFLOW_DOCS_DIR)
+	@install components/auto_annotate/auto_annotate_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/auto_annotate/auto_annotateconf.ini $(WORKFLOW_DOCS_DIR)
+
+auto_gene_curation	:
+	@echo "Installing auto_gene_curation workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/auto_gene_curation/auto_gene_curation-master.ini $(WORKFLOW_DOCS_DIR)
+	@install components/auto_gene_curation/auto_gene_curation-master_template.xml $(WORKFLOW_DOCS_DIR)
+	@install components/auto_gene_curation/auto_gene_curation.ini $(WORKFLOW_DOCS_DIR)
+	@install components/auto_gene_curation/auto_gene_curation_template.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/auto_gene_curation/auto_gene_curationconf.ini $(WORKFLOW_DOCS_DIR)
+
 
 backupdb  :
 	@echo "Installing backupdb workflows in $(WORKFLOW_DOCS_DIR)"
