@@ -18,7 +18,6 @@ USAGE: template.pl
             --polypeptide_fasta=/path/to/poly.fsa or list
             --output_bsml=output.bsml
             --id_repository=/path/to/id_respository
-            --project=aa1
         [   --log=/path/to/some/logfile
             --debug=4
             --help   ]
@@ -44,9 +43,6 @@ B<--output_bsml,-o>
 B<--id_respository,-r>
     [REQUIRED] A valid id_repository for use with Ergatis::IdGenerator.pm (see IdGenerator perldoc
     for more details).
-
-B<--project,-p>
-    [REQUIRED] The project name (used in id generation).
 
 B<--debug> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -164,6 +160,10 @@ move("$output_bsml_file.part", "$output_bsml_file") or
 sub gatherAndAdd {
     my ($twig, $sequence) = @_;
     my %old2newId;
+
+    $project = $1 if($sequence->att('id') =~ /^(\w+?)\./);
+    $logger->logdie("Could not parse project name from id: ".$sequence->att('id')) 
+        unless($project);
 
 	my $fTables = $sequence->first_child('Feature-tables');
 	my $featTable;
@@ -375,13 +375,6 @@ sub check_parameters {
                                  'CDS'         => 40 );
     } else {
         $errStr .= "Option id_repository is required\n";
-    }
-
-    #Project option is required.
-    unless($options{'project'}) {
-        $errStr .= "Option project is required\n";
-    } else {
-        $project = $options{'project'};
     }
 
     if($errStr) {
