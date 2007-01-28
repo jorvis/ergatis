@@ -90,13 +90,16 @@ sub process_command {
                       stderr => 'not defined',
                       stdout => 'not defined',
                       id => 'unknown',
+                      state => 'unknown',
                     );
     
     if ( $command->has_child('name') ) {
         $cmd_props{name}  = $command->first_child('name')->text;
     }
     
-    $cmd_props{state} = $command->first_child('state')->text;
+    if ( $command->has_child('state') ) {
+        $cmd_props{state} = $command->first_child('state')->text;
+    }
     
     if ( $command->has_child('id') ) {
         $cmd_props{id}    = $command->first_child('id')->text;
