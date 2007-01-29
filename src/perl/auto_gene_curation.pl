@@ -973,6 +973,7 @@ sub printChangedFeatures {
     my $asmblId = $sequenceSource->{'id'};
     my $length = $lengths->{ $asmblId };
     my $seq = $bsmlObj->createAndAddSequence( $asmblId, $asmblId, $length, 'dna', 'assembly' );
+    $seq->addBsmlLink( 'analysis', '#auto_gene_curation_analysis', 'input_of' );
     my $sdi = $bsmlObj->createAndAddSeqDataImport( $seq, 'fasta', $sequenceSource->{'fsaFile'}, '', $asmblId);
     my $fTable = $bsmlObj->createAndAddFeatureTable( $seq );
 
