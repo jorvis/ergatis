@@ -515,10 +515,6 @@ sub write_seq_to_fasta {
 sub mask_sequence {
     my ($seq, $segments, $mask_char) = @_;
     
-    if ($options{'softmask'}) {
-        $seq =~ tr/a-z/A-Z/;
-    }
-
     ## not gonna do any interval merging here because I'm lazy
     ## and hopefully these string operations should be fast
     foreach my $segment(@{$segments}) {
