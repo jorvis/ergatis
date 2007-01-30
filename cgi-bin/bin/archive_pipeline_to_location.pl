@@ -146,6 +146,8 @@ if ( $options{lock_file} ) {
     unlink $options{lock_file};
 }
 
+_log("INFO: archive operations complete");
+
 exit(0);
 
 

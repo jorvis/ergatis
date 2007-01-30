@@ -136,7 +136,7 @@ if ( $options{archive_output} ) {
 }
 
 ## archive the pipeline xml explicitly
-_log("INFO: recursively removing $wf_dir/pipeline/$options{pipeline_id}");
+_log("INFO: recursively archiving $wf_dir/pipeline/$options{pipeline_id}");
 &find_archive("$wf_dir/pipeline/$options{pipeline_id}");
 
 ## remove the lock file
@@ -144,6 +144,8 @@ if ( $options{lock_file} ) {
     close $lockfh;
     unlink $options{lock_file};
 }
+
+_log("INFO: archive operations complete");
 
 exit(0);
 

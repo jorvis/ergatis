@@ -144,6 +144,8 @@ if ( $options{lock_file} ) {
     unlink $options{lock_file};
 }
 
+_log("INFO: delete operations complete");
+
 exit(0);
 
 
