@@ -95,7 +95,10 @@ create_dir_and_record("$repository_root/workflow/project_id_repository", 7);
 
 ## the project id repository needs a file created within it to verify that it's valid.
 ##  see IdGenerator module for details.
-if ( open(my $vfh, ">$repository_root/workflow/project_id_repository/valid_id_repository") ) {
+my $validation_file = "$repository_root/workflow/project_id_repository/valid_id_repository";
+if ( -f $validation_file ) {
+     $$steps[8]{complete} = 1;
+} elsif ( open(my $vfh, ">$validation_file") ) {
      $$steps[8]{complete} = 1;
      close $vfh;
 } else {
