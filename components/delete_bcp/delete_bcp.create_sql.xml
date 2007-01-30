@@ -1,0 +1,66 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<name>delete_bcp</name>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Create directory for all create_delete_sql and execute_delete_sql artifacts</name>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;TABLE$;/</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_delete_sql</executable>
+	    <name>create_delete_sql</name>
+	    <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--database_type</key>
+		<value>$;DATABASE_TYPE$;</value>
+	    </param>
+	    <param>
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	    </param>
+	    <param>
+		<key>--password</key>
+		<value>chado_admin99</value>
+	    </param>
+	    <param>
+		<key>--username</key>
+		<value>chado_admin</value>
+	    </param>
+	    <param>
+		<key>--table</key>
+		<value>$;TABLE$;</value>
+	    </param>
+	    <param>
+		<key>--bcpfile</key>
+		<value>$;BCPFILE$;</value>
+	    </param>
+	    <param>
+		<key>--sqlfile</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;TABLE$;/delete.sql</value>
+	    </param>
+	    <param>
+		<key>--debug_level</key>
+		<value>$;DEBUG$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;TABLE$;/create_delete_sql.pl.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;TABLE$;/create_delete_sql.pl.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;TABLE$;/create_delete_sql.pl.stderr</value>
+	    </param>
+	</command>
+    </commandSet>
+</commandSetRoot>
