@@ -22,7 +22,7 @@
 	    <type>RunUnixCommand</type>
 	    <name>Create revoke permissions DDL list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/create_legacy2bsml_iterator_list.pl</executable>
+	    <executable>$;BIN_DIR$;/create_legacy2bsml_iterator_list</executable>
             <param>
 		<key>--control_file</key>
 		<value>$;LEGACY2BSML_CONTROL_FILE$;</value>
