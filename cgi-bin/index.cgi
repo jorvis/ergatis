@@ -67,8 +67,24 @@ if ( -e $running_dump_file &&
 
 } else {
     ( $running_pipelines, $active_pipelines ) = get_pipeline_lists();
-    store $running_pipelines, $running_dump_file;
-    store $active_pipelines, $active_dump_file;
+    eval { 
+        store $running_pipelines, $running_dump_file;
+        store $active_pipelines, $active_dump_file;
+    };
+
+    if ($@) {
+        print_error_page( 
+            ergatis_cfg => $ergatis_cfg,
+            message => "Failed to create stored version of pipeline lists: $!",
+            links => [
+                        { label => 'try again',
+                          is_last => 1,
+                          url => './index.cgi' }
+                     ],
+         );
+        exit();
+    }
+    
     $cache_file_age = -M $running_dump_file;
 }
 
