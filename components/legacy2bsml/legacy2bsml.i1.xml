@@ -82,6 +82,10 @@
 		<value>$;PROJECT_ID_REPOSITORY$;</value>
 	    </param>
 	    <param>
+		<key>--idgen_identifier_version</key>
+		<value>$;IDGEN_IDENTIFIER_VERSION$;</value>
+	    </param>
+	    <param>
 		<key>--tu_list_file</key>
 		<value>$;TU_LIST_FILE$;</value>
 	    </param>
