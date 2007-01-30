@@ -9,7 +9,7 @@ $;REPOSITORY_ROOT$;=/usr/local/annotation/TEST
 
 ;; This area will be used as temporary space for the project.  It should be cleaned out
 ;;  regularly, usually by some cron job.
-$;TMP_DIR$;=/usr/local/scratch/$;DATABASE$;/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;
+$;TMP_DIR$;=/usr/local/scratch/$;PROJECT$;/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;
 
 ;; All variables below must be full paths - no variable references or tokens.
 
