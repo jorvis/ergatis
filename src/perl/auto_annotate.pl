@@ -1060,8 +1060,16 @@ sub annotation2bsml {
         
     }
 
-    $doc->createAndAddAnalysis( 'id' => 'autoAnnotate_analysis',
-                                'sourcename' => $inputFiles[0] );
+    my $sourceDir = $1 if($inputFiles[0] =~ /^(.*\/\d+_\w+)\/);
+    $logger->logdie("Can't parse the sourcename (directory) from input file $inputFiles[0]")
+        unless( $sourceDir );
+    $logger->logdie("sourcename directory (from input file $inputFiles[0]) $sourceDir does not exist")
+        unless( -d $sourceDir );
+
+    $doc->createAndAddAnalysis( 'id' => 'auto_annotate_analysis',
+                                'sourcename' => $sourceDir,
+                                'algorithm'  => 'auto_annotate',
+                                'program'    => 'auto_annotate');
 
     print "Writing to $output\n";
     $doc->write($output);
