@@ -537,7 +537,7 @@ panther	:
 	@install components/panther/panther.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/panther/panther.config $(WORKFLOW_DOCS_DIR) 
 
-parse_for_ncRNAs	:
+parse_for_ncRNA	:
 	@echo "Installing parse_for_ncRNAs workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/parse_for_ncRNAs/parse_for_ncRNA.config $(WORKFLOW_DOCS_DIR)
 	@install components/parse_for_ncRNAs/parse_for_ncRNA.i1.xml $(WORKFLOW_DOCS_DIR)
@@ -582,14 +582,6 @@ promer	:
 	@install components/promer/promer.ini $(WORKFLOW_DOCS_DIR)
 	@install components/promer/promer_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/promer/promerconf.ini $(WORKFLOW_DOCS_DIR)  
-
-promote_gene_prediction	:
-	@echo "Installing promote_gene_prediction workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/promote_gene_prediction/promote_gene_prediction-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/promote_gene_prediction/promote_gene_prediction-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/promote_gene_prediction/promote_gene_prediction.ini $(WORKFLOW_DOCS_DIR)
-	@install components/promote_gene_prediction/promote_gene_prediction_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/promote_gene_prediction/promote_gene_predictionconf.ini $(WORKFLOW_DOCS_DIR)  
 
 ps_scan	:
 	@echo "Installing ps_scan workflows in $(WORKFLOW_DOCS_DIR)"
