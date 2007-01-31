@@ -89,7 +89,7 @@ sub process_gN_commandSet {
     
     my %props = (
                     file    => $file,
-                    name    => basename($file, ('.xml', '.gz')),
+                    name    => basename($file, ('.xml.gz', '.xml', '.gz')),
                     id      => $commandset->first_child('id')->text(),
                     state   => $commandset->first_child('state')->text(),
                     message => '',
