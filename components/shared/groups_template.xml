@@ -9,20 +9,14 @@
       <type>RunUnixCommand</type>
       <name>create group output directory</name>
       <state>incomplete</state>
-      <param>  
-	<key>command</key>
-	<value>mkdir</value>
-      </param>
+      <executable>mkdir</executable>
       <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
     </command>
     <command>
       <type>RunUnixCommand</type>
       <name>create group temp directory</name>
       <state>incomplete</state>
-      <param>  
-	<key>command</key>
-	<value>mkdir</value>
-      </param>
+      <executable>mkdir</executable>
       <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
     </command>
     <command>
@@ -48,7 +42,7 @@
       </param>
       <param>  
 	<key>--output_xml</key>
-	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</value>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml.gz</value>
       </param>
       <param>  
         <key>--keys</key>
@@ -70,7 +64,7 @@
     <commandSet type="parallel">
       <state>incomplete</state>
       <name>iterator:$;ITERATOR_NAME$; group:$;GROUP_NUMBER$; subflows</name>
-      <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml</fileName>
+      <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/g$;GROUP_NUMBER$;.iter.xml.gz</fileName>
     </commandSet>
   </commandSet>
 </commandSetRoot>

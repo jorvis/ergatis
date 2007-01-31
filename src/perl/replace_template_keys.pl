@@ -63,7 +63,7 @@ if (exists $options{'iterator_list'}) {
             $ireplacevals{$key} = $iteratorconf->{$key}->[$i];
         }
         
-        my $outputfile = $options{'output_dir'}.$iteratorconf->{$iterator_list_key}->[$i].".xml";
+        my $outputfile = $options{'output_dir'}.$iteratorconf->{$iterator_list_key}->[$i].".xml.gz";
         push @iterator_output_list,$outputfile;
         &replacekeys(\%ireplacevals,$options{'template_xml'},$outputfile);
     }
@@ -83,7 +83,12 @@ if (exists $options{'iterator_list'}) {
         }
     }
     
-    open FILE, ">$options{'output_xml'}" or $logger->logdie("Can't open file $options{'output_xml'}");
+    if ( $options{output_xml} =~ /\.gz$/ ) {
+        open(FILE, ">:gzip", $options{output_xml} ) or $logger->logdie("Can't open file $options{'output_xml'}");
+    } else {
+        open FILE, ">$options{'output_xml'}" or $logger->logdie("Can't open file $options{'output_xml'}");
+    }
+    
     print FILE "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                 <commandSetRoot type=\"instance\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation='commandSet.xsd'>
                 <commandSet type=\"$distrib\">
@@ -149,7 +154,12 @@ sub replacekeys{
 
     $logger->debug("Reading template $inputfile and writing output $outputfile");
     open( INPUTFILE, "$inputfile" ) or $logger->logdie("Could not open input template file $inputfile");
-    open( OUTPUTFILE, "+>$outputfile") or $logger->logdie("Could not open output template file $outputfile");
+    
+    if ( $outputfile =~ /\.gz$/ ) {
+        open( OUTPUTFILE, ">:gzip", $outputfile) or $logger->logdie("Could not open output template file $outputfile: $!");
+    } else {
+        open( OUTPUTFILE, "+>$outputfile") or $logger->logdie("Could not open output template file $outputfile: $!");
+    }
     while( my $line = <INPUTFILE> ){
         ## don't replace vals on comment lines
 	if( $line !~ /^\;/ && $line !~ /^\#/ ) {

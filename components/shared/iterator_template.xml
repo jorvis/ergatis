@@ -52,7 +52,7 @@
     </param>
     <param>  
 	<key>--output_xml</key>
-	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml</value>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml.gz</value>
     </param>
     <param>  
 	<key>--keys</key>
@@ -66,7 +66,7 @@
 <commandSet type="parallel">
     <state>incomplete</state>
     <name>iterator $;ITERATOR_NAME$;</name>
-    <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml</fileName>
+    <fileName>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;/$;ITERATOR_NAME$;.xml.gz</fileName>
 </commandSet>
 <!--End iterator twig-->
 
