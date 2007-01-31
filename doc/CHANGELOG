@@ -334,6 +334,7 @@ wait-master_template.xml -> wait.xml
 
 next
 ----
+-now supports auto-compressed workflow XML during pipeline execution on iterative steps.
 -added component lipoprotein_motif to Makefile.PL
 -changed "RunLoggedUnixCommand" to "RunUnixCommand" for tRNAscan-SE2bsml step intRNAscan-SE_template.xml
 -fixed bug in train_for_glimmer3 creating a situation where id collisions could occur, creating a lower unique orf count in the prediction
@@ -372,4 +373,4 @@ next
 -added auto_annotate and auto_gene_curation to install script
 -made promote_gene_prediciton a v2 component
 -made auto_gene_curation a v2 component
--made bsml2featurerelatiopnships a v2 component
+-made bsml2featurerelationships a v2 component
