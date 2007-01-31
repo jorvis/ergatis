@@ -52,15 +52,15 @@
 	  </param>
 	  <param>
 	      <key>--logfile</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.log</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/flatFileToChado.pl.$;I_TABLE_NAME$;.log</value>
 	  </param>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/flatFileToChado.pl.$;I_TABLE_NAME$;.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/chadoloader.pl.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/flatFileToChado.pl.$;I_TABLE_NAME$;.stderr</value>
       </param>
       </command>
       <command>
