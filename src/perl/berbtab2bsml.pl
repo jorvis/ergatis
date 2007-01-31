@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
+eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -69,11 +72,11 @@ use English;
 use File::Basename;
 use File::Path;
 use Pod::Usage;
-use Ergatis::Logger;
+use Workflow::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-use Ergatis::IdGenerator;
+use Workflow::IdGenerator;
 
 my %lookupDb;
 my %options = ();
@@ -91,12 +94,11 @@ my $results = GetOptions (\%options,
 			  'debug=s',
 			  'class|c=s',
 			  'analysis_id=s',
-              'project=s',
               'id_repository=s',
 			  'help|h') || pod2usage();
 
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -244,17 +246,12 @@ sub check_parameters{
         close(IN);
     }
   
-
-    unless($options{'project'}) {
-        $logger->logdie("Option project was no specified");
-    }
-
     if($options{'id_repository'}) {
         $logger->logdie("id_repository does not exist") unless(-d $options{'id_repository'});
     } else {
         $logger->logdie("option id_repository is required.");
     }
-    $idGenerator = new Ergatis::IdGenerator( 'id_repository' => $options{'id_repository'} );
+    $idGenerator = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'} );
     $idGenerator->set_pool_size( 'frameshift_mutation' => 25 );
 
     return 1;
@@ -272,6 +269,9 @@ sub createAndAddFrameshift {
     my $seqId = $lookupDb{$modelId};
     my $seq;
 
+    #Parse out the project id
+    my $project = $1 if($seqId =~ /^([^\.]+)\./);
+    
     #Check to see if the sequence has already been added.
     unless( $doc->returnBsmlSequenceByIDR( $seqId ) ){
 	    $seq = $doc->createAndAddSequence( $seqId, $seqId, '', 'na', 'assembly' );
@@ -297,7 +297,7 @@ sub createAndAddFrameshift {
             $strand = 1;
         }
         
-        my $fId = $idGenerator->next_id('type' => 'frameshift_mutation', 'project' => $options{'project'});
+        my $fId = $idGenerator->next_id('type' => 'frameshift_mutation', 'project' => $project);
         my $feat = $doc->createAndAddFeature($featTables{$seqId}, $fId, $fId, 'frameshift_mutation');
 
         $feat->addBsmlLink('analysis', '#'.$options{'analysis_id'}, 'computed_by');
@@ -306,11 +306,6 @@ sub createAndAddFrameshift {
        
         
     }
-
-    
-
-    
-
     
 }
 
