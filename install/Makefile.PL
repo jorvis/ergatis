@@ -538,10 +538,10 @@ panther	:
 	@install components/panther/panther.config $(WORKFLOW_DOCS_DIR) 
 
 parse_for_ncRNA	:
-	@echo "Installing parse_for_ncRNAs workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/parse_for_ncRNAs/parse_for_ncRNA.config $(WORKFLOW_DOCS_DIR)
-	@install components/parse_for_ncRNAs/parse_for_ncRNA.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/parse_for_ncRNAs/parse_for_ncRNA.xml $(WORKFLOW_DOCS_DIR)  
+	@echo "Installing parse_for_ncRNA workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/parse_for_ncRNA/parse_for_ncRNA.config $(WORKFLOW_DOCS_DIR)
+	@install components/parse_for_ncRNA/parse_for_ncRNA.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/parse_for_ncRNA/parse_for_ncRNA.xml $(WORKFLOW_DOCS_DIR)  
 
 pe	:
 	@echo "Installing pe workflows in $(WORKFLOW_DOCS_DIR)"
