@@ -19,7 +19,7 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
-                                        { label => 'create project', is_last => 1, url => './create_project_form.cgi' },
+                                        #{ label => 'create project', is_last => 1, url => './create_project_form.cgi' },
                                      ] );
 
 print $tmpl->output;
