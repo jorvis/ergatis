@@ -43,7 +43,12 @@ div.component_action_buttons {
 }
 div.component_nav_buttons img,
 div.component_action_buttons img {
+    cursor: pointer;
     padding-left: 3px;    
+}
+div.component_nav_buttons img.noclick,
+div.component_action_buttons img.noclick {
+    cursor: default;
 }
 div.component_action_buttons {
     margin-right: 30px;
