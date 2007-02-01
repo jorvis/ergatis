@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>ber</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>filter hits</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/ber_blast_hit_selector</executable>
+            <arg>-i $;I_FILE_PATH$; -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab.tmp -e $;MAX_E_VALUE$; -E $;MAX_P_VALUE$; -n $;MAX_NUM_HITS$; -N $;MAX_NUM_HITS_PER_REGION$; -V $;MIN_NUM_EXPERIMENTAL$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>filter additional hits</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/extract_blast_hits_by_id</executable>
+            <param>  
+                <key>--input_list</key>
+                <value>'$;ADDITIONAL_BLAST_HITS_LIST$;'</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.extra.btab</value>
+            </param>
+            <arg>-I $(cut -f1 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab.tmp)</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>append to filtered hits</name>
+            <state>incomplete</state>
+            <executable>cat</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab</value>
+            </param>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab.tmp $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.extra.btab</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create mini db</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_ber_db.sh</executable>
+            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb.tmp -d $;PROTEIN_DB$; -f $;PROTEIN_DB_FORMAT$; -p </arg>
+        </command>
+         <command>
+            <type>RunUnixCommand</type>
+            <name>append to mini db</name>
+            <state>incomplete</state>
+            <executable>cat</executable>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb.tmp $;ADDITIONAL_MINIDB_FASTA$;</arg>
+            <param>
+               <key>stdout</key>
+               <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb</value>
+            </param>
+        </command>
+         <command>
+            <type>RunUnixCommand</type>
+            <name>create nuc db</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_ber_db.sh</executable>
+            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nuc -d $;NUCLEOTIDE_DB$; -f xdformat -m $;PROTEIN_NUCLEOTIDE_ID_MAP$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>praze</name>
+            <state>incomplete</state>
+            <executable>$;PRAZE_EXEC$;</executable>
+            <arg>-O $;I_FILE_BASE$;.$;COMPONENT_NAME$; -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nuc $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>fix praze output</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/add_pvalue_to_praze_output</executable>
+            <arg>-b $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nr.btab -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nr.btab.tmp</arg>
+        </command>
+        <command>
+           <type>RunUnixCommand</type>
+           <name>rename fixed praze output</name>
+           <state>incomplete</state>
+           <executable>mv</executable>
+           <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nr.btab.tmp $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nr.btab</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>berbtab2bsml</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/berbtab2bsml</executable>
+            <param>  
+                <key>--btab_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nr.btab</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--pvalue</key>
+                <value>$;MAX_P_VALUE$;</value>
+            </param>
+            <param>  
+                <key>--class</key>
+                <value>CDS</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+             <param>  
+                <key>--mapping_file</key>
+                <value>$;PROTEIN_NUCLEOTIDE_ID_MAP$;</value>
+            </param>
+            <param>  
+                <key>--gzip_output</key>
+                <value>$;COMPRESS_BSML_OUTPUT$;</value>
+            </param>
+            <param>  
+                <key>--id_repository</key>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>store config params</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <param>  
+                <key>--ergatis_control_file</key>
+                <value>$;ERGATIS_DIR$;.ini</value>
+            </param>
+            <param>  
+                <key>--conf</key>
+                <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>  
+                <key>--bsml_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--componenturl</key>
+                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
+            </param>
+            <param>  
+                <key>--pipelineurl</key>
+                <value>$;PIPELINE_XML$;</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>compress raw output</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/compress_file</executable>
+            <param>  
+                <key>--file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+            <param>  
+                <key>--compress</key>
+                <value>$;COMPRESS_RAW_OUTPUT$;</value>
+            </param>
+            <param>  
+                <key>--list_file</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw.list</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>xsd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/xsdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/blastp.xsd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
