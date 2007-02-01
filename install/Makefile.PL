@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNAs phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -534,11 +534,11 @@ panther	:
 	@install components/panther/panther.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/panther/panther.config $(WORKFLOW_DOCS_DIR) 
 
-parse_for_ncRNA	:
+parse_for_ncRNAs	:
 	@echo "Installing parse_for_ncRNA workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/parse_for_ncRNA/parse_for_ncRNA.config $(WORKFLOW_DOCS_DIR)
-	@install components/parse_for_ncRNA/parse_for_ncRNA.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/parse_for_ncRNA/parse_for_ncRNA.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/parse_for_ncRNA/parse_for_ncRNAs.config $(WORKFLOW_DOCS_DIR)
+	@install components/parse_for_ncRNA/parse_for_ncRNAs.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/parse_for_ncRNA/parse_for_ncRNAs.xml $(WORKFLOW_DOCS_DIR)  
 
 pe	:
 	@echo "Installing pe workflows in $(WORKFLOW_DOCS_DIR)"
