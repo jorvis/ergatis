@@ -375,3 +375,4 @@ next
 -made auto_gene_curation a v2 component
 -made bsml2featurerelationships a v2 component
 -made ber a v2 component
+-made auto_annotate a v2 component
