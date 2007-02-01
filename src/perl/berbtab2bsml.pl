@@ -137,7 +137,7 @@ $doc->createAndAddAnalysis(
                             sourcename => $options{'output'},
                           );
 
-$doc->write($options{'output'});
+$doc->write($options{'output'}, '', $options{'gzip_output'});
 
 sub parse_ber_btabs {
 
