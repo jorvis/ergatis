@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
+eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -204,10 +207,18 @@ my $first = 1;
 my $seq = '';
 my $header;
 
-## load the sequence file
-open (my $sfh, "<$options{'input_file'}") || $logger->logdie("can't open sequence file:\n$!");
+my $sfh;
 
-my $sub_dir   = 1;
+## load the sequence file
+if ($options{'input_file'} =~ /\.(gz|gzip)$/) {
+    open ($sfh, "<:gzip", $options{'input_file'})
+      || $logger->logdie("can't open sequence file:\n$!");
+} else {
+    open ($sfh, "<$options{'input_file'}")
+      || $logger->logdie("can't open sequence file:\n$!");
+}
+
+my $sub_dir = 1;
 my $seq_file_count = 0;
 
 ## keep track of how many sequences are in the current output file
