@@ -106,6 +106,8 @@ use Ergatis::IdGenerator;
 use Chado::Gene;
 use BSML::GenePredictionBsml;
 use BSML::BsmlBuilder;
+use Data::Dumper;
+
 
 my $input;      # Input file name
 my $output;     # Output file name
@@ -116,6 +118,8 @@ my $bsml;       # BSML::BsmlBuilder object
 my $data;       # parsed tRNAscan-SE data
 my $debug = 4;  # debug value.  defaults to 4 (info)
 
+my $deflines = {};
+
 my %options = ();
 my $results = GetOptions (\%options, 
                           'input|i=s',
@@ -125,13 +129,13 @@ my $results = GetOptions (\%options,
                           'log|l=s',
                           'id_repository|r=s',
                           'debug=s',
-			  'help|h') || &_pod;
+              'help|h') || &_pod;
 
 
 # Set up the logger
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 ## make sure all passed options are peachy
@@ -141,9 +145,11 @@ $logger = $logger->get_logger();
 # otherwise just dump an 'empty' bsml file.
 if (-s $input) {
     $data = &parse_tRNAscanSE_input( $input );
+    $deflines = get_deflines($fasta_input);
     $bsml = &generateBsml( $data );
     $bsml->writeBsml( $output );
 } else {
+    $deflines = get_deflines($fasta_input);
     $bsml = &makeEmptyBsml;
     $bsml->write( $output );
 }
@@ -258,27 +264,33 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $doc = new BSML::GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
+    my $gene_pred = new BSML::GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
+    my $doc = $gene_pred->{'doc'};
 
     foreach my $gene(@{$data}) {
-        $doc->addGene($gene);
+        $gene_pred->addGene($gene);
+        my $addedTo = $gene_pred->setFasta($gene->{'seq'}, $fasta_input);
     }
+    
+    foreach my $seq_id(keys(%{$deflines})) {
+        if(!$gene_pred->{'seqs'}->{$seq_id}) {
+            my $seq = $doc->createAndAddSequence(
+                                                $seq_id, 
+                                                $seq_id, 
+                                                '',         ## length
+                                                'dna', 
+                                                'assembly'
+                                                );
+        
+            $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $seq_id);
 
-    my $seqId;
-    open(IN, "< $fasta_input") or &_die("Unable to open $fasta_input");
-    while(<IN>) {
-        #assume it's a single fasta file
-        if(/^>([^\s+]+)/) {
-            $seqId = $1;
-            last;
+            $seq->addBsmlLink('analysis','#tRNAscan-SE_analysis', 'input_of');
+
+            $doc->createAndAddBsmlAttribute( $seq, 'defline', $deflines->{$seq_id}); 
         }
     }
-    close(IN);
 
-    my $addedTo = $doc->setFasta($seqId, $fasta_input);
-    &_die("$seqId was not a sequence associated with the gene") unless($addedTo);
-
-    return $doc;
+    return $gene_pred;
 
 }
 
@@ -382,35 +394,25 @@ sub makeEmptyBsml {
    
     $doc->makeCurrentDocument();
 
-    my $seqId;
-    my $length;
-    my $sequence;
-    my $defline;
-
-    open(IN, "< $fasta_input") or &_die("Unable to open $fasta_input");
-    while(<IN>) {
-        chomp;
-        #assume it's a single fasta file
-        if (/^>([^\s+]+)/) {
-            $seqId = $1;
-            $defline = $_;
-        } else {
-            $sequence .= $_;
-        }
-    }
-    close(IN);
-    $length = length($sequence);
- 
-    my $seq = $doc->createAndAddSequence($seqId, $seqId, $length, 'na', 'assembly');
+    foreach my $seq_id(keys(%{$deflines})) {
     
-    $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $seqId);
+        my $seq = $doc->createAndAddSequence(
+                                                $seq_id, 
+                                                $seq_id, 
+                                                '',         ## length
+                                                'dna', 
+                                                'assembly'
+                                            );
+    
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $seq_id);
 
-    $seq->addBsmlLink('analysis','#tRNAscan-SE_analysis', 'input_of');
+        $seq->addBsmlLink('analysis','#tRNAscan-SE_analysis', 'input_of');
 
-    $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline); 
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $deflines->{$seq_id}); 
 
-    $doc->createAndAddAnalysis(id => 'tRNAscan-SE_analysis', sourcename =>$output);
-
+        $doc->createAndAddAnalysis(id => 'tRNAscan-SE_analysis', sourcename =>$output);
+    }
+    
     return $doc;
 
 }
@@ -426,4 +428,29 @@ sub _die {
     $logger->logdie($msg);
 }
 
+## retrieve deflines from a fasta file
+sub get_deflines {
+    my ($fasta_file) = @_;
 
+    my $deflines = {};
+
+    open (IN, $fasta_file)
+      || $logger->logdie("Failed opening '$fasta_file' for reading");
+
+    while (<IN>) {
+        unless (/^>/) {
+            next;
+        }
+        chomp;
+        if (/^>((\S+).*)$/) {
+            $deflines->{$2} = $1;
+        }
+    }
+    close IN;
+
+    if (scalar(keys(%{$deflines})) < 1) {
+        $logger->logwarn("defline lookup failed for '$fasta_file'");
+    }
+
+    return $deflines;
+}
