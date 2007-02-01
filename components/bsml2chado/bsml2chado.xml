@@ -149,7 +149,7 @@
 		<value>$;WORKFLOW_REPOSITORY$;/extract_checksums.stderr</value>
 	    </param>
         <dceSpec type="sge">
-            <os>linux</os>
+            <OS>linux</OS>
         </dceSpec>
 	</command>
 	<command>
@@ -167,7 +167,7 @@
 		<value>$;TMP_DIR$;/checksums.out.sorted</value>
 	    </param>
         <dceSpec type="sge">
-            <os>linux</os>
+            <OS>linux</OS>
         </dceSpec>
 	</command>
 	<command>
@@ -204,7 +204,7 @@
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
 	    </param>
         <dceSpec type="sge">
-            <os>linux</os>
+            <OS>linux</OS>
         </dceSpec>
 	</command> 
 	<command>
@@ -222,7 +222,7 @@
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
 	    </param>
         <dceSpec type="sge">
-            <os>linux</os>
+            <OS>linux</OS>
         </dceSpec>
 	</command>
 	<command>
@@ -262,7 +262,7 @@
 		<value>$;TMP_DIR$;/replace_checksums.stderr</value>
 	    </param>
         <dceSpec type="sge">
-            <os>linux</os>
+            <OS>linux</OS>
         </dceSpec>
 	</command>
 	<command>
