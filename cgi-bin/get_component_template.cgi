@@ -9,14 +9,18 @@ use HTML::Template;
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
-my $repository_root = $q->param('repository_root') || die "need a repository root";
-my $component_name  = $q->param('component_name') || die "need a component name";
-my $component_num;
+my $repository_root = $q->param('repository_root') || croak("need a repository root");
+my $component_name  = $q->param('component_name') || croak("need a component name");
+my $component_id    = $q->param('component_id') || croak("need a component id");
 
-if (defined $q->param('component_num')) {
-    $component_num = $q->param('component_num');
-} else {
-    croak('need a component num');
+my %form_vars;
+
+my %params = $q->Vars;
+for ( keys %params ) {
+    ## variables passed for cloning should look like c0_OTHER_OPTS
+    if ( /^c\d+_(.+)/ ) {
+        $form_vars{$1} = $params{$_};
+    }
 }
 
 my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
@@ -33,7 +37,7 @@ my %selectable_labels = ( INPUT_FILE_LIST => 1, INPUT_FILE => 1, INPUT_DIRECTORY
 
 my $component_found = 0;
 my $component_ini = "$workflowdocs_dir/${component_name}.config";
-my %sections = { basic => [], advanced => [] };
+my %sections = ( basic => [], advanced => [] );
 
 ## make sure the configuration exists.
 if ( -e $component_ini ) {
@@ -43,10 +47,6 @@ if ( -e $component_ini ) {
     
     ## it's possible that later the first dd could be comments and the second the value
     for my $section ( $component_cfg->Sections() ) {
-        ## any sections to skip?
-#        next if $section eq 'workflowdocs';
-#        next if $section eq 'include';
-#        next if $section eq 'component';
         my $section_type = 'basic';
         if ($section =~ /workflowdocs|include|component/) {
             $section_type = 'advanced';
@@ -64,17 +64,25 @@ if ( -e $component_ini ) {
             my $pretty_label = lc($label);
                $pretty_label =~ s/_/ /g;
             
+            ## the value can depend on whether we're just pulling a template or the user is cloning
+            ##  an existing component.  If they're doing the latter, the form data will contain the
+            ##  values we should use.
+            my $value = $component_cfg->val($section, $parameter);
+            if ( exists $form_vars{$label} && $label ne 'OUTPUT_TOKEN' ) {
+                $value = $form_vars{$label};
+            }
+            
             if ( exists $selectable_labels{$label} ) {
                 push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
-                                                        value => $component_cfg->val($section, $parameter),
+                                                        value => $value,
                                                         selectable => 1,
                                                         section => $section,
                                                         comment => $component_cfg->get_comment_html($section, $parameter) };            
             } else {
                 push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
-                                                        value => $component_cfg->val($section, $parameter),
+                                                        value => $value,
                                                         selectable => 0,
                                                         section => $section,
                                                         comment => $component_cfg->get_comment_html($section, $parameter) };
@@ -89,7 +97,7 @@ $tmpl->param( COMPONENT_FOUND => $component_found );
 ## $tmpl->param( COMPONENT_NAME    => $component_name );
 $tmpl->param( BASIC_SECTIONS => $sections{basic} );
 $tmpl->param( ADVANCED_SECTIONS => $sections{advanced} );
-$tmpl->param( COMPONENT_NUM => $component_num );
+$tmpl->param( COMPONENT_ID => $component_id );
 
 print $tmpl->output;
 

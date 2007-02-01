@@ -49,71 +49,27 @@ function addComponentInfo( component_id, name, token ) {
 }
 
 function addComponentStub( set_root ) {
-    var component_num = components.length;
-    var component_id = 'c' + component_num;
+    var component_id = 'c' + components.length;
 
     // this will be inserted above the panel clicked
 
     var node_below = set_root + '_panel';
     var node_above = getObject(set_root + '_panel_up').value;
     
-    var component_html = 
-        "<div class='component' id='" + component_id + "'>" +
-            "<form method='post' id='" + component_id + "_form' name='" + component_id + "_form'>" +
-            "<div class='component_nav_buttons'>" +
-                "<img id='" + component_id + "_arrow_up_disabled' src='/ergatis/images/icon_arrow_up_disabled.png' alt='cannot move component up' title='cannot move component up'>" +
-                "<img id='" + component_id + "_arrow_up' src='/ergatis/images/icon_arrow_up.png' alt='move component up' onClick='components[" + '"' + component_id + '"' + "].moveUp()' alt='move component up' title='move component up'>" +
-                "<img id='" + component_id + "_arrow_down_disabled' src='/ergatis/images/icon_arrow_down_disabled.png' alt='cannot move component down' title='cannot move component down'>" +
-                "<img id='" + component_id + "_arrow_down' src='/ergatis/images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()' alt='move component_down' title='move component down'>" +
-            "</div>" +
-            "<div class='component_action_buttons'>" +
-                "<img id='" + component_id + "_magnify_plus_disabled' src='/ergatis/images/icon_magnify_plus_disabled.png'>" +
-                "<img id='" + component_id + "_magnify_plus' src='/ergatis/images/icon_magnify_plus.png' onClick='components[" + '"' + component_id + '"' + "].advancedView()' alt='advanced view' title='advanced view'>" +
-                "<img id='" + component_id + "_magnify_minus' src='/ergatis/images/icon_magnify_minus.png' onClick='components[" + '"' + component_id + '"' + "].basicView()' alt='basic view' title='basic view'>" +
-                "<img id='" + component_id + "_copy' src='/ergatis/images/icon_copy.png' onClick='components[" + '"' + component_id + '"' + "].copy()' alt='copy component' title='copy component'>" +
-                "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()' alt='delete component' title='delete component'>" +
-            "</div>" +
-            "component<span class='locator'> (" + component_id + ")</span>: <select name='available_components' onChange='selectComponentConfig(" + '"' + component_num + '"' + ")' id='" + component_id + "_selector'></select>" +
-            "<div id='" + component_id + "_expander' class='config_expander' onClick='toggleConfigVisibility(" + '"' + component_id + '"' + ")'>" +
-                "<div class='component_status' id='" + component_id + "_status'>not configured</div>" +
-                "<img id='" + component_id + "_toggler' src='/ergatis/images/arrow_right.gif' alt='toggle configuration'>configuration" +
-            "</div>" +
-            "<div id='" + component_id + "_config>component not yet chosen</div>" +
-            "</form>" +
-        "</div>";
+    var component_html = Component.templateHtml( component_id );
     
     getObject(set_root + '_panel').insertAdjacentHTML('BeforeBegin', component_html);
 
     buildComponentSelector(component_id);
 
-    // add the locators
-    addLocator( component_id + '_up', node_above );
-    addLocator( component_id + '_down', node_below );
-
     components[component_id] = new Component( component_id );
-
-    var component = components[component_id];
-    
-    // set the nodes on either side of this one
-    component.node.setNodeNeighbors( nodes[node_above], nodes[node_below] );
-
-    // the node below should now point up to this component, and the node above should point down to it
-    component.node.down.setNodeAbove( component.node );
-    component.node.up.setNodeBelow( component.node );
-    
-    component.checkArrows();
-    
-    if (component.node.up.type == 'component') {
-        //debug("entered if with " + component.node.up.id);
-        components[component.node.up.id].checkArrows();
-    }
-    
-    if (component.node.down.type == 'component') {
-        components[component.node.down.id].checkArrows();
-    }
+    components[component_id].setPosition( node_below, node_above );
     
     // make sure the component is in basic view
-    component.clearConfig();
+    components[component_id].clearConfig();
+    
+    // the copy icon should be disabled until the component is saved
+    getObject(component_id + '_copy').style.display = 'none';
 }
 
 
@@ -481,6 +437,10 @@ function saveComponentConfig( component_id ) {
     // change the UI for this component so it's not editable.
     makeComponentUneditable( component_id );
     
+    // saved components are clonable
+    getObject(component_id + '_copy').style.display = '';
+    getObject(component_id + '_copy_disabled').style.display = 'none';
+    
     // save the current pipeline build
     saveBuildProgress();
 }
@@ -579,12 +539,11 @@ function savePipelineLayout() {
     }
 }
 
-function selectComponentConfig( component_num ) {
-    var component_id = 'c' + component_num;
+function selectComponentConfig( component_id, template_id ) {
 
     // inner functions below.  using these, reassigning the onreadystatechange
     // function won't stomp over earlier requests
-    var component_name = getObject( 'c' + component_num + '_selector' ).value;
+    var component_name = getObject( component_id + '_selector' ).value;
     
     // if the name is '' it's because they chose the 'please choose' option.  
     //  don't attempt to fetch anything.  just shrink the display
@@ -603,7 +562,7 @@ function selectComponentConfig( component_num ) {
             // 200 is the successful response code
             if (ajaxRequest.status == 200) {
                 // could add the component name here too if we later allow multiple configuration windows.
-                ajaxCallback ( component_num, ajaxRequest.responseText );
+                ajaxCallback ( component_id, ajaxRequest.responseText );
             } else {
                 // error handling here
                 alert("there was a problem fetching the component template");
@@ -615,7 +574,11 @@ function selectComponentConfig( component_num ) {
     var ajaxCallback = updateConfigContainer;
     var url = './get_component_template.cgi?repository_root=' + repository_root +
               '&component_name=' + component_name +
-              '&component_num=' + component_num;
+              '&component_id=' + component_id;
+
+    if ( template_id ) {
+        url += '&' + formData2QueryString(document.forms[template_id + '_form']);
+    }
 
     // bind the call back, then do the request
     if (window.XMLHttpRequest) {
@@ -656,9 +619,8 @@ function toggleConfigVisibility( component_id ) {
 
 
 // this should be called once the background request finishes parsing the template.
-function updateConfigContainer( component_num, config_html ) {
-    var component_id = 'c' + component_num;
-    getObject('c' + component_num + '_config').innerHTML = config_html;
+function updateConfigContainer( component_id, config_html ) {
+    getObject(component_id + '_config').innerHTML = config_html;
     
     // update all input lists
     updateInputLists();
