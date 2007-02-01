@@ -377,3 +377,4 @@ next
 -made ber a v2 component
 -made auto_annotate a v2 component
 -added gzipped input file support to split_multifasta
+-fixed tRNAscan-SE2bsml to support output from multifasta input
