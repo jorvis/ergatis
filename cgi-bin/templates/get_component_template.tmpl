@@ -1,6 +1,6 @@
 <TMPL_IF NAME=COMPONENT_FOUND>
-<table class='config_table' id='c<TMPL_VAR NAME=COMPONENT_NUM>_config_table'>
-    <tbody id='c<TMPL_VAR NAME=COMPONENT_NUM>_ct_basic'>
+<table class='config_table' id='<TMPL_VAR NAME=COMPONENT_ID>_config_table'>
+    <tbody id='<TMPL_VAR NAME=COMPONENT_ID>_ct_basic'>
     <TMPL_LOOP NAME=BASIC_SECTIONS>
     <tr class='config_section' colspan='2'>
         <td><TMPL_VAR NAME=NAME></td>
@@ -12,20 +12,20 @@
     </tr>
     </TMPL_IF>
     <tr>
-        <td id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
+        <td id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
         <TMPL_IF NAME=SELECTABLE>
         <td class="<TMPL_VAR NAME=SECTION>">
-            <select class='input_selector' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>'></select>
-            <input class='select_shadow' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
+            <select class='input_selector' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>'></select>
+            <input class='select_shadow' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
         </td>
         <TMPL_ELSE>
-        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
+        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
         </TMPL_IF> 
     </tr>
     </TMPL_LOOP> <!-- end parameters loop -->
     </TMPL_LOOP> <!-- end sections loop -->
     </tbody>
-    <tbody id='c<TMPL_VAR NAME=COMPONENT_NUM>_ct_advanced'>
+    <tbody id='<TMPL_VAR NAME=COMPONENT_ID>_ct_advanced'>
     <TMPL_LOOP NAME=ADVANCED_SECTIONS>
     <tr class='config_section' colspan='2'>
         <td><TMPL_VAR NAME=NAME></td>
@@ -37,14 +37,14 @@
     </tr>
     </TMPL_IF>
     <tr>
-        <td id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
+        <td id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
         <TMPL_IF NAME=SELECTABLE>
         <td class="<TMPL_VAR NAME=SECTION>">
-            <select class='input_selector' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>'></select>
-            <input class='select_shadow' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
+            <select class='input_selector' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>'></select>
+            <input class='select_shadow' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
         </td>
         <TMPL_ELSE>
-        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' id='c<TMPL_VAR NAME=COMPONENT_NUM>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
+        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
         </TMPL_IF> 
     </tr>
     </TMPL_LOOP> <!-- end parameters loop -->
@@ -58,7 +58,7 @@ an administrator.
 
 <div class='button_container'>
 <TMPL_IF NAME=COMPONENT_FOUND>
-    <div class='button save' id='c<TMPL_VAR NAME=COMPONENT_NUM>_save' onclick='saveComponentConfig("c<TMPL_VAR NAME=COMPONENT_NUM>")'>save</div>
-    <div class='button edit' id='c<TMPL_VAR NAME=COMPONENT_NUM>_edit' onclick='makeComponentEditable("c<TMPL_VAR NAME=COMPONENT_NUM>")'>edit</div>
+    <div class='button save' id='<TMPL_VAR NAME=COMPONENT_ID>_save' onclick='saveComponentConfig("<TMPL_VAR NAME=COMPONENT_ID>")'>save</div>
+    <div class='button edit' id='<TMPL_VAR NAME=COMPONENT_ID>_edit' onclick='makeComponentEditable("<TMPL_VAR NAME=COMPONENT_ID>")'>edit</div>
 </TMPL_IF>
 </div>
