@@ -74,6 +74,10 @@ foreach my $inFile (@inputFiles) {
     @bsmlToCombine = &findBsmlFiles($inFile, \@bsmlLists);
     
     foreach my $bsmlFile (@bsmlToCombine) {
+        #Get the project name from the input bsml file.
+        $project = $1 if($bsmlFile =~ /\/([^\/\.]+)\.[^\/]*/);
+        $logger->logdie("Unable to parse project name from bsml file name $bsmlFile")
+            unless($project);
         &parseBsml($bsmlFile, \%rnaFeats);
     }
 }
@@ -105,10 +109,11 @@ sub findBsmlFiles {
         
         foreach my $file (@files) {
             chomp $file;
-            $fileFound = $file if($file =~ /$escapedName/);
+            $fileFound = $file if($file =~ /$escapedName\./);
         }
              
         &_die("Could not find a match for $baseName in $list") unless($fileFound);
+        print "$fileFound\n";
         push(@{$retval}, $fileFound);
 
     }
@@ -274,7 +279,6 @@ sub check_parameters {
     unless($options{'project'}) {
         &_die("Option project is required for id creation.");
     }
-    $project = $options{'project'};
 
     unless($options{'output'}) {
         &_die("Option output is required (bsml output file name)");
