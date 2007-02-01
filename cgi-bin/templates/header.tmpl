@@ -1,4 +1,9 @@
     <div id='page_header'>
+        <div id='quick_search_container'>
+            <form name='quick_search' action='./quick_search.cgi' method='post'>
+                <input type=textbox name='quick_search_crit' id='quick_search_crit' value='quick search' onfocus='clearInput("quick_search_crit", "quick search")'>
+            </form>
+        </div>
         <div id='quick_links_container'>
             <ul id='quick_links'>
             <TMPL_LOOP NAME=QUICK_LINKS>
