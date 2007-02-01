@@ -374,3 +374,4 @@ next
 -made promote_gene_prediciton a v2 component
 -made auto_gene_curation a v2 component
 -made bsml2featurerelationships a v2 component
+-made ber a v2 component
