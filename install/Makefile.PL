@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_gene_curation bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -154,11 +154,9 @@ backupdb  :
 
 ber	:
 	@echo "Installing ber workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ber/ber-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ber/ber-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ber/ber.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ber/ber_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/ber/berconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/ber/ber.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ber/ber.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ber/ber.config $(WORKFLOW_DOCS_DIR)
 
 bsml2chado  :
 	@echo "Installing bsml2chado workflows in $(WORKFLOW_DOCS_DIR)"
