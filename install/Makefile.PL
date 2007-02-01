@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNA phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -134,11 +134,10 @@ augustus	:
 
 auto_annotate	:
 	@echo "Installing auto_annotate workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/auto_annotate/auto_annotate-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/auto_annotate/auto_annotate-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/auto_annotate/auto_annotate.ini $(WORKFLOW_DOCS_DIR)
-	@install components/auto_annotate/auto_annotate_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/auto_annotate/auto_annotateconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/auto_annotate/auto_annotate.xml $(WORKFLOW_DOCS_DIR)
+	@install components/auto_annotate/auto_annotate.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/auto_annotate/auto_annotate.config $(WORKFLOW_DOCS_DIR)
+
 
 auto_gene_curation	:
 	@echo "Installing auto_gene_curation workflows in $(WORKFLOW_DOCS_DIR)"
