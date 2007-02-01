@@ -126,5 +126,22 @@ sub print_error_page {
     print $tmpl->output;
 }
 
+=head2 url_dir_path( $cgi )
+
+=over 4
+
+returns the path of the current script, including 
+
+=back
+
+=cut
+sub url_dir_path {
+    my $cgi = shift;
+    
+    my $full = $cgi->url( -full => 1, -query => 0 );
+    $full =~ /(.+?)[^\/]+$/;
+
+    return $1;
+}
 
 1==1;

@@ -134,12 +134,3 @@ sub process_set {
     }
 }
 
-## returns the path of the current script, including 
-sub url_dir_path {
-    my $cgi = shift;
-    
-    my $full = $cgi->url( -full => 1, -query => 0 );
-    $full =~ /(.+?)[^\/]+$/;
-
-    return $1;
-}

@@ -10,8 +10,16 @@ div#page_header {
 
 div#quick_links_container {
     float: right;
+    padding: 5px 3px 0 0;
 }
-
+div#quick_search_container {
+    float: right;
+    padding: 3px 3px 0 0;
+}
+div#quick_search_container input {
+    background-color: rgb(198,196,197);
+    font-size: 80%;
+}
 div#title_container {
     padding: 10px 0 20px 30px;
     float: left;
