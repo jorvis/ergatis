@@ -608,11 +608,18 @@ sub get_deflines {
     my ($fasta_file) = @_;
 
     my $deflines = {};
-    
-    open (IN, $fasta_file)
-      || $logger->logdie("Failed opening '$fasta_file' for reading");
 
-    while (<IN>) {
+    my $ifh; 
+    
+    if ($fasta_file =~ /\.(gz|gzip)$/) {
+        open ($ifh, "<:gzip", $fasta_file)
+          || $logger->logdie("can't open input file '$fasta_file': $!");
+    } else {
+        open ($ifh, $fasta_file)
+          || $logger->logdie("Failed opening '$fasta_file' for reading: $!");
+      }
+
+    while (<$ifh>) {
         unless (/^>/) {
             next;
         }
@@ -621,7 +628,7 @@ sub get_deflines {
             $deflines->{$2} = $1;
         } 
     }
-    close IN;
+    close $ifh;
     
     if (scalar(keys(%{$deflines})) < 1) {
         $logger->logwarn("defline lookup failed for '$fasta_file'");
