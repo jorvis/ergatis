@@ -471,13 +471,24 @@ sub get_sequence_by_id {
     my ($fname, $id) = @_;
     my $seq_id = '';
     my $sequence = '';
-    open (IN, $fname) || $logger->logdie("couldn't open fasta file for reading");
-    TOP: while (<IN>) {
+   
+    my $infh;
+    
+    if (-e $fname) {
+        open ($infh, $fname) || $logger->logdie("couldn't open fasta file '$fname' for reading: $!");
+    } elsif (-e $fname.".gz") {
+        open($infh, "<:gzip", $fname.".gz") 
+          || logger->logdie("couldn't open gzipped fasta file '$fname.gz': $!");
+    } else {
+          logger->logdie("fasta file '$fname' doesn't exist");
+    }    
+    
+    TOP: while (<$infh>) {
         chomp;
         if (/^>([^\s]+)/) {
             $seq_id = $1;
             if ($seq_id eq $id) {
-                while (<IN>) {
+                while (<$infh>) {
                     chomp;
                     if (/^>/) {
                         last TOP;
@@ -488,7 +499,7 @@ sub get_sequence_by_id {
             }   
         }
     }
-    close IN;
+    close $infh;
 
     return $sequence;
 }
