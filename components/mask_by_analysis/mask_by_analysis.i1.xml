@@ -86,7 +86,7 @@
             </param>
             <param>  
                 <key>--compress</key>
-                <value>$;COMPRESS_RAW_OUTPUT$;</value>
+                <value>$;COMPRESS_BSML$;</value>
             </param>
             <param>  
                 <key>--list_file</key>
@@ -104,7 +104,7 @@
             </param>
             <param>  
                 <key>--compress</key>
-                <value>$;COMPRESS_RAW_OUTPUT$;</value>
+                <value>$;COMPRESS_FASTA$;</value>
             </param>
             <param>  
                 <key>--list_file</key>
