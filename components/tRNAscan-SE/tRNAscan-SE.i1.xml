@@ -36,10 +36,6 @@
                 <value>$;REPOSITORY_ROOT$;/workflow/project_id_repository</value>
             </param>
             <param>  
-                <key>--project</key>
-                <value>$;PROJECT$;</value>
-            </param>
-            <param>  
                 <key>--fasta_input</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
