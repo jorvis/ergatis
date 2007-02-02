@@ -18,6 +18,7 @@ USAGE: split_multifasta.pl
             --output_subdir_size=1000
             --output_subdir_prefix=fasta
             --seqs_per_file=1
+            --compress_output=1
           ]
 
 =head1 OPTIONS
@@ -47,6 +48,9 @@ B<--output_subdir_prefix,-p>
     subdirectories created.  Rather than just incrementing numbers (like 10), each subdirectory 
     will be named with this prefix (like prefix10).
 
+B<--compress_output,-c>
+    Output fasta files will be gzipped when written.
+    
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -178,6 +182,7 @@ my $results = GetOptions (\%options,
                           'output_subdir_size|u=s',
                           'output_subdir_prefix|p=s',
                           'seqs_per_file|e=s',
+                          'compress_output|c=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || pod2usage();
@@ -335,8 +340,15 @@ sub writeSequence {
         
         ## if the directory we want to write to doesn't exist yet, create it
         mkdir($dirpath) unless (-e $dirpath);
-    
-        open ($ofh, ">$filepath") || $logger->logdie("can't create $filepath");
+   
+        
+        if ($options{'compress_output'}) {    
+            open ($ofh, ">:gzip", $filepath)
+              || $logger->logdie("can't create $filepath:\n$!");
+        } else {
+            open ($ofh, ">$filepath") || $logger->logdie("can't create $filepath:\n$!");
+        
+        }
         $seq_file_count++;
         
         ## add the file we just wrote to the list, if we were asked to
