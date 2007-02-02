@@ -8,7 +8,7 @@ no lib ".";
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-use Workflow::Logger;
+use Ergatis::Logger;
 use Pod::Usage;
 use Data::Dumper;
 use File::Find;
@@ -68,8 +68,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -771,7 +771,7 @@ sub getSeqId {
     foreach my $sdi ($seqElem->children('Seq-data-import')) {
         $asmbl->{'import'}->{'source'} = $sdi->att('source');
         $asmbl->{'import'}->{'ident'}  = $sdi->att('identifier');
-        $asmbl->{'import'}->{'format'} = $sdi->att('id');
+        $asmbl->{'import'}->{'format'} = $sdi->att('format');
     }
 
     #Find the length of the sequence
@@ -1024,7 +1024,6 @@ sub getBestHMMMatch {
         }
 
     }
-
   
     return $winner;
 }
@@ -1037,7 +1036,7 @@ sub annotation2bsml {
     my $seq = $doc->createAndAddSequence($asmbl->{'id'},$asmbl->{'id'},'','dna','assembly');
     my $sdi = $doc->createAndAddSeqDataImport($seq, $asmbl->{'import'}->{'format'}, 
                                               $asmbl->{'import'}->{'source'}, '',
-                                              $asmbl->{'import'}->{'identifier'});
+                                              $asmbl->{'import'}->{'ident'});
     my $link = $doc->createAndAddLink($seq, 'analysis', '#autoAnnotate_analysis', 'input_of');
     my $featTable = $doc->createAndAddFeatureTable($seq);
 
@@ -1060,7 +1059,7 @@ sub annotation2bsml {
         
     }
 
-    my $sourceDir = $1 if($inputFiles[0] =~ /^(.*\/\d+_\w+)\/);
+    my $sourceDir = $1 if($inputFiles[0] =~ /^(.*\/\d+_\w+)\//);
     $logger->logdie("Can't parse the sourcename (directory) from input file $inputFiles[0]")
         unless( $sourceDir );
     $logger->logdie("sourcename directory (from input file $inputFiles[0]) $sourceDir does not exist")
