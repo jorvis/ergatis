@@ -8,7 +8,7 @@
             <name>tRNAscan-SE_compress</name>
             <state>incomplete</state>
             <executable>$;TRNASCANSE_EXEC$;</executable>
-            <arg>-q $;OTHER_OPTS$; -b $;SEARCH_TYPE$; $;I_FILE_PATH$;</arg>
+            <arg>-q $;OTHER_OPTS$; -b -$;SEARCH_TYPE$; $;I_FILE_PATH$;</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
