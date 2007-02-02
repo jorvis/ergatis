@@ -343,7 +343,7 @@ sub writeSequence {
    
         
         if ($options{'compress_output'}) {    
-            open ($ofh, ">:gzip", $filepath)
+            open ($ofh, ">:gzip", $filepath.".gz")
               || $logger->logdie("can't create $filepath:\n$!");
         } else {
             open ($ofh, ">$filepath") || $logger->logdie("can't create $filepath:\n$!");
