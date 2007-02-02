@@ -32,6 +32,10 @@
                 <key>--output_subdir_size</key>
                 <value>$;FILES_PER_DIRECTORY$;</value>
             </param>
+            <param>
+                <key>--compress_output</key>
+                <value>$;COMPRESS_OUTPUT$;</value>
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>
