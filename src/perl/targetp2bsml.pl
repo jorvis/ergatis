@@ -21,6 +21,9 @@ B<--input,-i>
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
+B<--project,-p>
+    [DEPRECATED]  Parses project name from input sequence id.
+
 B<--log,-l> 
     Log file
 
@@ -100,6 +103,9 @@ my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
 my $idcreator = new Ergatis::IdGenerator( id_repository => $options{'id_repository'});
+
+## project variable
+my $project;
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -204,6 +210,12 @@ if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
         } else {
             $seq_id = $line_ref->{'name'};
         }
+
+        $project = "";
+        $project = $1 if($seq_id =~ /^([^\.]+)\./);
+        $logger->logdie("Could not parse project from $seq_id") 
+            unless($project);
+
         my $seq = $doc->createAndAddSequence(
             $seq_id,
             undef, 
@@ -216,7 +228,7 @@ if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
         if ($line_ref->{'loc'} ne '*' && $line_ref->{'loc'} ne '?') {
             my $ft  = $doc->createAndAddFeatureTable($seq);
             my $new_id = $idcreator->next_id( 
-                                                project => $options{project},
+                                                project => $project,
                                                 type    => 'transit_peptide',
                                            );
             my $feature = $doc->createAndAddFeature($ft, $new_id, '', 'transit_peptide');
@@ -266,7 +278,7 @@ sub check_parameters {
     ## make sure output file doesn't exist yet
     if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
     
-    $options{'project'}    = 'unknown' unless ($options{'project'});
+    
     $options{'command_id'} = '0' unless ($options{'command_id'});
     
     return 1;
