@@ -38,8 +38,11 @@ B<--debug,-d>
     Debug level.  Use a large number to turn on verbose debugging. 
 
 B<--project,-p> 
-    Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
+    [DEPRECATED] Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
     not passed.
+
+    *Now parses project from input sequence id parsed from tRNAscan-SE raw file.
+    *ex:  project.type.num     (adg.assembly.1)
 
 B<--log,-l> 
     Log file
@@ -106,7 +109,6 @@ use Ergatis::IdGenerator;
 use Chado::Gene;
 use BSML::GenePredictionBsml;
 use BSML::BsmlBuilder;
-use Data::Dumper;
 
 
 my $input;      # Input file name
@@ -115,10 +117,8 @@ my $fasta_input;   # fasta input to tRNAscan-SE
 my $project;    # project id
 my $idcreator;  # Ergatis::IdGenerator object
 my $bsml;       # BSML::BsmlBuilder object
-my $data;       # parsed tRNAscan-SE data
+my $data = [];  # parsed tRNAscan-SE data
 my $debug = 4;  # debug value.  defaults to 4 (info)
-
-my $deflines = {};
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -143,18 +143,9 @@ $logger = $logger->get_logger();
 
 # Use the Gene.pm module if there exists a non-empty input
 # otherwise just dump an 'empty' bsml file.
-if (-s $input) {
-    $data = &parse_tRNAscanSE_input( $input );
-    $deflines = get_deflines($fasta_input);
-    $bsml = &generateBsml( $data );
-    $bsml->writeBsml( $output );
-} else {
-    $deflines = get_deflines($fasta_input);
-    $bsml = &makeEmptyBsml;
-    $bsml->write( $output );
-}
-
-
+$data = &parse_tRNAscanSE_input( $input );
+$bsml = &generateBsml( $data );
+$bsml->writeBsml( $output );
 exit (0);
 
 ################ SUBS ######################
@@ -183,7 +174,8 @@ sub parse_tRNAscanSE_input {
 
         ## there should be 9 elements in cols, unless we have an unrecognized format.
         unless (scalar @cols == 9) {
-            $logger->error("the following tRNAscan-SE line was not recognized and could not be parsed:\n$_\n") if ($logger->is_error);
+            $logger->error("the following tRNAscan-SE line was not recognized and could not be parsed:\n$_\n") 
+                if ($logger->is_error);
             next;
         }
     
@@ -196,6 +188,13 @@ sub parse_tRNAscanSE_input {
 
     ## loop through each of the matches that we found and make a entries in the genes array.
     for my $seqid (keys %rawdata) {
+
+        #Parse the project from the sequence id
+        unless($project) {
+            $project = $1 if($seqid =~ m|^([^/\.])\.|);
+            $logger->logdie("Could not parse project from sequence id $seqid")
+                unless($project);
+        }
 
         ## loop through each array reference of this key, adding to the data array as necessary.
         foreach my $arr ( @{$rawdata{$seqid}} ) {
@@ -264,32 +263,22 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $gene_pred = new BSML::GenePredictionBsml( 'tRNAscan-SE', $fasta_input );
+    my $gene_pred = new BSML::GenePredictionBsml( 'tRNAscan-SE' );
     my $doc = $gene_pred->{'doc'};
 
-    foreach my $gene(@{$data}) {
+    unless($data && @{$data} > 0) {
+        $gene_pred->addSequence( '', $fasta_input );
+    }
+
+    foreach my $gene( @{$data} ) {
         $gene_pred->addGene($gene);
-        my $addedTo = $gene_pred->setFasta($gene->{'seq'}, $fasta_input);
+        my $addedTo = $gene_pred->addSequence($gene->{'seq'}, $fasta_input);
+        $logger->logdie("Could not find identifier ".$gene->{'seq'}." in $fasta_input")
+            unless($addedTo || !(-e $fasta_input));
+        $logger->logdie("fasta_input file: '$fasta_input' does not exist") unless(-e $fasta_input);
+        
     }
     
-    foreach my $seq_id(keys(%{$deflines})) {
-        if(!$gene_pred->{'seqs'}->{$seq_id}) {
-            my $seq = $doc->createAndAddSequence(
-                                                $seq_id, 
-                                                $seq_id, 
-                                                '',         ## length
-                                                'dna', 
-                                                'assembly'
-                                                );
-        
-            $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $seq_id);
-
-            $seq->addBsmlLink('analysis','#tRNAscan-SE_analysis', 'input_of');
-
-            $doc->createAndAddBsmlAttribute( $seq, 'defline', $deflines->{$seq_id}); 
-        }
-    }
-
     return $gene_pred;
 
 }
@@ -354,13 +343,6 @@ sub check_parameters {
     } else {
         $error .= "--fasta_input is a required option\n";
     } 
-
-    ## We really do need a value for 'project'
-    if ($options{'project'}) {
-        $project = $options{'project'};
-    } else {
-        $error .= "--project is a required option\n";
-    }
     
     ## Now set up the id generator stuff
     if ($options{'id_repository'}) {
@@ -386,37 +368,6 @@ sub check_parameters {
 
 } # END OF check_parameters 
 
-sub makeEmptyBsml {
-# Create a BSML doc that contains no genes, just the input sequence and links
-# to the anlaysis.
-
-    my $doc = new BSML::BsmlBuilder();
-   
-    $doc->makeCurrentDocument();
-
-    foreach my $seq_id(keys(%{$deflines})) {
-    
-        my $seq = $doc->createAndAddSequence(
-                                                $seq_id, 
-                                                $seq_id, 
-                                                '',         ## length
-                                                'dna', 
-                                                'assembly'
-                                            );
-    
-        $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $seq_id);
-
-        $seq->addBsmlLink('analysis','#tRNAscan-SE_analysis', 'input_of');
-
-        $doc->createAndAddBsmlAttribute( $seq, 'defline', $deflines->{$seq_id}); 
-
-        $doc->createAndAddAnalysis(id => 'tRNAscan-SE_analysis', sourcename =>$output);
-    }
-    
-    return $doc;
-
-}
-
 sub _pod {
 # Used to display the perldoc help.
     pod2usage( {-exitval => 0, -verbose => 2} );
@@ -426,31 +377,4 @@ sub _die {
 # Kinda like a hitman, this is called when something needs to DIE.
     my $msg = shift;
     $logger->logdie($msg);
-}
-
-## retrieve deflines from a fasta file
-sub get_deflines {
-    my ($fasta_file) = @_;
-
-    my $deflines = {};
-
-    open (IN, $fasta_file)
-      || $logger->logdie("Failed opening '$fasta_file' for reading");
-
-    while (<IN>) {
-        unless (/^>/) {
-            next;
-        }
-        chomp;
-        if (/^>((\S+).*)$/) {
-            $deflines->{$2} = $1;
-        }
-    }
-    close IN;
-
-    if (scalar(keys(%{$deflines})) < 1) {
-        $logger->logwarn("defline lookup failed for '$fasta_file'");
-    }
-
-    return $deflines;
 }
