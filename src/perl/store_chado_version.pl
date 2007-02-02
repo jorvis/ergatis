@@ -61,7 +61,8 @@ umask(0000);
 
 my %options = ();
 
-my ($bindir, $database, $log4perl, $help, $debug, $workflow, $username, $password);
+my ($bindir, $database, $log4perl, $help, $debug, $workflow, $username, $password,
+$database_type);
 
 my $results = GetOptions (\%options, 
                           'bin_dir=s'     => \$bindir, 
@@ -71,6 +72,7 @@ my $results = GetOptions (\%options,
 			  'workflow=s'    => \$workflow,
 			  'username=s'    => \$username,
 			  'password=s'    => \$password,
+			  'database_type=s' => \$database_type,
                           'help|h'        => \$help ) || pod2usage();
 
 
@@ -79,6 +81,11 @@ my $log4perl = $options{'log4perl'} || Ergatis::Logger::get_default_logfilename(
 my $logger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = Ergatis::Logger::get_logger();
+
+if ($database_type eq 'postgresql'){
+    $logger->warn("$0 will not store revision information in PostgreSQL databases");
+    exit(0);
+}
 
 if (!defined($bindir)){
     die "bin_dir was not defined";
