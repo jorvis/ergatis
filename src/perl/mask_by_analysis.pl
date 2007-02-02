@@ -400,7 +400,7 @@ sub sequence_handler {
             $logger->logdie("unsupported seq-data-import format '$format' found");
         }
         
-        unless (-e $source) {
+        unless (-e $source || -e $source.".gz") {
             $logger->logdie("fasta file referenced in BSML Seq-data-import '$source' doesn't exist");
         }
         unless (defined($identifier)) {
