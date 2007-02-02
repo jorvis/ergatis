@@ -4,7 +4,7 @@
 	<command>
 	    <type>RunUnixCommand</type>
 	    <state>incomplete</state>
-	    <name>Create temporary obo2chado output directory</name>
+	    <name>Create temporary obov1p2tochado output directory</name>
 	    <executable>mkdir</executable>
 	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
         </command>
@@ -12,7 +12,7 @@
 	    <type>RunUnixCommand</type>
 	    <state>incomplete</state>
 	    <name>Process the OBO file</name>
-	    <executable>$;BIN_DIR$;/obo2chado</executable>
+	    <executable>$;BIN_DIR$;/obov1p2tochado</executable>
 	    <param>
 		<key>--username</key>
 		<value>chado_admin</value>
@@ -24,6 +24,10 @@
 	    <param>
 		<key>--database</key>
 		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>	  
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
 	    </param>
 	    <param>
 		<key>--server</key>
@@ -39,7 +43,7 @@
 	    </param>
 	    <param>
 		<key>--log4perl</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obov1p2tochado.log</value>
 	    </param>
 	    <param>
 		<key>--outdir</key>
@@ -51,11 +55,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obov1p2tochado.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obov1p2tochado.stderr</value>
 	    </param>
         </command>
 	<command>
