@@ -70,19 +70,19 @@ function remove_input( ) {
                 // check each of the select elements
                 var select_elements = getObject(component_id).getElementsByTagName('select');
                 for ( var select_num=0; select_num < select_elements.length; select_num++ ) {
+                    var current_choice = select_elements[select_num].selectedIndex;
                     
-                    for ( var option_num=0; option_num < select_elements[select_num].options.length; option_num++ ) {
-                        if ( select_elements[select_num].options[option_num].value == this.input_value ) {
-                            select_elements[select_num].selectedIndex = 0;
-                            changes_made++;
-                            
-                            // change the shadow too
-                            getObject( select_elements[select_num].name + '_shadow' ).value = 'please choose';
-                        }
+                    if ( select_elements[select_num].options[ current_choice ].value == this.input_value ) {
+                        select_elements[select_num].selectedIndex = 0;
+                        changes_made++;
+
+                        // change the shadow too
+                        getObject( select_elements[select_num].name + '_shadow' ).value = 'please choose';
                     }
                 }
                 
-                if (changes_made) {
+                if (changes_made > 0) {
+                    alert( "resetting input value" );
                     components[component_id].setConfigured(false);
                 }
             }
