@@ -378,3 +378,5 @@ next
 -made auto_annotate a v2 component
 -added gzipped input file support to split_multifasta
 -fixed tRNAscan-SE2bsml to support output from multifasta input
+-fixed tRNAscan-SE2bsml to not use the project option (and changed component files)
+-fixed BSML::GenePredictionBsml to add deflines and not create empty files.
