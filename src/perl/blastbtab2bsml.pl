@@ -77,7 +77,7 @@ my $results = GetOptions (\%options,
               'log|l=s',
               'debug=s',
               'class|c=s',
-              'gzip|z',
+              'gzip|z=s',
               'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -610,6 +610,14 @@ sub get_deflines {
     my $deflines = {};
 
     my $ifh; 
+   
+    if (! -e $fasta_file) {
+        if (-e $fasta_file.".gz") {
+            $fasta_file .= ".gz";
+        } elsif (-e $fasta_file.".gzip") {
+            $fasta_file .= ".gzip";
+        }
+    }
     
     if ($fasta_file =~ /\.(gz|gzip)$/) {
         open ($ifh, "<:gzip", $fasta_file)
