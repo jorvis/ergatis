@@ -27,6 +27,7 @@ B<--output,-o>
     Where the output bsml file should be
 
 B<--project,-p>
+    [DEPRECATED] The script will parse the project from the sequence id.
     Used in id generation.  It's the first token in the id.  (Ex. project.class.number.version)
 
 B<--id_repository,-r>
@@ -150,6 +151,9 @@ sub parseInfernalRaw {
             #Set all the stuff and things
             if($prevLines[1] =~ /sequence\:\s+(.*)\:\:(\d+)-(\d+)/) {
                 $infHit->{'seqId'} = $1;
+                $project = "";
+                $project = $1 if($infHit->{'seqId'} =~ /^([^\.]+)/);
+                $logger->logdie("Unable to parse project from $seqId") unless($project);
                 $start+=($2-1);
                 $stop+=($2-1);
             } 
@@ -372,12 +376,6 @@ sub check_parameters {
     }
     $idMaker = new Ergatis::IdGenerator( id_repository => "$options{'id_repository'}" );
     
-    #Project option must be passed
-    unless($options{'project'}) {
-        &_die("project option is required");
-    }
-    $project = $options{'project'};
-
     #If the query file path was given, parse out the definition line.
     if($options{'query_file_path'}) {
         open(IN, "<$options{query_file_path}") or
