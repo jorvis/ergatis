@@ -159,6 +159,10 @@ sub bsml_storeHit {
     my $id;
     $id = $1 if($defline =~ /^([^\s]+)/);
     &_die("Couldn't parse out the id out of the header (>$defline)") unless($id);
+
+    $project = "";
+    $project = $1 if($id =~ /^([^\.]+)\./);
+    &_die("Could not parse project out of id '$id'") unless($project);
     
     my $seq = $doc->returnBsmlSequenceByIDR( $id );
 
@@ -249,13 +253,12 @@ sub checkOptions {
         $mycoplasm = 1;
     }
 
-    if($opt->{'id_repository'} && $opt->{'project'}) {
+    if($opt->{'id_repository'}) {
         $idMaker = new Ergatis::IdGenerator( 'id_repository' => $opt->{'id_repository'} );
         $idMaker->set_pool_size( 'signal_peptide' => 25 );
         $project = $opt->{'project'};
     } else {
         $err.= "id_repository option is required\n" unless($opt->{'id_repository'});
-        $err.= "project options is required\n" unless($opt->{'project'});
     }
 
     if($opt->{'gzip_output'}) {
