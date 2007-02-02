@@ -109,8 +109,15 @@ if( $options{'help'} ){
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
+my $ifh;
+
 ## get a filehandle on the input
-open(my $ifh, "<$options{input}") || $logger->logdie("can't read the input sequence: $!");
+if ($options{'input'} =~ /\.(gz|gzip)$/) {
+    open ($ifh, "<:gzip", $options{'input'})
+      || $logger->logdie("can't open input file:\n$!");
+} else {
+    open(my $ifh, "<$options{input}") || $logger->logdie("can't read the input sequence: $!");
+}
 
 my $in = new Bio::SearchIO(-format => 'blast', 
                            -fh     => $ifh);
