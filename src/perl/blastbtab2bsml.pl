@@ -112,6 +112,10 @@ my $files = &get_btab_files($options{'btab_dir'},$options{'btab_file'});
 
 my $doc = new BSML::BsmlBuilder();
 
+my $seq_data_import_file = $options{'query_file_path'};
+
+$seq_data_import_file =~ s/\.gz$|\.gzip$//;
+
 my $deflines = get_deflines($options{'query_file_path'});
 
 #generate lookups
@@ -131,7 +135,7 @@ foreach my $seq_id(keys(%{$deflines})) {
         
         $seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
         $doc->createAndAddBsmlAttribute( $seq, 'defline', $deflines->{$seq_id} );
-        $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{'query_file_path'}, '', $seq_id);
+        $doc->createAndAddSeqDataImport( $seq, 'fasta', $seq_data_import_file, '', $seq_id);
     }
 }
 
@@ -428,7 +432,7 @@ sub createAndAddBtabLine {
         $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline );
         
         if ($options{'query_file_path'}) {
-            $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{'query_file_path'}, '', "$args{'query_name'}");
+            $doc->createAndAddSeqDataImport( $seq, 'fasta', $seq_data_import_file, '', "$args{'query_name'}");
         }
         
     }
