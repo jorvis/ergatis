@@ -245,11 +245,6 @@ function clearNewInput() {
     getObject('new_input_fields_row').style.display = 'none';
 }
 
-function removeInput( input_id ) {
-    inputs[input_id].remove();
-    updateInputLists();
-}
-
 function makeComponentEditable( component_id ) {
     // display the save button
     getObject(component_id + '_save').style.display = 'block';
@@ -328,6 +323,11 @@ function printNodes() {
             debug("&nbsp; &nbsp; &nbsp;prop: " + prop + ', value: ' + nodes[i][prop]);
         }
     }
+}
+
+function removeInput( input_id ) {
+    inputs[input_id].remove();
+    updateInputLists();
 }
 
 function saveBuildProgress(  ) {
