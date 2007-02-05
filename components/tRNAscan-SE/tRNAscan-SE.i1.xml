@@ -39,6 +39,10 @@
                 <key>--fasta_input</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
+            <param>  
+                <key>--project</key>
+                <value>$;ID_ROOT$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>

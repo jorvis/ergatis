@@ -44,6 +44,10 @@
                 <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
+                <key>--project</key>
+                <value>$;ID_ROOT$;</value>
+            </param>
+            <param>  
                 <key>--gzip_output</key>
                 <value>1</value>
             </param>
@@ -65,6 +69,7 @@
                 <key>--list_file</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw.list</value>
             </param>
+>>>>>>> 1.4
         </command>
         <command>
             <type>RunUnixCommand</type>

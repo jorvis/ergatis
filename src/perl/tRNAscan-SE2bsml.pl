@@ -42,11 +42,8 @@ B<--debug,-d>
     Debug level.  Use a large number to turn on verbose debugging. 
 
 B<--project,-p> 
-    [DEPRECATED] Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
-    not passed.
-
-    *Now parses project from input sequence id parsed from tRNAscan-SE raw file.
-    *ex:  project.type.num     (adg.assembly.1)
+    Optional. Project ID.  Used in creating feature ids.  (defaults = 'unknown')
+    If 'aa1' is passed, repeat feature IDs created are like aa1.repeat_region.4231.1
 
 B<--log,-l> 
     Log file
@@ -118,7 +115,6 @@ use BSML::BsmlBuilder;
 my $input;      # Input file name
 my $output;     # Output file name
 my $fasta_input;   # fasta input to tRNAscan-SE
-my $project;    # project id
 my $idcreator;  # Ergatis::IdGenerator object
 my $bsml;       # BSML::BsmlBuilder object
 my $data = [];  # parsed tRNAscan-SE data
@@ -194,13 +190,6 @@ sub parse_tRNAscanSE_input {
     ## loop through each of the matches that we found and make a entries in the genes array.
     for my $seqid (keys %rawdata) {
 
-        #Parse the project from the sequence id
-        unless($project) {
-            $project = $1 if($seqid =~ m|^([^/\.])\.|);
-            $logger->logdie("Could not parse project from sequence id $seqid")
-                unless($project);
-        }
-
         ## loop through each array reference of this key, adding to the data array as necessary.
         foreach my $arr ( @{$rawdata{$seqid}} ) {
         
@@ -213,7 +202,7 @@ sub parse_tRNAscanSE_input {
 
             ## First, create the gene model object
             my $currGene = new Chado::Gene ( $idcreator->next_id( 'type' => 'gene',
-                                                           'project' => $project ),
+                                                           'project' => $options{project} ),
                                       ($complement) ? $$arr[2] : $$arr[1],
                                       ($complement) ? $$arr[1] : $$arr[2],
                                       $complement,
@@ -222,7 +211,7 @@ sub parse_tRNAscanSE_input {
 
             ## Next, with the same coords, create the tRNA feature
             $currGene->addFeature( $idcreator->next_id ( 'type' => 'tRNA',
-                                                         'project' => $project ),
+                                                         'project' => $options{project} ),
                                    ($complement) ? $$arr[2] : $$arr[1],
                                    ($complement) ? $$arr[1] : $$arr[2],
                                    $complement,
@@ -297,7 +286,7 @@ sub add_exon_and_cds {
          
          # Add the exon or CDS to the gene model object
          $gm->addFeature( $idcreator->next_id( 'type' => $type,
-                                               'project' => $project ),
+                                               'project' => $options{project} ),
                           ($complement) ? $stop : $start,
                           ($complement) ? $start : $stop,
                           $complement,
@@ -362,6 +351,9 @@ sub check_parameters {
     if ($options{'debug'}) {
         $debug = $options{'debug'};
     }
+
+    ## set default if project not passed.
+    $options{project} ||= 'unknown';
 
     &_die($error) if $error;
 
