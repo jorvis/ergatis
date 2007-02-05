@@ -42,6 +42,9 @@ B<--softmask>
 B<--multifasta>
     Output a multifasta file of masked sequences instead of single sequence files.    
 
+B<--gzip_output,-g>
+    Optional. Write compressed BSML output.
+    
 B<--log,-l>
     Log file
 
@@ -89,6 +92,7 @@ GetOptions (\%options,
             'random:i',
             'softmask:i',
             'multifasta:i',
+            'gzip_output,g=s',
             'log|l=s',
             'debug|d=i',
             'help|h') || pod2usage();
@@ -213,7 +217,7 @@ $seq_twig->parse($infh);
 
 close $infh;
 
-$doc->write($outfile);
+$doc->write($outfile, '', $options{'gzip_output'});
 
 ## deals with seq-pair-alignments
 ## pulls out coordinates for seq-pair-runs
