@@ -153,6 +153,40 @@
         </dceSpec>
 	</command>
 	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Verify checksums.out file size</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/check_file_size</executable>
+	    <param>
+		<key>--bcp_dir</key>
+		<value>$;TMP_DIR$;/</value>
+	    </param>
+	    <param>
+		<key>--bcp_extension</key>
+		<value>bcp.out</value>
+	    </param>
+	    <param>
+		<key>--output_file</key>
+		<value>$;TMP_DIR$;/checksums.out</value>
+	    </param>
+	    <param>
+		<key>--debug</key>
+		<value>$;DEBUG_LEVEL$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.stdout</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.stderr</value>
+	    </param>
+	</command>
+	<command>
 	    <type>RunDistributedCommand</type>
 	    <name>sort checksums</name>
 	    <state>incomplete</state>
@@ -169,6 +203,32 @@
         <dceSpec type="sge">
             <OS>linux</OS>
         </dceSpec>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Verify checksums.out.sorted file size</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/check_file_size</executable>
+	    <param>
+		<key>--output_file</key>
+		<value>$;TMP_DIR$;/checksums.out.sorted</value>
+	    </param>
+	    <param>
+		<key>--debug</key>
+		<value>$;DEBUG_LEVEL$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.sorted.stdout</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.sorted.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.sorted.stderr</value>
+	    </param>
 	</command>
 	<command>
 	    <type>RunDistributedCommand</type>
@@ -224,6 +284,32 @@
         <dceSpec type="sge">
             <OS>linux</OS>
         </dceSpec>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Verify checksums.out.sorted.pks.offsets file size</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/check_file_size</executable>
+	    <param>
+		<key>--output_file</key>
+		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
+	    </param>
+	    <param>
+		<key>--debug</key>
+		<value>$;DEBUG_LEVEL$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.sorted.pks.offsets.stdout</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.sorted.pks.offsets.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/check_file_size.checksums.out.sorted.pks.offsets.stderr</value>
+	    </param>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
