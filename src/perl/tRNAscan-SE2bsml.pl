@@ -16,7 +16,8 @@ USAGE: tRNAscan-SE2bsml.pl
         --fasta_input=/path/to/fastafile
         --id_repository=/path/to/id_repository
         --project=aa1 
-        [ --log=/path/to/logfile 
+        [ --gzip_output=1       
+          --log=/path/to/logfile 
           --debug=3
         ]
 
@@ -34,6 +35,9 @@ B<--fasta_input,-a>
 B<--id_repository,-r>
     Path to the project's id repository
 
+B<--gzip_output,-g>
+    Optional. A non-zero value will make compressed output.
+    
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -128,6 +132,7 @@ my $results = GetOptions (\%options,
                           'project|p=s',
                           'log|l=s',
                           'id_repository|r=s',
+                          'gzip_output|g=s',
                           'debug=s',
               'help|h') || &_pod;
 
@@ -145,7 +150,7 @@ $logger = $logger->get_logger();
 # otherwise just dump an 'empty' bsml file.
 $data = &parse_tRNAscanSE_input( $input );
 $bsml = &generateBsml( $data );
-$bsml->writeBsml( $output );
+$bsml->writeBsml( $output, '', $options{'gzip_output'});
 exit (0);
 
 ################ SUBS ######################
@@ -326,10 +331,6 @@ sub check_parameters {
     
     ## make sure output file was given and doesn't exist yet
     if ($options{'output'}) {
-
-        if (-e $options{'output'}) {
-            $logger->logdie("can't create $options{'output'} because it already exists")
-        }
 
         $output = $options{'output'};
 
