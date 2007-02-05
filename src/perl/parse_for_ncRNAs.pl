@@ -75,7 +75,8 @@ foreach my $inFile (@inputFiles) {
     
     foreach my $bsmlFile (@bsmlToCombine) {
         #Get the project name from the input bsml file.
-        $project = $1 if($bsmlFile =~ /\/([^\/\.]+)\.[^\/]*/);
+        $project = "";
+        $project = $1 if($bsmlFile =~ m|/([^/\.]+)\.[^/]*$|);
         $logger->logdie("Unable to parse project name from bsml file name $bsmlFile")
             unless($project);
         &parseBsml($bsmlFile, \%rnaFeats);
