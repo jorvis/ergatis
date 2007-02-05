@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
+eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -12,9 +15,7 @@ ps_scan2bsml.pl - Formats prosite scan output into bsml format.
 USAGE: template.pl
             --input_file=/path/to/some/transterm.raw
             --output=/path/to/transterm.bsml
-            --project=aa1
             --analysis_id=ps_scan
-            --id_repository=/some/id_repository/dir
           [ --log=/path/to/file.log
             --debug=4
             --help
@@ -28,14 +29,8 @@ B<--input_file,-i>
 B<--output,-o>
     Where the output bsml file should be
 
-B<--project,-p>
-    Used in id generation.  It's the first token in the id.  (Ex. project.class.number.version)
-
 B<--analysis_id,-a>
     Analysis id.  Should most likely by ps_scan_analysis.
-
-B<--id_repository,-r>
-    Used to make the ids (See Ergatis::IdGenerator for details)
 
 B<--query_file_path,-g>
     Path to the query file (input fasta file) for ps_scan.
@@ -79,17 +74,15 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use BSML::BsmlBuilder;
-use Ergatis::Logger;
-use Ergatis::IdGenerator;
+use Workflow::Logger;
+use Workflow::IdGenerator;
 use Data::Dumper;
 
 ####### GLOBALS AND CONSTANTS ###########
 my $inputFile;
-my $project;
 my $output;
 my $debug;
 my $analysis_id;
-my $idMaker;
 my $fasta_file;
 my $gzip;
 my $defline;
@@ -100,9 +93,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'input_file|i=s',
                           'output|o=s',
-                          'project|p=s',
                           'analysis_id|a=s',
-                          'id_repository|r=s',
                           'query_file_path|q=s',
                           'gzip_output|g=s',
                           'fasta_file|f=s',
@@ -111,8 +102,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -243,23 +234,10 @@ sub check_parameters {
         $output = $options{'output'};
     }
 
-    unless($options{'project'}) {
-        $error .= "Option project is required\n";
-    } else {
-        $project = $options{'project'};
-    }
-
     unless($options{'analysis_id'}) {
         $error .= "Option analysis_id is required\n";
     } else {
         $analysis_id = $options{'analysis_id'};
-    }
-    
-    unless($options{'id_repository'}) {
-        $error .= "Option id_repository is required\n";
-    } else {
-        $idMaker = new Ergatis::IdGenerator( 'id_repository' => $options{'id_repository'});
-        #$idMaker->set_pool_size( 
     }
 
     unless($options{'query_file_path'}) {
