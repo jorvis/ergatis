@@ -294,7 +294,7 @@ ergatis-v1r22b1
 -initdb component changed to add chado_mart object manipulation support
 -clustalw now points at custom version allowing longer sequence IDs
 
-eragatis-v2r1b1
+ergatis-v2r1b1
 ---------------
 **Major restructuring of architecture for simplification and added scalability**
 Highlights
@@ -332,8 +332,8 @@ wait-master_template.xml -> wait.xml
 -fixed bug in translate_sequence.pl that would die if there were no Feature-tables element in the input bsml
 -fixed bug in prepare_for_transterm that would die if there were no Feature-tables element in the input bsml=======
 
-next
-----
+ergatis-v2r2b1
+---------------
 -now supports auto-compressed workflow XML during pipeline execution on iterative steps.
 -added component lipoprotein_motif to Makefile.PL
 -changed "RunLoggedUnixCommand" to "RunUnixCommand" for tRNAscan-SE2bsml step intRNAscan-SE_template.xml
@@ -382,3 +382,7 @@ next
 -fixed BSML::GenePredictionBsml to add deflines and not create empty files.
 -made genezilla a v2 component
 -made lipoprotein a v2 component
+
+ergatis-v2r2b2
+--------------
+-fixed lipoprotein and ps_scan targets in Makefile
