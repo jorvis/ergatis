@@ -403,12 +403,6 @@ legacy2bsml	:
 	@install components/legacy2bsml/legacy2bsml.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/legacy2bsml/legacy2bsml.config $(WORKFLOW_DOCS_DIR)
 
-lipoprotein_motif:
-	@echo "Installing lipoprotein_motif workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/lipoprotein_motif/lipoprotein_motif.xml $(WORKFLOW_DOCS_DIR)
-	@install components/lipoprotein_motif/lipoprotein_motif.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/lipoprotein_motif/lipoprotein_motif.config $(WORKFLOW_DOCS_DIR)
-    
 legacyparafam2bsml  :
 	@echo "Installing legacyparafam2bsml workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/legacyparafam2bsml/legacyparafam2bsml.ini $(WORKFLOW_DOCS_DIR)
@@ -417,13 +411,11 @@ legacyparafam2bsml  :
 	@install components/legacyparafam2bsml/legacyparafam2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/legacyparafam2bsml/legacyparafam2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
 
-lipoprotein_motif  :
+lipoprotein_motif:
 	@echo "Installing lipoprotein_motif workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/lipoprotein_motif/lipoprotein_motif.ini $(WORKFLOW_DOCS_DIR)
-	@install components/lipoprotein_motif/lipoprotein_motif_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/lipoprotein_motif/lipoprotein_motif-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/lipoprotein_motif/lipoprotein_motif-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/lipoprotein_motif/lipoprotein_motifconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/lipoprotein_motif/lipoprotein_motif.xml $(WORKFLOW_DOCS_DIR)
+	@install components/lipoprotein_motif/lipoprotein_motif.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/lipoprotein_motif/lipoprotein_motif.config $(WORKFLOW_DOCS_DIR)
 
 mask_by_analysis	:
 	@echo "Installing mask_by_analysis workflows in $(WORKFLOW_DOCS_DIR)"
@@ -572,12 +564,6 @@ promote_gene_prediction	:
 	@install components/promote_gene_prediction/promote_gene_prediction.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/promote_gene_prediction/promote_gene_prediction.config $(WORKFLOW_DOCS_DIR) 
 
-ps_scan	:
-	@echo "Installing ps_scan workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ps_scan/ps_scan.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ps_scan/ps_scan.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ps_scan/ps_scan.config $(WORKFLOW_DOCS_DIR) 
-
 predotar	:
 	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/predotar/predotar.xml $(WORKFLOW_DOCS_DIR)
@@ -594,11 +580,9 @@ promer	:
 
 ps_scan	:
 	@echo "Installing ps_scan workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ps_scan/ps_scan-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ps_scan/ps_scan-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ps_scan/ps_scan.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ps_scan/ps_scan_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/ps_scan/ps_scanconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/ps_scan/ps_scan.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ps_scan/ps_scan.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ps_scan/ps_scan.config $(WORKFLOW_DOCS_DIR) 
 
 psipred	:
 	@echo "Installing psipred workflows in $(WORKFLOW_DOCS_DIR)"
