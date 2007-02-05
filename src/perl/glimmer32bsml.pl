@@ -219,7 +219,7 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $doc = new GenePredictionBsml( 'glimmer3', $inputFsa );
+    my $doc = new BSML::GenePredictionBsml( 'glimmer3', $inputFsa );
     
     foreach my $gene(@{$data}) {
         $doc->addGene($gene);
