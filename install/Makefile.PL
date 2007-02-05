@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif ncbi-blastp ngap pangenome parse_for_ncRNAs phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif ncbi-blastp ngap pangenome parse_for_ncRNAs phat promote_gene_prediction ps_scan repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -570,6 +570,12 @@ promote_gene_prediction	:
 	@install components/promote_gene_prediction/promote_gene_prediction.xml $(WORKFLOW_DOCS_DIR)
 	@install components/promote_gene_prediction/promote_gene_prediction.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/promote_gene_prediction/promote_gene_prediction.config $(WORKFLOW_DOCS_DIR) 
+
+ps_scan	:
+	@echo "Installing ps_scan workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/ps_scan/ps_scan.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ps_scan/ps_scan.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ps_scan/ps_scan.config $(WORKFLOW_DOCS_DIR) 
 
 predotar	:
 	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
