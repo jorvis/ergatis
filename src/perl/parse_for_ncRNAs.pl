@@ -201,7 +201,7 @@ sub addRnaFeat {
         my $tmpRna = $rnaFeats->{$rnaId};
         
         #Is there an overlap (will produce a positive number if so).
-        my @sortedBound = sort($tmpRna->start, $tmpRna->end, $addRna->start, $addRna->end);
+        my @sortedBound = sort { $a <=> $b} ($tmpRna->start, $tmpRna->end, $addRna->start, $addRna->end);
         my $ol = abs($tmpRna->start - $tmpRna->end) + abs($addRna->start - $addRna->end)
             - abs($sortedBound[0] - $sortedBound[3]);
         
@@ -239,7 +239,8 @@ sub writeRnaBsmlFile {
         my $feat = $bsmlDoc->createAndAddFeature($ft, $rna->id, $rna->title, $rna->class);
         $feat->addBsmlLink('analysis', '#parse_for_ncRNA_analysis', 'computed_by');
         my $strand = $rna->start < $rna->end ? 0 : 1;
-        $feat->addBsmlIntervalLoc($rna->start, $rna->end, $strand);
+         my ($start, $end) = $strand ? ($rna->end, $rna->start) : ($rna->start, $rna->end);
+        $feat->addBsmlIntervalLoc($start, $end, $strand);
     }
 
     $bsmlDoc->createAndAddAnalysis( id => "parse_for_ncRNA_analysis",
