@@ -63,7 +63,7 @@ ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked a
 	@install components/shared/project.config.example $(WORKFLOW_DOCS_DIR)
 	@install components/shared/software.config $(PREFIX)
 
-ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw cogs copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastn_compress ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome panther parse_for_ncRNAs pe pepstats phat predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tRNAscan-SE_compress tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -425,13 +425,11 @@ lipoprotein_motif  :
 	@install components/lipoprotein_motif/lipoprotein_motif-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/lipoprotein_motif/lipoprotein_motifconf.ini $(WORKFLOW_DOCS_DIR)  
 
-mask_by_analysis  :
+mask_by_analysis	:
 	@echo "Installing mask_by_analysis workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/mask_by_analysis/mask_by_analysis.ini $(WORKFLOW_DOCS_DIR)
-	@install components/mask_by_analysis/mask_by_analysis_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/mask_by_analysis/mask_by_analysis-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/mask_by_analysis/mask_by_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/mask_by_analysis/mask_by_analysisconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/mask_by_analysis/mask_by_analysis.xml $(WORKFLOW_DOCS_DIR)
+	@install components/mask_by_analysis/mask_by_analysis.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/mask_by_analysis/mask_by_analysis.config $(WORKFLOW_DOCS_DIR)
 
 mepipe  :
 	@echo "Installing mepipe workflows in $(WORKFLOW_DOCS_DIR)"
@@ -449,7 +447,6 @@ mreps  :
 	@install components/mreps/mreps-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/mreps/mrepsconf.ini $(WORKFLOW_DOCS_DIR)  
 
-
 muscle  :
 	@echo "Installing muscle workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/muscle/muscle.ini $(WORKFLOW_DOCS_DIR)
@@ -460,11 +457,15 @@ muscle  :
 
 ncbi-blastn	:
 	@echo "Installing ncbi-blastn workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ncbi-blastn/ncbi-blastn-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastn/ncbi-blastn-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastn/ncbi-blastn.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastn/ncbi-blastn_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/ncbi-blastn/ncbi-blastnconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastn/ncbi-blastn.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastn/ncbi-blastn.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastn/ncbi-blastn.config $(WORKFLOW_DOCS_DIR)
+
+ncbi-blastn_compress	:
+	@echo "Installing ncbi-blastn_compress workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/ncbi-blastn_compress/ncbi-blastn_compress.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastn_compress/ncbi-blastn_compress.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastn_compress/ncbi-blastn_compress.config $(WORKFLOW_DOCS_DIR)
 
 ncbi-blastp	:
 	@echo "Installing ncbi-blastp workflows in $(WORKFLOW_DOCS_DIR)"
@@ -732,6 +733,12 @@ tRNAscan-SE	:
 	@install components/tRNAscan-SE/tRNAscan-SE.xml $(WORKFLOW_DOCS_DIR)
 	@install components/tRNAscan-SE/tRNAscan-SE.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/tRNAscan-SE/tRNAscan-SE.config $(WORKFLOW_DOCS_DIR)
+
+tRNAscan-SE_compress	:
+	@echo "Installing tRNAscan-SE_compress workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/tRNAscan-SE_compress/tRNAscan-SE_compress.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tRNAscan-SE_compress/tRNAscan-SE_compress.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tRNAscan-SE_compress/tRNAscan-SE_compress.config $(WORKFLOW_DOCS_DIR)
 
 wait	:
 	@echo "Installing wait workflows in $(WORKFLOW_DOCS_DIR)"
