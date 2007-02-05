@@ -1,0 +1,102 @@
+<!-- component documentation -->
+<h3>references</h3>
+<p>
+    Majoros WH, Pertea M, Salzberg SL.<br>
+    Abstract    TigrScan and GlimmerHMM: two open source ab initio eukaryotic gene-finders.<br>
+    Bioinformatics. 2004 Nov 1;20(16):2878-9. Epub 2004 May 14.<br>
+    PMID: [</a><a href="http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&amp;db=pubmed&amp;dopt=Abstract&amp;list_uids=15145805">15145805</a>]
+</p>
+<h3>input</h3>
+<p>
+    The usage defined by the script is:
+
+</p>
+<p class="code">
+    genezilla &lt;*.iso&gt; &lt;*.fasta&gt; [options]
+           options:
+              -s &lt;n&gt; : ignore sequences in FASTA shorter than N bases
+              -i &lt;file&gt; : load isochore predictions from file
+              -c &lt;file&gt; : load CpG island predictions from file
+              
+</p>
+<p>
+
+    Each of the options can be passed using the OTHER_OPTS parameter in the configuration of the component.
+    I tested this on a 4MB sequence and genezilla only used 46MB of RAM, so I have not yet established the
+    max we should use before splitting the input sequences.
+</p>
+<h3>output</h3>
+<p>
+    The raw output of genezilla is in GFF2 format:
+</p>
+<p class="code">
+    ##gff-version 2
+    ##source-version genezilla 1.0
+    ##date Mon May 16 14:56:39 2005
+    ##Type DNA
+    aa1.assembly.19838  genezilla   initial-exon    2697    2910    9.523   +   0   transgrp=1;
+    aa1.assembly.19838  genezilla   final-exon  3125    3540    33.04   +   1   transgrp=1;
+    aa1.assembly.19838  genezilla   single-exon 14327   15796   3166    +   0   transgrp=2;
+    aa1.assembly.19838  genezilla   single-exon 17640   25487   1.712e+04   +   0   transgrp=3;
+    aa1.assembly.19838  genezilla   single-exon 34289   34480   26.87   +   0   transgrp=4;
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence id="aa1.assembly.19838" molecule="mol-not-set"&gt;
+        &lt;Feature-tables&gt;
+
+          &lt;Feature-table id="Bsml0"&gt;
+            &lt;Feature class="exon" id="ir.pva1.exon.20170032.1"&gt;
+              &lt;Interval-loc complement="0" startpos="2696" endpos="2909"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#genezilla_analysis"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+
+            &lt;Feature class="exon" id="ir.pva1.exon.20170032.2"&gt;
+              &lt;Interval-loc complement="0" startpos="3124" endpos="3539"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#genezilla_analysis"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            
+            [ ... one Feature for each feature predicted ... ]
+            
+          &lt;/Feature-table&gt;
+
+          &lt;Feature-group id="Bsml2" group-set="ir.pva1.gene.20170032.1"&gt;
+            &lt;Feature-group-member feature-type="exon" featref="ir.pva1.exon.20170032.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="exon" featref="ir.pva1.exon.20170032.2"&gt;&lt;/Feature-group-member&gt;
+          &lt;/Feature-group&gt;
+          &lt;Feature-group id="Bsml3" group-set="ir.pva1.gene.20170032.2"&gt;
+
+            &lt;Feature-group-member feature-type="exon" featref="ir.pva1.exon.20170032.3"&gt;&lt;/Feature-group-member&gt;
+          &lt;/Feature-group&gt;
+          
+          [ ... one Feature-group for each gene found ... ]
+          
+        &lt;/Feature-tables&gt;
+        &lt;Seq-data-import source="/usr/local/scratch/jorvis/pipelines/genezilla/input/aa1.assembly.19838.fsa" identifier="aa1.assembly.19838" format="fasta" id="Bsml1"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#genezilla_analysis"&gt;&lt;/Link&gt;
+
+      &lt;/Sequence&gt;
+    &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="genezilla_analysis"&gt;
+
+        &lt;Attribute content="/usr/local/scratch/jorvis/pipelines/genezilla/output/8008_default/0/aa1.assembly.19838.genezilla.bsml" name="sourcename"&gt;&lt;/Attribute&gt;
+      &lt;/Analysis&gt;
+      &lt;Analysis&gt;
+        &lt;Attribute content="/usr/local/scratch/jorvis/pipelines/genezilla/input/input.list" name="query_fasta_file_list"/&gt;
+        &lt;Attribute content="/usr/local/annotation/GeneFinding/species/aedes/genezilla/grape.iso" name="iso"/&gt;
+        &lt;Attribute content="/usr/local/scratch/annotation/PVA1/BSML_repository" name="bsml_repository"/&gt;
+
+        
+        [ ... one Attribute for each in the analysis ... ]
+        
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+</div>
