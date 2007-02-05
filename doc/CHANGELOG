@@ -381,3 +381,4 @@ next
 -fixed tRNAscan-SE2bsml to not use the project option (and changed component files)
 -fixed BSML::GenePredictionBsml to add deflines and not create empty files.
 -made genezilla a v2 component
+-made lipoprotein a v2 component
