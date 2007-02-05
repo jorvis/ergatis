@@ -171,7 +171,7 @@
 	    </param>
 	    <param>
 		<key>--debug</key>
-		<value>$;DEBUGL$;</value>
+		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
 		<key>--logfile</key>
@@ -215,7 +215,7 @@
 	    </param>
 	    <param>
 		<key>--debug</key>
-		<value>$;DEBUGL$;</value>
+		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
 		<key>--logfile</key>
@@ -296,7 +296,7 @@
 	    </param>
 	    <param>
 		<key>--debug</key>
-		<value>$;DEBUGL$;</value>
+		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
 		<key>--logfile</key>
