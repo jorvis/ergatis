@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml ncbi-blastp ngap pangenome parse_for_ncRNAs phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif ncbi-blastp ngap pangenome parse_for_ncRNAs phat promote_gene_prediction repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration trf tRNAscan-SE wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -402,6 +402,12 @@ legacy2bsml	:
 	@install components/legacy2bsml/legacy2bsml.xml $(WORKFLOW_DOCS_DIR)
 	@install components/legacy2bsml/legacy2bsml.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/legacy2bsml/legacy2bsml.config $(WORKFLOW_DOCS_DIR)
+
+lipoprotein_motif:
+	@echo "Installing lipoprotein_motif workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/lipoprotein_motif/lipoprotein_motif.xml $(WORKFLOW_DOCS_DIR)
+	@install components/lipoprotein_motif/lipoprotein_motif.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/lipoprotein_motif/lipoprotein_motif.config $(WORKFLOW_DOCS_DIR)
     
 legacyparafam2bsml  :
 	@echo "Installing legacyparafam2bsml workflows in $(WORKFLOW_DOCS_DIR)"
