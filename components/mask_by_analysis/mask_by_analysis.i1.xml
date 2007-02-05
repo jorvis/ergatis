@@ -44,6 +44,10 @@
                 <key>--multifasta</key>
                 <value>'$;MULTIFASTA$;'</value>
             </param>
+            <param>  
+                <key>--gzip_output</key>
+                <value>$;COMPRESS_BSML$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -73,24 +77,6 @@
             <param>  
                 <key>--analysis_id</key>
                 <value>$;COMPONENT_NAME$;_analysis</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>compress bsml output</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/compress_file</executable>
-            <param>  
-                <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
-            </param>
-            <param>  
-                <key>--compress</key>
-                <value>$;COMPRESS_BSML$;</value>
-            </param>
-            <param>  
-                <key>--list_file</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml.list</value>
             </param>
         </command>
         <command>
