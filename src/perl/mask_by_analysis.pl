@@ -92,7 +92,7 @@ GetOptions (\%options,
             'random:i',
             'softmask:i',
             'multifasta:i',
-            'gzip_output,g=s',
+            'gzip_output|g=s',
             'log|l=s',
             'debug|d=i',
             'help|h') || pod2usage();
