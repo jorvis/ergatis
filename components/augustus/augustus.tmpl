@@ -1,0 +1,142 @@
+<!-- component documentation -->
+
+<p>
+     "AUGUSTUS is a gene prediction progam for eukaryotes by Mario Stanke and Stephan Waack. It can be used as an ab initio program, which means it bases its prediction purely on the sequence. AUGUSTUS may also incorporate hints on the gene structure coming from extrinsic sources such as BLAST search results."
+</p>
+<h3>references</h3>
+<p>
+    <a href='http://augustus.gobics.de/'>http://augustus.gobics.de/</a>.
+</p>
+<h3>input</h3>
+<p>
+Regular FASTA input.  Before the program can be run, you must set the environmental variable
+    AUGUSTUS_CONFIG_PATH to the config directory within the augustus installation.   The mandatory
+    arguments to augustus are the query file and "species".  Species is really just the name of the
+    training set and is actually most often the genus.  Letters other than ATGC (either case) in the
+    input sequence are simply ignored. </p>
+<h3>implemented options</h3>
+<p> Options supported by this component are:
+</p>
+<p>
+    <strong>--strand=both, --strand=forward or --strand=backward</strong><br>
+    report predicted genes on both strands, just the forward or just the backward strand.
+</p>
+<p>
+    <strong>--genemodel=partial, --genemodel=complete, --genemodel=atleastone or --genemodel=exactlyone</strong><br>
+      partial      : allow prediction of incomplete genes (default)<br>
+      complete     : only predict complete genes<br>
+
+      atleastone   : predict at least one complete gene<br>
+      exactlyone   : predict exactly one complete gene
+</p>
+<p>
+    <strong>--maxDNAPieceSize=n</strong>
+      When --singlestrand=false (default), AUGUSTUS uses a
+      little more than 1MB per kilo base sequence lenght memory. When run
+      with --singlestrand=true it uses about half the memory. If the sequence is too long for the memory of your
+      computer, you can specify the maximal length of the pieces that the sequence
+      should be cut into. Default is --maxDNAPieceSize=200000 (&lt; 250MB RAM required).
+      AUGUSTUS tries to place the boundaries of these pieces in the intergenic region, which 
+      is inferred by a preliminary prediction. GC-content dependent parameters are chosen for each piece of DNA. 
+      This is why this value should not be set very large, even if you have plenty of memory. 
+</p>
+
+<h3>raw output</h3>
+
+<p>
+    The raw output is a modified GFF format, such as:
+</p>
+<p class="code">
+# This output was generated with AUGUSTUS (version 1.5).
+# AUGUSTUS is a gene prediction tool for eukaryotes written by Mario Stanke (mstanke@gwdg.de).
+# Please cite: Mario Stanke and Stephan Waack (2003) "Gene prediction with a hidden Markov model and
+# a new intron submodel", Bioinformatics, Vol. 19 Suppl. 2, ii215-ii225
+# No extrinsic information on sequences given.
+# We have hints for 0 sequence and for 0 of the sequences in the input set.
+#
+# ----- prediction on sequence number 1 (length = 17799, name = aa1.assembly.24514) -----
+#
+# Constraints/Hints:
+# (none)
+# Predicted genes for sequence number 1 on both strands
+aa1.assembly.24514  AUGUSTUS    internal    519 677 .   -   0   transcript_id "g1.1"; gene_id "g1";
+aa1.assembly.24514  AUGUSTUS    intron  678 880 .   -   .   transcript_id "g1.1"; gene_id "g1";
+aa1.assembly.24514  AUGUSTUS    initial 881 1006    .   -   0   transcript_id "g1.1"; gene_id "g1";
+aa1.assembly.24514  AUGUSTUS    CDS 519 677 .   -   0   transcript_id "g1.1"; gene_id "g1";
+aa1.assembly.24514  AUGUSTUS    CDS 881 1006    .   -   0   transcript_id "g1.1"; gene_id "g1";
+# protein sequence = [MFNIHHSTLSRVLKRFQERLTLDYGKGAGRKPGPENKKTEGKDMNPPNCPELRPVEQ
+# YWAIMKRVLRKSKKTVKEEKDVLRKLKKKTEKLVPDDA]
+aa1.assembly.24514  AUGUSTUS    stop_codon  15167   15169   .   -   0   transcript_id "g3.1"; gene_id "g3";
+aa1.assembly.24514  AUGUSTUS    terminal    15167   15348   .   -   2   transcript_id "g3.1"; gene_id "g3";
+aa1.assembly.24514  AUGUSTUS    intron  15349   15409   .   -   .   transcript_id "g3.1"; gene_id "g3";
+aa1.assembly.24514  AUGUSTUS    initial 15410   15434   .   -   0   transcript_id "g3.1"; gene_id "g3";
+aa1.assembly.24514  AUGUSTUS    CDS 15170   15348   .   -   2   transcript_id "g3.1"; gene_id "g3";
+aa1.assembly.24514  AUGUSTUS    CDS 15410   15434   .   -   0   transcript_id "g3.1"; gene_id "g3";
+# protein sequence = [MIFIIGAQTGILGEPTAIGSTNLMGFPIKVGNVVVTSMISAKKREDDDDASETLLLL
+# LPPGIDPFDDE]
+</p>
+<p>
+    All comment lines in the raw output are ignored when converting to BSML.
+</p>
+
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence id="aa1.assembly.24514" molecule="mol-not-set"&gt;
+        &lt;Feature-tables&gt;
+          &lt;Feature-table id="Bsml0"&gt;
+
+            &lt;Feature class="exon" id="ir.aa1.exon.20145000.1"&gt;
+              &lt;Interval-loc complement="1" startpos="518" endpos="676"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#augustus_analysis"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="intron" id="ir.aa1.intron.20145000.1"&gt;
+
+              &lt;Interval-loc complement="1" startpos="677" endpos="879"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#augustus_analysis"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            
+            [ ... one Feature for each predicted feature ... ]
+            
+          &lt;/Feature-table&gt;
+          &lt;Feature-group id="Bsml2" group-set="ir.aa1.gene.20145000.1"&gt;
+
+            &lt;Feature-group-member feature-type="exon" featref="ir.aa1.exon.20145000.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="intron" featref="ir.aa1.intron.20145000.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="exon" featref="ir.aa1.exon.20145000.2"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="CDS" featref="ir.aa1.CDS.20145000.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="CDS" featref="ir.aa1.CDS.20145000.2"&gt;&lt;/Feature-group-member&gt;
+
+          &lt;/Feature-group&gt;
+          
+          [ ... one Feature-group for the components of each gene ... ]
+        
+        &lt;/Feature-tables&gt;
+        &lt;Seq-data-import source="/usr/local/scratch/Paolo/AA1/Asmbls/aa1.assembly.24514.fsa" identifier="aa1.assembly.24514" format="fasta" id="Bsml1"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#augustus_analysis"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+
+    &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="augustus_analysis"&gt;
+        &lt;Attribute content="/usr/local/scratch/annotation/AA1/BSML_repository/augustus/13898_default/0/aa1.assembly.24514.augustus.bsml" name="sourcename"&gt;&lt;/Attribute&gt;
+
+      &lt;/Analysis&gt;
+      &lt;Analysis&gt;
+        &lt;Attribute content="on" name="cds"/&gt;
+        &lt;Attribute content="aedes" name="species"/&gt;
+        &lt;Attribute content="350000" name="split_size"/&gt;
+        
+        [ ... one Attribute for each attribute of the Analysis ... ]
+      
+      &lt;/Analysis&gt;
+
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+</div>
