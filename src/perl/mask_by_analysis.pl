@@ -21,7 +21,7 @@ B<--output,-o>
     The output path.
 
 B<--output_prefix,-b>
-    Output file name prefix (for BSML and multifasta output).
+    Output file name prefix (for BSML output).
 
 B<--mask_char,-x>
     The character to mask with (default = X).
@@ -38,9 +38,6 @@ B<--random>
 
 B<--softmask>
     Soft-mask the sequence.    
-
-B<--multifasta>
-    Output a multifasta file of masked sequences instead of single sequence files.    
 
 B<--gzip_output,-g>
     Optional. Write compressed BSML output.
@@ -73,12 +70,15 @@ these sequence files.
 
 =cut
 use strict;
+no strict "refs";
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use XML::Twig;
 use Ergatis::Logger;
 use BSML::BsmlBuilder;
+use FileCache maxopen => 10;
+use File::Basename;
 
 $| = 1;
 my %options = ();
@@ -91,7 +91,6 @@ GetOptions (\%options,
             'output_prefix|p=s',
             'random:i',
             'softmask:i',
-            'multifasta:i',
             'gzip_output|g=s',
             'log|l=s',
             'debug|d=i',
@@ -327,8 +326,6 @@ sub sequence_handler {
     my $identifier;
     my $format;
    
-    my $append_file = 0; 
-    
     my $flag = 0;
     
     ## choose whether we want to deal with this sequence element
@@ -369,12 +366,9 @@ sub sequence_handler {
     my $fasta_header = ($defline) ? $defline : $seq_id;
     
     my $sequence_file;
-    if ($options{'multifasta'}) {
-        $append_file = 1;
-        $sequence_file = $options{'output'}."/".$options{'output_prefix'}.".fsa";
-    } else {
-        $sequence_file = $options{'output'}."/$seq_id.mask_by_analysis.fsa";
-    }
+    #} else {
+    #    $sequence_file = $options{'output'}."/$seq_id.mask_by_analysis.fsa";
+    #}
     
     if (!defined($class)) {
         if ($logger->is_debug()) {$logger->debug("WARNING: sequence class of '$seq_id' was not defined\n");}
@@ -397,7 +391,7 @@ sub sequence_handler {
         $source = $seq_data_import->{'att'}->{'source'};
         $identifier = $seq_data_import->{'att'}->{'identifier'};
         $format = $seq_data_import->{'att'}->{'format'};
-        
+       
         ## we only support pulling sequences from fasta files right now
         ## but get_sequence_by_id could be modified to support other formats 
         if (defined($format) && $format ne 'fasta') {
@@ -414,10 +408,14 @@ sub sequence_handler {
         my $seq = get_sequence_by_id($source, $identifier);
         
         if (length($seq) > 0) {
+        
+            ## for every one input fasta file referenced in a seq-data-import there will be an equivalent masked file
+            my $filename = basename($source, ".fsa");
+            $sequence_file = $options{'output'}."/$filename.mask_by_analysis.fsa";
 
             $seq = mask_sequence($seq, $mask_regions->{$seq_id}, $mask_char);
             
-            write_seq_to_fasta($sequence_file, $fasta_header, $seq, $append_file);
+            write_seq_to_fasta($sequence_file, $fasta_header, $seq);
 
             $seq_data_import->{'att'}->{'source'} = $sequence_file;
             
@@ -429,7 +427,10 @@ sub sequence_handler {
         ## sequence is in the BSML
         my $seq = mask_sequence($seq_data->text(), $mask_regions->{$seq_id}, $mask_char);
         
-        write_seq_to_fasta($sequence_file, $fasta_header, $seq, $append_file);
+        ## we'll write any masked sequence data from Seq-data elements into one multifasta file
+        $sequence_file = $options{'output'}."/".$options{'output_prefix'}.".fsa";
+        
+        write_seq_to_fasta($sequence_file, $fasta_header, $seq);
         
         $seq_data->delete();
         
@@ -510,20 +511,14 @@ sub get_sequence_by_id {
 
 ## writes a nicely formatted fasta file
 sub write_seq_to_fasta {
-    my ($file, $header, $sequence, $append) = @_;
-
+    my ($file, $header, $sequence) = @_;
     
-    if ($append) {
-        open (OUT, ">>$file") || $logger->logdie("couldn't write fasta file '$file': $!");
-    } else {
-        open (OUT, ">$file") || $logger->logdie("couldn't write fasta file '$file': $!");
-    }    
+    my $fh = cacheout $file;
     
     $sequence =~ s/\W+//g;
     $sequence =~ s/(.{1,60})/$1\n/g;
         
-    print OUT ">$header\n$sequence";
-    close OUT;
+    print $fh ">$header\n$sequence";
 }
 
 ## does the dirty business of masking the sequence
