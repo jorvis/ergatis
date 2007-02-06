@@ -1,0 +1,69 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<state>incomplete</state>
+	<name>backupdb workflow</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create temp directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+	</command>
+	<!--Iterator1 for converting regular size bcp files -->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Create list for local bcp conversion process</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_table_iterator_list</executable>
+            <param>
+		<key>--table_list</key>
+		<value>$;TABLE_LIST$;</value>
+	    </param>
+	    <param>
+		<key>--output_iter_list</key>    
+		<value>$;TMP_DIR$;/bcp.list</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/create_bcp_iterator_list.bcp.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/create_bcp_iterator_list.bcp.stderr</value>
+	    </param>
+	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=convertbcp,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bcp.list,$;NODISTRIB$;=1"/>
+	<!--Iterator2 for converting large size bcp files -->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Create list for distributed bcp conversion process</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_table_iterator_list</executable>
+            <param>
+		<key>--table_list</key>
+		<value>$;LARGE_TABLES_LIST$;</value>
+	    </param>
+	    <param>
+		<key>--output_iter_list</key>    
+		<value>$;TMP_DIR$;/large_bcp.list</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/create_table_iterator_list.large-bcp.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/create_table_iterator_list.large-bcp.stderr</value>
+	    </param>
+	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=convertlargebcp,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/large_bcp.list,$;NODISTRIB$;=0"/>
+    </commandSet>
+</commandSetRoot>

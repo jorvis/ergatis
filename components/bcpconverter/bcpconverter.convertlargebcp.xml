@@ -1,0 +1,55 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<name>Convert bcp files</name>
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <state>incomplete</state>
+	    <name>Convert bcp file</name>
+	    <executable>$;BIN_DIR$;/bcpConverter</executable>
+	    <param>
+		<key>--input_format</key>
+		<value>$;INPUT_FORMAT$;</value>
+	    </param>
+	    <param>
+		<key>--indir</key>
+		<value>$;INPUT_DIRECTORY$;</value>
+	    </param>
+	    <param>
+		<key>--input_ext</key>
+		<value>$;INPUT_FILE_EXTENSION$;</value>
+	    </param>
+	    <param>	  
+		<key>--output_format</key>
+		<value>$;OUTPUT_FORMAT$;</value>
+	    </param>
+	    <param>
+		<key>--outdir</key>
+		<value>$;OUTPUT_DIRECTORY$;</value>
+	    </param>
+	    <param>
+		<key>--output_ext</key>
+		<value>$;OUTPUT_FILE_EXTENSION$;</value>
+	    </param>
+	    <param>
+		<key>--debug_level</key>
+		<value>$;DEBUG$;</value>
+	    </param>
+	    <param>
+		<key>--table</key>
+		<value>$;TABLE$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;OUTPUT_DIRECTORY$;/bcpConverter.pl.$;TABLE$;.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/bcpConverter.pl.$;TABLE$;.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;OUTPUT_DIRECTORY$;/bcpConverter.pl.$;TABLE$;.stderr</value>
+	    </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
