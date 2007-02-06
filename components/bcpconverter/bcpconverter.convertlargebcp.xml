@@ -12,7 +12,7 @@
 	    </param>
 	    <param>
 		<key>--indir</key>
-		<value>$;INPUT_DIRECTORY$;</value>
+		<value>$;INDIR$;</value>
 	    </param>
 	    <param>
 		<key>--input_ext</key>
