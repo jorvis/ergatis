@@ -386,3 +386,4 @@ ergatis-v2r2b1
 ergatis-v2r2b2
 --------------
 -fixed lipoprotein and ps_scan targets in Makefile
+-made augustus a v2 component
