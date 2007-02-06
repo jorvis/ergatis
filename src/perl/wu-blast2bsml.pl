@@ -84,6 +84,7 @@ my $results = GetOptions (\%options,
                           'analysis_id|a=s',
                           'bsml_dir|d=s', ## deprecated.  keeping for backward compat (for now)
                           'max_hsp_count|m=s',
+                          'max_alignment_count|M=s',
                           'pvalue|p=s', 
                           'debug=s',
                           'class|c=s',
@@ -157,10 +158,16 @@ my $hsplookup = {};
 my @hsp_ref_array;
 
 # parse each blast record:
-while( my $result = $in->next_result ) {
+RESULT: while( my $result = $in->next_result ) {
     my $hsp_counter = 0;
+    my $hit_counter = 0;
     # parse each hit per record.
     while( my $hit = $result->next_hit ) {
+       
+        if ($options{'max_alignment_count'} && ++$hit_counter > $options{'max_alignment_count'}) {
+            next RESULT;
+        }
+        
         # a hit consists of one or more HSPs
         while( my $hsp = $hit->next_hsp ) {
             my @x;
@@ -445,9 +452,6 @@ sub createAndAddBlastResultLine {
     
     my %args = @_;
     my $doc = $args{'doc'};
-
-#    my $orig_dbmatch_accession = $args{dbmatch_accession};
-#    $args{dbmatch_accession} =~ s/[^a-z0-9\_]/_/gi;
 
     #determine if the query name and the dbmatch name are a unique pair in the document
     my $alignment_pair_list = BSML::BsmlDoc::BsmlReturnAlignmentLookup( $args{'query_name'}, $args{'dbmatch_accession'} );
