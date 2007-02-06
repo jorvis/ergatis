@@ -1,5 +1,5 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
-    <commandSet type="serial">
+    <commandSet type="parallel">
 	<name>Convert bcp files</name>
 	<command>
 	    <type>RunDistributedCommand</type>
