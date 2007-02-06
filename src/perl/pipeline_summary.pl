@@ -14,7 +14,7 @@ pipeline_summary.pl - Creates one BSML document describing annotation from a pip
 USAGE: pipeline_summary.pl
             --input_bsml=/path/to/file.bsml
             --other_bsml_lists=/path/to/some.list,/path/to/another.list
-            --output_dir=/path/to/someDir/
+            --output=/path/to/someDir/
           [ --log=/path/to/file.log
             --debug=4
             --help
@@ -89,7 +89,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'input_bsml|i=s',
                           'other_bsml_lists|b=s',
-                          'output_dir|o=s',
+                          'output|o=s',
                           'correct_mistakes|c',
                           'log|l=s',
                           'debug=s',
@@ -113,7 +113,7 @@ foreach my $file (@inputFiles) {
 
     #Make the output file name.
     my $base = $1 if($file =~ m|.*/([^/\.]+\.[^/\.]+\.[^/\.]+)\.[^/]+$|);
-    $outputFile = "$output/$base.summary.bsml";
+    $outputFile = "$output";
     print "input: $file\n";
 
     my $bsml = new BSML::BsmlBuilder;
@@ -470,10 +470,10 @@ sub check_parameters {
     }
     @otherFiles = &getInputFiles($input);
 
-    unless($opts->{'output_dir'}) {
-        $error .= "Option output_dir is required\n";
+    unless($opts->{'output'}) {
+        $error .= "Option output is required\n";
     } else {
-        $output = $opts->{'output_dir'};
+        $output = $opts->{'output'};
     }
     
     if($opts->{'debug'}) {
