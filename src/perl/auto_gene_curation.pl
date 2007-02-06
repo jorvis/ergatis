@@ -18,7 +18,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use XML::Twig;
 use File::Find;
-use Workflow::Logger;
+use Ergatis::Logger;
 use Time::localtime;
 use BSML::BsmlBuilder;
 use MLDBM 'DB_File';
@@ -44,6 +44,8 @@ my $familyLookup;
 my %hmmInfo;
 my $changedFeatures;
 my $lengths;
+my $featureSeqElems;
+my $deletedFeatures;
 ###########################
 
 ######## Parameters #################
@@ -92,6 +94,13 @@ foreach my $inputFile (@inputFiles) {
     my $out;
     open($out, "> $outBsml") or 
         $logger->logdie("Unable to open $outBsml for writing ($!)");
+
+    #This is used to make sure we gather all the sequences before we find any features
+    #which is dealt with in the next twig.
+    my $seqTwig = new XML::Twig( twig_handlers => {
+        'Sequence' => \&collectSeqs });
+    $seqTwig->parsefile($inputFile);
+                                 
     
     #Create a twig object
     my $twig = new XML::Twig( twig_roots => 
@@ -191,12 +200,19 @@ sub changeFeature {
         my $feature = $features->{$featureId};
         $feature->{'new_id'} = $1.($2+1) if($features->{$featureId}->{'old_id'} =~ /(.*\.)(\d+)/);
         $logger->logdie("Could not change the old id. ".$feature->{'old_id'}) unless($feature->{'new_id'});
+
+        $logger->logdie("Could not find bsml_feature_object for $featureId") unless($feature->{'bsml_feature_object'});
         $feature->{'bsml_feature_object'}->set_att('id', $feature->{'new_id'});
+
+        if(exists($featureSeqElems->{$featureId})) {
+            #Update the sequence id
+            $featureSeqElems->{$featureId}->{'seqId'} = $feature->{'new_id'};
+        }
 
         #Now change the feature group
         $genes->{$changeFeature->{'old_id'}}->{'fgm'}->{$type}->set_att('featref', $feature->{'new_id'});
         
-        #For debugging, keep the old start.
+        #For debugging, keep the old start and stop.
         my ($oldStart,$oldStop) = $feature->{'complement'} ? ($feature->{'endpos'}, $feature->{'startpos'}) :
             ($feature->{'startpos'}, $feature->{'endpos'});
 
@@ -209,6 +225,7 @@ sub changeFeature {
             $feature->{'interval-loc'}->set_att('startpos', $newStart);
         }
 
+        #Just a check.
         if($feature->{'startpos'} > $feature->{'endpos'}) {
             print STDOUT $feature->{'old_id'}."\n";
             print STDOUT $feature->{'new_id'}."\n";
@@ -220,21 +237,54 @@ sub changeFeature {
             
             $logger->logdie("I have no clue what happened but the endpos is now lower than the startpos.  Good luck");
         }
-        $logger->logdie("I have no clue what happened but the endpos is now lower than the startpos.  Good luck")
-            if($feature->{'startpos'} > $feature->{'endpos'});
 
+        #Keeps a records of features that have changed.
         $changedFeatures->{$featureId} = 1;
 
+        #Change the sequence element that is related to the feature that has changed.
+        if(exists($featureSeqElems->{$feature->{'old_id'}})) {
+            
+            #Update the sequence id.
+            $featureSeqElems->{$feature->{'old_id'}}->{'seqId'} = $feature->{'new_id'}."_seq";
+
+            #We don't have fasta sequence for it.  So we should get that.  And since we are only ever
+            #making genes shorter, we can use the existing fasta and just take off some nucleotides/amino acids.
+            my $source = $featureSeqElems->{$feature->{'old_id'}}->{'source'};
+            $logger->logdie("Attribute source does not exist in Seq-data-import element of Sequence ".
+                            $featureSeqElems->{$feature->{'old_id'}}->{'seqId'}) unless($source);
+            
+            my $ident = $featureSeqElems->{$feature->{'old_id'}}->{'identifier'};
+            $logger->logdie("Unable to parse identifier from Seq-data-import element of Sequence ".
+                            $featureSeqElems->{$feature->{'old_id'}}->{'seqId'}) unless($ident);
+
+            $logger->logdie("Sorry, I only deal with fasta input for Seq-data-import elements ".
+                            $featureSeqElems->{$feature->{'old_id'}}->{'seqId'}) 
+                unless($featureSeqElems->{$feature->{'old_id'}}->{'format'} eq 'fasta');
+
+            my $difference = $feature->{'complement'} ? $oldStart - $newStart : $newStart - $oldStart;
+          
+            $logger->logdie("The gene has gotten bigger and therefore cannot make a new fasta file from $source")
+                if($difference <= 0);
+
+            my $fsaFile = &makeFsaFile($source, $difference/3, $ident, $feature->{'new_id'});
+
+            $featureSeqElems->{$feature->{'old_id'}}->{'source'} = $fsaFile;
+            $featureSeqElems->{$feature->{'old_id'}}->{'identifier'} = $feature->{'new_id'};
+
+            print STDOUT "Printing the seq elem for ".$feature->{'old_id'}."\n" if($logger->is_debug);
+            print STDOUT $featureSeqElems->{$feature->{'old_id'}}->{'seqId'} if($logger->is_debug);
+            
+        } 
     }
-    
+
 }
 
 sub checkParametersAndLog {
     my $opts = shift;
 
     #Setup Logger
-    my $logfile = $opts->{'log'} || Workflow::Logger::get_default_logfilename();
-    $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+    my $logfile = $opts->{'log'} || Ergatis::Logger::get_default_logfilename();
+    $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$opts->{'debug'});
     $logger = $logger->get_logger();
     print "setup logger\n" if($logger->is_debug);
@@ -367,6 +417,57 @@ sub checkParametersAndLog {
     }
 
 } #End checkParameters
+
+sub collectSeqs {
+    my ($twig, $seq) = @_;
+
+    
+    my $seqId = $seq->att('id');
+    $logger->logdie("Unable to parse id from sequence") unless($seqId);
+
+    my $class = $seq->att('class');
+    unless($class) {
+        $class = $1 if($seqId =~ m|^[^\.]+\.([^\.]+)\.|);
+        $logger->logdie("Can't parse class from $seqId\n") unless($class);
+    }
+
+    #If it's the assembly sequence I don't care about it (yet).
+    return if($class eq 'assembly');
+    
+    my $featId = $1 if($seqId =~ /^(.*)_seq/);
+    $logger->logdie("Unable to parse the feature id from $seqId") unless($featId);
+
+    my $title = $seq->att('title');
+    unless($title) {
+        $title = $seqId;
+    }
+    $featureSeqElems->{$featId}->{'title'} = $title;
+
+    $featureSeqElems->{$featId}->{'class'} = $class;
+    $featureSeqElems->{$featId}->{'seqId'} = $seqId;
+
+    my $molecule = $seq->att('molecule');
+    my $length = $seq->att('length');
+
+    $featureSeqElems->{$featId}->{'moluecule'} = $molecule if($molecule);
+    $featureSeqElems->{$featId}->{'length'} = $length if($length);
+
+    #Gather the Seq-data-import information
+    my $sdi = $seq->first_child('Seq-data-import');
+    $logger->logdie("$seqId does not have Seq-data-import") unless($sdi);
+    
+    my $source = $sdi->att('source');
+    my $format = $sdi->att('format');
+    my $ident  = $sdi->att('identifier');
+
+    $logger->logdie("$seqId does not have a complete Seq-data-import (missing either source, format or identifier)")
+        unless($source && $format && $ident);
+
+    $featureSeqElems->{$featId}->{'source'} = $source;
+    $featureSeqElems->{$featId}->{'format'} = $format;
+    $featureSeqElems->{$featId}->{'identifier'} = $ident;
+    
+}
 
 sub definitionHandler {
     my ($twig, $definitionsElem, $feature) = @_;
@@ -724,6 +825,7 @@ sub handleOverlap {
     if($feat1->{'startpos'} == $feat2->{'startpos'} && $feat1->{'endpos'} == $feat2->{'endpos'}) {
         &removeFeature($feat2);
         print STDOUT "Removed because the coordinates are the same\n" if($logger->is_debug);
+        return;
     }
     
     #If overlapping features are in the same frame, get rid of the shorter
@@ -734,6 +836,7 @@ sub handleOverlap {
                         $feat1 : $feat2;
         &removeFeature($removeMe);
         print STDOUT "Removed because in same frame\n" if($logger->is_debug);
+        return;
     }
 
     #If the genes are going in the same direction 
@@ -765,7 +868,8 @@ sub handleOverlap {
             &removeFeature($downstream);
         } elsif( defined($newStart) ) {
             print STDOUT "found a new start for ".$downstream->{'old_id'}.". Changing from $dfEnd5 to $newStart\n" if($logger->is_debug);
-            &changeFeature($downstream, $newStart);
+            my $oldStart = $downstream->{'complement'} ? $downstream->{'endpos'} : $downstream->{'startpos'};
+            &changeFeature($downstream, $newStart) unless($newStart == $oldStart);
         } else {
             print STDOUT "newStart was undefined\n" if($logger->is_debug);
         }
@@ -826,19 +930,26 @@ sub handleOverlap {
 
             
     }
+
     
 }
 
 sub handleSequence {
     my ($twig, $seqElem) = @_;
 
-    return unless( $seqElem->att('class') && $seqElem->att('class') eq 'assembly');
-
     my $intervalTree = new IntervalTree;
 
     my $id = $seqElem->att('id');
     $logger->logdie("Can't parse id from input bsml file") unless($id);
-    
+
+    my $class = $seqElem->att('class');
+    unless($class) {
+        $class = $1 if($id =~ /^[^\.]+\.([^\.]+)\./);
+        $logger->logdie("Can't parse class out of $id") unless($class);
+    }
+    return unless($class eq 'assembly');
+       
+
     print STDOUT "handling $id\n" if($logger->is_debug);
 
     #We need to find all the start sites for this sequence to use later on (when finding no further downstream
@@ -884,6 +995,7 @@ sub handleSequence {
         my $featId = $feature->att('id');
         $logger->logdie("Unable to parse id from feature element (in $id)")
             unless($featId);
+
 
         #Make a new feature object and store for later use.
         $features->{$featId} = new Feature();
@@ -935,10 +1047,47 @@ sub handleSequence {
         
         
         foreach my $overlap ( @filteredOverlaps ) {
+            next if($deletedFeatures->{$overlap->[2]} || 
+                    $deletedFeatures->{$feature->{'old_id'}} );
             $feature->{'overlaps'}->{ $overlap->[2] } = 1;
             &handleOverlap( $feature, $features->{$overlap->[2]} );
         }   
 
+    }
+
+    #Print the other sequences
+    print STDOUT "Found ".(scalar (keys %{$featureSeqElems}))." non-assembly sequences\n";
+    
+    my $seqParent = $seqElem->parent();
+    while( my ($featId, $sequenceInfo) = each(%{$featureSeqElems}) ) {
+
+        my $title = $sequenceInfo->{'title'} ? $sequenceInfo->{'title'} : $featId;
+
+         my $intLoc = $seqParent->new( 'Seq-data-import', 
+                                       { 'source' => $sequenceInfo->{'source'}, 
+                                         'format' => $sequenceInfo->{'format'},
+                                         'identifier' => $sequenceInfo->{'identifier'},
+                                     }, ('') );
+
+         my $link = $seqParent->new( 'Link', { 'rel' => 'analysis', 
+                                               'href' => '#auto_gene_curation_analysis', 
+                                               'role' => 'input_of' }, ('') );
+        
+        unless($sequenceInfo->{'molecule'}) {
+            $sequenceInfo->{'molecule'} = 'dna';
+            $sequenceInfo->{'molecule'} = 'aa' if($sequenceInfo->{'class'} eq 'polypeptide');
+        }
+
+        
+
+        my $newSeq = $seqParent->new( 'Sequence', 
+                                      { 'id' => $sequenceInfo->{'seqId'},
+                                        'class' => $sequenceInfo->{'class'},
+                                        'title' => $title,
+                                        'molecule' => $sequenceInfo->{'molecule'} },
+                                      ($intLoc, $link));
+        $newSeq->print;
+    
     }
 
     $seqElem->print; 
@@ -959,8 +1108,68 @@ sub isNewOverlap {
     #Filter out identity hits.
     $retval = 0 if($featId1 eq $featId2);
 
+    #Make sure it wasn't recently deleted
+    $retval = 0 if( $deletedFeatures->{$featId1} );
+    $retval = 0 if( $deletedFeatures->{$featId2} );
+
     return $retval;
     
+}
+sub makeFsaFile {
+    my ($source, $difference, $ident, $newId) = @_;
+    my $flag = 0;
+
+    #Open the input source file.
+    open(IN, "< $source") or $logger->logdie("Unable to open $source ($!)");
+
+    my $seq = "";
+
+    #Search for the correct identifier in the fasta file.
+    while(my $line = <IN>) {
+        chomp $line;
+        if($line =~ /^>$ident/) {
+            $flag = 1;
+        } elsif($flag && $line !~ /^\s+$/ && $line !~ /^>/) {
+            $seq .= $line;
+        } elsif($flag && $line =~ /^>/) {
+            last;
+        }
+    }
+    close(IN);
+
+    if(length($seq) < ($difference - length($seq))) {
+        print STDOUT "$newId\n";
+        print STDOUT "$source\n";
+        print STDOUT "diff: $difference\n";
+        print STDOUT length($seq)."\n";
+        die("Bad\n");
+    }
+
+    #$difference contains the number of nucleotides we are chopping off from the beginning.  This is under the
+    #assumption that the start site will create a smaller protein (because we are only handling overlaps, 
+    #changing a start site that results in the increase in size of a gene will only increase the overlap). 
+    #Therefore we just need to chop a few nucleotides off the beginning of the sequence.
+    my $newSeq = substr($seq, ($difference - length($seq)), (length($seq) - $difference));
+
+    #Open the new output file.
+    my $newOutFsa = "$outDirectory/$newId.fsa";
+    open(OUT, "> $newOutFsa") or
+        $logger->logdie("Unable to open $newOutFsa for writing ($!)");
+
+    print OUT ">$newId\n";
+    
+    my $lineLength = 60;
+    my $buffer;
+
+    for (my $i = 0; $i < length($seq); $i+=$lineLength) {
+        print OUT substr($seq, $i, $lineLength);
+        print OUT "\n";
+    }
+
+    close(OUT);
+
+    return $newOutFsa;
+
 }
 
 sub printChangedFeatures {
@@ -1012,17 +1221,21 @@ sub printChangedFeatures {
 #Deletes the bsml_feature_object (so it will not remain in the bsml file)
 #Also removes the feature from the $features hash (which should contain all current features).
 #Also removes it from the genes object.
+#Also removes the sequence element if its there.
 sub removeFeature {
     my $feature = shift;
     foreach my $type ( keys %{$genes->{$feature->{'old_id'}}} ) {
         next if($type eq 'fgm' || $type eq 'feature-group');
         my $featId = $genes->{$feature->{'old_id'}}->{$type};
-        $features->{$featId}->{'bsml_feature_object'}->delete 
+        delete($features->{$featId}->{'bsml_feature_object'}) 
             if($features->{$featId}->{'bsml_feature_object'});
+        $deletedFeatures->{$featId} = 1;
         $logger->logdie("No fgm. $type $featId") unless($genes->{$feature->{'old_id'}}->{'fgm'}->{$type});
     }
 
-    $genes->{$feature->{'old_id'}}->{'feature-group'}->delete;
+    delete($featureSeqElems->{$feature->{'old_id'}}) if(exists($featureSeqElems->{$feature->{'old_id'}}));
+
+    delete($genes->{$feature->{'old_id'}}->{'feature-group'});
 }
 
 #Just in case I want to print out the documentation.
