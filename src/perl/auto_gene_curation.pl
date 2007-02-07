@@ -1047,8 +1047,6 @@ sub handleSequence {
         
         
         foreach my $overlap ( @filteredOverlaps ) {
-            next if($deletedFeatures->{$overlap->[2]} || 
-                    $deletedFeatures->{$feature->{'old_id'}} );
             $feature->{'overlaps'}->{ $overlap->[2] } = 1;
             &handleOverlap( $feature, $features->{$overlap->[2]} );
         }   
@@ -1107,10 +1105,6 @@ sub isNewOverlap {
 
     #Filter out identity hits.
     $retval = 0 if($featId1 eq $featId2);
-
-    #Make sure it wasn't recently deleted
-    $retval = 0 if( $deletedFeatures->{$featId1} );
-    $retval = 0 if( $deletedFeatures->{$featId2} );
 
     return $retval;
     
@@ -1224,10 +1218,13 @@ sub printChangedFeatures {
 #Also removes the sequence element if its there.
 sub removeFeature {
     my $feature = shift;
+    
+    print "DELETE the feature\n";
+
     foreach my $type ( keys %{$genes->{$feature->{'old_id'}}} ) {
         next if($type eq 'fgm' || $type eq 'feature-group');
         my $featId = $genes->{$feature->{'old_id'}}->{$type};
-        delete($features->{$featId}->{'bsml_feature_object'}) 
+        $features->{$featId}->{'bsml_feature_object'}->delete 
             if($features->{$featId}->{'bsml_feature_object'});
         $deletedFeatures->{$featId} = 1;
         $logger->logdie("No fgm. $type $featId") unless($genes->{$feature->{'old_id'}}->{'fgm'}->{$type});
@@ -1235,7 +1232,7 @@ sub removeFeature {
 
     delete($featureSeqElems->{$feature->{'old_id'}}) if(exists($featureSeqElems->{$feature->{'old_id'}}));
 
-    delete($genes->{$feature->{'old_id'}}->{'feature-group'});
+    $genes->{$feature->{'old_id'}}->{'feature-group'}->delete;
 }
 
 #Just in case I want to print out the documentation.
