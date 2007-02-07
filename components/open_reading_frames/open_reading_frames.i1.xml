@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>open_reading_frames compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>open_reading_frames</name>
+            <state>incomplete</state>
+            <executable>$;PREDICT_ALL_ORFS_EXEC$;</executable>
+            <arg>/dev/null $;I_FILE_PATH$; $;CODON_TABLE$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fna $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.faa $;MIN_CDNA_LENGTH$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
