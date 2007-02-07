@@ -70,6 +70,7 @@ use Ergatis::Logger;
 use Ergatis::IdGenerator;
 use BSML::BsmlBuilder;
 use XML::Twig;
+use Data::Dumper;
 
 ####### GLOBALS AND CONSTANTS ###########
 my @inputFiles;               #Holds input (gene prediction bsml) files
@@ -313,21 +314,34 @@ sub addFeature {
 
     my $link;
 
-    unless($bsmlFeature->{'BsmlLink'}) {
+    if( $bsmlFeature->{'BsmlLink'} && $bsmlFeature->{'BsmlLink'}->[0] ) {
+        print STDOUT "There exists already a bsml link\n";
         $link = $bsmlFeature->{'BsmlLink'}->[0];
+        &_die("Frackin retard") unless($link);
     } else {
+        print STDOUT "Creating a new bsml link\n";
         $bsml->createAndAddLink( $bsmlFeature, 'analysis', "#${analysisId}_analysis", "input_of" );
         $link = $bsmlFeature->{'BsmlLink'}->[0];
     }
     &_die("Couldn't add or find link element associated with Feature $featId") unless($link);
 
+    print STDOUT "Passed link\n";
+
     #Add attributes if any
     my @attributes = $feature->children('Attribute');
+
+    if(@attributes > 0) {
+        $bsmlFeature->{'BsmlAttr'} = {};
+    }
 
     foreach my $att ( @attributes ) {
         my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, $att->att('name'), $att->att('content') );
     }
 
+    if($class eq 'transcript' && $bsmlFeature->{'BsmlAttr'} && scalar(keys %{$bsmlFeature->{'BsmlAttr'}}) == 0 ) {
+        $bsmlFeature->addBsmlAttr('com_name', 'hypothetical protein');
+    }
+ 
     $features->{$featId} = $bsmlFeature;
     return $bsmlFeature;
 
