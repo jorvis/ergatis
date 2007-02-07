@@ -44,6 +44,7 @@ my @bsmlToCombine;
 my $idGenerator;
 my $project;
 my $asmblId;
+my $spaFeatures ={};
 ########################################################
 
 my %options = ();
@@ -101,10 +102,13 @@ sub findBsmlFiles {
     my $escapedName = $baseName;
     $escapedName =~ s/\./\\./g;
 
+    print Dumper($bsmlLists);
+
     foreach my $list (@{$bsmlLists}) {
+        next unless($list);
         my $fileFound;
 
-        open(IN, "< $list");
+        open(IN, "< $list") or die("could not open $list ($!)");
         my @files = <IN>;
         close(IN);
         
@@ -156,7 +160,6 @@ sub parseFeat {
 
     }
 
-    
 
 }
 
@@ -170,8 +173,6 @@ sub parseSpa {
     $tmpRna->class('ncRNA');
     $tmpRna->title($spa->{'att'}->{'compxref'});
 
-    
-    
     foreach my $spr($spa->children('Seq-pair-run')) {
         unless($spr->{'att'}->{'runscore'}) {
             $highSpr = $spr;
@@ -188,6 +189,7 @@ sub parseSpa {
     $tmpRna->start($highSpr->{'att'}->{'refpos'});
     $tmpRna->end($tmpRna->start + $highSpr->{'att'}->{'runlength'});
 
+    $spaFeatures->{$tmpRna->id} = 1;
     &addRnaFeat($tmpRna, $rnaFeats);
    
 }
@@ -235,12 +237,36 @@ sub writeRnaBsmlFile {
     $bsmlDoc->createAndAddSeqDataImport( $seq, 'fasta', $inputFiles[0], '', $asmblId);
     my $ft = $bsmlDoc->createAndAddFeatureTable( $seq );
 
+    print STDOUT "There are ".(scalar (keys %{$rnaFeats}))." rna feats to be printed\n";
+    print STDOUT (scalar (keys %{$spaFeatures}))." of those are from spas\n";
+
+
     while(my ($id, $rna) = each(%{$rnaFeats})) {
+        
         my $feat = $bsmlDoc->createAndAddFeature($ft, $rna->id, $rna->title, $rna->class);
         $feat->addBsmlLink('analysis', '#parse_for_ncRNA_analysis', 'computed_by');
         my $strand = $rna->start < $rna->end ? 0 : 1;
-         my ($start, $end) = $strand ? ($rna->end, $rna->start) : ($rna->start, $rna->end);
+        my ($start, $end) = $strand ? ($rna->end, $rna->start) : ($rna->start, $rna->end);
         $feat->addBsmlIntervalLoc($start, $end, $strand);
+
+        my @featureGroupMembers = ( $id );
+
+        foreach my $type ( qw/ exon gene / ) {
+            my $newId = $idGenerator->next_id( 'type' => $type,
+                                               'project' => $project );
+            my $otherFeat = $bsmlDoc->createAndAddFeature($ft, $newId, $rna->title, $type);
+            $otherFeat->addBsmlLink('analysis', '#parse_for_ncRNA_analysis', 'computed_by');
+            $otherFeat->addBsmlIntervalLoc($start, $end, $strand);
+            push(@featureGroupMembers, $newId);
+        }
+
+        #Add the feature group
+        my $fg = $bsmlDoc->createAndAddFeatureGroup( $seq, '', $id );
+
+        foreach my $featref (@featureGroupMembers) {
+            my $feattype = $1 if($featref =~ /^[^\.]+\.([^\.]+)\./);
+            my $fgm = $bsmlDoc->createAndAddFeatureGroupMember($fg, $featref, $feattype );
+        }
     }
 
     $bsmlDoc->createAndAddAnalysis( id => "parse_for_ncRNA_analysis",
