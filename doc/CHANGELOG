@@ -388,8 +388,8 @@ ergatis-v2r2b2
 -fixed lipoprotein and ps_scan targets in Makefile
 -made augustus a v2 component
 -added pipeline summary to Makefile
+-fixed hmmpfam, iprscan, tmhmm, signalp Analysis element encoding (needed program and version Attributes)
 
 next
 ----
 -added open_reading_frames component
--fixed hmmpfam, iprscan, tmhmm Analysis element encoding (needed program and version Attributes)
