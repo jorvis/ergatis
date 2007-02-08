@@ -42,6 +42,7 @@ my $asmbl;                                  #Contains assembly information
 my $outputDir;                              #Directory for output files.
 my $geneBoundaries;                         #Hash containing start and end positions keyed by id
 my $extension = 300;                        #Extension length for ber (default 300).
+my $countFromEvidence;
 use vars qw(%isoType);
 my ($acc,$name,$ec_num,$gene_sym,$species,$go_id,$role_id,$exp,$wgp,$cg,$rank) = (0..10);
 ###################################################################################
@@ -120,6 +121,10 @@ foreach my $input(@inputFiles) {
     &annotation2bsml($outputBsml);
     $finalAnnotes = {};
     $outputBsml = "";
+}
+print "\n\n----------------------------------------\n";
+foreach my $key ( keys %{$countFromEvidence} ) {
+    print "$key: ".$countFromEvidence->{$key}."\n";
 }
 
 ########################### SUB-ROUTINES #################################################
@@ -251,8 +256,10 @@ sub annotate {
 
         my $autoAnnotate = 0;
         $autoAnnotate = 1 if($evidence->{'HMM'}->{'rank'} == 1);
+        $countFromEvidence->{'equivalog'}++;
     } elsif($evidence->{'BER'}->[$rank] && $evidence->{'BER'}->[$rank] != 100) {  #if we have a not crap ber hit
         print "Taking evidence from not crap BER hit\n" if($logger->is_debug);
+        $countFromEvidence->{'not_crap_ber_hit'}++;
         $retval->{'annotation_from'} = $evidence->{'BER'}->[$acc];
         $retval->{'com_name'} = $evidence->{'BER'}->[$name];
         $retval->{'gene_sym'} =  $evidence->{'BER'}->[$gene_sym];
@@ -274,6 +281,7 @@ sub annotate {
         print "The com_name contains hypo...\n";
         if($evidence->{'HMM'}->{'hmm_com_name'}) {
             print "Setting com_name and annotation from from the HMM\n";
+            $countFromEvidence->{'other_hmm'}++;
             $retval->{'com_name'} = $evidence->{'HMM'}->{'hmm_com_name'};
             $retval->{'annotation_from'} = $evidence->{'HMM'}->{'hmm_acc'};
 
@@ -325,6 +333,7 @@ sub annotate {
 
     unless( defined $retval->{'com_name'} ) {
         $retval->{'com_name'} = 'hypothetical protein';
+        
     }
 
     if ($retval->{'com_name'} =~ /hypothetical protein|\, putative|\-related|unknown/i) { 
@@ -336,10 +345,12 @@ sub annotate {
         $retval->{'go_id'} = "GO:0000004 GO:0005554";
         $retval->{'gene_sym'} = "";
         $retval->{'ec_num'} = "";
+        $countFromEvidence->{'hypo'}++;
     }elsif ($retval->{'com_name'} =~ /^hypothetical protein$/i) {
         $retval->{'gene_sym'} = "";
         $retval->{'role_id'} = "";
         $retval->{'ec_num'} = "";
+        $countFromEvidence->{'hypo'}++;
     } elsif (!$retval->{'role_id'} || $retval->{'role_id'} eq "NULL" || $retval->{'role_id'} == 185) {
         
         print "Trying to find a role id\n" if($logger->is_debug);
