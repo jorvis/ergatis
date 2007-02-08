@@ -352,6 +352,8 @@ foreach my $a(('nn','hmm')) {
     my $analysis = $doc->createAndAddAnalysis(
                             id => 'signalp_'.$a.'_analysis',
                             sourcename => $options{'output'},
+                            program => 'signalp',
+                            algorithm => "signalp_$a",
                           );
 }
 
