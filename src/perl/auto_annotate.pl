@@ -771,7 +771,7 @@ sub getSeqId {
     foreach my $sdi ($seqElem->children('Seq-data-import')) {
         $asmbl->{'import'}->{'source'} = $sdi->att('source');
         $asmbl->{'import'}->{'ident'}  = $sdi->att('identifier');
-        $asmbl->{'import'}->{'format'} = $sdi->att('format');
+        $asmbl->{'import'}->{'format'} = $sdi->att('id');
     }
 
     #Find the length of the sequence
@@ -1024,6 +1024,7 @@ sub getBestHMMMatch {
         }
 
     }
+
   
     return $winner;
 }
@@ -1036,7 +1037,7 @@ sub annotation2bsml {
     my $seq = $doc->createAndAddSequence($asmbl->{'id'},$asmbl->{'id'},'','dna','assembly');
     my $sdi = $doc->createAndAddSeqDataImport($seq, $asmbl->{'import'}->{'format'}, 
                                               $asmbl->{'import'}->{'source'}, '',
-                                              $asmbl->{'import'}->{'ident'});
+                                              $asmbl->{'import'}->{'identifier'});
     my $link = $doc->createAndAddLink($seq, 'analysis', '#autoAnnotate_analysis', 'input_of');
     my $featTable = $doc->createAndAddFeatureTable($seq);
 
@@ -1050,6 +1051,7 @@ sub annotation2bsml {
             if($term =~ /(go_id|ec_num|role_id)/) {
                 my @vals = split(/\s+/, $finalAnnotes->{$polyid}->{$term});
                 foreach my $val(@vals) {
+                    $term = "ec_number" if($term eq 'ec_num');
                     $doc->createAndAddBsmlAttribute( $feat, $term, $val );
                 }
             } else {
