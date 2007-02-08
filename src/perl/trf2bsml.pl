@@ -16,6 +16,7 @@ trf2bsml.pl - convert Tandem Repeat Finder (trf) output to BSML
 USAGE: trf2bsml.pl 
             --input=/path/to/somefile.dat 
             --output=/path/to/output.bsml
+            --id_repository=/path/to/valid/id_repository
            [--fasta_input=/path/to/trf/input.fsa
             --gzip_output=1
             --project=aa1 ]
@@ -36,7 +37,10 @@ B<--output,-o>
 
 B<--project,-p>
     Project ID.  Used in creating feature ids.  Defaults to 'unknown' if
-    not passed.
+    not passed and is unable to parse from input file name.
+
+B<--id_repository>
+    Used in the generation of ids.
 
 B<--gzip_output,-g>
     [OPTIONAL] A non-zero value will result in compressed bsml output.  If there is no .gz extension on
@@ -92,18 +96,18 @@ Base positions from the input file are renumbered so that positions start at zer
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Ergatis::Logger;
+use Ergatis::IdGenerator;
 use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
 
 my $defline;
 my $identifier;
 my $gzip;
 my $fasta_input;
+my $project;
+my $id_repository;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -114,6 +118,7 @@ my $results = GetOptions (\%options,
               'fasta_input|f=s',
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
+              'id_repository=s',
               'project|p=s',
               'log|l=s',
 			  'help|h') || pod2usage();
@@ -139,7 +144,8 @@ my $next_id = 1;
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+my $idcreator = new Ergatis::IdGenerator( 'id_repository' => $id_repository );
+my $firstId = $idcreator->next_id( 'project' => $project, 'type' => 'gene');
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -182,7 +188,8 @@ if(scalar (keys %data) == 0) {
 }
 
 for my $seqid (keys %data) {
-    my $seq = $doc->createAndAddSequence($seqid, undef, '', 'dna', 'assembly');
+    my $bsmlId = $1 if($seqid =~ /^(\S+)/);
+    my $seq = $doc->createAndAddSequence($bsmlId, undef, '', 'dna', 'assembly');
        $seq->addBsmlLink('analysis', '#trf_analysis', 'input_of');
     $seq->addBsmlAttr('defline', $defline);
     $doc->createAndAddSeqDataImport( $seq, 'fasta', $fasta_input, '', $identifier);
@@ -194,13 +201,10 @@ for my $seqid (keys %data) {
     my @elements;
     foreach my $arr ( @{$data{$seqid}} ) {
         ## grab an ID
-        my $new_id = $idcreator->new_id( db     => $options{project},
-                                                          so_type => 'tandem_repeat',
-                                                          prefix => $options{command_id}
-                                                        );
+        my $new_id = $idcreator->next_id( 'project' => $project, 'type' => 'tandem_repeat' );
         
         ## add the repeat
-        $repeat = $doc->createAndAddFeature($ft, $new_id, '', $idcreator->so_used('tandem_repeat') );
+        $repeat = $doc->createAndAddFeature($ft, $new_id, '', 'tandem_repeat' );
         $repeat->addBsmlLink('analysis', '#trf_analysis', 'computed_by');
         
         ## add the location of the repeat (all given by trf as coords are on the forward strand)
@@ -244,8 +248,22 @@ sub check_parameters {
     ## make sure output file doesn't exist yet
     if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
     
-    $options{'project'}    = 'unknown' unless ($options{'project'});
+    unless($options{'project'}) {
+        $project = 'unknown';
+        $project = $1 if($options{'input'} =~ m|.*/([^/.]+)\.[^/]+$|);
+    } else {
+        $project = $options{'project'};
+    }
+
+    
+
     $options{'command_id'} = '0' unless ($options{'command_id'});
+
+    if($options{'id_repository'}) {
+        $id_repository = $options{'id_repository'};
+    } else {
+        $logger->logdie("Option id_repository is required");
+    }
 
     if($options{'fasta_input'}) {
         $fasta_input = $options{'fasta_input'};
