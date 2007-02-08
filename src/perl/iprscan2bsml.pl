@@ -236,6 +236,8 @@ while (<$ifh>) {
 my $analysis = $doc->createAndAddAnalysis(
                                             id => 'iprscan_analysis',
                                             sourcename => $options{'output'},
+                                            program => 'iprscan',
+                                            algorithm => 'iprscan',
                                          );
 $doc->createAndAddBsmlAttribute( $analysis, 'version', 'current' );
 $doc->createAndAddBsmlAttribute( $analysis, 'algorithm', 'iprscan' );
