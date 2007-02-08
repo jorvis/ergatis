@@ -257,6 +257,8 @@ foreach my $s(keys(%segment_hash)) {
     my $analysis = $doc->createAndAddAnalysis(
                             id => 'tmhmm_analysis',
                             sourcename => $options{'output'},
+                            program => 'tmhmm',
+                            algorithm => 'tmhmm',
                           );
 
 ## now write the doc
