@@ -262,6 +262,8 @@ while (<$ifh>) {
 $doc->createAndAddAnalysis(
                             id => "$options{search_method}_analysis",
                             sourcename => $options{'output'},
+                            program => 'hmmpfam',
+                            algorithm => 'hmmpfam',
                           );
 
 ## now write the doc
