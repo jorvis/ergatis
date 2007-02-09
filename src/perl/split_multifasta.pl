@@ -213,7 +213,7 @@ my $header;
 my $sfh;
 
 ## if the input sequence file doesn't exist, check for a .gz version
-if (! -e $options{input_file} && -e $options{input_file}.gz ) {
+if (! -e $options{input_file} && -e "$options{input_file}.gz" ) {
     $options{input_file} .= '.gz';
 }
 
