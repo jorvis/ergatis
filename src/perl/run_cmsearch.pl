@@ -182,6 +182,11 @@ my @dirsMade;
 foreach my $file(@files) {
     my $stats = &processHmmpfamFile($file);
     $stats = &getSequencesAndPrint($stats);
+
+    #Make sure that we make an output file even if there aren't any results to read in.
+    if( (scalar(keys %{$stats})) == 0 ) {
+        system("touch $ouputFile");
+    }
     
     #Okay this may seem to be overkill, but I'm almost sure it has to be this way (almost).
     #It allows for the case where one HMM can have a hit against the same sequence twice.  
