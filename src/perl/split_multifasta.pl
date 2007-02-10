@@ -212,11 +212,6 @@ my $header;
 
 my $sfh;
 
-## if the input sequence file doesn't exist, check for a .gz version
-if (! -e $options{input_file} && -e "$options{input_file}.gz" ) {
-    $options{input_file} .= '.gz';
-}
-
 ## load the sequence file
 if ($options{'input_file'} =~ /\.(gz|gzip)$/) {
     open ($sfh, "<:gzip", $options{'input_file'})
@@ -275,8 +270,12 @@ sub check_parameters {
     }
     
     ## make sure input_file exists
-    if (! -e "$options{input_file}") {
-        $logger->logdie("the input file passed ($options{input_file}) cannot be read or does not exist");
+    if (! -e $options{input_file} ) {
+        if ( -e "$options{input_file}.gz" ) {
+            $options{input_file} .= '.gz';
+        } else {
+            $logger->logdie("the input file passed ($options{input_file}) cannot be read or does not exist");
+        }
     }
     
     ## make sure the output_dir exists
