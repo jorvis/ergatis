@@ -55,7 +55,8 @@ my $found_states = 0;
 my $has_multiple_states = 0;
 my $within_status_box = 0;
 my $command_count = 0;
-my @xmlfiles;
+#my @xmlfiles;
+my %xmlfiles;
 my $display_source = '';
 
 while (my $line = readline $ifh) {
@@ -107,7 +108,7 @@ while (my $line = readline $ifh) {
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
-        push @xmlfiles,$url;
+        $xmlfiles{$url}++;
     }
     
     ## look for any linkable ini
@@ -180,17 +181,18 @@ if (scalar keys %states) {
         $has_multiple_states = 1;
     }
 
-    for (my $i=0; $i<=$#xmlfiles; $i++) {
-        if ( $i == $list_limit ) {
-            $unshown_file_count = $#xmlfiles - $i + 1;
+    my $file_counter = 0;
+    for (keys %xmlfiles) {
+        if ( $file_counter == $list_limit ) {
+            $unshown_file_count = scalar( keys %xmlfiles ) - $file_counter;
             last;
         }
         
-        my @stats = stat $xmlfiles[$i]; 
+        my @stats = stat $_; 
         
         push @$linked_files, {
-                                url => "./view_formatted_xml_source.cgi?file=$xmlfiles[$i]",
-                                label => basename($xmlfiles[$i]),
+                                url => "./view_formatted_xml_source.cgi?file=$_",
+                                label => basename($_),
                                 size => sprintf("%.1f", $stats[7]/1024) . ' kb',
                              };
     }
