@@ -14,6 +14,8 @@ var builder_animations = true;
 var pipeline_root_node;
 var pipeline_root_panel_node;
 
+var component_being_configured;
+
 window.onload = function() {
     // make sure the form is reset here.
     document.pipeline.reset();
@@ -60,8 +62,6 @@ function addComponentStub( set_root ) {
     
     getObject(set_root + '_panel').insertAdjacentHTML('BeforeBegin', component_html);
 
-    buildComponentSelector(component_id);
-
     components[component_id] = new Component( component_id );
     components[component_id].setPosition( node_below, node_above );
     
@@ -70,6 +70,15 @@ function addComponentStub( set_root ) {
     
     // the copy icon should be disabled until the component is saved
     getObject(component_id + '_copy').style.display = 'none';
+    
+    // set which component is being configured
+    component_being_configured = component_id;
+    
+    // display the add menu
+    getObject( 'pipeline_choices' ).style.display = 'none';
+    getObject( 'component_choices' ).style.display = 'block';
+    getObject( 'content_container' ).style.display = 'none';
+    getObject( 'add_menu_container' ).style.display = 'block';
 }
 
 
@@ -100,6 +109,7 @@ function addParallelSet( set_root ) {
             "<h3>parallel group<span class='locator'> (" + set_id + ")</span></h3>" +
             "<ul class='add_panel' id='" + set_id + "_panel'>" +
                 "<li class='comp'><a onclick=" + '"addComponentStub(' + "'" + set_id + "')" + '">add component</a></li>' +
+                "<li class='pipe'><a onclick=" + '"addPipelineMenu(' + "'" + set_id + "')" + '">add pipeline</a></li>' +
                 "<li class='serial'><a onclick=" + '"addSerialSet(' + "'" + set_id + "')" + '">add serial group</a></li>' +
                 "<li class='parallel'><a onclick=" + '"addParallelSet(' + "'" + set_id + "')" + '">add parallel group</a></li>' +
             "</ul>" +
@@ -152,6 +162,7 @@ function addSerialSet( set_root ) {
             "<h3>serial group<span class='locator'> (" + set_id + ")</span></h3>" +
             "<ul class='add_panel' id='" + set_id + "_panel'>" +
                 "<li class='comp'><a onclick=" + '"addComponentStub(' + "'" + set_id + "')" + '">add component</a></li>' +
+                "<li class='pipe'><a onclick=" + '"addPipelineMenu(' + "'" + set_id + "')" + '">add pipeline</a></li>' +
                 "<li class='serial'><a onclick=" + '"addSerialSet(' + "'" + set_id + "')" + '">add serial group</a></li>' +
                 "<li class='parallel'><a onclick=" + '"addParallelSet(' + "'" + set_id + "')" + '">add parallel group</a></li>' +
             "</ul>" +
@@ -198,12 +209,6 @@ function addSetType(set_id, type) {
     set_elm.setAttribute('value', type);
     
     getObject('variables').appendChild( set_elm );
-}
-
-// gets the template list of available components and populates it
-//  within the select for the passed component.
-function buildComponentSelector( component_id ) {
-    getObject(component_id + '_selector').innerHTML = getObject('available_component_list').innerHTML;
 }
 
 function cancelNewInput() {
@@ -281,14 +286,6 @@ function makeComponentEditable( component_id ) {
 
 function makeComponentUneditable( component_id ) {
 
-    // remove the component select box so the user can't change it.
-    if (! components[component_id].configured_before ) {
-        var name_span = document.createElement("span");
-        name_span.setAttribute('class', 'component_name');
-        name_span.innerHTML = components[component_id].name + ' (' + components[component_id].token + ')';
-        getObject(component_id + '_selector').replaceNode( name_span );
-    }
-    
     // hide the save button
     getObject(component_id + '_save').style.display = 'none';
     
@@ -434,6 +431,9 @@ function saveComponentConfig( component_id ) {
     // jump to the top of the page
     window.scrollTo(0,0);
 
+    // make sure the label has both the name and the token
+    getObject(component_id + '_name').innerHTML = components[component_id].name + ' (' + components[component_id].token + ')';
+
     // change the UI for this component so it's not editable.
     makeComponentUneditable( component_id );
     
@@ -539,11 +539,18 @@ function savePipelineLayout() {
     }
 }
 
-function selectComponentConfig( component_id, template_id ) {
+function selectComponentConfig( component_name, template_id ) {
+    var component_id = component_being_configured;
 
     // inner functions below.  using these, reassigning the onreadystatechange
     // function won't stomp over earlier requests
-    var component_name = getObject( component_id + '_selector' ).value;
+
+    // set the name
+    getObject( component_id + '_name' ).innerHTML = component_name;
+
+    // close the add menu
+    getObject( 'add_menu_container' ).style.display = 'none';
+    getObject( 'content_container' ).style.display = 'block';
     
     // if the name is '' it's because they chose the 'please choose' option.  
     //  don't attempt to fetch anything.  just shrink the display

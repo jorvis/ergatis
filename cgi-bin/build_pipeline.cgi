@@ -29,12 +29,20 @@ if (! -d $build_area) {
 
 ## read the available components
 my @components;
+my %classes;
 opendir(my $idh, $workflowdocs_dir) || die "can't read component directory ($workflowdocs_dir): $!";
 while ( my $thing = readdir $idh ) {
     if ( $thing =~ /(.+).config$/ ) {
         my $component_name = $1;
         
         if ( $ergatis_cfg->component_status($component_name) ne 'disabled' ) {
+            my $component_cfg = new Ergatis::ConfigFile( -file => "$workflowdocs_dir/$thing" );
+            if ( $component_cfg->val( 'interface', 'classification' ) ) {
+                push @{$classes{ $component_cfg->val( 'interface', 'classification' ) }}, $component_name;
+            } else {
+                push @{$classes{unclassified}}, $component_name;
+            }
+        
             push @components, { name => $component_name };
         }
     }
@@ -43,13 +51,21 @@ while ( my $thing = readdir $idh ) {
 ## we want the components to be sorted by name
 @components = sort {$a->{name} cmp $b->{name}} @components;
 
+my @component_classes = ();
+for my $class ( keys %classes ) {
+    push @component_classes, { class => $class, components => [] };
+    for my $component ( @{$classes{$class}} ) {
+        push @{$component_classes[-1]->{components}}, { name => $component };
+    }
+}
+
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'run pipeline', is_last => 0, url => 'javascript:checkAndRunPipeline()' },
                                         { label => 'save pipeline', is_last => 1, url => 'javascript:document.pipeline.skip_run.value=1;checkAndRunPipeline()' },
                                      ] );
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
-$tmpl->param( COMPONENTS => \@components );
+$tmpl->param( COMPONENT_CLASSES => \@component_classes );
 $tmpl->param( BUILD_DIRECTORY => "$build_area/" .temp_pipeline_id() );
 $tmpl->param( BUILDER_ANIMATIONS => $ergatis_cfg->val( 'display_settings', 'builder_animations' ) || 0 );
 

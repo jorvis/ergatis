@@ -72,7 +72,7 @@ function _template_html( component_id ) {
                 "<img id='" + component_id + "_copy' src='/ergatis/images/icon_copy.png' onClick='components[" + '"' + component_id + '"' + "].copy()' alt='copy component' title='copy component'>" +
                 "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()' alt='delete component' title='delete component'>" +
             "</div>" +
-            "component<span class='locator'> (" + component_id + ")</span>: <select name='available_components' onChange='selectComponentConfig(" + '"' + component_id + '"' + ")' id='" + component_id + "_selector'></select>" +
+            "component<span class='locator'> (" + component_id + ")</span>: <span id='" + component_id + "_name' class='component_name'>component not yet chosen</span>" +
             "<div id='" + component_id + "_expander' class='config_expander' onClick='toggleConfigVisibility(" + '"' + component_id + '"' + ")'>" +
                 "<div class='component_status' id='" + component_id + "_status'>not configured</div>" +
                 "<img id='" + component_id + "_toggler' src='/ergatis/images/arrow_right.gif' alt='toggle configuration'>configuration" +
@@ -194,7 +194,8 @@ function copy_me() {
     getObject(component_id + '_copy').style.display = 'none';
     
     // request the component config, but submit this one for initial values.
-    selectComponentConfig( component_id, this.id );
+    component_being_configured = component_id;
+    selectComponentConfig( this.name, this.id );
 }
 
 // if javascript only had a synchronous function like setTimeout we wouldn't have to do this!

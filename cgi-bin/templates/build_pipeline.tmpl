@@ -29,10 +29,28 @@
 <div id='page_container'>
 
 <TMPL_INCLUDE NAME="header.tmpl">
-
+    <div id='add_menu_container'>
+        <h2>add to pipeline</h2>
+        <div id='component_choices'>
+            <h3>new component</h3>
+            <TMPL_LOOP NAME=COMPONENT_CLASSES>
+            <div class='new_component_class_container'>
+                <h4><TMPL_VAR NAME=CLASS></h4>
+                <ul>
+                    <TMPL_LOOP NAME=COMPONENTS>
+                        <li><a onclick="selectComponentConfig('<TMPL_VAR NAME=NAME>')"><TMPL_VAR NAME=NAME></a></li>
+                    </TMPL_LOOP>
+                </ul>
+            </div>
+            </TMPL_LOOP>
+        </div>
+        <div id='pipeline_choices'>
+        <h3>recent pipeline</h3>
+        <h3>pipeline from template</h3>
+        </div>
+    </div>
     <div id='content_container'>
         <h2>pipeline builder</h2>
-        
         <div id='input_list_container'>
             <h3>input</h3>
             <table id='input_list'>
@@ -71,6 +89,7 @@
             <div class='serial' id='pipeline_root'>
                 <ul class='add_panel' id='pipeline_root_panel'>
                     <li class='comp'><a onclick="addComponentStub('pipeline_root')">add component</a></li>
+                    <li class='pipe'><a onclick="addPipelineMenu('pipeline_root')">add pipeline</a></li>
                     <li class='serial'><a onclick="addSerialSet('pipeline_root')">add serial group</a></li>
                     <li class='parallel'><a onclick="addParallelSet('pipeline_root')">add parallel group</a></li>
                 </ul>
@@ -93,12 +112,14 @@
             <input name='skip_instantiation' id='skip_instantiation' value='0'>
             <input name='instantiate' id='instantiate' value='0'>
             <input name='builder_animations' id='builder_animations' value='<TMPL_VAR NAME=BUILDER_ANIMATIONS>'>
+            <!--
             <select name='available_component_list' id='available_component_list'>
                 <option value='' selected>please choose</option>
             <TMPL_LOOP NAME=COMPONENTS>
                 <option value='<TMPL_VAR NAME=NAME>'><TMPL_VAR NAME=NAME></option>
             </TMPL_LOOP>
             </select>
+            -->
         </div>
         <div id='locators'>
             <input type='text' class='locator' id='pipeline_root_up' name='pipeline_root_up' value=''>
