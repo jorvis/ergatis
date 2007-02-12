@@ -96,7 +96,7 @@ sub findBsmlFiles {
     my ($inputFile, $bsmlLists) =@_;
     my $retval;
 
-    my $baseName = $1 if($inputFile =~ m|([^/]+)\.fsa|);
+    my $baseName = $1 if($inputFile =~ m|/([^/\.]+\.[^/\.]+\.[^/\.]+)\.(.*)?fsa|);
     &_die("Could not parse base name from $inputFile") unless($baseName);
     $asmblId = $baseName;
     my $escapedName = $baseName;
