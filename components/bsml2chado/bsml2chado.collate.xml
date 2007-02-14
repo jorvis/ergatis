@@ -23,6 +23,9 @@
 		$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_TABLE_NAME$;.stdout
 	    </value>
 	</param>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
     </command>
   </commandSet>
 </commandSetRoot>
