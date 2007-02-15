@@ -116,7 +116,7 @@ if ($options{'input'} =~ /\.(gz|gzip)$/) {
     open ($ifh, "<:gzip", $options{'input'})
       || $logger->logdie("can't open input file:\n$!");
 } else {
-    open(my $ifh, "<$options{input}") || $logger->logdie("can't read the input sequence: $!");
+    open($ifh, "<$options{input}") || $logger->logdie("can't read the input sequence: $!");
 }
 
 my $in = new Bio::SearchIO(-format => 'blast', 
