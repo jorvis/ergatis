@@ -111,7 +111,6 @@ use Chado::Gene;
 use BSML::GenePredictionBsml;
 use BSML::BsmlBuilder;
 
-
 my $input;      # Input file name
 my $output;     # Output file name
 my $fasta_input;   # fasta input to tRNAscan-SE
@@ -210,13 +209,34 @@ sub parse_tRNAscanSE_input {
                                     );
 
             ## Next, with the same coords, create the tRNA feature
-            $currGene->addFeature( $idcreator->next_id ( 'type' => 'tRNA',
+            my $trna_feat_id = $currGene->addFeature( $idcreator->next_id ( 'type' => 'tRNA',
                                                          'project' => $options{project} ),
                                    ($complement) ? $$arr[2] : $$arr[1],
                                    ($complement) ? $$arr[1] : $$arr[2],
                                    $complement,
                                    'tRNA'
                                  );
+            
+            ## add name attribute to feature
+            $currGene->addFeatureAttribute(
+                                            $trna_feat_id,
+                                            'name',
+                                            'tRNA-'.$$arr[3],
+                                          );
+
+            ## add tRNA_anti-codon attribute to feature
+            $currGene->addFeatureAttribute(
+                                            $trna_feat_id,
+                                            'tRNA_anti-codon',
+                                            $$arr[4],
+                                          );
+            
+            ## add score attribute to feature
+            $currGene->addFeatureAttribute(
+                                            $trna_feat_id,
+                                            'score',
+                                            $$arr[7],
+                                          );
 
             ## an exon needs to be added.
             ##  the following will eval as true if tRNAscan-SE reported an
