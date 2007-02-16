@@ -78,7 +78,6 @@ $gene->createGroup('groupID', $filter);
 use strict;
 use warnings;
 use Class::Struct;
-use Data::Dumper;
 
 #######A Data Structure Definition####################
  struct( Feature => {
@@ -270,11 +269,13 @@ sub addFeature {
     } else {
         
         #Create a new feature
-        $feat = Feature->new(id     => $id,
+        $feat = Feature->new(
+                             id     => $id,
                              start  => $start,
                              stop   => $stop,
                              strand => $strand,
-                             type   => $type);
+                             type   => $type,
+                            );
     }
                           
     push(@{$self->{'features'}}, $feat);
@@ -329,6 +330,29 @@ sub getFeatures {
     return $retval;
 }
 
+=item $gene->getFeature($id);
+
+B<Description:> Returns a single feature reference for the feature with specified id.
+
+B<Parameters:> feature id
+
+B<Returns:> Returns a feature reference    
+
+=cut
+
+sub getFeature {
+    my ($self, $featId) = @_;
+
+    my $filter = { 'id' => $featId };
+    my $feature = $self->filterFunction( $filter );
+
+    if (scalar(@{$feature}) > 0) {
+        return $feature->[0];
+    } else {
+        return undef;
+    }
+}
+
 =item $gene->addFeatureScore($featId, $scoreType, $value);
 
 B<Description:> Sets the score type for a feature
@@ -348,6 +372,31 @@ sub addFeatureScore {
     my $feature = $self->filterFunction( $filter );
     $feature->attribute($scoreType, $value);
     return $feature->id();
+}
+
+=item $gene->addFeatureAttribute($featId, $name, $content);
+
+B<Description:> Adds an attribute under a feature.
+
+B<Parameters:> $featId - The id of the feature to add an attribute to
+               $name - Attribute name
+               $content - Attribute content
+
+B<Returns:> Returns feature reference for the modified feature or undef if id was not found
+    
+=cut
+
+sub addFeatureAttribute {
+    my ($self, $featId, $name, $content) = @_;
+    
+    my $feature = $self->getFeature($featId);
+
+    if (defined($feature)) {
+        $feature->{'Feature::attribute'}->{$name} = $content;
+        return $feature;
+    } else {
+        return undef;
+    }
 }
 
 #################ID manipulation#############################################
