@@ -1,0 +1,33 @@
+<!-- component documentation -->
+
+<p>
+geneid is a program to predict genes in anonymous genomic sequences designed with a hierarchical structure. In the first step, splice sites, start and stop codons are predicted and scored along the sequence using Position Weight Arrays (PWAs). In the second step, exons are built from the sites. Exons are scored as the sum of the scores of the defining sites, plus the the log-likelihood ratio of a Markov Model for coding DNA. Finally, from the set of predicted exons, the gene structure is assembled, maximizing the sum of the scores of the assembled exons. geneid offers some type of support to integrate predictions from multiple source via external gff files and the redefinition of the general gene structure or model is also feasible. The accuracy of geneid compares favorably to that of other existing tools, but geneid is likely more efficient in terms of speed and memory usage. Currently, geneid v1.2 analyzes the whole human genome in 3 hours (approx. 1 Gbp / hour) on a processor Intel(R) Xeon CPU 2.80 Ghz.
+</p>
+<p>
+<a href='http://www1.imim.es/software/geneid/' >http://www1.imim.es/software/geneid/</a>
+</p>
+<h3>references</h3>
+<p>
+E. Blanco, G. Parra and R. Guigó,
+"Using geneid to Identify Genes.",
+In A. Baxevanis, editor:
+Current Protocols in Bioinformatics. Unit 4.3.
+John Wiley & Sons Inc., New York (2002)
+</p>
+<h3>input</h3>
+<p>
+    Like the program itself, this component accepts FASTA files as input.  If you have a single
+    file containing multiple sequences in FASTA format, you should use the 
+    <a href='./documentation.cgi?article=components&page=split_multifasta'>split_multifasta</a>
+    component first to generate individual sequences, allowing them to be atomically searched
+    and individually managed on the grid.
+</p>
+<h3>implemented options</h3>
+<p>
+    All options of the geneid binary are configurable with this component, but changes to the
+    output format options will cause btab and bsml conversion scripts to fail.  Note that the parameter file MUST be specified.
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+
+</div>
