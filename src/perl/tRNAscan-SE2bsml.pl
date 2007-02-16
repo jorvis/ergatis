@@ -191,14 +191,17 @@ sub parse_tRNAscanSE_input {
 
         ## loop through each array reference of this key, adding to the data array as necessary.
         foreach my $arr ( @{$rawdata{$seqid}} ) {
-        
-            ## 1 is subtracted from each position to give interbase numbering
-            $$arr[1]--;     ## tRNA begin
-            $$arr[2]--;     ## Bounds End
 
             ## Determine strandedness
             my $complement = ($$arr[1] > $$arr[2]) ? 1 : 0;
 
+            ## correct for interbase numbering
+            if ($complement) {
+                $$arr[2]--;     ## Bounds End
+            } else {
+                $$arr[1]--;     ## tRNA begin
+            }
+            
             ## First, create the gene model object
             my $currGene = new Chado::Gene ( $idcreator->next_id( 'type' => 'gene',
                                                            'project' => $options{project} ),
@@ -244,19 +247,35 @@ sub parse_tRNAscanSE_input {
             ##this seems to limit tRNAscan-SE to only report tRNAs with 0 or 1 intron.
             if ($$arr[5] && $$arr[6]) {
 
-                ## 1 is subtracted from each position to give interbase numbering
-                $$arr[5]--;     ## Intron Begin
-                $$arr[6]--;     ## Bounds End
+                if ($complement) {
+                    ## 1 is subtracted from each position to give interbase numbering
+                    $$arr[6]--;     ## Bounds End
             
-                ## exon1
-                &add_exon_and_cds($currGene, $$arr[1], $$arr[5], $complement);
-
-                ## exon2
-                &add_exon_and_cds($currGene, $$arr[6], $$arr[2], $complement);
+                    ## exon1
+                    &add_exon_and_cds($currGene, $$arr[2], $$arr[6], $complement);
+    
+                    ## exon2
+                    &add_exon_and_cds($currGene, $$arr[5], $$arr[1], $complement);
+                
+                } else {
+                    ## 1 is subtracted from each position to give interbase numbering
+                    $$arr[5]--;     ## Intron Begin
+                    
+                    ## exon1
+                    &add_exon_and_cds($currGene, $$arr[1], $$arr[5], $complement);
+    
+                    ## exon2
+                    &add_exon_and_cds($currGene, $$arr[6], $$arr[2], $complement);
+                
+                }
             
             } else {
-                ## just add the whole thing as an exon
-                &add_exon_and_cds($currGene, $$arr[1], $$arr[2], $complement);
+                if ($complement) {
+                    ## just add the whole thing as an exon
+                    &add_exon_and_cds($currGene, $$arr[1], $$arr[2], $complement);
+                } else {
+                    &add_exon_and_cds($currGene, $$arr[2], $$arr[1], $complement);
+                }
             }
 
             # Handle Group now:
