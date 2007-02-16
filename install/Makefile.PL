@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked augustus auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps open_reading_frames pangenome parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked augustus auto_annotate auto_gene_curation ber bsml2chado bsml2fasta bsml2featurerelationships clustalw fasta2bsml fgenesh formatdb geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps open_reading_frames pangenome parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan repeatmasker runsql signalp split_multifasta targetp tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -262,6 +262,13 @@ genbank2bsml  :
 	@install components/genbank2bsml/genbank2bsml.ini $(WORKFLOW_DOCS_DIR)
 	@install components/genbank2bsml/genbank2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/genbank2bsml/genbank2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
+
+geneid	:
+	@echo "Installing geneid workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/geneid/geneid.xml $(WORKFLOW_DOCS_DIR)
+	@install components/geneid/geneid.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/geneid/geneid.config $(WORKFLOW_DOCS_DIR)
+	@install components/geneid/geneid.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 genemark	:
 	@echo "Installing genemark workflows in $(WORKFLOW_DOCS_DIR)"
