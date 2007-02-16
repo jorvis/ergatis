@@ -30,4 +30,62 @@ John Wiley & Sons Inc., New York (2002)
 <h3>bsml output</h3>
 <div class='bsml_container'>
 
+&lt;?xml version="1.0"?&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence title="zma1.assembly.5808" id="zma1.assembly.5808" molecule="dna"&gt;
+        &lt;Feature-tables&gt;
+          &lt;Feature-table id="Bsml0"&gt;
+            &lt;Feature class="gene" title="zma1.assembly.5808_1" id="zma1.gene.50542.1"&gt;
+              &lt;Interval-loc complement="0" startpos="4911" endpos="5243"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#geneid" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="exon" title="exon_zma1.assembly.5808_1.0" id="zma1.exon.125567.1"&gt;
+              &lt;Interval-loc complement="0" startpos="4911" endpos="5243"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#geneid" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="transcript" title="mRNA_zma1.assembly.5808_1" id="zma1.transcript.38102.1"&gt;
+              &lt;Interval-loc complement="0" startpos="4911" endpos="5243"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#geneid" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="CDS" title="cds_zma1.assembly.5808_1" id="zma1.CDS.131010.1"&gt;
+              &lt;Interval-loc complement="0" startpos="4911" endpos="5243"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#geneid" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+          &lt;/Feature-table&gt;
+
+        [ ... and so on per prediction ... ]
+
+          &lt;Feature-group id="Bsml1" group-set="zma1.transcript.38102.1"&gt;
+            &lt;Feature-group-member feature-type="gene" featref="zma1.gene.50542.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="exon" featref="zma1.exon.125567.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="transcript" featref="zma1.transcript.38102.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="CDS" featref="zma1.CDS.131010.1"&gt;&lt;/Feature-group-member&gt;
+          &lt;/Feature-group&gt;
+
+        [ ... and so on per prediction ... ]
+
+        &lt;/Feature-tables&gt;
+        &lt;Link rel="analysis" href="#geneid" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+    &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="geneid_analysis"&gt;
+        &lt;Attribute content="/usr/local/annotation/ZMA1/output_repository/geneid/7748_test/i1" name="sourcename"&gt;&lt;/Attribute&gt;
+        &lt;Attribute content="/usr/local/scratch/jinman/rice.param.Aug_3_2004" name="param_file"/&gt;
+        &lt;Attribute content="1" name="compress_gff3_output"/&gt;
+        &lt;Attribute content="1" name="compress_bsml_output"/&gt;
+
+        [ ... and so on for all Analysis attributes ... ]
+
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+
 </div>
