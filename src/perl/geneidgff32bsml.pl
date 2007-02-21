@@ -38,18 +38,15 @@ B<--help,-h>
 
 This script parses GFF3 output from geneid and writes it out 
 as BSML suitable for import into CHADO/legacy DBs.  Note that
-this was pretty much evmgff32bsml.pl but copied with references
-to evm changed to geneid and a few lines removed that didn't apply
-to geneid gff3 output.
+this was pretty much evmgff32bsml.pl but edited to not merge
+CDS records, allowing accurate representation of the exon structure
+when loaded with bsml2legacydb.pl 
 
 =head1 INPUT
 
 Current assumption is that input files are syntactically
 correct with respect to the GFF3 spec, and that they are
 encoding predicted gene features.
-
-This script is NOT for geneid's other outputs.  If for some reason
-you want to convert the other output to bsml... have fun.
 
 The script could be extended to support writing BSML from
 GFF3 compliant files encoding other features.  (as it was for this!)
@@ -251,8 +248,8 @@ sub process_node {
         }
     }
     
-    ## process the record hash
-    process_record($record, $features);
+    ## process the record (unless, of course, it is a cds record
+    process_record($record, $features) unless ($record->{'_type'} eq 'CDS');
     
     ## process the node's children
     foreach my $child_type(keys %{$node->{'children'}}) {
@@ -275,59 +272,50 @@ sub process_record {
                             'mRNA'  =>  'transcript',               
                         };
     
-    
-    if ($record->{'_type'} eq 'CDS') {
-        ## CDS records can span lines and must be merged into one CDS feature
-        if (!$record->{'ID'}) {
-            die "CDS feature lacks ID -> bad form!";
-        }
-        if ($features->{'CDS'}->{$record->{'ID'}}) {
-            if ($features->{'CDS'}->{$record->{'ID'}}->{'startpos'} > $record->{'_start'}) {
-                $features->{'CDS'}->{$record->{'ID'}}->{'startpos'} = $record->{'_start'};
-            }
-            if ($features->{'CDS'}->{$record->{'ID'}}->{'endpos'} < $record->{'_end'}) {
-                $features->{'CDS'}->{$record->{'ID'}}->{'endpos'} = $record->{'_end'};
-            }
-        } else {
-            $features->{$feat_type_map->{'CDS'}}->{$record->{'ID'}} = {
-                                                    'complement'    => $record->{'_strand'},
-                                                    'startpos'      => $record->{'_start'},
-                                                    'endpos'        => $record->{'_end'},
-                                                                      };
-        }
-        
-    } else {
-        ##handle all other feature types    
-        
-        my $feat_type;
-        
-        if (!defined($feat_type_map->{$record->{'_type'}})) {
-            print STDERR "unexpected feature type '$record->{_type}'\n";
-            $feat_type = $record->{'_type'};    
-        } else {
-            $feat_type = $feat_type_map->{$record->{'_type'}};
-        }
+    if ($record->{'_type'} eq 'exon') {
 
-        my $id;
-        if (!$record->{'ID'}) {
-            $id = getTempId();
-        } else {
-            $id = $record->{'ID'};
-        }
-        
-        my $title = undef;
-        if ($record->{'Name'}) {
-            $title = shift(@{$record->{'Name'}});
-        }
-        
-        $features->{$feat_type}->{$id} = {  
+        ## Spoof CDS records based on each exon
+        my $feat_type = 'CDS';
+        (my $id = $record->{'ID'}) =~ s/exon/cds/;
+
+         $features->{$feat_type}->{$id} = {  
                     'complement'    => $record->{'_strand'},
                     'startpos'      => $record->{'_start'},
                     'endpos'        => $record->{'_end'},
-                    'title'         => $title,
                                          };
+
     }
+
+    ##handle all other feature types including the exon itself   
+        
+    my $feat_type;
     
+    if (!defined($feat_type_map->{$record->{'_type'}})) {
+        print STDERR "unexpected feature type '$record->{_type}'\n";
+        $feat_type = $record->{'_type'};    
+    } else {
+        $feat_type = $feat_type_map->{$record->{'_type'}};
+    }
+
+    my $id;
+    if (!$record->{'ID'}) {
+        $id = getTempId();
+    } else {
+        $id = $record->{'ID'};
+    }
+        
+    my $title = undef;
+    if ($record->{'Name'}) {
+        $title = shift(@{$record->{'Name'}});
+    }
+        
+    $features->{$feat_type}->{$id} = {  
+                'complement'    => $record->{'_strand'},
+                'startpos'      => $record->{'_start'},
+                'endpos'        => $record->{'_end'},
+                'title'         => $title,
+                                     };
+
 }
 
 
