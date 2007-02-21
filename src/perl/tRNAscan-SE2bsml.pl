@@ -223,7 +223,7 @@ sub parse_tRNAscanSE_input {
             ## add name attribute to feature
             $currGene->addFeatureAttribute(
                                             $trna_feat_id,
-                                            'name',
+                                            'gene_product_name',
                                             'tRNA-'.$$arr[3],
                                           );
 
