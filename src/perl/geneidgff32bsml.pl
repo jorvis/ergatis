@@ -180,7 +180,7 @@ sub parse_record {
 
     ## adjust both positions so that we are numbering from zero
     $cols[3]--;
-#    $cols[4]--;
+    $cols[4]--;
 
     ## change the + and - symbols in strand column to 0 and 1, respectively
     if ($cols[6] eq '+') {
