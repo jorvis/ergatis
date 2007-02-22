@@ -98,6 +98,10 @@
 		<value>$;NO_DIE_NULL_SEQUENCES$;</value>
 	    </param>
 	    <param>
+		<key>--sourcename</key>
+		<value>$;OUTPUT_DIRECTORY$;</value>
+	    </param>
+	    <param>
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/legacy2bsml.$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
 	    </param>
