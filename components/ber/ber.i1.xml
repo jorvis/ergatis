@@ -66,7 +66,7 @@
             <name>praze</name>
             <state>incomplete</state>
             <executable>$;PRAZE_EXEC$;</executable>
-            <arg>-O $;I_FILE_BASE$;.$;COMPONENT_NAME$; -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nuc $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb</arg>
+            <arg>-O $;I_FILE_BASE$;.$;COMPONENT_NAME$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nuc $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -157,7 +157,7 @@
             <executable>$;BIN_DIR$;/compress_file</executable>
             <param>  
                 <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nr</value>
             </param>
             <param>  
                 <key>--compress</key>
