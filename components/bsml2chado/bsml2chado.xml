@@ -104,6 +104,12 @@
 		<value>
 		    $;TMP_DIR$;/collatetables.list.tmp
 		</value>
+		<key>
+		    stderr
+		</key>
+		<value>
+		    $;TMP_DIR$;/collatesort.stderr
+		</value>
 	    </param>
 	</command>
 	<command>
@@ -165,6 +171,12 @@
 	    <param>
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/checksums.out.sorted</value>
+		<key>
+		    stderr
+		</key>
+		<value>
+		    $;TMP_DIR$;/checksums.out.sorted.stderr
+		</value>
 	    </param>
         <dceSpec type="sge">
             <OS>linux</OS>
@@ -220,6 +232,10 @@
 	    <param>
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets.stderr</value>
 	    </param>
         <dceSpec type="sge">
             <OS>linux</OS>
