@@ -10,6 +10,8 @@ the standard legacy output directory structure.
     USAGE: move_genewise_files.pl 
                 --repository_root=/usr/local/annotation/AA1
                 --pipeline_config=/path/to/some/component/pipeline.config
+              [ --search_db=search_db_name ]
+              [ --input_file_list=/path/to/input_file_list ]
               [ --log=/path/to/some/optional/file.log ]
 
 =head1 OPTIONS
@@ -24,6 +26,16 @@ B<--pipeline_config,-p>
         $;SEARCH_DBS$;
         $;INPUT_FILE_LIST$;
         $;RAW_OUTPUT_LIST$;
+
+B<--search_db, -s>
+    The name (not full path) of the search_db.  This option must be used for version 2
+    components configured to run off bsml and not off the database.
+
+B<--input_file_list, -i>
+    The full path (not just name) of the input file list.  This option must be used for
+    version 2 components configured to run off bsml and not off the database.
+    For most runs, where genewise has configured its own inputs, this input file is:
+    $;OUTPUT_REPOSITORY$;/genewise/$;PIPELINE_ID$;_$;OUTPUT_TOKEN$;/genewise.input_file_listing
 
 B<--log,-l> 
     Log file
@@ -63,6 +75,8 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'repository_root|r=s',
                           'pipeline_config|p=s',
+                          'search_db|s=s',
+                          'input_file_list|i=s',
                           'log|l=s',
                           'help|h') || pod2usage();
 
@@ -84,8 +98,8 @@ if ($options{log}) {
 my $cfg = new Config::IniFiles( -file => $options{pipeline_config} );
 
 ## get the variables from the conf file
-my $search_db       = $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )   || $cfg->val( 'parameters', '$;SEARCH_DB$;' ) || die "couldn't find SEARCH_DB in config file";
-my $input_file_list = $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' )  || $cfg->val( 'input', '$;INPUT_FILE_LIST$;' ) || die "couldn't find INPUT_FILE_LIST in config file";
+my $search_db       = $options{search_db} || $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )   || $cfg->val( 'parameters', '$;SEARCH_DB$;' ) || die "couldn't find SEARCH_DB in config file, MUST be specified via --search_db otherwise!";
+my $input_file_list = $options{input_file_list} || $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' )  || $cfg->val( 'input', '$;INPUT_FILE_LIST$;' ) || die "couldn't find INPUT_FILE_LIST in config file, MUST be specified via --input_file_list otherwise!";
 my $raw_output_list = $cfg->val( 'output genewise_best_loc', '$;RAW_OUTPUT_LIST$;' ) || $cfg->val( 'output', '$;RAW_OUTPUT_LIST$;' ) || die "couldn't find RAW_OUTPUT_LIST in config file";
 
 ## for each of the files defined in the input_file_list we want to copy the .fsa and .pep files
