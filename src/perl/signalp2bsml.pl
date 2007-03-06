@@ -1,4 +1,4 @@
-#!/usr/local/packages/perl-5.8.5/bin/perl
+#!/usr/local/bin/perl
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
@@ -68,6 +68,7 @@ use BSML::BsmlParserTwig;
 my %options = ();
 my $results = GetOptions (\%options, 
               'input|i=s',
+              'query_file_path|q=s',
               'output|o=s',
               'debug|d=s',
               'command_id=s',       ## passed by workflow
@@ -104,6 +105,7 @@ my $idcreator = new Ergatis::IdGenerator( id_repository => $options{'id_reposito
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
 my @sequence_ids;
+my %deflines;
 my %result_ref_hash;
 my $temp;
 my $next_seq_flag = 0;
@@ -115,18 +117,21 @@ while (<$ifh>) {
     $logger->debug("start of sequence results entry found") if($logger->is_debug());  
     my %nn_results;
     my %hmm_results;
-    my $sequence_id;
+    my $defline;
     if ($next_seq_flag) {
         $next_seq_flag = 0;
-        $sequence_id = $_;
+        $defline = $_;
     } else {
-        $sequence_id = <$ifh>;
+        $defline = <$ifh>;
     }
-    chomp $sequence_id;
-    $sequence_id =~ s/^>//;
+    chomp $defline;
+    $defline =~ s/^>//;
+    $defline =~ /^(\S+)/;
+    my $sequence_id = $1;
     $logger->debug("sequence id is '$sequence_id'") if($logger->is_debug());  
     push(@sequence_ids, $sequence_id);
-        
+    $deflines{$sequence_id} = $defline;    
+    
     while (my $result_line = <$ifh>) {
         chomp $result_line;
         if ($result_line =~ /^SignalP-NN result:/) {
@@ -134,12 +139,10 @@ while (<$ifh>) {
             $temp = <$ifh>;
             chomp $temp;
             $temp =~ /length = (\d+)/ || $logger->error("Couldn't parse sequence length in NN result.") if ($logger->is_error);
-#           $nn_results{'length'} = $1;
             $temp = <$ifh>; # we will discard the header line
             $temp = <$ifh>;
             chomp $temp;
             $temp =~ /^  max\. C\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)\s+([^\s]+)/ || $logger->logdie("Couldn't parse max. C line in NN result");
-            #$temp =~ /^  max\. C[ ]+([^ ]+)[ ]+([^ ]+)[ ]+([^ ]+)[ ]+([^ ]+)/ || $logger->logdie("Couldn't parse max. C line in NN result");
             $nn_results{'maxc_pos'} = $1;
             $nn_results{'maxc_value'} = $2;
             $nn_results{'maxc_cutoff'} = $3;
@@ -204,7 +207,6 @@ while (<$ifh>) {
                 $temp = <$ifh>;
                 chomp $temp;            
             }
-            #print $temp."\n";
             $temp =~ /^Max cleavage site probability: ([0-9]\.[0-9]{3}) between pos\. ([0-9\-]+)\s+and\s+([0-9\-]+)/ || $logger->logdie("Couldn't parse max cleavage site probability line in HMM result");
             $hmm_results{'max_cleavage_site_probability'} = $1;
             $hmm_results{'cleavage_site_position'} = $2."-".$3;
@@ -221,7 +223,27 @@ while (<$ifh>) {
 }
 
 foreach my $s(@sequence_ids) {
-    my $seq = $doc->createAndAddSequence($s, undef, '', 'aa', 'polypeptide');
+    my $seq = $doc->createAndAddSequence(
+                                        $s,             # id
+                                        $s,             # title
+                                        '',             # length
+                                        'aa',           # molecule
+                                        'polypeptide'   # class
+                                        );
+
+    $doc->createAndAddSeqDataImport(
+                                        $seq, 
+                                        'fasta', 
+                                        $options{'query_file_path'}, 
+                                        '', 
+                                        $s
+                                   );
+
+    $doc->createAndAddBsmlAttribute( 
+                                        $seq, 
+                                        'defline', 
+                                        $deflines{$s},
+                                   );
 
     foreach my $a(('nn','hmm')) {
         $seq->addBsmlLink('analysis', '#signalp_'.$a.'_analysis', 'input_of');
@@ -295,9 +317,6 @@ foreach my $s(@sequence_ids) {
                                         $result_ref_hash{$s,'nn'}->{$att}
                                        );
         }
-#        my $fg = $doc->createAndAddFeatureGroup($seq, '', $signalp_id);
-#        $fg->addBsmlFeatureGroupMember($signalp_id, 'signal_peptide');
-#        $fg->addBsmlFeatureGroupMember($csite_id, 'cleavage_site');
     }
     
     ## create BSML for hmm predictions
@@ -341,9 +360,6 @@ foreach my $s(@sequence_ids) {
                                         'max_cleavage_site_probability', 
                                         $result_ref_hash{$s,'hmm'}->{'max_cleavage_site_probability'}
                                        );
-#        my $fg = $doc->createAndAddFeatureGroup($seq, '', $signalp_id);
-#        $fg->addBsmlFeatureGroupMember($signalp_id, 'signal_peptide');
-#        $fg->addBsmlFeatureGroupMember($csite_id, 'cleavage_site');
     }
 }
     
@@ -366,9 +382,9 @@ sub check_parameters {
     
     ## make sure input file exists
     if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
-    
-    ## make sure output file doesn't exist yet
-    if (-e $options{'output'}) { $logger->logdie("can't create $options{'output'} because it already exists") }
+   
+    ##
+    if (! $options{'query_file_path'}) { $logger->logdie("must provide path to query fasta file with --query_file_path") }
     
     $options{'project'}    = 'unknown' unless ($options{'project'});
     $options{'command_id'} = '0' unless ($options{'command_id'});
