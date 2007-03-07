@@ -38,14 +38,6 @@
                 <key>--output_prefix</key>
                 <value>$;I_FILE_BASE$;.$;COMPONENT_NAME$;</value>
             </param>
-            <param>  
-                <key>--debug</key>
-                <value>4</value>
-            </param>
-            <param>  
-                <key>--log</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.log</value>
-            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -167,42 +159,6 @@
             <param>
                 <key>--list_file</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.gnu.list</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>compress_nn_eps_output</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/compress_file</executable>
-            <param>
-                <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nn.eps</value>
-            </param>
-            <param>
-                <key>--compress</key>
-                <value>$;COMPRESS_RAW_OUTPUT$;</value>
-            </param>
-            <param>
-                <key>--list_file</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nn.eps.list</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>compress_hmm_eps_output</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/compress_file</executable>
-            <param>
-                <key>--file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.hmm.eps</value>
-            </param>
-            <param>
-                <key>--compress</key>
-                <value>$;COMPRESS_RAW_OUTPUT$;</value>
-            </param>
-            <param>
-                <key>--list_file</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.hmm.eps.list</value>
             </param>
         </command>
         <command>
