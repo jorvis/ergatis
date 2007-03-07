@@ -440,11 +440,11 @@ sub createAndAddBtabLine {
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'dbmatch_accession'}")) ){
         $seq = $doc->createAndAddSequence( "$args{'dbmatch_accession'}", "$args{'dbmatch_header'}", ($args{'hit_length'} || 0), '', $args{'class'} );
         $doc->createAndAddBsmlAttribute( $seq, 'defline', "$args{orig_dbmatch_accession} $args{dbmatch_header}" );
-    }
 
-    ## see if the dbmatch_header format is recognized.  if so, add some cross-references
-    if (defined $args{'dbmatch_header'}) {
-        $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $args{orig_dbmatch_accession} );
+        ## see if the dbmatch_header format is recognized.  if so, add some cross-references
+        if (defined $args{'dbmatch_header'}) {
+            $doc->createAndAddCrossReferencesByParse( sequence => $seq, string => $args{orig_dbmatch_accession} );
+        }
     }
     
     $alignment_pair = $doc->returnBsmlSeqPairAlignmentR( $doc->addBsmlSeqPairAlignment() );
