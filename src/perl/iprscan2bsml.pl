@@ -21,12 +21,8 @@ USAGE: iprscan2bsml.pl
 B<--input,-i> 
     Input tab-delimited file from an iprscan search.
 
-B<--query_id,-r>
-	ID of the query sequence.  This allows the creation
-    of a Sequence element in BSML even if there are no matches.
-
 B<--query_file_path,-q>
-	Full path to FASTA file containing query sequence.  This allows the creation
+    Full path to FASTA file containing query sequence.  This allows the creation
     of a Sequence element in BSML even if there are no matches.
 
 B<--debug,-d> 
@@ -59,20 +55,20 @@ a single search.  Fromthe documentation, the raw output looks like this:
     NF00181542      0A5FDCE74AB7C3AD        272     HMMPIR  PIRSF001424     Prephenate dehydratase  1       270     6.5e-141        T       06-Oct-2004         IPR008237       Prephenate dehydratase with ACT region  Molecular Function:prephenate dehydratase activity (GO:0004664), Biological Process:L-phenylalanine biosynthesis (GO:0009094)
     ------
 
-	Where: NF00181542:             is the id of the input sequence.
-	       27A9BBAC0587AB84:       is the crc64 (checksum) of the proteic sequence (supposed to be unique).
-	       272:                    is the length of the sequence (in AA).
-	       HMMPIR:                 is the anaysis method launched.
-	       PIRSF001424:            is the database members entry for this match.
-	       Prephenate dehydratase: is the database member description for the entry.
-	       1:                      is the start of the domain match.
-	       270:                    is the end of the domain match.
-	       6.5e-141:               is the evalue of the match (reported by member database anayling method).
-	       T:                      is the status of the match (T: true, ?: unknown).
-	       06-Oct-2004:            is the date of the run.
-	       IPR008237:              is the corresponding InterPro entry (if iprlookup requested by the user).
-	       Prephenate dehydratase with ACT region:                           is the description of the InterPro entry.
-	       Molecular Function:prephenate dehydratase activity (GO:0004664):  is the GO (gene ontology) description for the InterPro entry.
+    Where: NF00181542:             is the id of the input sequence.
+           27A9BBAC0587AB84:       is the crc64 (checksum) of the proteic sequence (supposed to be unique).
+           272:                    is the length of the sequence (in AA).
+           HMMPIR:                 is the anaysis method launched.
+           PIRSF001424:            is the database members entry for this match.
+           Prephenate dehydratase: is the database member description for the entry.
+           1:                      is the start of the domain match.
+           270:                    is the end of the domain match.
+           6.5e-141:               is the evalue of the match (reported by member database anayling method).
+           T:                      is the status of the match (T: true, ?: unknown).
+           06-Oct-2004:            is the date of the run.
+           IPR008237:              is the corresponding InterPro entry (if iprlookup requested by the user).
+           Prephenate dehydratase with ACT region:                           is the description of the InterPro entry.
+           Molecular Function:prephenate dehydratase activity (GO:0004664):  is the GO (gene ontology) description for the InterPro entry.
 
 
 Illegal characters will be removed from the 
@@ -111,19 +107,18 @@ my $identifier;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
               'fasta_input|f=s',
               'gzip_output|g=s',
-			  'query_id|r=s',
-			  'query_file_path|q=s',
+              'query_file_path|q=s',
               'log|l=s',
               'debug=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -140,14 +135,20 @@ my $doc = new BSML::BsmlBuilder();
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
+my $deflines = get_deflines($options{'query_file_path'});
+
 my %seqs_found;
 
-## add the query sequence to the BSML doc
-my $seq = $doc->createAndAddSequence($options{query_id}, $options{query_id}, undef, 'na', 'assembly');
-$doc->createAndAddSeqDataImport($seq, 'fasta', $options{query_file_path}, '', $options{query_id});
-$seq->addBsmlLink('analysis', '#iprscan_analysis', 'input_of');
-$doc->createAndAddBsmlAttribute( $seq, 'defline', $defline) if($defline);
-$seqs_found{$options{query_id}} = 1;
+print Dumper $deflines;
+
+foreach my $query_id(keys(%{$deflines})) {
+    ## add the query sequence to the BSML doc
+    my $seq = $doc->createAndAddSequence($query_id, $query_id, undef, 'na', 'assembly');
+    $doc->createAndAddSeqDataImport($seq, 'fasta', $options{query_file_path}, '', $query_id);
+    $seq->addBsmlLink('analysis', '#iprscan_analysis', 'input_of');
+    $doc->createAndAddBsmlAttribute( $seq, 'defline', $deflines->{$query_id}) if ($deflines->{$query_id});
+    $seqs_found{$query_id} = 1;
+}
 
 while (<$ifh>) {
     ## ignore whitespace lines
@@ -255,8 +256,8 @@ sub check_parameters {
     ## make user an output file was passed
     if (! $options{'output'}) { $logger->logdie("output option required!") }
     
-    unless ($options{query_file_path} && $options{query_id}) { 
-        $logger->logdie("query_file_path and query_id options required!") 
+    unless ($options{query_file_path}) { 
+        $logger->logdie("Must specify query file with flag --query_file_path") 
     }
     
     ## do we want compressed output?
@@ -284,3 +285,44 @@ sub check_parameters {
     return 1;
 }
 
+## retrieve deflines from a fasta file
+sub get_deflines {
+    my ($fasta_file) = @_;
+
+    my $deflines = {};
+
+    my $ifh;
+
+    if (! -e $fasta_file) {
+        if (-e $fasta_file.".gz") {
+            $fasta_file .= ".gz";
+        } elsif (-e $fasta_file.".gzip") {
+            $fasta_file .= ".gzip";
+        }
+    }
+
+    if ($fasta_file =~ /\.(gz|gzip)$/) {
+        open ($ifh, "<:gzip", $fasta_file)
+          || $logger->logdie("can't open input file '$fasta_file': $!");
+    } else {
+        open ($ifh, $fasta_file)
+          || $logger->logdie("Failed opening '$fasta_file' for reading: $!");
+      }
+
+    while (<$ifh>) {
+        unless (/^>/) {
+            next;
+        }
+        chomp;
+        if (/^>((\S+).*)$/) {
+            $deflines->{$2} = $1;
+        }
+    }
+    close $ifh;
+
+    if (scalar(keys(%{$deflines})) < 1) {
+        $logger->logwarn("defline lookup failed for '$fasta_file'");
+    }
+
+    return $deflines;
+}
