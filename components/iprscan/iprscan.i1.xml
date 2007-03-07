@@ -113,10 +113,6 @@
                 <key>--gzip_output</key>
                 <value>$;COMPRESS_BSML_OUTPUT$;</value>
             </param>
-            <param>
-                <key>--query_id</key>
-                <value>$;I_FILE_BASE$;</value>
-            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
