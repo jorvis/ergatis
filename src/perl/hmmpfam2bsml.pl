@@ -1,4 +1,4 @@
-#!/usr/local/packages/perl-5.8.5/bin/perl
+#!/usr/local/bin/perl
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
@@ -91,7 +91,6 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
-my $defline;
 my $fasta_input;
 
 my %options = ();
@@ -125,104 +124,106 @@ my $doc = new BSML::BsmlBuilder();
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
 ## go through the top of the file and get a few things.
-my ($hmm_file, $sequence_file, $qry_id);
+my ($hmm_file, $sequence_file);
 while (<$ifh>) {
     if (/HMM file\:\s+(\S+)/) {
         $hmm_file = $1;
     } elsif (/Sequence file\:\s+(\S+)/) {
         $sequence_file = $1;
-    } elsif (/Query sequence\: (\S+)/) {
-        $qry_id = $1;
+        last;
     }
-
-    ## quit once we hit the overall scores section
-    last if (/Scores for sequence family classification/i);
 }
 
-## the query sequence only counts up the first whitespace
-if ($qry_id =~ /(.+?)\s+/) {
-    $qry_id = $1;
-}
+## fetch deflines
+my $deflines = get_deflines($sequence_file);
 
-## make sure the name is legal
-my $qry_id_orig = $qry_id;
-$qry_id =~ s/[^a-zA-Z0-9\.\-\_]/_/g;
-
-## make sure we found all 3
+## check that these were successfully parsed
 unless ($hmm_file)      { $logger->logdie("HMM file definition not found in input file.") }
 unless ($sequence_file) { $logger->logdie("Sequence file definition not found in input file.") }
-unless ($qry_id)        { $logger->logdie("Query sequence definition not found in input file.") }
 
-## add the query sequence file to the doc
-##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
-my $seq = $doc->createAndAddSequence($qry_id, $qry_id_orig, undef, 'aa', 'polypeptide');
-   $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
-my $identifier = $1 if($defline =~ /^(\S+)/);
-$logger->logdie("Couldn't parse identifier out of $defline\n") unless($identifier);
-$doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $1) if($options{'fasta_input'});
-$doc->createAndAddBsmlAttribute($seq, 'defline', $defline) if($defline);
-
-## for each model matched, create a Seq-pair-alignment and record the overall score and
-## overall E-value
-my %alignments;
-my ($model, $description, $score, $eval);
+my $qry_id;
 while (<$ifh>) {
-    ## datalines here look like this:
-    # PF00933   Glyco_hydro_3: Glycosyl hydrolase family 3    320.7      3e-93   1
-    # PF01915   Glyco_hydro_3_C: Glycosyl hydrolase family    152.2    1.7e-42   1
-    # PF07691   PA14: PA14 domain                              25.5    0.00022   1
-    # TIGR02148 Fibro_Slime: fibro-slime domain               -33.6        1.1   1
-    # PF02014   Reeler: Reeler domain                         -46.3        5.9   1
-    # PF06325   PrmA: ribosomal protein L11 methyltransfera  -198.1        8.5   1
-    if (/^(\S+)\s+(.+?)\s+([0-9\.\-e]+)\s+([0-9\.\-e]+)\s+\d+\s*$/) {
-        ($model, $description, $score, $eval) = ($1, $2, $3, $4);
+    
+    if (/Query sequence\:\s+(\S+)/) {
+        $qry_id = $1;
 
-        ## add this model sequence
-        my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'polypeptide');
-		#$seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
+        ## the query sequence only counts up the first whitespace
+        if ($qry_id =~ /(.+?)\s+/) {
+            $qry_id = $1;
+        }
+        unless ($qry_id) { $logger->logdie("Query sequence definition not found in input file.") }
         
-        $alignments{$model} = $doc->createAndAddSequencePairAlignment( refseq => $qry_id,
+        my %alignments;
+        my ($model, $description, $score, $eval);
+
+        ## add the query sequence file to the doc
+        ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
+        my $seq = $doc->createAndAddSequence($qry_id, $qry_id, undef, 'aa', 'polypeptide');
+           $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
+        my $identifier = $qry_id;
+        $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $1) if($options{'fasta_input'});
+        $doc->createAndAddBsmlAttribute($seq, 'defline', $deflines->{$qry_id}) if($deflines->{$qry_id});
+
+        ## for each model matched, create a Seq-pair-alignment and record the overall score and
+        ## overall E-value
+        while (<$ifh>) {
+            ## datalines here look like this:
+            # PF00933   Glyco_hydro_3: Glycosyl hydrolase family 3    320.7      3e-93   1
+            # PF01915   Glyco_hydro_3_C: Glycosyl hydrolase family    152.2    1.7e-42   1
+            # PF07691   PA14: PA14 domain                              25.5    0.00022   1
+            # TIGR02148 Fibro_Slime: fibro-slime domain               -33.6        1.1   1
+            # PF02014   Reeler: Reeler domain                         -46.3        5.9   1
+            # PF06325   PrmA: ribosomal protein L11 methyltransfera  -198.1        8.5   1
+            if (/^(\S+)\s+(.+?)\s+([0-9\.\-e]+)\s+([0-9\.\-e]+)\s+\d+\s*$/) {
+                ($model, $description, $score, $eval) = ($1, $2, $3, $4);
+
+                ## add this model sequence
+                my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'polypeptide');
+        
+                $alignments{$model} = $doc->createAndAddSequencePairAlignment( 
+                                                                       refseq => $qry_id,
                                                                        refstart => 0,
                                                                        #refend => $cols[2] - 1,
                                                                        #reflength => $cols[2],
                                                                        compseq => $model,
                                                                        class => 'match'
-                                                                     );
-        ## add a link element inside this seq-pair-alignment
-        $alignments{$model}->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
+                                                                             );
+                ## add a link element inside this seq-pair-alignment
+                $alignments{$model}->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
         
-        ## add the total_score and total_eval for this pair
-        $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_score', $score);
-        $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_e_value',  $eval);
-    }
+                ## add the total_score and total_eval for this pair
+                $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_score', $score);
+                $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_e_value',  $eval);
+            }
 
-    ## quit once we hit domain section
-    last if (/Parsed for domains/);
-}
+            ## quit once we hit domain section
+            last if (/Parsed for domains/);
+        }
 
 
-## we should now be in the region where the domain hits are described.  We'll add Seq-pair-runs
-##  to each of our Seq-pair-alignments here
-my $linectr=0;
+        ## we should now be in the region where the domain hits are described.  We'll add Seq-pair-runs
+        ##  to each of our Seq-pair-alignments here
+        my $linectr=0;
 
-while (<$ifh>) {
-    chomp;
+        while (<$ifh>) {
+            chomp;
 
-    ## these rows should look like this:
-    # PF00933     1/1      39   254 ..     1   243 []   320.7    3e-93
-    # PF01915     1/1     331   702 ..     1   308 []   152.2  1.7e-42
-    # PF02014     1/1     345   465 ..     1   150 []   -46.3      5.9
-    # PF07691     1/1     406   539 ..     1   178 []    25.5  0.00022
-    # TIGR02148   1/1     432   525 ..     1    92 []   -33.6      1.1
-    # PF06325     1/1     449   682 ..     1   312 []  -198.1      8.5
-    my ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval);
-    if (/^(\S+)\s+([0-9]+)\/([0-9]+)\s+(\d+)\s+(\d+).+(\d+)\s+(\d+).+?([0-9\-][0-9\.\-e]+)\s+([0-9\.\-e\+]+)\s*$/) {
+            ## these rows should look like this:
+            # PF00933     1/1      39   254 ..     1   243 []   320.7    3e-93
+            # PF01915     1/1     331   702 ..     1   308 []   152.2  1.7e-42
+            # PF02014     1/1     345   465 ..     1   150 []   -46.3      5.9
+            # PF07691     1/1     406   539 ..     1   178 []    25.5  0.00022
+            # TIGR02148   1/1     432   525 ..     1    92 []   -33.6      1.1
+            # PF06325     1/1     449   682 ..     1   312 []  -198.1      8.5
+            my ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval);
+            if (/^(\S+)\s+([0-9]+)\/([0-9]+)\s+(\d+)\s+(\d+).+(\d+)\s+(\d+).+?([0-9\-][0-9\.\-e]+)\s+([0-9\.\-e\+]+)\s*$/) {
 
-        $linectr++;
+                $linectr++;
 
-        ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
+                ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
         
-        my $run = $doc->createAndAddSequencePairRun(   alignment_pair => $alignments{$model},
+                my $run = $doc->createAndAddSequencePairRun(   
+                                                       alignment_pair => $alignments{$model},
                                                        runscore => $score,
                                                        runlength => abs($qry_stop - $qry_start) + 1,
                                                        comprunlength => abs($sbj_stop - $sbj_start) + 1,
@@ -230,33 +231,34 @@ while (<$ifh>) {
                                                        refcomplement => 0,
                                                        comppos => min($sbj_start, $sbj_stop) - 1,
                                                        compcomplement => 0,
-                                                   );
-        ## add other attributes of the run
-        $doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
-        $doc->createAndAddBsmlAttributes($run, 
+                                                           );
+                ## add other attributes of the run
+                $doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
+                $doc->createAndAddBsmlAttributes(
+                                            $run, 
                                             e_value    => $eval,
                                             domain_num => $domain_num,
                                             domain_of  => $domain_of
-                                        );
+                                                );
 
-    } else {
+            } else {
 
-        ## Skip the headers and blank lines
-        next if (/^Model\s+Domain\s+/i);
-        next if (/^----/);
-        next if (/^\s*$/);
+                ## Skip the headers and blank lines
+                next if (/^Model\s+Domain\s+/i);
+                next if (/^----/);
+                next if (/^\s*$/);
         
-        ## do nothing if no matches were found
-        next if (/no hits above thresholds/);
+                ## do nothing if no matches were found
+                next if (/no hits above thresholds/);
         
-        last if (/Alignments of top-scoring domains/);
-        die "Could not parse line number '$linectr': '$_'";
+                last if (/Alignments of top-scoring domains/);
+                die "Could not parse line number '$linectr': '$_'";
+            }
+            ## quit once we've read the alignments section
+            last if (/Alignments of top-scoring domains/);
+        }
     }
-    ## quit once we've read the alignments section
-    last if (/Alignments of top-scoring domains/);
 }
-
-
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
@@ -284,15 +286,6 @@ sub check_parameters {
     $options{'search_method'} = 'hmmpfam' unless ( $options{'search_method'} );
 
     if($options{'fasta_input'}) {
-        open(IN, "< $options{fasta_input}") or
-            $logger->logdie("Unable to open $options{fasta_input} ($!)");
-        while(<IN>) {
-            chomp;
-            if(/^>(.*)/) {
-                $defline = $1;
-            }
-        }
-
         $fasta_input = $options{'fasta_input'};
     }
 
@@ -307,4 +300,46 @@ sub min {
     } else {
         return $num2;
     }
+}
+
+## retrieve deflines from a fasta file
+sub get_deflines {
+    my ($fasta_file) = @_;
+
+    my $deflines = {};
+
+    my $ifh;
+
+    if (! -e $fasta_file) {
+        if (-e $fasta_file.".gz") {
+            $fasta_file .= ".gz";
+        } elsif (-e $fasta_file.".gzip") {
+            $fasta_file .= ".gzip";
+        }
+    }
+
+    if ($fasta_file =~ /\.(gz|gzip)$/) {
+        open ($ifh, "<:gzip", $fasta_file)
+          || $logger->logdie("can't open input file '$fasta_file': $!");
+    } else {
+        open ($ifh, $fasta_file)
+          || $logger->logdie("Failed opening '$fasta_file' for reading: $!");
+      }
+
+    while (<$ifh>) {
+        unless (/^>/) {
+            next;
+        }
+        chomp;
+        if (/^>((\S+).*)$/) {
+            $deflines->{$2} = $1;
+        }
+    }
+    close $ifh;
+
+    if (scalar(keys(%{$deflines})) < 1) {
+        $logger->logwarn("defline lookup failed for '$fasta_file'");
+    }
+
+    return $deflines;
 }
