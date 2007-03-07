@@ -72,7 +72,6 @@ use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 }
 
-my $defline;
 my %options = ();
 my $results = GetOptions (\%options, 
                           'input|i=s',
@@ -142,6 +141,8 @@ if ($options{'analysis_id'} =~ /^([^_]+)_analysis/) {
 unless($ref_molecule->{$blast_program} && $comp_molecule->{$blast_program}) {
     $logger->logdie("Molecule types for '$options{analysis_id}' are undefined");
 }
+
+my $deflines = get_deflines($options{'query_file_path'});
 
 ## get a filehandle on the input
 open(my $ifh, "<$options{input}") || $logger->logdie("can't read the input sequence: $!");
@@ -443,7 +444,7 @@ sub createAndAddNullResult {
         $doc->createAndAddBsmlAttribute( 
                             $seq, 
                             'defline', 
-                            $defline
+                            $deflines->{$args{'query_name'}},
                          );
     }
 }
@@ -564,6 +565,11 @@ sub createAndAddBlastResultLine {
                         '', 
                         $args{'query_name'}
                                        );
+        $doc->createAndAddBsmlAttribute( 
+                        $seq, 
+                        'defline', 
+                        $deflines->{$args{'query_name'}},
+                         );
         $seq->addBsmlLink(
                         'analysis', 
                         '#' . $options{analysis_id}, 
@@ -901,7 +907,6 @@ sub mergeOverlappingIntervals {
     return $merged;
 }
 
-
 sub check_parameters {
     my $options = shift;
     
@@ -920,19 +925,48 @@ sub check_parameters {
         $options{'analysis_id'} = 'unknown_analysis';
     }
     if (! $options{'query_file_path'}) {
-        $options{'query_file_path'} = '';
-    } else {
-        open(IN, "< $options{query_file_path}") or
-            $logger->logdie("Unable to open query_file $options{query_file_path} ($!)");
-        while(<IN>) {
-            chomp;
-            if(/^>(.*)/) {
-                $defline = $1;
-                last;
-            }
-        }
-        close(IN);
+        $logger->logdie("Must provide value for --query_file_path");
     }
 }
 
+## retrieve deflines from a fasta file
+sub get_deflines {
+    my ($fasta_file) = @_;
 
+    my $deflines = {};
+
+    my $ifh; 
+   
+    if (! -e $fasta_file) {
+        if (-e $fasta_file.".gz") {
+            $fasta_file .= ".gz";
+        } elsif (-e $fasta_file.".gzip") {
+            $fasta_file .= ".gzip";
+        }
+    }
+    
+    if ($fasta_file =~ /\.(gz|gzip)$/) {
+        open ($ifh, "<:gzip", $fasta_file)
+          || $logger->logdie("can't open input file '$fasta_file': $!");
+    } else {
+        open ($ifh, $fasta_file)
+          || $logger->logdie("Failed opening '$fasta_file' for reading: $!");
+      }
+
+    while (<$ifh>) {
+        unless (/^>/) {
+            next;
+        }
+        chomp;
+        if (/^>((\S+).*)$/) {
+            $deflines->{$2} = $1;
+        } 
+    }
+    close $ifh;
+    
+    if (scalar(keys(%{$deflines})) < 1) {
+        $logger->logwarn("defline lookup failed for '$fasta_file'");
+    }
+
+    return $deflines;
+}
