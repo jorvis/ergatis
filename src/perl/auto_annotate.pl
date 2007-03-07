@@ -221,7 +221,7 @@ sub checkParameters {
     if($opts->{'ber_extension_length'}) {
         $extension = $opts->{'ber_extension_length'};
     }
-    
+
 
 }
 
@@ -1059,10 +1059,11 @@ sub annotation2bsml {
         foreach my $term (keys %{$finalAnnotes->{$polyid}}) {
             next unless($finalAnnotes->{$polyid}->{$term});
 
-            if($term =~ /(go_id|ec_num|role_id)/) {
+            if($term =~ /(go_id|ec_num|role_id|gene_sym)/) {
                 my @vals = split(/\s+/, $finalAnnotes->{$polyid}->{$term});
                 foreach my $val(@vals) {
                     $term = "ec_number" if($term eq 'ec_num');
+                    $term = "gene_symbol" if($term eq 'gene_sym');
                     $doc->createAndAddBsmlAttribute( $feat, $term, $val );
                 }
             } else {
