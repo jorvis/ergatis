@@ -9,7 +9,9 @@ into the legacy database.
 
     USAGE: genewise2legacydb.pl 
                 --database=sma1
-                --pipeline_config=/path/to/some/component/pipeline.config
+              [  --pipeline_config=/path/to/some/component/pipeline.config ]
+              [ --search_db=search_db_name ]
+              [ --input_file_list=/path/to/input_file_list ]
               [ --log=/path/to/some/optional/file.log ]
 
 =head1 OPTIONS
@@ -25,6 +27,18 @@ B<--pipeline_config,-p>
         $;ASMBL_LIST_FILE$; (first check)
         or
         $;ASMBL_ID$;
+
+    Note that is --search_db and --input_file_list are used, this option is not required
+
+B<--search_db,-s>
+    The name (not full path) of the search_db, as specified in the path produced
+    by move_genewise_results.pl
+
+B<--input_file_list,-i>
+    The full path (not just name) of the input file list.  This option must be used for
+    version 2 components configured to run off bsml and not off the database.
+    For most runs, where genewise has configured its own inputs, this input file is:
+    $;OUTPUT_REPOSITORY$;/genewise/$;PIPELINE_ID$;_$;OUTPUT_TOKEN$;/genewise.input_file_listing
 
 B<--log,-l> 
     Log file
@@ -62,6 +76,8 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'database|d=s',
                           'pipeline_config|p=s',
+                          'search_db|s=s',
+                          'input_file_list|i=s',
                           'log|l=s',
                           'help|h') || pod2usage();
 
@@ -82,16 +98,31 @@ if ($options{log}) {
     open($logfh, ">$options{log}") || die "can't open log file: $!";
 }
 
-my $cfg = new Config::IniFiles( -file => $options{pipeline_config} );
+my $cfg;
+if ($options{pipeline_config}) {
+    $cfg = new Config::IniFiles( -file => $options{pipeline_config} );
+}
 
 ## get the variables from the conf file
-my $search_db       = $cfg->val( 'parameters', '$;SEARCH_DB$;' ) || $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )  || die "couldn't find SEARCH_DB in config file";
+my $search_db       = $options{search_db} || $cfg->val( 'parameters', '$;SEARCH_DB$;' ) || $cfg->val( 'parameters genewise_best_loc', '$;SEARCH_DB$;' )  || die "couldn't find SEARCH_DB in config file, MUST be specified using --search_db otherwise!";
 
 ## holds the assembly ids to process
 my @asmbl_ids;
 
 ## did the user specify a list of assembly ids, or just a single one?
-if ( $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' ) ) {
+if ($options{input_file_list}) {
+
+    my %asmbl_buff;
+    open (my $inputlist, $options{input_file_list}) || die "couldn't read input INPUT_FILE_LIST ($options{input_file_list}): $!";
+    while (<$inputlist>) {
+        if (/\.(\d+)\.\d+\.fsa/) {
+            $asmbl_buff{$1}++;
+        }
+    }
+    close $inputlist;
+    push (@asmbl_ids, keys %asmbl_buff);
+
+} elsif ( $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;INPUT_FILE_LIST$;' ) ) {
     my $asmbl_list_file = $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_best_loc', '$;ASMBL_LIST_FILE$;' )  || die "couldn't find ASMBL_LIST_FILE in config file";
     
     print $logfh "processing asmbl list file $asmbl_list_file\n" if $logfh;
@@ -110,7 +141,7 @@ if ( $cfg->val( 'input', '$;ASMBL_LIST_FILE$;' ) || $cfg->val( 'input genewise_b
     push @asmbl_ids, $aId;
     
 } else {
-    die "ASMBL_LIST_FILE or ASMBL_ID not defined in pipeline.config";
+    die "ASMBL_LIST_FILE or ASMBL_ID not defined in pipeline.config, MUST be specified via --input_file_list otherwise!";
 }
 
 ## use brian's script to load the results of each assembly
@@ -130,22 +161,30 @@ exit;
 sub check_parameters {
     my $options = shift;
     
-    ## make sure repository_root was passed and exists exists
+    ## make sure database passed
     if (! defined $options{database}) {
         print "database not passed!\n";
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});
     }
 
-    ## make sure pipeline_config was passed and exists exists
-    if (! defined $options{pipeline_config}) {
-        print "pipeline_config not passed!\n";
-        pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});
-    
+    ## make sure pipeline_config was passed and exists unless we're using the other inputs
+    if (! defined $options{pipeline_config} ) {
+        if ((! defined $options{search_db} )||( ! defined $options{input_file_list})) {
+            print "pipeline_config not passed, and either search_db or input_file_list not given!\n";
+            pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});
+        }
     } elsif (! -e $options{pipeline_config}) {
         print "the pipeline_config passed ($options{pipeline_config}) cannot be read or does not exist\n";
         pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});
     }
-    
+
+    ## make sure the input_file_list exists if we are relying on it
+    if (defined $options{input_file_list}) {
+        unless (-e $options{input_file_list}) {
+            print "the input_file_list given does not exist!\n";
+            pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});
+        }
+    }
     ## make sure the user has a password file in their home directory
     unless ( -e "/home/jorvis/.pwdfile" ) {
         print "\n\ncouldn't find password file /home/jorvis/.pwdfile .  quitting.\n\n";
