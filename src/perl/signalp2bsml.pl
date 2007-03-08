@@ -375,6 +375,11 @@ foreach my $s(@sequence_ids) {
                                         'signal_probability', 
                                         $result_ref_hash{$s,'hmm'}->{'signal_peptide_probability'}
                                        );
+        $doc->createAndAddBsmlAttribute(
+                                        $signalp, 
+                                        'prediction', 
+                                        $result_ref_hash{$s,'hmm'}->{'prediction'}
+                                       );
 
         ## prediction can be 'Signal anchor' or 'Signal peptide', signal anchor is uncleaved signal peptide
         if ($result_ref_hash{$s,'hmm'}->{'prediction'} eq 'Signal peptide') {
