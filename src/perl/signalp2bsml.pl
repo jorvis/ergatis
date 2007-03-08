@@ -56,6 +56,7 @@ bwhitty@tigr.org
 
 =cut
 
+use warnings;
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
@@ -64,6 +65,7 @@ use BSML::BsmlRepository;
 use Ergatis::IdGenerator;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
+use Data::Dumper;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -80,7 +82,7 @@ my $results = GetOptions (\%options,
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -183,17 +185,16 @@ while (<$ifh>) {
             $temp = <$ifh>;
             chomp $temp;
             if ($temp =~ /^# Most likely cleavage site between pos\. (\d+) and (\d+): ([A-Z\-]+)$/) {
-                $result_ref_hash{$sequence_id, 'nn'} = \%nn_results;
                 $nn_results{'cleavage_site_position'} = $1."-".$2;
-            } else {
-                $result_ref_hash{$sequence_id, 'nn'} = \%nn_results;
             }
+            $result_ref_hash{$sequence_id, 'nn'} = \%nn_results;
 
         } elsif ($result_line =~ /^SignalP-HMM result:/) {
             $logger->debug("parsing signalp hmm results") if($logger->is_debug());  
             $temp = <$ifh>; # we will discard the header line
             $temp = <$ifh>;
             chomp $temp;
+            ## If HMM predicts no signal peptide, prediction will be 'Non-secretory protein'
             $temp =~ /^Prediction: (.*)$/ || $logger->logdie("Couldn't parse prediction line in HMM result");
             $hmm_results{'prediction'} = $1;
             $temp = <$ifh>;
@@ -221,6 +222,30 @@ while (<$ifh>) {
     }
     }
 }
+
+## map these hash keys to ontology terms
+my %nn_onto = (
+                'maxs_pos'              =>  's-position',
+                'maxs_value'            =>  's-score',
+                'maxs_cutoff'           =>  's-cutoff',
+                'maxs_signal_peptide'   =>  's-prediction',
+                'means_pos'             =>  's-mean-position',
+                'means_value'           =>  's-mean',
+                'means_cutoff'          =>  's-mean-cutoff',
+                'means_signal_peptide'  =>  's-mean-prediction',
+                'd_pos'                 =>  'd-position',
+                'd_value'               =>  'd-score',
+                'd_cutoff'              =>  'd-cutoff',
+                'd_signal_peptide'      =>  'd-prediction',
+                'maxc_pos'              =>  'c-position',
+                'maxc_value'            =>  'c-score',
+                'maxc_cutoff'           =>  'c-cutoff',
+                'maxc_signal_peptide'   =>  'c-prediction',
+                'maxy_pos'              =>  'y-position',
+                'maxy_value'            =>  'y-score',
+                'maxy_cutoff'           =>  'y-cutoff',
+                'maxy_signal_peptide'   =>  'y-prediction',
+               ); 
 
 foreach my $s(@sequence_ids) {
     my $seq = $doc->createAndAddSequence(
@@ -262,8 +287,8 @@ foreach my $s(@sequence_ids) {
         
         ## create signal peptide feature
         my $signalp_id = $idcreator->next_id( project   => $options{project},
-                                         type       => 'signal_peptide',
-                                       );
+                                              type      => 'signal_peptide',
+                                            );
         my $signalp = $doc->createAndAddFeature($ft, $signalp_id, '', 'signal_peptide');
         $signalp->addBsmlIntervalLoc('0', $site_pos);
         $signalp->addBsmlLink('analysis', '#signalp_nn_analysis', 'computed_by');
@@ -283,7 +308,7 @@ foreach my $s(@sequence_ids) {
                         )) {
             $doc->createAndAddBsmlAttribute(
                                         $signalp,
-                                        $att, 
+                                        $nn_onto{$att}, 
                                         $result_ref_hash{$s,'nn'}->{$att}
                                        );
         }
@@ -313,53 +338,60 @@ foreach my $s(@sequence_ids) {
                         )) {
             $doc->createAndAddBsmlAttribute(
                                         $cleavage_site,
-                                        $att, 
+                                        $nn_onto{$att}, 
                                         $result_ref_hash{$s,'nn'}->{$att}
                                        );
         }
     }
     
     ## create BSML for hmm predictions
-    if ($result_ref_hash{$s,'hmm'}->{'cleavage_site_position'}) {
+    if ($result_ref_hash{$s,'hmm'}->{'prediction'} ne 'Non-secretory protein') {
         if (!$ft){
             $ft  = $doc->createAndAddFeatureTable($seq);
         }
+        
         
         ## parse out cleavage site coords
         my @coords = parse_position($result_ref_hash{$s,'hmm'}->{'cleavage_site_position'});
         my $site_pos = shift(@coords);
             
         ## create signal peptide feature
-        my $signalp_id = $idcreator->next_id( project   => $options{project},
-                                         type       => 'signal_peptide',
-                                       );
-        my $signalp = $doc->createAndAddFeature($ft, $signalp_id, '', 'signal_peptide');
+        my $signalp_id = $idcreator->next_id(project => $options{project}, type => 'signal_peptide');
+        my $signalp = $doc->createAndAddFeature(
+                                                $ft, 
+                                                $signalp_id, 
+                                                '', 
+                                                'signal_peptide',
+                                               );
         $signalp->addBsmlIntervalLoc('0', $site_pos);
         $signalp->addBsmlLink('analysis', '#signalp_hmm_analysis', 'computed_by');
         $doc->createAndAddBsmlAttribute(
                                         $signalp, 
-                                        'signal_anchor_probability', 
-                                        $result_ref_hash{$s,'hmm'}->{'signal_anchor_probability'}
+                                        'signal_anchor', 
+                                        $result_ref_hash{$s,'hmm'}->{'signal_anchor_probability'},
                                        );
         $doc->createAndAddBsmlAttribute(
                                         $signalp, 
-                                        'signal_peptide_probability', 
+                                        'signal_probability', 
                                         $result_ref_hash{$s,'hmm'}->{'signal_peptide_probability'}
                                        );
 
-        ## create cleavage site feature
-        my $csite_id = $idcreator->next_id( project => $options{project},
-                                         type       => 'cleavage_site',
-                                       );
+        ## prediction can be 'Signal anchor' or 'Signal peptide', signal anchor is uncleaved signal peptide
+        if ($result_ref_hash{$s,'hmm'}->{'prediction'} eq 'Signal peptide') {
+            ## create cleavage site feature
+            my $csite_id = $idcreator->next_id( project => $options{project},
+                                             type       => 'cleavage_site',
+                                           );
 
-        my $cleavage_site = $doc->createAndAddFeature($ft, $csite_id, '', 'cleavage_site');
-        $cleavage_site->addBsmlLink('analysis', '#signalp_hmm_analysis', 'computed_by');
-        $cleavage_site->addBsmlSiteLoc($site_pos);
-        $doc->createAndAddBsmlAttribute(
-                                        $cleavage_site, 
-                                        'max_cleavage_site_probability', 
-                                        $result_ref_hash{$s,'hmm'}->{'max_cleavage_site_probability'}
-                                       );
+            my $cleavage_site = $doc->createAndAddFeature($ft, $csite_id, '', 'cleavage_site');
+            $cleavage_site->addBsmlLink('analysis', '#signalp_hmm_analysis', 'computed_by');
+            $cleavage_site->addBsmlSiteLoc($site_pos);
+            $doc->createAndAddBsmlAttribute(
+                                $cleavage_site, 
+                                'max_cleavage_site_probability', 
+                                $result_ref_hash{$s,'hmm'}->{'max_cleavage_site_probability'}
+                                           );
+        }
     }
 }
     
