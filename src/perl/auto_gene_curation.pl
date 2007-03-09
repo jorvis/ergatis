@@ -9,7 +9,6 @@ use lib (@INC,$ENV{"PERL_MOD_DIR"});
 ####################################
 
 ### Use these things. ###########
-use lib (@INC, "/export/prog/auto_gene_curation");
 use strict;
 use warnings;
 use IntervalTree;
@@ -18,7 +17,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use XML::Twig;
 use File::Find;
-use Ergatis::Logger;
+use Workflow::Logger;
 use Time::localtime;
 use BSML::BsmlBuilder;
 use MLDBM 'DB_File';
@@ -283,8 +282,8 @@ sub checkParametersAndLog {
     my $opts = shift;
 
     #Setup Logger
-    my $logfile = $opts->{'log'} || Ergatis::Logger::get_default_logfilename();
-    $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+    my $logfile = $opts->{'log'} || Workflow::Logger::get_default_logfilename();
+    $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$opts->{'debug'});
     $logger = $logger->get_logger();
     print "setup logger\n" if($logger->is_debug);
@@ -617,11 +616,15 @@ sub findNewStart {
     my ($dfEnd5, $dfEnd3) = ($downstream->{'complement'}) ? ($downstream->{'endpos'}, $downstream->{'startpos'}) :
         ($downstream->{'startpos'}, $downstream->{'endpos'});
 
+    #Find the reading frame
+    my $readingFrame = $dfEnd3 % 3; 
+
     #If we find a start that doesn't overlap with any of the upstream feature's evidence, that's a winner.
     #Return it immediately.  If somehow we make it all the way through, return negative 1.
 
   STARTS:
     foreach my $possibleStart ( @{$downstream->{'clearStarts'}} ) {
+        next unless($possibleStart % 3 == $readingFrame);
         foreach my $upEvidence ( @{$upstream->{'evidence'}} ) {
 
             my $evEnd5 = ($upstream->{'complement'}) ? $upEvidence->{'stop'} : $upEvidence->{'start'};
@@ -783,6 +786,13 @@ sub handleHmmSPA {
         my ($start, $length, $compseq) = 
             ($spr->att('refpos'),$spr->att('runlength'), $spaElem->att('compseq'));
         $logger->logdie("Could not find hmm $compseq in hmm_info") unless(exists($hmmInfo{$compseq}));
+        unless($hmmInfo{$compseq}->{'trusted_cutoff'}) {
+            print STDOUT Dumper($hmmInfo{$compseq});
+        }
+            
+        $logger->logdie("Hmm does not have trusted cutoff ($compseq)") 
+            unless( $hmmInfo{$compseq}->{'trusted_cutoff'} );
+        $logger->logdie("current spr does not have a run length ($compseq)") unless($spr->att('runlength'));
         next if($hmmInfo{$compseq}->{'trusted_cutoff'} >= $spr->att('runlength') );
 
         my $featureId = $feature->{'old_id'};
@@ -1218,8 +1228,6 @@ sub printChangedFeatures {
 #Also removes the sequence element if its there.
 sub removeFeature {
     my $feature = shift;
-    
-    print "DELETE the feature\n";
 
     foreach my $type ( keys %{$genes->{$feature->{'old_id'}}} ) {
         next if($type eq 'fgm' || $type eq 'feature-group');
