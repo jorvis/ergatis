@@ -34,7 +34,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.raw.*"</value>
+                <value>".*\.raw"</value>
             </param>
             <param>  
                 <key>--output_list</key>
@@ -52,7 +52,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.bsml.*"</value>
+                <value>".*\.bsml"</value>
             </param>
             <param>  
                 <key>--output_list</key>
@@ -70,7 +70,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.gnu.*"</value>
+                <value>".*\.gnu"</value>
             </param>
             <param>  
                 <key>--output_list</key>
