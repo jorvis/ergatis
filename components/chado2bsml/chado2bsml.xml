@@ -28,8 +28,12 @@
 		<value>$;CHADO2BSML_CONTROL_FILE$;</value>
 	    </param>
 	    <param>
-		<key>--output</key>    
+		<key>--output_file</key>    
 		<value>$;TMP_DIR$;/chado2bsml.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/create_chado2bsml_iterator_list.pl.log</value>
 	    </param>
             <param>
 		<key>stdout</key>
