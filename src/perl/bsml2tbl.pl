@@ -12,7 +12,7 @@ my $in                  = "/dev/stdin";
 my $out                 = *STDOUT;
 my $output_mrna_feats   = 0;
 my $extract_all_ec      = 0;
-my $percent_n_cutoff    = '';
+my $percent_n_cutoff    = 10;
 my $asmbl_seq = '';
 my $asmbl_length;
 ## genes with equal or more than this % of Ns will be skiped (warning printed)
@@ -37,8 +37,8 @@ END
 sub parse_options
 {
     my %opts = ();
-    GetOptions(\%opts, "input|i=s", "output|o=s", "mrna|m", "percent_n_cutoff|n=i",
-            "ec_all|e", "help|h");
+    GetOptions(\%opts, "input|i=s", "output|o=s", "mrna|m=i", "percent_n_cutoff|n=i",
+            "ec_all|e=i", "help|h");
     print_usage() if $opts{help};
     $in = $opts{input} if $opts{input};
     $out = new IO::File($opts{output}, "w") or
@@ -46,7 +46,9 @@ sub parse_options
         if $opts{output};
     $output_mrna_feats = 0 unless $opts{mrna};
     $extract_all_ec = 1 if $opts{ec_all};
-    $percent_n_cutoff = 10 unless defined $opts{percent_n_cutoff};
+    if ( defined $opts{percent_n_cutoff} ) {
+        $percent_n_cutoff = $opts{percent_n_cutoff};
+    }
 }
 
 sub convert
@@ -115,6 +117,7 @@ sub process_feature_group
         }
         elsif ($feat_type eq "tRNA") {
             $class = "tRNA";
+            $transcript = $feat;
         }
         elsif ($feat_type eq "ncRNA") {
             $class = "ncRNA";
@@ -153,7 +156,14 @@ sub process_feature_group
         process_cds(\@exons, $cds, \%attrs);
     }
     elsif ($class eq "tRNA") {
-        print_feat(\@exons, "tRNA");
+        my %attrs = ();
+        
+        if ( $transcript->has_child('Attribute[@name="gene_product_name"]') ) {
+            my $product = $transcript->first_child('Attribute[@name="gene_product_name"]');
+            %attrs = ( product => $product->att('content') );
+        }
+        
+        print_feat(\@exons, "tRNA", \%attrs);
     }
     elsif ($class eq "ncRNA") {
         print_feat(\@exons, "ncRNA");
