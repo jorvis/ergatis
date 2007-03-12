@@ -397,3 +397,4 @@ next
 -created new v2 component geneid
 -changed hmmpfam to be single-threaded
 -added bsml2tbl component
+-added ergatis/src/perl/create_bsml_scaffolds.pl (an updated version of createBsmlScaffolds.pl)
