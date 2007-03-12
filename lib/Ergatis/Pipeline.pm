@@ -127,7 +127,7 @@ umask(0000);
                 ##debug
                 print $debugfh "debug init\n" if $self->{debug};
                 
-                chdir $run_dir;
+                chdir $run_dir || croak "Can't change to running directory $run_dir\n";
                 use POSIX qw(setsid);
                 setsid() or die "Can't start a new session: $!";
 
