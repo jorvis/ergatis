@@ -396,3 +396,4 @@ next
 -added ergatis/src/perl/new_id.pl; can be used to generate new ids in Apollo
 -created new v2 component geneid
 -changed hmmpfam to be single-threaded
+-added bsml2tbl component
