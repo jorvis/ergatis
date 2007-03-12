@@ -174,6 +174,7 @@ if (!defined($server)){
 
 &clear_install_dir($installdir, $init);
 
+&create_install_docs($installdir);
 
 if (!defined($workingdir)){
     $workingdir = "/tmp";
@@ -181,7 +182,6 @@ if (!defined($workingdir)){
 	$logger->debug("workingdir was set to '$workingdir'");
     }
 }
-
 
 &verify_create_directory($workingdir);
 
@@ -222,7 +222,7 @@ sub install_ontologies {
 
     &do_or_die($execstring);
 
-    $execstring = "cp ontologies/*.obo $installdir/docs";
+    $execstring = "cp $workingdir/ontologies/*.obo $installdir/docs/obo/.";
 
     &do_or_die($execstring);
 }
@@ -238,38 +238,25 @@ sub install_schema {
 
     my ($workingdir, $installdir, $tag) = @_;
 
-    chdir($workingdir);
+    chdir($workingdir) || die "Could not chdir $workingdir";
 
-    my $execstring = "cvs -Q export -kkv -d chado_schema -r $tag ANNOTATION/chado/sybase/ddls";
-
-    &do_or_die($execstring);
-
-    $execstring = "cp chado_schema/*.ddl chado_schema/*.sql $installdir/docs";
-
-    &do_or_die($execstring);
-}
-
-
-
-
-#--------------------------------------------------
-# install_bcp_files()
-#
-#--------------------------------------------------
-sub install_bcp_files {
-
-    my ($workingdir, $installdir, $tag) = @_;
-
-    chdir($workingdir);
-
-    my $execstring = "cvs -Q export -kkv -d cvdata -r $tag ANNOTATION/chado/cvdata";
+    my $execstring = "cvs -Q export -kkv -d chado_schema_sybase -r $tag ANNOTATION/chado/sybase/ddls";
 
     &do_or_die($execstring);
 
-    $execstring = "cp cvdata/pub.out $installdir/docs";
+    $execstring = "cp $workingdir/chado_schema_sybase/*.ddl $installdir/docs/ddls/sybase/.";
+
+    &do_or_die($execstring);
+
+    $execstring = "cvs -Q export -kkv -d chado_schema_postgresql -r $tag ANNOTATION/chado/postgresql/ddls";
+
+    &do_or_die($execstring);
+
+    $execstring = "cp $workingdir/chado_schema_postgresql/*.ddl $installdir/docs/ddls/postgresql/.";
 
     &do_or_die($execstring);
 }
+
 
 
 #--------------------------------------------------
@@ -380,13 +367,13 @@ sub clear_working_dir {
 	
 	my $execstring = "rm -rf $workingdir/*_install";
 	&do_or_die($execstring);
-	my $execstring = "rm -rf $workingdir/ergatis_c";
+	$execstring = "rm -rf $workingdir/ergatis_c";
 	&do_or_die($execstring);
-	$execstring = "rm -rf $workingdir/chado_schema";
+	$execstring = "rm -rf $workingdir/chado_schema_sybase";
+	&do_or_die($execstring);
+	$execstring = "rm -rf $workingdir/chado_schema_postgresql";
 	&do_or_die($execstring);
 	$execstring = "rm -rf $workingdir/peffect";
-	&do_or_die($execstring);
-	$execstring = "rm -rf $workingdir/cvdata";
 	&do_or_die($execstring);
 	$execstring = "rm -rf $workingdir/ontologies";
 	&do_or_die($execstring);
@@ -454,19 +441,13 @@ sub execute_installation {
 
 		my $installname = $name ."_install";
 
-
 		if ($name eq 'ontologies'){
 		    
 		    &install_ontologies($workingdir, $installdir, $tag);
-		    
 		}
 		elsif ($name eq 'chado_schema'){
 		    
 		    &install_schema($workingdir, $installdir, $tag);
-		}
-		elsif ($name eq 'cvdata') {
-
-		    &install_bcp_files($workingdir, $installdir, $tag);
 		}
 		elsif ($name eq 'peffect'){
 
@@ -835,5 +816,16 @@ sub print_usage {
 }
 
 
+sub create_install_docs {
 
+    my ($installdir) = @_;
 
+    &do_or_die("mkdir -p -m 777 $installdir/docs");
+    &do_or_die("mkdir -p -m 777 $installdir/docs/ddls/sybase");
+    &do_or_die("mkdir -p -m 777 $installdir/docs/ddls/postgresql");
+    &do_or_die("mkdir -p -m 777 $installdir/docs/components");
+    &do_or_die("mkdir -p -m 777 $installdir/docs/documentation");
+    &do_or_die("mkdir -p -m 777 $installdir/docs/obo");
+    &do_or_die("mkdir -p -m 777 $installdir/docs/documentation");
+
+}
