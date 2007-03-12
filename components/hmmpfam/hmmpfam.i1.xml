@@ -19,6 +19,7 @@
             <name>hmmpfam2htab</name>
             <state>incomplete</state>
             <executable>$;HTAB_EXEC$;</executable>
+            <arg>-m</arg>
             <param>  
                 <key>stdin</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
