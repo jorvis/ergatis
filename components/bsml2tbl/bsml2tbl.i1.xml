@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bsml2tbl compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>bsml2tbl</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bsml2tbl</executable>
+            <param>  
+                <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.tbl</value>
+            </param>
+            <param>  
+                <key>--mrna</key>
+                <value>$;EXPORT_MRNA_FEATURES$;</value>
+            </param>
+            <param>  
+                <key>--ec_all</key>
+                <value>$;ALL_EC_NUMBERS$;</value>
+            </param>
+            <param>  
+                <key>--percent_n_cutoff</key>
+                <value>$;PERCENT_N_CUTOFF$;</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
