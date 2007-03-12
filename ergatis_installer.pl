@@ -240,7 +240,7 @@ sub install_schema {
 
     chdir($workingdir);
 
-    my $execstring = "cvs -Q export -kkv -d chado_schema -r $tag /ANNOTATION/chado/sybase/ddls";
+    my $execstring = "cvs -Q export -kkv -d chado_schema -r $tag ANNOTATION/chado/sybase/ddls";
 
     &do_or_die($execstring);
 
