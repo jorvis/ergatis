@@ -43,7 +43,7 @@
 	    </param>
 	    <param>
 		<key>--log4perl</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/chado2bsml.pl.$;ASMBL_ID$;.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/chado2bsml.pl.$;ASMBL$;.log</value>
 	    </param>
 	    <param>
 		<key>--debug</key>
@@ -55,11 +55,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/chado2bsml.$;ASMBL_ID$;.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/chado2bsml.$;ASMBL$;.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/chado2bsml.$;ASMBL_ID$;.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/chado2bsml.$;ASMBL$;.stderr</value>
 	    </param>
 	</command>
 	<command>
@@ -67,7 +67,7 @@
 	    <state>incomplete</state>
 	    <name>DTD validation</name>
 	    <executable>$;BIN_DIR$;/dtdValid.pl</executable>
-	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASMBL_ID$;.bsml</arg>
+	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASMBL$;.bsml</arg>
 	</command>
     </commandSet>
 </commandSetRoot>
