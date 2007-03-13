@@ -15,7 +15,9 @@ USAGE: pipeline_summary.pl
             --input_bsml=/path/to/file.bsml
             --other_bsml_lists=/path/to/some.list,/path/to/another.list
             --output=/path/to/someDir/
-          [ --log=/path/to/file.log
+          [ --locus_prefix=ABO553
+            --cog_search_bsml=/path/to/wu-blastp.bsml.list
+            --log=/path/to/file.log
             --debug=4
             --help
           ]
@@ -83,6 +85,12 @@ my $analysisId = 'pipeline_summary';
 my $sourcename;
 my $features;
 my $featureGroups;
+my $topCogHits;
+my @cogBsmls;
+my $cogLookup;
+my $locusPrefix;
+my $prefixCount = 1;
+my $featElemsBsml = {};
 ########################################
 $|++;
 
@@ -92,6 +100,9 @@ my $results = GetOptions (\%options,
                           'other_bsml_lists|b=s',
                           'output|o=s',
                           'correct_mistakes|c',
+                          'locus_prefix|l=s',
+                          'cog_search_bsml|s=s',
+                          'cog_lookup|g=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || &_pod;
@@ -106,16 +117,15 @@ $logger = $logger->get_logger();
 &check_parameters(\%options);
 
 foreach my $file (@inputFiles) {
+    print STDOUT "using $file\n";
 
     $sourcename = $1 if($file =~ m|(.*\d+_[^/]+)/|);
     &_die("Could not parse the sourcename directory for analysis section from $file") 
         unless($sourcename);
-    print STDOUT $sourcename."\n";
 
     #Make the output file name.
     my $base = $1 if($file =~ m|.*/([^/\.]+\.[^/\.]+\.[^/\.]+)\.[^/]+$|);
     $outputFile = "$output";
-    print "input: $file\n";
 
     my $bsml = new BSML::BsmlBuilder;
 
@@ -124,8 +134,8 @@ foreach my $file (@inputFiles) {
         'Sequence' => sub { &printSequenceFeatures( $bsml, @_ ) },
         });
 
-    print STDOUT "Parsing $file\n";
     $twig->parsefile($file);
+    print STDOUT "Done parsing the input file $file\n";
 
     my @addThese;
     foreach my $otherFile (@otherFiles) {
@@ -133,15 +143,13 @@ foreach my $file (@inputFiles) {
     }
 
     foreach my $addThis ( @addThese ) {
+        print STDOUT "adding $addThis\n";
         my $newTwig = new XML::Twig( twig_handlers => {
             'Sequence' => sub { &printSequenceFeatures( $bsml, @_ ) }
             });
 
-        print STDOUT "adding $addThis to bsml file\n";
         $newTwig->parsefile($addThis);
     }
-
-    
 
     print STDOUT "Writing to $outputFile\n";
     $bsml->write($outputFile);
@@ -150,6 +158,98 @@ foreach my $file (@inputFiles) {
 
 
 ######################## SUB ROUTINES #######################################
+sub getTopCogHit {
+	my $bsmlFiles = shift;
+    my $polyId = shift;
+ 	my $cogId;
+	my $maxPval = 0;
+	
+    my $parseThisFile = "";
+	foreach my $bsmlFile ( @{$bsmlFiles} ) {
+        #Find the file the contains this polypeptide and parse it
+        if($bsmlFile =~ /$polyId\./) {
+            $parseThisFile = $bsmlFile;
+            last;
+        }
+    }
+
+    $logger->warn("couldn't find cog bsml file for $polyId") unless($parseThisFile);
+    return "" unless($parseThisFile);
+
+    my $cogTwig = new XML::Twig( twigHandlers => {
+		'Seq-pair-alignment' => sub { &cogSpaHandler( @_, \$cogId, \$maxPval ) } }
+                                 );
+
+    my $fh;
+
+    #Check for gzip extension
+    if( -e $parseThisFile ) {
+        open($fh, "< $parseThisFile") or 
+            $logger->logdie("Unable to open $parseThisFile ($!)");
+    } elsif( -e $parseThisFile.".gz" ) {
+        open($fh, "<:gzip", $parseThisFile.".gz") or
+            $logger->logdie("Can't open $parseThisFile.gz ($!)");
+    }
+    
+    $cogTwig->parse($fh);	
+    close($fh);
+
+    return $cogId;
+}
+
+sub cogSpaHandler {
+    my ($twig, $spaElem, $retval, $maxPval) = @_;
+
+    #Get the seq-pair-run children
+    my @sprs = $spaElem->children('Seq-pair-run');
+    $logger->logdie("Couldn't find any Seq-pair-run elements in Seq-pair-aligment")
+        unless( @sprs > 0 );
+
+    my $queryId = $spaElem->att('refseq');
+    my $matchId = $spaElem->att('compseq');
+    my $cogId = &getCog($matchId);
+
+    foreach my $spr ( @sprs ) {
+        my $curPval = 'noPval';
+
+        #Get the attribute elements
+        my @attributes = $spr->children('Attribute');
+        $logger->logdie("Unable to find Attribute elements in Seq-pair-run")
+            unless( @attributes > 0 );
+
+        foreach my $attribute ( @attributes ) {
+            next unless($attribute->att('name') eq 'p_value');
+            $curPval = $attribute->att('content');
+        }
+        
+        $logger->logdie("Seq-pair-run didn't have p_value Attribute") 
+            if( $curPval eq 'noPval' );  
+
+        #Check the pvalue to see if it's higher
+        if($$maxPval < $curPval) {
+            $$retval = $cogId;
+            $$maxPval = $curPval;
+        }
+    }
+
+}
+
+sub getCog {
+	my $id = shift;
+	my $retval = 'nocog';	
+	open(IN, "< $cogLookup") or
+		$logger->logdie("Unable to open cog lookup file $cogLookup");
+
+	while( my $line = <IN>) {
+		if($line =~ /COG/) {
+			$retval = $line;
+		} elsif($line =~ /$id/) {
+			last;
+		}
+	}	
+	return $retval;
+}
+
 sub printSequenceFeatures {
     my ($bsml, $twig, $seqElem) = @_;
     
@@ -163,7 +263,6 @@ sub printSequenceFeatures {
     return unless($seqElem->att('class') eq 'assembly');
 
     my $asmblId = $id;
-    print STDOUT "parsing: $asmblId\n";
 
     my $fTables = $seqElem->first_child('Feature-tables');
     my $fT = $fTables->first_child('Feature-table') if($fTables);
@@ -178,18 +277,29 @@ sub printSequenceFeatures {
     }
     &_die("Couldn't make the new feature table for $asmblId") unless($newFeatureTable);
 
+    print STDOUT "There are a total of ".scalar(@features)."\n";
+    my $count = 1;
     foreach my $featElem ( @features ) {
-        
+        print STDOUT "\r$count";
+        $count++;
         my $bsmlFeature = &addFeature( $bsml, $newFeatureTable, $featElem );
+        $featElemsBsml->{$featElem->att('id')} = $bsmlFeature;
         &_die("Unable to create new bsml feature for sequence $asmblId") unless($bsmlFeature);
     }
+    print STDOUT "\n";
 
     my @fgs = $fTables->children('Feature-group') if($fTables);
     
+    print STDOUT "Starting feature groups\n";
+    print STDOUT "There are a total of ".scalar(@fgs)."\n";
+    $count = 1;
     foreach my $fg ( @fgs ) {
+        print STDOUT "\r$count";
+        $count++;
         my $bsmlFg = &addFeatureGroup( $bsml, $bsmlSequence, $fg );
         &_die("Could not create new Feature-group") unless($bsmlFg);
     }
+    print STDOUT "\nFinished feature groups\n";
 
     my $analysis;
     if($bsml->returnBsmlAnalysisR(0)) {
@@ -200,6 +310,7 @@ sub printSequenceFeatures {
                                                  'algorithm' => 'pipeline_summary', 
                                                  'sourcename' => $sourcename );
     }
+    print STDOUT "Added analysis\n";
     &_die("Could not find or make an analysis") unless($analysis);
     
     
@@ -210,6 +321,7 @@ sub addFeatureGroup {
 
     my $fgId = $fgElem->att('id');
     &_die("Can't parse id from Feature-group") unless($fgId);
+
     
     my $groupSet = $fgElem->att('group-set');
     &_die("Could not parse group-set attribute from Feature-group $fgId") unless($groupSet);
@@ -221,11 +333,24 @@ sub addFeatureGroup {
         unless(@fgms > 0);
 
 
-    my $geneId;
+    my ($geneId, $topCogHit, $cdsId);
     foreach my $fgm ( @fgms ) {
-        next unless($fgm->att('feature-type') eq 'gene');
-        $geneId = $fgm->att('featref');
-        &_die("Can't parse featref from Feature-group-member in $groupSet (Feature-group)") unless($geneId);
+        if ($fgm->att('feature-type') eq 'gene') {
+            $geneId = $fgm->att('featref');
+            &_die("Can't parse featref from Feature-group-member in $groupSet (Feature-group)") unless($geneId);
+        } elsif($fgm->att('feature-type') eq 'polypeptide') {
+            $topCogHit = &getTopCogHit(\@cogBsmls, $fgm->att('featref'));
+        } elsif($fgm->att('feature-type') eq 'CDS') {
+            $cdsId = $fgm->att('featref');
+        }
+    }
+
+    if($topCogHit) {
+
+        my $featureElem = $featElemsBsml->{$cdsId};
+        $logger->logdie("Wasn't able to get the feature from featElemsBsml for $cdsId\n") 
+            unless($featureElem);
+        $bsml->createAndAddBsmlAttribute( $featElemsBsml->{$cdsId}, 'top_cog_hit', $topCogHit);
     }
 
     &_die("There was no gene Feature-group-member in the Feature-group $groupSet") unless($geneId);
@@ -315,36 +440,46 @@ sub addFeature {
     my $link;
 
     if( $bsmlFeature->{'BsmlLink'} && $bsmlFeature->{'BsmlLink'}->[0] ) {
-        print STDOUT "There exists already a bsml link\n";
         $link = $bsmlFeature->{'BsmlLink'}->[0];
         &_die("Frackin retard") unless($link);
     } else {
-        print STDOUT "Creating a new bsml link\n";
         $bsml->createAndAddLink( $bsmlFeature, 'analysis', "#${analysisId}_analysis", "input_of" );
         $link = $bsmlFeature->{'BsmlLink'}->[0];
     }
     &_die("Couldn't add or find link element associated with Feature $featId") unless($link);
 
-    print STDOUT "Passed link\n";
 
     #Add attributes if any
     my @attributes = $feature->children('Attribute');
+    &addAttributes( $bsml, $bsmlFeature, \@attributes ) unless( @attributes < 1 );
 
-    if(@attributes > 0) {
-        $bsmlFeature->{'BsmlAttr'} = {};
+    unless($class ne 'gene' || exists($bsmlFeature->{'BsmlAttr'}->{'locus_tag'})) {
+        $bsmlFeature->addBsmlAttr( 'locus_tag', $locusPrefix."_".$prefixCount++);
     }
 
-    foreach my $att ( @attributes ) {
-        my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, $att->att('name'), $att->att('content') );
-    }
 
-    if($class eq 'transcript' && $bsmlFeature->{'BsmlAttr'} && scalar(keys %{$bsmlFeature->{'BsmlAttr'}}) == 0 ) {
-        $bsmlFeature->addBsmlAttr('com_name', 'hypothetical protein');
-    }
- 
     $features->{$featId} = $bsmlFeature;
     return $bsmlFeature;
 
+}
+
+sub addAttributes {
+    my ($bsml, $bsmlFeature, $atts) = @_;
+
+    foreach my $att ( @{$atts} ) {
+        my ($name, $value) = ($att->att('name'), $att->att('content'));
+        $name =~ s/gene_sym/gene_symbol/;
+        $name =~ s/ec_num$/ec_number/;
+        my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, $name, $value);
+    }
+
+    my $hash = $bsmlFeature->returnattrHashR();
+    my $tmpClass = $hash->{'class'};
+
+    unless(exists($bsmlFeature->{'BsmlAttr'}->{'com_name'}) || $tmpClass eq 'tRNA' ) {
+        my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, 'com_name', 'hypothetical protein');
+    }
+    
 }
 
 sub addSequence {
@@ -496,6 +631,23 @@ sub check_parameters {
 
     if($opts->{'correct_mistakes'}) {
         $c = 1;
+    }
+
+    if($opts->{'cog_search_bsml'}) {
+        open(IN, "<", $opts->{'cog_search_bsml'}) or
+            $logger->logdie("Can't open cog_search_bsml");
+        while (my $line = <IN>) {
+            chomp $line;
+            push(@cogBsmls, $line);
+        }
+        close(IN);
+
+        $cogLookup = $opts->{'cog_lookup'} if($opts->{'cog_lookup'});
+        $error .= "Option --cog_lookup is required when using --cog_search_bsml" unless($opts->{'cog_lookup'});
+    }
+
+    if($opts->{'locus_prefix'}) {
+        $locusPrefix = $opts->{'locus_prefix'};
     }
     
     unless($error eq "") {
