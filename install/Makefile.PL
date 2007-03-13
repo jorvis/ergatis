@@ -692,7 +692,7 @@ tbl2asn	:
 	@install components/tbl2asn/tbl2asn.xml $(WORKFLOW_DOCS_DIR)
 	@install components/tbl2asn/tbl2asn.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/tbl2asn/tbl2asn.config $(WORKFLOW_DOCS_DIR)
-  	@install components/tbl2asn/tbl2asn.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+	@install components/tbl2asn/tbl2asn.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 tmhmm	:
 	@echo "Installing tmhmm workflows in $(WORKFLOW_DOCS_DIR)"
