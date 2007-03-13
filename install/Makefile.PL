@@ -194,7 +194,7 @@ bsml2tbl	:
 	@install components/bsml2tbl/bsml2tbl.xml $(WORKFLOW_DOCS_DIR)
 	@install components/bsml2tbl/bsml2tbl.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/bsml2tbl/bsml2tbl.config $(WORKFLOW_DOCS_DIR)
-  	@install components/bsml2tbl/bsml2tbl.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+	@install components/bsml2tbl/bsml2tbl.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 build_supercontig	:
 	@echo "Installing build_supercontig workflows in $(WORKFLOW_DOCS_DIR)"
