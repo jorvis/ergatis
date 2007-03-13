@@ -10,12 +10,12 @@ USAGE: create_bsml_scaffolds.pl
       --project=apx3
       --scaffold_file=pva1.scf
       --id_repository=/usr/local/annotation/APX3/workflow/project_id_repository
-      --bsml_repository=/usr/local/annotation/APX3/BSML_repository
+      --assembly_bsml_list=/usr/local/annotation/APX3/output_repository/legacy2bsml/7881_default/legacy2bsml.bsml.list
       --organism_name="Plasmodium vivax"
       --organism_type=euk
+    [ --output_dir=. ]
     [ --parse_gaps ]
     [ --parse_only ]
-    [ --workflow_id=12345 ]
     [ --using_contig_ids ]
     [ --scaffold_id_is_chromosome ]
     [ --annot_db=pva1 ]
@@ -38,14 +38,19 @@ USAGE: create_bsml_scaffolds.pl
 --id_repository
    A valid id repository.  See Ergatis::IdGenerator for details.
 
---bsml_repository
-   The full path to the BSML_repository for --project.
+--assembly_bsml_list
+   The full path to the file that contains a list of all the assembly BSML files (e.g., the
+   legacy2bsml.bsml.list file produced by the legacy2bsml process used to populate the chado
+   comparative database that corresponds to --project.)
 
 --organism_name
    The full name ("Genus species") of the organism to which the scaffolds should be assigned.
 
 --organism_type
    Either 'euk' or 'prok'; the type of TIGR annotation database used to store --organism_name.
+
+--output_dir
+   Where to write the scaffold BSML documents.
 
 --parse_gaps
    Use this option to specify that the gaps between contigs should be determined by the coordinates
@@ -56,12 +61,6 @@ USAGE: create_bsml_scaffolds.pl
 
 --parse_only
    Parse the input file(s) and report any errors but don't create any BSML documents.
-
---workflow_id
-   Workflow id of the legacy2bsml task used to migrate the assembly BSML documents into the chado
-   comparative database for --project.   Can be omitted if all the assembly documents can be found 
-   at the top level of the --bsml_repository; only needed if the assembly documents are nested 
-   under a legacy2bsml/ subdirectory.
 
 --using_contig_ids
    Whether the scaffold file uses contig ids (clone_info.clone_name) instead of asmbl_ids.  
@@ -171,12 +170,12 @@ use BSML::BsmlScaffolds;
 my($project,
    $scaffold_file,
    $id_repository,
-   $bsml_repository,
+   $assembly_bsml_list,
    $organism_name,
    $organism_type,
+   $output_dir,
    $parse_gaps,
    $parse_only,
-   $workflow_id,
    $using_contig_ids,
    $scaffold_id_is_chromosome,
    $annot_db,
@@ -191,12 +190,12 @@ my($project,
 &GetOptions("project=s" => \$project, 
 	    "scaffold_file=s" => \$scaffold_file,
 	    "id_repository=s" => \$id_repository,
-	    "bsml_repository=s" => \$bsml_repository,
+	    "assembly_bsml_list=s" => \$assembly_bsml_list,
 	    "organism_name=s" => \$organism_name,
 	    "organism_type=s" => \$organism_type,
+	    "output_dir=s" => \$output_dir,
 	    "parse_gaps!" => \$parse_gaps,
 	    "parse_only!" => \$parse_only,
-	    "workflow_id=s" => \$workflow_id,
 	    "using_contig_ids!" => \$using_contig_ids,
 	    "scaffold_id_is_chromosome!" => \$scaffold_id_is_chromosome,
 	    "annot_db=s" => \$annot_db,
@@ -216,8 +215,8 @@ pod2usage({-verbose => 2}) if $man;
 if (!$id_repository || !(-d $id_repository) || !(-r $id_repository)) {
     pod2usage({-message => "Error:\n     --id_repository=$id_repository is not readable\n", -exitstatus => 1, -verbose => 0});
 }
-if (!$bsml_repository || !(-d $bsml_repository) || !(-r $bsml_repository)) {
-    pod2usage({-message => "Error:\n     --bsml_repository=$bsml_repository is not readable\n", -exitstatus => 1, -verbose => 0});
+if (!$assembly_bsml_list || !(-r $assembly_bsml_list)) {
+    pod2usage({-message => "Error:\n     --assembly_bsml_list=$assembly_bsml_list is not readable\n", -exitstatus => 1, -verbose => 0});
 }
 unless ($organism_type =~ /^euk$/i || $organism_type =~ /^prok$/) {
     pod2usage({-message => "Error:\n     --organism_type must be 'euk' or 'prok'\n", -exitstatus => 1, -verbose => 0});
@@ -249,6 +248,9 @@ $log_file = Ergatis::Logger::get_default_logfilename() if (!defined($log_file));
 my $elogger = new Ergatis::Logger('LOG_FILE'=>$log_file, 'LOG_LEVEL'=>$log_level);
 my $logger = $elogger->get_logger(__PACKAGE__);
 
+# default output dir
+$output_dir = "." if (!defined($output_dir));
+
 # ------------------------------------------------------------------
 # Main program
 # ------------------------------------------------------------------
@@ -279,7 +281,8 @@ if ($using_contig_ids) {
 	    }
 	}
     }
-} 
+}
+
 # otherwise the contig_id is the same as the asmbl_id
 else {
     foreach my $s (@$scaffolds) {
@@ -301,9 +304,8 @@ if ($scaffold_id_is_chromosome) {
 }
 
 # write BSML files
-&BSML::BsmlScaffolds::writeBsmlScaffoldFiles($scaffolds, $annot_db, $organism_type, $project, $bsml_repository, 
-					     $workflow_id, $genus, $species, $parse_gaps, $parse_only, 
-					     $new_id_fn, $elogger);
+&BSML::BsmlScaffolds::writeBsmlScaffoldFiles($scaffolds, $annot_db, $organism_type, $project, $assembly_bsml_list,
+					     $output_dir, $genus, $species, $parse_gaps, $parse_only, $new_id_fn, $elogger);
 
 # all done
 exit(0);
