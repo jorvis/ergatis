@@ -233,8 +233,7 @@ pod2usage({-message => "Error:\n     --organism_name must be specified\n", -exit
 if ($using_contig_ids) {
     pod2usage({-message => "Error:\n     --annot_username must be specified\n", -exitstatus => 1, -verbose => 0}) if (!$annot_username);
     pod2usage({-message => "Error:\n     --annot_password must be specified\n", -exitstatus => 1, -verbose => 0}) if (!$annot_password);
-pod2usage({-message => "Error:\n     --annot_server must be specified\n", -exitstatus => 1, -verbose => 0}) if (!$annot_server);
-
+    pod2usage({-message => "Error:\n     --annot_server must be specified\n", -exitstatus => 1, -verbose => 0}) if (!$annot_server);
 }
 
 # parse $organism_name into chado organism.genus, species
