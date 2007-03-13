@@ -8,7 +8,7 @@ create_trivial_scaffold_files.pl - Create a tab-delimited scaffold description f
 
 USAGE: create_trivial_scaffold_files.pl
       --project=apx3
-      --bsml_repository=/usr/local/annotation/APX3/BSML_repository
+      --scaffold_dir=/usr/local/annotation/APX3/scaffolds
       --chado_db=apx3
       --username=user1 
       --password=password1 
@@ -24,8 +24,8 @@ USAGE: create_trivial_scaffold_files.pl
 --project
     The name of the project for which to create the scaffold files.
 
---bsml_repository
-   The full path to the BSML_repository for --project.
+--scaffold_dir
+   The full path to the top-level directory that contains all the BSML scaffold documents for --project.
 
 --chado_db
     The name of the chado comparative database to query for the list of assembly/contig sequences.
@@ -57,14 +57,14 @@ USAGE: create_trivial_scaffold_files.pl
 =head1   DESCRIPTION
 
 Create a tab-delimited scaffold description file for each organism in --chado_db that has 
-assembly/contig sequences that are not already part of a scaffold in --bsml_repository.
+assembly/contig sequences that are not already part of a scaffold in --scaffold_dir.
 Each such assembly will be assigned to a unique (and hence "trivial") scaffold.
 
 =head1  OUTPUT
 
 A set of tab-delimited scaffold description files, one for each organism in --chado_db
 that has assembly sequences not currently assigned to a scaffold by a BSML scaffold
-document in --bsml_repository.  These scaffold description files may be used as the
+document in --scaffold_dir.  These scaffold description files may be used as the
 input to create_bsml_scaffolds.pl in order to create a BSML document for each trivial
 scaffold.
 
@@ -96,7 +96,7 @@ use Ergatis::Logger;
 # ------------------------------------------------------------------
 
 my($project,
-   $bsml_repository,
+   $scaffold_dir,
    $chado_db,
    $username,
    $password,
@@ -108,7 +108,7 @@ my($project,
    $man);
 
 &GetOptions("project=s" => \$project,
-	    "bsml_repository=s" => \$bsml_repository,
+	    "scaffold_dir=s" => \$scaffold_dir,
 	    "chado_db=s" => \$chado_db, 
 	    "username=s" => \$username,
 	    "password=s" => \$password,
@@ -123,8 +123,8 @@ my($project,
 pod2usage(1) if $help;
 pod2usage({-verbose => 2}) if $man;
 
-if (!$bsml_repository || !(-d $bsml_repository) || !(-r $bsml_repository)) {
-    pod2usage({-message => "Error:\n     --bsml_repository=$bsml_repository is not readable\n", -exitstatus => 1, -verbose => 0});
+if (!$scaffold_dir || !(-d $scaffold_dir) || !(-r $scaffold_dir)) {
+    pod2usage({-message => "Error:\n     --scaffold_dir=$scaffold_dir is not readable\n", -exitstatus => 1, -verbose => 0});
 }
 
 pod2usage({-message => "Error:\n     --project must be specified\n", -exitstatus => 1, -verbose => 0}) if (!$project);
@@ -148,10 +148,9 @@ $output_dir = "." if (!defined($output_dir));
 # Main program
 # ------------------------------------------------------------------
 
-# read assembly names from the BSML repository
-my $bsml_scaffold_dir = File::Spec->catfile($bsml_repository, "scaffolds");
-my $assemblyIds = &readAssemblyIdsFromScaffoldFiles($bsml_scaffold_dir);
-$logger->info("read " . scalar(@$assemblyIds) .  " assembly ids from $bsml_scaffold_dir");
+# read assembly names from the existing scaffold files
+my $assemblyIds = &readAssemblyIdsFromScaffoldFiles($scaffold_dir);
+$logger->info("read " . scalar(@$assemblyIds) .  " assembly ids from $scaffold_dir");
 
 # read assembly names and lengths from the database
 my $dbiDsn = "DBI:Sybase:server=$server;packetSize=8192";
@@ -207,10 +206,10 @@ exit(0);
 # Returns a listref of those assemblies (by assembly name) already included in a scaffold.
 #
 sub readAssemblyIdsFromScaffoldFiles {
-    my($bsml_scaffold_dir) = @_;
+    my($scaffold_dir) = @_;
     my $names = [];
 
-    my $cmd = "find ${bsml_scaffold_dir} -name '*.bsml' -exec egrep '\.assembly' '{}' ';' |";
+    my $cmd = "find ${scaffold_dir} -name '*.bsml' -exec egrep '\.assembly' '{}' ';' |";
     my $fh = FileHandle->new();
     $fh->open($cmd);
     while (my $line = <$fh>) {
