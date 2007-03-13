@@ -25,7 +25,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/drop_tables.ddl</value>
+		<value>$;DOCS_DIR$;/$;RDBMS$;/drop_tables.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -41,7 +41,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/drop_views.ddl</value>
+		<value>$;DOCS_DIR$;/$;RDBMS$;/drop_views.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -57,7 +57,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/create_tables.ddl</value>
+		<value>$;DOCS_DIR$;/$;RDBMS$;/create_tables.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -73,7 +73,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/create_views.ddl</value>
+		<value>$;DOCS_DIR$;/$;RDBMS$;/create_views.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -89,7 +89,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/partition_tables.ddl</value>
+		<value>$;DOCS_DIR$;/$;RDBMS$;/partition_tables.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -97,67 +97,6 @@
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=partitiontables,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/partition_tables.list,$;NODISTRIB$;=1"/>
-	<command>
-	    <type>RunJavaUnixCommand</type>
-	    <name>Load pub record</name>
-	    <executable>$;BIN_DIR$;/flatFileToChado</executable>
-	    <param>
-		<key>--database</key>
-		<value>$;DATABASE$;</value>
-	    </param>
-	    <param>	  
-		<key>--server</key>
-		<value>$;SERVER$;</value>
-	    </param>
-	    <param>	  
-		<key>--database_type</key>
-		<value>$;RDBMS$;</value>
-	    </param>
-	    <param>
-		<key>--username</key>
-		<value>chado_admin</value>
-	    </param>
-	    <param>
-		<key>--password</key>
-		<value>chado_admin99</value>
-	    </param>
-	    <param>
-		<key>--debug_level</key>
-		<value>$;DEBUG$;</value>
-	    </param>
-	    <param>
-		<key>--bcp_ext</key>
-		<value>out</value>
-	    </param>
-	    <param>
-		<key>--bcpmode</key>
-		<value>in</value>
-	    </param>
-	    <param>
-		<key>--batchsize</key>
-		<value>$;BATCHSIZE$;</value>
-	    </param>
-	    <param>
-		<key>--logfile</key>
-		<value>$;WORKFLOW_REPOSITORY$;/load.pub.log</value>
-	    </param>
-	    <param>
-		<key>--infile</key>
-		<value>$;DOCS_DIR$;/pub.out</value>
-	    </param>
-	    <param>
-		<key>--infile</key>
-		<value>$;DOCS_DIR$;/pub.out</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;WORKFLOW_REPOSITORY$;/load.pub.stdout</value>
-	    </param>
-	    <param>
-		<key>stderr</key>
-		<value>$;WORKFLOW_REPOSITORY$;/load.pub.stderr</value>
-	    </param>
-	</command>
 	<!--Iterator7 for processing and loading all OBO files -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -182,7 +121,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/create_indexes.ddl</value>
+		<value>$;DOCS_DIR$;/$;RDBMS$;/create_indexes.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -198,7 +137,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/grant_all_public.ddl</value>
+		<value>$;DOCS_DIR$;/$;RDBMS$;/grant_all_public.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
