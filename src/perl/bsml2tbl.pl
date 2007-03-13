@@ -249,7 +249,13 @@ sub print_feat
         ## Deal with negative coordinates
         if ($from <= 0 && $from < $to) {
             if ($class eq "CDS") {
-                $attrs->{codon_start} = abs($from - 1) % 3;
+                my $frame = abs($from - 1) % 3;
+                if ($frame == 1) {
+                    $attrs->{codon_start} = 3;
+                }
+                elsif ($frame == 2) {
+                    $attrs->{codon_start} = 2;
+                }
             }
             $tmp_from = "<1";
         }
