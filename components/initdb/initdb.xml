@@ -25,7 +25,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/$;RDBMS$;/drop_tables.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -41,7 +41,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/$;RDBMS$;/drop_views.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_views.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -57,7 +57,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/$;RDBMS$;/create_tables.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -73,7 +73,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/$;RDBMS$;/create_views.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_views.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -89,7 +89,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/$;RDBMS$;/partition_tables.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/partition_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -121,7 +121,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/$;RDBMS$;/create_indexes.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_indexes.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -137,7 +137,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/$;RDBMS$;/grant_all_public.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/grant_all_public.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
