@@ -515,11 +515,9 @@ nucmer_snps	:
 
 obo2chado	:
 	@echo "Installing obo2chado workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/obo2chado/obo2chado-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/obo2chado/obo2chado-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/obo2chado/obo2chado.ini $(WORKFLOW_DOCS_DIR)
-	@install components/obo2chado/obo2chado_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/obo2chado/obo2chadoconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/obo2chado/obo2chado.xml $(WORKFLOW_DOCS_DIR)
+	@install components/obo2chado/obo2chado.obo.xml $(WORKFLOW_DOCS_DIR)
+	@install components/obo2chado/obo2chado.config $(WORKFLOW_DOCS_DIR)
 
 open_reading_frames	:
 	@echo "Installing open_reading_frames workflows in $(WORKFLOW_DOCS_DIR)"
