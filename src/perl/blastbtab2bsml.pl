@@ -140,9 +140,13 @@ foreach my $seq_id(keys(%{$deflines})) {
 }
 
 ## add the analysis element
+my $program = $options{analysis_id};
+   $program =~ s/_analysis//;
 $doc->createAndAddAnalysis(
                             id => $options{analysis_id},
                             sourcename => $options{'output'},
+                            algorithm => $program,
+                            program => $program,
                           );
 
 if($options{'gzip'}){
