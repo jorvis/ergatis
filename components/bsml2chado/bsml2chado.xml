@@ -1,4 +1,6 @@
-<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
 	<state>incomplete</state>
 	<name>bsml2chado workflow</name>
@@ -98,18 +100,12 @@
 	    <executable>cat</executable>
 	    <arg> $;TMP_DIR$;/tables.out | /usr/local/bin/perl -ne 's/.*\/([\w_]+).out/$1/;print '| sort | uniq</arg>
 	    <param>
-		<key>
-		    stdout
-		</key>
-		<value>
-		    $;TMP_DIR$;/collatetables.list.tmp
-		</value>
-		<key>
-		    stderr
-		</key>
-		<value>
-		    $;TMP_DIR$;/collatesort.stderr
-		</value>
+		    <key>stdout</key>
+		    <value>$;TMP_DIR$;/collatetables.list.tmp</value>
+        </param>
+        <param>
+		    <key>stderr</key>
+    		<value>$;TMP_DIR$;/collatesort.stderr</value>
 	    </param>
 	</command>
 	<command>
@@ -169,14 +165,12 @@
 		<value>$;TMP_DIR$;/checksums.out</value>
 	    </param>
 	    <param>
-		<key>stdout</key>
-		<value>$;TMP_DIR$;/checksums.out.sorted</value>
-		<key>
-		    stderr
-		</key>
-		<value>
-		    $;TMP_DIR$;/checksums.out.sorted.stderr
-		</value>
+		    <key>stdout</key>
+		    <value>$;TMP_DIR$;/checksums.out.sorted</value>
+        </param>
+        <param>
+		    <key>stderr</key>
+		    <value>$;TMP_DIR$;/checksums.out.sorted.stderr</value>
 	    </param>
         <dceSpec type="sge">
             <OS>linux</OS>
