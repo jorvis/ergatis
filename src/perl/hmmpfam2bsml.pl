@@ -177,8 +177,10 @@ while (<$ifh>) {
             if (/^(\S+)\s+(.+?)\s+([0-9\.\-e]+)\s+([0-9\.\-e]+)\s+\d+\s*$/) {
                 ($model, $description, $score, $eval) = ($1, $2, $3, $4);
 
-                ## add this model sequence
-                my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'polypeptide');
+                ## add this model sequence if we haven't already
+                if( !( $doc->returnBsmlSequenceByIDR($model)) ){
+                    my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'polypeptide');
+                }
         
                 $alignments{$model} = $doc->createAndAddSequencePairAlignment( 
                                                                        refseq => $qry_id,
