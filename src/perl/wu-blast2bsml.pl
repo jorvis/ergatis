@@ -592,16 +592,16 @@ sub createAndAddBlastResultLine {
                         '', 
                         $args{'dbmatch_accession'}
                                        );
+    
+        ## see if the dbmatch_header format is recognized.  if so, add some cross-references
+        if (defined $args{'dbmatch_header'}) {
+            $doc->createAndAddCrossReferencesByParse( 
+                        sequence => $seq, 
+                        string => $args{orig_dbmatch_accession}
+                                                    );
+        }
     }
 
-    ## see if the dbmatch_header format is recognized.  if so, add some cross-references
-    if (defined $args{'dbmatch_header'}) {
-        $doc->createAndAddCrossReferencesByParse( 
-                    sequence => $seq, 
-                    string => $args{orig_dbmatch_accession}
-                                                );
-    }
-    
     $alignment_pair = $doc->returnBsmlSeqPairAlignmentR( $doc->addBsmlSeqPairAlignment() );
     
     ## to the alignment pair, add a Link to the analysis
