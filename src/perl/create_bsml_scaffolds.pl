@@ -8,6 +8,7 @@ create_bsml_scaffolds.pl - Convert a tab-delimited scaffold description file int
 
 USAGE: create_bsml_scaffolds.pl
       --project=apx3
+      --annot_db=pva1 
       --scaffold_file=pva1.scf
       --id_repository=/usr/local/annotation/APX3/workflow/project_id_repository
       --assembly_bsml_list=/usr/local/annotation/APX3/output_repository/legacy2bsml/7881_default/legacy2bsml.bsml.list
@@ -18,7 +19,6 @@ USAGE: create_bsml_scaffolds.pl
     [ --parse_only ]
     [ --using_contig_ids ]
     [ --scaffold_id_is_chromosome ]
-    [ --annot_db=pva1 ]
     [ --annot_server=SYBTIGR ]
     [ --annot_username=user1 ]
     [ --annot_password=password1 ]
@@ -64,8 +64,7 @@ USAGE: create_bsml_scaffolds.pl
 
 --using_contig_ids
    Whether the scaffold file uses contig ids (clone_info.clone_name) instead of asmbl_ids.  
-   If set to true then the --annot_db, --annot_server, --annot_username, and --annot_password
-   options must also be supplied.
+   If set to true then --annot_username and --annot_password must also be supplied.
 
 --scaffold_id_is_chromosome
    Use this option if the scaffold ids in the --scaffold_file should be saved as the scaffold's
@@ -296,7 +295,8 @@ else {
 my $id_gen = Ergatis::IdGenerator->new( 'id_repository' => $id_repository, logging => 0);
 $id_gen->set_pool_size( 'supercontig' => 1 );
 my $new_id_fn = sub {
-    return $id_gen->next_id('type' => 'supercontig', project => lc($project) );
+    # keep --annot_db as the prefix of the new ids (for convenience)
+    return $id_gen->next_id('type' => 'supercontig', project => lc($annot_db) );
 };
 
 if ($scaffold_id_is_chromosome) {
