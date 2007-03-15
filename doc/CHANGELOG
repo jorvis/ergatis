@@ -400,3 +400,4 @@ next
 -added ergatis/src/perl/create_bsml_scaffolds.pl (an updated version of createBsmlScaffolds.pl)
 -added ergatis/src/perl/create_scaffold_file.pl, a script that helps create input files for create_bsml_scaffolds.pl
 -added ergatis/src/perl/create_trivial_scaffold_files.pl; generates "trivial" scaffold input files for create_bsml_scaffolds.pl
+-added snap component
