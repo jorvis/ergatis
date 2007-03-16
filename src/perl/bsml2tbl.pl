@@ -244,6 +244,9 @@ sub print_feat
         #   I'm addressing the other cases as I see them.
         if ( $from > $asmbl_length && $from > $to ) {
             $tmp_from = "<$asmbl_length";
+            $attrs->{codon_start} = 4 - ( $from - $asmbl_length );
+        } elsif( $to > $asmbl_length && $to > $from ) {
+            $tmp_to = ">$asmbl_length";
         }
 
         ## Deal with negative coordinates
@@ -259,6 +262,11 @@ sub print_feat
             }
             $tmp_from = "<1";
         }
+
+        if($to <= 0) {
+            $tmp_to = ">1";
+        }
+            
        
         $from = $tmp_from;
         $to = $tmp_to;
