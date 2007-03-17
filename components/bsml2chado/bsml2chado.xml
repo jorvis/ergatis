@@ -228,7 +228,7 @@
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
 	    </param>
 	    <param>
-		<key>stdout</key>
+		<key>stderr</key>
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets.stderr</value>
 	    </param>
         <dceSpec type="sge">
