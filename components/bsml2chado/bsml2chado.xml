@@ -282,7 +282,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/drop_indexes.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_indexes.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
@@ -316,7 +316,7 @@
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
 		<key>stdin</key>
-		<value>$;DOCS_DIR$;/create_indexes.ddl</value>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_indexes.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
 		<key>stdout</key>    
