@@ -83,6 +83,11 @@ brcGff3ToBsml.pl - Parse IOWG GFF file and produces BSML document
 Sample usage:
 ./brcGff3ToBsml.pl -g /usr/local/annotation/OMNIUM/brc-central/GFF_BACKUP/TIGR/bacillus_anthracis/b_anthracis_a0071_western_north_america.gff
 
+=head1 AUTHOR
+
+Jay Sundaram
+
+sundaram@tigr.org
 
 =cut
 
@@ -457,13 +462,6 @@ sub create_genome_component {
 			"for GFF3 file '$gff_file'");
     }
 
-    #
-    # editor:    sundaram@tigr.org
-    # date:      2005-08-17
-    # bgzcase:   2051
-    # URL:       http://serval.tigr.org:8080/bugzilla/show_bug.cgi?id=2051
-    # comment:   The <Sequence> will now be explicitly linked with the <Genome>
-    #
     if (( exists $genome_elem->{'attr'}->{'id'} ) && ( defined ( $genome_elem->{'attr'}->{'id'} ) )  ){
 	return ($genome_elem->{'attr'}->{'id'});
     }
@@ -1518,8 +1516,6 @@ sub mergeCDSSegments {
 	
 	my $member_cds_array = $cdsSegmentLookup->{'cdsorig'}->{$master_cds_id}; 	 
 	
-#	$logger->fatal("member_cds_array for master_cds_id '$master_cds_id':". Dumper $member_cds_array);
-	
 	# Get the smallest start and the largest end 	 
 	# 	 
 	my $minfmincds=0; 	 
@@ -1531,8 +1527,6 @@ sub mergeCDSSegments {
 	my $lastcdsrecordsparents;
 
 	foreach my $cds_segment_id ( @{$member_cds_array} ) { 	 
-
-#	    $logger->fatal("Processing cds_segment_id '$cds_segment_id' for master_cds_id '$master_cds_id'");
 	    
 	    my $cdsrecord = $gffrecords->{$cds_segment_id}; 	 
 	    
@@ -1560,11 +1554,7 @@ sub mergeCDSSegments {
 	    if ($master_cds_id ne $cds_segment_id){
 		delete $gffrecords->{$cds_segment_id}; 	
 		delete $parent_lookup->{$cds_segment_id};
-#		$logger->fatal("For master_cds_id '$master_cds_id' deleting cds_segment_id ' $cds_segment_id'");
 	    } 	
-# 	    else {
-# 		$logger->fatal("master_cds_id '$master_cds_id' == cds_segment_id ' $cds_segment_id'");
-# 	    }
 	}
 	
 
@@ -1586,21 +1576,6 @@ sub createTranscriptFeatureStubs {
     my ($gffrecords, $parent_lookup) = @_;
 
     print "Creating transcript feature stubs\n";
-
-#     my $child_lookup = {};
-
-#     my ($parentarray, $child);
-
-#     #
-#     # Create a child-to-parent lookup
-#     #
-#     while (($child, $parentarray) = each %{$parent_lookup}){
-
-# 	foreach my $parent ( @{$parentarray} ) {
-	    
-# 	    push ( @{$child_lookup->{$parent}}, $child);
-# 	}
-#     }
 
     foreach my $featureId ( keys %{$gffrecords}){
 
