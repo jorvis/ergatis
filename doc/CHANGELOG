@@ -401,3 +401,40 @@ next
 -added ergatis/src/perl/create_scaffold_file.pl, a script that helps create input files for create_bsml_scaffolds.pl
 -added ergatis/src/perl/create_trivial_scaffold_files.pl; generates "trivial" scaffold input files for create_bsml_scaffolds.pl
 -added snap component
+-installer updates for new ddl/sql layout
+-interface: adding support for component classes
+-interface: component addition now menu-driven (not select box)
+-bsml2chado: database_type now a required option to several steps
+-hmmpfam: forced to be single-threaded
+-initdb: ddl/obo paths changed
+-initdb: chadomart table support added
+-mask_by_analysis: compression support added
+-signalp: compression support added
+-signalp: graphics renaming corrections
+-tRNAscan-SE: project portion of names made configurable
+-genewise: support added to read bsml instead of legacydb
+-genbank2bsml: updates
+-numerous prok pipeline updates
+-wu-blast: multi-fasta input support added
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
