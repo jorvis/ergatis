@@ -192,6 +192,12 @@ sub gatherAndAdd {
         #sequence elements) we should skip it.
         next unless(exists(MAP->{$featElem->att('class')}));
 
+        #Add a link to the feature element to links it to the Feature sequence
+        my $newLink = 
+            new XML::Twig::Elt( 'Link', { 'rel' => 'sequence',
+                                          'href' => "#".$featElem->att('id')."_seq" } );
+        $newLink->paste( $featElem );
+
         #Retrieve the interval loc element
         my $intLocElem = $featElem->first_child('Interval-loc');
         
