@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>psiblast compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>psiblast</name>
+            <state>incomplete</state>
+            <executable>$;PSIBLAST_EXEC$;</executable>
+            <arg>-i $;CHD$; -R $;CHK$; -d $;DATABASE_PATH$; -m 8</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;UID$;.$;COMPONENT_NAME$;.hits</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
