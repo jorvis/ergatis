@@ -55,7 +55,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates augustus auto_annotate auto_gene_curation ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw cvtermpath_closure fasta2bsml fgenesh formatdb geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps open_reading_frames pangenome parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan repeatmasker runsql signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates augustus auto_annotate auto_gene_curation ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps open_reading_frames pangenome parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan psiblast repeatmasker rpsblast runsql signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -247,6 +247,12 @@ delete_analysis  :
 	@install components/delete_analysis/delete_analysis-master.ini $(WORKFLOW_DOCS_DIR)
 	@install components/delete_analysis/delete_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/delete_analysis/delete_analysisconf.ini $(WORKFLOW_DOCS_DIR)  
+
+ec_assignment :
+	@echo "Installing ec_assignment workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/ec_assignment/ec_assignment.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ec_assignment/ec_assignment.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ec_assignment/ec_assignment.config $(WORKFLOW_DOCS_DIR)
 
 fasta2bsml	:
 	@echo "Installing fasta2bsml workflows in $(WORKFLOW_DOCS_DIR)"
@@ -608,6 +614,12 @@ ps_scan	:
 	@install components/ps_scan/ps_scan.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/ps_scan/ps_scan.config $(WORKFLOW_DOCS_DIR) 
 
+psiblast :
+	@echo "Installing psiblast workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/psiblast/psiblast.xml $(WORKFLOW_DOCS_DIR)
+	@install components/psiblast/psiblast.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/psiblast/psiblast.config $(WORKFLOW_DOCS_DIR)
+
 psipred	:
 	@echo "Installing psipred workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/psipred/psipred-master.ini $(WORKFLOW_DOCS_DIR)
@@ -629,6 +641,12 @@ repeatmasker	:
 	@install components/repeatmasker/repeatmasker.xml $(WORKFLOW_DOCS_DIR)
 	@install components/repeatmasker/repeatmasker.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/repeatmasker/repeatmasker.config $(WORKFLOW_DOCS_DIR)
+
+rpsblast :
+	@echo "Installing rpsblast workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/rpsblast/rpsblast.xml $(WORKFLOW_DOCS_DIR)
+	@install components/rpsblast/rpsblast.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/rpsblast/rpsblast.config $(WORKFLOW_DOCS_DIR)
 
 signalp	:
 	@echo "Installing signalp workflows in $(WORKFLOW_DOCS_DIR)"
