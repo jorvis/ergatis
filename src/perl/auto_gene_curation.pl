@@ -1236,11 +1236,17 @@ sub removeFeature {
             if($features->{$featId}->{'bsml_feature_object'});
         $deletedFeatures->{$featId} = 1;
         $logger->logdie("No fgm. $type $featId") unless($genes->{$feature->{'old_id'}}->{'fgm'}->{$type});
+
     }
 
+    #remove the sequence elements (for polypeptides and cds')
     delete($featureSeqElems->{$feature->{'old_id'}}) if(exists($featureSeqElems->{$feature->{'old_id'}}));
+    delete($featureSeqElems->{ $genes->{$feature->{'old_id'}}->{'polypeptide'} } ) 
+        if( exists( $featureSeqElems->{ $genes->{ $feature->{'old_id'} }->{'polypeptide'} } ) );
 
     $genes->{$feature->{'old_id'}}->{'feature-group'}->delete;
+
+    
 }
 
 #Just in case I want to print out the documentation.
