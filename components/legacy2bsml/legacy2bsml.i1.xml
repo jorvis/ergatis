@@ -18,10 +18,6 @@
 		<value>$;SOURCE_DATABASE$;</value>
 	    </param>
 	    <param>
-		<key>--server</key>
-		<value>$;SERVER$;</value>
-	    </param>
-	    <param>
 		<key>--password</key>
 		<value>$;PASSWORD$;</value>
 	    </param>
