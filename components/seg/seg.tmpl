@@ -1,0 +1,63 @@
+<!-- component documentation -->
+<p>
+    This component runs seg to mask low/high-complexity regions in amino acid fasta sequences.
+</p>
+<h3>references</h3>
+<p>
+    Computers & Chemistry
+    Volume 17, Issue 2 , June 1993, Pages 149-163
+    Statistics of local complexity in amino acid sequences and sequence databases
+    John C. Wootton and Scott Federhen 
+    doi:10.1016/0097-8485(93)85006-X   
+</p>
+<h3>input</h3>
+<p>
+    Like the program itself, this component accepts FASTA files as input.  If you have a single
+    file containing multiple sequences in FASTA format, you should use the 
+    <a href='./documentation.cgi?article=components&page=split_multifasta'>split_multifasta</a>
+    component first to generate individual sequences, allowing them to be atomically searched
+    and individually managed on the grid.
+</p>
+<h3>implemented options</h3>
+<p>
+    All options of the seg binary are configurable with this component, but changes to the
+    output format options will cause bsml conversion scripts to fail.
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;?xml version="1.0"?&gt;
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence class="polypeptide" id="gfva1.model.18_00020" molecule="aa"&gt;
+        &lt;Feature-tables&gt;
+          &lt;Feature-table id="Bsml1"&gt;
+            &lt;Feature class="repeat_region" id="boomano.repeat_region.994.1"&gt;
+              &lt;Attribute name="complexity" content="2.42 (12/2.20/2.50)"&gt;&lt;/Attribute&gt;
+              &lt;Interval-loc complement="0" startpos="3" endpos="17"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#seg_analysis" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+
+                ... One Feature per masked region ...
+    
+          &lt;/Feature-table&gt;
+        &lt;/Feature-tables&gt;
+
+        &lt;Seq-data-import source="/usr/local/annotation/GFVA1/fasta_repository/models_20070320/gfva1.model.18_00020.fsa" identifier="gfva1.model.18_00020" format="fasta" id="Bsml0"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#seg_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+    &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="seg_analysis"&gt;
+        &lt;Attribute content="/usr/local/annotation/BOOMANO/output_repository/seg/8160_default/i1" name="sourcename"&gt;&lt;/Attribute&gt;
+
+            ... One Attribute per analysis attribute ...
+
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+</div>
