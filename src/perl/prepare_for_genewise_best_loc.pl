@@ -552,15 +552,17 @@ sub prepare_genewise_inputs {
         if ($rend > $genome_seq_length) {
             $rend = $genome_seq_length;
         }
+       
+        my $startpos = $lend - 1;
+        my $seq_len = $rend - $startpos;
         
-        my $subseq = substr($asmbl_seq->{$asmbl_id}, $lend -1, $rend - $lend + 1);
+        my $subseq = substr($asmbl_seq->{$asmbl_id}, $startpos, $seq_len);
         
         if ($orient eq '-') {
             $subseq = &reverse_complement($subseq);
             ($lend, $rend) = ($rend, $lend);
         }
 
-        $subseq =~ s/\W+//g;
         $subseq =~ s/(.{1,60})/$1\n/g;
 
         chomp $subseq;
@@ -726,6 +728,8 @@ sub seq_handler {
         if ($@) {
             die "cdbyank failed for fasta entry '$identifier' from '$source'";
         }
+        $seq =~ s/^>[^\n]+\n//;
+        $seq =~ s/\s+//g;
  
 #        my $seq = get_sequence_by_id($source, $identifier);
             
@@ -738,6 +742,7 @@ sub seq_handler {
     } elsif ($seq_data = $sequence->first_child('Seq-data')) {
         ## sequence is in the BSML
         $asmbl_seq->{$assembly_id} = $seq_data->text();
+        $asmbl_seq->{$assembly_id} =~ s/\s+//;
     } else {
         ## there is no Seq-data or Seq-data-import for the sequence
         die("No sequence present in BSML sequence element for '$seq_id'");
