@@ -12,7 +12,7 @@
 		stderr
 	    </key>
 	    <value>
-		$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_TABLE_NAME$;.stdout
+		$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_TABLE_NAME$;.stderr
 	    </value>
 	</param>
 	<param>
