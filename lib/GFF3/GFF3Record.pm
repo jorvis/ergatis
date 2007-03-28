@@ -286,6 +286,37 @@ sub getId {
     }
 }
 
+=item $obj->getType()
+
+B<Description:> Retrieves the type for the GFFRecord object
+
+B<Parameters:> None
+
+B<Returns:> Scalar/string that is the type assigned to the GFF3Record
+
+=cut 
+
+sub getType {
+
+    my ($self) = shift;
+
+    if (!defined($self)){
+	$logger->logdie("self was not defined");
+    }
+   
+    if ( exists $self->{'_core'} ) {
+	if (defined($self->{'_core'}->[2])) {
+	    return  $self->{'_core'}->[2];
+	}
+	else {
+	    $logger->logdie("The type is not defined for the GFF3Record with id '$self->{'_id'}'");
+	}
+    }
+    else {
+	$logger->logdie("The _core data does not exist for the GFF3Record with id '$self->{'_id'}'!");
+    }
+}
+
 =item $obj->extractFastaSequence()
 
 B<Description:> Returns the FASTA sequence (scalar/string) and deletes the fasta attribute for the GFFRecord object
@@ -504,5 +535,4 @@ sub formatFasta {
 
 }
 
-
-1=1;
+1;
