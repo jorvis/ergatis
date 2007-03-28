@@ -183,7 +183,9 @@ if ($options{'stdin'}) {
 my ($header, $sequence);
 while (<$seq_fh>) {
     chomp;
-    if (/^>(.*)/) {
+    if (/^#/) { 
+        next;
+    } elsif (/^>(.*)/) {
         if ($sequence) {
             my $header_hash_ref = process_header($header);
             process_sequence(\$sequence, $header_hash_ref);
