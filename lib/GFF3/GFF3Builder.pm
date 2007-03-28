@@ -41,6 +41,12 @@ my $gff3RecordCtr = 0;
 ## Class variable for keeping track of the number of GFF3 records with FASTA sequence.
 my $fastaRecordCtr = 0;
 
+## Instance variable for supporting the nextRecord() method
+my $recordIndex = -1;
+
+## Instance variable for supporting the nextRecord() method
+my $sorted = 0;
+
 =item new()
 
 B<Description:> Instantiate GFF3Builder object
@@ -251,6 +257,33 @@ sub createAndAddRecord {
     return $gff3Record;
 }
 
+=item $obj->removeRecord($id)
+
+B<Description:> Remove all references to the GFF3Record with id $id
+
+B<Parameters:> 
+
+ $id     - the column 9 ID attribute
+
+B<Returns:> None
+
+=cut
+
+sub removeRecord {
+
+    my ($self) = shift;
+    my ($id) = @_;
+
+    delete $self->{'_records'}->{$id};
+    delete $self->{'_recordswithfasta'}->{$id};
+
+    ## Keep track of which id values for GFF3Records that have been removed.
+    $self->{'_removedrecords'}->{$id}++;
+    ## Decrement the class member
+    $gff3RecordCtr--;
+
+}
+
 =item $obj->extractFastaSequenceFromRecord($id)
 
 B<Description:> Removes that FASTA sequence from the GFF3Record with id $id
@@ -458,7 +491,16 @@ sub writeRecords {
 		    $self->{'_records'}->{$feature_id}->writeRecord($fh, $sequence_id, $self->{'_source'});
 		}
 		else {
-		    $logger->logdie("GFF3Record does not exist for id '$feature_id'");
+		    if (exists $self->{'_removedrecords'}->{$feature_id} ){
+			if ($logger->is_debug()){
+			    ## It could be that the GFF3Record was legitimately removed.
+			    ## See the removeRecord() method.
+			    $logger->debug("GFF3Record with id '$feature_id' was removed.");
+			}
+		    }
+		    else {
+			$logger->logdie("GFF3Record with id '$feature_id' does not exist!");
+		    }			
 		}
 	    }
 	}
@@ -505,4 +547,44 @@ sub writeFastaRecords {
     }
 }
 
-1=1;
+=item $obj->nextRecord()
+
+B<Description:> Iteratively returns reference to each GFFRecord
+
+B<Parameters:> None
+
+B<Returns:> reference to GFF3Record
+
+=cut
+
+sub nextRecord {
+
+    my ($self) = shift;
+
+    if ($sorted == 0 ) {
+	if ($logger->is_debug()){
+	    $logger->debug("The GFF3Records have not yet been sorted by id");
+	}
+	## If the GFF3Records aren't already sorted, do so now.
+	foreach my $id (sort keys %{$self->{'_records'}} ) {
+	    push ( @{$self->{'_sortedrecords'}}, $id );	
+	}
+
+	## The list has been sorted once, let's not do it again.
+	$sorted = 1;
+    }
+
+    if (++$recordIndex <= $gff3RecordCtr ){
+	my $id = $self->{'_sortedrecords'}->[$recordIndex];
+	if (defined($id)){
+	    return $self->getRecordById($id);
+	}
+	else {
+	    $logger->logdie("id was not defined for recordIndex '$recordIndex'");
+	}
+    }
+    
+    return undef;
+}
+
+1;
