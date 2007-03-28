@@ -390,8 +390,8 @@ ergatis-v2r2b2
 -added pipeline summary to Makefile
 -fixed hmmpfam, iprscan, tmhmm, signalp Analysis element encoding (needed program and version Attributes)
 
-next
-----
+ergatis-v2r3b1
+--------------
 -added open_reading_frames component
 -added ergatis/src/perl/new_id.pl; can be used to generate new ids in Apollo
 -created new v2 component geneid
@@ -416,10 +416,10 @@ next
 -genbank2bsml: updates
 -numerous prok pipeline updates
 -wu-blast: multi-fasta input support added
+
+next
+----
 -prepare_for_genewise: fixed critical bug with subsequence extraction
-
-
-
 
 
 
