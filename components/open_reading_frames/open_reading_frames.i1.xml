@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>open_reading_frames</name>
             <state>incomplete</state>
-            <executable>$;PREDICT_ALL_ORFS_EXEC$;</executable>
+            <executable>$;BIN_DIR$;/open_reading_frames</executable>
             <param>
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
