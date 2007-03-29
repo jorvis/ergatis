@@ -421,6 +421,7 @@ next
 ----
 -prepare_for_genewise: fixed critical bug with subsequence extraction
 -created new v2 only component seg
+-j_ortholog_clusters: removed raw list creation (since there wasn't one)
 
 
 
