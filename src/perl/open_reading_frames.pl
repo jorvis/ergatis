@@ -773,7 +773,8 @@ sub check_parameters {
     
     ## handle some defaults
     $options->{'min_orf_size'}          = 180       unless (defined($options->{'min_orf_size'}));
-    $options->{'max_orf_size'}          = 999999999 unless (defined($options->{'max_orf_size'}));
+    $options->{'max_orf_size'}          = 999999999 if (! defined($options->{'max_orf_size'}) 
+                                                        || $options->{'max_orf_size'} == 0);
     $options->{'beginning_as_start'}    = 1         unless (defined($options->{'beginning_as_start'}));
     $options->{'end_as_stop'}           = 1         unless (defined($options->{'end_as_stop'}));
     $options->{'output_dir'}            = '.'       unless (defined($options->{'output_dir'}));
