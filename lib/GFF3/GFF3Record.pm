@@ -535,4 +535,82 @@ sub formatFasta {
 
 }
 
+=item $obj->getTranslationTable()
+
+B<Description:> Returns the translation_table value
+
+B<Parameters:> None
+
+B<Returns:>  scalar/string translation_table value
+
+=cut 
+
+sub getTranslationTable {
+
+    my $self = shift;
+
+    if (exists $self->{'_attrs'}->{'translation_table'}){
+	if (defined($self->{'_attrs'}->{'translation_table'}->[0])){
+	    return $self->{'_attrs'}->{'translation_table'}->[0];
+	}
+	else {
+	    $logger->warn("translation_table is not defined");
+	}
+    }
+    else {
+	$logger->warn("translation_table attribute does not exist");
+    }
+    return undef;
+}
+
+=item $obj->addTranslationTable()
+
+B<Description:> Stores a translation_table attribute for the GFF3Record
+
+B<Parameters:> 
+
+ $translation_table - scalar/string value that should be an integer value representing the translation_table
+
+B<Returns:>  None
+
+=cut 
+
+sub addTranslationTable {
+
+    my $self = shift;
+    my ($translation_table) = @_;
+
+    if (!defined($translation_table)){
+	$logger->logdie("translation_table was not defined");
+    }
+
+    push(@{$self->{'_attrs'}->{'translation_table'}}, $translation_table);
+}
+
+=item $obj->hasTranslationTable()
+
+B<Description:> Verifies whether the translation_table attribute has been defined
+
+B<Parameters:> None
+
+B<Returns:>
+
+ 0 - false
+ 1 - true
+
+=cut 
+
+sub hasTranslationTable {
+    
+    my $self = shift;
+    
+    if (exists $self->{'_attrs'}->{'translation_table'}){
+	if (defined($self->{'_attrs'}->{'translation_table'}->[0])){
+	    return 1;
+	}
+    }
+
+    return 0;
+}
+
 1;
