@@ -8,7 +8,58 @@
             <name>open_reading_frames</name>
             <state>incomplete</state>
             <executable>$;PREDICT_ALL_ORFS_EXEC$;</executable>
-            <arg>/dev/null $;I_FILE_PATH$; $;CODON_TABLE$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fna $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.faa $;MIN_CDNA_LENGTH$;</arg>
+            <param>
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--translation_table</key>
+                <value>$;CODON_TABLE$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--gzip_output</key>
+                <value>$;GZIP_OUTPUT$;</value>
+            </param>
+            <param>
+                <key>--beginning_as_start</key>
+                <value>$;BEGINNING_AS_START$;</value>
+            </param>
+            <param>
+                <key>--end_as_stop</key>
+                <value>$;END_AS_STOP$;</value>
+            </param>
+            <param>
+                <key>--assume_stops</key>
+                <value>$;ASSUME_STOPS$;</value>
+            </param>
+            <param>
+                <key>--full_orfs</key>
+                <value>$;FULL_ORFS$;</value>
+            </param>
+            <param>
+                <key>--min_orf_size</key>
+                <value>$;MIN_ORF_SIZE$;</value>
+            </param>
+            <param>
+                <key>--max_orf_size</key>
+                <value>$;MAX_ORF_SIZE$;</value>
+            </param>
+            <param>
+                <key>--frames</key>
+                <value>$;FRAMES$;</value>
+            </param>
+            <param>
+                <key>--force_methionine</key>
+                <value>$;FORCE_METHIONINE$;</value>
+            </param>
+            <param>
+                <key>--header_additions</key>
+                <value>'$;HEADER_ADDITIONS$;'</value>
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>
