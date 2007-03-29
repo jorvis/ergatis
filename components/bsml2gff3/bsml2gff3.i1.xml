@@ -20,6 +20,10 @@
                 <value>$;PROJECT$;</value>
             </param>
             <param>  
+                <key>--translation_table</key>
+                <value>$;TRANSLATION_TABLE$;</value>
+            </param>
+            <param>  
                 <key>--logfile</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml2gff3.log</value>
             </param>
