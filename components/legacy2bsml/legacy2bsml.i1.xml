@@ -78,6 +78,14 @@
 		<value>$;PROJECT_ID_REPOSITORY$;</value>
 	    </param>
 	    <param>
+		<key>--input_id_mapping_directories</key>
+		<value>$;INPUT_ID_MAPPING_DIRECTORIES$;</value>
+	    </param>
+	    <param>
+		<key>--input_id_mapping_files</key>
+		<value>$;INPUT_ID_MAPPING_FILES$;</value>
+	    </param>
+	    <param>
 		<key>--idgen_identifier_version</key>
 		<value>$;IDGEN_IDENTIFIER_VERSION$;</value>
 	    </param>
