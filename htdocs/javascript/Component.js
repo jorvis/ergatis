@@ -50,6 +50,8 @@ function Component( component_id ) {
 
 Component.templateHtml = _template_html;
 
+////////////////
+
 /*
     When a new component is added to the interface this provides the HTML first inserted.
 */
@@ -109,6 +111,7 @@ function _toggle() {
         
     } else {
         this.show();
+        debug( '_toggle called by ' + _toggle.caller );
     }
 }
 
@@ -179,11 +182,6 @@ function copy_me() {
     
     getObject(this.id).insertAdjacentHTML('AfterEnd', component_html);
 
-    buildComponentSelector(component_id);
-    
-    // set the selector to the right value
-    getObject(component_id + '_selector').value = this.name;
-    
     components[component_id] = new Component( component_id );
     components[component_id].setPosition( this.node.down.id, this.id );
     
@@ -195,7 +193,14 @@ function copy_me() {
     
     // request the component config, but submit this one for initial values.
     component_being_configured = component_id;
-    selectComponentConfig( this.name, this.id );
+    
+    // set the name
+    components[component_id].name = this.name;
+    getObject(component_id + '_name').innerHTML = this.name;
+    
+    getComponentConfig( 'clone', component_id, 
+                        build_directory + '/' + this.name + '.' + this.token + '.config',
+                        true, false );
 }
 
 // if javascript only had a synchronous function like setTimeout we wouldn't have to do this!

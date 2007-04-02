@@ -45,8 +45,13 @@
             </TMPL_LOOP>
         </div>
         <div id='pipeline_choices'>
-        <h3>recent pipeline</h3>
-        <h3>pipeline from template</h3>
+            <h3>recent pipeline (doesn't work yet, don't try)</h3>
+            <ul id='recent_pipelines'>
+                <TMPL_LOOP NAME=RECENT_PIPELINES>
+                    <li><a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a></li>
+                </TMPL_LOOP>
+            </ul>
+            <h3>pipeline from template</h3>
         </div>
     </div>
     <div id='content_container'>
@@ -89,7 +94,7 @@
             <div class='serial' id='pipeline_root'>
                 <ul class='add_panel' id='pipeline_root_panel'>
                     <li class='comp'><a onclick="addComponentStub('pipeline_root')">add component</a></li>
-                    <li class='pipe'><a onclick="addPipelineMenu('pipeline_root')">add pipeline</a></li>
+                    <li class='pipe'><a onclick="viewPipelineAddMenu('pipeline_root')">add pipeline</a></li>
                     <li class='serial'><a onclick="addSerialSet('pipeline_root')">add serial group</a></li>
                     <li class='parallel'><a onclick="addParallelSet('pipeline_root')">add parallel group</a></li>
                 </ul>
@@ -107,6 +112,7 @@
     <form name='pipeline' action='./run_pipeline.cgi' method='POST'>
         <div id='variables'>
             <input name='repository_root' id='repository_root' value='<TMPL_VAR NAME=REPOSITORY_ROOT>'>
+            <input name='workflowdocs_dir' id='workflowdocs_dir' value='<TMPL_VAR NAME=WORKFLOWDOCS_DIR>'>
             <input name='build_directory' id='build_directory' value='<TMPL_VAR NAME=BUILD_DIRECTORY>'>
             <input name='skip_run' id='skip_run' value='0'>
             <input name='skip_instantiation' id='skip_instantiation' value='0'>

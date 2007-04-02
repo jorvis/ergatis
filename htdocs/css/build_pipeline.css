@@ -98,6 +98,11 @@ div.new_component_class_container ul {
 div.new_component_class_container ul li {
     padding-right: 15px;
 }
+ul#recent_pipelines {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
 div#save_progress_label {
     display: none;
     position: fixed;

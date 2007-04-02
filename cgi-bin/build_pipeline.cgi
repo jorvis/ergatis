@@ -48,6 +48,8 @@ while ( my $thing = readdir $idh ) {
     }
 }
 
+closedir $idh;
+
 ## we want the components to be sorted by name
 @components = sort {$a->{name} cmp $b->{name}} @components;
 
@@ -59,13 +61,26 @@ for my $class ( keys %classes ) {
     }
 }
 
+my @recent_pipelines = ();
+
+opendir( my $recent_dh, $build_area ) || die "can't read build area directory: $!";
+while ( my $thing = readdir $recent_dh ) {
+    ## these will all have date names
+    if ( $thing =~ /^\d+$/ ) {
+        push @recent_pipelines, { id => $thing, path => "$build_area/$thing" };
+    }
+}
+
+
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'run pipeline', is_last => 0, url => 'javascript:checkAndRunPipeline()' },
                                         { label => 'save pipeline', is_last => 1, url => 'javascript:document.pipeline.skip_run.value=1;checkAndRunPipeline()' },
                                      ] );
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
+$tmpl->param( WORKFLOWDOCS_DIR => $workflowdocs_dir );
 $tmpl->param( COMPONENT_CLASSES => \@component_classes );
+$tmpl->param( RECENT_PIPELINES => \@recent_pipelines );
 $tmpl->param( BUILD_DIRECTORY => "$build_area/" .temp_pipeline_id() );
 $tmpl->param( BUILDER_ANIMATIONS => $ergatis_cfg->val( 'display_settings', 'builder_animations' ) || 0 );
 

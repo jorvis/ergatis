@@ -6,6 +6,7 @@ var next_set_num = 0;
 var new_input_fields_row;
 var no_input_message_row;
 var repository_root;
+var workflowdocs_dir;
 
 // set in the ergatis.ini file
 var build_directory;
@@ -15,6 +16,10 @@ var pipeline_root_node;
 var pipeline_root_panel_node;
 
 var component_being_configured;
+var pipeline_insert_location;
+
+var debug_pipeline_parse_calls = 0;
+var debug_components_found = 0;
 
 window.onload = function() {
     // make sure the form is reset here.
@@ -37,6 +42,7 @@ window.onload = function() {
     
     repository_root = getObject('repository_root').value;
     build_directory = getObject('build_directory').value;
+    workflowdocs_dir = getObject('workflowdocs_dir').value;
 }
 
 // we need to pass some linking information about each numbered component ID
@@ -109,7 +115,7 @@ function addParallelSet( set_root ) {
             "<h3>parallel group<span class='locator'> (" + set_id + ")</span></h3>" +
             "<ul class='add_panel' id='" + set_id + "_panel'>" +
                 "<li class='comp'><a onclick=" + '"addComponentStub(' + "'" + set_id + "')" + '">add component</a></li>' +
-                "<li class='pipe'><a onclick=" + '"addPipelineMenu(' + "'" + set_id + "')" + '">add pipeline</a></li>' +
+                "<li class='pipe'><a onclick=" + '"viewPipelineAddMenu(' + "'" + set_id + "')" + '">add pipeline</a></li>' +
                 "<li class='serial'><a onclick=" + '"addSerialSet(' + "'" + set_id + "')" + '">add serial group</a></li>' +
                 "<li class='parallel'><a onclick=" + '"addParallelSet(' + "'" + set_id + "')" + '">add parallel group</a></li>' +
             "</ul>" +
@@ -147,6 +153,8 @@ function addParallelSet( set_root ) {
     if (set.up.type == 'component') {
         components[ set.up.id ].checkArrows();
     }
+    
+    return set_id;
 }
 
 function addSerialSet( set_root ) {
@@ -162,7 +170,7 @@ function addSerialSet( set_root ) {
             "<h3>serial group<span class='locator'> (" + set_id + ")</span></h3>" +
             "<ul class='add_panel' id='" + set_id + "_panel'>" +
                 "<li class='comp'><a onclick=" + '"addComponentStub(' + "'" + set_id + "')" + '">add component</a></li>' +
-                "<li class='pipe'><a onclick=" + '"addPipelineMenu(' + "'" + set_id + "')" + '">add pipeline</a></li>' +
+                "<li class='pipe'><a onclick=" + '"viewPipelineAddMenu(' + "'" + set_id + "')" + '">add pipeline</a></li>' +
                 "<li class='serial'><a onclick=" + '"addSerialSet(' + "'" + set_id + "')" + '">add serial group</a></li>' +
                 "<li class='parallel'><a onclick=" + '"addParallelSet(' + "'" + set_id + "')" + '">add parallel group</a></li>' +
             "</ul>" +
@@ -200,6 +208,8 @@ function addSerialSet( set_root ) {
     if (set.up.type == 'component') {
         components[ set.up.id ].checkArrows();
     }
+    
+    return set_id;
 }
 
 function addSetType(set_id, type) {
@@ -248,6 +258,53 @@ function clearNewInput() {
     
     new_input_fields_row.toggle();
     getObject('new_input_fields_row').style.display = 'none';
+}
+
+/*
+    this function fetches the HTML for a component configuration, calling
+    the get_component_template.cgi script.
+    
+    called by: selectComponentConfig
+*/
+function getComponentConfig( mode, component_id, path, display_config, auto_save ) {
+    function ajaxBindCallback() {
+        // progressive transitions are from 0 .. 4
+        if (ajaxRequest.readyState == 4) {
+            // 200 is the successful response code
+            if (ajaxRequest.status == 200) {
+                // could add the component name here too if we later allow multiple configuration windows.
+                ajaxCallback( component_id, ajaxRequest.responseText, display_config, auto_save );
+            } else {
+                // error handling here
+                alert("there was a problem fetching the component template");
+            }
+        }
+    }
+
+    var ajaxRequest = null;
+    var ajaxCallback = updateConfigContainer;
+    var url = './get_component_template.cgi?mode=' + mode +
+              '&path=' + path +
+              '&component_id=' + component_id;
+
+    // bind the call back, then do the request
+    if (window.XMLHttpRequest) {
+        // mozilla, firefox, etc will get here
+        ajaxRequest = new XMLHttpRequest();
+        ajaxRequest.onreadystatechange = ajaxBindCallback;
+        ajaxRequest.open("GET", url , true);
+        ajaxRequest.send(null);
+    } else if (window.ActiveXObject) {
+        // IE, of course, has its own way
+        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+
+        if (ajaxRequest) {
+            ajaxRequest.onreadystatechange = ajaxBindCallback;
+            ajaxRequest.open("GET", url, true);
+            ajaxRequest.send();
+        }
+    }
+
 }
 
 function makeComponentEditable( component_id ) {
@@ -327,27 +384,7 @@ function removeInput( input_id ) {
     updateInputLists();
 }
 
-function saveBuildProgress(  ) {
-    // display 'saving' label
-    getObject('save_progress_label').innerHTML = 'saving pipeline build progress';
-    getObject('save_progress_label').style.display = 'block';
-
-    // save every component
-    for (cid in components) {
-        if ( components[cid].id ) {
-            components[cid].saveToDisk();        
-        }
-    }
-    
-    // save pipeline layout
-    savePipelineLayout();
-    
-    // display 'pipeline build progress saved' label
-    getObject('save_progress_label').innerHTML = 'pipeline build progress saved';
-    window.setTimeout( "getObject('save_progress_label').style.display = 'none'", 3000);
-}
-
-function saveComponentConfig( component_id ) {
+function saveComponentConfig( component_id, display_config ) {
 
     // make sure no other components of the same name in this pipeline have the same output token
     var token = document.getElementsByName(component_id + '_OUTPUT_TOKEN')[0].value;
@@ -426,7 +463,7 @@ function saveComponentConfig( component_id ) {
     updateInputLists();
 
     // shrink it
-    toggleConfigVisibility( component_id );
+    components[component_id].config_view.hide();
 
     // jump to the top of the page
     window.scrollTo(0,0);
@@ -442,7 +479,8 @@ function saveComponentConfig( component_id ) {
     getObject(component_id + '_copy_disabled').style.display = 'none';
     
     // save the current pipeline build
-    saveBuildProgress();
+    components[component_id].saveToDisk();
+    savePipelineLayout();
 }
 
 
@@ -491,6 +529,8 @@ function _save_pipeline_layout_handler( ajax_resp_text ) {
 }
 
 function savePipelineLayout() {
+    getObject('save_progress_label').innerHTML = 'saving pipeline layout';
+    getObject('save_progress_label').style.display = 'block';
 
     function ajaxBindCallback() {
         // progressive transitions are from 0 .. 4
@@ -537,13 +577,14 @@ function savePipelineLayout() {
             ajaxRequest.send( form_string );
         }
     }
+
+    // display 'pipeline build progress saved' label
+    getObject('save_progress_label').innerHTML = 'pipeline build progress saved';
+    window.setTimeout( "getObject('save_progress_label').style.display = 'none'", 3000);
 }
 
-function selectComponentConfig( component_name, template_id ) {
+function selectComponentConfig( component_name ) {
     var component_id = component_being_configured;
-
-    // inner functions below.  using these, reassigning the onreadystatechange
-    // function won't stomp over earlier requests
 
     // set the name
     getObject( component_id + '_name' ).innerHTML = component_name;
@@ -552,58 +593,13 @@ function selectComponentConfig( component_name, template_id ) {
     getObject( 'add_menu_container' ).style.display = 'none';
     getObject( 'content_container' ).style.display = 'block';
     
-    // if the name is '' it's because they chose the 'please choose' option.  
-    //  don't attempt to fetch anything.  just shrink the display
-    if ( isEmpty( component_name ) ) {
-        components[component_id].clearConfig();
-        components[component_id].config_view.hide();
-        return;
-    }
-    
     // set the name of the component
     components[component_id].name = component_name;
 
-    function ajaxBindCallback() {
-        // progressive transitions are from 0 .. 4
-        if (ajaxRequest.readyState == 4) {
-            // 200 is the successful response code
-            if (ajaxRequest.status == 200) {
-                // could add the component name here too if we later allow multiple configuration windows.
-                ajaxCallback ( component_id, ajaxRequest.responseText );
-            } else {
-                // error handling here
-                alert("there was a problem fetching the component template");
-            }
-        }
-    }
-
-    var ajaxRequest = null;
-    var ajaxCallback = updateConfigContainer;
-    var url = './get_component_template.cgi?repository_root=' + repository_root +
-              '&component_name=' + component_name +
-              '&component_id=' + component_id;
-
-    if ( template_id ) {
-        url += '&' + formData2QueryString(document.forms[template_id + '_form']);
-    }
-
-    // bind the call back, then do the request
-    if (window.XMLHttpRequest) {
-        // mozilla, firefox, etc will get here
-        ajaxRequest = new XMLHttpRequest();
-        ajaxRequest.onreadystatechange = ajaxBindCallback;
-        ajaxRequest.open("GET", url , true);
-        ajaxRequest.send(null);
-    } else if (window.ActiveXObject) {
-        // IE, of course, has its own way
-        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
-
-        if (ajaxRequest) {
-            ajaxRequest.onreadystatechange = ajaxBindCallback;
-            ajaxRequest.open("GET", url, true);
-            ajaxRequest.send();
-        }
-    }
+    // pull a new component config
+    getComponentConfig( 'new', component_id, 
+                        workflowdocs_dir + '/' + component_name + '.config',
+                        true, false );
 }
 
 
@@ -626,17 +622,24 @@ function toggleConfigVisibility( component_id ) {
 
 
 // this should be called once the background request finishes parsing the template.
-function updateConfigContainer( component_id, config_html ) {
+function updateConfigContainer( component_id, config_html, display_config, auto_save ) {
     getObject(component_id + '_config').innerHTML = config_html;
     
     // update all input lists
     updateInputLists();
     
     components[component_id].config_view.hide();
-    components[component_id].config_view.toggle();
+    
+    if ( display_config ) {
+        components[component_id].config_view.show();
+    }
     
     // make sure the component is in basic view
     components[component_id].basicView();
+    
+    if ( auto_save ) {
+        saveComponentConfig( component_id );
+    }
 }
 
 
@@ -665,6 +668,182 @@ function updateInputLists() {
         }
     }
 }
+
+/*  viewPipelineAddMenu
+    displays a menu with pipeline templates to add to the current pipeline.
+    called when the user clicks 'add pipeline' on the builder
+*/
+function viewPipelineAddMenu( set_root ) {
+    // display the add menu
+    getObject( 'pipeline_choices' ).style.display = 'block';
+    getObject( 'component_choices' ).style.display = 'none';
+    getObject( 'content_container' ).style.display = 'none';
+    getObject( 'add_menu_container' ).style.display = 'block';
+    
+    // remember where this pipeline will be inserted
+    pipeline_insert_location = set_root;
+}
+
+/*  selectPipelineTemplate
+    called when the user clicks on a pipeline template label on the pipeline choices menu
+*/
+function selectPipelineTemplate( template_path ) {
+    // hide the pipeline add menu
+    getObject( 'pipeline_choices' ).style.display = 'none';
+    getObject( 'component_choices' ).style.display = 'none';
+    getObject( 'content_container' ).style.display = 'block';
+    getObject( 'add_menu_container' ).style.display = 'none';
+
+    function ajaxBindCallback() {
+        // progressive transitions are from 0 .. 4
+        if (ajaxRequest.readyState == 4) {
+            // 200 is the successful response code
+            if (ajaxRequest.status == 200) {
+                ajaxCallback ( ajaxRequest.responseText, template_path );
+            } else {
+                // error handling here
+                alert("there was a problem getting the pipeline layout");
+            }
+        }
+    }
+
+    var ajaxRequest = null;
+    var ajaxCallback = parsePipelineLayout;
+    var url = './get_pipeline_layout.cgi?path=' + template_path;
+
+    // bind the call back, then do the request
+    if (window.XMLHttpRequest) {
+        // mozilla, firefox, etc will get here
+        ajaxRequest = new XMLHttpRequest();
+        ajaxRequest.onreadystatechange = ajaxBindCallback;
+        ajaxRequest.open("GET", url , true);
+        ajaxRequest.send( null );
+        
+    } else if (window.ActiveXObject) {
+        // IE, of course, has its own way
+        ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
+
+        if (ajaxRequest) {
+            ajaxRequest.onreadystatechange = ajaxBindCallback;
+            ajaxRequest.open("GET", url , true);
+            ajaxRequest.send( );
+        }
+    }
+}
+
+
+function parsePipelineLayout( layout_string, template_path ) {
+    // parse pipeline and add pieces
+//    alert("got string: " + layout_string);
+    var doc;
+    
+    // check for IE
+    if ( window.ActiveXObject ) {
+        doc = new ActiveXObject( "Microsoft.XMLDOM" );
+        doc.async = "false";
+        doc.loadXML( text );
+    
+    // then everything else
+    } else {
+        var parser = new DOMParser();
+        doc = parser.parseFromString( layout_string, "text/xml" );
+    }
+    
+    var commandSetRoot = doc.getElementsByTagName('commandSetRoot')[0];
+    parsePipelineNode( commandSetRoot, pipeline_insert_location, template_path );
+}
+
+// recursive function used to add a pipeline template to the current pipeline
+function parsePipelineNode( pipeline_node, insert_loc, template_path ) {
+    var children = pipeline_node.childNodes;
+    
+    // need to store a copy of this in case multiple sets are added at once
+    var this_loc = insert_loc;
+    
+    // regex used to match component name attributes
+    var regEx = /component_/;
+    
+    for (var i=0; i < children.length; i++ ) {
+    
+        if ( children[i].nodeName == 'commandSet' ) {
+            
+            if ( children[i].getAttribute('type') == 'serial' ) {
+                var possible_names = children[i].childNodes;
+                var is_component = false;
+                var name_token;
+                
+                // why, oh why doesn't javascript have hasChild('foo') or a depth argument 
+                //  to getElementsByTagName?  Since it doesn't, we do this loopy nonsense.
+                for ( var j=0; j < possible_names.length; j++ ) {
+                    if ( possible_names[j].nodeType == 1 && possible_names[j].nodeName == 'name' && regEx.test(possible_names[j].firstChild.nodeValue) ) {
+                        is_component = true;
+                        name_token = possible_names[j].firstChild.nodeValue.substr( 10 )
+                        break;
+                    }
+                }
+            
+                // components are represented as serial commandSet elements with a child
+                // like <name>component_jaccard.default</name>
+                // all others are just serial sets
+                if ( is_component ) {
+                    // add the component here
+                    var component_id = 'c' + components.length;
+
+                    // this will be inserted above the panel clicked
+
+                    var node_below = insert_loc + '_panel';
+                    var node_above = getObject(insert_loc + '_panel_up').value;
+
+                    var component_html = Component.templateHtml( component_id );
+
+                    getObject(insert_loc + '_panel').insertAdjacentHTML('BeforeBegin', component_html);
+
+                    components[component_id] = new Component( component_id );
+                    components[component_id].setPosition( node_below, node_above );
+
+                    // make sure the component is in basic view
+                    components[component_id].clearConfig();
+
+                    // the copy icon should be disabled until the component is saved
+                    getObject(component_id + '_copy').style.display = 'none';
+
+                    // set which component is being configured
+                    component_being_configured = component_id;
+                    var regSplit = /(.+?)\.(.+)/
+                    var parts = name_token.match( regSplit );
+                    
+                    // set the name
+                    components[component_id].name = parts[1];
+                    getObject(component_id + '_name').innerHTML = parts[1];
+                    
+                    getComponentConfig( 'exact', component_id, 
+                                        template_path + '/' + name_token + '.config',
+                                        false, true );
+                    
+                } else {
+                    insert_loc = addSerialSet( this_loc );
+                    parsePipelineNode( children[i], insert_loc, template_path );
+                }
+            
+            } else if ( children[i].getAttribute('type') == 'parallel' ) {
+                insert_loc = addParallelSet( this_loc );
+                parsePipelineNode( children[i], insert_loc, template_path );
+
+            } else {
+                alert('unhandled commandSet type: ' + children[i].getAttribute('type') );
+            }
+
+        }
+    }
+}
+
+
+
+
+
+
+
+
 
 
 

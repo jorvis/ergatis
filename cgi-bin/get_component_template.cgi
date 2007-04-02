@@ -1,5 +1,28 @@
 #!/usr/local/bin/perl -w
 
+=head1 DESCRIPTION
+
+There are three use cases for component config retrieval.
+
+Arguments needed depend on the mode used.
+
+1. completely new component instance
+    - mode: new
+    - default configuration
+    - not automatically saved
+
+2. clone of a component while building a pipeline
+    - mode: clone
+    - exact copy of component's values except OUTPUT_TOKEN
+    - not automatically saved
+
+3. copy of component while pipeline is copied or imported
+    - mode: exact
+    - exact copy of component, including OUTPUT_TOKEN
+    - automatically saved
+
+=cut
+
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
@@ -9,22 +32,9 @@ use HTML::Template;
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
-my $repository_root = $q->param('repository_root') || croak("need a repository root");
-my $component_name  = $q->param('component_name') || croak("need a component name");
+my $mode = $q->param('mode') || croak("need a mode");
+my $component_ini  = $q->param('path') || croak("need a path");
 my $component_id    = $q->param('component_id') || croak("need a component id");
-
-my %form_vars;
-
-my %params = $q->Vars;
-for ( keys %params ) {
-    ## variables passed for cloning should look like c0_OTHER_OPTS
-    if ( /^c\d+_(.+)/ ) {
-        $form_vars{$1} = $params{$_};
-    }
-}
-
-my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
-my $workflowdocs_dir = $shared_cfg->val( 'project', '$;DOCS_DIR$;' );
 
 my $tmpl = HTML::Template->new( filename => 'templates/get_component_template.tmpl',
                                 die_on_bad_params => 1,
@@ -36,7 +46,6 @@ my %selectable_labels = ( INPUT_FILE_LIST => 1, INPUT_FILE => 1, INPUT_DIRECTORY
                           MATCH_BSML_FILE_LIST => 1, MATCH_BSML_FILE => 1, MATCH_BSML_DIRECTORY => 1, );
 
 my $component_found = 0;
-my $component_ini = "$workflowdocs_dir/${component_name}.config";
 my %sections = ( basic => [], advanced => [] );
 
 ## make sure the configuration exists.
@@ -54,7 +63,6 @@ if ( -e $component_ini ) {
        
         push @{$sections{$section_type}}, { name => $section };
         
-        
         for my $parameter ( $component_cfg->Parameters($section) ) {
             ## strip the parameter of the $; symbols
             my $label = $parameter;
@@ -64,12 +72,13 @@ if ( -e $component_ini ) {
             my $pretty_label = lc($label);
                $pretty_label =~ s/_/ /g;
             
-            ## the value can depend on whether we're just pulling a template or the user is cloning
-            ##  an existing component.  If they're doing the latter, the form data will contain the
-            ##  values we should use.
-            my $value = $component_cfg->val($section, $parameter);
-            if ( exists $form_vars{$label} && $label ne 'OUTPUT_TOKEN' ) {
-                $value = $form_vars{$label};
+            my $value;
+            
+            ## when cloning, OUTPUT_TOKEN isn't copied
+            if ( $mode eq 'clone' && $parameter eq '$;OUTPUT_TOKEN$;' ) {
+                $value = 'default';
+            } else {
+                $value = $component_cfg->val($section, $parameter);
             }
             
             if ( exists $selectable_labels{$label} ) {
