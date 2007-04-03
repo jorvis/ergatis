@@ -32,7 +32,7 @@ if ( $$qvars{rerun} ) {
                                       );
 
 } else {
-    my $build_pipeline_path = "$$qvars{build_directory}/pipeline.xml";
+    my $build_pipeline_path = "$$qvars{build_directory}/pipeline.layout";
 
     ## create a skeleton XML file
     open(my $ofh, ">$build_pipeline_path") || die "failed to create pipeline at $build_pipeline_path: $!";

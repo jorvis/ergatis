@@ -339,25 +339,28 @@ use Ergatis::Pipeline;
         
         ## create the pipeline directory
         my $pipeline_dir = $pipeline_root . '/' . $self->{pipeline_id};
-	$self->{_logger}->debug("Creating pipeline dir $pipeline_dir");
+        $self->{_logger}->debug("Creating pipeline dir $pipeline_dir");
         $self->_create_dir($pipeline_dir);
+        
+        ## copy the layout into the pipeline directory
+        copy( $self->{template}, "$pipeline_dir/pipeline.layout" );
         
         ## copy the component INIs
         ##  this copies each file like jaccard.default.ini to
-        ##  $repository_root/Workflow/jaccard/$pipeline_id_default/component.bld.conf.ini
+        ##  $repository_root/workflow/runtime/jaccard/$pipeline_id_default/component.bld.conf.ini
         for my $commandname ( $self->_commandnames() ) {
-	    $self->{_logger}->debug("Creating config for $commandname");        
+            $self->{_logger}->debug("Creating config for $commandname");        
             ## only do the components
             if ($commandname =~ /component_(.+?)\.(.+)/) {
                 my ($component_name, $token) = ($1, $2);
                 my $outputdir = "$args{repository_root}/$self->{_component_dir}/$component_name";
-		$self->{_logger}->debug("Writing to parent outputdir $outputdir");        
+                $self->{_logger}->debug("Writing to parent outputdir $outputdir");        
                 ## create the component directory
                 $self->_create_dir($outputdir);
                 
                 ## create the component instance directory
                 $outputdir .= '/' . $self->{pipeline_id} . "_$token";
-		$self->{_logger}->debug("Writing to outputdir $outputdir");        
+                $self->{_logger}->debug("Writing to outputdir $outputdir");        
                 $self->_create_dir($outputdir);
                 
                 ## place the component conf into the output directory
