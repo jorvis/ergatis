@@ -757,9 +757,6 @@ function parsePipelineLayout( layout_string, template_path ) {
 function parsePipelineNode( pipeline_node, insert_loc, template_path ) {
     var children = pipeline_node.childNodes;
     
-    // need to store a copy of this in case multiple sets are added at once
-    var this_loc = insert_loc;
-    
     // regex used to match component name attributes
     var regEx = /component_/;
     
@@ -821,13 +818,13 @@ function parsePipelineNode( pipeline_node, insert_loc, template_path ) {
                                         false, true );
                     
                 } else {
-                    insert_loc = addSerialSet( this_loc );
-                    parsePipelineNode( children[i], insert_loc, template_path );
+                    var new_loc = addSerialSet( insert_loc );
+                    parsePipelineNode( children[i], new_loc, template_path );
                 }
             
             } else if ( children[i].getAttribute('type') == 'parallel' ) {
-                insert_loc = addParallelSet( this_loc );
-                parsePipelineNode( children[i], insert_loc, template_path );
+                var new_loc = addParallelSet( insert_loc );
+                parsePipelineNode( children[i], new_loc, template_path );
 
             } else {
                 alert('unhandled commandSet type: ' + children[i].getAttribute('type') );
