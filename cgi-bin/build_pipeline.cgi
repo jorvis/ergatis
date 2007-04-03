@@ -66,7 +66,7 @@ my @recent_pipelines = ();
 opendir( my $recent_dh, $build_area ) || die "can't read build area directory: $!";
 while ( my $thing = readdir $recent_dh ) {
     ## these will all have date names
-    if ( $thing =~ /^\d+$/ ) {
+    if ( $thing =~ /^\d+$/ && -e "$build_area/$thing/pipeline.layout" ) {
         push @recent_pipelines, { id => $thing, path => "$build_area/$thing" };
     }
 }
