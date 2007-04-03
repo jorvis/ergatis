@@ -656,7 +656,16 @@ function updateInputLists() {
                 current_index = input_lists[i].selectedIndex;
             }
         
-            input_lists[i].innerHTML = '<option value="">please choose</option>';
+            // for replicated components the first element will be the value in the
+            //  original source.  for new components or unused values the first element
+            //  will have a value of empty string and text of 'please choose'
+            if ( input_lists[i].options[0].value == '' ) {
+                input_lists[i].innerHTML = '<option value="">please choose</option>';    
+            } else {
+                input_lists[i].innerHTML = '<option value="' + input_lists[i].options[0].value + '">' + 
+                                           input_lists[i].options[0].value + '</option>';
+            }
+            
             for ( id in inputs ) {
                 if ( inputs[id] instanceof Input ) {
                     input_lists[i].innerHTML += '<option value="' + inputs[id].input_value + '">' + inputs[id].input_label + '</option>';
