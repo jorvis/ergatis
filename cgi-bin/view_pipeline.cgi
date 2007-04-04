@@ -110,6 +110,15 @@ my $component_html = '';
 ## parse the root commandSet to find components and set definitions
 parseCommandSet( $commandSet );
 
+## is there a comment?
+my $pipeline_comment = '';
+my $comment_file = "$xml_input.comment";
+if ( -e $comment_file ) {
+    open(my $ifh, "<$xml_input.comment") || die "can't read comment file: $!";
+    while (<$ifh>) {
+        $pipeline_comment .= $_;
+    }
+}
 
 $tmpl->param( PIPELINE_FILE       => $file );
 $tmpl->param( START_TIME          => $starttime );
@@ -122,6 +131,8 @@ $tmpl->param( PROJECT             => $project );
 $tmpl->param( QUOTA_STRING        => $quotastring );
 $tmpl->param( PIPELINE_ID         => $pipelineid );
 $tmpl->param( COMPONENT_HTML      => $component_html );
+$tmpl->param( PIPELINE_COMMENT    => $pipeline_comment );
+$tmpl->param( PIPELINE_COMMENT_FILE => $comment_file );
 $tmpl->param( PAGE_TITLE          => "$project|$state|pipeline" );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [

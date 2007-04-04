@@ -1,0 +1,30 @@
+div#pipeline_comment_shadow {
+    display: none;
+}
+
+div#user_message_container {
+    display: none;
+    position: fixed;
+    opacity: 0.8;
+    top: 0;
+    left: 300px;
+    border: 1px solid rgb(220,220,220); 
+    background-color: rgb(150,150,150);
+    padding: 2px 20px;
+    color: rgb(255,255,255);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+/*
+    some style overrides
+*/
+
+div#content_container {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+div#info_container {
+    padding-bottom: 0;
+}

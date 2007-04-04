@@ -55,10 +55,10 @@ span.error_message_header {
  * info element boxes start */
 
 div#info_container {
-    background-color: rgb(220,220,220);
+/*    background-color: rgb(220,220,220);*/
     float: left;
     padding: 10px;
-    margin-top: 10px;
+    margin-top: 5px;
 }
 li#starttime,
 li#state,
@@ -74,6 +74,7 @@ li#pipeline {
 }
 span.info_label {
     font-weight: bold;
+    color: rgb(130,130,130);
 }
 ul#info_elements {
     margin: 0;
@@ -116,6 +117,10 @@ div.timer {
     color: rgb(150,150,150);
     margin-right: 5px;
     font-size: 90%;
+}
+div#pipeline_timer_label {
+    position: relative;
+    top: -50px;
 }
 div.status_bar_portion {
     border: none;

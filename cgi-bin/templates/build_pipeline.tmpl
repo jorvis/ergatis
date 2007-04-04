@@ -45,13 +45,16 @@
             </TMPL_LOOP>
         </div>
         <div id='pipeline_choices'>
-            <h3>recent pipeline (doesn't work yet, don't try)</h3>
+            <h3>recent pipeline</h3>
             <ul id='recent_pipelines'>
                 <TMPL_LOOP NAME=RECENT_PIPELINES>
                     <li><a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a></li>
                 </TMPL_LOOP>
             </ul>
             <h3>pipeline from template</h3>
+            <div>
+                not yet available
+            </div>
         </div>
     </div>
     <div id='content_container'>

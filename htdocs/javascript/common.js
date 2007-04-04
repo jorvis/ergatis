@@ -11,6 +11,25 @@
 var IE = (navigator.appName == "Microsoft Internet Explorer") ? true : false;
 
 /*
+    cross-browser event handling for IE5+, NS6+ and Mozilla/Gecko
+    by Scott Andrew
+    http://www.scottandrew.com/weblog/articles/cbs-events
+*/
+function addEvent( elm, evType, fn, useCapture ) {
+    if ( elm.addEventListener ) {
+        elm.addEventListener( evType, fn, useCapture );
+        return true;
+        
+    } else if ( elm.attachEvent ) {
+        var r = elm.attachEvent( 'on' + evType, fn );
+        return r;
+        
+    } else {
+        elm[ 'on' + evType ] = fn;
+    }
+}
+
+/*
     clearInput simply clears the value of an input element inputId if, optionally, its 
     current value is clearVal.  this  allows you to have text boxes with initial values like
     'enter text here', which you can pass to this function to clear upon first entry.
@@ -27,7 +46,6 @@ function clearInput( inputId, clearVal ) {
         getObject(inputId).value = '';
     }
 }
-
 
 /*
     getElementsByClassName written by Jonathan Snook, http://www.snook.ca/jonathan

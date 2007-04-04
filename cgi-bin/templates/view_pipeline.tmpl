@@ -11,10 +11,12 @@
     <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/monitor.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/commenting.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/view_pipeline.css">
     <!-- functionality -->
     <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
+    <script type="text/javascript" src="/ergatis/javascript/commenting.js"></script>
     <script type="text/javascript" src="/ergatis/javascript/view_pipeline.js"></script>
-
 </head>
 
 <body class='pipelines'>
@@ -30,7 +32,19 @@
     <div id='content_container'>
 
         <div class='timer' id='pipeline_timer_label'></div>
-
+        <div id='comment_container'>
+            <form name='comment_form'>
+                <label for='pipeline_comment'>
+                    pipeline comment: 
+                    <span class='comment_control' id='comment_add'>click to add</span>
+                    <span class='comment_control' id='comment_save'>save</span>
+                    <span class='comment_control' id='comment_cancel'>cancel</span>
+                </label>
+                <textarea name='pipeline_comment' id='pipeline_comment' cols='10' rows='5'></textarea>
+                <input type='hidden' name='pipeline_comment_file' value='<TMPL_VAR NAME=PIPELINE_COMMENT_FILE>'>
+                <div id='pipeline_comment_shadow'><TMPL_VAR NAME=PIPELINE_COMMENT></div>
+            </form>
+        </div>
         <div class='pipeline_marker'>start</div>
         
 <TMPL_VAR NAME=COMPONENT_HTML>
@@ -40,7 +54,7 @@
     </div> <!-- end content_container -->
 
 </div> <!-- end page_container -->
-
+<div id='user_message_container'></div>
 </body>
 
 </html>

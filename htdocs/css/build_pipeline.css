@@ -124,6 +124,9 @@ div.parallel {
 div.parallel {
     border-left: 1px solid rgb(73,81,92);
 }
+div#pipeline_choices h3 {
+    margin-top: 15px;
+}
 div#variables {
     display: none;
 }
