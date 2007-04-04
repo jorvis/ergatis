@@ -56,6 +56,20 @@ div.error_container {
     margin: 15px;
     padding: 10px;
 }
+div#user_message_container {
+    display: none;
+    position: fixed;
+    opacity: 0.8;
+    top: 0;
+    left: 300px;
+    border: 1px solid rgb(220,220,220); 
+    background-color: rgb(150,150,150);
+    padding: 2px 20px;
+    color: rgb(255,255,255);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
 dt {
     font-weight: bold;
 }

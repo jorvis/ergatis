@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/config_file.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/commenting.css">
     <link rel="stylesheet" type="text/css" href="/ergatis/css/build_pipeline.css">
     <!-- functionality -->
     <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
@@ -20,6 +21,7 @@
     <script type='text/javascript' src='/ergatis/javascript/Input.js'></script>
     <script type='text/javascript' src='/ergatis/javascript/TreeNode.js'></script>
     <script type='text/javascript' src='/ergatis/javascript/Component.js'></script>
+    <script type="text/javascript" src="/ergatis/javascript/commenting.js"></script>
     <script type='text/javascript' src='/ergatis/javascript/build_pipeline.js'></script>
     <script type='text/javascript' src='/ergatis/javascript/ie_methods.js'></script>
 </head>
@@ -90,7 +92,7 @@
             <a id='save_control' onclick="saveNewInput()"><img src='/ergatis/images/bullet_disk.png' alt='add input'>save new input</a>
             <a id='cancel_control' onclick="cancelNewInput()"><img src='/ergatis/images/bullet_delete.png' alt='add input'>cancel</a>
         </div>
-        
+<TMPL_INCLUDE NAME="commenting.tmpl">
         <div id='build_area'>
             <div class='pipeline_marker'>start</div>
             
@@ -121,14 +123,6 @@
             <input name='skip_instantiation' id='skip_instantiation' value='0'>
             <input name='instantiate' id='instantiate' value='0'>
             <input name='builder_animations' id='builder_animations' value='<TMPL_VAR NAME=BUILDER_ANIMATIONS>'>
-            <!--
-            <select name='available_component_list' id='available_component_list'>
-                <option value='' selected>please choose</option>
-            <TMPL_LOOP NAME=COMPONENTS>
-                <option value='<TMPL_VAR NAME=NAME>'><TMPL_VAR NAME=NAME></option>
-            </TMPL_LOOP>
-            </select>
-            -->
         </div>
         <div id='locators'>
             <input type='text' class='locator' id='pipeline_root_up' name='pipeline_root_up' value=''>
@@ -145,6 +139,7 @@
 -->
 <div id='debug_box'>&nbsp;</div>
 <div id='save_progress_label'>pipeline build progress saved</div>
+<div id='user_message_container'></div>
 </body>
 
 </html>

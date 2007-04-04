@@ -10,6 +10,14 @@ my $file = $q->param('pipeline_comment_file') || carp("pipeline_comment_file is 
 
 print $q->header( -type => 'text/plain' );
 
+## make sure the directory exists
+$file =~ m|^(.+)/|;
+my $dir = $1;
+
+if ( ! -e $dir ) {
+    mkdir($dir) || die "can't create directory for pipeline comment: $!";
+}
+
 open( my $ofh, ">$file" ) || carp("failed to create comment file: $!");
 
 ## if the entire comment is whitespace, clear it
