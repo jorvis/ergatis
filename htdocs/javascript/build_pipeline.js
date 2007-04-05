@@ -85,6 +85,9 @@ function addComponentStub( set_root ) {
     getObject( 'component_choices' ).style.display = 'block';
     getObject( 'content_container' ).style.display = 'none';
     getObject( 'add_menu_container' ).style.display = 'block';
+    
+    // scroll to the top of the page
+    window.scrollTo(0,0);
 }
 
 
@@ -465,8 +468,9 @@ function saveComponentConfig( component_id, display_config ) {
     // shrink it
     components[component_id].config_view.hide();
 
-    // jump to the top of the page
-    window.scrollTo(0,0);
+    // jump to the top of the saved component
+    // window.scrollTo(0,0);
+    window.location.hash = component_id + '_marker';
 
     // make sure the label has both the name and the token
     getObject(component_id + '_name').innerHTML = components[component_id].name + ' (' + components[component_id].token + ')';
@@ -691,6 +695,9 @@ function viewPipelineAddMenu( set_root ) {
     
     // remember where this pipeline will be inserted
     pipeline_insert_location = set_root;
+    
+    // make sure we're at the top of the page
+    window.scrollTo(0,0);
 }
 
 /*  selectPipelineTemplate

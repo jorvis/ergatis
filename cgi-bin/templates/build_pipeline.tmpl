@@ -47,16 +47,44 @@
             </TMPL_LOOP>
         </div>
         <div id='pipeline_choices'>
-            <h3>recent pipeline</h3>
-            <ul id='recent_pipelines'>
-                <TMPL_LOOP NAME=RECENT_PIPELINES>
-                    <li><a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a></li>
+            <h3>project templates</h3>
+            <ul id='project_templates'>
+                <TMPL_LOOP NAME=PROJECT_TEMPLATES>
+                    <li>
+                        <a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a>
+                        - <TMPL_VAR NAME=COMPONENT_COUNT> components
+                        <TMPL_IF NAME=HAS_COMMENT>
+                        <p class='pipeline_comment'>
+                            <TMPL_VAR NAME=COMMENT> 
+                        </p>
+                        </TMPL_IF>
+                    </li>
                 </TMPL_LOOP>
             </ul>
-            <h3>pipeline from template</h3>
+<!--
+            <h3>global templates</h3>
             <div>
                 not yet available
             </div>
+            <h3>previous pipelines (in this project)</h3>
+            <div>
+                not yet available
+            </div>
+-->
+            <h3>recent pipelines (from all projects)</h3>
+            <ul id='recent_pipelines'>
+                <TMPL_LOOP NAME=RECENT_PIPELINES>
+                    <li>
+                        <a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a>
+                        - <TMPL_VAR NAME=COMPONENT_COUNT> components
+                        <TMPL_IF NAME=HAS_COMMENT>
+                        <p class='pipeline_comment'>
+                            <TMPL_VAR NAME=COMMENT> 
+                        </p>
+                        </TMPL_IF>
+                    </li>
+                </TMPL_LOOP>
+            </ul>
         </div>
     </div>
     <div id='content_container'>

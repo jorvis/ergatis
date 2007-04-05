@@ -32,6 +32,10 @@ div.button {
     background-color: rgb(200,200,200);
     padding: 1px 5px 1px 5px;
 }
+div#comment_container label {
+    color: rgb(73,81,92);
+}
+
 div.component {
     clear: both;
     border: 1px solid rgb(150,150,150);
@@ -98,11 +102,6 @@ div.new_component_class_container ul {
 div.new_component_class_container ul li {
     padding-right: 15px;
 }
-ul#recent_pipelines {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
 div#save_progress_label {
     display: none;
     position: fixed;
@@ -126,6 +125,19 @@ div.parallel {
 }
 div#pipeline_choices h3 {
     margin-top: 15px;
+}
+div#pipeline_choices ul {
+    list-style-image: url('/ergatis/images/link.gif');
+    margin-left: 40px;
+    padding-left: 0;
+}
+div#pipeline_choices ul li {
+    padding-bottom: 0.2em;
+}
+div#pipeline_choices p.pipeline_comment {
+    margin-top: 0.3em;
+    padding-left: 20px;
+    color: rgb(100,100,100);
 }
 div#variables {
     display: none;

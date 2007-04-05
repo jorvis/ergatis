@@ -59,6 +59,7 @@ Component.templateHtml = _template_html;
 function _template_html( component_id ) {
     var component_html = 
         "<div class='component' id='" + component_id + "'>" +
+            "<a name='" + component_id + "_marker'></a>" + 
             "<form method='post' id='" + component_id + "_form' name='" + component_id + "_form'>" +
             "<div class='component_nav_buttons'>" +
                 "<img id='" + component_id + "_arrow_up_disabled' class='noclick' src='/ergatis/images/icon_arrow_up_disabled.png' alt='cannot move component up' title='cannot move component up'>" +

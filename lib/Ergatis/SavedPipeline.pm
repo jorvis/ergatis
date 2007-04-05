@@ -10,7 +10,7 @@ SavedPipeline.pm - A module for loading and building saved pipeline templates.
     instance within the AA1 project space:
     
     my $pipe = Ergatis::SavedPipeline->new( 
-        template => '/path/to/saved/pipelines/some_label/pipeline.xml'
+        template => '/path/to/saved/pipelines/some_label/pipeline.layout'
     );
     $pipe->write_pipeline( 
         repository_root => '/usr/local/annotation/FUN' 
@@ -95,6 +95,7 @@ use Ergatis::Pipeline;
                         template                => undef,
                         source                  => undef,
                         instance_path           => undef,  # instance xml
+                        _component_count        => 0,
                         _source_twig            => undef,
                         _commandnames           => undef,
                         _template_dir           => undef,
@@ -524,6 +525,7 @@ XMLfraGMENt
             
             ## if this is a component, parse the name and check that the file exists.
             if ($commandname =~ /component_(.+?)\.(.+)/) {
+                $self->{_component_count}++;
                 my ($component_name, $token) = ($1, $2);
 		$self->{_logger}->debug("Found component name $component_name, $token");
                 ## file will be named like:
@@ -543,6 +545,10 @@ XMLfraGMENt
 
     sub _commandnames {
         return keys %{$_[0]->{_commandnames}};
+    }
+    
+    sub component_count {
+        return $_[0]->{_component_count};
     }
     
     sub _create_dir {

@@ -5,6 +5,7 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
 use Ergatis::ConfigFile;
+use Ergatis::SavedPipeline;
 use HTML::Template;
 
 my $q = new CGI;
@@ -61,22 +62,16 @@ for my $class ( keys %classes ) {
     }
 }
 
-my @recent_pipelines = ();
-
-opendir( my $recent_dh, $build_area ) || die "can't read build area directory: $!";
-while ( my $thing = readdir $recent_dh ) {
-    ## these will all have date names
-    if ( $thing =~ /^\d+$/ && -e "$build_area/$thing/pipeline.layout" ) {
-        push @recent_pipelines, { id => $thing, path => "$build_area/$thing" };
-    }
-}
+my $recent_pipelines = get_templates( $build_area );
+my $project_templates = get_templates( "$repository_root/workflow/project_saved_templates" );
 
 my $build_directory = "$build_area/" .temp_pipeline_id();
 
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
 $tmpl->param( WORKFLOWDOCS_DIR => $workflowdocs_dir );
 $tmpl->param( COMPONENT_CLASSES => \@component_classes );
-$tmpl->param( RECENT_PIPELINES => \@recent_pipelines );
+$tmpl->param( RECENT_PIPELINES => $recent_pipelines );
+$tmpl->param( PROJECT_TEMPLATES => $project_templates );
 $tmpl->param( BUILD_DIRECTORY => $build_directory );
 $tmpl->param( PIPELINE_COMMENT_FILE => "$build_directory/pipeline.xml.comment" );
 $tmpl->param( PIPELINE_COMMENT => '' );
@@ -88,6 +83,42 @@ $tmpl->param( SUBMENU_LINKS       => [
                                      ] );
 
 print $tmpl->output;
+
+exit(0);
+
+sub get_templates {
+    my $dir = shift;
+    my @templates = ();
+
+    if ( -d $dir ) {
+        opendir( my $recent_dh, $dir ) || die "can't read build area directory: $!";
+        while ( my $thing = readdir $recent_dh ) {
+            ## these will all have date names
+            if ( $thing =~ /^\d+$/ && -e "$dir/$thing/pipeline.layout" ) {
+                push @templates, { id => $thing, 
+                                   path => "$dir/$thing",
+                                   has_comment => 0,
+                                   comment => '',
+                                   component_count => 0, };
+
+                if ( -e "$dir/$thing/pipeline.xml.comment" ) {
+                    $templates[-1]->{has_comment} = 1;
+
+                    open( my $ifh, "$dir/$thing/pipeline.xml.comment" ) || die "can't read comment file: $!";
+                    while ( <$ifh> ) {
+                        $templates[-1]->{comment} .= $_;
+                    }
+                }
+
+                my $layout = Ergatis::SavedPipeline->new( template => "$dir/$thing/pipeline.layout" );
+
+                $templates[-1]->{component_count} = $layout->component_count();
+            }
+        }
+    }
+    
+    return \@templates;
+}
 
 
 # usage: $string = prettydate( [$time_t] );

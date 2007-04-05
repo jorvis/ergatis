@@ -7,7 +7,7 @@ use CGI::Carp qw(fatalsToBrowser);
 my $q = new CGI;
 my $path = $q->param('path') || '';
 
-my $layout_path = $path . '/pipeline.xml';
+my $layout_path = $path . '/pipeline.layout';
 
 print $q->header( -type => 'text/plain' );
 
