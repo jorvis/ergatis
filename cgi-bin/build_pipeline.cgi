@@ -39,7 +39,15 @@ while ( my $thing = readdir $idh ) {
         if ( $ergatis_cfg->component_status($component_name) ne 'disabled' ) {
             my $component_cfg = new Ergatis::ConfigFile( -file => "$workflowdocs_dir/$thing" );
             if ( $component_cfg->val( 'interface', 'classification' ) ) {
-                push @{$classes{ $component_cfg->val( 'interface', 'classification' ) }}, $component_name;
+                my $class_string = $component_cfg->val( 'interface', 'classification' );
+                
+                ## this can be a comma-separated list.  split it up
+                for ( split(',', $class_string) ) {
+                    ## strip leading/tailing whitespace
+                    s/^\s+//g;
+                    s/\s+$//g;
+                    push @{$classes{$_}}, $component_name;
+                }
             } else {
                 push @{$classes{unclassified}}, $component_name;
             }
