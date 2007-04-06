@@ -60,7 +60,7 @@ an administrator.
 
 <div class='button_container'>
 <TMPL_IF NAME=COMPONENT_FOUND>
-    <div class='button save' id='<TMPL_VAR NAME=COMPONENT_ID>_save' onclick='saveComponentConfig("<TMPL_VAR NAME=COMPONENT_ID>")'>save</div>
+    <div class='button save' id='<TMPL_VAR NAME=COMPONENT_ID>_save' onclick='saveComponentConfig("<TMPL_VAR NAME=COMPONENT_ID>", true)'>save</div>
     <div class='button edit' id='<TMPL_VAR NAME=COMPONENT_ID>_edit' onclick='makeComponentEditable("<TMPL_VAR NAME=COMPONENT_ID>")'>edit</div>
 </TMPL_IF>
 </div>

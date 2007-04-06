@@ -112,7 +112,6 @@ function _toggle() {
         
     } else {
         this.show();
-        debug( '_toggle called by ' + _toggle.caller );
     }
 }
 
@@ -336,7 +335,7 @@ function remove_component() {
 }
 
 
-function save_to_disk() {
+function save_to_disk( ) {
     var form_name = this.id + '_form';
     var component_id = this.id;
 

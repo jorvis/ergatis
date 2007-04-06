@@ -8,6 +8,9 @@ var no_input_message_row;
 var repository_root;
 var workflowdocs_dir;
 
+// component config fetches and saves sometimes need to be throttled
+var componentSaveQueue = new AjaxQueue( 3 );
+
 // set in the ergatis.ini file
 var build_directory;
 var builder_animations = true;
@@ -276,7 +279,15 @@ function getComponentConfig( mode, component_id, path, display_config, auto_save
             // 200 is the successful response code
             if (ajaxRequest.status == 200) {
                 // could add the component name here too if we later allow multiple configuration windows.
-                ajaxCallback( component_id, ajaxRequest.responseText, display_config, auto_save );
+                componentSaveQueue._calls_out--;
+                
+                // 'exact' mode is used when we're pulling in a copy of a pipeline.  layout shouldn't
+                //  be saved after each component config pulled
+                if ( mode == 'exact' ) {
+                    ajaxCallback( component_id, ajaxRequest.responseText, display_config, auto_save, false );
+                } else {
+                    ajaxCallback( component_id, ajaxRequest.responseText, display_config, auto_save, true );                
+                }
             } else {
                 // error handling here
                 alert("there was a problem fetching the component template");
@@ -296,7 +307,15 @@ function getComponentConfig( mode, component_id, path, display_config, auto_save
         ajaxRequest = new XMLHttpRequest();
         ajaxRequest.onreadystatechange = ajaxBindCallback;
         ajaxRequest.open("GET", url , true);
-        ajaxRequest.send(null);
+        
+        // requests of mode 'exact' are queued
+        if ( mode == 'exact' ) {
+            componentSaveQueue.addCall( function(){ajaxRequest.send(null);} );
+            
+        } else {
+            ajaxRequest.send(null);
+        }
+        
     } else if (window.ActiveXObject) {
         // IE, of course, has its own way
         ajaxRequest = new ActiveXObject("Microsoft.XMLHTTP");
@@ -304,7 +323,14 @@ function getComponentConfig( mode, component_id, path, display_config, auto_save
         if (ajaxRequest) {
             ajaxRequest.onreadystatechange = ajaxBindCallback;
             ajaxRequest.open("GET", url, true);
-            ajaxRequest.send();
+            
+            // requests of mode 'exact' are queued
+            if ( mode == 'exact' ) {
+                componentSaveQueue.addCall( function(){ajaxRequest.send();} );
+                
+            } else {
+                ajaxRequest.send();
+            }
         }
     }
 
@@ -387,7 +413,11 @@ function removeInput( input_id ) {
     updateInputLists();
 }
 
-function saveComponentConfig( component_id, display_config ) {
+/*
+    component_id - id of the component to be saved
+    save_layout - true/false, should the pipeline layout be saved?
+*/
+function saveComponentConfig( component_id, save_layout ) {
 
     // make sure no other components of the same name in this pipeline have the same output token
     var token = document.getElementsByName(component_id + '_OUTPUT_TOKEN')[0].value;
@@ -482,9 +512,12 @@ function saveComponentConfig( component_id, display_config ) {
     getObject(component_id + '_copy').style.display = '';
     getObject(component_id + '_copy_disabled').style.display = 'none';
     
-    // save the current pipeline build
     components[component_id].saveToDisk();
-    savePipelineLayout();
+    
+    // should we save the current pipeline build
+    if ( save_layout ) {
+        savePipelineLayout();
+    }
 }
 
 
@@ -626,7 +659,7 @@ function toggleConfigVisibility( component_id ) {
 
 
 // this should be called once the background request finishes parsing the template.
-function updateConfigContainer( component_id, config_html, display_config, auto_save ) {
+function updateConfigContainer( component_id, config_html, display_config, auto_save, save_layout ) {
     getObject(component_id + '_config').innerHTML = config_html;
     
     // update all input lists
@@ -641,8 +674,11 @@ function updateConfigContainer( component_id, config_html, display_config, auto_
     // make sure the component is in basic view
     components[component_id].basicView();
     
+    // put the view window here
+    window.location.hash = component_id + '_marker';
+    
     if ( auto_save ) {
-        saveComponentConfig( component_id );
+        saveComponentConfig( component_id, save_layout );
     }
 }
 
@@ -766,7 +802,14 @@ function parsePipelineLayout( layout_string, template_path ) {
     }
     
     var commandSetRoot = doc.getElementsByTagName('commandSetRoot')[0];
+
     parsePipelineNode( commandSetRoot, pipeline_insert_location, template_path );
+
+    // add a post processor to save the layout?
+    componentSaveQueue.addPostProcessor( savePipelineLayout );
+    
+    // purge the queue
+    componentSaveQueue.start();
 }
 
 // recursive function used to add a pipeline template to the current pipeline

@@ -149,7 +149,7 @@ function update_value( tbl_id, new_val ) {
                 }
                 
                 if (changes_made) {
-                    components[component_id].saveToDisk();
+                    components[component_id].saveToDisk( );
                 }
             }
         }
