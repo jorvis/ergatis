@@ -84,17 +84,34 @@ sub generate_component_list {
         if ( $thing =~ /(.+).config$/ ) {
             my $component_name = $1;
             my $status = $ergatis_cfg->component_status( $component_name );
-        
-            if ( -e "$ergatis_dir/docs/documentation/$component_name.tmpl" ) {
-                push @{$sections{documented}}, { name => $component_name, 
-                                                 documented => 1, 
-                                                 disabled => $status eq 'disabled' ? 1 : 0
-                                               };
-            } else {
-                push @{$sections{undocumented}}, { name => $component_name, 
-                                                   documented => 0, 
-                                                   disabled => $status eq 'disabled' ? 1 : 0
-                                                 };
+            
+            if (! -e "$ergatis_dir/docs/$thing" ) {
+                die("$ergatis_dir/docs/$thing");
+            }
+            
+            my $component_cfg = new Ergatis::ConfigFile( -file => "$ergatis_dir/docs/$thing" );
+            my $class_string = 'unclassified';
+            
+            if ( $component_cfg && $component_cfg->val( 'interface', 'classification' ) ) {
+                $class_string = $component_cfg->val( 'interface', 'classification' );
+            }
+            
+            ## this can be a comma-separated list.  split it up
+            for my $class ( split(',', $class_string) ) {
+                ## strip leading/tailing whitespace
+                $class =~ s/^\s+//g;
+                $class =~ s/\s+$//g;
+                
+                my $documented = 0;
+                
+                if ( -e "$ergatis_dir/docs/documentation/$component_name.tmpl" ) {
+                    $documented = 1;
+                }
+                    
+                push @{$sections{$class}}, { name => $component_name, 
+                                             documented => $documented, 
+                                             disabled => $status eq 'disabled' ? 1 : 0
+                                           };
             }
         }
     }

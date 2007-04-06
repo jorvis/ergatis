@@ -3,6 +3,16 @@ div.bsml_container {
     background-color: rgb(230,230,230);
 }
 
+div.doc_section_container {
+    float: left;
+    border: 1px solid rgb(200,200,200);
+    margin: 0 30px 30px 0;
+}
+
+div.doc_section_container ul.component_list {
+    list-style-image: url('/ergatis/images/link.gif');
+}
+
 dl {
     margin-left: 25px;
 }
