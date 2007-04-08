@@ -1,28 +1,34 @@
 <p>
-    Displaying components in: <TMPL_VAR NAME=ERGATIS_DIR>.  Disabled components will be crossed out (like <span class='crossed'>this</span>.)
+    Displaying components in: <TMPL_VAR NAME=ERGATIS_DIR>.  Disabled components are crossed 
+    out (like <span class='crossed'>this</span>.)  Components without documentation (hopefully 
+    not many) are not clickable.
 </p>
 
 <TMPL_IF NAME=SECTION_COUNT>
-    <TMPL_LOOP NAME=COMPONENT_SECTIONS>
-    <div class='doc_section_container'>
-        <h3><TMPL_VAR NAME=SECTION></h3>
-        <ul class='component_list'>
-            <TMPL_LOOP NAME=COMPONENTS>
-                <TMPL_IF NAME=DOCUMENTED>
-                    <TMPL_IF NAME=DISABLED>
-                        <li class='documented disabled'><a href='./documentation.cgi?article=components&page=<TMPL_VAR NAME=NAME>'><TMPL_VAR NAME=NAME></a></li>                
+    <TMPL_LOOP NAME=COMPONENT_GROUPS>
+    <div class='component_group' id='group<TMPL_VAR NAME=GROUP_NUM>'>
+        <TMPL_LOOP NAME=COMPONENT_SECTIONS>
+        <div class='doc_section_container'>
+            <h3><TMPL_VAR NAME=SECTION></h3>
+            <ul class='component_list'>
+                <TMPL_LOOP NAME=COMPONENTS>
+                    <TMPL_IF NAME=DOCUMENTED>
+                        <TMPL_IF NAME=DISABLED>
+                            <li class='documented disabled'><a href='./documentation.cgi?article=components&page=<TMPL_VAR NAME=NAME>'><TMPL_VAR NAME=NAME></a></li>                
+                        <TMPL_ELSE>
+                            <li class='documented'><a href='./documentation.cgi?article=components&page=<TMPL_VAR NAME=NAME>'><TMPL_VAR NAME=NAME></a></li>                
+                        </TMPL_IF>
                     <TMPL_ELSE>
-                        <li class='documented'><a href='./documentation.cgi?article=components&page=<TMPL_VAR NAME=NAME>'><TMPL_VAR NAME=NAME></a></li>                
-                    </TMPL_IF>
-                <TMPL_ELSE>
-                    <TMPL_IF NAME=DISABLED>
-                        <li class='undocumented disabled'><TMPL_VAR NAME=NAME></li>
-                    <TMPL_ELSE>
-                        <li class='undocumented'><TMPL_VAR NAME=NAME></li>
-                    </TMPL_IF>
-                </TMPL_IF> <!-- end documented if -->
-            </TMPL_LOOP> <!-- end components loop -->
-        </ul>
+                        <TMPL_IF NAME=DISABLED>
+                            <li class='undocumented disabled'><TMPL_VAR NAME=NAME></li>
+                        <TMPL_ELSE>
+                            <li class='undocumented'><TMPL_VAR NAME=NAME></li>
+                        </TMPL_IF>
+                    </TMPL_IF> <!-- end documented if -->
+                </TMPL_LOOP> <!-- end components loop -->
+            </ul>
+        </div>
+        </TMPL_LOOP> <!-- end sections loop -->
     </div>
     </TMPL_LOOP>
 <TMPL_ELSE>

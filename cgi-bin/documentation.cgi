@@ -38,7 +38,7 @@ if ( -e $doc_path ) {
                                       
     if ( $article eq 'components' && $page eq 'index' ) {
         my $component_sections = generate_component_list();
-        $page_tmpl->param( COMPONENT_SECTIONS => $component_sections );
+        $page_tmpl->param( COMPONENT_GROUPS => $component_sections );
         $page_tmpl->param( SECTION_COUNT => scalar @$component_sections );
         $page_tmpl->param( ERGATIS_DIR => $ergatis_dir );
     }
@@ -117,13 +117,55 @@ sub generate_component_list {
     }
 
     my $return_sections = [];
-
+    ## 3 columns (groups)
+    ## if you make changes to the group count you'll need to reflect them in the documentation.css
+    my $component_groups = [ { group_num => 0, component_sections => [] },
+                             { group_num => 1, component_sections => [] },
+                             { group_num => 2, component_sections => [] },
+                           ];
+    my $group_counts = [0,0,0];
+    
     foreach my $section ( sort keys %sections ) {
-        push @$return_sections, { section => $section, components => $sections{$section} };
+        my $min_group_num = min_group($group_counts);
+        
+        ## remember how many are in this column (add a few to make up for the header overhead)
+        $$group_counts[$min_group_num] += scalar @{$sections{$section}} + 2;
+        
+        ## sort the components within each section
+        my @sorted_components = sort {$$a{name} cmp $$b{name}} @{$sections{$section}};
+        
+        push @{$$component_groups[$min_group_num]{component_sections}}, { section => $section, components => \@sorted_components };
     }
 
-    return $return_sections;
+    return $component_groups;
 }
+
+
+sub min_group {
+    my $counts = shift;
+    my $min_num = 0;
+    my $min_count = 10000000000000;
+    
+    print STDERR "checking current groups counts: @$counts\n";
+    
+    for ( my $i=0; $i< scalar @$counts; $i++ ) {
+        
+        if ( $$counts[$i] < $min_count ) {
+            $min_count = $$counts[$i];
+            $min_num = $i;
+        }
+    }
+    
+    return $min_num;
+}
+
+
+
+
+
+
+
+
 
 
 
