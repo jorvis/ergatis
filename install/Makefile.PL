@@ -354,6 +354,7 @@ hmmpfam	:
 	@install components/hmmpfam/hmmpfam.xml $(WORKFLOW_DOCS_DIR)
 	@install components/hmmpfam/hmmpfam.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/hmmpfam/hmmpfam.config $(WORKFLOW_DOCS_DIR)
+	@install components/hmmpfam/hmmpfam.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 hmmpir	:
 	@echo "Installing hmmpir workflows in $(WORKFLOW_DOCS_DIR)"
