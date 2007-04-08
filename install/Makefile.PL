@@ -1,10 +1,73 @@
- use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker;
 require ExtUtils::Manifest;
+use Term::ANSIColor;
 require "perl2wrapper_ergatis.pl";
 use strict;
 
 ## always remake the MANIFEST
 ExtUtils::Manifest::mkmanifest();
+
+## let's start by checking for the modules we need
+my @modules_to_check = qw( 
+    Bio::Seq
+    Class::Struct
+    Config::IniFiles
+    DB_File
+    Data::Dumper
+    Date::Manip
+    File::Basename
+    File::Basename
+    File::Copy
+    File::Find
+    File::Path
+    File::Spec
+    Getopt::Long
+    HTML::Template
+    IO::File
+    IPC::Open3
+    LWP::Simple
+    Log::Log4perl
+    Mail::Mailer
+    Math::Combinatorics
+    Storable
+    URI::Escape
+    XML::Parser
+    XML::RSS
+    XML::Twig
+    XML::Writer
+);
+my @modules_not_found;
+
+print "checking necessary perl modules:\n";
+
+for ( @modules_to_check ) {
+    my $formed = $_;
+    $formed =~ s|::|/|g;
+    $formed =~ s|$|.pm|g;
+
+    print "\t$_\t:";
+    eval {require $formed};
+    
+    if ( $@ ) {
+        print color 'bold red';
+        print " not found\n";
+        push @modules_not_found, $_;
+    } else {
+        print color 'bold green';
+        print " found\n";
+    }
+    
+    print color 'reset';
+}
+
+if ( scalar @modules_not_found ) {
+    print "\ninstall aborted.  the following modules are missing: \n";
+    for ( @modules_not_found ) {
+        print "\t$_\n";
+    }
+    
+    exit(1);
+}
 
 my $workflowdocsdir = '';
 my $schemadocsdir = '';
