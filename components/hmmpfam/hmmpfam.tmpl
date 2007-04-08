@@ -1,0 +1,139 @@
+<!-- component documentation -->
+<p>
+    Part of the HMMER package (and included in iprscan), hmmpfam reads a single FASTA sequence and 
+    compares it against all HMMs in a collection to find significantly similar matches.
+</a></p>
+</p>
+<h3>references</h3>
+<p>
+    <a href='http://hmmer.wustl.edu/'>http://hmmer.wustl.edu/</a>
+</p>
+<h3>input</h3>
+<p>
+    The input to hmmpfam is a single-sequence FASTA file. hmmpfam has several steps for finding the named database that you want to use as the subject, but it is best to specify its full path explicitly. Each of the hmmpfam runtime options are supported by this component, and are listed below.
+</p>
+<div class='code_container'>
+  -n          Nucleic acid models/sequence (default protein)
+  -A &lt;n&gt;      Sets alignment output limit of best domain alignments to n
+  -E &lt;x&gt;      Sets E value cutoff to &lt;= x
+  -T &lt;x&gt;      Sets T bit threshold to &gt;= x
+  -Z &lt;n&gt;      Sets number of sequences for E-value calculation to n
+  --acc       Use HMM accession numbers instead of names in output
+  --cut_ga    Use Pfam GA gathering threshold cutoffs
+  --cut_nc    Use Pfam NC noise threshold cutoffs
+  --cut_tc    Use Pfam TC trusted threshold cutoffs
+  --domE &lt;x&gt;  Sets domain Eval cutoff (2nd threshold) to &lt;= x
+  --domT &lt;x&gt;  Sets domain T bit thresh (2nd threshold) to &gt;= x
+  --null2     Turn OFF the second null model
+  
+</div>
+
+<h3>output</h3>
+<p>
+     For each sequence you query there will be three result files. The one ending in .raw contains the raw sequence alignment from hmmpfam. This is also converted into both htab and bsml formats.
+</p>
+<p>
+     The .htab file is currently being created using a script from the old egc pipeline, /usr/local/common/htab.pl. While this is useful for now, this script relies on libraries outside of our current framework and will eventually be deprecated in favor of BSML. The BSML file created can be used to load the database.
+</p>
+<p>
+     The raw output file looks like this:
+</p>
+<div class='code_container'>
+    LDhmmpfam - search sequences against HMMs
+    Logical Depth HMMER 1.3e (June 2003)
+    Copyright (C) 2003 Logical Depth, Inc.
+    Logical Depth, Inc. 175 CPU License to TIGR
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    HMM file:                 /usr/local/db/HMM_LIB/ALL_LIB_bin.HMM
+    Sequence file:            /usr/local/scratch/jorvis/pipelines/hmmpfam/output//94.m00130.fsa
+    - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    Query sequence: 94.m00130
+    Accession:      [none]
+    Description:    tta1
+
+    Scores for sequence family classification (score includes all domains):
+    Model     Description                                   Score    E-value  N 
+    --------  -----------                                   -----    ------- ---
+    PF00560   LRR: Leucine Rich Repeat                      129.3    1.2e-35  24
+     [ ... deleted list elements ... ]
+    TIGR01102 yscR: Yop virulence translocation R          -163.0        9.9   1
+
+    Parsed for domains:
+    Model     Domain  seq-f seq-t    hmm-f hmm-t      score  E-value
+    --------  ------- ----- -----    ----- -----      -----  -------
+    TIGR00864   1/1       1  2228 [.     1  2740 [] -1084.0      0.1
+     [ ... deleted list elements ... ]
+    PF01023     1/1    2137  2175 ..     1    44 []   -15.5      7.5
+
+    Alignments of top-scoring domains:
+    TIGR00864: domain 1 of 1, from 1 to 2228: score -1084.0, E = 0.1
+                       *-&gt;dlsnnkistleeGtcnnlcnlteidlsgnPfecdcglfwlpsWleek
+                           +s  +  + +    +  +n +++  s+                +++
+       94.m00130     1    -MSLFECCSSKSKPASSNYNDSKLGQSST------------TKSQKR 34   
+
+     [ ... deleted alignment region ... ]
+
+                       qctgpsrelvceeclnstlnkleamllilqadtkaGtvtPteigdnilni
+                         t         e  n  l      + ++  +t   +  P       l i
+       94.m00130  2177 YDTIAMESKQIAEWRNHYLENKAISMDVIPQETADAISMP-------LQI 2219 
+
+                       tGdlihlas&lt;-*
+                       t +   l +   
+       94.m00130  2220 TSEYKFLTN    2228 
+
+    PF06729: domain 1 of 1, from 1 to 133: score -58.0, E = 3.3
+                       *-&gt;lSlFaSPasskEQkHRNGlSNEkRKklNlsSlvrskESTvKDrDeFM
+                          +SlF    s    k     SN    kl  sS ++s+    +      
+       94.m00130     1    MSLFECCSS----KSKPASSNYNDSKLGQSSTTKSQKRRPRGSQFKN 43
+
+      [ ... and so on for each alignment ... ]
+    //
+</div>
+<p>
+     The htab format will not be described here, as it probably won't be used for this component in the future.
+</p>
+<h3>BSML representation of output</h3>
+<div class='bsml_container'>
+    &lt;Bsml&gt; &lt;Definitions&gt; &lt;Sequences&gt;
+
+    &lt;Sequence class="protein" title="cpa1.model.900270"
+    id="cpa1.model.900270" molecule="aa"&gt; &lt;Link rel="analysis"
+    href="#hmmpfam_analysis"&gt;&lt;/Link&gt; &lt;/Sequence&gt;
+    &lt;Sequence class="profile" title="ADH_zinc_N: oxidoreductase,
+    zinc-binding de" id="PF00107" molecule="aa"&gt; &lt;Link rel="analysis"
+    href="#hmmpfam_analysis"&gt;&lt;/Link&gt; &lt;/Sequence&gt; [ ... one
+    Sequence stub for each matching profile ... ] &lt;/Sequences&gt;
+
+    &lt;Tables id="BsmlTables"&gt; &lt;Seq-pair-alignment
+    refseq="cpa1.model.900270" refstart="0" compseq="PF00107"
+    method="hmmpfam"
+    compxref="/usr/local/db/HMM_LIB/ALL_LIB_bin.HMM:PF00107"
+    refxref=":cpa1.model.900270"&gt; &lt;Attribute name="total_e_value"
+    content="1.6e-30"&gt;&lt;/Attribute&gt; &lt;Attribute
+    name="total_score" content="112.3"&gt;&lt;/Attribute&gt;
+    &lt;Seq-pair-run compcomplement="0" runlength="145" refpos="184"
+    comprunlength="150" refcomplement="0" runscore="3" comppos="0"&gt;
+    &lt;Attribute name="e_value" content="1.6e-30"&gt;&lt;/Attribute&gt;
+    &lt;Attribute name="domain_num" content="1"&gt;&lt;/Attribute&gt;
+
+    &lt;Attribute name="domain_of" content="1"&gt;&lt;/Attribute&gt;
+    &lt;/Seq-pair-run&gt; [ ... one Seq-pair-run for each domain in the
+    match ... ] &lt;/Seq-pair-alignment&gt; [ ... one Seq-pair-alignment
+    for each in the query -&gt; subject match ... ] &lt;/Tables&gt;
+    &lt;/Definitions&gt; &lt;Research&gt; &lt;Analyses&gt; &lt;Analysis
+    id="hmmpfam_analysis"&gt; &lt;Attribute
+    content="/usr/local/scratch/jorvis/pipelines/hmmpfam/output/5793_default/2/cpa1.model.900270.hmmpfam.bsml"
+    name="sourcename"&gt;&lt;/Attribute&gt; &lt;/Analysis&gt;
+
+    &lt;Analysis&gt; &lt;Attribute
+    content="/usr/local/scratch/jorvis/pipelines/hmmpfam/input/input.list"
+    name="query_fasta_file_list"/&gt; &lt;Attribute
+    content="/usr/local/db/HMM_LIB/ALL_LIB_bin.HMM"
+    name="database_path"/&gt; &lt;Attribute
+    content="/usr/local/scratch/annotation/CPA1/BSML_repository"
+    name="bsml_repository"/&gt; [ ... one Attribute for each in the
+    Analysis ... ] &lt;/Analysis&gt; &lt;/Analyses&gt; &lt;/Research&gt;
+    &lt;/Bsml&gt;
+
+</div>
