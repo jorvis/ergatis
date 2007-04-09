@@ -57,6 +57,8 @@ export LC_ALL
 PERL_MOD_DIR=$instdir/lib/5.8.8
 export PERL_MOD_DIR
 
+export PERL5LIB=$instdir/lib/5.8.8:$instdir/lib/perl5/site_perl/5.8.8:$PERL5LIB
+
 exec /usr/local/bin/perl $instdir/bin/$fname $shell_args    
 
 _END_WRAPPER_
