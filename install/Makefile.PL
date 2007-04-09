@@ -605,7 +605,8 @@ open_reading_frames	:
 	@echo "Installing open_reading_frames workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/open_reading_frames/open_reading_frames.xml $(WORKFLOW_DOCS_DIR)
 	@install components/open_reading_frames/open_reading_frames.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/open_reading_frames/open_reading_frames.config $(WORKFLOW_DOCS_DIR) 
+	@install components/open_reading_frames/open_reading_frames.config $(WORKFLOW_DOCS_DIR)
+	@install components/open_reading_frames/open_reading_frames.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 pangenome	:
 	@echo "Installing pangenome workflows in $(WORKFLOW_DOCS_DIR)"
