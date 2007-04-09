@@ -4,6 +4,8 @@ use Term::ANSIColor;
 require "perl2wrapper_ergatis.pl";
 use strict;
 
+$|++;
+
 ## always remake the MANIFEST
 ExtUtils::Manifest::mkmanifest();
 
@@ -69,38 +71,30 @@ if ( scalar @modules_not_found ) {
     exit(1);
 }
 
+print "\nall modules found, carrying on\n\n";
+
 my $workflowdocsdir = '';
-my $schemadocsdir = '';
-my $isworkflowdocsdir=0;
-my $isschemadocsdir=0;
 
 foreach my $arg (@ARGV){
 	if($arg =~ /WORKFLOW_DOCS_DIR/){
 	    ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(.*)/);
-	    $isworkflowdocsdir=1;
 	}
-	if($arg =~ /SCHEMA_DOCS_DIR/){
-	    ($schemadocsdir) = ($arg =~ /SCHEMA_DOCS_DIR=(.*)/);
-	    $isschemadocsdir=1;
-	}
-    }
+}
 
-if(!$isworkflowdocsdir || !(-e $workflowdocsdir)){
-    die "ERROR: Directory '$workflowdocsdir' does not exist.  You must specify a WORKFLOW_DOCS_DIR.\n".
-	"Workflow XML and ini files will be stored in this directory\n".
-	"Eg. \n\nperl Makefile.PL PREFIX=/usr/local/devel/ANNOTATION/shared WORKFLOW_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs\n\n";
+if ( $workflowdocsdir ) {
+    if (! -e $workflowdocsdir ) {
+        mkdir($workflowdocsdir) || die "failed to create WORKFLOW_DOCS_DIR: $!";
+    }
+    
+    print "ignore this: ";
+} else {
+    die "error: you must specify a WORKFLOW_DOCS_DIR.\n" .
+        "Workflow XML and ini files will be stored in this directory.\n";
+        "eg. \n\nperl Makefile.PL PREFIX=/opt/ergatis WORKFLOW_DOCS_DIR=/opt/ergatis/docs\n\n";
 }
-else{
-    print "Ignore the following warning: ";
-}
-if(!$isschemadocsdir || (!(-e $schemadocsdir))){
-    die "ERROR: Directory '$schemadocsdir' does not exist.  You must specify a SCHEMA_DOCS_DIR\n".
-	"BSML dtd and schemas are stored in this directory\n".
-        "Eg. \n\nperl Makefile.PL PREFIX=/usr/local/devel/ANNOTATION/shared WORKFLOW_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs SCHEMA_DOCS_DIR=/usr/local/devel/ANNOTATION/shared/docs\n\n";
-}
-else{
-    print "Ignore the following warning: ";
-}
+
+## workflow and schema docs dirs have always been the same
+my $schemadocsdir = $workflowdocsdir;
 
 my($scripts,$wrapperstr) = &get_bins();
 
