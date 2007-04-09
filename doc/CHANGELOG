@@ -431,6 +431,7 @@ next
 -clustalw: corrected default ANALYSIS_CONF setting
 -open_reading_frames: added documentation
 -hmmpfam: added documentation
+-installer: now checks for all necessary perl modules
 
 
 
