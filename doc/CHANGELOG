@@ -432,6 +432,7 @@ next
 -open_reading_frames: added documentation
 -hmmpfam: added documentation
 -installer: now checks for all necessary perl modules
+-installer: changes to SCHEMA_DOCS_DIR and PERL5LIB
 
 
 
