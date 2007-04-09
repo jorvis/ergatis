@@ -26,11 +26,14 @@ my @modules_to_check = qw(
     Getopt::Long
     HTML::Template
     IO::File
+    IO::Tee
     IPC::Open3
     LWP::Simple
+    Log::Cabin
     Log::Log4perl
     Mail::Mailer
     Math::Combinatorics
+    PerlIO::gzip
     Storable
     URI::Escape
     XML::Parser
