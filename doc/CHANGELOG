@@ -419,10 +419,19 @@ ergatis-v2r3b1
 
 next
 ----
+-interface: added ability to add recent pipelines to a new pipeline
+-interface: added ability to add project template pipelines to a new pipeline
+-interface: added an ajax call queue class to reduce server load
+-interface: components displayed by classification in documentation pages and when building a pipeline.
+-added classification for all v2 components
+-interface: added pipeline commenting ability (builder and pipeline view pages)
 -prepare_for_genewise: fixed critical bug with subsequence extraction
 -created new v2 only component seg
 -j_ortholog_clusters: removed raw list creation (since there wasn't one)
 -clustalw: corrected default ANALYSIS_CONF setting
+-open_reading_frames: added documentation
+-hmmpfam: added documentation
+
 
 
 
