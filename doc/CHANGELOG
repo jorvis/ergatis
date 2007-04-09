@@ -417,8 +417,8 @@ ergatis-v2r3b1
 -numerous prok pipeline updates
 -wu-blast: multi-fasta input support added
 
-next
-----
+ergatis-v2r4b1
+--------------
 -interface: added ability to add recent pipelines to a new pipeline
 -interface: added ability to add project template pipelines to a new pipeline
 -interface: added an ajax call queue class to reduce server load
@@ -447,15 +447,5 @@ next
 -auto_annotate: various improvements
 -genewise: coordinate correction in preparation script
 
-
-
-
-
-
-
-
-
-
-
-
-
+next
+----
