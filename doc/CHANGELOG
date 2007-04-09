@@ -430,15 +430,22 @@ next
 -j_ortholog_clusters: removed raw list creation (since there wasn't one)
 -clustalw: corrected default ANALYSIS_CONF setting
 -open_reading_frames: added documentation
+-open_reading_frames: many improvements to support reimplemented algorithm
 -hmmpfam: added documentation
 -installer: now checks for all necessary perl modules
 -installer: changes to SCHEMA_DOCS_DIR and PERL5LIB
-
-
-
-
-
-
+-bsml2gff3: translation table now configurable
+-chado2bsml: TIGR-specific defaults removed
+-clustalw: corrected default ANALYSIS_CONF value
+-legacy2bsml: ID mapping file locations now configurable
+-tbl2asn: corrected output list variable name and value
+-ec_assignment: v2 component added
+-psiblast: v2 component added
+-rpsblast: v2 component added
+-seg: v2 component added
+-SavedPipeline.pm: pipeline template names changed from pipeline.xml to pipeline.layout
+-auto_annotate: various improvements
+-genewise: coordinate correction in preparation script
 
 
 
