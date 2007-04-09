@@ -1,0 +1,100 @@
+<p>
+    Details on the implementation of the ORF finder script are found here. It should be 
+    applicable to any input sequence files, but has been developed as the ORF finder for 
+    processing the Global Ocean Survey data.
+</p>
+<h3>input</h3>
+<p>
+    The input can any number of single or multi-sequence FASTA files.  Compressed input
+    (via gzip) is natively supported.  A translation table can also be specified.
+</p>
+<h3>algorithm</h3>
+<ul>
+    <li>The script scales to support input sequences in the GB range without prohibitive memory use.</li>
+    <li>All six frames are scanned by default, with an optional --frames to specify a limited set. (eg, --frames=1,2,3)</li>
+    <li>User-configurable --min_orf_size and --max_orf_size settings (default off).</li>
+    <li>
+        Intelligent translation using the codon table is employed. The codon CCN, for example, will code 
+        for proline (P) regardless of the third position, so a P should be used in the translation instead 
+        of X.
+    </li>
+    <li>
+        Any codon that could be translated as a stop will be. TAN, for example, could be a stop codon (TAG) 
+        or tyrosine (Y) but will be marked as a stop codon. This is the default behavior, but can turned off 
+        by the user with --assume_stops=0.
+    </li>
+    <li>
+        Partial codons at the end of an ORF resulting from the ends of the source sequence will treat the 
+        missing bases as Ns for purposes of translation. Partial codons at the beginning of an ORF will be 
+        ignored/excluded from translation.
+    </li>
+    <li>
+        Option --beginning_as_start defaults to 1 and specifies whether the beginning of a sequence should 
+        be treated as a start codon and the ORF marked as partial.
+    </li>
+    <li>
+        Option --end_as_stop defaults to 1 and specifies whether the end of a sequence should be treated as 
+        a stop codon and the ORF marked as partial.
+    </li>
+    <li>
+        Option --full_orfs defaults to 0 and specifies whether ORFs span intervals from stop to stop, or start 
+        to stop (all non-stops are treated as starts when --full_orfs=1)
+    </li>
+</ul>
+<h3>output</h3>
+<p>
+    The are many user-configurable options for the output files.  These include:
+</p>
+<ul>
+    <li>Coordinates are reported using the zero inter-base standard.</li>
+    <li>
+        For each input file two output files are created, one for the nucleotide ORF and another for its 
+        conceptual translation. The input file basename is used in the output file names. For example, if 
+        foo.fasta is used as input foo.fna and foo.faa will be the two output files.
+    </li>
+    <li>The --gzip_output flag controls whether output sequence files will be gzipped (default=1).</li>
+    <li>
+        If --force_methionine option is used the initial amino acid in all translations will be M rather 
+        than the actual amino acid specified by the translation table (default=0).
+    </li>
+    <li>ORF and translation output FASTA entries have headers as described in the HEADERS section below.</li>
+    <li>Additional values can be passed to the headers like: --header_additions='foo=bar,ergatis_id=12345' </li>
+</ul>
+<h3>headers</h3>
+<p>
+    An example of an ORF header:
+</p>
+<div class='code_container'>
+   >JCVI_ORF_1105092286082 /pep_id=JCVI_PEP_1105092286083 /read_id=JCVI_READ_1098101644356
+   /begin=473 /end=932 /orientation=-1 /5_prime_stop=TGA /3_prime_stop=TAG /ttable=11
+   /ergatis_id=7720 /read_defline="/library_id=JCVI_LIB_MOVE858-H remaining defline here"
+   
+</div>
+<p>
+    The 'read_id' is the ID of the source read and 'begin' and 'end' are the coordinates of the prediction on that read. All coordinates are to be reported using the 0-based interbase coordinate system. The 'begin' coordinate should always be less than or equal to the 'end' coordinate, with the 'orientation' key providing the orientation with a value of 1 (forward) or -1 (reverse).
+</p>
+<p>
+    The '5_prime_stop' and '3_prime_stop' keys have values of the actual codon characters unless the ORF is partial, in which case the appropriate keys will have a 0 value. The 'pep_id' is the ID generated for the conceptual translation, an example of which is below. The 'ttable' is the numerical value the translation table and the length of the polypeptide is provided with the 'length' value. Finally, the 'read_defline' value is the exact FASTA defline from the input read after read's ID.
+</p>
+<p>
+    Once translated, the polypeptide FASTA header entry will look like this:
+</p>
+<div class='code_container'>
+   >JCVI_PEP_1105092286083 /orf_id=JCVI_ORF_1105092286082 /read_id=JCVI_READ_1098101644356 
+   /begin=473 /end=932 /orientation=-1 /5_prime_stop=TGA /3_prime_stop=TAG /ttable=11 /length=153 
+   /ergatis_id=7720 /read_defline="/library_id=JCVI_LIB_MOVE858-H remaining defline here"
+   
+</div>
+<p>
+   The format is similar to the ORF entry, but some of the keys are different. The 'orf_id' key is a pointer to the ORF from which this translation is derived. The length is the length of the peptide sequence in amino acids. 
+</p>
+
+
+
+
+
+
+
+
+
+
