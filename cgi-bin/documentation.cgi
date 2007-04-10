@@ -146,8 +146,6 @@ sub min_group {
     my $min_num = 0;
     my $min_count = 10000000000000;
     
-    print STDERR "checking current groups counts: @$counts\n";
-    
     for ( my $i=0; $i< scalar @$counts; $i++ ) {
         
         if ( $$counts[$i] < $min_count ) {
