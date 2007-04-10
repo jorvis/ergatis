@@ -41,7 +41,8 @@
 
     <div id='sub_nav_container'>
         <ul id='sub_nav_elements'>
-            <li class='last'><a href='index.html'>home</a></li>
+            <li><a href='index.html'>home</a></li>
+            <li class='last'><a href='documentation/install_guide.html'>installation guide</a></li>
         </ul>
     </div>
 
@@ -138,41 +139,15 @@
         <div id='section2'>
             <h2>documentation</h2>
             <p>
-                I'm just throwing some notes here to get an idea of the sort of documents I want to be publicly
-                available.  Documentation is currently either being written or decoupled from internal TIGR
-                specifications (much like the rest of the software.)
+                Ergatis is a highly scalable and portable architecture for performing high throughput genome annotation and comparative analysis. The architecture supports a large number of commonly used bioinformatics tools and predefines a number of integrated, multi-step pipelines for performing automated gene annotations and comparative analysis. The architecture utilizes a Java based workflow engine and integrates with a popular grid management packages, such as Sun Grid Engine and Condor, in addition to supporting pipeline execution on a stand-alone machine. A web based front-end provides an interface for configuring and monitoring pipelines. The software provides detailed execution status, logging information for process auditing, and facilitates error recovery from point of failure.
             </p>
-            <dl>
-                <dt><a>overview</a></dt>
-                <dd>
-                    A description of the overall usage and goals of ergatis will go here.  This should include
-                    comparisons with other data management packages.
-                </dd>
-                <dt><a>component documentation</a></dt>
-                <dd>
-                    A 'component' in ergatis is a tool, script or series of comments that performs a distinct
-                    computational task.  Examples include format conversion, sequence alignment (BLAST, AAT),
-                    or gene prediction programs (augustus, glimmerHMM).
-                </dd>
-                <dt><a>component creation tutorial</a></dt>
-                <dd>
-                    Ergatis currently contains 93 components and more are added every month.  If there is a specific
-                    analysis tool you want to use in the system that doesn't exist as a component you can request
-                    it's support or write the component yourself.  A tutorial on how this is done will appear here. 
-                </dd>
-
-                <dt><a>directory structure convention</a></dt>
-                <dd>
-                    Ergatis creates a lot of files and folders when used, including all output result files.  This 
-                    documentation should describe the standard directory structures employeed.
-                </dd>
-                <dt><a>pipeline creation tutorial</a></dt>
-                <dd>
-                    This is where stuff actually gets done.  You may have 10,000 sequences you want to BLAST across
-                    a compute grid, or a few gene finders to run locally.  This is where you learn how to use
-                    the interface to build and run your own custom analysis pipeline.
-                </dd>
-            </dl>
+            <p>
+                Most of the documentation for Ergatis is accessible from a 'documentation' tab like this one but within
+                an actual install of the software.  This includes component and pipeline creation tutorials, directory
+                structure convention explanations and component documentation.  On this SourceForge site you can find
+                the <a href='documentation/install_guide.html'>installation guide</a> and a list of some of the components
+                found within Ergatis (on the right).
+            </p>
         </div>
 
 
