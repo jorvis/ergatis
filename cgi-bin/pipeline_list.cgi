@@ -96,7 +96,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $component_count = 0;
     my $component_aref = [];
     my $component_label = ' components';
-    my $pipeline_file = "$repository_root/workflow/runtime/pipeline/$pipeline_id/pipeline.xml";  ## may be modified below
+    my $pipeline_file = "$pipeline_root/$pipeline_id/pipeline.xml";  ## may be modified below
     my $archive_link = "./archive_pipeline_form.cgi?repository_root=$repository_root&amp;pipeline_id=$pipeline_id";
     my $links_enabled = 1;
     my $error_message = 0;
@@ -120,6 +120,8 @@ foreach my $pipeline_id ( readdir $rdh ) {
             if ( -e "$pipeline_file.gz" ) {
                 $pipeline_file .= '.gz';
             } else {
+                ## didn't actually find a pipeline file
+                $pipeline_count--;
                 next;
             }
         }
