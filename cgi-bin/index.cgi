@@ -94,6 +94,7 @@ $tmpl->param( RUNNING_PIPELINES   => $running_pipelines );
 $tmpl->param( ACTIVE_PIPELINES    => $active_pipelines );
 $tmpl->param( ACTIVE_PIPELINE_AGE => $active_pipeline_age );
 $tmpl->param( CACHE_FILE_AGE      => int($cache_file_age * 1440) );
+$tmpl->param( DEFAULT_PROJECT_ROOT => $ergatis_cfg->val( 'paths', 'default_project_root') || '' );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'update cache', is_last => 1, url => './index.cgi?update_cache=1' },
