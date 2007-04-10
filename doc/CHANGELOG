@@ -447,5 +447,15 @@ ergatis-v2r4b1
 -auto_annotate: various improvements
 -genewise: coordinate correction in preparation script
 
+ergatis-v2r4b2
+--------------
+-installer: now checks for Log::Cabin, IO::Tee and PerlIO::gzip
+-legacy2bsml: fixed config keys without assignment operators
+-interface: repository root box on index page now reads from paths:default_project_root setting
+-interface: builder now hides [interface] section from component configs
+-interface: components listed on builder now sorted by category and organized correctly
+-sourceforge: updated sf site pages for 2.x release
+-sourceforge: added first version of install guide (not yet complete)
+
 next
 ----
