@@ -51,7 +51,11 @@
             <td class='actions'>
             <TMPL_IF NAME=LINKS_ENABLED>
                 <a href='<TMPL_VAR NAME=VIEW_LINK>'>view</a>
+                <TMPL_IF NAME=IS_RUNNING>
+                <a class='disabled'>archive/delete</a>
+                <TMPL_ELSE>
                 <a href='<TMPL_VAR NAME=ARCHIVE_LINK>'>archive/delete</a>
+                </TMPL_IF>
             <TMPL_ELSE>
                 <a class='disabled'>view</a>
             </TMPL_IF>

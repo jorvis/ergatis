@@ -197,6 +197,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
     $pipelines{$pipeline_id} = { 
                         pipeline_id     => $pipeline_id,
                         state           => $state,
+                        is_running      => $state eq 'running' ? 1 : 0,
                         last_mod        => $last_mod,
                         run_time        => $run_time,
                         pipeline_user   => $pipeline_user,
