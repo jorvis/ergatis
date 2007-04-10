@@ -58,7 +58,7 @@ if ( -e $component_ini ) {
     ## it's possible that later the first dd could be comments and the second the value
     for my $section ( $component_cfg->Sections() ) {
         my $section_type = 'basic';
-        if ($section =~ /workflowdocs|include|component/) {
+        if ($section =~ /workflowdocs|include|component|interface/) {
             $section_type = 'advanced';
         }
        
