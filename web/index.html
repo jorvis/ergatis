@@ -1,85 +1,123 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
+
 <head>
-    <meta http-equiv="content-type" content="text/html; charset=iso-8859-1">
-    <title>ergatis - web-based workflow creation and monitoring tool</title>
-    <link rel="stylesheet" type="text/css" href="css/web.css">
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis</title>
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" type="text/css" href="css/header.css">
+    <link rel="stylesheet" type="text/css" href="css/monitor.css">
+    <link rel="stylesheet" type="text/css" href="css/sourceforge.css">
 </head>
-<body>
 
-<div id='bannertop'>
-    <img src='images/banner_main.png' alt='banner'/>
-</div>
-<div id='bannerbottom'>
-    <a href='index.html'><img class='navbutton' src='images/button_blue_home.png' alt='home' title='home' /></a>
-    <a href='http://www.sf.net/projects/ergatis'><img class='navbutton' src='images/button_blue_downloads.png' alt='downloads' title='downloads' /></a>
-    <a href='screenshots.html'><img class='navbutton' src='images/button_blue_screenshots.png' alt='screenshots' title='screenshots' /></a>
-</div>
+<body class='home'>
 
-<div id="section2">
-    <h1>ergatis screenshots</h1>
-    <div>
-        <a href='screenshots.html'><img src='images/screenshot_running_pipeline_small.png' alt='screenshot - running pipeline' /></a>
-    </div>
-    <div class='figurecaption'>
-        Figure 1.  A view of a running pipeline in Ergatis.  Click to view screenshots.
-    </div>
-</div>
+<div id='page_container'>
 
-<div id="section1">
-    <h1>description</h1>
-    <p>
-        Ergatis is a web-based utility that is used to create, run, and monitor reusable computational analysis 
-        pipelines.  It contains pre-built components for common bioinformatics analysis tasks.  These components 
-        can be arranged graphically to form highly-configurable pipelines. Each analysis component supports 
-        multiple output formats, including the <a href='http://www.bsml.org/'>Bioinformatic Sequence Markup 
-        Language (BSML)</a>.  The current implementation includes support for data loading into project databases 
-        following the <a href='http://www.gmod.org/schema/index.shtml'>CHADO schema</a>, a highly normalized, 
-        community-supported schema for storage of biological annotation data.
-    </p>
-    <p>
-        Ergatis uses the <a href='http://sourceforge.net/projects/tigr-workflow'>Workflow engine</a> to process
-        its work on a compute grid.  Workflow provides an <a href='http://www.xml.com/'>XML</a>
-        language and processing engine for specifying the steps of a computational pipeline.  It provides detailed 
-        execution status and logging for process auditing, facilitates error recovery from point of failure, and 
-        is highly scalable with support for distributed computing environments.  The XML format employed enables 
-        commands to be run serially, in parallel, and in any combination or nesting level.
-    </p>
-    <p>
-        This framework has been employed in the annotation of several large, eukaryotic organisms, including 
-        <i>Aedes aegypti</i> and <i>Trichomonas vaginalis</i>. 
-    </p>
-    <h1>development status and availability</h1>
-    <p>
-        This project is functional but is undergoing active development.  While the core of all development is
-        taking place at <a href='http://www.tigr.org'>The Institute for Genomic Research</a>, we believe that
-        it is in the best interest of the community to release the source packages early and as often as 
-        possible - perhaps even before they work externally.  I'll be working to fix this, so check back here for
-        documentation additions and the <a href='http://sourceforge.net/projects/ergatis'>project page</a> for package updates.
-    </p>
-    <h1>genome informatics 2005 poster</h1>
-    <p>
-        During the poster sessions at <a href="http://meetings.cshl.edu/meetings/info05.shtml">Genome Informatics 2005</a>, 
-        many people requested that I make the poster available online.  
-        <a href="docs/genome_informatics_2005_orvis_final.ppt">Here it is</a>.
-    </p>
-</div>
+    <div id='page_header'>
+        <div id='quick_links_container'>
+            <ul id='quick_links'>
+                <li><a href='http://www.tigr.org'>tigr</a></li>
+                <li class='last'><a href='http://www.sf.net/projects/ergatis'>SF site</a></li>
+            </ul>
+        </div>
+        <div id='title_container'>
+            <span id='page_title'>ergatis</span>
+            <span id='page_slogan'>workflow creation and monitoring interface</span>
+        </div>
+    </div>
 
-<div id="footer">
-    <div id='officiallinks'>
-        <a href='http://www.sf.net/projects/ergatis'><img src="http://sourceforge.net/sflogo.php?group_id=59541&amp;type=1" alt='sourceforge'></a>
-        <a href='http://www.opensource.org/'><img src='http://opensource.org/trademarks/open_source_button.png' alt='open source'></a>
-        <a href='http://www.getfirefox.com'><img src='images/official_getfirefox.png' alt='get firefox'></a>
-        <a href='http://www.perl.com'><img src='images/official_perl.png' alt='perl'></a>
-        <img src='images/official_css2.png' alt='css2'>
+    <div id='primary_nav_container'>
+        <ul id='primary_nav_elements'>
+            <li id='nav_home'><a href="index.html">home</a></li>
+            <li id='nav_screenshots'><a href="screenshots.html">screenshots</a></li>
+            <li id='nav_documentation'><a href="documentation.html">documentation</a></li>
+            <li id='nav_download'><a href="download.html">download</a></li>
+        </ul>
     </div>
-    <div id='license'>
-        this project is licensed under the <a href='http://www.opensource.org/licenses/artistic-license.php'>Artistic License</a>.<br>
-        questions should be directed to jorvis AT tigr.org
+
+    <div id='sub_nav_container'>
+        <ul id='sub_nav_elements'>
+            <li class='last'><a href='index.html'>home</a></li>
+        </ul>
     </div>
-    <div style='clear: both;'>&nbsp;</div>
-</div>
+
+    <div id='content_container'>
+
+        <div id="section1">
+            <h2>documentation</h2>
+            <p>
+                All available public documentation is here.  More coming!
+            </p>
+            <h2>screenshots</h2>
+            <a href='screenshots.html'><img id='screen_running_pipeline' src='images/screenshot_running_pipeline_small.png' alt='screenshot - running pipeline' /></a>
+            <div class='figure_caption'>
+                Figure 1.  A view of a running pipeline in Ergatis.  Click to view other screenshots.
+            </div>
+        </div>
+
+        <div id="section2">
+            <h2>description</h2>
+            <p>
+                Ergatis is a web-based utility that is used to create, run, and monitor reusable computational analysis 
+                pipelines.  It contains pre-built components for common bioinformatics analysis tasks.  These components 
+                can be arranged graphically to form highly-configurable pipelines. Each analysis component supports 
+                multiple output formats, including the <a href='http://www.bsml.org/'>Bioinformatic Sequence Markup 
+                Language (BSML)</a>.  The current implementation includes support for data loading into project databases 
+                following the <a href='http://www.gmod.org/schema/index.shtml'>CHADO schema</a>, a highly normalized, 
+                community-supported schema for storage of biological annotation data.
+            </p>
+            <p>
+                Ergatis uses the <a href='http://sourceforge.net/projects/tigr-workflow'>Workflow engine</a> to process
+                its work on a compute grid.  Workflow provides an <a href='http://www.xml.com/'>XML</a>
+                language and processing engine for specifying the steps of a computational pipeline.  It provides detailed 
+                execution status and logging for process auditing, facilitates error recovery from point of failure, and 
+                is highly scalable with support for distributed computing environments.  The XML format employed enables 
+                commands to be run serially, in parallel, and in any combination or nesting level.
+            </p>
+            <p>
+                This framework has been employed in the annotation of several large, eukaryotic organisms, including 
+                <i>Aedes aegypti</i> and <i>Trichomonas vaginalis</i>. 
+            </p>
+            <h2>development status and availability</h2>
+            <p>
+                This project is functional and is undergoing active development.  While the core of all development is
+                taking place at <a href='http://www.tigr.org'>The Institute for Genomic Research</a>, we believe that
+                it is in the best interest of the community to release the source packages early and as often as 
+                possible - perhaps even before they easily work externally.  The upcoming 2.0 release strives to meet
+                the needs of external organizations and be the first truly exportable version.  This should be released,
+                at least in beta form, in early October.  
+            </p>
+            <p>
+                Any brave souls willing to be among the first external testers will get as much custom assistance as
+                possible.  Please feel free to contact me and check back here for
+                documentation additions and the <a href='http://sourceforge.net/projects/ergatis'>project page</a> for package updates.
+            </p>
+        </div>
+
+    </div> <!-- end content_container -->
+
+    <div id="footer">
+        <div id='official_links'>
+            <a href='http://www.sf.net/projects/ergatis'><img src="http://sourceforge.net/sflogo.php?group_id=59541&amp;type=1" alt='sourceforge'></a>
+            <a href='http://www.opensource.org/'><img src='http://opensource.org/trademarks/open_source_button.png' alt='open source'></a>
+            <a href='http://www.getfirefox.com'><img src='images/official_getfirefox.png' alt='get firefox'></a>
+            <a href='http://www.perl.com'><img src='images/official_perl.png' alt='perl'></a>
+            <img src='images/official_css2.png' alt='css2'>
+        </div>
+        <div id='license'>
+            this project is licensed under the <a href='http://www.opensource.org/licenses/artistic-license.php'>Artistic License</a>.<br>
+            questions should be directed to jorvis AT tigr.org
+        </div>
+        <div style='clear: both;'>&nbsp;</div>
+    </div>
+
+
+</div> <!-- end page_container -->
 
 </body>
+
 </html>
