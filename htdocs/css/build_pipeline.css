@@ -67,6 +67,10 @@ div.component_action_buttons {
     border-right: 1px dotted rgb(150,150,150);
     padding-right: 5px;
 }
+div.component_group {
+    float: left;
+    width: 220px;
+}
 div.component_status {
     float: right;
     font-weight: bold;
@@ -91,8 +95,8 @@ div#end_pipeline_marker {
     margin-top: 15px;
 }
 div.new_component_class_container {
-    float: left;
-    margin: 0 20px 15px 0;
+    margin: 0 20px 5px 0;
+    overflow: hidden;
 }
 div.new_component_class_container ul {
     list-style: none;
