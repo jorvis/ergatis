@@ -459,3 +459,5 @@ ergatis-v2r4b2
 
 next
 ----
+-interface: pipelines in 'running' state can no longer be deleted/archived
+-interface: now doesn't include empty pipeline dirs in count
