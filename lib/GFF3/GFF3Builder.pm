@@ -42,7 +42,7 @@ my $gff3RecordCtr = 0;
 my $fastaRecordCtr = 0;
 
 ## Instance variable for supporting the nextRecord() method
-my $recordIndex = -1;
+my $recordIndex = 0;
 
 ## Instance variable for supporting the nextRecord() method
 my $sorted = 0;
@@ -574,8 +574,8 @@ sub nextRecord {
 	$sorted = 1;
     }
 
-    if (++$recordIndex <= $gff3RecordCtr ){
-	my $id = $self->{'_sortedrecords'}->[$recordIndex];
+    if ( $recordIndex < $gff3RecordCtr ){
+	my $id = $self->{'_sortedrecords'}->[$recordIndex++];
 	if (defined($id)){
 	    return $self->getRecordById($id);
 	}
