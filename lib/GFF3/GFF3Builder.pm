@@ -101,9 +101,8 @@ sub _init {
     ## this lookup.
     $self->{'_records'} = {};
 
-    ## This lookup is keyed on an id with value being a reference to an list of id values.
-    ## The id as the key is the master sequence.
-    ## The id values in the list are all of the features that are localized to the master sequence.
+    ## This lookup is keyed on an id (reference sequence) with value being a reference to an list of id values.
+    ## The id values in the list are all of the features that are localized to the reference/master sequence.
     $self->{'_features'} = {};
 
     ## This lookup is keyed on the id with value being a reference to the GFF3Record.
@@ -473,44 +472,43 @@ sub writeRecords {
     if (!defined($fh)){
 	$logger->logdie("file handle was not defined");
     }
+    
+    foreach my $sequence_id ( keys %{$self->{'_features'}} ) {
 
-    if (exists $self->{'_features'}){
-	foreach my $sequence_id ( keys %{$self->{'_features'}} ) {
+	if (exists $self->{'_records'}->{$sequence_id}){
+	    ## Write all of the primary sequences first.
+	    $self->{'_records'}->{$sequence_id}->writeRecord($fh, $sequence_id, $self->{'_source'});
+	    delete $self->{'_records'}->{$sequence_id};
+	}
+	else {
+	    $logger->logdie("GFF3Record does not exist for id '$sequence_id'");
+	}
 
-	    if (exists $self->{'_records'}->{$sequence_id}){
-		## Write all of the primary sequences first.
-		$self->{'_records'}->{$sequence_id}->writeRecord($fh, $sequence_id, $self->{'_source'});
+	foreach my $feature_id ( @{$self->{'_features'}->{$sequence_id}} ) {
+	    ## Write all of the features localized to the primary sequences next.
+	    if (exists $self->{'_records'}->{$feature_id}){
+		$self->{'_records'}->{$feature_id}->writeRecord($fh, $sequence_id, $self->{'_source'});
+		delete $self->{'_records'}->{$feature_id};
 	    }
 	    else {
-		$logger->logdie("GFF3Record does not exist for id '$sequence_id'");
-	    }
-
-	    foreach my $feature_id ( @{$self->{'_features'}->{$sequence_id}} ) {
-		## Write all of the features localized to the primary sequences next.
-		if (exists $self->{'_records'}->{$feature_id}){
-		    $self->{'_records'}->{$feature_id}->writeRecord($fh, $sequence_id, $self->{'_source'});
+		if (exists $self->{'_removedrecords'}->{$feature_id} ){
+		    if ($logger->is_debug()){
+			## It could be that the GFF3Record was legitimately removed.
+			## See the removeRecord() method.
+			$logger->debug("GFF3Record with id '$feature_id' was removed.");
+		    }
 		}
 		else {
-		    if (exists $self->{'_removedrecords'}->{$feature_id} ){
-			if ($logger->is_debug()){
-			    ## It could be that the GFF3Record was legitimately removed.
-			    ## See the removeRecord() method.
-			    $logger->debug("GFF3Record with id '$feature_id' was removed.");
-			}
-		    }
-		    else {
-			$logger->logdie("GFF3Record with id '$feature_id' does not exist!");
-		    }			
-		}
+		    $logger->logdie("GFF3Record with id '$feature_id' does not exist!");
+		}			
 	    }
 	}
     }
-    else {
-	## Write all of the primary sequences that did not have any features that
-	## were localized to the primary sequences.
-	foreach my $id (keys %{$self->{'_records'}} ){
-	    $self->{'_records'}->{$id}->writeRecord($fh, $id, $self->{'_source'});
-	}
+
+    ## Write all of the primary sequences that did not have any features that
+    ## were localized to the primary sequences.
+    foreach my $id (keys %{$self->{'_records'}} ){
+	$self->{'_records'}->{$id}->writeRecord($fh, $id, $self->{'_source'});
     }
 }
 
