@@ -634,6 +634,9 @@ sub initialize_codon_table {
 ## boolean conditional based on whether codon is a start codon or not
 sub is_start_codon {
     my ($codon) = @_;
+   
+    ## support softmasked sequence
+    $codon = uc($codon);
     
     ## full_orfs flag treats all non-stop-codons as starts
     if ($options{'full_orfs'}) {
@@ -654,6 +657,9 @@ sub is_start_codon {
 ## boolean conditional based on whether codon is a stop codon or not
 sub is_stop_codon {
     my ($codon) = @_;
+   
+    ## support softmasked sequence
+    $codon = uc($codon);
     
     if ($codon_table_ref->{'stop'}->{$codon}) {
         return 1;
