@@ -12,7 +12,7 @@
                 <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
-                <key>--gff3_file_name</key>
+                <key>--gff_file_name</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gff3</value>
             </param>
             <param>  
