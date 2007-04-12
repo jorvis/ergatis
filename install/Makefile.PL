@@ -18,9 +18,9 @@ my @modules_to_check = qw(
     Data::Dumper
     Date::Manip
     File::Basename
-    File::Basename
     File::Copy
     File::Find
+    File::Mirror
     File::Path
     File::Spec
     Getopt::Long
