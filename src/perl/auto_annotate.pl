@@ -17,7 +17,7 @@ use XML::Twig;
 use BSML::BsmlBuilder;
 use Split_DB_File;
 require "autoAnnotate.data";
-require "/export/prog/autoAnnotate/sharedRoutines.pl";
+require "sharedRoutines.pl";
 $|++;
 
 
@@ -36,12 +36,13 @@ my %pandaHeaderOffsets;                     #Byte offsets of headers in the head
                                             #Split_DB_File tied hash
 my $headerFile;                              
 my $per_id_cutoff = 35;                     #Default cutoff for ber hit (percent identity)
-my $length_cutoff = 80;                     #Default cutoff for ber hit (length of hit)
+my $length_cutoff = 70;                     #Default cutoff for ber hit (length of hit)
 my %roleInfo;                               #Holds role guessing data.
 my $asmbl;                                  #Contains assembly information
 my $outputDir;                              #Directory for output files.
 my $geneBoundaries;                         #Hash containing start and end positions keyed by id
 my $extension = 300;                        #Extension length for ber (default 300).
+my $countFromEvidence;
 use vars qw(%isoType);
 my ($acc,$name,$ec_num,$gene_sym,$species,$go_id,$role_id,$exp,$wgp,$cg,$rank) = (0..10);
 ###################################################################################
@@ -78,7 +79,7 @@ $logger = $logger->get_logger();
 ###################################################################################
 
 ############################## MAIN ###############################################
-
+my $flag = 0;
 #Loop through all of the input files ( bsml with feature: class=polypeptide ).
 foreach my $input(@inputFiles) {
 
@@ -98,20 +99,23 @@ foreach my $input(@inputFiles) {
     my $count = 0;
   
     #Cycle through all these polypeptides
-    foreach my $polypeptide ( keys %polypeptideIds ) {       
-        next unless($polypeptide eq 'prok.polypeptide.156087.1');
+    foreach my $polypeptide ( keys %polypeptideIds ) { 
+        #next unless($polypeptide eq 'mmycoides.polypeptide.665408.1');
         print "***Annotating protein: $polypeptide***\n";# if($logger->is_debug);
 
         #Get the best HMM evidence
         $evidence->{$polypeptide}->{'HMM'} = &getHMMEvidence( $polypeptide );
+        print Dumper($evidence->{$polypeptide}->{'HMM'});
 
         #Get the best BER evidence unless we've found a great HMM hit.
         #HMM hits are more reliable (if they are equivalog level).
         $evidence->{$polypeptide}->{'BER'} = &getBEREvidence( $polypeptide )
             unless(exists $evidence->{$polypeptide}->{'HMM'}->{'rank'} &&
                    $evidence->{$polypeptide}->{'HMM'}->{'rank'} == 1);
+        print Dumper($evidence->{$polypeptide}->{'BER'});
       
         $finalAnnotes->{$polypeptide} = &annotate( $evidence->{$polypeptide} );
+        print Dumper( $finalAnnotes->{$polypeptide} );
         
         $count++;
     }
@@ -120,6 +124,10 @@ foreach my $input(@inputFiles) {
     &annotation2bsml($outputBsml);
     $finalAnnotes = {};
     $outputBsml = "";
+}
+print "\n\n----------------------------------------\n";
+foreach my $key ( keys %{$countFromEvidence} ) {
+    print "$key: ".$countFromEvidence->{$key}."\n";
 }
 
 ########################### SUB-ROUTINES #################################################
@@ -216,7 +224,7 @@ sub checkParameters {
     if($opts->{'ber_extension_length'}) {
         $extension = $opts->{'ber_extension_length'};
     }
-    
+
 
 }
 
@@ -251,8 +259,10 @@ sub annotate {
 
         my $autoAnnotate = 0;
         $autoAnnotate = 1 if($evidence->{'HMM'}->{'rank'} == 1);
+        $countFromEvidence->{'equivalog'}++;
     } elsif($evidence->{'BER'}->[$rank] && $evidence->{'BER'}->[$rank] != 100) {  #if we have a not crap ber hit
         print "Taking evidence from not crap BER hit\n" if($logger->is_debug);
+        $countFromEvidence->{'not_crap_ber_hit'}++;
         $retval->{'annotation_from'} = $evidence->{'BER'}->[$acc];
         $retval->{'com_name'} = $evidence->{'BER'}->[$name];
         $retval->{'gene_sym'} =  $evidence->{'BER'}->[$gene_sym];
@@ -270,11 +280,11 @@ sub annotate {
         }
 
     }
-    print "BEFORE IF:".$retval->{'com_name'}."\n";
     if( !$retval->{'com_name'} || $retval->{'com_name'} =~ /hypothetical protein/i) {
         print "The com_name contains hypo...\n";
         if($evidence->{'HMM'}->{'hmm_com_name'}) {
             print "Setting com_name and annotation from from the HMM\n";
+            $countFromEvidence->{'other_hmm'}++;
             $retval->{'com_name'} = $evidence->{'HMM'}->{'hmm_com_name'};
             $retval->{'annotation_from'} = $evidence->{'HMM'}->{'hmm_acc'};
 
@@ -326,6 +336,7 @@ sub annotate {
 
     unless( defined $retval->{'com_name'} ) {
         $retval->{'com_name'} = 'hypothetical protein';
+        
     }
 
     if ($retval->{'com_name'} =~ /hypothetical protein|\, putative|\-related|unknown/i) { 
@@ -337,10 +348,12 @@ sub annotate {
         $retval->{'go_id'} = "GO:0000004 GO:0005554";
         $retval->{'gene_sym'} = "";
         $retval->{'ec_num'} = "";
+        $countFromEvidence->{'hypo'}++;
     }elsif ($retval->{'com_name'} =~ /^hypothetical protein$/i) {
         $retval->{'gene_sym'} = "";
         $retval->{'role_id'} = "";
         $retval->{'ec_num'} = "";
+        $countFromEvidence->{'hypo'}++;
     } elsif (!$retval->{'role_id'} || $retval->{'role_id'} eq "NULL" || $retval->{'role_id'} == 185) {
         
         print "Trying to find a role id\n" if($logger->is_debug);
@@ -521,6 +534,10 @@ sub getBEREvidence {
 
     #Now that we have all the berMatches in this array, lets find the best one.
     my $bestMatch = &getBestBERMatch( \@berMatches, $fakeId2RealId );
+
+    if($bestMatch->[$name] =~ /^conserved\s*/) {
+        $bestMatch->[$name] = "conserved hypothetical protein";
+    }
     
     return $bestMatch;
 
@@ -657,8 +674,8 @@ sub getBestBERMatch {
     }
 
     #Use strict cutoffs for assigning GO terms.
-    unless($bestHitInfo->{'fraction_length'} >= 0.9 &&
-           $bestHitInfo->{'percent_id'} >= 40) {  
+    unless(exists($bestHitInfo->{'fraction_length'}) && $bestHitInfo->{'fraction_length'} >= 0.9 &&
+           exists($bestHitInfo->{'percent_id'}) && $bestHitInfo->{'percent_id'} >= 40) {  
         print "Getting rid of go_id\n" if($logger->is_debug);
         $bestBerMatch->[$go_id] = "";
     }
@@ -683,9 +700,10 @@ sub getBerHeader {
     close(HEAD);
 
     my @cols = split(/\t/,$tabs);
+    $"=" || ";
+    print STDOUT "@cols\n" unless(@cols == 10);
 
-    $logger->logdie("Wrong number of columns") if(@cols < 10);
-    
+    #If we have the wrong number of columns, that's okay.
     return \@cols;
 }
 
@@ -812,9 +830,9 @@ sub getPolypeptideHandler {
     return unless( $featElem->att('class') eq 'polypeptide' );
 
     my $intLoc = $featElem->first_child('Interval-loc');
-    $logger->logdie("Interval-loc element for polypeptide $featElem->att('id') does not exist".
-                    " or is incomplete") unless($intLoc && $intLoc->att('startpos') &&
-                                                $intLoc->att('endpos'));
+    $logger->logdie("Interval-loc element for polypeptide ".$featElem->att('id')." does not exist".
+                    " or is incomplete") unless($intLoc && defined($intLoc->att('startpos')) &&
+                                                defined($intLoc->att('endpos')));
     my ($id, $start, $end) = ($featElem->att('id'), $intLoc->att('startpos'), $intLoc->att('endpos') );
 
     $polypeptides->{ $id } =  $end - $start;
@@ -829,15 +847,21 @@ sub getPolypeptideHandler {
 #returns a list of analysis files.  Will search for
 #any bsml files in the directory.
 sub getAnalysisFiles {
-    my $analysis = shift;
+    my $analysisParamString = shift;
     my @retval;
-    if( -d $analysis ) {
-        find( sub { &findAnalysisFiles(\@retval) }, $analysis );
-    } elsif( -e $analysis ) {
-        open(ANFILES, "< $analysis") or
-            $logger->logdie("Could not open $analysis ($!)");
-        chomp(@retval = <ANFILES>);
-        close(ANFILES);
+    my @analyses = split(/,/, $analysisParamString);
+    
+    foreach my $analysis ( @analyses ) {
+        if( -d $analysis ) {
+            find( sub { &findAnalysisFiles(\@retval) }, $analysis );
+        } elsif( -e $analysis ) {
+            open(ANFILES, "< $analysis") or
+                $logger->logdie("Could not open $analysis ($!)");
+            my @tmpRetval;
+            chomp(@tmpRetval = <ANFILES>);
+            push(@retval, @tmpRetval);
+            close(ANFILES);
+        }
     }
     
     return @retval;
@@ -865,6 +889,8 @@ sub getHMMEvidence {
             last;
         }
     }
+
+    $logger->logdie("Could not find hmmpfam bsml output file for $polyId") unless($hmmBsmlFile);
 
     #Now parse the file.
     my $twig = new XML::Twig( TwigHandlers => 
@@ -1038,9 +1064,11 @@ sub annotation2bsml {
         foreach my $term (keys %{$finalAnnotes->{$polyid}}) {
             next unless($finalAnnotes->{$polyid}->{$term});
 
-            if($term =~ /(go_id|ec_num|role_id)/) {
+            if($term =~ /(go_id|ec_num|role_id|gene_sym)/) {
                 my @vals = split(/\s+/, $finalAnnotes->{$polyid}->{$term});
                 foreach my $val(@vals) {
+                    $term = "ec_number" if($term eq 'ec_num');
+                    $term = "gene_symbol" if($term eq 'gene_sym');
                     $doc->createAndAddBsmlAttribute( $feat, $term, $val );
                 }
             } else {
@@ -1050,8 +1078,15 @@ sub annotation2bsml {
         
     }
 
-    $doc->createAndAddAnalysis( 'id' => 'autoAnnotate_analysis',
-                                'sourcename' => $inputFiles[0] );
+    my $sourceDir = $1 if($inputFiles[0] =~ /^(.*\/\d+_\w+)\//);
+    $sourceDir = "./" unless( $sourceDir );
+    $logger->logdie("sourcename directory (from input file $inputFiles[0]) $sourceDir does not exist")
+        unless( -d $sourceDir );
+
+    $doc->createAndAddAnalysis( 'id' => 'auto_annotate_analysis',
+                                'sourcename' => $sourceDir,
+                                'algorithm'  => 'auto_annotate',
+                                'program'    => 'auto_annotate');
 
     print "Writing to $output\n";
     $doc->write($output);
