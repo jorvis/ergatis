@@ -1,0 +1,113 @@
+<!-- component documentation -->
+
+<p>
+    QuickTree allows the reconstruction of phylogenies for very large protein families
+    that would be infeasible using other popular methods.
+</p>
+<h3>references</h3>
+<p>
+    QuickTree: building huge Neighbour-Joining trees of protein sequences.
+    Howe K, Bateman A, Durbin R.<br>
+    <a href='http://bioinformatics.oxfordjournals.org/cgi/reprint/18/11/1546'>http://bioinformatics.oxfordjournals.org/cgi/reprint/18/11/1546</a>
+    PMID: 12424131
+    
+</p>
+<h3>input</h3>
+<p>
+    This component takes one of two types of input.  In the first case, it can take a
+    Stockholm formatted MSA.  Note that muscle/clustalw output will NOT be recognizable
+    by quicktree unless reformatted.  sreformat can convert clustal/muscle output into
+    Stockholm format.
+</p>
+<h3>implemented options</h3>
+<p>
+    Any of the quicktree executable options can be passed in, but quicktree2bsml will NOT
+    be able to handle the distance matrix output, as there currently exists no known satisfactory
+    way of representing a distance matrix in bsml.  Therefore, the -out t option is forced
+    into use, and the resulting tree is stored in the bsml as an attribute of a sequence-
+    alignment-table element.
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;?xml version="1.0"?&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence class="polypeptide" title="ENV_SIVGB/47-569" id="ENV_SIVGB_47-569" molecule="aa"&gt;
+        &lt;Attribute name="primary_label" content="ENV_SIVGB/47-569"&gt;&lt;/Attribute&gt;
+        &lt;Link rel="analysis" href="#quicktree_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+      &lt;Sequence class="polypeptide" title="ENV_HV2CA/25-512" id="ENV_HV2CA_25-512" molecule="aa"&gt;
+        &lt;Attribute name="primary_label" content="ENV_HV2CA/25-512"&gt;&lt;/Attribute&gt;
+        &lt;Link rel="analysis" href="#quicktree_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+
+        ... One Sequence element per sequence in the alignment ... ]
+
+    &lt;/Sequences&gt;
+    &lt;Tables id="BsmlTables"&gt;
+      &lt;Multiple-alignment-table molecule-type="protein" class="match"&gt;
+        &lt;Attribute name="newick_tree" content="(ENV_HV1A2/33-509:0.08298,((ENV_HV1C4/35-522:0.09267,ENV_HV1W1/33-510:0.08133):0.00593,(ENV_HV1B1/34-511:0.08194,ENV_HV1J3/33-523:0.08473):0.00407):0.00417,((((((ENV_SIVGB/47-569:0.36091,((ENV_SIVV1/24-538:0.15002,ENV_SIVG1/22-522:0.13856):0.12249,((ENV_HV2D2/24-513:0.15502,((((ENV_HV2BE/24-510:0.09272,ENV_HV2D1/24-501:0.08275):0.01818,ENV_HV2G1/23-502:0.08177):0.00667,ENV_HV2NZ/24-502:0.10369):0.00815,ENV_HV2CA/25-512:0.09768):0.01976):0.00122,ENV_SIVM1/24-528:0.14842):0.11339):0.05503):0.14590,ENV_SIVCZ/33-496:0.19223):0.05343,(ENV_HV1MA/33-513:0.12999,((ENV_HV1ND/33-501:0.10057,ENV_HV1EL/33-508:0.09339):0.00429,ENV_HV1Z8/33-518:0.09411):0.01745):0.02050):0.01061,ENV_HV1ZH/33-511:0.14166):0.03161,ENV_HV1OY/33-509:0.08905):0.00571,(ENV_HV1BN/34-507:0.06494,ENV_HV1RH/33-519:0.09023):0.01112):0.00079);"&gt;&lt;/Attribute&gt;
+        &lt;Alignment-summary seq-type="protein" seq-format="msf"&gt;
+          &lt;Aligned-sequence length="606" seqnum="1" name="ENV_SIVGB/47-569:1"&gt;&lt;/Aligned-sequence&gt;
+          &lt;Aligned-sequence length="606" seqnum="2" name="ENV_HV2CA/25-512:2"&gt;&lt;/Aligned-sequence&gt;
+
+        [ ... one Aligned-sequence element per sequence in the alignment ... ]
+
+       &lt;/Alignment-summary&gt;
+        &lt;Sequence-alignment sequences="1:2:3:4:5:6:7:8:9:10:11:12:13:14:15:16:17:18:19:20:21:22:23:24:"&gt;
+          &lt;Sequence-data seq-name="ENV_SIVGB/47-569:1"&gt;QYVTVFYGVPVWKEAKTHLICATDNS.......SLWVTTNCIPSLPDYDE
+VEIPDIKENFTGLIRENQIVYQAWHAMGSMLDTILKPCVKINPYCVKMQC
+QETENVS...........ATTAKPITTPTT......TSTVASSTEIYLDV
+DKNNTEEKVERNHVCRYNITGLCRDSKEEIVTNFRGDDVKCENN......
+..........TCYMNHCNESVNTEDCQKGLLIRC.ILGCVPPGYVMLRY.
+NEKLN.NNKLCSNISAVQCTQHLVATVSSFFGFNGTMHKEGELIPIDDKY
+RGPEEFHQRKFVYKVPGKYGLKIECHRKGNRSVVSTPSAT...GLLFYHG
+LEPGK...NLKKGMCTFKG.RWGLALWSLAKELNKLNDSIKVNQTCKNFT
+STGEENKQNTDKQKEFAKCIKTLKIDNYTTSGDRAAEMMMMTCQGEMFFC
+NVTRIMR.......AWNDP.............NEKK.......WYPYASC
+QIRQIVDDWMQVGRKIYLPPTSGFNNHIRCTHRVTEMYFEMQKIDSNETK
+......MQIKFLPPSETSNQFVAYGAHYKLVKIMPIGIAPTDVKRHTLPE
+HHKEKR
+          &lt;/Sequence-data&gt;
+          &lt;Sequence-data seq-name="ENV_HV2CA/25-512:2"&gt;QYVTVFYGVPAWKNASIPLFCATKNR.......DTWGTIQCLPDNDDYQE
+IPLN.VTEAFDAWD..NTITEQAIEDVWNLFETSIKPCVKLTPLCVAMKC
+N.......ISTSDT.....TMIRTTTPST.......AKEAPISDNSPCIR
+TNNCSGLEEEKIVKCHFNMTGLERDKKKQYNETWYSSDVVCDNSTDQTT.
+.......NETTCYMNHCNTSVITESCDKHYWDAMRFRYCAPPGFAILRCN
+DTKYSGFAPNCSKVVASTCTRMMETQTSTWFGFNGTRAENRTYIY.WHGK
+.......DNRTIISLNKHYNLSMYCRRPGNKTVVPITLMS...GQRFHS.
+RPIINKR..PRQAWCWFKG.NWTEAMQEVKQTLAEHPRYKG.TKNITDIT
+FK.APE.......................RGSDPEVTYMWSNCRGEFFYC
+NMTWFLN........WVENK............PNTT.......KRNYAPC
+HIRQIINTWHKVGKNVYLPPREG...ELTCNSTVTSIIANI..DERDNQ.
+.......TTNITFSADVAELYRLELGDYKLVEITPIGFAPTSQKRYSPAH
+G.RPKR
+          &lt;/Sequence-data&gt;
+
+        [ ... One Sequence-data element per sequence in the alignment ... ]
+
+          &lt;Alignment-consensus&gt;
+            [ ... this isn't filled in for this component's bsml ... ]
+          &lt;/Alignment-consensus&gt;
+
+        &lt;/Sequence-alignment&gt;
+        &lt;Link rel="analysis" href="#quicktree_analysis" role="computed_by"&gt;&lt;/Link&gt;
+      &lt;/Multiple-alignment-table&gt;
+    &lt;/Tables&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="quicktree_analysis"&gt;
+        &lt;Attribute content="quicktree" name="algorithm"&gt;&lt;/Attribute&gt;
+        &lt;Attribute content="quicktree" name="program"&gt;&lt;/Attribute&gt;
+
+        [ ... One Attribute element for each attribute in the analysis ... ]
+
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+</div>
