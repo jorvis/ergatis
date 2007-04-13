@@ -57,6 +57,59 @@ sub get_module_path {
     return $path;
 }
 
+=head2 get_pipeline_templates( path )
+
+=over 4
+
+searches each directory within the path passed for pipeline templates and returns a data
+structure ideal for use with HTML::Template.  The data structure returned looks like:
+
+    [
+        { id => 'pipeline_name', 
+            path => "$path/pipeline_name",
+            has_comment => 0,
+            comment => 'some comment here',
+            component_count => 0, },
+    ]
+
+=back
+
+=cut
+sub get_pipeline_templates {
+    my $dir = shift;
+    my @templates = ();
+
+    if ( -d $dir ) {
+        opendir( my $recent_dh, $dir ) || die "can't read template directory: $!";
+        while ( my $thing = readdir $recent_dh ) {
+
+            if ( -e "$dir/$thing/pipeline.layout" ) {
+                push @templates, { id => $thing, 
+                                   path => "$dir/$thing",
+                                   has_comment => 0,
+                                   comment => '',
+                                   component_count => 0, };
+
+                if ( -e "$dir/$thing/pipeline.xml.comment" ) {
+                    $templates[-1]->{has_comment} = 1;
+
+                    open( my $ifh, "$dir/$thing/pipeline.xml.comment" ) || die "can't read comment file: $!";
+                    while ( <$ifh> ) {
+                        $templates[-1]->{comment} .= $_;
+                    }
+                }
+
+                my $layout = Ergatis::SavedPipeline->new( template => "$dir/$thing/pipeline.layout" );
+                
+                $templates[-1]->{component_count} = $layout->component_count();
+            }
+        }
+    }
+    
+    return \@templates;
+}
+
+
 =head2 get_quick_links( config_ref )
 
 =over 4
