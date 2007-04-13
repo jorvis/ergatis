@@ -462,3 +462,6 @@ next
 -interface: pipelines in 'running' state can no longer be deleted/archived
 -interface: now doesn't include empty pipeline dirs in count
 -installer: File::Mirror now required
+-interface: can now save a pipeline building as a project pipeline template
+-interface: 'templates' browser tab added to all pages
+-interface: saved pipeline templates can be instantiated and run for any project from the template browser.
