@@ -146,6 +146,7 @@ ul#sub_nav_elements li a {
 /* end of ie5-mac hack */
 
 body.pipelines li#nav_pipelines,
+body.templates li#nav_templates,
 body.projects li#nav_projects,
 body.documentation li#nav_documentation,
 body.admin li#nav_admin {
