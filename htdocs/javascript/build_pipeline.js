@@ -792,8 +792,6 @@ function selectPipelineTemplate( template_path ) {
     getObject( 'content_container' ).style.display = 'block';
     getObject( 'add_menu_container' ).style.display = 'none';
 
-    alert('loading template path ' + template_path);
-
     function ajaxBindCallback() {
         // progressive transitions are from 0 .. 4
         if (ajaxRequest.readyState == 4) {
