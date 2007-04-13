@@ -465,3 +465,4 @@ next
 -interface: can now save a pipeline building as a project pipeline template
 -interface: 'templates' browser tab added to all pages
 -interface: saved pipeline templates can be instantiated and run for any project from the template browser.
+-quicktree: v2 component added
