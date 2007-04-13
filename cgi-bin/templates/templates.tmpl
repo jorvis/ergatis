@@ -1,0 +1,79 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis</title>
+    <!-- style -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/templates.css">
+    <!-- functionality -->
+    <script type="text/javascript" src="/ergatis/javascript/common.js"></script>
+    <script type="text/javascript" src="/ergatis/javascript/templates.js"></script>
+</head>
+
+<body class='templates'>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='content_container'>
+        <h2>templates</h2>
+        <p>
+            To reuse an old pipeline <span id='instructions'>first choose a project area and then a pipeline template</a>.
+        </p>
+        
+        <div id='group1'>
+            <div id='project_selection_container'>
+                <h3>project selection</h3>
+                <form name='project_selection' method='get' action='./build_pipeline.cgi'>
+                    <input type='hidden' id='autoload_template' name='autoload_template' value=''>
+                    <select name='repository_root' id='project'>
+                        <option value=''>choose one</option>
+                        <TMPL_LOOP NAME=PROJECTS>
+                        <option value='<TMPL_VAR NAME=REPOSITORY_ROOT>'><TMPL_VAR NAME=LABEL></option>
+                        </TMPL_LOOP>
+                    </select>
+                </form>
+            </div>
+            
+            <h3>recent pipelines (from all projects)</h3>
+            <ul class='pipeline_template_list' id='recent_pipelines'>
+                <TMPL_LOOP NAME=RECENT_TEMPLATES>
+                    <TMPL_INCLUDE NAME="pipeline_template_list_element.tmpl">
+                </TMPL_LOOP>
+            </ul>
+        </div>
+        <div id='group2'>
+            <h3>global templates</h3>
+            <ul class='pipeline_template_list' id='global_pipelines'>
+                <TMPL_LOOP NAME=GLOBAL_TEMPLATES>
+                    <TMPL_INCLUDE NAME="pipeline_template_list_element.tmpl">
+                </TMPL_LOOP>
+            </ul>
+            
+            <h3>project templates</h3>
+            <p id='no_project'>
+                Choose a project to display project templates.
+            </p>
+            <p id='no_project_templates_found'>
+                No templates found for the chosen project.
+            </p>
+            <!-- this is populated by an ajax call when the user selects a project -->
+            <ul class='pipeline_template_list' id='project_pipelines'>
+            
+            </ul>
+        </div>
+
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
+
+</body>
+
+</html>

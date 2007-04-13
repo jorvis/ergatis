@@ -1,0 +1,9 @@
+<li>
+    <a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a>
+    - <TMPL_VAR NAME=COMPONENT_COUNT> components
+    <TMPL_IF NAME=HAS_COMMENT>
+    <p class='pipeline_comment'>
+        <TMPL_VAR NAME=COMMENT> 
+    </p>
+    </TMPL_IF>
+</li>
