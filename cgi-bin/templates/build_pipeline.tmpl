@@ -53,17 +53,9 @@
         </div>
         <div id='pipeline_choices'>
             <h3>project templates</h3>
-            <ul id='project_templates'>
+            <ul class='pipeline_template_list' id='project_templates'>
                 <TMPL_LOOP NAME=PROJECT_TEMPLATES>
-                    <li>
-                        <a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a>
-                        - <TMPL_VAR NAME=COMPONENT_COUNT> components
-                        <TMPL_IF NAME=HAS_COMMENT>
-                        <p class='pipeline_comment'>
-                            <TMPL_VAR NAME=COMMENT> 
-                        </p>
-                        </TMPL_IF>
-                    </li>
+                    <TMPL_INCLUDE NAME="pipeline_template_list_element.tmpl">
                 </TMPL_LOOP>
             </ul>
 <!--
@@ -77,20 +69,17 @@
             </div>
 -->
             <h3>recent pipelines (from all projects)</h3>
-            <ul id='recent_pipelines'>
+            <ul class='pipeline_template_list' id='recent_pipelines'>
                 <TMPL_LOOP NAME=RECENT_PIPELINES>
-                    <li>
-                        <a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a>
-                        - <TMPL_VAR NAME=COMPONENT_COUNT> components
-                        <TMPL_IF NAME=HAS_COMMENT>
-                        <p class='pipeline_comment'>
-                            <TMPL_VAR NAME=COMMENT> 
-                        </p>
-                        </TMPL_IF>
-                    </li>
+                    <TMPL_INCLUDE NAME="pipeline_template_list_element.tmpl">
                 </TMPL_LOOP>
             </ul>
         </div>
+    </div>
+    <div id='pipeline_name_container'>
+        enter a name for this pipeline: <input id='pipeline_name' name='pipeline_name' value=''>
+        <span class=''><a onclick='saveAsProjectTemplate()'>save</a></span>
+        <span class=''><a onclick='hidePipelineNameForm()'>cancel</a></span>
     </div>
     <div id='content_container'>
         <h2>pipeline builder</h2>
@@ -156,6 +145,7 @@
             <input name='skip_instantiation' id='skip_instantiation' value='0'>
             <input name='instantiate' id='instantiate' value='0'>
             <input name='builder_animations' id='builder_animations' value='<TMPL_VAR NAME=BUILDER_ANIMATIONS>'>
+            <input name='autoload_template' id='autoload_template' value='<TMPL_VAR NAME=AUTOLOAD_TEMPLATE>'>
         </div>
         <div id='locators'>
             <input type='text' class='locator' id='pipeline_root_up' name='pipeline_root_up' value=''>
@@ -164,7 +154,11 @@
             <input type='text' class='locator' id='pipeline_root_panel_down' name='pipeline_root_panel_down' value=''>
         </div>
     </form>
-
+    <form name='save_project_template' action='./save_pipeline_template.cgi' method='POST'>
+        <input type='hidden' name='input_template' value='<TMPL_VAR NAME=BUILD_DIRECTORY>'>
+        <input type='hidden' name='repository_root' value='<TMPL_VAR NAME=REPOSITORY_ROOT>'>
+        <input type='hidden' name='template_name' value=''>
+    </form>
 </div> <!-- end page_container -->
 <!--
     the containers below are either used for debugging or are only transitively visible and
