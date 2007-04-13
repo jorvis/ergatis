@@ -131,7 +131,6 @@ div#pipeline_choices h3 {
     margin-top: 15px;
 }
 div#pipeline_choices ul {
-    list-style-image: url('/ergatis/images/link.gif');
     margin-left: 40px;
     padding-left: 0;
 }
@@ -142,6 +141,19 @@ div#pipeline_choices p.pipeline_comment {
     margin-top: 0.3em;
     padding-left: 20px;
     color: rgb(100,100,100);
+}
+div#pipeline_name_container {
+    display: none;
+    clear: both;
+    margin-bottom: 20px;
+    padding: 10px 0 10px 10px;
+    border-bottom: 3px solid rgb(73,81,92);
+}
+div#pipeline_name_container span {
+    font-size: 80%;
+    padding-left: 5px;
+    color: rgb(73,81,92);
+    font-weight: bold;
 }
 div#variables {
     display: none;

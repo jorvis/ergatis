@@ -1,6 +1,7 @@
 // these colors correspond to values in build_pipeline.css
 var color_invalid    = 'rgb(255,150,150)';
 var color_incomplete = 'rgb(230,230,230)';
+var color_error      = 'rgb(200,0,0)';
 
 var next_set_num = 0;
 var new_input_fields_row;
@@ -46,6 +47,13 @@ window.onload = function() {
     repository_root = getObject('repository_root').value;
     build_directory = getObject('build_directory').value;
     workflowdocs_dir = getObject('workflowdocs_dir').value;
+    
+    // check if there is anything to autoload
+    if ( ! isEmpty( getObject('autoload_template').value ) ) {
+        // remember where this pipeline will be inserted
+        pipeline_insert_location = 'pipeline_root';
+        selectPipelineTemplate( getObject('autoload_template').value );
+    }
 }
 
 // we need to pass some linking information about each numbered component ID
@@ -413,6 +421,44 @@ function removeInput( input_id ) {
     updateInputLists();
 }
 
+function saveAsProjectTemplate() {
+    if ( checkPipeline() ) {
+       
+        // check that the user entered a name.
+        if ( isEmpty( getObject('pipeline_name').value ) ) {
+            getObject('pipeline_name').style.backgroundColor = color_invalid;
+            getObject('pipeline_name').focus();
+            return false;
+        }
+
+        // grab the name
+        document.save_project_template.template_name.value = getObject('pipeline_name').value;
+        
+        // save the pipeline template
+        document.save_project_template.submit();
+        
+    } else {
+        // TODO: redirect the user to a div containing the error messages
+    }
+}
+
+function showPipelineNameForm( check_pipeline_first ) {
+    if ( check_pipeline_first ) {
+        if (! checkPipeline() ) {
+        
+            return false;
+        }
+    }
+    
+    getObject('pipeline_name_container').style.display = 'block';
+    getObject('pipeline_name').focus();
+}
+
+function hidePipelineNameForm() {
+    getObject('pipeline_name').style.backgroundColor = 'rgb(255,255,255)';
+    getObject('pipeline_name_container').style.display = 'none';
+}
+
 /*
     component_id - id of the component to be saved
     save_layout - true/false, should the pipeline layout be saved?
@@ -745,6 +791,8 @@ function selectPipelineTemplate( template_path ) {
     getObject( 'component_choices' ).style.display = 'none';
     getObject( 'content_container' ).style.display = 'block';
     getObject( 'add_menu_container' ).style.display = 'none';
+
+    alert('loading template path ' + template_path);
 
     function ajaxBindCallback() {
         // progressive transitions are from 0 .. 4
