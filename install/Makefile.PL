@@ -115,7 +115,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps open_reading_frames pangenome parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps open_reading_frames pangenome parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -525,11 +525,9 @@ mreps  :
 
 muscle  :
 	@echo "Installing muscle workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/muscle/muscle.ini $(WORKFLOW_DOCS_DIR)
-	@install components/muscle/muscle_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/muscle/muscle-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/muscle/muscle-master_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/muscle/muscleconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/muscle/muscle.xml $(WORKFLOW_DOCS_DIR)
+	@install components/muscle/muscle.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/muscle/muscle.config $(WORKFLOW_DOCS_DIR)
 
 ncbi-blastn	:
 	@echo "Installing ncbi-blastn workflows in $(WORKFLOW_DOCS_DIR)"
