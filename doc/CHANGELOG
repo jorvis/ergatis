@@ -466,3 +466,4 @@ next
 -interface: 'templates' browser tab added to all pages
 -interface: saved pipeline templates can be instantiated and run for any project from the template browser.
 -quicktree: v2 component added
+-installer: v2 backupdb added
