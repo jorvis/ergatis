@@ -477,6 +477,9 @@ sub process_header {
 sub translate_codon {
     my ($codon) = @_;
 
+    ## support softmasked sequence
+    $codon = uc($codon);
+    
     my $aa;
    
     ## append N's to partial codons 
@@ -666,6 +669,23 @@ sub is_stop_codon {
     } else {
         return 0;
     }
+}
+
+## finds coordinates of masked regions in a sequence
+## default is lowercase masking, but any characters can be provided to the regex
+sub find_masked_regions {
+    my ($seq_ref, $mask_char) = shift @_;
+    
+    unless (defined($mask_char)) {
+        $mask_char = 'a-z';
+    }
+    
+    my @regions = ();
+    
+    while (${$seq_ref} =~ /[$mask_char]{1,}/g) {
+        push (@regions, [$-[0],$+[0]]);
+    }
+    return \@regions;
 }
 
 sub get_translation_table_string {
