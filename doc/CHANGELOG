@@ -459,6 +459,7 @@ ergatis-v2r4b2
 
 next
 ----
+-all: code repository converted from local CVS to SVN on SourceForge
 -interface: pipelines in 'running' state can no longer be deleted/archived
 -interface: now doesn't include empty pipeline dirs in count
 -installer: File::Mirror now required
@@ -467,3 +468,4 @@ next
 -interface: saved pipeline templates can be instantiated and run for any project from the template browser.
 -quicktree: v2 component added
 -installer: v2 backupdb added
+-repeatmasker: 2bsml script now creates program and algorithm Attribute elements under Analysis
