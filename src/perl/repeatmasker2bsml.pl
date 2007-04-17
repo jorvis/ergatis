@@ -1,8 +1,4 @@
 #!/usr/local/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 =head1  NAME 
 
@@ -243,6 +239,8 @@ for my $seqid (keys %data) {
 $doc->createAndAddAnalysis(
                             id => 'repeatmasker_analysis',
                             sourcename => $options{'output'},
+                            program => 'repeatmasker',
+                            algorithm => 'repeatmasker',
                           );
 
 ## now write the doc
