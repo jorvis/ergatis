@@ -7,6 +7,7 @@ use Ergatis::Common;
 use Ergatis::ConfigFile;
 use Ergatis::Pipeline;
 use Ergatis::SavedPipeline;
+use File::Copy;
 use XML::Writer;
 
 my $q = new CGI;
@@ -108,6 +109,11 @@ if ( $$qvars{rerun} ) {
         my $pipeline_template = new Ergatis::SavedPipeline( template => $build_pipeline_path );
         $pipeline = $pipeline_template->write_pipeline( repository_root => $$qvars{repository_root},
                                                         id_repository => $global_id_repository );
+                                                        
+        ## if there is a pipeline comment, copy it into place
+        if ( -e "$$qvars{build_directory}/pipeline.xml.comment" ) {
+            copy( "$$qvars{build_directory}/pipeline.xml.comment", $pipeline->instance_path() . ".comment" );
+        }
     }
 
 }
