@@ -468,4 +468,8 @@ next
 -interface: saved pipeline templates can be instantiated and run for any project from the template browser.
 -quicktree: v2 component added
 -installer: v2 backupdb added
+-muscle: v2 component added
+-installer: added muscle
 -repeatmasker: 2bsml script now creates program and algorithm Attribute elements under Analysis
+-metagene: v2 component added
+-installer: added metagene
