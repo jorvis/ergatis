@@ -112,7 +112,7 @@ if ( $$qvars{rerun} ) {
                                                         
         ## if there is a pipeline comment, copy it into place
         if ( -e "$$qvars{build_directory}/pipeline.xml.comment" ) {
-            copy( "$$qvars{build_directory}/pipeline.xml.comment", $pipeline->instance_path() . ".comment" );
+            copy( "$$qvars{build_directory}/pipeline.xml.comment", $pipeline->path() . ".comment" );
         }
     }
 
