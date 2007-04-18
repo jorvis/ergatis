@@ -137,6 +137,9 @@ use Ergatis::Pipeline;
         return $self;
     }
 
+    ## some accessors
+    sub instance_path { return $_[0]->{instance_path} }
+
     sub load_pipeline {
 	my ($self, %args) = @_;
 
