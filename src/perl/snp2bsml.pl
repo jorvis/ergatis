@@ -79,14 +79,15 @@ use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case);
 use Sequence::SeqLoc;
 
-my $moltype     = 'nucleotide';
-my $in          = undef;
-my $out         = undef;
-my $db          = undef;
-my $logger      = undef;
-my %seqdata     = ();
+my $moltype         = 'nucleotide';
+my $in              = undef;
+my $out             = undef;
+my $db              = undef;
+my $logger          = undef;
+my %seqdata         = ();
 my $RECORD_DELIM    = '//';
-my %seqs_added = ();
+my %seqs_added      = ();
+my %opts            = ();
 
 &get_opts;
 &parse_data;
@@ -98,18 +99,17 @@ sub print_usage
 
 sub get_opts
 {
-    my %opts    = ();
     my $input_file  = '/dev/stdin';
     my $output_file = '/dev/stdout';
     my $log_file    = Ergatis::Logger::get_default_logfilename;
     my $debug   = 4;
     GetOptions(\%opts,
-           'in|i=s', 'out|o=s', 'database|d=s',
+           'input|i=s', 'output|o=s', 'database|d=s',
            'log|l=s', 'debug|D=i', 'moltype|m=s', 'seqdata|s=s',
            'help|h');
     print_usage if $opts{help};
-    $input_file = $opts{in} if $opts{in};
-    $output_file = $opts{out} if $opts{out};
+    $input_file = $opts{input} if $opts{input};
+    $output_file = $opts{output} if $opts{output};
     $db = $opts{database} if $opts{database};
     $log_file = $opts{log} if $opts{log};
     $debug = $opts{debug} if $opts{debug};
@@ -153,10 +153,6 @@ sub parse_data
                 push @indels, [];
                 push @{$indels[$#indels]}, @cluster;
             }
-            else {
-                add_table($doc, \@cluster, $id_creator,
-                      'indel');
-            }
             @cluster = ();
             next;
         }
@@ -176,7 +172,7 @@ sub parse_data
 
     $doc->createAndAddAnalysis( 
                                 'id'         => 'nucmer_snps_analysis',
-                                'sourcename' => $options{'input'},
+                                'sourcename' => $opts{'input'},
                                 'algorithm'  => 'auto_annotate',
                                 'program'    => 'auto_annotate',
                               );
