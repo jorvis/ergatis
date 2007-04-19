@@ -101,7 +101,6 @@ function addComponentStub( set_root ) {
     window.scrollTo(0,0);
 }
 
-
 /* a 'locator' can be considered an edge in a doubly-linked list used
    here to keep track of each element's position in the pipeline layout.
 */
@@ -233,6 +232,19 @@ function addSetType(set_id, type) {
     set_elm.setAttribute('value', type);
     
     getObject('variables').appendChild( set_elm );
+}
+
+function cancelAddMenu(cancel_type) {
+    if ( cancel_type == 'component' ) {
+        // delete the component stub
+        components[ component_being_configured ].remove();
+        component_being_configured = '';
+    }
+    
+    getObject( 'pipeline_choices' ).style.display = 'none';
+    getObject( 'component_choices' ).style.display = 'none';
+    getObject( 'content_container' ).style.display = 'block';
+    getObject( 'add_menu_container' ).style.display = 'none';
 }
 
 function cancelNewInput() {

@@ -162,6 +162,9 @@ h3 {
     margin-top: 0;
     padding-top: 0;
 }
+h3 span.button {
+    margin-left: 100px;
+}
 input.select_shadow {
     display: none;
 }
