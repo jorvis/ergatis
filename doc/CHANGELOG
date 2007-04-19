@@ -473,3 +473,5 @@ next
 -repeatmasker: 2bsml script now creates program and algorithm Attribute elements under Analysis
 -metagene: v2 component added
 -installer: added metagene
+-trf: bugfix - id_repository now passed to trf2bsml
+-ngap: bugfix - ngap.pl was not compiling
