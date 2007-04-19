@@ -748,8 +748,13 @@ function updateInputLists() {
             if ( input_lists[i].options[0].value == '' ) {
                 input_lists[i].innerHTML = '<option value="">please choose</option>';    
             } else {
-                input_lists[i].innerHTML = '<option value="' + input_lists[i].options[0].value + '">' + 
+                // put a empty option, followed by the selected actual option
+                // if we do this we're also adding an element before the selected index, so 
+                // we'll have to account for that.
+                input_lists[i].innerHTML = '<option value="">please choose</option>' +
+                                           '<option selected value="' + input_lists[i].options[0].value + '">' + 
                                            input_lists[i].options[0].value + '</option>';
+                current_index++;
             }
             
             for ( id in inputs ) {
