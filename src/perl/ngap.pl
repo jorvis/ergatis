@@ -169,7 +169,7 @@ foreach $seq_id(keys(%ngaps)) {
     my $feature_table;
     
     ## for more efficient ID generation
-    if ( scalar @{$ngaps{$seq_id}} )
+    if ( scalar @{$ngaps{$seq_id}} ) {
         $idcreator->set_pool_size( gap => scalar @{$ngaps{$seq_id}} );
     }
     
