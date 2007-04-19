@@ -45,7 +45,7 @@
             </param>
             <param>
                 <key>--id_repository</key>
-                <value>$;REPOSITORY_ROOT$;/workflow/project_id_repository</value>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
             </param>
         </command>
         <command>
