@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>seg</name>
             <state>incomplete</state>
-            <executable>/usr/local/bin/seg</executable>
+            <executable>$;SEG_EXEC$;</executable>
             <arg>$;I_FILE_PATH$; -l $;OTHER_OPTS$;</arg>
             <param>  
                 <key>stdout</key>
