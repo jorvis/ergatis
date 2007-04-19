@@ -35,7 +35,7 @@
     <div id='add_menu_container'>
         <h2>add to pipeline</h2>
         <div id='component_choices'>
-            <h3>new component</h3>
+            <h3>new component <span class='button' onclick='cancelAddMenu("component")'>cancel</span></h3>
             <TMPL_LOOP NAME=COMPONENT_GROUPS>
             <div class='component_group' id='group<TMPL_VAR NAME=GROUP_NUM>'>
                 <TMPL_LOOP NAME=COMPONENT_SECTIONS>
@@ -52,7 +52,7 @@
             </TMPL_LOOP> <!-- end groups loop -->
         </div>
         <div id='pipeline_choices'>
-            <h3>project templates</h3>
+            <h3>project templates <span class='button' onclick='cancelAddMenu("pipeline")'>cancel</span></h3>
             <ul class='pipeline_template_list' id='project_templates'>
                 <TMPL_LOOP NAME=PROJECT_TEMPLATES>
                     <TMPL_INCLUDE NAME="pipeline_template_list_element.tmpl">
