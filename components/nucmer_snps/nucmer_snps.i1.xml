@@ -55,7 +55,7 @@
         <key>stdout</key>
         <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;.$;COMPONENT_NAME$;.snps</value>
       </param>
-      <arg>-Tl $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;.filtered.delta</arg>
+      <arg>-Tl $;SHOW_SNPS_OPTS$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;.filtered.delta</arg>
     </command>    
   </commandSet>
 </commandSetRoot>
