@@ -697,10 +697,10 @@ psipred	:
 
 quicktree	:
 	@echo "Installing quicktree workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/quicktree/pangenome.xml $(WORKFLOW_DOCS_DIR)
-	@install components/quicktree/pangenome.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/quicktree/pangenome.config $(WORKFLOW_DOCS_DIR)
-	@install components/quicktree/pangenome.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+	@install components/quicktree/quicktree.xml $(WORKFLOW_DOCS_DIR)
+	@install components/quicktree/quicktree.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/quicktree/quicktree.config $(WORKFLOW_DOCS_DIR)
+	@install components/quicktree/quicktree.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 region	:
 	@echo "Installing region workflows in $(WORKFLOW_DOCS_DIR)"
