@@ -201,6 +201,9 @@ sub addAttribute {
 	$logger->logdie("value was not defined");
     }
 
+    ## URL encoding for compliance with GFF3 spec
+    $value =~ s/%([\dA-Fa-f]{2})/pack("C", hex($1))/eg; 
+
     push(@{$self->{'_attrs'}->{$key}}, $value);
 }
 
