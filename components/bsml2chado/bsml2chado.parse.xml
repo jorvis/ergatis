@@ -112,6 +112,14 @@
 		<key>--log4perl</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.appendfile.pl.log</value>
 	    </param>
+        <param>
+            <key>stdout</key>
+            <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/appendfile.$;I_FILE_BASE$;.stdout</value>
+        </param>
+        <param>
+            <key>stderr</key>
+            <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/appendfile.$;I_FILE_BASE$;.stderr</value>
+        </param>
 	</command>
     </commandSet>
 </commandSetRoot>
