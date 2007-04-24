@@ -457,6 +457,13 @@ ergatis-v2r4b2
 -sourceforge: updated sf site pages for 2.x release
 -sourceforge: added first version of install guide (not yet complete)
 
+An ergatis-v2r4b2 bug-fix/development branch was established on 2007-04-24 and was labelled ergatis-v2r4b2-bugfix.
+
+ergatis-v2r4b3 (ergatis-v2r4b2-bugfix)
+--------------------------------------
+-bsml2chado: capturing stdout and stderr for appendfile.pl
+-appendfile.pl: catching exceptions
+
 next
 ----
 -all: code repository converted from local CVS to SVN on SourceForge
