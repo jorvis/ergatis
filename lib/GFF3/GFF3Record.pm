@@ -202,7 +202,8 @@ sub addAttribute {
     }
 
     ## URL encoding for compliance with GFF3 spec
-    $value =~ s/%([\dA-Fa-f]{2})/pack("C", hex($1))/eg; 
+    $value =~ s/\\n/\n/g;
+    $value =~ s/([\f\n\r\t;=%&,[:cntrl:]])/sprintf("%%%02X", ord($1))/seg;
 
     push(@{$self->{'_attrs'}->{$key}}, $value);
 }
