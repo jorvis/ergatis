@@ -121,7 +121,7 @@ sub append_file_contents {
 	die "Caught exception while attempting to cat $appendfile >> $bcpfile: $!";
     }
 
-    rename($appendfile, $appendfile.$$.bak) || die "Could not mv $appendfile $appendfile.$$.bak: $!";
+    rename($appendfile, "$appendfile.$$.bak") || die "Could not mv $appendfile $appendfile.$$.bak: $!";
 
 
 }
