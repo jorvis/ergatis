@@ -50,6 +50,10 @@
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir</value>
 	    </param>
 	    <param>
+		<key>--respect_namespace</key>
+		<value>$;NAMESPACE$;</value>
+	    </param>
+	    <param>
 		<key>--cache_dir</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir</value>
 	    </param>
