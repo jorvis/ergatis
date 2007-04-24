@@ -126,10 +126,12 @@ A list of complete paths to each .fsa file is stored as:
 
 and to be used with subsequent genewise searches as part of workflow.
 
+NOTE: this script is modified version of the old database-dependent prepare_for_genewise script.
+
 =head1 CONTACT
 
-    Brian Haas
-    bhaas@tigr.org
+    Brett Whitty
+    bwhitty@tigr.org
 
 =cut
 
@@ -142,6 +144,7 @@ use Pod::Usage;
 use CdbTools;
 use Carp;
 use XML::Twig;
+use File::Basename;
 
 #option processing
 my ($database, $work_dir, $bsml_list, $file_list, $help, $verbose,
@@ -225,19 +228,30 @@ my $twig = new XML::Twig(
                             TwigHandlers => {
                                               'Sequence'           => \&seq_handler,
                                               'Seq-pair-alignment' => \&seq_pair_align_handler,
+                                              'Analysis'           => \&analysis_handler,
                                             }
                         );
-
 
 ## stores alignment data (replaces db queries)
 my $asmbl_data = {};
 ## stores assembly sequences
 my $asmbl_seq = {};
+## stores assembly sequence source filenames (for supporting masked aat searches)
+my $asmbl_source = {};
 ## stores subject db path
 my %subject_db;
 
-foreach my $bsml_file(@bsml_files) {
+## flag for dealing properly with masked aat input BSML
+my $analysis_is_masked_aat;
+## path to unmasked assembly sequences (read from masked aat BSML)
+my $unmasked_fasta_directory;
 
+my $counter = 0;
+my $bsml_count = scalar(@bsml_files);
+foreach my $bsml_file(@bsml_files) {
+    if ($verbose) {    
+        print STDERR "processing ".++$counter."/$bsml_count '$bsml_file'\n";
+    }
     my $infh;
     if ($bsml_file =~ /\.gz$/) {
         open($infh, "<:gzip", $bsml_file) 
@@ -245,10 +259,31 @@ foreach my $bsml_file(@bsml_files) {
     } else {
         open($infh, $bsml_file)
          || die("couldn't open input file '$bsml_file': $!");
-    }   
+    }
     $twig->parse($infh);
     close $infh;
 
+}
+
+## if the analysis was masked aat searches we need to replace the hash of stored assembly sequence with the unmasked sequence
+if ($analysis_is_masked_aat) {
+    foreach my $asmbl_id(keys(%{$asmbl_source})){
+        my ($source, $identifier) = split(":", $asmbl_source->{$asmbl_id});
+       
+        unless (-d $unmasked_fasta_directory) {
+            die "unmasked fasta directory '$unmasked_fasta_directory' doesn't exist: $!";
+        }
+        
+        $source = $unmasked_fasta_directory."/".$source;
+        
+        unless (-e $source) {
+            die "unmasked assembly file '$source' doesn't exist: $!";
+        }
+        
+        my $seq = get_sequence_by_id($identifier, $source);
+    
+        $asmbl_seq->{$asmbl_id} = $seq;
+    }
 }
 
 my $protein_fasta_file;
@@ -272,6 +307,26 @@ if (! $JUST_PRINT_BEST_LOCATIONS) {
 }
 
 exit(0);
+
+sub analysis_handler {
+    my ($twig, $analysis) = @_;
+
+    my $analysis_id = $analysis->{'att'}->{'id'};
+    if ($analysis_id eq 'aat_aa_masked_analysis') {
+        $analysis_is_masked_aat = 1;
+    } else {
+        return;
+    }
+
+    $unmasked_fasta_directory = get_attribute($analysis, 'unmasked_fasta_directory');
+    
+    unless ($unmasked_fasta_directory) {
+        die "failed to parse 'unmasked_fasta_directory' Analysis Attribute";
+    }
+
+    $unmasked_fasta_directory =~ s/\/$//;
+   
+}   
 
 sub seq_pair_align_handler {
     my ($twig, $seq_pair_alignment) = @_;
@@ -721,20 +776,12 @@ sub seq_handler {
             die("Seq-data-import for '$seq_id' does not have a value for identifier");
         }
         
-        my $seq = '';
-        eval {
-            $seq = cdbyank($identifier, $source);
-        };
-        if ($@) {
-            die "cdbyank failed for fasta entry '$identifier' from '$source'";
-        }
-        $seq =~ s/^>[^\n]+\n//;
-        $seq =~ s/\s+//g;
- 
-#        my $seq = get_sequence_by_id($source, $identifier);
+        my $seq = get_sequence_by_id($identifier, $source);
             
         if (length($seq) > 0) {
             $asmbl_seq->{$assembly_id} = $seq;
+            ## a file with the same source basename should exist in UNMASKED_FASTA_DIRECTORY if input is masked aat output
+            $asmbl_source->{$assembly_id} = basename($source).":".$identifier;
         } else {
             die("couldn't fetch sequence for '$seq_id' from Seq-data-import source '$source'");
         }
@@ -750,32 +797,23 @@ sub seq_handler {
 }
 
 ## pull a sequence from a fasta file by sequence id
-## where the sequence id is the header string up to
-## the first whitespace char
 sub get_sequence_by_id {
-    my ($fname, $id) = @_;
-    my $seq_id = '';
-    my $sequence = '';
-    open (IN, $fname) || die("couldn't open fasta file for reading");
-    TOP: while (<IN>) {
-        chomp;
-        if (/^>([^\s]+)/) {
-            $seq_id = $1;
-            if ($seq_id eq $id) {
-                while (<IN>) {
-                    chomp;
-                    if (/^>/) {
-                        last TOP;
-                    } else {
-                        $sequence .= $_;
-                    }
-                }
-            }   
-        }
-    }
-    close IN;
+    my ($identifier, $source) = @_;
+    
+    my $seq = '';
 
-    return $sequence;
+    eval {
+        $seq = cdbyank($identifier, $source);
+    };
+    
+    if ($@) {
+        die "cdbyank failed for fasta entry '$identifier' from '$source'";
+    }
+    
+    $seq =~ s/^>[^\n]+\n//;
+    $seq =~ s/\s+//g;
+ 
+    return $seq;
 }
 
 ## parses out the assembly id from a sequence id 
