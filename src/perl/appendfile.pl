@@ -114,8 +114,15 @@ sub append_file_contents {
 
     my ($bcpfile, $appendfile) = @_;
 
-    print `cat $appendfile >> $bcpfile`;
-    print `mv $appendfile $appendfile.$$.bak`;
+    eval {
+	print `cat $appendfile >> $bcpfile`;
+    };
+    if ($@){
+	die "Caught exception while attempting to cat $appendfile >> $bcpfile: $!";
+    }
+
+    rename($appendfile, $appendfile.$$.bak) || die "Could not mv $appendfile $appendfile.$$.bak: $!";
+
 
 }
 
