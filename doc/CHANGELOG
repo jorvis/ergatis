@@ -475,3 +475,7 @@ next
 -installer: added metagene
 -trf: bugfix - id_repository now passed to trf2bsml
 -ngap: bugfix - ngap.pl was not compiling
+-initdb: added obov1p2tochado.pl --respect_namespace support
+-obo2chado: added obov1p2tochado.pl --respect_namespace support
+-bsml2chado: capturing stdout and stderr for appendfile.pl
+-appendfile.pl: catching exceptions
