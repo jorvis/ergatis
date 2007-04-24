@@ -38,6 +38,10 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
+		<key>--respect_namespace</key>
+		<value>$;NAMESPACE$;</value>
+	    </param>
+	    <param>
 		<key>--ontdoc</key>
 		<value>$;I_FILE_PATH$;</value>
 	    </param>
