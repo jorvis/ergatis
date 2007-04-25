@@ -128,7 +128,7 @@
 		<value>$;TMP_DIR$;/partition_tables.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=partition_core_chado_tables,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/partition_tables.list,$;NODISTRIB$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=partition_core_chado_tables,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/partition_tables.list,$;NODISTRIB$;=1"/>
 	<!--Iterator7 for processing and loading all OBO files -->
 	<command>
 	    <type>RunUnixCommand</type>
