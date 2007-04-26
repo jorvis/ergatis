@@ -143,7 +143,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.bsml</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.$;OUTPUT_TOKEN$;.all.cluster.bsml</arg>
         </command>
            <command>
             <type>RunUnixCommand</type>
