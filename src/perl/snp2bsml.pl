@@ -12,7 +12,7 @@ snp2bsml.pl - convert clustered snp output information from show-snps to bsml
 
 usage: snp2bsml.pl [ --input|-i=/path/to/show-snps_clustered_output ]
            [ --output|-o=/path/to/snp_data.bsml ]
-             --database|-d=database_to_be_loaded
+             --project
            [ --log|-l=/path/to/logfile ]
            [ --debug|-d=debug_level ]
            [ --moltype|-m=molecule_type ]
@@ -26,8 +26,11 @@ B<--input, -i>
 B<--output, -o>
     BSML multiple sequence alignment file for SNP representation
 
-B<--database, -d>
-    Database to load BSML data into
+B<--project>
+    Project name
+
+B<--id_repository>
+    Path to project id repository
 
 B<--log, -l>
     Log file
@@ -73,8 +76,8 @@ use warnings qw(all);
 
 use IO::File;
 use BSML::BsmlBuilder;
-use Papyrus::TempIdCreator;
 use Ergatis::Logger;
+use Ergatis::IdGenerator;
 use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case);
 use Sequence::SeqLoc;
@@ -104,13 +107,17 @@ sub get_opts
     my $log_file    = Ergatis::Logger::get_default_logfilename;
     my $debug   = 4;
     GetOptions(\%opts,
-           'input|i=s', 'output|o=s', 'database|d=s',
+           'input|i=s', 'output|o=s', 
            'log|l=s', 'debug|D=i', 'moltype|m=s', 'seqdata|s=s',
-           'help|h');
+           'help|h', 'id_repository=s', 'project=s');
     print_usage if $opts{help};
+    $logger->logdie("No SNP seqdata provided")
+        if (!$opts{id_repository});
+    if (!$opts{project}) {
+        $opts{project} = 'unknown';
+    }
     $input_file = $opts{input} if $opts{input};
     $output_file = $opts{output} if $opts{output};
-    $db = $opts{database} if $opts{database};
     $log_file = $opts{log} if $opts{log};
     $debug = $opts{debug} if $opts{debug};
     $logger = new Ergatis::Logger('LOG_FILE'    => $log_file,
@@ -120,7 +127,6 @@ sub get_opts
         $logger->logdie("Error reading input $input_file: $!");
     $out = new IO::File($output_file, "w") or
         $logger->logdie("Error writing output $output_file: $!");
-    $logger->logdie("No database provided") if !$db;
     $moltype = $opts{moltype} if $opts{moltype};
     init_seqdata($opts{seqdata}) if $opts{seqdata};
     $logger->logdie("No SNP seqdata provided")
@@ -141,7 +147,7 @@ sub init_seqdata
 
 sub parse_data
 {
-    my $id_creator      = new Papyrus::TempIdCreator;
+    my $id_creator  = new Ergatis::IdGenerator('id_repository' => $opts{'id_repository'});
     my $doc         = new BSML::BsmlBuilder();
     my @indels      = ();
     my @cluster     = ();
@@ -188,8 +194,12 @@ sub add_table
             ($doc->addBsmlMultipleAlignmentTable);
     $msa_table->addBsmlLink('analysis', '#nucmer_snps_analysis', 'computed_by');
     $msa_table->addattr('molecule-type', $moltype);
-    $msa_table->addattr('id', $id_creator->new_id(db => $db,
-                              so_type => $type));
+    $msa_table->addattr('id', 
+                              $id_creator->next_id(
+                                                    project => $opts{project},
+                                                    type => $type
+                                                 )
+                       );
     $msa_table->addattr('class', $type);
     my $aln_summary = $msa_table->returnBsmlAlignmentSummaryR
               ($msa_table->addBsmlAlignmentSummary);
