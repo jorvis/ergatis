@@ -93,7 +93,16 @@
       <name>Create BSML</name>
       <state>incomplete</state>
       <executable>$;BIN_DIR$;/snp2bsml</executable>
-      <arg>-i $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.merged -o $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.bsml -d $;PROJECT$; -s $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.snps.seq</arg>
+      <key>-i</key>
+      <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.merged</value>
+      <key>-o</key>
+      <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.cluster.bsml</value>
+      <key>--project</key>
+      <value>$;PROJECT$;</value>
+      <key>--id_repository</key>
+      <value>$;PROJECT_ID_REPOSITORY$;</value>
+      <key>-s</key>
+      <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.all.snps.seq</value>
     </command>
         <command>
             <type>RunUnixCommand</type>
