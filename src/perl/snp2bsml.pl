@@ -179,8 +179,8 @@ sub parse_data
     $doc->createAndAddAnalysis( 
                                 'id'         => 'nucmer_snps_analysis',
                                 'sourcename' => $opts{'input'},
-                                'algorithm'  => 'auto_annotate',
-                                'program'    => 'auto_annotate',
+                                'algorithm'  => 'nucmer_snps',
+                                'program'    => 'nucmer_snps',
                               );
 
    
