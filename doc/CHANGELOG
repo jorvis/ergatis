@@ -486,3 +486,4 @@ next
 -obo2chado: added obov1p2tochado.pl --respect_namespace support
 -bsml2chado: capturing stdout and stderr for appendfile.pl
 -appendfile.pl: catching exceptions
+-installer: panther now installed as v2 and not v1
