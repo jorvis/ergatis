@@ -17,6 +17,48 @@
 	    <executable>mkdir</executable>
 	    <arg>-p -m 777 $;TMP_DIR$;</arg>
 	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>check database</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/checkDatabase</executable>
+	    <param>
+		<key>--username</key>
+		<value>chado_admin</value>
+	    </param>
+	    <param>
+		<key>--password</key>
+		<value>chado_admin99</value>
+	    </param>
+              <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+              <param>
+		<key>--database_type</key>
+		<value>$;DATABASE_TYPE$;</value>
+	    </param>
+              <param>
+		<key>--assert</key>
+		<value>1</value>
+	    </param>
+	    <param>
+		<key>--server</key>    
+		<value>$;SERVER$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/checkDatabase.pl.log</value>
+	    </param>
+              <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/checkDatabase.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/checkDatabase.stderr</value>
+	    </param>
+	</command>
 	<!--Iterator for dropping all chado-mart tables -->
 	<command>
 	    <type>RunUnixCommand</type>
