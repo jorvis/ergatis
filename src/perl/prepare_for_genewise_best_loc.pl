@@ -796,26 +796,6 @@ sub seq_handler {
     }
 }
 
-## pull a sequence from a fasta file by sequence id
-sub get_sequence_by_id {
-    my ($identifier, $source) = @_;
-    
-    my $seq = '';
-
-    eval {
-        $seq = cdbyank($identifier, $source);
-    };
-    
-    if ($@) {
-        die "cdbyank failed for fasta entry '$identifier' from '$source'";
-    }
-    
-    $seq =~ s/^>[^\n]+\n//;
-    $seq =~ s/\s+//g;
- 
-    return $seq;
-}
-
 ## parses out the assembly id from a sequence id 
 sub get_assembly_id {
     my ($seq_id) = @_;
@@ -844,4 +824,35 @@ sub get_attribute {
     } else {
         die "failed to extract $name from attributes";
     }
+}
+
+## pull a sequence from a fasta file by sequence id
+## where the sequence id is the header string up to
+## the first whitespace char
+sub get_sequence_by_id {
+    my ($id, $fname) = @_;
+    my $seq_id = '';
+    my $sequence = '';
+    open (IN, $fname) || die("couldn't open fasta file for reading");
+    TOP: while (<IN>) {
+        chomp;
+        if (/^>([^\s]+)/) {
+            $seq_id = $1;
+            if ($seq_id eq $id) {
+                while (<IN>) {
+                    chomp;
+                    if (/^>/) {
+                        last TOP;
+                    } else {
+                        $sequence .= $_;
+                    }
+                }
+            }
+        }
+    }
+    close IN;
+
+    $sequence =~ s/\s+//g;
+    
+    return $sequence;
 }
