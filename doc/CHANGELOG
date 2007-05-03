@@ -487,3 +487,4 @@ next
 -bsml2chado: capturing stdout and stderr for appendfile.pl
 -appendfile.pl: catching exceptions
 -installer: panther now installed as v2 and not v1
+-interface: pipeline lists on index page now loaded via ajax call to eliminate long waits before page display
