@@ -36,6 +36,18 @@ a.project_link:hover span {
     opacity: 0.9;
 }
 
+div#pipeline_lists_container {
+    display: none;
+}
+
+div#pipeline_loading_container div {
+    margin-bottom: 30px;
+}
+
+div#pipeline_loading_container div img {
+    padding-left: 15px;
+}
+
 input#repository_root_field {
     margin-left: 10px;
     width: 250px;
@@ -47,10 +59,9 @@ span.header_note {
     color: rgb(0,100,0);
 }
 
-#watched_pipeline_container,
-#running_pipeline_container,
-#other_active_pipelines_container,
-#custom_list_container {
+#pipeline_lists_container,
+#custom_list_container,
+#pipeline_loading_container {
     margin-left: 120px;
 }
 
