@@ -30,3 +30,16 @@ div.component_group {
     float: left;
     width: 250px;
 }
+
+table.grid {
+    border-collapse: collapse;
+}
+
+table.grid,
+table.grid td,
+table.grid th {
+    border: 1px solid rgb(0,0,0);
+}
+table.grid th {
+    padding: 0 5px 0 5px;
+}
