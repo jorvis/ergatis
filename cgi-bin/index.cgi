@@ -38,6 +38,7 @@ for my $label ( sort $ergatis_cfg->Parameters('projects') ) {
 
 $tmpl->param( REGISTERED_PROJECTS => $registered_projects );
 $tmpl->param( UPDATE_CACHE        => $update_cache );
+$tmpl->param( DEFAULT_PROJECT_ROOT => $ergatis_cfg->val( 'paths', 'default_project_root') || '' );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'update cache', is_last => 1, url => './index.cgi?update_cache=1' },
