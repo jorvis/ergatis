@@ -61,7 +61,7 @@ sub get_module_path {
 
 =over 4
 
-searches each directory within the path passed for pipeline templates and returns a data
+Searches each directory within the path passed for pipeline templates and returns a data
 structure ideal for use with HTML::Template.  The data structure returned looks like:
 
     [
@@ -71,6 +71,10 @@ structure ideal for use with HTML::Template.  The data structure returned looks 
             comment => 'some comment here',
             component_count => 0, },
     ]
+
+If there is any problem parsing the template it is skipped and excluded from the
+data structure returned.  This could happen if the pipelines are stored in a temp
+directory where some of the files are automatically removed.
 
 =back
 
@@ -84,24 +88,25 @@ sub get_pipeline_templates {
         while ( my $thing = readdir $recent_dh ) {
 
             if ( -e "$dir/$thing/pipeline.layout" ) {
-                push @templates, { id => $thing, 
-                                   path => "$dir/$thing",
-                                   has_comment => 0,
-                                   comment => '',
-                                   component_count => 0, };
+                my $layout;
+                eval { $layout = Ergatis::SavedPipeline->new( template => "$dir/$thing/pipeline.layout" ) };
+                
+                if (! $@ ) {
+                    push @templates, { id => $thing, 
+                                       path => "$dir/$thing",
+                                       has_comment => 0,
+                                       comment => '',
+                                       component_count => $layout->component_count, };
 
-                if ( -e "$dir/$thing/pipeline.xml.comment" ) {
-                    $templates[-1]->{has_comment} = 1;
+                    if ( -e "$dir/$thing/pipeline.xml.comment" ) {
+                        $templates[-1]->{has_comment} = 1;
 
-                    open( my $ifh, "$dir/$thing/pipeline.xml.comment" ) || die "can't read comment file: $!";
-                    while ( <$ifh> ) {
-                        $templates[-1]->{comment} .= $_;
+                        open( my $ifh, "$dir/$thing/pipeline.xml.comment" ) || die "can't read comment file: $!";
+                        while ( <$ifh> ) {
+                            $templates[-1]->{comment} .= $_;
+                        }
                     }
                 }
-
-                my $layout = Ergatis::SavedPipeline->new( template => "$dir/$thing/pipeline.layout" );
-                
-                $templates[-1]->{component_count} = $layout->component_count();
             }
         }
     }
