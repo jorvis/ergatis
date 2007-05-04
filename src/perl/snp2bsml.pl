@@ -212,17 +212,17 @@ sub add_table
         $seq_nums .= "$i";
         $seq_nums .= ":" if $i < $#$cluster;
         my $loc = $$cluster[$i];
+        my $length = $loc->GetSeqData ? length($loc->GetSeqData) : 0;
         my $aln_seq = $aln_summary->returnBsmlAlignedSequenceR
                   ($aln_summary->addBsmlAlignedSequence);
         $aln_seq->addattr('name', $loc->GetId);
         $aln_seq->addattr('seqref', $loc->GetId);
-        $aln_seq->addattr('length',
-            $loc->GetSeqData ? length($loc->GetSeqData) :
-            0);
+        $aln_seq->addattr('length', $length);
         $aln_seq->addattr('seqnum', $i);
-        $aln_seq->addattr('start', $loc->GetFrom);
+        $aln_seq->addattr('start',
+                $length ? $loc->GetFrom() : $loc->GetFrom() + 1);
         $aln_seq->addattr('on-complement',
-                  $loc->GetStrand eq '+' ? '0' : '1');
+                $loc->GetStrand eq '+' ? '0' : '1');
         my $seq_data = $seq_align->returnBsmlSequenceDataR
                    ($seq_align->addBsmlSequenceData);
         $seq_data->addattr('seq-name', $loc->GetId);
@@ -275,6 +275,14 @@ sub process_indels
                 }
             }
         }
+
+        #if the indel is on the minus strand, reverse the order
+        #the bases are already complemented so there's not need to
+        #complement them
+        if ($loc_with_seq->GetStrand() eq Sequence::SeqLoc::MINUS_STRAND) {
+            $indel = reverse($indel);
+        }
+        
         my @indel_cluster = ();
         foreach my $loc (@{$$cluster_group[0]}) {
             if ($loc->GetId eq $loc_with_seq->GetId) {
