@@ -106,7 +106,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Chado::Gene;
 use BSML::GenePredictionBsml;
-use Workflow::IdGenerator;
+use Ergatis::IdGenerator;
 use Ergatis::Logger;
 
 ####### GLOBALS AND CONSTANTS ###########
@@ -273,10 +273,10 @@ sub check_parameters {
     }
 
     unless($options{'id_repository'}) {
-        $error .= "Option id_repository is required.  Please see Workflow::IdGenerator ".
+        $error .= "Option id_repository is required.  Please see Ergatis::IdGenerator ".
             "for details.\n";
     } else {
-        $idMaker = new Workflow::IdGenerator( 'id_repository' => $options{'id_repository'} );
+        $idMaker = new Ergatis::IdGenerator( 'id_repository' => $options{'id_repository'} );
         $idMaker->set_pool_size( 'exon'        => 20,
                                  'transcript'  => 20,
                                  'gene'        => 20,
