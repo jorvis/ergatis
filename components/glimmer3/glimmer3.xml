@@ -19,6 +19,40 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>train_for_glimmer</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/train_for_glimmer3</executable>
+            <param>
+               <key>--input_list</key>
+               <value>"$;INPUT_FILE_LIST$;"</value>
+            </param>
+            <param>
+               <key>--training_seq</key>
+               <value>"$;TRAINING_SEQ$;"</value>
+            </param>
+            <param>
+               <key>--output_file</key>
+               <value>$;ICM$;</value>
+            </param>
+            <param>
+               <key>--tmp_dir</key>
+               <value>$;TMP_DIR$;</value>
+            </param>
+            <param>
+               <key>--long_orfs_opts</key>
+               <value>"$;LONG_ORFS_OPTS$;"</value>
+            </param>
+            <param>
+               <key>stdout</key>
+               <value>$;OUTPUT_DIRECTORY$;/train.glimmer3.stdout</value>
+            </param>
+            <param>
+               <key>stderr</key>
+               <value>$;OUTPUT_DIRECTORY$;/train.glimmer3.stderr</value>
+            </param>
+        </command>
         <!--Processing-->
         <!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
