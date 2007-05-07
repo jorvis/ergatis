@@ -185,20 +185,20 @@ foreach my $file(@files) {
 
     #Make sure that we make an output file even if there aren't any results to read in.
     if( (scalar(keys %{$stats})) == 0 ) {
-        system("touch $ouputFile");
+        system("touch $outputFile");
     }
     
     #Okay this may seem to be overkill, but I'm almost sure it has to be this way (almost).
     #It allows for the case where one HMM can have a hit against the same sequence twice.  
     #Therefore one cmsearch run should be identified not only by the hmm/cm and query sequence, 
-    #but also the are where the hit has occured on the query sequence.
+    #but also where the hit has occured on the query sequence.
     foreach my $querySeq(keys %{$stats}) {
         foreach my $hmm(keys %{$stats->{$querySeq}}) {
             foreach my $boundaries(keys %{$stats->{$querySeq}->{$hmm}}) {
                 my $fileName = $stats->{$querySeq}->{$hmm}->{$boundaries};
                 unless($fileName) {
                     print Dumper($stats->{$querySeq}->{$hmm});
-                    exit(0);
+                    &_die("Could not find file name");
                 }
                 my $exitVal = &runProg($fileName, $hmm, $other_opts, $outputFile);
                 &handleExitVal($exitVal);
