@@ -22,8 +22,6 @@ var pipeline_root_panel_node;
 var component_being_configured;
 var pipeline_insert_location;
 
-var debug_pipeline_parse_calls = 0;
-var debug_components_found = 0;
 
 window.onload = function() {
     // make sure the form is reset here.
