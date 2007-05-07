@@ -30,7 +30,7 @@
             <param>
                 <key>stderr</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
-            <param>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
