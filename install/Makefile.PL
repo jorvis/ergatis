@@ -282,6 +282,7 @@ clustalw	:
 	@install components/clustalw/clustalw.xml $(WORKFLOW_DOCS_DIR)
 	@install components/clustalw/clustalw.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/clustalw/clustalw.config $(WORKFLOW_DOCS_DIR)
+	@install components/clustalw/clustalw.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 copydb	:
 	@echo "Installing copydb workflows in $(WORKFLOW_DOCS_DIR)"
