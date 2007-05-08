@@ -488,3 +488,6 @@ next
 -appendfile.pl: catching exceptions
 -installer: panther now installed as v2 and not v1
 -interface: pipeline lists on index page now loaded via ajax call to eliminate long waits before page display
+-snp2bsml.pl: updated to use Ergatis::IdGenerator for ids
+-nucmer_snps: changes to support modified snp2bsml.pl
+-genbank2bsml: added v2 component, added to installer
