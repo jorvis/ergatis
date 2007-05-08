@@ -36,7 +36,7 @@
 	    </param>
               <param>
 		<key>--database_type</key>
-		<value>$;DATABASE_TYPE$;</value>
+		<value>$;RDBMS$;</value>
 	    </param>
               <param>
 		<key>--assert</key>
