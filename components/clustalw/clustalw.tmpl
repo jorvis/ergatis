@@ -1,0 +1,89 @@
+<!-- component documentation -->
+
+<p>
+    From the main EBI site for clustalw:
+</p>
+<blockquote>
+    ClustalW is a general purpose multiple sequence alignment program for DNA or proteins. 
+    It produces biologically meaningful multiple sequence alignments of divergent sequences. 
+    It calculates the best match for the selected sequences, and lines them up so that the 
+    identities, similarities and differences can be seen.
+</blockquote>
+<h3>references</h3>
+<p>
+    Ramu Chenna, et al.<br>
+    Multiple sequence alignment with the Clustal series of programs<br>
+    <a href='http://nar.oxfordjournals.org/cgi/content/abstract/31/13/3497'>Nucleic Acids Research, 2003, Vol. 31, No. 13 3497-3500</a>
+</p>
+<h3>input</h3>
+<p>
+    This program accepts multi-fasta files as input.
+</p>
+<h3>output</h3>
+<p>
+    Output includes the raw output files (dnd and clw) and BSML.
+</p>
+<h3>bsml representation</h3>
+<div class='bsml_container'>
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence class="polypeptide" title="ana1.polypeptide.238539.0" id="ana1.polypeptide.238539.0" molecule="aa"&gt;
+        &lt;Seq-data-import source="/usr/local/annotation/ASP/output_repository/j_ortholog_clusters/8499_3way/894.16661.fsa" identifier="ana1.polypeptide.238539.0" format="fasta" id="Bsml0"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#clustalw_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+      &lt;Sequence class="polypeptide" title="anig.polypeptide.278007.0" id="anig.polypeptide.278007.0" molecule="aa"&gt;
+        &lt;Seq-data-import source="/usr/local/annotation/ASP/output_repository/j_ortholog_clusters/8499_3way/894.16661.fsa" identifier="anig.polypeptide.278007.0" format="fasta" id="Bsml1"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#clustalw_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+      
+        [ ... one Sequence element for each sequence within the multi-fasta file ... ]
+      
+    &lt;/Sequences&gt;
+    &lt;Tables id="BsmlTables"&gt;
+      &lt;Multiple-alignment-table molecule-type="protein" class="match"&gt;
+        &lt;Attribute name="newick_tree" content="(ana1.polypeptide.238539.0:0.23503,anig.polypeptide.278007.0:0.23503);"&gt;&lt;/Attribute&gt;
+        &lt;Alignment-summary seq-type="protein" seq-format="msf"&gt;
+          &lt;Aligned-sequence length="351" seqnum="1" name="ana1.polypeptide.238539.0:1"&gt;&lt;/Aligned-sequence&gt;
+          &lt;Aligned-sequence length="351" seqnum="2" name="anig.polypeptide.278007.0:2"&gt;&lt;/Aligned-sequence&gt;
+        &lt;/Alignment-summary&gt;
+        &lt;Sequence-alignment sequences="1:2:"&gt;
+          &lt;Sequence-data seq-name="ana1.polypeptide.238539.0:1"&gt;ana1.polypeptide.238539.0      MSLQTRSLGS GPDAPQVPCM GLGFGSLSGF YGPAGSPESR LSLLDNAYAA 
+ana1.polypeptide.238539.0      GLRFWDLADI YGDAEDLVSE WVKRSDPAKR DDVFIATKFG LQRQADGMHR 
+ana1.polypeptide.238539.0      FRSDPDYVKE ACERSLKRLG VNTIDLYYCH RVDGVTPVER TVEAMVDLKK 
+ana1.polypeptide.238539.0      QGKIRHLGLS DISASTLRRA HAVHPIAALQ VEYSLFTLDI ESSESDVLQT 
+ana1.polypeptide.238539.0      ARELGVTVIA FSPIGRGILS GQFTSYTSIP EGDLRRIYPK YAESNFPAIL 
+ana1.polypeptide.238539.0      KLVKGLESVA SAHSQRAERS VKPAQIALAW LLAQGNDVIP IPGTKSAARI 
+ana1.polypeptide.238539.0      AEDVAAAAID LTEGELERIR ALAEEAAMGI SGTRYPAAVM ATMCADTPPL 
+ana1.polypeptide.238539.0      E
+&lt;/Sequence-data&gt;
+          &lt;Sequence-data seq-name="anig.polypeptide.278007.0:2"&gt;anig.polypeptide.278007.0      MS.DLRSLG. .HNGPLVNAI GLGTMSIAGA YGQQNTPEEK LAFLDHAHSI 
+anig.polypeptide.278007.0      RQRFWDTADI YFDSEAIIGQ WFKRS..GKR DDIFLATKFG LSYDASMNQS 
+anig.polypeptide.278007.0      IRSDPEYVRM ACERSLEKLG VETIDLYYCH RADGVTPIEK TVEAMAQLKR 
+anig.polypeptide.278007.0      EGKIRYLGLS EVSAATLRRA HAVHPISALQ IEYSPFCLDI ESPQSDVLRT 
+anig.polypeptide.278007.0      CRELGIAVVA YSPMGRGLLT GQFKSRSDLG EQDFRCMIPR YTEG.MDRLL 
+anig.polypeptide.278007.0      KIVGRFREIG EAHGS..... .TPSQVALAW LLAQGLDVIP IPGTRSIKYL 
+anig.polypeptide.278007.0      EENAAAVNLT LSDEEVAEIR DLVQKANF.. VGDRYP..TI MPIFPDTPEL 
+anig.polypeptide.278007.0      .
+&lt;/Sequence-data&gt;
+          &lt;Alignment-consensus&gt;&lt;/Alignment-consensus&gt;
+        &lt;/Sequence-alignment&gt;
+        &lt;Link rel="analysis" href="#clustalw_analysis" role="computed_by"&gt;&lt;/Link&gt;
+      &lt;/Multiple-alignment-table&gt;
+    &lt;/Tables&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="clustalw_analysis"&gt;
+        &lt;Attribute content="clustalw" name="algorithm"&gt;&lt;/Attribute&gt;
+        &lt;Attribute content="clustalw" name="program"&gt;&lt;/Attribute&gt;
+
+        [ ... one Attribute for each present ... ]
+
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+
+</div>
