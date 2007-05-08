@@ -857,6 +857,7 @@ wait	:
 	@install components/wait/wait.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/wait/wait.i2.xml $(WORKFLOW_DOCS_DIR)
 	@install components/wait/wait.config $(WORKFLOW_DOCS_DIR)
+	@install components/wait/wait.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 wu-blastn	:
 	@echo "Installing wu-blastn workflows in $(WORKFLOW_DOCS_DIR)"
