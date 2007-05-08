@@ -42,7 +42,7 @@
 	    </param>
 	    <param>
 	    	<key>--conf_ini_file</key>
-		<value>$;REPOSITORY_ROOT$;/workflow/glimmer3/$;PIPELINEID$;_$;GLIMMER3_OUTPUT_TOKEN$;/$;COMPONENT_NAME$;_$;OUTPUT_TOKEN$;.user.config</value>
+		<value>$;REPOSITORY_ROOT$;/workflow/glimmer3/$;PIPELINEID$;_$;GLIMMER3_OUTPUT_TOKEN$;/glimmer3.$;GLIMMER3_OUTPUT_TOKEN$;.user.config</value>
 	    </param>	   
         </command>
     </commandSet>
