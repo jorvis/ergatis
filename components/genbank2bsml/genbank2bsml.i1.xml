@@ -24,6 +24,14 @@
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
+            <param>
+                <key>--id_repository</key>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
+            </param> 
+           <param>
+                <key>--project</key>
+                <value>$;PROJECT$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
