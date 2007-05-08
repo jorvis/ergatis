@@ -57,7 +57,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Ergatis::Logger;
-use Workflow::IdGenerator;
+use Ergatis::IdGenerator;
 use XML::Twig;
 use Data::Dumper;
 use BSML::BsmlBuilder;
@@ -111,7 +111,7 @@ if (!$options{'id_repository'}) {
 if (!$options{'project'}) {
     pod2usage("project name must be provided with --project");
 }
-my $id_gen = Workflow::IdGenerator->new('id_repository' => $options{'id_repository'});
+my $id_gen = Ergatis::IdGenerator->new('id_repository' => $options{'id_repository'});
 
 if (!$options{'transeq_bin'}) {
     pod2usage("must provide path to transeq executable with --transeq_bin");
