@@ -250,6 +250,7 @@ bsml2fasta	:
 	@echo "Installing bsml2fasta workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/bsml2fasta/bsml2fasta.xml $(WORKFLOW_DOCS_DIR)
 	@install components/bsml2fasta/bsml2fasta.config $(WORKFLOW_DOCS_DIR)
+	@install components/bsml2fasta/bsml2fasta.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 bsml2featurerelationships	:
 	@echo "Installing bsml2featurerelationships workflows in $(WORKFLOW_DOCS_DIR)"

@@ -1,0 +1,32 @@
+<p>
+     Convert BSML files into FASTA format, allowing for a variety of input and output options, 
+     such as file lists or directories of files, handling these without user interaction.
+</p>
+
+<h3>input</h3>
+<p>
+     This component calls the perl script bsml2fasta.pl to do the format conversion. bsml2fasta.pl 
+     allows these types of input:
+</p>
+<ul>
+    <li>a single BSML file with one or multiple  elements</li>
+    <li>a comma separated list of BSML files</li>
+    <li>a directory containing BSML files</li>
+    <li>a comma separated list of directories containing BSML files</li>
+    <li>a text file containing a list of paths to individual BSML files or directories</li>
+</ul>
+<p>
+     Use perldoc on bsml2fasta.pl for complete script usage information.
+</p>
+
+<h3>output</h3>
+<p>
+     As each of the Sequence elements are considered, they can be filtered by their class 
+     attribute to control which are included among the output set. Filtering is off by default.
+</p>
+<p>
+     Depending on the output format passed, one or multiple FASTA files will be created. One 
+     can either create a single FASTA file containing one entry for each Sequence element in 
+     the input set, or create a separate FASTA file for each. When separate files are created, 
+     the id attribute of the sequence is used as the file name along with the .fsa extension.
+</p>
