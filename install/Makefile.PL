@@ -321,6 +321,7 @@ fasta2bsml	:
 	@echo "Installing fasta2bsml workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/fasta2bsml/fasta2bsml.config $(WORKFLOW_DOCS_DIR)
 	@install components/fasta2bsml/fasta2bsml.xml $(WORKFLOW_DOCS_DIR)
+	@install components/fasta2bsml/fasta2bsml.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 fgenesh	:
 	@echo "Installing fgenesh workflows in $(WORKFLOW_DOCS_DIR)"

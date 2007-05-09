@@ -1,0 +1,43 @@
+
+<p>
+    This is a conversion component that creates BSML from FASTA files.
+</p>
+
+<h3>input</h3>
+<p>
+     Input can be either a single file, a directory of files, or a list. A list is a text 
+     file containing a list of either files or directories, one on each line. Any individual 
+     fasta file can have a single entry or multiple entries. This component will separate them 
+     as needed.
+</p>
+<p>
+     When converting multiple FASTA files, or a single file with multiple entries, the ID of 
+     each entry is assumed to be the the string of characters after the > symbol up until the 
+     first whitespace. For example:
+</p>
+<div class='code_container'>
+    &gt;aa1.assembly.23411 some defline description here
+    
+</div>
+<p>
+     In the example header above, the ID of the sequence is assumed to be "aa1.assembly.23411".
+</p>
+
+<h3>output</h3>
+<p>
+     The fasta format is limited in its data representation in the header. Because of this, 
+     this script was written very generically to allow any sort of header. In each  element 
+     created, the attributes generated are length, title, and id. (other attributes may be 
+     handled by default in BsmlBuilder). The id is assumed to be the first part of the fasta 
+     header up to the initial whitespace. So with this header:
+</p>
+<div class='code_container'>
+    &gt;gi46446716 putative chromosomal replication initiator protein, dnaA
+    
+</div>
+<p>
+     The 'id' attribute will be set to 'gi46446716'. The 'title' attribute is set to the entire 
+     value of the fasta header, including the first word that became the id.   The component can 
+     be configured using the format option to create one large BSML file with multiple entries 
+     in it or to create individual BSML files for each sequence.
+</p>
