@@ -129,7 +129,9 @@ while (my $infile = <$listfh>) {
     my ($asmblid, $modelnum, $model);
 
     ## files must end in .hmmpfam.htab
-    if ( $infile =~ /(\d+)_(\d+)\.hmmpfam.htab/ ) {
+    ## OR be of the form model.(\d+)_(\d+).htab
+    if ( ($infile =~ /(\d+)_(\d+)\.hmmpfam.htab/) ||
+         ($infile =~ /model\.(\d+)_(\d+)\.htab/)  ) {
         $asmblid = $1;
         $modelnum = $2;
         $model = "$asmblid.m$modelnum";
