@@ -36,9 +36,9 @@ print "Converting $ifile to bsml \n";
 print "Outputting bsml to $ofile\n";
 $doc->createAndAddAnalysis(
                             id => $options{'analysis_id'},
-                            sourcename => $options{'output'},
-                            algorithm => $algorithm,
-                            program => $algorithm,
+                            sourcename => $options{'output_bsml'},
+                            algorithm => 'genbank2bsml',
+                            program => 'genbank2bsml',
                           );
 $doc->write($ofile);
 chmod (0777, $ofile);
