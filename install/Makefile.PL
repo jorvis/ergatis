@@ -411,6 +411,7 @@ glimmerHMM	:
 	@install components/glimmerHMM/glimmerHMM.xml $(WORKFLOW_DOCS_DIR)
 	@install components/glimmerHMM/glimmerHMM.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/glimmerHMM/glimmerHMM.config $(WORKFLOW_DOCS_DIR)
+	@install components/glimmerHMM/glimmerHMM.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 hmmpfam	:
 	@echo "Installing hmmpfam workflows in $(WORKFLOW_DOCS_DIR)"

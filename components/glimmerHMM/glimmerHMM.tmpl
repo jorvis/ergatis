@@ -1,0 +1,82 @@
+<p>
+    The following description is taken from the <a href='http://cbcb.umd.edu/software/glimmerhmm/'>GlimmerHMM site</a>:
+</p>
+<blockquote>
+    GlimmerHMM is a new gene finder based on a Generalized Hidden Markov Model (GHMM). Although 
+    the gene finder conforms to the overall mathematical framework of a GHMM, additionally it 
+    incorporates splice site models adapted from the GeneSplicer program and a decision tree 
+    adapted from GlimmerM. It also utilizes Interpolated Markov Models for the coding and 
+    noncoding models . Currently, GlimmerHMM's GHMM structure includes introns of each phase, 
+    intergenic regions, and four types of exons (initial, internal, final, and single).
+</blockquote>
+<p>
+    By default, this script splits the input fasta sequences into chunks of 200,000bp, with 
+    overlaps of 10,000. 
+</p>
+
+<h3>reference</h3>
+<p>
+    Majoros WH, Pertea M, Salzberg SL.<br>
+    Abstract TigrScan and GlimmerHMM: two open source ab initio eukaryotic gene-finders.<br>
+    <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=pubmed&dopt=Abstract&list_uids=15145805'>Bioinformatics. 2004 Nov 1;20(16):2878-9. Epub 2004 May 14.</a>
+</p>
+
+<h3>input</h3>
+<p>
+    GlimmerHMM takes a single-entry FASTA file as its input. Using this component, you can define 
+    multiple iterations over a larger input set using either an input list file or defining a 
+    directory of sequence files ending with the '.fsa' extension.
+</p>
+
+<h3>raw output</h3>
+<p>
+    An example of the raw output from glimmerHMM
+</p>
+<div class='code_container'>
+    GlimmerHMM
+    Sequence name: aa1.assembly.15595
+    Sequence length: 73904 bp
+    Sequence C+G%: 39.976185
+
+
+    Predicted genes/exons
+
+    Gene Exon Strand  Exon            Exon Range      Exon
+       #    #         Type                           Length
+
+       1    1  -  Initial        2522       2729      208
+
+       2    1  +  Single         4309       4566      258
+
+       3    1  +  Initial        6567       6594       28
+       3    2  +  Internal      10892      10912       21
+       3    3  +  Terminal      15171      15343      173
+
+       4    1  +  Initial       15371      17356     1986
+       4    2  +  Terminal      23748      23900      153
+
+       5    1  -  Terminal      26294      26316       23
+       5    2  -  Initial       32039      32054       16
+
+       6    1  -  Terminal      33873      34189      317
+       6    2  -  Initial       34684      34849      166
+
+       7    1  +  Initial       37907      37933       27
+       7    2  +  Terminal      42196      42408      213
+
+       8    1  -  Terminal      44043      44104       62
+       8    2  -  Initial       45635      45746      112
+
+       9    1  -  Terminal      48434      48555      122
+       9    2  -  Internal      51964      51994       31
+       9    3  -  Internal      54756      54857      102
+       9    4  -  Internal      55284      55764      481
+       9    5  -  Initial       60329      60366       38
+
+      10    1  +  Initial       64469      64517       49
+      10    2  +  Terminal      65016      65260      245
+
+      11    1  +  Initial       67010      67015        6
+      11    2  +  Terminal      72846      72947      102
+
+</div>
