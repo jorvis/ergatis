@@ -34,6 +34,12 @@ print "Converting $ifile to bsml \n";
 #output the BSML
 #my $bsmlfile = "$odir/".$gbr{'gi'}.".bsml";
 print "Outputting bsml to $ofile\n";
+$doc->createAndAddAnalysis(
+                            id => $options{'analysis_id'},
+                            sourcename => $options{'output'},
+                            algorithm => $algorithm,
+                            program => $algorithm,
+                          );
 $doc->write($ofile);
 chmod (0777, $ofile);
 
@@ -71,10 +77,14 @@ sub parse_options {
         'output_bsml|b=s',  #output bsml file
         'id_repository=s',
         'project=s',
+        'analysis_id|a=s',
         ) || &print_usage("Unprocessable option");
 
     # check for required parameters
 
+    unless($options{'analysis_id'}) {
+        $options{'analysis_id'} = 'genbank2bsml_analysis';
+    }
     (defined($options{input_file})) || die "input_file is required parameter";
     # we may be passed a file name, but the .gz is what is actually there
     unless (-e $options{input_file}) {
