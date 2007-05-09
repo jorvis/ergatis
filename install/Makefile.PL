@@ -770,6 +770,7 @@ split_multifasta	:
 	@install components/split_multifasta/split_multifasta.xml $(WORKFLOW_DOCS_DIR)
 	@install components/split_multifasta/split_multifasta.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/split_multifasta/split_multifasta.config $(WORKFLOW_DOCS_DIR)
+	@install components/split_multifasta/split_multifasta.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 statistics2chado	:
 	@echo "Installing statistics2chado workflows in $(WORKFLOW_DOCS_DIR)"

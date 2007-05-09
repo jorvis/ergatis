@@ -1,0 +1,55 @@
+<p>
+     This connector component takes one or more input FASTA files and splits them into individual, 
+     single-entry (by default) FASTA files. This should eventually be transparent to the end-user, since all 
+     multi-input files should be split for some components.  The component also has a SEQS_PER_FILE
+     (default 1) variable so the user can specify more than one sequence in each output file.
+</p>
+<h3>input</h3>
+<p>
+     The input is defined with --input_file and should be a single fasta file. File extensions are 
+     ignored. When creating this multi-entry FASTA file, one should take care to make the first *word* 
+     after the &gt; symbol a unique value, as it will be used as the file name for that sequence. For 
+     example:
+</p>
+<div class='code_container'>
+     >gi53791237 Tragulus javanicus p97bcnt gene for p97Bcnt 
+     ACAGGAGAAGAGACTGAAGAGACACGTTCAGGAGAAGAGCAAGAGAAGCCTAAAGAAATGCAAGAAGTTA 
+     AACTCACCAAATCACTTGTTGAAGAAGTCAGGTAACATGACATTCACAAACTTCAAAACTAGTTCTTTAA 
+     AAAGGAACATCTCTCTTTTAATATGTATGCATTATTAATTTATTTACTCATTGGCGTGGAGGAGGAAATG 
+     
+     >gi|15387669|emb|AJ308231.1|CCA308231 Corynebacterium callunae pCC1 plasmid 
+     ATGCATGCTAGTGTGGTGAGTATGAGCACACACATTCATGGGCACCGCCGGGGTGCAGGGGGGCTTGCCC 
+     CTTGTCCATGCGGGGTGTGGGGCTTGCCCCGCCGATAGAGACCGGCCACCACCATGGCACCCGGTCGCGG 
+     GGTGATCGGCCACCACCACCGCCCCCGGCCACTCTCCCCCTGTCTAGGCCATATTTCAGGCCGTCCACTG
+     
+</div>
+<p>
+     Whitespace is ignored within the input file. See the Output section for more on creation of output
+     files and how these headers would be handled.
+</p>
+
+<h3>output</h3>
+<p>
+     Because we are splitting a single file into multiple files, we must devise a way of naming the 
+     resultant files. The file names are pulled from the header of each FASTA sequence. Specifically, 
+     the first *word* after the "&gt;" symbol, defined as all the characters until the first whitespace, 
+     is used as the ID of that sequence. When creating the file all illegal characters in the ID are 
+     replaced with underscores. This is only done for the file name; the original FASTA header within 
+     the created file is left intact. The extention .fsa is added to each ID to complete the file name.
+</p>
+<p>
+    The legal characters are a-z A-Z 0-9 . - _
+</p>
+<p>
+    For the example above, two files would be created with the following names:
+</p>
+<div class='code_container'>
+    gi53791237.fsa 
+    gi_15387669_emb_AJ308231.1_CCA308231.fsa
+    
+</div>
+<p>
+     If you pass a file with the optional --list_file parameter this script will also create a text 
+     file listing the file names of each of the output files it creates. When running as a step in a 
+     serial compute, this could be useful to pass as input to the next component.
+</p>
