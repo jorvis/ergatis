@@ -748,36 +748,60 @@ function updateInputLists() {
         if ( input_lists[i].getAttribute('class') == 'input_selector' ) {
             // save the current value of the selected index, if any (-1 if none)
             var current_index = 0;
+            
             if ( input_lists[i].selectedIndex > -1 ) {
                 current_index = input_lists[i].selectedIndex;
             }
         
-            // for replicated components the first element will be the value in the
-            //  original source.  for new components or unused values the first element
-            //  will have a value of empty string and text of 'please choose'
-            if ( input_lists[i].options[0].value == '' ) {
-                input_lists[i].innerHTML = '<option value="">please choose</option>';    
-            } else {
-                // put a empty option, followed by the selected actual option
-                // if we do this we're also adding an element before the selected index, so 
-                // we'll have to account for that.
-                input_lists[i].innerHTML = '<option value="">please choose</option>' +
-                                           '<option selected value="' + input_lists[i].options[0].value + '">' + 
-                                           input_lists[i].options[0].value + '</option>';
-                current_index++;
-            }
+            // record current value
+            var current_value = input_lists[i].options[current_index].value;
+            var current_label = input_lists[i].options[current_index].text;
+
+            // add 'please choose' unless current value IS null (value for 'please choose')
+            input_lists[i].innerHTML = '<option value="">please choose</option>';
+
+            // as we add the input elements, was the previously selected one found among the input elements?
+            var input_was_found = false;
+            var selected_index = 0;
             
+            // add inlist iteratively
             for ( id in inputs ) {
                 if ( inputs[id] instanceof Input ) {
-                    input_lists[i].innerHTML += '<option value="' + inputs[id].input_value + '">' + inputs[id].input_label + '</option>';
+                    input_lists[i].innerHTML += '<option value="' + inputs[id].input_value + '">' +
+                                                inputs[id].input_label + '</option>';
+                    
+                    if ( inputs[id].input_value == current_value ) {
+                        input_was_found = true;
+                        selected_index = input_lists[i].length - 1;
+                    }
                 }
             }
+
+            // if it wasn't found, add it to the input list
+            if ( input_was_found ) {
+                // set the index
+                input_lists[i].selectedIndex = selected_index;            
+            } else if ( ! isEmpty(current_value) ) {
             
-            // retain the previous value of the select box after rebuilding
-            input_lists[i].selectedIndex = current_index;
+                input_lists[i].innerHTML += '<option value="' + current_value + '">' +
+                                            current_label + '</option>';
+
+                input_lists[i].selectedIndex = input_lists[i].length - 1;
+                
+                var new_input = new Input();
+                new_input.input_label = current_label;
+                new_input.input_value = current_value;
+                new_input.input_source = 'manual';
+                // WARNING: this next one should not be hard coded, but it's not respected right now anyway
+                new_input.input_type  = 'list';
+                new_input.addTo( 'input_list' );
+            }
+            
+
         }
     }
 }
+
 
 /*  viewPipelineAddMenu
     displays a menu with pipeline templates to add to the current pipeline.

@@ -34,14 +34,18 @@ function _get_call_count() {
 }
 
 function purge_queue() {
-
     if ( this.calls.length > 0 ) {
         var calls_to_make = this._max_calls - this._calls_out;
         
         for ( var i=0; i<calls_to_make; i++ ) {
             // element 0 is the send call (with arguments), element 1 is the object ref
             var fref = this.calls.shift();
-
+            
+            // this will only happen if the number in the queue is less than the max simultaneous call count
+            if ( typeof fref == "undefined" ) {
+                continue;
+            }
+            
             /* I really want it to handle the call back itself via a second passed
                parameter, but couldn't get it to work */
             /*
