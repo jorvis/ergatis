@@ -122,8 +122,9 @@ sub generate_component_list {
     my $component_groups = [ { group_num => 0, component_sections => [] },
                              { group_num => 1, component_sections => [] },
                              { group_num => 2, component_sections => [] },
+                             { group_num => 3, component_sections => [] },
                            ];
-    my $group_counts = [0,0,0];
+    my $group_counts = [0,0,0,0];
     
     foreach my $section ( sort keys %sections ) {
         my $min_group_num = min_group($group_counts);
