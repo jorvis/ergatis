@@ -625,6 +625,7 @@ panther	:
 	@install components/panther/panther.xml $(WORKFLOW_DOCS_DIR)
 	@install components/panther/panther.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/panther/panther.config $(WORKFLOW_DOCS_DIR) 
+	@install components/panther/panther.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 parse_for_ncRNAs	:
 	@echo "Installing parse_for_ncRNA workflows in $(WORKFLOW_DOCS_DIR)"

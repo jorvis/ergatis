@@ -1,0 +1,174 @@
+<!-- component documentation -->
+
+<p>
+    From the <a href='http://www.pantherdb.org/'>main site</a> for panther:
+</p>
+<blockquote>
+    The PANTHER (Protein ANalysis THrough Evolutionary Relationships) Classification System is a 
+    unique resource that classifies genes by their functions, using published scientific 
+    experimental evidence and evolutionary relationships to predict function even in the 
+    absence of direct experimental evidence. Proteins are classified by expert biologists 
+    into families and subfamilies of shared function, which are then categorized by molecular 
+    function and biological process ontology terms.
+</blockquote>
+<h3>references</h3>
+<p>
+    PANTHER: A Library of Protein Families and Subfamilies Indexed by Function.<br>
+    <a href='http://www.genome.org/cgi/content/full/13/9/2129'>Genome Research 13:2129-2141, 2003.</a>
+</p>
+</p>
+    The PANTHER database of protein families, subfamilies, functions and pathways.<br>
+    <a href='http://nar.oxfordjournals.org/cgi/content/full/33/suppl_1/D284'>Nucleic Acids Research 2005 33(Database Issue):D284-D288.</a>
+</p>
+<h3>algorithm</h3>
+<p>
+    From the readme:
+</p>
+<ul>
+    <li>
+
+        the protein sequence is blasted against the consensus sequences for each of the HMMs in the 
+        PANTHER library.
+    </li>
+    <li>
+        based on the blast results, a set of heuristics are used to determine which HMMs the protein 
+        needs to be scored against.  The details for this can be seen in the getHmmsToScoreAgainst 
+        subroutine of pantherScore.pl.  Here are the basics:
+    </li>
+    <li>
+        <ul>
+            <li>
+                if the best hit has an eval of zero, take the top 2 hits with eval > 0.
+            </li>
+
+            <li>
+                if the best score is nonzero, but really small (1e-70), take the top 5 hits.
+            </li>
+            <li>
+                if the top hit is a litte "weak" (worse than 1e-70), get all hits until 
+                hit an evalue of 0.1...or...until the evalue drop off (the top evalue
+                divided by the evalue of the hit being examined) is greater than 1e-15 and 
+                we have found at least 5 hits.
+            </li>
+        </ul>
+    </li>
+    <li>
+        the protein is then scored against each of these HMMs, as determined from the 
+        step above.
+    </li>
+
+    <li>
+        the best hit is determined by the HMM with the best HMMER e-value.  If multiple HMMs for 
+        that protein have the same HMMER e-value, then the HMMER (raw) score is used to determine 
+        what the best hit is.
+    </li>
+</ul>
+<h3>input</h3>
+<p>
+    Query sequences are in the FASTA format.  The database of HMMs must be downloaded
+    and stored in a location on disk, such as:
+</p>
+<p class='code'>
+    /usr/local/db/common/PANTHER6.0
+</p>
+<p>
+    The binary format of the database makes searches more efficient and saves disk space.
+</p>
+
+<h3>implemented options</h3>
+<p>
+    The only currently implemented, user-configurable options in the component are what the 
+    documentation describes as "display type", whose values can be any of "B =&gt; panther best hit, 
+    I =&gt; iprscan best hit, A =&gt; all hits".  Also the hmm e-value cutoff is configurable with
+    a default value of 1e-3 (software default).  The -n option, which requests HMM annotation names
+    to be included in the output, is forcibly passed to the script by the component.
+</p>
+<h3>output</h3>
+<p>
+    BSML output is described in a later section.  The default raw output is in a tab-delimited 
+    format such as:
+</p>
+<div class='code_container'>
+    aa1.model.27560_00048   PTHR11865:SF123 NUCLEAR RECEPTOR SUBFAMILY 2    0.00047 20.1    153-171,
+    aa1.model.27560_00048   PTHR11865:SF192 RETINOID X RECEPTOR (RXR)       1.6e-05 27.3    153-171,
+    aa1.model.27560_00048   PTHR11865:SF189 PHOTORECEPTOR-SPECIFIC NUCLEAR RECEPTOR RELATED 0.00099 21.0    153-171,
+    aa1.model.27560_00048   PTHR11865:SF175 RAR-RELATED ORPHAN RECEPTOR (ROR)       0.00022 21.8    151-171,
+    aa1.model.27560_00048   PTHR11865:SF191 DEVELOPMENTAL ORPHAN RECEPTOR 2 (DOR2)  4e-06   30.4    153-171,
+    aa1.model.27560_00048   PTHR11865:SF187 ORPHAN NUCLEAR RECEPTOR NR2E1 (NUCLEAR RECEPTOR TLX) (TAILLESS HOMOLOG) (       8.4e-05 24.4    151-171,
+    aa1.model.27560_00048   PTHR11865:SF148 NUCLEAR HORMONE RECEPTOR HR78   0.00084 21.3    153-171,
+    aa1.model.27560_00048   PTHR11865:SF147 gb def: Nuclear hormone receptor family member nhr-41   6.8e-05 25.7    153-171,
+
+</div>
+<p>
+    the column definitions are as follows:
+</p>
+<ol>
+    <li>sequence ID</li>
+    <li>PANTHER accession if (containts :SF, is a subfamily HMM)</li>
+    <li>PANTHER family or subfamily name</li>
+    <li>HMM evalue score, as reported by HMMER</li>
+    <li>HMM score, as reported by HMMER (not used by PANTHER)</li>
+    <li>alignment range of protein for this particular HMM</li>
+</ol>
+<p>
+	Trailing comma in the last column is a seperator used if there are multiple domain hit regions.
+</p>
+<h3>interpretation of scores</h3>
+<dl>
+    <dt>closely related</dt>
+    <dd>if the score is better than E-23 (very likely to be a correct functional assignment)</dd>
+    <dt>related</dt>
+    <dd>if the score is better than E-11, but worse than E-23 (molecular function likely to be the correct but biological process/pathway less certain)</dd>
+    <dt>distantly related</dt>
+    <dd>if the score is better than E-3, but worse than E-11 (protein is evolutionarily related but function may have diverged) </dd>
+</dl>
+<h3>BSML output representation</h3>
+<div class='bsml_container'>
+&lt;Bsml&gt;
+
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence class="polypeptide" title="afu1.model.108_00030" id="afu1.model.108_00030" molecule="aa"&gt;
+        &lt;Seq-data-import source="/usr/local/annotation/AFU1/FASTA_repository/models_20060510/afu1.model.108_00030.fsa" identifier="afu1.
+model.108_00030" format="fasta" id="Bsml0"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#panther_analysis" role="input_of"&gt;&lt;/Link&gt;
+
+      &lt;/Sequence&gt;
+      &lt;Sequence class="polypeptide" title="MAJOR FACILITATOR SUPERFAMILY OF TRANSPORTERS (HOL1 PROTEIN-RELATED)" id="PTHR10074:SF23" mol
+ecule="aa"&gt;&lt;/Sequence&gt;
+    &lt;/Sequences&gt;
+    &lt;Tables id="BsmlTables"&gt;
+      &lt;Seq-pair-alignment refseq="afu1.model.108_00030" refstart="0" compseq="PTHR10074:SF23"&gt;
+        &lt;Attribute name="total_e_value" content="2.6e-54"&gt;&lt;/Attribute&gt;
+
+        &lt;Attribute name="total_score" content="191.3"&gt;&lt;/Attribute&gt;
+        &lt;Seq-pair-run compcomplement="0" runlength="221" refpos="23" comprunlength="221" refcomplement="0" comppos="0"&gt;
+          &lt;Attribute name="domain_num" content="1"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="domain_of" content="2"&gt;&lt;/Attribute&gt;
+        &lt;/Seq-pair-run&gt;
+
+        &lt;Seq-pair-run compcomplement="0" runlength="160" refpos="326" comprunlength="160" refcomplement="0" comppos="0"&gt;
+          &lt;Attribute name="domain_num" content="2"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="domain_of" content="2"&gt;&lt;/Attribute&gt;
+        &lt;/Seq-pair-run&gt;
+        &lt;Link rel="analysis" href="panther_analysis" role="computed_by"&gt;&lt;/Link&gt;
+
+      &lt;/Seq-pair-alignment&gt;
+    &lt;/Tables&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="_analysis"&gt;
+
+        &lt;Attribute content="/usr/local/annotation/AFU1/output_repository/panther/2260_default/127/afu1.model.108_00030.panther.bsml" nam
+e="sourcename"&gt;&lt;/Attribute&gt;
+      &lt;/Analysis&gt;
+	  &lt;Analysis id="panther_analysis"&gt;
+	  		...CONTENTS OF ANALYSIS HERE...
+     &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+</div>
