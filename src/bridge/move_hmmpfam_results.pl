@@ -144,7 +144,7 @@ while (my $infile = <$listfh>) {
         _log("processing file $infile");
         
     } else {
-        _log("ERROR: file $_ does not match naming convention! quitting.");
+        _log("ERROR: file '$infile' does not match naming convention! quitting.");
         exit(1);
     }
     
