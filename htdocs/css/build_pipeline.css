@@ -232,3 +232,8 @@ ul.add_panel li.parallel {
     list-style-image: url('/ergatis/images/icon_parallel.png');
 }
 
+
+/* WARNING: the following is temporary until the input types are supported */
+.input_element_type {
+    display: none !important;
+}

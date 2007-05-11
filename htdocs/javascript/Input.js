@@ -44,6 +44,9 @@ function add_to( tbl_id ) {
     
     new_cell = new_row.insertCell(2);
     new_cell.innerHTML = this.input_type;
+    // this next line could really be taken away once types are supported.  it is only
+    //  here right now so we can hide the column via css
+    new_cell.setAttribute('class', 'input_element_type');
 
     new_cell = new_row.insertCell(3);
     new_cell.innerHTML = '<a onClick="removeInput(' + "'" + this.id + "'" + ')"><img src="/ergatis/images/trashcan.png"></a>';
