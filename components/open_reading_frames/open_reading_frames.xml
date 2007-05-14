@@ -34,7 +34,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.fna.bz2"</value>
+                <value>".*\.fna.gz"</value>
             </param>
             <param>  
                 <key>--output_list</key>
@@ -52,7 +52,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.faa.bz2"</value>
+                <value>".*\.faa.gz"</value>
             </param>
             <param>  
                 <key>--output_list</key>
