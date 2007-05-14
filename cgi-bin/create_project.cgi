@@ -61,6 +61,9 @@ my $steps = [
     { description => 'create default project configuration', complete => 0, failed => 0, 
       failed_msg => '',
     },
+    { description => 'create project templates directory', complete => 0, failed => 0, 
+      failed_msg => '',
+    },
 ];
 
 ## if the project root is one of the defaults prefixes, the user hasn't entered it yet.
@@ -127,6 +130,7 @@ if (-e $default_config) {
     print_template();
 }
 
+create_dir_and_record("$repository_root/workflow/project_saved_templates", 11);
 
 ## if we get this far all steps were successful.  
 print_template(1);
