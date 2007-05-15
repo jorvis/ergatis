@@ -101,6 +101,7 @@ my $build_directory = "$build_area/" .temp_pipeline_id();
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
 $tmpl->param( WORKFLOWDOCS_DIR => $workflowdocs_dir );
 $tmpl->param( COMPONENT_GROUPS => $component_groups );
+$tmpl->param( COMPONENT_NAMES => \@components );
 $tmpl->param( RECENT_PIPELINES => $recent_pipelines );
 $tmpl->param( PROJECT_TEMPLATES => $project_templates );
 $tmpl->param( BUILD_DIRECTORY => $build_directory );

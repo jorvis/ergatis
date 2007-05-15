@@ -35,21 +35,40 @@
     <div id='add_menu_container'>
         <h2>add to pipeline</h2>
         <div id='component_choices'>
-            <h3>new component <span class='button' onclick='cancelAddMenu("component")'>cancel</span></h3>
-            <TMPL_LOOP NAME=COMPONENT_GROUPS>
-            <div class='component_group' id='group<TMPL_VAR NAME=GROUP_NUM>'>
-                <TMPL_LOOP NAME=COMPONENT_SECTIONS>
-                <div class='new_component_class_container'>
-                    <h4><TMPL_VAR NAME=SECTION></h4>
-                    <ul>
-                        <TMPL_LOOP NAME=COMPONENTS>
-                            <li><a onclick="selectComponentConfig('<TMPL_VAR NAME=NAME>')"><TMPL_VAR NAME=NAME></a></li>
-                        </TMPL_LOOP>
-                    </ul>
+            <h3>
+                new component 
+                <span class='button' onclick='cancelAddMenu("component")'>cancel</span>
+                <span class='button' onclick='viewComponentsByCategory()' id='view_by_category'>view by category</span>
+                <span class='button' onclick='viewComponentsByName()' id='view_by_name'>view by name</span>
+            </h3>
+            <div id='components_by_category'>
+                <TMPL_LOOP NAME=COMPONENT_GROUPS>
+                <div class='component_group' id='group<TMPL_VAR NAME=GROUP_NUM>'>
+                    <TMPL_LOOP NAME=COMPONENT_SECTIONS>
+                    <div class='new_component_class_container'>
+                        <h4><TMPL_VAR NAME=SECTION></h4>
+                        <ul>
+                            <TMPL_LOOP NAME=COMPONENTS>
+                                <li><a onclick="selectComponentConfig('<TMPL_VAR NAME=NAME>')"><TMPL_VAR NAME=NAME></a></li>
+                            </TMPL_LOOP>
+                        </ul>
+                    </div>
+                    </TMPL_LOOP> <!-- end classes loop -->
                 </div>
-                </TMPL_LOOP> <!-- end classes loop -->
+                </TMPL_LOOP> <!-- end groups loop -->
             </div>
-            </TMPL_LOOP> <!-- end groups loop -->
+            <div id='components_by_name'>
+                <div class='component_group'>
+                    <div class='new_component_class_container'>
+                        <h4>components by name</h4>
+                        <ul>
+                            <TMPL_LOOP NAME=COMPONENT_NAMES>
+                                <li><a onclick="selectComponentConfig('<TMPL_VAR NAME=NAME>')"><TMPL_VAR NAME=NAME></a></li>
+                            </TMPL_LOOP>
+                        </ul>
+                    </div>
+                </div>
+            </div>
         </div>
         <div id='pipeline_choices'>
             <h3>project templates <span class='button' onclick='cancelAddMenu("pipeline")'>cancel</span></h3>
