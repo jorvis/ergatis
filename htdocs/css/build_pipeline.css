@@ -77,6 +77,11 @@ div.component_status {
     color: rgb(225,0,0);
     font-size: 90%;
 }
+div#components_by_name {
+    clear: both;
+    /* this is toggled via javascript */
+    display: none;
+}
 div.config_expander {
     border-bottom: 1px dotted rgb(150,150,150);
     margin-top: 15px;
@@ -163,7 +168,7 @@ h3 {
     padding-top: 0;
 }
 h3 span.button {
-    margin-left: 100px;
+    margin-left: 30px;
 }
 input.select_shadow {
     display: none;
@@ -177,6 +182,9 @@ input.select_shadow {
 }
 span.component_name {
     font-weight: bold;
+}
+span#view_by_category {
+    display: none;
 }
 table#input_list {
     border-collapse: collapse;

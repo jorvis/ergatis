@@ -796,12 +796,32 @@ function updateInputLists() {
                 new_input.input_type  = 'list';
                 new_input.addTo( 'input_list' );
             }
-            
-
         }
     }
 }
 
+
+function viewComponentsByCategory() {
+    // hide the 'by name' view
+    getObject('components_by_name').style.display = 'none';
+    
+    // show the 'by category' view
+    getObject('components_by_category').style.display = 'block';
+    
+    getObject('view_by_name').style.display = 'inline';
+    getObject('view_by_category').style.display = 'none';
+}
+
+function viewComponentsByName() {
+    // hide the 'by category' view
+    getObject('components_by_category').style.display = 'none';
+
+    // show the 'by name' view
+    getObject('components_by_name').style.display = 'block';
+    
+    getObject('view_by_category').style.display = 'inline';
+    getObject('view_by_name').style.display = 'none';
+}
 
 /*  viewPipelineAddMenu
     displays a menu with pipeline templates to add to the current pipeline.
