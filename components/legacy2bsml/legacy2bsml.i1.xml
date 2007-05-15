@@ -86,6 +86,10 @@
 		<value>$;INPUT_ID_MAPPING_FILES$;</value>
 	    </param>
 	    <param>
+		<key>--output_id_mapping_file</key>
+		<value>$;TMP_DIR$;/$;DATABASE$;_$;ASMBL_ID$;_$;SCHEMA_TYPE$;.idmap</value>
+	    </param>
+	    <param>
 		<key>--idgen_identifier_version</key>
 		<value>$;IDGEN_IDENTIFIER_VERSION$;</value>
 	    </param>
