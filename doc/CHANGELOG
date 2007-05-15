@@ -457,7 +457,7 @@ ergatis-v2r4b2
 -sourceforge: updated sf site pages for 2.x release
 -sourceforge: added first version of install guide (not yet complete)
 
-An ergatis-v2r4b2 bug-fix/development branch was established on 2007-04-24 and was labelled ergatis-v2r4b2-bugfix.
+An ergatis-v2r4b2 bug-fix/development branch was established on 2007-04-24 and was labeled ergatis-v2r4b2-bugfix.
 
 ergatis-v2r4b3 (ergatis-v2r4b2-bugfix)
 --------------------------------------
@@ -491,3 +491,4 @@ next
 -snp2bsml.pl: updated to use Ergatis::IdGenerator for ids
 -nucmer_snps: changes to support modified snp2bsml.pl
 -genbank2bsml: added v2 component, added to installer
+-interface: can now view components by name or category when adding to a pipeline
