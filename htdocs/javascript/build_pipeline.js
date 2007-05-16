@@ -512,6 +512,11 @@ function saveComponentConfig( component_id, save_layout ) {
         var parameter_type  = 'unknown';
         var parameter_value = outputs[i].firstChild.value;
 
+        // skip this one if it isn't assigned a value
+        if ( isEmpty( parameter_value ) ) {
+            continue;
+        }
+
         // skip the output token
         if ( parameter_label == 'output token' ) {
             continue;
