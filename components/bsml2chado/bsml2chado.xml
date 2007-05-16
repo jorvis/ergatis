@@ -185,6 +185,10 @@
 		<key>--database</key>
 		<value>$;DATABASE$;</value>
 	    </param>
+	    <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
 	    <param>	  
 		<key>--server</key>
 		<value>$;SERVER$;</value>
