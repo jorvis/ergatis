@@ -20,6 +20,7 @@ USAGE: open_reading_frames.pl
             --frames=1,2,3,4,5,6
             --force_methionine=0
             --header_additions='foo=bar,ergatis_id=12345'
+            --unknown_aa=X
           ]
 
 =head1 OPTIONS
@@ -73,7 +74,10 @@ B<--min_orf_size>
  
 B<--max_orf_size>
     Optional. Set the maximum size of ORFs to output. (default = 999999999)
- 
+
+B<--unknown_aa>
+    Optional. Character to use for aa translation of ambiguous or partial non-degenerate codons. (default = 'X')
+    
 B<--debug> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
@@ -128,6 +132,7 @@ my $results = GetOptions (\%options,
                           'min_orf_size=i',
                           'max_orf_size=i',
                           'header_additions=s',
+                          'unknown_aa=s',
                           'log|l=s',
                           'debug=i',
                           'help|h') || pod2usage();
@@ -490,7 +495,7 @@ sub translate_codon {
     if (defined($codon_table_ref->{'aa'}->{$codon})) {
         $aa = $codon_table_ref->{'aa'}->{$codon};
     } else {
-        $aa = "?";
+        $aa = $options{'unknown_aa'};
 #        die "no codon lookup for -> $codon";
     }
     
@@ -792,7 +797,7 @@ sub check_parameters {
             die "--$option is a required option";
         }
     }
-   
+  
     unless ($options->{'input_file'} || $options->{'stdin'}) {
         die "either --stdin or --input_file must be specified";
     }
@@ -805,6 +810,12 @@ sub check_parameters {
     $options->{'end_as_stop'}           = 1         unless (defined($options->{'end_as_stop'}));
     $options->{'output_dir'}            = '.'       unless (defined($options->{'output_dir'}));
     $options->{'gzip_output'}           = 1         unless (defined($options->{'gzip_output'}));
+    $options->{'unknown_aa'}            = 'X'         unless (defined($options->{'unknown_aa'}));
+
+    if (length($options->{'unknown_aa'}) < 1 || length($options->{'unknown_aa'}) > 1) {
+        print STDERR "value provided to flag --unknown_aa should be one character in length, setting to default 'X'\n";
+        $options->{'unknown_aa'} = 'X';
+    }
 }
 __END__
 
