@@ -30,7 +30,9 @@ div.component_group {
     float: left;
     width: 250px;
 }
-
+span.term {
+    font-weight: bold;
+}
 table.grid {
     border-collapse: collapse;
 }
@@ -42,4 +44,17 @@ table.grid th {
 }
 table.grid th {
     padding: 0 5px 0 5px;
+}
+
+ul {
+    list-style-image: url('/ergatis/images/link.gif');
+}
+
+
+/* this section for the component_creation.tmpl */
+
+img#component_structure_types {
+    float: right;
+    margin: 0;
+    padding: 0;
 }
