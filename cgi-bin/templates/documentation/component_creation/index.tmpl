@@ -1,20 +1,42 @@
 <p>
-    This document describes the process of creating a new component to run in Ergatis.  If you 
-    just want to run an existing component you're in the wrong place.
+    This document describes the process of creating a new component to run in Ergatis and is intended
+    for developers.  If you just want to run an existing component you're in the wrong place.
 </p>
-<h3>what is a component?</h3>
+<h2>outline</h2>
+<ul>
+    <li>background
+        <ul>
+            <li><a href='#what_is_component'>what is a component?</a></li>
+            <li><a href='#can_my_script_be'>can my script or program become a component?</a></li>
+        </ul>
+    </li>
+    <li>general structure
+        <ul>
+            <li><a href='#typical_component_types'>typical component types</a></li>
+        </ul>
+    </li>
+</ul>
+<a name='what_is_component' />
+<h2>what is a component?</h2>
 <p>
     When you build an analysis pipeline with ergatis each 'piece' of the pipeline is known as
-    a component.  Usually this corresponds to some analysis tool, such as blastp, glimmerHMM
+    a <span class='term'>component</span>.  Usually this corresponds to some analysis tool, such as blastp, glimmerHMM
     or clustalw but can also be involved in more mundane tasks such as file format conversion
     or splitting a multi-fasta file into individual files.  Any executable program or script
     (or series of them) can become a component in ergatis, assuming it meets a few easy criteria.
 </p>
-<h3>can my script or program become a component?</h3>
+<p>
+    The component is really just a few XML files created to tell Ergatis (and Workflow Engine) 
+    how to run a given script or analysis tool.  When you build a component you define each how
+    each command accepts arguments, the execution order of each command (if there are more than one)
+    and whether each should be run locally or distributed to a compute node.
+</p>
+<a name='can_my_script_be' />
+<h2>can my script or program become a component?</h2>
 <p>
     There are only a few criteria that must be met for a script/program to become an ergatis
-    component.  These are mostly limitations of the underlying Workflow Engine but are pretty
-    intuitive and don't usually cause many problems.
+    component.  These are mostly reasonable limitations of the underlying Workflow Engine but are 
+    pretty intuitive and don't usually cause many problems.
 </p>
 <dl>
     <dt>path resolution</dt>
@@ -45,7 +67,7 @@
     <dt>no process forking</dt>
     <dd>
         <p>
-            This is more of a best practice than it is a hard rule, but since ergatis takes care of
+            This is more of a best practice than it is a hard rule, but since Ergatis takes care of
             distributing your analysis sequences or steps across a compute cluster, and your grid
             management software handles the placement of the job, the script you execute should not
             fork processes or submit other jobs once placed on a grid slot.  This would cause you to
@@ -56,5 +78,81 @@
             make sure to hard-code these options to 1 when you build your component.
         </p>
     </dd>
+    <dt>environmental variables</dt>
+    <dd>
+        <p>
+            Sending a large environment to be replicated at the execution of each grid job can be
+            troublesome for many grid implementations.  Programs should accept any parameters needed
+            via options passed on the command line rather than reading environmental variables.  Though
+            they <strong>can</strong> be used, Ergatis strips your environment to the bare essentials
+            when sending jobs to the grid.  This hasn't proven to be a problem with most modern applications.
+        </p>
+    </dd>
 </dl>
+<a name='typical_component_types' />
+<h2>typical component types</h2>
+<img id='component_structure_types' src='/ergatis/images/documentation/component_structure_types.png' alt='component structure types'>
+<p>
+    We'll first discuss the general types of components before going into detail about their actual XML markup.  
+    This image illustrates the three main types of components in terms of their structure.
+</p>
+<dl>
+    <dt>non-iterative</dt>
+    <dd>
+        <p>
+            This is the most simple of the component types.  It's composed only a series of specific commands
+            to be executed in serial or parallel.  Examples include formatdb and xdformat.
+        </p>
+    </dd>
+    <dt>single iterator</dt>
+    <dd>
+        <p>
+            By far the most common of the component types, single iterator components have a few (usually local)
+            initial steps to execute followed by a set of commands that must be run on every one of a large
+            set of input files (usually distributed onto grid nodes).  Once this distribution/iteration is 
+            finished a few other steps can be executed.
+        </p>
+        <p>
+            The wu-blastp component is an example of a component with a single iterator.  An <span class='term'>
+            iterator</span>.  If you have 10,000 sequences to blast, for example, this component first creates
+            output and temp directories, then iterates a set of commands over each input sequence file.  Each
+            set of steps within the iterator is usually run in parallel and distributed to a compute grid, but
+            this isn't required.  In the case of blast, the following steps would happen within the iterator 
+            for each input sequence:
+        </p>
+        <ol>
+            <li>perform the blast</li>
+            <li>convert to btab format</li>
+            <li>convert to BSML format</li>
+            <li>store configuration</li>
+            <li>validate BSML</li>
+        </ol>
+        <p>
+            After the iterator is finished and the steps above have been applied to all sequences in the input
+            set any post-iterator commands necessary can be run.  This might include cleaning up temp files
+            or making lists of the output files created.
+        </p>
+    </dd>
+    <dt>multiple iterator</dt>
+    <dd>
+        <p>
+            Though not nearly as common as the other types, a component can be created to have multiple, 
+            separate iterators.  The layout is essentially the same as the single-iterator components, where
+            pre- post- and even inter-iterator commands can be executed.
+        </p>
+    </dd>
+</dl>
+
+<h1>this tutorial is not yet complete</h1>
+
+
+
+
+
+
+
+
+
+
+
 
