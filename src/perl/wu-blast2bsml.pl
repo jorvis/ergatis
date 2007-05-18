@@ -65,12 +65,10 @@ use File::Basename;
 use File::Path;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Ergatis::Logger;
 use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
-}
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -965,7 +963,7 @@ sub get_deflines {
     close $ifh;
     
     if (scalar(keys(%{$deflines})) < 1) {
-        $logger->logwarn("defline lookup failed for '$fasta_file'");
+        $logger->warn("defline lookup failed for '$fasta_file'");
     }
 
     return $deflines;

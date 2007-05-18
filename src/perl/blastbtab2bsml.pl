@@ -643,7 +643,7 @@ sub get_deflines {
     close $ifh;
     
     if (scalar(keys(%{$deflines})) < 1) {
-        $logger->logwarn("defline lookup failed for '$fasta_file'");
+        $logger->warn("defline lookup failed for '$fasta_file'");
     }
 
     return $deflines;
