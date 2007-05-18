@@ -145,15 +145,15 @@ sub process_feature_group
                         product => $product->att('content')
                     );
 
-        my $ec_number;
+        my @ec_numbers = ();
         foreach my $att_list( $transcript->children('Attribute-list') ) {
-            $ec_number = $att_list->first_child('Attribute[@name="EC"]');
-            last if($ec_number);            
+            my $ec_number = $att_list->first_child('Attribute[@name="EC"]');
+            push @ec_numbers, $ec_number if $ec_number;
         }
-        if ($ec_number) {
+        foreach my $ec_number (@ec_numbers) {
             my $ec = $ec_number->att('content');
             if ($extract_all_ec || $ec !~ /-/) {
-                $attrs{EC_number} = $ec_number->att('content');
+                push @{$attrs{EC_number}}, $ec_number->att('content');
             }
         }
         print_feat(\@exons, "mRNA", \%attrs) if $output_mrna_feats;
@@ -293,6 +293,19 @@ sub print_feat
     }
 
     while (my ($key, $val) = each %{$attrs}) {
-        print $out "\t\t\t$key\t$val\n";
+        if (ref($val) eq "ARRAY") {
+            foreach my $v (@{$val}) {
+                print_attribute($out, $key, $v);
+            }
+        }
+        else {
+            print_attribute($out, $key, $val);
+        }
     }
+}
+
+sub print_attribute
+{
+    my ($out, $key, $val) = @_;
+    print $out "\t\t\t$key\t$val\n";
 }
