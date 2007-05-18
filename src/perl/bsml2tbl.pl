@@ -139,13 +139,17 @@ sub process_feature_group
     print_feat(\@repeats, "repeat_region") if scalar(@repeats);
     if ($class eq "transcript") {
         my $product =
-            $transcript->first_child('Attribute[@name="com_name"]');
+            $transcript->first_child('Attribute[@name="gene_product_name"]');
         my %attrs = (   transcript_id  => $transcript->att('id'),
                         protein_id => $polypeptide->att('id'),
                         product => $product->att('content')
                     );
-        my $ec_number =
-            $transcript->first_child('Attribute[@name="ec_number"]');
+
+        my $ec_number;
+        foreach my $att_list( $transcript->children('Attribute-list') ) {
+            $ec_number = $att_list->first_child('Attribute[@name="EC"]');
+            last if($ec_number);            
+        }
         if ($ec_number) {
             my $ec = $ec_number->att('content');
             if ($extract_all_ec || $ec !~ /-/) {
