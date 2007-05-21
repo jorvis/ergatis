@@ -108,7 +108,7 @@ if ($options{'help'}) {
 if (!$options{'id_repository'}) {
     pod2usage("must provided --id_repository");
 }
-if (!$options{'project'}) {
+if (!$options{'project'} ) {
     pod2usage("project name must be provided with --project");
 }
 my $id_gen = Ergatis::IdGenerator->new('id_repository' => $options{'id_repository'});
@@ -295,6 +295,9 @@ if (!$fasta_flag) {
     system($transeq_exec.$transeq_flags);
 
     my $query_id = get_sequence_id($options{'input'});
+    if( $options{'project'} eq 'parse' ) {
+        $options{'project'} = $1 if( $query_id =~ /^([^\.]+)/);
+    }
     
 #   my $out_fsa = $options{'output'}."/"."$query_id.fsa";
     $id_hash = replace_sequence_ids('', $temp_out_fsa, $options{'output'});
@@ -449,6 +452,9 @@ sub process_sequence {
     my $topology;
     
     $seq_id = $sequence->{'att'}->{'id'};
+    if( $options{'project'} eq 'parse') {
+        $options{'project'} = $1 if( $seq_id =~ /^([^\.])/);
+    }
     $class = $sequence->{'att'}->{'class'};
     $molecule = $sequence->{'att'}->{'molecule'};
     $topology = $sequence->{'att'}->{'topology'};   
