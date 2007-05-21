@@ -42,8 +42,9 @@ B<--debug,-d>
     Debug level.  Use a large number to turn on verbose debugging. 
 
 B<--project,-p> 
-    Optional. Project ID.  Used in creating feature ids.  (defaults = 'unknown')
+    Required. Project ID.  Used in creating feature ids. 
     If 'aa1' is passed, repeat feature IDs created are like aa1.repeat_region.4231.1
+    If 'parse' is passed, will parse from already present ids.
 
 B<--log,-l> 
     Log file
@@ -118,6 +119,7 @@ my $idcreator;  # Ergatis::IdGenerator object
 my $bsml;       # BSML::BsmlBuilder object
 my $data = [];  # parsed tRNAscan-SE data
 my $debug = 4;  # debug value.  defaults to 4 (info)
+my $parse_project =0;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -163,6 +165,11 @@ sub parse_tRNAscanSE_input {
     while (<IN>) {
 
         my @cols = split;
+
+        unless( $options{'project'} && $options{'project'} ne 'parse' ){
+            my $seq_id = $cols[0];
+            $options{'project'} = $1 if( $seq_id =~ /^([^\.]+)\./ );
+        }
  
         #check whitespace, no warn
         next if ( /^\s*$/ );
