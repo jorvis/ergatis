@@ -86,7 +86,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.raw"</value>
+                <value>".*\.predict"</value>
             </param>
             <param>  
                 <key>--output_list</key>
