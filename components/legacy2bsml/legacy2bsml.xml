@@ -15,10 +15,10 @@
 	    <name>create temp directory</name>
 	    <state>incomplete</state>
 	    <executable>mkdir</executable>
-	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+	    <arg>-p -m 777 $;TMP_DIR$;/id_mapping</arg>
 	</command>
 	<!--Iterator1 for revoking all permissions -->
-	<command>
+ 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Create revoke permissions DDL list</name>
 	    <state>incomplete</state>
@@ -67,6 +67,32 @@
 	    <param>
 		<key>stderr</key>    
 		<value>$;TMP_DIR$;/create_legacy2bsml_iterator_list.stderr</value>
+	    </param>
+	</command>
+ 	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Consolidate all .idmap files</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/consolidateIdMapFiles</executable>
+	    <param>
+		<key>--input_directories</key>
+		<value>$;TMP_DIR$;/id_mapping</value>
+	    </param>
+	    <param>
+		<key>--output_file</key>    
+		<value>$;REPOSITORY_ROOT$;/workflow/mapping/$;PIPELINEID$;_$;COMPONENT_NAME$;_$;OUTPUT_TOKEN$;.idmap</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;OUTPUT_DIRECTORY$;/consolidateIdMapFiles.pl.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;OUTPUT_DIRECTORY$;/consolidateIdMapFiles.pl.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;OUTPUT_DIRECTORY$;/consolidateIdMapFiles.pl.stderr</value>
 	    </param>
 	</command>
     </commandSet>
