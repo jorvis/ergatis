@@ -70,14 +70,12 @@ these sequence files.
 
 =cut
 use strict;
-no strict "refs";
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use XML::Twig;
 use Ergatis::Logger;
 use BSML::BsmlBuilder;
-use FileCache maxopen => 10;
 use File::Basename;
 
 $| = 1;
@@ -513,7 +511,13 @@ sub get_sequence_by_id {
 sub write_seq_to_fasta {
     my ($file, $header, $sequence) = @_;
     
-    my $fh = cacheout $file;
+    my $fh;
+
+    if (-e $file) { 
+        open ($fh, ">>".$file) || die "Couldn't open file '$file' for appending: $!";
+    } else {
+        open ($fh, ">".$file) || die "Couldn't open file '$file' for writing: $!";
+    }
     
     $sequence =~ s/\W+//g;
     $sequence =~ s/(.{1,60})/$1\n/g;
