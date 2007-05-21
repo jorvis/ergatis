@@ -87,7 +87,7 @@
 	    </param>
 	    <param>
 		<key>--output_id_mapping_file</key>
-		<value>$;TMP_DIR$;/$;DATABASE$;_$;ASMBL_ID$;_$;SCHEMA_TYPE$;.idmap</value>
+		<value>$;TMP_DIR$;/id_mapping/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_$;SCHEMA_TYPE$;.idmap</value>
 	    </param>
 	    <param>
 		<key>--idgen_identifier_version</key>
