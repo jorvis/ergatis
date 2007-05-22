@@ -183,6 +183,10 @@ umask(0000);
 
     sub new {
         my ($class, %args) = @_;
+
+        ## make sure that the OS is linux (no support for other OS's)
+        croak "IdGenerator currently only supports Linux"
+            if $^O !~ /linux/;
         
         ## create the object
         my $self = bless { %_attributes }, $class;
@@ -389,7 +393,7 @@ umask(0000);
     sub _lock
     {
         my $self = shift;
-        my $fl = pack("s s l l i", F_WRLCK, SEEK_SET, 0, 0, 0);
+        my $fl = pack("s! s! l! l! i", F_WRLCK, SEEK_SET, 0, 0, $$);
         fcntl($self->{_fh}, $f_setlkw, $fl) ||
             die "Error locking file: $!";
     }
@@ -397,7 +401,7 @@ umask(0000);
     sub _unlock
     {
         my $self = shift;
-        my $fl = pack("s s l l i", F_UNLCK, SEEK_SET, 0, 0, 0);
+        my $fl = pack("s! s! l! l! i", F_UNLCK, SEEK_SET, 0, 0, $$);
         fcntl($self->{_fh}, $f_setlk, $fl) ||
             die "Error unlocking file: $!";
     }
