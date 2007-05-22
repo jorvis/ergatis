@@ -452,6 +452,7 @@ sub process_sequence {
     my $topology;
     
     $seq_id = $sequence->{'att'}->{'id'};
+    return unless( $seq_id =~ /assembly/ );
     if( $options{'project'} eq 'parse') {
         $options{'project'} = $1 if( $seq_id =~ /^([^\.])/);
     }
