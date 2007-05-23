@@ -175,6 +175,8 @@ for my $file ( @files ) {
     $x->parsefile( $file );
 }
 
+push( @groups, $currgroup);
+
 print "Opened the output file for writing\n";
 open OUTFILE,">$options{'output'}" or $logger->logdie("Can't open output file $options{'output'}");
 
