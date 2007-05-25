@@ -157,7 +157,7 @@ sub _separateIntervals {
     #Sort those intervals that overlap the center (first by left, then by right)
     my @sLeftTmp = sort { $a->[0] <=> $b->[0] } @{$node->{'s_center'}};
     $node->{'sort_left'} = \@sLeftTmp;
-    my @sRightTmp= sort { $a->[1] <=> $b->[1] } @{$node->{'s_center'}};
+    my @sRightTmp= sort { $b->[1] <=> $a->[1] } @{$node->{'s_center'}};
     $node->{'sort_right'}= \@sRightTmp;
 
 
