@@ -34,7 +34,7 @@
 	    </param> 
 	    <param>
 	    	<key>--project</key>
-		<value>$;PROJECT$;</value>
+		<value>$;PROJECT_NAME$;</value>
 	    </param>
 	    <param>
 	    	<key>--transeq_bin</key>
