@@ -297,7 +297,7 @@
 		<value>$;TMP_DIR$;/drop_cm_indices.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR7,$;ITERATOR_XML$;=ITERATOR7_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Drop indexes</name>
@@ -361,6 +361,6 @@
 		<value>$;TMP_DIR$;/create_cm_indices.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR6,$;ITERATOR_XML$;=ITERATOR6_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
     </commandSet>
 </commandSetRoot>
