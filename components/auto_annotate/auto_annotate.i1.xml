@@ -26,7 +26,7 @@
             </param>
             <param>
                <key>--panda_header_offsets</key>
-               <value>$;PANDA_HEADER_FILE$;</value>
+               <value>$;PANDA_HEADER_OFFESTS$;</value>
             </param>
             <param>
                <key>--length_cutoff</key>
