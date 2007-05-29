@@ -20,6 +20,8 @@ USAGE: bsml2legacydb.pl
         --db_name|n=alt_db_name
         --debug|D=4
         --log|l=/path/to/log_file.log
+        --username|U=username
+        --password|P=password
     ]
 
 =head1  OPTIONS
@@ -45,6 +47,12 @@ B<--debug,-D>
 
 B<--log,-l>
     Log file
+
+B<--username,-U>
+    Database username
+
+B<--password,-P>
+    Database password
 
 B<--help,-h>
     Print help
@@ -101,6 +109,8 @@ my $db_name = undef;
 my %latest_ids  = ();
 my %deleted_evidence    = ();
 my %chain_nums          = ();
+my $user    = "egc";
+my $pass    = "egcpwd";
 
 sub parse_opts;
 sub print_usage;
@@ -123,10 +133,10 @@ sub get_latest_id;
 
 GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
        "server|s=s", "database|d=s", "prog_name|p=s", "db_name|n=s",
-       "debug|D=i", "log|l=s", "help|h");
+       "debug|D=i", "log|l=s", "username|U=s", "password|P=s", "help|h");
 parse_opts;
 
-my $dbh = DBI->connect("dbi:Sybase:$server", 'egc', 'egcpwd', 
+my $dbh = DBI->connect("dbi:Sybase:$server", $user, $pass, 
                {RaiseError => 1, PrintError => 1}) or
     die "Error accessing db: DBI::errstr";
 $dbh->do("use $db");
@@ -165,6 +175,12 @@ sub parse_opts
         }
         elsif ($key eq "log") {
             $log_file = $val;
+        }
+        elsif ($key eq "username") {
+            $user = $val;
+        }
+        elsif ($key eq "password") {
+            $pass = $val;
         }
         elsif ($key eq "help") {
             print_usage if $val;
