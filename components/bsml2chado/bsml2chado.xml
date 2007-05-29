@@ -285,6 +285,21 @@
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
+	    <name>Drop chado-mart indices</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
+            <param>
+		<key>stdin</key>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_cm_indices.$;RDBMS$;.ddl</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/drop_cm_indices.list</value>
+	    </param>
+	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<command>
+	    <type>RunUnixCommand</type>
 	    <name>Drop indexes</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
@@ -317,6 +332,21 @@
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bcp.out.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Restore chado-mart indices</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
+            <param>
+		<key>stdin</key>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_cm_indices.$;RDBMS$;.ddl</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/create_cm_indices.list</value>
+	    </param>
+	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Rebuild indexes</name>
