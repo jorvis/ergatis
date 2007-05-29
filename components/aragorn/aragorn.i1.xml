@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>aragorn</name>
             <state>incomplete</state>
-            <executable>/usr/local/devel/ANNOTATION/wnelson/aragorn</executable>
+            <executable>$;ARAGORN_EXEC$;</executable>
             <arg>-w -l -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw $;I_FILE_PATH$;</arg>
         </command>
         <command>
