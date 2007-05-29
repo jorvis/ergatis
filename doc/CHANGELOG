@@ -492,3 +492,4 @@ next
 -nucmer_snps: changes to support modified snp2bsml.pl
 -genbank2bsml: added v2 component, added to installer
 -interface: can now view components by name or category when adding to a pipeline
+-added component aragorn
