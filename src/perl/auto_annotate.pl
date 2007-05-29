@@ -3,12 +3,12 @@ use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
 
-#auto_annotate --input_file /usr/local/annotation/scratch/kgalens/PROK/output_repository/glimmer3/5559_iter2/glimmer3.bsml.list --hmm_analysis /usr/local/annotation/scratch/kgalens/PROK/output_repository/hmmpfam/5557_protein_ALL_LIB_bin.HMM/ --ber_analysis /usr/local/annotation/scratch/kgalens/PROK/output_repository/ber/5576_AllGroup.niaa/ --output_bsml test.scaff1.output.bsml --hmm_info_db /usr/local/annotation/scratch/kgalens/hmmPandaInfo/hmmInfo.db --panda_header_offsets /usr/local/annotation/scratch/kgalens/hmmPandaInfo/pandaTest --panda_header_file /usr/local/annotation/scratch/kgalens/hmmPandaInfo/pandaTest_header --role_info_db /usr/local/annotation/scratch/kgalens/hmmPandaInfo/grData 
+#./auto_annotate --input_file input/cya1.assembly.9.1.bsml --output_dir output/ --hmm_analysis input/hmmpfam.bsml.list --ber_input input/ber.bsml.list --hmm_info_db /usr/local/annotation/MOORE/data_dbs/hmmInfo.db --panda_header_offsets /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda --panda_header_file /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda_header --role_info_db /usr/local/devel/ANNOTATION/kgalens/data_dbs/roleInfo.db
 
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-use Workflow::Logger;
+use Ergatis::Logger;
 use Pod::Usage;
 use Data::Dumper;
 use File::Find;
@@ -16,8 +16,8 @@ use MLDBM 'DB_File';
 use XML::Twig;
 use BSML::BsmlBuilder;
 use Split_DB_File;
-require "autoAnnotate.data";
-require "sharedRoutines.pl";
+require "/home/kgalens/data/autoAnnotate.data";
+require "/home/kgalens/bin/sharedRoutines.pl";
 $|++;
 
 
@@ -69,8 +69,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
@@ -80,6 +80,7 @@ $logger = $logger->get_logger();
 
 ############################## MAIN ###############################################
 my $flag = 0;
+my $best_ber_hits = 0;
 #Loop through all of the input files ( bsml with feature: class=polypeptide ).
 foreach my $input(@inputFiles) {
 
@@ -105,14 +106,12 @@ foreach my $input(@inputFiles) {
 
         #Get the best HMM evidence
         $evidence->{$polypeptide}->{'HMM'} = &getHMMEvidence( $polypeptide );
-        print Dumper($evidence->{$polypeptide}->{'HMM'});
 
         #Get the best BER evidence unless we've found a great HMM hit.
         #HMM hits are more reliable (if they are equivalog level).
         $evidence->{$polypeptide}->{'BER'} = &getBEREvidence( $polypeptide )
             unless(exists $evidence->{$polypeptide}->{'HMM'}->{'rank'} &&
                    $evidence->{$polypeptide}->{'HMM'}->{'rank'} == 1);
-        print Dumper($evidence->{$polypeptide}->{'BER'});
       
         $finalAnnotes->{$polypeptide} = &annotate( $evidence->{$polypeptide} );
         print Dumper( $finalAnnotes->{$polypeptide} );
@@ -129,6 +128,8 @@ print "\n\n----------------------------------------\n";
 foreach my $key ( keys %{$countFromEvidence} ) {
     print "$key: ".$countFromEvidence->{$key}."\n";
 }
+
+print "\nThere were $best_ber_hits best ber hits\n";
 
 ########################### SUB-ROUTINES #################################################
 sub checkParameters {
@@ -251,6 +252,7 @@ sub annotate {
         unless($retval->{'role_id'} && $retval->{'go_id'}) {
 
             print Dumper($evidence->{'HMM'});
+            
         }
 
 
@@ -515,7 +517,9 @@ sub getBEREvidence {
         }
     }
 
-    return [] unless($berBsmlFile);
+    if( ! $berBsmlFile ) {
+        die("Could not find ber file for $polyId");
+    }
 
     #Now parse the bsml file.
     my $twig = new XML::Twig( TwigHandlers => 
@@ -534,6 +538,7 @@ sub getBEREvidence {
 
     #Now that we have all the berMatches in this array, lets find the best one.
     my $bestMatch = &getBestBERMatch( \@berMatches, $fakeId2RealId );
+    $best_ber_hits++ if( $bestMatch );
 
     if($bestMatch->[$name] =~ /^conserved\s*/) {
         $bestMatch->[$name] = "conserved hypothetical protein";
@@ -1057,23 +1062,59 @@ sub annotation2bsml {
     my $link = $doc->createAndAddLink($seq, 'analysis', '#autoAnnotate_analysis', 'input_of');
     my $featTable = $doc->createAndAddFeatureTable($seq);
 
+    my $att_list_id = 0;
+
     foreach my $polyid (keys %{$finalAnnotes}) {
         my $feat = $doc->createAndAddFeature($featTable, $ber_map->{$polyid}, $ber_map->{$polyid}, 'transcript');
         $feat->addBsmlLink('analysis', '#autoAnnotate_analysis', 'computed_by');
         
         foreach my $term (keys %{$finalAnnotes->{$polyid}}) {
             next unless($finalAnnotes->{$polyid}->{$term});
+            
+            #We do different things with different types
+            if($term =~ /go_id/) {
+                my @vals = split( /\s+/, $finalAnnotes->{$polyid}->{$term} );
 
-            if($term =~ /(go_id|ec_num|role_id|gene_sym)/) {
-                my @vals = split(/\s+/, $finalAnnotes->{$polyid}->{$term});
-                foreach my $val(@vals) {
-                    $term = "ec_number" if($term eq 'ec_num');
-                    $term = "gene_symbol" if($term eq 'gene_sym');
-                    $doc->createAndAddBsmlAttribute( $feat, $term, $val );
+                foreach my $val ( @vals ) {
+
+                    my $attList = [ 
+                                    { 'name' => "GO", 'content' => $finalAnnotes->{$polyid}->{$term} },
+                                    { 'name' => "IEA", 'content' => $finalAnnotes->{$polyid}->{'annotation_from'} } ];
+                    
+                    push( @{$feat->{'BsmlAttributeList'}}, $attList );
+
                 }
-            } else {
+            } elsif( $term eq 'ec_num' ) {
+                my @vals = split( /\s+/, $finalAnnotes->{$polyid}->{$term} );
+
+                foreach my $val ( @vals ) {
+
+                    my $attList = [ 
+                                    { 'name' => "EC", 'content' => $finalAnnotes->{$polyid}->{$term} },
+                                    { 'name' => "IEA", 'content' => $finalAnnotes->{$polyid}->{'annotation_from'} } ];
+                    
+                    push( @{$feat->{'BsmlAttributeList'}}, $attList );
+
+                }
+            } elsif( $term eq 'role_id' ) { 
+                my @vals = split( /\s+/, $finalAnnotes->{$polyid}->{$term} );
+
+                foreach my $val ( @vals ) {
+
+                    my $attList = [ 
+                                    { 'name' => "TIGR_role", 'content' => $finalAnnotes->{$polyid}->{$term} },
+                                    { 'name' => "IEA", 'content' => $finalAnnotes->{$polyid}->{'annotation_from'} } ];
+                    
+                    push( @{$feat->{'BsmlAttributeList'}}, $attList );
+
+                }
+            } elsif( $term eq 'gene_sym' ) {
+                $doc->createAndAddBsmlAttribute( $feat, 'gene_symbol', $finalAnnotes->{$polyid}->{$term} );
+            } else { 
+                next if( $term eq 'role_from' );
                 $doc->createAndAddBsmlAttribute( $feat, $term, $finalAnnotes->{$polyid}->{$term} );
             }
+
         }
         
     }
