@@ -12,6 +12,7 @@ ExtUtils::Manifest::mkmanifest();
 ## let's start by checking for the modules we need
 my @modules_to_check = qw( 
     Bio::Seq
+    CDB_File
     Class::Struct
     Config::IniFiles
     DB_File
