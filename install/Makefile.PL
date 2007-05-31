@@ -116,7 +116,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps obo2chado open_reading_frames pangenome panther parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps obo2chado open_reading_frames pangenome panther parse_for_ncRNAs phat pipeline_summary promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -291,6 +291,12 @@ clustalw	:
 	@install components/clustalw/clustalw.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/clustalw/clustalw.config $(WORKFLOW_DOCS_DIR)
 	@install components/clustalw/clustalw.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
+combine_ncRNA_alignments	:
+	@echo "Installing combine_ncRNA_alignments workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/combine_ncRNA_alignments/combine_ncRNA_alignments.xml $(WORKFLOW_DOCS_DIR)
+	@install components/combine_ncRNA_alignments/combine_ncRNA_alignments.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/combine_ncRNA_alignments/combine_ncRNA_alignments.config $(WORKFLOW_DOCS_DIR)
 
 copydb	:
 	@echo "Installing copydb workflows in $(WORKFLOW_DOCS_DIR)"
