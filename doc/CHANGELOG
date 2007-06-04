@@ -464,33 +464,71 @@ ergatis-v2r4b3 (ergatis-v2r4b2-bugfix)
 -bsml2chado: capturing stdout and stderr for appendfile.pl
 -appendfile.pl: catching exceptions
 
-next
-----
+ergatis-v2r5b1
+--------------------------------------
 -all: code repository converted from local CVS to SVN on SourceForge
--interface: pipelines in 'running' state can no longer be deleted/archived
--interface: now doesn't include empty pipeline dirs in count
--installer: File::Mirror now required
+-interface: pipeline lists on index page now loaded via ajax call to eliminate long waits before page display
 -interface: can now save a pipeline building as a project pipeline template
 -interface: 'templates' browser tab added to all pages
 -interface: saved pipeline templates can be instantiated and run for any project from the template browser.
--quicktree: v2 component added
--installer: v2 backupdb added
--muscle: v2 component added
--installer: added muscle
--repeatmasker: 2bsml script now creates program and algorithm Attribute elements under Analysis
--metagene: v2 component added
--installer: added metagene
--trf: bugfix - id_repository now passed to trf2bsml
--ngap: bugfix - ngap.pl was not compiling
--initdb: added obov1p2tochado.pl --respect_namespace support
--obo2chado: added obov1p2tochado.pl --respect_namespace support
--bsml2chado: capturing stdout and stderr for appendfile.pl
--appendfile.pl: catching exceptions
--installer: panther now installed as v2 and not v1
--interface: pipeline lists on index page now loaded via ajax call to eliminate long waits before page display
--snp2bsml.pl: updated to use Ergatis::IdGenerator for ids
--nucmer_snps: changes to support modified snp2bsml.pl
--genbank2bsml: added v2 component, added to installer
+-inferface: now hides type column in input elements
 -interface: can now view components by name or category when adding to a pipeline
--added component aragorn
--added component combine_ncRNA_alignments
+-interface: pipelines in 'running' state can no longer be deleted/archived
+-interface: now doesn't include empty pipeline dirs in count
+-muscle: v2 component added, added to installer
+-metagene: v2 component added, added to installer
+-aragorn: component added, added to installer
+-delete_by_bcp: component added
+-genbank2bsml: component added, added to installer
+-bulk_delete_chado: component added
+-combine_ncRNA_alignmets: component added, added to installer
+-refresh_chado_mart: component added
+-truncated_chado_mart: component added
+-quicktree: component added, added to installer
+-repeatmasker: 2bsml script now creates program and algorithm Attribute elements under Analysis
+-repeatmasker: now correctly uses $;PROJECT_ID_REPOSITORY$; variable as input to 2bsml script
+-split_multifasta: documentation added
+-translate_sequence: resolved clash between project and component defined $;PROJECT$; variables
+-trf: bugfix - id_repository now passed to trf2bsml
+-fasta2bsml: component documenation added
+-tmhmm: now uses project id ergatis variable
+-seg: uses software.common to define executable
+-htab: various changes to component files to support new htab usage
+-htab: removal of component name from output file
+-open_reading_frames: uses gz to compress files instead of bz2
+-panther: documenation added
+-wait: documentation added
+-glimmer3: train_for_glimmer3 functionality added to component files
+-augustus: now uses project id repository ergatis variable
+-nucmer_snps: changes to support modified snp2bsml.pl
+-glimmerHMM: documenation added
+-bsml2fasta: documentation added
+-clustalw: documenation added
+-obo2chado: added obov1p2tochado.pl --respect_namespace support
+-initdb: added obov1p2tochado.pl --respect_namespace support
+-install: LISCENSE and INSTALL files added
+-installer: panther now installed as v2 and not v1
+-installer: v2 backupdb added
+-IntervalTree.pm: fixed bug in sorting of the right side of trees
+-GFF3Record.pm: added URL encoding for compliance with GFF3 spec
+-interface: added message stating support only for linux
+-hmm2htab.pl: added to replace global htab
+-run_cmsearch: bugfixes
+-open_reading_frames: various bugfixes and addition of --unknown_aa option
+-glimmer32bsml.pl: now correctly uses Ergatis::IdGenerator instead of Workflow
+-translate_sequence.pl: now correctly uses Ergatis::IdGenerator instead of Workflow
+-snp2bsml.pl: updated to use Ergatis::IdGenerator for ids
+-prepare_for_genewise_best_loc: various improvements
+-genbank2bsml.pl: improved bsml output format ( adds analysis section )
+-bsml2tbl.pl: now supports the addition of multiple ec numbers
+-legacy2bsml.pl: username and password for database access is no longer hardcoded
+-auto_annotate.pl: various improvements
+-tRNAscan2bsml.pl: now supports parsing the project name for ids from input ids
+-move_hmmpfam_results.pl: supports hmmpfam outfiles without component name in file name
+-install: install guide added
+-installer: File::Mirror, CDB_File now required
+-ngap: bugfix - ngap.pl was not compiling
+
+next
+----
+
