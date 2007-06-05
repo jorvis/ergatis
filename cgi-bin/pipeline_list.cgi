@@ -56,7 +56,7 @@ for my $var ( @required_vars ) {
 #################
 ## a check a selection of required, writeable directories
 my @required_dirs = ( $pipeline_root, "$repository_root/workflow", "$repository_root/workflow/runtime",
-                      "$repository_root/workflow/lock_files", "$repository_root/workflow/project_id_repository" );
+                      "$repository_root/workflow/lock_files", $project_conf->val( 'project', '$;PROJECT_ID_REPOSITORY$;' ) );
 
 for my $dir ( @required_dirs ) {
     if (! -d $dir ) {
