@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>promote gene prediction</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;</executable>
+            <executable>$;BIN_DIR$;/promote_gene_prediction</executable>
             <param>  
                 <key>--input_bsml</key>
                 <value>$;I_FILE_PATH$;</value>
@@ -22,7 +22,7 @@
             </param>
 	    <param>  
                 <key>--output_bsml</key>
-                <value>$;OUTPUT_DIRECTOR$;/$;ITERATOR_NAME$;/g$;GROUP_NUM$;/$;I_FILE_BASE$;_$;COMPONENT_NAME$;.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
             </param>
 	    <param>  
                 <key>--id_repository</key>
