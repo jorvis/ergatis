@@ -532,3 +532,4 @@ ergatis-v2r5b1
 next
 ----
 -promote_gene_prediction: now with valid bsml!
+-bsml2featurerelationships: There are more than one relationship, bug fix to call plural executable.
