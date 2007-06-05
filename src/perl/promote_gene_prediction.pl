@@ -196,7 +196,7 @@ sub gatherAndAdd {
         my $newLink = 
             new XML::Twig::Elt( 'Link', { 'rel' => 'sequence',
                                           'href' => "#".$featElem->att('id')."_seq" } );
-        $newLink->paste( $featElem );
+        $newLink->paste( 'last_child', $featElem );
 
         #Retrieve the interval loc element
         my $intLocElem = $featElem->first_child('Interval-loc');
