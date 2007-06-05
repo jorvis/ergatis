@@ -477,6 +477,7 @@ initdb	:
 	@install components/initdb/initdb.sql.xml $(WORKFLOW_DOCS_DIR)
 	@install components/initdb/initdb.sqlforce.xml $(WORKFLOW_DOCS_DIR)
 	@install components/initdb/initdb.obo.xml $(WORKFLOW_DOCS_DIR)
+	@install components/initdb/initdb.partition.xml $(WORKFLOW_DOCS_DIR)
 	@install components/initdb/initdb.config $(WORKFLOW_DOCS_DIR)
 
 iprscan	:
