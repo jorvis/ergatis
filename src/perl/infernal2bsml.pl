@@ -153,7 +153,7 @@ sub parseInfernalRaw {
                 $infHit->{'seqId'} = $1;
                 $project = "";
                 $project = $1 if($infHit->{'seqId'} =~ /^([^\.]+)/);
-                $logger->logdie("Unable to parse project from $seqId") unless($project);
+                $logger->logdie("Unable to parse project from $infHit->{'seqId'}") unless($project);
                 $start+=($2-1);
                 $stop+=($2-1);
             } 
