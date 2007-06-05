@@ -15,7 +15,7 @@
             <type>RunUnixCommand</type>
             <name>bsml2fasta</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/bsml2featurerelationship</executable>
+            <executable>$;BIN_DIR$;/bsml2featurerelationships</executable>
             <param>  
                 <key>--bsml_input</key>
                 <value>'$;INPUT_FILE$;'</value>
