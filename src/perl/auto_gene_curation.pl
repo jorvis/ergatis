@@ -17,7 +17,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use XML::Twig;
 use File::Find;
-use Workflow::Logger;
+use Ergatis::Logger;
 use Time::localtime;
 use BSML::BsmlBuilder;
 use MLDBM 'DB_File';
@@ -116,8 +116,6 @@ foreach my $inputFile (@inputFiles) {
     print STDOUT "wrote new file to $outBsml\n" if($logger->is_debug);
 
     &printChangedFeatures;
-
-    
 }
 ##################################################
 
@@ -282,8 +280,8 @@ sub checkParametersAndLog {
     my $opts = shift;
 
     #Setup Logger
-    my $logfile = $opts->{'log'} || Workflow::Logger::get_default_logfilename();
-    $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+    my $logfile = $opts->{'log'} || Ergatis::Logger::get_default_logfilename();
+    $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
                                   'LOG_LEVEL'=>$opts->{'debug'});
     $logger = $logger->get_logger();
     print "setup logger\n" if($logger->is_debug);
@@ -973,7 +971,7 @@ sub handleSequence {
     my $fsaFile = $seqDataImport->att('source');
     $logger->logdie("Unable to parse source from Seq-data-import element inside Sequence $id")
         unless($fsaFile);
-    $startSites->{$id} = &findStartSites( $identifier, $fsaFile);
+    $startSites->{$id} = &findStartSites( $identifier, $fsaFile );
     $sequenceSource->{'fsaFile'} = $fsaFile;
     $sequenceSource->{'id'} = $identifier;
     
