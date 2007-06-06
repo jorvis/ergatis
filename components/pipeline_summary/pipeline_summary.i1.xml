@@ -21,6 +21,18 @@
                 <key>--other_bsml_lists</key>
                 <value>$;OTHER_BSML_LISTS$;</value>
             </param>
+            <param>  
+                <key>--locus_prefix</key>
+                <value>$;LOCUS_PREFIX$;</value>
+            </param>
+            <param>  
+                <key>--cog_search_bsml</key>
+                <value>$;COGS_BSML_LIST$;</value>
+            </param>
+            <param>  
+                <key>--cog_lookup</key>
+                <value>$;COG_LOOKUP$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
