@@ -536,3 +536,5 @@ next
 -infernal2bsml: fixed syntax error
 -bsml2chado: added comments for interface
 -installer: initdb.partition.xml was omitted
+-auto_gene_curation: uses Ergatis Logger, instead of Workflow Logger
+-auto_gene_curation: checking both output bsml files ( storing config params and validating ).  It might work this time too.
