@@ -52,7 +52,7 @@
             </param>
             <param>  
                 <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.all.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.all.bsml</value>
             </param>
             <param>  
                 <key>--componenturl</key>
@@ -82,7 +82,7 @@
             </param>
             <param>  
                 <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.new.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.new.bsml</value>
             </param>
             <param>  
                 <key>--componenturl</key>
@@ -106,7 +106,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.all.bsml</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.all.bsml</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -117,7 +117,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.new.bsml</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.new.bsml</arg>
         </command>
     </commandSet>
 </commandSetRoot>
