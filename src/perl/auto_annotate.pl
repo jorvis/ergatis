@@ -1,9 +1,10 @@
-#!/usr/local/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
 
-#./auto_annotate --input_file input/cya1.assembly.9.1.bsml --output_dir output/ --hmm_analysis input/hmmpfam.bsml.list --ber_input input/ber.bsml.list --hmm_info_db /usr/local/annotation/MOORE/data_dbs/hmmInfo.db --panda_header_offsets /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda --panda_header_file /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda_header --role_info_db /usr/local/devel/ANNOTATION/kgalens/data_dbs/roleInfo.db
+#auto_annotate --input_file /usr/local/annotation/scratch/kgalens/PROK/output_repository/glimmer3/5559_iter2/glimmer3.bsml.list --hmm_analysis /usr/local/annotation/scratch/kgalens/PROK/output_repository/hmmpfam/5557_protein_ALL_LIB_bin.HMM/ --ber_analysis /usr/local/annotation/scratch/kgalens/PROK/output_repository/ber/5576_AllGroup.niaa/ --output_bsml test.scaff1.output.bsml --hmm_info_db /usr/local/annotation/scratch/kgalens/hmmPandaInfo/hmmInfo.db --panda_header_offsets /usr/local/annotation/scratch/kgalens/hmmPandaInfo/pandaTest --panda_header_file /usr/local/annotation/scratch/kgalens/hmmPandaInfo/pandaTest_header --role_info_db /usr/local/annotation/scratch/kgalens/hmmPandaInfo/grData 
 
 use strict;
 use warnings;
@@ -16,8 +17,8 @@ use MLDBM 'DB_File';
 use XML::Twig;
 use BSML::BsmlBuilder;
 use Split_DB_File;
-require "/home/kgalens/data/autoAnnotate.data";
-require "/home/kgalens/bin/sharedRoutines.pl";
+require "autoAnnotate.data";
+require "sharedRoutines.pl";
 $|++;
 
 
@@ -36,13 +37,12 @@ my %pandaHeaderOffsets;                     #Byte offsets of headers in the head
                                             #Split_DB_File tied hash
 my $headerFile;                              
 my $per_id_cutoff = 35;                     #Default cutoff for ber hit (percent identity)
-my $length_cutoff = 70;                     #Default cutoff for ber hit (length of hit)
+my $length_cutoff = 80;                     #Default cutoff for ber hit (length of hit)
 my %roleInfo;                               #Holds role guessing data.
 my $asmbl;                                  #Contains assembly information
 my $outputDir;                              #Directory for output files.
 my $geneBoundaries;                         #Hash containing start and end positions keyed by id
 my $extension = 300;                        #Extension length for ber (default 300).
-my $countFromEvidence;
 use vars qw(%isoType);
 my ($acc,$name,$ec_num,$gene_sym,$species,$go_id,$role_id,$exp,$wgp,$cg,$rank) = (0..10);
 ###################################################################################
@@ -79,8 +79,7 @@ $logger = $logger->get_logger();
 ###################################################################################
 
 ############################## MAIN ###############################################
-my $flag = 0;
-my $best_ber_hits = 0;
+
 #Loop through all of the input files ( bsml with feature: class=polypeptide ).
 foreach my $input(@inputFiles) {
 
@@ -100,8 +99,8 @@ foreach my $input(@inputFiles) {
     my $count = 0;
   
     #Cycle through all these polypeptides
-    foreach my $polypeptide ( keys %polypeptideIds ) { 
-        #next unless($polypeptide eq 'mmycoides.polypeptide.665408.1');
+    foreach my $polypeptide ( keys %polypeptideIds ) {       
+        next unless($polypeptide eq 'prok.polypeptide.156087.1');
         print "***Annotating protein: $polypeptide***\n";# if($logger->is_debug);
 
         #Get the best HMM evidence
@@ -114,7 +113,6 @@ foreach my $input(@inputFiles) {
                    $evidence->{$polypeptide}->{'HMM'}->{'rank'} == 1);
       
         $finalAnnotes->{$polypeptide} = &annotate( $evidence->{$polypeptide} );
-        print Dumper( $finalAnnotes->{$polypeptide} );
         
         $count++;
     }
@@ -124,12 +122,6 @@ foreach my $input(@inputFiles) {
     $finalAnnotes = {};
     $outputBsml = "";
 }
-print "\n\n----------------------------------------\n";
-foreach my $key ( keys %{$countFromEvidence} ) {
-    print "$key: ".$countFromEvidence->{$key}."\n";
-}
-
-print "\nThere were $best_ber_hits best ber hits\n";
 
 ########################### SUB-ROUTINES #################################################
 sub checkParameters {
@@ -225,7 +217,7 @@ sub checkParameters {
     if($opts->{'ber_extension_length'}) {
         $extension = $opts->{'ber_extension_length'};
     }
-
+    
 
 }
 
@@ -252,7 +244,6 @@ sub annotate {
         unless($retval->{'role_id'} && $retval->{'go_id'}) {
 
             print Dumper($evidence->{'HMM'});
-            
         }
 
 
@@ -261,10 +252,8 @@ sub annotate {
 
         my $autoAnnotate = 0;
         $autoAnnotate = 1 if($evidence->{'HMM'}->{'rank'} == 1);
-        $countFromEvidence->{'equivalog'}++;
     } elsif($evidence->{'BER'}->[$rank] && $evidence->{'BER'}->[$rank] != 100) {  #if we have a not crap ber hit
         print "Taking evidence from not crap BER hit\n" if($logger->is_debug);
-        $countFromEvidence->{'not_crap_ber_hit'}++;
         $retval->{'annotation_from'} = $evidence->{'BER'}->[$acc];
         $retval->{'com_name'} = $evidence->{'BER'}->[$name];
         $retval->{'gene_sym'} =  $evidence->{'BER'}->[$gene_sym];
@@ -282,11 +271,11 @@ sub annotate {
         }
 
     }
+    print "BEFORE IF:".$retval->{'com_name'}."\n";
     if( !$retval->{'com_name'} || $retval->{'com_name'} =~ /hypothetical protein/i) {
         print "The com_name contains hypo...\n";
         if($evidence->{'HMM'}->{'hmm_com_name'}) {
             print "Setting com_name and annotation from from the HMM\n";
-            $countFromEvidence->{'other_hmm'}++;
             $retval->{'com_name'} = $evidence->{'HMM'}->{'hmm_com_name'};
             $retval->{'annotation_from'} = $evidence->{'HMM'}->{'hmm_acc'};
 
@@ -338,7 +327,6 @@ sub annotate {
 
     unless( defined $retval->{'com_name'} ) {
         $retval->{'com_name'} = 'hypothetical protein';
-        
     }
 
     if ($retval->{'com_name'} =~ /hypothetical protein|\, putative|\-related|unknown/i) { 
@@ -350,12 +338,10 @@ sub annotate {
         $retval->{'go_id'} = "GO:0000004 GO:0005554";
         $retval->{'gene_sym'} = "";
         $retval->{'ec_num'} = "";
-        $countFromEvidence->{'hypo'}++;
     }elsif ($retval->{'com_name'} =~ /^hypothetical protein$/i) {
         $retval->{'gene_sym'} = "";
         $retval->{'role_id'} = "";
         $retval->{'ec_num'} = "";
-        $countFromEvidence->{'hypo'}++;
     } elsif (!$retval->{'role_id'} || $retval->{'role_id'} eq "NULL" || $retval->{'role_id'} == 185) {
         
         print "Trying to find a role id\n" if($logger->is_debug);
@@ -517,9 +503,7 @@ sub getBEREvidence {
         }
     }
 
-    if( ! $berBsmlFile ) {
-        die("Could not find ber file for $polyId");
-    }
+    return [] unless($berBsmlFile);
 
     #Now parse the bsml file.
     my $twig = new XML::Twig( TwigHandlers => 
@@ -538,11 +522,6 @@ sub getBEREvidence {
 
     #Now that we have all the berMatches in this array, lets find the best one.
     my $bestMatch = &getBestBERMatch( \@berMatches, $fakeId2RealId );
-    $best_ber_hits++ if( $bestMatch );
-
-    if($bestMatch->[$name] =~ /^conserved\s*/) {
-        $bestMatch->[$name] = "conserved hypothetical protein";
-    }
     
     return $bestMatch;
 
@@ -679,8 +658,8 @@ sub getBestBERMatch {
     }
 
     #Use strict cutoffs for assigning GO terms.
-    unless(exists($bestHitInfo->{'fraction_length'}) && $bestHitInfo->{'fraction_length'} >= 0.9 &&
-           exists($bestHitInfo->{'percent_id'}) && $bestHitInfo->{'percent_id'} >= 40) {  
+    unless($bestHitInfo->{'fraction_length'} >= 0.9 &&
+           $bestHitInfo->{'percent_id'} >= 40) {  
         print "Getting rid of go_id\n" if($logger->is_debug);
         $bestBerMatch->[$go_id] = "";
     }
@@ -705,10 +684,9 @@ sub getBerHeader {
     close(HEAD);
 
     my @cols = split(/\t/,$tabs);
-    $"=" || ";
-    print STDOUT "@cols\n" unless(@cols == 10);
 
-    #If we have the wrong number of columns, that's okay.
+    $logger->logdie("Wrong number of columns") if(@cols < 10);
+    
     return \@cols;
 }
 
@@ -835,9 +813,9 @@ sub getPolypeptideHandler {
     return unless( $featElem->att('class') eq 'polypeptide' );
 
     my $intLoc = $featElem->first_child('Interval-loc');
-    $logger->logdie("Interval-loc element for polypeptide ".$featElem->att('id')." does not exist".
-                    " or is incomplete") unless($intLoc && defined($intLoc->att('startpos')) &&
-                                                defined($intLoc->att('endpos')));
+    $logger->logdie("Interval-loc element for polypeptide $featElem->att('id') does not exist".
+                    " or is incomplete") unless($intLoc && $intLoc->att('startpos') &&
+                                                $intLoc->att('endpos'));
     my ($id, $start, $end) = ($featElem->att('id'), $intLoc->att('startpos'), $intLoc->att('endpos') );
 
     $polypeptides->{ $id } =  $end - $start;
@@ -852,21 +830,15 @@ sub getPolypeptideHandler {
 #returns a list of analysis files.  Will search for
 #any bsml files in the directory.
 sub getAnalysisFiles {
-    my $analysisParamString = shift;
+    my $analysis = shift;
     my @retval;
-    my @analyses = split(/,/, $analysisParamString);
-    
-    foreach my $analysis ( @analyses ) {
-        if( -d $analysis ) {
-            find( sub { &findAnalysisFiles(\@retval) }, $analysis );
-        } elsif( -e $analysis ) {
-            open(ANFILES, "< $analysis") or
-                $logger->logdie("Could not open $analysis ($!)");
-            my @tmpRetval;
-            chomp(@tmpRetval = <ANFILES>);
-            push(@retval, @tmpRetval);
-            close(ANFILES);
-        }
+    if( -d $analysis ) {
+        find( sub { &findAnalysisFiles(\@retval) }, $analysis );
+    } elsif( -e $analysis ) {
+        open(ANFILES, "< $analysis") or
+            $logger->logdie("Could not open $analysis ($!)");
+        chomp(@retval = <ANFILES>);
+        close(ANFILES);
     }
     
     return @retval;
@@ -894,8 +866,6 @@ sub getHMMEvidence {
             last;
         }
     }
-
-    $logger->logdie("Could not find hmmpfam bsml output file for $polyId") unless($hmmBsmlFile);
 
     #Now parse the file.
     my $twig = new XML::Twig( TwigHandlers => 
@@ -1062,72 +1032,27 @@ sub annotation2bsml {
     my $link = $doc->createAndAddLink($seq, 'analysis', '#autoAnnotate_analysis', 'input_of');
     my $featTable = $doc->createAndAddFeatureTable($seq);
 
-    my $att_list_id = 0;
-
     foreach my $polyid (keys %{$finalAnnotes}) {
         my $feat = $doc->createAndAddFeature($featTable, $ber_map->{$polyid}, $ber_map->{$polyid}, 'transcript');
         $feat->addBsmlLink('analysis', '#autoAnnotate_analysis', 'computed_by');
         
         foreach my $term (keys %{$finalAnnotes->{$polyid}}) {
             next unless($finalAnnotes->{$polyid}->{$term});
-            
-            #We do different things with different types
-            if($term =~ /go_id/) {
-                my @vals = split( /\s+/, $finalAnnotes->{$polyid}->{$term} );
 
-                foreach my $val ( @vals ) {
-
-                    my $attList = [ 
-                                    { 'name' => "GO", 'content' => $finalAnnotes->{$polyid}->{$term} },
-                                    { 'name' => "IEA", 'content' => $finalAnnotes->{$polyid}->{'annotation_from'} } ];
-                    
-                    push( @{$feat->{'BsmlAttributeList'}}, $attList );
-
+            if($term =~ /(go_id|ec_num|role_id)/) {
+                my @vals = split(/\s+/, $finalAnnotes->{$polyid}->{$term});
+                foreach my $val(@vals) {
+                    $doc->createAndAddBsmlAttribute( $feat, $term, $val );
                 }
-            } elsif( $term eq 'ec_num' ) {
-                my @vals = split( /\s+/, $finalAnnotes->{$polyid}->{$term} );
-
-                foreach my $val ( @vals ) {
-
-                    my $attList = [ 
-                                    { 'name' => "EC", 'content' => $finalAnnotes->{$polyid}->{$term} },
-                                    { 'name' => "IEA", 'content' => $finalAnnotes->{$polyid}->{'annotation_from'} } ];
-                    
-                    push( @{$feat->{'BsmlAttributeList'}}, $attList );
-
-                }
-            } elsif( $term eq 'role_id' ) { 
-                my @vals = split( /\s+/, $finalAnnotes->{$polyid}->{$term} );
-
-                foreach my $val ( @vals ) {
-
-                    my $attList = [ 
-                                    { 'name' => "TIGR_role", 'content' => $finalAnnotes->{$polyid}->{$term} },
-                                    { 'name' => "IEA", 'content' => $finalAnnotes->{$polyid}->{'annotation_from'} } ];
-                    
-                    push( @{$feat->{'BsmlAttributeList'}}, $attList );
-
-                }
-            } elsif( $term eq 'gene_sym' ) {
-                $doc->createAndAddBsmlAttribute( $feat, 'gene_symbol', $finalAnnotes->{$polyid}->{$term} );
-            } else { 
-                next if( $term eq 'role_from' );
+            } else {
                 $doc->createAndAddBsmlAttribute( $feat, $term, $finalAnnotes->{$polyid}->{$term} );
             }
-
         }
         
     }
 
-    my $sourceDir = $1 if($inputFiles[0] =~ /^(.*\/\d+_\w+)\//);
-    $sourceDir = "./" unless( $sourceDir );
-    $logger->logdie("sourcename directory (from input file $inputFiles[0]) $sourceDir does not exist")
-        unless( -d $sourceDir );
-
-    $doc->createAndAddAnalysis( 'id' => 'auto_annotate_analysis',
-                                'sourcename' => $sourceDir,
-                                'algorithm'  => 'auto_annotate',
-                                'program'    => 'auto_annotate');
+    $doc->createAndAddAnalysis( 'id' => 'autoAnnotate_analysis',
+                                'sourcename' => $inputFiles[0] );
 
     print "Writing to $output\n";
     $doc->write($output);
