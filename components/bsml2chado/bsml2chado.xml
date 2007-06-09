@@ -21,7 +21,7 @@
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>create temp directory</name>
+	    <name>create cache directory</name>
 	    <state>incomplete</state>
 	    <executable>mkdir</executable>
 	    <arg>-p -m 777 $;TMP_DIR$;/cache_dir</arg>
