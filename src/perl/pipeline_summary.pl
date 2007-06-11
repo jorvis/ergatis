@@ -16,6 +16,7 @@ USAGE: pipeline_summary.pl
             --other_bsml_lists=/path/to/some.list,/path/to/another.list
             --output=/path/to/someDir/
           [ --locus_prefix=ABO553
+            --organism="Acidolophus borneisi"
             --cog_search_bsml=/path/to/wu-blastp.bsml.list
             --log=/path/to/file.log
             --debug=4
@@ -38,7 +39,23 @@ B<--other_bsml_lists,-b>
     mc74.assembly.7.tRNAscan-SE.bsml
 
 B<--output_dir,-o>
-    [Required] Output bsml file.
+    [Required] Output directory where bsml will go.
+
+B<--locus_prefix,-u>
+    [Optional] The prefix to be used in Feature/Attribute@name="locus" elements.
+
+B<--organism,-r>
+    [Optional] Must have at least two words separated by spaces.  The first word will be
+     the genus and the rest of the string will be entered as the species.
+
+B<--translation_table,-t>
+    [Optional] Default: 11.  The translation table used for gene prediction.
+
+B<--cog_search_bsml,-c>
+    [Optional] Bsml file containing a blast against NCBI's COGs database.
+
+B<--cog_lookup,-g>
+    [Optional] Don't remember.
 
 B<--log,-l>
     [Optional] Logfile.
@@ -56,6 +73,9 @@ B<--help,-h>
 
 =head1 OUTPUT
 
+    A file will be created in the output directory.  The name of this file will be based on the auto_annotate
+    input.
+
 
 =head1  CONTACT
 
@@ -72,12 +92,14 @@ use Ergatis::Logger;
 use Ergatis::IdGenerator;
 use BSML::BsmlBuilder;
 use XML::Twig;
+use PerlIO::gzip;
 use Data::Dumper;
 
 ####### GLOBALS AND CONSTANTS ###########
 my @inputFiles;               #Holds input (gene prediction bsml) files
 my @otherFiles;               #Holds other bsml files.
 my $output;                   #Output directory
+
 my $outputFile;               #Output file (includes directory).
 my $debug;                    #The debug variable
 my $c;
@@ -91,6 +113,10 @@ my $cogLookup;
 my $locusPrefix;
 my $prefixCount = 1;
 my $featElemsBsml = {};
+my $organism = [];
+my $transTable;
+my $attListId = 0;
+my $crid = 0;               #Cross reference id counter
 ########################################
 $|++;
 
@@ -100,7 +126,9 @@ my $results = GetOptions (\%options,
                           'other_bsml_lists|b=s',
                           'output|o=s',
                           'correct_mistakes|c',
-                          'locus_prefix|l=s',
+                          'locus_prefix|u=s',
+                          'organism|r=s',
+                          'translation_table|t=s',
                           'cog_search_bsml|s=s',
                           'cog_lookup|g=s',
                           'log|l=s',
@@ -113,6 +141,8 @@ my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
+my $genomeId;
+
 # Check the options.
 &check_parameters(\%options);
 
@@ -124,17 +154,46 @@ foreach my $file (@inputFiles) {
         unless($sourcename);
 
     #Make the output file name.
-    my $base = $1 if($file =~ m|.*/([^/\.]+\.[^/\.]+\.[^/\.]+)\.[^/]+$|);
-    $outputFile = "$output";
+    my $base = $1 if($file =~ m|.*/(([^/\.]+\.){3})|);
+    $base =~ s/\.$//;
+    my $fileName = $1 if($file =~ m|.*/([^/]+)$|);
+    if( -d $output ) {
+        $outputFile = "$output/$fileName";
+    } else {
+        $logger->logdie("Option --output must be a directory");
+    }
 
     my $bsml = new BSML::BsmlBuilder;
+
+    #Add genome/organism
+    my $genome = $bsml->createAndAddGenome( );
+    $genomeId = $genome->returnattr( 'id' );
+    my $organism = $bsml->createAndAddOrganism( 'genome' => $genome, 
+                                                'genus' => $organism->[0],
+                                                'species' => $organism->[1] );
+    $logger->logdie("Couldn't get the genome id") unless($genomeId);
+
+    $bsml->createAndAddBsmlAttr( $organism, 'abbreviation', $locusPrefix );
+    $bsml->createAndAddBsmlAttr( $organism, 'genetic_code', $transTable );
 
     #Parse the bsml file
     my $twig = new XML::Twig( twig_handlers => {
         'Sequence' => sub { &printSequenceFeatures( $bsml, @_ ) },
         });
 
-    $twig->parsefile($file);
+    my $openFile;
+    if( -e $file ) {
+        open($openFile, "< $file") or 
+            $logger->logdie("Unable to open $file ($!)");
+    } elsif( -e $file.".gz" ) {
+        open($openFile, "<:gzip", $file.".gz") or
+            $logger->logdie("Can't open $file.gz ($!)");
+    } else {
+        $logger->logdie("Couldn't find $file");
+    }
+    
+
+    $twig->parse($openFile);
     print STDOUT "Done parsing the input file $file\n";
 
     my @addThese;
@@ -148,16 +207,176 @@ foreach my $file (@inputFiles) {
             'Sequence' => sub { &printSequenceFeatures( $bsml, @_ ) }
             });
 
-        $newTwig->parsefile($addThis);
+        my $otherOpenFile;
+
+        if( -e $addThis ) {
+            open($otherOpenFile, "< $addThis") or 
+                $logger->logdie("Unable to open $addThis ($!)");
+        } elsif( -e $addThis.".gz" ) {
+            open($otherOpenFile, "<:gzip", $addThis.".gz") or
+                $logger->logdie("Can't open $addThis.gz ($!)");
+        } else {
+            $logger->logdie("Couldn't find $addThis");
+        }
+
+        $newTwig->parse($otherOpenFile);
     }
 
     print STDOUT "Writing to $outputFile\n";
     $bsml->write($outputFile);
 
+    print STDOUT "Fixing attributes\n";
+    my $tmpOutputFile = $outputFile.".part";
+    my $toh;
+    open($toh, "> $tmpOutputFile") or $logger->logdie("Unable to open tmp output $tmpOutputFile");
+
+    #Now we have to go back and fix the attribute lists
+    my $attTwig = new XML::Twig( 'twig_roots' => { 'Feature' => \&fixAttributes },
+                                 'twig_print_outside_roots' => $toh,
+                                 'pretty_print' => 'indented' );
+
+    $attTwig->parsefile( $outputFile );
+
+    close($toh);
+
+    print STDOUT "mv $tmpOutputFile $outputFile\n";
+    system("mv $tmpOutputFile $outputFile")
+
 }
 
 
 ######################## SUB ROUTINES #######################################
+sub fixAttributes {
+    my ($twig, $featElem) = @_;
+    my $featId = $featElem->att('id');
+    $logger->logdie("Couldn't parse feature id from feature") unless($featId);
+    
+    my @elemOrder = ( 'Attribute', 'Interval-loc', 'Attribute-list', 'Cross-reference', 'Link' );
+    my %finalElts;
+
+    #Grab each child and cut it out and save it for later.
+    my %elts;
+    
+    foreach my $child ( $featElem->children() ) {
+        my $tag = $child->gi();
+        push( @{$elts{$tag}}, $child );
+        $child->cut;
+    }
+
+
+    #where did the annotation come from?
+    my $annotationFrom;
+    foreach my $att ( @{$elts{'Attribute'}} ) {
+        $annotationFrom = $att->att('content') if( $att->att('name') eq 'gene_product_name_source' );
+    }
+
+    foreach my $att ( @{$elts{'Attribute'}} ) {
+        
+        if($att->att('name') eq 'ec_number') {
+            #Where did we get the ec number from?
+            my $ecFrom = $att->att('ec_number_source') if($att->att('ec_number_source'));
+            $ecFrom = $annotationFrom if( (!$ecFrom) && $annotationFrom );
+            $logger->logdie("We should not have an ec_number if we don't know where the annotation came from") unless($ecFrom);
+            
+            my $attList = new XML::Twig::Elt( 'Attribute-list', { 'id' => "attList_".$attListId++ } );
+
+            my $firstAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'EC',
+                                                              'content' => $att->att('content') } );
+            my $secAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'IEA',
+                                                            'content' => $ecFrom } );
+
+            $firstAtt->paste( $attList );
+            $secAtt->paste( 'after' => $firstAtt );
+          
+            push(@{$elts{'Attribute-list'}}, $attList);
+            
+        } elsif($att->att('name') eq 'role_id') {
+            #Where did we get the TIGR role from?
+            my $roleFrom = $att->att('role_from') if($att->att('role_id_from'));
+            $roleFrom = $annotationFrom if( ( (!$roleFrom) || ($roleFrom eq 'guess_role') ) && $annotationFrom );
+            $logger->logdie("We should not have an ec_number if we don't know where the annotation came from") unless($roleFrom);
+
+            my $attList = new XML::Twig::Elt( 'Attribute-list', { 'id' => "attList_".$attListId } );
+            $attListId++;
+
+            my $firstAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'TIGR_role',
+                                                              'content' => $att->att('content') } );
+            my $secAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'IEA',
+                                                            'content' => $roleFrom } );
+
+            $firstAtt->paste( $attList );
+            $secAtt->paste( 'after' => $firstAtt );
+       
+            push(@{$elts{'Attribute-list'}}, $attList);
+
+        } elsif($att->att('name') eq 'go_id') {
+            #Where did we get the GO id from?
+            my $goFrom = $att->att('go_id_from') if($att->att('go_id_from'));
+            $goFrom = $annotationFrom if( (!$goFrom) && $annotationFrom );
+            $logger->logdie("We should not have a go_id if we don't know where the annotation came from") unless($goFrom);
+
+            my $attList = new XML::Twig::Elt( 'Attribute-list', { 'id' => "attList_".$attListId } );
+            $attListId++;
+
+            my $firstAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'GO',
+                                                              'content' => $att->att('content') } );
+            my $secAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'IEA',
+                                                            'content' => $goFrom } );
+
+            $firstAtt->paste( $attList );
+            $secAtt->paste( 'after' => $firstAtt );
+           
+            push(@{$elts{'Attribute-list'}}, $attList);
+            
+
+        } elsif( $att->att('name') eq 'locus_tag' ) {
+            my $crossRef = new XML::Twig::Elt( 'Cross-reference', { 
+                'database' => 'TIGR_moore',
+                'identifier' => $att->att('content'),
+                'id' => 'CrossReference_'.$crid++,
+                'identifier-type' => 'locus' } );
+            
+            push(@{$elts{'Cross-reference'}}, $crossRef);
+
+        } elsif( $att->att('name') eq 'role_from' ) {
+            
+        } elsif( $att->att('name') eq 'top_cog_hit' ) {
+            my $str = $att->att('content');
+            $str =~ s/\s+$//g;
+            $att->set_att('content', $str);
+            push(@{$finalElts{'Attribute'}}, $att);
+        } else {
+            push(@{$finalElts{'Attribute'}}, $att);
+        }
+    }
+    
+    foreach my $key ( keys %elts ) {
+        next if($key eq 'Attribute');
+        $finalElts{$key} = $elts{$key};
+    }
+ 
+    if($featId =~ /(polypeptide|CDS)/) {
+            
+        #Add a link element
+        my $newLink = new XML::Twig::Elt( 'Link', {
+            'rel' => 'sequence',
+            'href' => "#${featId}_seq" } );
+
+        push( @{$finalElts{'Link'}}, $newLink);
+        
+    }
+
+    #Now paste them in the correct order
+    foreach my $tagName ( reverse @elemOrder ) {
+        foreach my $featChild( @{$finalElts{$tagName}} ) {
+            $featChild->paste( $featElem );
+        }
+    }
+
+    $featElem->print;
+    
+}
+
 sub getTopCogHit {
 	my $bsmlFiles = shift;
     my $polyId = shift;
@@ -183,6 +402,7 @@ sub getTopCogHit {
     my $fh;
 
     #Check for gzip extension
+    $parseThisFile =~ s/\.gz$//;
     if( -e $parseThisFile ) {
         open($fh, "< $parseThisFile") or 
             $logger->logdie("Unable to open $parseThisFile ($!)");
@@ -236,17 +456,27 @@ sub cogSpaHandler {
 
 sub getCog {
 	my $id = shift;
-	my $retval = 'nocog';	
-	open(IN, "< $cogLookup") or
-		$logger->logdie("Unable to open cog lookup file $cogLookup");
+	my $retval = 'nocog';
 
-	while( my $line = <IN>) {
+    my $in;
+    $cogLookup =~ s/\.gz$//;
+	if( -e $cogLookup ) {
+        open($in, "< $cogLookup") or
+            $logger->logdie("Unable to open cog lookup file $cogLookup");
+    } elsif( -e $cogLookup.".gz" ) {
+        open($in, "<:gzip", $cogLookup.".gz") or
+            $logger->logdie("Unable to open $cogLookup.gz");
+    }
+
+	while( my $line = <$in>) {
 		if($line =~ /COG/) {
 			$retval = $line;
 		} elsif($line =~ /$id/) {
 			last;
 		}
 	}	
+    close($in);
+    
 	return $retval;
 }
 
@@ -457,10 +687,33 @@ sub addFeature {
         $bsmlFeature->addBsmlAttr( 'locus_tag', $locusPrefix."_".$prefixCount++);
     }
 
+    #Add attribute lists if any
+    my @att_lists = $feature->children( 'Attribute-list' );
+    &addAttributeLists( $bsml, $bsmlFeature, \@att_lists ) unless( @att_lists < 1 );
+    
+
 
     $features->{$featId} = $bsmlFeature;
     return $bsmlFeature;
 
+}
+
+sub addAttributeLists {
+    my ($bsml, $bsmlFeature, $att_lists) = @_;
+
+    foreach my $att_list ( @{$att_lists} ) {
+        my ($name, $content);
+        my $bsml_att_list = [];
+        
+        foreach my $attribute ( $att_list->children('Attribute') ) {
+            ($name, $content) = ($attribute->att('name'), $attribute->att('content') );
+            my $att = { 'name' => $name, 'content' => $content };
+            push( @{$bsml_att_list}, $att );
+        }
+
+        push( @{$bsmlFeature->{'BsmlAttributeList'}}, $bsml_att_list );
+
+    } 
 }
 
 sub addAttributes {
@@ -468,16 +721,19 @@ sub addAttributes {
 
     foreach my $att ( @{$atts} ) {
         my ($name, $value) = ($att->att('name'), $att->att('content'));
-        $name =~ s/gene_sym/gene_symbol/;
+        $name =~ s/gene_sym$/gene_symbol/;
+        $name =~ s/gene_symbolbol/gene_symbol/;
         $name =~ s/ec_num$/ec_number/;
+        $name =~ s/annotation_from/gene_product_name_source/;
+        $name =~ s/com_name/gene_product_name/;
         my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, $name, $value);
     }
 
     my $hash = $bsmlFeature->returnattrHashR();
     my $tmpClass = $hash->{'class'};
 
-    unless(exists($bsmlFeature->{'BsmlAttr'}->{'com_name'}) || $tmpClass eq 'tRNA' ) {
-        my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, 'com_name', 'hypothetical protein');
+    unless(exists($bsmlFeature->{'BsmlAttr'}->{'gene_product_name'}) || $tmpClass eq 'tRNA' ) {
+        my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, 'gene_product_name', 'hypothetical protein');
     }
     
 }
@@ -537,6 +793,12 @@ sub addSequence {
     
     # ($elem, $rel, $href, $role) = @_
     my $link = $bsml->createAndAddLink( $bsmlSequence, 'analysis', "#${analysisId}_analysis", 'input_of');
+    
+    my $newLink;
+    if($class eq 'assembly') {
+        $newLink = $bsml->createAndAddLink( $bsmlSequence, 'genome', "#$genomeId" );
+    }
+    
 
     return $bsmlSequence;
 
@@ -570,7 +832,16 @@ sub getInputFiles {
 
     foreach my $token ( @tokens ) {
         my $tfh;
-        open($tfh, "< $token") or die("Can't open $token ($!)");
+        $token =~ s/\.gz$//;
+        if( -e $token ) {
+            open($tfh, "< $token") or die("Can't open $token ($!)");
+        } elsif( -e $token.".gz" ) {
+            my $compFile = $token.".gz";
+            open($tfh, "<:gzip", "$compFile") or die("Can't open $compFile ($!)");
+        } else {
+            die("Can't find file $token");
+        }
+        
 
         my $isList = 0;
 
@@ -585,7 +856,7 @@ sub getInputFiles {
             } elsif($line =~ m|\.bsml|) {
                 chomp $line;
                 &_die("$line doesn't exist (from list $token) ($!)")
-                    unless(-e $line);
+                    unless(-e $line || -e $line.".gz");
                 push(@files, $line);
                 $isList = 1;
             }
@@ -634,20 +905,43 @@ sub check_parameters {
     }
 
     if($opts->{'cog_search_bsml'}) {
-        open(IN, "<", $opts->{'cog_search_bsml'}) or
-            $logger->logdie("Can't open cog_search_bsml");
-        while (my $line = <IN>) {
+        my $cogs;
+
+        my $file = $opts->{'cog_search_bsml'};
+        $file =~ s/\.gz$//;
+        if( -e $file  ) {
+            open($cogs, "< $file") or $logger->logdie("Can't open cog_search_bsml $file ($!)");
+        } elsif( -e $file.".gz" ) {
+            open($cogs, "<:gzip", "$file.gz") or $logger->logdie("Can't open cog_search_bsml $file.gz ($!)");
+        } else {
+            $logger->logdie("Can't find $file (or a gzipped version)");
+        }
+        
+
+        while (my $line = <$cogs>) {
             chomp $line;
             push(@cogBsmls, $line);
         }
-        close(IN);
+        close($cogs);
 
         $cogLookup = $opts->{'cog_lookup'} if($opts->{'cog_lookup'});
-        $error .= "Option --cog_lookup is required when using --cog_search_bsml" unless($opts->{'cog_lookup'});
+        $error .= "Option --cog_lookup is required when using --cog_search_bsml\n" unless($opts->{'cog_lookup'});
     }
 
     if($opts->{'locus_prefix'}) {
         $locusPrefix = $opts->{'locus_prefix'};
+    }
+
+    if( $opts->{'organism'} ) {
+        $organism = [ $1, $2 ] if($opts->{'organism'} =~ /(\S+)\s+(.*)/);
+        $error .= "Coult not parse genus and species out of organism: ".$opts->{'organism'}."\n" 
+            if( @{$organism} != 2 );
+    }
+
+    if( $opts->{'translation_table'} ) {
+        $transTable = $opts->{'translation_table'};
+    } else {
+        $transTable = 11;
     }
     
     unless($error eq "") {
