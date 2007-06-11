@@ -2,38 +2,7 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>pipeline_summary compute</name>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>pipeline_summary</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/pipeline_summary</executable>
-            <arg>-c</arg>
-            <param>  
-                <key>--input_bsml</key>
-                <value>$;I_FILE_PATH$;</value>
-            </param>
-            <param>  
-                <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
-            </param>
-            <param>  
-                <key>--other_bsml_lists</key>
-                <value>$;OTHER_BSML_LISTS$;</value>
-            </param>
-            <param>  
-                <key>--locus_prefix</key>
-                <value>$;LOCUS_PREFIX$;</value>
-            </param>
-            <param>  
-                <key>--cog_search_bsml</key>
-                <value>$;COGS_BSML_LIST$;</value>
-            </param>
-            <param>  
-                <key>--cog_lookup</key>
-                <value>$;COG_LOOKUP$;</value>
-            </param>
-        </command>
+        <name>pipeline_summary bsml verification</name>
         <command>
             <type>RunUnixCommand</type>
             <name>store config params</name>
