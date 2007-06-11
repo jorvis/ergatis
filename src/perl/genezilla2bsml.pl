@@ -254,7 +254,7 @@ sub parseGenezillaData {
 
             ## Add the features to the gene object here:
             foreach my $feat (@group_members) {
-print map {"$_\t$$feat{$_}\n"} sort keys %$feat;
+
                 $tmpGene->addFeature($$feat{'typeid'},$$feat{'low'},$$feat{'high'},
                                        $$feat{'comp'},$$feat{'type'});
 
