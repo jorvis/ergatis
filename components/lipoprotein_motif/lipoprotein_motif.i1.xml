@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>lipoprotein_motif</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lipoprotein_motif.pl</executable>
+            <executable>$;BIN_DIR$;/lipoprotein_motif</executable>
             <param>
                 <key>--input</key>
                 <value>$;I_FILE_PATH$;</value>
