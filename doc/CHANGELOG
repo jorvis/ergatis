@@ -545,3 +545,4 @@ next
 -installer: added phage_finder to install
 -phage_finder: initial commit
 -ps_scan2bsml: removed Workflow, replaced with Ergatis
+-lipoprotein_motif: fixed typo in lipoprotein_motif.config
