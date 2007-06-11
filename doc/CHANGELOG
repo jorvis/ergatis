@@ -542,3 +542,6 @@ next
 -deprecated Papyrus::TempIdCreator (finally)
 -auto_annotate: prints attribute lists correctly
 -installer: added pepstats to be installed as v2 component
+-installer: added phage_finder to install
+-phage_finder: initial commit
+-ps_scan2bsml: removed Workflow, replaced with Ergatis
