@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>phage finder</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create phage finder info</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_phage_find_info</executable>
+            <param>  
+                <key>--input_bsml</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_info.txt</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>phage finder</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/run_phage_finder</executable>
+            <param>  
+                <key>--input_bsml_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--input_polypeptide_multi_fsa</key>
+                <value>$;POLYPEPTIDE_MULTI_FSA$;</value>
+            </param>
+            <param>  
+                <key>--btab_list</key>
+                <value>$;BTAB_LIST$;</value>
+            </param>
+            <param>  
+                <key>--aragorn_list</key>
+                <value>$;ARAGORN_LIST$;</value>
+            </param>
+            <param>
+                <key>--trna_scan_list</key>
+                <value>$;TRNA_SCAN_LIST$;</value>
+            </param>
+            <param>  
+                <key>--info_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_info.txt</value>
+            </param>
+            <param>  
+                <key>--other_opts</key>
+                <value>$;OTHER_OPTS$;</value>
+            </param>
+            <param>  
+                <key>--tmp_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>
+            </param>
+            <param>  
+                <key>--phage_finder_dir</key>
+                <value>$;PHAGE_FINDER_DIR$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
