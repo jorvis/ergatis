@@ -468,7 +468,7 @@ sub process_header {
    
     my $header_hash_ref = {};
     
-    $header =~ /^(\S+)\s+(.*)/ || die "Couldn't parse read ID from header:\n$header";
+    $header =~ /^(\S+)\s*(.*)/ || die "Couldn't parse read ID from header:\n$header";
 
     $header_hash_ref->{'read_id'} = $1;
     $header_hash_ref->{'read_defline'} = "\"$2\"";
