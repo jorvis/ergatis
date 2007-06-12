@@ -40,8 +40,8 @@
                 <value>$;PROJECT_ID_REPOSITORY$;</value>
             </param>
             <param>
-                <key>--sourcedir</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
+                <key>--sourcename</key>
+                <value>$;OUTPUT_DIRECTORY$;/dummy/directory</value>
             </param>
         </command>
         <command>
