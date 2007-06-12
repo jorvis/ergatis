@@ -551,3 +551,4 @@ next
     and now uses the list as input to the script (for global locus
     identifiers)
 -auto_annotate: fixed error in printing multiple ec numbers or tigr roles
+-bsml2tbl: parses out locus tag information from cross-reference elements if available
