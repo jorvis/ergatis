@@ -537,7 +537,7 @@ next
 -bsml2chado: added comments for interface
 -installer: initdb.partition.xml was omitted
 -auto_gene_curation: uses Ergatis Logger, instead of Workflow Logger
---pipeline_summary: the iterator xml actually recieves all the configuration options now.
+-pipeline_summary: the iterator xml actually recieves all the configuration options now.
 -auto_gene_curation: checking both output bsml files ( storing config params and validating ).  It might work this time too.
 -deprecated Papyrus::TempIdCreator (finally)
 -auto_annotate: prints attribute lists correctly
@@ -552,3 +552,5 @@ next
     identifiers)
 -auto_annotate: fixed error in printing multiple ec numbers or tigr roles
 -bsml2tbl: parses out locus tag information from cross-reference elements if available
+-open_reading_frames: corrected list generation when output not compressed
+-open_reading_frames: input headers now require only an ID
