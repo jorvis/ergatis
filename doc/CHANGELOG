@@ -554,3 +554,5 @@ next
 -bsml2tbl: parses out locus tag information from cross-reference elements if available
 -open_reading_frames: corrected list generation when output not compressed
 -open_reading_frames: input headers now require only an ID
+-genezilla2bsml.pl: Updated to use Ergatis::IdGenerator, Ergatis::Logger, and BSML::GenePredictionBsml
+-genezilla.i1.xml: Changed to include genezilla2bsml.pl's new --sourcename option
