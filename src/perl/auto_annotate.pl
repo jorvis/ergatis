@@ -1098,7 +1098,7 @@ sub annotation2bsml {
 
                     my $attList = [ 
                                     { 'name' => "EC", 'content' => 
-                                          $finalAnnotes->{$polyid}->{$term} },
+                                          $val },
                                     { 'name' => "IEA", 'content' => 
                                           $finalAnnotes->{$polyid}->{'annotation_from'} } ];
                     
@@ -1112,7 +1112,7 @@ sub annotation2bsml {
 
                     my $attList = [ 
                                     { 'name' => "TIGR_role", 'content' => 
-                                          $finalAnnotes->{$polyid}->{$term} },
+                                          $val },
                                     { 'name' => "IEA", 'content' => 
                                           $finalAnnotes->{$polyid}->{'annotation_from'} } ];
                     
