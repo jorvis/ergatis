@@ -550,3 +550,4 @@ next
 -pipeline_summary: Moved the pipeline_summary compute from the iterator xml to the main xml
     and now uses the list as input to the script (for global locus
     identifiers)
+-auto_annotate: fixed error in printing multiple ec numbers or tigr roles
