@@ -1,0 +1,77 @@
+<h2>pipeline list</h2>
+<TMPL_IF NAME=PIPELINE_COUNT>
+    <table class='pipeline_list'>
+        <tr>
+            <th class='checkbox'></th>
+            <th class='pipeline_id'>id</th>
+            <th>state</th>
+            <th>user</th>
+            <th>contents</th>
+            <th>last mod</th>
+            <th>run time</th>
+            <th>actions</th>
+        </tr>
+    <TMPL_LOOP NAME=PIPELINE_GROUPS>
+        <tr>
+            <td class='group' colspan='8'><TMPL_VAR NAME=NAME></td>
+        </tr>
+    <TMPL_LOOP NAME=PIPELINES>
+        <tr>
+            <td class='checkbox'><input type='checkbox' name='pipelines_checked' value='<TMPL_VAR NAME=PIPELINE_ID>'></td>
+            <td class='pipeline_id'><a href='<TMPL_VAR NAME=VIEW_LINK>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
+            <td class='pipeline_state'>
+                <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                <TMPL_IF NAME=ERROR_MESSAGE>
+                <div>
+                    <span class='error_message_header'>top-level error message</span>
+                    <hr>
+                    <TMPL_VAR NAME=ERROR_MESSAGE>
+                </div>
+                </TMPL_IF>
+            </td>
+            <td><TMPL_VAR NAME=PIPELINE_USER></td>
+            <td class='component_review'>
+            <TMPL_IF NAME=LINKS_ENABLED>
+                <a href='<TMPL_VAR NAME=VIEW_LINK>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a>
+            <TMPL_ELSE>
+                <TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL>
+            </TMPL_IF>
+                <div>
+                    <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
+                    <hr/>
+                <TMPL_IF NAME=COMPONENT_COUNT>
+                <TMPL_LOOP NAME=COMPONENTS>
+                    <TMPL_IF NAME=ERROR_COUNT>
+                    <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+                    <TMPL_ELSE>
+                    <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                    </TMPL_IF> <!-- ERROR_COUNT if -->
+                </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
+                <TMPL_ELSE>
+                    no components found
+                </TMPL_IF>
+                </div>
+            </td>
+            <td><TMPL_VAR NAME=LAST_MOD></td>
+            <td><TMPL_VAR NAME=RUN_TIME></td>
+            <td class='actions'>
+            <TMPL_IF NAME=LINKS_ENABLED>
+                <a href='<TMPL_VAR NAME=VIEW_LINK>'>view</a>
+                <TMPL_IF NAME=IS_RUNNING>
+                <a class='disabled'>archive/delete</a>
+                <TMPL_ELSE>
+                <a href='<TMPL_VAR NAME=ARCHIVE_LINK>'>archive/delete</a>
+                </TMPL_IF>
+            <TMPL_ELSE>
+                <a class='disabled'>view</a>
+            </TMPL_IF>
+            </td>
+        </tr>
+    </TMPL_LOOP><!-- end pipelines loop -->
+    </TMPL_LOOP><!-- end groups loop -->
+    </table>
+<TMPL_ELSE> <!-- else PIPELINE_COUNT -->
+<p>
+    no pipelines found
+</p>
+</TMPL_IF> <!-- if PIPELINE_COUNT -->

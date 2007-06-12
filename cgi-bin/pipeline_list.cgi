@@ -216,6 +216,8 @@ foreach my $pipeline_id ( readdir $rdh ) {
 ## sort the pipelines
 my @pipelines_sorted;
 my @components_sorted;
+my %pipeline_groups;
+my @pipeline_groups_sorted;
 
 if ( $view eq 'component' ) {
     
@@ -232,7 +234,7 @@ if ( $view eq 'component' ) {
                 component_state => $$component_ref{state} || 'unknown',
                 component_token => $$component_ref{token} || 'unknown',
                 component_run_time => $$component_ref{run_time},
-                component_view_link => "./view_component.cgi?pipeline_xml=$repository_root/workflow/runtime/$$component_ref{name}/$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/component.xml",
+                 component_view_link => "./view_component.cgi?pipeline_xml=$repository_root/workflow/runtime/$$component_ref{name}/$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/component.xml",
             };
             
             if ( -e "$repository_root/workflow/runtime/$$component_ref{name}/$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/$$component_ref{name}.$$component_ref{token}.final.config" ) {
@@ -247,7 +249,25 @@ if ( $view eq 'component' ) {
     for ( sort keys %components ) {
         push @components_sorted, { name => $_, instances => $components{$_} };
     }
+
+} elsif ( $view eq 'group' ) {
+
+    ## put the pipelines in chronological order into groups
+    for my $pipeline ( sort { $pipelines{$b}{last_mod} cmp $pipelines{$a}{last_mod} } keys %pipelines ) {
+        $pipelines{$pipeline}{last_mod} = localtime( $pipelines{$pipeline}{last_mod} );
+        
+        my @groups = read_pipeline_groups( "$pipeline_root/$pipeline/pipeline.xml" );
+        
+        for my $group ( @groups ) {
+            push @{$pipeline_groups{$group}}, $pipelines{$pipeline};
+        }
+    }    
+
     
+    for my $group ( keys %pipeline_groups ) {
+        push @pipeline_groups_sorted, { name => $group, pipelines => \@{$pipeline_groups{$group}} };
+    }
+
 } else {
 
     for my $pipeline ( sort { $pipelines{$b}{last_mod} cmp $pipelines{$a}{last_mod} } keys %pipelines ) {
@@ -259,6 +279,27 @@ if ( $view eq 'component' ) {
 ## populate the template
 &print_template();
 
+sub read_pipeline_groups {
+    my $pipeline_path = shift;
+    my @groups = ();
+    
+    if ( -e "$pipeline_path.groups" ) {
+        my $groupsfh = get_conditional_read_fh("$pipeline_path.groups");
+        
+        ## each line is a group
+        while ( <$groupsfh>) {
+            chomp;
+            push @groups, $_;
+        }
+    }
+    
+    if ( scalar @groups < 1 ) {
+        push @groups, 'ungrouped';
+    }
+    
+    return @groups;
+}
+
 sub print_template {
     my $submenu_links = [
                             { label => 'new pipeline', is_last => 0, url => "./build_pipeline.cgi?repository_root=$repository_root" },
@@ -266,10 +307,17 @@ sub print_template {
 
     if ( $view eq 'component' ) {
         $tmpl->param( COMPONENTS        => \@components_sorted );
-        push @$submenu_links, { label => 'view by pipeline', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" };
+        push @$submenu_links, { label => 'view by pipeline', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" };
+        push @$submenu_links, { label => 'view by group', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root&view=group" };
+    } elsif ( $view eq 'group' ) {
+        $tmpl->param( PIPELINE_GROUPS   => \@pipeline_groups_sorted );
+        push @$submenu_links, { label => 'view by pipeline', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" };
+        push @$submenu_links, { label => 'view by component', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root&view=component" };
+        push @$submenu_links, { label => 'edit groups', is_last => 1, url => "javascript:showGroupModificationMenu()" };
     } else {
         $tmpl->param( PIPELINES        => \@pipelines_sorted );
-        push @$submenu_links, { label => 'view by component', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root&view=component" };
+        push @$submenu_links, { label => 'view by component', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root&view=component" };
+        push @$submenu_links, { label => 'view by group', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root&view=group" };
     }
 
     ## populate the template with the values that will always be passed.
@@ -281,6 +329,7 @@ sub print_template {
     $tmpl->param( ERGATIS_DIR      => $ergatis_dir );
     $tmpl->param( DISPLAY_CODEBASE => $display_codebase );
     $tmpl->param( COMPONENT_VIEW   => $view eq 'component' ? 1 : 0 );
+    $tmpl->param( GROUP_VIEW       => $view eq 'group' ? 1 : 0 );
     $tmpl->param( QUICK_LINKS      => &get_quick_links($ergatis_cfg) );
     $tmpl->param( SUBMENU_LINKS    => $submenu_links );
 

@@ -9,6 +9,70 @@ This is just a collection of commonly used methods.  No classes.
 
 =cut
 
+=head2 get_conditional_read_fh( file_path )
+
+=over 4
+
+Accepts a file path as an argument and returns an open, read-only file 
+handle for it.  If the file path ends in .gz the file handle is returned
+via the gzip IO layer.  It also automatically checks for the existence
+of a .gz form of the file you pass, so if you pass 'foo.fsa' and only
+'foo.fsa.gz' exists, you'll still get the correct filehandle.
+
+Returns undef if the file and .gz version both don't exist.
+
+=back
+
+=cut
+
+sub get_conditional_read_fh {
+    my $path = shift;
+
+    ## auto-handle gzipped files    
+    ## if neither version exists return undef
+    if (! -e $path) {
+        if (-e "$path.gz") {
+            $path .= '.gz';
+        } else {
+            return undef;
+        }
+    }
+
+    my $fh;
+    if ( $path =~ /\.gz$/ ) {
+        open($fh, "<:gzip", $path) || die "can't read file $path: $!";
+    } else {
+        open($fh, "<$path") || die "can't read file $path: $!";
+    }
+    
+    return $fh;
+}
+
+=head2 get_conditional_write_fh( file_path )
+
+=over 4
+
+Accepts a file path as an argument and returns an open, writeable file 
+handle for it.  If the file path ends in .gz the file handle is returned
+via the gzip IO layer.
+
+=back
+
+=cut
+
+sub get_conditional_write_fh {
+    my $path = shift;
+    my $fh;
+    
+    if ( $path =~ /\.gz$/ ) {
+        open( $fh, ">:gzip", "$path" ) || die "failed to create output file: $!";
+    } else {
+        open( $fh, ">$path" ) || die "failed to create output file: $!";
+    }
+    
+    return $fh;
+}
+
 
 =head2 get_project_conf_param( repository_root, section, parameter )
 

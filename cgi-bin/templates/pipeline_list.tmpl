@@ -12,6 +12,7 @@
     <link rel='stylesheet' type='text/css' href='/ergatis/css/pipeline_list.css'>
     <!-- functionality -->
     <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
+    <script type='text/javascript' src='/ergatis/javascript/pipeline_list.js'></script>
     <title>ergatis | pipeline list</title>
 </head>
 
@@ -20,6 +21,23 @@
 <div id='page_container'>
 
 <TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='modify_groups_container'>
+        <p id='modify_groups_instructions'>
+            Choose pipelines below, enter one or more group labels separated by commas then click 'add' or 'remove'
+        </p>
+        <input id='groups_entered' type='text' name='groups_entered' value=''>
+        <span class='button' onclick='modifyGroups("add")'>add labels</span>
+        <span class='button' onclick='modifyGroups("remove")' id='view_by_category'>remove labels</span>
+        <span class='button' onclick='cancelGroupModificationMenu("component")'>cancel</span>
+        <form id='modify_groups_form' name='modify_groups_form' method='post' action='./modify_pipeline_groups.cgi'>
+            <input type='text' id='pipeline_ids' name='pipeline_ids' value=''>
+            <!-- action here will be either add/remove -->
+            <input type='text' id='action' name='action' value=''>
+            <input type='text' name='group_labels' value=''>
+            <input type='text' name='repository_root' value='<TMPL_VAR NAME=REPOSITORY_ROOT>'>
+        </form>
+    </div>
 
     <div id='info_container'>
         <ul id='info_elements'>
@@ -47,7 +65,11 @@
             <TMPL_IF NAME=COMPONENT_VIEW>
                 <TMPL_INCLUDE NAME="pipeline_list_component_view.tmpl">   
             <TMPL_ELSE>
-                <TMPL_INCLUDE NAME="pipeline_list_pipeline_view.tmpl">  
+                <TMPL_IF NAME=GROUP_VIEW>
+                    <TMPL_INCLUDE NAME="pipeline_list_group_view.tmpl"> 
+                <TMPL_ELSE>
+                    <TMPL_INCLUDE NAME="pipeline_list_pipeline_view.tmpl"> 
+                </TMPL_IF> 
             </TMPL_IF> <!-- if COMPONENT_VIEW -->   
             
         </div> <!-- end pipelinelist -->
