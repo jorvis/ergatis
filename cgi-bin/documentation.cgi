@@ -37,10 +37,16 @@ if ( -e $doc_path ) {
                                       die_on_bad_params => 0 );
                                       
     if ( $article eq 'components' && $page eq 'index' ) {
-        my $component_sections = generate_component_list();
+        my $doc_class = 'categorized';
+        if ( $q->param('categorized') && $q->param('categorized') == 0 ) {
+            $doc_class = 'alphabetical';
+        }
+    
+        my $component_sections = generate_component_list( $doc_class );
         $page_tmpl->param( COMPONENT_GROUPS => $component_sections );
         $page_tmpl->param( SECTION_COUNT => scalar @$component_sections );
         $page_tmpl->param( ERGATIS_DIR => $ergatis_dir );
+        $page_tmpl->param( DOC_CLASS => 'wha?');
     }
     
 } else {
@@ -77,6 +83,8 @@ sub display_version {
 }
 
 sub generate_component_list {
+    ## usually 'alphabetical' or 'categorized'
+    my $display_method = shift;
     my %sections;
 
     opendir(my $idh, "$ergatis_dir/docs") || die "can't read component directory ($ergatis_dir/docs): $!";
@@ -90,10 +98,20 @@ sub generate_component_list {
             }
             
             my $component_cfg = new Ergatis::ConfigFile( -file => "$ergatis_dir/docs/$thing" );
-            my $class_string = 'unclassified';
+            my $class_string = '';
             
-            if ( $component_cfg && $component_cfg->val( 'interface', 'classification' ) ) {
-                $class_string = $component_cfg->val( 'interface', 'classification' );
+            if ( $display_method eq 'categorized' ) {
+                if ( $component_cfg && $component_cfg->val( 'interface', 'classification' ) ) {
+                    $class_string = $component_cfg->val( 'interface', 'classification' );
+                } else {
+                    $class_string = 'unclassified';
+                }
+            } else {
+                if ( $component_name =~ /^[A-M]/i ) {
+                    $class_string = 'A-M';
+                } elsif ( $component_name =~ /[N-Z]/i ) {
+                    $class_string = 'N-Z';
+                }
             }
             
             ## this can be a comma-separated list.  split it up
@@ -119,9 +137,9 @@ sub generate_component_list {
     my $return_sections = [];
     ## 3 columns (groups)
     ## if you make changes to the group count you'll need to reflect them in the documentation.css
-    my $component_groups = [ { group_num => 0, component_sections => [] },
-                             { group_num => 1, component_sections => [] },
-                             { group_num => 2, component_sections => [] },
+    my $component_groups = [ { group_num => 0, component_sections => [], display_method => $display_method },
+                             { group_num => 1, component_sections => [], display_method => $display_method },
+                             { group_num => 2, component_sections => [], display_method => $display_method },
                              { group_num => 3, component_sections => [] },
                            ];
     my $group_counts = [0,0,0,0];
