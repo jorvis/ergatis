@@ -16,7 +16,7 @@ USAGE: genezilla2bsml.pl
         --project=aa1 
         --fasta_file=/path/to/somefile.fsa 
         --id_repository=/path/to/repository
-        --sourcedir=/path/to/sourcedir
+        --sourcename=sourcename
       
 
 =head1 OPTIONS
@@ -38,9 +38,9 @@ B<--fasta_file,-a>
 B<--id_repository, -r>
     path to --project's id_repository
 
-B<--sourcedir,-s>
-    Sourcedir, required for the analysis section.  Most often should be the
-    output_repository dir for the componenet.
+B<--sourcename,-s>
+    Value to be used for the sourcename, required for the analysis section.  Most
+    often should be the output_directory for the run.
 
 B<--log,-l> 
     Log file
@@ -102,7 +102,7 @@ my $idMaker;
 my $bsml;
 my $data;
 my $inputFsa;
-my $sourcedir;
+my $sourcename;
 my $debug;
 my $length;
 
@@ -114,7 +114,7 @@ my $results = GetOptions (\%options,
                 'project|p=s',
                 'id_repository|r=s',
                 'fasta_input|a=s',
-                'sourcedir|s=s',
+                'sourcename|s=s',
                 'log|l=s',
                 'command_id=s',       ## passed by workflow
                 'logconf=s',          ## passed by workflow (not used)
@@ -332,7 +332,7 @@ sub generateBsml {
     my $data = shift;
 
     #Create the document
-    my $doc = new BSML::GenePredictionBsml( 'genezilla', $sourcedir);
+    my $doc = new BSML::GenePredictionBsml( 'genezilla', $sourcename);
 
     foreach my $gene(@{$data}) {
         $doc->addGene($gene);
@@ -434,10 +434,10 @@ sub check_parameters {
     }
 
     ## get sourcedir for the analysis section:
-    if ($options{'sourcedir'}) {
-        $sourcedir = $options{'sourcedir'};
+    if ($options{'sourcename'}) {
+        $sourcename = $options{'sourcename'};
     } else {
-        $error .= "sourcedir is a required option.\n";
+        $error .= "--sourcename is a required option.\n";
     }
 
     if($options{'debug'}) {
