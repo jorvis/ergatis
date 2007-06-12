@@ -1,8 +1,31 @@
-table.pipeline_list td.component {
+div#modify_groups_container {
+    display: none;
+    clear: both;
+    padding: 1px 0 10px 35px;
+    border-bottom: 3px solid rgb(73,81,92);
+}
+
+form#modify_groups_form {
+    display: none;
+}
+
+table.pipeline_list td.component,
+table.pipeline_list td.group {
     color: rgb(73,81,92);
 }
 
 table.pipeline_list tr th.token,
-table.pipeline_list tr td.token {
+table.pipeline_list tr td.token,
+table.pipeline_list tr th.pipeline_id,
+table.pipeline_list tr td.pipeline_id {
     padding-left: 30px;
+}
+
+td.checkbox,
+th.checkbox {
+    display: none;
+}
+
+.checkbox input {
+    border: 1px solid black !important;
 }
