@@ -22,6 +22,7 @@ USAGE: bsml2legacydb.pl
         --log|l=/path/to/log_file.log
         --username|U=username
         --password|P=password
+        --new_gene_encoding|N
     ]
 
 =head1  OPTIONS
@@ -53,6 +54,9 @@ B<--username,-U>
 
 B<--password,-P>
     Database password
+
+B<--new_gene_encoding,-N>
+    Input has the new CHADO canonical gene model encoding
 
 B<--help,-h>
     Print help
@@ -111,13 +115,16 @@ my %deleted_evidence    = ();
 my %chain_nums          = ();
 my $user    = "egc";
 my $pass    = "egcpwd";
+my $new_gene_encoding    = 0;
 
 sub parse_opts;
 sub print_usage;
 sub process_files;
 sub process_results;
-sub process_feat;
-sub process_feat_group;
+sub process_feat_new_encoding;
+sub process_feat_group_new_encoding;
+sub process_feat_old_encoding;
+sub process_feat_group_old_enconding;
 sub process_aln;
 sub process_sequence;
 sub get_db_id;
@@ -133,7 +140,8 @@ sub get_latest_id;
 
 GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
        "server|s=s", "database|d=s", "prog_name|p=s", "db_name|n=s",
-       "debug|D=i", "log|l=s", "username|U=s", "password|P=s", "help|h");
+       "debug|D=i", "log|l=s", "username|U=s", "password|P=s",
+       "new_gene_encoding|N", "help|h");
 parse_opts;
 
 my $dbh = DBI->connect("dbi:Sybase:$server", $user, $pass, 
@@ -182,6 +190,9 @@ sub parse_opts
         elsif ($key eq "password") {
             $pass = $val;
         }
+        elsif ($key eq "new_gene_encoding") {
+            $new_gene_encoding = 1;
+        }
         elsif ($key eq "help") {
             print_usage if $val;
         }
@@ -228,11 +239,17 @@ sub process_files
         } else {
             open ($ifh, "<$file") || $logger->logdie("can't read input file $file: $!");
         }
-        
+
+        my $process_feat_func = $new_gene_encoding ?
+            \&process_feat_new_encoding : \&process_feat_old_encoding;
+        my $process_feat_group_func = $new_gene_encoding ?
+            \&process_feat_group_new_encoding :
+            \&process_feat_group_old_enconding;
+
         my $twig = new XML::Twig
             (twig_roots =>
-                {'Feature' => \&process_feat,
-                 'Feature-group' => \&process_feat_group,
+                {'Feature' => $process_feat_func,
+                 'Feature-group' => $process_feat_group_func,
                  'Seq-pair-alignment' => sub {
                     my ($twig, $aln) = @_;
                     process_aln($twig, $aln,
@@ -312,7 +329,67 @@ sub process_results
     }
 }
 
-sub process_feat
+sub process_feat_new_encoding
+{
+    my ($twig, $feat) = @_;
+    my $id = $feat->att('id') or
+        $logger->logdie("Feature found with no id");
+    if ($feat->att('class') eq 'CDS' || $feat->att('class') eq 'exon') {
+        extract_seq_loc($feat);
+    }
+    else {
+        $logger->debug("Skipping feature $id [class is not CDS/exon]")
+            if $logger->is_debug;
+    }
+    $twig->purge;
+}
+
+sub process_feat_group_new_encoding
+{
+    my ($twig, $feat_group) = @_;
+    my @exon_coords = ();
+    my @exon_refs = ();
+    my $cds_coords;
+    foreach my $child ($feat_group->children('Feature-group-member')) {
+        my $type = $child->att('feature-type');
+        if ($type eq 'CDS') {
+            $cds_coords = $coords{CDS}{$child->att('featref')};
+        }
+        elsif ($type eq 'exon') {
+            push @exon_refs, $child;
+        }
+    }
+    foreach my $exon_ref (@exon_refs) {
+        my $id = $exon_ref->att('featref') or
+            $logger->logdie("Feature-group-member has no " .
+                    "featref");
+        my $exon_coords = $coords{exon}{$id} or
+            $logger->logdie("No exon feature found for $id");
+        if ($exon_coords->[1] < $cds_coords->[0] ||
+            $exon_coords->[0] > $cds_coords->[1]) {
+            next;
+        }
+        my $exon_begin = $exon_coords->[0] < $cds_coords->[0] ?
+            $cds_coords->[0] : $exon_coords->[0];
+        my $exon_end = $exon_coords->[1] > $cds_coords->[1] ?
+            $cds_coords->[1] : $exon_coords->[1];
+        swap(\$exon_begin, \$exon_end) if $exon_coords->[2] == 1;
+        push @exon_coords, [ $exon_begin, $exon_end ];
+
+    }
+    if (scalar @exon_coords) {
+        @exon_coords = sort { $a->[0] <=> $b->[0]; } @exon_coords;
+        push @genes, \@exon_coords;
+    }
+    else {
+        $logger->warn("Skipping feature group " .
+                  $feat_group->att('group-set') .
+                  " because it has no exons") if $logger->is_warn;
+    }
+    $twig->purge;
+}
+
+sub process_feat_old_encoding
 {
     my ($twig, $feat) = @_;
     my $id = $feat->att('id') or
@@ -341,7 +418,7 @@ sub process_feat
     $twig->purge;
 }
 
-sub process_feat_group
+sub process_feat_group_old_enconding
 {
     my ($twig, $feat_group) = @_;
     my @exon_coords = ();
@@ -511,6 +588,7 @@ sub insert_db_id
           "VALUES ('$db_name', NULL, getdate(), 'workflow', 1, " .
           "'custom')";
     $dbh->do($sql);
+
     return fetch_db_id($db_name);
 }
 
@@ -572,6 +650,7 @@ sub cleanup_records
         push @feat_names_for_deletion, $$row[0];
     }
     foreach my $feat_name (@feat_names_for_deletion) {
+
         $dbh->do("DELETE FROM asm_feature " .
              "WHERE feat_name='$feat_name'");
         $dbh->do("DELETE FROM phys_ev " .
@@ -579,6 +658,7 @@ sub cleanup_records
         $dbh->do("DELETE FROM feat_link " .
              "WHERE parent_feat='$feat_name' OR " .
              "child_feat='$feat_name'");
+
 #       print "$$row[0]\n";
     }
 }
@@ -608,7 +688,28 @@ sub cleanup_evidence_records
     return if $deleted_evidence{$asm_id}{$prog_tag}{$db_id};
     my $sql = "DELETE FROM evidence WHERE ev_type='$prog_tag' AND " .
           "db='$db_id' AND feat_name='$asm_id.intergenic'";
+
     $dbh->do($sql);
+
     ++$deleted_evidence{$asm_id}{$prog_tag}{$db_id};
     return $dbh->prepare($sql);
+}
+
+sub extract_seq_loc
+{
+    my ($feat) = @_;
+    my $id = $feat->att('id');
+    my $class = $feat->att('class'); 
+    my $seq_int = $feat->first_child('Interval-loc') or
+        $logger->logdie("Feature $id has no Interval-loc");
+    $logger->logdie("Feature $id missing seq positions") if
+        !defined $seq_int->att('startpos') or
+        !defined $seq_int->att('endpos');
+    my ($start_pos, $end_pos) = ($seq_int->att('startpos') + 1,
+            $seq_int->att('endpos') + 1);
+    my $complement = $seq_int->att('complement');
+    $logger->logdie("Feature $id has invalid complement value")
+        if ($complement != 0 and $complement != 1);
+    #swap(\$start_pos, \$end_pos) if ($seq_int->att('complement'));
+    push @{$coords{$class}{$id}}, $start_pos, $end_pos, $complement;
 }
