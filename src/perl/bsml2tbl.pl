@@ -177,11 +177,13 @@ sub process_feature_group
 sub process_gene
 {
     my ($gene, $transcript) = @_;
-    my $locus = $gene->first_child('Attribute[@name="locus"]');
+    my $locus = $gene->first_child('Cross-reference[@database="TIGR_moore"]');
     my $locus_tag = $gene->first_child('Attribute[@name="locus_tag"]');
+    my $cross_reference = $gene->first_child('Cross-reference[@identifier-type="locus"]');
     my %attrs = ();
     $attrs{'locus_tag'} = $locus_tag->att('content') if $locus_tag;
-    $attrs{'locus_tag'} = $locus->att('content') if $locus;
+    $attrs{'locus_tag'} = $locus->att('identifier') if $locus;
+    $attrs{'locus_tag'} = $cross_reference->att('identifier') if $cross_reference;
     if ($transcript) {
         my $symbol =
             $transcript->first_child('Attribute[@name="gene_symbol"]');
