@@ -42,7 +42,7 @@
 		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASMBL$;.bsml</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/chado2bsml.pl.$;ASMBL$;.log</value>
 	    </param>
 	    <param>
