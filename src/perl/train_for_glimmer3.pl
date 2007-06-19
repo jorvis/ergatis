@@ -1,10 +1,7 @@
-#!/local/packages/perl-5.8.8/bin/perl
-
-eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
-use lib(@INC, "/usr/local/devel/ANNOTATION/ard/current/lib/5.8.8");
-
+#!/usr/local/bin/perl
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
 
 =head1 NAME
 
@@ -15,6 +12,7 @@ train_for_glimmer.pl - you should put a one-line description of your script
 
 USAGE: train_for_glimmer.pl 
             --training_seqs=/path/to/somefile.fsa
+            --long_orfs_opts='-n -t 1.15'
             --icm_file=/path/to/glimmmer/training.icm
             --input_file=/path/to/input.fsa
             --output_file=/path/to/out.icm
@@ -23,24 +21,6 @@ USAGE: train_for_glimmer.pl
           ]
 
 =head1 OPTIONS
-
-B<--some_argument,-i>
-    here you'll put a longer description of this argument that can span multiple lines. in 
-    this example, the script has a long option and a short '-i' alternative usage.
-
-B<--another_argument,-o>
-    here's another named required argument.  please try to make your argument names all
-    lower-case with underscores separating multi-word arguments.
-
-B<--optional_argument,-s>
-    optional.  you should preface any long description orf optional arguments with the
-    optional word as I did in this description.  you shouldn't use 'optional' in the
-    actual argument name like I did in this example, it was just to indicate that
-    optional arguments in the SYNOPSIS should go between the [ ] symbols.
-
-B<--optional_argument2,-f>
-    optional.  if your optional argument has a default value, you should indicate it
-    somewhere in this description.   ( default = foo )
 
 B<--debug> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -79,18 +59,21 @@ use Ergatis::Logger;
 
 ########GLOBALS#############
 use constant BUILD_ICM => '/usr/local/devel/ANNOTATION/glimmer/glimmer3.01/bin/build-icm';
+my $longOrfsBin = "/usr/local/devel/ANNOTATION/glimmer/current/bin/long-orfs";
 my $training_seqs;
 my $icm_file;
 my $input_list;
 my $output;
 my $dontCreate = 0;
 my $tmp_dir;
+my $longOrfsOpts;
 ############################
 
 my %options = ();
 my $results = GetOptions (\%options, 
                           'training_seqs|t=s',
                           'input_list|i=s',
+                          'long_orfs_opts|n=s',
                           'output_file|o=s',
                           'tmp_dir|t=s',
                           'log|l=s',
@@ -118,6 +101,8 @@ unless($training_seqs || $icm_file) {
     close(IN);
 
     $training_seqs = &makeTrainingFile($tmp_dir, \@inputFiles);
+    
+    print "\n\nAccessing $training_seqs\n";
     &changeIds($training_seqs);
 
 }
@@ -142,14 +127,21 @@ sub makeTrainingFile {
     
     foreach my $file(@{$inputFiles}) {
         chomp $file;
-        print "Running:\n long-orfs $file > $tmp_dir/out.coords\n\n";
-        system("long-orfs $file > $tmp_dir/out.coords");
-        print "Running:\n extract $file $tmp_dir/out.coords >> $outFile\n";
-        system("extract $file $tmp_dir/out.coords >> $outFile")
+
+        my $base = $1 if($file =~ m|/([^/]+)\.|);
+        
+        my $longOrfsCmd = "$longOrfsBin $longOrfsOpts $file $tmp_dir/$base.train";
+        print "Running longorfs: $longOrfsCmd\n\n";
+        system($longOrfsCmd);
+
+        my $tmpOut = "$tmp_dir/$base.seqs";
+
+        my $extractCmd = "/usr/local/devel/ANNOTATION/glimmer/current/bin/extract -t $file $tmp_dir/$base.train >> $outFile";
+        print "Running:\n $extractCmd\n";
+        system($extractCmd)
     }
 
-    print "Running:\n rm -f $tmp_dir/out.coords\n";
-    system("rm -f $tmp_dir/out.coords");
+    #system("rm -f $tmp_dir/out.train");
 
     return $outFile;
 
@@ -161,11 +153,12 @@ sub changeIds {
     open(OUT, ">$file.tmp") or $logger->logdie("Can't open $file.tmp ($!)");
     my $count = 0;
     while(my $line = <IN>) {
-        if($line =~ /^T/) {
-            $line =~ s/^T\S+/$count/;
+        chomp $line;
+        if($line =~ /^>/) {
+            $line =~ s/^>\S+/>$count/;
             $count++;
         }
-        print OUT $line;
+        print OUT "$line\n";
         
     }
     close(IN);
@@ -176,10 +169,9 @@ sub changeIds {
 sub makeIcmFile {
     my ($output) = @_;
     
-    print "Running\n ".BUILD_ICM." $output < $training_seqs\n";
-    my $cmd = BUILD_ICM." $output < $training_seqs";
-
-    system($cmd);
+    my $buildIcmCmd = BUILD_ICM." -r $output < $training_seqs";
+    print "Running\n$buildIcmCmd\n";
+    system($buildIcmCmd);
 
 }
 
@@ -195,6 +187,8 @@ sub check_parameters {
     } else {
         &_die("one of input_list, training_seqs must exist");
     }
+
+    $longOrfsOpts = $options{'long_orfs_opts'} if($options{'long_orfs_opts'});    
 
     unless($options{'output_file'}) {
         &_die("Options output_file is required");
