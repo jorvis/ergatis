@@ -369,7 +369,8 @@ B<Returns:> Returns the id of the feature to which the score was added.
 sub addFeatureScore {
     my ($self, $featId, $scoreType, $value) = @_;
     my $filter = { 'id' => $featId };
-    my $feature = $self->filterFunction( $filter );
+    my $feature_array = $self->filterFunction( $filter );
+    my $feature = shift( @{$feature_array} );
     $feature->attribute($scoreType, $value);
     return $feature->id();
 }
