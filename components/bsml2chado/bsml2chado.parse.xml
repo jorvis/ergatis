@@ -87,10 +87,6 @@
 		<value>$;PROJECT_ID_REPOSITORY$;</value>
 	    </param>
 	    <param>
-		<key>--include_classes</key>
-		<value>$;INCLUDE_CLASSES$;</value>
-	    </param>
-	    <param>
 		<key>--exclude_classes</key>
 		<value>$;EXCLUDE_CLASSES$;</value>
 	    </param>
