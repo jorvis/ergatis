@@ -59,6 +59,10 @@
                 <key>--project</key>
                 <value>$;PROJECT$;</value>
             </param>
+            <param>
+                <key>--sourcename</key>
+                <value>$;OUTPUT_DIRECTORY$;/dummy/dir</value>
+            </param>
             <param>  
                 <key>--id_repository</key>
                 <value>$;PROJECT_ID_REPOSITORY$;</value>
