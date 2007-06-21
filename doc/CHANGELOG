@@ -558,3 +558,4 @@ next
 -genezilla.i1.xml: Changed to include genezilla2bsml.pl's new --sourcename option
 -Chado::Gene: fixed bug in addFeatureAttribute subroutine
 -augustus2bsml: uses Chado::Gene and GenePredictionBsml modules.
+-augustus.i1.xml: uses new augustus2bsml params
