@@ -575,6 +575,10 @@ sub to_bsml {
                           undef,                         # //Seq-data-import/@id
                           $fastaname                     # //Seq-data-import/@identifier
                           );
+
+    # bug #4005 add //Sequence/Attribute/@name="defline", @content=//Seq-data-import/@identifier
+    $doc->createAndAddBsmlAttribute($seq_obj, 'defline', $fastaname);
+
     open (my $FFILE, ">$fastafile") || die "Unable to open for writing $fastafile";
     print {$FFILE} fasta_out($fastaname, $gbr{'sequence'});
     close($FFILE);
@@ -1143,6 +1147,9 @@ sub addSeqToFeature {
                               $fastaname                     # //Seq-data-import/@identifier
                               );
 
+    # bug #4005 add //Sequence/Attribute/@name="defline", @content=//Seq-data-import/@identifier
+    $doc->createAndAddBsmlAttribute($feature_seq, 'defline', $fastaname);
+    
 #    open (my $FFILE, ">$fastafile") || die "Unable to open for writing $fastafile: $!";
 #    print {$FFILE} fasta_out($fastaname, $spliced_seq);
     print {$fsa_files{$class}{fh}} fasta_out($fastaname, $spliced_seq);
