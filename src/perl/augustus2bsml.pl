@@ -124,6 +124,7 @@ sub parseAugustusData {
         chomp;
         
         my @cols = split(/\t/);
+        $cols[0] =~ s/(\S+) .*/$1/;
 
         #The first column should contain the input sequence id.  We use it for
         #the project name if it was not passed in or if the keyword parse
