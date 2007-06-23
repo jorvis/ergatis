@@ -38,6 +38,22 @@
 		<value>$;ASMBL$;</value>
 	    </param>
 	    <param>
+		<key>--ignore_go</key>
+		<value>$;IGNORE_GO$;</value>
+	    </param>
+	    <param>
+		<key>--ignore_evcodes</key>
+		<value>$;IGNORE_EVCODES$;</value>
+	    </param>
+	    <param>
+		<key>--ignore_non_go</key>
+		<value>$;IGNORE_NON_GO$;</value>
+	    </param>
+	    <param>
+		<key>--polypeptides_only</key>
+		<value>$;POLYPEPTIDES_ONLY$;</value>
+	    </param>
+	    <param>
 		<key>--bsml_file_name</key>
 		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASMBL$;.bsml</value>
 	    </param>
