@@ -330,7 +330,7 @@ sub extract_and_write_sequence {
     }
   
     ## remove untranslated bases from the 5' end 
-    $seq = substr($seq, $orf->{'phase'});
+    $seq = substr($seq, $orf->{'frame'});
     
     my $outfile = $output_dir."/".$orf->{'id'}.".fsa";
     
