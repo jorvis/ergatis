@@ -559,3 +559,4 @@ next
 -Chado::Gene: fixed bug in addFeatureAttribute subroutine
 -augustus2bsml: uses Chado::Gene and GenePredictionBsml modules.
 -augustus.i1.xml: uses new augustus2bsml params
+-SavedPipeline.pm: Added a subroutine that allows the user to configure a pipeline from a saved template and ini file.
