@@ -84,6 +84,7 @@ use Ergatis::IdGenerator;
 use XML::Twig;
 use Ergatis::Logger;
 use Ergatis::Pipeline;
+use Ergatis::ConfigFile;
 
 
 ## class data and methods
@@ -589,5 +590,72 @@ XMLfraGMENt
         $cfg->WriteConfig( "$outputdir/$component_name.$token.user.config" );
         
     }
+
+    sub configure_saved_pipeline {
+        my ($self, $config_file, $repository_root, $id_repository) = @_;
+
+        #Create the new pipeline
+        $self->write_pipeline
+            ( 'repository_root' => $repository_root,
+              'id_repository'   => $id_repository );
+        my $pipeline_id = $self->pipeline_id();
+
+        #Replace the internal variables of the input config file
+        my $cfg = new Ergatis::ConfigFile( -file => $config_file );
+
+        #Replace some of the variables from the global section.
+        my %global_params = map( ($_, $cfg->val('global',$_)), $cfg->Parameters( 'global' ));
+        foreach my $section ( $cfg->Sections() ) {
+            foreach my $param( $cfg->Parameters( $section ) ) {
+                my $val = $cfg->val( $section, $param );
+                while( $val =~ /(\$;[\w_]+?\$;)/g ) {
+                    if( exists $global_params{$1} ) {
+                        my $replacement = $global_params{$1};
+                        my $match = $1;
+                        $match =~ s/\$/\\\$/g;
+                        $val =~ s/$match/$replacement/g;
+                        $cfg->setval( $section, $param, $val );
+                    }
+                }                
+            }
+        }
+        
+
+        #Retrieve all the sections of the input config file
+        my @sections = $cfg->Sections( );
+
+        #Check each sections for variables
+        foreach my $section ( @sections ) {
+            #These are sections that are only used for internal purposes
+            next if( $section =~ /global/);
+
+            #Format of section headers contaims the component name and the output token
+            my ($component_name, $output_token) = split(/\s+/, $section);
+
+            #This is where the newly written config file should be
+            my $ini_file = "$repository_root/workflow/runtime/$component_name/${pipeline_id}_$output_token/$component_name.$output_token.user.config";
+            croak("could not find ini_file $ini_file") unless( -e $ini_file );
+            
+            #The component ini file object
+            my $comp_ini = new Ergatis::ConfigFile( -file => $ini_file );
+
+            #Get the parameters fro this section
+            my @parameters = $cfg->Parameters( $section );
+            foreach my $param ( @parameters ) {
+
+                #Search through each section in the component ini file and replace where necesary.
+                #Dies if it can't find the variable ( ie. it doesn't exist, possible typo ).
+                my $retval;
+                foreach my $comp_section ( $comp_ini->Sections() ) {
+                    $retval = $comp_ini->setval( $comp_section, $param, $cfg->val($section, $param) );
+                    last if( $retval );
+                }
+                croak("could not find parameter $param in $ini_file") unless( $retval );
+                
+            }
+
+            $comp_ini->RewriteConfig();
+        }
+    } ## end configure_saved_pipeline
 
 } ## end class
