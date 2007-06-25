@@ -323,6 +323,14 @@ sub extract_and_write_sequence {
     my ($out_fsa_fh, $seq_ref, $orf) = @_;
 
     my $seq = substr(${$seq_ref}, $orf->{'startpos'}, $orf->{'endpos'} - $orf->{'startpos'});
+  
+    ## reverse complement orf if on complement 
+    if ($orf->{'complement'} == 1) {
+        $seq = reverse_complement_dna($seq); 
+    }
+  
+    ## remove untranslated bases from the 5' end 
+    $seq = substr($seq, $orf->{'phase'});
     
     my $outfile = $output_dir."/".$orf->{'id'}.".fsa";
     
@@ -374,3 +382,10 @@ sub open_file_read {
     return $fh
 }
 
+## reverse complement orfs
+sub reverse_complement_dna {
+        my ($r_seq) = @_;
+        $r_seq =~ tr/AaCcGgTtMmRrWwSsYyKkVvHhDdBb/TtGgCcAaKkYyWwSsRrMmBbDdHhVv/;
+        $r_seq = reverse($r_seq);
+        return $r_seq;
+}
