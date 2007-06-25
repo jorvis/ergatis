@@ -9,6 +9,10 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/genbank2bsml</executable>
             <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
             </param>
