@@ -197,6 +197,20 @@ foreach my $seq_id (keys(%{$orfs})) {
                                         'identifier'    => $seq_id,
                                     );
     $seq->addBsmlLink('analysis', '#'.$options{'analysis_id'}, 'input_of');
+    
+    
+    if (scalar(@{$orfs->{$seq_id}}) > 0) {
+        $doc->createAndAddBsmlAttribute(
+                                        $seq, 
+                                        'percent_gc', 
+                                        $orfs->{$seq_id}->[0]->{'gc'},
+                                       );
+        $doc->createAndAddBsmlAttribute(
+                                        $seq, 
+                                        'metagene_model', 
+                                        $orfs->{$seq_id}->[0]->{'model'},
+                                       );
+    }
 
     my $ft = $doc->createAndAddFeatureTable($seq);
 
