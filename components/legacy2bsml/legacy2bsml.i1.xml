@@ -79,11 +79,11 @@
 	    </param>
 	    <param>
 		<key>--input_id_mapping_directories</key>
-		<value>$;INPUT_ID_MAPPING_DIRECTORIES$;</value>
+		<value>'$;INPUT_ID_MAPPING_DIRECTORIES$;'</value>
 	    </param>
 	    <param>
 		<key>--input_id_mapping_files</key>
-		<value>$;INPUT_ID_MAPPING_FILES$;</value>
+		<value>'$;INPUT_ID_MAPPING_FILES$;'</value>
 	    </param>
 	    <param>
 		<key>--output_id_mapping_file</key>
