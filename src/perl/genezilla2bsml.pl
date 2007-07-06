@@ -186,24 +186,12 @@ sub parseGenezillaData {
 
             @cols = split(/\t/);
 
-            ## store the source sequence name
-            $source_seq_name = $cols[0];
-
-            ## count in interbase:
-            $cols[3]--;
-
-            ## store complement flag (1 is true, this is on reverse)
-            $comp_val = ($cols[6] eq '+') ? 0 : 1;
 
             ## Get the group id.
             if ($cols[8] =~ /transgrp=(\d+)\;/) {
                 $current_group_name = $1;
             } else {
                 $logger->logdie("unrecognized format in attributes column: $cols[8]");
-            }
-
-            if ($cols[2] =~ /poly-A-signal/) {
-                $poly_end = ($comp_val) ? $cols[3] : $cols[4];
             }
 
         }
@@ -273,9 +261,6 @@ sub parseGenezillaData {
 
         }
 
-        ## remember this group name
-        $previous_group_name = $current_group_name;
-
         if ($first_in_group) {
             # we'll need to make a new Chado::Gene for each new transgrp set.
 
@@ -285,6 +270,28 @@ sub parseGenezillaData {
             $comp_val = '';
             $poly_end = '';
             @group_members = ();
+        }
+
+        ## remember this group name
+        $previous_group_name = $current_group_name;
+
+        ## grab/modify a few values for later use
+        unless ($last_gene_found) {
+
+            ## store the source sequence name
+            $source_seq_name = $cols[0];
+
+            ## count in interbase:
+            $cols[3]--;
+            $cols[4]--;
+
+            ## store complement flag (1 is true, this is on reverse)
+            $comp_val = ($cols[6] eq '+') ? 0 : 1;
+
+            if ($cols[2] =~ /poly-A-signal/) {
+                $poly_end = ($comp_val) ? $cols[3] : $cols[4];
+            }
+
         }
 
         # Handle exons:
