@@ -153,6 +153,9 @@ sub parseAugustusData {
         #Make sure the start is always less than the stop.  And parse the strand out.
         my ($start, $end) = ($cols[3] > $cols[4]) ? ($cols[4], $cols[3]) : ($cols[3], $cols[4]);
         my $strand = ($cols[6] eq '+') ? 0 : 1;
+        
+        #adjust for interbase coords:
+        $start--;
 
         #If we have come across a new gene id (a fake one that augustus assigns), then 
         #create a new gene.
