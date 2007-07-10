@@ -185,7 +185,7 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/xsdValid.pl</executable>
             <param>  
-                <key>-d</key>
+                <key>-s</key>
                 <value>$;DOCS_DIR$;/blastp.xsd</value>
             </param>
             <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
