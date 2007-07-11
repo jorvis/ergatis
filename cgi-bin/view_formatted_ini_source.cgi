@@ -46,19 +46,19 @@ for my $section ( $ini->Sections ) {
         my $comment = $ini->get_comment_html($section, $parameter);
         
         ## look for any linkable xml
-        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))(?![\./])^i ) {
+        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))\s*$^i ) {
             $url = $1;
             $value =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
         }
 
         ## look for any linkable ini
-        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))(?![\./])^i ) {
+        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))\s*$^i ) {
             $url = $1;
             $value =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
         }
 
         ## look for any linkable lists
-        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)(?![\./])^i ) {
+        if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)\s*$^i ) {
             $url = $1;
             $value =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
         }
