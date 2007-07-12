@@ -116,7 +116,7 @@ sub MY::postamble {
     $postamble .= << 'END';
 
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ngap nucmer_snps obo2chado open_reading_frames pangenome panther parse_for_ncRNAs pepstats phage_finder phat pipeline_summary predotar promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames pangenome panther parse_for_ncRNAs pepstats phage_finder phat pipeline_summary predotar promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -572,11 +572,10 @@ ncbi-blastp	:
 
 ncbi-blastx	:
 	@echo "Installing ncbi-blastx workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ncbi-blastx/ncbi-blastx-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastx/ncbi-blastx-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastx/ncbi-blastx.ini $(WORKFLOW_DOCS_DIR)
-	@install components/ncbi-blastx/ncbi-blastx_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/ncbi-blastx/ncbi-blastxconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastx/ncbi-blastx.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastx/ncbi-blastx.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastx/ncbi-blastx.config $(WORKFLOW_DOCS_DIR)
+	@install components/ncbi-blastx/ncbi-blastx.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 ncbi-tblastn	:
 	@echo "Installing ncbi-tblastn workflows in $(WORKFLOW_DOCS_DIR)"
@@ -898,11 +897,10 @@ wu-blastp	:
 
 wu-blastx	:
 	@echo "Installing wu-blastx workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/wu-blastx/wu-blastx-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastx/wu-blastx-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastx/wu-blastx.ini $(WORKFLOW_DOCS_DIR)
-	@install components/wu-blastx/wu-blastx_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/wu-blastx/wu-blastxconf.ini $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastx/wu-blastx.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastx/wu-blastx.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastx/wu-blastx.config $(WORKFLOW_DOCS_DIR)
+	@install components/wu-blastx/wu-blastx.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 wu-tblastn	:
 	@echo "Installing wu-tblastn workflows in $(WORKFLOW_DOCS_DIR)"
