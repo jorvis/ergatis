@@ -1,0 +1,137 @@
+<!-- component documentation -->
+
+<p>
+    This component does a translating nucleotide-protein comparison between the query
+    sequence and subject database using the NCBI BLAST blastall executable.
+</p>
+<h3>references</h3>
+<p>
+    <a href='http://www.ncbi.nlm.nih.gov/blast/docs/blastall.html'></a>
+</p>
+<h3>input</h3>
+<p>
+    blastall takes a FASTA-formatted query input file (which can contain multiple sequences)
+    and a formatdb prepared database.
+</p>
+<h3>implemented options</h3>
+<p>
+<ul>
+    <li>-e - expectation value
+    <li>-F - filter string ('T' to turn on hard-masking, 'm L' to turn on soft-masking)
+    <li>-b - number of database sequences to show alignments for
+    <li>-v - number of database sequences to show one-line descriptions for
+    <li>-M - scoring matrix to be used in protein related searches
+
+</ul>
+</p>
+<h3>output</h3>
+<p class="subsection_header">
+    Output
+</p>
+<p>
+    The raw output from the blastall suite looks as follows:
+</p>
+<p class="code">
+BLASTP 2.2.10 [Oct-19-2004]
+
+
+Reference: Altschul, Stephen F., Thomas L. Madden, Alejandro A. Schaffer,
+Jinghui Zhang, Zheng Zhang, Webb Miller, and David J. Lipman (1997),
+"Gapped BLAST and PSI-BLAST: a new generation of protein database search
+programs",  Nucleic Acids Res. 25:3389-3402.
+
+Query= gi|181726|gb|AAA02729.1| antigen, T-cell receptor
+         (30 letters)
+
+Database: seq
+           1 sequences; 30 total letters
+
+Searching.done
+
+                                                                 Score    E
+Sequences producing significant alignments:                      (bits) Value
+
+gb|AAA02729.1| antigen, T-cell receptor                                71   4e-19
+
+>gb|AAA02729.1| antigen, T-cell receptor
+          Length = 30
+
+ Score = 70.9 bits (172), Expect = 4e-19
+ Identities = 30/30 (100%), Positives = 30/30 (100%)
+
+Query: 1  CATWDGPEWHYKKLFGSGTTLVVTDKQLDA 30
+          CATWDGPEWHYKKLFGSGTTLVVTDKQLDA
+Sbjct: 1  CATWDGPEWHYKKLFGSGTTLVVTDKQLDA 30
+
+
+  Database: seq
+    Posted date:  Jun 9, 2005  4:39 PM
+  Number of letters in database: 30
+  Number of sequences in database:  1
+
+Lambda     K      H
+   0.318    0.135    0.474
+
+Gapped
+Lambda     K      H
+   0.267   0.0410    0.140
+
+
+Matrix: BLOSUM62
+Gap Penalties: Existence: 11, Extension: 1
+Number of Hits to DB: 28
+Number of Sequences: 1
+Number of extensions: 1
+Number of successful extensions: 1
+Number of sequences better than 10.0: 1
+Number of HSP's better than 10.0 without gapping: 1
+Number of HSP's successfully gapped in prelim test: 0
+Number of HSP's that attempted gapping in prelim test: 0
+Number of HSP's gapped (non-prelim): 1
+length of query: 30
+length of database: 30
+effective HSP length: 0
+effective length of query: 30
+effective length of database: 30
+effective search space:      900
+effective search space used:      900
+T: 11
+A: 40
+X1: 5 ( 2.3 bits)
+X2: 38 (14.6 bits)
+X3: 64 (24.7 bits)
+S1: 5 ( 5.2 bits)
+S2: 5 ( 6.5 bits)
+</p>
+
+<h3>bsml output</h3>
+<div class='bsml_container'>
+<p class="code">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;!DOCTYPE Bsml PUBLIC "-//EBI//Labbook, Inc. BSML DTD//EN" "http://www.labbook.com/dtd/bsml3_1.dtd"&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence length="30" class="assembly" title="gi|181726|gb|AAA02729.1|" id="gi|181726|gb|AAA02729.1|" molecule="aa"&gt;&lt;/Sequence&gt;
+
+      &lt;Sequence class="assembly" title="antigen, T-cell receptor" id="gb_AAA02729_1_" molecule="aa"&gt;&lt;/Sequence&gt;
+    &lt;/Sequences&gt;
+    &lt;Tables id="BsmlTables"&gt;
+      &lt;Seq-pair-alignment refend="30" compseq="gb_AAA02729_1_" compxref="seq:gb_AAA02729_1_" refseq="gi|181726|gb|AAA02729.1|" refstart="0" reflength="30" refxref=":gi|181726|gb|AAA02729.1|" method="BLASTP"&gt;
+        &lt;Seq-pair-run refcomplement="0" runprob="30" comppos="0" refpos="0" runlength="30" compcomplement="0" comprunlength="30" runscore="172"&gt;
+          &lt;Attribute name="p_value" content="4e-19"&gt;&lt;/Attribute&gt;
+
+          &lt;Attribute name="chain_number" content="70.9"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_identity" content="100.0"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="segment_number" content=""&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_similarity" content="100.0"&gt;&lt;/Attribute&gt;
+        &lt;/Seq-pair-run&gt;
+
+      &lt;/Seq-pair-alignment&gt;
+    &lt;/Tables&gt;
+  &lt;/Definitions&gt;
+&lt;/Bsml&gt;
+</p>
+
+</div>
