@@ -11,6 +11,11 @@ $;REPOSITORY_ROOT$;=/usr/local/annotation/TEST
 ;;  regularly, usually by some cron job.
 $;TMP_DIR$;=/usr/local/scratch/$;PROJECT$;/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;
 
+;; SunGrid Engine supports grid usage monitoring by project codes, allowing admins to keep
+;;  track of grid time across different groups.  This setting is optional but will cause
+;;  Workflow Engine to utilize SGE's -P directive.
+$;PROJECT_CODE$;=8010
+
 ;; All variables below must be full paths - no variable references or tokens.
 
 ;; This should be the path to the id repository under the 'workflow' directory for your project.

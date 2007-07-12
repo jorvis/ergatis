@@ -104,8 +104,13 @@ if (exists $options{'iterator_list'}) {
                      <id>$i</id>
                      <fileName>$file</fileName>
                      <dceSpec type=\"sge\">
-                        <OS>linux</OS>
-                     </dceSpec>
+                        <OS>linux</OS>\n";
+        
+        if ( $cfg->val( 'project', '$;PROJECT_CODE$;' ) ) {
+            print FILE "                        <group>", $cfg->val( 'project', '$;PROJECT_CODE$;' ), "</group>\n"; 
+        }
+        
+        print FILE " </dceSpec>
                     </commandSet>\n";
     }
     print FILE "</commandSet>
