@@ -156,6 +156,7 @@ sub parseAugustusData {
         
         #adjust for interbase coords:
         $start--;
+        $end--;
 
         #If we have come across a new gene id (a fake one that augustus assigns), then 
         #create a new gene.
