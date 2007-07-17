@@ -165,9 +165,11 @@ sub replacekeys{
     } else {
         open( OUTPUTFILE, "+>$outputfile") or $logger->logdie("Could not open output template file $outputfile: $!");
     }
+    my $run_dist_cmd_flag = 0;
+
     while( my $line = <INPUTFILE> ){
         ## don't replace vals on comment lines
-	if( $line !~ /^\;/ && $line !~ /^\#/ ) {
+	if( $line !~ /^\;/ && $line !~ /^\#/ ) {        
 	    if($line =~ /\<INCLUDE/){
 		$line =~ s/(\$;[\w_]+\$;)([^=])/&replaceval($1,$subs).$2/ge;
 	    }
@@ -175,6 +177,23 @@ sub replacekeys{
 		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
 	    }
         }
+
+    if($line =~ /\<type\>RunDistributedCommand\<\/type\>/) {
+        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+        $run_dist_cmd_flag = 1 if( $group || $group == 0 );
+    }
+    if($run_dist_cmd_flag && $line =~ /<dceSpec/) {
+        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+        $line .= "            <group>$group</group>\n";
+        $run_dist_cmd_flag = 0;
+    }
+    if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
+        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+        my $new_line = "        <dceSpec>\n            <group>$group</group>\n        </dceSpec>\n$line";
+        $line = $new_line;
+        $run_dist_cmd_flag = 0;
+    }
+
 	if($line =~ /\<INCLUDE/){
 	    if($line !~ />/){
 		$logger->logdie("<INCLUDE> directive must be contained on a single line");
@@ -274,6 +293,7 @@ sub import_xml{
 	}
     }
     open FILE, "$file" or $logger->logdie("Can't open file $file");
+    my $run_dist_cmd_flag = 0;
     while(my $line=<FILE>){
 	if( $line !~ /^\;/ && $line !~ /^\#/ ) {
 	    if($line =~ /\<INCLUDE/){
@@ -283,6 +303,22 @@ sub import_xml{
 		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
 	    }
         }
+
+    if($line =~ /\<type\>RunDistributedCommand\<\/type\>/) {
+        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+        $run_dist_cmd_flag = 1 if( $group || $group == 0 );
+    }
+    if($run_dist_cmd_flag && $line =~ /<dceSpec/) {
+        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+        $line .= "            <group>$group</group>\n";
+        $run_dist_cmd_flag = 0;
+    }
+    if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
+        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+        my $new_line = "        <dceSpec>\n            <group>$group</group>\n        </dceSpec>\n$line";
+        $line = $new_line;
+        $run_dist_cmd_flag = 0;
+    }
 	if($line =~ /\<INCLUDE/){
 	    if($line !~ />/){
 		$logger->logdie("<INCLUDE> directive must be contained on a single line");
