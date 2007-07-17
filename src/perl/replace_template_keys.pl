@@ -189,7 +189,7 @@ sub replacekeys{
     }
     if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
         my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        my $new_line = "        <dceSpec>\n            <group>$group</group>\n        </dceSpec>\n$line";
+        my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
         $line = $new_line;
         $run_dist_cmd_flag = 0;
     }
@@ -315,7 +315,7 @@ sub import_xml{
     }
     if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
         my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        my $new_line = "        <dceSpec>\n            <group>$group</group>\n        </dceSpec>\n$line";
+        my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
         $line = $new_line;
         $run_dist_cmd_flag = 0;
     }
