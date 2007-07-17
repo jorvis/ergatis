@@ -561,3 +561,7 @@ next
 -augustus.i1.xml: uses new augustus2bsml params
 -SavedPipeline.pm: Added a subroutine that allows the user to configure a pipeline from a saved template and ini file.
 -installer: added wu-blastx and ncbi-blastx, both new to version 2.
+-replace_template_keys: Will add the <group> element to component xml (in the dceSpec) to
+    commands with type RunDistributedCommand.  If dceSpec exists, it will
+    add it to that element, if not, it will create one.  Also will add this
+    to includes.
