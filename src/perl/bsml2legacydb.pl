@@ -404,7 +404,8 @@ sub process_feat_old_encoding
             !defined $seq_int->att('startpos') or
             !defined $seq_int->att('endpos');
         my ($start_pos, $end_pos) = ($seq_int->att('startpos') + 1,
-            $seq_int->att('endpos') + 1);
+#            $seq_int->att('endpos') + 1); ## generates off by one errors
+            $seq_int->att('endpos') );
         $logger->logdie("Feature $id has invalid complement value")
             if ($seq_int->att('complement') != 0 and
             $seq_int->att('complement') != 1);
@@ -706,7 +707,8 @@ sub extract_seq_loc
         !defined $seq_int->att('startpos') or
         !defined $seq_int->att('endpos');
     my ($start_pos, $end_pos) = ($seq_int->att('startpos') + 1,
-            $seq_int->att('endpos') + 1);
+#            $seq_int->att('endpos') + 1); ## generates off by one errors.
+            $seq_int->att('endpos'));
     my $complement = $seq_int->att('complement');
     $logger->logdie("Feature $id has invalid complement value")
         if ($complement != 0 and $complement != 1);
