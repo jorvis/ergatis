@@ -554,7 +554,7 @@ next
 -bsml2tbl: parses out locus tag information from cross-reference elements if available
 -open_reading_frames: corrected list generation when output not compressed
 -open_reading_frames: input headers now require only an ID
--genezilla2bsml.pl: Updated to use Ergatis::IdGenerator, Ergatis::Logger, and BSML::GenePredictionBsml
+-genezilla2bsml.pl: Updated to use Ergatis::IdGenerator, Ergatis::Logger, and BSML::GenePredictionBsml, also corrected interbase conversion
 -genezilla.i1.xml: Changed to include genezilla2bsml.pl's new --sourcename option
 -Chado::Gene: fixed bug in addFeatureAttribute subroutine
 -augustus2bsml: uses Chado::Gene and GenePredictionBsml modules. Also converts to interbase.
@@ -565,3 +565,5 @@ next
     commands with type RunDistributedCommand.  If dceSpec exists, it will
     add it to that element, if not, it will create one.  Also will add this
     to includes.
+-snap2bsml.pl: now correctly converts to interbase
+-bsml2legacydb.pl: now correctly converts from interbase
