@@ -88,10 +88,14 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Ergatis::Logger;
-use BSML::BsmlRepository;
-use Papyrus::TempIdCreator;
-use BSML::BsmlBuilder;
-use BSML::BsmlParserTwig;
+
+#use Papyrus::TempIdCreator;
+use Ergatis::IdGenerator;
+
+use BSML::GenePredictionBsml;
+#use BSML::BsmlRepository;
+#use BSML::BsmlBuilder;
+#use BSML::BsmlParserTwig;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -185,7 +189,6 @@ while (<$ifh>) {
     
     ## adjust both positions so that we are numbering from zero
     $cols[1]--;
-    $cols[2]--;
     
     ## change the + and - symbols in strand column to 0 and 1, respectively
     if ($cols[3] eq '+') {
