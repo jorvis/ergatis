@@ -283,7 +283,6 @@ sub parseGenezillaData {
 
             ## count in interbase:
             $cols[3]--;
-            $cols[4]--;
 
             ## store complement flag (1 is true, this is on reverse)
             $comp_val = ($cols[6] eq '+') ? 0 : 1;
