@@ -567,3 +567,5 @@ next
     to includes.
 -snap2bsml.pl: now correctly converts to interbase
 -bsml2legacydb.pl: now correctly converts from interbase
+-twinscan2bsml.pl: initial commit
+-merge_twinscan_results.pl: initial commit
