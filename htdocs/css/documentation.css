@@ -53,6 +53,10 @@ ul {
 
 /* this section for the component_creation.tmpl */
 
+div#formatdb_xml {
+    font-size: 90%;
+    float: right;
+}
 img#component_structure_types {
     float: right;
     margin: 0;
