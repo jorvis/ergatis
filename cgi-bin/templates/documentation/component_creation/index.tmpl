@@ -13,10 +13,12 @@
     <li>general structure
         <ul>
             <li><a href='#typical_component_types'>typical component types</a></li>
+            <li><a href='#workflow_engine_xml'>workflow engine xml</a></li>
+            <li><a href='#component_file_layout'>component file layout</a></li>
         </ul>
     </li>
 </ul>
-<a name='what_is_component' />
+<a name='what_is_component'></a>
 <h2>what is a component?</h2>
 <p>
     When you build an analysis pipeline with ergatis each 'piece' of the pipeline is known as
@@ -31,7 +33,7 @@
     each command accepts arguments, the execution order of each command (if there are more than one)
     and whether each should be run locally or distributed to a compute node.
 </p>
-<a name='can_my_script_be' />
+<a name='can_my_script_be'></a>
 <h2>can my script or program become a component?</h2>
 <p>
     There are only a few criteria that must be met for a script/program to become an ergatis
@@ -89,7 +91,7 @@
         </p>
     </dd>
 </dl>
-<a name='typical_component_types' />
+<a name='typical_component_types'></a>
 <h2>typical component types</h2>
 <img id='component_structure_types' src='/ergatis/images/documentation/component_structure_types.png' alt='component structure types'>
 <p>
@@ -142,7 +144,63 @@
         </p>
     </dd>
 </dl>
+<p>
+    Next we'll talk about how commands that are part of a component are encoded in Workflow XML, then how these
+    are organized into a component.
+</p>
 
+<a name='workflow_engine_xml'></a>
+<h2>Workflow Engine XML</h2>
+<p>
+    The Ergatis interface provides an easy, modular way to build pipelines that are eventually represented in
+    XML format for processing by the <a href='http://sf.net/projects/tigr-workflow'>Workflow Engine</a>.  Each
+    component created is a set of template XML files describing how to run a tool and its associated commands.
+    Once created, the interface uses these templates to build the final XML that can be parsed by Workflow Engine.
+    The content of the actual XML files mimic the typical component steps shown in the image above.  We'll first
+    consider a simple non-iterative component, which is composed of a series of commands.
+</p>
+<div id='formatdb_xml' class='code_container'>
+    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+    &lt;commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                             xsi:schemaLocation='commandSet.xsd'&gt;
+        &lt;commandSet type="serial"&gt;
+            &lt;state&gt;incomplete&lt;/state&gt;
+            &lt;name&gt;formatdb workflow&lt;/name&gt;
+            &lt;command&gt;
+                &lt;type&gt;RunUnixCommand&lt;/type&gt;
+                &lt;name&gt;create output directory&lt;/name&gt;
+                &lt;state&gt;incomplete&lt;/state&gt;
+                &lt;executable&gt;mkdir&lt;/executable&gt;
+                &lt;arg&gt;-p -m 777 /some/output/directory&lt;/arg&gt;
+            &lt;/command&gt;
+            &lt;command&gt;
+                &lt;type&gt;RunUnixCommand&lt;/type&gt;
+                &lt;name&gt;formatdb&lt;/name&gt;
+                &lt;state&gt;incomplete&lt;/state&gt;
+                &lt;executable&gt;$;FORMATDB_EXEC$;&lt;/executable&gt;
+                &lt;arg&gt;-p F -oT -i somefile.fsa -n /some/output/directory/dbout&lt;/arg&gt;
+            &lt;/command&gt;
+        &lt;/commandSet&gt;
+    &lt;/commandSetRoot&gt;
+    
+</div>
+<p>
+    Formatdb is a well-known tool used to index FASTA collections to be searched with NCBI's BLAST suite.  Our
+    execution of formatdb contains two steps:
+</p>
+<ol>
+    <li>mkdir /some/output/directory</li>
+    <li>formatdb -p F -oT -i somefile.fsa -n /some/output/directory/dbout</li>
+</ol>
+
+<a name='component_file_layout'></a>
+<h2>component file layout</h2>
+<p>
+    
+</p>
+
+<!-- this to be removed once the tutorial is complete -->
 <h1>this tutorial is not yet complete</h1>
 
 
