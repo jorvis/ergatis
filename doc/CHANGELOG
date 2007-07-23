@@ -569,3 +569,4 @@ next
 -bsml2legacydb.pl: now correctly converts from interbase
 -twinscan2bsml.pl: initial commit
 -merge_twinscan_results.pl: initial commit
+-interface: now displays project code on pipeline list pages
