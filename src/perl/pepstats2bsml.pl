@@ -64,18 +64,18 @@ use strict;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'input|i=s',
+              'input|i=s',
               'output|o=s',
               'debug|d=s',
               'command_id=s',       ## passed by workflow
               'logconf=s',          ## passed by workflow (not used)
               'project|p=s',
               'log|l=s',
-			  'help|h') || pod2usage();
+              'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
@@ -84,30 +84,30 @@ if( $options{'help'} ){
 }
 
 if (!$options{'input'}) {
-	pod2usage("you must specify an input file with --input");
+    pod2usage("you must specify an input file with --input");
 }
 if (!$options{'output'}) {
-	pod2usage("you must specify an output file with --output");
+    pod2usage("you must specify an output file with --output");
 }
 if (-e $options{'output'}) {
-	$logger->logdie("output file '$options{output}' already exists");
+    $logger->logdie("output file '$options{output}' already exists");
 }
 if (!-e $options{'input'}) {
-	$logger->logdie("input file '$options{input}' does not exist");
+    $logger->logdie("input file '$options{input}' does not exist");
 }
 
 ## map output to ontology terms in output.obo
 my $onto_terms = {
-'Molecular weight' 									=> 'mol_wt',
-'Residues' 											=> '',
-'Average Residue Weight' 							=> 'avg_residue_wt',
-'Charge' 											=> 'charge',
-'Isoelectric Point' 								=> 'isoelectric_pt',
-'A280 Molar Extinction Coefficient' 				=> 'extinction_coefficient_mol',
-'A280 Extinction Coefficient 1mg/ml' 				=> 'extinction_coefficient_mg_ml',
-'Improbability of expression in inclusion bodies' 	=> 'improb_expr_in_inclusion_bodies',
-'Probability of expression in inclusion bodies' 	=> 'prob_expr_in_inclusion_bodies',
-		    	 };
+'Molecular weight'                                  => 'mol_wt',
+'Residues'                                          => '',
+'Average Residue Weight'                            => 'avg_residue_wt',
+'Charge'                                            => 'charge',
+'Isoelectric Point'                                 => 'isoelectric_pt',
+'A280 Molar Extinction Coefficient'                 => 'extinction_coefficient_mol',
+'A280 Extinction Coefficient 1mg/ml'                => 'extinction_coefficient_mg_ml',
+'Improbability of expression in inclusion bodies'   => 'improb_expr_in_inclusion_bodies',
+'Probability of expression in inclusion bodies'     => 'prob_expr_in_inclusion_bodies',
+                 };
 
 my $doc = new BSML::BsmlBuilder();
 $doc->makeCurrentDocument();
@@ -118,46 +118,47 @@ my $length;
 
 open (IN, $options{'input'}) || $logger->logdie("couldn't open input file for reading");
 while (<IN>) {
-	chomp;
-	s/\t+/\t/g;
-	s/\s+=\s+/=/g;
-	s/\s+$//;
-	if (/^\s*$/) {
-		next;
-	}
-	if (/PEPSTATS of ([^\s]+)/) {
-		$seq_id = $1;
-		next;
-	}
-	if (/^Residue/) {
-		last;
-	}
-	my @data = split("\t");
-	foreach my $datum(@data) {
-		my ($att, $val) = split("=",$datum);
-		if ($att eq 'Residues') {
-			$length = $val;
-		}
-		if (!defined($onto_terms->{$att})) { 
-			$logger->logdie("encountered an unexpected data type '$att'");
-		} elsif ($onto_terms->{$att} ne '') {
-			$atts->{$onto_terms->{$att}} = $val;
-		}
-	}
+    chomp;
+    s/\t+/\t/g;
+    s/\s+=\s+/=/g;
+    s/\s+$//;
+    if (/^\s*$/) {
+        next;
+    }
+    if (/PEPSTATS of ([^\s]+)/) {
+        $seq_id = $1;
+        next;
+    }
+    if (/^Residue/) {
+        last;
+    }
+    my @data = split("\t");
+    foreach my $datum(@data) {
+        my ($att, $val) = split("=",$datum);
+        $val =~ s/\s+//g;
+        if ($att eq 'Residues') {
+            $length = $val;
+        }
+        if (!defined($onto_terms->{$att})) { 
+            $logger->logdie("encountered an unexpected data type '$att'");
+        } elsif ($onto_terms->{$att} ne '') {
+            $atts->{$onto_terms->{$att}} = $val;
+        }
+    }
 }
 my $seq = $doc->createAndAddSequence(
-										$seq_id, 
-										$seq_id, 
-										$length, 
-										'aa', 
-										'polypeptide'
-									);
+                                        $seq_id, 
+                                        $seq_id, 
+                                        $length, 
+                                        'aa', 
+                                        'polypeptide'
+                                    );
 foreach my $att(keys(%{$atts})) {
-	$seq->addBsmlAttr($att, $atts->{$att});
+    $seq->addBsmlAttr($att, $atts->{$att});
 }
 
 $doc->createAndAddLink(
-						$seq,
+                        $seq,
                         'analysis',
                         '#pepstats_analysis',
                         'computed_by',
