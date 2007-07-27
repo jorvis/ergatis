@@ -1,0 +1,171 @@
+<!-- component documentation -->
+
+<h3>overview</h3>
+<p>
+    This component runs the AAT suite of programs when comparing a nucleic acid sequence with a protein
+    database.  The series of actions it performs is:
+</p>
+<ul>
+    <li>dps</li>
+    <li>ext</li>
+    <li>collapse_ext</li>
+    <li>filter</li>
+    <li>nap</li>
+</ul>
+<h3>input</h3>
+<p>
+    The input to aat_aa can be a single FASTA file, a directory of fasta files or a text file 
+    containing a list of file paths.  Note that each FASTA file must have only one sequence within
+    it.  If you have a multi-fasta file, the <a href="./documentation.cgi?article=components&page=split_multifasta">split_multifasta</a>
+    component should be run first.  If iterating over a directory of FASTA files, the iterator will
+    only look for files with the .fsa extension.
+</p>
+<p>
+    We need to avoid directly passing huge sequences to AAT for analysis, as memory usage and
+    processing time would be less than optimal.  Instead, we usually split the input sequences
+    into chunks using <a href="./documentation.cgi?article=components&page=split_fasta">split_fasta</a>, run the analysis and then reconstitute
+    the result set, adjusting coordinates when necessary.
+
+</p>
+<h3>output</h3>
+<p>
+    This component calls five different executables, and each has at least one output file.  Each of
+    these are retained and written to the output directory assigned during configuration.  The files
+    created follow a standard naming convention.  If your input file is called:
+</p>
+<blockquote>
+    something.fsa
+</blockquote>
+<p>
+    the following files will exist after a successful run (in order of creation):
+</p>
+<blockquote>
+    something.dps.raw<br>
+    something.ext.raw<br>
+    something.ext.collapsed<br>
+    something.filter.raw<br>
+    something.nap.raw<br>
+    something.nap.btab<br>
+    something.aat_aa.bsml
+</blockquote>
+<p>
+    Notice that the original extension has been stripped.  Because the extension is usually a format
+    descriptor, it is removed to avoid ambiguous file endings such as ".btab.bsml"  or ".fsa.btab" which
+    describe two different formats.
+</p>
+<p>
+    The default btab is tab-delimited and has 19 columns.  An example row:
+</p>
+<table class="grid">
+    <tbody>
+        <tr>
+            <th class="header">column</th>
+            <th class="header">description</th>
+            <th class="header">example</th>
+        </tr>
+        <tr>
+            <td>0</td>
+            <td>qry name</td>
+            <td>cpa1.assem.1</td>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>date</td>
+            <td>Jan 25 2005</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>query length</td>
+            <td>15235</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>analysis tool</td>
+            <td>/usr/local/bin/nap</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>database</td>
+            <td>/usr/local/db/panda/AllGroup/AllGroup.niaa</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>db match accession</td>
+            <td>GB|BAA97098.1|8777580|AP002460</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>qry start</td>
+            <td>5416</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>qry stop</td>
+            <td>5280</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>hit start</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>hit stop</td>
+            <td>46</td>
+        </tr>
+        <tr>
+            <td>10</td>
+            <td>percent identity</td>
+            <td>28.888889</td>
+        </tr>
+        <tr>
+            <td>11</td>
+            <td>percent similarity</td>
+            <td>60.000000</td>
+        </tr>
+        <tr>
+            <td>12</td>
+            <td>domain score</td>
+            <td>70</td>
+        </tr>
+        <tr>
+            <td>13</td>
+            <td>chain number</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>14</td>
+            <td>segment number</td>
+            <td>1</td>
+        </tr>
+        <tr>
+            <td>15</td>
+            <td>db match name</td>
+            <td>unnamed protein product; gene_id:F1D9.26 unknown protein {Arabidopsis thaliana;}</td>
+        </tr>
+        <tr>
+            <td>16</td>
+            <td>???</td>
+            <td>-1</td>
+        </tr>
+        <tr>
+            <td>17</td>
+            <td>qry strand</td>
+            <td>Minus</td>
+        </tr>
+        <tr>
+            <td>18</td>
+            <td>total score</td>
+            <td>260</td>
+        </tr>
+    </tbody>
+</table>
+<h3>BSML output representation</h3>
+<p>
+    We start by creating a Sequence stub for each sequency in the analysis, both query and subject. Then
+    we create a Seq-pair-alignment element for each match in the comparison.  These are followed by
+    The Analysis information.  Using the data above as an example:
+</p>
+<div class='code_container'>
+    Example BSML needed here.
+</div>
