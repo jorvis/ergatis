@@ -41,7 +41,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.analysisprop.log</value>
 	    </param>
 	    <param>
@@ -86,7 +86,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.dbxrefprop.log</value>
 	    </param>
 	    <param>
@@ -131,7 +131,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.featureprop.log</value>
 	    </param>
 	    <param>
@@ -176,7 +176,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.feature_cvtermprop.log</value>
 	    </param>
 	    <param>
@@ -221,7 +221,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.feature_relationshipprop.log</value>
 	    </param>
 	    <param>
@@ -266,7 +266,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.organismprop.log</value>
 	    </param>
 	    <param>
@@ -311,7 +311,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.phylonodeprop.log</value>
 	    </param>
 	    <param>
@@ -356,7 +356,7 @@
 		<value>$;DEBUG$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.pubprop.log</value>
 	    </param>
 	    <param>
@@ -370,6 +370,47 @@
 	    <param>
 		<key>stderr</key>
 		<value>$;WORKFLOW_REPOSITORY$;/checkForDuplicatePropertyTuples.pl.pubprop.stderr</value>
+	    </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Check for fmin>fmax and valid strand featureloc records</name>
+	    <executable>$;BIN_DIR$;/checkFeaturelocRecords</executable>
+	    <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
+	    <param>	  
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	    </param>
+	    <param>
+		<key>--username</key>
+		<value>$;USERNAME$;</value>
+	    </param>
+	    <param>
+		<key>--password</key>
+		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+		<key>--debug_level</key>
+		<value>$;DEBUG$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;WORKFLOW_REPOSITORY$;/checkFeaturelocRecords.pl.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;WORKFLOW_REPOSITORY$;/checkFeaturelocRecords.pl.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/checkFeaturelocRecords.pl.stderr</value>
 	    </param>
 	</command>
     </commandSet>
