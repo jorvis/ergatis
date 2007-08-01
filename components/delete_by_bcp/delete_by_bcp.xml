@@ -62,11 +62,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/create_iterator_list.pl.stdout</value>
+		<value>$;TMP_DIR$;/create_file_iterator_list.pl.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/create_iterator_list.pl.stderr</value>
+		<value>$;TMP_DIR$;/create_file_iterator_list.pl.stderr</value>
 	    </param>
 	</command>
 	<!--This iterator will read $;TMP_DIR$;/delete_records.sql.list and will execute sql2DB.pl to drop the records from chado tables.-->
