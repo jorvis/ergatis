@@ -22,10 +22,11 @@ IdGenerator.pm - A module for creating unique feature or pipeline IDs.
     
 =head1 DESCRIPTION
 
-This is a module for creating unique pipeline/feature IDs for Ergatis.  It works
-based on an incremented file method designed to handle simultaneous ID requests 
-from multiple processes, users and hosts over NFS.  The module currently uses
-the File::NFSLock module.
+This is a module for creating unique pipeline/feature IDs for Ergatis. 
+
+This is an abstract class that instantiates an object of an IdGenerator subclass, defined in Ergatis::IdGenerator::Config.
+
+Subclasses should implement all of the abstract methods present here.
 
 =head1 METHODS
 
@@ -129,282 +130,55 @@ take care of any other necessary file and directory structure needs.
 
 This directory will be checked the first time next_id() is called.
 
-=head1 TO DO / IMPROVEMENTS
-
-Some signal handling is done to attempt to ensure an ID file isn't left in a locked
-or incomplete state if a process is killed.  The File::NFSLock module does occasionally
-leave some temp and .NFSLock files behind when this happens, but they do not affect
-other processes (in my testing).  More testing and handling could be done here.
-
-There are other modules that claim to provide locking functionality, namely
-DotLock and IPC::Locker.  While performance is definitely important, I'm primarily 
-interested in getting something working without any race conditions.  I plan to
-play with these other modules to see if they are equally stable and test
-if they may give a performance advantage.
-
 =head1 AUTHOR
 
-    Joshua Orvis
-    jorvis@tigr.org
+    Brett Whitty
+    bwhitty@jcvi.org
 
 =cut
 
 use strict;
 use warnings;
 use Carp;
-use Sys::Hostname;
-use POSIX;
+use Ergatis::IdGenerator::Config;
 
 $|++;
 
-umask(0000);
-
 ## class data and methods
 {
-
-    my %_attributes = (
-                        id_repository           => undef,
-                        logging                 => 1,
-                        log_dir                 => undef,
-                        _id_pending             => undef,
-                        _id_repository_checked  => 0,
-                        _fh                     => undef,
-                        _logfh                  => undef,
-                        _pool_sizes             => undef,  # will be hashref
-                        _pools                  => undef,  # will be hashref
-                      );
-
-    ## class variables
-    my $host = hostname();
-
-    ## workaround Perl's F_SETLKW bug
-    my $f_setlk = 6;
-    my $f_setlkw = 7;
-
     sub new {
-        my ($class, %args) = @_;
-
-        ## make sure that the OS is linux (no support for other OS's)
-        croak "IdGenerator currently only supports Linux"
-            if $^O !~ /linux/;
-        
+        my ($class, @args) = @_;
         ## create the object
-        my $self = bless { %_attributes }, $class;
-        
-        ## set any attributes passed, checking to make sure they
-        ##  were all valid
-        for (keys %args) {
-            if (exists $_attributes{$_}) {
-                $self->{$_} = $args{$_};
-            } else {
-                croak ("$_ is not a recognized attribute");
-            }
-        }
-        
-        ## id_repository is required
-        #   don't check it until the first next_id call
-        if ( ! defined $args{id_repository} ) {
-            croak ("id_repository is a required argument for the constructor");
-        }
-        
-        ## set the log dir (unless the user has)
-        unless ( defined $self->{log_dir} ) {
-            $self->{log_dir} = "$args{id_repository}/logs";
-        }
-        
-        ## if we are logging, create a file
-        if ($self->logging) {
-            ## make sure the log directory exists (if we're logging)
-            if(! -d $self->log_dir() ) {
-                mkdir($self->log_dir(), 0777);
-            }
-
-            ## make sure the host subdir exists
-            if (! -d $self->log_dir() . "/$host") {
-                mkdir($self->log_dir() . "/$host", 0777);
-            }
-
-            open (my $fh, ">>" . $self->log_dir() . "/$host/$$.log") || croak ("can't create log file: $!");
-            print $fh "info: starting IdGenerator log for process $$\n";
-            $self->{_logfh} = $fh;
-        }
+        my $self = new $Ergatis::IdGenerator::Config::class(@args);
         
         return $self;
     }
-    
+   
+    ## returns the directory for id-generation related files
     sub id_repository {
-        ## just return the directory containing the id and lock files
-        $_[0]->{id_repository};
+        return undef;
     }
 
+    ## returns the directory containing log files
     sub log_dir {
-        ## just return the directory containing the log files
-        $_[0]->{log_dir};
+        return undef;
     }    
 
+    ## boolean check for whether logging is enabled
     sub logging {
-        ## just return the logging boolean
-        $_[0]->{logging};
+        return 0;
     }
     
+    ## returns the next id available
     sub next_id {
-        my ($self, %args) = @_;
-        my $current_num = undef;
-        my $idfh;  ## filehandle for the ID file
-
-        ## check some required arguments
-        $args{type} || croak "type is a required argument for the next_id method";
-        $args{count} = 1 unless ( defined $args{count} );
-        
-        unless ( $args{type} eq 'pipeline' ) {
-            $args{project} || croak "project is a required argument for the next_id method";
-            $args{version} = 1 unless ( defined $args{version} );
-        }
-        
-        ## has the id_repository been checked? (jay requested this not be in the constructor)
-        unless ( $self->{_id_repository_checked} ) {
-            $self->_check_id_repository();
-        }
-        
-        ## get ID
-        
-        ## from pool
-        if ( defined $self->{_pools}->{ $args{type} } && scalar @{ $self->{_pools}->{ $args{type} } } ) {
-            $current_num = shift @{ $self->{_pools}->{$args{type}} };
-        
-        ## from file system (refresh pool if necessary)
-        } else {
-            ## we need to trap interrupts here so we don't leave the ID file in a *bad* state
-            #   i'm doing it locally so in order to minimize messing with any signal trapping the
-            #   the calling script may have.
-            # sub mymethod { local $SIG{INT} = sub { int-like-stuff }; ... rest of method ... }
-            local $SIG{INT} = sub {
-                ## if a lock is open and we have a truncated ID file, we need to write the
-                #   pending ID.
-                if ( defined $self->{_id_pending} ) {
-                        sysseek($self->{_fh}, 0, 0);
-                        syswrite($self->{_fh}, $self->{_id_pending});
-                        close $self->{_fh};
-                }
-                
-                ## if a lock is open, close it
-                $self->_unlock();
-                
-                croak("caught SIGINT. idgen process interrupted");
-            };
-        
-        my $id_file = "$self->{id_repository}/next.$args{type}.id";
-        sysopen($self->{_fh}, $id_file, O_RDWR|O_CREAT) ||
-            croak("failed to initialize file $id_file");
-        $self->_lock();
-
-        sysseek($self->{_fh}, 0, 0);
-        sysread($self->{_fh}, $current_num, 100);
-        $current_num = 1 if !$current_num;
-        chomp $current_num;
-
-        my $id_to_set;
-
-            ## do we have a pool to refresh?
-        if ( defined $self->{_pool_sizes}->{ $args{type} } ) {
-            my $pool_size = $self->{_pool_sizes}->{ $args{type} };
-            $id_to_set = $current_num + $pool_size;
-
-                    ## reload the pool
-            if ( $pool_size > 1 ) {
-                for ( 1 .. ($pool_size - 1) ) {
-                    push @{ $self->{_pools}->{$args{type}} },
-                     $_ + $current_num;
-                }
-            }
-        } else {
-            $id_to_set = $current_num + 1;
-        }
-                
-        ## set next id, close
-        $self->{_id_pending} = $id_to_set;
-        sysseek($self->{_fh}, 0, 0);
-        syswrite($self->{_fh}, $id_to_set);
-
-        $self->{_id_pending} = undef;
-        $self->_unlock();
-        close $self->{_fh};
-        undef $self->{_fh};
-
+       croak "Method next_id is not implemented"; 
     }
 
-        ## format and return the id we got
-        ## if type is pipeline we just return the numerical portion.
-        if ( $args{type} eq 'pipeline' ) {
-            $self->_log("info: got pipeline ID $current_num");
-            return $current_num;
-        } else {
-            $self->_log("info: got ID $args{project}.$args{type}.$current_num.$args{version}");
-            return "$args{project}.$args{type}.$current_num.$args{version}";
-        }
-        
-    }  ## end next_id method block
-
+    ## sets a the size of the pool of ids to prefetch, if possible
     sub set_pool_size {
-        my ($self, %args) = @_;
-        
-        for my $type ( keys %args ) {
-            ## the value must be a number
-            if ( $args{$type} !~ /^\d+$/ ) {
-                croak("fatal: failed attempt to set pool size for type $type.  value '$args{$type}' must be an integer");
-            }
-            
-            ## it cannot be 0
-            if ( $args{$type} == 0 ) {
-                croak("fatal: failed attempt to set pool size for type $type.  value cannot be 0");
-            }
-            
-            $self->_log("info: setting pool size for type $type to $args{$type}");
-            $self->{_pool_sizes}->{$type} = $args{$type};
-        }
+        croak "Method set_pool_size is not implemented";
     }
 
-    #####################
-    ## private methods ##
-    #####################
-
-    sub _check_id_repository {
-        my ($self, %args) = @_;
-    
-        ## make sure it is a valid ID repository
-        unless ( -f "$self->{id_repository}/valid_id_repository" ) {
-            croak ("fatal: Can't find file $self->{id_repository}/valid_id_repository.  the id repository $self->{id_repository} doesn't appear to be valid.  see the documentation for this module");
-        }
-        
-        $self->{_id_repository_checked} = 1;
-    }
-    
-    sub _log {
-        my ($self, $msg) = @_;
-        
-        my $logfh = $self->{_logfh};
-        
-        ## print the message to the log file, if logging
-        if ($self->logging) {
-            print $logfh "$msg\n";
-        }
-    }
-
-    sub _lock
-    {
-        my $self = shift;
-        my $fl = pack("s! s! l! l! i", F_WRLCK, SEEK_SET, 0, 0, $$);
-        fcntl($self->{_fh}, $f_setlkw, $fl) ||
-            die "Error locking file: $!";
-    }
-
-    sub _unlock
-    {
-        my $self = shift;
-        my $fl = pack("s! s! l! l! i", F_UNLCK, SEEK_SET, 0, 0, $$);
-        fcntl($self->{_fh}, $f_setlk, $fl) ||
-            die "Error unlocking file: $!";
-    }
 }
 
-1==1;
+1;
