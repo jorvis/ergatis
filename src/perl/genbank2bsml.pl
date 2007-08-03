@@ -15,6 +15,8 @@ use BSML::BsmlBuilder;
 use Ergatis::IdGenerator;
 umask(0000);
 
+use Data::Dumper;
+
 my %options = &parse_options();
 # output options
 my $ifile = $options{input_file};
@@ -183,9 +185,9 @@ sub parse_genbank_file {
     # taxonomy names taken from http://www.ncbi.nlm.nih.gov/genomes/VIRUSES/vifam.html
     # polymer types adapted from genbank list: http://www.bio.net/bionet/mm/genbankb/2001-October/000103.html
     # 34-36      Blank, ss- (single-stranded), ds- (double-stranded), or
-        #            ms- (mixed-stranded)
-        # 37-42      Blank, DNA, RNA, tRNA (transfer RNA), rRNA (ribosomal RNA), 
-        #            mRNA (messenger RNA), uRNA (small nuclear RNA), snRNA
+    #            ms- (mixed-stranded)
+    # 37-42      Blank, DNA, RNA, tRNA (transfer RNA), rRNA (ribosomal RNA), 
+    #            mRNA (messenger RNA), uRNA (small nuclear RNA), snRNA
     $gbr{'polymer_type'} = $seq->molecule(); #default
     my $classification = join(" ",$seq->species->classification);
     if ($classification =~ /dsDNA viruses/) {
@@ -311,8 +313,9 @@ sub parse_genbank_file {
             $primary_tag eq 'exon' ||
             #$primary_tag eq 'variation' ||  #this is an example of an IN-BETWEEN tag
             $primary_tag eq 'intron' ||
-            $primary_tag eq 'mRNA' 
-#||         $primary_tag eq 'tRNA'
+            $primary_tag eq 'mRNA' ||
+	    $primary_tag eq 'tRNA' || # SO:0000253
+	    $primary_tag eq 'rRNA'    # SO:0000252
             ) {
             
             # obtain feature group
@@ -333,9 +336,6 @@ sub parse_genbank_file {
             $feature_value = join('_',$feat_object->get_tag_values("protein_id"));
             }
             else {
-            #testing skipping unknowns for now
-            #next;
-            #/testing
             #no way to group feature, so put it in its own feature_group
             $feature_tag = 'unknown';
             $feature_value = $ugc;              
@@ -629,7 +629,7 @@ sub to_bsml {
 
     #count the number of each parsed feature in each feature group
     # really this ought to be rewritten with a master feature type list
-    my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => []); #hash of array
+    my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => [], rRNA => []); #hash of array
 
     my $gene_product_name;
     my $ec_numbers;
@@ -671,6 +671,9 @@ sub to_bsml {
         elsif ($feature =~ /tRNA/) {
         push(@{$feature_type{tRNA}}, $feature);
         }
+        elsif ($feature =~ /rRNA/) {
+        push(@{$feature_type{rRNA}}, $feature);
+        }
         else {
         die "Unexpected feature ($feature) in $feature_group";
         }
@@ -678,17 +681,24 @@ sub to_bsml {
     
     #
     # add gene
-        #
+    #
     if (@{$feature_type{gene}} == 1) {
         &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        # support for feature_groups of a just a gene and just a genen and a tRNA
-        # see bug #3298 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3298
+        # support for feature_groups of a just a gene, gene+tRNA, gene+rRNA
+        # see bug #3298 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3298, bug #5328
         if (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 1) {
         next; # goto next feature_group if this is the only thing (ie don't die)
         }
         elsif ( (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 2) && (@{$feature_type{tRNA}} == 1 )) {
         &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        next; # if the only other feature is tRNA, add it and head to the next feature_group
+	# see bug 5328: need an exon in the feature group
+	derive_and_add_exons_from_Feature($feature_type{tRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        next; # next feature_group (no die)
+        }
+        elsif ( (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 2) && (@{$feature_type{rRNA}} == 1 )) {
+        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{rRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        next; # next feature-group, no die
         }
     }
     elsif (@{$feature_type{gene}} > 1) {
@@ -816,7 +826,9 @@ sub to_bsml {
         }
     }
     else {
-        die "Unable to create CDS object in @{$feature_type{CDS}} @{$feature_type{mRNA}} $feature_group";
+      print Dumper($gbr{'Features'}{$feature_group})."\n\n";
+      
+        die "Unable to create CDS object in CDS: @{$feature_type{CDS}}, mRNA: @{$feature_type{mRNA}}, feature group: $feature_group";
     }
 
 
@@ -831,21 +843,23 @@ sub to_bsml {
     }
     # derive from mRNA if present
     elsif (@{$feature_type{mRNA}} >= 1) {
-        my $n_exon = 0;
-        foreach my $mrna (@{$feature_type{mRNA}}) {
-        foreach my $loc (@{$gbr{'Features'}{$feature_group}{$mrna}{locations}}) {
-            my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$mrna}, 'exon');
-            $exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
-            $exon_featref->{id} =~ s/exon/exon_$n_exon/;
-            $exon_featref->{start} = $loc->{start};
-            $exon_featref->{start_type} = $loc->{start_pos_type};
-            $exon_featref->{end} = $loc->{end};
-            $exon_featref->{end_type} = $loc->{end_pos_type};
-            my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#           $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
-            ++$n_exon;
-        }
-        }       
+      derive_and_add_exons_from_Feature($feature_type{mRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      
+#         my $n_exon = 0;
+#         foreach my $mrna (@{$feature_type{mRNA}}) {
+#         foreach my $loc (@{$gbr{'Features'}{$feature_group}{$mrna}{locations}}) {
+#             my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$mrna}, 'exon');
+#             $exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
+#             $exon_featref->{id} =~ s/exon/exon_$n_exon/;
+#             $exon_featref->{start} = $loc->{start};
+#             $exon_featref->{start_type} = $loc->{start_pos_type};
+#             $exon_featref->{end} = $loc->{end};
+#             $exon_featref->{end_type} = $loc->{end_pos_type};
+#             my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+# #           $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
+#             ++$n_exon;
+#         }
+#         }  
+	
     }
     # See bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion of multiple CDSs
     # Regardless of the number of CDSs, each segment is used as an exon
@@ -905,6 +919,33 @@ sub to_bsml {
     }
     } #foreach feature_group
 } #/to_bsml
+
+
+# create and add an exon to the $doc for each
+# type of feature and each location of that feature
+sub derive_and_add_exons_from_Feature {
+  my ($feature_type, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem) = @_;
+  
+  my $numexons = 0;
+  foreach my $a_feature (@{$feature_type}) {
+    foreach my $loc (@{$gbr{'Features'}{$feature_group}{$a_feature}{locations}}) {
+      my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$a_feature}, 'exon');
+            #$exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
+            #$exon_featref->{id} =~ s/exon/exon_$n_exon/;
+      $exon_featref->{id} = "exon_".$numexons."_from_".$exon_featref->{id};
+      $exon_featref->{start} = $loc->{start};
+      $exon_featref->{start_type} = $loc->{start_pos_type};
+      $exon_featref->{end} = $loc->{end};
+      $exon_featref->{end_type} = $loc->{end_pos_type};
+      my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+#           $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
+      ++$numexons;
+    }
+  } 
+}
+
+
+
 
 #this doesn't conflict w/ BSML namespace
 sub addFeature {
@@ -1000,6 +1041,7 @@ sub addFeature {
 
     # add any db_xrefs associated with the feature as Cross-references
     # list of database names taken from http://www.geneontology.org/doc/GO.xrf_abbs
+    # list of databases in genbank records: http://www.ncbi.nlm.nih.gov/collab/db_xref.html
     if (defined($featref->{db_xrefs})) {
     foreach (@{$featref->{db_xrefs}}) {
         # print "\tdb_xref\t$_\n";
@@ -1135,13 +1177,11 @@ sub addSeqToFeature {
     open($fsa_files{$class}{fh}, ">".$fsa_files{$class}{name});
     }
 
-#    my $fastafile = "$odir/$id.fsa"; 
     my $fastaname = $id;
     #Seq-data-import/@identifier must equal the fasta header up to the first space  
     my $feature_seq_obj = $doc->createAndAddSeqDataImport(
                               $feature_seq,                  # Sequence element object reference
                               'fasta',                       # //Seq-data-import/@format
-#                             $fastafile,                    # //Seq-data-import/@source
                               $fsa_files{$class}{name},      # //Seq-data-import/@source
                               undef,                         # //Seq-data-import/@id
                               $fastaname                     # //Seq-data-import/@identifier
@@ -1150,12 +1190,7 @@ sub addSeqToFeature {
     # bug #4005 add //Sequence/Attribute/@name="defline", @content=//Seq-data-import/@identifier
     $doc->createAndAddBsmlAttribute($feature_seq, 'defline', $fastaname);
     
-#    open (my $FFILE, ">$fastafile") || die "Unable to open for writing $fastafile: $!";
-#    print {$FFILE} fasta_out($fastaname, $spliced_seq);
     print {$fsa_files{$class}{fh}} fasta_out($fastaname, $spliced_seq);
-
-#    close($FFILE);
-    #chmod(0666, $fastafile);
 
     # link sequence to genome
     # I am reasonably certain that not including the genome@id value for the href is okay
@@ -1195,21 +1230,6 @@ sub copy_featref {
 
     return $newfeat;
 
-    
-# #         my $poly_featref = {
-# #                  'id' => $featref->{'id'},
-# #                  'class' => 'polypeptide',
-# #                  'is_complement' => $featref->{'is_complement'},
-# #                  'start' => $featref->{'start'} - 1, #convert to space based coords
-# #                  'end' => $featref->{'end'}, #this should NOT be +1, right?
-# #                  'feature_tag' => $featref->{'feature_tag'},
-# #                  'feature_value' => $featref->{'feature_value'},                 
-# #                  'location_type' => $featref->{'location_type'},
-# #                  'start_type' => $featref->{'start_type'},
-# #                  'end_type' => $featref->{'end_type'},
-# #                  'feature_len' => length($featref->{'translation'}),
-# #                  'spliced_seq' => $featref->{'translation'}
-# #                  };
 }
 
 #-------------------------------------------------------------------------
@@ -1234,80 +1254,3 @@ sub fasta_out {
 
 }
 
-#
-# unused
-#
-# sub parse_genbank_file_regexp {
-#     my $gb_file = shift;
-
-#     my %gbr;
-#     open(File,"<$gb_file") || die "can't open file ($gb_file): $!\n";
-#     while (my $line = <File>) {
-#   chomp;
-#   if($line =~ /\AACCESSION/) {
-#       # We have found the ACCESSION, grab that info and store it in gbr:
-#       my ($check1,$check2,$check3)=split(/\s+/,$line);
-#       $gbr{'accession'} = $check2;
-#   }
-#   elsif($line =~ /\A\s+ORGANISM/) {
-#       # We have found the ORGANISM, grab that info and store it in gbr:
-#       $gbr{'organism'} = $line;
-#       $gbr{'organism'} =~ s/\A\s+ORGANISM\s+//;
-#       chomp $gbr{'organism'};
-#   }
-#   elsif ($line =~ /^FEATURES/) {
-#       my $next_line = <File>;
-#       if ($next_line =~ /^\s*source/) {
-#       $gbr{'feature'} = 1;
-#       }
-#   }
-#   elsif($line =~ /\A\s+\/strain/) {
-#       # We have found the strain, grab that info and store it in gbr:
-#       $gbr{'strain'} = $line;
-#       $gbr{'strain'} =~ s/\A\s+\/strain\=//;
-#       $gbr{'strain'} =~ s/\"//g;
-#       $gbr{'strain'} =~ s/\n//g;
-#       chomp $gbr{'strain'};
-#   }
-#   elsif ($line =~ /\/db_xref=\"taxon\:(\d+)\"/) {
-#       $gbr{'taxon_id'} = $1;
-#   }
-#   elsif ($line =~ /\/isolate=\"(.+)\"/) {
-#       $gbr{'isolate'} = $1;
-#   }
-#   elsif ($line =~ /\/serovar=\"(.+)\"/) {
-#       $gbr{'serovar'} = $1;
-#   }
-#   elsif ($line =~ /\/specific_host=\"(.+)\"/) {
-#       $gbr{'specific_host'} = $1;
-#   }
-#   elsif ($line =~ /\/note=(.+)/) {
-#       $gbr{'note'} = $1;
-#   }
-#     } #while $line
-#     close(File);
-
-#     #Clean up parsed data
-
-#     #remove strain information from organism name
-#     #sp. and str. are sometimes present in organism previous to strain
-#     if (defined $gbr{'strain'} && defined $gbr{'organism'}) {
-#   $gbr{'organism'} =~ s/((sp\.)|(str\.))?\s*\Q$gbr{'strain'}\E//;
-#     }
-
-#     #If two words in organism, split to genus species
-#     #(first word is genus, everything else is species)
-#     if (defined $gbr{'organism'}) {
-#   my @words = split (/\s/, $gbr{'organism'});
-#   $gbr{'words'} = @words;
-#   if ($gbr{'words'} == 1) { #one word is probably genus
-#       $gbr{'genus'} = $words[0];
-#       $gbr{'species'} = "";
-#   }
-#   else { #else, throw it all in species
-#       $gbr{'genus'} = shift @words;
-#       $gbr{'species'} = "@words";
-#   }
-#     }
-#     return \%gbr;
-# }
