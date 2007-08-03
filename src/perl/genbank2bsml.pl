@@ -843,60 +843,17 @@ sub to_bsml {
     }
     # derive from mRNA if present
     elsif (@{$feature_type{mRNA}} >= 1) {
-      derive_and_add_exons_from_Feature($feature_type{mRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      
-#         my $n_exon = 0;
-#         foreach my $mrna (@{$feature_type{mRNA}}) {
-#         foreach my $loc (@{$gbr{'Features'}{$feature_group}{$mrna}{locations}}) {
-#             my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$mrna}, 'exon');
-#             $exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
-#             $exon_featref->{id} =~ s/exon/exon_$n_exon/;
-#             $exon_featref->{start} = $loc->{start};
-#             $exon_featref->{start_type} = $loc->{start_pos_type};
-#             $exon_featref->{end} = $loc->{end};
-#             $exon_featref->{end_type} = $loc->{end_pos_type};
-#             my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-# #           $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
-#             ++$n_exon;
-#         }
-#         }  
-	
+      derive_and_add_exons_from_Feature($feature_type{mRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
     }
     # See bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion of multiple CDSs
     # Regardless of the number of CDSs, each segment is used as an exon
     # see bug $3305 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3305
     elsif (@{$feature_type{CDS}} >= 1) { # otherwise one exon for each CDS fragment
-        my $n_exon = 0;
-        foreach my $cds (@{$feature_type{CDS}}) {
-        foreach my $loc (@{$gbr{'Features'}{$feature_group}{$cds}{locations}}) {
-            my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$cds}, 'exon');
-            $exon_featref->{id} =~ s/CDS/exon_from_CDS/;
-            $exon_featref->{id} =~ s/exon/exon_$n_exon/;
-            $exon_featref->{start} = $loc->{start};
-            $exon_featref->{start_type} = $loc->{start_pos_type};
-            $exon_featref->{end} = $loc->{end};
-            $exon_featref->{end_type} = $loc->{end_pos_type};
-            my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#           $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from CDS tag");
-            ++$n_exon;
-        }
-        }
+      derive_and_add_exons_from_Feature($feature_type{CDS}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
     }
     # what if the CDS was derived from an MRNA, see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
     elsif (@{$feature_type{mRNA}} == 1) {
-        # if it's joined, one exon for each segment
-        my $n_exon = 0;
-        foreach my $loc (@{$gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}{locations}}) {
-        my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}, 'exon');
-        $exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
-        $exon_featref->{id} =~ s/exon/exon_$n_exon/;
-        $exon_featref->{start} = $loc->{start};
-        $exon_featref->{start_type} = $loc->{start_pos_type};
-        $exon_featref->{end} = $loc->{end};
-        $exon_featref->{end_type} = $loc->{end_pos_type};
-        my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#       $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
-        ++$n_exon;
-        }
+      derive_and_add_exons_from_Feature($feature_type{mRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
     }
     else {
         die "Unable to create exon object in $feature_group";
@@ -930,15 +887,12 @@ sub derive_and_add_exons_from_Feature {
   foreach my $a_feature (@{$feature_type}) {
     foreach my $loc (@{$gbr{'Features'}{$feature_group}{$a_feature}{locations}}) {
       my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$a_feature}, 'exon');
-            #$exon_featref->{id} =~ s/mRNA/exon_from_mRNA/;
-            #$exon_featref->{id} =~ s/exon/exon_$n_exon/;
       $exon_featref->{id} = "exon_".$numexons."_from_".$exon_featref->{id};
       $exon_featref->{start} = $loc->{start};
       $exon_featref->{start_type} = $loc->{start_pos_type};
       $exon_featref->{end} = $loc->{end};
       $exon_featref->{end_type} = $loc->{end_pos_type};
       my $exon_elem = &addFeature($exon_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#           $doc->createAndAddBsmlAttribute($exon_elem, "comment", "Derived from mRNA tag");
       ++$numexons;
     }
   } 
