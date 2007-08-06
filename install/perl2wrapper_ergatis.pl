@@ -5,16 +5,21 @@ sub get_bins{
     my($instdir,$workflowdocsdir,$schemadocsdir);
     my(@binfiles);
     my($wrapper_str);
+    my $perl_path = $^X;  ## can be overwritten below
+    
     foreach my $arg (@ARGV){
-	if($arg =~ /PREFIX/){
-	    ($instdir) = ($arg =~ /PREFIX=(.*)/);
-	}
-	if($arg =~ /WORKFLOW_DOCS_DIR/){
-	    ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(.*)/);
-	}
-	if($arg =~ /SCHEMA_DOCS_DIR/){
-	    ($schemadocsdir) = ($arg =~ /SCHEMA_DOCS_DIR=(.*)/);
-	}
+        if($arg =~ /PREFIX/){
+            ($instdir) = ($arg =~ /PREFIX=(.*)/);
+        }
+        if($arg =~ /WORKFLOW_DOCS_DIR/){
+            ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(.*)/);
+        }
+        if($arg =~ /SCHEMA_DOCS_DIR/){
+            ($schemadocsdir) = ($arg =~ /SCHEMA_DOCS_DIR=(.*)/);
+        }
+        if($arg =~ /PERL_PATH/){
+            ($perl_path) = ($arg =~ /PERL_PATH=(.*)/);
+        }
     }
 
     open FILE, 'MANIFEST' or die "MANIFEST is missing!\n";
@@ -59,7 +64,7 @@ export PERL_MOD_DIR
 
 export PERL5LIB=$instdir/lib/5.8.8:$instdir/lib/perl5/site_perl/5.8.8
 
-    $^X $instdir/bin/$fname $shell_args    
+    $perl_path $instdir/bin/$fname $shell_args    
 
 _END_WRAPPER_
    ;
