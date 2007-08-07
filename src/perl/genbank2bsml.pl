@@ -42,7 +42,9 @@ $doc->createAndAddAnalysis(
                             algorithm => 'genbank2bsml',
                             program => 'genbank2bsml',
                           );
-$doc->write($ofile);
+# gzip output
+$doc->write($ofile, '', 1);
+# $doc->write($ofile);
 chmod (0777, $ofile);
 
 # close file handlers
