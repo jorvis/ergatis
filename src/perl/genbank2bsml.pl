@@ -417,11 +417,13 @@ sub parse_genbank_file {
 	  $gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag}=join('',$feat_object->get_tag_values($tag));
 	  #$gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
 	}
-	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note') {  # use this to treat it as an arrayref
+#	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note') {  # use this to treat it as an arrayref
+	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note' ||
+	       $tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id") {  # use this to treat it as an arrayref
 	  $gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
 	}	
-        elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
-               $tag eq "translation" || $tag eq "transl_table") {
+ #       elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
+	elsif ($tag eq "translation" || $tag eq "transl_table") {
             # do nothing
         }
         else {
@@ -623,15 +625,14 @@ sub to_bsml {
     # if these are universal then keep them all
     my $shared_gene_product_name = get_shared_feature_tag($gbr{'Features'}->{$feature_group}, 'product');
     my $shared_comment = get_shared_feature_tag($gbr{'Features'}->{$feature_group}, 'note');
-    #$gbr{'Features'}->{$feature_group}->{'gene_product_name'} = get_unique_feature_tag($gbr{'Features'}->{$feature_group}, 'product');
     my $ec_numbers;
-
     
     foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {
         if(ref $gbr{'Features'}->{$feature_group}->{$feature}){
         $gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
         }
         
+	# mapping from genbank feature tag to attributes for potentially shared attributes
 	if ($shared_gene_product_name) {
 	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'gene_product_name'} = $shared_gene_product_name;
 	}	
@@ -650,6 +651,19 @@ sub to_bsml {
         if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'}){
         $ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'};
         }
+
+	# mapping from genbank feature tag to attributes
+	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene'}){
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'gene'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'gene'};
+	}
+	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'protein_id'}){
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'protein'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'prodtein_id'};
+	}
+	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'}){
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'locus'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'};
+	}
+
+
 
         if ($feature =~ /gene/) {
         push(@{$feature_type{gene}}, $feature);
@@ -1018,6 +1032,7 @@ sub addFeature {
     }
     }
 
+    # TODO: fix up above so it's like this
     # add gene_product_name, comment (others) (which may have been derived from feature_group: bug 5338)
     if (defined($featref->{attributes})) {
       foreach my $attribute (keys %{$featref->{attributes}}) {	
