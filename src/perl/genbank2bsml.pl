@@ -633,11 +633,13 @@ sub to_bsml {
     # really this ought to be rewritten with a master feature type list
     my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => [], rRNA => []); #hash of array
 
+    # map feature tags to their named versions
     # if these are universal then keep them all
     my $shared_gene_product_name = get_shared_feature_tag($gbr{'Features'}->{$feature_group}, 'product');
+    my $shared_comment = get_shared_feature_tag($gbr{'Features'}->{$feature_group}, 'note');
     #$gbr{'Features'}->{$feature_group}->{'gene_product_name'} = get_unique_feature_tag($gbr{'Features'}->{$feature_group}, 'product');
     my $ec_numbers;
-    my $comment;
+
     
     foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {
         if(ref $gbr{'Features'}->{$feature_group}->{$feature}){
@@ -645,15 +647,24 @@ sub to_bsml {
         }
         
 	if ($shared_gene_product_name) {
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'} = $shared_gene_product_name;
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'gene_product_name'} = $shared_gene_product_name;
+	}	
+        elsif (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'product'}){
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'gene_product_name'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'product'};
 	}
-	
-#        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'}){
 #        $gene_product_name = $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'};
 #        }
-        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'}){
-        $comment = $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'};
-        }
+
+	if ($shared_comment) {
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'comment'} = $shared_comment;
+	}	
+        elsif (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'note'}){
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'comment'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'note'};
+	}
+	
+#        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'}){
+#        $comment = $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'};
+#        }
         if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'}){
         $ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'};
         }
@@ -752,7 +763,7 @@ sub to_bsml {
         }
         }
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
+#        $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
 #        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
         if($ec_numbers){
         foreach my $ec_number (@$ec_numbers){
@@ -764,7 +775,7 @@ sub to_bsml {
         my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{gene}->[0]}, 'transcript');
         $trans_featref->{id} =~ s/gene/transcript_from_gene/;
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
+#        $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
 #        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
         if($ec_numbers){
         foreach my $ec_number (@$ec_numbers){
@@ -787,7 +798,7 @@ sub to_bsml {
         }
         }
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
+#        $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
 #        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
         if($ec_numbers){
         foreach my $ec_number (@$ec_numbers){
@@ -924,14 +935,16 @@ sub get_shared_feature_tag {
     # otherwise, compare
     for (my $i = 0; $i < @{$fref->{$tag}}; ++$i) {
       unless ($tagref->[$i] eq $fref->{$tag}->[$i]) {
-	die "Mismatch on $tag between (".$tagref->[$i].") and (".$feature-{$tag}->[$i].")";
+#	print Dumper($tagref);	
+#	print Dumper($fref->{$tag});
+	
+	warn "Mismatch on $tag between (".$tagref->[$i].") and (".$fref->{$tag}->[$i]."): no shared tag $tag for feature_group ($feature_group)";
 	return 0;
       }
     }
     # extra in current
     if (@$tagref > @{$fref->{$tag}}) {
-      die "Too many!";
-      
+      warn "Tag count mismatch, no shared tag ($tag) for feature_group ($feature_group)";      
       return 0;
     }
   }
@@ -1033,12 +1046,18 @@ sub addFeature {
     }
 
     # add gene_product_name (which may have been derived from feature_group: bug 5338)
-    if (defined($featref->{gene_product_name})) {
-      foreach (@{$featref->{gene_product_name}}) {
-	$doc->createAndAddBsmlAttribute($feature_elem, "gene_product_name", $_)
-      }  
+    if (defined($featref->{attributes})) {
+      foreach my $attribute (keys %{$featref->{attributes}}) {	
+	foreach (@{$featref->{attributes}->{$attribute}}) {
+	  $doc->createAndAddBsmlAttribute($feature_elem, $attribute, $_)
+	}  
+      }      
     }
-    
+#     if (defined($featref->{gene_product_name})) {
+#       foreach (@{$featref->{gene_product_name}}) {
+# 	$doc->createAndAddBsmlAttribute($feature_elem, "gene_product_name", $_)
+#       }  
+#     }
 
     # add any db_xrefs associated with the feature as Cross-references
     # list of database names taken from http://www.geneontology.org/doc/GO.xrf_abbs
