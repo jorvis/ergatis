@@ -385,32 +385,26 @@ sub parse_genbank_file {
             #print $gbr{'Features'}{$feature_group}{$feature_id}{locations}[0]{start}."\n";
             }
 
+# 	    # bug 5338
+# 	    if ($feat_object->has_tag("translation")) { # in some cases its "psuedo"
+# 	      $gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'}=join('',$feat_object->get_tag_values("translation"));
+# 	      }
+# 	    if ($feat_object->has_tag("product")) { 
+# 		  $gbr{'Features'}->{$feature_group}->{$feature_id}->{'gene_product_name'} = join('',$feat_object->get_tag_values("product"));
+# 	      }
+# 	    if ($feat_object->has_tag("note")) { 
+# 		  $gbr{'Features'}->{$feature_group}->{$feature_id}->{'comment'} = join('',$feat_object->get_tag_values("note"));
+# 	      }
+# 	    if ($feat_object->has_tag("EC_number")) { 
+# 		  $gbr{'Features'}->{$feature_group}->{$feature_id}->{'ec_number'} = [$feat_object->get_tag_values("EC_number")]
+# 	      }
+
             # make a fake translation for mRNAs later (see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300)
             if ($primary_tag eq 'CDS' || $primary_tag eq 'mRNA') {
-            #store (possibly joined) nucleotide sequence using spliced_seq()
-            $gbr{'Features'}->{$feature_group}->{$feature_id}->{'spliced_seq'} = $feat_object->spliced_seq->seq();
-            $gbr{'Features'}->{$feature_group}->{$feature_id}->{'feature_len'} = $feat_object->spliced_seq->length();
-            $gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'} = 0; #default null value
-
-        
-            if ($primary_tag eq 'CDS') {
-                if ($feat_object->has_tag("translation")) { # in some cases its "psuedo"
-                $gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'}=join('',$feat_object->get_tag_values("translation"));
-                }
-                if ($feat_object->has_tag("product")) { 
-                $gbr{'Features'}->{$feature_group}->{$feature_id}->{'gene_product_name'} = join('',$feat_object->get_tag_values("product"));
-                }
-                if ($feat_object->has_tag("note")) { 
-                $gbr{'Features'}->{$feature_group}->{$feature_id}->{'comment'} = join('',$feat_object->get_tag_values("note"));
-                }
-                if ($feat_object->has_tag("EC_number")) { 
-                $gbr{'Features'}->{$feature_group}->{$feature_id}->{'ec_number'} = [$feat_object->get_tag_values("EC_number")]
-                }
-            }
-                # adding support for deriving translation from genomic sequence
-#               else {
-#               die "CDS lacking translation in $feature_group $feature_id";
-#               }
+	      #store (possibly joined) nucleotide sequence using spliced_seq()
+	      $gbr{'Features'}->{$feature_group}->{$feature_id}->{'spliced_seq'} = $feat_object->spliced_seq->seq();
+	      $gbr{'Features'}->{$feature_group}->{$feature_id}->{'feature_len'} = $feat_object->spliced_seq->length();
+	      $gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'} = 0; #default null value
             }
 
             #See bug 2414
@@ -432,6 +426,14 @@ sub parse_genbank_file {
             push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{db_xrefs}}, $_);
             }
         }
+	# bug 5338
+	elsif ($tag eq 'translation') {
+	  $gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag}=join('',$feat_object->get_tag_values($tag));
+	  #$gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
+	}
+	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note') {  # use this to treat it as an arrayref
+	  $gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
+	}	
         elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
                $tag eq "translation" || $tag eq "transl_table") {
             # do nothing
@@ -591,10 +593,10 @@ sub to_bsml {
     # add expanded ard.obo polymer_type (or SO term, if DNA|RNA)
     # see bug #3251 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
     if ($gbr{polymer_type} eq "DNA" || $gbr{polymer_type} eq "RNA") {
-    $doc->createAndAddBsmlAttribute($sequence, 'SO', $gbr{polymer_type});
+       $sequence->addBsmlAttributeList([{name => 'SO', content=> $gbr{polymer_type}}]);
     }
     else {
-    $doc->createAndAddBsmlAttribute($sequence, 'ARD', $gbr{polymer_type});
+       $sequence->addBsmlAttributeList([{name => 'ARD', content=> $gbr{polymer_type}}]);
     }
 
     # Add strand attribute (this may not be used)
@@ -631,7 +633,9 @@ sub to_bsml {
     # really this ought to be rewritten with a master feature type list
     my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => [], rRNA => []); #hash of array
 
-    my $gene_product_name;
+    # if these are universal then keep them all
+    my $shared_gene_product_name = get_shared_feature_tag($gbr{'Features'}->{$feature_group}, 'product');
+    #$gbr{'Features'}->{$feature_group}->{'gene_product_name'} = get_unique_feature_tag($gbr{'Features'}->{$feature_group}, 'product');
     my $ec_numbers;
     my $comment;
     
@@ -640,9 +644,13 @@ sub to_bsml {
         $gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
         }
         
-        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'}){
-        $gene_product_name = $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'};
-        }
+	if ($shared_gene_product_name) {
+	  $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'} = $shared_gene_product_name;
+	}
+	
+#        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'}){
+#        $gene_product_name = $gbr{'Features'}->{$feature_group}->{$feature}->{'gene_product_name'};
+#        }
         if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'}){
         $comment = $gbr{'Features'}->{$feature_group}->{$feature}->{'comment'};
         }
@@ -720,7 +728,6 @@ sub to_bsml {
         }
         }
         my $gene_elem = &addFeature($gene_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#       $doc->createAndAddBsmlAttribute($gene_elem, "comment", "Derived from CDS tag");
     }
     else {
         die "Unable to create gene object in $feature_group";
@@ -746,7 +753,7 @@ sub to_bsml {
         }
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
-        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
+#        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
         if($ec_numbers){
         foreach my $ec_number (@$ec_numbers){
             $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
@@ -758,7 +765,7 @@ sub to_bsml {
         $trans_featref->{id} =~ s/gene/transcript_from_gene/;
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
-        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
+#        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
         if($ec_numbers){
         foreach my $ec_number (@$ec_numbers){
             $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
@@ -781,7 +788,7 @@ sub to_bsml {
         }
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         $doc->createAndAddBsmlAttribute($trans_elem, "comment", $comment) if($comment);
-        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
+#        $doc->createAndAddBsmlAttribute($trans_elem, "gene_product_name", $gene_product_name) if($gene_product_name);
         if($ec_numbers){
         foreach my $ec_number (@$ec_numbers){
             $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
@@ -833,7 +840,7 @@ sub to_bsml {
 
 
     #
-    # add exons
+    # add exon
     #
     if (@{$feature_type{exon}} > 0) { # use exons if available
         foreach my $exon (@{$feature_type{exon}}) {
@@ -898,6 +905,38 @@ sub derive_and_add_exons_from_Feature {
   } 
 }
 
+# check a feature group for a unique value of some feature tag
+# if it differs among any two features, return 0
+# if it is the same or absent in all features, return it
+sub get_shared_feature_tag {
+  my $feature_group = shift;
+  my $tag = shift;
+  
+  my $tagref = undef;
+  
+  foreach my $feature (keys %$feature_group) {
+    my $fref = $feature_group->{$feature};
+    next unless defined($fref->{$tag});  # skip if this isn't defined, no penalty
+    unless (defined($tagref)) {
+      $tagref = $fref->{$tag};
+      next;
+    }
+    # otherwise, compare
+    for (my $i = 0; $i < @{$fref->{$tag}}; ++$i) {
+      unless ($tagref->[$i] eq $fref->{$tag}->[$i]) {
+	die "Mismatch on $tag between (".$tagref->[$i].") and (".$feature-{$tag}->[$i].")";
+	return 0;
+      }
+    }
+    # extra in current
+    if (@$tagref > @{$fref->{$tag}}) {
+      die "Too many!";
+      
+      return 0;
+    }
+  }
+  return $tagref;
+}
 
 
 
@@ -992,6 +1031,14 @@ sub addFeature {
         die("Could not create <Attribute> element ");
     }
     }
+
+    # add gene_product_name (which may have been derived from feature_group: bug 5338)
+    if (defined($featref->{gene_product_name})) {
+      foreach (@{$featref->{gene_product_name}}) {
+	$doc->createAndAddBsmlAttribute($feature_elem, "gene_product_name", $_)
+      }  
+    }
+    
 
     # add any db_xrefs associated with the feature as Cross-references
     # list of database names taken from http://www.geneontology.org/doc/GO.xrf_abbs
