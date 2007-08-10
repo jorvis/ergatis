@@ -28,7 +28,7 @@
 		<value>$;TABLE_LIST$;</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--output_iter_list</key>
 		<value>$;TMP_DIR$;/chado_table.list</value>
 	    </param>
 	</command>
