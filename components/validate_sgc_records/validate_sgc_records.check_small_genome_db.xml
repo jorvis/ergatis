@@ -2,10 +2,17 @@
   <commandSet type="serial">
     <name>check_small_genome_db</name>
       <command>
+            <type>RunUnixCommand</type>
+	  <state>incomplete</state>
+	  <name>Create database output directories</name>
+	  <executable>mkdir</executable>
+ 	  <arg>-p -m 777 $;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load $;WORKFLOW_REPOSITORY$;/$;DATABASE$;/gip $;WORKFLOW_REPOSITORY$;/$;DATABASE$;/sgc</arg>
+      </command>
+      <command>
 	  <type>RunUnixCommand</type>
 	  <name>check_small_genome_db load</name>
 	  <state>incomplete</state>
-	  <executable>$;BIN_DIR$;/check_small_genome_db.dbi</executable>
+	  <executable>$;BIN_DIR$;/check_small_genome_db</executable>
 	  <param>
 	      <key>--workflow_enabled</key>
 	      <value>1</value>
@@ -28,26 +35,26 @@
 	  </param>
 	  <param>
 	      <key>--errorlog</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.load.$;DATABASE$;.errorlog.log</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load/check_small_genome_db.dbi.errorlog.log</value>
 	  </param>
 	  <param>
 	      <key>--logfile</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.load.$;DATABASE$;.logfile.log</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load/check_small_genome_db.dbi.logfile.log</value>
 	  </param>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.load.$;DATABASE$;.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load/check_small_genome_db.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.load.$;DATABASE$;.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load/check_small_genome_db.dbi.stderr</value>
 	  </param>
       </command>
       <command>
 	  <type>RunUnixCommand</type>
 	  <name>check_small_genome_db gip</name>
 	  <state>incomplete</state>
-	  <executable>$;BIN_DIR$;/check_small_genome_db.dbi</executable>
+	  <executable>$;BIN_DIR$;/check_small_genome_db</executable>
 	  <param>
 	      <key>--workflow_enabled</key>
 	      <value>1</value>
@@ -74,26 +81,26 @@
 	  </param>
 	  <param>
 	      <key>--errorlog</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.gip.$;DATABASE$;.errorlog.log</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/gip/check_small_genome_db.dbi.errorlog.log</value>
 	  </param>
 	  <param>
 	      <key>--logfile</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.gip.$;DATABASE$;.logfile.log</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/gip/check_small_genome_db.dbi.logfile.log</value>
 	  </param>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.gip.$;DATABASE$;.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/gip/check_small_genome_db.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.gip.$;DATABASE$;.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/gip/check_small_genome_db.dbi.stderr</value>
 	  </param>
       </command>
       <command>
 	  <type>RunUnixCommand</type>
 	  <name>check_small_genome_db sgc</name>
 	  <state>incomplete</state>
-	  <executable>$;BIN_DIR$;/check_small_genome_db.dbi</executable>
+	  <executable>$;BIN_DIR$;/check_small_genome_db</executable>
 	  <param>
 	      <key>--workflow_enabled</key>
 	      <value>1</value>
@@ -120,19 +127,19 @@
 	  </param>
 	  <param>
 	      <key>--errorlog</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.sgc.$;DATABASE$;.errorlog.log</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/sgc/check_small_genome_db.dbi.errorlog.log</value>
 	  </param>
 	  <param>
 	      <key>--logfile</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.sgc.$;DATABASE$;.logfile.log</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/sgc/check_small_genome_db.dbi.logfile.log</value>
 	  </param>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.sgc.$;DATABASE$;.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/sgc/check_small_genome_db.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/check_small_genome_db.dbi.sgc.$;DATABASE$;.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/sgc/check_small_genome_db.dbi.stderr</value>
 	  </param>
       </command>
   </commandSet>
