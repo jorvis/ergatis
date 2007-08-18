@@ -125,5 +125,35 @@
 	    <executable>$;BIN_DIR$;/dtdValid.pl</executable>
 	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</arg>
 	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/profileBSMLFile</executable>
+	    <name>profileBSMLFile</name>
+	    <param>
+		<key>--infile</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
+	    </param>
+	    <param>
+		<key>--database</key>
+		<value>$;SOURCE_DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--asmbl_id</key>
+		<value>$;ASMBL_ID$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.profileBSMLFile.pl.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stderr</value>
+	    </param>
+	</command>
     </commandSet>
 </commandSetRoot>
