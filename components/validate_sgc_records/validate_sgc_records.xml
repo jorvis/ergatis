@@ -45,5 +45,39 @@
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=check_small_genome_db,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/database.list,$;NODISTRIB$;=1"/>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>generate and email report</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/generateCheckSmallGenomeDBReport.pl</executable>
+	    <param>
+		<key>--database-list</key>
+		<value>$;DATABASE_LIST$;</value>
+	    </param>
+	    <param>
+		<key>--email-list</key>
+		<value>$;EMAIL_LIST$;</value>
+	    </param>
+	    <param>
+		<key>--output_repository</key>
+		<value>$;WORKFLOW_REPOSITORY$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;WORKFLOW_REPOSITORY$;/generateCheckSmallGenomeDBReport.pl.log</value>
+	    </param>
+	    <param>
+		<key>--report-file</key>
+		<value>$;WORKFLOW_REPOSITORY$;/checkSmallGenomeDBReport.report.txt</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;WORKFLOW_REPOSITORY$;/generateCheckSmallGenomeDBReport.pl.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/generateCheckSmallGenomeDBReport.pl.stderr</value>
+	    </param>
+	</command>
     </commandSet>
 </commandSetRoot>
