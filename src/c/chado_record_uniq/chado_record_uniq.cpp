@@ -22,20 +22,6 @@ void uniq(TFiles &files, FILE *out, int dbtype)
     char *buf = reinterpret_cast<char *>(malloc(sizeof(char) * buf_size));
     ssize_t num_read = 0;
 
-
-    /*
-      This is a hack on top of a hack.
-      The program has been merely utilizing the size of the delimiter
-      string value to measure and slice up the records (regardless
-      what that particular value might be).
-
-      This new hack works because all sybase delimiters are two strings
-      long i.e.: field \0\t and record \0\n.  Whereas, all postgresql
-      delimiters are one character long i.e.: field \t and record \n.
-
-      Need to consider revision in the future.
-     */
-
     char sybaseDelim[] = {0, '\n'};
     char postgresqlDelim[] = {'\n'};
 
