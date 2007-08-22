@@ -143,6 +143,10 @@
 		<value>bcp.out</value>
 	    </param>
 	    <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
+	    <param>
 		<key>--output_file</key>
 		<value>$;TMP_DIR$;/checksums.out</value>
 	    </param>
