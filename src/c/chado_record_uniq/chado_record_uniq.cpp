@@ -90,7 +90,7 @@ int main(int argc, char **argv)
        Default support is for sybase.
     */
     int dbtype=0;
-    const char *OPTSTR = "i:o:h:d";
+    const char *OPTSTR = "i:o:d:h";
     while ((opt = getopt(argc, argv, OPTSTR)) != EOF) {
         switch (opt) {
         case 'i':
@@ -104,7 +104,26 @@ int main(int argc, char **argv)
             }
             break;
         }
-        case 'o':
+	case 'd':
+	  {
+
+	    char sybase[] = "sybase";
+	    char postgresql[] = "postgresql";
+	    
+	    if (strcmp(optarg,sybase) == 0){
+	      dbtype=0;
+	    }
+	    else if (strcmp(optarg,postgresql) == 0){
+	      dbtype=1;
+	    }
+	    else {
+	      fprintf(stderr, "Invalid database_type '%s'.  Supported types are sybase and postgresql.\n", optarg);
+	      exit(10);
+	    }
+	    
+	    break;
+	  }
+	case 'o':
             out = fopen(optarg, "w");
             if (!out) {
                 perror(("Error writing " + string(optarg)).c_str());
@@ -113,11 +132,7 @@ int main(int argc, char **argv)
         case 'h':
             help = true;
             break;
-	case 'd':
-	  dbtype=1;
-	  break;
-
-        }
+}
     }
     if (help) {
         fprintf(stderr, "usage: %s [-i <input_record_file> ...]\n"
