@@ -12,7 +12,7 @@ using namespace std;
 
 typedef vector<FILE *> TFiles;
 
-void uniq(TFiles &files, FILE *out)
+void uniq(TFiles &files, FILE *out, int dbtype)
 {
     typedef set<string> TWritten;
     TWritten written;
@@ -21,7 +21,24 @@ void uniq(TFiles &files, FILE *out)
     size_t buf_size = BUF_SIZE;
     char *buf = reinterpret_cast<char *>(malloc(sizeof(char) * buf_size));
     ssize_t num_read = 0;
-    char delim[] = {0, '\n'};
+
+
+    /*
+      This is a hack on top of a hack.
+      The program has been merely utilizing the size of the delimiter
+      string value to measure and slice up the records (regardless
+      what that particular value might be).
+
+      This new hack works because all sybase delimiters are two strings
+      long i.e.: field \0\t and record \0\n.  Whereas, all postgresql
+      delimiters are one character long i.e.: field \t and record \n.
+
+      Need to consider revision in the future.
+     */
+
+    char sybaseDelim[] = {0, '\n'};
+    char postgresqlDelim[] = {'\n'};
+
     if (!buf) {
         perror("Cannot allocate buffer");
         exit(1);
@@ -44,13 +61,27 @@ void uniq(TFiles &files, FILE *out)
                     fwrite(buf, sizeof(char), num_read, out);
                 }
             }
-            if (num_read >= sizeof(delim)) {
-                newRecord = memcmp((buf + num_read) - sizeof(delim), 
-                                   delim, sizeof(delim)) == 0;
-            }
-            else {
+
+	    if (dbtype){
+	      // postgresql
+	      if (num_read >= sizeof(postgresqlDelim)) {
+                newRecord = memcmp((buf + num_read) - sizeof(postgresqlDelim), 
+                                   postgresqlDelim, sizeof(postgresqlDelim)) == 0;
+	      }
+	      else {
                 newRecord = 0;
-            }
+	      }
+	    }
+	    else {
+	      // sybase
+	      if (num_read >= sizeof(sybaseDelim)) {
+                newRecord = memcmp((buf + num_read) - sizeof(sybaseDelim), 
+                                   sybaseDelim, sizeof(sybaseDelim)) == 0;
+	      }
+	      else {
+                newRecord = 0;
+	      }
+	    }
         }
     }
     free(buf);
@@ -62,7 +93,18 @@ int main(int argc, char **argv)
     FILE *out = stdout;
     bool help = false;
     int opt;
-    const char *OPTSTR = "i:o:h";
+
+    /* Declaring dbtype in order to support TIGR-specific delimiters:
+       sybase field delimiter is  \0\t
+       sybase record delimiter is \0\n
+       postgresql field delimiter is  \t
+       postgresql record delimiter is \n
+       Default dbtype=0 for sybase.
+       If -d option specified, dbtype=1 and postgresql support is enabled.
+       Default support is for sybase.
+    */
+    int dbtype=0;
+    const char *OPTSTR = "i:o:h:d";
     while ((opt = getopt(argc, argv, OPTSTR)) != EOF) {
         switch (opt) {
         case 'i':
@@ -85,6 +127,10 @@ int main(int argc, char **argv)
         case 'h':
             help = true;
             break;
+	case 'd':
+	  dbtype=1;
+	  break;
+
         }
     }
     if (help) {
@@ -96,7 +142,7 @@ int main(int argc, char **argv)
     if (files.empty()) {
         files.push_back(stdin);
     }
-    uniq(files, out);
+    uniq(files, out, dbtype);
     for (TFiles::iterator i = files.begin(); i != files.end(); ++i) {
         if (*i != stdin) {
             fclose(*i);
