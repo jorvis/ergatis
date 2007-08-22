@@ -6,7 +6,7 @@
 	<name>collate and remove dups</name>
 	<state>incomplete</state>
 	<executable>$;BIN_DIR$;/cat_files</executable>
-	<arg>--extension=$;I_TABLE_NAME$;.out --list_file=$;TMP_DIR$;/tables.out | $;BIN_DIR$;/chado_record_uniq -o $;TMP_DIR$;/$;I_TABLE_NAME$;.bcp.out</arg>
+	<arg>--extension=$;I_TABLE_NAME$;.out --list_file=$;TMP_DIR$;/tables.out | $;BIN_DIR$;/chado_record_uniq -o $;TMP_DIR$;/$;I_TABLE_NAME$;.bcp.out -d $;RDBMS$;</arg>
 	<param>
 	    <key>
 		stderr
