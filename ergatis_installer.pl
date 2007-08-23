@@ -1,18 +1,12 @@
 #!/usr/local/bin/perl -w
-#---------------------------------------------------------------------------
-#
-#
-#
-#
-#
-#---------------------------------------------------------------------------
+
 =head1 NAME
 
-cas_installer.pl - Checks out code from CVS repository using specified tags then installs software in specified install directory
+ergatis_installer.pl - Checks out code from CVS repository using specified tags then installs software in specified install directory
 
 =head1 SYNOPSIS
 
-USAGE:  cas_installer.pl --installdir=installdirr --workingdir=workingdir --username=username [-S server] --cvscode="cvscode" --controlfile=controlfiler [-d debug_level] [--init] [-h] [-l log4perl] [-m]
+USAGE:  ergatis_installer.pl --installdir=installdir --workingdir=workingdir --username=username [-S server] --cvscode="cvscode" --controlfile=controlfile [-d debug_level] [--init] [-h] [-l log4perl] [-m]
 
 =head1 OPTIONS
 
