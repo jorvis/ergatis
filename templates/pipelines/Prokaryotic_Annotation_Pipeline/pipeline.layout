@@ -1,0 +1,189 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start pipeline:</name>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>component_split_multifasta.default</name>
+        </commandSet>
+        <commandSet type="parallel">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_wu-blastn.All_RNA.db</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_tRNAscan-SE.find_tRNA</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_hmmpfam.prok_Rfam.HMM</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_infernal.find_RNA</name>
+                </commandSet>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_glimmer3.iter1</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_train_for_glimmer3_iteration.train_for_glimmer</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_glimmer3.iter2</name>
+                </commandSet>
+                <commandSet type="parallel">
+                    <state>incomplete</state>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>component_translate_sequence.translate_prediction</name>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>component_bsml2fasta.prediction_CDS</name>
+                    </commandSet>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_promote_gene_prediction.promote_prediction</name>
+                </commandSet>
+            </commandSet>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>component_translate_sequence.translate</name>
+        </commandSet>
+        <commandSet type="parallel">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_hmmpfam.pre_overlap_analysis</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <commandSet type="parallel">
+                    <state>incomplete</state>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>component_wu-blastp.pre_overlap_analysis</name>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <commandSet type="serial">
+                            <state>incomplete</state>
+                            <name>component_bsml2fasta.pre_overlap_analysis</name>
+                        </commandSet>
+                        <commandSet type="serial">
+                            <state>incomplete</state>
+                            <name>component_xdformat.pre_overlap_analysis</name>
+                        </commandSet>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>component_bsml2featurerelationships.pre_overlap_analysis</name>
+                    </commandSet>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_ber.pre_overlap_analysis</name>
+                </commandSet>
+            </commandSet>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>component_auto_gene_curation.overlap_analysis</name>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>component_translate_sequence.translate_new_models</name>
+        </commandSet>
+            <commandSet type="parallel">
+                <state>incomplete</state>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_hmmpfam.post_overlap_analysis</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <commandSet type="parallel">
+                        <state>incomplete</state>
+                        <commandSet type="serial">
+                            <state>incomplete</state>
+                            <name>component_wu-blastp.post_overlap_analysis</name>
+                        </commandSet>
+                        <commandSet type="serial">
+                            <state>incomplete</state>
+                            <commandSet type="serial">
+                                <state>incomplete</state>
+                                <name>component_bsml2fasta.post_overlap_analysis</name>
+                            </commandSet>
+                            <commandSet type="serial">
+                                <state>incomplete</state>
+                                <name>component_xdformat.post_overlap_analysis</name>
+                            </commandSet>
+                        </commandSet>
+                        <commandSet type="serial">
+                            <state>incomplete</state>
+                            <name>component_bsml2featurerelationships.post_overlap_analysis</name>
+                        </commandSet>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>component_ber.post_overlap_analysis</name>
+                    </commandSet>
+                </commandSet>
+            </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>component_auto_annotate.annotate</name>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>component_translate_sequence.default</name>
+        </commandSet>
+        <commandSet type="parallel">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_tmhmm.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_targetp.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_lipoprotein_motif.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_signalp.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_ps_scan.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_wu-blastp.COGS</name>
+            </commandSet>
+        </commandSet>
+        <commandSet>
+            <state>incomplete</state>
+            <name>component_pipeline_summary.default</name>
+        </commandSet>
+        <commandSet>
+            <state>incomplete</state>
+            <name>component_bsml2tbl.default</name>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>

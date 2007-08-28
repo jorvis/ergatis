@@ -1,0 +1,52 @@
+<!-- component documentation -->
+
+<p>
+    This component will check the data from a prokaryotic annotation pipeline.  Various 
+    checks are built in to ensure quality data. 
+</p>
+<h3>references</h3>
+<p>
+    <div>Kevin Galens</div>
+    <a href="mailto:kgalens@jcvi.org">kgalens@jcvi.org</a>
+</p>
+<h3>input and options</h3>
+<p>
+    <p>There are no input files to this program.  Instead, only a repository root and pipeline id are required
+    by the program.  By default, all information is printed to the screen ( and is captured in stdout by 
+    ergatis ).  This includes summary information and warnings/errors.  The log file option allows the user to
+    print warnings/errors to a file. </p>
+
+    <p>A note about --transcript_level_computes option:
+    This was implemented to support checking for the transcript level computes.  But because this program is
+    also used to check gene calls, we might want to verify the calls before spending the compute time on 
+    transcript level computes.  If this option is zero, the normal "sgc" equivalent will be skipped.</p>
+
+</p>
+<h3>checks</h3>
+    <p>Several things are assumed of the pipeline:
+    <ol>
+        <li>It contains all normal computes for a prokaryotic pipeline (tested as of prokaryotic pipeline v1.0).</li>
+        <li>The components have standard output tokens (prok pipeline v1.0)</li>
+        <li>The workflow was run with ergatis and therefore normal ergatis configuration files are 
+            present and accessible (ergatis v2).</li>
+    </ol></p>
+
+    <p>Die conditions:
+    <ul>
+        <li>If the ORF count is not in an acceptable range. ( Acceptable range can be defined by 
+            genome length / 1000 * 120% + 20 > x > genome length / 1000 * 80% - 20 ).</li>
+        <li>If there were no BER evidence files greater than size zero (btab result files).</li>
+        <li>If there were no HMM evidence files greater than size zero (hmm result files).</li>
+    </ul>
+    All Other conditions will generate warnings, but will not stop the pipeline.</p>
+        
+    <p>Warn conditions:
+    <ul>
+        <li>If the organism name or abbreviation cannot be determined.  This is parsed from the pipeline
+            summary configuration file</li>
+        <li>If the entry was not found or more than one entry was found in the common..genomes table</li>
+        <li>If the genome length could not be retrieved or it is size zero</li>
+        <li>If there were no tRNA-scanSE results for the pipeline</li>
+        <li>If the transcript level compute checks are run, the program will produce and error if the
+            number of output files for an analysis doesn't match the number of ORFs reported</li>
+    </ul></p>

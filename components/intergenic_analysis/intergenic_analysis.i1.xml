@@ -2,7 +2,37 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>pipeline_summary bsml verification</name>
+        <name>intergenic_analysis compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>intergenic_analysis</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/intergenic_analysis</executable>
+            <param>
+                <key>--input_bsml</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml</value>
+            </param>
+            <param>
+                <key>--id_repository</key>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
+            </param>
+            <param>
+                <key>--minimum_gene_length</key>
+                <value>$;MINIMUM_GENE_LENGTH$;</value>
+            </param>
+            <param>
+                <key>--sourcename</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;</value>
+            </param>
+            <param>
+                <key>--project</key>
+                <value>$;PROJECT$;</value>
+            </param>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>store config params</name>
@@ -18,7 +48,7 @@
             </param>
             <param>  
                 <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml</value>
             </param>
             <param>  
                 <key>--componenturl</key>
@@ -42,7 +72,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.bsml</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml</arg>
         </command>
     </commandSet>
 </commandSetRoot>

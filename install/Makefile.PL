@@ -115,8 +115,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames pangenome panther parse_for_ncRNAs pepstats phage_finder phat pipeline_summary predotar promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat pipeline_summary redotar promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -480,6 +479,12 @@ initdb	:
 	@install components/initdb/initdb.partition.xml $(WORKFLOW_DOCS_DIR)
 	@install components/initdb/initdb.config $(WORKFLOW_DOCS_DIR)
 
+intergenic_analysis	:
+	@echo "Installing intergenic_analysis workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/intergenic_analysis/intergenic_analysis.xml $(WORKFLOW_DOCS_DIR)
+	@install components/intergenic_analysis/intergenic_analysis.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/intergenic_analysis/intergenic_analysis.config $(WORKFLOW_DOCS_DIR)
+
 iprscan	:
 	@echo "Installing iprscan workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/iprscan/iprscan.xml $(WORKFLOW_DOCS_DIR)
@@ -626,6 +631,13 @@ open_reading_frames	:
 	@install components/open_reading_frames/open_reading_frames.config $(WORKFLOW_DOCS_DIR)
 	@install components/open_reading_frames/open_reading_frames.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
+outer_membrane_domain :
+	@echo "Installing outer_membrane_domain workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/outer_membrane_domain/outer_membrane_domain.xml $(WORKFLOW_DOCS_DIR)
+	@install components/outer_membrane_domain/outer_membrane_domain.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/outer_membrane_domain/outer_membrane_domain.config $(WORKFLOW_DOCS_DIR)
+	@install components/outer_membrane_domain/outer_membrane_domain.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
 pangenome	:
 	@echo "Installing pangenome workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/pangenome/pangenome.xml $(WORKFLOW_DOCS_DIR)
@@ -659,6 +671,12 @@ pepstats	:
 	@install components/pepstats/pepstats.xml $(WORKFLOW_DOCS_DIR)
 	@install components/pepstats/pepstats.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/pepstats/pepstats.config $(WORKFLOW_DOCS_DIR)
+
+percent_gc	:
+	@echo "Installing percent_gc workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/percent_gc/percent_gc.xml $(WORKFLOW_DOCS_DIR)
+	@install components/percent_gc/percent_gc.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/percent_gc/percent_gc.config $(WORKFLOW_DOCS_DIR)
 
 phage_finder	:
 	@echo "Installing phage_finder workflows in $(WORKFLOW_DOCS_DIR)"

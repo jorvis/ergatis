@@ -1,0 +1,46 @@
+<!-- component documentation -->
+<p>
+     calculates the percent GC content of nucleotide sequences
+</p>
+<h3>references</h3>
+<p>
+    Script adapted from sgc_GC_content_load.spl developed for the legacy prok pipeline.
+</p>
+<h3>input</h3>
+<p>
+    The input to outer_membrane_domain is fasta sequence ( nucleotide )
+    or bsml.
+
+    The class option determines which class of Sequence element is going to be 
+    parsed and the gc percentage will be calculated for.
+</p>
+
+<h3>output</h3>
+<p>
+    Script will generate an output bsml file.  
+</p>
+<h3>bsml example</h3>
+<div class='code_container'>
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence length="22" title="MDG893.polypeptide.844000.1" id="MDG893.polypeptide.844000.1" molecule="na"&gt;
+        &lt;Attribute name="defline" content="MDG893.polypeptide.844000.1&#10;"&gt;&lt;/Attribute&gt;
+        &lt;Attribute name="percent_gc" content="45.45"&gt;&lt;/Attribute&gt;
+        &lt;Seq-data-import source="MDG893.polypeptide.844000.1.fsa" identifier="MDG893.polypeptide.844000.1" format="fasta" id="Bsml0"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#percent_gc_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+    &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="percent_gc_analysis"&gt;
+        &lt;Attribute name="algorithm" content="percent_gc"&gt;&lt;/Attribute&gt;
+        &lt;Attribute name="programversion" content="current"&gt;&lt;/Attribute&gt;
+        &lt;Attribute name="sourcename" content="/export/prog/omp_gc/"&gt;&lt;/Attribute&gt;
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+
+</div>

@@ -1,4 +1,5 @@
 #!/usr/local/bin/perl
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -197,10 +198,13 @@ sub generateBsml {
 
     my $doc = new BSML::BsmlBuilder;
 
-    my $inputId = $1 if($inputFsa =~ m|(([^/\.]+\.){3,4})[^/]+$|);
+    open( IN, "< $inputFsa" ) or $logger->logdie("Unable to open $inputFsa");
+    my $defline = <IN>;
+    close( IN );
+    my $inputId = $1 if( $defline =~ /^>(\S+)/ );
+
     $logger->logdie("Can't parse input id from $inputFsa") unless( $inputId );
     $inputId =~ s/\.$//;
-    $inputId =~ s/\.[^\d\.]+$/./;
     &createSequence( $doc, $inputId ) unless( scalar keys %$data );
 
     foreach my $seqId ( keys %$data ) {
@@ -332,13 +336,6 @@ sub check_parameters {
         $output = $options{'output'};
     }
 
-    unless($options{'project'}) {
-        $project = &parseProjectName( $inputFile );
-    } else {
-        $project = $options{'project'};
-        $project = &parseProjectName( $inputFile ) if($project eq 'parse');
-    }
-
     unless($options{'id_repository'}) {
         $error .= "Option id_repository is required.  Please see Ergatis::IdGenerator ".
             "for details.\n";
@@ -354,6 +351,14 @@ sub check_parameters {
         $error .= "$options{'fasta_input'} (fasta_input) does not exist\n" 
             unless(-e $options{'fasta_input'});
         $inputFsa = $options{'fasta_input'};
+    }
+
+    
+    unless($options{'project'}) {
+        $project = &parseProjectName( $inputFsa ) if( $inputFsa );
+    } else {
+        $project = $options{'project'};
+        $project = &parseProjectName( $inputFsa ) if($project eq 'parse' && $inputFsa);
     }
 
     unless($options{'compress_output'}) {
@@ -372,10 +377,18 @@ sub check_parameters {
     
 }
 
+
 sub parseProjectName {
     my $input = shift;
-    my $projectName = $1 if($input =~ m|.*?([^\./]+)\.[^/]+$|);
-    die("Can't parse project name from $input") unless($projectName);
+    my $projectName;
+    
+    open(IN, "< $input" ) or $logger->logdie("Unable to open $input");
+    my $defline = <IN>;
+    close(IN);
+
+    $projectName = $1 if( $defline =~ /^>([^\s\.]+)/ );
+    $logger->logdie("Can't parse project name from $input") unless($projectName);
+
     return $projectName;
 }
 

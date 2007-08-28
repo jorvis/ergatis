@@ -5,20 +5,6 @@
         <name>phage finder</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>create phage finder info</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_phage_find_info</executable>
-            <param>  
-                <key>--input_bsml</key>
-                <value>$;I_FILE_PATH$;</value>
-            </param>
-            <param>
-                <key>--output_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_info.txt</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
             <name>phage finder</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/run_phage_finder</executable>
@@ -44,7 +30,7 @@
             </param>
             <param>  
                 <key>--info_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_info.txt</value>
+                <value>$;INFO_FILE$;</value>
             </param>
             <param>  
                 <key>--other_opts</key>

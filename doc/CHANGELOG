@@ -570,3 +570,16 @@ next
 -twinscan2bsml.pl: initial commit
 -merge_twinscan_results.pl: initial commit
 -interface: now displays project code on pipeline list pages
+-Merged prok_pipeline-v1.1-devel onto head
+    -Add components:
+        -prok_pipeline_check
+        -percent_gc
+        -output_membrane_domain
+    -Added templates directory
+        -included prokaryotic annotation pipeline
+    -Added modules
+        -Prokaryotic::Pipeline::Statistics.pm
+        -File::OpenFile.pm
+    -Fixed bug in pipeline_summary component to not look for iterator output files ( in main out directory, not iterator dir)
+    -Added option to phage_finder component for user to include their own info_file
+    -Added project parameter to aragorn2bsml.pl script

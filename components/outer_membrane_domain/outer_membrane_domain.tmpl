@@ -1,0 +1,69 @@
+<!-- component documentation -->
+<p>
+    outer_membrane_domain :: looks for carboxy-terminal motif correlated with sorting to outer membrane
+
+    the carboxy-terminal residue must be aromatic (eg phenylalanine, tryptophan, or tyrosine) and 
+    at least two more of the 10 carboxy-terminal residues must also be aromatic.
+</a></p>
+</p>
+<h3>references</h3>
+<p>
+    Script adapted from omp_update.dbi developed for the legacy prok pipeline.
+</p>
+<h3>input</h3>
+<p>
+    The input to outer_membrane_domain is fasta sequences ( amino acid ). 
+</p>
+<div class='code_container'>
+  REQUIRED PARAMETERS:
+    --input_fsa        :: Input fasta, multi or single format.
+    --output_bsml      :: Name of output bsml file to be created.
+    --id_repository    :: For details, see Ergatis::Id_Repository
+    --sourcename       :: Used in the analysis section of bsml.
+    --project          :: Used in id generation. If not there, will parse from available ids.
+    
+  OPTIONAL PARAMETERS:
+    --log              :: The log file.
+    --debug            :: Higher number = more verbose
+    --help             :: See the perl documentation
+  
+</div>
+
+<h3>output</h3>
+<p>
+    Script will generate an output bsml file.  
+</p>
+<h3>bsml example</h3>
+<div class='code_container'>
+
+&lt;?xml version="1.0"?&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+    &lt;Sequence length="38" title="MDG893.polypeptide.844000.1" id="MDG893.polypeptide.844000.1" molecule="aa"&gt;
+        &lt;Feature-tables&gt;
+          &lt;Feature-table id="Bsml2"&gt;
+            &lt;Feature class="outer_membrane_domain" title="MDG893.outer_membrane_domain.1.1" id="MDG893.outer_membrane_domain.1.1"&gt;
+              &lt;Interval-loc complement="0" startpos="28" endpos="38"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#outer_membrane_domain_analysis" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+          &lt;/Feature-table&gt;
+        &lt;/Feature-tables&gt;
+        &lt;Seq-data-import source="MDG893.polypeptide.844000.1.fsa" identifier="MDG893.polypeptide.844000.1" format="fasta" id="Bsml1"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#outer_membrane_domain_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+     &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="outer_membrane_domain_analysis"&gt;
+        &lt;Attribute name="algorithm" content="outer_membrane_domain"&gt;&lt;/Attribute&gt;
+        &lt;Attribute name="programversion" content="current"&gt;&lt;/Attribute&gt;
+        &lt;Attribute name="sourcename" content="/export/prog/omp_gc/"&gt;&lt;/Attribute&gt;
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+
+</div>
