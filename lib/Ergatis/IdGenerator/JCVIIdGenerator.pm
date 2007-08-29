@@ -321,7 +321,7 @@ umask(0000);
         foreach my $val(values(%{$self->{_pool_sizes}})) {
             $new_size += $val;
         }
-        if ($new_size > $id_service->getBlockSize()) {
+        if ($new_size > $id_service->{'block_size'}) {
             $id_service->setBlockSize($new_size);
         }
     }
