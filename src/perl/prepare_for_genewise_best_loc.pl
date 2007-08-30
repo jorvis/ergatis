@@ -255,10 +255,10 @@ foreach my $bsml_file(@bsml_files) {
     my $infh;
     if ($bsml_file =~ /\.gz$/) {
         open($infh, "<:gzip", $bsml_file) 
-         || die("couldn't open gzipped input file '$bsml_file': $!");
+         || confess("couldn't open gzipped input file '$bsml_file': $!");
     } else {
         open($infh, $bsml_file)
-         || die("couldn't open input file '$bsml_file': $!");
+         || confess("couldn't open input file '$bsml_file': $!");
     }
     $twig->parse($infh);
     close $infh;
@@ -610,6 +610,8 @@ sub prepare_genewise_inputs {
        
         my $startpos = $lend - 1;
         my $seq_len = $rend - $startpos;
+       
+        print STDERR "Getting substring($startpos, $seq_len) on assembly '$asmbl_id' which is length $genome_seq_length\n";
         
         my $subseq = substr($asmbl_seq->{$asmbl_id}, $startpos, $seq_len);
         
@@ -766,24 +768,28 @@ sub seq_handler {
         ## we only support pulling sequences from fasta files right now
         ## but get_sequence_by_id could be modified to support other formats 
         if (defined($format) && $format ne 'fasta') {
-            die("unsupported seq-data-import format '$format' found");
+            confess("unsupported seq-data-import format '$format' found");
         }
         
         unless (-e $source) {
-            die("fasta file referenced in BSML Seq-data-import '$source' doesn't exist");
+            confess("fasta file referenced in BSML Seq-data-import '$source' doesn't exist");
         }
         unless (defined($identifier)) {
-            die("Seq-data-import for '$seq_id' does not have a value for identifier");
+            confess("Seq-data-import for '$seq_id' does not have a value for identifier");
         }
         
+        $identifier =~ s/\s+//g;
+        
         my $seq = get_sequence_by_id($identifier, $source);
-            
+        
+        print STDERR "Retrieved sequence for '$identifier' from '$source' with length of '".length($seq)."'\n";
+        
         if (length($seq) > 0) {
             $asmbl_seq->{$assembly_id} = $seq;
             ## a file with the same source basename should exist in UNMASKED_FASTA_DIRECTORY if input is masked aat output
             $asmbl_source->{$assembly_id} = basename($source).":".$identifier;
         } else {
-            die("couldn't fetch sequence for '$seq_id' from Seq-data-import source '$source'");
+            confess("Couldn't fetch sequence for '$seq_id' from Seq-data-import source '$source' using identifer '$identifier'");
         }
         
     } elsif ($seq_data = $sequence->first_child('Seq-data')) {
@@ -792,7 +798,7 @@ sub seq_handler {
         $asmbl_seq->{$assembly_id} =~ s/\s+//;
     } else {
         ## there is no Seq-data or Seq-data-import for the sequence
-        die("No sequence present in BSML sequence element for '$seq_id'");
+        confess("No sequence present in BSML sequence element for '$seq_id'");
     }
 }
 
@@ -802,8 +808,10 @@ sub get_assembly_id {
 
     if ($seq_id =~ /^[^\.]+\.assembly\.(\d+)/) {
         return $1;
+    } elsif ($seq_id =~ /^_(\d+)$/) {
+        return $1;
     } else {
-        die "Couldn't parse assembly id from sequence identifier '$seq_id'";
+        confess "Couldn't parse assembly id from sequence identifier '$seq_id'";
         return undef;
     }
 }
@@ -833,7 +841,7 @@ sub get_sequence_by_id {
     my ($id, $fname) = @_;
     my $seq_id = '';
     my $sequence = '';
-    open (IN, $fname) || die("couldn't open fasta file for reading");
+    open (IN, $fname) || confess("couldn't open fasta file for reading");
     TOP: while (<IN>) {
         chomp;
         if (/^>([^\s]+)/) {
