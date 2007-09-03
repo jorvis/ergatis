@@ -529,8 +529,8 @@ ergatis-v2r5b1
 -installer: File::Mirror, CDB_File now required
 -ngap: bugfix - ngap.pl was not compiling
 
-next
-----
+ergatis-v2r6b1
+--------------
 -promote_gene_prediction: now with valid bsml!
 -bsml2featurerelationships: There are more than one relationship, bug fix to call plural executable.
 -infernal2bsml: fixed syntax error
@@ -583,3 +583,7 @@ next
     -Fixed bug in pipeline_summary component to not look for iterator output files ( in main out directory, not iterator dir)
     -Added option to phage_finder component for user to include their own info_file
     -Added project parameter to aragorn2bsml.pl script
+
+
+next
+----
