@@ -110,6 +110,9 @@
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/chadoToChadoMart.pl.stderr</value>
 	    </param>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+            </dceSpec>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
