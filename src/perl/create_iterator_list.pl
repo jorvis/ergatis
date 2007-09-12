@@ -48,6 +48,7 @@ my $results = GetOptions (\%options,
                           'input_list=s', 
 			  'output_iter_list=s',
 			  'log|l=s',
+			  'key=s',
                           'debug=s', 
                           'help|h' ) || pod2usage();
 
@@ -71,7 +72,7 @@ $list =~ s/\s*//;
 
 my @iteratorconf = split(/,/, $list);
 
-&output_lists(\@iteratorconf, $options{'output_iter_list'});
+&output_lists(\@iteratorconf, $options{'output_iter_list'}, $options{'key'});
 
 
 print "$0 program execution completed\n";
@@ -91,11 +92,16 @@ exit(0);
 #---------------------------------------------
 sub output_lists {
 
-    my ($iteratorconf, $output) = @_;
+    my ($iteratorconf, $output, $key) = @_;
 
     open FILE, "+>$output" or $logger->logdie("Can't open output file $output");
     
-    print FILE '$;CV_ID$;' . "\n";
+    if (!defined($key)){
+	print FILE '$;CV_ID$;' . "\n";
+    }
+    else {
+	print FILE '$;' . $key . '$;' . "\n";
+    }
 
     foreach my $cv_id (@{$iteratorconf}){
 
