@@ -6,7 +6,7 @@
 	    <state>incomplete</state>
 	    <name>create_ir_scratch</name>
 	    <executable>mkdir</executable>
-	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir</arg>
+	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/cachedir</arg>
         </command>
 	<command>
 	    <type>RunUnixCommand</type>
@@ -43,27 +43,27 @@
 	    </param>
 	    <param>
 		<key>--log4perl</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/obov1p2tochado.pl.log</value>
 	    </param>
 	    <param>
 		<key>--outdir</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir</value>
 	    </param>
 	    <param>
+		<key>--cache_dir</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/cachedir</value>
+	    </param>
+	    <param>
 		<key>--respect_namespace</key>
 		<value>$;NAMESPACE$;</value>
 	    </param>
 	    <param>
-		<key>--cache_dir</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir</value>
-	    </param>
-	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/obov1p2tochado.pl.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/obov1p2tochado.pl.stderr</value>
 	    </param>
 	    <arg>--ignore_relationships</arg>
         </command>
@@ -110,7 +110,7 @@
 	    </param>
 	    <param>
 		<key>--logfile</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/chadoloader.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/flatFileToChado.pl.log</value>
 	    </param>
 	    <param>
 		<key>--directory</key>
@@ -118,11 +118,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/chadoloader.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/flatFileToChado.pl.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/chadoloader.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ir/flatFileToChado.pl.stderr</value>
 	    </param>
         </command>
 	<command>
@@ -130,7 +130,7 @@
 	    <state>incomplete</state>
 	    <name>create_ro_scratch</name>
 	    <executable>mkdir</executable>
-	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro</arg>
+	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/cachedir</arg>
         </command>
 	<command>
 	    <type>RunUnixCommand</type>
@@ -167,7 +167,7 @@
 	    </param>
 	    <param>
 		<key>--log4perl</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/obov1p2tochado.pl.log</value>
 	    </param>
 	    <param>
 		<key>--outdir</key>
@@ -175,15 +175,15 @@
 	    </param>
 	    <param>
 		<key>--cache_dir</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/cachedir</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/obov1p2tochado.pl.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obo2chado.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/obov1p2tochado.pl.stderr</value>
 	    </param>
 	    <arg>--relationships_only</arg>
         </command>
@@ -230,7 +230,7 @@
 	    </param>
 	    <param>
 		<key>--logfile</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/chadoloader.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/flatFileToChado.pl.log</value>
 	    </param>
 	    <param>
 		<key>--directory</key>
@@ -238,11 +238,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/chadoloader.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/flatFileToChado.pl.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/chadoloader.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/ro/flatFileToChado.pl.stderr</value>
 	    </param>
         </command>
     </commandSet>
