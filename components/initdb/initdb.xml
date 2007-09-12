@@ -66,12 +66,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_cm_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/drop_cm_tables.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_tables.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_tables.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_tables.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=drop_chado_mart_tables,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_cm_tables.list,$;NODISTRIB$;=1"/>
@@ -98,12 +110,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/drop_tables.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_tables.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_tables.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_tables.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=drop_tables,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_tables.list,$;NODISTRIB$;=1"/>
@@ -152,12 +176,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/create_tables.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_tables.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_tables.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_tables.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=create_core_chado_tables,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_tables.list,$;NODISTRIB$;=1"/>
@@ -168,12 +204,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_cm_views.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/create_cm_views.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_views.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_views.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_views.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=create_chado_mart_views,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_cm_views.list,$;NODISTRIB$;=1"/>
@@ -184,12 +232,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_cm_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/create_cm_tables.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_tables.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_tables.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_tables.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=create_chado_mart_tables,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_cm_tables.list,$;NODISTRIB$;=1"/>
@@ -200,12 +260,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/partition_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/partition_tables.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.partition_tables.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.partition_tables.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.partition_tables.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=partition_core_chado_tables,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/partition_tables.list,$;NODISTRIB$;=1"/>
@@ -232,12 +304,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/create_indexes.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/create_indexes.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_indexes.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_indexes.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_indexes.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=create_core_chado_indices,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list,$;NODISTRIB$;=1"/>
@@ -248,12 +332,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/grant_all_public.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/grant_all_public.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_all_public.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_all_public.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_all_public.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=grant_permission_core_chado,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/grant_all_public.list,$;NODISTRIB$;=1"/>
@@ -280,12 +376,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/grant_permissions_cm_views.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/grant_permissions_cm_views.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_permissions_cm_views.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_permissions_cm_views.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_permissions_cm_views.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=grant_permissions_chado_mart_views,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/grant_permissions_cm_views.list,$;NODISTRIB$;=1"/>
