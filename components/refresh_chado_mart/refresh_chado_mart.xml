@@ -52,7 +52,7 @@
 	<!--Iterator2 for dropping all chado-mart indices and constraints -->
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>Create drop chado-mart views list</name>
+	    <name>Create drop chado-mart indices and constraints list</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
