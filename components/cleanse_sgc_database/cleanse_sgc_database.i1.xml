@@ -28,7 +28,7 @@
 	  <name>RNA_populate.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/RNA_populate</executable>
- 	  <arg>-U $;USERNAME$; -P $;PASSWORD$; -D $;DATABASE$;</arg>
+ 	  <arg>-U $;USERNAME$; -P $;PASSWORD$; -D $;DATABASE$; -X $;SKIP_RNA$;</arg>
 	  <param>
 	      <key>stdout</key>
 	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/RNA_populate.dbi.stdout</value>
@@ -133,7 +133,7 @@
 	  <name>load_tRNAs.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/load_tRNAs</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -X $;SKIP_RNA$;</arg>
 	  <param>
 	      <key>stdout</key>
 	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load_tRNAs.dbi.stdout</value>
