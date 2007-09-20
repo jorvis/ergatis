@@ -148,7 +148,7 @@
 	  <name>condor_cog_search.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/condor_cog_search</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -I</arg>
 	  <param>
 	      <key>stdout</key>
 	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/condor_cog_search.dbi.stdout</value>
