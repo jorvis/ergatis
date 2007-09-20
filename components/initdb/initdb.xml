@@ -372,12 +372,24 @@
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
             <param>
-		<key>stdin</key>
+		<key>--infile</key>
 		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/grant_permissions_cm_tables.$;RDBMS$;.ddl</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>--outfile</key>    
 		<value>$;TMP_DIR$;/grant_permissions_cm_tables.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_permissions_cm_tables.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_permissions_cm_tables.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.grant_permissions_cm_tables.stderr</value>
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=grant_permissions_chado_mart_tables,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/grant_permissions_cm_tables.list,$;NODISTRIB$;=1"/>
