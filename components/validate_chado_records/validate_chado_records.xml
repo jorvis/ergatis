@@ -413,5 +413,46 @@
 		<value>$;WORKFLOW_REPOSITORY$;/checkFeaturelocRecords.pl.stderr</value>
 	    </param>
 	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Check for feature residues-seqlen mismatches</name>
+	    <executable>$;BIN_DIR$;/checkForFeatureResiduesSeqlenMismatches</executable>
+	    <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
+	    <param>	  
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	    </param>
+	    <param>
+		<key>--username</key>
+		<value>$;USERNAME$;</value>
+	    </param>
+	    <param>
+		<key>--password</key>
+		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+		<key>--debug_level</key>
+		<value>$;DEBUG$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>
+		<value>$;WORKFLOW_REPOSITORY$;/checkForFeatureResiduesSeqlenMismatches.pl.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;WORKFLOW_REPOSITORY$;/checkForFeatureResiduesSeqlenMismatches.pl.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/checkForFeatureResiduesSeqlenMismatches.pl.stderr</value>
+	    </param>
+	</command>
     </commandSet>
 </commandSetRoot>
