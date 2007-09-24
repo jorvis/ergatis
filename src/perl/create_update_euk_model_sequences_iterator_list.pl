@@ -2,7 +2,8 @@
 =head1  NAME 
 
 create_update_euk_model_sequences_iterator_list.pl - Default output is a workflow iterator that
-can be used to iterator over a set of database-asmbl_id values
+can be used to iterator over a set of database-asmbl_id values.  Can read in the standard legacy2bsml
+control file.
 
 =head1 SYNOPSIS
 
@@ -292,7 +293,7 @@ sub getDataLookup {
 	}
 	else{
 
-	    if ($line =~ /^database:(\S+)\s*$/){
+	    if ($line =~ /^database:(\S+)/){
 		## This is the line which identifies the annotation database to be processed
 		$database = $1;
 	    }
