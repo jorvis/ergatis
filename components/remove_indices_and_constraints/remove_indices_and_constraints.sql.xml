@@ -1,0 +1,47 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<name>Execute SQL</name>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/sql2DB</executable>
+	    <name>Send SQL to chado</name>
+	    <param>
+		<key>--username</key>
+		<value>chado_admin</value>
+	    </param>
+	    <param>
+		<key>--password</key>
+		<value>chado_admin99</value>
+	    </param>
+	    <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
+	    <param>
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	    </param>
+	    <param>
+		<key>--log</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_SQLNUM$;.log</value>
+	    </param>
+	    <param>
+		<key>--sql</key>
+		<value>"$;I_SQL$;"</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_SQLNUM$;.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_SQLNUM$;.stderr</value>
+	    </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
