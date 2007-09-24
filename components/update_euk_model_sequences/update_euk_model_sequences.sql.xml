@@ -27,10 +27,6 @@
 		<value>$;SERVER$;</value>
 	    </param>
 	    <param>
-		<key>--exec</key>
-		<value>$;REFRESH_INDEXES$;</value>
-	    </param>
-	    <param>
 		<key>--log</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_SQLNUM$;.log</value>
 	    </param>
