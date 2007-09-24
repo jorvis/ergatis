@@ -49,38 +49,6 @@
 	    </param>
 	</command>
 	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=truncate,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/truncate.list,$;NODISTRIB$;=1"/>
-	<!--Iterator2 for dropping all chado-mart indices and constraints -->
-	<command>
-	    <type>RunUnixCommand</type>
-	    <name>Create drop chado-mart indices and constraints list</name>
-	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
-            <param>
-		<key>--database_type</key>
-		<value>$;RDBMS$;</value>
-	    </param>
-	    <param>
-		<key>--outfile</key>    
-		<value>$;TMP_DIR$;/drop_indices.list</value>
-	    </param>
-	    <param>
-		<key>--logfile</key>    
-		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_indices.log</value>
-	    </param>
-            <param>
-		<key>--infile</key>
-		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_cm_indices.$;RDBMS$;.ddl</value>
-	    </param>
-	    <param>
-		<key>stdout</key>    
-		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_indices.stdout</value>
-	    </param>
-	    <param>
-		<key>stderr</key>    
-		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_indices.stderr</value>
-	    </param>
-	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=drop_indices,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_indices.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunDistributedCommand</type>
 	    <name>Generate chado-mart data</name>
@@ -146,6 +114,83 @@
                 <OS>linux</OS>
             </dceSpec>
 	</command>
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <name>Generate cm_blast data</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_blast_query_view_bcp</executable>
+            <param>
+		<key>--analysis_id</key>
+		<value>$;BLAST_ANALYSIS_ID$;</value>
+	  </param>
+            <param>
+		<key>--user</key>
+		<value>chado_admin</value>
+            </param>
+            <param>
+		<key>--password</key>
+		<value>chado_admin99</value>
+	  </param>
+            <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+            </param>
+            <param>
+		<key>--output_file</key>
+		<value>$;TMP_DIR$;/cm_blast.out</value>
+	  </param>
+            <param>
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	  </param>
+            <param>
+		<key>--logfile</key>
+		<value>$;TMP_DIR$;/create_blast_query_view_bcp.pl.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/create_blast_query_view_bcp.pl.stdout</value>
+	    </param>
+            <param>
+		<key>stderr</key>
+		<value>$;TMP_DIR$;/create_blast_query_view_bcp.pl.stderr</value>
+	    </param>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+            </dceSpec>
+	</command>
+	<!--Iterator2 for dropping all chado-mart indices and constraints -->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Create drop chado-mart indices and constraints list</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
+            <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
+	    <param>
+		<key>--outfile</key>    
+		<value>$;TMP_DIR$;/drop_indices.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_indices.log</value>
+	    </param>
+            <param>
+		<key>--infile</key>
+		<value>$;DOCS_DIR$;/ddls/$;RDBMS$;/drop_cm_indices.$;RDBMS$;.ddl</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_indices.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_indices.stderr</value>
+	    </param>
+	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=drop_indices,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_indices.list,$;NODISTRIB$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>list bcp files</name>
