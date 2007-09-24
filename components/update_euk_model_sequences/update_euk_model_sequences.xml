@@ -1,0 +1,124 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<state>incomplete</state>
+	<name>update_euk_model_sequences workflow</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory and temporary working directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$; $;TMP_DIR$;</arg>
+	</command>
+	<!--Iterator1 for creating the primary iterator list  -->
+ 	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Create iterator list for the update_euk_model_sequences component</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_update_euk_model_sequences_iterator_list</executable>
+            <param>
+		<key>--control_file</key>
+		<value>$;UPDATE_EUK_MODEL_SEQUENCES_CONTROL_FILE$;</value>
+	    </param>
+	    <param>
+		<key>--output</key>    
+		<value>$;TMP_DIR$;/update_euk_model_sequences.list</value>
+	    </param>
+            <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/create_update_euk_model_sequences_iterator_list.stdout</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/create_update_euk_model_sequences_iterator_list.stderr</value>
+	    </param>
+	</command>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/update_euk_model_sequences.list"/> 
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create update sequences SQL list</name>
+            <state>incomplete</state>
+            <executable>find</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/ -name '*.update-sequences.sql'</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/update-sequences.sql.list</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create update proteins SQL list</name>
+            <state>incomplete</state>
+            <executable>find</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/ -name '*.update-proteins.sql'</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/update-proteins.sql.list</value>
+            </param>
+        </command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Create update sequences SQL iterator</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
+            <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
+            <param>
+		<key>--infile</key>
+		<value>$;OUTPUT_DIRECTORY$;/update-sequences.sql.list</value>
+	    </param>
+	    <param>
+		<key>--outfile</key>    
+		<value>$;TMP_DIR$;/update-sequences.sql.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_update_sequences.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_update_sequences.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_update_sequences.stderr</value>
+	    </param>
+	</command>
+	<!--Iterator2 for running the update sequence SQL  -->
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/update-sequences.sql.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Create update proteins SQL iterator</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/ddl2iterator</executable>
+            <param>
+		<key>--database_type</key>
+		<value>$;RDBMS$;</value>
+	    </param>
+            <param>
+		<key>--infile</key>
+		<value>$;OUTPUT_DIRECTORY$;/update-proteins.sql.list</value>
+	    </param>
+	    <param>
+		<key>--outfile</key>    
+		<value>$;TMP_DIR$;/update-proteins.sql.list</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_update_proteins.log</value>
+	    </param>
+	    <param>
+		<key>stdout</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_update_proteins.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/ddl2iterator.pl.create_update_proteins.stderr</value>
+	    </param>
+	</command>
+	<!--Iterator3 for running the update sequence SQL  -->
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/update-proteins.sql.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+    </commandSet>
+</commandSetRoot>
