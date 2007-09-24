@@ -5,10 +5,14 @@
 	    <type>RunUnixCommand</type>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/deriveCDSSequences</executable>
-	    <name>update_euk_model_sequences</name>
+	    <name>deriveCDSSequences</name>
 	    <param>
 		<key>--database</key>
 		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--server</key>
+		<value>$;SERVER$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
@@ -48,11 +52,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.deriveCDSSequences.pl.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;.deriveCDSSequences.pl.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.deriveCDSSequences.pl.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;.deriveCDSSequences.pl.stderr</value>
 	    </param>
 	</command>
     </commandSet>
