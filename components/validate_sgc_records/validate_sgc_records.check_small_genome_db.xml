@@ -8,6 +8,7 @@
 	  <executable>mkdir</executable>
  	  <arg>-p -m 777 $;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load $;WORKFLOW_REPOSITORY$;/$;DATABASE$;/gip $;WORKFLOW_REPOSITORY$;/$;DATABASE$;/sgc</arg>
       </command>
+      <commandSet type="parallel">
       <command>
 	  <type>RunUnixCommand</type>
 	  <name>check_small_genome_db load</name>
@@ -49,6 +50,7 @@
 	      <key>stderr</key>
 	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/load/check_small_genome_db.dbi.stderr</value>
 	  </param>
+ 	  <arg>--tigr_ann_only</arg>
       </command>
       <command>
 	  <type>RunUnixCommand</type>
@@ -95,6 +97,7 @@
 	      <key>stderr</key>
 	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/gip/check_small_genome_db.dbi.stderr</value>
 	  </param>
+ 	  <arg>--tigr_ann_only</arg>
       </command>
       <command>
 	  <type>RunUnixCommand</type>
@@ -141,6 +144,8 @@
 	      <key>stderr</key>
 	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/sgc/check_small_genome_db.dbi.stderr</value>
 	  </param>
+ 	  <arg>--tigr_ann_only</arg>
       </command>
+  </commandSet>
   </commandSet>
 </commandSetRoot>
