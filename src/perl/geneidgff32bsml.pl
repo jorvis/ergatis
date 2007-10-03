@@ -178,9 +178,8 @@ sub parse_record {
     
     my @cols = split("\t");
 
-    ## adjust both positions so that we are numbering from zero
+    ## adjust start position so that we are in interbase
     $cols[3]--;
-    $cols[4]--;
 
     ## change the + and - symbols in strand column to 0 and 1, respectively
     if ($cols[6] eq '+') {
