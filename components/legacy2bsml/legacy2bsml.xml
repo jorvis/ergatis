@@ -36,7 +36,7 @@
 		<value>$;TMP_DIR$;/create_legacy2bsml_iterator_list.stdout</value>
 	    </param>
 	    <param>
-		<key>stdout</key>    
+		<key>stderr</key>    
 		<value>$;TMP_DIR$;/create_legacy2bsml_iterator_list.stderr</value>
 	    </param>
 	</command>
