@@ -28,6 +28,14 @@
 	<key>--randomize</key>
 	<value>'$;ITERATOR_RANDOM$;'</value>
     </param>
+    <param>
+	<key>stdout</key>
+	<value>$;TMP_DIR$;/create_iterator_groups.stdout</value>
+    </param>
+    <param>
+	<key>stderr</key>    
+	<value>$;TMP_DIR$;/create_iterator_groups.stderr</value>
+    </param>
 </command>
 <command>
     <type>RunUnixCommand</type>
@@ -61,6 +69,14 @@
     <param>  
 	<key>--distribopts</key>
 	<value>nodistrib=$;NODISTRIB$;</value>
+    </param>
+    <param>
+	<key>stdout</key>
+	<value>$;TMP_DIR$;/replace_template_keys.stdout</value>
+    </param>
+    <param>
+	<key>stderr</key>    
+	<value>$;TMP_DIR$;/replace_template_keys.stderr</value>
     </param>
 </command>
 <commandSet type="parallel">
