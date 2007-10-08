@@ -124,7 +124,7 @@ umask(0000);
 ## make sure the output directory exists
 if (! -d $options{output_directory} ) {
     $logger->debug("attempting to create $options{output_directory}") if $logger->is_debug();
-    mkdir($options{output_directory}) || $logger->logdie("failed to create output directory: $!");
+    mkdir($options{output_directory}) || $logger->logdie("failed to create output directory '$options{'output_directory'}': $!");
 }
 
 #skim is list of byte offsets for each line in the file
