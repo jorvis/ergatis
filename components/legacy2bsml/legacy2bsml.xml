@@ -1,4 +1,4 @@
-<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+3<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
 	<state>incomplete</state>
 	<name>legacy2bsml workflow</name>
@@ -17,10 +17,9 @@
 	    <executable>mkdir</executable>
 	    <arg>-p -m 777 $;TMP_DIR$;/id_mapping</arg>
 	</command>
-	<!--Iterator1 for revoking all permissions -->
  	<command>
 	    <type>RunUnixCommand</type>
-	    <name>Create revoke permissions DDL list</name>
+	    <name>Create legacy2bsml master iterator list file</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/create_legacy2bsml_iterator_list</executable>
             <param>
