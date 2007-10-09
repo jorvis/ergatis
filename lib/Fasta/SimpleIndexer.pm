@@ -118,9 +118,10 @@ sub get_record {
     
     my $ref = _fetch($accession);
     
+    $ref->[0] .= "\n";
     $ref->[1] =~ s/(.{1,60})/$1\n/g;
     
-    return join("", @{$ref});
+    return ">".join("", @{$ref});
 }
 
 ## returns a string containing the raw sequence for a specified accession
@@ -134,6 +135,19 @@ sub get_sequence {
     my $ref = _fetch($accession);
 
     return $ref->[1];
+}
+
+## returns an array containing header string and string containing the raw sequence for a specified accession
+sub get_sequence_array {
+    my ($self, $accession) = @_;
+
+    unless ($accession) {
+        confess "No accession provided to get_sequence_array";
+    }
+    
+    my $ref = _fetch($accession);
+
+    return ($ref->[0], $ref->[1]);
 }
 
 ## private method that does the fetching
@@ -162,8 +176,11 @@ sub _fetch {
             $line = <IN>;
         } else {
             my $header = $1;
+            
             $defline = $line;
-     
+            chomp($defline);
+            $defline =~ s/^>//;
+            
             if ($header eq $specified_header) {
                 while(defined($line=<IN>) and $line !~ /^>/ ) {
                     next if($line =~/^\s+$/);                   #skip blank lines
