@@ -15,7 +15,7 @@
 	    <name>legacy2bsml</name>
 	    <param>
 		<key>--database</key>
-		<value>$;SOURCE_DATABASE$;</value>
+		<value>$;DATABASE$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
@@ -31,11 +31,11 @@
 	    </param>
 	    <param>
 		<key>--bsml_doc_name</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
 	    </param>
 	    <param>
 		<key>--log4perl</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.legacy2bsml.pl.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.legacy2bsml.pl.log</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
@@ -87,7 +87,7 @@
 	    </param>
 	    <param>
 		<key>--output_id_mapping_file</key>
-		<value>$;TMP_DIR$;/id_mapping/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_$;SCHEMA_TYPE$;.idmap</value>
+		<value>$;TMP_DIR$;/id_mapping/$;DATABASE$;_$;ASMBL_ID$;_$;SCHEMA_TYPE$;.idmap</value>
 	    </param>
 	    <param>
 		<key>--idgen_identifier_version</key>
@@ -111,11 +111,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/legacy2bsml.$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/legacy2bsml.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/legacy2bsml.$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/legacy2bsml.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stderr</value>
 	    </param>
 	</command>
 	<command>
@@ -123,7 +123,7 @@
 	    <state>incomplete</state>
 	    <name>DTD validation</name>
 	    <executable>$;BIN_DIR$;/dtdValid.pl</executable>
-	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</arg>
+	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</arg>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
@@ -132,11 +132,11 @@
 	    <name>profileBSMLFile</name>
 	    <param>
 		<key>--infile</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
 	    </param>
 	    <param>
 		<key>--database</key>
-		<value>$;SOURCE_DATABASE$;</value>
+		<value>$;DATABASE$;</value>
 	    </param>
 	    <param>
 		<key>--asmbl_id</key>
@@ -144,15 +144,15 @@
 	    </param>
 	    <param>
 		<key>--logfile</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.profileBSMLFile.pl.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.profileBSMLFile.pl.log</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;SOURCE_DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stderr</value>
 	    </param>
 	</command>
     </commandSet>
