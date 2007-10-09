@@ -58,7 +58,7 @@ my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 $logger = Workflow::Logger::get_logger();
 
 my $unique_key      = '$;UNIQUE_KEY$;';
-my $database_key      = '$;SOURCE_DATABASE$;';
+my $database_key      = '$;DATABASE$;';
 my $asmbl_id_key      = '$;ASMBL_ID$;';
 my $sequence_type_key = '$;SEQUENCE_TYPE$;';
 my $organism_key        = '$;SCHEMA_TYPE$;';
@@ -200,7 +200,7 @@ sub output_lists {
     open FILE, "+>$output" or $logger->logdie("Can't open output file $output");
     
     print FILE '$;UNIQUE_KEY$;' . "\t".
-    '$;SOURCE_DATABASE$;' . "\t".
+    '$;DATABASE$;' . "\t".
     '$;ASMBL_ID$;' . "\t".
     '$;SEQUENCE_TYPE$;' . "\t".
     '$;SCHEMA_TYPE$;' . "\t".
