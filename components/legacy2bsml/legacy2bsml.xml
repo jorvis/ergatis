@@ -5,17 +5,10 @@
 	<!--Preprocessing-->
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>create output directory</name>
+	    <name>create output directories</name>
 	    <state>incomplete</state>
 	    <executable>mkdir</executable>
-	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
-	</command>
-	<command>
-	    <type>RunUnixCommand</type>
-	    <name>create temp directory</name>
-	    <state>incomplete</state>
-	    <executable>mkdir</executable>
-	    <arg>-p -m 777 $;TMP_DIR$;/id_mapping</arg>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$; $;TMP_DIR$; $;TMP_DIR$;/id_mapping</arg>
 	</command>
  	<command>
 	    <type>RunUnixCommand</type>
