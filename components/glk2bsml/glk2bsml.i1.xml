@@ -27,14 +27,6 @@
 		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.bsml</value>
 	    </param>
 	    <param>
-		<key>--logfile</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.glk2bsml.pl.log</value>
-	    </param>
-	    <param>
-		<key>--debug_level</key>
-		<value>$;DEBUG$;</value>
-	    </param>
-	    <param>
 		<key>--bac_id</key>
 		<value>$;ASMBL_ID$;</value>
 	    </param>
