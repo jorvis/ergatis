@@ -349,6 +349,11 @@ sub get_organism_hash {
 		    }
 		}
 	    }
+	    elsif ($line =~ /^database:(\S+)\s*/){
+		$database_type = $1;
+		my $database = $database_type;
+		$hash->{$database_type}->{'database'} = $database;
+	    }
 	    elsif ($line =~ /^\s*(\d+)\s*/){
 
 		&store_asmbl_id($database_type, $1, $line, $linectr, $unique_asmbl_id_values, $hash, $file);
