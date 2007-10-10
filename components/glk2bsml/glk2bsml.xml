@@ -5,10 +5,10 @@
 	<!--Preprocessing-->
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>create output directory</name>
+	    <name>create output directory and temporary directory</name>
 	    <state>incomplete</state>
 	    <executable>mkdir</executable>
-	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$; $;TMP_DIR$;</arg>
 	</command>
  	<command>
 	    <type>RunUnixCommand</type>
