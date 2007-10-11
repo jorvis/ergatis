@@ -47,7 +47,7 @@
 		<value>$;INSERT_NEW$;</value>
 	    </param>
 	    <param>
-		<key>--log4perl</key>
+		<key>--logfile</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml2chado.pl.log</value>
 	    </param>
 	    <param>
@@ -90,10 +90,14 @@
 		<key>--exclude_classes</key>
 		<value>$;EXCLUDE_CLASSES$;</value>
 	    </param>
-        <param>
-            <key>stderr</key>
-            <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
-        </param>
+	    <param>
+	          <key>stdout</key>
+                    <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+              </param>
+              <param>
+                   <key>stderr</key>
+                   <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+              </param>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
