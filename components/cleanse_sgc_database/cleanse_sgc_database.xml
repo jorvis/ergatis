@@ -2,36 +2,39 @@
     <commandSet type="serial">
 	<state>incomplete</state>
 	<name>cleanse_sgc_database workflow</name>
-	<!--Preprocessing-->
 	<command>
 	    <type>RunUnixCommand</type>
-	    <name>create output directory and temp directory</name>
+	    <name>create output and temporary directory</name>
 	    <state>incomplete</state>
 	    <executable>mkdir</executable>
 	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$; $;TMP_DIR$;</arg>
 	</command>
- 	<command>
+	<command>
 	    <type>RunUnixCommand</type>
-	    <name>Create cleanse_sgc_database master iterator list file</name>
+	    <name>create_iterator_list</name>
 	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/create_legacy2bsml_iterator_list</executable>
-            <param>
-		<key>--control_file</key>
-		<value>$;CONTROL_FILE$;</value>
+	    <executable>$;BIN_DIR$;/create_iterator_list</executable>
+	    <param>
+		<key>--input_list</key>
+		<value>$;DATABASE_LIST$;</value>
 	    </param>
 	    <param>
-		<key>--output</key>    
-		<value>$;WORKFLOW_REPOSITORY$;/cleanse_sgc_database.list</value>
+		<key>--key</key>
+		<value>DATABASE</value>
 	    </param>
-            <param>
+	    <param>
+		<key>--output_iter_list</key>
+		<value>$;WORKFLOW_REPOSITORY$;/database.list</value>
+	    </param>
+	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/create_cleanse_sgc_database_list.stdout</value>
+		<value>$;WORKFLOW_REPOSITORY$;/create_iterator_list.pl.stdout</value>
 	    </param>
 	    <param>
-		<key>stderr</key>    
-		<value>$;TMP_DIR$;/create_cleanse_sgc_database_list.stderr</value>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/create_iterator_list.pl.stderr</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=cleanse_sgc_database,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/cleanse_sgc_database.list,$;NODISTRIB$;=1"/> 
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=cleanse_sgc_database,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/database.list,$;NODISTRIB$;=1"/>
     </commandSet>
 </commandSetRoot>
