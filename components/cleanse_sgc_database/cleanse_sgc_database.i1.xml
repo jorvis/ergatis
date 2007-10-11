@@ -6,36 +6,21 @@
 	  <state>incomplete</state>
 	  <name>Create database output directory</name>
 	  <executable>mkdir</executable>
- 	  <arg>-p -m 777 $;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;</arg>
+ 	  <arg>-p -m 777 $;WORKFLOW_REPOSITORY$;/$;DATABASE$;</arg>
       </command>
       <command>
 	  <type>RunUnixCommand</type>
 	  <name>rewrite_seqs.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/rewrite_seqs</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -a $;ASMBL_ID$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/rewrite_seqs.dbi.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/rewrite_seqs.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/rewrite_seqs.dbi.stderr</value>
-	  </param>
-      </command>
-      <command>
-	  <type>RunUnixCommand</type>
-	  <name>RNA_populate.dbi</name>
-	  <state>incomplete</state>
-	  <executable>$;BIN_DIR$;/RNA_populate</executable>
- 	  <arg>-U $;USERNAME$; -P $;PASSWORD$; -D $;DATABASE$; -X $;SKIP_RNA$; -A $;ASMBL_ID$;</arg>
-	  <param>
-	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/RNA_populate.dbi.stdout</value>
-	  </param>
-	  <param>
-	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/RNA_populate.dbi.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/rewrite_seqs.dbi.stderr</value>
 	  </param>
       </command>
       <command>
@@ -43,14 +28,14 @@
 	  <name>sgc_GC_content_load.spl</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/sgc_GC_content_load</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -a $;ASMBL_ID$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/RNA_populate.dbi.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/RNA_populate.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/RNA_populate.dbi.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/RNA_populate.dbi.stderr</value>
 	  </param>
       </command>
       <command>
@@ -58,14 +43,14 @@
 	  <name>molwt_update.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/molwt_update</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -a $;ASMBL_ID$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/molwt_update.dbi.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/molwt_update.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/molwt_update.dbi.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/molwt_update.dbi.stderr</value>
 	  </param>
       </command>
       <command>
@@ -73,14 +58,14 @@
 	  <name>signalP_update.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/signalP_update</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -a $;ASMBL_ID$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/signalP_update.dbi.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/signalP_update.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/signalP_update.dbi.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/signalP_update.dbi.stderr</value>
 	  </param>
       </command>
       <command>
@@ -88,14 +73,14 @@
 	  <name>lipoprotein_update.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/lipoprotein_update</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -a $;ASMBL_ID$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/lipoprotein_update.dbi.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/lipoprotein_update.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/lipoprotein_update.dbi.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/lipoprotein_update.dbi.stderr</value>
 	  </param>
       </command>
       <command>
@@ -103,14 +88,14 @@
 	  <name>tm_update.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/tm_update</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -a $;ASMBL_ID$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/tm_update.dbi.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/tm_update.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/tm_update.dbi.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/tm_update.dbi.stderr</value>
 	  </param>
       </command>
       <command>
@@ -118,44 +103,14 @@
 	  <name>omp_update.dbi</name>
 	  <state>incomplete</state>
 	  <executable>$;BIN_DIR$;/omp_update</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -a $;ASMBL_ID$;</arg>
+ 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;</arg>
 	  <param>
 	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/omp_update.dbi.stdout</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/omp_update.dbi.stdout</value>
 	  </param>
 	  <param>
 	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/omp_update.dbi.stderr</value>
-	  </param>
-      </command>
-      <command>
-	  <type>RunUnixCommand</type>
-	  <name>load_tRNAs.dbi</name>
-	  <state>incomplete</state>
-	  <executable>$;BIN_DIR$;/load_tRNAs</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$; -X $;SKIP_RNA$; -a $;ASMBL_ID$;</arg>
-	  <param>
-	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/load_tRNAs.dbi.stdout</value>
-	  </param>
-	  <param>
-	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/load_tRNAs.dbi.stderr</value>
-	  </param>
-      </command>
-      <command>
-	  <type>RunUnixCommand</type>
-	  <name>condor_cog_search.dbi</name>
-	  <state>incomplete</state>
-	  <executable>$;BIN_DIR$;/condor_cog_search</executable>
- 	  <arg>-u $;USERNAME$; -p $;PASSWORD$; -D $;DATABASE$;  -a $;ASMBL_ID$;</arg>
-	  <param>
-	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/condor_cog_search.dbi.stdout</value>
-	  </param>
-	  <param>
-	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;_$;ASMBL_ID$;/condor_cog_search.dbi.stderr</value>
+	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/omp_update.dbi.stderr</value>
 	  </param>
       </command>
   </commandSet>
