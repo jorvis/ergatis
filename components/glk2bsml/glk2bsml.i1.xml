@@ -23,6 +23,14 @@
 		<value>$;USERNAME$;</value>
 	    </param>
 	    <param>
+		<key>--id_repository</key>
+		<value>$;PROJECT_ID_REPOSITORY$;</value>
+	    </param>
+	    <param>
+		<key>--id_gen_version_suffix</key>
+		<value>$;ID_GEN_VERSION$;</value>
+	    </param>
+	    <param>
 		<key>--bsmlfile</key>
 		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.bsml</value>
 	    </param>
