@@ -23,35 +23,6 @@
 	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/annot_validator.dbi.$;DATABASE$;_$;ASMBL_ID$;.stderr</value>
 	    </param>
 	</command>
-	<command>
-	    <type>RunUnixCommand</type>
-	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/find_n_ending_genes</executable>
-	    <name>find_n_ending_genes</name>
- 	    <param>
-	      <key>--annot_db</key>
-	      <value>$;DATABASE$;</value>
-	    </param>
- 	    <param>
-	      <key>--asmbl_id</key>
-	      <value>$;ASMBL_ID$;</value>
-	    </param>
- 	    <param>
-	      <key>--out_file</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/find_n_ending_genes.pl.$;DATABASE$;_$;ASMBL_ID$;.outfile.txt</value>
-	    </param>
-	    <param>
-	      <key>--log_file</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/find_n_ending_genes.pl.$;DATABASE$;_$;ASMBL_ID$;.log</value>
-	    </param>
-	    <param>
-	      <key>stdout</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/find_n_ending_genes.pl.$;DATABASE$;_$;ASMBL_ID$;.stdout</value>
-	    </param>
-	    <param>
-	      <key>stderr</key>
-	      <value>$;WORKFLOW_REPOSITORY$;/$;DATABASE$;/find_n_ending_genes.pl.$;DATABASE$;_$;ASMBL_ID$;.stderr</value>
-	    </param>
 	</command>
     </commandSet>
 </commandSetRoot>
