@@ -42,6 +42,12 @@ if (! -e $project_conf_path ) {
 ## pull the ergatis dir from the shared conf file
 my $project_conf = new Ergatis::ConfigFile( -file => $project_conf_path );
 
+## see if a project code is defined
+my $project_code = 0;
+if ( $project_conf->val('project', '$;PROJECT_CODE$;') ) {
+    $project_code = $project_conf->val('project', '$;PROJECT_CODE$;');
+}
+
 #################
 ## check for some required variables in the project.config
 my @required_vars = ( '$;PROJECT$;', '$;REPOSITORY_ROOT$;', '$;TMP_DIR$;', '$;PROJECT_ID_REPOSITORY$;',
@@ -321,6 +327,7 @@ sub print_template {
     }
 
     ## populate the template with the values that will always be passed.
+    $tmpl->param( PROJECT_CODE     => $project_code );
     $tmpl->param( ERRORS_FOUND     => $errors_found );
     $tmpl->param( REPOSITORY_ROOT  => $repository_root );
     $tmpl->param( ERROR_MSGS       => $error_msgs );

@@ -46,6 +46,9 @@
             <li><span class='info_label'>codebase:</span> <TMPL_VAR NAME=ERGATIS_DIR></li>
             </TMPL_IF>
             <li><span class='info_label'>project quota:</span> <TMPL_VAR NAME=QUOTA_STRING></li>
+            <TMPL_IF NAME=PROJECT_CODE>
+            <li><span class='info_label'>project code:</span> <TMPL_VAR NAME=PROJECT_CODE></li>
+            </TMPL_IF>
         </ul>
     </div>
 
