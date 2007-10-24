@@ -537,7 +537,7 @@ ergatis-v2r6b1
 -bsml2chado: added comments for interface
 -installer: initdb.partition.xml was omitted
 -auto_gene_curation: uses Ergatis Logger, instead of Workflow Logger
--pipeline_summary: the iterator xml actually recieves all the configuration options now.
+-pipeline_summary: the iterator xml actually receives all the configuration options now.
 -auto_gene_curation: checking both output bsml files ( storing config params and validating ).  It might work this time too.
 -deprecated Papyrus::TempIdCreator (finally)
 -auto_annotate: prints attribute lists correctly
@@ -588,3 +588,4 @@ ergatis-v2r6b1
 next
 ----
 -geneidgff2bsml.pl: now correctly converts to interbase
+-pipeline list page for a project now shows project code
