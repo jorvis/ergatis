@@ -584,6 +584,9 @@ ergatis-v2r6b1
     -Added option to phage_finder component for user to include their own info_file
     -Added project parameter to aragorn2bsml.pl script
 
+ergatis-v2r6b2
+--------------
+-bugfix release for installer.  was failing on predotar component
 
 next
 ----
