@@ -326,6 +326,13 @@ sub add_config_params {
 sub add_software_versions {
     my $analysis = shift;
 
+    ## this is optional for now.  don't die if the file doesn't exist.  this is only appropriate
+    ##  when an organization is doing the same sort of software version tracking as we are.  This
+    ##  see bug: http://sourceforge.net/tracker/index.php?func=detail&aid=1831859&group_id=148765&atid=772583
+    if (! -e $options{'ergatis_control_file'} ) {
+        return;
+    }
+    
 	my %software_version = ();
 	my %tag_onto = (
 					'prok_prism' 	=> 'prok_prism_version',
@@ -381,7 +388,11 @@ sub check_parameters{
     if(! -e $options{'conf'}){
 	pod2usage({-exitval => 2,  -message => "Can't read conf file $options{'conf'}", -verbose => 1, -output => \*STDERR});    
     }
-    if(defined $options{ergatis_control_file} && ! -e $options{'ergatis_control_file'}){
-		pod2usage({-exitval => 2,  -message => "Can't read ergatis install control file $options{'ergatis_control_file'}", -verbose => 1, -output => \*STDERR});    
-	}
+    
+    ## this is optional for now.  don't die if the file doesn't exist.  this is only appropriate
+    ##  when an organization is doing the same sort of software version tracking as we are.  This
+    ##  see bug: http://sourceforge.net/tracker/index.php?func=detail&aid=1831859&group_id=148765&atid=772583
+#    if(defined $options{ergatis_control_file} && ! -e $options{'ergatis_control_file'}){
+#		pod2usage({-exitval => 2,  -message => "Can't read ergatis install control file $options{'ergatis_control_file'}", -verbose => 1, -output => \*STDERR});    
+#	}
 }
