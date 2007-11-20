@@ -109,7 +109,7 @@ if ( $$qvars{rerun} ) {
         my $pipeline_template = new Ergatis::SavedPipeline( template => $build_pipeline_path );
         $pipeline = $pipeline_template->write_pipeline( repository_root => $$qvars{repository_root},
                                                         id_repository => $global_id_repository );
-                                                        
+
         ## if there is a pipeline comment, copy it into place
         if ( -e "$$qvars{build_directory}/pipeline.xml.comment" ) {
             copy( "$$qvars{build_directory}/pipeline.xml.comment", $pipeline->path() . ".comment" );
@@ -119,7 +119,17 @@ if ( $$qvars{rerun} ) {
 }
 
 unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
-    $pipeline->run( ergatis_cfg => $ergatis_cfg );
+    ## how we run the pipeline depends on some settings in the ergatis config file
+    ## should we run as a different user?
+    my $current_user = &user_logged_in();
+    
+    if ( $ergatis_cfg->val('workflow_settings', 'authentication_method') ne 'open' && 
+         $ergatis_cfg->val('workflow_settings', 'sudo_pipeline_execution') && $current_user ) {
+
+        $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user );
+    } else {
+        $pipeline->run( ergatis_cfg => $ergatis_cfg );
+    }
 }
 
 ## now redirect to a monitor page
