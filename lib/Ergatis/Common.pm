@@ -1,4 +1,5 @@
 use strict;
+use CGI::Cookie;
 use Ergatis::ConfigFile;
 use File::Find;
 use HTML::Template;
@@ -179,6 +180,31 @@ sub get_pipeline_templates {
 }
 
 
+=head2 user_logged_in( )
+
+=over 4
+
+Checks if a user is currently logged in - Currently cookie-based..  Returns the
+user name or undef.
+
+=back
+
+=cut
+
+    sub user_logged_in {
+        my (%args) = @_;
+        
+        my %cookies = fetch CGI::Cookie;
+
+        if ( defined $cookies{ergatis_user} ) {
+            return $cookies{ergatis_user};
+
+        } else {
+            return undef;
+        }
+    }
+
+
 =head2 get_quick_links( config_ref )
 
 =over 4
@@ -195,6 +221,31 @@ sub get_quick_links {
     my $ergatis_cfg = shift;
     my $quick_links = [];
     
+    ## is the user logged in?
+    my $current_user = &user_logged_in(  );
+    
+    if ( $current_user ) {
+
+        ## display the logout button
+        push @$quick_links, {  
+                                label => $current_user->value . " [logout]",
+                                url => './logout.cgi',
+                                is_last => 0
+                            };
+    
+    } else {
+    
+        ## display the login button
+        if ( $ergatis_cfg->val('authentication', 'authentication_method') ne 'open' ) {
+            push @$quick_links, {  
+                                    label => 'login',
+                                    url => './login_form.cgi',
+                                    is_last => 0
+                                };
+        }
+    }
+    
+    ## look at the [quick_links] of the ergatis.ini file
     for my $label ( $ergatis_cfg->Parameters('quick_links') ) {
         push @$quick_links, { 
                                 label => $label,

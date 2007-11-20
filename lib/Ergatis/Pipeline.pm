@@ -49,7 +49,7 @@ umask(0000);
     my %_attributes = (
                         path  => undef,
                         id    => undef,
-                        debug => 0,
+                        debug => 1,
                         debug_file => '/tmp/ergatis.run.debug',
                       );
 
@@ -146,6 +146,22 @@ umask(0000);
                 
                 my $init_heap = $args{ergatis_cfg}->val('workflow_settings', 'init_heap') || '100m';
                 my $max_heap = $args{ergatis_cfg}->val('workflow_settings', 'max_heap') || '1024m';
+                
+                ## building the runstring now
+                
+                ## which user's logged in?  (maybe none)
+                my $runprefix = '';
+                
+                ## should we sudo to a different user?
+                if ( defined $args{run_as} ) {
+                     
+                    $runprefix = "sudo -u $args{run_as} ";
+                }
+
+                ## are we submitting the workflow as a job?  (CURRENTLY TIED TO SGE)
+                if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
+                    $runprefix = 'qsub ';
+                }
                 
                 my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap --logconf=" . 
                                 $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";

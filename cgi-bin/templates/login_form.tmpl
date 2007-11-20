@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
+"http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+
+<head>
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>ergatis</title>
+    <!-- bring in the styles -->
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/forms.css">
+    <link rel="stylesheet" type="text/css" href="/ergatis/css/login_form.css">
+    <!-- functionality -->
+    <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
+</head>
+
+<body>
+
+<div id='page_container'>
+
+<TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id='content_container'>
+
+        <div id='login_container'>
+            <h1>login</h1>
+            <TMPL_IF NAME=FORM_READY>
+            <TMPL_IF NAME=FAILED>
+                <p class='failure_message'>
+                    Incorrect username or password.  Please try again.
+                </p>
+            </TMPL_IF>
+            <form id='login_form' name='login_form' method='post' action='./login.cgi'>
+                <div class='form_row'>
+                    <label for='login_user'>user</label>
+                    <input id="login_user" type="text" name="login_user">
+                </div>
+                <div class='form_row'>
+                    <label for='login_pass'>password:</label>
+                    <input id="login_pass" type="password" name="login_pass">
+                </div>
+                <div>
+                    <div class='button' id='login_submit' onClick="document.login_form.submit()">log in</div>
+                </div>
+            </form>
+            <TMPL_ELSE>
+                <p>
+                    <TMPL_VAR FORM_NOT_READY_MSG>
+                </p>
+            </TMPL_IF><!-- end can_login conditional -->
+        </div>
+        
+    </div> <!-- end content_container -->
+
+</div> <!-- end page_container -->
+
+</body>
+
+</html>
