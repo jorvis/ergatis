@@ -592,4 +592,5 @@ next
 ----
 -geneidgff2bsml.pl: now correctly converts to interbase
 -pipeline list page for a project now shows project code
+-changed all /usr/local/bin/perl paths to /usr/bin/perl in cgi-bin
 
