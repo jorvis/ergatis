@@ -163,7 +163,7 @@ umask(0000);
                     $runprefix = 'qsub ';
                 }
                 
-                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap --logconf=" . 
+                my $runstring = "$runprefix $ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap --logconf=" . 
                                 $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
 #                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap >& $self->{path}.run.out";

@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
 use strict;
 use CGI;
@@ -123,10 +123,10 @@ unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
     ## should we run as a different user?
     my $current_user = &user_logged_in();
     
-    if ( $ergatis_cfg->val('workflow_settings', 'authentication_method') ne 'open' && 
-         $ergatis_cfg->val('workflow_settings', 'sudo_pipeline_execution') && $current_user ) {
+    if ( $ergatis_cfg->val('authentication', 'authentication_method') ne 'open' && 
+         $ergatis_cfg->val('authentication', 'sudo_pipeline_execution') && $current_user ) {
 
-        $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user );
+        $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user->value );
     } else {
         $pipeline->run( ergatis_cfg => $ergatis_cfg );
     }
