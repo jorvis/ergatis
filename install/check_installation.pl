@@ -34,7 +34,13 @@ output like this:
     checking temp space ... FAIL - directory doesn't exist
 
 Counts of each type will be summarized at the end, but case in the warnings makes the output
-files easily searched via grep.
+files easily searched via grep.  There are also SKIPPED and WARNING types.  Warnings are things
+that are probably OK but should be verified.  FATAL messages should be rare but are reserved for
+those that prevent the script from performing all checks.  Explanations are provided on each type
+for guidance.
+
+You should run this script as a user that runs pipelines, else some of the permission checks
+may not report correctly.
 
 This script assumes you've run the installer so it doesn't perform all the same checks (such
 as the existence of required perl modules)
@@ -100,8 +106,16 @@ if ( $@ ) {
 ## make sure the ini file has all the sections / parameters expected
 &check_ergatis_ini_sections();
 
-## temp space should exist, be a directory, and be writeable
-&check_temp_space();
+## each of the following, single-spaced checks map directly to a variable within
+##  the ini file, usually checking basic properties.  The subroutines are all named
+##  like $section__$parameter.  For example. the 'temp_space' parameter under the 
+##  paths section is checked with the subroutine paths__temp_space();
+&paths__temp_space();
+&paths__pipeline_archive_root();
+&paths__workflow_run_dir();
+&paths__workflow_log4j();
+&paths__workflow_root();
+&paths__global_id_repository();
 
 
 ## if we got this far, print counts
@@ -163,6 +177,10 @@ sub check_ergatis_ini_sections {
         projects => [],
     };
     
+    ## any of these missing variables are fatal.  They need to exist for the other checks to
+    #   be performed.
+    my $fatal_count = 0;
+    
     ## we're only checking that these exist here, no values are examined
     for my $section ( keys %$expected ) {
         _log("checking for section $section in ergatis.ini ... ");
@@ -181,18 +199,44 @@ sub check_ergatis_ini_sections {
                     _log("PASS\n");
                 } else {
                     $results{fail}++;
+                    $fatal_count++;
                     _log("FAIL - parameter '$param' in section '$section' is missing\n");
                 }
             }
             
         } else {
             $results{fail}++;
+            $fatal_count++;
             _log("FAIL - section missing\n");
         }
     }
+    
+    ## if any of these were missing report FATAL
+    if ( $fatal_count ) {
+        _logdie("FATAL - there were missing sections or parameters in the ergatis.ini file (listed " . 
+                "above.  This may be because you are using an old ini file that doesn't have all the " .
+                "current parameters.  The script cannot continue unless these exist.\n"
+               );
+    }
 }
 
-sub check_existance {
+sub check_executable {
+    my $thing = shift;
+
+    ## check that it executable
+    _log("checking that $thing is executable ... ");
+    if ( -x $thing ) {
+        $results{pass}++;
+        _log("PASS\n");
+        return 1;
+    } else {
+        $results{fail}++;
+        _log("FAIL\n");
+        return 0;
+    }
+}
+
+sub check_existence {
     my $thing = shift;
 
     ## check that it exists
@@ -200,9 +244,43 @@ sub check_existance {
     if ( -e $thing ) {
         $results{pass}++;
         _log("PASS\n");
+        return 1;
     } else {
         $results{fail}++;
         _log("FAIL\n");
+        return 0;
+    }
+}
+
+sub check_is_directory {
+    my $thing = shift;
+
+    ## check that it is a directory
+    _log("checking that $thing is a directory ... ");
+    if ( -d $thing ) {
+        $results{pass}++;
+        _log("PASS\n");
+        return 1;
+    } else {
+        $results{fail}++;
+        _log("FAIL\n");
+        return 0;
+    }
+}
+
+sub check_is_file {
+    my $thing = shift;
+
+    ## check that it is a file
+    _log("checking that $thing is a file ... ");
+    if ( -f $thing ) {
+        $results{pass}++;
+        _log("PASS\n");
+        return 1;
+    } else {
+        $results{fail}++;
+        _log("FAIL\n");
+        return 0;
     }
 }
 
@@ -241,20 +319,121 @@ sub check_required_value {
     }
 }
 
-sub check_temp_space {
+sub check_writable {
+    my $thing = shift;
+
+    ## check that it is writable
+    _log("checking that $thing is writable ... ");
+    if ( -w $thing ) {
+        $results{pass}++;
+        _log("PASS\n");
+        return 1;
+    } else {
+        $results{fail}++;
+        _log("FAIL\n");
+        return 0;
+    }
+}
+
+sub paths__global_id_repository {
+    my $repos = $cfg->val('paths', 'global_id_repository');
+    
+    _log("\nchecking ID repository\n");
+    
+    ## the directory needs to exist and contain the validation file
+    my $repos_found = &check_existence( $repos );
+    &check_is_directory( $repos );
+    
+    if ( $repos_found ) {
+        my $validation_found = &check_existence( "$repos/valid_id_repository" );
+        if ( $validation_found ) {
+            my $is_file = &check_is_file("$repos/valid_id_repository");
+            if ( ! $is_file ) {
+                _log("The valid_id_repository is a file that validates any given directory has an ID " .
+                     "repository.  You should create an empty file of that name in $repos");
+            }
+            
+        } else {
+            _log("checking that $repos/valid_id_repository is a file ... SKIPPED\n");
+        }
+        
+    } else {
+        _log("checking for existence of global id repository validation file ... SKIPPED\n");
+    }
+}
+
+sub paths__pipeline_archive_root {
+    my $archive_root = $cfg->val('paths', 'pipeline_archive_root');
+
+    ## if the path provided exists, it should be a directory and writable
+    if ( -e $archive_root ) {
+        &check_is_directory( $archive_root );
+        &check_writable( $archive_root );
+    
+    ## the path provided doesn't have to exist, but the parent does and must be writable
+    } else {
+        ## remove any trailing /
+        if ( $archive_root =~ m|(.+)/\s*$| ) {
+            $archive_root = $1;
+        }
+        
+        ## get the parent directory
+        $archive_root =~ m|(.*)/|;
+        my $parent = $1;
+        
+        _log("WARNING: paths - pipeline_archive_root defined doesn't exist.  This isn't " .
+             "necessarily a problem because the interface will create it automatically " .
+             "when it needs to.  Instead, we need to check that the parent exists and is " .
+             "writable\n"); 
+        &check_existence( $parent );
+        &check_writable( $parent );
+    }
+    
+}
+
+sub paths__temp_space {
     &check_required_value( 'paths', 'temp_space' );
 
     my $temp_space = $cfg->val( 'paths', 'temp_space' );
 
-    ## check that it exists
-    &check_existance( $temp_space );
+    ## check that it exists and is a directory
+    &check_existence( $temp_space );
+    &check_is_directory( $temp_space );
+    
+    ## check that it's writable
+    &check_writable( $temp_space );
 }
 
+sub paths__workflow_log4j {
+    my $log4j_file = $cfg->val('paths', 'workflow_log4j');
 
+    ## we should later do verification of the contents of this file, but for now just make
+    #   sure it exists
+    &check_existence( $log4j_file );
+}
 
+sub paths__workflow_root {
+    my $wf_root = $cfg->val('paths', 'workflow_root');
+    
+    ## this needs to exist, be a directory and contain a few executables
+    &check_existence( $wf_root );
+    &check_is_directory( $wf_root );
+    
+    _log("\nwill now check a few Workflow binaries\n");
+    &check_existence( "$wf_root/RunWorkflow" );
+    &check_executable( "$wf_root/RunWorkflow" );
+    
+    &check_existence( "$wf_root/KillWorkflow" );
+    &check_executable( "$wf_root/KillWorkflow" );
+}
 
+sub paths__workflow_run_dir {
+    my $run_dir = $cfg->val('paths', 'workflow_run_dir');
 
-
+    ## this must exist and be writable
+    &check_is_directory( $run_dir );
+    &check_writable( $run_dir );
+}
 
 
 
