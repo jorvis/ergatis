@@ -135,14 +135,41 @@ sub process_feature_group
             push @repeats, $feat;
         }
     }
+
     process_gene($gene, $transcript) if $gene;
     print_feat(\@repeats, "repeat_region") if scalar(@repeats);
+
     if ($class eq "transcript") {
-        my $product =
-            $transcript->first_child('Attribute[@name="gene_product_name"]');
+        my $product = $transcript->first_child('Attribute[@name="gene_product_name"]');
+
+	my $productContent;
+	if (defined($product)){
+	    $productContent = $product->att('content');
+	}
+
+	my $protein_id;
+
+	if (defined($polypeptide)){
+
+	    $protein_id = $polypeptide->att('id');
+
+	    if (!defined($product)){
+		## The product was not associated with the transcript.
+		## Check the polypeptide.
+		my $product = $polypeptide->first_child('Attribute[@name="gene_product_name"]');
+		if (defined($product)){
+		    $productContent = $product->att('content');
+		}
+	    }
+	}
+
+	if (!defined($productContent)){
+	    die "productContent was not defined";
+	}
+
         my %attrs = (   transcript_id  => $transcript->att('id'),
-                        protein_id => $polypeptide->att('id'),
-                        product => $product->att('content')
+                        protein_id => $protein_id,
+                        product => $productContent
                     );
 
         my @ec_numbers = ();
@@ -196,6 +223,11 @@ sub process_cds
 {
     my ($exons, $cds, $attrs) = @_;
     my @cdss;
+
+    if (!defined($cds)){
+	die "cds was not defined";
+    }
+
     my $cds_loc = $cds->first_child('Interval-loc');
     my $cds_from = $cds_loc->att('startpos');
     my $cds_to = $cds_loc->att('endpos');
