@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>tbl2asn</name>
             <state>incomplete</state>
-            <executable>$TBL2ASN_EXEC$;</executable>
+            <executable>$;TBL2ASN_EXEC$;</executable>
             <param>  
                 <key>-i</key>
                 <value>$;I_FILE_PATH$;</value>
