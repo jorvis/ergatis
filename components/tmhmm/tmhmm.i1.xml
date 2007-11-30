@@ -8,7 +8,7 @@
             <name>tmhmm</name>
             <state>incomplete</state>
             <executable>$;TMHMM_EXEC$;</executable>
-            <arg>$;I_FILE_PATH$;</arg>
+            <arg>$;OTHER_OPTS$; $;I_FILE_PATH$;</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
