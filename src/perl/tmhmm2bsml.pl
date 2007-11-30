@@ -154,6 +154,11 @@ while (my $line = <$ifh>) {
     if ($skip_flag && !($line =~ /^#/)) {
             next;
     }
+    
+    ## skip lines that are like # <A HREF ...
+    #   these are commented out by tmhmm when functionality is removed
+    next if ( $line =~ /^# \</ );
+    
     if ($line =~ /^# ([^ ]+) ([^:]+):\s+([^ ]+)$/) {
         $skip_flag = 0;
         my $seq_id = $1;

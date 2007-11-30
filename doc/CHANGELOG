@@ -594,4 +594,4 @@ next
 -pipeline list page for a project now shows project code
 -changed all /usr/local/bin/perl paths to /usr/bin/perl in cgi-bin
 -bugfix: tmhmm component wasn't actually passing OTHER_OPTS variable
-
+-bugfix: tmhmm2bsml was failing when html anchors in output were commented out by tmhmm
