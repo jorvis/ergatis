@@ -1,10 +1,4 @@
-#!/local/packages/perl-5.8.8/bin/perl
-
-eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+#!/usr/bin/perl -w
 
 =head1 NAME
 
@@ -161,15 +155,22 @@ sub generateBsml {
     my $data = shift;
     my $seqObj;
 
+    ## keeps track of which sequence elements we've added (since they can't be duplicated)
+    ##  key is id, value is a reference to the object
+    my %seqs;
+    
     my $doc = new BSML::BsmlBuilder();
 
     foreach my $seq(keys %{$data}) {
         
-        #Create the seq object
-        $seqObj = $doc->createAndAddSequence($seq, $seq, '', 'aa', 'polypeptide');
-        $doc->createAndAddLink($seqObj, 'analysis', '#'.$analysis_id.'_analysis', 'input_of');
-        $doc->createAndAddSeqDataImport($seqObj, 'fasta', $fasta_file, '', $identifier);
-        $doc->createAndAddBsmlAttribute( $seqObj, 'defline', $defline);
+        #Create the seq object if we need to
+        if ( ! defined $seqs{$seq} ) {
+            $seqs{$seq} = $doc->createAndAddSequence($seq, $seq, '', 'aa', 'polypeptide');
+        }
+        
+        $doc->createAndAddLink($seqs{$seq}, 'analysis', '#'.$analysis_id.'_analysis', 'input_of');
+        $doc->createAndAddSeqDataImport($seqs{$seq}, 'fasta', $fasta_file, '', $identifier);
+        $doc->createAndAddBsmlAttribute( $seqs{$seq}, 'defline', $defline);
 
         foreach my $proDomain(keys %{$data->{$seq}}) {
 
@@ -177,10 +178,14 @@ sub generateBsml {
             my ($proId, $title) = ($1, $2) if($proDomain =~ /(\w+)\s(.*)/);
             &_die("Could not parse id and title from prosite domain id line in raw output")
                 unless($proId && $title);
-            my $proSeq = $doc->createAndAddSequence($proId, $title,  '', 'aa', 'prosite_entry');
+                
+            if ( ! defined $seqs{$proId} ) {
+                print STDERR "ADDING SEQUENCE: $proId\n";
+                $seqs{$proId} = $doc->createAndAddSequence($proId, $title,  '', 'aa', 'prosite_entry');
+            }
 
-            my %spaArgs = ( 'refseq'  => $seqObj->{'attr'}->{'id'},
-                            'compseq' => $proSeq->{'attr'}->{'id'},
+            my %spaArgs = ( 'refseq'  => $seqs{$seq}->{'attr'}->{'id'},
+                            'compseq' => $seqs{$proId}->{'attr'}->{'id'},
                             'restart' => 0,
                             'class'   => 'match' );
 
