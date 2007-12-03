@@ -595,3 +595,4 @@ next
 -changed all /usr/local/bin/perl paths to /usr/bin/perl in cgi-bin
 -bugfix: tmhmm component wasn't actually passing OTHER_OPTS variable
 -bugfix: tmhmm2bsml was failing when html anchors in output were commented out by tmhmm
+-bugfix: ps_scan component how handles multi-fasta input files correctly
