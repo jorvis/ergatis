@@ -596,3 +596,4 @@ next
 -bugfix: tmhmm component wasn't actually passing OTHER_OPTS variable
 -bugfix: tmhmm2bsml was failing when html anchors in output were commented out by tmhmm
 -bugfix: ps_scan component how handles multi-fasta input files correctly
+-fixed sf.net bug 1843655: save_component.cgi was failing on values containing + symbol
