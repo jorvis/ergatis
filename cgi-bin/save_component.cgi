@@ -35,13 +35,7 @@ my $output_token = $1;
 my %component_vars;
 for ( $q->param ) {
     if ( /${component_id}_(.+)/ ) {
-    
-        ## decode the value
-        my $value = $q->param($_);
-        $value =~ s/\+/ /g;
-        $value =~ s/%([\dA-Fa-f]{2})/pack("C", hex($1))/eg;
-        
-        $component_vars{'$;' . $1 . '$;'} = $value;
+        $component_vars{'$;' . $1 . '$;'} = $q->param($_);
     }
 }
 
