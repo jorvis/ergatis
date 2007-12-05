@@ -17,6 +17,7 @@ USAGE: open_reading_frames.pl
             --full_orfs=0
             --min_orf_size=180
             --max_orf_size=9999
+            --min_unmasked_size=150
             --frames=1,2,3,4,5,6
             --force_methionine=0
             --header_additions='foo=bar,ergatis_id=12345'
@@ -75,6 +76,9 @@ B<--min_orf_size>
 B<--max_orf_size>
     Optional. Set the maximum size of ORFs to output. (default = 999999999)
 
+B<--min_unmasked_size>
+    Optional. The minimum number of non-softmasked bases and ORF must contain to be valid. (default = 150)
+    
 B<--unknown_aa>
     Optional. Character to use for aa translation of ambiguous or partial non-degenerate codons. (default = 'X')
     
@@ -361,10 +365,22 @@ sub process_sequence {
 ## does whatever we're going to do with an orf once we've got one
 sub process_orf {
     my ($orf_array_ref, $orf_ref) = @_;
-   
+
+    ## enforce limits on softmasked regions
+    if ($options{'min_unmasked_size'}) {
+        my $unmasked_size = 0;
+        foreach my $codon(@{$orf_ref->{'codon'}}) {
+            $codon =~ s/[a-z]+//g;
+            $unmasked_size += length($codon);
+        }
+        if ($unmasked_size < $options{'min_unmasked_size'}) {
+            return;
+        } 
+    }
+  
     ## enforce orf size limits
     if ($orf_ref->{'length'} <= $options{'max_orf_size'} && $orf_ref->{'length'} >= $options{'min_orf_size'}) {
-   
+        
         ## force first codon to translate as methionine
         if ($options{'force_methionine'}) {
             $orf_ref->{'aa'}->[0] = 'M';
@@ -467,9 +483,9 @@ sub process_header {
     my ($header) = @_;
    
     my $header_hash_ref = {};
-    
+   
     $header =~ /^(\S+)\s*(.*)/ || die "Couldn't parse read ID from header:\n$header";
-
+    
     $header_hash_ref->{'read_id'} = $1;
     $header_hash_ref->{'read_defline'} = "\"$2\"";
     
@@ -803,6 +819,7 @@ sub check_parameters {
     }
     
     ## handle some defaults
+    $options->{'min_unmasked_size'}     = 150      unless (defined($options->{'min_unmasked_size'}));
     $options->{'min_orf_size'}          = 180       unless (defined($options->{'min_orf_size'}));
     $options->{'max_orf_size'}          = 999999999 if (! defined($options->{'max_orf_size'}) 
                                                         || $options->{'max_orf_size'} == 0);
