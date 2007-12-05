@@ -77,6 +77,7 @@ use XML::Twig;
 use Ergatis::Logger;
 use BSML::BsmlBuilder;
 use File::Basename;
+use Fasta::SimpleIndexer;
 
 $| = 1;
 my %options = ();
@@ -472,38 +473,15 @@ sub sequence_handler {
 ## the first whitespace char
 sub get_sequence_by_id {
     my ($fname, $id) = @_;
-    my $seq_id = '';
-    my $sequence = '';
-   
-    my $infh;
-    
-    if (-e $fname) {
-        open ($infh, $fname) || $logger->logdie("couldn't open fasta file '$fname' for reading: $!");
-    } elsif (-e $fname.".gz") {
-        open($infh, "<:gzip", $fname.".gz") 
-          || logger->logdie("couldn't open gzipped fasta file '$fname.gz': $!");
-    } else {
-          logger->logdie("fasta file '$fname' doesn't exist");
-    }    
-    
-    TOP: while (<$infh>) {
-        chomp;
-        if (/^>([^\s]+)/) {
-            $seq_id = $1;
-            if ($seq_id eq $id) {
-                while (<$infh>) {
-                    chomp;
-                    if (/^>/) {
-                        last TOP;
-                    } else {
-                        $sequence .= $_;
-                    }
-                }
-            }   
-        }
-    }
-    close $infh;
 
+    my $fasta = new Fasta::SimpleIndexer($fname);
+    
+    my $sequence = $fasta->get_sequence($id);
+   
+    unless ($sequence) {
+        die "Failed fetching sequence id '$id' from '$fname'";
+    }
+    
     return $sequence;
 }
 
