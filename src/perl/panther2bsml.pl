@@ -14,7 +14,7 @@ panther2bsml.pl - convert panther raw output to BSML
 USAGE: panther2bsml.pl 
         --input=/path/to/somefile.panther.raw 
         --output=/path/to/somefile.panther.bsml
-		--query_file_path=/path/to/query.fasta.fsa
+        --query_file_path=/path/to/query.fasta.fsa
         --gzip_output=1
       [ --log=/path/to/some.log
         --debug=4 
@@ -88,7 +88,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
               'input|i=s',
               'output|o=s',
-			  'query_file_path|q=s',
+              'query_file_path|q=s',
               'gzip_output|g=s',
               'log|l=s',
               'debug=s',
@@ -111,9 +111,9 @@ my $infile = basename($options{'input'});
 
 my $query_id = '';
 if ($infile =~ /^(.*)\.panther\.raw/) {
-	$query_id = $1;
+    $query_id = $1;
 } else {
-	$logger->logdie("bad input file '$options{input}'");
+    $logger->logdie("bad input file '$options{input}'");
 }
 
 ## open the input file for parsing
@@ -135,39 +135,39 @@ $seq->addBsmlAttr('defline', $defline);
 
 my @panther_results = ();
 while (<$ifh>) {
-	chomp;
-	## Panther raw format
-	# sma1.model.48073_00236  PTHR23256:SF53  TYROSINE-PROTEIN KINASE-LIKE 7  5.9e-65 226.6   229-343,422-510,539-564,615-727,761-802,827-868,
-	my @results = split("\t", $_);
-	
+    chomp;
+    ## Panther raw format
+    # sma1.model.48073_00236  PTHR23256:SF53  TYROSINE-PROTEIN KINASE-LIKE 7  5.9e-65 226.6   229-343,422-510,539-564,615-727,761-802,827-868,
+    my @results = split("\t", $_);
+    
     ## add this model sequence
-	my $seq = $doc->createAndAddSequence($results[1], $results[2], undef, 'aa', 'polypeptide');
+    my $seq = $doc->createAndAddSequence($results[1], $results[2], undef, 'aa', 'polypeptide');
    
-	my $seqPairAlignment = $doc->createAndAddSequencePairAlignment( refseq => $query_id,
-																   	refstart => 0,
-                                                                   	compseq => $results[1],
+    my $seqPairAlignment = $doc->createAndAddSequencePairAlignment( refseq => $query_id,
+                                                                    refstart => 0,
+                                                                    compseq => $results[1],
                                                                     class => 'match',
                                                                   );
     
-	## add a link element inside this seq-pair-alignment
-	$seqPairAlignment->addBsmlLink('analysis', "panther_analysis", 'computed_by');
+    ## add a link element inside this seq-pair-alignment
+    $seqPairAlignment->addBsmlLink('analysis', "panther_analysis", 'computed_by');
     
-	## add the total_score and total_eval for this pair
-	$doc->createAndAddBsmlAttribute($seqPairAlignment, 'total_score', $results[4]);
-	$doc->createAndAddBsmlAttribute($seqPairAlignment, 'total_e_value',  $results[3]);
+    ## add the total_score and total_eval for this pair
+    $doc->createAndAddBsmlAttribute($seqPairAlignment, 'total_score', $results[4]);
+    $doc->createAndAddBsmlAttribute($seqPairAlignment, 'total_e_value',  $results[3]);
 
-	my $segments = pop(@results);
-	$results[5] =~ s/\,$//;
-	
-	my $seg_counter = 0;
-	my $seg_total = scalar(split(",", $segments));
-	foreach my $segment(split(",", $segments)) {
-		$seg_counter++;
+    my $segments = pop(@results);
+    $results[5] =~ s/\,$//;
+    
+    my $seg_counter = 0;
+    my $seg_total = scalar(split(",", $segments));
+    foreach my $segment(split(",", $segments)) {
+        $seg_counter++;
 
-		my ($startpos, $endpos) = split("-", $segment);
-		$startpos--; ## correct startpos for interbase
+        my ($startpos, $endpos) = split("-", $segment);
+        $startpos--; ## correct startpos for interbase
 
-		my $run = $doc->createAndAddSequencePairRun(   alignment_pair => $seqPairAlignment,
+        my $run = $doc->createAndAddSequencePairRun(   alignment_pair => $seqPairAlignment,
                                                        runlength => ($endpos - $startpos),
                                                        comprunlength => ($endpos - $startpos),
                                                        refpos => $startpos,
@@ -177,11 +177,11 @@ while (<$ifh>) {
                                                    );
         ## add other attributes of the run
         $doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
-        $doc->createAndAddBsmlAttributes(	$run, 
-											domain_num => $seg_counter,
-											domain_of  => $seg_total,
+        $doc->createAndAddBsmlAttributes(   $run, 
+                                            domain_num => $seg_counter,
+                                            domain_of  => $seg_total,
                                         );
-	}
+    }
 }
 
 close $ifh;
