@@ -14,7 +14,7 @@ USAGE:  join_multifasta.pl -i /path/to/input.list -f /path/to/input_file.fsa -D 
 
 =head1 OPTIONS
 
-B<--input_list,-i>
+B<--input_file_list,-i>
     The list(s) of files to join in a multifasta file [can be two or more comma delimited]
 
 B<--input_file,-f>
@@ -23,7 +23,7 @@ B<--input_file,-f>
 B<--input_dir,-D>
     The input directory
 
-B<--input_suffix,-s>
+B<--input_directory_extension,-s>
     The input file suffix
 
 B<--output_file,-o>
@@ -62,10 +62,10 @@ use Ergatis::Logger;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-                          'input_list|i:s',
+                          'input_file_list|i:s',
                           'input_file|f:s',
-                          'input_dir|D:s',
-                          'input_suffix|s=s',
+                          'input_directory|D:s',
+                          'input_directory_extension|s=s',
                           'output_file|o=s',
                           'compress=i',
                           'log|l=s',
@@ -134,8 +134,8 @@ sub open_file_write {
 sub get_input_files {
     my @infiles;
 
-    if ($options{'input_list'}) {
-        my @lists = split(",", $options{'input_list'});
+    if ($options{'input_file_list'}) {
+        my @lists = split(",", $options{'input_file_list'});
         foreach my $list(@lists) {
             unless(-e $list) {
                 $logger->logdie("provided input list '$list' doesn't exist: $!");
@@ -151,14 +151,14 @@ sub get_input_files {
         }
     }
 
-    if ($options{'input_dir'}) {
-        unless (-d $options{'input_dir'}) {
-            die "specified input dir '$options{input_dir}' is not a directory";
+    if ($options{'input_directory'}) {
+        unless (-d $options{'input_directory'}) {
+            die "specified input dir '$options{input_directory}' is not a directory";
         }
-        if (!$options{'input_suffix'}) {
-            $options{'input_suffix'} = '.fsa';
+        if (!$options{'input_directory_extension'}) {
+            $options{'input_directory_extension'} = '.fsa';
         }
-        find({wanted => sub{ if(/$options{input_suffix}(.gz)?$/) {push(@infiles,$_)}}, no_chdir => 1}, ($options{'input_dir'}));
+        find({wanted => sub{ if(/$options{input_directory_extension}(.gz)?$/) {push(@infiles,$_)}}, no_chdir => 1}, ($options{'input_directory'}));
     }
 
     if ($options{'input_file'}) {
