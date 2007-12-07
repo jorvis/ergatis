@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 #./new_auto_gene_curation --input_file mdg.scaffold.1.glimmer3.bsml --output_dir ./ --hmm_input /usr/local/annotation/MOORE/output_repository/hmmpfam/5925_protein/ --ber_input /usr/local/annotation/MOORE/output_repository/ber/5925_default/ --names_dump /usr/local/annotation/MOORE/data_dbs/tax_dump/names.dmp --nodes_dump /usr/local/annotation/MOORE/data_dbs/tax_dump/nodes.dmp --base_name tmp.base.name --debug 5
 

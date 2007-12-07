@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 =head1  NAME 
 
 create_chado2bsml_iterator_list.pl will take a new-line separated list of assembly identifiers and create an ergatis workflow iterator list file

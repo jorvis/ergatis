@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell

@@ -1,4 +1,4 @@
-#!/usr/local/packages/perl-5.8.5/bin/perl
+#!/usr/bin/perl
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});

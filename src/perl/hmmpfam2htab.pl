@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 use lib (@INC,"/usr/local/devel/ANNOTATION/hmm/bin");
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";

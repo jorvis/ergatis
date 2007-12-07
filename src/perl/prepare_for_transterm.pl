@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};

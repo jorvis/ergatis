@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 =head1  NAME 
 
 create_iterator_list.pl - 

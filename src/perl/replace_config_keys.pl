@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 #Example command line 
 #perl -I ../../lib/ replace_config_keys.pl --template_conf=/usr/local/devel/ANNOTATION/angiuoli/code/ergatis/workflow/wait/wait.default.user.config --output_conf=/tmp/test.config --keys=PIPELINEID=23 --debug=5 --log=my.log

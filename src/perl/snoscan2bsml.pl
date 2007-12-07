@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 use lib $ENV{'PERL_MOD_DIR'};
 

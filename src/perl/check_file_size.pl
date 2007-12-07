@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 =head1  NAME 
 
 generate_asmbl_list.pl - Default output is a workflow iterator that

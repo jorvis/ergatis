@@ -1,4 +1,4 @@
-#!/local/packages/perl-5.8.8/bin/perl
+#!/usr/bin/perl
 
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";

@@ -597,3 +597,4 @@ next
 -bugfix: tmhmm2bsml was failing when html anchors in output were commented out by tmhmm
 -bugfix: ps_scan component how handles multi-fasta input files correctly
 -fixed sf.net bug 1843655: save_component.cgi was failing on values containing + symbol
+-standardized the perl path to /usr/bin/perl in ergatis/src/perl (though they're mostly run by wrappers anyway)
