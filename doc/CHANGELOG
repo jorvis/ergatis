@@ -600,3 +600,4 @@ next
 -standardized the perl path to /usr/bin/perl in ergatis/src/perl (though they're mostly run by wrappers anyway)
 -brought default project.config inline with ergatis.ini default values
 -made PROJECT_CODE optional, can now omit value
+-bugfix: create_iterator_list.pl was using Workflow::Logger instead of Ergatis::Logger
