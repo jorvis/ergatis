@@ -598,3 +598,5 @@ next
 -bugfix: ps_scan component how handles multi-fasta input files correctly
 -fixed sf.net bug 1843655: save_component.cgi was failing on values containing + symbol
 -standardized the perl path to /usr/bin/perl in ergatis/src/perl (though they're mostly run by wrappers anyway)
+-brought default project.config inline with ergatis.ini default values
+-made PROJECT_CODE optional, can now omit value
