@@ -37,8 +37,9 @@ $origcfg = &import_includes($origcfg,$included);
 #Perform initial key replacement
 my $cfg = &replace_keys($origcfg);
 
-#Init section is composed of required parameters
+# check that the parameters that need values have them
 &check_parameters($cfg,'project');
+
 #Write the output location of this file as key $;COMPONENT_CONFIG$;
 my $ret = $cfg->setval('component','$;COMPONENT_CONFIG$;',$options{'output_conf'});
 if(!$ret){
@@ -56,14 +57,19 @@ $logger->debug("Wrote configuration file $options{'output_conf'}");
 exit;
 
 sub check_parameters{
-    my($cfg,$section) = @_;
-    foreach my $param ($cfg->Parameters($section)){
-	if($cfg->val( $section, $param) eq ""){
-	    $logger->logdie("Required parameter $param is missing (".$cfg->val( $section, $param).").  Check [$section] section of configuration file.\n\n");
-	}
-	else{
-	    $logger->debug("Required parameter $param=".$cfg->val( $section, $param)) if($logger->is_debug());
-	}
+    my ($cfg,$section) = @_;
+
+    my %optional = ( '$;PROJECT_CODE$;' => 1 );
+
+    for my $param ( $cfg->Parameters($section) ) {
+        ## skip checking if this one's optional
+        next if defined $optional{$param};
+    
+        if( $cfg->val( $section, $param) eq "" ){
+            $logger->logdie("Required parameter $param is missing (".$cfg->val( $section, $param).").  Check [$section] section of configuration file.\n\n");
+        } else{
+            $logger->debug("Required parameter $param=".$cfg->val( $section, $param)) if($logger->is_debug());
+        }
     }
 }
 
