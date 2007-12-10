@@ -1,7 +1,5 @@
 package SeqLocation::SeqLocation;
 
-use lib (@INC,'/usr/local/devel/ANNOTATION/ard/testing_manual/lib/site_perl/5.8.5/');
-
 =head1 NAME
 
 SeqLocation.pm - an object that holds sequence location information
@@ -18,7 +16,7 @@ my $seqLocation = new SeqLocation::SeqLocation($id, $type, $start, $end);
 
 use warnings;
 use strict;
-use Workflow::Logger;
+use Ergatis::Logger;
 use Data::Dumper;
 
 
@@ -41,7 +39,7 @@ sub init {
     my @args = @_;
 
     #Get the logger.
-    $self->{'logger'} = Workflow::Logger::get_logger();
+    $self->{'logger'} = Ergatis::Logger::get_logger();
 
     if(@args < 2) {
         $self->{'logger'}->logdie("SeqLocation object requires four arguments".
