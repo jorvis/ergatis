@@ -1,0 +1,90 @@
+<p>
+    This document attempts to capture notes developers should be aware of concerning the pipeline 
+    builder interface.  Mostly, for now, this serves as a sanity check to aid in mapping out the 
+    processes and algorithms involved in the most tricky bits.
+</p>
+<h3>loading pipeline templates</h3>
+<p>
+    One of the most complicated tasks the interface does is supporting the import of pipeline
+    templates both into new and existing pipelines.  If pipeline templates could only be loaded
+    and executed this would be trivial, but we want to support the addition of these templates
+    within a pipeline the user has already started building, and allow them to modify or add on
+    to it before execution.  This means that not only does the pipeline have to be read and 
+    parsed on the server side, but the structure and information contained within it have to 
+    be available on the client side for continued construction of the pipeline.  Doing this in
+    a way that is scalable and flexible is nontrivial.
+</p>
+<p>
+    Each pipeline template is actually just a directory stored on disk containing a single layout
+    XML file and one config file for each component in the template.  The layout file must be 
+    translated into graphical form for the user and select contents of each component sent to the
+    browser and stored in memory in javascript.
+</p>
+<h3>program flow</h3>
+<p>
+    The following sections describe the program flow for pipeline template additions within the
+    interface.  It isn't an exciting read, but is useful when making changes or debugging.  There
+    are two points of entry for this process.
+</p>
+<dl>
+    <dt>new pipeline from template</dt>
+    <dd>
+        The more straight-forward of the two, users can choose an existing template to start 
+        building a new pipeline.  The pipeline_insert_location variable is set to pipeline_root
+    </dd>
+    <dt>adding a pipeline template to a building pipeline</dt>
+    <dd>
+        As a user is building a pipeline manually, they have the option to add a component or 
+        pipeline template at any location within the building pipeline.
+    </dd>
+</dl>
+<p>
+    Either of these brings us to the same function call - which reads a pipeline from disk and 
+    inserts it into a new pipeline.  Both have, by now, set the pipeline_insert_location variable 
+    before calling the first function below.
+</p>
+<ol>
+    <li>
+        <h4>selectPipelineTemplate( $template_path ) - build_pipeline.js</h4>
+        <ol>
+            <li>Make sure component/pipeline addition menus are hidden</li>
+            <li>Re-display the content container</li>
+            <li>AJAX call to get_pipeline_layout.cgi with parsePipelineLayout as the handler</li>
+        </ol>
+    </li>
+    <li>
+        <h4>get_pipeline_layout.cgi?path=$template_path</h4>
+        <ol>
+            <li>Read $template_path/pipeline.layout and return it in plain-text</li>
+        </ol>
+    </li>
+    <li>
+        <h4>parsePipelineLayout( $layout_string, $template_path ) - build_pipeline.js</h4>
+        <ol>
+            <li>Create a parsable DOM object out of $layout_string</li>
+            <li>
+                Parse through this DOM pipeline using the recursive parsePipelineNode function.
+                This process add entries to componentSaveQueue, an instance of AjaxQueue used to
+                prevent all the component config AJAX pulls from happening at once.
+            </li>
+            <li>
+                After parsePipelineNode recursion, adds another entry to componentSaveQueue to 
+                save the actual pipeline layout, then starts the queue.
+            </li>
+        </ol>
+    </li>
+    <li>
+        <h4>parsePipelineNode( pipeline_node, insert_loc, template_path) - build_pipeline.js</h4>
+        
+    </li>
+</ol>
+
+
+
+
+
+
+
+
+
+
