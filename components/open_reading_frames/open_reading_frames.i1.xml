@@ -49,6 +49,10 @@
                 <value>$;MAX_ORF_SIZE$;</value>
             </param>
             <param>
+                <key>--min_unmasked_size</key>
+                <value>$;MIN_UNMASKED_SIZE$;</value>
+            </param>
+            <param>
                 <key>--frames</key>
                 <value>$;FRAMES$;</value>
             </param>
