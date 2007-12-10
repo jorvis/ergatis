@@ -16,11 +16,15 @@ USAGE: train_for_glimmer.pl
             --icm_file=/path/to/glimmmer/training.icm
             --input_file=/path/to/input.fsa
             --output_file=/path/to/out.icm
+            --glimmer3_dir=/path/to/glimmer3/
           [ --log=/path/to/log.file
             --help
           ]
 
 =head1 OPTIONS
+
+B<--glimmer3_dir> 
+    Path to the glimmer3 installation directory.  This should contain a bin directory underneath.
 
 B<--debug> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -58,8 +62,7 @@ use Pod::Usage;
 use Ergatis::Logger;
 
 ########GLOBALS#############
-use constant BUILD_ICM => '/usr/local/devel/ANNOTATION/glimmer/glimmer3.01/bin/build-icm';
-my $longOrfsBin = "/usr/local/devel/ANNOTATION/glimmer/current/bin/long-orfs";
+my $longOrfsBin = "$options{glimmer3_dir}/bin/long-orfs";
 my $training_seqs;
 my $icm_file;
 my $input_list;
@@ -136,7 +139,7 @@ sub makeTrainingFile {
 
         my $tmpOut = "$tmp_dir/$base.seqs";
 
-        my $extractCmd = "/usr/local/devel/ANNOTATION/glimmer/current/bin/extract -t $file $tmp_dir/$base.train >> $outFile";
+        my $extractCmd = "$options{glimmer3_dir}/bin/extract -t $file $tmp_dir/$base.train >> $outFile";
         print "Running:\n $extractCmd\n";
         system($extractCmd)
     }
@@ -169,7 +172,7 @@ sub changeIds {
 sub makeIcmFile {
     my ($output) = @_;
     
-    my $buildIcmCmd = BUILD_ICM." -r $output < $training_seqs";
+    my $buildIcmCmd = "$options{glimmer3_dir}/bin/build-icm -r $output < $training_seqs";
     print "Running\n$buildIcmCmd\n";
     system($buildIcmCmd);
 
@@ -186,6 +189,10 @@ sub check_parameters {
         $input_list = $options{'input_list'};
     } else {
         &_die("one of input_list, training_seqs must exist");
+    }
+
+    unless ( defined $options{glimmer3_dir} && -d $options{glimmer3_dir} ) {
+        &_die('glimmer3_dir not passed or not found');
     }
 
     $longOrfsOpts = $options{'long_orfs_opts'} if($options{'long_orfs_opts'});    

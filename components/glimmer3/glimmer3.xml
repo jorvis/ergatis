@@ -43,6 +43,9 @@
             <param>
                <key>--long_orfs_opts</key>
                <value>"$;LONG_ORFS_OPTS$;"</value>
+            <param>
+               <key>--glimmer3_dir</key>
+               <value>$;GLIMMER3_DIR$;</value>
             </param>
             <param>
                <key>stdout</key>
