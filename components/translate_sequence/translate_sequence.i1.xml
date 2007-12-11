@@ -14,7 +14,7 @@
 	    </param>    
 	    <param>
 	    	<key>--regions</key>
-		<value>$;REGIONS$;</value>
+		<value>'$;REGIONS$;'</value>
 	    </param>  
 	    <param>
 	    	<key>--frame</key>
@@ -38,7 +38,7 @@
 	    </param>
 	    <param>
 	    	<key>--transeq_bin</key>
-		<value>$;BIN_DIR$;/transeq.sh</value>
+		<value>$;TRANSEQ_EXEC$;</value>
 	    </param> 
 	    <param>
 	    	<key>stderr</key>
