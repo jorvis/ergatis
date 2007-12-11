@@ -1,12 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
-
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
@@ -24,7 +17,7 @@ my $outputStartProp;
 my $transTable;
 my $tmpDir;
 my $length;
-my $glimmerDir = "/usr/local/devel/ANNOTATION/glimmer/current";
+my $glimmerDir = '';
 my $elph = "/usr/local/bin/elph";
 ####################
 
@@ -36,7 +29,7 @@ my $results = GetOptions (\%options,
                           'output_pwm|o=s',
                           'trans_table|z=s',
                           'tmp_dir|t=s',
-                          'glimmer_dir|g=s',
+                          'glimmer3_dir|g=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || &_pod;
@@ -248,6 +241,9 @@ sub check_parameters {
     close(FSA);
     chomp(@fsaFiles);
 
+    # required glimmer_dir
+    $glimmerDir = $opts->{'glimmer3_dir'} || $logger->logdie("Option glimmer3_dir is required ($opts->{'output_pwm'})");
+
     # option confIniFile is required
     unless($opts->{'conf_ini_file'}) {
         $logger->logdie("Option conf_ini_file is required");
@@ -273,11 +269,6 @@ sub check_parameters {
     #Optional trans_table
     if($opts->{'trans_table'}) {
         $transTable = $opts->{'trans_table'};
-    }
-
-    #Optional glimmer_dir
-    if($opts->{'glimmer_dir'}) {
-        $glimmerDir = $opts->{'glimmer_dir'};
     }
 
 }

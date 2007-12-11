@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
-        <name>wu-blastp workflow</name>
+        <name>train_for_glimmer3 workflow</name>
         <!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
@@ -19,31 +19,35 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
-	<command>
+        <command>
             <type>RunUnixCommand</type>
             <name>train for glimmer3 iteration</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/train_for_glimmer3_iteration</executable>
             <param>
-	    	<key>--input_predict_list</key>
-		<value>$;INPUT_PREDICT_LIST$;</value>
-	    </param>
-	    <param>
-	    	<key>--input_fasta_list</key>
-		<value>$;INPUT_FASTA_LIST$;</value>
-	    </param>
-	    <param>
-	    	<key>--output_pwm</key>
-		<value>$;OUTPUT_PWM$;</value>
-	    </param>
-	    <param>
-	    	<key>--tmp_dir</key>
-		<value>$;TMP_DIR$;</value>
-	    </param>
-	    <param>
-	    	<key>--conf_ini_file</key>
-		<value>$;REPOSITORY_ROOT$;/workflow/runtime/glimmer3/$;PIPELINEID$;_$;GLIMMER3_OUTPUT_TOKEN$;/glimmer3.$;GLIMMER3_OUTPUT_TOKEN$;.user.config</value>
-	    </param>	   
+                <key>--input_predict_list</key>
+                <value>$;INPUT_PREDICT_LIST$;</value>
+            </param>
+            <param>
+                <key>--input_fasta_list</key>
+                <value>$;INPUT_FASTA_LIST$;</value>
+            </param>
+            <param>
+                <key>--output_pwm</key>
+                <value>$;OUTPUT_PWM$;</value>
+            </param>
+            <param>
+                <key>--tmp_dir</key>
+                <value>$;TMP_DIR$;</value>
+            </param>
+            <param>
+                <key>--glimmer3_dir</key>
+                <value>$;GLIMMER3_DIR$;</value>
+            </param>
+            <param>
+                <key>--conf_ini_file</key>
+                <value>$;REPOSITORY_ROOT$;/workflow/runtime/glimmer3/$;PIPELINEID$;_$;GLIMMER3_OUTPUT_TOKEN$;/glimmer3.$;GLIMMER3_OUTPUT_TOKEN$;.user.config</value>
+            </param>       
         </command>
     </commandSet>
 </commandSetRoot>
