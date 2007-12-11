@@ -1,16 +1,12 @@
 #!/usr/bin/perl
 
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME
 
 translate_sequence.pl  - translates nt fasta or gene describing BSML into polypeptide fasta
 
 =head1 SYNOPSIS
 
-USAGE:  translate_sequence.pl --transeq_bin /path/to/transeq.sh -i [single_sequence.fsa|gene_document.bsml] -o /output/directory [-l /path/to/logfile.log] [--regions s1-e1,s2-e2,...] [--frame 1,2,3,F,-1,-2,-3,R,6] [--table 0] --project project_name --id_repository /path/to/id_repository
+USAGE:  translate_sequence.pl --transeq_bin /path/to/emboss/bin/transeq -i [single_sequence.fsa|gene_document.bsml] -o /output/directory [-l /path/to/logfile.log] [--regions s1-e1,s2-e2,...] [--frame 1,2,3,F,-1,-2,-3,R,6] [--table 0] --project project_name --id_repository /path/to/id_repository
 
 =head1 OPTIONS
 
@@ -19,6 +15,10 @@ B<--input,-i>
 
 B<--output,-o>
     The output path.
+
+B<--project>
+    Used as the project portion of the names in all features generated.  See Ergatis::IdGenerator
+    module for more details on ID generation.
 
 B<--regions,r>
     Optional regions of sequence to translate (formatted to be compatible with emboss transeq)
@@ -31,7 +31,7 @@ B<--frame,-f>
 B<--table,-t>
     Optional translation table to use
 
-B<--debug,-d>
+B<--debug>
     Debug level.  Use a large number to turn on verbose debugging.
 
 B<--log,-l>
@@ -154,7 +154,6 @@ if (!$fasta_flag) {
     ## if a bsml document has been provided
     ## we're going to process it and perform
     ## transeq on the gene models it encodes
-
     my $input_prefix = basename($options{'input'},".bsml");
 
     my $id_hash;
@@ -188,8 +187,9 @@ if (!$fasta_flag) {
 
     my $temp_in_fsa = $options{'output'}."/temp.in.fsa";
     my $temp_out_fsa = $options{'output'}."/temp.out.fsa";
-    
+   
     foreach my $seq_id(keys(%{$sequence_children})) {
+
         my $doc = new BSML::BsmlBuilder();
         
         my $seq = '';
@@ -222,7 +222,11 @@ if (!$fasta_flag) {
             $flags .= " -clean";
 
             ## execute transeq
-            system($transeq_exec.$flags);
+            eval { system($transeq_exec . $flags) };
+
+            if ( $@ ) {
+                $logger->logdie("failed running transeq: $@");
+            }
             
             ## replace sequence ids in output file
 #           my $out_fsa = $options{'output'}."/"."$polypeptide_ids->{$transcript_id}.fsa";
@@ -291,8 +295,12 @@ if (!$fasta_flag) {
     $transeq_flags .= " -sequence $options{input}";
     $transeq_flags .= " -outseq $temp_out_fsa";
     
-    ## run transeq
-    system($transeq_exec.$transeq_flags);
+    ## execute transeq
+    eval { system($transeq_exec . $transeq_flags) };
+
+    if ( $@ ) {
+        $logger->logdie("failed running transeq: $@");
+    }
 
     my $query_id = get_sequence_id($options{'input'});
     if( $options{'project'} eq 'parse' ) {
@@ -452,7 +460,13 @@ sub process_sequence {
     my $topology;
     
     $seq_id = $sequence->{'att'}->{'id'};
-    return unless( $seq_id =~ /assembly/ );
+    
+    ## skip any non-DNA molecules
+    if ( $sequence->{'att'}->{'molecule'} ne 'dna' ) {
+        $logger->warn("skipping sequence $seq_id because molecule != dna\n");
+        return;
+    }
+    
     if( $options{'project'} eq 'parse') {
         $options{'project'} = $1 if( $seq_id =~ /^([^\.])/);
     }
