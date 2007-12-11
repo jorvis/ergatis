@@ -33,7 +33,7 @@
             </param>
             <param>  
                 <key>--project</key>
-                <value>$;PROJECT$;</value>
+                <value>$;PROJECT_ABBREVIATION$;</value>
             </param>
             <param>  
                 <key>--id_repository</key>
