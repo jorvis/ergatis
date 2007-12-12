@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -23,7 +23,7 @@ USAGE: train_for_glimmer.pl
 
 =head1 OPTIONS
 
-B<--glimmer3_dir> 
+B<--glimmer3_dir,g> 
     Path to the glimmer3 installation directory.  This should contain a bin directory underneath.
 
 B<--debug> 
@@ -79,6 +79,7 @@ my $results = GetOptions (\%options,
                           'long_orfs_opts|n=s',
                           'output_file|o=s',
                           'tmp_dir|t=s',
+                          'glimmer3_dir|g=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || pod2usage();
