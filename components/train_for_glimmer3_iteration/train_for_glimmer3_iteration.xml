@@ -45,6 +45,10 @@
                 <value>$;GLIMMER3_DIR$;</value>
             </param>
             <param>
+                <key>--elph_bin</key>
+                <value>$;ELPH_BIN$;</value>
+            </param>
+            <param>
                 <key>--conf_ini_file</key>
                 <value>$;REPOSITORY_ROOT$;/workflow/runtime/glimmer3/$;PIPELINEID$;_$;GLIMMER3_OUTPUT_TOKEN$;/glimmer3.$;GLIMMER3_OUTPUT_TOKEN$;.user.config</value>
             </param>       

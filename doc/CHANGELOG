@@ -605,3 +605,4 @@ next
 -bugfix: create_iterator_list.pl was using Workflow::Logger instead of Ergatis::Logger
 -changed glimmer3 to read executable paths from software.config
 -translate_sequence: removed hard-coded paths, eliminated sh wrapper
+-train_for_glimmer3_iteratation: removed hard-coded paths for elph and glimmer tools

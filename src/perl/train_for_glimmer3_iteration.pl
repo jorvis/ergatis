@@ -18,7 +18,7 @@ my $transTable;
 my $tmpDir;
 my $length;
 my $glimmerDir = '';
-my $elph = "/usr/local/bin/elph";
+my $elph = '';
 ####################
 
 my %options = ();
@@ -30,6 +30,7 @@ my $results = GetOptions (\%options,
                           'trans_table|z=s',
                           'tmp_dir|t=s',
                           'glimmer3_dir|g=s',
+                          'elph_bin|e=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || &_pod;
@@ -241,8 +242,9 @@ sub check_parameters {
     close(FSA);
     chomp(@fsaFiles);
 
-    # required glimmer_dir
-    $glimmerDir = $opts->{'glimmer3_dir'} || $logger->logdie("Option glimmer3_dir is required ($opts->{'output_pwm'})");
+    # required program paths
+    $glimmerDir = $opts->{'glimmer3_dir'} || $logger->logdie("Option glimmer3_dir is required");
+    $elph = $opts->{'elph_bin'} || $logger->logdie("Option elph_bin is required");
 
     # option confIniFile is required
     unless($opts->{'conf_ini_file'}) {
