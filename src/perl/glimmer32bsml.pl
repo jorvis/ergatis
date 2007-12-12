@@ -1,12 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
-
 =head1 NAME
 
 glimmer32bsml.pl - Creates a bsml document from glimmer3 raw
@@ -163,9 +156,11 @@ sub parseGlimmer3Data {
         if(/^>(.*?)\s/) {
 
             $foundId = $1;
-            $project = $1 if($foundId =~ /^(\w+?)\./);
-            $logger->logdie("Could not parse project name out of id $foundId.")
-                unless($project);
+            if( $project eq 'parse' ) {
+                $project = $1 if($foundId =~ /^(\w+?)\./);
+                $logger->logdie("Could not parse project name out of id $foundId.")
+                    unless($project);
+            }
 
         } elsif($foundId) {
 
@@ -313,6 +308,12 @@ sub check_parameters {
 
         $length->{$curId} = length($seq);
         close(IN);
+    }
+
+    if( $options{'project'} ) {
+        $project = $options->{'project'};
+    } else {
+        $project = "parse";
     }
     
     if($options{'debug'}) {
