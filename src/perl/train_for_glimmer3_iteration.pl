@@ -190,8 +190,8 @@ sub createFileNameLookup {
     my $retval;
 
     foreach my $pred ( @{$predList} ) { 
-       
-        my $base = $1 if($pred =~ m|/(([^/\.]+\.){3})|);
+        
+        my $base = $1 if($pred =~ m|/([^/]+)\..*$|);
         $base =~ s/\.$//;
         $logger->logdie("Could not parse out basename from $pred") unless($base);
         my $found = 0;
