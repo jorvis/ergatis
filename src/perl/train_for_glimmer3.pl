@@ -62,7 +62,6 @@ use Pod::Usage;
 use Ergatis::Logger;
 
 ########GLOBALS#############
-my $longOrfsBin = "$options{glimmer3_dir}/bin/long-orfs";
 my $training_seqs;
 my $icm_file;
 my $input_list;
@@ -83,6 +82,8 @@ my $results = GetOptions (\%options,
                           'log|l=s',
                           'debug=s',
                           'help|h') || pod2usage();
+
+my $longOrfsBin = "$options{glimmer3_dir}/bin/long-orfs";
 
 ## display documentation
 if( $options{'help'} ){
