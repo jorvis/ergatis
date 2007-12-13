@@ -161,9 +161,11 @@ sub gatherAndAdd {
     my ($twig, $sequence) = @_;
     my %old2newId;
 
-    $project = $1 if($sequence->att('id') =~ /^(\w+?)\./);
-    $logger->logdie("Could not parse project name from id: ".$sequence->att('id')) 
-        unless($project);
+    if( $project eq 'parse' ) {
+        $project = $1 if($sequence->att('id') =~ /^(\w+?)\./);
+        $logger->logdie("Could not parse project name from id: ".$sequence->att('id')) 
+            if( $project eq 'parse' );
+    }
 
 	my $fTables = $sequence->first_child('Feature-tables');
 	my $featTable;
@@ -340,6 +342,13 @@ sub check_parameters {
         $input_bsml = $opt->{'input_bsml'};
     } else {
         $errStr .= "Option input_bsml is required\n";
+    }
+    
+    #Project option
+    if( $opt->{'project'} ) {
+        $project = $opt->{'project'};
+    } else {
+        $project = 'parse';
     }
 
     #Make sure the cds_fasta was included
