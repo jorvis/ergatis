@@ -32,7 +32,7 @@ B<--cds_fasta,-c>
     pertaining to the gene predictions found in the input_bsml file.  Will also take a comma separated list 
     of multi-fasta or list files.
 
-B<--polypeptide_fasta,-p>
+B<--polypeptide_fasta,-f>
     [REQUIRED] The polypeptide multifasta file or list of individual fasta files which contain sequence
     information for the predicted polypeptides in input_bsml. Will also take a comma separated list 
     of multi-fasta or list files.
@@ -101,7 +101,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'input_bsml|i=s',
                           'cds_fasta|c=s',
-                          'polypeptide_fasta|p=s',
+                          'polypeptide_fasta|f=s',
                           'output_bsml|o=s',
                           'id_repository|r=s',
                           'project|p=s',

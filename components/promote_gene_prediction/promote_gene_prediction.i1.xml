@@ -12,26 +12,26 @@
                 <key>--input_bsml</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
-	    <param>  
+            <param>  
                 <key>--cds_fasta</key>
                 <value>$;CDS_FASTA$;</value>
             </param>
-	    <param>  
+            <param>  
                 <key>--polypeptide_fasta</key>
                 <value>$;POLYPEPTIDE_FASTA$;</value>
             </param>
-	    <param>  
+            <param>  
                 <key>--output_bsml</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
             </param>
-	    <param>  
+            <param>  
                 <key>--id_repository</key>
                 <value>$;PROJECT_ID_REPOSITORY$;</value>
             </param>
-         <param>
-         <key>--project</key>
-         <value>$;PROJECT_ABBREVIATION$;</value>
-         </param>
+            <param>
+                <key>--project</key>
+                <value>$;PROJECT_ABBREVIATION$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
