@@ -1,0 +1,18 @@
+This script performs the pangenome analysis for all genes of a given genome.
+
+Input is two binary files, one encoding gene presence/absence profiles,
+and another containing profile masks representing the comparison genome set.
+
+Format is:
+
+unsigned long PROFILE_ARRAY_SIZE   //number of unsigned long values in array
+unsigned long PROFILE_FRAME_COUNT  //number of unsigned longs per profile (eg: profiles > 1 unsigned long are split between 2 or more)
+unsigned long PROFILE_ELEMENT_1_FRAME_1_OF_x    // where x = PROFILE_FRAME_COUNT
+unsigned long PROFILE_ELEMENT_?_FRAME_?_OF_?
+...
+
+Profile binary data files will be architecture dependent.
+
+Contact:
+Brett Whitty
+bwhitty@jcvi.org
