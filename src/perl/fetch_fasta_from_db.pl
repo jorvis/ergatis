@@ -18,7 +18,7 @@ my $db		= 0;
 my $format	= "xdformat";
 my $protein	= 0;
 my %BINS	= ( "cdbfasta"	=> "/usr/local/bin/cdbyank -w",
-		    "xdformat"	=> "/usr/local/packages/blast2/xdget",
+		    "xdformat"	=> "/usr/local/bin/xdget",
 		    "formatdb"	=> "/usr/local/bin/fastacmd"
 		  );
 
