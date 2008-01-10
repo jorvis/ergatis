@@ -1,10 +1,4 @@
 #!/usr/bin/perl
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-use lib (@INC,"/usr/local/devel/ANNOTATION/hmm/bin");
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
-
 
 =head1 NAME
 
@@ -141,8 +135,8 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use DBI;
 use HmmTools;
-use Workflow::IdGenerator;
-use Workflow::Logger;
+use Ergatis::IdGenerator;
+use Ergatis::Logger;
 
 ####### GLOBALS AND CONSTANTS ###########
 my @input_files;                   #Holds input files
@@ -166,8 +160,8 @@ my $results = GetOptions (\%options,
                           'help|h') || &_pod;
 
 #Setup the logger
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
