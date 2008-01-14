@@ -102,7 +102,7 @@
 	    <name>trim dups files</name>
 	    <state>incomplete</state>
 	    <executable>cat</executable>
-	    <arg> $;TMP_DIR$;/tables.out | /usr/local/bin/perl -ne 's/.*\/([\w_]+).out/$1/;print '| sort | uniq</arg>
+	    <arg> $;TMP_DIR$;/tables.out | perl -ne 's/.*\/([\w_]+).out/$1/;print '| sort | uniq</arg>
 	    <param>
 		    <key>stdout</key>
 		    <value>$;TMP_DIR$;/collatetables.list.tmp</value>
