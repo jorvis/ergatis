@@ -40,6 +40,7 @@ Returns the ID of a given pipeline.
 use strict;
 use Carp;
 use Sys::Hostname;
+use IO::File;
 
 umask(0000);
 
@@ -88,9 +89,16 @@ umask(0000);
         ## ergatis cfg is required
         if (! defined $args{ergatis_cfg} ) { croak("ergatis_cfg is a required option") };
         my $run_dir = $args{ergatis_cfg}->val('paths', 'workflow_run_dir') || croak "workflow_run_dir not found in ergatis.ini";
+        my $pipeline_scripts_dir = "$run_dir/scripts";
         
         ## create a directory from which to run this pipeline
         if ( -d $run_dir ) {
+            ## make sure the scripts directory exists.  this is where the pipeline execution shell
+            #   files are written
+            if ( ! -d $pipeline_scripts_dir ) {
+                mkdir $pipeline_scripts_dir || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
+            }
+        
             ## make a subdirectory for this pipelineid
             $run_dir .= '/' . $self->id;
             if (! -d $run_dir) {
@@ -163,15 +171,38 @@ umask(0000);
                     $runprefix = 'qsub ';
                 }
                 
-                my $runstring = "$runprefix $ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap --logconf=" . 
+                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap --logconf=" . 
                                 $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
 #                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap >& $self->{path}.run.out";
 
+                ## write all this to a file
+#                sysopen(my $pipeline_fh, ">$self->{path}.sh", O_RDWR|O_EXCL|O_TRUNC, 0600) || die "can't write pipeline shell file: $!";
+                my $pipeline_script = "$pipeline_scripts_dir/pipeline." . $self->id . ".run.sh";
+                open(my $pipeline_fh, ">$pipeline_script") || die "can't write pipeline shell file $pipeline_script: $!";
+                
+                print $pipeline_fh '#!/bin/bash', "\n\n";
+                
+                for my $env ( keys %ENV ) {
+                    ## don't do HTTP_ variables
+                    next if $env =~ /^HTTP_/;
+                    
+                    print $pipeline_fh "export $env=\"$ENV{$env}\"\n";
+                }
+                
+                print $pipeline_fh "\n$runstring";
+                
+                close $pipeline_fh;
+                
+                ## the script needs to be executable
+                chmod 0755, $pipeline_script;
+                
+                #print $debugfh "preparing to execute $runstring\n" if $self->{debug};
 
-                print $debugfh "preparing to run $runstring\n" if $self->{debug};
+                print $debugfh "preparing to run $pipeline_script\n" if $self->{debug};
 
-                my $rc = 0xffff & system($runstring);
+                #my $rc = 0xffff & system($runstring);
+                my $rc = 0xffff & system("$runprefix $pipeline_script");
 
                 printf $debugfh "system(%s) returned %#04x: $rc" if $self->{debug};
                 if($rc == 0) {
