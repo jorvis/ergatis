@@ -191,9 +191,22 @@ sub createFileNameLookup {
 
     foreach my $pred ( @{$predList} ) { 
         
-        my $base = $1 if($pred =~ m|/([^/]+)\..*$|);
-        $base =~ s/\.$//;
-        $logger->logdie("Could not parse out basename from $pred") unless($base);
+        #Get the id from the prediction file
+        open( my $pfh, "< $pred" ) or die("Could not open $pred ($!)");
+
+        my $base = "";
+
+        while( my $line = <$pfh> ) {
+            chomp $line;
+            if( $line =~ /^>(\S+)/ ) {
+                $base = $1;
+                last;
+            }
+        }
+        close( $pfh );
+
+        die("Could not parse the id from $pred") unless( $base );
+
         my $found = 0;
 
         print "\nLooking for fsa for $base\n";
