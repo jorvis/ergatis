@@ -1,3 +1,5 @@
+#!/bin/awk -f
+
 BEGIN   {
          if  (ARGC < 3)
              Usage_Exit();
