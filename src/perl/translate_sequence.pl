@@ -546,7 +546,10 @@ sub process_sequence {
     if($featTable) {
         foreach my $child ($featTable->children('Feature-group')) {
             #$feature_parent_seq->{$child->{'att'}->{'group-set'}} = $seq_id;
-            push(@{$sequence_children->{$seq_id}}, $child->{'att'}->{'group-set'});
+            
+            #Only include those sequences with a transcript id
+            my ($trans_fgm) = $child->find_nodes('Feature-group-member[@feature-type="transcript"]');
+            push(@{$sequence_children->{$seq_id}}, $child->{'att'}->{'group-set'}) if( $trans_fgm );
         }
     }
         
