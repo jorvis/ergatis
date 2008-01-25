@@ -608,3 +608,4 @@ next
 -train_for_glimmer3_iteration: removed hard-coded paths for elph and glimmer tools
 -added C source code for cluster - required for comparative components
 -promote_gene_prediction: resolved duplicate -p short options
+-infernal: updated to latest version (0.81), generalized, removed nonused database (DBI) info options

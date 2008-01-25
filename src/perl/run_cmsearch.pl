@@ -1,8 +1,4 @@
 #!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 =head1 NAME
 
@@ -16,8 +12,6 @@ USAGE: run_cmsearch.pl
               --input_file=/path/hmmpfam/result.raw
               --tmp_dir=/path/to/tmpdir/
               --output_file=/path/to/infernal.raw
-              --database=osa1
-              --password_file=$EGC_SCRIPTS/password
               --flanking_seq=50
               --hmm_cm_table=/path/to/some/file.table
               --cm_dir=/dir/with/covariance/models/
@@ -39,12 +33,6 @@ B<--tmp_dir,-t>
 
 B<--output_file,-o>
     The output file for cmsearch results to go into.  Will concate all results to this file.
-
-B<--database,-d>
-    The database where the sequences are found.
-
-B<--password_file,-p>
-    File containing username and password for database
 
 B<--flanking_seq,-f>
     The number of nucleotides on either side of the hmmpfam hit to parse out of database for 
@@ -128,7 +116,6 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Ergatis::Logger;
 use Data::Dumper;
-use DBI;
 use IPC::Open3;
 
 my %options = ();
@@ -138,7 +125,6 @@ my $results = GetOptions (\%options,
                           'tmp_dir|t=s',
                           'output_file|o=s',
                           'sequence_list|s=s',
-                          'password_file|p=s',
                           'flanking_seq|f=i',
                           'hmm_cm_table|c=s',
                           'other_opts|e=s',
@@ -167,7 +153,6 @@ my $cmDir;
 my $outputDir;
 my $outputFile;
 my $debug;
-my $passwordFile;
 my @seqList;
 my $extraSeqLen = 50;
 my $other_opts = "";
@@ -252,22 +237,6 @@ sub check_parameters {
 
     $debug = $options{debug} if($options{debug});
 
-    if($options{password_file}) {
-        if(-e $options{password_file}) {
-            open(IN, "<$options{password_file}") 
-                or &_die("Unable to open $options{password_file} ($!)");
-            ($passwordFile->{username}, $passwordFile->{password}) = <IN>;
-            chomp($passwordFile->{username});
-            chomp($passwordFile->{password});
-            close(IN);
-
-        } else {
-            &_die("password_file $options{password_file} does not exist");
-        }
-    } else {
-        &_die("password_file option required");
-    }
-
     if($options{sequence_list}) {
         &_die("sequence_list $options{sequence_list} does not exist") unless(-e $options{sequence_list});
     } else {
@@ -301,7 +270,8 @@ sub check_parameters {
 #Rets: Nothing
 sub cleanUp {
     foreach my $dir(@dirsMade) {
-        system("rm -f $dir");
+        print STDERR "DEBUG: removing $dir\n";
+        system("rm -rf $dir");
     }
 }
 
@@ -595,7 +565,7 @@ sub runProg {
     &_die("Could not parse HMM name from line $hmm") unless($cm);
     
     #Make sure the -W option isn't used in the other opts.  
-    $other_opts =~ s/-W\s\S+//;
+    $other_opts =~ s/--window\s\S+//;
 
     #Get the length of the fasta file
     my $length;
@@ -608,7 +578,7 @@ sub runProg {
     &_die("Could not determine length of sequence in file $fsaFile") unless($length);
 
     #set up the cmsearch command
-    my $cmd = PROG_NAME." -W $length $oOpts $cm $fsaFile";
+    my $cmd = PROG_NAME." --window $length $oOpts $cm $fsaFile";
 
     print " running [$cmd]\n" if($debug > 2);
 

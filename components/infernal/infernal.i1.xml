@@ -25,10 +25,6 @@
 		<value>$;SEQUENCE_LIST$;</value>
 	    </param>
 	    <param>
-	    	<key>--password_file</key>
-		<value>$;PASSWORD_FILE$;</value>
-	    </param>
-	    <param>
 	    	<key>--flanking_sequence</key>
 		<value>50</value>
 	    </param>
