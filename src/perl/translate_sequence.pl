@@ -461,9 +461,13 @@ sub process_sequence {
     
     $seq_id = $sequence->{'att'}->{'id'};
     
-    ## skip any non-DNA molecules
+    ## skip any non-DNA molecules or anything where the ID ends in '_seq' (since these are stubs
+    #   that are referenced elsewhere within the document.)
     if ( $sequence->{'att'}->{'molecule'} ne 'dna' ) {
         $logger->warn("skipping sequence $seq_id because molecule != dna\n");
+        return;
+    } elsif ( $sequence->{'att'}->{'id'} =~ /_seq$/ ) {
+        $logger->warn("skipping sequence $seq_id because it's a stub (id ends in _seq)\n");
         return;
     }
     
