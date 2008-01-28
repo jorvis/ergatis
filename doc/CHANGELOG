@@ -609,3 +609,5 @@ next
 -added C source code for cluster - required for comparative components
 -promote_gene_prediction: resolved duplicate -p short options
 -infernal: updated to latest version (0.81), generalized, removed nonused database (DBI) info options
+-aat_aa: moved matrix param into software.config
+-SavedPipeline.pm: fixed - was missing id_repository param
