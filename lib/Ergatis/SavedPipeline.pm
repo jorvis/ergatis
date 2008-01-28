@@ -13,7 +13,8 @@ SavedPipeline.pm - A module for loading and building saved pipeline templates.
         template => '/path/to/saved/pipelines/some_label/pipeline.layout'
     );
     $pipe->write_pipeline( 
-        repository_root => '/usr/local/annotation/FUN' 
+        repository_root => '/usr/local/annotation/FUN',
+        id_repository => '/path/to/global_id_repository'
     );
     
     To save a pipeline template from an existing pipeline.xml:
@@ -32,7 +33,9 @@ SavedPipeline.pm - A module for loading and building saved pipeline templates.
 =item I<PACKAGE>->new()
 
 Returns a newly created "saved" pipeline object.  If loading an existing
-template, pass a 'template' argument pointing to the template pipeline.xml
+template, pass a 'template' argument pointing to the template pipeline.xml.  The
+id_repository to be passed is the path to any repository as defined by
+Ergatis::IdGenerator
 
 =item I<$OBJ>->load_template()
 
@@ -56,7 +59,8 @@ $component_name.$token.user.config files will be copied into save dir)
 Creates a ready-to-execute pipeline xml in the defined project
 space.  You must pass a repository_root parameter to this method.  You may optionally
 pass a shared_config parameter, else it will derive it from the repository root.
-Returns an Ergatis::Pipeline object.
+Returns an Ergatis::Pipeline object.  The id_repository to be passed is the path to 
+any repository as defined by Ergatis::IdGenerator
 
 
 =back
