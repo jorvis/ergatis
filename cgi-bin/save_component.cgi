@@ -39,6 +39,14 @@ for ( $q->param ) {
     }
 }
 
+## disable grid submissions if they are disabled in ergatis.ini
+if ( $ergatis_cfg->val('grid', 'grid_enabled') == 0 ) {
+    ## reset NODISTRIB if it exists
+    if ( exists $component_vars{'$;NODISTRIB$;'} ) {
+        $component_vars{'$;NODISTRIB$;'} = 1;
+    }
+}
+
 ## loop through each element of the template and replace with the user's settings.
 ## open the template for this component
 open(my $template_fh, "<$docs_dir/$component_name.config") || die "failed to find template file for $component_name in $docs_dir: $!";
