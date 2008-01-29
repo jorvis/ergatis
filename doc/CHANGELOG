@@ -611,3 +611,4 @@ next
 -infernal: updated to latest version (0.81), generalized, removed nonused database (DBI) info options
 -aat_aa: moved matrix param into software.config
 -SavedPipeline.pm: fixed - was missing id_repository param
+-ergatis.ini: added grid_enabled option, allowing toggling of grid support
