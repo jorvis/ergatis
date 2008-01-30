@@ -270,6 +270,9 @@ umask(0000);
         
         ## for the htab.pl script within the hmmpfam component
         $ENV{HMM_SCRIPTS} = '/usr/local/devel/ANNOTATION/hmm/bin';
+
+        ## for the open-source hmmpfam, this ensures that it only runs on a single processor
+        $ENV{HMMER_NCPU} = 1;
         
         ## for the genewise component
         $ENV{WISECONFIGDIR} = '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg';
