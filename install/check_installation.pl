@@ -116,7 +116,9 @@ if ( $@ ) {
 &paths__workflow_log4j();
 &paths__workflow_root();
 &paths__global_id_repository();
-
+&paths__global_saved_templates();
+&paths__pipeline_build_area();
+&paths__default_ergatis_dir();
 
 ## if we got this far, print counts
 _log( "\npassed $results{pass}/" . ($results{pass} + $results{fail}) . " tests\n\n" );
@@ -335,6 +337,31 @@ sub check_writable {
     }
 }
 
+sub get_parent_directory {
+    my $full = shift;
+    
+    ## remove any trailing /
+    if ( $full =~ m|(.+)/\s*$| ) {
+        $full = $1;
+    }
+
+    ## get the parent directory
+    $full =~ m|(.*)/|;
+    
+    return $1;
+}
+
+sub paths__default_ergatis_dir {
+    _log("\nchecking default ergatis directory\n");
+    
+    my $ergatis_dir = $cfg->val('paths', 'default_ergatis_dir');
+    
+    ## this directory should already exist
+    LEFT OFF HERE
+    
+    ## we can check for a few things within it to make sure
+}
+
 sub paths__global_id_repository {
     my $repos = $cfg->val('paths', 'global_id_repository');
     
@@ -362,6 +389,15 @@ sub paths__global_id_repository {
     }
 }
 
+sub paths__global_saved_templates {
+    _log("\nchecking global saved templates area\n");
+
+    my $template_dir = $cfg->val('paths', 'global_saved_templates');
+
+    &check_existence( $template_dir );
+    &check_writable( $template_dir );
+}
+
 sub paths__pipeline_archive_root {
     my $archive_root = $cfg->val('paths', 'pipeline_archive_root');
 
@@ -372,14 +408,8 @@ sub paths__pipeline_archive_root {
     
     ## the path provided doesn't have to exist, but the parent does and must be writable
     } else {
-        ## remove any trailing /
-        if ( $archive_root =~ m|(.+)/\s*$| ) {
-            $archive_root = $1;
-        }
-        
-        ## get the parent directory
-        $archive_root =~ m|(.*)/|;
-        my $parent = $1;
+
+        my $parent = get_parent_directory( $archive_root );
         
         _log("WARNING: paths - pipeline_archive_root defined doesn't exist.  This isn't " .
              "necessarily a problem because the interface will create it automatically " .
@@ -388,7 +418,30 @@ sub paths__pipeline_archive_root {
         &check_existence( $parent );
         &check_writable( $parent );
     }
+}
+
+sub paths__pipeline_build_area {
+    _log("\nchecking pipeline build area\n");
+
+    my $build_area = $cfg->val('paths', 'pipeline_build_area');
+
+    ## if the path provided exists, it should be a directory and writable
+    if ( -e $build_area ) {
+        &check_is_directory( $build_area );
+        &check_writable( $build_area );
     
+    ## the path provided doesn't have to exist, but the parent does and must be writable
+    } else {
+
+        my $parent = get_parent_directory( $build_area );
+        
+        _log("WARNING: paths - pipeline_build_area defined doesn't exist.  This isn't " .
+             "necessarily a problem because the interface will create it automatically " .
+             "when it needs to.  Instead, we need to check that the parent exists and is " .
+             "writable\n"); 
+        &check_existence( $parent );
+        &check_writable( $parent );
+    }
 }
 
 sub paths__temp_space {
