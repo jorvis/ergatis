@@ -127,6 +127,11 @@ if (defined $options{log}) {
 
 open(my $ifh, "<$options{hmm_file}") || die "can't read input file: $!";
 
+my %info;
+
+## create the tied hash
+tie(%info, 'MLDBM', $options{'output_file'});
+
 ## store attributes for each HMM as we encounter them.  This is purged after each
 ##  HMM in the file
 my $att;
@@ -136,19 +141,49 @@ while ( my $line = <$ifh> ) {
     ## are we at the end of an entry?
     if ( $line =~ m|^//| && defined $att ) {
         
-        ## add entry to MLDBM
+        my ($trusted_global, $trusted_domain, $noise_global, $noise_domain);
         
+        if ( $$att{TC} =~ /([0-9\.\-]+)\s+([0-9\.\-]+)/ ) {
+            ($trusted_global, $trusted_domain) = ($1, $2);
+            
+        } else {
+            die "failed to parse trusted global and trusted domains for $$att{ACC}\n";
+        }
+        
+        if ( $$att{NC} =~ /([0-9\.\-]+)\s+([0-9\.\-]+)/ ) {
+            ($noise_global, $noise_domain) = ($1, $2);
+            
+        } else {
+            die "failed to parse noise global and noise domains for $$att{ACC}\n";
+        }
+        
+        ## handle the product name.  if it contains the NAME, remove that
+        my $product_name = $$att{DESC};
+        
+        if ( $product_name =~ /^$$att{NAME}: (.+)/ ) {
+            $product_name = $1;
+        }
+        
+        ## add entry to MLDBM
+        $info{$$att{ACC}} = {
+                                hmm_com_name => $product_name,
+                                hmm_len => $$att{LENG},
+                                trusted_cutoff => $trusted_global,
+                                noise_cutoff => $noise_global,
+                                trusted_cutoff2 => $trusted_domain,
+                                noise_cutoff2 => $noise_domain,
+                            };
         
         undef $att;
         next;
     }
     
     if ( $line =~ /^([A-Z]+)\s+(.*)$/ ) {
-        $att->{} = $1;
+        $att->{$1} = $2;
     }
 }
 
-
+untie(%info);
 
 exit(0);
 
