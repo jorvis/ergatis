@@ -1,8 +1,5 @@
 #!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case);
@@ -33,6 +30,26 @@ sub parse_options
 		   "output|o=s", "help|h");
 	print_usage if $opts{help};
 	initialize_pvalues($opts{blast_btab}) if $opts{blast_btab};
+    
+    ## if the input file doesn't exist, touch it.  This is a dirty hack used
+    ##  only because praze doesn't create an empty output file if there are no
+    ##  matches, which it should.
+    if ( ! -e $opts{praze_btab} ) {
+        open(my $infh, ">$opts{praze_btab}") || die "can't create empty btab output file from praze: $!";
+        close $infh;
+    }
+    
+    ## sigh.  also make sure the regular (non-btab) file is there
+    if ( $opts{praze_btab} =~ /(.+)\.btab$/ ) {
+        my $non_btab = $1;    
+    
+        if ( ! -e $non_btab ) {
+            open(my $infh, ">$non_btab") || die "can't create empty non-btab output file from praze: $!";
+            close $infh;
+        }
+
+    }    
+    
 	$praze_btab = new IO::File($opts{praze_btab}) or
 		die "Error reading praze btab data $opts{praze_btab}: $!"
 		if $opts{praze_btab};
