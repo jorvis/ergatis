@@ -24,6 +24,11 @@
                 <key>--hmm_input</key>
                 <value>$;HMM_INPUT$;</value>
             </param>
+        <param>
+            <key>--hmm_info_db</key>
+            <value>$;HMM_INFO_DB$;</value>
+        </param>
+
 	    <param>  
                 <key>--names_dump</key>
                 <value>$;NAMES_DUMP$;</value>

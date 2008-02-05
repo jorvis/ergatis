@@ -2,10 +2,6 @@
 
 #./new_auto_gene_curation --input_file mdg.scaffold.1.glimmer3.bsml --output_dir ./ --hmm_input /usr/local/annotation/MOORE/output_repository/hmmpfam/5925_protein/ --ber_input /usr/local/annotation/MOORE/output_repository/ber/5925_default/ --names_dump /usr/local/annotation/MOORE/data_dbs/tax_dump/names.dmp --nodes_dump /usr/local/annotation/MOORE/data_dbs/tax_dump/nodes.dmp --base_name tmp.base.name --debug 5
 
-#### Ergatis Library Finding #####
-eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
 ####################################
 
 ### Use these things. ###########
@@ -65,6 +61,7 @@ my $results = GetOptions (\%options,
                           'input_file|f=s',
                           'output_dir|o=s',
                           'hmm_input|h=s',
+                          'hmm_info_db|m=s',
                           'ber_input|b=s',
                           'names_dump|n=s',
                           'nodes_dump|d=s',
@@ -404,11 +401,17 @@ sub checkParametersAndLog {
     }
 
     
+    ## MLDBM file stored with this structure:
+    ##  $h->{hmm_id} = {
+    ##                      trusted_cutoff => N,
+    ##                      
+    ##                 };
+     
     if($opts->{'hmm_info'}) {
         tie(%hmmInfo, 'MLDBM', $opts->{'hmm_info'})
             or $logger->logdie("Unable to tie hash to $opts->{'hmm_info'}");
     } else {
-        my $file = "/usr/local/annotation/MOORE/data_dbs/hmmInfo.db";
+        my $file = $opts->{'hmm_info_db'};
         tie(%hmmInfo, 'MLDBM', $file)
             or $logger->logdie("Unable to tie hash to $file");
     }
