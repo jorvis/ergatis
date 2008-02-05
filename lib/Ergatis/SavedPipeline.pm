@@ -122,23 +122,23 @@ use Ergatis::ConfigFile;
                 croak ("$_ is not a recognized attribute");
             }
         }
+
+        $self->{_pipeline_dir} = "workflow/runtime/pipeline";
+        $self->{_component_dir} = "workflow/runtime";
+        $self->{_project_conf} = "workflow/project.config";
         
         ## if the template was defined, load it
         ## if the source was defined, load it
         if (defined $self->{template}) {
-	    $self->{_logger}->debug("Loading template $self->{template}");
+	        $self->{_logger}->debug("Loading template $self->{template}");
             $self->load_template();
-        }
-        elsif (defined $self->{source}) {
+        
+        } elsif (defined $self->{source}) {
             $self->load_pipeline();
-        }
-	else{
-	    $self->{_logger}->warn("No template or pipeline specified");
-	}
-        $self->{_pipeline_dir} = "workflow/runtime/pipeline";
-        $self->{_component_dir} = "workflow/runtime";
-        $self->{_project_conf} = "workflow/project.config";
-
+        } else {
+	        $self->{_logger}->warn("No template or pipeline specified");
+	    }
+        
         return $self;
     }
 
@@ -172,11 +172,12 @@ use Ergatis::ConfigFile;
 #	    $project_id = $2;
 	    $self->{pipeline_id} = $3;
 	} else {
-	    croak("failed to extract repository root, project id, or pipeline id from ".$self->{source});
+	    croak("failed to extract repository root, project id, or pipeline id from " . $self->{source} .
+              "\nexpected $self->{source} to match $self->{_pipeline_dir}" );
 	}
 	
 	#load pipeline from xml
-        $self->{_source_twig} = XML::Twig->new(pretty_print => 'indented');
+    $self->{_source_twig} = XML::Twig->new(pretty_print => 'indented');
 	$self->{_source_twig}->parsefile($self->{source}) || croak "unable to parse ".$self->{source};
 
 	#strip it to the barebones
