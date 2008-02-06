@@ -1,0 +1,124 @@
+<!-- component documentation -->
+<p>
+    This component does gene prediction using the genscan executable.  For a full reference, see:
+    <a href='http://genes.mit.edu/GENSCANinfo.html'>http://genes.mit.edu/GENSCANinfo.html</a>.
+</p>
+<h3>references</h3>
+<p>
+    Burge, C. and Karlin, S. (1997) Prediction of complete gene structures in human genomic DNA.  J. Mol. Biol.   268,  78-94.
+</p>
+<h3>input</h3>
+<p>
+    Like the program itself, this component accepts FASTA files as input.  Also needed is a paramter file.  Some of these are distributed with the genscan package.
+</p>
+<h3>implemented options</h3>
+<p>
+    All options of the genscan binary are configurable with this component.
+</p>
+<h3>output</h3>
+<p>
+The regular prediction output of genscan looks like this:
+(Excluding header lines)
+<code>
+Gn.Ex Type S .Begin ...End .Len Fr Ph I/Ac Do/T CodRg P.... Tscr..
+----- ---- - ------ ------ ---- -- -- ---- ---- ----- ----- ------
+
+ 1.01 Term +   5651   6289  639  1  0   81   35   400 0.481  34.31
+ 1.02 PlyA +   6539   6544    6                              -2.62
+
+ 2.00 Prom +   6570   6609   40                              -6.39
+ 2.01 Init +   8942   9175  234  1  0   66   57   714 0.999  67.88
+ 2.02 Intr +   9209  11608 2400  1  0    9    6  2378 0.397 225.56
+ 2.03 Intr +  11642  12440  799  1  1   50  -60   947 0.007  74.06
+ 2.04 Intr +  12604  12679   76  2  1   43   87    13 0.006  -2.13
+ 2.05 Term +  13098  13374  277  0  1   51   46   232 0.275  14.16
+ 2.06 PlyA +  13643  13648    6                               0.77
+</code>
+which has the general format shown below.  (Taken from
+<a href="http://genome.imim.es/courses/Bioinformatics2003_genefinding/results/genscan.html">http://genome.imim.es/courses/Bioinformatics2003_genefinding/results/genscan.html</a>)
+<code>
+Gn.Ex : gene number, exon number (for reference)
+Type  : Init = Initial exon (ATG to 5' splice site)
+        Intr = Internal exon (3' splice site to 5' splice site)
+        Term = Terminal exon (3' splice site to stop codon)
+        Sngl = Single-exon gene (ATG to stop)
+        Prom = Promoter (TATA box / initation site)
+        PlyA = poly-A signal (consensus: AATAAA)
+S     : DNA strand (+ = input strand; - = opposite strand)
+Begin : beginning of exon or signal (numbered on input strand)
+End   : end point of exon or signal (numbered on input strand)
+Len   : length of exon or signal (bp)
+Fr    : reading frame (a forward strand codon ending at x has frame x mod 3)
+Ph    : net phase of exon (exon length modulo 3)
+I/Ac  : initiation signal or 3' splice site score (tenth bit units)
+Do/T  : 5' splice site or termination signal score (tenth bit units)
+CodRg : coding region score (tenth bit units)
+P     : probability of exon (sum over all parses containing exon)
+Tscr  : exon score (depends on length, I/Ac, Do/T and CodRg scores)
+</code>
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;?xml version="1.0"?&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence class="assembly" id="zma1.assembly.5808" molecule="dna"&gt;
+        &lt;Attribute name="defline" content="zma1.assembly.5808"&gt;&lt;/Attribute&gt;
+        &lt;Feature-tables&gt;
+          &lt;Feature-table id="Bsml1"&gt;
+            &lt;Feature class="gene" id="eha2.gene.2884.1"&gt;
+              &lt;Interval-loc complement="0" startpos="318965" endpos="319085"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#genscan_analysis" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="CDS" id="eha2.CDS.2790.1"&gt;
+              &lt;Interval-loc complement="0" startpos="318965" endpos="319085"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#genscan_analysis" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="exon" id="eha2.exon.2790.1"&gt;
+              &lt;Interval-loc complement="0" startpos="318965" endpos="319085"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#genscan_analysis" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class="promoter" id="eha2.promoter.206.1"&gt;
+              &lt;Interval-loc complement="0" startpos="318552" endpos="318592"&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel="analysis" href="#genscan_analysis" role="computed_by"&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+
+            ... [One element per feature] ...
+
+          &lt;/Feature-table&gt;
+          &lt;Feature-group id="Bsml2" group-set="eha2.gene.2884.1"&gt;
+            &lt;Feature-group-member feature-type="gene" featref="eha2.gene.2884.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="CDS" featref="eha2.CDS.2790.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="exon" featref="eha2.exon.2790.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="promoter" featref="eha2.promoter.206.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="polypeptide" featref="eha2.polypeptide.724.1"&gt;&lt;/Feature-group-member&gt;
+            &lt;Feature-group-member feature-type="transcript" featref="eha2.transcript.724.1"&gt;&lt;/Feature-group-member&gt;
+          &lt;/Feature-group&gt;
+
+            ... [One element per feature-group] ...
+
+        &lt;/Feature-tables&gt;
+        &lt;Seq-data-import source="/usr/local/scratch/jinman/genscan_gunk/zma1.assembly.5808.fsa" identifier="zma1.assembly.5808" format="fasta" id="Bsml0"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#genscan_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+    &lt;/Sequences&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="genscan_analysis"&gt;
+        &lt;Attribute content="genscan" name="algorithm"&gt;&lt;/Attribute&gt;
+        &lt;Attribute content="genscan" name="program"&gt;&lt;/Attribute&gt;
+        &lt;Attribute content="feature prediction / genes" name="classification"/&gt;
+        &lt;Attribute content="/usr/local/packages/genscan/Maize.smat" name="parameter_file"/&gt;
+
+        ... [One element per attribute] ...
+
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+
+</div>
