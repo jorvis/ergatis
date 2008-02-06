@@ -1,8 +1,4 @@
 #!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 =head1  NAME 
 
@@ -43,14 +39,14 @@ umask(0000);
 my %options = ();
 
 my $results = GetOptions (\%options, 
-                          'input_file_list|l=s', 
+                          'input_file_list|n=s', 
                           'input_file|f=s',
                           'input_directory|d=s', 
-			  'output_dir|o=s',
-			  'extension|x=s',
-			  'output_extension|x=s',
-			  'output_iter_list|l=s',
-			  'log|l=s',
+                          'output_dir|o=s',
+                          'extension|x=s',
+                          'output_extension|u=s',
+                          'output_iter_list|l=s',
+                          'log|l=s',
                           'debug=s', 
                           'help|h' ) || pod2usage();
 
