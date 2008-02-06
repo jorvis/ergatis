@@ -612,3 +612,4 @@ next
 -aat_aa: moved matrix param into software.config
 -SavedPipeline.pm: fixed - was missing id_repository param
 -ergatis.ini: added grid_enabled option, allowing toggling of grid support
+-converted genscan and genscan-plus to version 2
