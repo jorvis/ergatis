@@ -52,7 +52,7 @@ my $results = GetOptions (\%options,
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
+                  'LOG_LEVEL'=>$options{'debug'});
 $logger = Ergatis::Logger::get_logger();
 
 $options{'extension'} = 'bsml' if($options{'extension'} eq "");
@@ -60,18 +60,18 @@ $options{'output_extension'} = 'list' if($options{'output_extension'} eq "");
 
 my $filelist = [];
 
-if($options{'input_file'}){
-    if(-e $options{'input_file'} && -f $options{'input_file'}){
-	push( @{$filelist}, $options{'input_file'} );
-    }
-    else{
-	$logger->logdie("Can't open file $options{'input_file'}");
+if ($options{'input_file'}) {
+    if (-e $options{'input_file'} && -f $options{'input_file'}) {
+        push( @{$filelist}, $options{'input_file'} );
+        
+    } else {
+        $logger->logdie("Can't open file $options{'input_file'}");
     }
 }
-if($options{'input_file_list'}){
+if ($options{'input_file_list'}) {
     &get_list_from_file($filelist,$options{'input_file_list'});
 }
-if($options{'input_directory'}){
+if ($options{'input_directory'}) {
     &get_list_from_directory($filelist,$options{'input_directory'});
 }
 
@@ -79,32 +79,32 @@ my $genome;
 my $genomelookup = {};
 
 my $funcs = {'Organism'=>
-		 sub {
-		     my ($expat,$elt,%params) = @_;
-		     if(exists $params{'genus'} && $params{'species'}){
-			 $genome = $params{'genus'}.'_'.$params{'species'};
-			 $genome =~ s/\s//g;
-			 $genome =~ s/[^\w\.\-\_]/_/g;
-		     }
-		 }
-	 };
+         sub {
+                 my ($expat,$elt,%params) = @_;
+                 if(exists $params{'genus'} && $params{'species'}){
+                 $genome = $params{'genus'}.'_'.$params{'species'};
+                 $genome =~ s/\s//g;
+                 $genome =~ s/[^\w\.\-\_]/_/g;
+             }
+         }
+     };
 
 foreach my $file (@{$filelist}){
     my $x = new XML::Parser(Handlers => 
-			    {
-				Start =>
-				    sub {
-					#$_[1] is the name of the element
-					if(exists $funcs->{$_[1]}){
-					    $funcs->{$_[1]}(@_);
-					}
-				    }
-				}
-			    );
+                {
+                Start =>
+                    sub {
+                        #$_[1] is the name of the element
+                        if(exists $funcs->{$_[1]}){
+                            $funcs->{$_[1]}(@_);
+                        }
+                    }
+                }
+                );
     $x->parsefile( $file );
     $logger->debug("Found genome $genome in file $file");
     if(! exists $genomelookup->{$genome}){
-	$genomelookup->{$genome} = [];
+        $genomelookup->{$genome} = [];
     }
     push @{$genomelookup->{$genome}},$file;
 }
@@ -115,8 +115,7 @@ foreach my $g (keys %$genomelookup){
     $logger->debug("Dumping genome $g");
     my $outfile = $options{'output_dir'}."/$g"."."."$options{'output_extension'}";
     print LISTFILE "$g\t$outfile\n";
-    open FILE, "+>$outfile"
-	or $logger->logdie("Can't open output file $outfile");
+    open FILE, "+>$outfile" or $logger->logdie("Can't open output file $outfile");
     print FILE join("\n",@{$genomelookup->{$g}}),"\n";
     close FILE;
 }
@@ -124,7 +123,7 @@ foreach my $g (keys %$genomelookup){
 close LISTFILE;
 
 exit;
-	
+    
     
 sub get_list_from_file{
     my ($filelist, $f) = @_;
@@ -132,27 +131,26 @@ sub get_list_from_file{
     my @lines;
     my @files = split(',',$f);
     foreach my $file (@files){
-	if( $file){
-	    if(-e $file && -f $file){
-		open( FH, $file ) or $logger->logdie("Could not open $file");
-		while( my $line = <FH> ){
-		    chomp($line);
-		    push @lines,  split(',',$line) if($line =~ /\S+/);
-		}
+        if( $file){
+            if(-e $file && -f $file){
+                open( FH, $file ) or $logger->logdie("Could not open $file");
+                while( my $line = <FH> ){
+                    chomp($line);
+                    push @lines,  split(',',$line) if($line =~ /\S+/);
+                }
 
-		foreach my $line (@lines){
-		    if($line){
-			my $filename = "$line";
-			push( @{$filelist}, $filename );
-		    }
-		}
-		close( FH );
-	    }
-	    else{
-		$logger->logdie("Can't open list file $file");
-	    }
-	       
-	}
+                foreach my $line (@lines){
+                    if($line){
+                        my $filename = "$line";
+                        push( @{$filelist}, $filename );
+                    }
+                }
+                close( FH );
+            } else {
+                $logger->logdie("Can't open list file $file");
+            }
+
+        }
     }
 }
 
@@ -160,18 +158,17 @@ sub get_list_from_directory{
     my ($filelist, $dir, $glob) = @_;
 
     my @directories = split(',',$dir);
-    foreach my $directory (@directories){
-	if(-e $directory && -d $directory){
-	    opendir DIR, "$directory" or $logger->logdie("Can't read directory $directory");
-	    my @files = grep /\.$options{'extension'}$/, readdir DIR;
-	    foreach my $file (@files ){
-		my $filename = "$directory/$file";
-		push( @{$filelist}, $filename );
-	    }
-	}
-	else{
-	    $logger->logdie("Can't open directory $directory");
-	}
+    foreach my $directory (@directories) {
+        if (-e $directory && -d $directory) {
+            opendir DIR, "$directory" or $logger->logdie("Can't read directory $directory");
+            my @files = grep /\.$options{'extension'}$/, readdir DIR;
+            foreach my $file (@files ){
+                my $filename = "$directory/$file";
+                push( @{$filelist}, $filename );
+            }
+        } else {
+            $logger->logdie("Can't open directory $directory");
+        }
     }
 }
 
