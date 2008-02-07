@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
 
 use strict;
 use Date::Manip;
@@ -30,30 +30,45 @@ sub process_file {
     
     my $fh = get_conditional_read_fh($path);
 
-    my $t = XML::Twig->new(
-                       twig_roots => {
-                           'command' => sub {
-                               my ($t, $elt) = @_;
-                               $cmds{ $elt->first_child('name')->text() } += time_info( $elt );
-                           },
-                           'commandSet/fileName' => sub {
-                               my ($t, $elt) = @_;
-                               process_file( $elt->text );
-                           },
-                       },);
-    
-    $t->parse( $fh );    
+    if ( $fh ) {
+        my $t = XML::Twig->new(
+                           twig_roots => {
+                               'command' => sub {
+                                   my ($t, $elt) = @_;
+                                   $cmds{ $elt->first_child('name')->text() } += time_info( $elt );
+                               },
+                               'commandSet/fileName' => sub {
+                                   my ($t, $elt) = @_;
+                                   process_file( $elt->text );
+                               },
+                           },);
+
+        $t->parse( $fh ); 
+    } else {
+        print "WARNING: skipping absent $path\n";
+    }
 }
 
 sub get_conditional_read_fh {
     my $path = shift;
+    my $fh;
+    my $found = 0;
+    
+    if ( -e $path ) {
+        $found = 1;
     
     ## auto-handle gzipped files
-    if (! -e $path && -e "$path.gz") {
+    } elsif (! -e $path && -e "$path.gz") {
         $path .= '.gz';
+        $found = 1;
+    } 
+    
+    if (! $found ) {
+        ## we can't find the file.  just return an empty file handle. 
+        ##  the process sub is OK with this.
+        return $fh;
     }
 
-    my $fh;
     if ( $path =~ /\.gz$/ ) {
         open($fh, "<:gzip", $path) || die "can't read file $path: $!";
     } else {
