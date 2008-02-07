@@ -25,18 +25,9 @@ B<--help,-h> This help message
 
 =cut
 
-#use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-
-
-BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-}
+use Ergatis::Logger;
 use File::Basename;
 
 umask(0000);
@@ -47,14 +38,14 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'table_list=s', 
                           'output_iter_list=s', 
-			  'log|l=s',
+                          'log|l=s',
                           'debug=s', 
                           'help|h' ) || pod2usage();
 
-my $logfile = $options{'log'} || Workflow::Logger::get_default_logfilename();
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 if (!defined($options{'table_list'})){
     $logger->logdie("table_list was not defined");
