@@ -90,6 +90,7 @@ my $funcs = {'Organism'=>
      };
 
 foreach my $file (@{$filelist}){
+    $logger->info("parsing file $file");
     my $x = new XML::Parser(Handlers => 
                 {
                 Start =>
