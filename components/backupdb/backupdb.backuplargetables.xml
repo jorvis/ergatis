@@ -2,7 +2,7 @@
     <commandSet type="serial">
 	<name>Backup tables to flat file</name>
 	<command>
-	    <type>RunDistributedCommand</type>
+	    <type>RunUnixCommand</type>
 	    <state>incomplete</state>
 	    <name>Backup the table to flat file</name>
 	    <executable>$;BIN_DIR$;/flatFileToChado</executable>
