@@ -436,8 +436,8 @@ sub create_fasta_headers {
     my ($orf_header, $pep_header);
     
     ## create new orf / pep ids
-    my $orf_id = "JCVI_ORF_".$idgen->getGUID();
-    my $pep_id = "JCVI_PEP_".$idgen->getGUID();
+    my $orf_id = "JCVI_ORF_".get_new_id();
+    my $pep_id = "JCVI_PEP_".get_new_id();
    
     $orf_header = "$orf_id /pep_id=$pep_id";
     $pep_header = "$pep_id /orf_id=$orf_id";
@@ -477,6 +477,35 @@ sub create_fasta_headers {
     $orf_ref->{'pep_header'} = $pep_header;
     
     return $orf_ref;
+}
+
+## grabs a new id.  Some ids were being given blanks.
+sub get_new_id {
+    my $tries = shift;
+
+    #default number of tries is 5
+    unless( $tries ) {
+        $tries = 5;
+    }
+
+    my $count = 0;  #Counts how many times we've tried pulling an id
+    my $id = undef; #Holds the id
+
+    while( !defined( $id ) ) {
+        last if( $count >= $tries );
+        
+        #If this is not our first try, wait for 1 second
+        sleep(1) if( $count > 0 );
+
+        $id = $idgen->getGUID();
+        $count++;
+    }
+
+    if( !defined( $id ) ) {
+        die("Can't pull new id");
+    }
+
+    return $id;
 }
 
 ## parses the input sequence header and returns a hash of attributes
