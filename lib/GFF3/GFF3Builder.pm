@@ -583,7 +583,7 @@ sub nextRecord {
 	    $logger->logdie("id was not defined for recordIndex '$recordIndex'");
 	}
     }
-    
+
     return undef;
 }
 
@@ -611,25 +611,17 @@ sub _sortFeaturesByCoordinates {
     foreach my $feature_id ( @{$featuresList} ) {
 	if (! exists $self->{'_records'}->{$feature_id}){
 	    $logger->warn("feature_id '$feature_id' does not exist in the _records lookup!");
-#	    delete $self->{'_records'}->{$feature_id};
 	}
 	else {
 	    push(@{$sortableFeatureList}, $feature_id);
-#	    $logger->fatal("feature_id:" . Dumper $self->{'_records'}->{$feature_id});
 	}
     }
-#    die;
 
-
-
-#    foreach my $feature_id ( sort { $recordsLookup->{$a}->getStart() <=> $recordsLookup->{$b}->getStart() }  @{$featuresList} ) {
-#    foreach my $feature_id ( sort { $self->{'_records'}->{$a}->getStart() <=> $self->{'_records'}->{$b}->getStart() }  @{$featuresList} ) {
     foreach my $feature_id ( sort { $self->{'_records'}->{$a}->getStart() <=> $self->{'_records'}->{$b}->getStart() }  @{$sortableFeatureList} ) {
 	push(@{$sortedFeatureList}, $feature_id);
     }
-    
+
     $self->{'_features'}->{$sequence_id} = $sortedFeatureList;
 }
-    
-	
-1;
+
+1; ## End of module
