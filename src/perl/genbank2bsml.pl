@@ -149,8 +149,8 @@ sub parse_genbank_file {
     $gbr{'gi'} = $seq->primary_id();
     defined($gbr{'gi'}) || die "No gi in $gb_file";
 
-    #first word is genus, all follows is species
-    $gbr{'organism'} = $seq->species->common_name;
+    #first word is genus, all follows is species (a workaround to encode the entire scientific name in BSML/chado)
+    $gbr{'organism'} = $seq->species->scientific_name;
     $gbr{'organism'} =~ m/(\S+)\s+(.*)/;
     $gbr{'genus'} = $1;
     $gbr{'species'} = $2;
