@@ -484,6 +484,8 @@ sub writeRecords {
 	    $logger->logdie("GFF3Record does not exist for id '$sequence_id'");
 	}
 
+	$self->_sortFeaturesByCoordinates($sequence_id);
+
 	foreach my $feature_id ( @{$self->{'_features'}->{$sequence_id}} ) {
 	    ## Write all of the features localized to the primary sequences next.
 	    if (exists $self->{'_records'}->{$feature_id}){
@@ -585,4 +587,49 @@ sub nextRecord {
     return undef;
 }
 
+=item $obj->_sortFeaturesByCoordinates()
+
+B<Description:> Sort all of the GFFRecords by start coordinate
+
+B<Parameters:> None
+
+B<Returns:> None
+
+=cut
+
+sub _sortFeaturesByCoordinates {
+
+    my $self = shift;
+    my ($sequence_id) = @_;
+
+    my $featuresList = $self->{'_features'}->{$sequence_id};
+    my $recordsLookup = $self->{'_records'};
+
+    my $sortedFeatureList=[];
+    my $sortableFeatureList=[];
+    use Data::Dumper;
+    foreach my $feature_id ( @{$featuresList} ) {
+	if (! exists $self->{'_records'}->{$feature_id}){
+	    $logger->warn("feature_id '$feature_id' does not exist in the _records lookup!");
+#	    delete $self->{'_records'}->{$feature_id};
+	}
+	else {
+	    push(@{$sortableFeatureList}, $feature_id);
+#	    $logger->fatal("feature_id:" . Dumper $self->{'_records'}->{$feature_id});
+	}
+    }
+#    die;
+
+
+
+#    foreach my $feature_id ( sort { $recordsLookup->{$a}->getStart() <=> $recordsLookup->{$b}->getStart() }  @{$featuresList} ) {
+#    foreach my $feature_id ( sort { $self->{'_records'}->{$a}->getStart() <=> $self->{'_records'}->{$b}->getStart() }  @{$featuresList} ) {
+    foreach my $feature_id ( sort { $self->{'_records'}->{$a}->getStart() <=> $self->{'_records'}->{$b}->getStart() }  @{$sortableFeatureList} ) {
+	push(@{$sortedFeatureList}, $feature_id);
+    }
+    
+    $self->{'_features'}->{$sequence_id} = $sortedFeatureList;
+}
+    
+	
 1;

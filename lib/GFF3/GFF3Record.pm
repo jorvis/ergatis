@@ -321,6 +321,37 @@ sub getType {
     }
 }
 
+=item $obj->getStart()
+
+B<Description:> Retrieves the start for the GFFRecord object
+
+B<Parameters:> None
+
+B<Returns:> Scalar/string that is the start assigned to the GFF3Record
+
+=cut 
+
+sub getStart {
+
+    my ($self) = shift;
+
+    if (!defined($self)){
+	$logger->logdie("self was not defined");
+    }
+   
+    if ( exists $self->{'_core'} ) {
+	if (defined($self->{'_core'}->[3])) {
+	    return  $self->{'_core'}->[3];
+	}
+	else {
+	    $logger->logdie("The start is not defined for the GFF3Record with id '$self->{'_id'}'");
+	}
+    }
+    else {
+	$logger->logdie("The _core data does not exist for the GFF3Record with id '$self->{'_id'}'!");
+    }
+}
+
 =item $obj->extractFastaSequence()
 
 B<Description:> Returns the FASTA sequence (scalar/string) and deletes the fasta attribute for the GFFRecord object
