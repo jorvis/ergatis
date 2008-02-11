@@ -24,6 +24,10 @@
                 <value>$;TRANSLATION_TABLE$;</value>
             </param>
             <param>  
+                <key>--gbrowse</key>
+                <value>$;GBROWSE$;</value>
+            </param>
+            <param>  
                 <key>--logfile</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml2gff3.log</value>
             </param>
