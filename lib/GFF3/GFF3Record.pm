@@ -63,7 +63,7 @@ sub new  {
     my ($class) = shift;
 
     my ($id, $seqid, $source, $type, $start, $stop, $score,
-	$strand, $phase) = @_;
+	$strand, $phase, $gbrowse) = @_;
 
 
    my $self = {};
@@ -136,7 +136,10 @@ sub new  {
     }
 
     $self->{'_core'}->[7] = $phase;
-   
+
+    if ($gbrowse == 1){
+      $self->{'_gbrowse'} = 1;
+    }
 
     bless $self, $class;    
 
@@ -206,6 +209,14 @@ sub addAttribute {
     $value =~ s/([\f\n\r\t;=%&,[:cntrl:]])/sprintf("%%%02X", ord($1))/seg;
 
     push(@{$self->{'_attrs'}->{$key}}, $value);
+
+    if ( ($key eq 'gene_product_name') || ($key eq 'description')){
+      if ((exists $self->{'_gbrowse'}) && (defined($self->{'_gbrowse'})) && ($self->{'_gbrowse'} == 1)){
+	## In order to ensure GBrowse compatibility, the gene_product_name
+	## must be store as the Note attribute
+	push(@{$self->{'_attrs'}->{'Note'}}, $value);
+      }
+    }
 }
 
 =item $obj->addParent($parent)

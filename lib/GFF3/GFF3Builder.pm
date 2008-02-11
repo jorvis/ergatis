@@ -241,7 +241,7 @@ sub createAndAddRecord {
     my ($self) = shift;
     my ($id, $seqid, $source, $type, $start, $stop, $score, $strand, $phase) = @_;
 
-    my $gff3Record = new GFF3::GFF3Record($id, $seqid, $source, $type, $start, $stop, $score, $strand, $phase);
+    my $gff3Record = new GFF3::GFF3Record($id, $seqid, $source, $type, $start, $stop, $score, $strand, $phase, $self->{'_gbrowse'});
     if (!defined($gff3Record)){
 	$logger->logdie("Could not instantiate GFF3::GFF3Record for id '$id' type '$type' start '$start' stop '$stop' strand '$strand'");
     }
