@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>validate_asn</name>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Create the asnval and asndisc temp output directories</name>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Create the asnval and asndisc output directories</name>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/</arg>
+              <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.mkdir.stderr</value>
+              </param>
+              <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.mkdir.stdout</value>
+              </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Run asnval</name>
+	    <executable>/usr/local/bin/asnval</executable>
+	    <arg>-i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.asnval.rpt</arg>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.asnval.stderr</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.asnval.stdout</value>
+            </param>
+        </command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Run asndisc</name>
+	    <executable>/usr/local/bin/asndisc</executable>
+	    <arg>-i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.discrpt</arg>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.asndisc.stderr</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.asndisc.stdout</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
