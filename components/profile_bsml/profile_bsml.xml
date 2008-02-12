@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<state>incomplete</state>
+	<name>profile_bsml workflow</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create temp directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+            <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/mkdir.output_directory.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/mkdir.output_directory.stderr</value>
+	    </param>
+	</command>
+	<!--Iterator-->
+	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML"/>
+	<command>
+	    <type>RunJavaUnixCommand</type>
+	    <name>Create BSML Profile file list</name>
+	    <executable>find</executable>
+	    <arg>$;OUTPUT_DIRECTORY$; -name '*.log'</arg>
+            <param>
+		<key>stdout</key>
+		<value>$;PROF_OUTPUT_LIST$;</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/create_profile_file_list.stderr</value>
+	    </param>
+	</command>
+    </commandSet>
+</commandSetRoot>
