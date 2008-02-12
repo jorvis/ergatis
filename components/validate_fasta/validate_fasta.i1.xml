@@ -1,0 +1,27 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<name>validate_fasta</name>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Validation of FASTA file</name>
+	    <executable>$;BIN_DIR$;/countHeadersWithoutSequence</executable>
+	    <param>
+	       <key>--fastafile</key>
+	       <value>$;I_FILE_PATH$;</value>
+	    </param>
+	    <param>
+	       <key>--logfile</key>
+	       <value>$;TMP_DIR$;/countHeadersWithoutSequence.pl.$;I_FILE_BASE$;.log</value>
+	    </param>
+	    <param>
+	       <key>stdout</key>
+	       <value>$;TMP_DIR$;/countHeadersWithoutSequence.pl.$;I_FILE_BASE$;.stdout</value>
+	    </param>
+            <param>
+               <key>stderr</key>
+               <value>$;TMP_DIR$;/countHeadersWithoutSequence.pl.$;I_FILE_BASE$;.stderr</value>
+            </param>
+	</command>
+    </commandSet>
+</commandSetRoot>
