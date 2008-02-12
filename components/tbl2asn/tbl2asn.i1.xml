@@ -2,43 +2,95 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>tbl2asn compute</name>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>tbl2asn</name>
-            <state>incomplete</state>
-            <executable>$;TBL2ASN_EXEC$;</executable>
-            <param>  
-                <key>-i</key>
-                <value>$;I_FILE_PATH$;</value>
-            </param>
-            <param>  
-                <key>-o</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.asn</value>
-            </param>
-            <param>  
-                <key>-b</key>
-                <value>$;GENERATE_GENBANK_FILES$;</value>
-            </param>
-            <param>  
-                <key>-v</key>
-                <value>$;PERFORM_VALIDATION$;</value>
-            </param>
-            <param>  
-                <key>-j</key>
-                <value>"[gcode=$;CODON_TABLE$;]"</value>
-            </param>
-            <param>  
-                <key>-n</key>
-                <value>"$;ORGANISM_NAME$;"</value>
-            </param>
+        <name>tbl2asn</name>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Create the tbl2asn output directory</name>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/</arg>
+              <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.mkdir.stderr</value>
+              </param>
+              <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.mkdir.stdout</value>
+              </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Copy input tbl file to output directory</name>
+	    <executable>cp</executable>
+	    <arg>$;INPUT_TBL_FILE$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/.</arg>
+              <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.copy.tbl.stderr</value>
+              </param>
+              <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.copy.tbl.stdout</value>
+              </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Copy input fasta file to output directory</name>
+	    <executable>cp</executable>
+	    <arg>$;INPUT_FASTA_FILE$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/.</arg>
+              <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.copy.fasta.stderr</value>
+              </param>
+              <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.copy.fasta.stdout</value>
+              </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Run tbl2asn</name>
+	    <executable>$;TBL2ASN_EXEC$;</executable>
+	    <arg>-p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/ -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/$;ASSEMBLY_ID$;.asn -b $;GENERATE_GENBANK_FILES$; -v $;PERFORM_VALIDATION$; -j "[gcode=$;CODON_TABLE$;]" -n "$;GENUS$; $;SPECIES$;"</arg>
             <param>  
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.tbl2asn.stderr</value>
             </param>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.tbl2asn.stdout</value>
+            </param>
+        </command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Run asnval</name>
+	    <executable>/usr/local/bin/asnval</executable>
+	    <arg>-i $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/$;ASSEMBLY_ID$;.asn -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/$;ASSEMBLY_ID$;.asnval.rpt</arg>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.asnval.stderr</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.asnval.stdout</value>
+            </param>
+        </command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Run asndisc</name>
+	    <executable>/usr/local/bin/asndisc</executable>
+	    <arg>-i $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/$;ASSEMBLY_ID$;.asn -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;/$;ASSEMBLY_ID$;.discrpt</arg>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.asndisc.stderr</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;ASSEMBLY_ID$;.asndisc.stdout</value>
             </param>
         </command>
     </commandSet>
