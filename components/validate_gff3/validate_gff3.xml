@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<state>incomplete</state>
+	<name>validate_gff3 workflow</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create temp directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+	</command>
+	<!--Iterator-->
+	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML"/>
+    </commandSet>
+</commandSetRoot>

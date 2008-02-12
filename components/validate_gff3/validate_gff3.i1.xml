@@ -1,0 +1,20 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<name>validate_gff3</name>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
+	    <name>Validation of GFF3 file</name>
+	    <executable>$;BIN_DIR$;/gff3Valid</executable>
+	    <arg>$;I_FILE_PATH$;</arg>
+	    <param>
+	       <key>stdout</key>
+	       <value>$;TMP_DIR$;/gff3Valid.pl.$;I_FILE_BASE$;.stdout</value>
+	    </param>
+            <param>
+               <key>stderr</key>
+               <value>$;TMP_DIR$;/gff3Valid.pl.$;I_FILE_BASE$;.stderr</value>
+            </param>
+	</command>
+    </commandSet>
+</commandSetRoot>
