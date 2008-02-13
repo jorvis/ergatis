@@ -29,6 +29,10 @@
                 <value>'$;FORMAT$;'</value>
             </param>
             <param>  
+                <key>--class</key>
+                <value>'$;CLASS$;'</value>
+            </param>
+            <param>  
                 <key>--output</key>
                 <value>'$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE$;'</value>
             </param>
