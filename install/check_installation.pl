@@ -89,7 +89,7 @@ if (defined $options{log}) {
 }
 
 ## holds the test counts ( pass|fail )
-my %results = ( pass => 0, fail => 0 );
+my %results = ( pass => 0, fail => 0, warn => 0 );
 
 my $cfg;
 
@@ -119,11 +119,29 @@ if ( $@ ) {
 &paths__global_saved_templates();
 &paths__pipeline_build_area();
 &paths__default_ergatis_dir();
+&paths__default_project_root();
+&paths__default_project_conf();
 
-## if we got this far, print counts
-_log( "\npassed $results{pass}/" . ($results{pass} + $results{fail}) . " tests\n\n" );
+&workflow_settings__submit_pipelines_as_jobs();
+&workflow_settings__marshal_interval();
+&workflow_settings__init_heap();
+&workflow_settings__max_heap();
+## if we got this far, print results
+_log("\n--------------------------------------------------------\n" );
+_log( "\npassed $results{pass}/" . ($results{pass} + $results{fail}) . " tests\n" );
+
+if ( $results{warn} == 1 ) {
+    _log( "$results{warn} warning\n\n" );
+} else {
+    _log( "$results{warn} warnings\n\n" );
+}
 
 exit(0);
+
+sub _explain {
+    my $msg = shift;
+    _log("\tEXPLANATION: $msg\n\n");
+}
 
 
 sub _log {
@@ -168,7 +186,8 @@ sub check_ergatis_ini_sections {
             ],
         grid =>
             [
-                'sge_root', 'sge_cell', 'sge_qmaster_port', 'sge_execd_port', 'sge_arch',
+                'grid_enabled', 'sge_root', 'sge_cell', 'sge_qmaster_port', 'sge_execd_port', 
+                'sge_arch',
             ],
         authentication =>
             [
@@ -357,9 +376,28 @@ sub paths__default_ergatis_dir {
     my $ergatis_dir = $cfg->val('paths', 'default_ergatis_dir');
     
     ## this directory should already exist
-    LEFT OFF HERE
+    &check_existence( $ergatis_dir );
     
     ## we can check for a few things within it to make sure
+    &check_existence( "$ergatis_dir/bin" );
+    &check_existence( "$ergatis_dir/lib" );
+}
+
+sub paths__default_project_conf {
+    _log("\nchecking default project conf\n");
+    
+    my $proj_conf = $cfg->val('paths', 'default_project_conf');
+    
+    &check_existence( $proj_conf );
+}
+
+sub paths__default_project_root {
+    _log("\nchecking default project root\n");
+    
+    my $proj_root = $cfg->val('paths', 'default_project_root');
+    
+    &check_existence( $proj_root );
+    &check_writable( $proj_root );
 }
 
 sub paths__global_id_repository {
@@ -414,7 +452,8 @@ sub paths__pipeline_archive_root {
         _log("WARNING: paths - pipeline_archive_root defined doesn't exist.  This isn't " .
              "necessarily a problem because the interface will create it automatically " .
              "when it needs to.  Instead, we need to check that the parent exists and is " .
-             "writable\n"); 
+             "writable\n");
+        $results{warn}++;
         &check_existence( $parent );
         &check_writable( $parent );
     }
@@ -438,7 +477,8 @@ sub paths__pipeline_build_area {
         _log("WARNING: paths - pipeline_build_area defined doesn't exist.  This isn't " .
              "necessarily a problem because the interface will create it automatically " .
              "when it needs to.  Instead, we need to check that the parent exists and is " .
-             "writable\n"); 
+             "writable\n");
+        $results{warn}++;
         &check_existence( $parent );
         &check_writable( $parent );
     }
@@ -487,6 +527,99 @@ sub paths__workflow_run_dir {
     &check_is_directory( $run_dir );
     &check_writable( $run_dir );
 }
+
+sub workflow_settings__init_heap {
+    _log("checking workflow_settings:init_heap ... ");
+    
+    my $init_heap = $cfg->val('workflow_settings', 'init_heap');
+    
+    ## value should be like 100m
+    if ( $init_heap =~ /^\d+m/i ) {
+        $results{pass}++;
+        _log("PASS\n");
+    } else {
+        $results{fail}++;
+        _log("FAIL\n");
+        _explain("workflow_settings:init_heap expected value like 100m");
+    }
+}
+
+sub workflow_settings__max_heap {
+    _log("checking workflow_settings:max_heap ... ");
+    
+    my $max_heap = $cfg->val('workflow_settings', 'max_heap');
+    
+    ## value should be like 1024m
+    if ( $max_heap =~ /^\d+m/i ) {
+        $results{pass}++;
+        _log("PASS\n");
+    } else {
+        $results{fail}++;
+        _log("FAIL\n");
+        _explain("workflow_settings:max_heap expected value like 1024m");
+    }
+}
+
+sub workflow_settings__marshal_interval {
+    _log("checking workflow_settings:marshal_interval ... ");
+    
+    my $marshal_interval = $cfg->val('workflow_settings', 'marshal_interval');
+    
+    ## must be a value greater than 0
+    if ( $marshal_interval =~ /^\d+$/ && $marshal_interval > 0 ) {
+        $results{pass}++;
+        _log("PASS\n");
+    } else {
+        $results{fail}++;
+        _log("FAIL\n");
+        _explain("workflow_settings:marshal_interval must be an integer, 0 or greater");
+    }
+}
+
+sub workflow_settings__submit_pipelines_as_jobs {
+    _log("\nchecking workflow_settings:submit_pipelines_as_jobs value ... ");
+    my $submit_as_jobs = $cfg->val('workflow_settings', 'submit_pipelines_as_jobs');
+    
+    ## the only acceptable values are 0 and 1
+    if ( $submit_as_jobs !~ /^\d+$/ || ($submit_as_jobs != 0 && $submit_as_jobs != 1) ) {
+        $results{fail}++;
+        _log("FAIL\n");
+        _explain("submit_pipelines_as_jobs value must be either 0 or 1");
+        
+    } else {
+        $results{pass}++;
+        _log("PASS\n");
+    }
+    
+    ## if this is set to 1, grid_enabled needs to also be 1
+    _log("checking workflow_settings:submit_pipelines_as_jobs grid:grid_enabled agreement ... ");
+    if ( $submit_as_jobs == 1 ) {
+        if ( $cfg->val('grid', 'grid_enabled') == 1 ) {
+            $results{pass}++;
+            _log("PASS\n");
+        } else {
+            $results{fail}++;
+            _log("FAIL\n");
+            _explain("The workflow_settings:submit_pipelines_as_jobs parameter is set to 1 but " . 
+                     "grid:grid_enabled is not 1.  Can't submit jobs without an active grid.");
+        }
+    } else {
+        $results{pass}++;
+        _log("PASS\n");
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
