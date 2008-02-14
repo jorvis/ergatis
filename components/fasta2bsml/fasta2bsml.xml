@@ -33,6 +33,14 @@
                 <value>'$;CLASS$;'</value>
             </param>
             <param>  
+                <key>--genus</key>
+                <value>'$;GENUS$;'</value>
+            </param>
+            <param>  
+                <key>--species</key>
+                <value>'$;SPECIES$;'</value>
+            </param>
+            <param>  
                 <key>--output</key>
                 <value>'$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE$;'</value>
             </param>
