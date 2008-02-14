@@ -221,6 +221,8 @@ my $results = GetOptions (\%options,
                           'output_subdir_size|z=s',
                           'output_subdir_prefix|x=s',
                           'format|m=s',
+                          'genus=s',
+                          'species=s',
 			              'log|l=s',
 			              'debug=s',
 			              'help|h') || pod2usage();
@@ -334,11 +336,53 @@ for my $file ( @files ) {
         if ($options{format} eq 'single') {
             $doc = new BSML::BsmlBuilder;
         }
-         
-        my $seq_element = $doc->createAndAddSequence( $id, $seqs{$seqid}{h}, length($seqs{$seqid}{s}), undef, $options{class} );
+
+	my $genome_id;
+
+	if ((defined($options{'genus'})) && (defined($options{'species'}))){
+
+	  my $genome_elem = $doc->createAndAddGenome();
+
+	  if (!defined($genome_elem)){
+	    $logger->logdie("Could not create <Genome> element ".
+			    "object for organism with genus ".
+			    "'$options{'genus'}' species ".
+			    "'$options{'species'}'");
+	  }
+
+	  if (( exists $genome_elem->{'attr'}->{'id'} ) && ( defined ( $genome_elem->{'attr'}->{'id'} ) )  ){
+	    $genome_id = $genome_elem->{'attr'}->{'id'};
+	  } else {
+	    $logger->logdie("Genome id was not defined!");
+	  }
+
+	  my $organism_elem = $doc->createAndAddOrganism('genome'  => $genome_elem,
+							 'genus'   => $options{'genus'},
+							 'species' => $options{'species'} );
+	  if (!defined($organism_elem)){
+	    $logger->logdie("Could not create <Organism> element ".
+			    "object for genus '$options{'genus'}' ".
+			    "species '$options{'species'}'");
+	  }
+	}
+
+        my $seq_element = $doc->createAndAddSequence( $id, $seqs{$seqid}{'h'}, length($seqs{$seqid}{'s'}), undef, $options{'class'} );
         $logger->debug("adding id $id to the bsml doc") if ($logger->is_debug);
-        $doc->createAndAddSeqData( $seq_element, $seqs{$seqid}{s} );
-        
+        $doc->createAndAddSeqData( $seq_element, $seqs{$seqid}{'s'} );
+
+        if (defined($genome_id)){
+	  ## The <Sequence> will be explicitly linked with the <Genome>
+	  my $link_elem = $doc->createAndAddLink(  $seq_element,
+						   'genome',        # rel
+						   "#$genome_id"    # href
+						);
+
+	  if (!defined($link_elem)){
+	    $logger->logdie("Could not create a 'genome' <Link> ".
+			    "element object <Sequence> with id '$id'");
+	  }
+	}
+
         ## record the defline
         $doc->createAndAddBsmlAttribute( $seq_element, 'defline', $seqs{$seqid}{h} );
         
