@@ -60,6 +60,9 @@
     </li>
     <li>
         <h4>parsePipelineLayout( $layout_string, $template_path ) - build_pipeline.js</h4>
+        <p>
+            This function that parses the layout string returned by get_pipeline_layout.cgi
+        </p>
         <ol>
             <li>Create a parsable DOM object out of $layout_string</li>
             <li>
@@ -75,7 +78,14 @@
     </li>
     <li>
         <h4>parsePipelineNode( pipeline_node, insert_loc, template_path) - build_pipeline.js</h4>
-        
+        <p>
+            This is a recursive function where each iteration parses a single node, originally
+            from parsePipelineLayout.  For each iteration:
+        </p>
+        <ol>
+            <li>gathers direct children of the current node</li>
+            <li></li>
+        </ol>
     </li>
 </ol>
 
