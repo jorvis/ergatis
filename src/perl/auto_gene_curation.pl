@@ -780,13 +780,28 @@ sub handleHmmSPA {
 
     #Get the seq pair runs
     my @sprs = $spaElem->children('Seq-pair-run');
-    $logger->logdie("SPA (".$spaElem->att('compseq').") did not have any spr's") if(@sprs == 0);
+
+    $logger->logdie("SPA (".$spaElem->att('compseq').") did not have any spr's") 
+    
+    ## you would only do this if your HMM lib had duplicate IDs and the BSML wasn't formed correctly
+    ##next if(@sprs == 0);
 
     foreach my $spr ( @sprs ) {
         
-        my ($start, $length, $compseq) = 
-            ($spr->att('refpos'),$spr->att('runlength'), $spaElem->att('compseq'));
-        $logger->logdie("Could not find hmm $compseq in hmm_info") unless(exists($hmmInfo{$compseq}));
+        my ($start, $length, $compseq) = ($spr->att('refpos'),$spr->att('runlength'), $spaElem->att('compseq'));
+        
+        ## if compseq ID doesn't exist and starts with an underscore, this may be because it really started with
+        ##  an integer and BSML couldn't allow that within an id attribute.  Check for this.
+        if ( ! exists $hmmInfo{$compseq} ) {
+
+            if ( $compseq =~ /^_(\d.+)/ && exists $hmmInfo{$1} ) {
+                $logger->warn("replaced ID of $compseq with $1 to correct for the BSML id attribute limitations");
+                $compseq = $1;
+            } else {
+                $logger->logdie("Could not find hmm $compseq in hmm_info");
+            }
+        }
+        
         unless($hmmInfo{$compseq}->{'trusted_cutoff'}) {
             print STDOUT Dumper($hmmInfo{$compseq});
         }
