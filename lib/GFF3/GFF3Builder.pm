@@ -181,7 +181,12 @@ sub addHeader {
 	$logger->logdie("value was not defined");
     }
 
-    $self->{'_headers'}->{$key} = $value;
+    if (! exists $self->{'_headers'}->{$key}){
+      $self->{'_headers'}->{$key} = $value;
+      push(@{$self->{'_headersArray'}}, "$key $value");
+    } else {
+      $logger->warn("header key '$key' value '$value' was already stored");
+    }
 }
  
 
@@ -245,7 +250,7 @@ sub createAndAddRecord {
     if (!defined($gff3Record)){
 	$logger->logdie("Could not instantiate GFF3::GFF3Record for id '$id' type '$type' start '$start' stop '$stop' strand '$strand'");
     }
-    
+
     ## Store reference to this new GFF3Record
     $self->{'_records'}->{$id} = $gff3Record;
 
@@ -446,8 +451,8 @@ sub writeHeaders {
     }
 
     if (exists $self->{'_headers'}){
-	foreach my $header ( keys %{$self->{'_headers'}} ) {
-	    print $fh "\#\# $header\t$self->{'_headers'}->{$header}\n";
+	foreach my $header ( @{$self->{'_headersArray'}} ) {
+	    print $fh "\#\#$header\n";
 	}
     }
 }
