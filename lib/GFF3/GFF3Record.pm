@@ -495,7 +495,13 @@ sub writeRecord {
 	$values .= "Parent=$parent;";
     }
 
+    my $nameAttributeEncountered=0;
+
     foreach my $attr ( keys %{$self->{'_attrs'}} ) {
+
+      if ($attr eq 'Name'){
+	$nameAttributeEncountered++;
+      }
 
 	$values .= "$attr=";
 
@@ -508,7 +514,15 @@ sub writeRecord {
 	## add attribute separator (semicolon)
 	$values .= ";";
     }
-    
+
+    if ( ($nameAttributeEncountered == 0) && (($cols->[2] eq 'mRNA') || ( $cols->[2] eq 'contig' ) || ( $cols->[2] eq 'assembly' )) ){
+      ## Need to add the Name attribute for records
+      ## of type mRNA, contig or assembly
+      ## in order for GFF3 file to be valid.
+      $values .= "Name=$self->{'_id'};";
+    }
+
+
     ## remove trailing semicolon
     chop $values;
 
