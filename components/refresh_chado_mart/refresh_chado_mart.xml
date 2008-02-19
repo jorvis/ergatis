@@ -60,11 +60,11 @@
 	    </param>
             <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;USERNAME$;</value>
 	    </param>
             <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;PASSWORD$;'</value>
 	    </param>
             <param>
 		<key>--database</key>
@@ -125,11 +125,11 @@
 	  </param>
             <param>
 		<key>--user</key>
-		<value>chado_admin</value>
+		<value>$;USERNAME$;</value>
             </param>
             <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;PASSWORD$;'</value>
 	  </param>
             <param>
 		<key>--database</key>
