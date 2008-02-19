@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
 
 =head1 NAME
 
@@ -25,7 +25,7 @@ B<--output,-o>
 
 B<--analysis_id,-a>
     Analysis id.  Should most likely by ps_scan_analysis.
-
+    
 B<--query_file_path,-g>
     Path to the query file (input fasta file) for ps_scan.
 
@@ -79,8 +79,7 @@ my $debug;
 my $analysis_id;
 my $fasta_file;
 my $gzip;
-my $defline;
-my $identifier;
+my $identifier_lookup = {};
 ########################################
 
 my %options = ();
@@ -106,6 +105,7 @@ $logger = $logger->get_logger();
 
 my $data = &parsePs_scanData($inputFile);
 my $bsml = &generateBsml($data);
+print "Writing to $output\n";
 $bsml->write($output,'', $gzip);
 
 ######################## SUB ROUTINES #######################################
@@ -121,7 +121,6 @@ sub parsePs_scanData {
     while(<IN>) {
 
         if(/^>(.*)\s:(.*)$/) {
-            print $_;
             $seq = $1;
             $seq =~ s/\s+//g;
             $prosite = $2;
@@ -161,6 +160,16 @@ sub generateBsml {
     
     my $doc = new BSML::BsmlBuilder();
 
+    if( scalar(keys %{$data}) == 0 ) {
+        foreach my $seq ( keys %{$identifier_lookup} ) {
+            print "Adding $seq to doc\n";
+            my $seq_elem = $doc->createAndAddSequence($seq, $seq, '', 'aa', 'polypeptide');
+            $doc->createAndAddLink($seq_elem, 'analysis', '#'.$analysis_id.'_analysis', 'input_of');
+            $doc->createAndAddSeqDataImport($seq_elem, 'fasta', $fasta_file, '', $seq);
+            $doc->createAndAddBsmlAttribute( $seq_elem, 'defline', $identifier_lookup->{$seq});
+        }
+    }
+
     foreach my $seq(keys %{$data}) {
         
         #Create the seq object if we need to
@@ -169,8 +178,13 @@ sub generateBsml {
         }
         
         $doc->createAndAddLink($seqs{$seq}, 'analysis', '#'.$analysis_id.'_analysis', 'input_of');
-        $doc->createAndAddSeqDataImport($seqs{$seq}, 'fasta', $fasta_file, '', $identifier);
-        $doc->createAndAddBsmlAttribute( $seqs{$seq}, 'defline', $defline);
+
+        if( ! exists( $identifier_lookup->{$seq} ) ) {
+            die("$seq was not found in query sequence file");
+        }
+
+        $doc->createAndAddSeqDataImport($seqs{$seq}, 'fasta', $fasta_file, '', $seq);
+        $doc->createAndAddBsmlAttribute( $seqs{$seq}, 'defline', $identifier_lookup->{$seq});
 
         foreach my $proDomain(keys %{$data->{$seq}}) {
 
@@ -180,7 +194,6 @@ sub generateBsml {
                 unless($proId && $title);
                 
             if ( ! defined $seqs{$proId} ) {
-                print STDERR "ADDING SEQUENCE: $proId\n";
                 $seqs{$proId} = $doc->createAndAddSequence($proId, $title,  '', 'aa', 'prosite_entry');
             }
 
@@ -251,10 +264,12 @@ sub check_parameters {
         $fasta_file = $options{'query_file_path'};
         open(IN, "< $fasta_file") or
             &_die("Unable to open $fasta_file ($!)");
+        
         while(<IN>) {
             if(/^>(.*)/) {
-                $defline = $1;
-                $identifier = $1 if($defline =~ /^([^\s])/);
+                my $defline = $1;
+                my $identifier = $1 if($defline =~ /^([^\s]+)/);
+                $identifier_lookup->{$identifier} = $defline;
             }
         }
         close(IN);
