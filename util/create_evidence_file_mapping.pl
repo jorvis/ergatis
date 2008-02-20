@@ -106,6 +106,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use XML::Twig;
 use Data::Dumper;
+use File::Basename;
 
 my %options;
 my $results = GetOptions( \%options,
@@ -254,6 +255,9 @@ sub print_mapping_and_list_files {
             die("Could not parse base_name from $analysis_list") unless( $base_name );
         }
 
+	if (!defined($qualified_list_out_dir)){
+	    $qualified_list_out_dir = '/tmp';
+	}
         my $list_name = "$qualified_list_out_dir/qualified.$base_name";
 
         $alist_to_qlist_lookup{$analysis_list} = $list_name;
@@ -333,7 +337,8 @@ sub check_options {
     if( $opts->{'output'} ) {
         $out_map = $opts->{'output'};
     } else {
-        die("Option output is required");
+	$out_map = '/tmp/' . File::Basename::basename($0) . '.mapping-file.txt';
+	print STDERR "output was not specified and therefore was set to '$out_map'\n";
     }
 
     if( $opts->{'exclude_empty'} ) {
