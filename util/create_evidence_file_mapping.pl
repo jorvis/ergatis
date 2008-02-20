@@ -25,10 +25,10 @@ B<--input_file,-i>
 
     REQUIRED. A gene describing BSML file or list file of bsml files (.all.bsml)
 
-B<--analysis_lists,-a>
+B<--analysis_list,-a>
 
     REQUIRED or list_of_analysis_lists option. List file of output from analysis. Can be 
-    comman separated list of list files.
+    comma separated list of list files.
 
 B<--list_of_analysis_lists,-s>
 
