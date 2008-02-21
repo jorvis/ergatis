@@ -160,6 +160,10 @@ sub find_evidence_files {
 
     foreach my $analysis_file( @{$analysis_files} ) {
 
+	if ($analysis_file =~ /tRNAscan-SE/){
+	    die "This util cannot process the tRNAscan-SE analysis result files";
+	}
+
 	$analysis_file_ctr++;
 
         my $afh = open_file( $analysis_file );
