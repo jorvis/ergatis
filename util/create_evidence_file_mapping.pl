@@ -154,8 +154,13 @@ exit(0);
 sub find_evidence_files {
     my ($polypeptide_ids, $analysis_files) = @_;
     my %polypeptide_ev_hash = ();
+    
+    my $found_ctr=0;
+    my $analysis_file_ctr=0;
 
     foreach my $analysis_file( @{$analysis_files} ) {
+
+	$analysis_file_ctr++;
 
         my $afh = open_file( $analysis_file );
         chomp( my @list = <$afh> );
@@ -164,10 +169,23 @@ sub find_evidence_files {
             
             my @found_files = grep { /$polypeptide_id\./ } @list;
             push(@{$polypeptide_ev_hash{$polypeptide_id}->{$analysis_file}}, @found_files);
+	    $found_ctr++;
 
         }
     }
 
+
+    if ($analysis_file_ctr == 0){
+	die "Did not process any analysis list files!";
+    } else {
+	print "Processed '$analysis_file_ctr' analysis list files\n";
+    }
+
+    if ($found_ctr == 0){
+	die "Did not find any matching polypeptide files!";
+    } else {
+	print "Found '$found_ctr' polypeptide files\n";
+    }
     return %polypeptide_ev_hash;
 }
 
