@@ -145,6 +145,9 @@ if( $empty_file_list ) {
     &print_empty_file_list( \@empty_files );
 }
 
+print "$0 execution completed\n";
+exit(0);
+
 ############################################################
 
 ## finds evidence files for a given list of polypeptide ids
@@ -318,6 +321,10 @@ sub check_options {
 
     } else {
         die("Option input_file is required");
+    }
+
+    if (! (( $opts->{'analysis_list'} ) ||( $opts->{'list_of_analysis_lists'} )) ) {
+	die "You must specify --analysis_list or --list_of_analysis_lists";
     }
 
     if( $opts->{'analysis_list'} ) {
