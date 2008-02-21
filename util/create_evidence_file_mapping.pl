@@ -168,9 +168,11 @@ sub find_evidence_files {
         foreach my $polypeptide_id( @{$polypeptide_ids} ) {
             
             my @found_files = grep { /$polypeptide_id\./ } @list;
-            push(@{$polypeptide_ev_hash{$polypeptide_id}->{$analysis_file}}, @found_files);
-	    $found_ctr++;
 
+	    if (scalar(@found_files) > 0 ){
+		push(@{$polypeptide_ev_hash{$polypeptide_id}->{$analysis_file}}, @found_files);
+		$found_ctr += scalar(@found_files) + 1;
+	    } 
         }
     }
 
