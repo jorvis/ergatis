@@ -29,7 +29,7 @@
                <value>"$;INPUT_FILE_LIST$;"</value>
             </param>
             <param>
-               <key>--training_seq</key>
+               <key>--training_seqs</key>
                <value>"$;TRAINING_SEQ$;"</value>
             </param>
             <param>
