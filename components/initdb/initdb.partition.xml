@@ -8,11 +8,11 @@
 	    <name>Send SQL to chado</name>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;ADMIN_USER$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
 	    <param>
 		<key>--database</key>

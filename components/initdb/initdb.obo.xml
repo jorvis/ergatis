@@ -15,11 +15,11 @@
 	    <executable>$;BIN_DIR$;/obov1p2tochado</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;ADMIN_USER$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
 	    <param>
 		<key>--database</key>
@@ -73,11 +73,11 @@
 	    <executable>$;BIN_DIR$;/flatFileToChado</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;ADMIN_USER$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
 	    <param>
 		<key>--database</key>

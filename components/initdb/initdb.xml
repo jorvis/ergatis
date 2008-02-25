@@ -24,11 +24,11 @@
 	    <executable>$;BIN_DIR$;/checkDatabase</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;ADMIN_USER$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
               <param>
 		<key>--database</key>
@@ -150,11 +150,11 @@
 	    <executable>$;BIN_DIR$;/dropChadoObjects</executable>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;ADMIN_USER$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
               <param>
 		<key>--database</key>
@@ -439,11 +439,11 @@
 	    </param>
 	    <param>
 		<key>--username</key>
-		<value>chado_admin</value>
+		<value>$;ADMIN_USER$;</value>
 	    </param>
 	    <param>
 		<key>--password</key>
-		<value>chado_admin99</value>
+		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
