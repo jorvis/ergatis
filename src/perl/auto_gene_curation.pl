@@ -783,7 +783,8 @@ sub handleHmmSPA {
     #Get the seq pair runs
     my @sprs = $spaElem->children('Seq-pair-run');
 
-    $logger->logdie("SPA (".$spaElem->att('compseq').") did not have any spr's") 
+    ## not sure what you meant here Joshua, but it runs now.
+    $logger->logdie("SPA (".$spaElem->att('compseq').") did not have any spr's") if( @sprs == 0 );
     
     ## you would only do this if your HMM lib had duplicate IDs and the BSML wasn't formed correctly
     ##next if(@sprs == 0);
