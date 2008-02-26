@@ -408,12 +408,14 @@ sub checkParametersAndLog {
     ##                 };
      
     if($opts->{'hmm_info'}) {
-        tie(%hmmInfo, 'MLDBM', $opts->{'hmm_info'})
+        tie(%hmmInfo, 'MLDBM', $opts->{'hmm_info'}, mode => 0_RDONLY )
             or $logger->logdie("Unable to tie hash to $opts->{'hmm_info'}");
-    } else {
+    } elsif( $opts->{'hmm_info_db'} ) {
         my $file = $opts->{'hmm_info_db'};
-        tie(%hmmInfo, 'MLDBM', $file)
+        tie(%hmmInfo, 'MLDBM', $file, mode => O_RDONLY )
             or $logger->logdie("Unable to tie hash to $file");
+    } else {
+        $logger->logdie("option hmm_info_db is required");
     }
 
 } #End checkParameters
