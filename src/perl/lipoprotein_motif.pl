@@ -160,7 +160,7 @@ sub bsml_storeHit {
     $id = $1 if($defline =~ /^([^\s]+)/);
     &_die("Couldn't parse out the id out of the header (>$defline)") unless($id);
 
-    $project = "";
+    #project = "";
     $project = $1 if($id =~ /^([^\.]+)\./);
     &_die("Could not parse project out of id '$id'") unless($project);
     
