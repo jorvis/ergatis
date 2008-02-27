@@ -164,8 +164,26 @@ while ( my $line = <$ifh> ) {
             $product_name = $1;
         }
         
-        ## add entry to MLDBM
+        ## make sure it doesn't exist already
+        if ( exists $info{$$att{ACC}} )  {
+            _log("WARNING: duplicate accession ($$att{ACC}) added to data structure.  old one overwritten.");
+        }
+        
+        
+        _log("INFO: writing entry with accession $$att{ACC}");
+        ## add entry to MLDBM with the accession as the key
         $info{$$att{ACC}} = {
+                                hmm_com_name => $product_name,
+                                hmm_len => $$att{LENG},
+                                trusted_cutoff => $trusted_global,
+                                noise_cutoff => $noise_global,
+                                trusted_cutoff2 => $trusted_domain,
+                                noise_cutoff2 => $noise_domain,
+                            };
+        
+        _log("INFO: writing entry with name $$att{NAME}");
+        ## do it again with the name as the key (this is dumb)
+        $info{$$att{NAME}} = {
                                 hmm_com_name => $product_name,
                                 hmm_len => $$att{LENG},
                                 trusted_cutoff => $trusted_global,
