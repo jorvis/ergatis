@@ -2,12 +2,12 @@
 
 =head1 NAME
 
-tigrfams_to_mldbm.pl - Reads an HMM file and creates an MLDBM database of commonly-accessed 
+hmmlib_to_mldbm.pl - Reads an HMM file and creates an MLDBM database of commonly-accessed 
 attributes for each HMM.
 
 =head1 SYNOPSIS
 
-USAGE: tigrfams_to_mldbm.pl 
+USAGE: hmmlib_to_mldbm.pl 
             --hmm_file=/path/to/some_file.lib
             --output_file=/path/to/some.db
 
