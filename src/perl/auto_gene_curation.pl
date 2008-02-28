@@ -16,6 +16,7 @@ use File::Find;
 use Ergatis::Logger;
 use Time::localtime;
 use BSML::BsmlBuilder;
+use Fcntl qw( O_RDONLY );
 use MLDBM 'DB_File';
 $|++;
 #################################
@@ -408,7 +409,7 @@ sub checkParametersAndLog {
     ##                 };
      
     if($opts->{'hmm_info'}) {
-        tie(%hmmInfo, 'MLDBM', $opts->{'hmm_info'}, mode => 0_RDONLY )
+        tie(%hmmInfo, 'MLDBM', $opts->{'hmm_info'}, mode => O_RDONLY )
             or $logger->logdie("Unable to tie hash to $opts->{'hmm_info'}");
     } elsif( $opts->{'hmm_info_db'} ) {
         my $file = $opts->{'hmm_info_db'};
