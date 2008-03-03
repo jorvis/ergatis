@@ -588,8 +588,8 @@ ergatis-v2r6b2
 --------------
 -bugfix release for installer.  was failing on predotar component
 
-next
-----
+ergatis-v2r7b1
+--------------
 -geneidgff2bsml.pl: now correctly converts to interbase
 -pipeline list page for a project now shows project code
 -changed all /usr/local/bin/perl paths to /usr/bin/perl in cgi-bin
@@ -613,3 +613,7 @@ next
 -SavedPipeline.pm: fixed - was missing id_repository param
 -ergatis.ini: added grid_enabled option, allowing toggling of grid support
 -converted genscan and genscan-plus to version 2
+
+
+next
+----
