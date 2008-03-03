@@ -79,17 +79,28 @@ The output file is created using the MLDBM library, which can be accessed as a t
 this structure:
 
     $h->{$accession} = {
-                            hmm_com_name => ?,
-                            hmm_len => ?,
+                            name => 'S16'
+                            hmm_com_name => 'ribosomal protein S16',
+                            hmm_len => 81,
                             trusted_cutoff => ?,
                             noise_cutoff => ?,
                             trusted_cutoff2 => ?,
                             noise_cutoff2 => ?,
+                            gathering_cutoff => 35.00,
+                            gathering_cutoff2 => 35.00,
+                            ec_num => ?,
+                            gene_symbol => ?,
+                            isotype => ?,
                        };
 
 Future attributes that could be added:
 
-iso_type, ec_num, gene_sym, role_ids, go_terms
+role_ids, go_terms
+
+Any other processes or scripts can add to this data structure to possibly improve annotation.  The
+tigrfam_info_to_mldbm script, for example, adds ec_num, gene_symbol and isotype to the data
+structure for TIGRFAM entries.  These scripts though should not create new attributes of an
+accession without a stub being added here first.
 
 =head1  CONTACT
 
@@ -142,6 +153,7 @@ while ( my $line = <$ifh> ) {
     if ( $line =~ m|^//| && defined $att ) {
         
         my ($trusted_global, $trusted_domain, $noise_global, $noise_domain);
+        my ($gathering_global, $gathering_domain);
         
         if ( $$att{TC} =~ /([0-9\.\-]+)\s+([0-9\.\-]+)/ ) {
             ($trusted_global, $trusted_domain) = ($1, $2);
@@ -157,7 +169,14 @@ while ( my $line = <$ifh> ) {
             die "failed to parse noise global and noise domains for $$att{ACC}\n";
         }
         
-        ## handle the product name.  if it contains the NAME, remove that
+        if ( $$att{GA} =~ /([0-9\.\-]+)\s+([0-9\.\-]+)/ ) {
+            ($gathering_global, $gathering_domain) = ($1, $2);
+            
+        } else {
+            die "failed to parse gathering global and gathering domains for $$att{GA}\n";
+        }
+        
+        ## handle the product name.  if it contains the NAME at the beginning, remove that
         my $product_name = $$att{DESC};
         
         if ( $product_name =~ /^$$att{NAME}: (.+)/ ) {
@@ -173,23 +192,18 @@ while ( my $line = <$ifh> ) {
         _log("INFO: writing entry with accession $$att{ACC}");
         ## add entry to MLDBM with the accession as the key
         $info{$$att{ACC}} = {
+                                name => $$att{NAME},
                                 hmm_com_name => $product_name,
                                 hmm_len => $$att{LENG},
                                 trusted_cutoff => $trusted_global,
                                 noise_cutoff => $noise_global,
                                 trusted_cutoff2 => $trusted_domain,
                                 noise_cutoff2 => $noise_domain,
-                            };
-        
-        _log("INFO: writing entry with name $$att{NAME}");
-        ## do it again with the name as the key (this is dumb)
-        $info{$$att{NAME}} = {
-                                hmm_com_name => $product_name,
-                                hmm_len => $$att{LENG},
-                                trusted_cutoff => $trusted_global,
-                                noise_cutoff => $noise_global,
-                                trusted_cutoff2 => $trusted_domain,
-                                noise_cutoff2 => $noise_domain,
+                                gathering_cutoff => $gathering_global,
+                                gathering_cutoff2 => $gathering_domain,
+                                ec_num => $$att{EC} || '',
+                                gene_symbol => $$att{GS} || '',
+                                isotype => $$att{IT} || '',
                             };
         
         undef $att;
