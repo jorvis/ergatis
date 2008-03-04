@@ -399,7 +399,6 @@ genscan-plus  :
 	@install components/genscan-plus/genscan-plus.config $(WORKFLOW_DOCS_DIR)
 	@install components/genscan-plus/genscan-plus.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/genscan-plus/genscan-plus.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/genscan-plus/genscan-plus.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 gff2bsml	:
 	@echo "Installing gff2bsml workflows in $(WORKFLOW_DOCS_DIR)"
