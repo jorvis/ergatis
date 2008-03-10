@@ -19,6 +19,10 @@ B<--input_file,-i>
 B<--output_htab,-o>
     HTAB output file
 
+B<--mldbm_file,-m>
+    MLDBM perl data structure (tied hash) containing HMM information.  This was previously
+    queried out of egad.hmm2.  See hmmlib_to_mldbm.pl for more information.
+
 B<--log,-l>
     Logfile.
 
@@ -133,8 +137,9 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use DBI;
 use HmmTools;
+use MLDBM 'DB_File';
+use Fcntl qw( O_RDONLY );
 use Ergatis::IdGenerator;
 use Ergatis::Logger;
 
@@ -155,6 +160,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'input_file|i=s',
                           'output_htab|o=s',
+                          'mldbm_file|m=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || &_pod;
@@ -169,9 +175,7 @@ $logger = $logger->get_logger();
 &check_parameters(\%options);
 
 #Gather information about the hmms.
-my ($hmm_db_info, $dbh);
-$dbh = DBI->connect("dbi:Sybase:server=SYBTIGR;database=egad", "access", "access");
-$hmm_db_info = &hmm_database_info($dbh);
+tie(my %hmm_info, 'MLDBM', $options{mldbm_file}, O_RDONLY ) or die("Unable to tie hash to $options{mldbm_file}");
 
 foreach my $file (@input_files) {
 
@@ -184,9 +188,7 @@ foreach my $file (@input_files) {
 
     #Generate the htab file.
     system( "rm -f $htab_file" ) if( -e $htab_file );
-    my $hmm_data = &generate_htab( $file, $htab_file, $hmm_db_info );
-
-    
+    my $hmm_data = &generate_htab( $file, $htab_file, \%hmm_info );
 }
 
 
@@ -247,6 +249,11 @@ sub check_parameters {
     my $options = shift;
 
     &_pod if($options{'help'});
+
+    ## mldbm file must be passed
+    if ( ! $options{mldbm_file} ) {
+        $logger->logdie("Option mldbm_file is required\n");
+    }
 
     if($options{'input_file'}) {
         $logger->logdie("Option input_file ($options{'input_file'}) does not exist\n") 
