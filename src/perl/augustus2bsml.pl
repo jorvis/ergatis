@@ -121,10 +121,14 @@ sub parseAugustusData {
     
     while(<IN>) {
         next if(/^\#/);
+        next if(/^\s+$/);
         chomp;
         
         my @cols = split(/\t/);
-        $cols[0] =~ s/(\S+) .*/$1/;
+        $cols[0] =~ s/(\S+)\s.*/$1/;
+
+        #The output will sometimes contain the 
+        next unless( $cols[1] eq 'AUGUSTUS' );
 
         #The first column should contain the input sequence id.  We use it for
         #the project name if it was not passed in or if the keyword parse
