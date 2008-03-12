@@ -76,6 +76,7 @@ The following are added to the existing tied hash.  Each accession entry should 
 =cut
 
 use strict;
+use Fcntl qw( O_RDWR );
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use MLDBM 'DB_File';
 use Pod::Usage;
@@ -106,8 +107,8 @@ opendir(my $idh, "$options{info_dir}") || die "can't read info dir: $!";
 
 my %info;
 
-## create the tied hash
-tie(%info, 'MLDBM', $options{'mldbm_file'});
+## open the tied hash
+tie(%info, 'MLDBM', $options{'mldbm_file'}, O_RDWR );
 
 _log("INFO: scanning $options{info_dir} for .INFO files");
 while ( my $file = readdir($idh) ) {
@@ -137,25 +138,32 @@ while ( my $file = readdir($idh) ) {
     my $ec_num = $info{$accession}{ec_num} || '';
     my $gene_symbol = $info{$accession}{gene_symbol} || '';
     my $isotype = $info{$accession}{isotype} || '';
-    
+
+    ## we have to store this into a variable first, make modifications, then write it
+    ##  back.  this is dumb, but see the BUGS section of the MLDBM perldoc for the
+    ##  explanation.
+    my $tied_acc = $info{$accession};
+
     while ( my $line = <$ifh> ) {
         chomp $line;
         
         ## look for isotype lines
         if ( $line =~ /^IT\s+(.+)$/ ) {
             _log("INFO: $accession isotype was [$isotype], changing to [$1]");
-            $info{$accession}{isotype} = $1;
+            $$tied_acc{isotype} = $1;
         
         ## look for ec num lines
         } elsif ( $line =~ /^EC\s+(.+)$/ ) {
             _log("INFO: $accession ec_num was [$ec_num], changing to [$1]");
-            $info{$accession}{ec_num} = $1;
+            $$tied_acc{ec_num} = $1;
             
         } elsif ( $line =~ /^GS\s+(.+)$/ ) {
             _log("INFO: $accession gene_symbol was [$gene_symbol], changing to [$1]");
-            $info{$accession}{gene_symbol} = $1;
+            $$tied_acc{gene_symbol} = $1;
         }
     }
+    
+    $info{$accession} = $tied_acc;
 }
 
 untie(%info);
