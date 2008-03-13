@@ -10,6 +10,7 @@ existing HmmInfo MLDBM file.
 USAGE: tigrfam_info_to_mldbm.pl 
             --mldbm_file=/path/to/some_file.db
             --info_dir=/path/to/some_dir
+          [ --go_link=/path/to/TIGRFAMS_GO_LINK ]
 
 =head1 OPTIONS
 
@@ -19,6 +20,9 @@ B<--mldbm_file>
 B<--info_dir>
     A directory of files named like TIGR00572.INFO with one 
 
+B<--go_link>
+    A tab-delimited file containing relationships of TIGRFAMs to GO terms
+    
 B<--log,-l> 
     Log file
 
@@ -58,6 +62,18 @@ The only fields I currently look for are these:
     GS  purD
     EC  6.3.4.13
 
+The --go_link is a tab-delimited text file with this format:
+
+    TIGR00025       GO:0005887      NULL
+    TIGR00025       GO:0006810      NULL
+    TIGR00025       GO:0043190      NULL
+    TIGR00025       GO:0042626      contributes_to
+    TIGR00029       GO:0003735      NULL
+    TIGR00029       GO:0006412      NULL
+    TIGR00029       GO:0000312      NULL
+
+Currently, this script only considers the first two columns.  This file is optional.
+
 =head1  OUTPUT
 
 The following are added to the existing tied hash.  Each accession entry should exist alraedy.
@@ -66,6 +82,7 @@ The following are added to the existing tied hash.  Each accession entry should 
                             isotype => 'equivalog_domain'
                             ec_num => '6.3.4.13',
                             gene_sym => 'purD',
+                            go => [ 'GO:0003735', 'GO:0006412', ... ]
                        };
 
 =head1  CONTACT
@@ -85,6 +102,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'mldbm_file=s',
                           'info_dir=s',
+                          'go_link=s',
                           'log|l=s',
                           'help|h') || pod2usage();
 
@@ -102,6 +120,20 @@ if (defined $options{log}) {
     open($logfh, ">$options{log}") || die "can't create log file: $!";
 }
 
+## read in all the GO associations first, if there are any
+my $go_terms = {};
+if ( $options{go_link} ) {
+    _log("INFO: reading go_link file $options{go_link}");
+    open(my $go_fh, "<$options{go_link}") || die "couldn't read --go_link file: $!";
+    
+    while ( my $line = <$go_fh> ) {
+        chomp $line;
+        next if $line =~ /^\s*$/;
+        
+        my @cols = split(/\t/, $line);
+        push @{$$go_terms{$cols[0]}}, $cols[1];
+    }
+}
 
 opendir(my $idh, "$options{info_dir}") || die "can't read info dir: $!";
 
@@ -163,6 +195,14 @@ while ( my $file = readdir($idh) ) {
         }
     }
     
+    ## now add any GO terms
+    if ( exists $$go_terms{$accession} ) {
+        _log("INFO: attaching " . scalar( @{$$go_terms{$accession}} ) . " to accession $accession");
+        $$tied_acc{go} = $$go_terms{$accession};
+    } else {
+        _log("INFO: no GO terms found for accession $accession");
+    }
+    
     $info{$accession} = $tied_acc;
 }
 
@@ -194,5 +234,5 @@ sub check_parameters {
     ##
     
     ## handle some defaults
-    #$options{optional_argument2}   = 'foo'  unless ($options{optional_argument2});
+    $options{go_link} = '' unless ($options{go_link});
 }

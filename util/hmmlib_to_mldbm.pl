@@ -91,11 +91,8 @@ this structure:
                             ec_num => ?,
                             gene_symbol => ?,
                             isotype => ?,
+                            go => [ 'GO:0003735', 'GO:0006412', ... ]
                        };
-
-Future attributes that could be added:
-
-role_ids, go_terms
 
 Values for isotype should currently be limited to:
 
@@ -227,6 +224,7 @@ while ( my $line = <$ifh> ) {
                                 ec_num => $$att{EC} || '',
                                 gene_symbol => $$att{GS} || '',
                                 isotype => $$att{IT} || '',
+                                go => [],
                             };
         
         undef $att;
