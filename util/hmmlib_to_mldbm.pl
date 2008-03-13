@@ -97,6 +97,25 @@ Future attributes that could be added:
 
 role_ids, go_terms
 
+Values for isotype should currently be limited to:
+
+    equivalog
+    subfamily
+    hypoth_equivalog
+    equivalog_domain
+    subfamily_domain
+    domain
+    superfamily
+    paralog
+    hypoth_equivalog_domain
+    paralog_domain
+    exception
+    repeat
+    signature
+
+The only isotype this script will set is 'pfam' if the accession starts with PF.  All
+others are added by other scripts, such as tigrfam_info_to_mldbm.pl
+
 Any other processes or scripts can add to this data structure to possibly improve annotation.  The
 tigrfam_info_to_mldbm script, for example, adds ec_num, gene_symbol and isotype to the data
 structure for TIGRFAM entries.  These scripts though should not create new attributes of an
@@ -188,6 +207,10 @@ while ( my $line = <$ifh> ) {
             _log("WARNING: duplicate accession ($$att{ACC}) added to data structure.  old one overwritten.");
         }
         
+        ## if this looks like a pfam accession (PF03372.14), set the isotype to 'pfam'
+        if ( $$att{ACC} =~ /^PF\d+\.\d+/ ) {
+            $$att{IT} = 'pfam';
+        }
         
         _log("INFO: writing entry with accession $$att{ACC}");
         ## add entry to MLDBM with the accession as the key
