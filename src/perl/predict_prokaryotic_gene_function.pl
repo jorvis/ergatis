@@ -286,8 +286,6 @@ sub annotate_feature_element {
             }
             
             ## any GO terms to add?
-            ## TO DO
-            #$features{$ref_id}{go} = $hmm_info{$comp_id}{go};
             if ( scalar @{ $features{$polypeptide_id}{go} } ) {
                 for my $go ( @{ $features{$polypeptide_id}{go} } ) {
                     
