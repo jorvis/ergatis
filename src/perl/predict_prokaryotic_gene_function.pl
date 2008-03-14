@@ -211,7 +211,8 @@ my $annot_priorities = {
 ##                                  gene_sym_score => 2,
 ##                                  ec_num => '1.2.3.4',
 ##                                  ec_num_score => 2,
-##                                  ec_num_source => 'PF02503'
+##                                  ec_num_source => 'PF02503',
+##                                  go => [ { term => 'GO:0003735', src  => 'PF02503' }, ... ]
 ##                               }
 my %features;
 
@@ -250,15 +251,16 @@ sub annotate_feature_element {
         _log("INFO: exporting annotation to feature $$feat{att}{id}");
         
         if ( exists $peplookup{ $$feat{att}{id} } ) {
+            my $polypeptide_id = $peplookup{ $$feat{att}{id} };
             
             ## add the common name
             my $gene_product_name_elt = XML::Twig::Elt->new( Attribute => {  
                                                                     name => 'gene_product_name',
-                                                                    content => $features{ $peplookup{ $$feat{att}{id} } }{product},
+                                                                    content => $features{ $polypeptide_id }{product},
                                                              } );
             $gene_product_name_elt->paste( last_child => $feat );
             
-            my $gene_symbol = $features{  $peplookup{ $$feat{att}{id} }  }{gene_sym};
+            my $gene_symbol = $features{  $polypeptide_id  }{gene_sym};
             if ( $gene_symbol ) {
                 my $gene_symbol_elt = XML::Twig::Elt->new( Attribute => {  
                                                              name => 'gene_symbol',
@@ -267,8 +269,8 @@ sub annotate_feature_element {
                 $gene_symbol_elt->paste( last_child => $feat );
             }
             
-            ## EC numbers are handled a little differently.  They get 
-            my $ec_num = $features{  $peplookup{ $$feat{att}{id} }  }{ec_num};
+            ## EC numbers are handled a little differently.  They are represented as an Attribute-list
+            my $ec_num = $features{ $polypeptide_id }{ec_num};
             if ( $ec_num ) {
                 ## create the Attribute list
                 my $att_list = XML::Twig::Elt->new( 'Attribute-list' );
@@ -281,6 +283,28 @@ sub annotate_feature_element {
                    $method_att->paste( last_child => $att_list );
                 
                 $att_list->paste( last_child => $feat );
+            }
+            
+            ## any GO terms to add?
+            ## TO DO
+            #$features{$ref_id}{go} = $hmm_info{$comp_id}{go};
+            if ( scalar @{ $features{$polypeptide_id}{go} } ) {
+                for my $go ( @{ $features{$polypeptide_id}{go} } ) {
+                    
+                    ## create the Attribute list
+                    my $att_list = XML::Twig::Elt->new( 'Attribute-list' );
+
+                    my $go_att = XML::Twig::Elt->new( Attribute => { name => 'GO', content => $go->{term} } );
+                       $go_att->paste( last_child => $att_list );
+
+                    my $ev_att = XML::Twig::Elt->new( Attribute => { name => 'IEA', 
+                                                                     content => $go->{src} },
+                                                    );
+                       $ev_att->paste( last_child => $att_list );
+
+                    $att_list->paste( last_child => $feat );
+                    
+                }
             }
             
             ## add a link to the analysis (this one).  the link may not resolve yet, but it will after
@@ -436,6 +460,14 @@ sub process_hmm_coding_alignment {
                     
                     }
                     
+                    ## handle any GO terms on the accession
+                    if ( scalar @{ $hmm_info{$comp_id}{go} } ) {
+                        for my $term ( @{ $hmm_info{$comp_id}{go} } ) {
+                            push @{ $features{$ref_id}{go} }, { term => $term, src => $comp_id };
+                        }
+                    
+                        _log("INFO: $ref_id: set " . scalar(@{ $hmm_info{$comp_id}{go} }) . " GO terms based on hit to $comp_id");
+                    }
                     
                 } else {
                     _log("INFO: $ref_id: HMM match to $comp_id not better priority than current match.  skipping");
@@ -494,6 +526,7 @@ sub process_input_feature_group {
         ec_num => '',
         ec_num_score => 1000,
         ec_num_source => '',
+        go => [],
     };
 }
 
