@@ -1,8 +1,8 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 
 use strict;
 use warnings;
-
+use Data::Dumper;
 use XML::Twig;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
@@ -304,16 +304,40 @@ sub print_feat
         if($to <= 0) {
             $tmp_to = ">1";
         }
-            
        
         $from = $tmp_from;
         $to = $tmp_to;
         
         if ( $class eq 'gene' || $class eq 'CDS' || $class eq 'mRNA' ) {
             ## bail if this sequence has too many Ns
-            my $feat_seq = substr($asmbl_seq, $loc->att('startpos'), $loc->att('endpos') - $loc->att('startpos') );
+
+	    my $startpos =  $loc->att('startpos');
+	    my $endpos = $loc->att('endpos');
+	    
+	    if ($startpos == $endpos){
+		die "startpos == endpos ('$startpos') for <Feature> ".
+		"with class '$class'";
+	    }
+
+            my $feat_seq = substr($asmbl_seq, $startpos, $endpos - $startpos );
+
+	    my $ofeat_seq = $feat_seq;
+
+	    my $feat_seq_length = length($feat_seq);
+
+	    if ($feat_seq_length == 0){
+
+		my $asmbl_seq_length = length($asmbl_seq);
+		print STDERR "loc:". Dumper $loc;
+		print STDERR "The Feature with class '$class' had feat_seq_length == '0'. ".
+		"startpos '$startpos' endpos '$endpos' asmbl_seq_length ".
+		"'$asmbl_seq_length' asmbl_length '$asmbl_length' original_feat_seq ".
+		"'$ofeat_seq'";
+		die;
+	    }
+
             my $n_count = ( $feat_seq =~ tr/Nn// );
-            my $n_perc = ($n_count / length($feat_seq)) * 100;
+            my $n_perc = ($n_count / $feat_seq_length) * 100;
 
             if ( $n_perc >= $percent_n_cutoff ) {
                 print STDERR "warning: skipping $class because it has too many Ns (", sprintf("%.1f",$n_perc), "\%)\n";
