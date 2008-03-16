@@ -33,9 +33,7 @@ SavedPipeline.pm - A module for loading and building saved pipeline templates.
 =item I<PACKAGE>->new()
 
 Returns a newly created "saved" pipeline object.  If loading an existing
-template, pass a 'template' argument pointing to the template pipeline.xml.  The
-id_repository to be passed is the path to any repository as defined by
-Ergatis::IdGenerator
+template, pass a 'template' argument pointing to the template pipeline.xml
 
 =item I<$OBJ>->load_template()
 
@@ -59,8 +57,7 @@ $component_name.$token.user.config files will be copied into save dir)
 Creates a ready-to-execute pipeline xml in the defined project
 space.  You must pass a repository_root parameter to this method.  You may optionally
 pass a shared_config parameter, else it will derive it from the repository root.
-Returns an Ergatis::Pipeline object.  The id_repository to be passed is the path to 
-any repository as defined by Ergatis::IdGenerator
+Returns an Ergatis::Pipeline object.
 
 
 =back
@@ -126,19 +123,20 @@ use Ergatis::ConfigFile;
         $self->{_pipeline_dir} = "workflow/runtime/pipeline";
         $self->{_component_dir} = "workflow/runtime";
         $self->{_project_conf} = "workflow/project.config";
-        
+
         ## if the template was defined, load it
         ## if the source was defined, load it
         if (defined $self->{template}) {
-	        $self->{_logger}->debug("Loading template $self->{template}");
+	    $self->{_logger}->debug("Loading template $self->{template}");
             $self->load_template();
-        
-        } elsif (defined $self->{source}) {
+        }
+        elsif (defined $self->{source}) {
             $self->load_pipeline();
-        } else {
-	        $self->{_logger}->warn("No template or pipeline specified");
-	    }
-        
+        }
+	else{
+	    $self->{_logger}->warn("No template or pipeline specified");
+	}
+
         return $self;
     }
 
@@ -172,14 +170,13 @@ use Ergatis::ConfigFile;
 #	    $project_id = $2;
 	    $self->{pipeline_id} = $3;
 	} else {
-	    croak("failed to extract repository root, project id, or pipeline id from " . $self->{source} .
-              "\nexpected $self->{source} to match $self->{_pipeline_dir}" );
+	    croak("failed to extract repository root, project id, or pipeline id from ".$self->{source});
 	}
 	
 	#load pipeline from xml
-    $self->{_source_twig} = XML::Twig->new(pretty_print => 'indented');
+        $self->{_source_twig} = XML::Twig->new(pretty_print => 'indented');
 	$self->{_source_twig}->parsefile($self->{source}) || croak "unable to parse ".$self->{source};
-
+        
 	#strip it to the barebones
 	$self->_strip_pipeline( $self->{_source_twig}->root );
 
@@ -189,7 +186,7 @@ use Ergatis::ConfigFile;
 	#check that all expected $component_name.$token.user.config files are present
 	#(not saving names)
 	foreach my $child ( $self->{_source_twig}->root->descendants("name") ) {
-	    if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
+	    if ( $child->text =~ m|^(.+?)\.(.+)|) {
 		my $component = $1;
 		my $token = $2;
 		#check that conf exists
@@ -210,7 +207,7 @@ use Ergatis::ConfigFile;
 
         #print out the pipeline
 	unless (-e $args{template}) {
-	    mkdir($args{template}) || croak( "unable to create tmeplate directory ".$args{template});
+	    mkdir($args{template}) || croak( "unable to create template directory ".$args{template});
 	}
 	open(my $FOUT, ">".$args{template}."/pipeline.xml") || croak("unable to create pipeline.xml in ".$args{template});
 	$self->{_source_twig}->print($FOUT);
@@ -218,7 +215,7 @@ use Ergatis::ConfigFile;
 
         #copy neccessary .ini files
         #convert from -/PROJECTDIR/Workflow/$component/$pipelineid_$token/$component_name.$token.user.config
-        #to $template_dir/$component.$token.ini
+        #to $template_dir/$component.$token.config
 
 	#repository_root and pipeline_id should already be defined
 	unless (exists $self->{_repository_root} && exists $self->{pipeline_id}) {
@@ -227,12 +224,12 @@ use Ergatis::ConfigFile;
 
 	#copy .ini files
 	foreach my $child ( $self->{_source_twig}->root->descendants("name") ) {
-	    if ( $child->text =~ m|^component_(.+?)\.(.+)|) {
+	    if ( $child->text =~ m|^(.+?)\.(.+)|) {
 		my $component = $1;
 		my $token = $2;
 		#copy .ini, setting SHARED_CONFIG = ""
 		my $source_file = $self->{_repository_root}."/$self->{_component_dir}/$component/".$self->{pipeline_id}."_$token/$component.$token.user.config";
-		my $dest_file = $args{template}."/$component.$token.ini";
+		my $dest_file = $args{template}."/$component.$token.config";
 		my $cfg = new Config::IniFiles( -file => $source_file );
 		my $ret = $cfg->setval("include", '$;PROJECT_CONFIG$;', "" );        
 		if(!$ret){
@@ -253,9 +250,11 @@ use Ergatis::ConfigFile;
 	    {
 		my $cmi = $child->first_child("name")->text();
 		#tags we want to keep and search under
-		if ($cmi eq "start" ||
+		if ($cmi =~ /^start pipeline/ ||
 		    $cmi eq "empty" ||
-		    $cmi =~ /^component_/ ||
+                    $cmi eq "serial" ||
+                    $cmi eq "parallel" ||
+		    $cmi =~ /^\S+\.\S+/ ||  ## matches components
 		    $cmi =~ /^pipeline_/ ||
 		    $cmi =~ /^\d+/) 
 		{
@@ -356,12 +355,12 @@ use Ergatis::ConfigFile;
         copy( $self->{template}, "$pipeline_dir/pipeline.layout" );
         
         ## copy the component INIs
-        ##  this copies each file like jaccard.default.ini to
-        ##  $repository_root/workflow/runtime/jaccard/$pipeline_id_default/component.bld.conf.ini
+        ##  this copies each file like jaccard.default.conf to
+        ##  $repository_root/workflow/runtime/jaccard/$pipeline_id_default/component.token.user.config
         for my $commandname ( $self->_commandnames() ) {
             $self->{_logger}->debug("Creating config for $commandname");        
             ## only do the components
-            if ($commandname =~ /component_(.+?)\.(.+)/) {
+            if ($commandname =~ /(.+?)\.(.+)/) {
                 my ($component_name, $token) = ($1, $2);
                 my $outputdir = "$args{repository_root}/$self->{_component_dir}/$component_name";
                 $self->{_logger}->debug("Writing to parent outputdir $outputdir");        
@@ -398,7 +397,7 @@ use Ergatis::ConfigFile;
         foreach my $commandname_elt ( $twig->getElementsByTagName('name') ) {
             my $commandname =  $commandname_elt->text();
             
-            if ($commandname =~ /component_(.+?)\.(.+)/) {
+            if ($commandname =~ /(.+?)\.(.+)/) {
                 my ($component_name, $token) = ($1, $2);
             
                 ## create a twig for the text we need to append and replace
@@ -538,7 +537,7 @@ XMLfraGMENt
                 my ($component_name, $token) = ($1, $2);
 		$self->{_logger}->debug("Found component name $component_name, $token");
                 ## file will be named like:
-                ##  component.token.ini
+                ##  component.token.config
                 my $component_file = $self->{_template_dir} . "/$component_name.$token.config";
 		$self->{_logger}->debug("Looking for file $component_file");
                 if (! -e $component_file) {
@@ -581,6 +580,7 @@ XMLfraGMENt
 	if(!$ret){
 	    croak("can't set \$;PROJECT_CONFIG\$; in section [include] $self->{shared_config} $self->{_template_dir}/$component_name.$token.config");
 	}
+        
 	if($self->{pipeline_token} ne ''){
 	    my $ret = $cfg->setval("component",'$;PIPELINE_TOKEN$;');
 	    if(!$ret){
@@ -590,10 +590,10 @@ XMLfraGMENt
 		}
 	    }
 	}
-	$self->{_logger}->debug("Writing to config file $outputdir/$component_name.$token.user.config");        
+	
+        $self->{_logger}->debug("Writing to config file $outputdir/$component_name.$token.user.config");        
         ## write it into the proper directory
         $cfg->WriteConfig( "$outputdir/$component_name.$token.user.config" );
-        
     }
 
     sub configure_saved_pipeline {
