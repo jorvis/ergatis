@@ -1,5 +1,6 @@
 next release
 ------------
+-Prokaryotic_Annotation_Pipeline: moved tmhmm and lipoprotein_motif earlier in the pipeline so they can be used in functional prediction step
 -CHANGELOG: now in reverse chronological order
 
 ergatis-v2r7b1

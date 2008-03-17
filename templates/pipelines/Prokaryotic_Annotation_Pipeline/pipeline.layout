@@ -114,6 +114,14 @@
                 </commandSet>
                 <commandSet type="serial">
                     <state>incomplete</state>
+                    <name>component_lipoprotein_motif.default</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>component_tmhmm.default</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
                     <commandSet type="parallel">
                         <state>incomplete</state>
                         <commandSet type="serial">
@@ -154,15 +162,7 @@
             <state>incomplete</state>
             <commandSet type="serial">
                 <state>incomplete</state>
-                <name>component_tmhmm.default</name>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
                 <name>component_targetp.default</name>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>component_lipoprotein_motif.default</name>
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
