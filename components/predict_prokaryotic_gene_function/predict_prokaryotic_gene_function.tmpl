@@ -1,0 +1,20 @@
+<!-- component documentation -->
+
+<p>
+    This component is under development and documentation will be finalized once the full methods are implemented.
+    The general annotation strategy is below:
+</p>
+<h3>evidence priority</h3>
+<ol>
+   <li>Equivalog HMM above trusted cutoff</li>
+   <li>Characterized BER match with at least 35% identity (configurable) and over 80% of the query length (configurable)</li>
+   <li>Full-length subfamily HMM (will append 'family protein')</li>
+   <li>Equivalog-domain HMM</li>
+   <li>Superfamily HMM (will append 'family protein')</li>
+   <li>Subfamily domain (will append 'domain protein')</li>
+   <li>Domain HMM (will append 'domain protein')</li>
+   <li>PFAM isology (will append 'family protein')</li>
+   <li>consider tmhmm - if 50% (configurable) of protein is involved in tmhmm matches gene product will be 'putative membrane protein'</li>
+   <li>consider lipoprotein - If matches, gene product will be 'putative lipoprotein'</li>
+   <li>Hypothetical equivalog HMM (will name 'conserved hypothetical protein')</li>
+</ol>
