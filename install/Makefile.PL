@@ -115,7 +115,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat pipeline_summary predotar promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_annotate auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat pipeline_summary predict_prokaryotic_gene_function predotar promote_gene_prediction ps_scan psiblast quicktree repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -692,11 +692,11 @@ pipeline_summary	:
 	@install components/pipeline_summary/pipeline_summary.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/pipeline_summary/pipeline_summary.config $(WORKFLOW_DOCS_DIR) 
 
-promote_gene_prediction	:
-	@echo "Installing promote_gene_prediction workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/promote_gene_prediction/promote_gene_prediction.xml $(WORKFLOW_DOCS_DIR)
-	@install components/promote_gene_prediction/promote_gene_prediction.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/promote_gene_prediction/promote_gene_prediction.config $(WORKFLOW_DOCS_DIR) 
+predict_prokaryotic_gene_function	:
+	@echo "Installing predict_prokaryotic_gene_function workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/predict_prokaryotic_gene_function/predict_prokaryotic_gene_function.xml $(WORKFLOW_DOCS_DIR)
+	@install components/predict_prokaryotic_gene_function/predict_prokaryotic_gene_function.config $(WORKFLOW_DOCS_DIR)
+	@install components/predict_prokaryotic_gene_function/predict_prokaryotic_gene_function.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 predotar	:
 	@echo "Installing predotar workflows in $(WORKFLOW_DOCS_DIR)"
@@ -711,6 +711,12 @@ promer	:
 	@install components/promer/promer.ini $(WORKFLOW_DOCS_DIR)
 	@install components/promer/promer_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/promer/promerconf.ini $(WORKFLOW_DOCS_DIR)  
+
+promote_gene_prediction	:
+	@echo "Installing promote_gene_prediction workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/promote_gene_prediction/promote_gene_prediction.xml $(WORKFLOW_DOCS_DIR)
+	@install components/promote_gene_prediction/promote_gene_prediction.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/promote_gene_prediction/promote_gene_prediction.config $(WORKFLOW_DOCS_DIR) 
 
 ps_scan	:
 	@echo "Installing ps_scan workflows in $(WORKFLOW_DOCS_DIR)"
