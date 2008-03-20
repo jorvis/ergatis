@@ -1,5 +1,5 @@
 #!/usr/bin/perl
- 
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -259,6 +259,8 @@ sub parse_genbank_file {
     #$gbr{'species'} = $seq->species->species(); #changed to organism parsing
     #$gbr{'strain'} = $seq->species->strain();
     #$gbr{'desc'} = $seq->desc();
+    #$gbr{'organism'} = $seq->species->common_name;
+
     #$seq->moltype() will say dna if the sequence is dna, this is a problem for genbank records
     #where an rna sequence will be represented as dna
     
@@ -425,7 +427,7 @@ sub parse_genbank_file {
 	  $gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
 	}	
  #       elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
-	elsif ($tag eq "translation" || $tag eq "transl_table") {
+	elsif ( $tag eq "transl_table") {
             # do nothing
         }
         else {
@@ -1252,6 +1254,8 @@ sub fasta_out {
     #$logger->debug("Entered fasta_out") if $logger->is_debug;
 
     my ($seq_name, $seq) = @_;
+
+    die "Empty sequence ($seq_name) passed to fasta_out!" unless defined($seq);
 
     my $fasta=">"."$seq_name"."\n";
     $seq =~ s/\s+//g;
