@@ -1,4 +1,5 @@
-#!/usr/bin/perl
+#!/usr/local/perl
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -83,7 +84,11 @@ my $inputFsa;                 #The fasta file input to augustus
 my $sourcename;               #Used for the analysis section of the bsml
 my $debug;                    #The debug variable
 ########################################
+# handle versions of the executable with different output flags like this
+# to get the right encoding in the model object & bsml.
+my %version_map = ('1.8.2' => "1", '2.0.2' => "2");
 
+########################################
 my %options = ();
 my $results = GetOptions (\%options, 
                           'input_file|i=s',
@@ -117,17 +122,21 @@ sub parseAugustusData {
     my @genes; #Array of gene objects.
     my ($tmp, $curGene, $curTransc) = ({}, 0, 0);
     
-    open(IN, "< $file") or &_die("Unable to open $file (input_file) ($!)");
-    
-    while(<IN>) {
+    open(my $in, "< $file") or &_die("Unable to open $file (input_file) ($!)");
+
+    # Check the version of the augustus executable.  This is necessary because the output is 
+    # somewhat inconsistent between versions
+    my $version = &get_version($in) || $logger->logdie("Can't get the version of augustus used");
+   
+    while(<$in>) {
+
         next if(/^\#/);
         next if(/^\s+$/);
         chomp;
         
         my @cols = split(/\t/);
         $cols[0] =~ s/(\S+)\s.*/$1/;
-
-        #The output will sometimes contain the 
+        
         next unless( $cols[1] eq 'AUGUSTUS' );
 
         #The first column should contain the input sequence id.  We use it for
@@ -170,25 +179,46 @@ sub parseAugustusData {
             $curGene = $newGeneId;
         }
 
-        #Deal with the lines according to column 2 (the type column).
-        if($cols[2] =~ /^(initial|internal|terminal|single)$/) {
-            my $exonId = $idMaker->next_id( 'type' => 'exon', 'project' => $project );
-            $tmp->{$newGeneId}->addExon($exonId, $start, $end, $strand);
-            $tmp->{$newGeneId}->addToGroup($newTransId, { 'id' => $exonId } );
+        # Deal with the lines according to column 2 (the type column).
+        # Base this also on the version of the augustus program.
+        #   (Yes, this *is* fugly.  It works.)
+        if ($version_map{$version} == 1) {
+            if($cols[2] =~ /^(initial|internal|terminal|single)$/) {
+                my $exonId = $idMaker->next_id( 'type' => 'exon', 'project' => $project );
+                $tmp->{$newGeneId}->addExon($exonId, $start, $end, $strand);
+                $tmp->{$newGeneId}->addToGroup($newTransId, { 'id' => $exonId } );
 
-            my $score = $cols[5];
-            $tmp->{$newGeneId}->addFeatureScore($exonId, 'p-value', $score) if($score);
-        } elsif($cols[2] eq 'transcript') {
-            foreach my $type(qw(CDS transcript polypeptide) ) {
-                my $id = $idMaker->next_id( 'type' => $type, 'project' => $project );
-                $tmp->{$newGeneId}->addFeature( $id, $start, $end, $strand, $type );
-                $tmp->{$newGeneId}->addToGroup( $newTransId, { 'id' => $id } );
-                
                 my $score = $cols[5];
-                $tmp->{$newGeneId}->addFeatureScore($id, 'p-value', $score) if($score);
-            }
-        }        
-        
+                $tmp->{$newGeneId}->addFeatureScore($exonId, 'p-value', $score) if($score);
+            } elsif($cols[2] eq 'transcript') {
+                foreach my $type(qw(CDS transcript polypeptide) ) {
+                    my $id = $idMaker->next_id( 'type' => $type, 'project' => $project );
+                    $tmp->{$newGeneId}->addFeature( $id, $start, $end, $strand, $type );
+                    $tmp->{$newGeneId}->addToGroup( $newTransId, { 'id' => $id } );
+                    
+                    my $score = $cols[5];
+                    $tmp->{$newGeneId}->addFeatureScore($id, 'p-value', $score) if($score);
+                }
+            }        
+        } elsif ($version_map{$version} == 2) {
+            if($cols[2] =~ /^CDS$/) {
+                my $exonId = $idMaker->next_id( 'type' => 'exon', 'project' => $project );
+                $tmp->{$newGeneId}->addExon($exonId, $start, $end, $strand);
+                $tmp->{$newGeneId}->addToGroup($newTransId, { 'id' => $exonId } );
+
+                my $score = $cols[5];
+                $tmp->{$newGeneId}->addFeatureScore($exonId, 'p-value', $score) if($score);
+            } elsif($cols[2] eq 'transcript') {
+                foreach my $type(qw(CDS transcript polypeptide) ) {
+                    my $id = $idMaker->next_id( 'type' => $type, 'project' => $project );
+                    $tmp->{$newGeneId}->addFeature( $id, $start, $end, $strand, $type );
+                    $tmp->{$newGeneId}->addToGroup( $newTransId, { 'id' => $id } );
+                    
+                    my $score = $cols[5];
+                    $tmp->{$newGeneId}->addFeatureScore($id, 'p-value', $score) if($score);
+                }
+            }        
+        }
     }
 
     @genes = values %{$tmp};
@@ -293,6 +323,22 @@ sub check_parameters {
         &_die($error);
     }
     
+}
+
+sub get_version {
+# Pull off a single line from the passed filehandle reference, then parse
+# the augustus version.  
+
+    my $fh = shift;
+    my $first_line = <$fh>;
+
+    my $version;
+    if ($first_line =~ /\(version (\d+\.\d+\.\d+)\)/) {
+        $version = $1;
+    }
+
+    return ($version);
+
 }
 
 sub _pod {   
