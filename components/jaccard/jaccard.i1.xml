@@ -50,6 +50,10 @@
                 <key>--outfile</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
             </param>
+            <param>
+                <key>--cluster_path</key>
+                <value>$;CLUSTER_PATH$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
