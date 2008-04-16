@@ -80,15 +80,16 @@ use DB_File;
 
 my %options = ();
 my $results = GetOptions (\%options,
-			  'bsmlSearchList|m=s',
-			  'asmbl_lookup|a=s',
-			  'linkscore|k=s',
-			  'percent_identity|p=s',
-			  'p_value|u=s',
-			  'outfile|o=s',
-			  'log|l=s',
-			  'debug|d=s',
-			  'help|h') || pod2usage();
+                          'bsmlSearchList|m=s',
+                          'asmbl_lookup|a=s',
+                          'linkscore|k=s',
+                          'percent_identity|p=s',
+                          'p_value|u=s',
+                          'outfile|o=s',
+                          'log|l=s',
+                          'debug|d=s',
+                          'cluster_path|c=s',
+                          'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
@@ -168,7 +169,7 @@ sub produce_cluster_output {
     # 1. Get clustering
     #
     
-    my $resolver = new Jaccard_coefficient_cluster_resolver($linkscore);
+    my $resolver = new Jaccard_coefficient_cluster_resolver($linkscore,$options{'cluster_path'});
     $logger->logdie("resolver was not defined") if (!defined($resolver));
     
     my @clusters = $resolver->resolve_clusters(@$pairs);
