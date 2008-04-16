@@ -87,12 +87,17 @@ sub new {
     my $packagename = shift;
     
     my $linkScore = shift;
+    
+    my $cluster_path = shift;
+
+    # Utilizing public variable from SingleLinkageClusterer
+    $SingleLinkageClusterer::CLUSTERPATH = $cluster_path;
 
     unless ($linkScore >= 0 && $linkScore <= 1) {
 	die "Invalid link score ($linkScore). \n\n 0 <= link_score <= 1\n\n\n";
     }
     my $self = { 
-	linkScore => $linkScore
+	linkScore => $linkScore,
 	};
     bless ($self, $packagename);
     return ($self);
