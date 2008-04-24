@@ -10,10 +10,11 @@ prediction with product name, gene symbol, EC number and GO terms where possible
 USAGE: predict_gene_function.pl 
             --input_list=/path/to/bsml.list
             --output_directory=/some/dir
-            --hmm_list=/path/to/hmm_bsml.list
-            --ber_list=/path/to/ber_bsml.list
+          [ --hmm_list=/path/to/hmm_bsml.list
             --hmm_info=/path/to/hmminfo.db
-          [ --annotate_on=transcript ]
+            --ber_list=/path/to/ber_bsml.list
+            --ber_info=/path/to/berinfo.db
+            --annotate_on=transcript ]
 
 =head1 OPTIONS
 
@@ -26,12 +27,17 @@ B<--output_directory>
 B<--hmm_list>
     Optional. Ouput list of HMM evidence in BSML format.
 
-B<--ber_list>
-    Optional. Output list of BER evidence in BSML format.
-
 B<--hmm_info>
     Optional (unless --hmm_list defined) MLDBM file (tied hash) on disk that stores 
     attributes of HMM entries in your search database.  See the hmmlib_to_mldbm.pl 
+    script for more info.
+
+B<--ber_list>
+    Optional. Output list of BER evidence in BSML format.
+
+B<--ber_info>
+    Optional (unless --ber_list is defined).  MLDBM file (tied hash) on disk that stores 
+    attributes of matched BER accessions from your search.  See the tchar_to_mldbm.pl
     script for more info.
 
 B<--annotate_on>
@@ -98,6 +104,10 @@ The only section of the HMM BSML input considered are the alignments.  Each look
         <Link rel="analysis" href="#hmmpfam_analysis" role="computed_by"></Link>
     </Seq-pair-alignment>
 
+=head2 BER BSML format
+
+Not yet written
+
 =head1  OUTPUT
 
 The output of the script is a copy of the input BSML but with additional function definitions
@@ -132,6 +142,16 @@ Will become something like this, depending on how much evidence is present:
         <Attribute name="IEA" content="PF02503"></Attribute>
       </Attribute-list>
     </Feature>
+
+The log file, if generated with the --log option, contains a great deal of information about the
+decision process for functional curation of each gene.
+
+=head1 TESTING
+
+This is my command for testing.  This should be removed eventually, but I'm putting it here
+because it takes a while to build the command.  :)
+
+perl -I /usr/local/projects/ergatis/package-devel/lib/perl5/site_perl/5.8.8/ predict_prokaryotic_gene_function.pl --input_list=/usr/local/projects/aengine/output_repository/auto_gene_curation/537_overlap_analysis/auto_gene_curation.bsml.list.all --output_directory=/tmp/annotate --hmm_list=/usr/local/projects/aengine/output_repository/hmmpfam/537_pre_overlap_analysis/hmmpfam.bsml.list --hmm_info=/usr/local/projects/db/coding_hmm/coding_hmm.lib.db --ber_list=/usr/local/projects/aengine/output_repository/ber/537_pre_overlap_analysis/ber.bsml.list --ber_info=/usr/local/projects/db/tchar/tchar.db --log=/tmp/annotate/annotation.log
 
 =head1  CONTACT
 
@@ -181,6 +201,14 @@ if ( $options{hmm_info} ) {
     _log("INFO: successfull tied hmm_info hash");
 }
 
+## make sure we can tie the berinfo file
+my %ber_info;
+if ( $options{ber_info} ) {
+    _log("INFO: attempting to read tied ber_info hash");
+    tie(%ber_info, 'MLDBM', $options{ber_info}, O_RDONLY ) or die("Unable to tie hash to $options{ber_info}");
+    _log("INFO: successfull tied ber_info hash");
+}
+
 my $initial_product_name = 'hypothetical protein';
 
 ## priority system for the annotation rules we want to apply
@@ -221,6 +249,11 @@ my %features;
 ##      $h{ $annotate_on_id } => $polypeptide_id;
 my %peplookup;
 
+## index on annotation feature IDs, this gives the corresponding CDS ID
+## structure like:
+##      $h{ $annotate_on_id } => $cds_id;
+my %cdslookup;
+
 my $input_files = parse_multi_list( $options{input_list} );
 _log("INFO: found " . scalar(@$input_files) . " input files to process");
 
@@ -232,11 +265,16 @@ my $hmm_files = parse_multi_list( $options{hmm_list} );
 _log("INFO: found " . scalar(@$hmm_files) . " HMM files to process");
 &process_hmm_results( $hmm_files );
 
+## apply ber evidence
+my $ber_files = parse_multi_list( $options{ber_list} );
+_log("INFO: found " . scalar(@$hmm_files) . " BER files to process");
+&process_ber_results( $ber_files );
+
 ## write out result BSML
 &output_annotated_bsml( $input_files );
 
-
 untie(%hmm_info) if $options{hmm_info};
+untie(%ber_info) if $options{ber_info};
 
 exit(0);
 
@@ -362,6 +400,99 @@ sub process_feature_relationships {
     }
 }
 
+sub process_ber_alignment {
+    my ($t, $spa, $id_lookup, $input_lengths) = @_;
+    
+    my $ref_id = $spa->{att}->{refseq};
+    my $comp_id = $spa->{att}->{compseq};
+    
+    ## is it in the characterized db?
+    if ( exists $ber_info{ $$id_lookup{$comp_id} } ) {
+        _log("INFO: setting product, gene_sym and ec_num based on BER hit to $$id_lookup{$comp_id}");
+        
+    } else {
+        _log("INFO: skipping $ref_id hit to $$id_lookup{$comp_id} - not in characterized database");
+    }
+}
+
+sub process_ber_results {
+    my $files = shift;
+    
+    ## within each BER result file the polypeptide Sequence elements have IDs like this:
+    #
+    #       RF_NP_343702.1_15899097_NC_002754
+    #
+    #   but also has elements like this:
+    #
+    #       <Attribute name="defline" content="RF|NP_343702.1|15899097|NC_002754"></Attribute>
+    #
+    #   It's these second values that will be contained within the characterized lookup.  Pass
+    #   through the file building the lookup and go through the alignments
+    
+    for my $file ( @$files ) {
+        _log("INFO: processing BER results in $file");
+        
+        ## structure like:
+        #   $h->{RF_NP_343702.1_15899097_NC_002754} = 'RF|NP_343702.1|15899097|NC_002754'
+        my $id_lookup = {};
+        
+        ## holds the lengths of the input sequences (usually only one, but a hash here just in case)
+        my $input_lengths = {};
+        
+        my $t = XML::Twig->new(
+            twig_roots => {
+                ## we need to parse each of the sequences here to populate $id_lookup
+                ##
+                ##  each sequence looks like:
+                #  <Sequence class="polypeptide" title="holliday junction resolvase ..." id="RF_NP_147250.1_14600729_NC_000854" molecule="aa">
+                #    <Attribute name="defline" content="RF|NP_147250.1|14600729|NC_000854"></Attribute>
+                #  </Sequence>
+                
+                'Sequence' => sub {
+                    my ($t, $elt) = @_;
+                    
+                    my $id = $elt->{att}->{id} || die "failed to get ID attribute of Sequence in BER alignment file $file";
+                    my $defline;
+                    
+                    ## check for input sequences.  They will be a CDS and have an input_of role
+                    if ( $elt->{att}->{class} eq 'CDS' ) {
+                        for my $link ( $elt->children('Link') ) {
+                            if ( $link->{att}->{role} eq 'input_of' ) {
+                                $$input_lengths{$id} = $elt->{att}->{length} || die "failed to determine sequence length for $id, an input to BER within file $file";
+                            }
+
+                            ## we can return here, since these won't have any attributes to save.
+                            return;
+                        }
+                    }
+                    
+                    for my $att ( $elt->children('Attribute') ) {
+                        if ( $att->{att}->{name} eq 'defline' ) {
+                        
+                            ## if the comp ID looks like this:
+                            #       RF|YP_235471.1|66045630|NC_007005
+                            ## we only need to look at the first bit, since that's how accessions are stored in the 
+                            ## ber_info file:
+                            #       RF|YP_235471.1
+                            if ( $att->{att}->{content} =~ /^[A-Z]+\|[A-Z0-9_\.]+/ ) {
+                                $$id_lookup{$id} = $1;
+                            } else {
+                                $$id_lookup{$id} = $att->{att}->{content};
+                            }
+                        }
+                    }
+                },
+                'Seq-pair-alignment' => sub {
+                    my ($t, $spa) = @_;
+                    &process_ber_alignment($t, $spa, $id_lookup, $input_lengths),
+                },
+            },
+        );
+        $t->parsefile( $file );
+    }
+    
+}
+
 ## pulls the <Seq-pair-alignment> elements from the input HMM files and passes
 #   them to process_hmm_coding_alignment, where the actual works happens
 sub process_hmm_results {
@@ -420,7 +551,7 @@ sub process_hmm_coding_alignment {
                 ## we can just compare with the product_score here since all scores are currently
                 #   set together.  in the future this could change.
                 if ( $$annot_priorities{"hmm_$isotype"} < $features{$ref_id}{product_score} ) {
-                    _log("INFO: $ref_id: setting product, gene_sym and ec_num based on hit to $comp_id ($isotype)");
+                    _log("INFO: $ref_id: setting product, gene_sym and ec_num based on HMM hit to $comp_id ($isotype)");
                     
                     $features{$ref_id}{gene_sym} = $hmm_info{$comp_id}{gene_symbol};
                     $features{$ref_id}{gene_sym_score} = $$annot_priorities{"hmm_$isotype"};
@@ -485,7 +616,7 @@ sub process_hmm_coding_alignment {
 
 
 ## given a Feature-group element this searches the Feature-group-member elements to find
-#   the ID relationship between the polypeptide
+#   the ID relationship between the polypeptide and the feature being annotated
 sub process_input_feature_group {
     my ($t, $feat_group) = @_;
     
@@ -495,12 +626,18 @@ sub process_input_feature_group {
     
     ## feat_group here is an XML::Twig::Elt
     my @feat_group_members = $feat_group->getElementsByTagName('Feature-group-member');
-    my ($polypeptide_id, $annot_feat_id);
+    my ($polypeptide_id, $cds_id, $annot_feat_id);
     
     for my $gm ( @feat_group_members ) {
         if ( $gm->{att}->{'feature-type'} eq 'polypeptide' ) {
             $polypeptide_id = $gm->{att}->{featref};
-        } elsif ( $gm->{att}->{'feature-type'} eq $options{annotate_on} ) {
+        }
+        
+        if ( $gm->{att}->{'feature-type'} eq 'CDS' ) {
+            $cds_id = $gm->{att}->{featref};
+        }
+
+        if ( $gm->{att}->{'feature-type'} eq $options{annotate_on} ) {
             $annot_feat_id = $gm->{att}->{featref};
         }
     }
@@ -514,6 +651,7 @@ sub process_input_feature_group {
     
     ## remember the relationship
     $peplookup{$annot_feat_id} = $polypeptide_id;
+    $cdslookup{$annot_feat_id} = $cds_id;
     
     ## initialize it, with crappy score values
     $features{$polypeptide_id} = {
