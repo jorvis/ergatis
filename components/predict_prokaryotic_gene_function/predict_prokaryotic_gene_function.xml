@@ -30,12 +30,16 @@
                 <value>'$;HMM_LIST$;'</value>
             </param>
             <param>  
+                <key>--hmm_info</key>
+                <value>'$;HMM_INFO$;'</value>
+            </param>
+            <param>  
                 <key>--ber_list</key>
                 <value>'$;BER_LIST$;'</value>
             </param>
             <param>  
-                <key>--hmm_info</key>
-                <value>'$;HMM_INFO$;'</value>
+                <key>--ber_info</key>
+                <value>'$;BER_INFO$;'</value>
             </param>
             <param>  
                 <key>--output_directory</key>
