@@ -153,6 +153,12 @@ because it takes a while to build the command.  :)
 
 perl -I /usr/local/projects/ergatis/package-devel/lib/perl5/site_perl/5.8.8/ predict_prokaryotic_gene_function.pl --input_list=/usr/local/projects/aengine/output_repository/auto_gene_curation/537_overlap_analysis/auto_gene_curation.bsml.list.all --output_directory=/tmp/annotate --hmm_list=/usr/local/projects/aengine/output_repository/hmmpfam/537_pre_overlap_analysis/hmmpfam.bsml.list --hmm_info=/usr/local/projects/db/coding_hmm/coding_hmm.lib.db --ber_list=/usr/local/projects/aengine/output_repository/ber/537_pre_overlap_analysis/ber.bsml.list --ber_info=/usr/local/projects/db/tchar/tchar.db --log=/tmp/annotate/annotation.log
 
+=head1 DEVEL NOTES
+
+Do we have a problem when features are versioned up and we point at BLAST or HMM results from
+the previous version?  This needs to be considered, but since a version change usually implies
+a sequence change the old result files would be stale.
+
 =head1  CONTACT
 
     Joshua Orvis
@@ -173,8 +179,9 @@ my $results = GetOptions (\%options,
                           'input_list=s',
                           'output_directory=s',
                           'hmm_list=s',
-                          'ber_list=s',
                           'hmm_info=s',
+                          'ber_list=s',
+                          'ber_info=s',
                           'annotate_on=s',
                           'log|l=s',
                           'help|h') || pod2usage();
@@ -198,7 +205,7 @@ my %hmm_info;
 if ( $options{hmm_info} ) {
     _log("INFO: attempting to read tied hmm_info hash");
     tie(%hmm_info, 'MLDBM', $options{hmm_info}, O_RDONLY ) or die("Unable to tie hash to $options{hmm_info}");
-    _log("INFO: successfull tied hmm_info hash");
+    _log("INFO: successfully tied hmm_info hash");
 }
 
 ## make sure we can tie the berinfo file
@@ -206,7 +213,7 @@ my %ber_info;
 if ( $options{ber_info} ) {
     _log("INFO: attempting to read tied ber_info hash");
     tie(%ber_info, 'MLDBM', $options{ber_info}, O_RDONLY ) or die("Unable to tie hash to $options{ber_info}");
-    _log("INFO: successfull tied ber_info hash");
+    _log("INFO: successfully tied ber_info hash");
 }
 
 my $initial_product_name = 'hypothetical protein';
@@ -249,9 +256,9 @@ my %features;
 ##      $h{ $annotate_on_id } => $polypeptide_id;
 my %peplookup;
 
-## index on annotation feature IDs, this gives the corresponding CDS ID
+## index on CDS feature IDs, this gives the corresponding polypeptide ID
 ## structure like:
-##      $h{ $annotate_on_id } => $cds_id;
+##      $h{ $annotate_on_id } => $polypeptide_id;
 my %cdslookup;
 
 my $input_files = parse_multi_list( $options{input_list} );
@@ -298,8 +305,10 @@ sub annotate_feature_element {
                                                              } );
             $gene_product_name_elt->paste( last_child => $feat );
             
+            ## whitespace seems to creep in from everywhere here ... make sure we don't propagate it.
+            
             my $gene_symbol = $features{  $polypeptide_id  }{gene_sym};
-            if ( $gene_symbol ) {
+            if ( $gene_symbol && $gene_symbol =~ /\S/ ) {
                 my $gene_symbol_elt = XML::Twig::Elt->new( Attribute => {  
                                                              name => 'gene_symbol',
                                                              content => $gene_symbol,
@@ -309,7 +318,13 @@ sub annotate_feature_element {
             
             ## EC numbers are handled a little differently.  They are represented as an Attribute-list
             my $ec_num = $features{ $polypeptide_id }{ec_num};
-            if ( $ec_num ) {
+            
+            ## sometimes the EC number contains labels like 'EC ' ... remove this
+            if ( $ec_num =~ /EC\s*(.+)/i ) {
+                $ec_num = $1;
+            }
+            
+            if ( $ec_num && $ec_num =~ /\S/ ) {
                 ## create the Attribute list
                 my $att_list = XML::Twig::Elt->new( 'Attribute-list' );
                 
@@ -406,12 +421,50 @@ sub process_ber_alignment {
     my $ref_id = $spa->{att}->{refseq};
     my $comp_id = $spa->{att}->{compseq};
     
+    ## annotation is mapped internally on the polypeptide, so we need that ID
+    my $polypeptide_id;
+    if ( exists $cdslookup{$ref_id} ) {
+        $polypeptide_id = $cdslookup{$ref_id};
+    } else {
+        _log("WARN: CDS -> polypeptide lookup failed for ref id $ref_id, skipping this BER hit");
+        return;
+    }
+    
     ## is it in the characterized db?
     if ( exists $ber_info{ $$id_lookup{$comp_id} } ) {
-        _log("INFO: setting product, gene_sym and ec_num based on BER hit to $$id_lookup{$comp_id}");
+        
+        ## we got here, so this is a characterized BER match.
+        
+        ## we can just compare with the product_score here since all scores are currently
+        #   set together.  in the future this could change.
+        if ( $$annot_priorities{"ber_characterized"} < $features{$polypeptide_id}{product_score} ) {
+            _log("INFO: $polypeptide_id: setting product, gene_sym and ec_num based on $ref_id BER hit to $$id_lookup{$comp_id}");
+            
+            $features{$polypeptide_id}{gene_sym} = $ber_info{ $$id_lookup{$comp_id} }{gene_symbol} || '';
+            $features{$polypeptide_id}{gene_sym_score} = $$annot_priorities{"ber_characterized"};
+
+            $features{$polypeptide_id}{ec_num} = $ber_info{ $$id_lookup{$comp_id} }{ec_num} || '';
+            $features{$polypeptide_id}{ec_num_score} = $$annot_priorities{"ber_characterized"};
+            $features{$polypeptide_id}{ec_num_source} = $$id_lookup{$comp_id};
+
+            $features{$polypeptide_id}{product} = $ber_info{ $$id_lookup{$comp_id} }{com_name};
+            $features{$polypeptide_id}{product_score} = $$annot_priorities{"ber_characterized"};
+            
+            ## handle any GO terms on the accession
+            if ( scalar @{ $ber_info{$$id_lookup{$comp_id}}{go} } ) {
+                for my $term ( @{ $ber_info{$$id_lookup{$comp_id}}{go} } ) {
+                    push @{ $features{$polypeptide_id}{go} }, { term => $term, src => $$id_lookup{$comp_id} };
+                }
+
+                _log("INFO: $ref_id: set " . scalar(@{ $ber_info{$$id_lookup{$comp_id}}{go} }) . " GO terms based on hit to $$id_lookup{$comp_id}");
+            }
+            
+        } else {
+            _log("INFO: $polypeptide_id: found characterized $ref_id BER hit to $$id_lookup{$comp_id}, but higher priority annotation exists ($features{$ref_id}{product_score})");
+        }
         
     } else {
-        _log("INFO: skipping $ref_id hit to $$id_lookup{$comp_id} - not in characterized database");
+        _log("INFO: $polypeptide_id: skipping $ref_id hit to $$id_lookup{$comp_id} - not in characterized database");
     }
 }
 
@@ -474,11 +527,13 @@ sub process_ber_results {
                             ## we only need to look at the first bit, since that's how accessions are stored in the 
                             ## ber_info file:
                             #       RF|YP_235471.1
-                            if ( $att->{att}->{content} =~ /^[A-Z]+\|[A-Z0-9_\.]+/ ) {
+                            if ( $att->{att}->{content} =~ /^([A-Z]+\|[A-Z0-9_\.]+)/ ) {
                                 $$id_lookup{$id} = $1;
                             } else {
                                 $$id_lookup{$id} = $att->{att}->{content};
                             }
+                            
+                            _log("");
                         }
                     }
                 },
@@ -551,7 +606,7 @@ sub process_hmm_coding_alignment {
                 ## we can just compare with the product_score here since all scores are currently
                 #   set together.  in the future this could change.
                 if ( $$annot_priorities{"hmm_$isotype"} < $features{$ref_id}{product_score} ) {
-                    _log("INFO: $ref_id: setting product, gene_sym and ec_num based on HMM hit to $comp_id ($isotype)");
+                    _log("INFO: $ref_id: setting product, gene_sym and ec_num based on $isotype HMM hit to $comp_id ($isotype)");
                     
                     $features{$ref_id}{gene_sym} = $hmm_info{$comp_id}{gene_symbol};
                     $features{$ref_id}{gene_sym_score} = $$annot_priorities{"hmm_$isotype"};
@@ -595,11 +650,11 @@ sub process_hmm_coding_alignment {
                             push @{ $features{$ref_id}{go} }, { term => $term, src => $comp_id };
                         }
                     
-                        _log("INFO: $ref_id: set " . scalar(@{ $hmm_info{$comp_id}{go} }) . " GO terms based on hit to $comp_id");
+                        _log("INFO: $ref_id: set " . scalar(@{ $hmm_info{$comp_id}{go} }) . " GO terms based on $isotype HMM hit to $comp_id");
                     }
                     
                 } else {
-                    _log("INFO: $ref_id: HMM match to $comp_id not better priority than current match.  skipping");
+                    _log("INFO: $ref_id: $isotype HMM match to $comp_id not better priority than current match.  skipping");
                 }
                 
             } else {
@@ -651,7 +706,10 @@ sub process_input_feature_group {
     
     ## remember the relationship
     $peplookup{$annot_feat_id} = $polypeptide_id;
-    $cdslookup{$annot_feat_id} = $cds_id;
+    
+    _log("INFO: $cds_id: storing relationship to polypeptide ID: $polypeptide_id");
+    $cdslookup{$cds_id} = $polypeptide_id;
+    
     
     ## initialize it, with crappy score values
     $features{$polypeptide_id} = {
@@ -730,5 +788,10 @@ sub check_parameters {
     ## if hmm_list was defined, hmm_info needs to be
     if ( $options{hmm_list} && ! $options{hmm_info} ) {
         die "--hmm_info required if passing --hmm_list";
+    }
+
+    ## if ber_list was defined, ber_info needs to be
+    if ( $options{ber_list} && ! $options{ber_info} ) {
+        die "--ber_info required if passing --ber_list";
     }
 }
