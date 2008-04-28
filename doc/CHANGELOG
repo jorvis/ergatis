@@ -1,5 +1,6 @@
 next release
 ------------
+-fgenesh2bsml.pl: now uses Chado::Gene modeling.  fgenesh.i1.xml updated accordingly.
 -glimmerHMM2bsml.pl: no longer off by one on right side coords.
 -reset_subgroups.pl: marks subgroups not marked complete as incomplete given an iterator workflow xml file
 -augustus2bsml.pl: now automatically detects executable version and parses correctly
