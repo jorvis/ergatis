@@ -20,7 +20,7 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/fgenesh2bsml</executable>
             <param>  
-                <key>--input</key>
+                <key>--input_file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fgenesh.raw</value>
             </param>
             <param>  
@@ -28,12 +28,24 @@
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fgenesh.bsml</value>
             </param>
             <param>  
-                <key>--fasta_file</key>
+                <key>--fasta_input</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
                 <key>--project</key>
                 <value>$;PROJECT$;</value>
+            </param>
+            <param>
+                <key>--programversion</key>
+                <value>'current'</value>
+            </param>
+            <param>
+                <key>--sourcename</key>
+                <value>$;OUTPUT_DIRECTORY$;/dummy/dir</value>
+            </param>
+            <param>
+                <key>--id_repository</key>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
             </param>
         </command>
         <command>
