@@ -230,11 +230,11 @@ while (<$ifh>) {
         $fg->addBsmlFeatureGroupMember( $cds->returnattr('id'), $cds->returnattr('class') );
         
         if ($cols[2] eq '+') {
-            &add_interval_loc($exon, $cols[4] - 1, $cols[5] - 1);
-            &add_interval_loc($cds,  $cols[4] - 1, $cols[5] - 1);
+            &add_interval_loc($exon, $cols[4] - 1, $cols[5]);
+            &add_interval_loc($cds,  $cols[4] - 1, $cols[5]);
         } elsif ($cols[2] eq '-') {
-            &add_interval_loc($exon, $cols[5] - 1, $cols[4] - 1);
-            &add_interval_loc($cds,  $cols[5] - 1, $cols[4] - 1);
+            &add_interval_loc($exon, $cols[5], $cols[4] - 1);
+            &add_interval_loc($cds,  $cols[5], $cols[4] - 1);
         } else {
             $logger->logdie("unknown value ($cols[2]) in column 3 of input file");
         }
