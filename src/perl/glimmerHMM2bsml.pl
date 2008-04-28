@@ -209,7 +209,7 @@ while (<$ifh>) {
         }
         
         ## set the gene stop (gets overridden each time)
-        $gene_stop = $cols[5] - 1;
+        $gene_stop = $cols[5];
         
         ## add this exon feature
         my $exon = $doc->createAndAddFeature($ft, 
