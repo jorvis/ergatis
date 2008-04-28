@@ -1,5 +1,6 @@
 next release
 ------------
+-genscan2bsml.pl: no longer attempts to create exonless predictions where they exist in genscan output.
 -fgenesh2bsml.pl: now uses Chado::Gene modeling.  fgenesh.i1.xml updated accordingly.
 -glimmerHMM2bsml.pl: no longer off by one on right side coords.
 -reset_subgroups.pl: marks subgroups not marked complete as incomplete given an iterator workflow xml file
