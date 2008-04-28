@@ -169,6 +169,7 @@ foreach my $file (@inputFiles) {
     $bsml = &generateBsml($data);
 
 }
+
 $bsml->writeBsml($output);
 
 exit(0);
@@ -182,6 +183,7 @@ sub parseGenscanData {
     open (my $ifh, "< $inFile") || $logger->logdie("Can't open input file for reading");
 
     my $source_seq_name = '';
+    my $source_seq_len  = 0;
     my $group_name = '';
     my $comp_val;
     my $min_exon_low = '';
@@ -189,13 +191,15 @@ sub parseGenscanData {
     my $genes;
     my %tmp;
     my @group_members = ();
-print "getting into the file\n";
+
     while (<$ifh>) {
-        print $_;
-        if ($_ =~ /^Sequence (\S+) :/) {
+
+        if ($_ =~ /^Sequence (\S+) : (\d+) bp/) {
             $source_seq_name = $1;
+            $source_seq_len  = $2;
             last;
         }
+
     }
 
     ## skip the rest of the headers
@@ -204,7 +208,7 @@ print "getting into the file\n";
     }
     <$ifh>;
 
-print "data points here we come!\n";
+
     ## go through the data now
     while (<$ifh>) {
         ## We're done if we encounter this line:
@@ -217,9 +221,14 @@ print "data points here we come!\n";
         $_ =~ s/^ +//;
 
         ## add the group if we come across a blank line
-        if ($_ eq '') {
-            &add_group(\@group_members, $min_exon_low, $max_exon_high,
-                        $comp_val, \$genes, $source_seq_name);
+        if ($_ eq '' && scalar(@group_members)) {
+
+            # Sometimes, genscan predicts exon-less 'genes' such as a
+            # lone poly a signal.  Skip those stupid things.
+            if (&count_exons(\@group_members)){
+                &add_group(\@group_members, $min_exon_low, $max_exon_high,
+                            $comp_val, \$genes, $source_seq_name);
+            }
             @group_members = ();
             $min_exon_low = '';
             $max_exon_high = '';
@@ -244,6 +253,8 @@ print "data points here we come!\n";
                 'low'    => $low,
                 'high'   => $high,
                 'comp'   => $comp_val );
+
+        # add this to the group array.
         push @group_members, {%tmp};
 
         # Adjust the min/max coords for the gene and polypeptide
@@ -264,8 +275,24 @@ print "data points here we come!\n";
 
 }
 
+sub count_exons {
+
+    my $grp_mems = shift;
+
+    my $count = 0;
+
+    foreach my $feat (@$grp_mems) {
+
+        $count++ if ($feat->{'type'} =~ /Init|Intr|Term|Sngl/);
+
+    }
+
+    return $count;
+
+}
+
 sub add_group {
-print "adding gfrp\n";
+
     my ($grp_mems, $min, $max, $comp, $genes, $source_seq_name) = @_;
 
     ## Create a new gene object:
@@ -288,7 +315,7 @@ print "adding gfrp\n";
         if ($mem_type =~ /Init|Intr|Term|Sngl/) {
 
             foreach my $type ( qw( exon CDS ) ) {
-        
+
                 $tmpGene->addFeature( $idMaker->next_id( 'type' => $type, 'project' => $project),
                                       $$feat{'low'}, $$feat{'high'}, $$feat{'comp'}, $type );
 
