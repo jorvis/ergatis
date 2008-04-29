@@ -389,7 +389,7 @@ for my $file ( @files ) {
 			     my $index = scalar(@{$expat->{'Context'}}) - 1;
 			     if($expat->{'Context'}->[$index] eq 'Seq-data'){
 				 $char =~ s/\s+//g;
-				 $sequencelookup->{$sequenceid}->{'seqdata'} = $char;
+				 $sequencelookup->{$sequenceid}->{'seqdata'} = \$char;
 			     }
 			 }
 		 };
@@ -405,7 +405,7 @@ for my $file ( @files ) {
 		      'Seq-data'=>
 			  sub{
 			      my ($expat,$elt,%params) = @_;
-			      $expat->{'Handlers'}->{'Char'} =  $charfuncs->{'Seq-data'};
+			      $expat->setHandlers( 'Char' => $charfuncs->{'Seq-data'} );
 			      $sequencelookup->{$sequenceid}->{'fasta_header'}=$sequenceid;
 			  },
 		      'Seq-data-import'=>
