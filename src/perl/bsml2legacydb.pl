@@ -305,7 +305,8 @@ sub process_results
 
         foreach my $exon_coords (@{$gene_coords}) {
             ++$$exon_id;
-            my $exon_feat_name = "$asm_id.e$$exon_id";
+            ## also zero pad the exon_id numeric portion to 6 places
+            my $exon_feat_name = "$asm_id.e" . sprintf("%06d", $$exon_id);
             my ($exon_pos5p, $exon_pos3p) = ($$exon_coords[0], $$exon_coords[1]);
 
             $logger->debug("asm_feature_insert_stmt ($loader, $exon_pos5p, $exon_pos3p, $exon_feat_name, $asm_id) ") if $logger->is_debug;
@@ -675,7 +676,7 @@ sub get_latest_id
         $stmt->execute;
         my $last_id = "000000";
         while (my $row = $stmt->fetchrow_arrayref) {
-            my $id = $& if $$row[0] =~ /\d+$/;
+            my $id = $1 if $$row[0] =~ /0*(\d+)$/;
             $last_id = $id if $id > $last_id;
         }
         $latest_ids{$asm_id}{$feat_type} = $last_id;
