@@ -24,7 +24,8 @@ void uniq(TFiles &files, FILE *out, int dbtype)
 
     char sybaseDelim[] = {0, '\n'};
     char postgresqlDelim[] = {'\n'};
-
+    char mysqlDelim[] = {'\n'};
+    
     if (!buf) {
         perror("Cannot allocate buffer");
         exit(1);
@@ -48,26 +49,36 @@ void uniq(TFiles &files, FILE *out, int dbtype)
                 }
             }
 
-	    if (dbtype){
-	      // postgresql
-	      if (num_read >= sizeof(postgresqlDelim)) {
-                newRecord = memcmp((buf + num_read) - sizeof(postgresqlDelim), 
+            if (dbtype == 1){
+                // postgresql
+                if (num_read >= sizeof(postgresqlDelim)) {
+                    newRecord = memcmp((buf + num_read) - sizeof(postgresqlDelim), 
                                    postgresqlDelim, sizeof(postgresqlDelim)) == 0;
-	      }
-	      else {
-                newRecord = 0;
-	      }
-	    }
-	    else {
-	      // sybase
-	      if (num_read >= sizeof(sybaseDelim)) {
-                newRecord = memcmp((buf + num_read) - sizeof(sybaseDelim), 
+                }
+                else {
+                    newRecord = 0;
+                }
+            } 
+            else if (dbtype == 2) {
+                // mysql
+                if (num_read >= sizeof(mysqlDelim)) {
+                    newRecord = memcmp((buf + num_read) - sizeof(mysqlDelim), 
+                                   mysqlDelim, sizeof(mysqlDelim)) == 0;
+                }
+                else {
+                    newRecord = 0;
+                }                
+            }
+            else {
+                // sybase
+                if (num_read >= sizeof(sybaseDelim)) {
+                    newRecord = memcmp((buf + num_read) - sizeof(sybaseDelim), 
                                    sybaseDelim, sizeof(sybaseDelim)) == 0;
-	      }
-	      else {
-                newRecord = 0;
-	      }
-	    }
+                }
+                else {
+                    newRecord = 0;
+                }
+            }
         }
     }
     free(buf);
@@ -85,9 +96,12 @@ int main(int argc, char **argv)
        sybase record delimiter is \0\n
        postgresql field delimiter is  \t
        postgresql record delimiter is \n
-       Default dbtype=0 for sybase.
-       If -d option specified, dbtype=1 and postgresql support is enabled.
-       Default support is for sybase.
+       mysql field delimiter is  \t
+       mysql record delimiter is \n
+       dbtypes:
+            0 - sybase (default)
+            1 - postgres
+            2 - myqsl
     */
     int dbtype=0;
     const char *OPTSTR = "i:o:d:h";
@@ -109,6 +123,7 @@ int main(int argc, char **argv)
 
 	    char sybase[] = "sybase";
 	    char postgresql[] = "postgresql";
+        char mysql[] = "mysql";
 	    
 	    if (strcmp(optarg,sybase) == 0){
 	      dbtype=0;
@@ -116,8 +131,11 @@ int main(int argc, char **argv)
 	    else if (strcmp(optarg,postgresql) == 0){
 	      dbtype=1;
 	    }
+	    else if (strcmp(optarg,mysql) == 0){
+	      dbtype=2;
+	    }
 	    else {
-	      fprintf(stderr, "Invalid database_type '%s'.  Supported types are sybase and postgresql.\n", optarg);
+	      fprintf(stderr, "Invalid database_type '%s'.  Supported types are sybase, mysql and postgresql.\n", optarg);
 	      exit(10);
 	    }
 	    
