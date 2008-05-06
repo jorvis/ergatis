@@ -17,11 +17,14 @@ USAGE: pipeline_summary.pl
             --output=/path/to/someDir/
           [ --locus_prefix=ABO553
             --organism="Acidolophus borneisi"
+            --translation_table=11
             --cog_search_bsml=/path/to/wu-blastp.bsml.list
+            --cog_lookup=/path/to/COGS_file.info
             --log=/path/to/file.log
             --debug=4
             --help
           ]
+
 
 =head1 OPTIONS
 
@@ -55,7 +58,7 @@ B<--cog_search_bsml,-c>
     [Optional] Bsml file containing a blast against NCBI's COGs database.
 
 B<--cog_lookup,-g>
-    [Optional] Don't remember.
+    [Optional] NCBI Cogs file
 
 B<--log,-l>
     [Optional] Logfile.
@@ -174,7 +177,7 @@ foreach my $file (@inputFiles) {
     $logger->logdie("Couldn't get the genome id") unless($genomeId);
 
     $bsml->createAndAddBsmlAttr( $organism, 'abbreviation', $locusPrefix );
-    $bsml->createAndAddBsmlAttr( $organism, 'genetic_code', $transTable );
+    $bsml->createAndAddBsmlAttr( $organism, 'translation_table', $transTable );
 
     #Parse the bsml file
     my $twig = new XML::Twig( twig_handlers => {
@@ -671,7 +674,6 @@ sub addFeature {
 
     if( $bsmlFeature->{'BsmlLink'} && $bsmlFeature->{'BsmlLink'}->[0] ) {
         $link = $bsmlFeature->{'BsmlLink'}->[0];
-        &_die("Frackin retard") unless($link);
     } else {
         $bsml->createAndAddLink( $bsmlFeature, 'analysis', "#${analysisId}_analysis", "input_of" );
         $link = $bsmlFeature->{'BsmlLink'}->[0];
@@ -883,12 +885,12 @@ sub check_parameters {
         $error = "Option input_bsml is required\n";
     }
 
-    @inputFiles = &getInputFiles($input);
+    @inputFiles = &getInputFiles($input) if( $input );
 
     if($opts->{'other_bsml_lists'}) {
         $input = $opts->{'other_bsml_lists'};
     }
-    @otherFiles = &getInputFiles($input);
+    @otherFiles = &getInputFiles($input) if( $input );
 
     unless($opts->{'output'}) {
         $error .= "Option output is required\n";
