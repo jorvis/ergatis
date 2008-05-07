@@ -152,7 +152,7 @@
             </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
-            <name>component_auto_annotate.annotate</name>
+            <name>component_predict_prokaryotic_gene_function.default</name>
         </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
