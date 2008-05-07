@@ -124,6 +124,7 @@ Will become something like this, depending on how much evidence is present:
       <Attribute name="gene_product_name" content="polyphosphate kinase"></Attribute>
       <Attribute name="gene_product_name_source" content="PF02503"></Attribute>
       <Attribute name="gene_symbol" content="ppk"></Attribute>
+      <Attribute name="gene_symbol_source" content="PF02503"></Attribute>
       <Link rel="analysis" href="#predict_prokaryotic_gene_function_analysis" role="computed_by"></Link>
       <Attribute-list>
         <Attribute name="GO" content="GO:0006799"></Attribute>
@@ -242,8 +243,10 @@ my $annot_priorities = {
 ##      $h{ $polypeptide_id } => {
 ##                                  product => $initial_product_name,
 ##                                  product_score => 2,
+##                                  product_source => 'PF02503',
 ##                                  gene_sym => $gene_symbol,
 ##                                  gene_sym_score => 2,
+##                                  gene_sym_source => 'PF02503',
 ##                                  ec_num => '1.2.3.4',
 ##                                  ec_num_score => 2,
 ##                                  ec_num_source => 'PF02503',
@@ -305,6 +308,15 @@ sub annotate_feature_element {
                                                              } );
             $gene_product_name_elt->paste( last_child => $feat );
             
+            ## attach product name source, if available
+            if ( $features{ $polypeptide_id }{product_source} ) {
+                my $gene_product_name_source_elt = XML::Twig::Elt->new( Attribute => {  
+                                                                        name => 'gene_product_name_source',
+                                                                        content => $features{ $polypeptide_id }{product_source},
+                                                                 } );
+                $gene_product_name_source_elt->paste( last_child => $feat );
+            }
+            
             ## whitespace seems to creep in from everywhere here ... make sure we don't propagate it.
             
             my $gene_symbol = $features{  $polypeptide_id  }{gene_sym};
@@ -314,6 +326,12 @@ sub annotate_feature_element {
                                                              content => $gene_symbol,
                                                       } );
                 $gene_symbol_elt->paste( last_child => $feat );
+                
+                my $gene_symbol_source_elt = XML::Twig::Elt->new( Attribute => {  
+                                                             name => 'gene_symbol_source',
+                                                             content => $features{  $polypeptide_id  }{gene_sym_source},
+                                                      } );
+                $gene_symbol_source_elt->paste( last_child => $feat );
             }
             
             ## EC numbers are handled a little differently.  They are represented as an Attribute-list
@@ -442,6 +460,7 @@ sub process_ber_alignment {
             
             $features{$polypeptide_id}{gene_sym} = $ber_info{ $$id_lookup{$comp_id} }{gene_symbol} || '';
             $features{$polypeptide_id}{gene_sym_score} = $$annot_priorities{"ber_characterized"};
+            $features{$polypeptide_id}{gene_sym_source} = $$id_lookup{$comp_id};
 
             $features{$polypeptide_id}{ec_num} = $ber_info{ $$id_lookup{$comp_id} }{ec_num} || '';
             $features{$polypeptide_id}{ec_num_score} = $$annot_priorities{"ber_characterized"};
@@ -449,6 +468,7 @@ sub process_ber_alignment {
 
             $features{$polypeptide_id}{product} = $ber_info{ $$id_lookup{$comp_id} }{com_name};
             $features{$polypeptide_id}{product_score} = $$annot_priorities{"ber_characterized"};
+            $features{$polypeptide_id}{product_source} = $$id_lookup{$comp_id};
             
             ## handle any GO terms on the accession
             if ( scalar @{ $ber_info{$$id_lookup{$comp_id}}{go} } ) {
@@ -610,12 +630,14 @@ sub process_hmm_coding_alignment {
                     
                     $features{$ref_id}{gene_sym} = $hmm_info{$comp_id}{gene_symbol};
                     $features{$ref_id}{gene_sym_score} = $$annot_priorities{"hmm_$isotype"};
+                    $features{$ref_id}{gene_sym_source} = $comp_id;
                     
                     $features{$ref_id}{ec_num} = $hmm_info{$comp_id}{ec_num};
                     $features{$ref_id}{ec_num_score} = $$annot_priorities{"hmm_$isotype"};
                     $features{$ref_id}{ec_num_source} = $comp_id;
                     
                     $features{$ref_id}{product_score} = $$annot_priorities{"hmm_$isotype"};
+                    $features{$ref_id}{product_source} = $comp_id;
                     
                     ## what we do now depends on the isotype
                     if ( $isotype eq 'equivalog' ) {
