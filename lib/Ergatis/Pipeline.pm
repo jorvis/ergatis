@@ -261,7 +261,6 @@ umask(0000);
         $ENV{WF_ROOT_INSTALL} = $ENV{WF_ROOT};
         $ENV{WF_TEMPLATE} = "$ENV{WF_ROOT}/templates";
 
-        $ENV{SYBASE} = '/usr/local/packages/sybase';
         $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
         
@@ -276,6 +275,19 @@ umask(0000);
         
         ## for the genewise component
         $ENV{WISECONFIGDIR} = '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg';
+        
+        ## Sybase crap
+        $ENV{SYBASE} = '/usr/local/packages/sybase';
+        $ENV{SYBASE_ASE} = 'ASE-15_0';
+        $ENV{LD_LIBRARY_PATH} = '/usr/local/packages/sybase/ASE-15_0/lib:/usr/local/packages/sybase/DataAccess/ODBC/lib:/usr/local/packages/sybase/OCS-15_0/lib:/usr/local/packages/sybase/OCS-15_0/lib3p';
+        $ENV{SYBASE_OCS} = 'OCS-15_0';
+        $ENV{INCLUDE} = '/usr/local/packages/sybase/OCS-15_0/include';
+        $ENV{LIB} = '/usr/local/packages/sybase/OCS-15_0/lib';
+        $ENV{SYBASE_JRE} = '/usr/local/packages/sybase/shared/jre142_013';
+        $ENV{SYBASE_SYSAM2} = 'SYSAM-2_0';
+        $ENV{SYBASE_UA} = '/usr/local/packages/sybase/UAF-2_0';
+        $ENV{SCROOT} = '/usr/local/packages/sybase/shared/sybcentral43';
+        $ENV{SYBROOT} = '/usr/local/packages/sybase';
     }
     
 }
