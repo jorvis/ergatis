@@ -280,6 +280,9 @@ my $ber_files = parse_multi_list( $options{ber_list} );
 _log("INFO: found " . scalar(@$hmm_files) . " BER files to process");
 &process_ber_results( $ber_files );
 
+## perform post-processing on all predicted names
+&check_gene_product_names( \%features );
+
 ## write out result BSML
 &output_annotated_bsml( $input_files );
 
@@ -287,6 +290,7 @@ untie(%hmm_info) if $options{hmm_info};
 untie(%ber_info) if $options{ber_info};
 
 exit(0);
+
 
 ## this is called when we finally start adding annotation to the output BSML.
 #   it reads a single Feature element and, if it is of the correct type ($annotate_on)
@@ -393,6 +397,92 @@ sub annotate_feature_element {
     $feat->flush($ofh, pretty_print => 'indented' );
 }
 
+
+## applies the list of name change rules defined by manual curation team
+#   to all gene product names
+sub check_gene_product_names {
+    my $feats = shift;
+    
+    for my $feature (keys %$feats) {
+        if ( defined $$feats{$feature}{product} ) {
+            
+            ## names with 'family, family' or 'family family' truncated to just 'family'
+            #   ex: AcrB/AcrD/AcrF family family protein -> AcrB/AcrD/AcrF family protein
+            $$feats{$feature}{product} =~ s|family[, ]+family|family|ig;
+            
+            ## names with 'domain, domain' or 'domain domain' truncated to just 'domain'
+            $$feats{$feature}{product} =~ s|domain[, ]+domain|domain|ig;
+            
+            ## Names with family and domain should just be domain protein:
+            #   ex. PHP domain family protein -> PHP domain protein. 
+            $$feats{$feature}{product} =~ s|domain family protein|domain protein|ig;
+            
+            ## if 'putative' and 'family' are in the same name, remove the putative
+            #   ex. putative methyltransferase family protein -> methyltransferase family protein
+            if ( $$feats{$feature}{product} =~ m|putative|i && $$feats{$feature}{product} =~ m|family|i ) {
+                $$feats{$feature}{product} =~ s|putative\s*||ig;
+            }
+            
+            ## Remove The from the beginning of all names. 
+            #   ex. The GLUG motif family protein -> GLUG motif family protein
+            $$feats{$feature}{product} =~ s|^the\s+||ig;
+            
+            ## PAS domain proteins should just be called 'sensory box protein'
+            if ( $$feats{$feature}{product} =~ m|PAS domain|i ) {
+                $$feats{$feature}{product} = 'sensory box protein';
+            }
+            
+            ## S-box domain proteins should just be called 'sensory box protein'
+            if ( $$feats{$feature}{product} =~ m|S\-box domain protein|i ) {
+                $$feats{$feature}{product} = 'sensory box protein';
+            }
+
+            ## if 'response regulator' is anywhere within the name, that should be the entire name
+            if ( $$feats{$feature}{product} =~ m|response regulator|i ) {
+                $$feats{$feature}{product} = 'response regulator';
+            }            
+            
+            ## any name with conserved hypothetical, DUF family, or protein of unknown function should be 
+            #   conserved hypothetical protein 
+            #   exs conserved hypothetical family protein; Protein of unknown function (DUF454) family protein -> conserved hypothetical protein
+            if ( $$feats{$feature}{product} =~ m|conserved hypothetical|i || 
+                 $$feats{$feature}{product} =~ m|DUF.*protein| ||
+                 $$feats{$feature}{product} =~ m|protein.*unknown function|i   ) {
+                $$feats{$feature}{product} = 'conserved hypothetical protein';
+            }
+            
+            ## anything with 'uncharacterized ACR' should be changed to conserved hypothetical
+            if ( $$feats{$feature}{product} =~ m|ncharacterized ACR| ) {
+                $$feats{$feature}{product} = 'conserved hypothetical protein';
+            }
+            
+            ## any gene symbol family starting with Y should be a conserved hypothetical
+            #   ex. YfiH family COG1496 family protein -> conserved hypothetical protein
+            if ( $$feats{$feature}{product} =~ m|Y\S*[A-Z] family| ) {
+                $$feats{$feature}{product} = 'conserved hypothetical protein';
+            }
+            
+            ## names with superfamily and family should just be family
+            #   ex. PAP2 superfamily family protein -> PAP2 family protein
+            $$feats{$feature}{product} =~ s|superfamily family|family|ig;
+            
+            ## Truncate "family protein" when if follows subunit. 
+            #   ex. electron transport complex, RnfABCDGE type, D subunit family protein -> electron transport complex, RnfABCDGE type, D subunit
+            $$feats{$feature}{product} =~ s|subunit family protein|subunit|i;
+            
+            ## anytime there's a protein something protein, take off the first instance of protein
+            $$feats{$feature}{product} =~ s|protein (\S+ protein)|$1|i;
+            
+            ## replace 'or' with /. 
+            #   ex. succinate dehydrogenase or fumarate reductase, flavoprotein subunit family protein -> succinate dehydrogenase/fumarate reductase, flavoprotein subunit
+            $$feats{$feature}{product} =~ s| or |\/|i;
+            
+            ## remove leading predicted from names
+            #   ex. Predicted permease family protein -> permease family protein
+            $$feats{$feature}{product} =~ s|^predicted\s+||i;
+        }
+    }
+}
 
 ## reads through input files and, for each, creates a new one in the output_directory
 ##  with the same base name but with annotations attached to $annotate_on features.
