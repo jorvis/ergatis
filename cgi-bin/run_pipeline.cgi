@@ -70,7 +70,7 @@ if ( $$qvars{rerun} ) {
                 $writer->characters( 'incomplete' );
                 $writer->endTag('state');
                 $writer->startTag('name');
-                $writer->characters( "component_$name_token" );
+                $writer->characters( "$name_token" );
                 $writer->endTag('name');
                 $writer->endTag('commandSet');
 
