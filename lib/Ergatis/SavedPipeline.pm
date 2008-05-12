@@ -575,21 +575,26 @@ XMLfraGMENt
                                                   "/$component_name.$token.config"
                                        );
         
+        if ( ! defined $cfg ) {
+            croak("failed to parse expected ini file: $self->{_template_dir}/$component_name.$token.config");
+        }
+        
         ## set the shared conf
         my $ret = $cfg->setval( "include", '$;PROJECT_CONFIG$;', $self->{shared_config} );
-	if(!$ret){
-	    croak("can't set \$;PROJECT_CONFIG\$; in section [include] $self->{shared_config} $self->{_template_dir}/$component_name.$token.config");
-	}
-        
-	if($self->{pipeline_token} ne ''){
-	    my $ret = $cfg->setval("component",'$;PIPELINE_TOKEN$;');
+
 	    if(!$ret){
-		$ret = $cfg->newval("component",'$;PIPELINE_TOKEN$;');
-		if(!$ret){
-		    croak("can't set \$;PIPELINE_TOKEN\$; in section [component]");
-		}
+	        croak("can't set \$;PROJECT_CONFIG\$; in section [include] $self->{shared_config} $self->{_template_dir}/$component_name.$token.config");
 	    }
-	}
+
+	    if($self->{pipeline_token} ne ''){
+	        my $ret = $cfg->setval("component",'$;PIPELINE_TOKEN$;');
+	        if(!$ret){
+		        $ret = $cfg->newval("component",'$;PIPELINE_TOKEN$;');
+		        if(!$ret){
+		            croak("can't set \$;PIPELINE_TOKEN\$; in section [component]");
+		        }
+	        }
+	    }
 	
         $self->{_logger}->debug("Writing to config file $outputdir/$component_name.$token.user.config");        
         ## write it into the proper directory
