@@ -20,17 +20,6 @@
                 <state>incomplete</state>
                 <commandSet type="serial">
                     <state>incomplete</state>
-                    <name>component_hmmpfam.prok_Rfam.HMM</name>
-                </commandSet>
-                <commandSet type="serial">
-                    <state>incomplete</state>
-                    <name>component_infernal.find_RNA</name>
-                </commandSet>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <commandSet type="serial">
-                    <state>incomplete</state>
                     <name>component_glimmer3.iter1</name>
                 </commandSet>
                 <commandSet type="serial">
