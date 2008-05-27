@@ -21,11 +21,11 @@
 <a name='what_is_component'></a>
 <h2>what is a component?</h2>
 <p>
-    When you build an analysis pipeline with ergatis each 'piece' of the pipeline is known as
+    When you build an analysis pipeline with Ergatis each 'piece' of the pipeline is known as
     a <span class='term'>component</span>.  Usually this corresponds to some analysis tool, such as blastp, glimmerHMM
     or clustalw but can also be involved in more mundane tasks such as file format conversion
     or splitting a multi-fasta file into individual files.  Any executable program or script
-    (or series of them) can become a component in ergatis, assuming it meets a few easy criteria.
+    (or series of them) can become a component in Ergatis, assuming it meets a few easy criteria.
 </p>
 <p>
     The component is really just a few XML files created to tell Ergatis (and Workflow Engine) 
@@ -36,7 +36,7 @@
 <a name='can_my_script_be'></a>
 <h2>can my script or program become a component?</h2>
 <p>
-    There are only a few criteria that must be met for a script/program to become an ergatis
+    There are only a few criteria that must be met for a script/program to become an Ergatis
     component.  These are mostly reasonable limitations of the underlying Workflow Engine but are 
     pretty intuitive and don't usually cause many problems.
 </p>
@@ -46,7 +46,7 @@
         <p>
             This will be true for almost everything, but anything you try to execute must resolve to
             a file someplace on the file system.  This really only means that you can't execute built-in
-            shell commands such as ls, cd, pwd as steps in an ergatis component.  Full paths should 
+            shell commands such as ls, cd, pwd as steps in an Ergatis component.  Full paths should 
             always be used.
         </p>
     </dd>
@@ -156,8 +156,14 @@
     XML format for processing by the <a href='http://sf.net/projects/tigr-workflow'>Workflow Engine</a>.  Each
     component created is a set of template XML files describing how to run a tool and its associated commands.
     Once created, the interface uses these templates to build the final XML that can be parsed by Workflow Engine.
-    The content of the actual XML files mimic the typical component steps shown in the image above.  We'll first
-    consider a simple non-iterative component, which is composed of a series of commands.
+    For full documentation of both Workflow Engine and its XML format, please see the 
+    <a href='http://sf.net/projects/tigr-workflow'>Workflow Engine site</a> on SourceForge.  Here we'll cover the most common aspects of the format, 
+    focusing on how Ergatis uses it to represent pipelines.
+</p>
+
+<p>
+    The content of the actual XML files mimic the typical component steps shown in the image on the right.
+    We'll first consider a simple non-iterative component, which is composed of a series of commands.
 </p>
 <div id='formatdb_xml' class='code_container'>
     &lt;?xml version="1.0" encoding="UTF-8"?&gt;
@@ -193,6 +199,64 @@
     <li>mkdir /some/output/directory</li>
     <li>formatdb -p F -oT -i somefile.fsa -n /some/output/directory/dbout</li>
 </ol>
+<p>
+    You can see from the XML that there is a commandSetRoot element to contain everything in the
+    document.  Within it is a commandSet element, which can have a 'type' attribute value of either
+    serial or parallel.  In this case the value is 'serial', so Workflow Engine will execute each
+    of the command elements within the commandSet serially.
+</p>
+<p>
+    Within each command element are some core attributes, here including 'type', 'name', 'state',
+    'executable' and 'arg'.  
+</p>
+<dl>
+    <dt>type</dt>
+    <dd>
+        Among other things, this attribute discerns commons to be run locally (RunUnixCommand) from 
+        those to be distributed on a compute grid (RunDistributedCommand).
+    </dd>
+    <dt>name</dt>
+    <dd>
+        The 'name' element can be any string to describe the step of the pipeline and is directly 
+        displayed in the Ergatis interface.  
+    </dd>
+    <dt>state</dt>
+    <dd>
+        This attribute is pretty intuitive and has values like 'incomplete', 'complete', 'unknown',
+        'pending', 'running', 'failed', 'error', etc.  The 'incomplete' state is the default one and
+        indicates a command that hasn't yet been reached in the pipeline.
+    </dd>
+    <dt>executable</dt>
+    <dd>
+        This is the location of the program executed in this step of the pipeline.  These should be
+        full paths to the executable when possible, though entering the name alone is acceptable for
+        built-in OS commands.  Notice in our second command the variable $;FORMATDB_EXEC$;.  This
+        will be replaced automatically at pipeline build time with that value within the component
+        config file.
+    </dd>
+    <dt>arg</dt>
+    <dd>
+        Anything included as the 'arg' value will be passed directly on the command line to the
+        corresponding executable.
+    </dd>
+</dl>
+<p>
+    It's important to remember that these are just the basic elements contained within an Ergatis
+    component.  When Workflow Engine begins to process this file it will add a host of other attributes,
+    mostly for auditing purposes.  These include a unique identifer ('id'), 'startTime', 'endTime', 
+    'retryCount' and more.
+</p>
+<p>
+    The other important element that Ergatis uses is the 'fileName' element.  Used within a commandSet,
+    it serves as an include to direct Workflow Engine to read commands from within the referenced file
+    once it is reached.  The referenced file is not physically imported; Workflow Engine simply reads it
+    and beings executing commands within it.  Once those are finished, it will return to the next command
+    or commandSet after the fileName element.
+</p>
+<p>
+    We'll specifics on how Ergatis uses template XML files for Workflow Engine next, but for more
+    documentation on Workflow Engine itself please visit <a href='http://tigr-workflow.sf.net'>SourceForge</a>.
+</p>
 
 <a name='component_file_layout'></a>
 <h2>component file layout</h2>
