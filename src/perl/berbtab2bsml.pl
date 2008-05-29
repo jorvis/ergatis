@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME 
 
 berbtab2bsml.pl  - convert info stored in BER btab files into BSML documents 
@@ -133,6 +128,8 @@ parse_ber_btabs($files);
 $doc->createAndAddAnalysis(
                             id => $options{analysis_id},
                             sourcename => $options{'output'},
+                            program => 'ber',
+                            algorithm => 'ber',
                           );
 
 $doc->write($options{'output'}, '', $options{'gzip_output'});
@@ -166,7 +163,7 @@ sub parse_ber_btabs {
 	    }
 	    my $align = &createAndAddBtabLine(
 					      doc                => $doc,
-                          class              => $class,
+                                              class              => $class,
 					      query_name         => $btab[0],
 					      date               => $btab[1],
 					      query_length       => $btab[2],
