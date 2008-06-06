@@ -452,7 +452,7 @@ sub collectSeqs {
     my $molecule = $seq->att('molecule');
     my $length = $seq->att('length');
 
-    $featureSeqElems->{$featId}->{'moluecule'} = $molecule if($molecule);
+    $featureSeqElems->{$featId}->{'molecule'} = $molecule if($molecule);
     $featureSeqElems->{$featId}->{'length'} = $length if($length);
 
     #Gather the Seq-data-import information
