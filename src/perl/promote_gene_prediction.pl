@@ -207,7 +207,8 @@ sub gatherAndAdd {
         my $newSeq = 
             new XML::Twig::Elt( 'Sequence', { 'id' => $featElem->att('id')."_seq", 
                                               'length' => $intLocElem->att('endpos') - $intLocElem->att('startpos'),
-                                              'molecule' => ($featElem->att('class') eq 'CDS') ? 'dna' : 'aa'
+                                              'molecule' => ($featElem->att('class') eq 'CDS') ? 'dna' : 'aa',
+                                              'class' => $featElem->att('class'),
                                           } );
         $newSeq->paste( 'before', $sequence );
 
