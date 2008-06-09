@@ -301,7 +301,7 @@ function getComponentConfig( mode, component_id, path, display_config, auto_save
                 
                 // 'exact' mode is used when we're pulling in a copy of a pipeline.  layout shouldn't
                 //  be saved after each component config pulled
-                if ( mode == 'exact' ) {
+                if ( mode == 'exact' || mode == 'existing' ) {
                     ajaxCallback( component_id, ajaxRequest.responseText, display_config, auto_save, false );
                 } else {
                     ajaxCallback( component_id, ajaxRequest.responseText, display_config, auto_save, true );                
@@ -715,6 +715,18 @@ function startNewInput() {
 
 // toggles the visibility of the component configuration
 function toggleConfigVisibility( component_id ) {
+   
+    // if it's configured, we need to fetch the configuration which is saved on disk.
+    if ( components[component_id].configured == true && 
+         components[component_id].config_view.visible == false ) {
+        
+        // pull an existing component config
+        // alert('TODO: make this not editable by default.');
+        getComponentConfig( 'existing', component_id, 
+                            build_directory + '/' + components[component_id].name + '.' + components[component_id].token + '.config',
+                            true, false );
+    }
+    
     components[component_id].config_view.toggle();
 }
 
@@ -896,8 +908,11 @@ function selectPipelineTemplate( template_path ) {
 
 function parsePipelineLayout( layout_string, template_path ) {
     // parse pipeline and add pieces
-//    alert("got string: " + layout_string);
     var doc;
+    
+    // we don't need to close this message because it will be done by the post-processor
+    getObject('save_progress_label').innerHTML = 'parsing pipeline layout';
+    getObject('save_progress_label').style.display = 'block';
     
     // check for IE
     if ( window.ActiveXObject ) {
@@ -927,7 +942,7 @@ function parsePipelineNode( pipeline_node, insert_loc, template_path ) {
     var children = pipeline_node.childNodes;
     
     // regex used to match component name attributes
-    var regEx = /component_/;
+    var regEx = /\S+\.\S+/;
     
     for (var i=0; i < children.length; i++ ) {
     
@@ -943,15 +958,16 @@ function parsePipelineNode( pipeline_node, insert_loc, template_path ) {
                 for ( var j=0; j < possible_names.length; j++ ) {
                     if ( possible_names[j].nodeType == 1 && possible_names[j].nodeName == 'name' && regEx.test(possible_names[j].firstChild.nodeValue) ) {
                         is_component = true;
-                        name_token = possible_names[j].firstChild.nodeValue.substr( 10 )
+                        name_token = possible_names[j].firstChild.nodeValue;
                         break;
                     }
                 }
             
                 // components are represented as serial commandSet elements with a child
-                // like <name>component_jaccard.default</name>
+                // like <name>jaccard.default</name>
                 // all others are just serial sets
                 if ( is_component ) {
+                
                     // add the component here
                     var component_id = 'c' + components.length;
 
@@ -981,9 +997,9 @@ function parsePipelineNode( pipeline_node, insert_loc, template_path ) {
                     // set the name
                     components[component_id].name = parts[1];
                     getObject(component_id + '_name').innerHTML = parts[1];
-                    
+
                     getComponentConfig( 'exact', component_id, 
-                                        template_path + '/' + name_token + '.config',
+                                         template_path + '/' + name_token + '.config',
                                         false, true );
                     
                 } else {

@@ -80,7 +80,7 @@ function _template_html( component_id ) {
                 "<div class='component_status' id='" + component_id + "_status'>not configured</div>" +
                 "<img id='" + component_id + "_toggler' src='/ergatis/images/arrow_right.gif' alt='toggle configuration'>configuration" +
             "</div>" +
-            "<div id='" + component_id + "_config>component not yet chosen</div>" +
+            "<div id='" + component_id + "_config'>component not yet chosen</div>" +
             "</form>" +
         "</div>";
     
@@ -387,6 +387,15 @@ function save_to_disk( ) {
 
 function _save_to_disk_handler( component_id, ajax_resp_text ) {
     components[component_id].setConfigured(true);
+    
+    
+    // to save memory, destroy the config DOM under this node.  it will be fetched again via
+    //  a remote call un the _show() method when the user wants to see it again
+    var config_node = getObject(component_id + '_config');
+
+    while ( config_node.firstChild ) {
+        config_node.removeChild( config_node.firstChild );
+    }
 }
 
 function set_configured( flag ) {
