@@ -151,9 +151,10 @@ sub get_pipeline_templates {
     if ( -d $dir ) {
         opendir( my $recent_dh, $dir ) || die "can't read template directory: $!";
         while ( my $thing = readdir $recent_dh ) {
-
+            
             if ( -e "$dir/$thing/pipeline.layout" ) {
                 my $layout;
+                
                 eval { $layout = Ergatis::SavedPipeline->new( template => "$dir/$thing/pipeline.layout" ) };
                 
                 if (! $@ ) {
@@ -171,6 +172,8 @@ sub get_pipeline_templates {
                             $templates[-1]->{comment} .= $_;
                         }
                     }
+                } else {
+                    print STDERR "failed to parse pipeline template so excluding it from the lists: $@";
                 }
             }
         }
