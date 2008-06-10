@@ -237,7 +237,8 @@
     <dt>arg</dt>
     <dd>
         Anything included as the 'arg' value will be passed directly on the command line to the
-        corresponding executable.
+        corresponding executable.  Note that this isn't the only way to pass parameters - they can
+        be specified individually with param elements (more on that later.)
     </dd>
 </dl>
 <p>
@@ -261,8 +262,23 @@
 <a name='component_file_layout'></a>
 <h2>component file layout</h2>
 <p>
-    
+    Now that we have these fundamentals the creation of a component is relatively easy.  I'm going to try
+    to describe it sufficiently here, but people new to the project have contributed their first component 
+    in just a few hours, while very active developers can toss one together quite a bit faster.
 </p>
+<p>
+    Adding a new component involves the creation of one or two XML files and an INI (config) file.  In
+    practice, we usually copy an existing component with similar structure and modify as needed.  Typing
+    XML from the beginning isn't very efficient, and is even less fun.  With that in mind, let's start
+    with the simplest component type.
+</p>
+
+<h3>non-iterative</h3>
+<p>
+    Non-iterative components are those which simply execute a series of commands.  They are different from
+    iterative components in that the set of commands are not executed repeatedly, once for each input file.
+</p>
+
 
 <!-- this to be removed once the tutorial is complete -->
 <h1>this tutorial is not yet complete</h1>
