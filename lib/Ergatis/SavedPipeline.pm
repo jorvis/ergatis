@@ -528,25 +528,30 @@ XMLfraGMENt
             my $commandname =  $commandname_elt->text();
 
 	    $self->{_logger}->debug("Found command name $commandname");
+            
             ## remember the commandname
             $self->_add_commandname( $commandname ); #for the commandset
             
             ## if this is a component, parse the name and check that the file exists.
-            if ($commandname =~ /component_(.+?)\.(.+)/) {
+            if ($commandname =~ /(.+?)\.(.+)/) {
                 $self->{_component_count}++;
+                
                 my ($component_name, $token) = ($1, $2);
-		$self->{_logger}->debug("Found component name $component_name, $token");
+		
+                $self->{_logger}->debug("Found component name $component_name, $token");
+                
                 ## file will be named like:
                 ##  component.token.config
                 my $component_file = $self->{_template_dir} . "/$component_name.$token.config";
-		$self->{_logger}->debug("Looking for file $component_file");
+		
+                $self->{_logger}->debug("Looking for file $component_file");
                 if (! -e $component_file) {
                     croak( "component configuration file $component_file could not be found" );
                 }
             }
         }
 
-	if(scalar(keys %{$self->{_commandnames}}) == 0){
+	if (scalar(keys %{$self->{_commandnames}}) == 0) {
 	    $self->{_logger}->warn("No command names found in file $self->{template}");
 	}
     }
