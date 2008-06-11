@@ -1,8 +1,4 @@
 #!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 =head1  NAME 
 
@@ -26,6 +22,9 @@ B<--file,-f>
 
 B<--compress,-c>
     Optional.  If 0, the compression will not be performed.
+
+B<--remove_source,-r>
+    Optional.  Controls whether source file is removed when compressing (default = 1)
 
 B<--list_file,-s>
     Optional.  Writes a list file of the gzipped file created.
@@ -60,6 +59,15 @@ may create a list file for the raw output, but if we zip it, we want to
 overwrite that single-entry list file with the gzip'ed path before it
 is merged.
 
+Some checks are performed to handle common problems found handling compression
+in production - each handling cases where previous compression attempts
+have left partial files.
+
+If neither input or output exists the script will die.  If the input file
+exists and output doesn't, normal compression will occur.  If the output file
+exists and the input file doesn't, a warning is issued and the script completes
+successfully.  
+
 =head1 OUTPUT
 
 The output file will be named the same but with the .gz extension
@@ -67,7 +75,7 @@ The output file will be named the same but with the .gz extension
 =head1 CONTACT
 
     Joshua Orvis
-    jorvis@tigr.org
+    jorvis@users.sf.net
 
 =cut
 
@@ -75,16 +83,15 @@ The output file will be named the same but with the .gz extension
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
-BEGIN {
 use Ergatis::Logger;
-}
 
 my %options = ();
 my $results = GetOptions (\%options,
 			  'file|f=s',
 			  'compress|c=s',
-              'list_file|s=s',
+                          'list_file|s=s',
 			  'output|o=s',
+                          'remove_source|r=s',
 			  'log|l=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
@@ -106,16 +113,39 @@ my $return_status = 0;
 ## we're only going to compress if the user requested it
 if ($options{compress}) {
     $logger->debug("preparing to compress file $options{file}") if ($logger->is_debug);
-    if($options{output}){
-	system("gzip -c -f $options{file} > $options{output}");
-    }
-    else{
-	system("gzip -f $options{file}");
+    
+    ## do both the input and output already exist?
+    my $output = $options{output} || "$options{file}.gz";
+    
+    ## if the output file already exists but the input file doesn't the operation is 
+    #   already completed.  log a warning and continue
+    if ( -e $output && ! -e $options{file} ) {
+        $logger->warn( "output file already exists, operation appears to be completed" ) if $logger->is_warn;
+        
+    } else {
+    
+        ## if a previous run of this failed in the middle both the input and output files
+        #   will already exist.  delete the output file and try again.
+        if ( -e $output && -e $options{file} ) {
+            unlink($output) || $logger->logdie("failed to clear pre-existing output file: $!");
+        }
+        
+        ## if neither exists Bad Things have happened
+        if (! -e $output && ! -e $options{file} ) {
+            $logger->logdie("input file doesn't exist and no previous attempts detected.");
+        }
+        
+        system("gzip -c -f $options{file} > $output");
+
+        if ( $options{remove_source} ) {
+            unlink($options{file}) || die "failed to remove source file after compression: $!";
+        }
+
+        ## was it successful?
+        $return_status = $? >> 8;
+        $logger->debug("return status was $return_status") if ($logger->is_debug);
     }
     
-    ## was it successful?
-    $return_status = $? >> 8;
-    $logger->debug("return status was $return_status") if ($logger->is_debug);
 } else {
     if($options{output}){
 	system("cp $options{file} $options{output}");
@@ -143,12 +173,8 @@ sub check_parameters{
 	    pod2usage({-exitval => 2,  -message => "--file option missing", -verbose => 1, -output => \*STDERR});    
     }
     
-    ## make sure the file exists
-    if (! -e $options{'file'} && $options{'file'} !~ /\*/){
-	    $logger->logdie("output file $options{file} doesn't exist");
-    }
-    
     ## handle some defaults
     $options{compress}  = 1 if (! defined $options{compress});
     $options{list_file} = 0 if (! defined $options{list_file});
+    $options{remove_source} = 1 if (! defined $options{remove_source});
 }

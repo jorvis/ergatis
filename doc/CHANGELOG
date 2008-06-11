@@ -1,5 +1,6 @@
 next release
 ------------
+-bug 1784444: compress_file.pl now handles retry attempts
 -augustus: revemped augustus options a little to make it more general use
 -bsml2fasta: fixed Seq-data parsing bug (previously wouldn't extract anything)
 -bsml2legacydb.pl: now pads exon ids to 6 digits
