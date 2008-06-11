@@ -587,11 +587,11 @@ XMLfraGMENt
         ## set the shared conf
         my $ret = $cfg->setval( "include", '$;PROJECT_CONFIG$;', $self->{shared_config} );
 
-	    if(!$ret){
+	    if (!$ret) {
 	        croak("can't set \$;PROJECT_CONFIG\$; in section [include] $self->{shared_config} $self->{_template_dir}/$component_name.$token.config");
 	    }
 
-	    if($self->{pipeline_token} ne ''){
+	    if ( defined $self->{pipeline_token} && $self->{pipeline_token} ne '') {
 	        my $ret = $cfg->setval("component",'$;PIPELINE_TOKEN$;');
 	        if(!$ret){
 		        $ret = $cfg->newval("component",'$;PIPELINE_TOKEN$;');
