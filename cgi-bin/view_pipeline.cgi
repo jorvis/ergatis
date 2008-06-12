@@ -133,7 +133,9 @@ $tmpl->param( PIPELINE_ID         => $pipelineid );
 $tmpl->param( COMPONENT_HTML      => $component_html );
 $tmpl->param( PIPELINE_COMMENT    => $pipeline_comment );
 $tmpl->param( PIPELINE_COMMENT_FILE => $comment_file );
-$tmpl->param( PAGE_TITLE          => "$project|$state|pipeline" );
+
+## changes in PAGE_TITLE need to be mirrored in view_pipeline.js (function processPipelineUpdate)
+$tmpl->param( PAGE_TITLE          => "$project | $pipelineid | $state" );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'pipeline list', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" },
