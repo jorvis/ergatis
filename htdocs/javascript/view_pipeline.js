@@ -160,8 +160,9 @@ function processPipelineUpdate() {
 
         // update the page title
         //  title should be like "project|state pipeline view"
-        document.title = document.getElementById('projectid').innerHTML + '|' + 
-                         document.getElementById('pipeline_state').innerHTML + '|pipeline';
+        document.title = document.getElementById('projectid').innerHTML + ' | ' +
+                         document.getElementById('pipelineid').innerHTML + ' | ' +
+                         document.getElementById('pipeline_state').innerHTML;
 
         // set the border back
         document.getElementById('info_container').style.borderColor = 'rgb(150,150,150)';
