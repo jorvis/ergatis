@@ -1,6 +1,6 @@
 next release
 ------------
--interface: added pipeline ID to pipeline view page titles
+-interface: added pipeline ID to pipeline view page titles (feat request 1930140)
 -bsml2chado: now has mysql support
 -bug 1784444: compress_file.pl now handles retry attempts
 -augustus: revemped augustus options a little to make it more general use
