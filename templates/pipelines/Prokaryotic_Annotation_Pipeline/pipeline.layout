@@ -91,9 +91,16 @@
             <state>incomplete</state>
             <name>component_auto_gene_curation.overlap_analysis</name>
         </commandSet>
-        <commandSet type="serial">
+        <commandSet type="parallel">
             <state>incomplete</state>
-            <name>component_translate_sequence.translate_new_models</name>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_translate_sequence.translate_new_models</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>component_translate_sequence.default</name>
+            </commandSet>            
         </commandSet>
             <commandSet type="parallel">
                 <state>incomplete</state>
