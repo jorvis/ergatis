@@ -22,6 +22,8 @@ USAGE: bsml2legacydb.pl
         --log|l=/path/to/log_file.log
         --username|U=username
         --password|P=password
+        --server|S=s
+        --password_file=/path/to/password/file
         --new_gene_encoding|N
     ]
 
@@ -54,6 +56,13 @@ B<--username,-U>
 
 B<--password,-P>
     Database password
+
+B<--server,-S>
+    Sybase server hosting the database
+
+B<--password_file>
+    Password file containing sybase username on one line and password on the next, with an
+    optional third line containing the sybase server name.
 
 B<--new_gene_encoding,-N>
     Input has the new CHADO canonical gene model encoding
@@ -113,12 +122,14 @@ my $db_name = undef;
 my %latest_ids  = ();
 my %deleted_evidence    = ();
 my %chain_nums          = ();
-my $user    = "egc";
-my $pass    = "egcpwd";
+my $user    = undef;
+my $pass    = undef;
+my $password_file = '/usr/local/devel/ANNOTATION/euk_genome_control/bin/egc_password';
 my $new_gene_encoding    = 0;
 
 sub parse_opts;
 sub print_usage;
+sub process_pwdfile;
 sub process_files;
 sub process_results;
 sub process_feat_new_encoding;
@@ -141,6 +152,7 @@ sub get_latest_id;
 GetOptions(\%opts, "input_file|i=s", "input_list|I=s",
        "server|s=s", "database|d=s", "prog_name|p=s", "db_name|n=s",
        "debug|D=i", "log|l=s", "username|U=s", "password|P=s",
+       "password_file=s",
        "new_gene_encoding|N", "help|h");
 parse_opts;
 
@@ -165,6 +177,9 @@ sub parse_opts
                 next if $file =~ /^\s*$/;
                 push @files, $file;
             }
+        }
+        elsif ($key eq "password_file") {
+            process_pwdfile($password_file);
         }
         elsif ($key eq "server") {
             $server = $val;
@@ -202,6 +217,36 @@ sub parse_opts
     $logger = Ergatis::Logger::get_logger;
     $logger->logdie("No input(s) provided") if !scalar(@files);
     $logger->logdie("No database provided") if !$db;
+}
+
+sub process_pwdfile
+{
+    my $pwdfile = shift;
+    open (my $pfile,"< $pwdfile") || $logger->logdie("Can't read pwd_file $pwdfile: $!\n");
+
+    my @pwd_contents = ();
+
+    while (<$pfile>) {
+        chomp;
+        if (/\s/) { # whitespace has NO PLACE in username, passwords, or server names
+            $logger->logdie("malformed pwd_file: $pwdfile\n");
+        } else {  # I know the else is needless but it is slightly more sensical to leave it in.
+            push @pwd_contents, $_;
+        }
+    }
+    close $pfile;
+
+    $user = shift @pwd_contents;
+    $pass = shift @pwd_contents;
+
+    if (scalar @pwd_contents) {
+        $server = shift @pwd_contents;
+    }
+
+    if (scalar @pwd_contents) {
+        $logger->logwarn("Possible malformed pwd_file.  (more than three lines)\n");
+    }
+
 }
 
 sub print_usage
