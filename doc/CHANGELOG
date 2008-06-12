@@ -4,6 +4,7 @@ next release
 -augustus: revemped augustus options a little to make it more general use
 -bsml2fasta: fixed Seq-data parsing bug (previously wouldn't extract anything)
 -bsml2legacydb.pl: now pads exon ids to 6 digits
+-bsml2legacydb.pl: now reads in pwd_file.  --user, --pass, --server all overwrite what is in defaultpwdfile, or what is in a user supplied pwd_file, which would trump the default.
 -genscan2bsml.pl: no longer attempts to create exonless predictions where they exist in genscan output.
 -fgenesh2bsml.pl: now uses Chado::Gene modeling.  fgenesh.i1.xml updated accordingly.
 -glimmerHMM2bsml.pl: no longer off by one on right side coords.
