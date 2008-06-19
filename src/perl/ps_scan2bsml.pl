@@ -226,7 +226,9 @@ sub generateBsml {
 
     }
     $doc->createAndAddAnalysis( 'id' => $analysis_id,
-                                'sourcename' => $output );
+                                'sourcename' => $output,
+                                'algorithm'  => 'ps_scan',
+                                'program'    => 'ps_scan');
 
     return $doc;
 }
