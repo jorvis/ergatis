@@ -263,6 +263,8 @@ if ($options{'sequence_id'} && scalar(@result_line_ref) > 1) {
 my $analysis = $doc->createAndAddAnalysis(
                                             id          =>  'targetp_analysis',
                                             sourcename  =>  $options{'output'},
+                                            algorithm   =>  'targetp',
+                                            program     =>  'targetp'
                                          );
 
 ## now write the doc
