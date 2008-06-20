@@ -1,4 +1,4 @@
-3<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
 	<state>incomplete</state>
 	<name>legacy2bsml workflow</name>
