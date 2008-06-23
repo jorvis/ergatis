@@ -226,7 +226,9 @@ sub write_tmp_files {
     while( my $line = <RAW> ) {
         chomp($line);
         if( $line =~ /Query sequence\:\s+(.*)/ ) {
-            my $tmp_file = "$outdir/$1.tmp.raw";
+	    my $base = $1;
+	    $base =~ s|/||; # remove slashes from file name
+            my $tmp_file = "$outdir/$base.tmp.raw";
             push( @files, $tmp_file );
             close($oh) if($oh);
             open( $oh, "> $tmp_file") or $logger->logdie("Can't open temp file for writing $tmp_file ($!)");
