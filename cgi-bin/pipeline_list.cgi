@@ -106,6 +106,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $archive_link = "./archive_pipeline_form.cgi?repository_root=$repository_root&amp;pipeline_id=$pipeline_id";
     my $links_enabled = 1;
     my $error_message = 0;
+    my $pipeline_comment = '';
     
     ## see if this pipeline is locked (usually for maintenance such as deleting or archiving.)
     my $lock_file = "$repository_root/workflow/lock_files/pipeline.$pipeline_id.lock";
@@ -119,6 +120,14 @@ foreach my $pipeline_id ( readdir $rdh ) {
         $links_enabled = 0;
     
     } else {
+
+        ## is there a comment?
+        if ( -e "$pipeline_file.comment" ) {
+            open(my $ifh, "<$pipeline_file.comment") || die "can't read comment file: $!";
+            while (<$ifh>) {
+                $pipeline_comment .= $_;
+            }
+        }
 
         ## if only the pipeline.xml exists, we can do less
         if (! -e $pipeline_file ) {
@@ -216,6 +225,8 @@ foreach my $pipeline_id ( readdir $rdh ) {
                         archive_link    => $archive_link,
                         links_enabled   => $links_enabled,
                         error_message   => $error_message,
+                        has_comment     => length($pipeline_comment),
+                        pipeline_comment => $pipeline_comment,
                       };
 }
 
