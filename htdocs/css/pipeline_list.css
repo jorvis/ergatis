@@ -4,11 +4,34 @@ div#modify_groups_container {
     padding: 1px 0 10px 35px;
     border-bottom: 3px solid rgb(73,81,92);
 }
-
+div.pipeline_comment {
+    display: none;
+    position: absolute;
+    border: 1px solid rgb(100,100,100);
+    width: 30em;
+    background-color: rgb(230,230,230);
+    padding: .8em;
+    margin-left: 3em;
+    margin-top: -2em;
+    opacity: 0.9;
+}
+div.pipeline_comment_container {
+    background: url("/ergatis/images/icon_comment.png") no-repeat left top;
+    width: 20px;
+    height: 16px;
+}
+div.pipeline_comment_container:hover div.pipeline_comment {
+    display: block;
+}
 form#modify_groups_form {
     display: none;
 }
-
+p.comment_label {
+    font-weight: bold;
+    margin: 0;
+    padding: 0 0 0 20px;
+    background: url("/ergatis/images/icon_comment.png") no-repeat left top;
+}
 table.pipeline_list td.component,
 table.pipeline_list td.group {
     color: rgb(73,81,92);
