@@ -50,5 +50,23 @@
                 <value>'$;OUTPUT_DIRECTORY$;/functional_predictions.log'</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create bsml list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.bsml"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;BSML_OUTPUT_LIST$;</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>
