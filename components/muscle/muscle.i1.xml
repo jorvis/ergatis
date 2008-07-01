@@ -15,23 +15,7 @@
             <name>muscle</name>
             <state>incomplete</state>
             <executable>$;MUSCLE_EXEC$;</executable>
-            <arg>$;OUTPUT_FLAG$; $;OTHER_OPTS$;</arg>
-            <param>  
-                <key>-in</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;</value>
-            </param>
-            <param>  
-                <key>-out</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.clw</value>
-            </param>
-            <param>  
-                <key>-tree1</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.tree1.phy</value>
-            </param>
-            <param>  
-                <key>-tree2</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.tree2.phy</value>
-            </param>
+            <arg>$;OUTPUT_FLAG$; $;OTHER_OPTS$; -in $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$; -out $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.clw -tree1 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.tree1.phy -tree2 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.tree2.phy</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
