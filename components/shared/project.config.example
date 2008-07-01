@@ -12,9 +12,9 @@ $;REPOSITORY_ROOT$;=/usr/local/projects/NEW
 $;TMP_DIR$;=/usr/local/scratch/$;PROJECT$;/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;
 
 ;; SunGrid Engine supports grid usage monitoring by project codes, allowing admins to keep
-;;  track of grid time across different groups.  This setting is optional but will cause
-;;  Workflow Engine to utilize SGE's -P directive.
-$;PROJECT_CODE$;=
+;;  track of grid time across different groups.  This will cause Workflow Engine to utilize 
+;;  SGE's -P directive.  Required: if you don't know what to put here, just use 'general'
+$;PROJECT_CODE$;=general
 
 ;; All variables below must be full paths - no variable references or tokens.
 
