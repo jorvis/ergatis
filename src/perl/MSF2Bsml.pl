@@ -336,7 +336,7 @@ sub process_MSF_file {
     }
     #if($line =~ /Name:\s+([\S]+)\s+[o]{2}\s+Len:\s+([\S]+)\s+Check:\s+([\S]+)\s+Weight:\s+([\S]+)/) {
 
-    if($line =~ /Name:\s*([\S]+)\s*[o]{2}\s*Len:\s*([\S]+)\s*Check:\s*([\S]+)\s*Weight:\s*([\S]+)/) {
+    if($line =~ /Name:\s*([\S]+)\s*[o]*\s*Len:\s*([\S]+)\s*Check:\s*([\S]+)\s*Weight:\s*([\S]+)/) {
         my $name    = $1;
         my $ali_len = $2;
         my $check   = $3;
