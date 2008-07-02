@@ -32,6 +32,14 @@
                 <key>--analysis_id</key>
                 <value>$;COMPONENT_NAME$;_analysis</value>
             </param>
+            <param>
+                <key>--cds_fasta</key>
+                <value>$;CDS_FASTA$;</value>
+            </param>
+            <param>
+                <key>--polypeptide_fasta</key>
+                <value>$;POLYPEPTIDE_FASTA$;</value>
+            </param>            
         </command>
         <command>
             <type>RunUnixCommand</type>

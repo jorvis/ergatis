@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -20,6 +23,8 @@ USAGE: pipeline_summary.pl
             --translation_table=11
             --cog_search_bsml=/path/to/wu-blastp.bsml.list
             --cog_lookup=/path/to/COGS_file.info
+            --cds_fasta=/path/to/CDS.fasta|CDS.fsa.list
+            --polypeptide_fasta=/path/to/polypeptide.fasta|polypeptide.fsa.list
             --log=/path/to/file.log
             --debug=4
             --help
@@ -96,6 +101,7 @@ use Ergatis::IdGenerator;
 use BSML::BsmlBuilder;
 use XML::Twig;
 use PerlIO::gzip;
+use File::OpenFile qw(open_file);
 use Data::Dumper;
 
 ####### GLOBALS AND CONSTANTS ###########
@@ -120,6 +126,7 @@ my $organism = [];
 my $transTable;
 my $attListId = 0;
 my $crid = 0;               #Cross reference id counter
+my %seq_data_import_info;
 ########################################
 $|++;
 
@@ -134,6 +141,8 @@ my $results = GetOptions (\%options,
                           'translation_table|t=s',
                           'cog_search_bsml|s=s',
                           'cog_lookup|g=s',
+                          'cds_fasta|f=s',
+                          'polypeptide_fasta|p=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || &_pod;
@@ -225,6 +234,9 @@ foreach my $file (@inputFiles) {
         $newTwig->parse($otherOpenFile);
     }
 
+    #Add missing sequence elements for features
+    &add_feature_sequence_elements( $bsml );
+
     print STDOUT "Writing to $outputFile\n";
     $bsml->write($outputFile);
 
@@ -249,6 +261,81 @@ foreach my $file (@inputFiles) {
 
 
 ######################## SUB ROUTINES #######################################
+sub add_feature_sequence_elements {
+    my ($bsml) = @_;
+    
+    #Grab all the Sequence elements to grab all the Feature elements
+    my $sequences = $bsml->returnBsmlSequenceListR;
+
+    foreach my $seq ( @{$sequences} ) {
+        my $feature_tables = $seq->returnBsmlFeatureTableListR;
+        foreach my $ft ( @{$feature_tables} ) {
+            my $features = $ft->returnBsmlFeatureListR;
+            foreach my $feat ( @{$features} ) {
+                my $feat_id = $feat->returnattr('id');
+                my $class = $feat->returnattr('class');
+                $logger->logdie("Could not parse class from feature $feat_id") unless( $class );
+
+                my $molecule;
+                
+                if( $class eq 'CDS' ) {
+                    $molecule = 'dna';
+                } elsif( $class eq 'polypeptide' ) {
+                    $molecule = 'aa';
+                } else {
+                    next;
+                }
+                
+                #do we have a sequence element for it already?
+                my $feature_sequence = $bsml->returnBsmlSequenceByIDR( $feat_id );
+                undef $feature_sequence if( ref($feature_sequence) ne 'BSML::BsmLSequence' );
+                $feature_sequence = $bsml->returnBsmlSequenceByIDR( $feat_id."_seq" )
+                    unless( $feature_sequence );
+
+
+                my $seq_data_import_info = &lookup_seq_data_import_info( $feat_id );
+
+                #if we don't have the info, this probably means it's a tRNA CDS
+                next unless( $seq_data_import_info );
+
+                my $add_sdi_flag = 0;
+                if( $feature_sequence ) {
+                    #make sure the seq data import is up to date
+                    my $seq_data_import = $feature_sequence->returnBsmlSeqDataImport;
+
+                    unless( $seq_data_import->returnattr( 'source' ) eq $seq_data_import_info->{'source'} &&
+                            $seq_data_import->returnattr( 'identifier' ) eq $seq_data_import_info->{'identifier'} ) {
+                        $feature_sequence->dropBsmlSeqDataImport;
+
+                        $add_sdi_flag = 1;
+
+                    }
+                    
+
+                } else {
+                    #add a new sequence element
+                    #  my ( $id, $title, $length, $molecule, $class ) = @_;
+                    $feature_sequence = $bsml->createAndAddSequence( $feat_id."_seq", $feat_id,
+                                                                         '', $molecule, $class );
+
+                    $add_sdi_flag = 1;
+
+                    #my ($elem, $rel, $href, $role) = @_;
+                    my $link = $bsml->createAndAddLink( $feature_sequence, 'analysis', "#".$analysisId."_analysis",
+                                                        'input_of' );
+
+                }
+                
+                if( $add_sdi_flag ) {
+                    #my ( $seq, $format, $source, $id, $identifier ) = @_;
+                    my $sdi = $bsml->createAndAddSeqDataImport( $feature_sequence, $seq_data_import_info->{'format'},
+                                                                $seq_data_import_info->{'source'}, '', 
+                                                                $seq_data_import_info->{'identifier'} );
+                }
+            } #Feature
+        } #Feature-table
+    } #Sequence
+}
 sub fixAttributes {
     my ($twig, $featElem) = @_;
     my $featId = $featElem->att('id');
@@ -529,7 +616,7 @@ sub printSequenceFeatures {
     foreach my $fg ( @fgs ) {
         print STDOUT "\r$count";
         $count++;
-        my $bsmlFg = &addFeatureGroup( $bsml, $bsmlSequence, $fg );
+        my $bsmlFg = 1;#&addFeatureGroup( $bsml, $bsmlSequence, $fg );
         &_die("Could not create new Feature-group") unless($bsmlFg);
     }
     print STDOUT "\nFinished feature groups\n";
@@ -871,6 +958,71 @@ sub getInputFiles {
     
 }
 
+sub process_fasta_file_or_list {
+    my ($file, $class) = @_;
+    my @fsa_files;
+
+    #Determine if it's a list or fasta
+    if( $file =~ /list(.gz)?$/ ) {
+        my $in = &open_file( $file, 'in' );
+        chomp( @fsa_files = <$in> );
+        close($in);
+    } elsif( $file =~ /fsa(.gz)?$/ ) {
+        push(@fsa_files, $file);
+    } else {
+        my $in = &open_file( $file, 'in' );
+        chomp( my $test = <$in> );
+        if( $test =~ /^>/ ) {
+            push(@fsa_files, $file);
+        } else {
+            my $tmp;
+            eval {
+                $tmp = &open_file( $test, 'in' );
+            };
+            if( $@ ) {
+                croak("Could not determine the format of file $file. Required either ".
+                      "fasta file or list of fasta files");
+            }
+            close($tmp);
+
+            chomp( @fsa_files = <$in> );
+            push(@fsa_files, $test );
+        }
+        close($in);
+    }
+
+    #index for seq data import usage
+    my $total = scalar(@fsa_files);
+    my $count = 0;
+    foreach my $fsa_file ( @fsa_files ) {
+        my $fsa = &open_file( $fsa_file, 'in' );
+        
+        while( <$fsa> ) {
+            if( /^>(\S*)/ ) {
+                $seq_data_import_info{$1} = {
+                    'source' => $fsa_file,
+                    'format' => 'fasta',
+                    'identifier' => $1,
+                }
+            }
+        }
+        close($fsa);
+        $count++;
+        print "$count/$total\r";
+    }
+    print "\n";
+    
+}
+
+sub lookup_seq_data_import_info {
+    my ($id) = @_;
+    my $info;
+    if( exists( $seq_data_import_info{$id} ) ) {
+        $info = $seq_data_import_info{$id};
+    }
+    return $info;
+}
+
 sub check_parameters {
     my $opts = shift;
 
@@ -944,6 +1096,26 @@ sub check_parameters {
         $transTable = $opts->{'translation_table'};
     } else {
         $transTable = 11;
+    }
+
+    
+    if( $opts->{'cds_fasta'} ) {
+        my $option = $opts->{'cds_fasta'};
+        my @files = split(/,\s+/, $option );
+        print "Processing CDS fasta file[s]\n";
+        foreach my $file ( @files ) {
+            &process_fasta_file_or_list( $file, 'CDS' );
+        }
+    }
+
+    if( $opts->{'polypeptide_fasta'} ) {
+        my $option = $opts->{'polypeptide_fasta'};
+        my @files = split(/,\s+/, $option );
+        print "Processing polypeptide fasta file[s]\n";
+        foreach my $file ( @files ) {
+            &process_fasta_file_or_list( $file, 'polypeptide' );
+        }
+        
     }
     
     unless($error eq "") {
