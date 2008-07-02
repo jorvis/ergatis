@@ -19,6 +19,7 @@ next release
 -Prokaryotic_Annotation_Pipeline: moved translate_sequence.default so that tmhmm and lipoprotein can use the translated sequences fromauto_gene_curation.all output
 -start_site_curation: added component
 -CHANGELOG: now in reverse chronological order
+-start_site_curation: changed output of changed bsml to have the changed.bsml extension instead of new.bsml
 
 ergatis-v2r7b1
 --------------
