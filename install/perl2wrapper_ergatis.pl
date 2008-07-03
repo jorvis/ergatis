@@ -2,6 +2,7 @@ use File::Basename;
 use File::Find;
 
 sub get_bins{
+    my $perl_lib_root = shift;
     my($instdir,$workflowdocsdir,$schemadocsdir);
     my(@binfiles);
     my($wrapper_str);
@@ -62,7 +63,7 @@ export LC_ALL
 PERL_MOD_DIR=$instdir/lib/5.8.8
 export PERL_MOD_DIR
 
-export PERL5LIB=$instdir/lib/5.8.8:$instdir/lib/perl5/site_perl/5.8.8
+export PERL5LIB=$perl_lib_root
 
     $perl_path $instdir/bin/$fname $shell_args    
 

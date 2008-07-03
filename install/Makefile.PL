@@ -1,4 +1,5 @@
 use ExtUtils::MakeMaker;
+use ExtUtils::MakeMaker::Config;
 require ExtUtils::Manifest;
 use Term::ANSIColor;
 require "perl2wrapper_ergatis.pl";
@@ -78,11 +79,15 @@ if ( scalar @modules_not_found ) {
 print "\nall modules found, carrying on\n\n";
 
 my $workflowdocsdir = '';
+my $prefix;
 
 foreach my $arg (@ARGV){
-	if($arg =~ /WORKFLOW_DOCS_DIR/){
-	    ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(.*)/);
-	}
+	if ($arg =~ /WORKFLOW_DOCS_DIR/) {
+	    ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(\S+)/);
+
+	} elsif ( $arg =~ /PREFIX=(\S+)/ ) {
+        $prefix = $1;
+    }
 }
 
 if ( $workflowdocsdir ) {
@@ -100,10 +105,17 @@ if ( $workflowdocsdir ) {
 ## workflow and schema docs dirs have always been the same
 my $schemadocsdir = $workflowdocsdir;
 
-my($scripts,$wrapperstr) = &get_bins();
+## need this object so we can see where perl libs are going to be installed.
+#   it should be the value of INSTALLSITELIB with $(SITEPREFIX) replaced
+#   with the passed prefix option
+my $unused_mm = new ExtUtils::MakeMaker;
 
+my $perl_lib_root = $unused_mm->{INSTALLSITELIB};
+   $perl_lib_root =~ s|\$\(.+?\)|$prefix|;
 
-WriteMakefile(
+my($scripts,$wrapperstr) = &get_bins($perl_lib_root);
+
+my $mm = WriteMakefile(
 	      'NAME'=>'ergatis',
 	      'EXE_FILES'=>$scripts,
 	      'clean' =>{FILES => "MANIFEST.bak $wrapperstr README.symlinks"}
@@ -130,8 +142,8 @@ dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)/documentation
 
 shellwrappers:
-	@install bin/create_ber_db.sh $(PREFIX)/bin
-	@install bin/pepstats.sh $(PREFIX)/bin
+	@install shell/create_ber_db.sh $(PREFIX)/bin
+	@install shell/pepstats.sh $(PREFIX)/bin
 
 aat_aa	:
 	@echo "Installing aat_aa workflows in $(WORKFLOW_DOCS_DIR)"
