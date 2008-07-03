@@ -616,7 +616,7 @@ sub printSequenceFeatures {
     foreach my $fg ( @fgs ) {
         print STDOUT "\r$count";
         $count++;
-        my $bsmlFg = 1;#&addFeatureGroup( $bsml, $bsmlSequence, $fg );
+        my $bsmlFg = &addFeatureGroup( $bsml, $bsmlSequence, $fg );
         &_die("Could not create new Feature-group") unless($bsmlFg);
     }
     print STDOUT "\nFinished feature groups\n";

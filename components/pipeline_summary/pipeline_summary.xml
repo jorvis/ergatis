@@ -52,7 +52,19 @@
             <param>
                 <key>--organism</key>
                 <value>&apos;$;ORGANISM$;&apos;</value>
+            </param>   
+            <param>  
+                <key>--translation_table</key>
+                <value>$;TRANSLATION_TABLE$;</value>
+            </param>      
+            <param>
+                <key>--cds_fasta</key>
+                <value>$;CDS_FASTA$;</value>
             </param>
+            <param>
+                <key>--polypeptide_fasta</key>
+                <value>$;POLYPEPTIDE_FASTA$;</value>
+            </param>     
         </command>
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
         <command>
