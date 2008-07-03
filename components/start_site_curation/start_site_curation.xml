@@ -34,7 +34,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.bsml"</value>
+                <value>".*(?<!changed)\.bsml"</value>
             </param>
             <param>  
                 <key>--output_list</key>
