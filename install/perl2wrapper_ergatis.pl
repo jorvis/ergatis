@@ -2,15 +2,14 @@ use File::Basename;
 use File::Find;
 
 sub get_bins{
-    my $perl_lib_root = shift;
     my($instdir,$workflowdocsdir,$schemadocsdir);
     my(@binfiles);
     my($wrapper_str);
     my $perl_path = $^X;  ## can be overwritten below
     
     foreach my $arg (@ARGV){
-        if($arg =~ /PREFIX/){
-            ($instdir) = ($arg =~ /PREFIX=(.*)/);
+        if($arg =~ /INSTALL_BASE/){
+            ($instdir) = ($arg =~ /INSTALL_BASE=(.*)/);
         }
         if($arg =~ /WORKFLOW_DOCS_DIR/){
             ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(.*)/);
@@ -63,7 +62,7 @@ export LC_ALL
 PERL_MOD_DIR=$instdir/lib/5.8.8
 export PERL_MOD_DIR
 
-export PERL5LIB=$perl_lib_root
+export PERL5LIB=$instdir/lib/perl5/
 
     $perl_path $instdir/bin/$fname $shell_args    
 

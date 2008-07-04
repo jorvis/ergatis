@@ -79,15 +79,12 @@ if ( scalar @modules_not_found ) {
 print "\nall modules found, carrying on\n\n";
 
 my $workflowdocsdir = '';
-my $prefix;
 
 foreach my $arg (@ARGV){
 	if ($arg =~ /WORKFLOW_DOCS_DIR/) {
 	    ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(\S+)/);
 
-	} elsif ( $arg =~ /PREFIX=(\S+)/ ) {
-        $prefix = $1;
-    }
+	}
 }
 
 if ( $workflowdocsdir ) {
@@ -105,15 +102,7 @@ if ( $workflowdocsdir ) {
 ## workflow and schema docs dirs have always been the same
 my $schemadocsdir = $workflowdocsdir;
 
-## need this object so we can see where perl libs are going to be installed.
-#   it should be the value of INSTALLSITELIB with $(SITEPREFIX) replaced
-#   with the passed prefix option
-my $unused_mm = new ExtUtils::MakeMaker;
-
-my $perl_lib_root = $unused_mm->{INSTALLSITELIB};
-   $perl_lib_root =~ s|\$\(.+?\)|$prefix|;
-
-my($scripts,$wrapperstr) = &get_bins($perl_lib_root);
+my($scripts,$wrapperstr) = &get_bins();
 
 my $mm = WriteMakefile(
 	      'NAME'=>'ergatis',
