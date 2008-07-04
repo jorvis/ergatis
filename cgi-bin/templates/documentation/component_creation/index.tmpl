@@ -33,6 +33,10 @@
     each command accepts arguments, the execution order of each command (if there are more than one)
     and whether each should be run locally or distributed to a compute node.
 </p>
+<p>
+    When you run a pipeline Ergatis uses these component templates to create the full XML used
+    to represent your pipeline.
+</p>
 <a name='can_my_script_be'></a>
 <h2>can my script or program become a component?</h2>
 <p>
@@ -165,31 +169,36 @@
     The content of the actual XML files mimic the typical component steps shown in the image on the right.
     We'll first consider a simple non-iterative component, which is composed of a series of commands.
 </p>
-<div id='formatdb_xml' class='code_container'>
-    &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+<div id='formatdb_xml' class='code_sidenote'>
+    <div class='code_caption'>
+        <span class='caption_title'>Workflow XML</span>: This is an example Workflow XML file 
+        representing two commands to be executed serially.
+    </div>
+    <div class='code_container'>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 
-    &lt;commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                             xsi:schemaLocation='commandSet.xsd'&gt;
-        &lt;commandSet type="serial"&gt;
+&lt;commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                         xsi:schemaLocation='commandSet.xsd'&gt;
+    &lt;commandSet type="serial"&gt;
+        &lt;state&gt;incomplete&lt;/state&gt;
+        &lt;name&gt;formatdb workflow&lt;/name&gt;
+        &lt;command&gt;
+            &lt;type&gt;RunUnixCommand&lt;/type&gt;
+            &lt;name&gt;create output directory&lt;/name&gt;
             &lt;state&gt;incomplete&lt;/state&gt;
-            &lt;name&gt;formatdb workflow&lt;/name&gt;
-            &lt;command&gt;
-                &lt;type&gt;RunUnixCommand&lt;/type&gt;
-                &lt;name&gt;create output directory&lt;/name&gt;
-                &lt;state&gt;incomplete&lt;/state&gt;
-                &lt;executable&gt;mkdir&lt;/executable&gt;
-                &lt;arg&gt;-p -m 777 /some/output/directory&lt;/arg&gt;
-            &lt;/command&gt;
-            &lt;command&gt;
-                &lt;type&gt;RunUnixCommand&lt;/type&gt;
-                &lt;name&gt;formatdb&lt;/name&gt;
-                &lt;state&gt;incomplete&lt;/state&gt;
-                &lt;executable&gt;$;FORMATDB_EXEC$;&lt;/executable&gt;
-                &lt;arg&gt;-p F -oT -i somefile.fsa -n /some/output/directory/dbout&lt;/arg&gt;
-            &lt;/command&gt;
-        &lt;/commandSet&gt;
-    &lt;/commandSetRoot&gt;
-    
+            &lt;executable&gt;mkdir&lt;/executable&gt;
+            &lt;arg&gt;-p -m 777 /some/output/directory&lt;/arg&gt;
+        &lt;/command&gt;
+        &lt;command&gt;
+            &lt;type&gt;RunUnixCommand&lt;/type&gt;
+            &lt;name&gt;formatdb&lt;/name&gt;
+            &lt;state&gt;incomplete&lt;/state&gt;
+            &lt;executable&gt;$;FORMATDB_EXEC$;&lt;/executable&gt;
+            &lt;arg&gt;-p F -oT -i somefile.fsa -n /some/output/directory/dbout&lt;/arg&gt;
+        &lt;/command&gt;
+    &lt;/commandSet&gt;
+&lt;/commandSetRoot&gt;
+    </div>
 </div>
 <p>
     Formatdb is a well-known tool used to index FASTA collections to be searched with NCBI's BLAST suite.  Our
@@ -255,7 +264,7 @@
     or commandSet after the fileName element.
 </p>
 <p>
-    We'll specifics on how Ergatis uses template XML files for Workflow Engine next, but for more
+    We'll cover specifics on how Ergatis uses template XML files for Workflow Engine next, but for more
     documentation on Workflow Engine itself please visit <a href='http://tigr-workflow.sf.net'>SourceForge</a>.
 </p>
 
@@ -278,10 +287,65 @@
     Non-iterative components are those which simply execute a series of commands.  They are different from
     iterative components in that the set of commands are not executed repeatedly, once for each input file.
 </p>
+<div id='component_formatdb_xml' class='code_sidenote'>
+    <div class='code_caption'>
+        <span class='caption_title'>formatdb.xml</span>: Template XML file for the formatdb component.
+        Variables within it are replaced by those in formatdb.config
+    </div>
+    <div  class='code_container'>
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 
+&lt;commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                          xsi:schemaLocation='commandSet.xsd'&gt;
+    &lt;commandSet type="serial"&gt;
+        &lt;state&gt;incomplete&lt;/state&gt;
+        &lt;name&gt;formatdb workflow&lt;/name&gt;
+        &lt;!--Processing--&gt;
+        &lt;command&gt;
+            &lt;type&gt;RunUnixCommand&lt;/type&gt;
+            &lt;name&gt;create output directory&lt;/name&gt;
+            &lt;state&gt;incomplete&lt;/state&gt;
+            &lt;executable&gt;mkdir&lt;/executable&gt;
+            &lt;arg&gt;-p -m 777 $;OUTPUT_DIRECTORY$;&lt;/arg&gt;
+        &lt;/command&gt;
+        &lt;command&gt;
+            &lt;type&gt;RunUnixCommand&lt;/type&gt;
+            &lt;name&gt;formatdb&lt;/name&gt;
+            &lt;state&gt;incomplete&lt;/state&gt;
+            &lt;executable&gt;$;FORMATDB_EXEC$;&lt;/executable&gt;
+            &lt;arg&gt;-p $;PROTEIN$; -oT -i '$;INPUT_FILES$;' 
+                     -n $;OUTPUT_DIRECTORY$;/$;DATABASE_NAME$;&lt;/arg&gt;
+        &lt;/command&gt;
+    &lt;/commandSet&gt;
+&lt;/commandSetRoot&gt;
+    </div>
+</div>
+<p>
+    As an example, we'll look at the 'formatdb' component, which is part of the NCBI BLAST suite and 
+    formats/indexes multi-FASTA files for use with the blastall search tool.  Each non-iterative 
+    component is composed of a minimum of two files.
+</p>
+<ul class='file_list'>
+    <li>formatdb.xml</li>
+    <li>fromatdb.config</li>
+</ul>
+<p>
+    The 'formatdb.xml' panel on the right shows the actual contents of that file.
+</p>
 
 <!-- this to be removed once the tutorial is complete -->
 <h1>this tutorial is not yet complete</h1>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
