@@ -78,27 +78,23 @@ if ( scalar @modules_not_found ) {
 
 print "\nall modules found, carrying on\n\n";
 
-my $workflowdocsdir = '';
+my $install_base;
 
 foreach my $arg (@ARGV){
-	if ($arg =~ /WORKFLOW_DOCS_DIR/) {
-	    ($workflowdocsdir) = ($arg =~ /WORKFLOW_DOCS_DIR=(\S+)/);
-
-	}
-}
-
-if ( $workflowdocsdir ) {
-    if (! -e $workflowdocsdir ) {
-        mkdir($workflowdocsdir) || die "failed to create WORKFLOW_DOCS_DIR: $!";
+    if ($arg =~ /INSTALL_BASE/) {
+	($install_base) = ($arg =~ /INSTALL_BASE=(\S+)/);
+    } elsif ( $arg =~ /PREFIX/ ) {
+        print "\nERROR: please use INSTALL_BASE instead of PREFIX.  (This requires a current version of ExtUtils::MakeMaker";
+        exit(1);
     }
-    
-    print "ignore this: ";
-} else {
-    die "error: you must specify a WORKFLOW_DOCS_DIR.\n" .
-        "Workflow XML and ini files will be stored in this directory.\n";
-        "eg. \n\nperl Makefile.PL PREFIX=/opt/ergatis WORKFLOW_DOCS_DIR=/opt/ergatis/docs\n\n";
 }
 
+my $workflowdocsdir = "$install_base/docs";
+
+if (! -e $workflowdocsdir ) {
+    mkdir($workflowdocsdir) || die "failed to create WORKFLOW_DOCS_DIR: $!";
+}
+    
 ## workflow and schema docs dirs have always been the same
 my $schemadocsdir = $workflowdocsdir;
 
