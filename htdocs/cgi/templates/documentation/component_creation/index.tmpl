@@ -209,14 +209,15 @@
     <li>formatdb -p F -oT -i somefile.fsa -n /some/output/directory/dbout</li>
 </ol>
 <p>
-    You can see from the XML that there is a commandSetRoot element to contain everything in the
-    document.  Within it is a commandSet element, which can have a 'type' attribute value of either
-    serial or parallel.  In this case the value is 'serial', so Workflow Engine will execute each
-    of the command elements within the commandSet serially.
+    You can see from the XML that there is a <span class='xml_element'>commandSetRoot</span> element to 
+    contain everything in the document.  Within it is a <span class='xml_element'>commandSet</span> 
+    element, which can have a <span class='xml_attr'>type</span> attribute value of either serial or 
+    parallel.  In this case the value is 'serial', so Workflow Engine will execute each
+    of the <span class='xml_element'>command</span> elements within the commandSet serially.
 </p>
 <p>
-    Within each command element are some core attributes, here including 'type', 'name', 'state',
-    'executable' and 'arg'.  
+    Within each <span class='xml_element'>command</span> element are some core attributes, here including 
+    'type', 'name', 'state', 'executable' and 'arg'.  
 </p>
 <dl>
     <dt>type</dt>
@@ -257,11 +258,12 @@
     'retryCount' and more.
 </p>
 <p>
-    The other important element that Ergatis uses is the 'fileName' element.  Used within a commandSet,
+    The other important element that Ergatis uses is the <span class='xml_element'>fileName</span> element.  Used within a commandSet,
     it serves as an include to direct Workflow Engine to read commands from within the referenced file
     once it is reached.  The referenced file is not physically imported; Workflow Engine simply reads it
-    and beings executing commands within it.  Once those are finished, it will return to the next command
-    or commandSet after the fileName element.
+    and beings executing commands within it.  Once those are finished, it will return to the next 
+    <span class='xml_element'>command</span> or <span class='xml_element'>commandSet</span> after the 
+    <span class='xml_element'>fileName</span> element.
 </p>
 <p>
     We'll cover specifics on how Ergatis uses template XML files for Workflow Engine next, but for more
@@ -320,17 +322,54 @@
 &lt;/commandSetRoot&gt;
     </div>
 </div>
+
+<h4>XML and INI files</h4>
 <p>
     As an example, we'll look at the 'formatdb' component, which is part of the NCBI BLAST suite and 
     formats/indexes multi-FASTA files for use with the blastall search tool.  Each non-iterative 
-    component is composed of a minimum of two files.
+    component is composed of a minimum of two files, named like those below:
 </p>
 <ul class='file_list'>
     <li>formatdb.xml</li>
-    <li>fromatdb.config</li>
+    <li>formatdb.config</li>
 </ul>
 <p>
-    The 'formatdb.xml' panel on the right shows the actual contents of that file.
+    The 'formatdb.xml' panel on the right shows the actual contents of that file.  It contains the
+    structure of each command that should be run but with some of the actual values encoded as
+    variables (which we'll talk about soon) using syntax like $;THIS$;.
+</p>
+<p>
+    I'll assume that you're familiar with XML formats in general and we won't provide an exhaustive
+    coverage of all the Workflow XML elements here.  All of the elements in this file are contained
+    within the <span class='xml_element'>commandSetRoot</span> element.  Inside that we find a 
+    <span class='xml_element'>commandSet</span>, which can have a <span class='xml_attr'>class</span>
+    value of either 'serial' or 'parallel'.  This value dictates how the <span class='xml_element'>command</span>
+    elements within the <span class='xml_element'>commandSet</span> will be executed.
+</p>
+<p>
+    Each <span class='xml_element'>command</span> has the core attributes we described above such as
+    name, state and type.  Those with a <span class='xml_attr'>type</span> value of 'RunUnixCommand'
+    will be run locally, while 'RunDistributedCommand' will cause the command to be queued onto your
+    grid or cluster.
+</p>
+
+<h4>When should you distribute commands?</h4>
+<p>
+    When writing a new component you should mark any commands within your pipeline as RunDistributedCommand
+    if they will take up any significant amount of resoures or run for longer than a few seconds.
+    This is dependent on each installation site, but usually the Ergatis interface will be running
+    on a single server that submits jobs to a cluster, so you don't want to run too many commands
+    locally (on the webserver) else you'll slow down the interface for everyone else.  Ergatis will
+    automatically change these to RunUnixCommand (local) for any pipelines/components set to run
+    locally (via the grid_enabled option in the ergatis.ini file set to 0 or the NODISTRIB option set 
+    to 1 within any component.)
+</p>
+
+<h4>$;VARIABLES$;</h4>
+<p>
+    You should avoid hard-coding as many values within your XML files as possible.  Instead, they can be
+    made user-configurable by putting them in the component's corresponding config file.  For our example
+    formatdb component, the config file looks like this:  
 </p>
 
 <!-- this to be removed once the tutorial is complete -->

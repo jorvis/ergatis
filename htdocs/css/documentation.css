@@ -81,3 +81,7 @@ img#component_structure_types {
     margin: 0;
     padding: 0;
 }
+span.xml_element {
+    color: rgb(73,81,92);
+    font-style: italic;
+}

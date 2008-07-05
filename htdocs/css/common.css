@@ -73,7 +73,7 @@ div#user_message_container {
 dt {
     font-weight: bold;
 }
-h1, h2, h3 {
+h1, h2, h3, h4 {
     color: rgb(73,81,92);
 }
 
@@ -96,6 +96,10 @@ h3 {
 h3.warning {
     margin-top: 30px;
     color: rgb(200,0,0);
+}
+h4 {
+    font-weight: bold;
+    font-size: 90%;
 }
 
 hr {
