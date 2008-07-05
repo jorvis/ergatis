@@ -22,7 +22,7 @@ div.doc_section_container {
 }
 
 div.doc_section_container ul.component_list {
-    list-style-image: url('/ergatis/images/link.gif');
+    list-style-image: url('../images/link.gif');
 }
 
 dl {
@@ -62,7 +62,7 @@ table.grid th {
 }
 
 ul {
-    list-style-image: url('/ergatis/images/link.gif');
+    list-style-image: url('../images/link.gif');
 }
 
 

@@ -228,16 +228,16 @@ ul.add_panel li {
     margin: 0 10px 10px 15px;
 }
 ul.add_panel li.comp {
-    list-style-image: url('/ergatis/images/icon_component_add.png');
+    list-style-image: url('../images/icon_component_add.png');
 }
 ul.add_panel li.pipe {
-    list-style-image: url('/ergatis/images/icon_pipeline_add.png');
+    list-style-image: url('../images/icon_pipeline_add.png');
 }
 ul.add_panel li.serial {
-    list-style-image: url('/ergatis/images/icon_serial.png');
+    list-style-image: url('../images/icon_serial.png');
 }
 ul.add_panel li.parallel {
-    list-style-image: url('/ergatis/images/icon_parallel.png');
+    list-style-image: url('../images/icon_parallel.png');
 }
 
 

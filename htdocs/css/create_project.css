@@ -3,13 +3,13 @@ input#repository_root {
 }
 
 li.complete {
-    list-style-image: url('/ergatis/images/status_complete.png');
+    list-style-image: url('../images/status_complete.png');
 }
 li.failed {
-    list-style-image: url('/ergatis/images/status_failed.png');
+    list-style-image: url('../images/status_failed.png');
 }
 li.incomplete {
-    list-style-image: url('/ergatis/images/status_incomplete.png');
+    list-style-image: url('../images/status_incomplete.png');
 }
 
 span.failed {

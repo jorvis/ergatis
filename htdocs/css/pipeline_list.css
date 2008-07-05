@@ -16,7 +16,7 @@ div.pipeline_comment {
     opacity: 0.9;
 }
 div.pipeline_comment_container {
-    background: url("/ergatis/images/icon_comment.png") no-repeat left top;
+    background: url("../images/icon_comment.png") no-repeat left top;
     width: 20px;
     height: 16px;
 }
@@ -30,7 +30,7 @@ p.comment_label {
     font-weight: bold;
     margin: 0;
     padding: 0 0 0 20px;
-    background: url("/ergatis/images/icon_comment.png") no-repeat left top;
+    background: url("../images/icon_comment.png") no-repeat left top;
 }
 table.pipeline_list td.component,
 table.pipeline_list td.group {

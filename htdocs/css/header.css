@@ -77,7 +77,7 @@ ul#primary_nav_elements {
 
 ul#primary_nav_elements li {
     float: left;
-    background: url("/ergatis/images/rounded_right_corner.gif") no-repeat right top;
+    background: url("../images/rounded_right_corner.gif") no-repeat right top;
     margin: 0 10px 0 0;
     padding: 0;
     border-bottom: 1px solid rgb(73,81,92);
@@ -94,7 +94,7 @@ ul#sub_nav_elements li a {
 ul#primary_nav_elements li a {
     float: left;
     color: rgb(73,81,92);
-    background: url("/ergatis/images/rounded_left_corner.gif") no-repeat left top;
+    background: url("../images/rounded_left_corner.gif") no-repeat left top;
     padding: 2px 7px 2px 7px;
 }
 

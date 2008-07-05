@@ -134,7 +134,7 @@ table, td {
     font-size: 100%;
 }
 ul.pipeline_template_list {
-    list-style-image: url('/ergatis/images/link.gif');
+    list-style-image: url('../images/link.gif');
 }
 ul.pipeline_template_list p {
     margin-top: 0;
