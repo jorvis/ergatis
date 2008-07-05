@@ -8,13 +8,13 @@
     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
     <link rel="alternate" type="application/rss+xml" title="RSS" href="./rss_pipeline_list.cgi">
     <title>ergatis</title>
-    <link rel="stylesheet" type="text/css" href="/ergatis/css/common.css">
-    <link rel="stylesheet" type="text/css" href="/ergatis/css/header.css">
-    <link rel="stylesheet" type="text/css" href="/ergatis/css/monitor.css">
-    <link rel="stylesheet" type="text/css" href="/ergatis/css/index.css">
+    <link rel="stylesheet" type="text/css" href="../css/common.css">
+    <link rel="stylesheet" type="text/css" href="../css/header.css">
+    <link rel="stylesheet" type="text/css" href="../css/monitor.css">
+    <link rel="stylesheet" type="text/css" href="../css/index.css">
     <!-- functionality -->
-    <script type='text/javascript' src='/ergatis/javascript/common.js'></script>
-    <script type='text/javascript' src='/ergatis/javascript/index.js'></script>
+    <script type='text/javascript' src='../javascript/common.js'></script>
+    <script type='text/javascript' src='../javascript/index.js'></script>
 </head>
 
 <body class='pipelines'>
@@ -39,12 +39,12 @@
         <div id='pipeline_loading_container'>
             <div>
                 <h2>running pipelines</h2>
-                <img src='/ergatis/images/progress1.gif' alt='loading'> loading pipeline lists ...
+                <img src='../images/progress1.gif' alt='loading'> loading pipeline lists ...
             </div>
             
             <div>
                 <h2>other active pipelines</h2>
-                <img src='/ergatis/images/progress1.gif' alt='loading'> loading pipeline lists ...
+                <img src='../images/progress1.gif' alt='loading'> loading pipeline lists ...
             </div>
         </div>
 
@@ -55,7 +55,7 @@
 
         <div id='custom_list_container'>
             <h2>custom pipeline list</h2>
-            <form method='get' action='/cgi-bin/ergatis/pipeline_list.cgi'>
+            <form method='get' action='./pipeline_list.cgi'>
                 <p>
                     repository root: <input id='repository_root_field' type='text' name='repository_root' value='<TMPL_VAR NAME=DEFAULT_PROJECT_ROOT>'>
                 </p>

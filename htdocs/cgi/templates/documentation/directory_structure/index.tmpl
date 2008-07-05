@@ -62,20 +62,26 @@
     </dd>
 </dl>
 <h3>within apache</h3>
+<p>
+    Beginning with ergatis-v2r7b2 and above Ergatis no longer has a fixed installation path.  The
+    CGI scripts are contained within the html/htdocs area, so you can place it anywhere within
+    your apache installation.  For the paths below, I'll assume an installation base of
+    /var/www/html for apache, which is common in many linux distributions.
+</p>
 <dl>
-    <dt>cgi-bin/ergatis</dt>
+    <dt>/var/www/html/ergatis</dt>
+    <dd>
+        The root of the interface, this contains the images, javascript and CSS supporting Ergatis.
+    </dd>
+    <dt>/var/www/html/ergatis/cgi</dt>
     <dd>
         This contains the CGI scripts and HTML templates supporting the Ergatis interface.
     </dd>
-    <dt>cgi-bin/ergatis/ergatis.ini</dt>
+    <dt>/var/www/html/ergatis/cgi/ergatis.ini</dt>
     <dd>
         Parameters go here that involve customizations of the interface as well as 'global'
         Workflow Engine settings.  A list of registered projects goes here, along with pointers
         to the global_id_repository and global_saved_templates directories.
-    </dd>
-    <dt>htdocs/ergatis</dt>
-    <dd>
-        This contains the images, javascript and CSS supporting the Ergatis interface.
     </dd>
 </dl>
 <h3>other</h3>
