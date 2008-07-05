@@ -62,23 +62,23 @@ function _template_html( component_id ) {
             "<a name='" + component_id + "_marker'></a>" + 
             "<form method='post' id='" + component_id + "_form' name='" + component_id + "_form'>" +
             "<div class='component_nav_buttons'>" +
-                "<img id='" + component_id + "_arrow_up_disabled' class='noclick' src='/ergatis/images/icon_arrow_up_disabled.png' alt='cannot move component up' title='cannot move component up'>" +
-                "<img id='" + component_id + "_arrow_up' src='/ergatis/images/icon_arrow_up.png' alt='move component up' onClick='components[" + '"' + component_id + '"' + "].moveUp()' alt='move component up' title='move component up'>" +
-                "<img id='" + component_id + "_arrow_down_disabled'  class='noclick' src='/ergatis/images/icon_arrow_down_disabled.png' alt='cannot move component down' title='cannot move component down'>" +
-                "<img id='" + component_id + "_arrow_down' src='/ergatis/images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()' alt='move component_down' title='move component down'>" +
+                "<img id='" + component_id + "_arrow_up_disabled' class='noclick' src='../images/icon_arrow_up_disabled.png' alt='cannot move component up' title='cannot move component up'>" +
+                "<img id='" + component_id + "_arrow_up' src='../images/icon_arrow_up.png' alt='move component up' onClick='components[" + '"' + component_id + '"' + "].moveUp()' alt='move component up' title='move component up'>" +
+                "<img id='" + component_id + "_arrow_down_disabled'  class='noclick' src='../images/icon_arrow_down_disabled.png' alt='cannot move component down' title='cannot move component down'>" +
+                "<img id='" + component_id + "_arrow_down' src='../images/icon_arrow_down.png' alt='move component down' onClick='components[" + '"' + component_id + '"' + "].moveDown()' alt='move component_down' title='move component down'>" +
             "</div>" +
             "<div class='component_action_buttons'>" +
-                "<img id='" + component_id + "_magnify_plus_disabled'  class='noclick' src='/ergatis/images/icon_magnify_plus_disabled.png'>" +
-                "<img id='" + component_id + "_magnify_plus' src='/ergatis/images/icon_magnify_plus.png' onClick='components[" + '"' + component_id + '"' + "].advancedView()' alt='advanced view' title='advanced view'>" +
-                "<img id='" + component_id + "_magnify_minus' src='/ergatis/images/icon_magnify_minus.png' onClick='components[" + '"' + component_id + '"' + "].basicView()' alt='basic view' title='basic view'>" +
-                "<img id='" + component_id + "_copy_disabled'  class='noclick' src='/ergatis/images/icon_copy_disabled.png' alt='copy component disabled'>" +
-                "<img id='" + component_id + "_copy' src='/ergatis/images/icon_copy.png' onClick='components[" + '"' + component_id + '"' + "].copy()' alt='copy component' title='copy component'>" +
-                "<img src='/ergatis/images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()' alt='delete component' title='delete component'>" +
+                "<img id='" + component_id + "_magnify_plus_disabled'  class='noclick' src='../images/icon_magnify_plus_disabled.png'>" +
+                "<img id='" + component_id + "_magnify_plus' src='../images/icon_magnify_plus.png' onClick='components[" + '"' + component_id + '"' + "].advancedView()' alt='advanced view' title='advanced view'>" +
+                "<img id='" + component_id + "_magnify_minus' src='../images/icon_magnify_minus.png' onClick='components[" + '"' + component_id + '"' + "].basicView()' alt='basic view' title='basic view'>" +
+                "<img id='" + component_id + "_copy_disabled'  class='noclick' src='../images/icon_copy_disabled.png' alt='copy component disabled'>" +
+                "<img id='" + component_id + "_copy' src='../images/icon_copy.png' onClick='components[" + '"' + component_id + '"' + "].copy()' alt='copy component' title='copy component'>" +
+                "<img src='../images/trashcan.png' onClick='components[" + '"' + component_id + '"' + "].remove()' alt='delete component' title='delete component'>" +
             "</div>" +
             "component<span class='locator'> (" + component_id + ")</span>: <span id='" + component_id + "_name' class='component_name'>component not yet chosen</span>" +
             "<div id='" + component_id + "_expander' class='config_expander' onClick='toggleConfigVisibility(" + '"' + component_id + '"' + ")'>" +
                 "<div class='component_status' id='" + component_id + "_status'>not configured</div>" +
-                "<img id='" + component_id + "_toggler' src='/ergatis/images/arrow_right.gif' alt='toggle configuration'>configuration" +
+                "<img id='" + component_id + "_toggler' src='../images/arrow_right.gif' alt='toggle configuration'>configuration" +
             "</div>" +
             "<div id='" + component_id + "_config'>component not yet chosen</div>" +
             "</form>" +
@@ -92,7 +92,7 @@ function _template_html( component_id ) {
 
 function _hide() {
     // point the arrow to the right
-    getObject(this.component.id + '_toggler').src = '/ergatis/images/arrow_right.gif';
+    getObject(this.component.id + '_toggler').src = '../images/arrow_right.gif';
     
     getObject( this.component.id + '_config' ).style.display = 'none';
     this.visible = false;
@@ -100,7 +100,7 @@ function _hide() {
 
 function _show() {
      // point the arrow down
-    getObject(this.component.id + '_toggler').src = '/ergatis/images/arrow_down.gif';
+    getObject(this.component.id + '_toggler').src = '../images/arrow_down.gif';
 
     getObject( this.component.id + '_config' ).style.display = 'block';
     this.visible = true;

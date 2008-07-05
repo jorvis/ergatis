@@ -49,7 +49,7 @@ function add_to( tbl_id ) {
     new_cell.setAttribute('class', 'input_element_type');
 
     new_cell = new_row.insertCell(3);
-    new_cell.innerHTML = '<a onClick="removeInput(' + "'" + this.id + "'" + ')"><img src="/ergatis/images/trashcan.png"></a>';
+    new_cell.innerHTML = '<a onClick="removeInput(' + "'" + this.id + "'" + ')"><img src="../images/trashcan.png"></a>';
 
     getObject('no_input_message').style.display = 'none';
 }

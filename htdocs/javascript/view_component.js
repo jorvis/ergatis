@@ -19,11 +19,11 @@ function toggle_subflowgroup_display(subflowname, subflowfile) {
     // is it visible?
     if ( subflownamedata.style.display == 'block' ) {
         subflownamedata.style.display = 'none';
-        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_right.gif';
+        get_object(subflowname + '_arrow').src = '../images/arrow_right.gif';
         get_object(subflowname + '_data').innerHTML = '';
     } else {
         subflownamedata.style.display = 'block';
-        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_down.gif';
+        get_object(subflowname + '_arrow').src = '../images/arrow_down.gif';
         get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
         sendElementUpdateRequest('./subflowgroup_summary.cgi?xml_input=' + encodeURIComponent(subflowfile) + '&nocache=' + no_cache_string(), updateSubflowGroup, subflowname);
     }
@@ -36,11 +36,11 @@ function toggle_subflow_display(subflowname, subflowfile) {
     // is it visible?
     if ( subflownamedata.style.display == 'block' ) {
         subflownamedata.style.display = 'none';
-        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_right.gif';
+        get_object(subflowname + '_arrow').src = '../images/arrow_right.gif';
         get_object(subflowname + '_data').innerHTML = '';
     } else {
         subflownamedata.style.display = 'block';
-        get_object(subflowname + '_arrow').src = '/ergatis/images/arrow_down.gif';
+        get_object(subflowname + '_arrow').src = '../images/arrow_down.gif';
         get_object(subflowname + '_data').innerHTML = 'parsing subflow data';
         sendElementUpdateRequest('./subflow_summary.cgi?xml_input=' + encodeURIComponent(subflowfile) + '&nocache=' + no_cache_string(), updateSubflow, subflowname);
     }
@@ -99,7 +99,7 @@ function updateSubflow (sometext, subflowname) {
 
     // update the subflow image
     subflowstateimg = get_object(subflowname + '_img');
-    subflowstateimg.src   = '/ergatis/images/status_' + subflowstate + '.png';
+    subflowstateimg.src   = '../images/status_' + subflowstate + '.png';
     subflowstateimg.title = subflowstate;
     subflowstateimg.alt   = subflowstate;
 
