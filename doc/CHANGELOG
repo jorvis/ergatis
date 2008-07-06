@@ -22,6 +22,7 @@ next release
 -start_site_curation: changed output of changed bsml to have the changed.bsml extension instead of new.bsml
 -pipeline_summary: will now accept cds and polypeptide fasta and add Sequence element for these features if not already present
 -interface: cgi-bin now contained as 'cgi' within htdocs area.  all internal paths now referential, allowing install to be anywhere on the server.
+-interface: new project configuration page now auto-fills most settings
 
 ergatis-v2r7b1
 --------------
