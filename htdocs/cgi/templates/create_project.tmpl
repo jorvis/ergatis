@@ -52,7 +52,7 @@
             <p>
                 <strong>Almost finished.</strong>  You now need to configure the project config file:
             </p>
-            <span class='button'><a href='./edit_config.cgi?config=<TMPL_VAR NAME=PROJECT_CONFIG>'>configure project config file</a></span>
+            <span class='button'><a href='./edit_config.cgi?config=<TMPL_VAR NAME=PROJECT_CONFIG>&mode=new_project&project_directory=<TMPL_VAR NAME=REPOSITORY_ROOT>'>configure project config file</a></span>
         <TMPL_ELSE>
             <TMPL_IF NAME=USER_ATTEMPTED>
             <span class='button' onclick='document.create_pipeline.submit()'>try again</span>

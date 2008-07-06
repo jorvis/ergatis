@@ -41,6 +41,14 @@
         <p>
             <TMPL_VAR NAME=CONFIG>
         </p>
+        <TMPL_IF NAME=CREATING_NEW_PROJECT>
+        <p>
+            You are now editing the configuration file for a new project.  Most of the settings
+            have been populated from the ergatis.ini file within your installation and, if
+            correct, you should't have to change any of these values except the first (project
+            abbreviation).
+        </p>
+        </TMPL_IF>
         <table class='config_table'>
             <TMPL_LOOP NAME=SECTIONS>
             <tr class='config_section' colspan='2'>
