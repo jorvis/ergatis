@@ -1,7 +1,8 @@
 ;; This is the project configuration file.  All options are required unless specified optional.
 [project]
 
-;; Usually the name or abbreviation for a project.
+;; Usually the name or abbreviation for a project (no spaces).  It will serve as the prefix of
+;; many IDs created, so you should keep it to 3-6 characters.
 $;PROJECT$;=new
 
 ;; The root of your project directory, under which should exist the 'workflow' directory
