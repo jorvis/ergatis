@@ -173,11 +173,11 @@
             <state>incomplete</state>
             <name>predict_prokaryotic_gene_function.default</name>
         </commandSet>
-        <commandSet>
+        <commandSet type="serial">
             <state>incomplete</state>
             <name>pipeline_summary.default</name>
         </commandSet>
-        <commandSet>
+        <commandSet type="serial">
             <state>incomplete</state>
             <name>bsml2tbl.default</name>
         </commandSet>
