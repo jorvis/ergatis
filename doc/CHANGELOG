@@ -1,5 +1,8 @@
-next release
-------------
+next
+----
+
+ergatis-v2r8b1-rc1
+------------------
 -interface: added pipeline comment display in pipeline list view
 -interface: added pipeline ID to pipeline view page titles (feat request 1930140)
 -bsml2chado: now has mysql support
@@ -23,6 +26,7 @@ next release
 -pipeline_summary: will now accept cds and polypeptide fasta and add Sequence element for these features if not already present
 -interface: cgi-bin now contained as 'cgi' within htdocs area.  all internal paths now referential, allowing install to be anywhere on the server.
 -interface: new project configuration page now auto-fills most settings
+-installer: checks for correct ExtUtils::MakeMaker version (>= 6.31)
 
 ergatis-v2r7b1
 --------------
