@@ -217,6 +217,7 @@
                 <li>modify your apache configuration to allow CGI script execution within the ergatis directory</li>
                 <li>read and customize your new /ergatis/cgi/ergatis.ini config file</li>
                 <li>read and edit your INSTALL_BASE/software.config file</li>
+                <li>run the check_installation.pl script packaged with the installer (reads your ergatis.ini)</li>
                 <li>point your browser to http://yourserver/ergatis</li>
                 <li>use the 'admin' tab to set up your first project</li>
             </ol>
@@ -340,7 +341,6 @@
     /var/www/html/ergatis/cgi/ergatis.ini
             </p>
             <p>
-
                 It is pretty heavily documented so you'll have information about every variable you need to set.  Once
                 finished you can point your browser to
             </p>
@@ -365,10 +365,19 @@
                 build a pipeline.
             </p>
             
+            <h3>check_installation.pl</h3>
+            <p>
+                Before we proceed you should run the installation verification script, passing the ergatis.ini file you
+                just configured.  It performs a host of checks to ensure that the software is set up and configured
+                correctly.
+            </p>
+            <p class='code'>
+    ./check_installation.pl --ergatis_ini=/var/www/html/ergatis/cgi/ergatis.ini
+            </p>
+            
             <a name='project_area'></a>
             <h3>setting up a project area</h3>
             <p>
-
                 Now that you have the software and interface set up you're ready to create a project area.  This will be
                 where your pipelines and data are stored for any particular project.  In our example we decided to
                 creating a project area for the annotation of the <span class='organism'>E. coli</span>, so we start by
