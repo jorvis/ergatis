@@ -76,6 +76,18 @@ if ( scalar @modules_not_found ) {
     exit(1);
 }
 
+## make sure that their ExtUtils::MakeMaker is a high enough version
+my $makemaker_found = 0;
+
+eval "require ExtUtils::MakeMaker";
+
+if ( ExtUtils::MakeMaker->VERSION < 6.31 ) {
+    print color 'bold red';
+    print "ExtUtils::MakeMaker >= 6.31 not found\n";
+    print color 'reset';
+    exit(1);
+}
+
 print "\nall modules found, carrying on\n\n";
 
 my $install_base;
