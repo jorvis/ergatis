@@ -137,7 +137,7 @@
                 <state>incomplete</state>
                 <name>translate_sequence.final_polypeptides</name>
             </commandSet>
-            <commandSet>
+            <commandSet type='serial'>
                 <state>incomplete</state>
                 <name>bsml2fasta.final_cds</name>
             </commandSet>
