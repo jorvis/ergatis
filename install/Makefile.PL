@@ -35,6 +35,7 @@ my @modules_to_check = qw(
     Log::Log4perl
     Mail::Mailer
     Math::Combinatorics
+    MLDBM
     PerlIO::gzip
     Storable
     URI::Escape
