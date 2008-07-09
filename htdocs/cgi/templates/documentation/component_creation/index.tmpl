@@ -368,9 +368,120 @@
 <h4>$;VARIABLES$;</h4>
 <p>
     You should avoid hard-coding as many values within your XML files as possible.  Instead, they can be
-    made user-configurable by putting them in the component's corresponding config file.  For our example
-    formatdb component, the config file looks like this:  
+    made user-configurable by putting them in the component's corresponding config file.  This should 
+    include common parameters, paths to binaries, etc.  It is this config file that is parsed and
+    displayed as a form when users add a component to a pipeline using the interface.  For our example formatdb component, the config 
+    file looks like this:  
 </p>
+<div id='component_formatdb_config' class='code_sidenote'>
+    <div class='code_caption'>
+        <span class='caption_title'>formatdb.config</span>: Configuration INI file for the formatdb component.
+        These variables are used to substitute values within formatdb.xml as the pipeline is built.
+    </div>
+    <div  class='code_container'>
+[interface]
+classification = file / indexing
+
+[parameters]
+;; enter T for protein, F for nucleotide
+$;PROTEIN$; = T
+
+[input]
+;; space-separated list
+$;INPUT_FILES$; = 
+
+[output]
+$;OUTPUT_TOKEN$; = default
+$;OUTPUT_DIRECTORY$; = $;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;
+;; call it whatever you like
+$;DATABASE_NAME$; = db
+
+[component]
+$;COMPONENT_NAME$; = formatdb
+$;DESCRIPTION$; = none
+$;WORKFLOW_REPOSITORY$; = $;REPOSITORY_ROOT$;/workflow/runtime/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;
+$;PIPELINE_TOKEN$; = unnamed
+
+;The version,revision,tag here is set by an interpolated CVS tag
+$;VERSION$; = 2.0
+$;RELEASE_TAG$; = $Name$
+$;REVISION$;            = $Revision$
+
+$;TEMPLATE_XML$; = $;DOCS_DIR$;/$;COMPONENT_NAME$;.xml
+
+;the following keys are replaced at runtime by the invocation script
+$;COMPONENT_CONFIG$; = 
+$;COMPONENT_XML$; = 
+$;PIPELINE_XML$; = 
+$;PIPELINEID$; = 
+
+[include]
+$;PROJECT_CONFIG$;=
+    </div>
+</div>
+
+<h4>config file sections</h4>
+<p>
+    The configuration files in Ergatis are standard INI files.  These allow for very simple key/value
+    parameters grouped in sections (denoted with [] symbols). We use a format like $;THIS$; for the
+    key portions of each to allow for easy substitution within the component XML files, since pattern
+    is not likely to happen by chance within the XML.  The sections here are standard across most
+    components.
+</p>
+<dl>
+    <dt>interface</dt>
+    <dd>
+        <p>
+            The only section that doesn't use the $;VARIABLE$; key/value scheme, this section currently
+            only has one parameter <span class='config_param'>classification</span>.  This value is only
+            used in the interface when a person is adding a component to a pipeline and is viewing the
+            component list by category.  You can put any value here - if you use a classification value
+            shared by no other components the interface will automatically create a new category.
+        </p>
+    </dd>
+    <dt>parameters</dt>
+    <dd>
+        <p>
+            Here you should put all of the common parameters a user may want to change for your component.
+            One example is E-value cutoff (for BLAST).  In this example, the formatdb binary had a -p
+            option which specifies the type of file.  Instead of exposing all the command-line options
+            to the user, they enter the value in this form and the variable's value is passed to the -p
+            argument specified in the formatdb.xml file.
+        </p>
+    </dd>
+    <dt>input</dt>
+    <dd>
+        <p>
+            This is easy - Here you put whatever variables you need to allow the user to define the
+            input to your component.  Whether you allow a single file, directory or list of files here
+            depends totally on the script or binary you'll be executing.  The formatdb binary accepts
+            a space-separated list of all the files you want to be included for the index it creates,
+            so we write this entry to reflect that.
+        </p>
+    </dd>
+    <dt>output</dt>
+    <dd>
+        <p>
+            As with the input section, you can freely put whatever variables here you need to support
+            your program.  If it creates physical output files, you'll probably need at least
+            $;OUTPUT_DIRECTORY$; and then a corresponding mkdir step within your component.xml file.
+        </p>
+        </p>
+            The only <strong>required key</strong> here is $;OUTPUT_TOKEN$;.  It serves as a label
+            and is used to uniquely identify this component within the pipeline.  If you have a 
+            pipeline with two ncbi-blastp components, for example, and knowing that the component
+            name is part of the output directory structure, you might write output files from multiple
+            component runs in the same output directory.  The interface restricts any given pipeline
+            from having more than one component of the same type with the same output token and, since
+            output token is used as part of the output directory path, you ensure that no two components
+            stomp each other's output.  (see the 
+            <a href='./documentation.cgi?article=directory_structure'>directory structure convention</a>
+            documentation for more information.
+        </p>
+    </dd>
+</dl>
+
+
 
 <!-- this to be removed once the tutorial is complete -->
 <h1>this tutorial is not yet complete</h1>
