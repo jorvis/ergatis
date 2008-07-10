@@ -55,7 +55,7 @@ A relatively simple approach to functional prediction, this script considers evi
 the following order:
 
    1. Equivalog HMM above trusted cutoff
-   2. Characterized BER match with at least 35% identity (configurable) and over 80% of the query length (configurable)
+   2. Characterized BER match (later, with at least 35% identity (configurable) and over 80% of the query length (configurable))
    3. Full-length subfamily HMM (will append 'family protein')
    4. Equivalog-domain HMM
    5. Superfamily HMM (will append 'family protein')
@@ -263,6 +263,12 @@ my %peplookup;
 ## structure like:
 ##      $h{ $annotate_on_id } => $polypeptide_id;
 my %cdslookup;
+
+## we need to keep track of the product names for the BER matches in case we want to use them
+## instead of the associated tchar entries
+## structure like:
+##      $h{ SP_Q9HSG3_DCD_HALSA } = 'Probable deoxycytidine triphosphate deaminase (EC 3.5.4.13) (dCTPdeaminase). taxon:2242 {Halobacterium salinarum;} (exp...'
+my %ber_sbj_names;
 
 my $input_files = parse_multi_list( $options{input_list} );
 _log("INFO: found " . scalar(@$input_files) . " input files to process");
@@ -538,6 +544,9 @@ sub process_ber_alignment {
         return;
     }
     
+    ## we need to insert code here to support the identity and length cutoffs.  Currently the identity
+    #   cutoff is applied only by the settings used when doing the BLAST.
+    
     ## is it in the characterized db?
     if ( exists $ber_info{ $$id_lookup{$comp_id} } ) {
         
@@ -555,10 +564,16 @@ sub process_ber_alignment {
             $features{$polypeptide_id}{ec_num} = $ber_info{ $$id_lookup{$comp_id} }{ec_num} || '';
             $features{$polypeptide_id}{ec_num_score} = $$annot_priorities{"ber_characterized"};
             $features{$polypeptide_id}{ec_num_source} = $$id_lookup{$comp_id};
-
-            $features{$polypeptide_id}{product} = $ber_info{ $$id_lookup{$comp_id} }{com_name};
+            
+            ## TEMPORARY - tchar is screwed.  We're reading the FASTA header from the hit directly instead.
+            #$features{$polypeptide_id}{product} = $ber_info{ $$id_lookup{$comp_id} }{com_name};
+            $features{$polypeptide_id}{product} = $ber_sbj_names{$comp_id} || die("failed to find lookup: ber_sbj_names{$$id_lookup{$comp_id}}");
             $features{$polypeptide_id}{product_score} = $$annot_priorities{"ber_characterized"};
             $features{$polypeptide_id}{product_source} = $$id_lookup{$comp_id};
+            
+            ## we're temporarily pulling the product_name from the Panda header here since tchar
+            #   is pretty screwed.
+            
             
             ## handle any GO terms on the accession
             if ( scalar @{ $ber_info{$$id_lookup{$comp_id}}{go} } ) {
@@ -642,10 +657,29 @@ sub process_ber_results {
                             } else {
                                 $$id_lookup{$id} = $att->{att}->{content};
                             }
-                            
-                            _log("");
                         }
                     }
+                    
+                    ## we need to process the title a bit.  Each of these rules should only affect Panda headers
+                    my $title = $elt->{att}->{title};
+                    
+                    ## remove all but the primary entry.
+                    if ( $title =~ m|^(.+?)\{[^;}]+\;\}| ) {
+                        $title = $1;
+                    }
+                    
+                    ## take off any taxon links
+                    if ( $title =~ m|(.+?)\s*taxon\:\d+\s*| ) {
+                        $title = $1;
+                    }
+                    
+                    ## remove leading/trailing whitespace
+                    if ( $title =~ m|^\s*(.+?)\s*$| ) {
+                        $title = $1;
+                    }
+                    
+                    $ber_sbj_names{ $elt->{att}->{id} } = $title;
+                    
                 },
                 'Seq-pair-alignment' => sub {
                     my ($t, $spa) = @_;
