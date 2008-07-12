@@ -134,6 +134,7 @@ structure ideal for use with HTML::Template.  The data structure returned looks 
             path => "$path/pipeline_name",
             has_comment => 0,
             comment => 'some comment here',
+            has_build_guide => 1,
             component_count => 0, },
     ]
 
@@ -162,6 +163,7 @@ sub get_pipeline_templates {
                                        path => "$dir/$thing",
                                        has_comment => 0,
                                        comment => '',
+                                       has_build_guide => 0,
                                        component_count => $layout->component_count, };
 
                     if ( -e "$dir/$thing/pipeline.xml.comment" ) {
@@ -172,6 +174,11 @@ sub get_pipeline_templates {
                             $templates[-1]->{comment} .= $_;
                         }
                     }
+                    
+                    if ( -e "$dir/$thing/pipeline.config" ) {
+                        $templates[-1]->{has_build_guide} = 1;
+                    }
+                    
                 } else {
                     print STDERR "failed to parse pipeline template so excluding it from the lists: $@";
                 }

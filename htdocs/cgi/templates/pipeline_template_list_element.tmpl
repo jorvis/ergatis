@@ -1,4 +1,8 @@
+<TMPL_IF NAME=HAS_BUILD_GUIDE>
+<li class='has_build_guide'>
+<TMPL_ELSE>
 <li>
+</TMPL_IF>
     <a onclick="selectPipelineTemplate('<TMPL_VAR NAME=PATH>')"><TMPL_VAR NAME=ID></a>
     - <TMPL_VAR NAME=COMPONENT_COUNT> components
     <TMPL_IF NAME=HAS_COMMENT>
