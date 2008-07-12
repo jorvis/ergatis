@@ -76,12 +76,17 @@ div#component_formatdb_xml {
     float: right;
     width: 500px;
 }
+div#component_formatdb_config {
+    float: right;
+    width: 600px;
+}
 img#component_structure_types {
     float: right;
     margin: 0;
     padding: 0;
 }
-span.xml_element {
+span.xml_element,
+span.config_param {
     color: rgb(73,81,92);
     font-style: italic;
 }
