@@ -1,0 +1,2 @@
+Pangenome pipeline.
+Required inputs are a nucleotide multiFASTA of the genomic contigs and a peptide multiFASTA of gene translations.  The first xdformat component should be configured to reference the nucleotide multiFASTA. The second xdformat and the split_multifasta components should be configured to reference the protein multiFASTA.

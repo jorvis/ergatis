@@ -1,0 +1,36 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start</name>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>xdformat.default</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>xdformat.pepdb</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>split_multifasta.default</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>wu-blastp.default</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>wu-tblastn.default</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>pangenome.default</name>
+                </commandSet>
+            </commandSet>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>
