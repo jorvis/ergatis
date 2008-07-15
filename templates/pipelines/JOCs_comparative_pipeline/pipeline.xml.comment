@@ -1,0 +1,1 @@
+A pipeline for orthologous and paralogous gene clustering employed by Sybil.  Required inputs are a set of BSML files of the genomes to cluster.  The bsml2fasta component should be configured to reference these BSML files.
