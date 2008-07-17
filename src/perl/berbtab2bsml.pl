@@ -365,7 +365,7 @@ sub createAndAddBtabLine {
     my $seq;
     
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'aa', $args{'class'} );
+	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'dna', $args{'class'} );
 		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     }
 

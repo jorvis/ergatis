@@ -1,5 +1,10 @@
 next
 ----
+-Chado::Gene: Fixed a small bug when applying filters to a gene group
+-pipeline_summary: added TRANS_TABLE option to pipeline_sumamry config
+-lipoprotein_motif: fixed a typo in the lipoprotein motif bsml output analysis links
+-ps_scan2bsml: now correctly uses the analysis_id option for setting analysis links
+-berbtab2bsml: fixed bug in Sequence elements of input fsa. Was marking as Sequence[@molecule='aa']. Changed to 'dna'
 
 ergatis-v2r8b1-rc1
 ------------------

@@ -164,7 +164,7 @@ sub generateBsml {
         foreach my $seq ( keys %{$identifier_lookup} ) {
             print "Adding $seq to doc\n";
             my $seq_elem = $doc->createAndAddSequence($seq, $seq, '', 'aa', 'polypeptide');
-            $doc->createAndAddLink($seq_elem, 'analysis', '#'.$analysis_id.'_analysis', 'input_of');
+            $doc->createAndAddLink($seq_elem, 'analysis', '#'.$analysis_id, 'input_of');
             $doc->createAndAddSeqDataImport($seq_elem, 'fasta', $fasta_file, '', $seq);
             $doc->createAndAddBsmlAttribute( $seq_elem, 'defline', $identifier_lookup->{$seq});
         }
@@ -177,7 +177,7 @@ sub generateBsml {
             $seqs{$seq} = $doc->createAndAddSequence($seq, $seq, '', 'aa', 'polypeptide');
         }
         
-        $doc->createAndAddLink($seqs{$seq}, 'analysis', '#'.$analysis_id.'_analysis', 'input_of');
+        $doc->createAndAddLink($seqs{$seq}, 'analysis', '#'.$analysis_id, 'input_of');
 
         if( ! exists( $identifier_lookup->{$seq} ) ) {
             die("$seq was not found in query sequence file");

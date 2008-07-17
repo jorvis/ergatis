@@ -543,7 +543,7 @@ B<Returns:> Hash Reference.  Format:
 sub getTranscript {
     #Gets the transcript
     my ($self, $filter) = @_;
-    $filter = {'all'=>1};
+    $filter = {'all'=>1} unless( $filter );
     return $self->getFeatures($filter, 'transcript');
 }
 
@@ -604,6 +604,8 @@ sub addToGroup {
         $self->{'groups'}->{$groupID}->{$feat->id} = $feat;
     }
 
+    #create relationships
+
     return $retval;
 }
 
@@ -623,7 +625,7 @@ sub createGroup {
     #Creates a gene group
     my ($self, $groupID, $filter) = @_;  
     $filter = {'all' => 1} unless($filter);
-    return $self->addGenesToGroup($groupID, $filter);
+    return $self->addToGroup($groupID, $filter);
 }
 
 =item $gene->removeFromGroup($groupID[, $filter]);

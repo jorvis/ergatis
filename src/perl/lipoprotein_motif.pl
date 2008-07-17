@@ -186,7 +186,7 @@ sub bsml_storeHit {
 
     $doc->createAndAddIntervalLoc( $feat, $start, $end, $comp);
     $logger->logdie("Feat was not set") unless($feat);
-    $doc->createAndAddLink( $feat, 'analysis', '#lipoprotein_motif_anlaysis', 'computed_by');
+    $doc->createAndAddLink( $feat, 'analysis', '#lipoprotein_motif_analysis', 'computed_by');
 
 }
 
