@@ -1,10 +1,24 @@
 next
 ----
+
+ergatis-v2r8b1-rc2
+------------------
 -Chado::Gene: Fixed a small bug when applying filters to a gene group
--pipeline_summary: added TRANS_TABLE option to pipeline_sumamry config
+-pipeline_summary: added TRANS_TABLE option to pipeline_summary config
 -lipoprotein_motif: fixed a typo in the lipoprotein motif bsml output analysis links
 -ps_scan2bsml: now correctly uses the analysis_id option for setting analysis links
 -berbtab2bsml: fixed bug in Sequence elements of input fsa. Was marking as Sequence[@molecule='aa']. Changed to 'dna'
+-ergatis_installer.pl - removed.  this was a legacy installer that did lots of CVS checkouts, etc. which wouldn't work anymore.
+-interface: now detects pipeline build guides for templates and displays an icon (that's it though so far)
+-documentation: added to component creation tutorial
+-software.config: corrected HMM_MLDBM vs. HMM_INFO_DB mismathes
+-installer: now checks for required MLDBM module
+-predict_prokaryotic_gene_function: naming improvements
+-SF.net web: fixed some e-mail, organization links
+-prok pipeline template: fixed a commandSet in pipeline.layout
+-prok pipeline template: renamed ProkPipeline.config -> pipeline.config
+-pipeline templates: added Sybil comparative and Pangenome pipeline templates
+-hmmpfam: made --acc passed by default (still configurable)
 
 ergatis-v2r8b1-rc1
 ------------------
