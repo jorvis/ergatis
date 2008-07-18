@@ -227,7 +227,7 @@ sub write_tmp_files {
         chomp($line);
         if( $line =~ /Query sequence\:\s+(.*)/ ) {
 	    my $base = $1;
-	    $base =~ s|/||; # remove slashes from file name
+	    $base =~ s|/||g; # remove slashes from file name
             my $tmp_file = "$outdir/$base.tmp.raw";
             push( @files, $tmp_file );
             close($oh) if($oh);
