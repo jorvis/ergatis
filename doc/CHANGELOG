@@ -1,5 +1,8 @@
 next
 ----
+-Prokaryotic_Annotation_Pipeline: Removed unnecessary variables from pipeline_summary.default.config
+-Util: Added check_pipeline_template_configs.pl
+
 
 ergatis-v2r8b1-rc2
 ------------------
