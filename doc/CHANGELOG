@@ -3,6 +3,7 @@ next
 -Prokaryotic_Annotation_Pipeline: Removed unnecessary variables from pipeline_summary.default.config
 -Util: Added check_pipeline_template_configs.pl
 -hmmpfam2htab.pl: removes slashes from temp filename
+-software.config: removed unused $;HTAB_EXEC$; variable
 
 ergatis-v2r8b1-rc2
 ------------------
