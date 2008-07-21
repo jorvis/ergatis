@@ -308,7 +308,9 @@ foreach my $sequence_id ( keys %{$sequences} ) {
 
     } ## END GENES
 
-    
+    if( !exists( $changed_start_sites{$sequence_id} ) ) {
+        $changed_start_sites{$sequence_id} = {};
+    }
 
 } ## END SEQUENCES
 
