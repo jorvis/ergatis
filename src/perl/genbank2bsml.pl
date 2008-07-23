@@ -9,11 +9,16 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use File::Basename;
+use FileHandle;
 use Bio::SeqIO;
 use Bio::Tools::CodonTable; # for creating CDSs from mRNAs, bug #3300
 use BSML::BsmlBuilder;
 use Ergatis::IdGenerator;
 umask(0000);
+
+# optional mapping parsed from --organism_to_prefix_mapping argument
+my $organism_to_prefix_map = undef;
+my $current_prefix = undef;
 
 use Data::Dumper;
 
@@ -81,6 +86,8 @@ sub parse_options {
         'output_bsml|b=s',  #output bsml file
         'id_repository=s',
         'project=s',
+        'organism_to_prefix_mapping=s',  #tab-delimited file that maps organism name to id prefix
+        'generate_new_seq_ids=s',        #whether to replace existing sequence ids with ergatis ones
         'analysis_id|a=s',
         ) || &print_usage("Unprocessable option");
 
@@ -99,7 +106,13 @@ sub parse_options {
     (-w $options{output_dir} && -d $options{output_dir}) 
     || die "output_dir directory ($options{output_dir}) not writeable: $!";
 
-    (defined($options{output_bsml})) || die "output_bsml is required options";
+    (defined($options{output_bsml})) || die "output_bsml is a required option";
+
+    if (defined($options{organism_to_prefix_mapping})) {
+	(-r $options{organism_to_prefix_mapping}) 
+	    || die "organism_to_prefix_mapping ($options{organism_to_prefix_mapping}) not readable: $!";
+	$organism_to_prefix_map = &parse_organism_to_prefix_mapping($options{organism_to_prefix_mapping});
+    }
 
     ## Now set up the id generator stuff
     if ($options{'id_repository'}) {
@@ -151,6 +164,14 @@ sub parse_genbank_file {
 
     #first word is genus, all follows is species (a workaround to encode the entire scientific name in BSML/chado)
     $gbr{'organism'} = $seq->species->scientific_name;
+
+    if (defined($organism_to_prefix_map)) {
+	$current_prefix = $organism_to_prefix_map->{$gbr{'organism'}};
+	if (!defined($current_prefix) || ($current_prefix =~ /^\s*$/)) {
+	    # TODO - this should result in a warning, but logging doesn't appear to be enabled
+	}
+    }
+
     $gbr{'organism'} =~ m/(\S+)\s+(.*)/;
     $gbr{'genus'} = $1;
     $gbr{'species'} = $2;
@@ -473,6 +494,29 @@ sub parse_genbank_file {
     return \%gbr;
 }
 
+sub parse_organism_to_prefix_mapping {
+    my $map_file = shift;
+    my $map = {};
+    my $fh = FileHandle->new();
+    my $lnum = 0;
+    $fh->open($map_file, 'r') || die "unable to read from $map_file";
+
+    while (my $line = <$fh>) {
+	chomp($line);
+	++$lnum;
+	if ($line =~ /^\s*$|^[\#]|^\/\//) {
+	    next;
+	} elsif ($line =~ /^\s*(\S.*)\s+(\S+)$/) {
+	    my($organism, $prefix) = ($1, $2);
+	    $map->{$organism} = $prefix;
+	} else {
+	    die "unable to parse line $lnum of $map_file: $line";
+	}
+    }
+    $fh->close();
+
+    return $map;
+}
 
 sub to_bsml {
     my %gbr = %{$_[0]};
@@ -519,14 +563,14 @@ sub to_bsml {
     my %mt_codes = (2 => 1, 3 => 1, 4 => 1, 5 => 1, 9 => 1, 13 => 1, 14 => 1, 16 => 1, 21 => 1, 22 => 1, 23 => 1);
     my $transl_table;
     if ($mt_codes{$gbr{'transl_table'}}) {
-    $transl_table = $doc->createAndAddBsmlAttribute($organism, 'mt_genetic_code', $gbr{'transl_table'});
+	$transl_table = $doc->createAndAddBsmlAttribute($organism, 'mt_genetic_code', $gbr{'transl_table'});
     }
     else {
-    $transl_table = $doc->createAndAddBsmlAttribute($organism, 'genetic_code', $gbr{'transl_table'});
+	$transl_table = $doc->createAndAddBsmlAttribute($organism, 'genetic_code', $gbr{'transl_table'});
     }
 
     if($gbr{'molecule_name'}){
-    $doc->createAndAddBsmlAttribute($organism, 'molecule_name', $gbr{'molecule_name'});
+	$doc->createAndAddBsmlAttribute($organism, 'molecule_name', $gbr{'molecule_name'});
     }
 
     # only add a strain element if there is valid strain info
@@ -535,32 +579,49 @@ sub to_bsml {
     $gbr{'strain'} =~ s/\s+$//;
     if ($gbr{'strain'}) {
     my $strain_elem = $doc->createAndAddStrain(
-                           'name'     => $gbr{'strain'},
-                           'organism' => $organism
-                           );
+					       'name'     => $gbr{'strain'},
+					       'organism' => $organism
+					       );
     }
 
     # class is always assembly
     # chromosome|plasmid will be denoted in the "secondary type" ie an Attribute-list
-    # if seq->molcule (taken from LOCUS line) matches dna, molecule=dna
+    # if seq->molecule (taken from LOCUS line) matches dna, molecule=dna
     # if it matches rna, molecule=rna
     # otherwise it dies
-    my $sequence = $doc->createAndAddSequence(
-                          $gbr{'accession'}, #id
-                          undef,             #title
-                          $gbr{'seq_len'},   #length
-                          $gbr{'molecule'},  #molecule
-                          'assembly'         #class
-                          );
 
-    # store the main genomic sequence
-    # store everything in odir
+    my $seqid = $gbr{'accession'};
     my $fastafile = "$odir/$gbr{'gi'}.assembly.fsa";
     my $fastaname = "gi|".$gbr{'gi'}."|ref|".$gbr{'accession'}."|".$gbr{'organism'};
     # in order for this to get parsed correctly by bsml2chado's BSML::Indexer::Fasta component, 
     # Seq-data-import/@identifier must equal the fasta header up to the first space
     # currently dealing with this by:
     $fastaname =~ s/\s+/_/g;
+    my $seq_type = 'assembly';
+
+    # generate a new ergatis-compliant sequence id for the DNA sequence
+    # (for the benefit of other components that fail to work with non-ergatis-compliant ids)
+    if ($options{'generate_new_seq_ids'}) {
+	my $project = $current_prefix || $options{'project'};
+	$seqid = $idcreator->next_id('type' => $seq_type, 'project' => $project);
+	$fastafile = "${odir}/${seqid}.fsa";
+	# can't use ($seqid . ' ' . $fastaname) because other components 
+	# follow different rules for identifying sequences (e.g., bsml2fasta.pl
+	# expects the id to be the entire FASTA defline, not just the part up to
+	# the first space)
+	$fastaname = $seqid;
+    }
+
+    my $sequence = $doc->createAndAddSequence(
+  		          $seqid,            #id
+                          undef,             #title
+                          $gbr{'seq_len'},   #length
+                          $gbr{'molecule'},  #molecule
+                          $seq_type,         #class
+                          );
+
+    # store the main genomic sequence
+    # store everything in odir
 
     my $seq_obj = $doc->createAndAddSeqDataImport(
                           $sequence,                     # Sequence element object reference
@@ -965,7 +1026,8 @@ sub addFeature {
     my $start_type = $featref->{'start_type'};
     my $end_type = $featref->{'end_type'};
     
-    my $id = $idcreator->next_id('type' => $class, 'project' => $options{'project'});
+    my $project = $current_prefix || $options{'project'};
+    my $id = $idcreator->next_id('type' => $class, 'project' => $project);
 
     $feature_id_lookup->{$old_id} = $id;
     
@@ -1184,8 +1246,8 @@ sub addSeqToFeature {
                          );
     # write sequence object to file
     unless (defined($fsa_files{$class})) {
-    $fsa_files{$class}{name} = "$odir/$gbr{gi}.$class.fsa";
-    open($fsa_files{$class}{fh}, ">".$fsa_files{$class}{name});
+	$fsa_files{$class}{name} = "$odir/$gbr{gi}.$class.fsa";
+	open($fsa_files{$class}{fh}, ">".$fsa_files{$class}{name});
     }
 
     my $fastaname = $id;

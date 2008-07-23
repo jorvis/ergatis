@@ -17,6 +17,14 @@
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
             </param>
             <param>  
+                <key>--organism_to_prefix_mapping</key>
+                <value>$;ORGANISM_TO_PREFIX_MAPPING$;</value>
+            </param>
+            <param>  
+                <key>--generate_new_seq_ids</key>
+                <value>$;GENERATE_NEW_SEQ_IDS$;</value>
+            </param>
+            <param>  
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
