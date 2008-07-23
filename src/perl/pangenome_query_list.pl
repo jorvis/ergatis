@@ -111,11 +111,19 @@ sub processSequence {
         my @link = $feat->children('Link');
         if ($link[0]->{'att'}->{'rel'} ne 'analysis') {
             my $seq_id = $seqdataimport[0]->{'att'}->{'identifier'};
-            $seq_id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse seq-data-import id for '$id'\n";
-            $sequence_hash{$1}{$2} = 1;
+	    if ($seq_id =~ /^(([^\.]+)\.[a-z]+\.\d+\.\d+)$/) { 
+		$sequence_hash{$2}{$1} = 1;
+	    } else {
+		$seq_id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse seq-data-import id for '$seq_id'\n";
+		$sequence_hash{$1}{$2} = 1;
+	    }
         }
     } elsif ($class eq 'assembly') {
-        $id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse db and seq id from '$id'\n";
-        $sequence_hash{$1}{$2} = 1;
+	if ($id =~ /^(([^\.]+)\.assembly\.\d+\.\d+)$/) {
+	    $sequence_hash{$2}{$1} = 1;
+	} else {
+	    $id =~ /^([^_]+)_(.*)_[^_]+$/ || print STDERR "couldn't parse db and seq id from '$id'\n";
+	    $sequence_hash{$1}{$2} = 1;
+	}
     }
 }

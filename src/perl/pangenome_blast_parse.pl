@@ -158,10 +158,29 @@ sub processSeqPairAlignment {
     my $all_seg_p_ident = sprintf("%.1f", $pident_sum / $len_total * 100);
     my $all_seg_p_sim = sprintf("%.1f", $psim_sum / $len_total * 100);
 
-    $query_id =~ /^(([^\.]+)\..*)$/ || die "couldn't parse out db and sequence id from query\n$query_id";
+    # $qprot may be an assembly for TBLASTN, not a protein
     my($qdb, $qprot) = ($2, $1);
-    $subject_id =~ /^(([^\.]+)\..*)$/ || die "couldn't parse out db and sequence id from subject";
-    my($sdb, $sprot) = ($2, $1);
+    if ($query_id =~ /^(([^\.]+)\..*)$/) {
+	($qdb, $qprot) = ($2, $1);
+    }
+    # handle BSML sequences (for NC GenBank entries) created via genbank2bsml
+    elsif ($query_id =~ /^ref_(NC_\d+)_(\S+)$/) {
+	($qdb, $qprot) = ($2, $1);
+    } else {
+	die "couldn't parse out db and sequence id from query\n$query_id\n";
+    }
+
+    # $sprot may be an assembly for TBLASTN, not a protein
+    my($sdb, $sprot);
+    if ($subject_id =~ /^(([^\.]+)\..*)$/) {
+        ($sdb, $sprot) = ($2, $1);
+    } 
+    # handle BSML sequences (for NC GenBank entries) created via genbank2bsml
+    elsif ($subject_id =~ /^ref_(NC_\d+)_(\S+)$/) {
+	($sdb, $sprot) = ($2, $1);
+    } else {
+	die "couldn't parse out db and sequence id from subject\n$subject_id\n";
+    }
     
     if ($skip_filter || ($filter->{$qdb}->{$qprot} && $filter->{$sdb}->{$sprot})) {
     #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
