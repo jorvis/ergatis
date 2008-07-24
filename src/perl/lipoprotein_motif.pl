@@ -139,7 +139,10 @@ foreach my $defline (keys %{$sequence}) {
 
 #Add the analysis
 $doc->createAndAddAnalysis( 'id' => 'lipoprotein_motif_analysis',
-                            'sourcename' => $inFileName );
+                            'sourcename' => $inFileName,
+                            'algorithm' => 'lipoprotein_motif',
+                            'program' => 'lipoprotein_motif',
+                            'programversion' => 'lipoprotein_motif' );
 
 #Write the bsml file.
 $doc->write($outFileName, '', $gzip);
