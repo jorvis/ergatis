@@ -142,7 +142,7 @@ $doc->createAndAddAnalysis( 'id' => 'lipoprotein_motif_analysis',
                             'sourcename' => $inFileName,
                             'algorithm' => 'lipoprotein_motif',
                             'program' => 'lipoprotein_motif',
-                            'programversion' => 'lipoprotein_motif' );
+                            'programversion' => 'current' );
 
 #Write the bsml file.
 $doc->write($outFileName, '', $gzip);
