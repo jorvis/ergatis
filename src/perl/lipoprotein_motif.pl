@@ -173,7 +173,7 @@ sub bsml_storeHit {
         $seq = $doc->createAndAddSequence( $id, $id, length($protein), 'aa', 'polypeptide' );
         $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
         $doc->createAndAddSeqDataImport( $seq, 'fasta', $inFileName, '', $id ); 
-        $doc->createAndAddLink( $seq, 'analysis', '#lipoprotein_motif_analysis', '#input_of' );
+        $doc->createAndAddLink( $seq, 'analysis', '#lipoprotein_motif_analysis', 'input_of' );
     }
 
     my $fTable = $doc->createAndAddFeatureTable( $seq );
