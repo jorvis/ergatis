@@ -59,7 +59,7 @@ B<--help,-h>
 =head1  CONTACT
 
     Kevin Galens
-    kgalens@tigr.org
+    kgalens@som.umaryland.edu
 
 =cut
 
@@ -218,6 +218,9 @@ sub generateBsml {
                 my $sprObj = $doc->createAndAddSequencePairRun(%sprArgs);
                 $doc->createAndAddBsmlAttribute($sprObj, 'class', 'match_part');
             }
+
+            ## add a link to the analysis
+            my $analysis_link = $doc->createAndAddLink( $spaObj, 'analysis', "#$analysis_id", 'computed_by' );
 
 
         }
