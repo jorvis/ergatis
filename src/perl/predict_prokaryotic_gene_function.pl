@@ -525,7 +525,7 @@ sub check_gene_product_names {
             $new_product_name =~ s|\s{2,}| |g;
             
             _log("INFO: $feature: name before processing: $$feats{$feature}{product}");
-            _log("INFO: $feature: name after processing: $new_product_name");
+            _log("INFO: $feature: name  after processing: $new_product_name");
             $$feats{$feature}{product} = $new_product_name;
         }
     }
