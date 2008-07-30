@@ -8,21 +8,14 @@
             <name>stap</name>
             <state>incomplete</state>
             <executable>$;STAP_EXEC$;</executable>
-            <param>  
-                <key>-i</key>
-                <value>$;I_FILE_PATH$;/</value>
+            <arg>-i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; -n $;UNCLASSIFIED_NEIGHBORS$; -t $;SECOND_TREE_STEP_UP$;</arg>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
             </param>
-            <param>  
-                <key>-o</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>
-            <param>  
-                <key>-n</key>
-                <value>$;UNCLASSIFIED_NEIGHBORS$;</value>
-            </param>
-            <param>  
-                <key>-t</key>
-                <value>$;SECOND_TREE_STEP_UP$;</value>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
             </param>
         </command>
     </commandSet>
