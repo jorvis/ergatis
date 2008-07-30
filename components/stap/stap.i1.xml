@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>stap compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>stap</name>
+            <state>incomplete</state>
+            <executable>$;STAP_EXEC$;</executable>
+            <param>  
+                <key>-i</key>
+                <value>$;I_FILE_PATH$;/</value>
+            </param>
+            <param>  
+                <key>-o</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            </param>
+            <param>  
+                <key>-n</key>
+                <value>$;UNCLASSIFIED_NEIGHBORS$;</value>
+            </param>
+            <param>  
+                <key>-t</key>
+                <value>$;SECOND_TREE_STEP_UP$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
