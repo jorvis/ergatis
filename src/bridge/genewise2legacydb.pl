@@ -148,7 +148,7 @@ if ($options{input_file_list}) {
 my $cmd;
 foreach my $asmbl_id ( @asmbl_ids ) {
     print $logfh "loading asmbl_id $asmbl_id\n" if $logfh;
-    $cmd = "$loader -D $options{database} -p /home/jorvis/.pwdfile -n $search_db -a $asmbl_id -j";
+    $cmd = "$loader -D $options{database} -p /usr/local/devel/ANNOTATION/euk_genome_control/bin/egc_password  -n $search_db -a $asmbl_id -j";
     print $logfh "$cmd\n" if $logfh;
     `$cmd`;
 }
