@@ -5,6 +5,7 @@ next
 -hmmpfam2htab.pl: removes slashes from temp filename
 -software.config: removed unused $;HTAB_EXEC$; variable
 -peptstats: removed unused parameters in config file (obviously from a component copy)
+-stap: component added
 
 ergatis-v2r8b1-rc2
 ------------------
