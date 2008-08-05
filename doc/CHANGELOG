@@ -6,6 +6,8 @@ next
 -software.config: removed unused $;HTAB_EXEC$; variable
 -peptstats: removed unused parameters in config file (obviously from a component copy)
 -stap: component added
+-genbank2bsml: new command-line options and bug fixes to support pan-genome analyses
+-pangenome_blast_parse.pl, pangenome_query_list.pl: generalized regexes to not fail so much
 
 ergatis-v2r8b1-rc2
 ------------------
