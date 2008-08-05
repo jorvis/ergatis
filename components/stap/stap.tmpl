@@ -1,34 +1,55 @@
 <!-- component documentation -->
-
-<p>
-    <span style='font-weight:bold;'>PLEASE NOTE:</span> The Perl script that is currently used to run STAP,
-    rRNA_pipeline_for_one.pl, has a serious bug whereby it returns an exit code of 1 on successful completion.
-    In order to use STAP with ergatis you <span style='font-weight:bold;'>MUST</span> patch the script to fix
-    this problem.  This can be done with the following Perl command, run after the STAP installation procedure
-    has completed: <span style='font-style:italic;'>perl -pi.bak -e 's/exit 1/exit/;' rRNA_pipeline_for_one.pl</span>
-    Note that there are also two plain 'exit;' commands in the script; these can be left alone since they are
-    triggered in circumstances where one can argue that the script has completed successfully, albeit without
-    necessarily classifying the input sequence.  We now return you to your regularly-scheduled component documentation.
-</p>
 <p>
     This component uses the ss-rRNA Taxonomy Assigning Pipeline (STAP) to generate an automatic taxonomic 
     assignment for each of the input nucleotide sequences, which are assumed to be small subunit ribosomal 
     RNA (ss-rRNA) sequences.  If any of the input sequences do not appear to be ss-rRNA sequences then 
     STAP will detect and report this, so it is not necessary to prescreen the input.  STAP generates 
-    taxonomic assignments by building phylogenetic trees, using the following basic procedure.  See the
-    paper referenced below for a more detailed and accurate description; what follows has been adapted 
-    from Figure 1, "A flow chart of the STAP pipeline."
+    taxonomic assignments by building phylogenetic trees from automatically-trimmed multiple sequence
+    alignments.  A rough outline of the procedure that it uses is given below.
 </p>
 
+<h3>IMPORTANT: READ THIS BEFORE INSTALLING STAP</h3>
+<p>
+<span style='font-weight: bold;'>
+    As of this writing (August 2008), the Perl script that implements STAP, rRNA_pipeline_for_one.pl, 
+    incorrectly returns a Unix exit code of 1 instead of 0 on successful completion.  In order to use 
+    STAP with ergatis you <span style='font-weight:bold;'>MUST</span> patch the script to fix this 
+    problem.</span>  This can be done by running the following Perl command, which patches the version of
+    the script created by the STAP setup/install program:
+</p>
+
+    <div style='font-family: Courier,monospace;'>perl -pi.bak -e 's/exit 1/exit/;' rRNA_pipeline_for_one.pl</div>
+
+<p>
+    Note that there are two other 'exit;' commands in the script, which can be left unchanged as they 
+    are only triggered in circumstances in which one can reasonably argue that the script has exited 
+    normally, albeit without generating a taxonomic assignment for the input sequence.  We now return
+    you to your regularly-scheduled ergatis component documentation.
+</p>
+
+<h3>references</h3>
+<p>
+  <ul>
+   <li><a href='http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0002566'>Wu D, Hartman A, Ward N, Eisen JA (2008) An Automated Phylogenetic Tree-Based Small Subunit rRNA Taxonomy and Alignment Pipeline (STAP). PLoS ONE 3(7): e2566. doi:10.1371/journal.pone.0002566</a></li>
+   <li><a href='http://128.120.136.15/mediawiki/index.php/STAP_download'>STAP page on the Eisen Lab.'s web site</a></li>
+  </ul>
+</p>
+
+<h3>algorithm</h3>
+
+  See the paper referenced above for a more detailed and accurate description of the STAP algorithm.
+  The following rough outline has been adapted from Figure 1 ("A flow chart of the STAP pipeline.") 
+  in the paper:
+
     <ol>
-     <li>Assign the input sequence to a domain (if not explicitly specified)</li>
+     <li>Assign the input sequence to a domain (if not explicitly specified with <span style='font-weight: bold;'>$;DOMAIN$;</span> in ergatis)</li>
       <ol>
 	<li>The input sequence is aligned to a special three-domain subset using CLUSTALW's profile alignment.</li>
 	<li>Build a maximum-likelihood (ML) tree using phyml.</li>
         <li>Parse the output to determine the domain of the input sequence.</li>
       </ol>
 
-     <li>Use BLASTN to find homologous sequences in the STAP appropriate database, based on domain assignment (either archaeal/bacterial or eukaryotic)</li>
+     <li>Use BLASTN to find homologous sequences in the relevant STAP database (archaeal/bacterial or eukaryotic) based on the domain assignment</li>
 
      <li>Build tree #1
       <ol>
@@ -39,12 +60,12 @@
      </li>
 
      <li>Make an initial taxonomic assignment via mid-point rooting</li>
-     <li>Build a databases of sequences that includes:
+     <li>Build a database of sequences that includes:
        <ul>
-        <li>All sequences 1 level up from the initial assignment (or 2 or more levels up if SECOND_TREE_STEP_UP is used)</li>
+        <li>All database sequences 1 level up from the initial assignment (or 2 or more levels up if <span style='font-weight: bold;'>$;SECOND_TREE_STEP_UP$;</span> is used)</li>
 	<li>2 outgroup sequences</li>
        </ul>
-     <li>
+     </li>
 
      <li>Build tree #2
       <ol>
@@ -54,7 +75,7 @@
       </ol>
      </li>
      
-     <li>Make a final assignment using outgroup rooting<li>
+     <li>Make a final assignment using outgroup rooting</li>
 
     </ol>
 
@@ -64,34 +85,32 @@
     appropriate location in a phylogenetic tree that is composed solely of representatives from the STAP
     databases.  Currently STAP uses data from two ss-rRNA databases: <a href='http://greengenes.lbl.gov'>Greengenes</a>
     for bacterial and archaeal sequences and <a href='http://rdp.cme.msu.edu/'>RDP II</a> for eukaryotic sequences.
-    Note also that both of these sites/databases have their own rRNA classification tools.
+    Both of these sites/databases have their own SSU-rRNA classification tools.
 </p>
-<h3>references</h3>
-<p>
-    <a href='http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0002566'>Wu D, Hartman A, Ward N, Eisen JA (2008) An Automated Phylogenetic Tree-Based Small Subunit rRNA Taxonomy and Alignment Pipeline (STAP). PLoS ONE 3(7): e2566. doi:10.1371/journal.pone.0002566</a><br>
-    <a href='http://128.120.136.15/mediawiki/index.php/STAP_download'>STAP download from the Eisen Lab.'s web site</a>
-</p>
+
 <h3>input</h3>
 <p>
     Like the program itself, this component accepts FASTA files as input.  If you have a single
     file containing multiple sequences in FASTA format, you should use the 
     <a href='./documentation.cgi?article=components&page=split_multifasta'>split_multifasta</a>
-    component first to generate individual sequences, allowing them to be atomically searched
-    and individually managed on the grid.
+    component first to generate individual sequence files.
 </p>
+
 <h3>implemented options</h3>
 <p>
    <ul>
     <li>-n: number of unclassified ss-rRNA nearest neighbors to ignore when building tree #1</li>
     <li>-t: number of levels to step up from the initial assignment when building tree #2</li>
+    <li>-d: the domain of the input sequences (E=eukaryote, P=bacterial/archaeal)</li>
    </ul>
- The "-d" option to explicitly specify the domain of the input sequence is not currently supported
- by this component.
+ Note that there is currently no way to specify a different domain (-d option) for different
+ sequences in the input set; at present the option applies to all of the input sequences.
 </p>
+
 <h3>output</h3>
 <p>
     Curently the component produces output in STAP's native format.  See 
-    <a href='http://128.120.136.15/mediawiki/index.php/STAP_download#Read_the_results'>Eisen Lab.'s wiki</a> 
+    <a href='http://128.120.136.15/mediawiki/index.php/STAP_download#Read_the_results'>the Eisen Lab.'s STAP wiki page</a> 
     for the details.
 </p>
 </div>
