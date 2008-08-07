@@ -11,7 +11,7 @@
 <h3>IMPORTANT: READ THIS BEFORE INSTALLING STAP</h3>
 <p>
 <span style='font-weight: bold;'>
-    As of this writing (August 2008), the Perl script that implements STAP, rRNA_pipeline_for_one.pl, 
+    As of this writing (August 2008), the Perl script that implements the STAP classifier, rRNA_pipeline_for_one.pl, 
     incorrectly returns a Unix exit code of 1 instead of 0 on successful completion.  In order to use 
     STAP with ergatis you <span style='font-weight:bold;'>MUST</span> patch the script to fix this 
     problem.</span>  This can be done by running the following Perl command, which patches the version of
@@ -109,8 +109,16 @@
 
 <h3>output</h3>
 <p>
-    Curently the component produces output in STAP's native format.  See 
+    Curently the component produces output in STAP's native format.  An example of the final
+    .results file is shown below (artifically line-wrapped for readability).  See 
     <a href='http://128.120.136.15/mediawiki/index.php/STAP_download#Read_the_results'>the Eisen Lab.'s STAP wiki page</a> 
-    for the details.
+    for a full description of this file and the other output files.
+
+<div class='code_container' style='font-family: Courier,monospace;'>
+P19992_PROK2.18.3.4.1	BLAST=P52865_PROK2.18.3.4.1|Bacteria|Cyanobacteria|Chloroplasts|Euglena_et_al._chloroplasts|Unclass\
+ified	TREE1=P3475_PROK2.18.3.4.1|Bacteria|Cyanobacteria|Chloroplasts|Euglena_et_al._chloroplasts|Unclassified	TREE2=\
+P69121_PROK2.18.3.4.1|Bacteria|Cyanobacteria|Chloroplasts|Euglena_et_al._chloroplasts|Unclassified	DOMAIN=B|18
+
+</div>
 </p>
 </div>

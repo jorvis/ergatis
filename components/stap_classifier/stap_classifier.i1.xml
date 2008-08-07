@@ -2,12 +2,12 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>stap compute</name>
+        <name>STAP SSU-rRNA classifier</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>stap</name>
+            <name>rRNA_pipeline_for_one.pl</name>
             <state>incomplete</state>
-            <executable>$;STAP_EXEC$;</executable>
+            <executable>$;STAP_CLASSIFIER_EXEC$;</executable>
             <arg>-i $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; -n $;UNCLASSIFIED_NEIGHBORS$; -t $;SECOND_TREE_STEP_UP$; -d $;DOMAIN$;</arg>
             <param>
                 <key>stderr</key>

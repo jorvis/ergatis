@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
-        <name>stap workflow</name>
+        <name>STAP SSU-rRNA classifier workflow</name>
         <!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
