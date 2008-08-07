@@ -5,7 +5,8 @@ next
 -hmmpfam2htab.pl: removes slashes from temp filename
 -software.config: removed unused $;HTAB_EXEC$; variable
 -peptstats: removed unused parameters in config file (obviously from a component copy)
--stap: component added
+-stap_aligner: component added
+-stap_classifier: component added
 -genbank2bsml: new command-line options and bug fixes to support pan-genome analyses
 -pangenome_blast_parse.pl, pangenome_query_list.pl: generalized regexes to not fail so much
 
