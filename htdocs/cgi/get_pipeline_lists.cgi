@@ -7,6 +7,7 @@ use Data::Dumper;
 use Ergatis::Common;
 use Ergatis::ConfigFile;
 use Ergatis::Monitor;
+use File::Path;
 use HTML::Template;
 use Storable;
 use XML::Twig;
@@ -28,6 +29,7 @@ my $tmpl = HTML::Template->new( filename => 'templates/get_pipeline_lists.tmpl',
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 my $temp_space = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
+mkpath ($temp_space, 0, 0777) unless (-e $temp_space);  ## Make it if it doesn't exist.
 
 ## an MD5 is used on the project list so that many installations can
 ## share the same storable object.
