@@ -1,0 +1,149 @@
+<!-- component documentation -->
+<p>
+    This component uses the profile aligner from the ss-rRNA Taxonomy Assigning Pipeline (STAP) 
+    to align each of the input nucleotide sequences to its database of small subunit ribosomal 
+    RNA sequences.  The input sequences are assumed to be either all eukaryotic or all prokaryotic 
+    ss-rRNAs, and the component must be explicitly told which database (eukaryotic or prokaryotic)
+    the input sequences should be aligned to.
+</p>
+
+<h3>references</h3>
+<p>
+  <ul>
+   <li><a href='http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0002566'>Wu D, Hartman A, Ward N, Eisen JA (2008) An Automated Phylogenetic Tree-Based Small Subunit rRNA Taxonomy and Alignment Pipeline (STAP). PLoS ONE 3(7): e2566. doi:10.1371/journal.pone.0002566</a></li>
+   <li><a href='http://128.120.136.15/mediawiki/index.php/STAP_download'>STAP page on the Eisen Lab.'s web site</a></li>
+  </ul>
+</p>
+
+<h3>algorithm</h3>
+
+  The profile alignment script in STAP uses the CLUSTALW profile aligner to perform the alignments.
+
+<h3>input</h3>
+<p>
+    Like the program itself, this component accepts FASTA files as input.  If you have a single
+    file containing multiple sequences in FASTA format, you should use the 
+    <a href='./documentation.cgi?article=components&page=split_multifasta'>split_multifasta</a>
+    component first to generate individual sequence files.
+</p>
+
+<h3>implemented options</h3>
+<p>
+   <ul>
+    <li>-d: the domain of the input sequences (E=eukaryotic, P=prokaryotic)</li>
+   </ul>
+ Note that there is currently no way to specify a different domain (-d option) for different
+ sequences in the input set; at present the option applies to all of the input sequences and
+ MUST be supplied.  Unlike the RDP classifier the aligner has no option to automatically guess
+ the domain of the input sequence(s).
+</p>
+
+<h3>output</h3>
+<p>
+    The output is a set of profile alignments in FASTA format.  For example, here is the 
+    STAP-generated alignment for one of the prokaryotic rRNA sequences in STAP's own 
+    database (line-wrapped for readability):
+
+<div class='code_container' style='font-family: Courier,monospace;'>
+>P19992_PROK2.18.3.4.1
+--------------------------------------------------------------------------------
+----------------------CTGCAGAGAGTTT-GA--T-CC-T-G-GCTC-AG-GA-TGAA-C-GC--TGG-C--G-
+GT-A-TG--C----T-T--AACACA-T-GC-A-AGT-CGA-A-CGA---------A-A----------------------
+------------------G-TT----------------------------------------------------TGT---
+--------------------------------------------------------------------------------
+-AAAAAC---------------------------TT--T--AG-T-GG-C-GG-A--C-------------GGG-TGAGT
+-A--AC-AC-G-T-G-AG---A-A--T-CT-A--C-T-TTT--AG-G---------------------------------
+---------------------------------A-GA-----GGCAT-AA-CAT-------------------------T
+-T-G-----------------------GAA-A---CAA-TTG-CTAA-AG---CC-T--C-AT-A----------T----
+------------------------------------------------------GC-T----------------------
+--------------------------------------------------------------------------------
+-----------------G-CA-A---------------------------------------------------------
+-----------------------------------------------------------------------------A-G
+-T------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------------------------------GAAACAGAG-A----------------------
+--------------------------------------------------------------------------------
+--------------------------------AAT---------------------------------------------
+--------------------------------------------------------------------------------
+-------C----TG--------------C----C-T---G-AA-A---AT---G-A-----G-CTC-GCG--C-CTG--A
+------TT--A--G-CT-A----G---TTGG-T-A-AG-G-T----AAA-AG-C-T-T-ACCA--A-GG-C-A--A-CG-
+A------------TCA-G-T------AG-CT-G-G-TTT-G-AG----A--GG-AC--G-AC-C-AG-CCAC-A-CTGGG
+--A-C-TG-A-GA-C-AC-G-G-CCCAGA-CTCC-TAC-G--G-G-A-G-GC-A-GC-A-G-TG---GG-G-A-ATT-TT
+CCG-C-AA-T-GG--GC-GA-A----A-G--CCT-GA-CG-GA-GCAA-TACC-G-CG-T---G-A-G--G--GA-T-G-
+-A--A-G-G-CT-----CG-TG---------G-G-T-T-G-T--A---AA-C-CTC--------TT-TT-C-T--T-AGG
+----GA-A--G---A--------------------A-GC--TC-T------------------------------GA-CG
+-GT-A-C-CT-A-AG-G---------AT-----------TAAGC-ATC-GG-C-TAA---C--T-CCGT--GCCC--G-C
+---A--TCCG---C-GG--TA-AT--AC---GG-AG-GAT-GCA-A-G-CG-TTAT-C-CGG-AA-TC-A--C-T--GGG
+C-ATT----TA-GCGT-CT--G-TA-G-G-T-T------------G--C-TT-A-G-T-AA----G-T-C-T---G-CTG
+-TT-A-AA-TA--TT-GGG-G-----------------------------------------------------------
+---------CT-C-AA----------------------------------------------------------------
+---------CC-C-C-AA-AA-C----A-G-C-A-G-T--------G--GA-A-A-C-T-G-CTA--A-G-C--------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-----------------------------------------T-A-G-A-G-T-A-----T-GG--CA-A-G---------
+---G-GT-A-AA-G----GG--AATT-CCC-A-GT--GT-A-GCG-GTGAAA-TG-CGT-AGAT-A-TT-G-GGA--AG-
+A-AC-A-CC-AG--A--G--GC-GAA-A---GC---G----C--T-T-TACTA------G-AC-CA--------------
+------------------------------------------------TT-G-C-T--GA--CA-----CT-CA-GA--G
+-A-CGA--AA-G-C--------------T-AGGG-GAG-C-G-AATG--GG-ATTA-G-ATA-C-----CC-C-A-GTA-
+G-T----C-CT--A-G-CCG-T-AAA--C-GATG-GA--TA-CT---------A-GA--T--G-T-TG-C-GC-G-----
+--------------------------------------------------------------------------------
+----TATTGACC--------------------------------------------------------------------
+------------------------------------------------------------------------------C-
+G-TG--C-A-G-T-AT-C------GT--A----GC-TAA--CG-C-G-T--T--AA-GT--A----T-CCC-GCC-T-G-
+GG-GAG-TA---CGC-----T-C--G-C-A-A-GAG-T--GAA-ACTC-AAA---------GGAA-TTG-ACGGG-G-G-
+CCCG----C-A--C-A-A-GC-GGT-G--G--AG-CA-T--GT-GGT-TT-AATT-C-G-ATG-CAAC-G-CG-A-AG-A
+-A-CC-TT-A-CC-AGGAC-TT-G-AC-A-T-G--------------TCA-C---------------AAAT-T-T----T
+T--T-GA-A-A-A--A-A-G--A-A-A-G--T-G-----CC-------------------------------------T-
+-TT-G------------------------------------------GG----A----A---TG-TGA---A--CA----
+-----------------------------------------------C-A-G-G-T-GGTG-CA-TGG-CT--GTC-GTC
+-A-GC-TC---G-TG-CG-G--TGA-GA-TGT-T-GG-G-TT-AA-GT-CCCGC-AA--------C-GAG-CGC-A-ACC
+-C-T-TG--TC--T-TTAG--T-T-G-C-C---AT-C-A--T--------------------------------------
+--------------------------------------------------------------------------------
+------------------------------------------------------------------TTAG----------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+----------------------------------T----T-G------------G----G---C-A--CT----------
+-----C-T-A-A-A-GA-G--AC-T-G-CCG--G-T------------------------------------G-A---CA
+A----------------------------------A-C-C-G--G-A-GG-A--AGG-T--GAGG-A-TGAC-GTC--AA
+GT-C---AGC-A-T-G-C-C-C-CTT----AT-G--TC-C-T-GG-GC-TA-CAC-ACGTG-C--TA--CAATG---G-T
+CGC-G-A--C-AAA-GA-GT------------------------------------------------------------
+--------------------------------------T-G-C-A-A--A-CTTG-C--C--------------------
+-------------------A-AA-G-C-----------T--A-G-CT---A----------A--TCT-C------A-C-A
+AATC-GC-G-G-C-T-CAG-TTC--------GGA-T-TGCAG-GC--T-GCAA-CT-C----------------------
+---------------------------------------------------------------------------G-CCT
+GC-A-T-G-AA-G-GT-GGAAT-CG-G-TA--G-TA-AT-C-G-C----CGG-TC-A-G-CT------AC--ACG-GC-G
+-GT-G-AAT-CCGT-T-CCCGGGCCT-TGTA----CACACCG-CCC-GTC-----A---CA--CCA-TG-GG-A--G---
+CTG-G-CC-AC-GCC--C-GAA------G--T-CGT-TA-C-C-C-T-AA-CCT--------------------------
+-----------------------------------T-TT-----------------------------------------
+---------------------------------------------------------------GG-A--GG-G--G---G
+G-CGC--CT--AAG-G----T-AGG-GC-TAG------------------------TG--ACT-GGGG------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+--
+
+</div>
+</p>
+</div>
