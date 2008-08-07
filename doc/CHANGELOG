@@ -1,5 +1,6 @@
 next
 ----
+-get_pipeline_lists.cgi: now checks for the existance of the path stored in 'temp_space' of ergatis.ini and creates it if it doesn't exist
 -Prokaryotic_Annotation_Pipeline: Removed unnecessary variables from pipeline_summary.default.config
 -Util: Added check_pipeline_template_configs.pl
 -hmmpfam2htab.pl: removes slashes from temp filename
