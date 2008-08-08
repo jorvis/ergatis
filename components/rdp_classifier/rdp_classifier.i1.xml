@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>RDP SSU-rRNA classifier</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>RDP classifier</name>
+            <state>incomplete</state>
+            <executable>$;JAVA_EXEC$;</executable>
+            <arg>-Xmx$;JAVA_MX$; -jar $;RDP_CLASSIFIER_JAR_FILE$; $;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.results $;PROPERTY_FILE$;</arg>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

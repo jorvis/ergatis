@@ -1,0 +1,75 @@
+<!-- component documentation -->
+<p>
+    This component uses the RDP naive Bayesian rRNA classifier to generate an automatic 
+    taxonomic assignment for each of the input nucleotide sequences, which are assumed to 
+    be small subunit ribosomal RNA (ss-rRNA) sequences.
+</p>
+
+<h3>IMPORTANT: READ THIS BEFORE RUNNING RDP CLASSIFIER</h3>
+<p>
+    The speed of the RDP classifier is highly dependent on the Java interpreter/compiler used 
+    to run it.  For example, one set of ~3500 short test sequences had the following observed
+    run times in different environments:
+    <ul>
+ 	<li>Java 1.4.2: ~23 minutes</li>
+        <li>Java 1.6.0_02 / JIT disabled (-Xint option): ~10 minutes</li>
+	<li>Java 1.6.0_02 / JIT enabled: 16 seconds</li>
+    </ul>
+    Therefore before using the rdp_classifier component please ensure that the ergatis 
+    <span style='font-weight: bold;'>$;JAVA_EXEC$;</span> software.config variable 
+    is set to a recent high-performance Java VM (e.g., a recent 
+    <a href='http://java.sun.com/javase/technologies/hotspot/'>HotSpot</a> VM).
+</p>
+
+<h3>references</h3>
+<p>
+  <ul>
+   <li><a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?db=pubmed&cmd=Retrieve&dopt=AbstractPlus&list_uids=17586664'>Wang, Q, G. M. Garrity, J. M. Tiedje, and J. R. Cole. 2007. Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences into the New Bacterial Taxonomy. Appl Environ Microbiol. 73(16):5261-7.</a></li>
+  </ul>
+</p>
+
+<h3>algorithm</h3>
+    The RDP classifier uses a bootstrapping procedure based on matching 8-mers from the input 
+    sequence against those in the training set.  See the paper for details.
+
+<h3>input</h3>
+<p>
+    Like the RDP classifier itself, this component accepts EMBL, GenBank, FASTA, and multi-FASTA 
+    files as input.  By default each input file will be run as a single RDP job so that, for example,
+    a single input multi-FASTA file of 10,000 sequences will be run as a single RDP job on one grid
+    node.  This is usually not a problem, since the classifier is extremely fast and can easily 
+    classify over 10,000 sequences per minute.  If it is necessary to distribute the sequences in an
+    extremely large multi-FASTA input file over multiple grid nodes, the split_multifasta component
+    can be used--with the <span style='font-weight:bold;'>$;SEQS_PER_FILE$;</span> parameter set to an appropriately large 
+    value--to generate a set of input files for the classifier, each of which will be run as a separate 
+    grid job.  It is NOT recommended to run each input sequence separately since the overhead of 
+    starting the RDP classifier (Java) process in this case will be much greater than the time spent 
+    actually classifying each sequence.
+</p>
+
+<h3>implemented options</h3>
+<p>
+   <ul>
+    <li><span style='font-weight: bold;'>$;PROPERTY_FILE$;</span> - this option can be used to search against something other than the default database/taxonomy</li>
+   </ul>
+</p>
+
+<h3>output</h3>
+<p>
+    Curently the component produces output in RDP's native format.  An example of a single entry
+    from the .results file is shown below:
+</p>
+<div class='code_container' style='font-family: Courier,monospace;'>
+>P19992_PROK2.18.3.4.1 reverse=false
+Root; 1.0; Bacteria; 1.0; Cyanobacteria; 1.0; Cyanobacteria; 1.0; Subsection 3; 0.6; Family 3.1; 0.6; Microcoleus; 0.27; 
+
+</div>
+<p>
+    Note that in order to interpret the output of the RDP classifier one typically chooses a 
+    threshold score value (e.g., 0.8) and ignores all node assignments below that threshold.
+    Using a threshold of 0.8 the above result would correspond to Bacteria/Cyanobacteria/Cyanobacteria,
+    ignoring everything below the second Cyanobacteria assignment.  Also note that the classifier
+    will refuse to classify any sequence of less than 200bp in length; see the RDP .stdout files 
+    for a list of the sequences thus disqualified.
+</p>
+</div>
