@@ -20,7 +20,10 @@ B<--input_list,-i>
     - When giving a list of files as input for loading.
 
 B<--search_db, -s>
-    - Which db was searched against?
+    - Which db was searched against?  This param is asking for the value
+      found in common..search_dbs.name.
+    Note: A record must already have been created.  This loader will fail if
+    no entry exists in search_dbs for the given search database.
 
 B<--project_db, -p>
     - name of project database
