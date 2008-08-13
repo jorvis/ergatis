@@ -25,6 +25,14 @@
 		<key>--username</key>
 		<value>$;USERNAME$;</value>
 	    </param>
+        <param>
+		<key>--host</key>
+		<value>$;HOST$;</value>
+	    </param>
+        <param>
+		<key>--rdbms</key>
+		<value>$;RDBMS$;</value>
+	    </param>
 	    <param>
 		<key>--mode</key>
 		<value>$;MODE$;</value>
