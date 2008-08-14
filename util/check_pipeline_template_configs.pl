@@ -66,7 +66,7 @@ my @components;
 my $in = open_file( $pipeline_layout, 'in' );
 while(<$in>) {
     if(/\<name\>([^\<]+)\</ ) {
-        next if( $1 eq 'start pipeline:' );
+        next if( $1 eq 'start pipeline:' || $1 eq 'start' );
         push( @components, $1 );
     }
 }
