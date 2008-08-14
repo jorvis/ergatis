@@ -133,7 +133,7 @@ ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked a
 	@install components/shared/project.config.example $(WORKFLOW_DOCS_DIR)
 	@install components/shared/software.config $(PREFIX)
 
-ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus auto_gene_curation backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome parse_for_ncRNAs pe pepstats phat pipeline_summary predotar promer promote_gene_prediction ps_scan psipred region repeatmasker signalp snps snap snoscan split_fasta split_multifasta statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus auto_gene_curation backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado pangenome parse_for_ncRNAs pe pepstats phat pipeline_summary predotar promer promote_gene_prediction ps_scan psipred rdp_classifier region repeatmasker signalp snps snap snoscan split_fasta split_multifasta stap_aligner stap_classifier statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -748,6 +748,13 @@ quicktree	:
 	@install components/quicktree/quicktree.config $(WORKFLOW_DOCS_DIR)
 	@install components/quicktree/quicktree.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
+rdp_classifier	:
+	@echo "Installing rdp_classifier workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/rdp_classifier/rdp_classifier.xml $(WORKFLOW_DOCS_DIR)
+	@install components/rdp_classifier/rdp_classifier.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/rdp_classifier/rdp_classifier.config $(WORKFLOW_DOCS_DIR)
+	@install components/rdp_classifier/rdp_classifier.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
 region	:
 	@echo "Installing region workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/region/region-master.ini $(WORKFLOW_DOCS_DIR)
@@ -814,6 +821,20 @@ split_multifasta	:
 	@install components/split_multifasta/split_multifasta.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/split_multifasta/split_multifasta.config $(WORKFLOW_DOCS_DIR)
 	@install components/split_multifasta/split_multifasta.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
+stap_aligner	:
+	@echo "Installing stap_aligner workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/stap_aligner/stap_aligner.xml $(WORKFLOW_DOCS_DIR)
+	@install components/stap_aligner/stap_aligner.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/stap_aligner/stap_aligner.config $(WORKFLOW_DOCS_DIR)
+	@install components/stap_aligner/stap_aligner.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
+stap_classifier	:
+	@echo "Installing stap_classifier workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/stap_classifier/stap_classifier.xml $(WORKFLOW_DOCS_DIR)
+	@install components/stap_classifier/stap_classifier.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/stap_classifier/stap_classifier.config $(WORKFLOW_DOCS_DIR)
+	@install components/stap_classifier/stap_classifier.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 start_site_curation	:
 	@echo "Installing start_site_curation workflows in $(WORKFLOW_DOCS_DIR)"
