@@ -1,5 +1,9 @@
 next
 ----
+
+ergatis-v2r8b1
+--------------
+-software.config: added sections for rdp_classifier, stap_aligner, stap_classifier
 -get_pipeline_lists.cgi: now checks for the existance of the path stored in 'temp_space' of ergatis.ini and creates it if it doesn't exist
 -Prokaryotic_Annotation_Pipeline: Removed unnecessary variables from pipeline_summary.default.config
 -Util: Added check_pipeline_template_configs.pl
@@ -11,6 +15,13 @@ next
 -rdp_classifier: component added
 -genbank2bsml: new command-line options and bug fixes to support pan-genome analyses
 -pangenome_blast_parse.pl, pangenome_query_list.pl: generalized regexes to not fail so much
+-installer: added stap_aligner, stap_classifier and rdp_classifier components
+-legacy2bsml: added host and rdbms arguments
+-lipoprotein_motif: added algorithm, program and programversion to BSML Analysis element
+-start_site_curation: Fixed bug where script would fail on a molecule that didn't have any unchanged genes
+-ps_scan: linked input sequences to Analysis element in BSML output
+-utilities: added check_pipeline_template_configs.pl script
+-SF web: added new screenshots
 
 ergatis-v2r8b1-rc2
 ------------------
@@ -37,7 +48,7 @@ ergatis-v2r8b1-rc1
 -interface: added pipeline ID to pipeline view page titles (feat request 1930140)
 -bsml2chado: now has mysql support
 -bug 1784444: compress_file.pl now handles retry attempts
--augustus: revemped augustus options a little to make it more general use
+-augustus: revamped augustus options a little to make it more general use
 -bsml2fasta: fixed Seq-data parsing bug (previously wouldn't extract anything)
 -bsml2legacydb.pl: now pads exon ids to 6 digits
 -bsml2legacydb.pl: now reads in pwd_file.  --user, --pass, --server all overwrite what is in defaultpwdfile, or what is in a user supplied pwd_file, which would trump the default.
