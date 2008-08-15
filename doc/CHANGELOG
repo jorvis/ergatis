@@ -7,6 +7,8 @@ ergatis-v2r8b1
 -get_pipeline_lists.cgi: now checks for the existance of the path stored in 'temp_space' of ergatis.ini and creates it if it doesn't exist
 -Prokaryotic_Annotation_Pipeline: Removed unnecessary variables from pipeline_summary.default.config
 -Util: Added check_pipeline_template_configs.pl
+-priam_ec_assignment: initial commit
+-ec_assignment: removing component from svn and Makefile.PL
 -hmmpfam2htab.pl: removes slashes from temp filename
 -software.config: removed unused $;HTAB_EXEC$; variable
 -peptstats: removed unused parameters in config file (obviously from a component copy)
@@ -22,6 +24,8 @@ ergatis-v2r8b1
 -ps_scan: linked input sequences to Analysis element in BSML output
 -utilities: added check_pipeline_template_configs.pl script
 -SF web: added new screenshots
+-priam_ec_assignment: initial commit
+-ec_assignment: removing component from svn and Makefile.PL
 
 ergatis-v2r8b1-rc2
 ------------------

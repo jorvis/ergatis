@@ -125,7 +125,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure ec_assignment fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat pipeline_summary predict_prokaryotic_gene_function predotar promote_gene_prediction ps_scan psiblast quicktree rdp_classifier repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
+ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -324,12 +324,6 @@ delete_analysis  :
 	@install components/delete_analysis/delete_analysis-master.ini $(WORKFLOW_DOCS_DIR)
 	@install components/delete_analysis/delete_analysis-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/delete_analysis/delete_analysisconf.ini $(WORKFLOW_DOCS_DIR)  
-
-ec_assignment :
-	@echo "Installing ec_assignment workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/ec_assignment/ec_assignment.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ec_assignment/ec_assignment.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/ec_assignment/ec_assignment.config $(WORKFLOW_DOCS_DIR)
 
 fasta2bsml	:
 	@echo "Installing fasta2bsml workflows in $(WORKFLOW_DOCS_DIR)"
@@ -706,6 +700,12 @@ predotar	:
 	@install components/predotar/predotar.xml $(WORKFLOW_DOCS_DIR)
 	@install components/predotar/predotar.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/predotar/predotar.config $(WORKFLOW_DOCS_DIR)
+
+priam_ec_assignment	:
+	@echo "Installing priam_ec_assignment workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/priam_ec_assignment/priam_ec_assignment.xml $(WORKFLOW_DOCS_DIR)
+	@install components/priam_ec_assignment/priam_ec_assignment.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/priam_ec_assignment/priam_ec_assignment.config $(WORKFLOW_DOCS_DIR)
 
 promer	:
 	@echo "Installing promer workflows in $(WORKFLOW_DOCS_DIR)"
