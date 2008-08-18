@@ -54,11 +54,15 @@
 	    <name>Generate chado-mart data</name>
 	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/chadoToChadoMart</executable>
-            <param>
-		<key>--analysis_id</key>
-		<value>$;ANALYSIS_ID$;</value>
+        <param>
+		<key>--blast_analysis_id</key>
+		<value>$;BLAST_ANALYSIS_ID$;</value>
 	    </param>
-            <param>
+        <param>
+        <key>--cluster_analysis_id</key>
+        <value>$;CLUSTER_ANALYSIS_ID$;</value>
+        </param>
+        <param>
 		<key>--username</key>
 		<value>$;USERNAME$;</value>
 	    </param>
@@ -75,7 +79,7 @@
 		<value>$;RDBMS$;</value>
 	    </param>
             <param>
-		<key>--batchsize</key>
+		<key>--batch_size</key>
 		<value>1000</value>
 	    </param>
             <param>
@@ -95,6 +99,10 @@
 		<value>$;SERVER$;</value>
 	    </param>
             <param>
+        <key>--use_cm_blast</key>
+        <value>$;USE_CM_BLAST$;</value>
+        </param>
+            <param>
 		<key>--iteratorlist</key>
 		<value>1</value>
 	    </param>
@@ -109,51 +117,6 @@
             <param>
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/chadoToChadoMart.pl.stderr</value>
-	    </param>
-            <dceSpec type="sge">
-                <OS>linux</OS>
-            </dceSpec>
-	</command>
-	<command>
-	    <type>RunDistributedCommand</type>
-	    <name>Generate cm_blast data</name>
-	    <state>incomplete</state>
-	    <executable>$;BIN_DIR$;/create_blast_query_view_bcp</executable>
-            <param>
-		<key>--analysis_id</key>
-		<value>$;BLAST_ANALYSIS_ID$;</value>
-	  </param>
-            <param>
-		<key>--user</key>
-		<value>$;USERNAME$;</value>
-            </param>
-            <param>
-		<key>--password</key>
-		<value>'$;PASSWORD$;'</value>
-	  </param>
-            <param>
-		<key>--database</key>
-		<value>$;DATABASE$;</value>
-            </param>
-            <param>
-		<key>--output_file</key>
-		<value>$;TMP_DIR$;/cm_blast.out</value>
-	  </param>
-            <param>
-		<key>--server</key>
-		<value>$;SERVER$;</value>
-	  </param>
-            <param>
-		<key>--logfile</key>
-		<value>$;TMP_DIR$;/create_blast_query_view_bcp.pl.log</value>
-	    </param>
-	    <param>
-		<key>stdout</key>    
-		<value>$;TMP_DIR$;/create_blast_query_view_bcp.pl.stdout</value>
-	    </param>
-            <param>
-		<key>stderr</key>
-		<value>$;TMP_DIR$;/create_blast_query_view_bcp.pl.stderr</value>
 	    </param>
             <dceSpec type="sge">
                 <OS>linux</OS>
