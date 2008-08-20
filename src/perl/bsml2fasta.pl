@@ -1,9 +1,5 @@
 #!/usr/bin/perl
 
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME 
 
 bsml2fasta.pl - convert BSML files to fasta
@@ -214,8 +210,11 @@ The following will be created:
 
 =head1 CONTACT
 
+    Sam Angiuoli
+    angiuoli@users.sf.net
+
     Joshua Orvis
-    jorvis@tigr.org
+    jorvis@users.sf.net
 
 =cut
 
@@ -493,10 +492,25 @@ sub process_sequences{
 	}
 	else{
 	    if(exists $sequencelookup->{$sequenceid}->{'seqdata'}){
-		#seq-data
-		#print fasta record formatted as fasta
-		&write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
-				$sequencelookup->{$sequenceid}->{'title'},$sequencelookup->{$sequenceid}->{'seqdata'});
+            #seq-data
+            
+            if ($options{class_filter} && (lc($options{class_filter}) ne lc($sequencelookup->{$sequenceid}->{'class'}))) {
+                $logger->debug("Skipping $sequenceid because it does not match the class filter") if ($logger->is_debug);
+                next;
+            }
+            if ($options{role_exclude} && ($excludeflags->{$sequenceid})) {
+                $logger->debug("Skipping $sequenceid because it does not match the role exclude filter") if ($logger->is_debug);
+                next;
+            }
+            if ($options{role_include} && (!$includeflags->{$sequenceid})) {
+                $logger->debug("Skipping $sequenceid because it does not match the role include filter") if ($logger->is_debug);
+                next;
+            }            
+            
+            #print fasta record formatted as fasta
+            #print "writing sequence $sequenceid\n";
+            &write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
+                            $sequencelookup->{$sequenceid}->{'title'},$sequencelookup->{$sequenceid}->{'seqdata'});
 	    }
 	}
     }
@@ -527,6 +541,7 @@ sub process_sequences{
 	open ($filehandle, $fasta_file) or die "Unable to open $fasta_file due to $!";
 
 	foreach my $sequenceid (@{$fastafiles->{$fasta_file}}){
+    
 	    if ($options{class_filter} && (lc($options{class_filter}) ne lc($sequencelookup->{$sequenceid}->{'class'}))) {
 		$logger->debug("Skipping $sequenceid because it does not match the class filter") if ($logger->is_debug);
 		next;
@@ -539,21 +554,22 @@ sub process_sequences{
 		$logger->debug("Skipping $sequenceid because it does not match the role include filter") if ($logger->is_debug);
 		next;
 	    }
-	    if(! exists $sequencelookup->{$sequenceid}->{'seqdata'}){
-		my $seqdata = undef;
-		if(exists $e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}}){
-		    my ($offset, $length) = split( ',',$e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}});
-		    seek($filehandle, $offset, 0);
-		    read($filehandle, $seqdata, $length);
-		    $seqdata =~ s/\>.*//g;
-		    $seqdata =~ s/\s+//g;
-		    &write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
-				    $sequencelookup->{$sequenceid}->{'title'},\$seqdata);
-		}
-		else{
-		    $logger->logdie("Can't find offset for $sequenceid in $fasta_file\n");
-		}
-	    }
+
+        if(! exists $sequencelookup->{$sequenceid}->{'seqdata'}){
+            my $seqdata = undef;
+            if(exists $e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}}){
+                my ($offset, $length) = split( ',',$e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}});
+                seek($filehandle, $offset, 0);
+                read($filehandle, $seqdata, $length);
+                $seqdata =~ s/\>.*//g;
+                $seqdata =~ s/\s+//g;
+                &write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
+                $sequencelookup->{$sequenceid}->{'title'},\$seqdata);
+            }
+            else{
+                $logger->logdie("Can't find offset for $sequenceid in $fasta_file\n");
+            }
+        }
 	}
 	close $filehandle;
     }
