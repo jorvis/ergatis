@@ -76,8 +76,10 @@ if (exists $options{'iterator_list'}) {
             $distrib = "parallel";
             $maxpar = "<maxParallelCmds>$1</maxParallelCmds>";
             $cstype = "serial";
-	}
-	else {
+	} elsif ($options{'distribopts'} =~ /serial/) {
+	    $distrib = "serial";
+	    $cstype = "serial";
+	} else {
             $distrib = "parallel";
             $cstype = "remote-serial";
         }
