@@ -11,7 +11,7 @@ ergatis-v2r8b1
 -ec_assignment: removing component from svn and Makefile.PL
 -hmmpfam2htab.pl: removes slashes from temp filename
 -software.config: removed unused $;HTAB_EXEC$; variable
--peptstats: removed unused parameters in config file (obviously from a component copy)
+-pepstats: removed unused parameters in config file (obviously from a component copy)
 -stap_aligner: component added
 -stap_classifier: component added
 -rdp_classifier: component added
