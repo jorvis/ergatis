@@ -27,6 +27,7 @@ ergatis-v2r8b1
 -priam_ec_assignment: initial commit
 -ec_assignment: removing component from svn and Makefile.PL
 -refresh_chado_mart: Updated the component to work with the newly optimized chadoToChadoMart script. Changes included replacing analysis_id with cluster_analysis_id, supporting blast_analysis_id and use_cm_blast and a few extra comments.
+-initdb: now has PostgreSQL support and can be run as non-superuser
 
 ergatis-v2r8b1-rc2
 ------------------
