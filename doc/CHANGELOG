@@ -1,5 +1,6 @@
 next
 ----
+-targetp2legacydb.pl: revised pattern match on model name during raw file parsing
 
 ergatis-v2r8b1
 --------------
