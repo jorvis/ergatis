@@ -198,7 +198,9 @@ sub parse_targetp {
         if (/Using ([^\s]+) networks/){
             $tp{'network'} = $1;
             $tp{'network'} =~ tr/A-Z/a-z/;
-        } elsif (/^(?:$dbname\.model\.[^\s]+)   # model_feat_name
+        } elsif (/^(?:((??{substr("$dbname\.model\.",0,20)})[^\s]*)   # model_feat_name
+                                                            # but only the first 20
+                                                            # characters appear in the raw.
             \s+(\d+)                            # peptide length  $1
             \s*(\d+\.\d+)?                      # cTP score       $2
             \s+(\d+\.\d+)                       # mTP score       $3
