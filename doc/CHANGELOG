@@ -1,10 +1,10 @@
 next
 ----
--targetp2legacydb.pl: revised pattern match on model name during raw file parsing
 
 ergatis-v2r8b1
 --------------
 -software.config: added sections for rdp_classifier, stap_aligner, stap_classifier
+-targetp2legacydb.pl: revised pattern match on model name during raw file parsing
 -get_pipeline_lists.cgi: now checks for the existance of the path stored in 'temp_space' of ergatis.ini and creates it if it doesn't exist
 -Prokaryotic_Annotation_Pipeline: Removed unnecessary variables from pipeline_summary.default.config
 -Util: Added check_pipeline_template_configs.pl
