@@ -226,6 +226,7 @@ use XML::Parser;
 use BSML::Indexer::Fasta;
 use Data::Dumper;
 use Ergatis::Logger;
+use File::OpenFile qw(open_file);
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -282,7 +283,7 @@ if ( $options{bsml_list} ) {
             open (my $fh, $list) || $logger->logdie("Can't open file $list");
             for ( <$fh> ) {
                 chomp;
-                if (-e $_ && -s $_) {
+                if ( -e $_ || -e "$_.gz" ) {
                     push @list_elements, $_;
                 } else {
                     $logger->warn("Error reading $_ from list $list") if ($logger->is_warn);
@@ -465,7 +466,9 @@ for my $file ( @files ) {
 					}
 				    }
 			    });
-    $x->parsefile( $file );
+                
+    my $x_fh = open_file( $file, 'in' );
+    $x->parse( $x_fh );
 }
 
 if($options{parse_element} eq 'sequence'){
@@ -537,8 +540,8 @@ sub process_sequences{
 	my (%h, %e);
 	tie %h, 'CDB_File', $header_index or die "tie failed: $!\n";
 	tie %e, 'CDB_File', $entry_index or die "tie failed: $!\n";
-	my $filehandle;
-	open ($filehandle, $fasta_file) or die "Unable to open $fasta_file due to $!";
+	
+    my $filehandle = open_file( $fasta_file, 'in' );
 
 	foreach my $sequenceid (@{$fastafiles->{$fasta_file}}){
     
@@ -642,6 +645,13 @@ sub add_file {
     if (-e $file && -s $file) {
         $logger->debug("Adding file $file for processing") if ($logger->is_debug);
         push @files, $file;
+    
+    ## check for compressed version
+    } elsif ( -e "$file.gz" ) {
+        $logger->debug("Adding file $file.gz for processing") if ($logger->is_debug);
+        ## File::OpenFile will handle the compressed read
+        push @files, $file;
+        
     } else {
         $logger->warn("Error reading file $file") if ($logger->is_warn);
         return 0;
