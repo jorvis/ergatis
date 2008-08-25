@@ -23,7 +23,7 @@ my $recent_templates = get_pipeline_templates( $ergatis_cfg->val('paths', 'pipel
 
 my $projects = [];
 ## read each of the projects from the conf file
-for my $project ( $ergatis_cfg->Parameters('projects') ) {
+for my $project ( sort $ergatis_cfg->Parameters('projects') ) {
     my $project_data = {
         label               => $project,
         repository_root     => $ergatis_cfg->val('projects', $project ),
