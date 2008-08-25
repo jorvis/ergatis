@@ -1,33 +1,4 @@
 <!-- component documentation -->
-[parameters]
-; Name of the chado database to be affected.
-$;DATABASE$; = $;PROJECT$;
-; The name of the server on which the database resides.
-$;SERVER$; =
-; Relational database management system type e.g. sybase or postgresql
-$;RDBMS$; = sybase
-$;USERNAME$; =
-$;PASSWORD$; = 
-; The chado-mart table BCP files will be gzipped.
-$;GZIP_BCP$;=1
-; The analysis_id to which all blast data is tied to.
-; The create_blast_query_view_bcp.pl script will generate BCP records
-; to be loaded into the chado-mart table: cm_blast. This value will also be used
-; to generate the cm_clusters statistics so it should correspond to the analysis used
-; to generate the clusters.
-$;BLAST_ANALYSIS_ID$;=
-; The analysis_id associated with the data to be prepared for insertion into the chado-mart tables.
-; This parameter can accept comma separated lists: 4,5,6. Alternatively, the user can specify the 
-; program.  If both are provided, the analysis_id will
-; override the program value.  The chadoToChadoMart.pl program will generate BCP records to be 
-; loaded into the chado-mart tables: cm_proteins, cm_clusters, cm_cluster_members.
-$;CLUSTER_ANALYSIS_ID$;=
-$;PROGRAM$;=
-;; Sybase bcp utility batch size
-$;BCP_BATCH_SIZE$; = 30000
-; Utilize a prepopulated cm_blast table to generate the cm_cluster records. This is quite fast for large
-; data sets provided the cm_blast table is populated correctly and the indices are in place.
-$;USE_CM_BLAST$; = 0
 <p>
     This component loads the chadomart tables cm_proteins, cm_clusters and cm_cluster_members
     from an already existing and loaded chado instance. 
