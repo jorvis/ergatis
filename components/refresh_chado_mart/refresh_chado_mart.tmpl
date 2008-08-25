@@ -1,0 +1,57 @@
+<!-- component documentation -->
+[parameters]
+; Name of the chado database to be affected.
+$;DATABASE$; = $;PROJECT$;
+; The name of the server on which the database resides.
+$;SERVER$; =
+; Relational database management system type e.g. sybase or postgresql
+$;RDBMS$; = sybase
+$;USERNAME$; =
+$;PASSWORD$; = 
+; The chado-mart table BCP files will be gzipped.
+$;GZIP_BCP$;=1
+; The analysis_id to which all blast data is tied to.
+; The create_blast_query_view_bcp.pl script will generate BCP records
+; to be loaded into the chado-mart table: cm_blast. This value will also be used
+; to generate the cm_clusters statistics so it should correspond to the analysis used
+; to generate the clusters.
+$;BLAST_ANALYSIS_ID$;=
+; The analysis_id associated with the data to be prepared for insertion into the chado-mart tables.
+; This parameter can accept comma separated lists: 4,5,6. Alternatively, the user can specify the 
+; program.  If both are provided, the analysis_id will
+; override the program value.  The chadoToChadoMart.pl program will generate BCP records to be 
+; loaded into the chado-mart tables: cm_proteins, cm_clusters, cm_cluster_members.
+$;CLUSTER_ANALYSIS_ID$;=
+$;PROGRAM$;=
+;; Sybase bcp utility batch size
+$;BCP_BATCH_SIZE$; = 30000
+; Utilize a prepopulated cm_blast table to generate the cm_cluster records. This is quite fast for large
+; data sets provided the cm_blast table is populated correctly and the indices are in place.
+$;USE_CM_BLAST$; = 0
+<p>
+    This component loads the chadomart tables cm_proteins, cm_clusters and cm_cluster_members
+    from an already existing and loaded chado instance. 
+</p>
+
+<h3>parameters</h3>
+<p>
+   <ul>
+    <li><span style='font-weight: bold;'>database</span> - Name of the chado database to be affected. </li>
+    <li><span style='font-weight: bold;'>server</span> - The name of the server on which the database resides.</li>
+    <li><span style='font-weight: bold;'>database_type</span> - Relational database management system type e.g. sybase or postgresql</li>
+    <li><span style='font-weight: bold;'>username</span> - Username with write permissions on the database.</li>
+    <li><span style='font-weight: bold;'>password</span> - Password for said username.</li>
+    <li><span style='font-weight: bold;'>cluster_analysis_id</span> - This parameter can be used to specify the analysis_ids
+        for clustering analyses loaded into the chado instance. It can be a single value or a comma separated list.</li>
+    <li><span style='font-weight: bold;'>program</span> - An alternative to cluster_analysis_id this  parameter can be used
+        to specify the program name used to generate the clusters (i.e. clustalw). The program name is specified in the analysis
+        table and was at one point the name of the multiple sequence alignment tool. The program has more recently been loaded 
+        to refer to the cluster strategy (j_ortholog_clusters).
+    </li>
+    <li><span style='font-weight: bold;'>blast_analysis_id</span> - This parameter is used to specify the analysis id referring
+        to the blast data used to generate the ortholog/paralog clusters. It can be found in the analysis table.
+    </li>
+    <li><span style='font-weight: bold;'>use_cm_blast</span> - Utilize a prepopulated cm_blast table to generate the cm_cluster records. 
+        This is quite fast for large data sets provided the cm_blast table is populated correctly and the indices are in place.
+   </ul>
+</p>
