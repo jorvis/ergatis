@@ -125,7 +125,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
+ergatis_install : dirs shellwrappers c_apps aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -277,6 +277,15 @@ build_supercontig	:
 	@install components/build_supercontig/build_supercontigconf.ini $(WORKFLOW_DOCS_DIR)
 	@install components/build_supercontig/build_supercontig-master.ini $(WORKFLOW_DOCS_DIR)
 	@install components/build_supercontig/build_supercontig-master_template.xml $(WORKFLOW_DOCS_DIR)
+
+c_apps	:
+	@echo "Compiling C applications and installing in $(PREFIX)/bin"
+	${MAKE} -C src/cluster
+	@install src/cluster/cluster $(PREFIX)/bin
+	${MAKE} -C src/chado_record_uniq
+	@install src/chado_record_uniq/chado_record_uniq $(PREFIX)/bin
+	${MAKE} -C src/pangenome_profile_compare
+	@install src/pangenome_profile_compare/pangenome_profile_compare $(PREFIX)/bin
 
 chado2bsml  :
 	@echo "Installing chado2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
@@ -758,8 +767,9 @@ rdp_classifier	:
 refresh_chado_mart	:
 	@echo "Installing refresh_chado_mart workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/refresh_chado_mart/refresh_chado_mart.xml $(WORKFLOW_DOCS_DIR)
-	@install components/refresh_chado_mart/refresh_chado_mart.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/refresh_chado_mart/refresh_chado_mart.load.xml $(WORKFLOW_DOCS_DIR)
 	@install components/refresh_chado_mart/refresh_chado_mart.config $(WORKFLOW_DOCS_DIR)
+	@install components/refresh_chado_mart/refresh_chado_mart.sqlforce.xml $(WORKFLOW_DOCS_DIR)
 	@install components/refresh_chado_mart/refresh_chado_mart.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 repeatmasker	:

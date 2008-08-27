@@ -2,6 +2,7 @@ next
 ----
 -added refresh_chado_mart to the installer
 -bsml2fasta: fixed bug 2008114 - was failing to read compressed BSML files from input lists.
+-installer: now compiles/installs C sources (chado_record_uniq, cluster, etc.)
 
 ergatis-v2r8b1
 --------------
