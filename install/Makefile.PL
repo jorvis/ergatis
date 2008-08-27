@@ -286,6 +286,8 @@ c_apps	:
 	@install src/chado_record_uniq/chado_record_uniq $(PREFIX)/bin
 	${MAKE} -C src/pangenome_profile_compare
 	@install src/pangenome_profile_compare/pangenome_profile_compare $(PREFIX)/bin
+	${MAKE} -C src/SnpClusterer
+	@install src/SnpClusterer/SnpClusterer $(PREFIX)/bin
 
 chado2bsml  :
 	@echo "Installing chado2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
