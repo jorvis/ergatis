@@ -1,5 +1,6 @@
 next
 ----
+-bsml2chado: PostgreSQL chado ddls corrected to prevent failure in createindex step
 
 ergatis-v2r9b1
 --------------
