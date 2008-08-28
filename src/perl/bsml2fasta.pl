@@ -487,6 +487,8 @@ sub process_sequences{
 
     my $fastafiles = {};
     foreach my $sequenceid (sort {$a cmp $b} keys %$sequencelookup){
+        #print "DEBUG: processing sequence ID $sequenceid\n";
+    
 	if(exists $sequencelookup->{$sequenceid}->{'fasta_file'}){
 	    if(! exists $fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}}){
 		$fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}} = [];
@@ -519,6 +521,7 @@ sub process_sequences{
     }
 
     foreach my $fasta_file (keys %$fastafiles){
+    
 	my $pos = -1;
 	my $posMax = -1;
 	while (($pos = index( $fasta_file, "\/", $pos)) > -1 ){
