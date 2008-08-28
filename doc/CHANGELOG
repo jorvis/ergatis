@@ -1,9 +1,14 @@
 next
 ----
+
+ergatis-v2r9b1
+--------------
 -added refresh_chado_mart to the installer
 -bsml2fasta: fixed bug 2008114 - was failing to read compressed BSML files from input lists.
 -installer: now compiles/installs C sources (chado_record_uniq, cluster, etc.)
+-installer: removed obsolete region component from installer section
 -legacy2bsml: Now supports mysql/euk.  Fixed bug in handling of 1 base exon features.
+-interface: project list in templates tab now sorted alphabetically
 
 ergatis-v2r8b1
 --------------
