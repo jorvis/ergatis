@@ -501,16 +501,6 @@ sub check_gene_product_names {
                 $new_product_name = $1;
             }
             
-            ## remove trailing whitespace
-            if ( $new_product_name =~ /^(.+?)\s+$/ ) {
-                $new_product_name = $1;
-            }
-            
-            ## remove trailing periods
-            if ( $new_product_name =~ /^(.+?)\.$/ ) {
-                $new_product_name = $1;
-            }
-            
             ## remove EC numbers from names. this will catch the following case-insensitive convention:
             #   ex. Aspartate aminotransferase (EC 2.6.1.1) -> Aspartate aminotransferase
             $new_product_name =~ s|\(ec .+?\)||i;
@@ -523,6 +513,16 @@ sub check_gene_product_names {
             
             ## multiple whitespace should be collapsed
             $new_product_name =~ s|\s{2,}| |g;
+
+            ## remove trailing whitespace
+            if ( $new_product_name =~ /^(.+?)\s+$/ ) {
+                $new_product_name = $1;
+            }
+            
+            ## remove trailing periods
+            if ( $new_product_name =~ /^(.+?)\.$/ ) {
+                $new_product_name = $1;
+            }
             
             _log("INFO: $feature: name before processing: $$feats{$feature}{product}");
             _log("INFO: $feature: name  after processing: $new_product_name");
