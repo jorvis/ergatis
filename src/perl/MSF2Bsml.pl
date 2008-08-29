@@ -29,8 +29,8 @@ B<--output,-o>
     The full path to the BSML file that will be created.
 
 B<--analysis_conf,-a>
-    Optional. The BSML file created contains an Analysis element which eventually records all 
-    the parameters in the analysis.  Usually, this should point to the Ergatis pipeline.config 
+    Optional. The BSML file created contains an Analysis element which eventually record all 
+    the parameters in the analysis.  Usually this should point to the Ergatis pipeline.config 
     file for the component/analysis preceeding the clustalw step (such as jaccard or cogs).
     If omitted, the id attribute within the Analysis element will default to 'clustalw_analysis'.
 
@@ -54,7 +54,7 @@ B<--help,-h>
 
 =head1  DESCRIPTION
 
-Converts and MSF file, created by programs such as clustalw and muscle, into
+Converts an MSF file, created by programs such as clustalw and muscle, into
 BSML with the option of including a corresponding newick tree.
 
 =head1  INPUT
@@ -91,7 +91,7 @@ An MSF file is the main required input, and has a format like this:
     got_3002_ORFB02050_polypeptide      KKHLEILQN. .KYNSAIELL NNSALQKKIK PILQQKLSQP YDRNKLIEHY 
 
 It can be created from components such as cogs, clustalw and muscle.  Optional input includes
-a DND file containing the distance information gleaned from the alignment above.  It's format
+a DND file containing the distance information gleaned from the alignment above.  Its format
 is like:
 
     (
