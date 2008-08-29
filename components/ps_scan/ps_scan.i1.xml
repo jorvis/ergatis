@@ -8,7 +8,7 @@
             <name>ps_scan</name>
             <state>incomplete</state>
             <executable>$;PS_SCAN_EXEC$;</executable>
-            <arg>$;OTHER_OPTS$; -d '$;PROSITE_DAT$;' $;I_FILE_PATH$;</arg>
+            <arg>$;OTHER_OPTS$; -d '$;PROSITE_DAT$;' $;I_FILE_PATH$; --pfscan $;PFSCAN_EXEC$; --psa2msa $;PSA2MSA_EXEC$;</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
