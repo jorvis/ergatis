@@ -6,7 +6,7 @@ no lib ".";
 
 =head1  NAME 
 
-CogBsmlLoader.pl  -  Preprosess data stored in BSML pairwise alignment documents into BTAB
+CogBsmlLoader.pl  -  Preprocess data stored in BSML pairwise alignment documents into BTAB
 structure for COG analysis using best_hits.pl. 
 
 =head1 SYNOPSIS
@@ -47,7 +47,7 @@ Calling the script name with NO flags/options or --help will display the syntax 
 
 =cut
 
-# Preprosess data stored in BSML pairwise alignment documents into BTAB
+# Preprocess data stored in BSML pairwise alignment documents into BTAB
 # structure for COG analysis.
 
 ############
