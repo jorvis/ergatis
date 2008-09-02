@@ -237,14 +237,18 @@ if (keys %$MSF_alignments > 1) {   #skip empty msf files
         #In order to ensure that each seq in a multiple sequence alignment is truly
         #unique, the seq-name and name will be in the form "polypeptide_accession:seqnum"
         #i.e. (ana1.10005.m00234_polypeptide:1). 
-        if (length($seq) == 30 && $seq !~ /_polypeptide$/){
-            $logger->warn("polypeptide identifier '$seq' was truncated by clustalw, repairing now");
-            $seq =~ s/_[^_]+$/_polypeptide/;
-        }
 
-        if ($alignment !~ /_polypeptide\s/){
-            $logger->warn("polypeptide identifier in the alignment of '$seq' was truncated by clustalw, repairing now");
-            $alignment =~ s/_[^_\s]+\s/_polypeptide /g;
+        # don't apply this so-called repair to non-underscore-delimited (i.e., new) ids
+        if ($seq !~ /\.polypeptide\./) {
+            if (length($seq) == 30 && $seq !~ /_polypeptide$/){
+                $logger->warn("polypeptide identifier '$seq' was truncated by clustalw, repairing now");
+                $seq =~ s/_[^_]+$/_polypeptide/;
+            }
+            
+            if ($alignment !~ /_polypeptide\s/){
+                $logger->warn("polypeptide identifier in the alignment of '$seq' was truncated by clustalw, repairing now");
+                $alignment =~ s/_[^_\s]+\s/_polypeptide /g;
+            }
         }
 
         ##
