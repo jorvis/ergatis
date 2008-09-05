@@ -4,6 +4,9 @@ next
 -ps_scan: added --pfscan and --psa2msa options to include paths to the respective binaries. Also added $;PFSCAN$; and $;PSA2MSA$; variables to default software config.
 -predict_prokaryotic_gene_function: minor name processing updates
 -MSF2Bsml.pl: fixed bug whereby id "repair" was mangling non-truncated new style ('.'-delimited) ids.
+-updates to the pangenome component. sampling procedure that simplifies output from large pan genome runs
+-added integrated JOCs,pangenome saved pipeline
+
 
 ergatis-v2r9b1
 --------------
