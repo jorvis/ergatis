@@ -90,3 +90,32 @@ span.config_param {
     color: rgb(73,81,92);
     font-style: italic;
 }
+
+
+/* this section for the pipeline_creation.tmpl */
+
+div.screenshot {
+    margin-bottom: 40px;
+}
+div.screenshot img {
+    border: 2px solid black;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

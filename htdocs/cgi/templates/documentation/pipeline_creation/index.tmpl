@@ -3,7 +3,247 @@
 </p>
 <h2>outline</h2>
 <p>
-    We will start with an example FASTA file containing 10 polypeptide sequences and run, in
-    parallel, blastp and SignalP on each sequence.  
+    We will start with an example FASTA file containing 5 polypeptide sequences and run BLAST search
+    against a small database of sequences.  Our example pipeline with both format the database for
+    searching and execute the searches.  We'll explore how Ergatis handles partitioning of input
+    sequences for scalable execution.
 </p>
+
+<h2>assumptions</h2>
+<p>
+    If you want to follow along with this tutorial we'll assume that you already have 
+    Ergatis running and have created an initial project area.  As input, we'll be using the files
+    within the 'sample' folder directly under your Ergatis installation area.  This also assumes
+    that you've updated your software.config file to point to the locations of your locally-installed
+    formatdb and blastall executables from NCBI.
+</p>
+
+<h2>the pipeline creation page</h2>
+<p>
+    I've created a project area called 'strep' with the path /usr/local/projects/strep that I'll
+    be using for this tutorial.  When I click this project area I see a page like this:
+</p>
+<div class='screenshot'>
+    <img id='blank_strep_project' src='../images/documentation/blank_strep_project.png' alt='blank strep project'>
+</div>
+<p>
+    When I click the 'new pipeline' link at the top the pipeline creation page is displayed.
+</p>
+<div class='screenshot'>
+    <img id='new_pipeline_page' src='../images/documentation/new_pipeline_page.png' alt='new pipeline page'>
+</div>
+<p>
+    The top section of the pipeline builder page is where you define input to the pipeline.  The area
+    between the two blue bars labeled 'start' and 'end' is the build area where you'll string 
+    components together to form your pipeline.  Recall that 'components' are atomic units of a pipeline
+    and usually correspond to some analysis tool.
+</p>
+<p>
+    In our sample directory we'll be using the following files:
+</p>
+<dl class='file_list'>
+    <dt>proteins.faa</dt>
+    <dd>
+        This is a multi-FASTA file containing 5 polypeptide sequences from a variety of bacteria.
+        These will be our query sequences.
+    </dd>
+    
+    <dt>glutamine_synthetases.faa</dt>
+    <dd>
+        A larger multi-FASTA file, this time with 14 glutamine synthetase genes from a diverse
+        collection of organisms.  We will search our query sequences against this subject set.
+    </dd>
+</dl>
+<p>
+    If you're familiar with BLAST you'll know that we need to format our subject sequence collection
+    (usually referred to as a database) before the BLAST tool can utilize it.  You could do this
+    on the command line first using the 'formatdb' utility from NCBI or you can use the 'formatdb'
+    Ergatis component.  The steps of our pipeline, then, will be:
+</p>
+<ol class='pipeline_steps'>
+    <li>format subject sequences (formatdb component)</li>
+    <li>perform blastp (ncbi-blastp component)</li>
+</ol>
+<p>
+    This means we'll be creating a pipeline with two components.  To start, let's add our input query
+    sequences by clicking the 'add new input' button, highlighted in green.  This makes the page look
+    like this:
+</p>
+<div class='screenshot'>
+    <img id='adding_new_input' src='../images/documentation/adding_new_input.png' alt='adding new input'>
+</div>
+<p>
+    In the first 'label' field you can enter any label you like for your input.  I'll enter 'my proteins'.  In
+    the second 'input' field you should enter the full path (on your system) to the proteins.faa file.
+    Then click the 'save new input' button.  The form should transform and look like this:
+</p>
+<div class='screenshot'>
+    <img id='adding_new_input2' src='../images/documentation/adding_new_input2.png' alt='adding new input (saved)'>
+</div>
+<p>
+    Any input you add like this will automatically be available within any components that have
+    selectable input (we'll see this in the ncbi-blastp component.)  For now, let's add formatdb - 
+    the tool that prepares the subject FASTA file for searching.  To so this, click the 'add
+    component' link in the build area.  This will display the component list:
+</p>
+<div class='screenshot'>
+    <img id='component_list' src='../images/documentation/component_list.png' alt='component list'>
+</div>
+<p>
+    This is a list of all the components available within your Ergatis installation.  (Your list
+    may not be the same, since your administrator can disable some components with settings in
+    the ergatis.ini file.)
+</p>
+<p>
+    They components are functionally categorized and you can find the 'formatdb' component under the
+    'file / indexing' section.  If you have problems finding any component, you can also click the 
+    'view by name' link near the top to see an alphabetical listing.  For now, click the 'formatdb'
+    link, which will bring up that component's configuration form:
+</p>
+<div class='screenshot'>
+    <img id='pipeline_add_formatdb' src='../images/documentation/pipeline_add_formatdb.png' alt='adding formatdb'>
+</div>
+<p>
+    This simple component doesn't have too many configuration options, and the documentation text above
+    the form boxes provides guidance.  The 'protein' setting has a value of 'T', which is correct
+    for our input protein sequences.  Next, for the 'input files' box we want to enter the full
+    path to the subject database, which for me is /opt/ergatis/sample/glutamine_synthetases.faa
+</p>
+<p>
+    Once you've entered that click 'save' (we'll explain the other parts soon.)  This will collapse
+    the form you just configured and a message will flash at the top of your browser that the 
+    pipeline layout has been automatically saved.
+</p>
+<div class='screenshot'>
+    <img id='pipeline_add_formatdb_saved' src='../images/documentation/pipeline_add_formatdb_saved.png' alt='saving formatdb'>
+</div>
+<p>
+    The vertical focus of the page will remain on the component you just saved, but you can scroll
+    up and down to see the rest of the pipeline builder page.  Notice that the controls within the
+    build area ('add component', 'add pipeline', etc.) have now moved underneath the component you
+    just added.  If you click 'add component' again, it will add the new component beneath the
+    previous one, which means they'll run serially (sequentially).
+</p>
+<p>
+    Another important thing to note is that the output from all components is automatically added
+    as input for later components.  If you scroll to the top of the page you can see there are now
+    three entries in the input table:
+</p>
+<div class='screenshot'>
+    <img id='pipeline_add_formatdb_saved_top' src='../images/documentation/pipeline_add_formatdb_saved_top.png' alt='inputs after formatdb'>
+</div>
+<p>
+    We can see our original 'my proteins' entry as well as two new ones.  The second entry in the
+    table represents the formatdb tool's output directory.  The third entry provides the name of the
+    database created (in this case simply 'db').  The combination of these provides the full path 
+    to the newly-created database, which we'll use in our next component.
+</p>
+<p>
+    As a side-note, you've probably noticed that the second entry in our input table contains strange
+    values like '$;PIPELINEID$;'.  These are variables used by Ergatis and are replaced with their
+    actual values before your pipeline executes.  Of course, when configuring the formatdb 
+    component you could have customized this path but the defaults ensure that all component output
+    is properly separated.
+</p>
+<p>
+    Click the 'add component' link again to bring up the component selection page.  Find 'ncbi-blastp'
+    under the 'alignment / pairwise' section and click it.  This will bring up the configuration 
+    form for that component:
+</p>
+<div class='screenshot'>
+    <img id='pipeline_add_blastp' src='../images/documentation/pipeline_add_blastp.png' alt='adding ncbi-blastp'>
+</div>
+<p>
+    At the top of this you'll find parameters you're probably accusted to for BLAST, such as
+    matrix and expect value cutoffs.  If you're a BLAST guru and want to set your own parameters
+    not handled by this form you can type them in the 'other opts' box.
+</p>
+<p>
+    In term of component input and output the ncbi-blastp component is representative of most other
+    components in the system.  There are four general input elements, each described below:
+</p>
+<dl>
+    <dt>input file list</dt>
+    <dd>
+        Probably the most commonly used input type, an 'input list' is a plain text file where each
+        line of the file contains the full path to a file.  This allows you to define input with
+        files in multiple directories throughout your file system.  Most components create output
+        lists of their files, which allows for easy connection into the next component.
+    </dd>
+    <dt>input file</dt>
+    <dd>
+        Use this when you have a single file to use as input.
+    </dd>
+    <dt>input directory</dt>
+    <dd>
+        If all of your files are in a single directory you can use this option.  It will not be
+        searched recursively, and only the files matching the extension defined in the next option
+        will be included.
+    </dd>
+    <dt>input extension</dt>
+    <dd>
+        See above.  This option is only used in conjuction with the 'input directory' option.
+    </dd>
+</dl>
+<p>
+    Though typically only one of these options is used, the system will aggregate inputs if you, for
+    example, define both an input list and input file. 
+</p>
+<p>
+    For our example pipeline we want our query input to ncbi-blastp to be our individual proteins.faa
+    file, to which we gave the label 'my proteins'.  Click the select box next to the 'input file' 
+    label and choose 'my proteins'.  Then, in the 'database path' field paste in our subject database
+    path, '$;REPOSITORY_ROOT$;/output_repository/formatdb/$;PIPELINEID$;_default/db'.  Click 'save'
+    and scroll to the top of the page, which should now look like:
+</p>
+<div class='screenshot'>
+    <img id='pipeline_add_blastp_saved' src='../images/documentation/pipeline_add_blastp_saved.png' alt='saved ncbi-blastp'>
+</div>
+<p>
+    The input section has grown again because the outputs from the ncbi-blastp component have been
+    added.
+</p>
+<p>
+    Your pipeline is now ready to execute!  Click the 'run pipeline' at the top of the page.  This
+    will display the pipeline view page, which automatically updates to display pipeline progress.
+    Because Ergatis is simply parsing the Workflow Engine XML it may take a moment for the initial
+    states to change.  Note the counters to the right of both the header and each component which
+    show when each section will next be updated.
+</p>
+<div class='screenshot'>
+    <img id='gln_blast_running' src='../images/documentation/gln_blast_running.png' alt='running BLAST pipeline'>
+</div>
+<p>
+    Because of the very small number of sequences this pipeline should finish very quickly.  If you
+    are unsure where to find the output of any component, click the 'config' button and you'll
+    find the directories listed there.
+</p>
+<h2>review</h2>
+<p>
+    Here we've only covered the basic steps in building a pipeline with more than one component.
+    Further tutorials will demonstrate how to add components in parallel, build and load pipeline
+    templates and debug execution errors.
+</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
