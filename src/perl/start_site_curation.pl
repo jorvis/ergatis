@@ -493,13 +493,11 @@ sub tie_breaker {
 
         #Grab the start codon
         my $start_codon = substr( $region, length($region) - 3, length($region) );
-        if( exists( $start_site_relative_frequencies->{$start_codon} ) ) {
-            my $freq = $start_site_relative_frequencies->{$start_codon};
-            $votes->{$start_site} += $freq;
-            $ret_string .= " and start site [$start_site] has a frequency of $freq";
-        } else {
-            $logger->logdie("Found a start codon ($start_codon) that doesn't have a frequency. $region");
-        }
+        my $freq = 0;
+        $freq = $start_site_relative_frequencies->{$start_codon} 
+        if( exists( $start_site_relative_frequencies->{$start_codon} ) );
+        $votes->{$start_site} += $freq;
+        $ret_string .= " and start site [$start_site] has a frequency of $freq";
 
     }
 
