@@ -218,6 +218,27 @@
     are unsure where to find the output of any component, click the 'config' button and you'll
     find the directories listed there.
 </p>
+<h2>improvements we could make</h2>
+<p>
+    This pipeline works fine and runs quickly, but what if your input set had been 10,000 sequences
+    and the subject database a multi-gigabyte file?  Ergatis was designed to scale to this (and
+    much larger) but the pipeline we just build wouldn't perform very well because all of the
+    input query sequences were in a single file.  Ergatis will not automatically split your single
+    input file up into more managable pieces.
+</p>
+<p>
+    If you have 100 grid nodes and 10,000 input sequences in a single file you'll probably want 
+    to split your input sequences into multiple files and then let Ergatis group them, ultimately
+    giving you 100 jobs with 100 query sequences per job.  This balances out the work across your
+    compute cluster and is the most efficient way to use it.
+</p>
+<p>
+    Considering that Ergatis won't automatically split up your single input file but it will handle
+    the grouping for you if there are multiple files present, you should use a component that
+    can split your large FASTA file into smaller ones.  One exists already, and is called
+    split_multifasta.  If we wanted to use this in the current example pipeline instead, all we
+    would have to do is configure xdformat, then split_multifasta, then ncbi-blastp.
+</p>
 <h2>review</h2>
 <p>
     Here we've only covered the basic steps in building a pipeline with more than one component.
