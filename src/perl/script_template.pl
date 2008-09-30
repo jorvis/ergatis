@@ -71,14 +71,14 @@ use Ergatis::Logger;
 use Pod::Usage;
 
 my %options = ();
-my $results = GetOptions (\%options, 
-                          'some_argument|i=s',
-                          'another_argument|o=s',
-                          'optional_argument|s=s',
-                          'optional_argument2|f=s',
-                          'log|l=s',
-                          'debug=s',
-                          'help|h') || pod2usage();
+GetOptions(\%options, 
+           'some_argument|i=s',
+           'another_argument|o=s',
+           'optional_argument|s=s',
+           'optional_argument2|f=s',
+           'log|l=s',
+           'debug=s',
+           'help|h') || pod2usage();
 
 ## display documentation
 if( $options{'help'} ){
