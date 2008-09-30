@@ -11,6 +11,8 @@ USAGE: template.pl
             --another_argument=/path/to/somedir
           [ --optional_argument=/path/to/somefile.list 
             --optional_argument2=1000
+            --log=/path/to/some.log
+            --debug=4
           ]
 
 =head1 OPTIONS
@@ -35,6 +37,9 @@ B<--optional_argument2,-f>
 
 B<--log,-l> 
     Log file
+
+B<--debug> 
+    Debug level.
 
 B<--help,-h>
     This help message
@@ -62,6 +67,7 @@ you should document which tables and columns are affected.
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+use Ergatis::Logger;
 use Pod::Usage;
 
 my %options = ();
@@ -71,6 +77,7 @@ my $results = GetOptions (\%options,
                           'optional_argument|s=s',
                           'optional_argument2|f=s',
                           'log|l=s',
+                          'debug=s',
                           'help|h') || pod2usage();
 
 ## display documentation
@@ -81,24 +88,18 @@ if( $options{'help'} ){
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
-## open the log if requested
-my $logfh;
-if (defined $options{log}) {
-    open($logfh, ">$options{log}") || die "can't create log file: $!";
-}
+## Setup the logger.  See perldoc for more info on usage
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE' =>$logfile,
+                                 'LOG_LEVEL'=>$options{'debug'});
+$logger = $logger->get_logger();
+
 
 ##
 ## CODE HERE
 ##
 
 exit(0);
-
-
-sub _log {
-    my $msg = shift;
-
-    print $logfh "$msg\n" if $logfh;
-}
 
 
 sub check_parameters {
