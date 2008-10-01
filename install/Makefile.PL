@@ -419,6 +419,20 @@ gff2bsml	:
 	@install components/gff2bsml/gff2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/gff2bsml/gff2bsmlconf.ini $(WORKFLOW_DOCS_DIR)
 
+gff3_to_annotab	:
+	@echo "Installing gff3_to_annotab workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/gff3_to_annotab/gff3_to_annotab.xml $(WORKFLOW_DOCS_DIR)
+	@install components/gff3_to_annotab/gff3_to_annotab.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/gff3_to_annotab/gff3_to_annotab.config $(WORKFLOW_DOCS_DIR)
+	@install components/gff3_to_annotab/gff3_to_annotab.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
+gff3_to_fasta	:
+	@echo "Installing gff3_to_fasta workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/gff3_to_fasta/gff3_to_fasta.xml $(WORKFLOW_DOCS_DIR)
+	@install components/gff3_to_fasta/gff3_to_fasta.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/gff3_to_fasta/gff3_to_fasta.config $(WORKFLOW_DOCS_DIR)
+	@install components/gff3_to_fasta/gff3_to_fasta.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
 glimmer3	:
 	@echo "Installing glimmer3 workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/glimmer3/glimmer3.config $(WORKFLOW_DOCS_DIR)
