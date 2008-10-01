@@ -1,0 +1,95 @@
+<!-- component documentation -->
+
+<p>
+    This component does a protein-protein comparison between the query sequence and subject 
+    database using the WU BLAST blastp executable.  For a full reference, see:
+    <a href='http://blast.wustl.edu/blast/README.html'>http://blast.wustl.edu/blast/README.html</a>.
+</p>
+<h3>references</h3>
+<p>
+    Gish, W. (1996-2004)<br>
+    <a href='http://blast.wustl.edu'>http://blast.wustl.edu</a>
+</p>
+<h3>input</h3>
+<p>
+    Like the program itself, this component accepts annotab files as input.  If you have a single
+    file containing multiple sequences in annotab format, you should use the 
+    <a href='./documentation.cgi?article=components&page=split_multiannotab'>split_multiannotab</a>
+    component first to generate individual sequences, allowing them to be atomically searched
+    and individually managed on the grid.
+</p>
+<h3>implemented options</h3>
+<p>
+    All options of the blastp binary are configurable with this component, but changes to the
+    output format options will cause btab and bsml conversion scripts to fail.
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;?xml version="1.0"?&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence length="179" class="polypeptide" title="sma1.model.31034_000109" id="sma1.model.31034_000109" molecule="aa"&gt;
+        &lt;Seq-data-import source="/usr/local/annotation/SMA1/annotab_repository/current_models/sma1.model.31034_000109.fsa" identifier="sma1.model.31034_000109" format="annotab" id="Bsml0"&gt;&lt;/Seq-data-import&gt;
+        &lt;Link rel="analysis" href="#wu-blastp_analysis" role="input_of"&gt;&lt;/Link&gt;
+      &lt;/Sequence&gt;
+      &lt;Sequence length="183" class="polypeptide" title="AGR221Wp {Ashbya gossypii ATCC 10895;} (exp=0; wgp=1; cg=0; )^|^RF|NP_986887.1|45201317|NM_211949 AGR221Wp {Eremothecium gossypii;} (exp=-1; wgp=0; cg=0; )" id="GB_AAS54711.1_44986171_AE016820" molecule="aa"&gt;
+        &lt;Seq-data-import source="/local/closure6/PANDA/AllGroupNoTIGR/AllGroup.NoTIGR.niaa" identifier="GB_AAS54711.1_44986171_AE016820" format="annotab" id="Bsml1"&gt;&lt;/Seq-data-import&gt;
+        &lt;Cross-reference database="GB" identifier="AAS54711.1" id="_0" identifier-type="version"&gt;&lt;/Cross-reference&gt;
+        &lt;Cross-reference database="GB" identifier="44986171" id="_1" identifier-type="gi"&gt;&lt;/Cross-reference&gt;
+      &lt;/Sequence&gt;
+      &lt;Sequence length="182" class="polypeptide" title="similar to CG8385-PB, isoform B {Apis mellifera;} (exp=-1; wgp=0; cg=0; )^|^RF|XP_623101.1|66549724|XM_623098 similar to CG8385-PB, isoform B {Apis mellifera;} (exp=-1; wgp=0; cg=0; )" id="RF_XP_392990.2_66549728_XM_392990" molecule="aa"&gt;
+        &lt;Seq-data-import source="/local/closure6/PANDA/AllGroupNoTIGR/AllGroup.NoTIGR.niaa" identifier="RF_XP_392990.2_66549728_XM_392990" format="annotab" id="Bsml2"&gt;&lt;/Seq-data-import&gt;
+      &lt;/Sequence&gt;
+      
+      [ one Sequence element for each matching sequence ]
+      
+    &lt;/Sequences&gt;
+    &lt;Tables id="BsmlTables"&gt;
+      &lt;Seq-pair-alignment refend="179" compseq="GB_AAS54711.1_44986171_AE016820" compxref="/local/closure6/PANDA/AllGroupNoTIGR/AllGroup.NoTIGR.niaa:GB_AAS54711.1_44986171_AE016820" refseq="sma1.model.31034_000109" refstart="0" reflength="179" refxref="/usr/local/annotation/SMA1/annotab_repository/current_models/sma1.model.31034_000109.fsa:sma1.model.31034_000109" method="BLASTP"&gt;
+        &lt;Seq-pair-run refcomplement="0" runprob="4.5e-28" comppos="0" refpos="0" runlength="131" compcomplement="0" comprunlength="133" runscore="118.1"&gt;
+          &lt;Attribute name="p_value" content="4.5e-28"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_coverage_compseq" content="72.7"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_coverage_refseq" content="73.2"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_identity" content="48.9"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_similarity" content="70.7"&gt;&lt;/Attribute&gt;
+        &lt;/Seq-pair-run&gt;
+        &lt;Link rel="analysis" href="#wu-blastp_analysis" role="computed_by"&gt;&lt;/Link&gt;
+      &lt;/Seq-pair-alignment&gt;
+      &lt;Seq-pair-alignment refend="179" compseq="RF_XP_392990.2_66549728_XM_392990" compxref="/local/closure6/PANDA/AllGroupNoTIGR/AllGroup.NoTIGR.niaa:RF_XP_392990.2_66549728_XM_392990" refseq="sma1.model.31034_000109" refstart="0" reflength="179" refxref="/usr/local/annotation/SMA1/annotab_repository/current_models/sma1.model.31034_000109.fsa:sma1.model.31034_000109" method="BLASTP"&gt;
+        &lt;Seq-pair-run refcomplement="0" runprob="1.7e-28" comppos="0" refpos="0" runlength="129" compcomplement="0" comprunlength="130" runscore="119.5"&gt;
+          &lt;Attribute name="p_value" content="1.7e-28"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_coverage_compseq" content="71.4"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_coverage_refseq" content="72.1"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_identity" content="48.5"&gt;&lt;/Attribute&gt;
+          &lt;Attribute name="percent_similarity" content="70.0"&gt;&lt;/Attribute&gt;
+        &lt;/Seq-pair-run&gt;
+        &lt;Link rel="analysis" href="#wu-blastp_analysis" role="computed_by"&gt;&lt;/Link&gt;
+      &lt;/Seq-pair-alignment&gt;
+      
+      [ one Seq-pair-alignment element for each sequence match ]
+      
+    &lt;/Tables&gt;
+  &lt;/Definitions&gt;
+
+  &lt;Research&gt;
+    &lt;Analyses&gt;
+      &lt;Analysis id="wu-blastp_analysis"&gt;
+        &lt;Attribute content="/usr/local/annotation/SMA1/output_repository/wu-blastp/5134_AllGroup.NoTIGR.niaa" name="sourcename"&gt;&lt;/Attribute&gt;
+        &lt;Attribute content="BLOSUM62" name="matrix"/&gt;
+        &lt;Attribute content="1e-5" name="expect"/&gt;
+        &lt;Attribute content="none" name="filter"/&gt;
+        &lt;Attribute content="150" name="database_matches"/&gt;
+        &lt;Attribute content="150" name="descriptions"/&gt;
+        &lt;Attribute content="5" name="gspmax"/&gt;
+        &lt;Attribute content="5134" name="pipelineid"/&gt;
+
+        [ one Attribute element for each compute parameter ]
+
+      &lt;/Analysis&gt;
+    &lt;/Analyses&gt;
+  &lt;/Research&gt;
+&lt;/Bsml&gt;
+
+</div>
