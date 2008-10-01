@@ -98,7 +98,7 @@ my $project_templates = get_pipeline_templates( "$repository_root/workflow/proje
 
 my $build_directory = "$build_area/" .temp_pipeline_id();
 
-my $inputs = &get_inputsets($build_area);
+my $inputs = &get_inputsets($build_area,10);
 
 $tmpl->param( INPUTSETS => $inputs);
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
@@ -157,7 +157,7 @@ sub get_inputsets{
 		push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
 			      'VALUE'=>$input_val,
 			      'TYPE'=>$input_type,
-			      'SOURCE'=>"$cname.$token"} if(scalar(@inputs)<10);
+			      'SOURCE'=>"$cname.$token"};
 	    }
 	}
 	return \@inputs;
