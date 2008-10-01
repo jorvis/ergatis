@@ -98,6 +98,9 @@ my $project_templates = get_pipeline_templates( "$repository_root/workflow/proje
 
 my $build_directory = "$build_area/" .temp_pipeline_id();
 
+my $inputs = &get_inputsets($build_area);
+
+$tmpl->param( INPUTSETS => $inputs);
 $tmpl->param( REPOSITORY_ROOT => $repository_root );
 $tmpl->param( WORKFLOWDOCS_DIR => $workflowdocs_dir );
 $tmpl->param( COMPONENT_GROUPS => $component_groups );
@@ -119,6 +122,46 @@ $tmpl->param( SUBMENU_LINKS       => [
 print $tmpl->output;
 
 exit(0);
+
+sub get_inputsets{
+	my $dir = shift;
+	my $limit = shift;
+	my @inputs;
+	my @inputlists = `find $dir -name "*.config"`;
+	
+	foreach my $file (sort {chomp $a;chomp $b;(stat($a))[9]<=>(stat($b))[9]} (@inputlists)){
+	    if(scalar(@inputs)<$limit){
+		chomp $file;
+		my @fstats = stat($file);
+		my $component_cfg = new Ergatis::ConfigFile( -file => "$file" );
+		my $cname = $component_cfg->val( 'component', '$;COMPONENT_NAME$;' );
+		$cname =~ s/\s//g;
+		my $token = $component_cfg->val( 'output', '$;OUTPUT_TOKEN$;');
+		my $input_file = $component_cfg->val( 'input', '$;INPUT_FILE$;');
+		my $input_list = $component_cfg->val( 'input', '$;INPUT_FILE_LIST$;');
+		my $input_dir = $component_cfg->val( 'input', '$;INPUT_DIRECTORY$;');
+		my $input_type;
+		my $input_val;
+		if($input_file ne ""){
+		    $input_type = "file";
+		    $input_val = $input_file;
+		}
+		elsif($input_list ne ""){
+		    $input_type = "list";
+		    $input_val = $input_list;
+		}
+		elsif($input_dir ne ""){
+		    $input_type = "directory";
+		    $input_val = $input_dir;
+		}
+		push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
+			      'VALUE'=>$input_val,
+			      'TYPE'=>$input_type,
+			      'SOURCE'=>"$cname.$token"} if(scalar(@inputs)<10);
+	    }
+	}
+	return \@inputs;
+}
 
 sub min_group {
     my $counts = shift;

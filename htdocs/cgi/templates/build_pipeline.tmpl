@@ -186,6 +186,21 @@
 <div id='debug_box'>&nbsp;</div>
 <div id='save_progress_label'>pipeline build progress saved</div>
 <div id='user_message_container'></div>
+
+<script>
+<TMPL_LOOP NAME=INPUTSETS>
+            var new_input = new Input( "<TMPL_VAR NAME=NAME>" );
+
+            new_input.input_label = "<TMPL_VAR NAME=NAME>";
+            new_input.input_value = "<TMPL_VAR NAME=VALUE>";
+            new_input.input_type  = "<TMPL_VAR NAME=TYPE>";
+            new_input.input_source = "<TMPL_VAR NAME=SOURCE>";
+
+            new_input.addTo( 'input_list' );
+</TMPL_LOOP>
+updateInputLists();
+</script>
+
 </body>
 
 </html>
