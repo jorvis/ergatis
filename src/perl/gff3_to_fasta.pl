@@ -26,6 +26,9 @@ my $currfeature;
 my @pepfastaoutbuffer;
 #my @seqfastaoutbuffer;
 
+my $featcount = 0;
+my $seqcount = 0;
+
 open (my $FIN, $opts{input_file}) || die "Unable to open input_file ($opts{input_file}): $!";
 open (my $FOUT, ">$opts{output_fasta}") || die "Unable to open output_fasta ($opts{output_fasta}): $!";
 
@@ -57,6 +60,9 @@ while(my $line=<$FIN>){
 
 	#my(%dbxrefs) = split(/[,:]/,$attrs{'Dbxref'});
 	$features->{$attrs{'ID'}}->{'save'}=1;
+
+	++$featcount;
+
 	# only care about save, note that taxon causes problems
 #	$features->{$attrs{'ID'}}->{'description'} = $attrs{'description'};
 #	$features->{$attrs{'ID'}}->{'center'} = $elts[1];
@@ -75,6 +81,7 @@ while(my $line=<$FIN>){
 	  if( $features->{$1}->{'save'} == 1) {
 	    ++$features->{$1}->{'save'};
 	    $savefastaentry=1;
+	    ++$seqcount;
 	  }
 	  elsif ($features->{$1}->{'save'} > 1){
 	    die "Seen feature $1 more than once";
@@ -92,7 +99,16 @@ while(my $line=<$FIN>){
   }
 }
 
+# if we never found a sequence for a feature, then save will still be 1
+if ($featcount != $seqcount) {
+  my $miss_seq_txt ='';
+  foreach my $id (keys %{$features}) {
+    $miss_seq_txt .= "$id\n" if ($features->{$id}->{save} == 1);
+  }
+  die "Feature ($featcount) != Seqcount ($seqcount).  Missing features:\n".$miss_seq_txt;
+}
 
+print "Feature count: $featcount\nSequence count: $seqcount\n";
 
 
 # if(defined $ARGV[1]){
