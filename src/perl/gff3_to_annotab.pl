@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-#./gff3_to_annotab.pl --type|t <featuretype> --input_gff3|i <file> --output_fasta|o <file> [--source|s <source>]
+#./gff3_to_annotab.pl --type|t <featuretype> --input_file|i <file> --output_annotab|o <file> [--source|s <source>]
 # featuretype is stored in column 3 of gff3 
 # For example, this is a line with featuretype cds
 # nmpdr|158878.1.contig.NC_002758 NMPDR   cds ...
@@ -29,7 +29,7 @@ my $featcount = 0;
 my $seqcount = 0;
 
 open (my $FIN, $opts{input_file}) || die "Unable to open input_file ($opts{input_file}): $!";
-open (my $FOUT, ">$opts{output_fasta}") || die "Unable to open output_fasta ($opts{output_fasta}): $!";
+open (my $FOUT, ">$opts{output_annotab}") || die "Unable to open output_annotab ($opts{output_annotab}): $!";
 
 #while(my $line=<STDIN>){
 while(my $line=<$FIN>){
@@ -145,7 +145,7 @@ sub parse_options {
     my %options = ();
     GetOptions( \%options,
         'input_file|i=s',
-        'output_fasta|o=s',
+        'output_annotab|o=s',
         'type|t=s',
         'source|s=s',
         ) || die "Unprocessable option";
