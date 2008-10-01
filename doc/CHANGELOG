@@ -9,7 +9,8 @@ next
 -updates to the pangenome component. sampling procedure that simplifies output from large pan genome runs
 -added integrated JOCs,pangenome saved pipeline
 -start_site_curation: fixed bug to correctly assign a start site frequency of 0 to start sites that don't occur.
-
+-gff3_to_fasta.pl: Extracts fasta sequences from a gff3 file for a provided feature type (part of Annotation Evaluation Pipeline)
+-gff3_to_annotab.pl: Extracts tabular annotation information for a provided feature type (part of Annotation Evaluation Pipeline)
 
 ergatis-v2r9b1
 --------------
