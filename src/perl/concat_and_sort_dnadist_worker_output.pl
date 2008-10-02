@@ -11,6 +11,7 @@ concat_and_sort_dnadist_worker_output.pl
          --output_file=/path/to/complete_control_file.txt
         [--worker_output_regex='^\S+\.distances$'
          --tmp_dir=/tmp
+         --worker_output_is_sorted
          --delete_worker_files
          --delete_tmp_files
          --log=/path/to/some.log
@@ -31,6 +32,9 @@ B<--worker_output_regex,-r>
 
 B<--tmp_dir,-t>
     optional.  directory in which to place temporary files.  defaults to /tmp
+
+B<--worker_output_is_sorted,-a>
+    optional.  whether the worker output files are already sorted.
 
 B<--delete_worker_files,-x>
     optional.  whether to delete worker output files once they are no longer needed.
@@ -103,6 +107,7 @@ my $options = {};
             'worker_output_regex|r=s',
             'output_file|o=s',
             'tmp_dir|t=s',
+            'worker_output_is_sorted|a',
             'delete_worker_files|x',
             'delete_tmp_files|y',
             "log|l=s",
@@ -146,12 +151,20 @@ exit(1) if ($nf == 0);
 
 # sort each file individually
 my $sorted_files = [];
+if ($options->{'worker_output_is_sorted'}) {
+    $logger->info("skipping initial sort step due to --worker_output_is_sorted flag");
+}
+
 foreach my $path (@paths) {
-    $logger->info("sorting $path\n");
-    my($filename, $directories, $suffix) = fileparse($path);
-    my $sorted_path = File::Spec->catfile($options->{'tmp_dir'}, $filename . '.sorted');
-    &sort_file($path, $sorted_path);
-    push(@$sorted_files, $sorted_path);
+    if ($options->{'worker_output_is_sorted'}) {
+        push(@$sorted_files, $path);
+    } else {
+        $logger->info("sorting $path\n");
+        my($filename, $directories, $suffix) = fileparse($path);
+        my $sorted_path = File::Spec->catfile($options->{'tmp_dir'}, $filename . '.sorted');
+        &sort_file($path, $sorted_path);
+        push(@$sorted_files, $sorted_path);
+    }
 }
 
 # merge sorted files (using an open filehandle for each input file)
@@ -228,7 +241,7 @@ if ($options->{'delete_worker_files'}) {
     }
 }
 
-if ($options->{'delete_tmp_files'}) {
+if (($options->{'delete_tmp_files'}) && (!$options->{'worker_output_is_sorted'})) {
     my $ns = scalar(@$sorted_files);
     $logger->info("deleting $ns sorted temporary file(s)");
     foreach my $file (@$sorted_files) {
