@@ -1,0 +1,55 @@
+<!-- component documentation -->
+<p>
+    This component is a parallelized version of the dnadist utility from Joe 
+    Felsenstein's PHYLIP package.
+</p>
+
+<h3>references</h3>
+<p>
+  <ul>
+   <li><a href='http://evolution.genetics.washington.edu/phylip.html'>Felsenstein, J. 2005. PHYLIP (Phylogeny Inference Package) version 3.6. Distributed by the author. Department of Genome Sciences, University of Washington, Seattle.</a></li>
+   <li>Felsenstein, J. 1989. PHYLIP - Phylogeny Inference Package (Version 3.2). Cladistics 5: 164-166.</li>
+  </ul>
+</p>
+
+<h3>algorithm</h3>
+    dnadist supports several distance calculation methods. See the <a href='http://evolution.genetics.washington.edu/phylip.html'>PHYLIP</a> 
+    documentation for details.
+
+<h3>input</h3>
+<p>
+    The dnadist component accepts essentially the same input as dnadist itself.
+</p>
+
+<h3>implemented options</h3>
+<p>
+   <ul>
+        <li><span style='font-weight: bold;'>$;INPUT_FILE$;</span> - path to a file containing aligned sequence data in the format accepted by dnadist, e.g.:
+<div class='code_container' style='font-family: Courier,monospace;'>
+   5   13
+Alpha     AACGTGGCCACAT
+Beta      AAGGTCGCCACAC
+Gamma     CAGTTCGCCACAA
+Delta     GAGATTTCCGCCT
+Epsilon   GAGATCTCCGCCC
+</div>
+In this test data set (from the dnadist documentation), 5 = the number of species/sequences and 13 = the number of characters (i.e., the sequence length).
+</li>
+        <li><span style='font-weight: bold;'>$;CONTROL_FILE$;</span> - a partial dnadist "control file" of the type accepted by dnadist.  A dnadist control file is nothing more than a set of commands, one per line, that can be piped into dnadist instead of interacting manually with its menu-based interface.  This control file, if specified, should NOT include an initial line to set the input file name (this line will be inserted based on the INPUT_FILE parameter) and it also should NOT include the final 'Y' response used to run the calculation.
+
+For example, here is a control file that: changes the distance matrix format to Lower-triangular ("L"); changes the Transition/transversion ratio from the default to 2.1 ("T", "2.1"); and changes the distance measure from the default to Kimura 2-parameter ("D"):
+<div class='code_container' style='font-family: Courier,monospace;'>
+L
+T
+2.1
+D
+</div>
+</li>
+        <li><span style='font-weight: bold;'>$;GROUP_SIZE$;</span> - Number of pairwise comparisons to be performed by each distributed dnadist worker process.</li>
+   </ul>
+</p>
+
+<h3>output</h3>
+<p>
+    The output of dnadist is a distance matrix, the format of which will depend on the dnadist control file (e.g., in the case where the lower triangular output has been selected.)
+</p>

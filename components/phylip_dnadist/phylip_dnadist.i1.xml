@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>PHYLIP dnadist (distributed dnadist process)</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dnadist_worker_wrapper</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dnadist_worker_wrapper</executable>
+            <param>
+                <key>--dnadist_worker_path</key>
+                <value>$;DNADIST_WORKER$;</value>
+            </param>
+            <param>
+                <key>--control_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/dnadist_control_file.txt</value>
+            </param>
+            <param>
+                <key>--start_cell</key>
+                <value>$;I_START_CELL$;</value>
+            </param>
+            <param>
+                <key>--end_cell</key>
+                <value>$;I_END_CELL$;</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.distances</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.stderr</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.stdout</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

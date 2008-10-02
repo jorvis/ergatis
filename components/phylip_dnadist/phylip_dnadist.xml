@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>PHYLIP dnadist</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <!--Generate dnadist control file-->
+        <command>
+	        <type>RunUnixCommand</type>
+  	        <name>create dnadist control file</name>
+    	    <state>incomplete</state>
+    	    <executable>$;BIN_DIR$;/create_dnadist_control_file</executable>
+            <param>
+        		<key>--dnadist_seq_file</key>
+        		<value>$;INPUT_FILE$;</value>
+    	    </param>
+            <param>
+        		<key>--control_file</key>
+        		<value>$;CONTROL_FILE$;</value>
+    	    </param>
+            <param>
+        		<key>--output_control_file</key>
+        		<value>$;OUTPUT_DIRECTORY$;/dnadist_control_file.txt</value>
+    	    </param>
+        </command>
+        <!--Split dnadist work amongst dnadist_worker processes-->
+        <command>
+	        <type>RunUnixCommand</type>
+  	        <name>create dnadist iterator list</name>
+    	    <state>incomplete</state>
+    	    <executable>$;BIN_DIR$;/create_dnadist_iterator_list</executable>
+            <param>
+        		<key>--dnadist_seq_file</key>
+        		<value>$;INPUT_FILE$;</value>
+    	    </param>
+            <param>
+        		<key>--output_iterator_list</key>
+        		<value>$;OUTPUT_DIRECTORY$;/dnadist_worker_jobs.i1.list</value>
+    	    </param>
+            <param>
+        		<key>--group_size</key>
+        		<value>$;GROUP_SIZE$;</value>
+    	    </param>
+            <param>
+        		<key>--log</key>    
+        		<value>$;TMP_DIR$;/dnadist_make_iterator.log</value>
+    	    </param>
+            <param>
+        		<key>stdout</key>    
+        		<value>$;TMP_DIR$;/dnadist_make_iterator.stdout</value>
+    	    </param>
+    	    <param>
+        		<key>stderr</key>    
+        		<value>$;TMP_DIR$;/dnadist_make_iterator.stderr</value>
+    	    </param>
+    	</command>
+        <!--Run distributed dnadist jobs on the grid-->
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;OUTPUT_DIRECTORY$;/dnadist_worker_jobs.i1.list,$;NODISTRIB$;=0,$;GROUP_NUMBER$;=1">
+        <!--Concatenate and sort distributed worker output-->
+        <command>
+	        <type>RunUnixCommand</type>
+  	        <name>concatenate and sort dnadist_worker output</name>
+    	    <state>incomplete</state>
+    	    <executable>$;BIN_DIR$;/concat_and_sort_dnadist_worker_output</executable>
+            <arg>--delete_tmp_files --delete_worker_files</arg>
+            <param>
+        		<key>--worker_output_dir</key>    
+        		<value>$;OUTPUT_DIRECTORY$;</value>
+    	    </param>
+            <param>
+    	    	<key>--output_file</key>    
+        		<value>$;OUTPUT_DIRECTORY$;/sorted_dnadist_worker_output.txt</value>
+    	    </param>
+            <param>
+        		<key>--worker_output_regex</key>    
+        		<value>'^\S+\.distances$'</value>
+    	    </param>
+            <param>
+        		<key>--log</key>    
+        		<value>$;TMP_DIR$;/concat_and_sort_dnadist_worker_output.log</value>
+    	    </param>
+            <param>
+        		<key>stdout</key>    
+        		<value>$;TMP_DIR$;/concat_and_sort_dnadist_worker_output.stdout</value>
+    	    </param>
+    	    <param>
+        		<key>stderr</key>    
+        		<value>$;TMP_DIR$;/concat_and_sort_dnadist_worker_output.stderr</value>
+    	    </param>
+        </command>
+        <!--Output final distance matrix using dnadist_combiner-->
+        <command>
+	        <type>RunUnixCommand</type>
+  	        <name>dnadist_combiner - print distance matrix</name>
+    	    <state>incomplete</state>
+    	    <executable>$;BIN_DIR$;/dnadist_combiner_wrapper</executable>
+    	    <param>
+                <key>--dnadist_combiner_path</key>
+                <value>$;DNADIST_COMBINER$;</value>
+    	    </param>
+            <param>
+                <key>--control_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/dnadist_control_file.txt</value>
+            </param>
+    	    <param>
+                <key>--sorted_worker_output</key>
+                <value>$;OUTPUT_DIRECTORY$;/sorted_dnadist_worker_output.txt</value>
+    	    </param>
+    	    <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/dnadist_output.txt</value>
+    	    </param>
+            <param>
+    		    <key>log</key>    
+        		<value>$;TMP_DIR$;/dnadist_combiner.log</value>
+    	    </param>
+            <param>
+    		    <key>stdout</key>    
+        		<value>$;TMP_DIR$;/dnadist_combiner.stdout</value>
+    	    </param>
+    	    <param>
+        		<key>stderr</key>    
+        		<value>$;TMP_DIR$;/dnadist_combiner.stderr</value>
+    	    </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
