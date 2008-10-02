@@ -78,7 +78,7 @@
   	        <name>concatenate and sort dnadist_worker output</name>
     	    <state>incomplete</state>
     	    <executable>$;BIN_DIR$;/concat_and_sort_dnadist_worker_output</executable>
-            <arg>--delete_tmp_files --delete_worker_files</arg>
+                <arg>--delete_tmp_files --delete_worker_files --worker_output_is_sorted</arg>
             <param>
         		<key>--worker_output_dir</key>    
         		<value>$;OUTPUT_DIRECTORY$;</value>

@@ -26,7 +26,7 @@
             </param>
             <param>
                 <key>--output_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.distances</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.distances.unsorted</value>
             </param>
             <param>
                 <key>stderr</key>
@@ -36,6 +36,22 @@
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.stdout</value>
             </param>
+        </command>
+        <!--Sort output file-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort output</name>
+            <state>incomplete</state>
+            <executable>$;DNADIST_SORT$;</executable>
+            <arg>-n $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.distances.unsorted > $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.distances </arg>
+        </command>
+        <!--Delete unsorted output-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>remove unsorted output</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_START_CELL$;-$;I_END_CELL$;.distances.unsorted</arg>
         </command>
     </commandSet>
 </commandSetRoot>
