@@ -129,7 +129,7 @@ sub get_inputsets{
 	my @inputs;
 	my @inputlists = `find $dir -name "*.config"`;
 	
-	foreach my $file (sort {chomp $a;chomp $b;(stat($a))[9]<=>(stat($b))[9]} (@inputlists)){
+	foreach my $file (sort {chomp $a;chomp $b;(stat($b))[9]<=>(stat($a))[9]} (@inputlists)){
 	    if(scalar(@inputs)<$limit){
 		chomp $file;
 		my @fstats = stat($file);
