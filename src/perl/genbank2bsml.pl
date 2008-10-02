@@ -119,7 +119,11 @@ sub parse_options {
 
         # we're going to generate ids
         $idcreator = new Ergatis::IdGenerator('id_repository' => $options{'id_repository'});
-
+        $idcreator->set_pool_size('exon'        => 30,
+                                  'polypeptide' => 30,
+                                  'transcript'  => 30,
+                                  'CDS'         => 30,
+                                  'gene'        => 30);
     } else {
         die "--id_repository is a required option";
     }
