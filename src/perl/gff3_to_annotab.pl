@@ -4,6 +4,10 @@
 # featuretype is stored in column 3 of gff3 
 # For example, this is a line with featuretype cds
 # nmpdr|158878.1.contig.NC_002758 NMPDR   cds ...
+# output is tab-delimited file with columns
+#cds_id    source    taxon_id    contig_id    product_name
+# ie
+# pathema|ntbc02.1.cds.ORF00001   Pathema 288681  pathema|ntbc02.contig.1 chromosomal replication initiator protein DnaA
 use strict;
 use warnings;
 
@@ -81,7 +85,7 @@ while(my $line=<$FIN>){
 	defined($attrs{ID}) || die "Missing 'ID' in attributes";
 	defined($attrs{description}) || die "Missing 'description' in attributes";
 
-	print {$FOUT} join("\t", ($source, $contig, $contig2taxon{$contig}, $attrs{ID}, $attrs{description}))."\n";
+	print {$FOUT} join("\t", ($attrs{ID}, $source, $contig2taxon{$contig}, $contig, $attrs{description}))."\n";
 
 	++$featcount;
       }
