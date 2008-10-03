@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>wu-blastp compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>tabula_rasa</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/tabula_rasa</executable>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+            </param>
+            <param>  
+                <key>--input_command</key>
+                <value>'$;INPUT_COMMAND$;'</value>
+            </param>
+            <param>
+                <key>--iter_file_path</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--iter_file_base</key>
+                <value>$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--iter_file_ext</key>
+                <value>$;I_FILE_EXT$;</value>
+            </param>
+            <param>
+                <key>--iter_file_name</key>
+                <value>$;I_FILE_NAME$;</value>
+            </param>
+            <param>
+                <key>--iter_dir</key>
+                <value>$;I_DIR$;</value>
+            </param>
+            <param>  
+                <key>--output_directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
