@@ -1,12 +1,6 @@
 #!/usr/bin/perl
-                                                                               
-eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
+# tabula_rasa.pl
+# execute a user-provided input_command in an iterator
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -39,9 +33,10 @@ my %replacements = (
 foreach (keys %replacements) {
 #    print "$_ => $replacements{$_}\n";
     $cmd =~ s/\$;$_\$;/$replacements{$_}/g;
+#    $cmd =~ s/$_/$replacements{$_}/g;
 }
 # print "Revised cmd:  $cmd\n";
 
-die "Unresolved variables in command ($cmd)" if ($cmd =~ /\$;/);
+die "Unresolved variables in command ($cmd)" if ($cmd =~ /[\$;]/);
 
 exec $cmd;
