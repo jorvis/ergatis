@@ -885,11 +885,9 @@ subfeature_mapping  :
 
 tabula_rasa	:
 	@echo "Installing tabula_rasa workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/tabula_rasa/tabula_rasa-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tabula_rasa/tabula_rasa-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/tabula_rasa/tabula_rasa.ini $(WORKFLOW_DOCS_DIR)
-	@install components/tabula_rasa/tabula_rasa_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/tabula_rasa/tabula_rasaconf.ini $(WORKFLOW_DOCS_DIR)  
+	@install components/tabula_rasa/tabula_rasa.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tabula_rasa/tabula_rasa.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/tabula_rasa/tabula_rasa.config $(WORKFLOW_DOCS_DIR)
 
 targetp	:
 	@echo "Installing targetp workflows in $(WORKFLOW_DOCS_DIR)"
