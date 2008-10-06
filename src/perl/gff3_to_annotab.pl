@@ -5,7 +5,7 @@
 # For example, this is a line with featuretype cds
 # nmpdr|158878.1.contig.NC_002758 NMPDR   cds ...
 # output is tab-delimited file with columns
-#cds_id    source    taxon_id    contig_id    product_name
+#cds_id    source    taxon_id    contig_id    product_name    [GO assignments]    [EC numbers]
 # ie
 # pathema|ntbc02.1.cds.ORF00001   Pathema 288681  pathema|ntbc02.contig.1 chromosomal replication initiator protein DnaA
 use strict;
@@ -50,12 +50,8 @@ while(my $line=<$FIN>){
 
       # if it's a contig, pull taxon info
       if($elts[2] eq 'contig') {
-	my @split_atts = split(/[;=]/,$elts[8]);
-	
-	die "No attributes on row" if (@split_atts == 0);
-	die "Problem parsing attributes on row" if (@split_atts % 2 == 1);
-	
-	my(%attrs) =@split_atts;
+
+	my(%attrs) = field_to_attributes($elts[8]);
 
 	my(%dbxrefs) = split(/[,:]/,$attrs{'Dbxref'});
 
@@ -68,12 +64,7 @@ while(my $line=<$FIN>){
 
       if($elts[2] eq $type){
 
-	my @split_atts = split(/[;=]/,$elts[8]);
-	
-	die "No attributes on row" if (@split_atts == 0);
-	die "Problem parsing attributes on row" if (@split_atts % 2 == 1);
-	
-	my(%attrs) =@split_atts;
+	my(%attrs) = field_to_attributes($elts[8]);
 
 	# unless a default source was passed in use column 2
 	my $source = (exists $opts{source}) ? $opts{source} : $elts[1];
@@ -85,65 +76,91 @@ while(my $line=<$FIN>){
 	defined($attrs{ID}) || die "Missing 'ID' in attributes";
 	defined($attrs{description}) || die "Missing 'description' in attributes";
 
-	print {$FOUT} join("\t", ($attrs{ID}, $source, $contig2taxon{$contig}, $contig, $attrs{description}))."\n";
+	print {$FOUT} join("\t", ($attrs{ID}, $source, $contig2taxon{$contig}, $contig, $attrs{description}));
 
+	# optional fields
+
+	if ($opts{parse_GO}) {
+	  print {$FOUT} "\t".parse_GO(%attrs); # null or comma-delimited GO ids
+	}
+
+	if ($opts{parse_EC}) {
+	  print {$FOUT} "\t".parse_EC(%attrs); # null or single EC id
+	}
+
+	if ($opts{parse_gene_symbol}) {
+	  print {$FOUT} "\t".parse_gene_symbol(%attrs); # null or value of gene_symbol
+	}
+
+	print {$FOUT} "\n";
 	++$featcount;
       }
     }
-#     else{
-#       #parse fasta
-#       if($line =~ /^>(\S+)/){
-# 	$savefastaentry=0;
-# 	if ( exists($features->{$1}) ) {
-# 	  exists ($features->{$1}->{'save'}) || warn "save not defined for id ($1) on line ($line) dumped: ".Dumper($features->{$1});
-# 	  if( $features->{$1}->{'save'} == 1) {
-# 	    ++$features->{$1}->{'save'};
-# 	    $savefastaentry=1;
-# 	    ++$seqcount;
-# 	  }
-# 	  elsif ($features->{$1}->{'save'} > 1){
-# 	    die "Seen feature $1 more than once";
-# 	  }
-# 	}
-# 	else {
-# 	  #print "No id ($1)\n";
-# 	}
-#       }
-      
-#       if($savefastaentry){
-# 	print {$FOUT} $line;
-#       }
-#     }
   }
 }
 
 #die "Feature ($featcount) != Seqcount ($seqcount)" if ($featcount != $seqcount);
 print "Feature count: $featcount\n";
 
-
-# if(defined $ARGV[1]){
-#     open FILE,">>$ARGV[1]" or die;
-#     foreach my $id (keys %$features){
-# 	if($features->{$id}->{'type'} eq $ARGV[0]){
-# 	    print FILE "$id $features->{$id}->{'center'},$features->{$id}->{'taxon'},$features->{$id}->{'genomic_source'},$features->{$id}->{'description'}\n";
-# 	}
-#     }
-#     close FILE;
-# }
-
-# If(defined $ARGV[2]){
-#     open FILE,">>$ARGV[2]" or die;
-#     print FILE @seqfastaoutbuffer;
-#     close FILE;
-# }
-
-# print @pepfastaoutbuffer;
-
-
-
 #
 # Subs
 #
+
+# Ways EC numbers might be stored:
+# pathema: Dbxref=TIGR_CMR:BAKB_0005,EC:2.7.8.-;
+sub parse_EC {
+  my %attrs = @_;
+
+  if (defined ($attrs{Dbxref})) {
+    # assume comma delimited 
+    # it looks like EC only matches once, but this is a bug if it matches > 1
+    foreach my $full_dbxref (split(/[,]/,$attrs{'Dbxref'})) {
+      if ($full_dbxref =~ /^EC:/) {
+	return $full_dbxref;
+      }
+    }
+  }
+  return 'null';
+}
+
+# Ways GO ids might be stored:
+# pathema:  Ontology_term=GO:0004239,GO:0006464
+sub parse_GO {
+  my %attrs = @_;
+
+  if (defined ($attrs{Ontology_term})) {
+    return $attrs{Ontology_term};
+  } else {
+    return 'null';
+  }
+}
+
+# Ways gene_symbol might be stored:
+# pathema:  gene_symbol=rpmI;
+sub parse_gene_symbol {
+  my %attrs = @_;
+
+  if (defined ($attrs{gene_symbol})) {
+    return $attrs{gene_symbol};
+  } else {
+    return 'null';
+  }
+}
+
+sub field_to_attributes {
+  my $field = shift;
+
+  my @split_atts = split(/[;=]/,$field);
+  
+  die "No attributes on row" if (@split_atts == 0);
+  die "Problem parsing attributes on row" if (@split_atts % 2 == 1);
+  
+  my(%attrs) =@split_atts;
+
+  return %attrs;
+
+}
+
 
 sub parse_options {
     my %options = ();
@@ -152,13 +169,16 @@ sub parse_options {
         'output_annotab|o=s',
         'type|t=s',
         'source|s=s',
+	'parse_GO:i', # optional default 0
+	'parse_EC:i',
+	'parse_gene_symbol:i',	       
         ) || die "Unprocessable option";
 
     (defined($options{input_file})) || die "input_file is required parameter";
     # we may be passed a file name, but the .gz is what is actually there
-    unless (-e $options{input_file}) {
-    $options{input_file} .= ".gz";
-    }
+#    unless (-e $options{input_file}) {
+#    $options{input_file} .= ".gz";
+#    }
     (-r $options{input_file}) || die "input_file ($options{input_file}) not readable: $!";
 
     return %options;
