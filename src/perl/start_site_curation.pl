@@ -653,7 +653,7 @@ sub reverse_complement {
 
 sub parse_input_bsml {
     my ($bsml_file) = @_;
-    my @genes;
+    my @genes = ();
     my %sequences;
 
     $logger->logdie("File does not exist [$bsml_file]") unless( -e $bsml_file );
@@ -662,6 +662,7 @@ sub parse_input_bsml {
         'Sequence' => sub {
             my ($xtwig, $seq_elem) = @_;
             my $seq_id = $seq_elem->att('id');
+            my $seq_class = $seq_elem->att('class');
             my $seq_data_import = $seq_elem->first_child('Seq-data-import');
 
             foreach my $feat_elem ( $seq_elem->find_nodes('//Feature[@class="gene"]') ) {
@@ -686,7 +687,7 @@ sub parse_input_bsml {
 
             #Create the sequence data structure if the sequence had features.
             #Otherwise, it's just a CDS or polypeptide Sequence.
-            if( @genes > 0 ) {
+            if( $seq_class ne 'CDS' && $seq_class ne 'polypeptide' ) {
                 my $sequence = { 
                     'source' => $seq_data_import->att('source'),
                     'identifier' => $seq_data_import->att('identifier'),

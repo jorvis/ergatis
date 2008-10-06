@@ -13,6 +13,7 @@ next
 -gff3_to_annotab.pl: Extracts tabular annotation information for a provided feature type (part of Annotation Evaluation Pipeline)
 -new component: phylip_dnadist, a wrapper for a parallelized version of PHYLIP's dnadist
 -moved RDP and STAP components into a generic 'phylogeny' component group
+-start_site_curation: fixed bug: didn't print Sequence element in changed bsml if Sequence had no Feature children
 
 ergatis-v2r9b1
 --------------
