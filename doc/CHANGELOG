@@ -1,6 +1,7 @@
 next
 ----
--src/perl: added script_template.pl as s template for people adding perl scripts to Ergatis
+-bug #2142533: corrected File::Find options for proper functioning on NFS
+-src/perl: added script_template.pl as a template for people adding perl scripts to Ergatis
 -documentation: added pipeline creation tutorial to interface
 -bsml2chado: PostgreSQL chado ddls corrected to prevent failure in createindex step
 -ps_scan: added --pfscan and --psa2msa options to include paths to the respective binaries. Also added $;PFSCAN$; and $;PSA2MSA$; variables to default software config.
