@@ -70,9 +70,13 @@ while(my $line=<$FIN>){
 	  if( $features->{$1}->{'save'} == 1) {
 	    $savefastaentry=1;
 	    ++$seqcount;
+	    --$features->{$1}->{'save'};
 	  }
 	  elsif ($features->{$1}->{'save'} > 1){
 	    die "Seen feature $1 ".$features->{$1}->{'save'}." > 1 times in $opts{input_file}";
+	  }
+	  else { # if save was decremented to 0, then we saw this already
+	    die "Feature $1 associated with > 1 sequence";
 	  }
 	}
 	else {
