@@ -145,7 +145,15 @@ sub parse_gene_symbol {
 sub field_to_attributes {
   my $field = shift;
 
+  #remove empty keypairs
+  $field =~ s/;;+/;/g;
+
   my @split_atts = split(/[;=]/,$field);
+
+  # because above dies on ;; in attribute field...
+#  foreach my $keypair ( split( /[;]/, $field) ) {
+#    print "$keypair\n";
+#  }
   
   die "No attributes on row" if (@split_atts == 0);
   die "Odd number of keys parsed from attribute field ($field)" if (@split_atts % 2 == 1);
