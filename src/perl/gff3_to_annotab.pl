@@ -42,8 +42,8 @@ while(my $line=<$FIN>){
       my (@elts) = split(/\t/,$line);
       $elts[2] = lc($elts[2]);
 
-      # if it's a contig, pull taxon info
-      if($elts[2] eq 'contig') {
+      # if it's a contig or supercontig (apidb), pull taxon info
+      if($elts[2] eq 'contig' || $elts[2] eq 'supercontig') {
 
 	my(%attrs) = field_to_attributes($elts[8]);
 
