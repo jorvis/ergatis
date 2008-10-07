@@ -67,8 +67,8 @@ while(my $line=<$FIN>){
 	exists ($contig2taxon{$contig}) || die "Missing taxon for contig ($contig)";
 	my $taxon = $contig2taxon{$contig};
        
-	defined($attrs{ID}) || die "Missing 'ID' in attributes";
-	defined($attrs{description}) || die "Missing 'description' in attributes";
+	defined($attrs{ID}) || die "Missing 'ID' in attributes ( $opts{input_file} )";
+	defined($attrs{description}) || die "Missing 'description' in attributes ( $opts{input_file} )";
 
 	print {$FOUT} join("\t", ($attrs{ID}, $source, $contig2taxon{$contig}, $contig, $attrs{description}));
 
@@ -164,7 +164,7 @@ sub field_to_attributes {
 #  }
   
   die "No attributes on row" if (@split_atts == 0);
-  die "Odd number of keys parsed from attribute field ($field)" if (@split_atts % 2 == 1);
+  die "Odd number of keys parsed from attribute field ($field) in (  $opts{input_file} )" if (@split_atts % 2 == 1);
   
   my(%attrs) =@split_atts;
 

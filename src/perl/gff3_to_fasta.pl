@@ -48,7 +48,7 @@ while(my $line=<$FIN>){
 	#exists($attrs{ID}) || die "Unable to parse ID from attributes";
 	
 	#my(%dbxrefs) = split(/[,:]/,$attrs{'Dbxref'});
-	$features->{$attrs{'ID'}}->{'save'}=1;
+	++$features->{$attrs{'ID'}}->{'save'};
 
 	++$featcount;
 
@@ -66,14 +66,13 @@ while(my $line=<$FIN>){
       if($line =~ /^>(\S+)/){
 	$savefastaentry=0;
 	if ( exists($features->{$1}) ) {
-	  exists ($features->{$1}->{'save'}) || warn "save not defined for id ($1) on line ($line) dumped: ".Dumper($features->{$1});
+	  exists ($features->{$1}->{'save'}) || warn "save not defined for id ($1) on line ($line) dumped in ($opts{input_file}): ".Dumper($features->{$1});
 	  if( $features->{$1}->{'save'} == 1) {
-	    ++$features->{$1}->{'save'};
 	    $savefastaentry=1;
 	    ++$seqcount;
 	  }
 	  elsif ($features->{$1}->{'save'} > 1){
-	    die "Seen feature $1 more than once";
+	    die "Seen feature $1 ".$features->{$1}->{'save'}." > 1 times in $opts{input_file}";
 	  }
 	}
 	else {
@@ -127,7 +126,7 @@ sub field_to_attributes {
 #  }
 
   die "No attributes on row" if (@split_atts == 0);
-  die "Odd number of keys parsed from attribute field ($field)" if (@split_atts % 2 == 1);
+  die "Odd number of keys parsed from attribute field ($field) in (  $opts{input_file} )" if (@split_atts % 2 == 1);
   
   my(%attrs) =@split_atts;
 
