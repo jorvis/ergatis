@@ -111,8 +111,16 @@ sub field_to_attributes {
   #remove empty keypairs
   $field =~ s/;;+/;/g;
 
+  #remove trailing keypairs
+  $field =~ s/;\s*$//g;
+
   my @split_atts = split(/[;=]/,$field);
   
+  # remove leading spaces
+  foreach (@split_atts) {
+    $_ =~ s/^\s+//;
+  }
+
   # because above dies on ;; in attribute field...
 #  foreach my $keypair ( split( /[;]/, $field) ) {
 #    print "$keypair\n";
