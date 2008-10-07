@@ -1,9 +1,5 @@
 #!/usr/bin/perl
 
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME 
 
 join_multifasta.pl  - joins a set of fasta input files into one multifasta file
@@ -56,9 +52,11 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use File::Find;
-BEGIN {
 use Ergatis::Logger;
-}
+
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
 
 my %options = ();
 my $results = GetOptions (\%options, 

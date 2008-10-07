@@ -21,6 +21,10 @@ use MLDBM 'DB_File';
 $|++;
 #################################
 
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
+
 ### Globals ##############
 my @inputFiles;
 my $sequenceSource;

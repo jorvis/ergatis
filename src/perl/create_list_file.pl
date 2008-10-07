@@ -1,7 +1,4 @@
 #!/usr/bin/perl
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 =head1	NAME
 
@@ -17,7 +14,7 @@ USAGE: create_list_file.pl
 
 =head1	OPTIONS
 
-B<--direcotry,-d>
+B<--directory,-d>
 	Location of the directory to search.  No wild card characters should be
     used in the directory.
     (Default: current directory)
@@ -69,6 +66,10 @@ use warnings;
 use File::Find;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Cwd;
+
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
 
 #GLOBAL VARIABLES##########################################################
 my $directory = getcwd;     #The directory to search

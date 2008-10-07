@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1 NAME
 
 promote_gene_prediction.pl - will create bsml documents that will represent working models from gene 
@@ -96,6 +91,10 @@ use XML::Twig;
 use File::Copy;
 use File::Find;
 use Data::Dumper;
+
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
 
 my %options = ();
 my $results = GetOptions (\%options, 

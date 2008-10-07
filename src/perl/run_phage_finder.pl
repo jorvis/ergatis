@@ -1,7 +1,4 @@
 #!/usr/bin/perl
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 use strict;
 use warnings;
@@ -11,6 +8,10 @@ use Ergatis::Logger;
 use File::Find;
 use XML::Twig;
 use Data::Dumper;
+
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
 
 ######################### GLOBALS AND CONSTANTS ####################################
 my $input_file;

@@ -96,6 +96,10 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Ergatis::Logger;
 use Pod::Usage;
 
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
+
 ## globals
 my $DEFAULT_TMP_DIR = '/tmp';
 my $DEFAULT_WORKER_OUTPUT_REGEX = '^\S+\.distances$';

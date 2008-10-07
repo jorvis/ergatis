@@ -1,7 +1,4 @@
 #!/usr/bin/perl
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 #./auto_annotate --input_file input/cya1.assembly.9.1.bsml --output_dir output/ --hmm_analysis input/hmmpfam.bsml.list --ber_input input/ber.bsml.list --hmm_info_db /usr/local/annotation/MOORE/data_dbs/hmmInfo.db --panda_header_offsets /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda --panda_header_file /usr/local/devel/ANNOTATION/kgalens/data_dbs/parsedPanda_header --role_info_db /usr/local/devel/ANNOTATION/kgalens/data_dbs/roleInfo.db
 
@@ -20,6 +17,9 @@ require "/home/kgalens/data/autoAnnotate.data";
 require "/home/kgalens/bin/sharedRoutines.pl";
 $|++;
 
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
 
 ##################### GLOBALS AND CONSTANTS #######################################
 my @inputFiles;                             #The list of input files

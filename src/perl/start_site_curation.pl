@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 
 =head1 NAME
 
@@ -161,6 +161,10 @@ use File::OpenFile qw(open_file);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use MLDBM 'DB_File';
 use DB_File;
+
+## required for proper operation on NFS
+##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
+$File::Find::dont_use_nlink = 1;
 
 ############# PARAMETERS ########################
 ## See perldoc for explanation of parameters.
