@@ -13,19 +13,14 @@ use warnings;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
-use CGI qw/escape unescape/;
+#use CGI qw/escape unescape/;
 #use Data::Dumper;
 
 my %opts = &parse_options();
 
 my $type = $opts{type};
 
-#my $features = {};
 my $fastadirective=0;
-#my $savefastaentry=0;
-#my $currfeature;
-#my @pepfastaoutbuffer;
-#my @seqfastaoutbuffer;
 
 my %contig2taxon;
 
@@ -35,9 +30,8 @@ my $seqcount = 0;
 open (my $FIN, $opts{input_file}) || die "Unable to open input_file ($opts{input_file}): $!";
 open (my $FOUT, ">$opts{output_annotab}") || die "Unable to open output_annotab ($opts{output_annotab}): $!";
 
-#while(my $line=<STDIN>){
 while(my $line=<$FIN>){
-  $line = unescape($line);
+  #$line = unescape($line);
   if($line =~ /^\#\#FASTA/){
     $fastadirective=1;
   }
@@ -147,13 +141,14 @@ sub parse_gene_symbol {
   }
 }
 
+#shared w/ gff3_to_fasta.pl
 sub field_to_attributes {
   my $field = shift;
 
   my @split_atts = split(/[;=]/,$field);
   
   die "No attributes on row" if (@split_atts == 0);
-  die "Problem parsing attributes on row" if (@split_atts % 2 == 1);
+  die "Odd number of keys parsed from attribute field ($field)" if (@split_atts % 2 == 1);
   
   my(%attrs) =@split_atts;
 

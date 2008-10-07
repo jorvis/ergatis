@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 #./gff2fasta.pl [featuretype] [keysfile]
-#./gff3_to_fasta.pl --type|t <featuretype> --input_gff3|i <file> --output_fasta|o <file>
+#./gff3_to_fasta.pl --type|t <featuretype> --input_file|i <file> --output_fasta|o <file>
 # featuretype is stored in column 3 of gff3 
 # For example, this is a line with featuretype cds
 # nmpdr|158878.1.contig.NC_002758 NMPDR   cds ...
@@ -11,9 +11,8 @@ use warnings;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
-use CGI qw/escape unescape/;
-use Data::Dumper;
-
+#use CGI qw/escape unescape/;
+#use Data::Dumper;
 
 my %opts = &parse_options();
 
@@ -23,8 +22,6 @@ my $features = {};
 my $fastadirective=0;
 my $savefastaentry=0;
 my $currfeature;
-my @pepfastaoutbuffer;
-#my @seqfastaoutbuffer;
 
 my $featcount = 0;
 my $seqcount = 0;
@@ -32,9 +29,8 @@ my $seqcount = 0;
 open (my $FIN, $opts{input_file}) || die "Unable to open input_file ($opts{input_file}): $!";
 open (my $FOUT, ">$opts{output_fasta}") || die "Unable to open output_fasta ($opts{output_fasta}): $!";
 
-#while(my $line=<STDIN>){
 while(my $line=<$FIN>){
-  $line = unescape($line);
+#  $line = unescape($line);
   if($line =~ /^\#\#FASTA/){
     $fastadirective=1;
   }
@@ -47,17 +43,10 @@ while(my $line=<$FIN>){
 
       if($elts[2] eq $type){
 
-	my @split_atts = split(/[;=]/,$elts[8]);
-	
-	die "No attributes on row" if (@split_atts == 0);
-	die "Problem parsing attributes on row" if (@split_atts % 2 == 1);
-	
-	my(%attrs) =@split_atts;
+	my(%attrs) = field_to_attributes($elts[8]);
 
 	#exists($attrs{ID}) || die "Unable to parse ID from attributes";
 	
-	#die "line: $line" if ($attrs{ID} eq 'pathema|gb21.contig.76');
-
 	#my(%dbxrefs) = split(/[,:]/,$attrs{'Dbxref'});
 	$features->{$attrs{'ID'}}->{'save'}=1;
 
@@ -103,37 +92,32 @@ while(my $line=<$FIN>){
 if ($featcount != $seqcount) {
   my $miss_seq_txt ='';
   foreach my $id (keys %{$features}) {
-    $miss_seq_txt .= "$id\n" if ($features->{$id}->{save} == 1);
+    $miss_seq_txt .= "missing sequence:\t$opts{input_file}\t$id\n" if ($features->{$id}->{save} == 1);
   }
-  die "Feature ($featcount) != Seqcount ($seqcount).  Missing features:\n".$miss_seq_txt;
+  warn "Feature ($featcount) != Seqcount ($seqcount).  Missing features:\n".$miss_seq_txt;
 }
 
 print "Feature count: $featcount\nSequence count: $seqcount\n";
 
 
-# if(defined $ARGV[1]){
-#     open FILE,">>$ARGV[1]" or die;
-#     foreach my $id (keys %$features){
-# 	if($features->{$id}->{'type'} eq $ARGV[0]){
-# 	    print FILE "$id $features->{$id}->{'center'},$features->{$id}->{'taxon'},$features->{$id}->{'genomic_source'},$features->{$id}->{'description'}\n";
-# 	}
-#     }
-#     close FILE;
-# }
-
-# If(defined $ARGV[2]){
-#     open FILE,">>$ARGV[2]" or die;
-#     print FILE @seqfastaoutbuffer;
-#     close FILE;
-# }
-
-# print @pepfastaoutbuffer;
-
-
-
 #
 # Subs
 #
+
+#shared w/ gff3_to_annotab.pl
+sub field_to_attributes {
+  my $field = shift;
+
+  my @split_atts = split(/[;=]/,$field);
+  
+  die "No attributes on row" if (@split_atts == 0);
+  die "Odd number of keys parsed from attribute field ($field)" if (@split_atts % 2 == 1);
+  
+  my(%attrs) =@split_atts;
+
+  return %attrs;
+
+}
 
 sub parse_options {
     my %options = ();
