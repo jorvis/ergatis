@@ -91,6 +91,8 @@ while(my $line=<$FIN>){
   }
 }
 
+close($FOUT);
+
 # if we never found a sequence for a feature, then save will still be 1
 if ($featcount != $seqcount) {
   my $miss_seq_txt ='';
@@ -101,7 +103,7 @@ if ($featcount != $seqcount) {
 }
 
 # die if we never found any sequences
-die "Missing all sequences in $opts{input_file}" if (-z $opts{output_fasta});
+die "Empty fasta output from $opts{input_file}" if (-z $opts{output_fasta});
 
 
 
