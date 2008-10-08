@@ -98,11 +98,10 @@ if ($featcount != $seqcount) {
     $miss_seq_txt .= "missing sequence:\t$opts{input_file}\t$id\n" if ($features->{$id}->{save} == 1);
   }
   warn "Feature ($featcount) != Seqcount ($seqcount).  Missing features:\n".$miss_seq_txt;
-
-  # die if we never found any sequences
-  die "Missing all sequences in $opts{input_file}" if (-z $opts{output_fasta});
 }
 
+# die if we never found any sequences
+die "Missing all sequences in $opts{input_file}" if (-z $opts{output_fasta});
 
 
 
