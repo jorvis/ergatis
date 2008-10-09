@@ -12,14 +12,16 @@ process_file( $source_file );
 
 print "command summary:\n";
 
-my $total = 0;
+my $total_time = 0;
+my $total_count = 0;
 
 foreach my $cmd ( keys %cmds ) {
-    $total += $cmds{$cmd}{time};
+    $total_time += $cmds{$cmd}{time};
     print "\t$cmd - count: $cmds{$cmd}{count} - time: $cmds{$cmd}{time}s\n";
 }
 
-print "\ntotal CPU time: ${total}s\n\n";
+print "\ntotal CPU time: ${total_time}s\n";
+print "total command count: $total_count\n\n";
 
 exit();
 
