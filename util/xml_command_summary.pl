@@ -15,8 +15,8 @@ print "command summary:\n";
 my $total = 0;
 
 foreach my $cmd ( keys %cmds ) {
-    $total += $cmds{$cmd};
-    print "\t$cmd - $cmds{$cmd}s\n";
+    $total += $cmds{$cmd}{time};
+    print "\t$cmd - count: $cmds{$cmd}{count} - time: $cmds{$cmd}{time}s\n";
 }
 
 print "\ntotal CPU time: ${total}s\n\n";
@@ -35,7 +35,8 @@ sub process_file {
                            twig_roots => {
                                'command' => sub {
                                    my ($t, $elt) = @_;
-                                   $cmds{ $elt->first_child('name')->text() } += time_info( $elt );
+                                   $cmds{ $elt->first_child('name')->text() }{time} += time_info( $elt );
+                                   $cmds{ $elt->first_child('name')->text() }{count}++;
                                },
                                'commandSet/fileName' => sub {
                                    my ($t, $elt) = @_;
