@@ -17,6 +17,7 @@ next
 -new component: phylip_dnadist, a wrapper for a parallelized version of PHYLIP's dnadist
 -moved RDP and STAP components into a generic 'phylogeny' component group
 -start_site_curation: fixed bug: didn't print Sequence element in changed bsml if Sequence had no Feature children
+-hmmpfam2htab.pl: Appended process id ($$) to /tmp directory to prevent concurrent executions from sharing (and wiping) the tmp dir
 
 ergatis-v2r9b1
 --------------
