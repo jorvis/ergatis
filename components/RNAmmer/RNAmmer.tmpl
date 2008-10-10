@@ -1,0 +1,39 @@
+<!-- component documentation -->
+
+<p>
+    This component uses the RNAmmer package to identify ribosomal genes within genome sequences
+    of organisms of any of the three super kingdoms.
+</p>
+<h3>availability</h3>
+<p>
+    Distributed by the <a href='http://cbs.dtu.dk'>Center for Biological Sequence Analysis</a>,
+    RNAmmer is freely available to academic, education or research institutions but commercial
+    entities must gain a license.
+</p>
+<h3>references</h3>
+<p>
+    Lagesen K, Hallin P, Rødland EA, Staerfeldt HH, Rognes T, Ussery DW.<br>
+    RNAmmer: consistent and rapid annotation of ribosomal RNA genes.<br>
+    Nucleic Acids Res. 2007;35(9):3100-8. Epub 2007 Apr 22.<br>
+    PMID: <a href='http://www.ncbi.nlm.nih.gov/pubmed/17452365'>17452365</a>
+</p>
+<h3>input</h3>
+<p>
+    Like the program itself, this component accepts FASTA files as input.  Specifically, the input
+    is genomic sequence.  If you have a single
+    file containing multiple sequences in FASTA format, you can use the 
+    <a href='./documentation.cgi?article=components&page=split_multifasta'>split_multifasta</a>
+    component first to generate individual sequences, allowing them to be atomically searched
+    and individually managed on the grid.
+</p>
+<h3>implemented options</h3>
+<p>
+    All options of the rnammer executable are currently implemented except for -multi, which
+    spawns parallel processes (bad for grid job management).  Available options include super
+    kingdom specification and model type(s) to search for.
+</p>
+<h3>output</h3>
+<p>
+    The native tool creates output in several formats including an XML, GFF2, FASTA and an HMM 
+    search report.  All these are maintained by the component.
+</p>
