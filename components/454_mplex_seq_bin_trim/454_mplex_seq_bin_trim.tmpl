@@ -1,0 +1,122 @@
+<!-- component documentation -->
+<p>
+This component is a special-purpose program for binning (demultiplexing) barcoded sequences
+from a multiplex 454 sequencing run.
+
+It takes a set of barcoded sequences, groups them by barcode and trims primers.  The component
+takes as input a single multi-FASTA file of sequences and divides them amongst a set of
+output files based on the persence of an embedded sequence barcode (e.g., "ACACACTG").
+The component will trim the barcode sequence off each sequence, in addition to trimming 
+the reverse and forward primers (REVERSE_PRIMER and FORWARD_PRIMER), if they can
+be found.  The TRIM option can be used to specify the trimming behavior: trim neither
+the barcode nor the primers, trim only the barcode, or trim both the primers and the
+barcode.
+
+Each sequence with a recognizable barcode will be placed in an output file whose name
+contains both the barcode and also the well/sample ID specified for that barcode in 
+the BARCODE_FILE.  For example, if the input sequence file is "input.fsa", the barcode
+detected in the sequence is "TGCATCGA", and the sample id that corresponds to that 
+barcode is "H12" then the (trimmed) sequence will be placed in one of the following 
+two files:
+
+input.fsa.H12.TGCATCGA.filtered
+input.fsa.H12.TGCATCGA.discarded
+
+A sequence will be placed in the ".filtered" file if both the barcode and the reverse
+primer can be found (within MAX_EDIT_DIST), and the length of the sequence after 
+trimming is greater than or equal to the minimum value specified by MIN_LENGTH.
+If the reverse primer cannot be found or the length of the sequence after trimming is
+below the threshold then the (perhaps partially trimmed) sequence will be placed in 
+the ".discarded" file.  (If reverse primer trimming is disabled then the presence of
+the reverse primer isn't required for the sequence to be placed in the ".filtered"
+file.)  Any sequence without a recognizable barcode will be placed in a discard
+file named based solely on the input file, e.g.:
+
+test.fsa.discarded
+
+The FASTA header line of the sequences (in both the .filtered and .discarded files) 
+will be updated to reflect the trimming and barcode/primer matching.  For example, 
+in the following defline:
+
+>000123_456_789 length=261 uaccno=XXFABC40343|E01|CTGAGTGT|trimmed_length:232|rev_primer_mismatches:0|fwd_primer_mismatches:NA
+
+The new fields are:
+
+E01: 
+ well/sample id that corresponds to the barcode 'CTGAGTGT'
+CTGAGTGT: 
+ literal barcode that was identified in the sequence (and trimmed, unless TRIM=none)
+trimmed_length
+ the length of the sequence after trimming the barcode and/or primers
+rev_primer_mismatches: 
+ edit distance between the canonical reverse primer given by REVERSE_PRIMER and the 
+ primer found in the sequence.  should always be <= MAX_EDIT_DIST.  "NA" means that
+ the primer was not found.
+fwd_primer_mismatches:
+ edit distance between the canonical forward primer given by FORWARD_PRIMER and the 
+ primer found in the sequence.  this value will always be either 0 (exact match) or 
+ "NA" (no match) since approximate matching of forward primers is not yet supported.
+</p>
+
+<h3>references</h3>
+<p>
+<!--
+  <ul>
+   <li></li>
+  </ul>
+-->
+</p>
+
+<h3>algorithm</h3>
+    The component uses a combination of exact string matching (for the barcode and forward primer) and 
+    approximate string matching with the Perl module Text::LevenshteinXS (for the reverse primer and 
+    optional linker sequence).
+
+<h3>input</h3>
+<p>
+    The component accepts a multi-FASTA file of multiplex 454 sequences as input.
+</p>
+
+<h3>implemented options</h3>
+<p>
+   <ul>
+        <li><span style='font-weight: bold;'>$;INPUT_FILE$;</span> - multi-FASTA file of input sequences<li>
+        <li><span style='font-weight: bold;'>$;BARCODE_FILE$;</span> - whitespace delimited file mapping sequence barcodes to well/sample ids<li>
+        <li><span style='font-weight: bold;'>$;MAX_BARCODE_OFFSET$;</span> - maximum number of characterst to allow at the beginning of the sequence before matching a barcode<li>
+        <li><span style='font-weight: bold;'>$;REVERSE_PRIMER$;</span> - reverse primer sequence that should match immediately after the barcode sequence<li>
+        <li><span style='font-weight: bold;'>$;MAX_EDIT_DIST$;</span> - maximum number of substitutions and indels to allow when matching REVERSE_PRIMER<li>
+        <li><span style='font-weight: bold;'>$;FORWARD_PRIMER$;</span> - forward primer sequence to search for somewhere after the REVERSE_PRIMER in the sequence <li>
+        <li><span style='font-weight: bold;'>$;TRIM$;</span> - either 'all', 'barcodes', or 'none'<li>
+        <li><span style='font-weight: bold;'>$;MIN_LENGTH$;</span> - minimum sequence length after trimming<li>
+   </ul>
+</p>
+
+<h3>output</h3>
+<p>
+
+A set of multi-FASTA formatted files as described above.  The script also prints the 
+following information to STDOUT:
+
+Levenshtein edit distance histogram for reverse RNA primer:
+
+    distance      num_seqs
+           0        239058
+           1          5014
+           2*          289
+
+       total        244361
+* - setting for --max_edit_dist
+
+Indel count histogram for reverse RNA primer:
+
+      indels      num_seqs
+          -2           155
+          -1          1925
+           0        241723
+           1           503
+           2            55
+
+       total        244361
+
+Number of reverse primers that match exactly except for missing CA linker: 45
+</p>
