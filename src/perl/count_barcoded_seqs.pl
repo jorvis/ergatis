@@ -294,8 +294,8 @@ sub count_multi_FASTA_seqs {
             # old defline format
             ++$nnrp if ($line =~ /no primer/i);
             # new defline format
-            ++$nnrp if ($line =~ /rev_primer_mismatches:\s+NA/i);
-            ++$nnfp if ($line =~ /fwd_primer_mismatches:\s+NA/i);
+            ++$nnrp if ($line =~ /rev_primer_mismatches:\s*NA/i);
+            ++$nnfp if ($line =~ /fwd_primer_mismatches:\s*NA/i);
         }
     }
     $fh->close();
