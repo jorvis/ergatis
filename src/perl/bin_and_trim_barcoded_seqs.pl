@@ -246,7 +246,7 @@ my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile, 'LOG_LEVEL'=>$options->{'
 $logger = Ergatis::Logger::get_logger();
 
 ## MAIN SECTION
-my $barcodes = get_barcode_plate_mapping($options->{'barcode_file'});
+my $barcodes = get_barcode_plate_mapping($logger, $options->{'barcode_file'});
 my $input_file = $options->{'input_file'};
 my $input_basefilename = basename($input_file);
 my $output_dir = $options->{'output_dir'};
@@ -390,12 +390,12 @@ sub check_and_reset {
 
 			# trim reverse and forward primers unless --trim=barcodes|none
 			if ( $options->{'trim'} !~ /barcodes/ ) {
-				($trimseq, $rev_edit_dist) = trim_reverse_primer( $options, $logger, $header, \$trimseq, $options->{'reverse_primer'} );
+				($trimseq, $rev_edit_dist) = trim_reverse_primer( $options, $logger, $header, \$trimseq, uc($options->{'reverse_primer'}) );
                 ++$NUM_SEQS_WITH_BARCODE_AND_REV_PRIMER if (defined($trimseq));
 				$seq_leng = length($trimseq);
 
                 # trim forward primer, if present
-                my ($f_trim, $f_ed) = trim_forward_primer( $header, \$trimseq, $options->{'forward_primer'});
+                my ($f_trim, $f_ed) = trim_forward_primer( $header, \$trimseq, uc($options->{'forward_primer'}));
                 if (defined($f_trim)) {
                     $trimseq = $f_trim;
                     $fwd_edit_dist = $f_ed;
@@ -648,10 +648,11 @@ sub trim_reverse_primer {
 
 # get mapping from barcode to well/sample id
 #
+# $logger - Ergatis::Logger
 # $barcode_file - full path to file that contains barcode - well/sample ID mapping
 #
 sub get_barcode_plate_mapping {
-    my($barcode_file) = @_;
+    my($logger, $barcode_file) = @_;
 	my %barcodes;
     my $different_lengths = 0;
 
