@@ -12,7 +12,8 @@ dnadist_worker_wrapper.pl
          --start_cell=10
          --end_cell=20
          --output_file=/path/to/partial_output.dnadist
-        [--log=/path/to/some.log
+        [--instance_limit=2
+         --log=/path/to/some.log
          --debug=4 ]
 
 =head1 OPTIONS
@@ -34,9 +35,14 @@ B<--end_cell,-e>
 B<--output_file,-o>
     path to the file in which to store the (partial) dnadist output.
 
+B<--instance_limit,-i>
+    optional.  run no more than this number of dnadist_worker_wrapper jobs on any
+    given machine (this is an ad-hoc architecture-dependent workaround; use at
+    your peril.)
+
 B<--log,-l> 
     optional.  path to a log file the script should create.  will be overwritten if
-    already exists.
+    it already exists.
     
 B<--debug,-d> 
     optional.  the debug level for the logger (an integer)
@@ -89,6 +95,7 @@ my $options = {};
             "start_cell|s=i",
             "end_cell|e=i",
             "output_file|o=s",
+            "instance_limit|i=i",
             "log|l=s",
             "debug|d=i",
             "help|h",
@@ -107,6 +114,7 @@ my $logger = new Ergatis::Logger('LOG_FILE' => $logfile, 'LOG_LEVEL' => $options
 $logger = $logger->get_logger();
 
 ## main program
+&enforce_instance_limit($logger, $options->{'instance_limit'});
 
 # construct dnadist_worker command line
 my $cmd = "cat " . $options->{'control_file'} . " | ";
@@ -167,6 +175,60 @@ sub check_parameters {
     if ($options->{'start_cell'} > $options->{'end_cell'}) {
         die "--start_cell must be <= --end_cell";
     }
+
+    if (defined($options->{'instance_limit'})) {
+        if ($options->{'instance_limit'} < 1) {
+            $options->{'instance_limit'} = 1;
+        }
+    }
     
     ## defaults
+}
+
+# this is an ad-hoc workaround for problems introduced when too many dnadist_worker
+# processes are active on the same machine.
+sub enforce_instance_limit {
+    my($logger, $limit) = @_;
+
+    if (defined($limit)) {
+        # always be extra-careful before entering an infinite loop...
+        $limit = 1 if (($limit < 1) || ($limit !~ /^\d+$/));
+        my $self_regex = $0;
+        $self_regex =~ s/\//\\\//g;
+
+        while (1) {
+            my $ps = `ps -f`;
+            my $procs = [];
+            my $ppid = undef;
+            my $my_ppid = undef;
+            
+            $logger->debug("$$: checking 'ps' output");
+            foreach my $proc (split(/\n/, $ps)) {
+                my($uid, $pid, $ppid, $cmd) = ($proc =~ /^(\d+)\s+(\d+)\s+(\d+)\s+\d+\s+[\d\:]+\s+\S+\s+\S+\s+(\S.*)$/);
+                if ($cmd =~ /$self_regex/) {
+                    $logger->debug("$$: uid=$uid pid=$pid ppid=$ppid cmd=$cmd");
+                    push(@$procs, [$uid, $pid, $ppid, $cmd]);
+                    $my_ppid = $ppid if ($pid == $$);
+                }
+            }
+    
+            my @siblings = grep { $_->[2] == $my_ppid } @$procs;
+            my @sorted = sort { $a->[1] <=> $b->[1] } @siblings;
+
+            my $rank = undef;
+            my $ns = scalar(@sorted);
+            for (my $i = 0;$i < $ns;++$i) {
+                if ($sorted[$i]->[1] == $$) {
+                    $rank = $i + 1;
+                    last;
+                }
+            }
+
+            $logger->debug("$$: my_ppid=$my_ppid, rank=$rank, limit=$limit");
+            last if ($rank <= $limit);
+            $logger->debug("$$: sleeping");
+            sleep(30);
+        }
+        $logger->debug("$$: running");
+    }
 }
