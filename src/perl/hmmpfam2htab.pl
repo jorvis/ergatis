@@ -198,7 +198,7 @@ sub generate_htab {
 
     #If the hmmer output file is in multi sequence format, HmmTools.pm can't handle it.
     #So we will add the functionality here.
-    my $tmp_dir = "/tmp/hmmpfam2htab";
+    my $tmp_dir = "/tmp/hmmpfam2htab/$$"; #append process id
     my @tmp_files = &write_tmp_files( $file, $tmp_dir );
 
     foreach my $tmp_file ( @tmp_files ) {
