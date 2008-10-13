@@ -21,6 +21,10 @@
                 <value>$;TYPE$;</value>
             </param>
             <param>  
+                <key>--sequence_type</key>
+                <value>$;SEQUENCE_TYPE$;</value>
+            </param>
+            <param>  
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>

@@ -1,22 +1,27 @@
 #!/usr/bin/perl
 
 #./gff2fasta.pl [featuretype] [keysfile]
-#./gff3_to_fasta.pl --type|t <featuretype> --input_file|i <file> --output_fasta|o <file>
+#./gff3_to_fasta.pl --type|t <featuretype> --input_file|i <file> --output_fasta|o <file> [--sequence_type|s <featuretype]
 # featuretype is stored in column 3 of gff3 
 # For example, this is a line with featuretype cds
 # nmpdr|158878.1.contig.NC_002758 NMPDR   cds ...
-# only sequences of featuretype will be added to fasta file
+# only sequences of type featuretype will be added to fasta file
+# the optional parameter sequence_type specifies the type of the child features assiated
+# with the Parent featuretype that should be used for the Fasta sequence
+# This is needed to associate cds sequences with their parent mrnas
+
 use strict;
 use warnings;
 
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 #use CGI qw/escape unescape/;
-#use Data::Dumper;
+use Data::Dumper;
 
 my %opts = &parse_options();
 
 my $type = $opts{type};
+my $sequence_type = $opts{sequence_type};
 
 my $features = {};
 my $fastadirective=0;
@@ -25,6 +30,11 @@ my $currfeature;
 
 my $featcount = 0;
 my $seqcount = 0;
+
+# map a parent id to its children
+# used for linking sequence_type features to the main featuretype
+my %parent2id;
+my %id2parent;
 
 open (my $FIN, $opts{input_file}) || die "Unable to open input_file ($opts{input_file}): $!";
 open (my $FOUT, ">$opts{output_fasta}") || die "Unable to open output_fasta ($opts{output_fasta}): $!";
@@ -60,27 +70,48 @@ while(my $line=<$FIN>){
 #	$features->{$attrs{'ID'}}->{'type'} = $elts[2];
 
       }
+      elsif ($elts[2] eq $sequence_type){ # hopefully we never get a sequence type of 0
+	my(%attrs) = field_to_attributes($elts[8]);
+
+	foreach ('ID', 'Parent') {
+	  exists($attrs{$_}) || die "Unable to parse $_ from attributes";
+	}
+
+	++$parent2id{$attrs{Parent}}->{$attrs{ID}}; # increase count of this map
+	++$id2parent{$attrs{ID}}->{$attrs{Parent}}; # increase count of this map
+
+      }
     }
     else{
       #parse fasta
       if($line =~ /^>(\S+)/){
 	$savefastaentry=0;
-	if ( exists($features->{$1}) ) {
-	  exists ($features->{$1}->{'save'}) || warn "save not defined for id ($1) on line ($line) dumped in ($opts{input_file}): ".Dumper($features->{$1});
-	  if( $features->{$1}->{'save'} == 1) {
-	    $savefastaentry=1;
-	    ++$seqcount;
-	    --$features->{$1}->{'save'};
+	my $id = $1;
+	# are we outputting child sequences instead of the parent?
+	if ( $sequence_type ) {
+	  next unless (defined $id2parent{$id});
+	  if ( scalar(keys %{$id2parent{$id}}) > 1 ) {
+	    die "Child id $id mapped to > 1 Parents:\t". join("\t",(keys %{$id2parent{$id}}));
 	  }
-	  elsif ($features->{$1}->{'save'} > 1){
-	    die "Seen feature $1 ".$features->{$1}->{'save'}." > 1 times in $opts{input_file}";
+
+	  my $parent = (keys %{$id2parent{$id}})[0]; # grab the parent id
+	  
+	  if ( scalar(keys %{$parent2id{$parent}}) > 1 ) {
+	    die "Parent id $parent mapped to > 1 Childen:\t". join("\t",(keys %{$parent2id{$parent}}));
 	  }
-	  else { # if save was decremented to 0, then we saw this already
-	    die "Feature $1 associated with > 1 sequence";
+
+	  # if the parent was of featuretype update seen counts and set savefastaentry=1
+	  if ( exists($features->{$parent}) ) {
+	    track_features_printed($parent, $line);
+	    $line =~ s/^>$id/>$parent\t$id/; # update fasta header
 	  }
 	}
+	# if we don't care about parent type, check if this is of featuretype
+	elsif ( exists($features->{$id}) ) {
+	  track_features_printed($id, $line);
+	}
 	else {
-	  #print "No id ($1)\n";
+	  #print "No id ($id)\n";
 	}
       }
       
@@ -97,9 +128,10 @@ close($FOUT);
 if ($featcount != $seqcount) {
   my $miss_seq_txt ='';
   foreach my $id (keys %{$features}) {
-    $miss_seq_txt .= "missing sequence:\t$opts{input_file}\t$id\n" if ($features->{$id}->{save} == 1);
+#    $miss_seq_txt .= "missing sequence:\t$opts{input_file}\t$id\n" if ($features->{$id}->{save} == 1);
+    $miss_seq_txt .= "\t$id" if ($features->{$id}->{save} == 1);
   }
-  warn "Feature ($featcount) != Seqcount ($seqcount).  Missing features:\n".$miss_seq_txt;
+  warn "Feature / sequence count mismatch ($featcount != $seqcount). Missing features: ".$miss_seq_txt,"\n";
 }
 
 # die if we never found any sequences
@@ -113,6 +145,26 @@ print "Feature count: $featcount\nSequence count: $seqcount\n";
 #
 # Subs
 #
+
+# check if a feature is one that we want to return
+# and if its been returned the correct number of times
+sub track_features_printed {
+  my $id = shift;
+  my $line = shift;
+	  exists ($features->{$id}->{'save'}) || warn "save not defined for id ($id) on line ($line) dumped in ($opts{input_file}): ".Dumper($features->{$id});
+	  if( $features->{$id}->{'save'} == 1) {
+	    $savefastaentry=1;
+	    ++$seqcount;
+	    --$features->{$id}->{'save'};
+	  }
+	  elsif ($features->{$id}->{'save'} > 1){
+	    die "Seen feature $id ".$features->{$id}->{'save'}." > 1 times in $opts{input_file}";
+	  }
+	  else { # if save was decremented to 0, then we saw this already
+	    die "Feature $id associated with > 1 sequence";
+	  }
+
+}
 
 #shared w/ gff3_to_annotab.pl
 sub field_to_attributes {
@@ -151,6 +203,7 @@ sub parse_options {
         'input_file|i=s',
         'output_fasta|o=s',
         'type|t=s',
+        'sequence_type|s=s',
         ) || die "Unprocessable option";
 
     (defined($options{input_file})) || die "input_file is required parameter";
@@ -159,6 +212,8 @@ sub parse_options {
     $options{input_file} .= ".gz";
     }
     (-r $options{input_file}) || die "input_file ($options{input_file}) not readable: $!";
+
+    (defined($options{sequence_type})) || ($options{sequence_type} = 0); # optional, if not provided skip over dealing with it
 
     return %options;
 }
