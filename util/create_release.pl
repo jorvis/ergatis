@@ -24,7 +24,8 @@ B<--new_release_tag>
     This is the name of the tag to be created, such as ergatis-v2r10b1
 
 B<--source_release_tag>
-    Optional.  This is a release based on which tag?  (default = trunk)
+    Optional.  This is a release based on which tag?  If not 'trunk' this should
+    be a branch label.  (default = trunk)
 
 B<--log,-l> 
     Log file
@@ -37,11 +38,16 @@ B<--help,-h>
 
 =head1  DESCRIPTION
 
-steps to doing a full release with example version 'N':
+steps to doing a full release from trunk with example version 'N':
 
 - svn copy trunk to tags/ergatis-N
 - mkdir release/ergatis-N
 - svn propset svn:externals release/ergatis-N  [ definition file ]
+
+steps to doing a full release from branch with example version N
+- svn copy branches/$tag to tags/ergatis-N
+- mkdir release/ergatis-N
+- svn propset svn:externals release/ergatis-N [ definition file ]
 
 steps to create release externals from an existing tag
 
@@ -57,7 +63,9 @@ commands.
 
 =head1  OUTPUT
 
-Just a log - the rest are SVN changes
+Just a log - the rest are SVN changes.  Does create a temporary file with the svn:externals
+definition within the /tmp directory.
+
 
 =head1  CONTACT
 
@@ -94,14 +102,80 @@ my $logger = new Ergatis::Logger('LOG_FILE' =>$logfile,
                                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
-## if the values for the new and source release 
+## set this variable to 1 if you just want to log the commands that would have been run
+my $testing = 0;
 
+## this is reused
+my $cmd;
 
-##
-## CODE HERE
-##
+## if the values for the new and source release are different we need to do an svn copy
+if ( $options{new_release_tag} ne $options{source_release_tag} ) {
+    my ($src_url, $dest_url);
+    
+    if ( $options{source_release_tag} =~ /^head$/i || 
+         $options{source_release_tag} =~ /^trunk$/i   ) {
+
+        $src_url = "$options{svn_repository}/trunk";
+
+    } else {
+        $src_url = "$options{svn_repository}/branches/$options{source_release_tag}";
+    }
+
+    $dest_url = "$options{svn_repository}/tags/$options{new_release_tag}";
+
+    $cmd = "svn copy -m \"$options{new_release_tag} release based off $options{source_release_tag}\" $src_url $dest_url";
+    run_cmd($cmd, "There was a problem tagging version $options{new_release_tag} from version $options{source_release_tag}");
+}
+
+## now create the release directory
+$cmd = "svn mkdir -m \"creating release directory for $options{new_release_tag}\" $options{svn_repository}/release/$options{new_release_tag}";
+run_cmd($cmd, "There was a problem creating the release/$options{new_release_tag} directory");
+
+## we need to write the properties file
+$logger->info("writing svn:externals file to /tmp/$$.externals");
+open(my $externals_fh, ">/tmp/$$.externals") || die "failed to create externals file: $!";
+
+print $externals_fh <<SVN_exteRnAls;
+
+$options{new_release_tag} $options{svn_repository}/tags/$options{new_release_tag}/install
+$options{new_release_tag}/bin $options{svn_repository}/tags/$options{new_release_tag}/src/perl
+$options{new_release_tag}/shell $options{svn_repository}/tags/$options{new_release_tag}/src/shell
+$options{new_release_tag}/lib $options{svn_repository}/tags/$options{new_release_tag}/lib
+$options{new_release_tag}/components $options{svn_repository}/tags/$options{new_release_tag}/components
+$options{new_release_tag}/htdocs $options{svn_repository}/tags/$options{new_release_tag}/htdocs
+$options{new_release_tag}/src $options{svn_repository}/tags/$options{new_release_tag}/src/c
+
+SVN_exteRnAls
+
+## can't currently set svn:externals on a remote directory.  check it out first.
+$cmd = "svn co $options{svn_repository}/release/$options{new_release_tag} /tmp/$options{new_release_tag}";
+run_cmd($cmd, "There was a problem checking out the newly-created release directory.  See the logs for the last command attempted");
+
+## now set the properties
+$cmd = "svn propset svn:externals /tmp/$options{new_release_tag}/ -F /tmp/$$.externals";
+run_cmd($cmd, "Failed to set svn:externals.  Check log for last executed statement");
+
+## commit the properties
+$cmd = "svn commit -m \"set svn:externals on release $options{new_release_tag}\" /tmp/$options{new_release_tag}";
+run_cmd($cmd, "Failed to commit svn:externals.  CHeck log for last executed statement");
+
 
 exit(0);
+
+sub run_cmd {
+    my ($command, $err_msg) = @_;
+
+    $logger->info("running: $command");
+
+    if (! $testing ) {
+        my $cmd_stdout = `$command`;
+
+        if ( $? ) {
+            print STDERR "$err_msg\n";
+            exit(1);
+        }
+    }
+}
 
 
 sub check_parameters {
@@ -115,9 +189,11 @@ sub check_parameters {
         }
     }
     
-    ##
-    ## you can do other things here, such as checking that files exist, etc.
-    ##
+    ## the new tag directly shouldn't exist already in /tmp
+    if ( -e "/tmp/$options{new_release_tag}" ) {
+        die "/tmp/$options{new_release_tag} is in the way.  please remove it.";
+    }
+        
     
     ## handle some defaults
     $options{source_release_tag} = 'trunk' unless ($options{source_release_tag});
