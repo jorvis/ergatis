@@ -141,8 +141,8 @@ dirs	:
 
 samples	:
 	@install samples/proteins.faa $(PREFIX)/samples
-    @install samples/NC_002695.fna $(PREFIX)/samples
-    @install samples/NC_010364.fna $(PREFIX)/samples
+	@install samples/NC_002695.fna $(PREFIX)/samples
+	@install samples/NC_010364.fna $(PREFIX)/samples
 
 shellwrappers:
 	@install shell/create_ber_db.sh $(PREFIX)/bin
