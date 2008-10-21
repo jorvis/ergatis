@@ -13,13 +13,14 @@ next
 -updates to the pangenome component. sampling procedure that simplifies output from large pan genome runs
 -added integrated JOCs,pangenome saved pipeline
 -start_site_curation: fixed bug to correctly assign a start site frequency of 0 to start sites that don't occur.
--gff3_to_fasta.pl: Extracts fasta sequences from a gff3 file for a provided feature type (part of Annotation Evaluation Pipeline)
--gff3_to_annotab.pl: Extracts tabular annotation information for a provided feature type (part of Annotation Evaluation Pipeline)
--tabula_rasa: Allows a user-input command to be run as an iterator on an input file/list/dir
+-new component: gff3_to_fasta.pl, Extracts fasta sequences from a gff3 file for a provided feature type (part of Annotation Evaluation Pipeline)
+-new component: gff3_to_annotab.pl, Extracts tabular annotation information for a provided feature type (part of Annotation Evaluation Pipeline)
+-new component: tabula_rasa, Allows a user-input command to be run as an iterator on an input file/list/dir
 -new component: phylip_dnadist, a wrapper for a parallelized version of PHYLIP's dnadist
 -moved RDP and STAP components into a generic 'phylogeny' component group
 -start_site_curation: fixed bug: didn't print Sequence element in changed bsml if Sequence had no Feature children
 -hmmpfam2htab.pl: Appended process id ($$) to /tmp directory to prevent concurrent executions from sharing (and wiping) the tmp dir
+-new component: concatenate_files, Concatenate the files in an input file list into a single output file
 
 ergatis-v2r9b1
 --------------
