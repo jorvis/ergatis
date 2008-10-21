@@ -318,6 +318,11 @@ combine_ncRNA_alignments	:
 	@install components/combine_ncRNA_alignments/combine_ncRNA_alignments.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/combine_ncRNA_alignments/combine_ncRNA_alignments.config $(WORKFLOW_DOCS_DIR)
 
+concatenate_files        :
+        @echo "Installing concatenate_files workflows in $(WORKFLOW_DOCS_DIR)"
+        @install components/concatenate_files/concatenate_files.xml $(WORKFLOW_DOCS_DIR)
+        @install components/concatenate_files/concatenate_files.config $(WORKFLOW_DOCS_DIR)
+
 copydb	:
 	@echo "Installing copydb workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/copydb/copydb-master.ini $(WORKFLOW_DOCS_DIR)
