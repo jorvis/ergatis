@@ -215,7 +215,7 @@ RESULT: while( my $result = $in->next_result ) {
             $x[19] = $hsp->evalue();
             $x[20] = $hsp->pvalue();
 
-            if(($x[20] < $options{'pvalue'}) && ($x[0] ne "") && ($x[5] ne "")){
+            if(($x[20] <= $options{'pvalue'}) && ($x[0] ne "") && ($x[5] ne "")){
                 ## pvalue is less than cutoff parameter
                 ##      so process btab line
                 $hsp_counter++;
