@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>concatenate_files workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>concatenate_files</name>
+            <state>incomplete</state>
+            <executable>for i in `cat $;INPUT_FILE_LIST$;`; do cat $i; done >> $;OUTPUT_FILE$;</executable>
+        </command>
+    </commandSet>
+</commandSetRoot>
