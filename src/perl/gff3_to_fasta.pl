@@ -152,14 +152,18 @@ sub track_features_printed {
   my $id = shift;
   my $line = shift;
 	  exists ($features->{$id}->{'save'}) || warn "save not defined for id ($id) on line ($line) dumped in ($opts{input_file}): ".Dumper($features->{$id});
-	  if( $features->{$id}->{'save'} == 1) {
+          if ($features->{$id}->{'save'} > 1){
+	    warn "Seen feature $id ".$features->{$id}->{'save'}." > 1 times in $opts{input_file}";
+	  }
+#	  if( $features->{$id}->{'save'} == 1) {
+	  if( $features->{$id}->{'save'} >= 1) {
 	    $savefastaentry=1;
 	    ++$seqcount;
 	    --$features->{$id}->{'save'};
 	  }
-	  elsif ($features->{$id}->{'save'} > 1){
-	    die "Seen feature $id ".$features->{$id}->{'save'}." > 1 times in $opts{input_file}";
-	  }
+#	  elsif ($features->{$id}->{'save'} > 1){
+#	    die "Seen feature $id ".$features->{$id}->{'save'}." > 1 times in $opts{input_file}";
+#	  }
 	  else { # if save was decremented to 0, then we saw this already
 	    die "Feature $id associated with > 1 sequence";
 	  }
