@@ -1,5 +1,6 @@
 next
 ----
+-snap: output filenames now include the component name
 -unreported bugfix: fixed off-by-one error in legacy genemark2bsml.pl
 -added 'samples' directory for use in training and pipeline testing
 -new component: RNAmmer, predicts ribosomal genes in genomic sequences
