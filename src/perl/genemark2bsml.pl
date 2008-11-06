@@ -68,7 +68,7 @@ sub create_bsml
 		next if $tokens[0] !~ /^(\d+)/;
 		if (exists EXON_LABELS->{$tokens[3]}) {
 			my $from = $tokens[4] - 1;
-			my $to = $tokens[5] - 1;
+			my $to = $tokens[5];
 			if ($tokens[2] eq '-') {
 				($from, $to) = ($to, $from);
 			}
