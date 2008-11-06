@@ -1,5 +1,6 @@
 next
 ----
+-unreported bugfix: fixed off-by-one error in legacy genemark2bsml.pl
 -added 'samples' directory for use in training and pipeline testing
 -new component: RNAmmer, predicts ribosomal genes in genomic sequences
 -new component: 454_mplex_seq_bin_trim, a binning and trimming script for multiplex 454 sequence data
