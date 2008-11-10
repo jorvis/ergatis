@@ -1,8 +1,7 @@
 #!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 =head1 NAME
 
@@ -100,14 +99,17 @@ my $outputfn = $options{output_list};
 open(my $ofh, ">$outputfn") || $logger->logdie("can't create output file $outputfn");
 
 ## merge each file.
-for my $file (glob "$options{input_dir}/$options{glob}") {
-    $logger->info("merging $file into $outputfn") if ($logger->is_info);
+use File::Find;
+find sub {
+   my $file = $File::Find::name;
+   if($file =~ /$options{glob}/){
+	$logger->info("merging $file into $outputfn") if ($logger->is_info);
     
-    ## open this file, and write it to the output file
-    open(my $ifh, "<$file") || $logger->logdie("can't read input file $file");
-    while (<$ifh>) { print $ofh $_ }
-}
-
+        ## open this file, and write it to the output file
+        open(my $ifh, "<$file") || $logger->logdie("can't read input file $file");
+        while (<$ifh>) { print $ofh $_ }
+   }
+}, "$options{input_dir}";
 
 exit;
 

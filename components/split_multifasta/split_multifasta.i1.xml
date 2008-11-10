@@ -18,7 +18,7 @@
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;TMP_DIR$;/i1/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.list</value>
+                <value>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.list</value>
             </param>
             <param>  
                 <key>--output_file_prefix</key>

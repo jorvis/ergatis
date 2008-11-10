@@ -30,7 +30,7 @@
             <executable>$;BIN_DIR$;/merge_lists</executable>
             <param>  
                 <key>--input_dir</key>
-                <value>$;TMP_DIR$;/i1</value>
+                <value>$;OUTPUT_DIRECTORY$;/i1</value>
             </param>
             <param>  
                 <key>--output_list</key>
@@ -38,7 +38,7 @@
             </param>
             <param>  
                 <key>--glob</key>
-                <value>'*.$;COMPONENT_NAME$;.list'</value>
+                <value>'$;COMPONENT_NAME$;.list'</value>
             </param>
         </command>
     </commandSet>
