@@ -105,20 +105,20 @@ while (my $line = readline $ifh) {
     $line =~ s!(ENDTAGSPAN|ENDCOMMENTSPAN)!</span>!g;
 
     ## look for any linkable xml
-    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))\s*$^i ) {
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
         $xmlfiles{$url}++;
     }
     
     ## look for any linkable ini
-    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))\s*$^i ) {
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
     }
 
     ## look for any linkable log/stderr/sdtout
-    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:log|stderr|stdout))\s*$^i ) {
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:log|stderr|stdout))^i ) {
         if(-z $url){
             $url = $1;
             $line =~ s|$url|<a href="./view_formatted_log_source.cgi?file=$url">$url</a>|;

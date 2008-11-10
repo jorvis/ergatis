@@ -201,6 +201,8 @@ sub process_subflowgroup {
                       ret_value => 'unknown',
                       state => 'unknown',
                       workflow_id => '?',
+                      htc_id => '?',
+                      log => '?',
                    );
     
     ## get the pointer to the gN file
@@ -219,11 +221,16 @@ sub process_subflowgroup {
     
     ## grab data from the dceSpec if it has one
     if ( $commandSet->first_child('dceSpec') ) {
+	if($commandSet->first_child('dceSpec')->first_child('log')){        
+	    $sg_props{log} = $commandSet->first_child('dceSpec')->first_child('log')->text();
+	}
+        if($commandSet->first_child('dceSpec')->first_child('jobID')){
+	    $sg_props{htc_id} = $commandSet->first_child('dceSpec')->first_child('jobID')->text();
+	}
         if ( $commandSet->first_child('dceSpec')->first_child('executionHost') ) {
             $sg_props{execution_host} = $commandSet->first_child('dceSpec')->first_child('executionHost')->text();
         }
-        
-        if ( $commandSet->first_child('dceSpec')->first_child('gridID') ) {
+	if ( $commandSet->first_child('dceSpec')->first_child('gridID') ) {
             $sg_props{grid_id} = $commandSet->first_child('dceSpec')->first_child('gridID')->text();
         }
     }
@@ -248,8 +255,6 @@ sub process_subflowgroup {
         ## don't include 'command set ... finished' messages
         $sg_props{message} =~ s/command set .* finished//i;
     }
-
-    $sg_props{hostsrvstr} = join(',',split(/\./,$sg_props{execution_host}));
 
     push @{$$elements[-1]->{sg_props}}, \%sg_props;
 }

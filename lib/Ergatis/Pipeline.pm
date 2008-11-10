@@ -91,22 +91,25 @@ umask(0000);
         my $run_dir = $args{ergatis_cfg}->val('paths', 'workflow_run_dir') || croak "workflow_run_dir not found in ergatis.ini";
         my $pipeline_scripts_dir = "$run_dir/scripts";
         
-        ## create a directory from which to run this pipeline
-        if ( -d $run_dir ) {
-            ## make sure the scripts directory exists.  this is where the pipeline execution shell
-            #   files are written
-            if ( ! -d $pipeline_scripts_dir ) {
-                mkdir $pipeline_scripts_dir || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
-            }
-        
-            ## make a subdirectory for this pipelineid
-            $run_dir .= '/' . $self->id;
-            if (! -d $run_dir) {
-                mkdir $run_dir || croak "failed to create workflow_run_dir: $run_dir : $!";
-            }
-        } else {
-            croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
-        }
+	## create a directory from which to run this pipeline
+	if(-d $run_dir ) {
+	    ## make sure the scripts directory exists.  this is where the pipeline execution shell
+	    #   files are written
+	    if ( ! -d $pipeline_scripts_dir ) {
+		mkdir $pipeline_scripts_dir || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
+	    }
+	    
+	    # make a subdirectory for this pipelineid
+	    if (!$args{ergatis_cfg}->val('grid', 'vappio_data_placement')){
+		$run_dir .= '/' . $self->id;
+		if (! -d $run_dir) {
+		    mkdir $run_dir || croak "failed to create workflow_run_dir: $run_dir : $!";
+		}
+	    }
+	} else {
+	    croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
+	}
+	
         
         if (! -e $args{ergatis_cfg}->val('paths','workflow_log4j') ) {
             croak "Invalid workflow_log4j in ergatis.ini : " . $args{ergatis_cfg}->val('paths','workflow_log4j');
@@ -164,8 +167,9 @@ umask(0000);
                 if ( defined $args{run_as} ) {
                      
                     $runprefix = "sudo -u $args{run_as} ";
+	
                 }
-
+	
                 ## are we submitting the workflow as a job?  (CURRENTLY TIED TO SGE)
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
                     $runprefix = 'qsub ';
@@ -202,15 +206,22 @@ umask(0000);
                 print $debugfh "preparing to run $pipeline_script\n" if $self->{debug};
 
                 #my $rc = 0xffff & system($runstring);
+		if($args{ergatis_cfg}->val('grid', 'vappio_data_placement')){
+			my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh";
+			print `sudo -u $args{run_as} $vappiosynccmd`;
+		}
+
                 my $rc = 0xffff & system("$runprefix $pipeline_script");
 
-                printf $debugfh "system(%s) returned %#04x: $rc" if $self->{debug};
+                printf $debugfh "system(%s) returned %#04x: $rc for command $runprefix $pipeline_script" if $self->{debug};
                 if($rc == 0) {
                     print $debugfh "ran with normal exit\n" if $self->{debug};
                 } elsif ( $rc == 0xff00 ) {
-                    print $debugfh "command failed: $!\n" if $self->{debug};
+                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
+			print $debugfh "command failed: $!\n" if $self->{debug};
                 } elsif (($rc & 0xff) == 0) {
                     $rc >>= 8;
+                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
                     print $debugfh "ran with non-zero exit status $rc\n" if $self->{debug};
                 } else {
                     print $debugfh "ran with " if $self->{debug};
@@ -261,6 +272,7 @@ umask(0000);
         $ENV{WF_ROOT_INSTALL} = $ENV{WF_ROOT};
         $ENV{WF_TEMPLATE} = "$ENV{WF_ROOT}/templates";
 
+        $ENV{SYBASE} = '/usr/local/packages/sybase';
         $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
         
@@ -275,19 +287,10 @@ umask(0000);
         
         ## for the genewise component
         $ENV{WISECONFIGDIR} = '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg';
-        
-        ## Sybase crap
-        $ENV{SYBASE} = '/usr/local/packages/sybase';
-        $ENV{SYBASE_ASE} = 'ASE-15_0';
-        $ENV{LD_LIBRARY_PATH} = '/usr/local/packages/sybase/ASE-15_0/lib:/usr/local/packages/sybase/DataAccess/ODBC/lib:/usr/local/packages/sybase/OCS-15_0/lib:/usr/local/packages/sybase/OCS-15_0/lib3p';
-        $ENV{SYBASE_OCS} = 'OCS-15_0';
-        $ENV{INCLUDE} = '/usr/local/packages/sybase/OCS-15_0/include';
-        $ENV{LIB} = '/usr/local/packages/sybase/OCS-15_0/lib';
-        $ENV{SYBASE_JRE} = '/usr/local/packages/sybase/shared/jre142_013';
-        $ENV{SYBASE_SYSAM2} = 'SYSAM-2_0';
-        $ENV{SYBASE_UA} = '/usr/local/packages/sybase/UAF-2_0';
-        $ENV{SCROOT} = '/usr/local/packages/sybase/shared/sybcentral43';
-        $ENV{SYBROOT} = '/usr/local/packages/sybase';
+
+	## for local data placement 
+	$ENV{vappio_root} = $args{ergatis_cfg}->val('grid', 'vappio_root');
+	$ENV{vappio_data_placement} = $args{ergatis_cfg}->val('grid', 'vappio_data_placement');
     }
     
 }

@@ -1,7 +1,7 @@
 <div id='id<TMPL_VAR NAME=WORKFLOW_ID>_bar' class='subflowgroupbar'>
     <div class='leftside'>
         <img id='id<TMPL_VAR NAME=WORKFLOW_ID>_arrow' class='expander' src='../images/arrow_right.gif' onclick='toggle_subflowgroup_display("id<TMPL_VAR NAME=WORKFLOW_ID>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
-        <img class='status' src='../images/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
+-       <img class='status' src='../images/status_<TMPL_VAR NAME=STATE>.png' title='<TMPL_VAR NAME=STATE>' alt='<TMPL_VAR NAME=STATE>'>
         <span class='minor'>group <TMPL_VAR NAME=GROUP_NUM></span>
     </div>
     <div class='rightside'>
@@ -17,13 +17,17 @@
 <div id='id<TMPL_VAR NAME=WORKFLOW_ID>_info' class='subflowinfo'>
     <table class='cmd_stats'>
         <!-- <TMPL_VAR NAME=NAME> -->
-        <tr><th>workflow id:</th><td><TMPL_VAR NAME=WORKFLOW_ID></td></tr>
+        <tr><th>workflow command id:</th><td><TMPL_VAR NAME=WORKFLOW_ID></td></tr>
         <tr><th>state:</th><td><TMPL_VAR NAME=STATE></td></tr>
         <tr><th>start time:</th><td><TMPL_VAR NAME=START_TIME></td></tr>
         <tr><th>end time:</th><td><TMPL_VAR NAME=END_TIME></td></tr>
         <tr><th>duration:</th><td><TMPL_VAR NAME=RUN_TIME></td></tr>
         <tr><th>grid id:</th><td><TMPL_VAR NAME=GRID_ID></td></tr>
-        <tr><th>execution host:</th><td><TMPL_VAR NAME=EXECUTION_HOST><a href='http://intranet.tigr.org/cgi-bin/sysadmin/hobbit/bb-hostsvc.sh?HOSTSVC=<TMPL_VAR NAME=HOSTSRVSTR>.cpu&amp;IP=0.0.0.0&amp;DISPLAYNAME=<TMPL_VAR NAME=EXECUTION_HOST>'>[BB]</a><a href='http://enterprise.tigr.org/ganglia/?m=load_one&amp;r=hour&amp;s=descending&amp;c=Main+Cluster&amp;h=<TMPL_VAR NAME=EXECUTION_HOST>&amp;sh=1&amp;hc=4'>[Ganglia]</a></td></tr>
+        <tr><th>workflow grid id:</th><td><TMPL_VAR NAME=HTC_ID></td></tr>
+        <tr><th>workflow event log:</th><td><a href='view_formatted_log_source.cgi?file=<TMPL_VAR NAME=LOG>'><TMPL_VAR NAME=LOG></a></td></tr>
+        <tr><th>execution host:</th><td><a href='/ganglia/?&c=Grid+V1&h=<TMPL_VAR NAME=EXECUTION_HOST>'><TMPL_VAR NAME=EXECUTION_HOST></a></td></tr>
+        <tr><th>remote wf stderr/sdout</th><td><TMPL_VAR NAME=EXECUTION_HOST>:/mnt/wf-working/RunWorkflow.o<TMPL_VAR NAME=GRID_ID>,/mnt/wf-working/RunWorkflow.e<TMPL_VAR NAME=GRID_ID></td></tr>
+        <tr><th>prolog/epilog stderr/stdout</th><td>/home/guest/staging.*,home/guest/harvesting.*</td></tr>
         <tr><th colspan='2'>xml:</th></tr>
         <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=FILE>'><TMPL_VAR NAME=FILE></a></td></tr>
     </table>
