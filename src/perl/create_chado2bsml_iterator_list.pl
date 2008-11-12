@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 =head1  NAME 
 
 create_chado2bsml_iterator_list.pl will take a new-line separated list of assembly identifiers and create an ergatis workflow iterator list file
@@ -45,7 +45,9 @@ BEGIN {
     require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
     import Workflow::Logger;
 }
+use XML::Twig;
 use File::Basename;
+use Annotation::Util2;
 
 umask(0000);
 
@@ -54,75 +56,142 @@ my %options = ();
 
 my $results = GetOptions (\%options, 
                           'control_file=s', 
+                          'bsmlfilelist=s', 
 			  'output_file=s',
 			  'logfile=s',
                           'debug=s', 
                           'help|h' ) || pod2usage();
 
-my $logfile = $options{'logfile'} || Workflow::Logger::get_default_logfilename();
+my $logfile;
+
+if (!defined($options{logfile})){
+
+    $logfile = '/tmp/' . File::Basename::basename($0) . '.log';
+
+} else {
+
+    $logfile = $options{logfile};
+}
+
 my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = Workflow::Logger::get_logger();
 
-if (&verify_control_file($options{'control_file'})){
+my $outfile;
 
-    if (defined($options{'output_file'})){
+if (defined($options{'output_file'})){
 
-	my $asmblCtr=0;
-	my $lineCtr=0;
-	my $asmblLookup={};
+    $outfile = $options{output_file};
 
-	open (INFILE, "<$options{'control_file'}") || $logger->logdie("Could not open control_file '$options{'control_file'}' for input mode: $!");
+} else {
 
-	while (my $line = <INFILE>){
-	    chomp $line;
-	    $lineCtr++;
-
-	    if ($line =~ /^\s*$/){
-		next; ## skip blank lines
-	    }
-
-	    if ($line =~ /^\#+/){
-		next;
-	    }
-
-	    $line =~ s/^\s+//; ## remove leading white spaces
-	    $line =~ s/\s+$//; ## remove trailing white spaces
-
-	    if (! exists $asmblLookup->{$line}){
-		$asmblCtr++;
-		$asmblLookup->{$line}++;
-	    }
-	    else {
-		$logger->warn("Found duplicate asmbl '$line' at line '$lineCtr' of control_file '$options{'control_file'}'");
-	    }		
-	}
-
-	close INFILE;
-
-	if ($asmblCtr>0){
-
-	    open (OUTFILE, ">$options{'output_file'}") || $logger->logdie("Could not open output_file '$options{'output_file'}' for output mode: $!");
-
-	    print OUTFILE  '$;ASMBL$;' . "\n";
-
-	    foreach my $asmblId (sort keys %{$asmblLookup} ){
-		print OUTFILE "$asmblId\n";
-	    }
-
-	    close OUTFILE;
-	}
-	else {
-	    $logger->logdie("Did not find any assembly identifiers in control_file '$options{'control_file'}'");
-	}
-    }
-    else{
-	$logger->logdie("output_file was not defined");
-    }
+    $outfile = '/tmp/' . File::Basename::basename($0) . '.out';
 }
 
 
-exit;
+my $asmblCtr=0;
+my $asmblLookup={};
+my $currentAsmblId;
+
+if (defined($options{bsmlfilelist})){
+
+    my $bsmlfilelist = $options{bsmlfilelist};
+
+    if (!Annotation::Util2::checkInputFileStatus($bsmlfilelist)){
+	$logger->logdie("Detected some problem with the bsml list file '$bsmlfilelist'");
+    }
+
+    my $contents = Annotation::Util2::getFileContentsArrayRef($bsmlfilelist);
+    if (!defined($contents)){
+	$logger->logdie("Could not retrieve contents of bsml list file '$bsmlfilelist'");
+    }
+
+    my $bsmlFileCtr=0;
+    foreach my $bsmlfile (@{$contents}){
+	parseBSMLFile($bsmlfile);
+	$bsmlFileCtr++;
+
+
+	if (! exists $asmblLookup->{$currentAsmblId}){
+	    $asmblCtr++;
+	    $asmblLookup->{$currentAsmblId} = $bsmlfile;
+	} else {
+	    $logger->logdie("Found duplicate assembly id '$currentAsmblId' ".
+			    "while processing BSML file '$bsmlfile'.  The ".
+			    "previous file that had the same id was ".
+			    "'$asmblLookup->{$currentAsmblId}'");
+	}		
+	
+    }
+
+    print "Parsed '$bsmlFileCtr' BSML files\n";
+
+} elsif (defined($options{control_file})){
+    
+    my $controlfile = $options{control_file};
+
+    if (! Annotation::Util2::checkInputFileStatus($controlfile)){
+	$logger->logdie("Detected some problem with control file '$controlfile'");
+    }
+
+    my $contents = Annotation::Util2::getFileContentsArrayRef($controlfile);
+    if (!defined($contents)){
+	$logger->logdie("Could not retrieve contents of control file '$controlfile'");
+    }
+
+    my $lineCtr=0;
+
+    foreach my $line (@{$contents}){
+
+	chomp $line;
+	$lineCtr++;
+
+	if ($line =~ /^\s*$/){
+	    next; ## skip blank lines
+	}
+
+	if ($line =~ /^\#+/){
+	    next;
+	}
+
+	$line =~ s/^\s+//; ## remove leading white spaces
+	$line =~ s/\s+$//; ## remove trailing white spaces
+
+	if (! exists $asmblLookup->{$line}){
+	    $asmblCtr++;
+	    $asmblLookup->{$line}++;
+	} else {
+	    $logger->warn("Found duplicate asmbl '$line' at line '$lineCtr' of control_file '$options{'control_file'}'");
+	}		
+    }
+
+    print "Parsed '$lineCtr' lines in control file '$controlfile'\n";
+
+} else {
+    $logger->logdie("You must specify either --bsmlfilelist or --control_file");
+}
+
+
+if ($asmblCtr>0){
+
+    open (OUTFILE, ">$outfile") || $logger->logdie("Could not open output_file '$outfile' in write mode: $!");
+
+    print OUTFILE  '$;ASMBL$;' . "\n";
+
+    foreach my $asmblId (sort keys %{$asmblLookup} ){
+	print OUTFILE "$asmblId\n";
+    }
+    
+    close OUTFILE;
+
+} else {
+    $logger->logdie("Did not find any assembly identifiers in control_file '$options{'control_file'}'");
+}
+
+print "$0 execution completed\n";
+print "The output file is '$outfile'\n";
+print "The log file is '$logfile'\n";
+exit(0);
 						     
 #---------------------------------------------------------------------------------------------------------
 #
@@ -130,30 +199,45 @@ exit;
 #
 #---------------------------------------------------------------------------------------------------------
  
-#-------------------------------------------
-# verify_control_file()
-#
-#-------------------------------------------
-sub verify_control_file {
-    my $file = shift;
 
-    if ((defined($file)) && (-e $file) && (-r $file) && (-s $file)) {
-	# control file was defined, exists, has read permissions
-	# and has content
-	return 1;
+sub parseBSMLFile {
+
+    my ($bsmlfile) = @_;
+
+    ## Function: parse input BSML file for sequence and gene information
+    my $ifh;
+
+    if (stat "$bsmlfile.gz"){
+	$bsmlfile .= ".gz";
     }
-    else {
-	if (!defined($file)){
-	    $logger->logdie("control file '$file' was not defined");
-	}
-	if (!-e $file){
-	    $logger->logdie("control file '$file' does not exist");
-	}
-	if (!-r $file){
-	    $logger->logdie("control file '$file' does not have read permissions");
-	}
-	if (!-s $file){
-	    $logger->logdie("control file '$file' has zero content");
-	}
+    
+    if ($bsmlfile =~ /\.(gz|gzip)$/) {
+	open ($ifh, "<:gzip", $bsmlfile) || $logger->logdie("Could not open BSML file '$bsmlfile' ".
+							    "in read mode:$!");
     }
+
+    my $twig = new XML::Twig(   TwigRoots => { 'Sequence' => 1},
+				TwigHandlers => { 'Sequence' => \&sequenceCallBack }
+				);
+    
+    $twig->parsefile($bsmlfile);    # build the twig
+}
+
+sub sequenceCallBack {
+
+    my ($twig, $bsmlSequence) = @_;
+
+    my $class = $bsmlSequence->{'att'}->{'class'};
+    if (!defined($class)){
+	$logger->logdie("class was not defined");
+    }
+    if ($class ne 'assembly'){
+	last;
+    }
+
+    if (! exists $bsmlSequence->{'att'}->{'id'}){
+	$logger->logdie("id attribute does not exist for BSML <Sequence>");
+    }
+
+    $currentAsmblId =  $bsmlSequence->{'att'}->{'id'};
 }
