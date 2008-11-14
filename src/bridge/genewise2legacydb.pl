@@ -12,6 +12,7 @@ into the legacy database.
               [  --pipeline_config=/path/to/some/component/pipeline.config ]
               [ --search_db=search_db_name ]
               [ --input_file_list=/path/to/input_file_list ]
+              [ --pass_file=/path/to/password_file ]
               [ --log=/path/to/some/optional/file.log ]
 
 =head1 OPTIONS
@@ -19,7 +20,7 @@ into the legacy database.
 B<--database,-d>
     The Sybase database to load.
 
-B<--pipeline_config,-p>
+B<--pipeline_config,-c>
     The path to some component's pipeline.config file.  This will be created when running a 
     genewise component in Workflow and should have the following variables within:
     
@@ -39,6 +40,9 @@ B<--input_file_list,-i>
     version 2 components configured to run off bsml and not off the database.
     For most runs, where genewise has configured its own inputs, this input file is:
     $;OUTPUT_REPOSITORY$;/genewise/$;PIPELINE_ID$;_$;OUTPUT_TOKEN$;/genewise.input_file_listing
+
+B<--pass_file,-p>
+    Path to a password file containing the account info with which to log into the db.
 
 B<--log,-l> 
     Log file
@@ -75,9 +79,10 @@ use Pod::Usage;
 my %options = ();
 my $results = GetOptions (\%options, 
                           'database|d=s',
-                          'pipeline_config|p=s',
+                          'pipeline_config|c=s',
                           'search_db|s=s',
                           'input_file_list|i=s',
+                          'pass_file|p=s',
                           'log|l=s',
                           'help|h') || pod2usage();
 
@@ -148,7 +153,7 @@ if ($options{input_file_list}) {
 my $cmd;
 foreach my $asmbl_id ( @asmbl_ids ) {
     print $logfh "loading asmbl_id $asmbl_id\n" if $logfh;
-    $cmd = "$loader -D $options{database} -p /usr/local/devel/ANNOTATION/euk_genome_control/bin/egc_password  -n $search_db -a $asmbl_id -j";
+    $cmd = "$loader -D $options{database} -p $options{pass_file} -n $search_db -a $asmbl_id -j";
     print $logfh "$cmd\n" if $logfh;
     `$cmd`;
 }
@@ -185,9 +190,9 @@ sub check_parameters {
             pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});
         }
     }
-    ## make sure the user has a password file in their home directory
-    unless ( -e "/home/jorvis/.pwdfile" ) {
-        print "\n\ncouldn't find password file /home/jorvis/.pwdfile .  quitting.\n\n";
+    ## make sure the password file has been given
+    unless ( -e $options{pass_file} ) {
+        print "\n\ncouldn't find password file $options{pass_file}.  quitting.\n\n";
         exit(1);
     }
     
