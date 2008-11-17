@@ -53,15 +53,6 @@ if (! -f $xml_input ) {
     }
 }
 
-## make sure the file exists, check for .gz version
-if (! -f $xml_input ) {
-    if (-f "$xml_input.gz") {
-        $xml_input .= '.gz';
-    } else {
-        die "$xml_input doesn't exist";
-    }
-}
-
 my $file = $xml_input;
 
 my $ifh;
