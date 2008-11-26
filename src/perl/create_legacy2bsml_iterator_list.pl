@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl
 =head1  NAME 
 
 generate_asmbl_list.pl - Default output is a workflow iterator that
@@ -26,77 +26,131 @@ B<--help,-h> This help message
 
 =cut
 
+#use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-use Ergatis::Logger;
+
+
+BEGIN {
+    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+    import Workflow::Logger;
+}
 use File::Basename;
+use Annotation::Util2;
 
 umask(0000);
 
-my %options = ();
-
-
-my $results = GetOptions (\%options, 
-                          'control_file|f=s', 
-			  'output|o=s',
-			  'log|l=s',
-                          'debug=s', 
-                          'help|h' ) || pod2usage();
-
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Ergatis::Logger::get_logger();
-
-my $unique_key      = '$;UNIQUE_KEY$;';
-my $database_key      = '$;DATABASE$;';
-my $asmbl_id_key      = '$;ASMBL_ID$;';
-my $sequence_type_key = '$;SEQUENCE_TYPE$;';
-my $organism_key        = '$;SCHEMA_TYPE$;';
-my $include_genefinders_key = '$;INCLUDE_GENEFINDERS$;';
-my $exclude_genefinders_key = '$;EXCLUDE_GENEFINDERS$;';
-my $alt_database_key = '$;ALT_DATABASE$;';
-my $alt_species_key = '$;ALT_SPECIES$;';
-my $tu_list_key = '$;TU_LIST_FILE$;';
-my $model_list_key = '$;MODEL_LIST_FILE$;';
-
-
+## These are the only valid organism types/schemas
 my $valid_organism_types = { 'prok'   => 1,
 			     'ntprok' => 1,
 			     'euk'    => 1
 			 };
 
+## These are the headers that should be written to the output file.
+my $HEADER_LIST = ['$;UNIQUE_KEY$;',
+		   '$;DATABASE$;',
+		   '$;ASMBL_ID$;',
+		   '$;SEQUENCE_TYPE$;',
+		   '$;SCHEMA_TYPE$;',
+		   '$;INCLUDE_GENEFINDERS$;',
+		   '$;EXCLUDE_GENEFINDERS$;',
+		   '$;ALT_DATABASE$;',
+		   '$;ALT_SPECIES$;',
+		   '$;TU_LIST_FILE$;',
+		   '$;MODEL_LIST_FILE$;',
+		   '$;GOPHER_ID_MAPPING_FILE$;',
+		   '$;REPEAT_ID_MAPPING_FILE$;',
+		   ];
+		   
+# set up options
+my ($controlFile, $outfile, $logfile, $help, $debug, $man,
+    $gopherIdMappingFile, $repeatIdMappingFile);
+
+&GetOptions(
+	    'control_file|f=s' => \$controlFile,
+	    'outfile|o=s'      => \$outfile,
+	    'log|l=s'          => \$logfile,
+	    'help|h'           => \$help,
+	    'debug=s'          => \$debug,
+	    'man|m'            => \$man,
+	    'gopher_file=s'    => \$gopherIdMappingFile,
+	    'repeat_file=s'    => \$repeatIdMappingFile,
+	    );
 
 
-if (&verify_control_file($options{'control_file'})){
-
-    if (defined($options{'output'})){
-
-	my $iteratorconf = [];
-
-	#
-	# Read in the information from asmbl_file OR asmbl_list
-	#
-	&get_list_from_file($iteratorconf,$options{'control_file'});
-
-	#
-	# Output the lists
-	#
-	&output_lists($iteratorconf, $options{'output'});
-    }
-    else{
-	$logger->logdie("output was not defined");
-    }
+if (!defined($logfile)){
+    $logfile = Workflow::Logger::get_default_logfilename();
 }
 
+my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+				  'LOG_LEVEL'=>$debug);
 
-exit;
+$logger = Workflow::Logger::get_logger();
+
+
+&checkCommandLineArguments();
+
+
+if (! Annotation::Util2::checkInputFileStatus($controlFile)){
+    $logger->logdie("Detected some problem with the control ".
+		    "file '$controlFile'");
+}
+
+my $iteratorconf = [];
+
+#
+# Read in the information from asmbl_file OR asmbl_list
+#
+&get_list_from_file($iteratorconf,
+		    $controlFile,
+		    $gopherIdMappingFile,
+		    $repeatIdMappingFile);
+
+#
+# Output the lists
+#
+&output_lists($iteratorconf, $outfile);
+
+
+print "$0 execution completed\n";
+print "The output file is '$outfile'\n";
+print "The log file is '$logfile'\n";
+exit(0);
 						     
 #---------------------------------------------------------------------------------------------------------
 #
 #                           END OF MAIN  --  SUBROUTINES FOLLOW
 #
 #---------------------------------------------------------------------------------------------------------
+
+sub checkCommandLineArguments {
+
+    if ($help){
+	&pod2usage( {-exitval => 1, -verbose => 2, -output => \*STDOUT} ); 
+	exit(1);
+    }
+    
+    my $fatalCtr=0;
+
+    if (!$controlFile){
+	print STDERR "control_file was not specified\n";
+	$fatalCtr++;
+    }
+    if (!$outfile){
+	print STDERR "outfile was not specified\n";
+	$fatalCtr++;
+    }
+
+
+    if ($fatalCtr>0){
+	die "Required command-line arguments were not specified";
+    }
+
+
+}
 
 
 
@@ -106,11 +160,34 @@ exit;
 #-----------------------------------------
 sub get_list_from_file{
 
-    my ($iteratorconf, $f) = @_;
+    my ($iteratorconf, $controlFile, $gopherIdMappingFile, $repeatIdMappingFile) = @_;
 
-    my $contents = &get_file_contents($f);
+    if (defined($gopherIdMappingFile)){
+	if (! Annotation::Util2::checkInputFileStatus($gopherIdMappingFile)){
+	    $logger->logdie("Detected some problem with the GOPHER ".
+			    "identifier mapping file '$gopherIdMappingFile'");
+	}
+    } else {
+	$gopherIdMappingFile = '';
+    }
 
-    my $orghash = &get_organism_hash($contents, $f);
+    if (defined($repeatIdMappingFile)){
+	if (! Annotation::Util2::checkInputFileStatus($repeatIdMappingFile)){
+	    $logger->logdie("Detected some problem with the repeat ".
+			    "identifier mapping file '$repeatIdMappingFile'");
+	}
+    } else {
+	$repeatIdMappingFile = '';
+    }
+
+    my $contents = Annotation::Util2::getFileContentsArrayRef($controlFile);
+
+    if (!defined($contents)){
+	$logger->logdie("Could not retrieve contents of control file ".
+			"'$controlFile'");
+    }
+
+    my $orghash = &get_organism_hash($contents, $controlFile);
 
     foreach my $database_type (sort keys %{$orghash} ){ 
 
@@ -130,55 +207,22 @@ sub get_list_from_file{
 
 	    my $uniqueId = $database . '_' . $asmbl_id;
 	    
-
-	    my @tempArray = ( $uniqueId, 
-			      $database, 
-			      $asmbl_id,
-			      $sequence_type, 
-			      $organism_type,
-			      $include_genefinders, 
-			      $exclude_genefinders, 
-			      $alt_database,
-			      $alt_species,
-			      $tu_list,
-			      $model_list);
-
-	    push(@{$iteratorconf}, \@tempArray);
-
+	    push(@{$iteratorconf}, [ $uniqueId, 
+				     $database, 
+				     $asmbl_id,
+				     $sequence_type, 
+				     $organism_type,
+				     $include_genefinders, 
+				     $exclude_genefinders, 
+				     $alt_database,
+				     $alt_species,
+				     $tu_list,
+				     $model_list,
+				     $gopherIdMappingFile,
+				     $repeatIdMappingFile]);
 	}
     }
 }
-
-
-#-------------------------------------------
-# verify_control_file()
-#
-#-------------------------------------------
-sub verify_control_file {
-    my $file = shift;
-
-    if ((defined($file)) && (-e $file) && (-r $file) && (-s $file)) {
-	# control file was defined, exists, has read permissions
-	# and has content
-	return 1;
-    }
-    else {
-	if (!defined($file)){
-	    $logger->logdie("control file '$file' was not defined");
-	}
-	if (!-e $file){
-	    $logger->logdie("control file '$file' does not exist");
-	}
-	if (!-r $file){
-	    $logger->logdie("control file '$file' does not have read permissions");
-	}
-	if (!-s $file){
-	    $logger->logdie("control file '$file' has zero content");
-	}
-    }
-}
-
-
 
 #---------------------------------------------
 # output_lists()
@@ -190,17 +234,8 @@ sub output_lists {
 
     open FILE, "+>$output" or $logger->logdie("Can't open output file $output");
     
-    print FILE '$;UNIQUE_KEY$;' . "\t".
-    '$;DATABASE$;' . "\t".
-    '$;ASMBL_ID$;' . "\t".
-    '$;SEQUENCE_TYPE$;' . "\t".
-    '$;SCHEMA_TYPE$;' . "\t".
-    '$;INCLUDE_GENEFINDERS$;' . "\t".
-    '$;EXCLUDE_GENEFINDERS$;' . "\t".
-    '$;ALT_DATABASE$;' . "\t".
-    '$;ALT_SPECIES$;' . "\t".
-    '$;TU_LIST_FILE$;' . "\t".
-    '$;MODEL_LIST_FILE$;' . "\n";
+
+    print FILE join("\t",@{$HEADER_LIST}) ,"\n";
 
     foreach my $arrayRef (@{$iteratorconf}){
 
@@ -212,24 +247,6 @@ sub output_lists {
 
 }
 
-
-
-#---------------------------------------------
-# get_file_contents()
-#
-#---------------------------------------------
-sub get_file_contents {
-
-    my $f = shift;
-
-    open (CONTROLFILE,  "<$f") or die "Could not open file '$f': $!";
-    
-    my @lines = <CONTROLFILE>;
-
-    chomp @lines;
-
-    return \@lines;
-}
 
 #---------------------------------------------
 # get_organism_hash()
