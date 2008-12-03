@@ -64,7 +64,7 @@
             </param>
             <param>  
                 <key>--glob</key>
-                <value>'*/*/*.$;COMPONENT_NAME$;.fsa.list'</value>
+                <value>'$;COMPONENT_NAME$;.fsa.list'</value>
             </param>
         </command>
     </commandSet>
