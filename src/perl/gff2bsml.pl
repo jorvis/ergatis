@@ -21,6 +21,8 @@
 #  -all sequences/features belong to 1 genome, the one named by --organism param
 
 # TODO
+#  -add option to specify the prefix used in id generation
+#   -and store it in the organism table as the abbreviation?
 #  -add a strict mode in which deviations from the GFF3/canonical gene spec. are reported
 #   -see http://www.sequenceontology.org/gff3.shtml
 #  -if --use_cds_parent_ids is in effect the script should check that the CDS features under each mRNA are
@@ -658,7 +660,8 @@ sub gene_feature_hash_to_bsml {
             my $dseq = $dna_seqs->{$seq_id};
             die "couldn't find DNA sequence for $seq_id" if (!defined($dseq));
             my $path = File::Spec->rel2abs($options->{'dna_fasta'});
-            my $seq_data_import_elem = $doc->createAndAddSeqDataImport($seq, 'fasta', $path, undef, $dseq->{'defline'});
+            my $seq_data_import_elem = $doc->createAndAddSeqDataImport($seq, 'fasta', $path, undef, $dseq->{'bsml_identifier'});
+            $doc->createAndAddBsmlAttribute($seq, 'defline', $dseq->{'defline'});
         }
 
         # TODO - need a way to specify which features get linked to an analysis
@@ -723,7 +726,8 @@ sub gene_feature_hash_to_bsml {
                     my $feat_seq_link = $doc->createAndAddLink($feat, 'sequence', '#'.$id.'_seq');
 
                     my $path = File::Spec->rel2abs($options->{'peptide_fasta'});
-                    my $seq_data_import_elem = $doc->createAndAddSeqDataImport($pep_seq, 'fasta', $path, undef, $fseq->{'defline'});
+                    my $seq_data_import_elem = $doc->createAndAddSeqDataImport($pep_seq, 'fasta', $path, undef, $fseq->{'bsml_identifier'});
+                    $doc->createAndAddBsmlAttribute($pep_seq, 'defline', $fseq->{'defline'});
                 }
 
                 # TODO - need a way to specify which features get linked to an analysis
@@ -782,16 +786,22 @@ sub read_sequence_lengths {
     my($file, $id_regex, $id_fn) = @_;
     my $result = {};
     my $fh = FileHandle->new();
+    my $bsml_idents = {};
 
     my $process_seq = sub {
         my($defline, $seq, $lnum) = @_;
         my($id) = ($defline =~ /$id_regex/);
         die "unable to parse id from line $lnum of $file: $defline" if (!defined($id));
         $seq =~ s/\s+//g;
-        $defline =~ s/^>//;
         $id = &$id_fn($id) if (defined($id_fn));
         die "sequence id '$id' is not unique in $file" if (defined($result->{$id}));
-        $result->{$id} = { 'id' => $id, 'seqlen' => length($seq), 'defline' => $defline };
+        # this must mirror the hard-coded regex in BSML::BsmlReader::parse_multi_fasta:
+        my($bsml_ident) = ($defline =~ /^>([^\s]+)/);
+        die "unable to parse BSML identifier from the following defline in $file: $defline" if (!defined($bsml_ident));
+        die "BSML identifier '$bsml_ident' is not unique in $file" if (defined($bsml_idents->{$bsml_ident}));
+        $bsml_idents->{$bsml_ident} = 1;
+        $defline =~ s/^>//;
+        $result->{$id} = { 'id' => $id, 'seqlen' => length($seq), 'defline' => $defline, 'bsml_identifier' => $bsml_ident };
     };
 
     my $defline = undef;
