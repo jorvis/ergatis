@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
@@ -46,6 +41,7 @@ $doc->createAndAddAnalysis(
                             sourcename => $options{'output_bsml'},
                             algorithm => 'genbank2bsml',
                             program => 'genbank2bsml',
+                            version => 'current',
                           );
 # gzip output
 $doc->write($ofile, '', 1);
