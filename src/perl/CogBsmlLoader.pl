@@ -72,6 +72,7 @@ my $results = GetOptions( \%options,
               'bsmlJaccardList|j=s', 
               'outfile|o=s', 
               'pvalcut|p=s', 
+              'coverageCutoff|c=s',
               'log|l=s',
               'debug=s',
               'help|h') || pod2usage();
@@ -345,7 +346,14 @@ my $alnhandlers = {'Seq-pair-alignment'=>
                    $bestSeqPairRun->{'segment_number'} = $params{'content'};
                    }
                }
+               if($expat->{'Context'}->[$index] eq 'Seq-pair-alignment'){
+                   if($params{'name'} eq 'percent_coverage_refseq'){
+                       if($params{'content'} < $options{'coverageCutoff'}) {
+                           %alnparams = ();
+                       }
+                   }
                }
+           }
            };
 
 my $alnparser = new XML::Parser(Handlers => 
@@ -496,4 +504,131 @@ sub check_parameters{
     if(0){
     pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
     }
+}
+
+# Returns only those BLAST HSPs that contributed to the best Sum(P) value
+# reported for each subject/query sequence pair.
+#
+sub filterBlastpHsps {
+    my($links) = @_;
+    my $linksByQuery = &groupByMulti($links, ['from_tag', 'to_tag']);
+    my $result = [];
+
+    # Aggregate all HSPs with the same subject and query sequence
+    foreach my $queryId (keys %$linksByQuery) {
+	my $linksBySubject = $linksByQuery->{$queryId};
+
+	foreach my $subjId (keys %$linksBySubject) {
+	    my $slinks = $linksBySubject->{$subjId};
+	    my @sortedLinks = sort { $a->{'p_value'} <=> $b->{'p_value'} } @$slinks;
+	    # heuristic - assume that all HSPs with the same Sum(P) as the best are contributing to that Sum(p) score
+	    my $bestScore = $sortedLinks[0]->{'p_value'};
+	    
+	    foreach my $sl (@sortedLinks) {
+		last if ($sl->{'p_value'} > $bestScore);
+		push(@$result, $sl);
+	    }
+	}
+    }
+    return $result;
+}
+
+# Generalized version of groupBy 
+sub groupByMulti {
+    my($arrayref, $keyFields) = @_;
+    my $nKeys = scalar(@$keyFields);
+    my $groups = {};
+
+    foreach my $a (@$arrayref) {
+	my @keyValues = map { $a->{$_} } @$keyFields;
+	my $hash = $groups;
+
+	for (my $i = 0;$i < $nKeys;++$i) {
+	    my $kv = $keyValues[$i];
+
+	    if ($i < ($nKeys-1)) {
+		$hash->{$kv} = {} if (!defined($hash->{$kv}));
+		$hash = $hash->{$kv};
+	    } 
+	    else {
+		$hash->{$kv} = [] if (!defined($hash->{$kv}));
+		push(@{$hash->{$kv}}, $a);
+	    }
+	}
+    }
+    return $groups;
+}
+
+sub getAvgBlastPPctCoverage {
+    my($hsps) = @_;
+    $hsps = &filterBlastpHsps($hsps);
+    my $sum = 0;
+    my $numHsps = 0;
+
+    # Group by query and target id
+    my $hspsByQuery = &groupByMulti($hsps, ['from_tag', 'to_tag']);
+
+    foreach my $queryId (keys %$hspsByQuery) {
+	my $hspsByTarget = $hspsByQuery->{$queryId};
+
+	foreach my $subjId (keys %$hspsByTarget) {
+	    ++$numHsps;
+	    my $shsps = $hspsByTarget->{$subjId};
+	    my $querySeqLen = $shsps->[0]->{'from_length'};
+	    my $targetSeqLen = $shsps->[0]->{'to_length'};
+
+	    my @queryIntervals = map { {'fmin' => $_->{'from_Nterm'}, 'fmax' => $_->{'from_Cterm'}, 'strand' => 1} } @$shsps;
+	    my @targetIntervals = map { {'fmin' => $_->{'to_Nterm'}, 'fmax' => $_->{'to_Cterm'}, 'strand' => 1} } @$shsps;
+
+	    my $mergedQueryIntervals = &mergeOverlappingIntervals(\@queryIntervals);
+	    my $mergedTargetIntervals = &mergeOverlappingIntervals(\@targetIntervals);
+
+	    my $queryHitLen = 0;
+	    my $targetHitLen = 0;
+	    
+	    map { $queryHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedQueryIntervals;
+	    map { $targetHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedTargetIntervals;
+
+	    $sum += $queryHitLen / $querySeqLen;
+	    $sum += $targetHitLen / $targetSeqLen;
+	}
+    }
+
+    return ($numHsps > 0) ? ($sum/($numHsps * 2) * 100.0) : undef;
+}
+
+# Generate a new set of intervals by merging any that overlap in the original set.
+#
+sub mergeOverlappingIntervals {
+    my($intervals) = @_;
+
+    # result set of intervals
+    my $merged = [];
+
+    # sort all intervals by fmin
+    my @sorted = sort { $a->{'fmin'} <=> $b->{'fmin'} } @$intervals;
+    
+    # current interval
+    my $current = undef;
+
+    foreach my $i (@sorted) {
+	# case 1: no current interval
+	if (!defined($current)) {
+	    $current = $i;
+	} 
+	# case 2: compare current interval to interval $i
+	else {
+	    # case 2a: no overlap
+	    if ($i->{'fmin'} > $current->{'fmax'}) {   
+		push(@$merged, $current);
+		$current = $i;
+	    } 
+	    # case 2b: overlap, with $i ending to the right of $current
+	    elsif ($i->{'fmax'} > $current->{'fmax'}) {
+		$current->{'fmax'} = $i->{'fmax'};
+	    }
+	}
+    }
+    push(@$merged, $current) if (defined($current));
+    return $merged;
 }
