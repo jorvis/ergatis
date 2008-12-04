@@ -43,6 +43,10 @@
                 <value>$;PIDENTITY_CUTOFF$;</value>
             </param>
             <param>  
+                <key>--percent_coverage</key>
+                <value>$;PCOVERAGE_CUTOFF$;</value>
+            </param>
+            <param>  
                 <key>--p_value</key>
                 <value>$;PVALCUT$;</value>
             </param>

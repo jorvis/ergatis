@@ -46,6 +46,10 @@
                 <value>$;PVALCUT$;</value>
             </param>
             <param>  
+                <key>--coverageCutoff</key>
+                <value>$;PCOVERAGE_CUTOFF$;</value>
+            </param>
+            <param>  
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/bsml2cogbtab.stdout</value>
             </param>
