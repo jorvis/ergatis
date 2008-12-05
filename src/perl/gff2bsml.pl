@@ -16,13 +16,14 @@
 #   -all Sequences link to that <Genome>
 #   -reference Sequence lengths are determined from the GFF, if possible
 #  -modified Seq-data-imports to use absolute paths
+#  -added --insert_missing_mrnas, --insert_missing_exons
 
 # Current restrictions/assumptions
 #  -all sequences/features belong to 1 genome, the one named by --organism param
 
 # TODO
-#  -add option to specify the prefix used in id generation
-#   -and store it in the organism table as the abbreviation?
+#  -replace STDERR prints with log statements
+#  -generalize to regular GFF
 #  -add a strict mode in which deviations from the GFF3/canonical gene spec. are reported
 #   -see http://www.sequenceontology.org/gff3.shtml
 #  -if --use_cds_parent_ids is in effect the script should check that the CDS features under each mRNA are
@@ -59,6 +60,9 @@ gff32bsml.pl
          --organism_genetic_code=1
          --organism_mt_genetic_code=4
          --use_cds_parent_ids
+         --insert_missing_mrnas
+         --insert_missing_exons
+         --insert_polypeptides
          --default_seq_class=assembly
          --log=/path/to/some.log
          --debug=4
@@ -127,6 +131,19 @@ B<--organism, -r>
 
 B<--use_cds_parent_ids,-c>
     optional.  whether to use the GFF parent id to identify CDS features that lack an ID of their own.
+
+B<--insert_missing_mrnas>
+    optional.  automatically insert missing mRNA features wherever they are missing from the GFF 
+    (i.e., anytime a CDS feature is found hanging directly off a gene feature)
+    
+B<--insert_missing_exons>
+    optional.  automatically inserts missing exon features in any gene model that does not have _any_
+    exons but does have CDS features.  in this case a single exon will be created to exactly span each
+    CDS.
+
+B<--insert_polypeptides>
+    optional.  automatically inserts a polypeptide feature in any gene model that has one or more CDS
+    features but no polypeptide feature.
 
 B<--default_seq_class,-e>
     optional.  default sequence class/SO type (e.g., 'assembly', 'supercontig') to use for sequences 
@@ -236,6 +253,9 @@ my $results = GetOptions($options,
                          'id_repository|i=s',
                          'organism|r=s',
                          'use_cds_parent_ids|c',
+                         'insert_missing_mrnas',
+                         'insert_missing_exons',
+                         'insert_polypeptides',
                          'default_seq_class|e=s',
                          'log|l=s',
                          'debug|d=i',
@@ -343,6 +363,84 @@ my $mt_code_att = $doc->createAndAddBsmlAttribute($organism, 'mt_genetic_code', 
 
 foreach my $root(@{$gene_nodes}) {
     if ($root->{'_type'} eq 'gene') {
+
+        # insert missing features if the appropriate options are set
+        my ($cds_type, $mrna_type, $exon_type) = ('CDS', 'mRNA', 'exon');
+        
+        # TODO - need to check other possible mRNA types?
+
+        # insert mRNA, if none and --insert_missing_mrnas set
+        if ((!defined($root->{'children'}->{$mrna_type}) && $options->{'insert_missing_mrnas'})) {
+            $logger->debug("inserting missing mRNA for " . $root->{'ID'});
+            my $trans_id = $root->{'ID'} . "-mRNA";
+            
+            # TODO - extent of mRNA should = extent of exons (if present), of CDS feats if not
+            my $mrna_list = $root->{'children'}->{$mrna_type} = [];
+            push(@$mrna_list, {
+                'ID' => $trans_id,
+                '_seqid' => $root->{'_seqid'},
+                '_type' => $mrna_type,
+                'children' => {},
+                'Parent' => [ $root->{'ID'} ],
+                '_source' => $root->{'_source'},
+                '_score' => '.',
+                '_strand' => $root->{'_strand'},
+                '_start' => $root->{'_start'},
+                '_end' => $root->{'_end'},
+            });
+
+            # make mRNA the parent of the CDS and exon features
+            my $cds_list = $root->{'children'}->{$cds_type};
+            my $exon_list = $root->{'children'}->{$exon_type};
+            map { push(@{$_->{'Parent'}}, $trans_id); } @$cds_list if (defined($cds_list));
+            map { push(@{$_->{'Parent'}}, $trans_id); } @$exon_list if (defined($exon_list));
+        }
+
+        # insert exons, if none and --insert_missing_exons set
+        my $exon_list = $root->{'children'}->{$exon_type};
+        my $num_exons = defined($exon_list) ? scalar(@$exon_list) : 0;
+        if (($num_exons == 0) && $options->{'insert_missing_exons'}) {
+            my $cds_list = $root->{'children'}->{$cds_type};
+            my $mrna_list = $root->{'children'}->{$mrna_type};
+            my $nm = scalar(@$mrna_list);
+
+            if (defined($cds_list)) {
+                if (scalar(@$mrna_list) != 1) {
+                    $logger->error("can't insert exons for " . $root->{'ID'} . ": gene has $nm mRNAs");
+                } else {
+                    my $exon_list = $root->{'children'}->{$exon_type} = [];
+                    my $nc = scalar(@$cds_list);
+                    my $mrna_id = $mrna_list->[0]->{'ID'};
+                    $logger->debug("inserting $nc missing exon(s) for " . $root->{'ID'});
+                    my $mrna_exons = $mrna_list->[0]->{'children'}->{$exon_type};
+                    if (!defined($mrna_exons)) {
+                        $mrna_exons = $mrna_list->[0]->{'children'}->{$exon_type} = [];
+                    }
+
+                    my $enum = 1;
+                    foreach my $cds (@$cds_list) {
+                        my $exon_id = $mrna_id . "-e" . $enum++;
+                        my $exon = {
+                            'ID' => $exon_id,
+                            '_seqid' => $cds->{'_seqid'},
+                            '_type' => $exon_type,
+                            'children' => {},
+                            'Parent' => [ $mrna_id ],
+                            '_source' => $cds->{'_source'},
+                            '_score' => '.',
+                            '_strand' => $cds->{'_strand'},
+                            '_start' => $cds->{'_start'},
+                            '_end' => $cds->{'_end'},
+                        };
+                        push(@$exon_list, $exon);
+                        push(@$mrna_exons, $exon);
+                    }
+                }
+            } else {
+                $logger->debug("not inserting exons for $root->{ID}: no CDS seqs found");
+            }
+        }
+
         my $features = {};
         process_node($root, $features);
         $features->{'_seqid'} = $root->{'_seqid'};
@@ -511,17 +609,17 @@ sub process_node {
 sub process_record {
     my ($record, $features) = @_;
     
-    print STDERR "process_record called on " . $record . "\n" if ($record->{'_type'} eq 'polypeptide');
-
     if ($record->{'_type'} eq 'CDS') {
         # CDS records can span lines and must be merged into one CDS feature
         if (!$record->{'ID'}) {
             if ($options->{'use_cds_parent_ids'}) {
                 if ($record->{'Parent'}) {
                     my $trans_id = &get_parent_id_by_type({'parent' => $record->{'Parent'}}, $features, $MRNA_TYPES);
-                    die "no parent id found for CDS feature" if (!defined($trans_id));
+                    if (!defined($trans_id)) {
+                        print Dumper $record;
+                        die "no mRNA parent id found for CDS feature: try running with --insert_missing_mrnas";
+                    }
                     $record->{'ID'} = $trans_id;
-                    $logger->debug("setting CDS parent id to " . $trans_id);
                 } else {
                     die "CDS feature lacks ID and also has no Parent ID for --use_cds_parent_ids!";
                 }
@@ -598,20 +696,16 @@ sub get_parent_id_by_type {
 
     foreach my $type (keys %$types) {
         my $type_list = $features->{$type};
-    
         foreach my $parent_id (@$parent_list) {
             push(@$matches, $parent_id) if (defined($type_list->{$parent_id}));
         }
     }
 
     my $nm = scalar(@$matches);
-    if ($nm == 0) {
-        print Dumper $feat;
-        die "no parent found for feature $feat->{title} with parents = " . join(',', @$parent_list);
-    } elsif ($nm > 1) {
-        print Dumper $feat;
-        die "multiple parents found for feature $feat->{title} with parents = " . join(',', @$parent_list);
-    } 
+    if ($nm != 1)  {
+        $logger->warn("multiple parents found for feature $feat->{title}: " . join(',', @$parent_list)) if ($nm > 1);
+        return undef;
+    }
 
     return $matches->[0];
 }
@@ -701,8 +795,32 @@ sub gene_feature_hash_to_bsml {
         }
     }
 
-    foreach my $type(keys(%{$features})) {
+    my $get_singleton_feat = sub {
+        my($type) = @_;
+        my @feats = values %{$features->{$type}};
+        my @ids = keys %{$features->{$type}};
+        my $nf = scalar(@feats);
+        die "trying to insert polypeptide feature but no $type found" if ($nf != 1);
+        return ($ids[0], $feats[0]);
+    };
 
+    my $pep_type = $FEAT_TYPE_MAP->{'polypeptide'};
+    my $added_pep = 0;
+    if ($options->{'insert_polypeptides'} && (!defined($id_counts{$pep_type}))) {
+        my($cds_id, $cds) = &$get_singleton_feat('CDS');
+        my($gene_id, $gene) = &$get_singleton_feat('gene');
+
+        $features->{$pep_type}->{$gene_id . "-Protein"} = {
+            'parent' => [ $cds_id ],
+            'type' => $pep_type,
+            'startpos' => $cds->{'startpos'},
+            'endpos' => $cds->{'endpos'},
+            'complement' => $cds->{'complement'},
+        };
+        $added_pep = 1;
+    } 
+
+    foreach my $type(keys(%{$features})) {
         foreach my $feat_id(keys(%{$features->{$type}})) {
                 my $id;
                 if (! defined($id_hash->{$feat_id})) {
@@ -720,14 +838,21 @@ sub gene_feature_hash_to_bsml {
                 # link polypeptides to Sequences in --peptide_fasta
                 if (($type eq 'polypeptide') && defined($peptides)) {
                     my $fseq = $peptides->{$feat_id};
-                    die "couldn't find peptide sequence for $feat_id" if (!defined($fseq));
-                    my $pep_seq = $doc->createAndAddSequence($id . "_seq", undef, $fseq->{'seqlen'}, 'aa', 'polypeptide');
-                    my $seq_genome_link = $doc->createAndAddLink($pep_seq, 'genome', '#' . $genome_id);
-                    my $feat_seq_link = $doc->createAndAddLink($feat, 'sequence', '#'.$id.'_seq');
 
-                    my $path = File::Spec->rel2abs($options->{'peptide_fasta'});
-                    my $seq_data_import_elem = $doc->createAndAddSeqDataImport($pep_seq, 'fasta', $path, undef, $fseq->{'bsml_identifier'});
-                    $doc->createAndAddBsmlAttribute($pep_seq, 'defline', $fseq->{'defline'});
+                    if (!defined($fseq)) {
+                        if ($added_pep) {
+                            $logger->warn("couldn't find peptide sequence for $feat_id");
+                        } else {
+                            die "couldn't find peptide sequence for $feat_id";
+                        }
+                    } else {
+                        my $pep_seq = $doc->createAndAddSequence($id . "_seq", undef, $fseq->{'seqlen'}, 'aa', 'polypeptide');
+                        my $seq_genome_link = $doc->createAndAddLink($pep_seq, 'genome', '#' . $genome_id);
+                        my $feat_seq_link = $doc->createAndAddLink($feat, 'sequence', '#'.$id.'_seq');
+                        my $path = File::Spec->rel2abs($options->{'peptide_fasta'});
+                        my $seq_data_import_elem = $doc->createAndAddSeqDataImport($pep_seq, 'fasta', $path, undef, $fseq->{'bsml_identifier'});
+                        $doc->createAndAddBsmlAttribute($pep_seq, 'defline', $fseq->{'defline'});
+                    }
                 }
 
                 # TODO - need a way to specify which features get linked to an analysis
@@ -745,7 +870,10 @@ sub gene_feature_hash_to_bsml {
                     $feat_group = $feat_groups->{$feat_id};
                 } else {
                     my $trans_id = &get_parent_id_by_type($features->{$type}->{$feat_id}, $features, $MRNA_TYPES);
-                    die "no parent id found for $type feature" if (!defined($trans_id));
+                    if (!defined($trans_id)) {
+                        print Dumper $features;
+                        die "no parent id found for $type feature $feat_id";
+                    }
                     $feat_group = $feat_groups->{$trans_id};
                     if (!defined($feat_group)) {
                         print Dumper $features;
