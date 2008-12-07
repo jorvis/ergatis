@@ -27,7 +27,7 @@
 		<value>$;PROJECT_ID_REPOSITORY$;</value>
 	    </param>
 	    <param>
-		<key>--id_gen_version_suffix</key>
+		<key>--id_gen_version</key>
 		<value>$;ID_GEN_VERSION$;</value>
 	    </param>
 	    <param>
