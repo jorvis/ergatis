@@ -39,6 +39,10 @@
 		<value>$;ASMBL_ID$;</value>
 	    </param>
 	    <param>
+		<key>--genus</key>
+		<value>$;GENUS$;</value>
+	    </param>
+	    <param>
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/glk2bsml.$;DATABASE$;_$;ASMBL_ID$;.stdout</value>
 	    </param>
