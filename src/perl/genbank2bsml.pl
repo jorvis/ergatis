@@ -1195,22 +1195,13 @@ sub addFeature {
         }
 
 	# add in identifier-type
-	if ($database eq 'NCBILocus') {
-	  $doc->createAndAddCrossReference(
-					   'parent'          => $feature_elem, 
-					   'database'        => $database,          # //Genome/Cross-reference/@database
-					   'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
-					   'identifier-type' => 'locus' # //Genome/Cross-reference/@identifier-type
-					  );
-	}
-	else {
-	  $doc->createAndAddCrossReference(
-					   'parent'          => $feature_elem, 
-					   'database'        => $database,          # //Genome/Cross-reference/@database
-					   'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
-					   #'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
-					  );
-	}
+	$doc->createAndAddCrossReference(
+					 'parent'          => $feature_elem, 
+					 'database'        => $database,          # //Genome/Cross-reference/@database
+					 'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
+					 # identifier-type stored as dbxref.version
+					 #'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
+					);
     }
     }
 
