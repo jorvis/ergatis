@@ -738,9 +738,10 @@ sub to_bsml {
 	}
 	
 	# TODO: Handle ec_number similar to above
-        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'}){
-        $ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'ec_number'};
-        }
+    if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'}){
+        $ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'};
+    }
+    
 
 	# mapping from genbank feature tag to attributes
 	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene'}){
@@ -860,13 +861,14 @@ sub to_bsml {
         }
     }
     elsif (@{$feature_type{gene}} == 1) {
+        
         my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{gene}->[0]}, 'transcript');
         $trans_featref->{id} =~ s/gene/transcript_from_gene/;
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        if($ec_numbers){
-        foreach my $ec_number (@$ec_numbers){
-            $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
-        }
+        if ($ec_numbers){
+            foreach my $ec_number (@$ec_numbers){
+                $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
+            }
         }
     }
     elsif (@{$feature_type{CDS}} >= 1) { # use CDSs
