@@ -9,6 +9,7 @@ use Bio::SeqIO;
 use Bio::Tools::CodonTable; # for creating CDSs from mRNAs, bug #3300
 use BSML::BsmlBuilder;
 use Ergatis::IdGenerator;
+use Data::Dumper;
 umask(0000);
 
 # optional mapping parsed from --organism_to_prefix_mapping argument
@@ -170,7 +171,7 @@ sub parse_genbank_file {
 	$current_prefix = $organism_to_prefix_map->{$gbr{'organism'}};
 	if (!defined($current_prefix) || ($current_prefix =~ /^\s*$/)) {
 	    # TODO - this should result in a warning, but logging doesn't appear to be enabled
-	  die "Empty prefix"; #AARON
+	  die "No prefix defined in $options{organism_to_prefix_mapping} for organism scientific name ($gbr{organism}) "; #AARON
 	}
     }
 
@@ -748,11 +749,15 @@ sub to_bsml {
 	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'protein_id'}){
 	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'protein'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'prodtein_id'};
 	}
+
+	# store locus_tag as Cross-reference not Attribute
+	# database=NCBILocus
 	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'}){
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'locus'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'};
+#	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'locus'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'};
+	  foreach my $locus_dbxref (@{$gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'}}) {
+	    push(@{$gbr{'Features'}->{$feature_group}->{$feature}->{db_xrefs}}, "NCBILocus:".$locus_dbxref);
+	  }
 	}
-
-
 
         if ($feature =~ /gene/) {
         push(@{$feature_type{gene}}, $feature);
@@ -1148,7 +1153,7 @@ sub addFeature {
         my %known_dbxrefs = ( GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
                   HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
                   EMBL => 1, GenBank => 1, InterPro => 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1,
-                  dictyBase => 1, FlyBase => 1, VectorBase => 1, SGD => 1, SGDID => 1);
+                  dictyBase => 1, FlyBase => 1, VectorBase => 1, SGD => 1, SGDID => 1, NCBILocus => 1);
         (defined($known_dbxrefs{$database})) || die "Unknown database in dbxref ($database)";
         
         # mod database to GO xref standard as neccessary http://www.geneontology.org/doc/GO.xrf_abbs
@@ -1188,12 +1193,24 @@ sub addFeature {
             die "Unable to parse COG database from identifier ($identifier)";
         }
         }
-        $doc->createAndAddCrossReference(
-                         'parent'          => $feature_elem, 
-                         'database'        => $database,          # //Genome/Cross-reference/@database
-                         'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
-#                        'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
-                         );
+
+	# add in identifier-type
+	if ($database eq 'NCBILocus') {
+	  $doc->createAndAddCrossReference(
+					   'parent'          => $feature_elem, 
+					   'database'        => $database,          # //Genome/Cross-reference/@database
+					   'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
+					   'identifier-type' => 'locus' # //Genome/Cross-reference/@identifier-type
+					  );
+	}
+	else {
+	  $doc->createAndAddCrossReference(
+					   'parent'          => $feature_elem, 
+					   'database'        => $database,          # //Genome/Cross-reference/@database
+					   'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
+					   #'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
+					  );
+	}
     }
     }
 
