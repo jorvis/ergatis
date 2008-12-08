@@ -163,12 +163,14 @@ sub parse_genbank_file {
     defined($gbr{'gi'}) || die "No gi in $gb_file";
 
     #first word is genus, all follows is species (a workaround to encode the entire scientific name in BSML/chado)
+    #this pulls the ORGANISM field up to the taxonomic lineage
     $gbr{'organism'} = $seq->species->scientific_name;
 
     if (defined($organism_to_prefix_map)) {
 	$current_prefix = $organism_to_prefix_map->{$gbr{'organism'}};
 	if (!defined($current_prefix) || ($current_prefix =~ /^\s*$/)) {
 	    # TODO - this should result in a warning, but logging doesn't appear to be enabled
+	  die "Empty prefix"; #AARON
 	}
     }
 
@@ -271,6 +273,20 @@ sub parse_genbank_file {
     }
     elsif ($gbr{'polymer_type'} =~ /ds/ ) {
         $gbr{'strand'} = "ds";      
+    }
+
+    # correct polymer_type (this could be earlier, but then
+    # have to change strand setting)
+    if ($gbr{polymer_type} eq 'ss-RNA') {
+      $gbr{polymer_type} = 'ss_RNA_viral_sequence';
+    } elsif ($gbr{polymer_type} eq 'ss-RNA+') {
+      $gbr{polymer_type} = 'postive_sense_ssRNA_viral_sequence';
+    } elsif ($gbr{polymer_type} eq 'ss-RNA-') {
+      $gbr{polymer_type} = 'negative_sense_ssRNA_viral_sequence';
+    } elsif ($gbr{polymer_type} eq 'ds-RNA') {
+      $gbr{polymer_type} = 'ds_RNA_viral_sequence';
+    } elsif ($gbr{polymer_type} eq 'ss-DNA') {
+      $gbr{polymer_type} = 'single_stranded_DNA_chromosome';
     }
 
     #currently unused
@@ -645,7 +661,15 @@ sub to_bsml {
 
     # add expanded ard.obo polymer_type (or SO term, if DNA|RNA)
     # see bug #3251 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
-    if ($gbr{polymer_type} eq "DNA" || $gbr{polymer_type} eq "RNA") {
+    if ($gbr{polymer_type} eq "DNA" || 
+	$gbr{polymer_type} eq "RNA" ||
+	$gbr{polymer_type} eq "mRNA" ||
+	$gbr{polymer_type} eq "ss_RNA_viral_sequence" ||
+	$gbr{polymer_type} eq "postive_sense_ssRNA_viral_sequence" ||
+	$gbr{polymer_type} eq "negative_sense_ssRNA_viral_sequence" ||
+	$gbr{polymer_type} eq "ds_RNA_viral_sequence" || 
+	$gbr{polymer_type} eq "single_stranded_DNA_chromosome"
+       ) {
        $sequence->addBsmlAttributeList([{name => 'SO', content=> $gbr{polymer_type}}]);
     }
     else {
@@ -1151,7 +1175,7 @@ sub addFeature {
         $database = 'SGD';
         }
         elsif ($database eq 'COG') {
-        if ($identifier =~ /^COG/) {
+        if ($identifier =~ /^\s+COG/) {
             $database = 'COG_Cluster';
         }
         elsif ($identifier =~ /^\d$/) { # single digit
