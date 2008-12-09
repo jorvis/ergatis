@@ -22,7 +22,6 @@
 #  -all sequences/features belong to 1 genome, the one named by --organism param
 
 # TODO
-#  -replace STDERR prints with log statements
 #  -generalize to regular GFF
 #  -add a strict mode in which deviations from the GFF3/canonical gene spec. are reported
 #   -see http://www.sequenceontology.org/gff3.shtml
@@ -350,7 +349,7 @@ close IN;
 foreach my $id(keys(%{$NODES})) {
     foreach my $record(@{$NODES->{$id}->{'records'}}) {
         if (defined($record->{'children'})) {
-            print STDERR "WARNING - about to overwrite children field of record $record with id=$id\n";
+            $logger->warn("about to overwrite children field of record $record with id=$id)";
         }
         $record->{'children'} = $NODES->{$id}->{'children'};
         delete $NODES->{$id}->{'children'};
@@ -588,7 +587,7 @@ sub parse_record {
     }
 
     if (!defined($record->{'ID'})) {
-#        print STDERR "no ID defined for record $line\n";
+        $logger->debug("no ID defined for record $line");
     } else {
         $record->{'ID'} = $record->{'ID'}->[0];
     }
@@ -599,7 +598,7 @@ sub parse_record {
         if (defined($record->{'Derives_from'})) {
             push(@$parents, @{$record->{'Derives_from'}});
         }
-#        print STDERR "no Parent attribute defined for record $line\n";
+        $logger->debug("no Parent defined for record $line");
     } else {
         push(@$parents, @{$record->{'Parent'}});
     }
@@ -695,7 +694,7 @@ sub process_record {
         my $feat_type;
         
         if (!defined($FEAT_TYPE_MAP->{$record->{'_type'}})) {
-            print STDERR "unexpected feature type '$record->{_type}'\n";
+            $logger->error("unexpected feature type '$record->{_type}'");
             $feat_type = $record->{'_type'};    
         } else {
             $feat_type = $FEAT_TYPE_MAP->{$record->{'_type'}};
@@ -964,8 +963,9 @@ sub fetch_node_type {
 
 # read deflines and sequence lengths from a multi-FASTA file
 #
-# $file - 
-# $id_regex - 
+# $file - a multi-FASTA sequence file
+# $id_regex - regular expression to extract a sequence id from each defline of $file
+# $id_fn - function to apply to the id parsed by $id_regex before using it as a key in the result hash
 #
 # returns a hashref mapping sequence id to { 'seqlen' => sequence length, 'defline' => sequence defline }
 #
