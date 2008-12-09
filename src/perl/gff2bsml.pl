@@ -29,7 +29,6 @@
 #  -if --use_cds_parent_ids is in effect the script should check that the CDS features under each mRNA are
 #   nonoverlapping: if not it may be impossible to correctly reconstruct the original gene model without
 #   correctly-assigned CDS ids
-#  -check handling of identifiers in Seq-data-imports: can a shorter id be used without rewriting the FASTA file?
 #  -add options to control the handling of '*' characters in the peptide sequences
 #   -current legacy2bsml/genbank2bsml scripts appear to be inconsistent wrt whether '*' is included
 #   -and if the '*' is included then it gets counted in the seqlen in chado
@@ -53,10 +52,12 @@ gff32bsml.pl
          --peptide_id_regex='^>(\S+)'
          --peptide_id_prefix=''
          --peptide_id_suffix='-Protein'
+         --peptide_no_seqdata
          --dna_fasta=/path/to/dna-seqs.fsa
          --dna_id_regex='^>(\S+)'
          --dna_id_prefix='Chr'
          --dna_id_suffix=''
+         --dna_no_seqdata
          --organism_genetic_code=1
          --organism_mt_genetic_code=4
          --use_cds_parent_ids
@@ -91,6 +92,10 @@ B<--peptide_id_suffix>
     optional. suffix to append to the id parsed by --peptide_id_regex to produce the polypeptide ID 
     used in the GFF file.
 
+B<--peptide_no_seqdata>
+    do not create Seq-data or Seq-data-import entries for the polypeptide sequences; use --peptide_fasta,
+    if specified, only to determine the sequence length(s).
+
 B<--dna_fasta>
     optional.  path to a multi-FASTA file containing the DNA sequences for the reference sequences
     in the GFF file.  if this argument is supplied then the named file _must_ contain all of the 
@@ -107,6 +112,10 @@ B<--dna_id_prefix>
 B<--dna_id_suffix>
     optional. suffix to append to the id parsed by --dna_id_regex to produce the sequence ID 
     used in the GFF file.
+
+B<--dna_no_seqdata>
+    do not create Seq-data or Seq-data-import entries for the DNA/reference sequences; use --dna_fasta,
+    if specified, only to determine the sequence length(s).
 
 B<--organism_genetic_code>
     optional.  specifies a genetic code value to appear in the BSML <Organism> element for --organism
@@ -242,10 +251,12 @@ my $results = GetOptions($options,
                          'peptide_id_regex=s',
                          'peptide_id_prefix=s',
                          'peptide_id_suffix=s',
+                         'peptide_no_seqdata',
                          'dna_fasta=s',
                          'dna_id_regex=s',
                          'dna_id_prefix=s',
                          'dna_id_suffix=s',
+                         'dna_no_seqdata',
                          'organism_genetic_code=i',
                          'organism_mt_genetic_code=i',
                          'output|o=s',
@@ -373,9 +384,18 @@ foreach my $root(@{$gene_nodes}) {
         if ((!defined($root->{'children'}->{$mrna_type}) && $options->{'insert_missing_mrnas'})) {
             $logger->debug("inserting missing mRNA for " . $root->{'ID'});
             my $trans_id = $root->{'ID'} . "-mRNA";
-            
-            # TODO - extent of mRNA should = extent of exons (if present), of CDS feats if not
+            my $cds_list = $root->{'children'}->{$cds_type};
+            my $exon_list = $root->{'children'}->{$exon_type};
             my $mrna_list = $root->{'children'}->{$mrna_type} = [];
+
+            # extent of mRNA should = extent of exons (if present), of CDS feats if not
+            my $feat_list = defined($exon_list) ? $exon_list : $cds_list;
+            my($m_start, $m_end, $m_strand) = &union_feat_intervals($feat_list);
+
+            if (($m_start != $root->{_start}) || ($m_end != $root->{_end}) || ($m_strand != $root->{_strand})) {
+                $logger->debug($root->{'ID'} . ": mrna coords=$m_start-$m_end/$m_strand gene coords=" . $root->{_start} . "-" . $root->{_end} . "/" . $root->{_strand} . "\n");
+            }
+
             push(@$mrna_list, {
                 'ID' => $trans_id,
                 '_seqid' => $root->{'_seqid'},
@@ -384,14 +404,12 @@ foreach my $root(@{$gene_nodes}) {
                 'Parent' => [ $root->{'ID'} ],
                 '_source' => $root->{'_source'},
                 '_score' => '.',
-                '_strand' => $root->{'_strand'},
-                '_start' => $root->{'_start'},
-                '_end' => $root->{'_end'},
+                '_strand' => $m_strand,
+                '_start' => $m_start,
+                '_end' => $m_end,
             });
 
             # make mRNA the parent of the CDS and exon features
-            my $cds_list = $root->{'children'}->{$cds_type};
-            my $exon_list = $root->{'children'}->{$exon_type};
             map { push(@{$_->{'Parent'}}, $trans_id); } @$cds_list if (defined($cds_list));
             map { push(@{$_->{'Parent'}}, $trans_id); } @$exon_list if (defined($exon_list));
         }
@@ -459,6 +477,33 @@ $doc->write($options->{'output'});
 exit(0);
 
 ## subroutines
+
+sub union_feat_intervals {
+    my($feats) = @_;
+    my $min_start = undef;
+    my $max_end = undef;
+    my $strand = undef;
+    
+    foreach my $feat (@$feats) {
+        my($fs, $fe, $fstr) = map { $feat->{$_} } ('_start', '_end', '_strand');
+        die "feature $feat->{ID} has no _start" if (!defined($fs));
+        die "feature $feat->{ID} has no _end" if (!defined($fe));
+        die "feature end < start in feature $feat->{ID}" if ($fe < $fs);
+        die "feature $feat->{ID} has no _strand" if (!defined($fstr));
+
+        if (!defined($min_start)) {
+            $min_start = $fs;
+            $max_end = $fe;
+            $strand = $fstr;
+        } else {
+            die "strand mismatch ($strand vs $fstr) in feature $feat->{ID}" if ($strand != $fstr);
+            $min_start = $fs if ($fs < $min_start);
+            $max_end = $fe if ($fe > $max_end);
+        }
+    }
+
+    return($min_start, $max_end, $strand);
+}
 
 sub check_parameters {
 	my $options = shift;
@@ -743,18 +788,30 @@ sub gene_feature_hash_to_bsml {
                 # interbase coords in effect here
                 $gff_seqlen = $records->[0]->{'_end'} - $records->[0]->{'_start'};
             }
-        } else {
-            $logger->warn("unable to determine length of Sequence $seq_id: corresponding feature not found in GFF");
+        }
+
+        my $dseq = undef;
+        if (defined($dna_seqs)) {
+            $dseq = $dna_seqs->{$seq_id};
+            die "couldn't find DNA sequence for $seq_id" if (!defined($dseq));
+            $gff_seqlen = $dseq->{'seqlen'};
+        }
+        if (!defined($gff_seqlen)) {
+            if (defined($dna_seqs)) {
+                $logger->warn("unable to determine length of Sequence $seq_id: not found in GFF or --dna_fasta file");
+            } else {
+                $logger->warn("unable to determine length of Sequence $seq_id: feature not found in GFF and --dna_fasta not specified");
+            }
         }
 
         $seq = $doc->createAndAddSequence( $seq_id, $seq_id, $gff_seqlen, 'dna', $options->{'default_seq_class'} );
         my $genome_link = $doc->createAndAddLink($seq, 'genome', '#' . $genome_id);
 
-        if (defined($dna_seqs)) {
-            my $dseq = $dna_seqs->{$seq_id};
-            die "couldn't find DNA sequence for $seq_id" if (!defined($dseq));
-            my $path = File::Spec->rel2abs($options->{'dna_fasta'});
-            my $seq_data_import_elem = $doc->createAndAddSeqDataImport($seq, 'fasta', $path, undef, $dseq->{'bsml_identifier'});
+        if (defined($dseq)) {
+            if (!$options->{'dna_no_seqdata'}) {
+                my $path = File::Spec->rel2abs($options->{'dna_fasta'});
+                my $seq_data_import_elem = $doc->createAndAddSeqDataImport($seq, 'fasta', $path, undef, $dseq->{'bsml_identifier'});
+            }
             $doc->createAndAddBsmlAttribute($seq, 'defline', $dseq->{'defline'});
         }
 
@@ -849,8 +906,10 @@ sub gene_feature_hash_to_bsml {
                         my $pep_seq = $doc->createAndAddSequence($id . "_seq", undef, $fseq->{'seqlen'}, 'aa', 'polypeptide');
                         my $seq_genome_link = $doc->createAndAddLink($pep_seq, 'genome', '#' . $genome_id);
                         my $feat_seq_link = $doc->createAndAddLink($feat, 'sequence', '#'.$id.'_seq');
-                        my $path = File::Spec->rel2abs($options->{'peptide_fasta'});
-                        my $seq_data_import_elem = $doc->createAndAddSeqDataImport($pep_seq, 'fasta', $path, undef, $fseq->{'bsml_identifier'});
+                        if (!$options->{'peptide_no_seqdata'}) {
+                            my $path = File::Spec->rel2abs($options->{'peptide_fasta'});
+                            my $seq_data_import_elem = $doc->createAndAddSeqDataImport($pep_seq, 'fasta', $path, undef, $fseq->{'bsml_identifier'});
+                        }
                         $doc->createAndAddBsmlAttribute($pep_seq, 'defline', $fseq->{'defline'});
                     }
                 }
@@ -936,8 +995,13 @@ sub read_sequence_lengths {
     my $defline_lnum = undef;
     my $seq = undef;
     my $lnum = 0;
+    my $openCmd = $file;
+    if ($file =~ /\.gz$/) {
+        $openCmd = "zcat $file |";
+        $logger->warn("FASTA file $file is compressed, which may cause bsml2chado to fail to load sequences from it.");
+    }
 
-    $fh->open($file, 'r') || die "unable to read from $file";
+    $fh->open($openCmd) || die "unable to open $openCmd for file $file";
     while (my $line = <$fh>) {
         chomp($line);
         ++$lnum;
