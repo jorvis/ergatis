@@ -200,7 +200,7 @@ sub produce_cluster_output {
 }
 
 sub process_alignment{
-    my($polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$pcoverage,$pvalue,$pidentity_cutoff,$percent_coverage_cutoff,$pvalue_cutoff) = @_;
+    my($polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$r_pcoverage,$c_pcoverage,$pvalue,$pidentity_cutoff,$percent_coverage_cutoff,$pvalue_cutoff) = @_;
     $logger->logdie("compseq was not defined") if (!defined($compseq));
     $logger->logdie("refseq was not defined")  if (!defined($refseq));
     $logger->logdie("pidentity was not defined") if (!defined($pidentity));
@@ -219,7 +219,7 @@ sub process_alignment{
 	#  pvalue is from blastp bsml file ()
 	#  p_value threshold value
 	
-	if (($pidentity > $pidentity_cutoff) and ($pvalue < $pvalue_cutoff) and ($pcoverage >= $percent_coverage_cutoff)){
+	if (($pidentity > $pidentity_cutoff) and ($pvalue < $pvalue_cutoff) and ($r_pcoverage >= $percent_coverage_cutoff) and ($c_pcoverage >= $percent_coverage_cutoff)){
 	    push (@$polypeptidepairs, [$compseq, $refseq]);
 	}
     }
@@ -267,12 +267,13 @@ sub retrieve_polypeptide_pairs {
     my $refseq = undef;
     my $pidentity = undef;
     my $pvalue = undef;
-    my $pcoverage = undef;
+    my $r_pcoverage = undef;
+    my $c_pcoverage = undef;
     
     my $funcs = {'Seq-pair-alignment'=>
 		     sub {
 			 my ($expat,$elt,%params) = @_;
-			 &process_alignment(\@polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$pcoverage,$pvalue,$percent_identity,$percent_coverage,$p_value) if(defined $compseq && defined $refseq);
+			 &process_alignment(\@polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$r_pcoverage,$c_pcoverage,$pvalue,$percent_identity,$percent_coverage,$p_value) if(defined $compseq && defined $refseq);
 			 $compseq = undef;
 			 $refseq = undef;
 			 $pidentity = undef;
@@ -295,8 +296,11 @@ sub retrieve_polypeptide_pairs {
 			 }
 			 if($expat->{'Context'}->[$index] eq 'Seq-pair-alignment'){
 			     if($params{'name'} eq 'percent_coverage_refseq'){
-				 $pcoverage = $params{'content'};
-             }
+                     $r_pcoverage = $params{'content'};
+                 }
+                 elsif($params{'name'} eq 'percent_coverage_compseq'){
+                     $c_pcoverage = $params{'content'};
+                 }
 			 }
          }
 	     };
@@ -338,7 +342,7 @@ sub retrieve_polypeptide_pairs {
         }
     }
 
-    &process_alignment(\@polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$pcoverage,$pvalue,$percent_identity,$percent_coverage,$p_value) if(defined $compseq && defined $refseq);
+    &process_alignment(\@polypeptidepairs,$polypeptide2assemblyhash,$compseq,$refseq,$pidentity,$r_pcoverage,$c_pcoverage,$pvalue,$percent_identity,$percent_coverage,$p_value) if(defined $compseq && defined $refseq);
 
     $logger->debug("Polypeptide pairs to be processed:\n") if $logger->is_debug();
 
