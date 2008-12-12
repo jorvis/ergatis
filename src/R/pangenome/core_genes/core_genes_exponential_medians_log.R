@@ -59,7 +59,7 @@ start=list(th1=33, th2=476, th3=1.5))
 postscript(file="###output_path###core_genes_exponential_medians_log.ps")
 
 # Add some space on the right for the legend(s)
-par(mar=par()$mar+c(0,0,0,13))
+par(mar=par()$mar+c(0,0,0,14))
 
 # Draw the axis
 plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### core genes exponential log axis", cex=0.5, log="xy", col=p_color)
