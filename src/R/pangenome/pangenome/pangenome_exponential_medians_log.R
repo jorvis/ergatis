@@ -2,9 +2,9 @@ invisible(options(echo = TRUE))
 
 ## read in data
 pangenome <- read.table("###input_file###", header=FALSE)
-genome_count <- max(pangenome$V8)
-genomes <- (pangenome$V9[1:genome_count])
-print(genomes)
+#genome_count <- max(pangenome$V8)
+#genomes <- (pangenome$V9[1:genome_count])
+#print(genomes)
 pangenome <- pangenome[ pangenome$V1 > 1, ]
 attach(pangenome)
 
@@ -19,28 +19,28 @@ v1allmedians <- as.vector(tapply(V1,V1,FUN=median))
 
 ## exponential model based on medianss
 nlmodel_exp <- nls(v2allmedians ~ th1 + th2* exp(-v1allmedians / th3), data=pangenome,
-start=list(th1=2000, th2=20, th3=2))
+start=list(th1=2000, th2=-200, th3=2))
 #summary(nlmodel_exp)
 
 # Open up the output file for the log graph
 postscript(file="###output_path###pangenome_exponential_medians_log.ps")
 
 # Add some space on the right for the legend(s)
-par(mar=par()$mar+c(0,0,0,12))
+par(mar=par()$mar+c(0,0,0,14))
 
 # Draw the axis
-plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### pangenome exponential log axis", cex=0.5, log="xy")
+plot(V1,V2, ylim=c(min(V2),nlmodel_exp$m$getPars()[1]), xlab="number of genomes", ylab="new genes", main="###TITLE### pangenome exponential log axis", cex=0.5, log="xy")
 
 # plot the medians
-points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
+points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='red')
 
 # plot the means
-points(tapply(V2,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
+points(tapply(V2,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='red')
 
 # plot the regression
 x <- seq(par()$xaxp[1]-1,par()$xaxp[2]+1)
-lines(x, predict(nlmodel_exp, data.frame(v1allmedians=x)), lwd=2, col="black")
-abline(h=nlmodel_exp$m$getPars()[1], lty=2, lwd=2,col="black")
+lines(x, predict(nlmodel_exp, data.frame(v1allmedians=x)), lwd=2, col="red")
+abline(h=nlmodel_exp$m$getPars()[1], lty=2, lwd=2,col="red")
 
 expr_exp <- substitute(
                 expression(y == th1 + th2 * italic(e)^(-x / th3)), 
@@ -54,4 +54,4 @@ expr_exp <- substitute(
 height<- (10^(par()$usr[4]) - 10^(par()$usr[3]))
 width<- (10^(par()$usr[2]) - 10^(par()$usr[1]))
 par(xpd=T)
-legend(10^(par()$usr[2])+(0.01*width),10^(par()$usr[3]) + height/2, c(eval(expr_exp)), lwd=c(2,2), yjust=0.5,xjust=0)
+legend(10^(par()$usr[2])+(0.01*width),10^(par()$usr[3]) + height/2, c(eval(expr_exp)), lwd=c(2,2), yjust=0.5,xjust=0,col=c('red'))
