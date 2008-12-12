@@ -61,6 +61,7 @@ my $results = GetOptions (  \%options,
                             'input|i=s',
                             'output_path|o=s',
 #                           'filter|f=s',
+                            'db_list|dl:s',
                             'debug|d=s',
                             'command_id=s',       ## passed by workflow
                             'logconf=s',          ## passed by workflow (not used)
@@ -73,12 +74,17 @@ my @dups_temp = ();
 my %dups = ();
 my $filter;
 my $skip_filter = 1;
+my $dbs = {};
 
 my $twig = XML::Twig->new(
                             twig_roots  => { 
                                                 'Seq-pair-alignment' => \&processSeqPairAlignment
                                            }
                          );
+
+if($options{'db_list'}) {
+    &read_db_list();
+}
 
 if (!-d $options{'output_path'}) {
     die "must specify output path as a directory";
@@ -182,6 +188,7 @@ sub processSeqPairAlignment {
 	die "couldn't parse out db and sequence id from subject\n$subject_id\n";
     }
     
+    if(!$options{'db_list'} || ($dbs->{$qdb} && $dbs->{$sdb})) {
     if ($skip_filter || ($filter->{$qdb}->{$qprot} && $filter->{$sdb}->{$sprot})) {
     #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
     #       push (@results, [$qdb,$qprot,$sdb,$sprot,$all_seg_p_ident,$p_cov_ref]);
@@ -196,4 +203,17 @@ sub processSeqPairAlignment {
             print $p_cov_ref." ".$p_cov_comp."\n";
         }
     }
+}
+    elsif($options{'db_list'}) {
+        print STDERR "Filtered $qdb or $sdb\n";
+    }
+}
+
+sub read_db_list {
+    open IN, "<".$options{'db_list'} || die "couldn't open '$options{db_list}' for reading: $!";
+    while(<IN>) {
+        chomp;
+        $dbs->{$_} = 1;
+    }close IN;
+    
 }
