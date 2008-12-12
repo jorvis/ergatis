@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>pangenome generate graphs</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>prep the R input file</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/pangenome_make_graphs</executable>
+            <param>  
+                <key>--r_script</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--input_table</key>
+                <value>$;PANGENOME_INPUT_TABLE$;</value>
+            </param>
+            <param>
+                <key>--title</key>
+                <value>$;TITLE$;</value>
+            </param>
+            <param>  
+                <key>--output_path</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+            </dceSpec>
+        </command>
+    </commandSet>
+</commandSetRoot>
