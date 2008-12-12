@@ -75,6 +75,7 @@ points(tapply(pangenome$V4,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenom
 points(tapply(V4,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
 
 # plot the regression
+x <- seq(par()$xaxp[1]-1,par()$xaxp[2]+1)
 lines(x, predict(nlmodel_exp, data.frame(v1allmedians=x)), lwd=2, col="black")
 abline(h=nlmodel_exp$m$getPars()[1], lty=2, lwd=2,col="black")
 
