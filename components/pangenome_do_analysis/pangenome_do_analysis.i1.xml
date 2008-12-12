@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>pangenome compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>parse blast results</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/pangenome_blast_parse</executable>
+            <param>  
+                <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--output_path</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+            </dceSpec>
+        </command>
+    </commandSet>
+</commandSetRoot>
