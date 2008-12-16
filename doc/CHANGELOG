@@ -1,5 +1,6 @@
 next
 ----
+-RNAmmer: added 2bsml section
 -genewise2legacydb.pl: now accepts a password file
 -snap: output filenames now include the component name
 -unreported bugfix: fixed off-by-one error in legacy genemark2bsml.pl
