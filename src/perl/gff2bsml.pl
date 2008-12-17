@@ -210,6 +210,8 @@ use File::Spec;
 my $DEFAULT_SEQ_CLASS = '';
 my $GLOBAL_ID_COUNTER = 0;
 my $NODES = {};
+# mapping from GFF sequence id to BSML sequence id.  these need not be the same.
+my $GFF2BSML_SEQID_MAP = {};
 
 # mapping from GFF3 feature type to Chado cvterm.  if the script encounters
 # a GFF type not found in this hashref it will fail
@@ -349,7 +351,7 @@ close IN;
 foreach my $id(keys(%{$NODES})) {
     foreach my $record(@{$NODES->{$id}->{'records'}}) {
         if (defined($record->{'children'})) {
-            $logger->warn("about to overwrite children field of record $record with id=$id)";
+            $logger->warn("about to overwrite children field of record $record with id=$id)");
         }
         $record->{'children'} = $NODES->{$id}->{'children'};
         delete $NODES->{$id}->{'children'};
@@ -460,8 +462,7 @@ foreach my $root(@{$gene_nodes}) {
 
         my $features = {};
         process_node($root, $features);
-        $features->{'_seqid'} = $root->{'_seqid'};
-        gene_feature_hash_to_bsml($NODES, $features, $peptides, $dna_seqs);
+        gene_feature_hash_to_bsml($NODES, $features, $peptides, $dna_seqs, $root->{'_seqid'});
     }
 }
 
@@ -756,11 +757,8 @@ sub get_parent_id_by_type {
 
 # convert a gene feature hash into BSML
 sub gene_feature_hash_to_bsml {
-    my ($nodes, $features, $peptides, $dna_seqs) = @_;
+    my ($nodes, $features, $peptides, $dna_seqs, $seq_id) = @_;
     
-    my $seq_id = $features->{'_seqid'};
-    delete $features->{'_seqid'};
-
     my $id_hash = {};
     my %id_counts;
     
@@ -770,9 +768,10 @@ sub gene_feature_hash_to_bsml {
     $idcreator->set_pool_size(%id_counts);
     
     my $seq;
+    my $bsml_seq_id = $GFF2BSML_SEQID_MAP->{$seq_id};
     
     # create a sequence stub for the seq_id if it doesn't exist yet
-    if (!($doc->returnBsmlSequenceByIDR($seq_id))){
+    if (!defined($bsml_seq_id)) {
 
         # determine length of sequence from feature in GFF, if present
         my $gff_seq = $nodes->{$seq_id};
@@ -803,7 +802,9 @@ sub gene_feature_hash_to_bsml {
             }
         }
 
-        $seq = $doc->createAndAddSequence( $seq_id, $seq_id, $gff_seqlen, 'dna', $options->{'default_seq_class'} );
+        my $bsml_id = $idcreator->next_id('project' => $options->{'project'}, 'type' => $options->{'default_seq_class'});
+        $GFF2BSML_SEQID_MAP->{$seq_id} = $bsml_id;
+        $seq = $doc->createAndAddSequence( $bsml_id, $seq_id, $gff_seqlen, 'dna', $options->{'default_seq_class'} );
         my $genome_link = $doc->createAndAddLink($seq, 'genome', '#' . $genome_id);
 
         if (defined($dseq)) {
@@ -817,7 +818,7 @@ sub gene_feature_hash_to_bsml {
         # TODO - need a way to specify which features get linked to an analysis
 #        $seq->addBsmlLink('analysis', '#EVM', 'input_of');
     } else {
-        $seq = $doc->returnBsmlSequenceByIDR($seq_id);
+        $seq = $doc->returnBsmlSequenceByIDR($bsml_seq_id);
     }
 
     # each of the feature types listed in $MRNA_TYPES can be used as a transcript-level feature
