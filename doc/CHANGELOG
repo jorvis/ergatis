@@ -1,5 +1,6 @@
 next
 ----
+-software.config: added $;PRIAM_PROFILE$; under shared section and added RNAmmer section
 -RNAmmer: added 2bsml section
 -genewise2legacydb.pl: now accepts a password file
 -snap: output filenames now include the component name
