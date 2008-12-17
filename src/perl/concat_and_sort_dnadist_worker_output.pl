@@ -55,6 +55,8 @@ B<--help,-h>
 =head1 DESCRIPTION
 
 Concatenates and sorts intermediate output from dnadist_worker processes.
+Modified version of the script that assumes the output will be in lower triangular 
+form.
 
 =head1 INPUT
 
@@ -95,10 +97,6 @@ use File::Spec;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Ergatis::Logger;
 use Pod::Usage;
-
-## required for proper operation on NFS
-##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
-$File::Find::dont_use_nlink = 1;
 
 ## globals
 my $DEFAULT_TMP_DIR = '/tmp';
@@ -171,70 +169,50 @@ foreach my $path (@paths) {
     }
 }
 
-# merge sorted files (using an open filehandle for each input file)
-my $of = $options->{'output_file'};
-my $ofh = FileHandle->new();
-$ofh->open(">$of") || die "unable to write to $of";
-
-# track position in each input file simultaneously
-my $index2file = {};
-my $openfiles = 0;
-
-# read ahead and use hash table to track where the next entry is coming from
-my $readLine = sub {
-    my($filestate) = @_;
-    my $lastindex = $filestate->{'lastindex'};
-    delete $index2file->{$lastindex} if (defined($lastindex));
-    my $fh = $filestate->{'fh'};
-    my $line = <$fh>;
-
-    if (!defined($line)) {
-        $filestate->{'fh'}->close();
-        --$openfiles;
-    } else {
-        $filestate->{'line'} = $line;
-        my($ind) = ($line =~ /^(\d+)\s+/);
-        ++$filestate->{'linenum'};
-        $filestate->{'lastindex'} = $ind;
-        $index2file->{$ind} = $filestate;
-    }
-};
-
+# concatenate sorted files in the correct order
+my $file2start = {};
 foreach my $file (@$sorted_files) {
-    my $ifh = FileHandle->new();
-    $ifh->open($file, 'r') || die "unable to read from $file";
-    ++$openfiles;
-    my $state = {
-        'fh' => $ifh,
-        'path' => $file,
-        'line' => undef,
-        'linenum' => -1,
-        'lastindex' => undef,
-    };
-    &$readLine($state);
-}
-
-# do the merge, halting when all input files are exhausted
-my $index = 1;
-my $nskipped = 0;
-
-while ($openfiles > 0) {
-    my $filestate = $index2file->{$index};
-    if (!defined($filestate)) {
-        # skip to next defined entry if 1 or more are missing
-        my @keys = sort { $a <=> $b } keys %$index2file;
-        my $next = $keys[0];
-        $logger->debug("missing entry at $index, skipping to $next");
-        $index = $next;
-        next;
+    if ($file =~ /(\d+)\-\d+\.distances$/) {
+        my $start = $1;
+        $file2start->{$file} = $start;
+    } else {
+        die "error parsing start cell from $file";
     }
-    $nskipped = 0;
-    $ofh->print($filestate->{'line'});
-    &$readLine($filestate);
-    ++$index;
 }
 
-$ofh->close();
+my @files = sort { $file2start->{$a} <=> $file2start->{$b} } @$sorted_files;
+my $first = 1;
+my $of = $options->{'output_file'};
+
+foreach my $file (@files) {
+    my $cmd = undef;
+
+    if ($first) {
+        $cmd = "cat $file > $of";
+        $first = 0;
+    } else {
+        $cmd = "cat $file >> $of";
+    }
+    system($cmd);
+    
+    # check for errors (see perldoc -f system)
+    if ($? == -1) {
+        $logger->error("failed to execute: $!");
+        exit(-1);
+    }
+    elsif ($? & 127) {
+        my $err = sprintf("child died with signal %d, %s coredump\n", ($? & 127), ($? & 128) ? 'with':'without');
+        $logger->error($err);
+        exit(1);
+    }
+    else {
+        my $exitval = $? >> 8;
+        if ($exitval != 0) {
+            $logger->error("child exited with value $exitval");
+            exit($exitval);
+        }
+    }
+}
 
 if ($options->{'delete_worker_files'}) {
     my $nwf = scalar(@paths);
