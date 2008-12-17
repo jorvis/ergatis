@@ -99,11 +99,13 @@ if (defined($cf)) {
     my $ifh = FileHandle->new();
     $ifh->open($cf, 'r') || die "unable to read from $cf";
     while (my $line = <$ifh>) {
-        $ofh->print($line);
+        $ofh->print($line) unless ($line =~ /^[LY]$/);
     }
     $ifh->close();
 }
 
+# lower-triangular output format:
+$ofh->print("L\n");
 $ofh->print("Y\n");
 $ofh->close();
 exit(0);
