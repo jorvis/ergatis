@@ -664,7 +664,7 @@ sub process_record {
                         print Dumper $record;
                         die "no mRNA parent id found for CDS feature: try running with --insert_missing_mrnas";
                     }
-                    $record->{'ID'} = $trans_id;
+                    $record->{'ID'} = $trans_id . "-CDS";
                 } else {
                     die "CDS feature lacks ID and also has no Parent ID for --use_cds_parent_ids!";
                 }
@@ -866,7 +866,6 @@ sub gene_feature_hash_to_bsml {
     if ($options->{'insert_polypeptides'} && (!defined($id_counts{$pep_type}))) {
         my($cds_id, $cds) = &$get_singleton_feat('CDS');
         my($gene_id, $gene) = &$get_singleton_feat('gene');
-
         $features->{$pep_type}->{$gene_id . "-Protein"} = {
             'parent' => [ $cds_id ],
             'type' => $pep_type,
@@ -928,10 +927,25 @@ sub gene_feature_hash_to_bsml {
                 if (defined($feat_groups->{$feat_id})) { 
                     $feat_group = $feat_groups->{$feat_id};
                 } else {
-                    my $trans_id = &get_parent_id_by_type($features->{$type}->{$feat_id}, $features, $MRNA_TYPES);
+                    # polypeptides _should_ be linked through CDS
+                    my $cds_id = undef;
+                    my $cds_type = undef;
+
+                    if ($type eq $pep_type) {
+                        $cds_type = $FEAT_TYPE_MAP->{'CDS'};
+                        $cds_id = &get_parent_id_by_type($features->{$type}->{$feat_id}, $features, { $cds_type => 1 });
+                    }
+
+                    my $trans_id = undef;
+                    if (defined($cds_id)) {
+                        $trans_id = &get_parent_id_by_type($features->{$cds_type}->{$cds_id}, $features, $MRNA_TYPES);
+                    } else {
+                        $trans_id = &get_parent_id_by_type($features->{$type}->{$feat_id}, $features, $MRNA_TYPES);
+                    }
+
                     if (!defined($trans_id)) {
                         print Dumper $features;
-                        die "no parent id found for $type feature $feat_id";
+                        die "no mRNA parent id found for $type feature $feat_id";
                     }
                     $feat_group = $feat_groups->{$trans_id};
                     if (!defined($feat_group)) {
@@ -979,7 +993,7 @@ sub read_sequence_lengths {
     my $process_seq = sub {
         my($defline, $seq, $lnum) = @_;
         my($id) = ($defline =~ /$id_regex/);
-        die "unable to parse id from line $lnum of $file: $defline" if (!defined($id));
+        die "unable to parse id from line $lnum of $file using regex '$id_regex': $defline" if (!defined($id));
         $seq =~ s/\s+//g;
         $id = &$id_fn($id) if (defined($id_fn));
         die "sequence id '$id' is not unique in $file" if (defined($result->{$id}));
