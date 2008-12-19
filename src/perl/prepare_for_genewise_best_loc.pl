@@ -1,4 +1,7 @@
-#!/usr/bin/perl
+#!/local/packages/perl-5.8.8/bin/perl
+
+eval 'exec /local/packages/perl-5.8.8/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
@@ -14,11 +17,9 @@ prepare_for_geneWise.dbi
 USAGE: prepare_for_geneWise.dbi
            --project|-p                   aa1 
            --bsml_list|-i                 aat_aa.bsml.list
+           --bsml_file|-I                 aat_aa_bsml_file
            --work_dir|-w                  working_directory
-         [ --asmbl_id|-a                  24832 
-           --asmbl_file|-A                list_of_asmbl_ids 
-           --file_list|-f                 genewise.input_file_listing    
-           --verbose|-v
+        [  --verbose|-v
            --PADDING_LENGTH               500
            --MIN_CHAIN_SCORE              50
            --MIN_PERCENT_CHAIN_ALIGN      70
@@ -29,38 +30,18 @@ USAGE: prepare_for_geneWise.dbi
 
 =head1 OPTIONS
 
-B<--Database,-D>
-    Annotation database name
+B<--project,-p>
+    Name of the project database 
 
-B<--username,-u>
-    username to access database
+B<--bsml_list,-i>
+    BSML list file as output by an aat_aa run
 
-B<--password,-p>
-    password to access database
-
-B<--search_db,-s>
-    name of fasta file already searched and with results already loaded into 
-    the evidence table of the annotation database, ie. using AAT
+B<--bsml_file,-I>
+    BSML file, a sinlge output of an aat_aa run
 
 B<--work_dir,-w>
-    working directory to post the genome sequence segments and proteins to
+    Working directory to post the genome sequence segments and proteins to
     be aligned using genewise
-
-B<--asmbl_id,-a>
-    asmbl_id in annotation database to process
-
-B<--asmbl_file,-A>
-    file containing a list of asmbl_ids to process, whitespace delimited
-
-B<--file_list,-f>
-    name of the output file containing the list of input sequences to genewise
-    default: "genewise.input_file_listing", written to the working directory.  
-    
-    You can specify a full path to your required output file list, or a 
-    different name for this file.
-
-B<--help,-h>
-    This help documentation
 
 B<--verbose,-v>
     Verbose mode 
@@ -68,14 +49,14 @@ B<--verbose,-v>
 B<--PADDING_LENGTH>
     number of basepairs to extend the genome location on each end (default: 500)
 
-B<--MIN_PERCENT_CHAIN_ALIGN>
-    mimimum percent of the matching proteins length that aligns to the genome in a single alignment chain.
-    default: 70%
-
 B<--MIN_CHAIN_SCORE>
     minimum score for an alignment chain to be considered a candidate for genewise realignment.
     chain_score = sum (per_id * segment_length)
     default minimum score = 50
+
+B<--MIN_PERCENT_CHAIN_ALIGN>
+    mimimum percent of the matching proteins length that aligns to the genome in a single alignment chain.
+    default: 70%
 
 B<--num_tiers,-n>
     number of overlapping best location hits.
@@ -87,6 +68,8 @@ B<--JUST_PRINT_BEST_LOCATIONS>
 B<--DUMP_CHAIN_STATS>
     All AAT alignments retrieved from the database are printed to a file \$asmbl_id.chain_stats.
 
+B<--help,-h>
+    This help documentation
 
 =head1 DESCRIPTION
 
@@ -117,14 +100,7 @@ The header of the .fsa file is constructed like so:
 
 {database}.assembly.{asmbl_id}.{end5}.{end3}
 
-so that, by extracting the header for this entry, the exact genome coordinates can be inferred,
-and 
-
-A list of complete paths to each .fsa file is stored as:
-
-{WORKING_DIRECTORY}/{file_list}  
-
-and to be used with subsequent genewise searches as part of workflow.
+so that, by extracting the header for this entry, the exact genome coordinates can be inferred.
 
 NOTE: this script is modified version of the old database-dependent prepare_for_genewise script.
 
@@ -147,11 +123,10 @@ use XML::Twig;
 use File::Basename;
 
 #option processing
-my ($database, $work_dir, $bsml_list, $file_list, $help, $verbose,
+my ($database, $work_dir, $bsml_list, $bsml_file, $help, $verbose,
     $JUST_PRINT_BEST_LOCATIONS, $DUMP_CHAIN_STATS);
 
 # default settings.
-my $DEFAULT_FILE_LIST = "genewise.input_file_listing";
 my $PADDING_LENGTH = 500; # sequence extended from each end of genomic location.
 my $MIN_CHAIN_SCORE = 50; # min score of alignment required for possible genewise realignment.
 my $num_tiers = 2; # only the two best matches per location is extracted.
@@ -161,7 +136,7 @@ my $MIN_PERCENT_CHAIN_ALIGN = 70; #minimum percent of the protein sequence found
              'project|p=s' => \$database,
              'work_dir|w=s' => \$work_dir,
              'bsml_list|i=s' => \$bsml_list,
-             'file_list|f=s' => \$file_list,
+             'bsml_file|I=s' => \$bsml_file,
              'help|h' => \$help,
              'verbose|v' => \$verbose,
              'PADDING_LENGTH=i' => \$PADDING_LENGTH,
@@ -178,7 +153,7 @@ if ($help) {
     pod2usage();
 }
 
-unless ( $database && $work_dir && $bsml_list
+unless ( $database && $work_dir && ($bsml_file || $bsml_list) 
     ) {
     carp "** Missing required options. **\n\n";
     pod2usage();
@@ -191,17 +166,27 @@ my %prot_acc_to_prot_length;
 
 ## populate array of bsml files to process
 my @bsml_files;
-open (my $fh, $bsml_list) || die "cannot open '$bsml_list': $!";
-while (<$fh>) {
-    chomp;
-    if (! -e $_) {
-        if (-e $_.".gz") {
-            push(@bsml_files, $_.".gz");
+if ($bsml_list) {
+    open (my $fh, $bsml_list) || die "cannot open '$bsml_list': $!";
+    while (<$fh>) {
+        chomp;
+        if (! -e $_) {
+            if (-e $_.".gz") {
+                push(@bsml_files, $_.".gz");
+            } else {
+                die "specified bsml input file '$_' doesn't exist";
+            }
         } else {
-            die "specified bsml input file '$_' doesn't exist";
+            push(@bsml_files, $_);
         }
-    } else {
-        push(@bsml_files, $_);
+    }
+} elsif ($bsml_file) {
+    if (! -e $bsml_file) {
+        if (-e $bsml_file.".gz") {
+            push(@bsml_files, $bsml_file.".gz");
+        } else {
+            die "specified bsml input file '$bsml_file' doesn't exist";
+        }
     }
 }
 if (! @bsml_files) {
@@ -212,16 +197,6 @@ if (! @bsml_files) {
 if (! -d $work_dir) {
     mkdir($work_dir) || die "failed to create work_dir $work_dir because $!";
 } 
-
-## open file for writing input file listings
-if (! $file_list) {
-    $file_list = $DEFAULT_FILE_LIST;
-}
-
-my $file_list_fh;
-if (! $JUST_PRINT_BEST_LOCATIONS) {
-    open ($file_list_fh, ">$file_list") or croak ("cannot write to $file_list ");
-}
 
 ## use XML::Twig to parse the BSML
 my $twig = new XML::Twig(   
@@ -300,10 +275,6 @@ if (! -s $protein_fasta_file) {
 # get the pep and genome seqs for each location on each asmbl_id
 foreach my $asmbl(keys(%{$asmbl_data})) {
     &prepare_asmbl_data($asmbl);
-}
-
-if (! $JUST_PRINT_BEST_LOCATIONS) {
-    close $file_list_fh;
 }
 
 exit(0);
@@ -633,9 +604,6 @@ sub prepare_genewise_inputs {
         open ($fh, ">$data_dir/$database.assembly.$asmbl_id.$counter.pep") or die $!;
         print $fh $fasta_entry;
         close $fh;
-        
-        ## add entry in file listing:
-        print $file_list_fh "$data_dir/$database.assembly.$asmbl_id.$counter.fsa\n";
         
     }
 }
