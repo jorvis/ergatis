@@ -2,16 +2,47 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>genewise compute</name>
+        <name>prepare_for_genewise compute</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>genewise</name>
+            <name>prepare for genewise</name>
             <state>incomplete</state>
-            <executable>$;GENEWISE_EXEC$;</executable>
-            <arg>$;I_DIR$;/$;I_FILE_BASE$;.pep $;I_FILE_PATH$; -gff -quiet $;OTHER_OPTS$;</arg>
-            <param>  
+            <executable>$;BIN_DIR$;/prepare_for_genewise_best_loc</executable>
+            <param>
+                <key>--bsml_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--project</key>
+                <value>$;PROJECT$;</value>
+            </param>
+            <param>
+                <key>--work_dir</key>
+                <value>$;WORK_DIR$;</value>
+            </param>
+            <param>
+                <key>--PADDING_LENGTH</key>
+                <value>$;PADDING_LENGTH$;</value>
+            </param>
+            <param>
+                <key>--MIN_CHAIN_SCORE</key>
+                <value>$;MIN_CHAIN_SCORE$;</value>
+            </param>
+            <param>
+                <key>--num_tiers</key>
+                <value>$;NUM_TIERS$;</value>
+            </param>
+            <param>
+                <key>--MIN_PERCENT_CHAIN_ALIGN</key>
+                <value>$;MIN_PERCENT_ALIGN_CHAIN$;</value>
+            </param>
+            <param>
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+                <value>$;TMP_DIR$;/prepare_for_genewise_best_loc.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/prepare_for_genewise_best_loc.stderr</value>
             </param>
         </command>
     </commandSet>
