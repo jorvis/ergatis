@@ -130,11 +130,13 @@ foreach my $defline (keys %{$sequence}) {
 
     #Actually use the regex and make sure that the motif is long enough, but didn't occur to
     #far in the sequence.
+    my $match = 0;
     if($protein =~ /($regex)/g && (pos $protein > 14 && pos $protein < 36) ) {
-
-        #Store the hit in bsml.
-        &bsml_storeHit($defline, $protein, $1);
+        $match = $1;
     }
+
+    #Store the hit in bsml.
+    &bsml_storeHit($defline, $protein, $match);
 }
 
 #Add the analysis
@@ -176,21 +178,24 @@ sub bsml_storeHit {
         $doc->createAndAddLink( $seq, 'analysis', '#lipoprotein_motif_analysis', 'input_of' );
     }
 
-    my $fTable = $doc->createAndAddFeatureTable( $seq );
-    my $featId = $idMaker->next_id('type'    => 'signal_peptide',
-                                  'project' => $project );
-
-    my $feat = $doc->createAndAddFeature( $fTable, $featId, FEAT_TITLE, 'signal_peptide');
-
-    my $start = index($protein, $match);
-    my $end = $start + length($match);
-    my $comp;
-    ($start, $end, $comp) = ($start > $end) ? ($end, $start, 1) : ($start, $end, 0);
-
-    $doc->createAndAddIntervalLoc( $feat, $start, $end, $comp);
-    $logger->logdie("Feat was not set") unless($feat);
-    $doc->createAndAddLink( $feat, 'analysis', '#lipoprotein_motif_analysis', 'computed_by');
-
+    if( $match ) {
+        
+        my $fTable = $doc->createAndAddFeatureTable( $seq );
+        my $featId = $idMaker->next_id('type'    => 'signal_peptide',
+                                       'project' => $project );
+        
+        my $feat = $doc->createAndAddFeature( $fTable, $featId, FEAT_TITLE, 'signal_peptide');
+        
+        my $start = index($protein, $match);
+        my $end = $start + length($match);
+        my $comp;
+        ($start, $end, $comp) = ($start > $end) ? ($end, $start, 1) : ($start, $end, 0);
+        
+        $doc->createAndAddIntervalLoc( $feat, $start, $end, $comp);
+        $logger->logdie("Feat was not set") unless($feat);
+        $doc->createAndAddLink( $feat, 'analysis', '#lipoprotein_motif_analysis', 'computed_by');
+    }
+        
 }
 
 #Description:  Will retrieve sequences from a fasta file.  
