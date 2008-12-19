@@ -1,5 +1,6 @@
 next
 ----
+-lipoprotein_motif: now prints an empty sequence element to output bsml when there is not lipoprotein motif match
 -genewise: Moved prepare_for_genewise into its own iterator; moved input file list creation out of the script and into the component. Added genewise2bsml.pl and updated the component to take advantage of it. 
 -software.config: added $;PRIAM_PROFILE$; under shared section and added RNAmmer section
 -RNAmmer: added 2bsml section
