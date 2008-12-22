@@ -17,6 +17,7 @@
 #   -reference Sequence lengths are determined from the GFF, if possible
 #  -modified Seq-data-imports to use absolute paths
 #  -added --insert_missing_mrnas, --insert_missing_exons
+#  -added --feat_xref_mappings, --seq_xref_mappings
 
 # Current restrictions/assumptions
 #  -all sequences/features belong to 1 genome, the one named by --organism param
@@ -64,6 +65,8 @@ gff32bsml.pl
          --insert_missing_exons
          --insert_polypeptides
          --default_seq_class=assembly
+         --feat_xref_mappings='ID:mydb:accession,Name:mydb:pub_locus'
+         --seq_xref_mapping='ID:mydb:seq_id'
          --log=/path/to/some.log
          --debug=4
          --help
@@ -157,6 +160,19 @@ B<--default_seq_class,-e>
     optional.  default sequence class/SO type (e.g., 'assembly', 'supercontig') to use for sequences 
     for which the type cannot be parsed from the GFF file.
 
+B<--feat_xref_mappings,-x>
+    optional.  a comma-delimited list of GFF attribute -> BSML Cross-reference mappings, each of which
+    is defined by a set of 3 values separated by colons, as in 'ID:mydb:accession', which specifies
+    that each BSML 'ID' value should be inserted into the BSML document as a <Cross-reference> 
+    element with database="mydb" and identifier-type="accession" (and identifier set to the ID value.)
+    Any embedded colons may be escaped with a backslash ("\:")
+  
+B<--seq_xref_mappings>
+    optional.  identical to --xref_mappings except that it defines cross-reference mappings for the 
+    reference _sequences_ in the GFF files (i.e., those things whose IDs appear in GFF column 1)
+    in the case where the sequences are not themselves defined as GFF features the only attribute for
+    which a mapping may be specified is 'ID'.
+
 B<--log,-l>
     optional.  path to a log file the script should create.  will be overwritten if
     it already exists.
@@ -243,6 +259,7 @@ my $MRNA_TYPES = {
     'snRNA' => 1,
     'rRNA' => 1,
 };
+# TODO - add all posible mRNA types from SO?
 
 ## input/options
 my $options = {};
@@ -269,6 +286,8 @@ my $results = GetOptions($options,
                          'insert_missing_exons',
                          'insert_polypeptides',
                          'default_seq_class|e=s',
+                         'feat_xref_mappings|x=s',
+                         'seq_xref_mappings=s',
                          'log|l=s',
                          'debug|d=i',
                          'help|h',
@@ -305,7 +324,7 @@ if (defined($options->{'peptide_fasta'})) {
     $peptides = &read_sequence_lengths($options->{'peptide_fasta'}, $options->{'peptide_id_regex'}, $pep_id_fn);
 }
 
-## parse peptide FASTA (optional)
+## parse genomic DNA FASTA (optional)
 my $dna_seqs = undef;
 
 if (defined($options->{'dna_fasta'})) {
@@ -329,7 +348,6 @@ while (<IN>) {
     if (/^\#/) {
         # process header line
     } elsif (/^>/ || /^\#.*fasta.*/i) {
-
         last;
     } else {
         my $record = parse_record($_);
@@ -373,14 +391,20 @@ my $mt_code = $options->{'organism_mt_genetic_code'};
 my $code_att = $doc->createAndAddBsmlAttribute($organism, 'genetic_code', $code) if (defined($code));
 my $mt_code_att = $doc->createAndAddBsmlAttribute($organism, 'mt_genetic_code', $code) if (defined($mt_code));
 
-foreach my $root(@{$gene_nodes}) {
+# copied this from legacy2bsml.pl.  not clear why this isn't handled internally to the BsmlDoc 
+# (or why 'xrefctr' is used for an id shared by both x-refs and genomes)
+$doc->{'xrefctr'}++;
+
+# database cross-reference mappings, indexed by GFF attribute
+my $feat_xref_mappings = &parse_xref_mappings($options->{'feat_xref_mappings'});
+my $seq_xref_mappings = &parse_xref_mappings($options->{'seq_xref_mappings'});
+
+foreach my $root (@{$gene_nodes}) {
     if ($root->{'_type'} eq 'gene') {
 
         # insert missing features if the appropriate options are set
         my ($cds_type, $mrna_type, $exon_type) = ('CDS', 'mRNA', 'exon');
         
-        # TODO - need to check other possible mRNA types?
-
         # insert mRNA, if none and --insert_missing_mrnas set
         if ((!defined($root->{'children'}->{$mrna_type}) && $options->{'insert_missing_mrnas'})) {
             $logger->debug("inserting missing mRNA for " . $root->{'ID'});
@@ -408,6 +432,8 @@ foreach my $root(@{$gene_nodes}) {
                 '_strand' => $m_strand,
                 '_start' => $m_start,
                 '_end' => $m_end,
+                # TODO - propagation of cross-references to automatically-inserted features should be optional:
+                '_record' => $feat_list->[0]->{'_record'},
             });
 
             # make mRNA the parent of the CDS and exon features
@@ -450,6 +476,8 @@ foreach my $root(@{$gene_nodes}) {
                             '_strand' => $cds->{'_strand'},
                             '_start' => $cds->{'_start'},
                             '_end' => $cds->{'_end'},
+                            # TODO - propagation of cross-references to automatically-inserted features should be optional:
+                            '_record' => $cds->{'_record'},
                         };
                         push(@$exon_list, $exon);
                         push(@$mrna_exons, $exon);
@@ -477,6 +505,23 @@ $doc->write($options->{'output'});
 exit(0);
 
 ## subroutines
+
+sub parse_xref_mappings {
+    my($mapping_str) = @_;
+    my $mappings = {};
+    if (defined($mapping_str)) {
+        my @mstrs = split(',', $mapping_str);
+        foreach my $mstr (@mstrs) {
+            my($gff_att, $db_name, $id_type) = split(':', $mstr);
+            $gff_att =~ s/\://g;
+            my $list = $mappings->{$gff_att};
+            $list = $mappings->{$gff_att} = [] if (!defined($list));
+            push(@$list, { 'db_name' => $db_name, 'id_type' => $id_type });
+            $logger->info("parsed xref mapping for gff_att: $gff_att, db_name: $db_name, id_type: $id_type");
+        }
+    }
+    return $mappings;
+}
 
 sub union_feat_intervals {
     my($feats) = @_;
@@ -686,6 +731,7 @@ sub process_record {
                                                     'endpos'        => $record->{'_end'},
                                                     'parent'        => $record->{'Parent'},
                                                     'type'          => $record->{'_type'},
+                                                    '_record'       => $record,
                                                 };
         }
         
@@ -721,6 +767,7 @@ sub process_record {
                     'title'         => $title,
                     'parent'        => $record->{'Parent'} || $record->{'Derives_from'},
                     'type'          => $record->{'_type'},
+                    '_record'       => $record,
                 };
     }
     
@@ -776,6 +823,7 @@ sub gene_feature_hash_to_bsml {
         # determine length of sequence from feature in GFF, if present
         my $gff_seq = $nodes->{$seq_id};
         my $gff_seqlen = undef;
+        my $gff_seq_record = undef;
 
         if (defined($gff_seq)) {
             my $records = $gff_seq->{'records'};
@@ -784,7 +832,8 @@ sub gene_feature_hash_to_bsml {
                 $logger->warn("$nr GFF record(s) found for sequence with id = $seq_id");
             } else {
                 # interbase coords in effect here
-                $gff_seqlen = $records->[0]->{'_end'} - $records->[0]->{'_start'};
+                $gff_seq_record = $records->[0];
+                $gff_seqlen = $gff_seq_record->{'_end'} - $gff_seq_record->{'_start'};
             }
         }
 
@@ -813,6 +862,26 @@ sub gene_feature_hash_to_bsml {
                 my $seq_data_import_elem = $doc->createAndAddSeqDataImport($seq, 'fasta', $path, undef, $dseq->{'bsml_identifier'});
             }
             $doc->createAndAddBsmlAttribute($seq, 'defline', $dseq->{'defline'});
+        }
+
+        # handle cross-references
+        foreach my $att (keys %$seq_xref_mappings) {
+            my $mappings = $seq_xref_mappings->{$att};
+            my $att_val;
+            if (defined($gff_seq_record)) {
+                $att_val = $gff_seq_record->{$att};
+            } elsif ($att eq 'ID') {
+                $att_val = $seq_id;
+            }
+            next unless (defined($att_val));
+            foreach my $mapping (@$mappings) {
+                my $xref_elem = $doc->createAndAddCrossReference('parent'          => $seq,
+                                                                 'id'              => $doc->{'xrefctr'}++,
+                                                                 'database'        => $mapping->{'db_name'},
+                                                                 'identifier'      => $att_val,
+                                                                 'identifier-type' => $mapping->{'id_type'},
+                                                                 );
+            }
         }
 
         # TODO - need a way to specify which features get linked to an analysis
@@ -872,6 +941,8 @@ sub gene_feature_hash_to_bsml {
             'startpos' => $cds->{'startpos'},
             'endpos' => $cds->{'endpos'},
             'complement' => $cds->{'complement'},
+            # TODO - propagation of cross-references to automatically-inserted features should be optional:
+            '_record' => $cds->{'_record'},
         };
         $added_pep = 1;
     } 
@@ -922,6 +993,24 @@ sub gene_feature_hash_to_bsml {
                                           $features->{$type}->{$feat_id}->{'complement'},
                                           );
 
+                # add cross-references
+                foreach my $att (keys %$feat_xref_mappings) {
+                    my $feature = $features->{$type}->{$feat_id};
+                    my $mappings = $feat_xref_mappings->{$att};
+                    my $att_val = $feature->{'_record'}->{$att};
+
+                    if (defined($att_val)) {
+                        foreach my $mapping (@$mappings) {
+                            my $xref_elem = $doc->createAndAddCrossReference('parent'          => $feat,
+                                                                             'id'              => $doc->{'xrefctr'}++,
+                                                                             'database'        => $mapping->{'db_name'},
+                                                                             'identifier'      => $att_val,
+                                                                             'identifier-type' => $mapping->{'id_type'},
+                                                                             );
+                        }
+                    }
+                }
+
                 # determine which feat_group this feature belongs with
                 my $feat_group = undef;
                 if (defined($feat_groups->{$feat_id})) { 
@@ -930,7 +1019,6 @@ sub gene_feature_hash_to_bsml {
                     # polypeptides _should_ be linked through CDS
                     my $cds_id = undef;
                     my $cds_type = undef;
-
                     if ($type eq $pep_type) {
                         $cds_type = $FEAT_TYPE_MAP->{'CDS'};
                         $cds_id = &get_parent_id_by_type($features->{$type}->{$feat_id}, $features, { $cds_type => 1 });
