@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>parse_evidence compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>parse_evidence</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/parse_evidence</executable>
+            <param>
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.tab</value>
+            </param>
+            <param>
+                <key>--evidence_type</key>
+                <value>$;EVIDENCE_TYPE$;</value>
+            </param>
+            <param>
+                <key>--bsml_feature_lookup_list</key>
+                <value>$;BSML_FEATURE_LOOKUP_LIST$;</value>
+            </param>
+            <param>
+                <key>--annotate_on</key>
+                <value>$;ANNOTATE_ON$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
