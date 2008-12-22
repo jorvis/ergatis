@@ -139,72 +139,74 @@ sub parse_ber_btabs {
     my $btab_files = shift;
     my $num;
     foreach my $file (@$btab_files) {
-	$num++; 
-	open (BTAB, "$file") or die "Unable to open \"$file\" due to $!";
-	$logger->debug("opening $file $num using pvalue cutoff $options{'pvalue'}") if($logger->is_debug());
-	my $query_id;
-	while(my $line = <BTAB>) {
-	    chomp($line);
-	    my @btab = split("\t", $line);
+        $num++; 
+        open (BTAB, "$file") or die "Unable to open \"$file\" due to $!";
+        $logger->debug("opening $file $num using pvalue cutoff $options{'pvalue'}") if($logger->is_debug());
+        my $query_id;
 
-        #if we don't pass the pvalue cutoff
-	    next if($btab[20] > $options{'pvalue'} );
+        while(my $line = <BTAB>) {
+            chomp($line);
+            my @btab = split("\t", $line);
 
-        #if it's not created by praze (ber)
-	    next if($btab[3] ne 'praze');
+            #if we don't pass the pvalue cutoff
+            next if($btab[20] > $options{'pvalue'} );
 
-	    #next if( !($btab[13] > 0) || !($btab[14] > 0) );
+            #if it's not created by praze (ber)
+            next if($btab[3] ne 'praze');
 
-        #make sure we have query id and match id
-	    next if(!$btab[0] or !$btab[5]);
+            #next if( !($btab[13] > 0) || !($btab[14] > 0) );
 
-	    #$btab[5] =~ s/\|//g;   #get rid of trailing |
-	    $query_id = $btab[0];	    
-	    my $match_name = $btab[5];
+            #make sure we have query id and match id
+            next if(!$btab[0] or !$btab[5]);
 
-        #&createAndAddFrameshift($btab[19], $btab[0]) if($btab[19]);
-	    #splice(@btab, 19, 1);   Why was this happening?
-	    
-	    for (my $i=0;$i<scalar(@btab);$i++){
-            if ($btab[$i] eq 'N/A'){
-                $btab[$i] = undef;
+            #$btab[5] =~ s/\|//g;   #get rid of trailing |
+            $query_id = $btab[0];	    
+            my $match_name = $btab[5];
+
+            #&createAndAddFrameshift($btab[19], $btab[0]) if($btab[19]);
+            #splice(@btab, 19, 1);   Why was this happening?
+            
+            for (my $i=0;$i<scalar(@btab);$i++){
+                if ($btab[$i] eq 'N/A'){
+                    $btab[$i] = undef;
+                }
             }
-	    }
-        
-	    my $align = &createAndAddBtabLine(
-                                          doc                => $doc,
-                                          class              => $class,
-                                          query_name         => $btab[0],
-                                          date               => $btab[1],
-                                          query_length       => $btab[2],
-                                          blast_program      => $btab[3],
-                                          search_database    => $btab[4],
-                                          dbmatch_accession  => $btab[5],
-                                          start_query        => $btab[6],
-                                          stop_query         => $btab[7],
-                                          start_hit          => $btab[8],
-                                          stop_hit           => $btab[9],
-                                          percent_identity   => $btab[10],
-                                          percent_similarity => $btab[11],
-                                          raw_score          => $btab[12],
-                                          bit_score          => $btab[13],
-                                          chain_number       => $btab[14],
-                                          segment_number     => $btab[14],
-                                          dbmatch_header     => $btab[15],
-                                          blast_frame        => $btab[16],
-                                          query_strand       => $btab[17],
-                                          subject_length     => $btab[18],
-                                          e_value            => $btab[19],
-                                          p_value            => $btab[20]
-                                          );
+            
+            my $align = &createAndAddBtabLine(
+                                              doc                => $doc,
+                                              class              => $class,
+                                              query_name         => $btab[0],
+                                              date               => $btab[1],
+                                              query_length       => $btab[2],
+                                              blast_program      => $btab[3],
+                                              search_database    => $btab[4],
+                                              dbmatch_accession  => $btab[5],
+                                              start_query        => $btab[6],
+                                              stop_query         => $btab[7],
+                                              start_hit          => $btab[8],
+                                              stop_hit           => $btab[9],
+                                              percent_identity   => $btab[10],
+                                              percent_similarity => $btab[11],
+                                              raw_score          => $btab[12],
+                                              bit_score          => $btab[13],
+                                              chain_number       => $btab[14],
+                                              segment_number     => $btab[14],
+                                              dbmatch_header     => $btab[15],
+                                              blast_frame        => $btab[16],
+                                              query_strand       => $btab[17],
+                                              subject_length     => $btab[18],
+                                              e_value            => $btab[19],
+                                              p_value            => $btab[20]
+                                              );
 
-	    my $seq = $doc->returnBsmlSequenceByIDR($match_name);
+            my $seq = $doc->returnBsmlSequenceByIDR($match_name);
 
-	}
-	close BTAB;
-	if ($query_id) {
-		my $seq = $doc->returnBsmlSequenceByIDR($query_id);
-	}
+        }
+        close BTAB;
+
+        if ($query_id) {
+            my $seq = $doc->returnBsmlSequenceByIDR($query_id);
+        }
     }
 }
 
@@ -375,9 +377,14 @@ sub createAndAddBtabLine {
     #check to see if sequences exist in the BsmlDoc, if not add them with basic attributes
     my $seq;
     
+    print STDOUT "Checking for query: $args{'query_name'}\n";
+
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
+        print STDOUT "Didn't find it int he doc\n";
 	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'dna', $args{'class'} );
 		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+    } else {
+        print STDOUT "Found it in the doc\n";
     }
 
     

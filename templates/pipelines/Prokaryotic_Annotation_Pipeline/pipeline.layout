@@ -10,11 +10,11 @@
             <state>incomplete</state>
             <commandSet type="serial">
                 <state>incomplete</state>
-                <name>wu-blastn.All_RNA.db</name>
+                <name>tRNAscan-SE.find_tRNA</name>
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
-                <name>tRNAscan-SE.find_tRNA</name>
+                <name>RNAmmer.default</name>
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
@@ -146,10 +146,6 @@
             <state>incomplete</state>
             <commandSet type="serial">
                 <state>incomplete</state>
-                <name>targetp.default</name>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
                 <name>signalp.default</name>
             </commandSet>
             <commandSet type="serial">
@@ -168,18 +164,58 @@
                 <state>incomplete</state>
                 <name>tmhmm.default</name>
             </commandSet>
+            <commandSet type="parallel">
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>rpsblast.priam</name>
+                </commandSet>
+                <commandSet>
+                    <state>incomplete</state>
+                    <name>priam_ec_assignment.default</name>
+                </commandSet>
+            </commandSet>
+        </commandSet>
+        <commandSet type="parallel">
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.hmmpfam_pre</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.hmmpfam_post</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.ber_pre</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.ber_post</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.tmhmm</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.lipoprotein</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.priam_ec</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>parse_evidence.hypothetical</name>
+            </commandSet>
         </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
-            <name>predict_prokaryotic_gene_function.default</name>
+            <name>p_func.default</name>
         </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
             <name>pipeline_summary.default</name>
-        </commandSet>
-        <commandSet type="serial">
-            <state>incomplete</state>
-            <name>bsml2tbl.default</name>
         </commandSet>
     </commandSet>
 </commandSetRoot>

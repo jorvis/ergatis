@@ -135,7 +135,7 @@ ergatis_install : dirs samples shellwrappers c_apps aat_aa aat_aa_masked aat_na 
 	@install components/shared/project.config.example $(WORKFLOW_DOCS_DIR)
 	@install components/shared/software.config $(PREFIX)
 
-ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus auto_gene_curation backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado p_func pangenome parse_for_ncRNAs pe pepstats phat pipeline_summary predotar promer promote_gene_prediction ps_scan psipred rdp_classifier repeatmasker signalp snps snap snoscan split_fasta split_multifasta stap_aligner stap_classifier statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
+ergatis_install_last : dirs shellwrappers aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates adjust_btab_coordinates adjust_gap2_coordinates adjust_nap_coordinates augustus auto_gene_curation backupdb ber bsml2chado bsml2chado_fast bsml2fasta bsml2featurerelationships build_supercontig chado2bsml clustalw copydb coverage delete_analysis fasta2bsml fgenesh formatdb genbank2bsml genezilla genemark genie genscan genscan-plus gff2bsml glimmer3 glimmerHMM hmmpfam hmmpir hmmsearch hmmsmart hmmtigr infernal initdb iprscan jaccard legacy2bsml legacyparafam2bsml mask_by_analysis mepipe mreps muscle ncbi-blastn ncbi-blastp ncbi-blastx ncbi-tblastn ncbi-tblastx ngap nucmer nucmer_snps obo2chado p_func pangenome parse_evidence parse_for_ncRNAs pe pepstats phat pipeline_summary predotar promer promote_gene_prediction ps_scan psipred rdp_classifier repeatmasker signalp snps snap snoscan split_fasta split_multifasta stap_aligner stap_classifier statistics2chado subfeature_mapping tabula_rasa targetp tmhmm train_for_glimmer3_iteration translate_sequence transterm tRNAscan-SE tiling trf wait wu-blastn wu-blastp wu-blastx wu-tblastn wu-tblastx xdformat
 
 dirs	:
 	mkdir -p $(WORKFLOW_DOCS_DIR)
@@ -680,6 +680,12 @@ pangenome	:
 	@install components/pangenome/pangenome.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/pangenome/pangenome.config $(WORKFLOW_DOCS_DIR)
 	@install components/pangenome/pangenome.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
+parse_evidence	:
+	@echo "Installing parse_evidence workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/parse_evidence/parse_evidence.xml $(WORKFLOW_DOCS_DIR)
+	@install components/parse_evidence/parse_evidence.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/parse_evidence/parse_evidence.config $(WORKFLOW_DOCS_DIR)
     
 panther	:
 	@echo "Installing panther workflows in $(WORKFLOW_DOCS_DIR)"

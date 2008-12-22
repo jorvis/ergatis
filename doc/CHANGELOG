@@ -1,5 +1,9 @@
 next
 ----
+-prokaryotic_pipeline: removed wu-blastn against RNA database and bsml2tbl components
+-prokaryotic_pipeline: added RNAmmer to prok pipeline
+-prokaryotic_pipeline: added new p_func component to prok pipeline
+-parse_evidence: added parse_evidence component (used to generate inputs for p_func)
 -p_func: added p_func component
 -lipoprotein_motif: now prints an empty sequence element to output bsml when there is not lipoprotein motif match
 -genewise: Moved prepare_for_genewise into its own iterator; moved input file list creation out of the script and into the component. Added genewise2bsml.pl and updated the component to take advantage of it. 
