@@ -66,7 +66,7 @@ gff32bsml.pl
          --insert_polypeptides
          --default_seq_class=assembly
          --feat_xref_mappings='ID:mydb:accession,Name:mydb:pub_locus'
-         --seq_xref_mapping='ID:mydb:seq_id'
+         --seq_xref_mappings='ID:mydb:seq_id'
          --log=/path/to/some.log
          --debug=4
          --help
@@ -224,6 +224,8 @@ use File::Spec;
 
 ## global/default values    
 my $DEFAULT_SEQ_CLASS = '';
+my $DEFAULT_PEPTIDE_ID_REGEX = '^>(\S+)';
+my $DEFAULT_DNA_ID_REGEX = '^>(\S+)';
 my $GLOBAL_ID_COUNTER = 0;
 my $NODES = {};
 # mapping from GFF sequence id to BSML sequence id.  these need not be the same.
@@ -246,6 +248,7 @@ my $FEAT_TYPE_MAP = {
     'rRNA' => 'rRNA',
     'three_prime_UTR' => 'three_prime_UTR',
     'five_prime_UTR' => 'five_prime_UTR',
+    'gap' => 'gap',
 };
 
 # list of types that are allowed for the mRNA; must be a subset of those
@@ -564,6 +567,8 @@ sub check_parameters {
     ## default values
     $options->{'default_seq_class'} = $DEFAULT_SEQ_CLASS if (!defined($options->{'default_seq_class'}));
     $options->{'project'} =~ tr/A-Z/a-z/;
+    $options->{'dna_id_regex'} = $DEFAULT_DNA_ID_REGEX if (!defined($options->{'dna_id_regex'}));
+    $options->{'peptide_id_regex'} = $DEFAULT_PEPTIDE_ID_REGEX if (!defined($options->{'peptide_id_regex'}));
 
     ## check files
     my $input = $options->{'input'};
@@ -870,17 +875,22 @@ sub gene_feature_hash_to_bsml {
             my $att_val;
             if (defined($gff_seq_record)) {
                 $att_val = $gff_seq_record->{$att};
+                unshift(@$att_val, $gff_seq_record->{'title'}) if (($att eq 'Name') && (defined($gff_seq_record->{'title'})) && ($gff_seq_record->{'title'} =~ /\S+/));
             } elsif ($att eq 'ID') {
                 $att_val = $seq_id;
             }
             next unless (defined($att_val));
+            my $att_vals = ((ref $att_val) eq 'ARRAY') ? $att_val : [$att_val];
+
             foreach my $mapping (@$mappings) {
-                my $xref_elem = $doc->createAndAddCrossReference('parent'          => $seq,
-                                                                 'id'              => $doc->{'xrefctr'}++,
-                                                                 'database'        => $mapping->{'db_name'},
-                                                                 'identifier'      => $att_val,
-                                                                 'identifier-type' => $mapping->{'id_type'},
-                                                                 );
+                foreach my $av (@$att_vals) {
+                    my $xref_elem = $doc->createAndAddCrossReference('parent'          => $seq,
+                                                                     'id'              => $doc->{'xrefctr'}++,
+                                                                     'database'        => $mapping->{'db_name'},
+                                                                     'identifier'      => $av,
+                                                                     'identifier-type' => $mapping->{'id_type'},
+                                                                     );
+                }
             }
         }
 
@@ -998,15 +1008,20 @@ sub gene_feature_hash_to_bsml {
                     my $feature = $features->{$type}->{$feat_id};
                     my $mappings = $feat_xref_mappings->{$att};
                     my $att_val = $feature->{'_record'}->{$att};
-
+                    unshift(@$att_val, $feature->{'title'}) if (($att eq 'Name') && (defined($feature->{'title'})) && ($feature->{'title'} =~ /\S+/));
+                    
                     if (defined($att_val)) {
+                        my $att_vals = ((ref $att_val) eq 'ARRAY') ? $att_val : [$att_val];
+
                         foreach my $mapping (@$mappings) {
-                            my $xref_elem = $doc->createAndAddCrossReference('parent'          => $feat,
-                                                                             'id'              => $doc->{'xrefctr'}++,
-                                                                             'database'        => $mapping->{'db_name'},
-                                                                             'identifier'      => $att_val,
-                                                                             'identifier-type' => $mapping->{'id_type'},
-                                                                             );
+                            foreach my $av (@$att_vals) {
+                                my $xref_elem = $doc->createAndAddCrossReference('parent'          => $feat,
+                                                                                 'id'              => $doc->{'xrefctr'}++,
+                                                                                 'database'        => $mapping->{'db_name'},
+                                                                                 'identifier'      => $av,
+                                                                                 'identifier-type' => $mapping->{'id_type'},
+                                                                                 );
+                            }
                         }
                     }
                 }
