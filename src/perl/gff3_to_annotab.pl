@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 
-#./gff3_to_annotab.pl --type|t <featuretype> --input_file|i <file> --output_annotab|o <file> [--source|s <source>]
+#./gff3_to_annotab.pl --type|t <featuretype> --input_file|i <file> --output_annotab|o <file> [--source|s <source>] [--id_attr <attr_field>]
+# ID will be taken from id_attr if one is specified.  If id_attr is specified and a feature of <featuretype> lacks it, the script will die.
 # featuretype is stored in column 3 of gff3 
 # For example, this is a line with featuretype cds
 # nmpdr|158878.1.contig.NC_002758 NMPDR   cds ...
@@ -25,7 +26,6 @@ my $fastadirective=0;
 my %contig2taxon;
 
 my $featcount = 0;
-my $seqcount = 0;
 
 open (my $FIN, $opts{input_file}) || die "Unable to open input_file ($opts{input_file}): $!";
 open (my $FOUT, ">$opts{output_annotab}") || die "Unable to open output_annotab ($opts{output_annotab}): $!";
@@ -79,26 +79,20 @@ while(my $line=<$FIN>){
       if($elts[2] eq $type){
 
 	my(%attrs) = field_to_attributes($elts[8]);
-# 	my $id;
-# 	if (defined( $attrs{ID} ) ) {
-# 	  $id = $attrs{ID};
-# 	}
-# 	elsif (defined( $attrs{protein_id} )) {
-# 	  $id = $attrs{protein_id};
-# 	}
-# 	#    unless (defined( $attrs{protein_id} )) {
-# 	else {
-# 	  # manually parse out protein_id
-# 	  $elts[8] =~ q{protein_id=([^;]+)[;$]};
-#           $attrs{protein_id}  = $1;
-# 	  unless ( defined( $attrs{protein_id} )) {
-# 	    warn "No protein_id for $attrs{ID} ($ifile)";
-# 	    #next;
-# 	  }
-# 	}
-	defined( $contig2taxon{$elts[0]} ) || die "No taxon for $elts[0] ($opts{input_file})";
-#	defined($id) || die "no id";
 
+	defined( $contig2taxon{$elts[0]} ) || die "No taxon for $elts[0] ($opts{input_file})";
+
+	# retrieve ID from specific attribute field if one was specified
+	if ( exists($opts{id_attr}) ) {
+	  if ( defined($attrs{$opts{id_attr}}) ) {
+	    $attrs{ID} = $attrs{$opts{id_attr}};
+	  }
+	  else {
+	    die "No specified id_attr $opts{id_attr} for row in file $opts{input_file}";
+	  }
+	}
+	# assume that if an id_attr was specified, then for consistency's sake all IDs must come from that
+	else {
 	# make sure an ID was defined
 	# can't go in field_to_attributes because it doesn't apply to contigs
 	unless ( defined( $attrs{ID} ) ) {
@@ -120,6 +114,7 @@ while(my $line=<$FIN>){
 	    }
 	  }
 	}
+        }
 
         defined($attrs{ID}) || die "Missing 'ID' in attributes ( $opts{input_file} )";
 
@@ -165,7 +160,6 @@ while(my $line=<$FIN>){
   }
 }
 
-#die "Feature ($featcount) != Seqcount ($seqcount)" if ($featcount != $seqcount);
 print "Feature count: $featcount\n";
 
 #
@@ -279,6 +273,7 @@ sub parse_options {
         'output_annotab|o=s',
         'type|t=s',
         'source|s=s',
+        'id_attr=s',
 	'parse_GO:i', # optional default 0
 	'parse_EC:i',
 	'parse_gene_symbol:i',	       
