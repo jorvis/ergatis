@@ -15,7 +15,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 #use CGI qw/escape unescape/;
-#use Data::Dumper;
+use Data::Dumper;
 
 my %opts = &parse_options();
 
@@ -82,15 +82,22 @@ while(my $line=<$FIN>){
 
 	defined( $contig2taxon{$elts[0]} ) || die "No taxon for $elts[0] ($opts{input_file})";
 
-	# retrieve ID from specific attribute field if one was specified
-	if ( exists($opts{id_attr}) ) {
-	  if ( defined($attrs{$opts{id_attr}}) ) {
-	    $attrs{ID} = $attrs{$opts{id_attr}};
+	# retrieve ID from specific attribute field(s) if one was specified
+	if ( defined($opts{id_attr}) && !($opts{id_attr} eq '')) {
+	  my $found_id = 0;
+	  my @id_attr = split(",", $opts{id_attr});
+	  foreach my $id_attr (@id_attr) {
+	    if ( defined($attrs{$id_attr}) ) {
+	      $attrs{ID} = $attrs{$id_attr};
+	      ++$found_id;
+	      last;
+	    }
 	  }
-	  else {
-	    die "No specified id_attr $opts{id_attr} for row in file $opts{input_file}";
+	  unless ($found_id) {
+	    die "No specified id_attr $opts{id_attr} for row in file $opts{input_file}\n".Dumper(%attrs);
 	  }
 	}
+	# the below is all largely redundant after comma-delimited method above
 	# assume that if an id_attr was specified, then for consistency's sake all IDs must come from that
 	else {
 	# make sure an ID was defined
@@ -236,18 +243,33 @@ sub field_to_attributes {
   die "Odd number of keys parsed from attribute field ($field) in (  $opts{input_file} )" if (@split_atts % 2 == 1);
   
   my %attrs;
-  
-  while ((my $key = shift @split_atts) && (my $value = shift @split_atts)) {
-    if ( ($key eq 'db_xref') || ($key eq 'Dbxref') ) {
-      my @dbxrefs = split(/[:,]/,$value);
+
+  # to handle empty valued keys (e.g., key=;)
+  %attrs=@split_atts;
+#  print "split_atts: \n".Dumper(@split_atts);
+#  print "attrs:\n".Dumper(%attrs);
+
+  foreach my $key ('db_xref', 'Dbxref') {
+    if ( exists($attrs{$key}) ) {
+      my @dbxrefs = split(/[:,]/,$attrs{$key});
       while ((my $db = shift @dbxrefs) && (my $acc = shift @dbxrefs)) {
-	$attrs{$db} = $acc;
+ 	$attrs{$db} = $acc;
       }
     }
-    else {
-      $attrs{$key} = $value;
-    }
   }
+  
+#   while ((my $key = shift @split_atts) && (my $value = shift @split_atts)) {
+#     if ( ($key eq 'db_xref') || ($key eq 'Dbxref') ) {
+#       my @dbxrefs = split(/[:,]/,$value);
+#       while ((my $db = shift @dbxrefs) && (my $acc = shift @dbxrefs)) {
+# 	$attrs{$db} = $acc;
+#       }
+#     }
+#     else {
+# #      print "att:$key -> $value\n";
+#       $attrs{$key} = $value;
+#     }
+#   }
 
 
   return %attrs;
@@ -273,7 +295,7 @@ sub parse_options {
         'output_annotab|o=s',
         'type|t=s',
         'source|s=s',
-        'id_attr=s',
+        'id_attr:s',
 	'parse_GO:i', # optional default 0
 	'parse_EC:i',
 	'parse_gene_symbol:i',	       
