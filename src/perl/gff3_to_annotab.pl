@@ -39,26 +39,89 @@ while(my $line=<$FIN>){
     if(!$fastadirective){
       #parse tab delimeted
       chomp $line;
+      $line = clean_gff3_line($line);
       my (@elts) = split(/\t/,$line);
       $elts[2] = lc($elts[2]);
 
       # if it's a contig or supercontig (apidb), pull taxon info
-      if($elts[2] eq 'contig' || $elts[2] eq 'supercontig') {
+      if($elts[2] eq 'contig' || $elts[2] eq 'source' || $elts[2] eq 'supercontig') {
 
 	my(%attrs) = field_to_attributes($elts[8]);
+	$attrs{ID} = exists($attrs{ID}) ? $attrs{ID} : $elts[0];
 
-	my(%dbxrefs) = split(/[,:]/,$attrs{'Dbxref'});
+#	my(%dbxrefs) = split(/[,:]/,$attrs{'Dbxref'});
 
-	exists($dbxrefs{taxon}) || die "No taxon for contig $attrs{ID}";
+#	exists($dbxrefs{taxon}) || die "No taxon for contig $attrs{ID}";
 
-	exists ($contig2taxon{$attrs{ID}}) && die "Redef of taxon for $attrs{ID} ".$contig2taxon{$attrs{ID}};
-	$contig2taxon{$attrs{ID}} = $dbxrefs{taxon};
+	# try to parse out a taxon directly if one couldn't be pulled
+	unless (  exists($attrs{taxon}) ) {
+	  if ( $elts[8] =~ /taxon:(\d+)/i ) {
+	    $attrs{taxon} = $1;
+	  }
+	}
+	
+	exists($attrs{taxon}) || die "No taxon for $attrs{ID} in $opts{input_file}".Dumper(%attrs);
+
+	if ( (exists ($contig2taxon{$attrs{ID}})) && ($contig2taxon{$attrs{ID}} != $attrs{taxon})    ) {
+	  # we will assume that this is for phage sequences and not really a problem
+	  #      warn "Redef of taxon for $attrs{ID} ($opts{input_file}) ".$contig2taxon{$attrs{ID}}." != $dbxrefs{taxon}";
+	  warn "Redef of taxon for $attrs{ID} ($opts{input_file}) ".$contig2taxon{$attrs{ID}}." != $attrs{taxon}";
+	}
+	else  {
+	  $contig2taxon{$attrs{ID}} = $attrs{taxon};
+	}
+
+#	exists ($contig2taxon{$attrs{ID}}) && die "Redef of taxon for $attrs{ID} ".$contig2taxon{$attrs{ID}};
+#	$contig2taxon{$attrs{ID}} = $dbxrefs{taxon};
 
       }
 
       if($elts[2] eq $type){
 
 	my(%attrs) = field_to_attributes($elts[8]);
+# 	my $id;
+# 	if (defined( $attrs{ID} ) ) {
+# 	  $id = $attrs{ID};
+# 	}
+# 	elsif (defined( $attrs{protein_id} )) {
+# 	  $id = $attrs{protein_id};
+# 	}
+# 	#    unless (defined( $attrs{protein_id} )) {
+# 	else {
+# 	  # manually parse out protein_id
+# 	  $elts[8] =~ q{protein_id=([^;]+)[;$]};
+#           $attrs{protein_id}  = $1;
+# 	  unless ( defined( $attrs{protein_id} )) {
+# 	    warn "No protein_id for $attrs{ID} ($ifile)";
+# 	    #next;
+# 	  }
+# 	}
+	defined( $contig2taxon{$elts[0]} ) || die "No taxon for $elts[0] ($opts{input_file})";
+#	defined($id) || die "no id";
+
+	# make sure an ID was defined
+	# can't go in field_to_attributes because it doesn't apply to contigs
+	unless ( defined( $attrs{ID} ) ) {
+	  # if there's no ID use locus_id or protein_id
+	  if (defined( $attrs{locus_tag} )) {
+	    $attrs{ID} = $attrs{locus_tag};
+	  }
+	  elsif (defined( $attrs{protein_id} )) {
+	    $attrs{ID} = $attrs{protein_id};
+	  }
+	  else {
+	    # manually parse out protein_id
+	    if ($elts[8] =~ q{protein_id=([^;]+)[;$]} ) {
+	       $attrs{ID} = $1;
+	    }
+	    else {
+	       die "No protein_id for $attrs{ID} ($opts{input_file})";
+	       next;
+	    }
+	  }
+	}
+
+        defined($attrs{ID}) || die "Missing 'ID' in attributes ( $opts{input_file} )";
 
 	# unless a default source was passed in use column 2
 	my $source = (exists $opts{source}) ? $opts{source} : $elts[1];
@@ -67,9 +130,18 @@ while(my $line=<$FIN>){
 	exists ($contig2taxon{$contig}) || die "Missing taxon for contig ($contig)";
 	my $taxon = $contig2taxon{$contig};
        
-	defined($attrs{ID}) || die "Missing 'ID' in attributes ( $opts{input_file} )";
-	defined($attrs{description}) || die "Missing 'description' in attributes ( $opts{input_file} )";
-
+	# check that a description was provided
+	# if not use product
+	unless ( defined($attrs{description})) {
+	  if (defined( $attrs{product} )) {
+	    $attrs{description} = $attrs{product};
+	  }
+	  else {
+            # this really shouldn't be a die, as we know that not every cds will be annotated
+	    warn "Missing 'description' in attributes ( $opts{input_file} )";
+            $attrs{description} = '';
+	  }
+	}
 	print {$FOUT} join("\t", ($attrs{ID}, $source, $contig2taxon{$contig}, $contig, $attrs{description}));
 
 	# optional fields
@@ -145,6 +217,9 @@ sub parse_gene_symbol {
 sub field_to_attributes {
   my $field = shift;
 
+  # remove trailing focus=
+  $field =~ s/;focus=$//;
+
   #remove empty keypairs
   $field =~ s/;;+/;/g;
 
@@ -166,12 +241,36 @@ sub field_to_attributes {
   die "No attributes on row" if (@split_atts == 0);
   die "Odd number of keys parsed from attribute field ($field) in (  $opts{input_file} )" if (@split_atts % 2 == 1);
   
-  my(%attrs) =@split_atts;
+  my %attrs;
+  
+  while ((my $key = shift @split_atts) && (my $value = shift @split_atts)) {
+    if ( ($key eq 'db_xref') || ($key eq 'Dbxref') ) {
+      my @dbxrefs = split(/[:,]/,$value);
+      while ((my $db = shift @dbxrefs) && (my $acc = shift @dbxrefs)) {
+	$attrs{$db} = $acc;
+      }
+    }
+    else {
+      $attrs{$key} = $value;
+    }
+  }
+
 
   return %attrs;
 
 }
 
+sub clean_gff3_line {
+  my $line = shift;
+
+  # replace spaces
+  $line =~ s/%20/ /g;
+
+  # some files have them escaped, but just in the contig row, why??? :(
+  $line =~ s/%7C/|/g;
+
+  return $line;
+}
 
 sub parse_options {
     my %options = ();
@@ -194,3 +293,4 @@ sub parse_options {
 
     return %options;
 }
+
