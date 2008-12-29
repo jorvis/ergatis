@@ -153,7 +153,7 @@ while(my $line=<$FIN>){
 	}
 
 	if ($opts{parse_EC}) {
-	  print {$FOUT} "\t".parse_EC(%attrs); # null or single EC id
+	  print {$FOUT} "\t".parse_EC($elts[8], %attrs); # null or single EC id
 	}
 
 	if ($opts{parse_gene_symbol}) {
@@ -176,17 +176,25 @@ print "Feature count: $featcount\n";
 # Ways EC numbers might be stored:
 # pathema: Dbxref=TIGR_CMR:BAKB_0005,EC:2.7.8.-;
 sub parse_EC {
+  my $field = shift;
   my %attrs = @_;
 
-  if (defined ($attrs{Dbxref})) {
-    # assume comma delimited 
-    # it looks like EC only matches once, but this is a bug if it matches > 1
-    foreach my $full_dbxref (split(/[,]/,$attrs{'Dbxref'})) {
-      if ($full_dbxref =~ /^EC:/) {
-	return $full_dbxref;
-      }
-    }
+  if ( defined($attrs{EC}) ) {
+    return "EC:".$attrs{EC};
   }
+  elsif ( $field =~ /EC:[\.\-\d]+/ ) {
+    return join(",", ( $field =~ /EC:[\.\-\d]+/g ) );	      
+  }
+
+#   if (defined ($attrs{Dbxref})) {
+#     # assume comma delimited 
+#     # it looks like EC only matches once, but this is a bug if it matches > 1
+#     foreach my $full_dbxref (split(/[,]/,$attrs{'Dbxref'})) {
+#       if ($full_dbxref =~ /^EC:/) {
+# 	return $full_dbxref;
+#       }
+#     }
+#   }
   return 'null';
 }
 
@@ -253,6 +261,9 @@ sub field_to_attributes {
     if ( exists($attrs{$key}) ) {
       my @dbxrefs = split(/[:,]/,$attrs{$key});
       while ((my $db = shift @dbxrefs) && (my $acc = shift @dbxrefs)) {
+	if ( defined($attrs{$db}) && ($attrs{$db} ne $acc) ) {
+	  die "db value conflict for $db: $acc ne $attrs{$db}";
+	}
  	$attrs{$db} = $acc;
       }
     }
