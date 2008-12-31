@@ -200,10 +200,13 @@ sub parse_EC {
   my $field = shift;
   my %attrs = @_;
 
-  if ( defined($attrs{EC}) ) {
+  if ( defined($attrs{EC_number}) ) {
+    return "EC:".$attrs{EC_number};
+  }
+  elsif ( defined($attrs{EC}) ) {
     return "EC:".$attrs{EC};
   }
-  elsif ( $attrs{description} =~ /EC:[\.\-\d]+/ ) {
+  elsif ( $attrs{description} =~ /EC:[\.\-\d]+/ ) { #regex works w/o ()'s
     return join(",", sort ( $attrs{description} =~ /EC:[\.\-\d]+/g ) );
   }
   elsif ( $field =~ /EC:[\.\-\d]+/ ) {
@@ -222,6 +225,14 @@ sub parse_GO {
   if (defined ($attrs{Ontology_term})) {
     return $attrs{Ontology_term};
   } 
+  # GO_component:%200005840 or GO_process:%200009116 
+  # but it looks like the characters have been decoded
+  elsif ( defined($attrs{note}) && ( $attrs{note} =~ m/GO_[a-zA-Z]+:\s*(\d+)/ ) ) {
+#  elsif ( defined($attrs{note}) && ( $attrs{note} =~ m/(GO_[a-zA-z]+:....)/ ) ) {
+    my $go = "GO:$1";
+#    $go  =~ s/%([a-fA-F0-9]{2,2})/chr(hex($1))/eg; # remove encodings
+    return $go;
+  }
   elsif (  defined($attrs{GO}) ) {
     return "GO:".$attrs{GO};
   }
