@@ -81,18 +81,35 @@ if ( -e $component_ini ) {
             } else {
                 $value = $component_cfg->val($section, $parameter);
             }
-            
-            if ( exists $selectable_labels{$label} ) {
-                push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
+            my @enumeration;
+	    if($value =~ /^\s*\[(.*)\]/){
+		my @vals = split(/\|/,$1);
+		foreach my $val (@vals){
+		    push @enumeration, {value=>$val}
+		}
+	    }
+            if ( exists $selectable_labels{$label} || @enumeration) {
+		if(@enumeration){
+		    push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
-                                                        value => $value,
+                                                        values => \@enumeration,
                                                         selectable => 1,
+                                                        enumerated => 1,
                                                         section => $section,
-                                                        comment => $component_cfg->get_comment_html($section, $parameter) };            
+                                                        comment => $component_cfg->get_comment_html($section, $parameter) };
+		}
+		else{
+		    push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
+									    pretty_label => $pretty_label, 
+									    values => [{value=>$value}],
+									    selectable => 1,
+									    section => $section,
+									    comment => $component_cfg->get_comment_html($section, $parameter) };            
+		}
             } else {
                 push @{$sections{$section_type}->[-1]->{parameters}}, { label => $label, 
                                                         pretty_label => $pretty_label, 
-                                                        value => $value,
+                                                        values => [{value=>$value}],
                                                         selectable => 0,
                                                         section => $section,
                                                         comment => $component_cfg->get_comment_html($section, $parameter) };

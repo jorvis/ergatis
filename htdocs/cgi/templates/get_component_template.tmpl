@@ -14,14 +14,27 @@
     <tr>
         <td id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_label'><TMPL_VAR NAME=PRETTY_LABEL></td>
         <TMPL_IF NAME=SELECTABLE>
+        <TMPL_IF NAME=ENUMERATED>
         <td class="<TMPL_VAR NAME=SECTION>">
-            <select class='input_selector' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>'>
+            <select class='enumerated_input_selector' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>'>
+            <TMPL_LOOP NAME=VALUES>
                 <option value="<TMPL_VAR NAME=VALUE>"><TMPL_VAR NAME=VALUE></option>
+            </TMPL_LOOP>
             </select>
             <input class='select_shadow' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
         </td>
         <TMPL_ELSE>
-        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
+	<td class="<TMPL_VAR NAME=SECTION>">
+            <select class='input_selector' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>'>
+            <TMPL_LOOP NAME=VALUES>
+                <option value="<TMPL_VAR NAME=VALUE>"><TMPL_VAR NAME=VALUE></option>
+            </TMPL_LOOP>
+            </select>
+            <input class='select_shadow' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
+        </td>
+        </TMPL_IF>
+        <TMPL_ELSE>
+        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' value='<TMPL_LOOP NAME=VALUES><TMPL_VAR NAME=VALUE></TMPL_LOOP>'></td> 
         </TMPL_IF> 
     </tr>
     </TMPL_LOOP> <!-- end parameters loop -->
@@ -46,7 +59,7 @@
             <input class='select_shadow' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>_shadow' value=''>
         </td>
         <TMPL_ELSE>
-        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' value='<TMPL_VAR NAME=VALUE>'></td> 
+        <td class="<TMPL_VAR NAME=SECTION>"><input type='text' name='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' id='<TMPL_VAR NAME=COMPONENT_ID>_<TMPL_VAR NAME=LABEL>' value='<TMPL_LOOP NAME=VALUES><TMPL_VAR NAME=VALUE></TMPL_LOOP>'></td> 
         </TMPL_IF> 
     </tr>
     </TMPL_LOOP> <!-- end parameters loop -->
