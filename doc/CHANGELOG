@@ -1,5 +1,6 @@
 next
 ----
+-repeat2legacydb.pl: now allows 'tandem_repeat's to be loaded from trf
 -prokaryotic_pipeline: removed wu-blastn against RNA database and bsml2tbl components
 -prokaryotic_pipeline: added RNAmmer to prok pipeline
 -prokaryotic_pipeline: added new p_func component to prok pipeline
