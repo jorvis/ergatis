@@ -86,6 +86,7 @@ sub parse_options {
         'organism_to_prefix_mapping=s',  #tab-delimited file that maps organism name to id prefix
         'generate_new_seq_ids=s',        #whether to replace existing sequence ids with ergatis ones
         'analysis_id|a=s',
+	'skip_unknown_dbxref',
         ) || &print_usage("Unprocessable option");
 
     # check for required parameters
@@ -738,10 +739,9 @@ sub to_bsml {
 	}
 	
 	# TODO: Handle ec_number similar to above
-    if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'}){
-        $ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'};
-    }
-    
+        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'}){
+	  $ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'};
+        }
 
 	# mapping from genbank feature tag to attributes
 	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene'}){
@@ -1156,7 +1156,13 @@ sub addFeature {
                   HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
                   EMBL => 1, GenBank => 1, InterPro => 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1,
                   dictyBase => 1, FlyBase => 1, VectorBase => 1, SGD => 1, SGDID => 1, NCBILocus => 1);
-        (defined($known_dbxrefs{$database})) || die "Unknown database in dbxref ($database)";
+        unless (defined($known_dbxrefs{$database})) {
+	  warn "Unknown database in dbxref ($database)";
+	  if ($options{skip_unknown_dbxref}) {
+	    warn "Skipping feature with dbxref $database:$identifier";
+	    next;
+	  }
+	}
         
         # mod database to GO xref standard as neccessary http://www.geneontology.org/doc/GO.xrf_abbs
 	# VectorBase from http://neuron.cse.nd.edu/vectorbase/index.php/GenBank_submission#db_xref
