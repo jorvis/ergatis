@@ -158,7 +158,7 @@ sub get_inputsets{
 		if(!exists $uniqueinputs->{$input_type}->{$input_val}){
 		    push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
 				  'VALUE'=>$input_val,
-				  'TYPE'=>$input_type,v
+				  'TYPE'=>$input_type,
 				  'SOURCE'=>"$cname.$token"};
 		}
 		$uniqueinputs->{$input_type}->{$input_val}++;
