@@ -17,6 +17,7 @@ USAGE:  bsml2fasta.pl
           --bp_extension=#bpadjacentgenomicseq
           --debug=debug_level 
           --log=log_file
+          --use_feature_ids_in_fasta=0|1
         ]
 
 =head1 OPTIONS
@@ -44,6 +45,11 @@ B<--format,-f>
 
 B<--log,-l> 
     Log file
+
+B<--use_feature_ids_in_fasta>
+    Set this to nonzero to use the BSML id of the linked feature that corresponds to each sequence being written.  
+    The script will fail if any of the exported sequences are linked to multiple features. Also nNote that this 
+    option will only work if --parse_element=sequence.
 
 B<--output,-o> 
     Output file (if --format=multi) or directory (if --format=single)
@@ -224,7 +230,6 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use XML::Parser;
 use BSML::Indexer::Fasta;
-use Data::Dumper;
 use Ergatis::Logger;
 use File::OpenFile qw(open_file);
 
@@ -248,6 +253,7 @@ my $results = GetOptions (\%options,
 			  'debug=s',
 			  'format|m=s',
 			  'log|l=s',
+			  'use_feature_ids_in_fasta=i',
 			  'output|o=s',
 			  'help|h') || pod2usage();
 
@@ -371,6 +377,11 @@ if ($options{format} eq "multi") {
     }
 }
 
+my $use_feature_ids_in_fasta = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0);
+
+# mapping from each Sequence.id to the corresponding linked Feature.id, used for --use_feature_ids_in_fasta
+my $seqId2FeatId = {};
+
 for my $file ( @files ) {
     my $sfh;
     
@@ -379,13 +390,13 @@ for my $file ( @files ) {
         $logger->debug("Writing output to multi-fasta file $options{output}") if ($logger->is_debug);
         
     }
-    
 
     my $sequenceid;
     my $featureid;
     my $charfuncs = {'Seq-data'=>
 			 sub {
 			     my ($expat,$char) = @_;
+                  die "sequence id undefined" if (!defined($sequenceid));
 			     my $index = scalar(@{$expat->{'Context'}}) - 1;
 			     if($expat->{'Context'}->[$index] eq 'Seq-data'){
 				 $char =~ s/\s+//g;
@@ -405,19 +416,28 @@ for my $file ( @files ) {
 		      'Seq-data'=>
 			  sub{
 			      my ($expat,$elt,%params) = @_;
+                  die "sequence id undefined" if (!defined($sequenceid));
 			      $expat->setHandlers( 'Char' => $charfuncs->{'Seq-data'} );
-			      $sequencelookup->{$sequenceid}->{'fasta_header'}=$sequenceid;
+			      $sequencelookup->{$sequenceid}->{'fasta_id'}=$sequenceid;
 			  },
 		      'Seq-data-import'=>
 			  sub{
 			      my ($expat,$elt,%params) = @_;
+                  die "sequence id undefined" if (!defined($sequenceid));
 			      $sequencelookup->{$sequenceid}->{'fasta_file'}=$params{'source'};
-			      $sequencelookup->{$sequenceid}->{'fasta_header'}=$params{'identifier'};
+                  if ($use_feature_ids_in_fasta) {
+                      # the id that the script *should* be using, according to the documentation above:
+                      $sequencelookup->{$sequenceid}->{'fasta_id'}=$sequenceid;
+                      $sequencelookup->{$sequenceid}->{'title'}=$params{'identifier'};
+                  } else {
+                      $sequencelookup->{$sequenceid}->{'fasta_id'}=$params{'identifier'};
+                  }
 			  },
 		      'Feature'=>
 			  sub{
 			      my ($expat,$elt,%params) = @_;
 			      $featureid = $params{'id'};
+                  die "sequence id undefined" if (!defined($sequenceid));
 			      $sequencelookup->{$sequenceid}->{'features'}->{$featureid}++;
 			      $featurelookup->{$params{'id'}}->{'sequence'} = $sequenceid;
 			      $featurelookup->{$params{'id'}}->{'class'} = $params{'class'};		
@@ -437,6 +457,7 @@ for my $file ( @files ) {
 			      my $parentelt = $expat->{'Context'}->[$index];
 			      if($parentelt eq 'Sequence' || $parentelt eq 'Feature'){
 				  my $objectid = ($parentelt eq 'Feature') ? $featureid : $sequenceid;
+                  die "couldn't find parent id" if (!defined($objectid));
 				  if($role_exclude{$params{'role'}}){
 				      $excludeflags->{$objectid} = 1;
 				  }
@@ -447,26 +468,66 @@ for my $file ( @files ) {
 			  }
 		  };
 
-    if($options{parse_element} eq 'sequence'){
-	delete $startfuncs->{'Feature'};
-	delete $startfuncs->{'Interval-loc'};
-    }
+    my $endfuncs = {};
+
     if(!$options{role_include} && !$options{role_exclude}){
-	delete $startfuncs->{'Link'};
+        delete $startfuncs->{'Link'};
     }
 
-    my $x = new XML::Parser(
-			    Handlers => 
-			    {
-				Start =>
-				    sub {
-					#$_[1] is the name of the element
-					if(exists $startfuncs->{$_[1]}){
-					    $startfuncs->{$_[1]}(@_);
-					}
-				    }
-			    });
-                
+    if($options{parse_element} eq 'sequence'){
+        delete $startfuncs->{'Feature'};
+        delete $startfuncs->{'Interval-loc'};
+        my $feat_id;
+
+        # handle --use_feature_ids_in_fasta; need to track links between features and sequences
+        if ($use_feature_ids_in_fasta) {
+            my $lf = $startfuncs->{'Link'};
+            $startfuncs->{'Link'} = sub {
+                my ($expat,$elt,%params) = @_;
+                if (($params{'rel'} eq 'sequence') && (defined($feat_id))) {
+                    my $seq_id = $params{'href'};
+                    $seq_id =~ s/^\#//;
+                    if (defined($seqId2FeatId->{$seq_id})) {
+                        die "multiple sequences link to feature $feat_id: correct this or run without --use_feature_ids_in_fasta flag";
+                    }
+                    $seqId2FeatId->{$seq_id} = $feat_id;
+                }
+
+                # call original start func
+                &$lf($expat,$elt,%params) if (defined($lf));
+            };
+
+            $startfuncs->{'Feature'} = sub {
+                my ($expat,$elt,%params) = @_;
+                $feat_id = $params{'id'};
+            };
+
+            $endfuncs->{'Feature'} = sub {
+                $feat_id = undef;
+            };
+        }
+    }
+
+    my $handlers = {
+        Start =>
+            sub {
+                #$_[1] is the name of the element
+                if(exists $startfuncs->{$_[1]}){
+                    $startfuncs->{$_[1]}(@_);
+                }
+            }
+    };
+
+    if (keys %$endfuncs) {
+        $handlers->{End} = sub {
+            #$_[1] is the name of the element
+            if(exists $endfuncs->{$_[1]}){
+                $endfuncs->{$_[1]}(@_);
+            }
+        };
+    }
+    
+    my $x = new XML::Parser( Handlers => $handlers );
     my $x_fh = open_file( $file, 'in' );
     $x->parse( $x_fh );
 }
@@ -514,7 +575,7 @@ sub process_sequences{
             
             #print fasta record formatted as fasta
             #print "writing sequence $sequenceid\n";
-            &write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
+            &write_sequence($sequencelookup->{$sequenceid}->{'fasta_id'},
                             $sequencelookup->{$sequenceid}->{'title'},$sequencelookup->{$sequenceid}->{'seqdata'});
 	    }
 	}
@@ -563,13 +624,15 @@ sub process_sequences{
 
         if(! exists $sequencelookup->{$sequenceid}->{'seqdata'}){
             my $seqdata = undef;
-            if(exists $e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}}){
-                my ($offset, $length) = split( ',',$e{$h{$sequencelookup->{$sequenceid}->{'fasta_header'}}});
+            # column containing the Seq-data-import.identifier
+            my $lookup_col = $use_feature_ids_in_fasta ? 'title' : 'fasta_id';
+            if(exists $e{$h{$sequencelookup->{$sequenceid}->{$lookup_col}}}){
+                my ($offset, $length) = split( ',',$e{$h{$sequencelookup->{$sequenceid}->{$lookup_col}}});
                 seek($filehandle, $offset, 0);
                 read($filehandle, $seqdata, $length);
                 $seqdata =~ s/\>.*//g;
                 $seqdata =~ s/\s+//g;
-                &write_sequence($sequencelookup->{$sequenceid}->{'fasta_header'},
+                &write_sequence($sequencelookup->{$sequenceid}->{'fasta_id'},
                 $sequencelookup->{$sequenceid}->{'title'},\$seqdata);
             }
             else{
@@ -591,7 +654,7 @@ sub process_features{
 	    if(scalar(keys %{$sequencelookup->{$sequenceid}->{'features'}})>0){
 		$sequencelookup->{$sequenceid}->{'seqdata'} = 
 		    &parse_multi_fasta($sequencelookup->{$sequenceid}->{'fasta_file'},
-				       $sequencelookup->{$sequenceid}->{'fasta_header'},
+				       $sequencelookup->{$sequenceid}->{'fasta_id'},
 				       $filehandles,undef,1);
 	    }
 	   }
@@ -634,7 +697,7 @@ sub process_features{
 	&write_sequence($featureid,$featurelookup->{$featureid}->{'title'},\$featureseqdata);
     }
 
-}	
+}
 
 
 sub add_file {
@@ -723,8 +786,9 @@ sub check_parameters {
     $options{output_subdir_size}   = 0  unless ($options{output_subdir_size});
     $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
 
-    if(0){
-        pod2usage({-exitval => 2,  -message => "error message", -verbose => 1, -output => \*STDERR});    
+    my $use_feature_ids_in_fasta = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0);
+    if ($use_feature_ids_in_fasta && ($options{parse_element} eq 'feature')) {
+        $logger->logdie("--use_feature_ids_in_fasta can only be used if --parse_element=sequence");
     }
 }
 
@@ -750,6 +814,14 @@ sub write_sequence {
     
     $ids{$id}++;
 
+    # use feature id instead of sequence id
+    my $use_feature_ids_in_fasta = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0);    
+    if ($use_feature_ids_in_fasta) {
+        my $feat_id = $seqId2FeatId->{$id};
+        $logger->logdie("no feature id found for sequence with id = $id.  quitting.") if (!defined($feat_id));
+        $id = $feat_id;
+    }
+    
     if ($options{format} eq 'multi') {
         &fasta_out("$id $title", $seqref, $multioutputfh);
 
@@ -824,15 +896,15 @@ sub parse_multi_fasta {
     
     my $seqdata = undef;
     
-    if(exists $e{$h{$sequencelookup->{$specified_header}->{'fasta_header'}}}){
+    if(exists $e{$h{$sequencelookup->{$specified_header}->{'fasta_id'}}}){
 		    my ($offset, $length) = split( ',',$e{$h{$specified_header}});
 		    seek($filehandle, $offset, 0);
 		    read($filehandle, $seqdata, $length);
 		    $seqdata =~ s/\>.*//g;
 		    $seqdata =~ s/\s+//g;
     }
-    else{
-	$logger->logdie("Can't find offset for $specified_header in $fasta_file\n");
+    else {
+        $logger->logdie("Can't find offset for $specified_header in $fasta_file\n");
     }
     close $filehandle;
     return $seqdata;
