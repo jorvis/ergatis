@@ -177,7 +177,7 @@ sub parse_genbank_file {
 	$current_prefix = $organism_to_prefix_map->{$gbr{'organism'}};
 	if (!defined($current_prefix) || ($current_prefix =~ /^\s*$/)) {
 	    # TODO - this should result in a warning, but logging doesn't appear to be enabled
-	  die "No prefix defined in $options{organism_to_prefix_mapping} for organism scientific name ($gbr{organism}) "; #AARON
+	    warn "No prefix defined in $options{organism_to_prefix_mapping} for organism scientific name ($gbr{organism}) "; #AARON
 	}
     }
 
