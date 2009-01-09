@@ -247,7 +247,7 @@ sub process_repeat_feature {
     
     ## skip this feature if it isn't a repeat region
     my $class = $elt->{att}->{class};
-    if ($class ne 'repeat_region') {
+    if ($class ne 'repeat_region' && ($class ne 'tandem_repeat' && $$prog_name eq 'trf')) {
         _log("skipping feature $feat_id because its class is $class");
         return 1;
     }
