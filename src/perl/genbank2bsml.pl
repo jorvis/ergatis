@@ -86,7 +86,7 @@ sub parse_options {
         'organism_to_prefix_mapping=s',  #tab-delimited file that maps organism name to id prefix
         'generate_new_seq_ids=s',        #whether to replace existing sequence ids with ergatis ones
         'analysis_id|a=s',
-	'skip_unknown_dbxref',
+	'skip_unknown_dbxref=s',
         ) || &print_usage("Unprocessable option");
 
     # check for required parameters
@@ -110,6 +110,11 @@ sub parse_options {
 	(-r $options{organism_to_prefix_mapping}) 
 	    || die "organism_to_prefix_mapping ($options{organism_to_prefix_mapping}) not readable: $!";
 	$organism_to_prefix_map = &parse_organism_to_prefix_mapping($options{organism_to_prefix_mapping});
+    }
+
+    # default of skip_unknown_dbxref is not to skip
+    unless (defined($options{output_bsml})) {
+      $options{skip_unknown_dbxref} = 0;
     }
 
     ## Now set up the id generator stuff
