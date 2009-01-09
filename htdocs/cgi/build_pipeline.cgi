@@ -129,6 +129,7 @@ sub get_inputsets{
 	my @inputs;
 	my @inputlists = `find $dir -name "*.config"`;
 	
+	my $uniqueinputs = {};
 	foreach my $file (sort {chomp $a;chomp $b;(stat($b))[9]<=>(stat($a))[9]} (@inputlists)){
 	    if(scalar(@inputs)<$limit){
 		chomp $file;
@@ -154,10 +155,13 @@ sub get_inputsets{
 		    $input_type = "directory";
 		    $input_val = $input_dir;
 		}
-		push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
-			      'VALUE'=>$input_val,
-			      'TYPE'=>$input_type,
-			      'SOURCE'=>"$cname.$token"};
+		if(!exists $uniqueinputs->{$input_type}->{$input_val}){
+		    push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
+				  'VALUE'=>$input_val,
+				  'TYPE'=>$input_type,v
+				  'SOURCE'=>"$cname.$token"};
+		}
+		$uniqueinputs->{$input_type}->{$input_val}++;
 	    }
 	}
 	return \@inputs;
