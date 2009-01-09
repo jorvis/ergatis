@@ -44,6 +44,10 @@
                 <key>--project</key>
                 <value>$;PROJECT$;</value>
             </param>
+           <param>
+                <key>--skip_unknown_dbxref</key>
+                <value>$;SKIP_UNKNOWN_DBXREF$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
