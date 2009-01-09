@@ -223,6 +223,7 @@ foreach my $pipeline_id ( readdir $rdh ) {
                         component_label => $component_label,
                         view_link       => $view_link,
                         archive_link    => $archive_link,
+                        clone_link    => "clone_pipeline.cgi?instance=$pipeline_file&repository_root=$repository_root",
                         links_enabled   => $links_enabled,
                         error_message   => $error_message,
                         has_comment     => length($pipeline_comment),

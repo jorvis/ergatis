@@ -374,7 +374,8 @@ use Ergatis::ConfigFile;
                 
                 ## place the component conf into the output directory
                 ##  also setting the shared conf
-                $self->_place_component_conf( $component_name, $token, $outputdir );
+                $self->_place_component_conf( $component_name, $token, "$outputdir/$component_name.$token.user.config" );
+                $self->_place_component_conf( $component_name, $token, "$pipeline_dir/$component_name.$token.config" );
             }
         }
         
@@ -573,7 +574,7 @@ XMLfraGMENt
     }
 
     sub _place_component_conf {
-        my ($self, $component_name, $token, $outputdir) = @_;
+        my ($self, $component_name, $token, $output) = @_;
         
         ## parse the config file
         my $cfg = Config::IniFiles->new( -file => $self->{_template_dir} . 
@@ -601,9 +602,9 @@ XMLfraGMENt
 	        }
 	    }
 	
-        $self->{_logger}->debug("Writing to config file $outputdir/$component_name.$token.user.config");        
+        $self->{_logger}->debug("Writing to config file $output");        
         ## write it into the proper directory
-        $cfg->WriteConfig( "$outputdir/$component_name.$token.user.config" );
+        $cfg->WriteConfig( "$output" );
     }
 
     sub configure_saved_pipeline {
