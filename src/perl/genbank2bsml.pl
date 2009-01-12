@@ -815,6 +815,14 @@ sub to_bsml {
 	derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         next; # next feature-group, no die
         }
+	# support for gene+rRNA+rRNA e.g., NC_010169
+	# this creates a feature group w/ gene, rRNA x2, exon x2
+	elsif ( (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 3) && (@{$feature_type{rRNA}} == 2 )) {
+        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{rRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{rRNA}->[1]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        next; # next feature-group, no die
+        }
     }
     elsif (@{$feature_type{gene}} > 1) {
         die "Multiple gene tags (".@{$feature_type{gene}}.") in feature group $feature_group";
