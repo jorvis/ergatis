@@ -823,6 +823,19 @@ sub to_bsml {
         derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         next; # next feature-group, no die
         }
+	# support for gene+tRNA+promoter
+        elsif ( ( scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 3) && 
+	        ( (@{$feature_type{tRNA}} == 1 ) && (@{$feature_type{promoter}} == 1 )) 
+	      ) {
+        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        derive_and_add_exons_from_Feature($feature_type{tRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+#       foreach my $promoter (@{$feature_type{promoter}}) {
+        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{promoter}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+#        }
+	
+        next; # next feature_group (no die)
+        }
+
     }
     elsif (@{$feature_type{gene}} > 1) {
         die "Multiple gene tags (".@{$feature_type{gene}}.") in feature group $feature_group";
