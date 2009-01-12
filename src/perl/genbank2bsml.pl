@@ -799,40 +799,35 @@ sub to_bsml {
     #
     if (@{$feature_type{gene}} == 1) {
         &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+
+	my $feature_count = scalar(keys %{$gbr{'Features'}->{$feature_group}});
+	my $tRNA_count = @{$feature_type{tRNA}};
+	my $rRNA_count = @{$feature_type{rRNA}};
+	my $promoter_count = @{$feature_type{promoter}};
         # support for feature_groups of a just a gene, gene+tRNA, gene+rRNA
         # see bug #3298 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3298, bug #5328
-        if (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 1) {
-        next; # goto next feature_group if this is the only thing (ie don't die)
+	if ($feature_count == 1) {
+	  next; # goto next feature_group if this is the only thing (ie don't die)
         }
-        elsif ( (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 2) && (@{$feature_type{tRNA}} == 1 )) {
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	# see bug 5328: need an exon in the feature group
-	derive_and_add_exons_from_Feature($feature_type{tRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        next; # next feature_group (no die)
+	elsif ( ($feature_count == 2) && ($tRNA_count == 1) ) {
+          &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	  # see bug 5328: need an exon in the feature group
+	  derive_and_add_exons_from_Feature($feature_type{tRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+          next; # next feature_group (no die)
         }
-        elsif ( (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 2) && (@{$feature_type{rRNA}} == 1 )) {
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{rRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-	derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        next; # next feature-group, no die
-        }
-	# support for gene+rRNA+rRNA e.g., NC_010169
-	# this creates a feature group w/ gene, rRNA x2, exon x2
-	elsif ( (scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 3) && (@{$feature_type{rRNA}} == 2 )) {
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{rRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{rRNA}->[1]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        next; # next feature-group, no die
-        }
-	# support for gene+tRNA+promoter
-        elsif ( ( scalar(keys %{$gbr{'Features'}->{$feature_group}}) == 3) && 
-	        ( (@{$feature_type{tRNA}} == 1 ) && (@{$feature_type{promoter}} == 1 )) 
-	      ) {
+	# if it's just a gene + one or more rRNA then add in all of the rRNAs
+	elsif ( ($rRNA_count > 0) && ($feature_count - $rRNA_count - 1 == 0) ) {
+          foreach my $rRNA (@{$feature_type{rRNA}}) {
+            &addFeature($gbr{'Features'}->{$feature_group}->{$rRNA}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+          }
+          derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	  next; 
+	}
+	# support for gene+tRNA+promoter see SACE_8025 in NC_009142
+	elsif ( ($feature_count == 3) && ( ($tRNA_count == 1) && ($promoter_count == 1) ) ) {
         &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         derive_and_add_exons_from_Feature($feature_type{tRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#       foreach my $promoter (@{$feature_type{promoter}}) {
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{promoter}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#        }
-	
+        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{promoter}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);	
         next; # next feature_group (no die)
         }
 
@@ -957,7 +952,7 @@ sub to_bsml {
     }
     else {
       print Dumper($gbr{'Features'}{$feature_group})."\n\n";
-      
+	print "feautre_type:\n".Dumper(%feature_type);      
         die "Unable to create CDS object in CDS: @{$feature_type{CDS}}, mRNA: @{$feature_type{mRNA}}, feature group: $feature_group";
     }
 
