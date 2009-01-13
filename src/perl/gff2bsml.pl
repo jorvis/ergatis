@@ -248,6 +248,8 @@ my $FEAT_TYPE_MAP = {
     'rRNA' => 'rRNA',
     'three_prime_UTR' => 'three_prime_UTR',
     'five_prime_UTR' => 'five_prime_UTR',
+    'three_prime_utr' => 'three_prime_UTR',
+    'five_prime_utr' => 'five_prime_UTR',
     'gap' => 'gap',
 };
 
@@ -348,11 +350,14 @@ open (IN, $options->{'input'}) || die "couldn't open input file '$options->{inpu
 while (<IN>) {
     chomp;
     
-    if (/^\#/) {
-        # process header line
-    } elsif (/^>/ || /^\#.*fasta.*/i) {
+    if (/^>/ || /^\#.*fasta.*/i) {
         last;
-    } else {
+    }
+    # ignore blank lines and those beginning with '#'
+    elsif (/^\#|^\s*$/) {
+        # no-op
+    } 
+    else {
         my $record = parse_record($_);
 
         # if it has no parents it's a root node    
