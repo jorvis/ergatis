@@ -27,6 +27,13 @@ my %fsa_files; # file names and handlers and for each fasta output file
 my $idcreator;  # Ergatis::IdGenerator object
 my $feature_id_lookup = {};
 
+# features we care about
+# unprocessed features:
+# 'misc_feature' # not supported by chado (not in cvterm)
+# 'variation'    # this is an example of an IN-BETWEEN tag#
+# 'terminator'   # not sure why we don't deal with these
+my @feature_type_list = ('gene', 'CDS', 'promoter', 'exon', 'intron', 'mRNA', 'tRNA','rRNA');
+
 my %TagCount; #NOTE: rename this or something
 print "Parsing $ifile\n";
 my %gbr = %{parse_genbank_file($ifile)};
@@ -353,21 +360,22 @@ sub parse_genbank_file {
         die "Hey, there are transcript features" if $primary_tag eq 'transcript';
         #/testing
 
-
-        if ($primary_tag eq 'CDS'  ||
-            $primary_tag eq 'gene' || 
-            #$primary_tag eq 'misc_feature' ||  #not supported by chado (not in cvterm)
-            $primary_tag eq 'promoter' ||
-            $primary_tag eq 'exon' ||
-            #$primary_tag eq 'variation' ||  #this is an example of an IN-BETWEEN tag
-            $primary_tag eq 'intron' ||
-            $primary_tag eq 'mRNA' ||
-	    $primary_tag eq 'tRNA' || # SO:0000253
-	    $primary_tag eq 'rRNA'    # SO:0000252
-            ) {
+	# if it's a feature_type in the list we care about
+	if ( grep {$primary_tag =~ /$_/} @feature_type_list ) {
+#         if ($primary_tag eq 'CDS'  ||
+#             $primary_tag eq 'gene' || 
+#             #$primary_tag eq 'misc_feature' ||  #not supported by chado (not in cvterm)
+#             $primary_tag eq 'promoter' ||
+#             $primary_tag eq 'exon' ||
+#             #$primary_tag eq 'variation' ||  #this is an example of an IN-BETWEEN tag
+#             $primary_tag eq 'intron' ||
+#             $primary_tag eq 'mRNA' ||
+# 	    $primary_tag eq 'tRNA' || # SO:0000253
+# 	    $primary_tag eq 'rRNA'    # SO:0000252
+#             ) {
             
             # obtain feature group
-            my $feature_group = '';
+            my $fg_name = '';
             my $feature_tag = '';
             my $feature_value = '';
             # could be multiples of same gene, so look for locus_tag first
@@ -389,14 +397,14 @@ sub parse_genbank_file {
             $feature_value = $ugc;              
             ++$ugc;
             }
-            $feature_group = $feature_tag."_".$feature_value;
+            $fg_name = $feature_tag."_".$feature_value;
             
             # id is unique across all bsml documents (use accession instead?  can't use taxon id)
             # //Feature/@id has to begin with alpha character?
-            # old way: my $feature_id = "gi_".$gbr{'gi'}.".".$feature_group.".".$primary_tag."_".$FeatureCount{$primary_tag};
+            # old way: my $feature_id = "gi_".$gbr{'gi'}.".".$fg_name.".".$primary_tag."_".$FeatureCount{$primary_tag};
             my $feature_id = "gi_".$gbr{'gi'}.".".$primary_tag."_".$FeatureCount{$primary_tag};
             $feature_id =~ s/\///; #/'s in this will cause trouble down the road
-            if (exists $gbr{'Features'}->{$feature_group}->{$feature_id}) { die "feature id is not unique!  feature_id: $feature_id"; }
+            if (exists $gbr{'Features'}->{$fg_name}->{$feature_id}) { die "feature id is not unique!  feature_id: $feature_id"; }
             
             my $is_complement;
             if ($feat_object->strand == 1) {
@@ -406,11 +414,11 @@ sub parse_genbank_file {
             $is_complement = 1;
             }
             else {
-            die "unknown feature strand in $feature_group $feature_id: (".$feat_object->strand.")"; 
+            die "unknown feature strand in $fg_name $feature_id: (".$feat_object->strand.")"; 
             }
 
             #store information on the feature in the hashref
-            $gbr{'Features'}->{$feature_group}->{$feature_id} = {
+            $gbr{'Features'}->{$fg_name}->{$feature_id} = {
                                       class => $primary_tag,
                                       is_complement => $is_complement,
                                       start => $feat_object->start,
@@ -427,18 +435,18 @@ sub parse_genbank_file {
             my @locations = $feat_object->location->each_Location();
             foreach my $loc (@locations) {
             #print $loc->start."\t".$loc->start_pos_type."\t".$loc->end."\t".$loc->end_pos_type."\n";
-            push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{locations}},
+            push(@{$gbr{'Features'}->{$fg_name}->{$feature_id}->{locations}},
                  {start => $loc->start, start_pos_type => $loc->start_pos_type, 
                   end => $loc->end, end_pos_type => $loc->end_pos_type});
-            #print $gbr{'Features'}{$feature_group}{$feature_id}{locations}[0]{start}."\n";
+            #print $gbr{'Features'}{$fg_name}{$feature_id}{locations}[0]{start}."\n";
             }
 
             # make a fake translation for mRNAs later (see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300)
             if ($primary_tag eq 'CDS' || $primary_tag eq 'mRNA') {
 	      #store (possibly joined) nucleotide sequence using spliced_seq()
-	      $gbr{'Features'}->{$feature_group}->{$feature_id}->{'spliced_seq'} = $feat_object->spliced_seq->seq();
-	      $gbr{'Features'}->{$feature_group}->{$feature_id}->{'feature_len'} = $feat_object->spliced_seq->length();
-	      $gbr{'Features'}->{$feature_group}->{$feature_id}->{'translation'} = 0; #default null value
+	      $gbr{'Features'}->{$fg_name}->{$feature_id}->{'spliced_seq'} = $feat_object->spliced_seq->seq();
+	      $gbr{'Features'}->{$fg_name}->{$feature_id}->{'feature_len'} = $feat_object->spliced_seq->length();
+	      $gbr{'Features'}->{$fg_name}->{$feature_id}->{'translation'} = 0; #default null value
             }
 
             #See bug 2414
@@ -457,18 +465,18 @@ sub parse_genbank_file {
         if ($tag eq "db_xref") {
             # Assuming the possiblity of multiple tags of the same database
             foreach ($feat_object->get_tag_values($tag)) {
-            push(@{$gbr{'Features'}->{$feature_group}->{$feature_id}->{db_xrefs}}, $_);
+            push(@{$gbr{'Features'}->{$fg_name}->{$feature_id}->{db_xrefs}}, $_);
             }
         }
 	# bug 5338 add gene_product_name and comments as shared or individual
 	elsif ($tag eq 'translation') {
-	  $gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag}=join('',$feat_object->get_tag_values($tag));
-	  #$gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
+	  $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag}=join('',$feat_object->get_tag_values($tag));
+	  #$gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
 	}
 #	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note') {  # use this to treat it as an arrayref
 	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note' ||
 	       $tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id") {  # use this to treat it as an arrayref
-	  $gbr{'Features'}->{$feature_group}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
+	  $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
 	}	
  #       elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
 	elsif ( $tag eq "transl_table") {
@@ -627,6 +635,10 @@ sub to_bsml {
     if ($options{'generate_new_seq_ids'}) {
 	my $project = $current_prefix || $options{'project'};
 	$seqid = $idcreator->next_id('type' => $seq_type, 'project' => $project);
+
+	# HACK AARON TAKE THIS OUT
+#	$seqid = 1;
+
 	$fastafile = "${odir}/${seqid}.fsa";
 	# can't use ($seqid . ' ' . $fastaname) because other components 
 	# follow different rules for identifying sequences (e.g., bsml2fasta.pl
@@ -702,105 +714,91 @@ sub to_bsml {
     #create the feature table
     my $feature_table_elem = $doc->createAndAddFeatureTable($sequence);
 
-    foreach my $feature_group (keys %{$gbr{'Features'}}) {
+    # this was called $fg_name and is referred to as such above
+
+    foreach my $fg_name (keys %{$gbr{'Features'}}) {
     # testing
-    next if $feature_group =~ /unknown/;
+    next if $fg_name =~ /unknown/;
     #/testing
     my $feature_group_elem = $doc->createAndAddFeatureGroup(
                                 $sequence, #the <Sequence> element containing the feature group
                                 undef,                    # id
-                                "$feature_group"             # groupset
+                                "$fg_name"             # groupset
                                 );
     die ("Could not create <Feature-group> element for uniquename '$sequence'") if (!defined($feature_group_elem));
 
     #count the number of each parsed feature in each feature group
-    # really this ought to be rewritten with a master feature type list
-    my %feature_type = (gene => [], CDS => [], promoter => [], exon => [], intron => [], mRNA => [], tRNA => [], rRNA => []); #hash of array
+#    my @feature_type_list = ('gene', 'CDS', 'promoter', 'exon', 'intron', 'mRNA', 'tRNA', 'rRNA');
+    my %feature_type = map {$_ => []} @feature_type_list; # create anon arrays for each key
+    my %feature_count;
 
     # map feature tags to their named versions
     # if these are universal then keep them all
-    my $shared_gene_product_name = get_shared_feature_tag($gbr{'Features'}->{$feature_group}, 'product');
-    my $shared_comment = get_shared_feature_tag($gbr{'Features'}->{$feature_group}, 'note');
+    my $shared_gene_product_name = get_shared_feature_tag($gbr{'Features'}->{$fg_name}, 'product');
+    my $shared_comment = get_shared_feature_tag($gbr{'Features'}->{$fg_name}, 'note');
     my $ec_numbers;
     
-    foreach my $feature (keys %{$gbr{'Features'}->{$feature_group}}) {
-        if(ref $gbr{'Features'}->{$feature_group}->{$feature}){
-        $gbr{'Features'}->{$feature_group}->{$feature}->{id} = $feature;
+    foreach my $feature_name (keys %{$gbr{'Features'}->{$fg_name}}) {
+        my $fg = $gbr{'Features'}->{$fg_name};
+        my $feature = $fg->{$feature_name};
+
+        if(ref $feature){
+	  $feature->{id} = $feature_name;
         }
         
 	# mapping from genbank feature tag to attributes for potentially shared attributes
 	if ($shared_gene_product_name) {
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'gene_product_name'} = $shared_gene_product_name;
+	  $feature->{attributes}->{'gene_product_name'} = $shared_gene_product_name;
 	}	
-        elsif (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'product'}){
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'gene_product_name'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'product'};
+        elsif (exists $feature->{'product'}){
+	  $feature->{attributes}->{'gene_product_name'} = $feature->{'product'};
 	}
 
 	if ($shared_comment) {
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'comment'} = $shared_comment;
+	  $feature->{attributes}->{'comment'} = $shared_comment;
 	}	
-        elsif (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'note'}){
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'comment'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'note'};
+        elsif (exists $feature->{'note'}){
+	  $feature->{attributes}->{'comment'} = $feature->{'note'};
 	}
 	
 	# TODO: Handle ec_number similar to above
-        if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'}){
-	  $ec_numbers = $gbr{'Features'}->{$feature_group}->{$feature}->{'EC_number'};
+        if (exists $feature->{'EC_number'}){
+	  $ec_numbers = $feature->{'EC_number'};
         }
 
 	# mapping from genbank feature tag to attributes
-	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'gene'}){
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'gene'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'gene'};
+	if (exists $feature->{'gene'}){
+	  $feature->{attributes}->{'gene'} = $feature->{'gene'};
 	}
-	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'protein_id'}){
-	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'protein'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'prodtein_id'};
+	if (exists $feature->{'protein_id'}){
+	  $feature->{attributes}->{'protein'} = $feature->{'protein_id'};
 	}
 
-	# store locus_tag as Cross-reference not Attribute
 	# database=NCBILocus
-	if (exists $gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'}){
-#	  $gbr{'Features'}->{$feature_group}->{$feature}->{attributes}->{'locus'} = $gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'};
-	  foreach my $locus_dbxref (@{$gbr{'Features'}->{$feature_group}->{$feature}->{'locus_tag'}}) {
-	    push(@{$gbr{'Features'}->{$feature_group}->{$feature}->{db_xrefs}}, "NCBILocus:".$locus_dbxref);
+	if (exists $feature->{'locus_tag'}){
+	  foreach my $locus_dbxref (@{$feature->{'locus_tag'}}) {
+	    push(@{$feature->{db_xrefs}}, "NCBILocus:".$locus_dbxref);
 	  }
 	}
 
-        if ($feature =~ /gene/) {
-        push(@{$feature_type{gene}}, $feature);
-        }
-        elsif ($feature =~ /CDS/) {
-        push(@{$feature_type{CDS}}, $feature);
-        }
-        elsif ($feature =~ /promoter/) {
-        push(@{$feature_type{promoter}}, $feature);
-        }
-        elsif ($feature =~ /exon/) {
-        push(@{$feature_type{exon}}, $feature);
-        }
-        elsif ($feature =~ /intron/) {
-        push(@{$feature_type{intron}}, $feature);
-        }
-        elsif ($feature =~ /mRNA/) {
-        push(@{$feature_type{mRNA}}, $feature);
-        }
-        elsif ($feature =~ /tRNA/) {
-        push(@{$feature_type{tRNA}}, $feature);
-        }
-        elsif ($feature =~ /rRNA/) {
-        push(@{$feature_type{rRNA}}, $feature);
-        }
-        else {
-        die "Unexpected feature ($feature) in $feature_group";
-        }
+	# count the number of features of each type / class / primary_tag in the feature_group
+	if ( grep {$feature->{class} =~ /$_/} @feature_type_list ) {
+	  push(@{$feature_type{$feature->{class}}}, $feature_name);
+	  ++$feature_count{$feature->{class}};
+	  ++$feature_count{total};
+	}
+	else {
+	  die "Unexpected feature class ($feature_name) in $fg_name";
+	}
     }
     
     #
     # add gene
     #
     if (@{$feature_type{gene}} == 1) {
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        &addFeature($gbr{'Features'}->{$fg_name}->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 
-	my $feature_count = scalar(keys %{$gbr{'Features'}->{$feature_group}});
+	my $feature_count = scalar(keys %{$gbr{'Features'}->{$fg_name}});
 	my $tRNA_count = @{$feature_type{tRNA}};
 	my $rRNA_count = @{$feature_type{rRNA}};
 	my $promoter_count = @{$feature_type{promoter}};
@@ -810,50 +808,50 @@ sub to_bsml {
 	  next; # goto next feature_group if this is the only thing (ie don't die)
         }
 	elsif ( ($feature_count == 2) && ($tRNA_count == 1) ) {
-          &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+          &addFeature($gbr{'Features'}->{$fg_name}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	  # see bug 5328: need an exon in the feature group
-	  derive_and_add_exons_from_Feature($feature_type{tRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+	  derive_and_add_exons_from_Feature($feature_type{tRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
           next; # next feature_group (no die)
         }
 	# if it's just a gene + one or more rRNA then add in all of the rRNAs
 	elsif ( ($rRNA_count > 0) && ($feature_count - $rRNA_count - 1 == 0) ) {
           foreach my $rRNA (@{$feature_type{rRNA}}) {
-            &addFeature($gbr{'Features'}->{$feature_group}->{$rRNA}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+            &addFeature($gbr{'Features'}->{$fg_name}->{$rRNA}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
           }
-          derive_and_add_exons_from_Feature($feature_type{rRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+          derive_and_add_exons_from_Feature($feature_type{rRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	  next; 
 	}
 	# support for gene+tRNA+promoter see SACE_8025 in NC_009142
 	elsif ( ($feature_count == 3) && ( ($tRNA_count == 1) && ($promoter_count == 1) ) ) {
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        derive_and_add_exons_from_Feature($feature_type{tRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        &addFeature($gbr{'Features'}->{$feature_group}->{$feature_type{promoter}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);	
+        &addFeature($gbr{'Features'}->{$fg_name}->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        derive_and_add_exons_from_Feature($feature_type{tRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        &addFeature($gbr{'Features'}->{$fg_name}->{$feature_type{promoter}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);	
         next; # next feature_group (no die)
         }
 
     }
     elsif (@{$feature_type{gene}} > 1) {
-        die "Multiple gene tags (".@{$feature_type{gene}}.") in feature group $feature_group";
+        die "Multiple gene tags (".@{$feature_type{gene}}.") in feature group $fg_name";
     }
     # support for multiple CDSs bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299
     elsif (@{$feature_type{CDS}} >= 1) { # use CDSs
-        my $gene_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'gene');
+        my $gene_featref = &copy_featref($gbr{'Features'}{$fg_name}{$feature_type{CDS}->[0]}, 'gene');
         $gene_featref->{id} =~ s/CDS/gene_from_CDS/;
         # obtain max span
         foreach my $cds (@{$feature_type{CDS}}) {
-        if ($gbr{'Features'}{$feature_group}{$cds}->{start} < $gene_featref->{start}) {
-            $gene_featref->{start} = $gbr{'Features'}{$feature_group}{$cds}->{start};
-            $gene_featref->{start_type} = $gbr{'Features'}{$feature_group}{$cds}->{start_type};
+        if ($gbr{'Features'}{$fg_name}{$cds}->{start} < $gene_featref->{start}) {
+            $gene_featref->{start} = $gbr{'Features'}{$fg_name}{$cds}->{start};
+            $gene_featref->{start_type} = $gbr{'Features'}{$fg_name}{$cds}->{start_type};
         }
-        if ($gbr{'Features'}{$feature_group}{$cds}->{end} > $gene_featref->{end}) {
-            $gene_featref->{end} = $gbr{'Features'}{$feature_group}{$cds}->{end};
-            $gene_featref->{end_type} = $gbr{'Features'}{$feature_group}{$cds}->{end_type};
+        if ($gbr{'Features'}{$fg_name}{$cds}->{end} > $gene_featref->{end}) {
+            $gene_featref->{end} = $gbr{'Features'}{$fg_name}{$cds}->{end};
+            $gene_featref->{end_type} = $gbr{'Features'}{$fg_name}{$cds}->{end_type};
         }
         }
         my $gene_elem = &addFeature($gene_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
     }
     else {
-        die "Unable to create gene object in $feature_group";
+        die "Unable to create gene object in $fg_name";
     }
 
     #
@@ -861,17 +859,17 @@ sub to_bsml {
     #
     # adding support for multiple mRNAs.  See bug #3308 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3308
     if (@{$feature_type{mRNA}} >= 1) {
-        my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{mRNA}->[0]}, 'transcript');
+        my $trans_featref = &copy_featref($gbr{'Features'}{$fg_name}{$feature_type{mRNA}->[0]}, 'transcript');
         $trans_featref->{id} =~ s/mRNA/transcript_from_mRNA/; #no.
         # obtain max span
         foreach my $mrna (@{$feature_type{mRNA}}) {
-        if ($gbr{'Features'}{$feature_group}{$mrna}->{start} < $trans_featref->{start}) {
-            $trans_featref->{start} = $gbr{'Features'}{$feature_group}{$mrna}->{start};
-            $trans_featref->{start_type} = $gbr{'Features'}{$feature_group}{$mrna}->{start_type};
+        if ($gbr{'Features'}{$fg_name}{$mrna}->{start} < $trans_featref->{start}) {
+            $trans_featref->{start} = $gbr{'Features'}{$fg_name}{$mrna}->{start};
+            $trans_featref->{start_type} = $gbr{'Features'}{$fg_name}{$mrna}->{start_type};
         }
-        if ($gbr{'Features'}{$feature_group}{$mrna}->{end} > $trans_featref->{end}) {
-            $trans_featref->{end} = $gbr{'Features'}{$feature_group}{$mrna}->{end};
-            $trans_featref->{end_type} = $gbr{'Features'}{$feature_group}{$mrna}->{end_type};
+        if ($gbr{'Features'}{$fg_name}{$mrna}->{end} > $trans_featref->{end}) {
+            $trans_featref->{end} = $gbr{'Features'}{$fg_name}{$mrna}->{end};
+            $trans_featref->{end_type} = $gbr{'Features'}{$fg_name}{$mrna}->{end_type};
         }
         }
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
@@ -883,7 +881,7 @@ sub to_bsml {
     }
     elsif (@{$feature_type{gene}} == 1) {
         
-        my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{gene}->[0]}, 'transcript');
+        my $trans_featref = &copy_featref($gbr{'Features'}{$fg_name}{$feature_type{gene}->[0]}, 'transcript');
         $trans_featref->{id} =~ s/gene/transcript_from_gene/;
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         if ($ec_numbers){
@@ -893,17 +891,17 @@ sub to_bsml {
         }
     }
     elsif (@{$feature_type{CDS}} >= 1) { # use CDSs
-        my $trans_featref = &copy_featref($gbr{'Features'}{$feature_group}{$feature_type{CDS}->[0]}, 'transcript');
+        my $trans_featref = &copy_featref($gbr{'Features'}{$fg_name}{$feature_type{CDS}->[0]}, 'transcript');
         $trans_featref->{id} =~ s/CDS/transcript_from_CDS/;
         # obtain max span
         foreach my $cds (@{$feature_type{CDS}}) {
-        if ($gbr{'Features'}{$feature_group}{$cds}->{start} < $trans_featref->{start}) {
-            $trans_featref->{start} = $gbr{'Features'}{$feature_group}{$cds}->{start};
-            $trans_featref->{start_type} = $gbr{'Features'}{$feature_group}{$cds}->{start_type};
+        if ($gbr{'Features'}{$fg_name}{$cds}->{start} < $trans_featref->{start}) {
+            $trans_featref->{start} = $gbr{'Features'}{$fg_name}{$cds}->{start};
+            $trans_featref->{start_type} = $gbr{'Features'}{$fg_name}{$cds}->{start_type};
         }
-        if ($gbr{'Features'}{$feature_group}{$cds}->{end} > $trans_featref->{end}) {
-            $trans_featref->{end} = $gbr{'Features'}{$feature_group}{$cds}->{end};
-            $trans_featref->{end_type} = $gbr{'Features'}{$feature_group}{$cds}->{end_type};
+        if ($gbr{'Features'}{$fg_name}{$cds}->{end} > $trans_featref->{end}) {
+            $trans_featref->{end} = $gbr{'Features'}{$fg_name}{$cds}->{end};
+            $trans_featref->{end_type} = $gbr{'Features'}{$fg_name}{$cds}->{end_type};
         }
         }
         my $trans_elem = &addFeature($trans_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
@@ -914,7 +912,7 @@ sub to_bsml {
         }
     }
     else {
-        die "Unable to create transcript object in $feature_group";
+        die "Unable to create transcript object in $fg_name";
     }
 
     #
@@ -927,11 +925,11 @@ sub to_bsml {
     if (@{$feature_type{CDS}} >= 1) { # use multiple CDSs
         foreach my $cds (@{$feature_type{CDS}}) {
         # create translation if there isn't one
-        unless ($gbr{'Features'}{$feature_group}{$cds}->{translation}) {
+        unless ($gbr{'Features'}{$fg_name}{$cds}->{translation}) {
             my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
-            $gbr{'Features'}{$feature_group}{$cds}->{translation} = $codon_table->translate($gbr{'Features'}{$feature_group}{$cds}->{spliced_seq});
+            $gbr{'Features'}{$fg_name}{$cds}->{translation} = $codon_table->translate($gbr{'Features'}{$fg_name}{$cds}->{spliced_seq});
         }
-        &addFeature($gbr{'Features'}->{$feature_group}->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        &addFeature($gbr{'Features'}->{$fg_name}->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         }
     }
     # create CDS from mRNA if present
@@ -939,7 +937,7 @@ sub to_bsml {
     # revised in bug #3308 to create one CDS per mRNA
     elsif (@{$feature_type{mRNA}} >= 1) {
         foreach my $mrna (@{$feature_type{mRNA}}) {
-        my $cds_featref = &copy_featref($gbr{'Features'}{$feature_group}{$mrna}, 'CDS');
+        my $cds_featref = &copy_featref($gbr{'Features'}{$fg_name}{$mrna}, 'CDS');
         $cds_featref->{id} =~ s/mRNA/CDS_from_mRNA/;
         # create translation from known transl_table value ($gbr{'transl_table'})
         # doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
@@ -951,9 +949,8 @@ sub to_bsml {
         }
     }
     else {
-      print Dumper($gbr{'Features'}{$feature_group})."\n\n";
-	print "feautre_type:\n".Dumper(%feature_type);      
-        die "Unable to create CDS object in CDS: @{$feature_type{CDS}}, mRNA: @{$feature_type{mRNA}}, feature group: $feature_group";
+      print Dumper($gbr{'Features'}{$fg_name})."\n\n";
+      die "Unable to create CDS object in CDS: @{$feature_type{CDS}}, mRNA: @{$feature_type{mRNA}}, feature group: $fg_name";
     }
 
 
@@ -963,25 +960,25 @@ sub to_bsml {
     if (@{$feature_type{exon}} > 0) { # use exons if available
         foreach my $exon (@{$feature_type{exon}}) {
         #check if joined locations?
-        &addFeature($gbr{'Features'}->{$feature_group}->{$exon}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        &addFeature($gbr{'Features'}->{$fg_name}->{$exon}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         }
     }
     # derive from mRNA if present
     elsif (@{$feature_type{mRNA}} >= 1) {
-      derive_and_add_exons_from_Feature($feature_type{mRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
+      derive_and_add_exons_from_Feature($feature_type{mRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
     }
     # See bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion of multiple CDSs
     # Regardless of the number of CDSs, each segment is used as an exon
     # see bug $3305 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3305
     elsif (@{$feature_type{CDS}} >= 1) { # otherwise one exon for each CDS fragment
-      derive_and_add_exons_from_Feature($feature_type{CDS}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
+      derive_and_add_exons_from_Feature($feature_type{CDS}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
     }
     # what if the CDS was derived from an MRNA, see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
     elsif (@{$feature_type{mRNA}} == 1) {
-      derive_and_add_exons_from_Feature($feature_type{mRNA}, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+      derive_and_add_exons_from_Feature($feature_type{mRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
     }
     else {
-        die "Unable to create exon object in $feature_group";
+        die "Unable to create exon object in $fg_name";
     }
 
     #
@@ -990,13 +987,13 @@ sub to_bsml {
     if (@{$feature_type{promoter}} > 0) { # use promoters if available
         foreach my $promoter (@{$feature_type{promoter}}) {
         #check if joined locations?
-        &addFeature($gbr{'Features'}->{$feature_group}->{$promoter}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        &addFeature($gbr{'Features'}->{$fg_name}->{$promoter}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         }
     }
     if (@{$feature_type{intron}} > 0) { # use introns if available
         foreach my $intron (@{$feature_type{intron}}) {
         #check if joined locations?
-        &addFeature($gbr{'Features'}->{$feature_group}->{$intron}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+        &addFeature($gbr{'Features'}->{$fg_name}->{$intron}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
         }
     }
     } #foreach feature_group
@@ -1006,12 +1003,12 @@ sub to_bsml {
 # create and add an exon to the $doc for each
 # type of feature and each location of that feature
 sub derive_and_add_exons_from_Feature {
-  my ($feature_type, $feature_group, $doc, $genome_id, $feature_table_elem, $feature_group_elem) = @_;
+  my ($feature_type, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem) = @_;
   
   my $numexons = 0;
   foreach my $a_feature (@{$feature_type}) {
-    foreach my $loc (@{$gbr{'Features'}{$feature_group}{$a_feature}{locations}}) {
-      my $exon_featref = &copy_featref($gbr{'Features'}{$feature_group}{$a_feature}, 'exon');
+    foreach my $loc (@{$gbr{'Features'}{$fg_name}{$a_feature}{locations}}) {
+      my $exon_featref = &copy_featref($gbr{'Features'}{$fg_name}{$a_feature}, 'exon');
       $exon_featref->{id} = "exon_".$numexons."_from_".$exon_featref->{id};
       $exon_featref->{start} = $loc->{start};
       $exon_featref->{start_type} = $loc->{start_pos_type};
@@ -1080,6 +1077,9 @@ sub addFeature {
     
     my $project = $current_prefix || $options{'project'};
     my $id = $idcreator->next_id('type' => $class, 'project' => $project);
+
+    # HACK AARON TAKE THIS OUT!!!
+#    $id = 1;
 
     $feature_id_lookup->{$old_id} = $id;
     
