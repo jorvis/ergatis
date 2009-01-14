@@ -361,19 +361,7 @@ sub parse_genbank_file {
         #/testing
 
 	# if it's a feature_type in the list we care about
-	if ( grep {$primary_tag =~ /$_/} @feature_type_list ) {
-#         if ($primary_tag eq 'CDS'  ||
-#             $primary_tag eq 'gene' || 
-#             #$primary_tag eq 'misc_feature' ||  #not supported by chado (not in cvterm)
-#             $primary_tag eq 'promoter' ||
-#             $primary_tag eq 'exon' ||
-#             #$primary_tag eq 'variation' ||  #this is an example of an IN-BETWEEN tag
-#             $primary_tag eq 'intron' ||
-#             $primary_tag eq 'mRNA' ||
-# 	    $primary_tag eq 'tRNA' || # SO:0000253
-# 	    $primary_tag eq 'rRNA'    # SO:0000252
-#             ) {
-            
+	if ( grep {$primary_tag =~ /$_/} @feature_type_list ) {          
             # obtain feature group
             my $fg_name = '';
             my $feature_tag = '';
@@ -508,6 +496,8 @@ sub parse_genbank_file {
     else {
         die "Conflicting /transl_table values for CDSs in $gb_file";
     }
+    $gbr{codon_table} = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
+
 
     #if there wasn't a valid strain provided, see if one can be grabbed from organism name
     unless ($gbr{'strain'}) {
@@ -733,6 +723,10 @@ sub to_bsml {
     my %feature_count = map {$_ => 0} @feature_type_list;
     my $fg = $gbr{'Features'}->{$fg_name};
 
+    # the feature refs that will actually be populated in the bsml (some of these are derived
+    # from the initial features present in the genbank file)
+    my %bsml_featref = map {$_ => []} @feature_type_list;
+
     # map feature tags to their named versions
     # if these are universal then keep them all
     my $shared_gene_product_name = get_shared_feature_tag($fg, 'product');
@@ -793,7 +787,7 @@ sub to_bsml {
     }
     
     #
-    # add gene
+    # create gene feature
     #
     if (@{$feature_type{gene}} == 1) {
         &addFeature($fg->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
@@ -855,12 +849,16 @@ sub to_bsml {
     }
 
     #
-    # add transcript
+    # create transcript feature
     #
-    my $transcript_featref = feature_group_to_transcript($fg, \%feature_type, \%feature_count);
-    if ($transcript_featref) {
-      warn "Creating transcript!";
-      my $trans_elem = &addFeature($transcript_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+    if ( my $transcript_featref = feature_group_to_transcript($fg, \%feature_type, \%feature_count) ) {
+      push ( @{$bsml_featref{transcript}}, $transcript_featref);
+    }
+#    my $transcript_featref = feature_group_to_transcript($fg, \%feature_type, \%feature_count);
+#    if ($transcript_featref) {
+    if ( @{$bsml_featref{transcript}} == 1) {
+#      my $trans_elem = &addFeature($transcript_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+      my $trans_elem = &addFeature($bsml_featref{transcript}->[0], $doc, $genome_id, $feature_table_elem, $feature_group_elem);
       if($ec_numbers){
         foreach my $ec_number (@$ec_numbers){
 	  $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
@@ -870,46 +868,55 @@ sub to_bsml {
 
 
     #
-    #  add CDS
+    #  create CDS feature
     #
-    # known bugs: 
-    #  -multiple CDSs are straight up just added
-    #  -CDSs might be joined segments and this is kind of ignored
-    # see bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
-    if (@{$feature_type{CDS}} >= 1) { # use multiple CDSs
-        foreach my $cds (@{$feature_type{CDS}}) {
-        # create translation if there isn't one
-        unless ($fg->{$cds}->{translation}) {
-            my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
-            $fg->{$cds}->{translation} = $codon_table->translate($fg->{$cds}->{spliced_seq});
-        }
-        &addFeature($fg->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-        }
+    $bsml_featref{CDS} = feature_group_to_CDS($fg, \%feature_type, \%feature_count);
+    if ( @{$bsml_featref{CDS}} > 0 ) {
+      foreach my $cds_featref (@{$bsml_featref{CDS}}) {
+	addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+      }
     }
-    # create CDS from mRNA if present
-    # see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
-    # revised in bug #3308 to create one CDS per mRNA
-    elsif (@{$feature_type{mRNA}} >= 1) {
-        foreach my $mrna (@{$feature_type{mRNA}}) {
-        my $cds_featref = &copy_featref($fg->{$mrna}, 'CDS');
-        $cds_featref->{id} =~ s/mRNA/CDS_from_mRNA/;
-        # create translation from known transl_table value ($gbr{'transl_table'})
-        # doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
-        my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
-        $cds_featref->{translation} = $codon_table->translate($cds_featref->{spliced_seq});
 
-        my $cds_elem = &addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#       $doc->createAndAddBsmlAttribute($cds_elem, "comment", "Derived from mRNA tag");
-        }
-    }
-    else {
-      print Dumper($fg)."\n\n";
-      die "Unable to create CDS object in CDS: @{$feature_type{CDS}}, mRNA: @{$feature_type{mRNA}}, feature group: $fg_name";
-    }
+#     # known bugs: 
+#     #  -multiple CDSs are straight up just added
+#     #  -CDSs might be joined segments and this is kind of ignored
+#     # see bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
+#     if (@{$feature_type{CDS}} >= 1) { # use multiple CDSs
+#         foreach my $cds (@{$feature_type{CDS}}) {
+#         # create translation if there isn't one
+#         unless ($fg->{$cds}->{translation}) {
+# #            my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );	  
+# #            $fg->{$cds}->{translation} = $codon_table->translate($fg->{$cds}->{spliced_seq});
+# 	  $fg->{$cds}->{translation} = $gbr{codon_table}->translate($fg->{$cds}->{spliced_seq});
+#         }
+# #        &addFeature($fg->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+#         }
+#     }
+#     # create CDS from mRNA if present
+#     # see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
+#     # revised in bug #3308 to create one CDS per mRNA
+#     elsif (@{$feature_type{mRNA}} >= 1) {
+#         foreach my $mrna (@{$feature_type{mRNA}}) {
+#         my $cds_featref = &copy_featref($fg->{$mrna}, 'CDS');
+#         $cds_featref->{id} =~ s/mRNA/CDS_from_mRNA/;
+#         # create translation from known transl_table value ($gbr{'transl_table'})
+#         # doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
+# #        my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
+# #        $cds_featref->{translation} = $codon_table->translate($cds_featref->{spliced_seq});
+# 	$cds_featref->{translation} = $gbr{codon_table}->translate($cds_featref->{spliced_seq});
+
+# #        my $cds_elem = &addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+# #       $doc->createAndAddBsmlAttribute($cds_elem, "comment", "Derived from mRNA tag");
+#         }
+#     }
+#     else {
+#       print Dumper($fg)."\n\n";
+#       die "Unable to create CDS object in CDS: @{$feature_type{CDS}}, mRNA: @{$feature_type{mRNA}}, feature group: $fg_name";
+#     }
 
 
     #
-    # add exon
+    # create exon feature
     #
     if (@{$feature_type{exon}} > 0) { # use exons if available
         foreach my $exon (@{$feature_type{exon}}) {
@@ -961,6 +968,7 @@ sub to_bsml {
 sub feature_group_to_transcript {
   my ($fg, $feature_type, $feature_count) = @_;
 
+  # TODO: Replace this style w/ copy_featref_maxspan() function...
   # adding support for multiple mRNAs.  See bug #3308 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3308
   if ($feature_count->{mRNA} >= 1) {
     my $trans_featref = &copy_featref($fg->{$feature_type->{mRNA}->[0]}, 'transcript');
@@ -1005,12 +1013,47 @@ sub feature_group_to_transcript {
   }
 }
 
+# known bugs: 
+#  -multiple CDSs are straight up just added
+#  -CDSs might be joined segments and this is kind of ignored
+# see bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion
+sub feature_group_to_CDS {
+  my ($fg, $feature_type, $feature_count) = @_;
 
+  my @cds_featrefs = ();
 
-
-
-
-
+  if ($feature_count->{CDS} >= 1) { # use multiple CDSs    
+    foreach my $cds (@{$feature_type->{CDS}}) {
+      # create translation if there isn't one
+      unless ($fg->{$cds}->{translation}) {
+	$fg->{$cds}->{translation} = $gbr{codon_table}->translate($fg->{$cds}->{spliced_seq});
+      }
+#     &addFeature($fg->{$cds}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+      push( @cds_featrefs, $fg->{$cds});
+   }
+  }
+  # create CDS from mRNA if present
+  # see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
+  # revised in bug #3308 to create one CDS per mRNA
+  elsif ($feature_count->{mRNA} >= 1) {
+    foreach my $mrna (@{$feature_type->{mRNA}}) {
+      my $cds_featref = &copy_featref($fg->{$mrna}, 'CDS');
+      $cds_featref->{id} =~ s/mRNA/CDS_from_mRNA/;
+      # create translation from known transl_table value ($gbr{'transl_table'})
+      # doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
+#      my $codon_table  = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
+      $cds_featref->{translation} = $gbr{codon_table}->translate($cds_featref->{spliced_seq});
+      push ( @cds_featrefs, $cds_featref);
+#         my $cds_elem = &addFeature($cds_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+    }
+  }
+  else {
+#       print Dumper($fg)."\n\n";
+    #die "Unable to create CDS object in CDS: @{$feature_type{CDS}}, mRNA: @{$feature_type{mRNA}}, feature group: $fg_name";
+    warn "Unable to create CDS object ";
+  }
+  return \@cds_featrefs;
+}
 
 
 
