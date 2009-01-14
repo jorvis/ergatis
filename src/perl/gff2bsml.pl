@@ -64,9 +64,11 @@ gff32bsml.pl
          --insert_missing_mrnas
          --insert_missing_exons
          --insert_polypeptides
+         --inserted_polypeptide_id_type=CDS
          --default_seq_class=assembly
          --feat_xref_mappings='ID:mydb:accession,Name:mydb:pub_locus'
          --seq_xref_mappings='ID:mydb:seq_id'
+         --atts_with_unescaped_commas='ID,Name'
          --log=/path/to/some.log
          --debug=4
          --help
@@ -156,6 +158,12 @@ B<--insert_polypeptides>
     optional.  automatically inserts a polypeptide feature in any gene model that has one or more CDS
     features but no polypeptide feature.
 
+B<--inserted_polypeptide_id_type>
+    optional. specifies which feature ('CDS', 'gene', 'transcript', or 'mRNA') the newly-inserted
+    polypeptide ids should be based on (default = 'gene')  the id of the new polypeptide will be 
+    formed by taking the GFF id of the corresponding named feature and appending "-Protein"  
+    Note that "transcript" and "mRNA" are synonymous for the purposes of this option.
+
 B<--default_seq_class,-e>
     optional.  default sequence class/SO type (e.g., 'assembly', 'supercontig') to use for sequences 
     for which the type cannot be parsed from the GFF file.
@@ -172,6 +180,12 @@ B<--seq_xref_mappings>
     reference _sequences_ in the GFF files (i.e., those things whose IDs appear in GFF column 1)
     in the case where the sequences are not themselves defined as GFF features the only attribute for
     which a mapping may be specified is 'ID'.
+
+B<--atts_with_unescaped_commas>
+    optional.  a comma-delimited list of GFF3 attributes whose values (incorrectly) contain unescaped
+    commas.  instead of parsing these values as comma-delimited lists the program will treat each as
+    a single value and will parse it as though the commas embedded in the value had been correctly 
+    URL-escaped.
 
 B<--log,-l>
     optional.  path to a log file the script should create.  will be overwritten if
@@ -290,9 +304,11 @@ my $results = GetOptions($options,
                          'insert_missing_mrnas',
                          'insert_missing_exons',
                          'insert_polypeptides',
+                         'inserted_polypeptide_id_type=s',
                          'default_seq_class|e=s',
                          'feat_xref_mappings|x=s',
                          'seq_xref_mappings=s',
+                         'atts_with_unescaped_commas=s',
                          'log|l=s',
                          'debug|d=i',
                          'help|h',
@@ -303,6 +319,9 @@ my $results = GetOptions($options,
 &pod2usage({-exitval => 1, -verbose => 2, -output => \*STDOUT}) if ($options->{'man'});
 
 &check_parameters($options);
+
+my $unescaped_comma_atts = {};
+map { $unescaped_comma_atts->{$_} = 1; } split(/\s*,\s*/, $options->{'atts_with_unescaped_commas'});
 
 ## initialize logging
 my $logfile = $options->{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -574,6 +593,7 @@ sub check_parameters {
     $options->{'project'} =~ tr/A-Z/a-z/;
     $options->{'dna_id_regex'} = $DEFAULT_DNA_ID_REGEX if (!defined($options->{'dna_id_regex'}));
     $options->{'peptide_id_regex'} = $DEFAULT_PEPTIDE_ID_REGEX if (!defined($options->{'peptide_id_regex'}));
+    $options->{'inserted_polypeptide_id_type'} = 'gene' if (!defined($options->{'inserted_polypeptide_id_type'}));
 
     ## check files
     my $input = $options->{'input'};
@@ -595,6 +615,10 @@ sub check_parameters {
     if ($options->{'organism'} !~ /^\S+\s\S+/) {
         die "--organism must specify a species and genus, e.g., --organism='Aspergillus nidulans'";
     }
+
+    if ($options->{'inserted_polypeptide_id_type'} !~ /^gene|CDS|mRNA|transcript$/) {
+        die "--inserted_polypeptide_id_type must be one of the following: gene,CDS,mRNA,transcript";
+    }
 }
 
 # Parse a single GFF3 record.
@@ -613,6 +637,8 @@ sub parse_record {
 
     # convert to interbase coordinates:
     $cols[3]--;
+
+    # TODO - URL-unescape the columns that might require it
 
     # change the + and - symbols in strand column to 0 and 1, respectively
     if ($cols[6] eq '+') {
@@ -638,8 +664,13 @@ sub parse_record {
     my @attribs = split(";", $cols[8]);
     foreach my $attrib(@attribs) {
         my ($type, $val) = split("=", $attrib);
-        my @vals = split(",", $val);
-        $record->{$type}=\@vals;
+        if (defined($unescaped_comma_atts->{$type})) {
+            # treat $val as a single value, but other parts of the code assume that all attribute values are in lists
+            $record->{$type}=[$val];
+        } else {
+            my @vals = split(",", $val);
+            $record->{$type}=\@vals;
+        }
     }
 
     if (!defined($record->{'ID'})) {
@@ -941,16 +972,27 @@ sub gene_feature_hash_to_bsml {
         my @feats = values %{$features->{$type}};
         my @ids = keys %{$features->{$type}};
         my $nf = scalar(@feats);
-        die "trying to insert polypeptide feature but no $type found" if ($nf != 1);
+        die "trying to insert polypeptide feature but unique $type was found" if ($nf != 1);
         return ($ids[0], $feats[0]);
     };
 
     my $pep_type = $FEAT_TYPE_MAP->{'polypeptide'};
     my $added_pep = 0;
     if ($options->{'insert_polypeptides'} && (!defined($id_counts{$pep_type}))) {
+        my $id_type = $options->{'inserted_polypeptide_id_type'};
         my($cds_id, $cds) = &$get_singleton_feat('CDS');
         my($gene_id, $gene) = &$get_singleton_feat('gene');
-        $features->{$pep_type}->{$gene_id . "-Protein"} = {
+        my($trans_id, $trans) = &$get_singleton_feat('transcript');
+        my $pep_id = undef;
+        if ($id_type eq 'gene') {
+            $pep_id = $gene_id . '-Protein';
+        } elsif ($id_type eq 'CDS') {
+            $pep_id = $cds_id . '-Protein';
+        } else { # mrna/transcript
+            $pep_id = $trans_id . '-Protein';
+        }
+
+        $features->{$pep_type}->{$pep_id} = {
             'parent' => [ $cds_id ],
             'type' => $pep_type,
             'startpos' => $cds->{'startpos'},
