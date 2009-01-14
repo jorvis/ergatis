@@ -416,7 +416,7 @@ my $code = $options->{'organism_genetic_code'};
 my $mt_code = $options->{'organism_mt_genetic_code'};
 
 my $code_att = $doc->createAndAddBsmlAttribute($organism, 'genetic_code', $code) if (defined($code));
-my $mt_code_att = $doc->createAndAddBsmlAttribute($organism, 'mt_genetic_code', $code) if (defined($mt_code));
+my $mt_code_att = $doc->createAndAddBsmlAttribute($organism, 'mt_genetic_code', $mt_code) if (defined($mt_code));
 
 # copied this from legacy2bsml.pl.  not clear why this isn't handled internally to the BsmlDoc 
 # (or why 'xrefctr' is used for an id shared by both x-refs and genomes)
