@@ -224,13 +224,13 @@ foreach my $s(keys(%segment_hash)) {
         my $new_id = $idgen->next_id( project => $options{project},
                                       type => 'signal_peptide',
                                      );
-        my $signalp = $doc->createAndAddFeature($feature_table, 
-                                                $new_id, 
-                                                '', 
-                                                'signal_peptide'
-                                               );
+#        my $signalp = $doc->createAndAddFeature($feature_table, 
+#                                                $new_id, 
+#                                                '', 
+#                                                'signal_peptide'
+#                                               );
                                            
-         $signalp->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
+#         $signalp->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
     }
     
     ## this makes ID pulling more efficient
@@ -239,23 +239,27 @@ foreach my $s(keys(%segment_hash)) {
     }
 
     foreach my $tm_ref( @{$segment_hash{$s}} ) {
-        my $tm = $doc->createAndAddFeature(
-                                            $feature_table, 
-                                            $idgen->next_id( project => $options{'project'},
-                                                             type => 'located_sequence_feature',
-                                                           ),
-                                            $tm_ref->[2], ## state
-                                            'located_sequence_feature'
-                                        );
-                                          
-        $tm->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
-        $tm->addBsmlIntervalLoc(
-                                    $tm_ref->[3] - 1, ## start
-                                       $tm_ref->[4], ## end
-                                       0
-                                 );
-    }
 
+        # Currently only dealing with the transmembrane regions (TMhelix)
+        if($tm_ref->[2] eq 'TMhelix') {
+            my $tm = $doc->createAndAddFeature(
+                                               $feature_table, 
+                                               $idgen->next_id( project => $options{'project'},
+                                                                #type => 'located_sequence_feature',
+                                                                type => 'transmembrane_region',
+                                                                ),
+                                               $tm_ref->[2], ## state
+                                               'transmembrane_region'
+                                               );
+            
+            $tm->addBsmlLink('analysis', '#tmhmm_analysis', 'computed_by');
+            $tm->addBsmlIntervalLoc(
+                                    $tm_ref->[3] - 1, ## start
+                                    $tm_ref->[4], ## end
+                                    0
+                                    );
+        }
+    }
 }
     
 ## add the analysis element
