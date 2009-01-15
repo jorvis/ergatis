@@ -48,6 +48,10 @@
                 <key>--skip_unknown_dbxref</key>
                 <value>$;SKIP_UNKNOWN_DBXREF$;</value>
             </param>
+           <param>
+                <key>--skip_incomplete_feature_groups</key>
+                <value>$;SKIP_INCOMPLETE_FEATURE_GROUPS$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
