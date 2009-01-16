@@ -1,267 +1,203 @@
-Project release SOP
-========================
+Code release and management SOP
+===============================
 
 Overview
 --------
 
-This document describes the process of cutting code releases and doing
-a production install for the following projects
-
--chado
--ergatis
--bsml
--prism
-
-In one line the process is "test,tag,release".
-
- An overview of the process follows
-
--Successfully run testing suite 
--Run CVS diff on code bases and notate/compare with existing CHANGELOG
--Tag code using cvs_release scripts and update/commit CHANGELOG
--Install code in /usr/local/devel/ANNOTATION/ard/
-
-Detailed descriptions are provided in the following sections
-
-1)Testing
-2)CVS release tags
-3)Rules for incrementing chado version-revision-build numbers
-4)Optional branch creation for immediate fix
-5)Install
+This document describes the standard operating procedures regarding the release and installation
+procedures of Ergatis and its dependent packages with an emphasis on code versioning practices.
 
+Ergatis makes use of several other open-source packages including:
 
-Testing 
-------- 
+BSML - http://sf.net/projects/bsml
+Coati - http://sf.net/projects/coati-api
+Prism - http://sf.net/projects/prism-api
+Workflow Engine - http://sf.net/projects/tigr-workflow
 
-A project release should be initiated only after a successful run of
-the testing suite.  The testing suite is still under development but
-will include a set of saved pipelines which test the core components
-of the production pipelines.  Currently, the following tests are
-required before cutting a release:
-
--pro_test
--euk_test
--wait_test
-
-A bugzilla case should be opened (product:ergatis
-component:ergatis_test_suite title:testing for release candidate)
-noting the completion of testing and any attaching differences found.
-This case should be annotated with the release tags and install area
-once the release is complete
-
-CVS release tags
-----------------
-
-Any project that has changed since the last install should receive a
-new release tag in CVS, AKA "cutting a release".  All the release tags
-follow the form
-
- project-v1r1b1
-
-Usually, the revision number (r) is incremented for a release
-(eg. v1r1b1 --> v1r2b1), but it is left up to the developer to decide
-whether to increment the build, release, or version number when
-cutting a release.  Note, whichever number is used, its most important
-that the CHANGELOG accurately reflects the changes.
-
-Some rules of thumb follow:
-
--Most code releases will increment the revision number (r)...unless
- the change seems trivial or substantial.
-
--For trivial changes, the build number (b) can be incremented instead
-of the revision number. eg. v1r1b1 --> v1r1b2.  Examples of trivial
-changes include: fixing syntax errors (that escaped testing),
-documentation changes, adding/deleting comments, simple code
-reformatting.
-
--For substantial changes, the version number (v) should be
- incremented. eg. v1r1b1 --> v2r1b1.  Examples of substantial changes
- include: large code refactoring and substantial changes in
- functionality.
-
-Note, all version, release, build numbers start at 1 not zero.
-
-The following sections provides the commands to tag releases in
-Ergatis, Prism, BSML, and Chado.  The syntax is similar for all the
-projects.  The './cvs_release.sh -p' command displays the last release
-version of the project.  The new release can be derived from this
-release tag.  The '-s' flag specifies the source datestamp from CVS.
-It is preferred that this time corresponds to start time of the last
-successful completion of the test suite.
-
-****************
-Ergatis releases
-****************
-
-cvs co -d ergatis_release ANNOTATION/ergatis/util/cvs_release.sh
-cd ergatis_release
-./cvs_release.sh -p 
-./cvs_release.sh -r ?ERGATIS_TAG_NAME? -s now
-
-**************
-Prism releases
-**************
-
-cvs co -d prism_release ANNOTATION/Prism/util/cvs_release.sh
-cd prism_release
-./cvs_release.sh -p 
-./cvs_release.sh -r ?PRISM_TAG_NAME? -s now
+Many of the Ergatis developers also contribute to these other projects and we make every attempt
+to ensure our codebases work together, testing and often co-releasing when appropriate.  Here we
+describe this process and give practical examples of how this code is managed for end-users.
 
-*************
-BSML releases
-*************
+A notable exception to the list above is Workflow Engine, which has a smaller and more isolated
+developer list when compared to the other projects.  It is generally more static and has less
+releases.  Though we have frequent communication with the Workflow developers, the procedures
+described in this document do not necessarily apply to that project.
 
-cvs co -d bsml_release ANNOTATION/bsml/util/cvs_release.sh
-cd bsml_release
-./cvs_release.sh -p 
-./cvs_release.sh -r ?BSML_TAG_NAME? -s now
+For most of this document I'll be focusing on Ergatis conventions and note where the others
+have specific differences.
 
-**************
-Chado releases
-**************
 
-cvs co -d chado_release ANNOTATION/chado/util/cvs_release.sh
-./cvs_release.sh -p 
-./cvs_release.sh -r ?CHADO_TAG_NAME? -s now
+Quick summary for the impatient
+-------------------------------
 
+Can't be bothered to read this whole thing?  Here's the quick version:
 
-Rules for incrementing Chado version-revision-build numbers
------------------------------------------------------------
+- Code available on SourceForge, contributors welcome
+- Developers should test individual changes before committing
+- The general steps of a project code release are:
+    - A standard suite of tests is performed
+    - Code is tagged in SVN
+    - Tarball placed on Sourceforge
+    - Release announcement sent to appropriate e-mail lists
+- Fixing bugs involves:
+    - creation of a bugfix branch from the release tag point
+    - commit fix to both branch and trunk
+    - release new build tarball
 
-The Chado tag (chado-v1r6b1) attempts to describe both schema format
-and usage conventions with the purpose of providing software an
-indication of what to expect in the database.  Database clients (such
-as Apollo, Sybil, Manatee) can expect that all databases with the same
-tag have equivalent table structures, index schemas, and data
-model/usage conventions.  The hope is that the Chado tag will be
-useful for tagging database client software compatibility
-(eg. sybil-v3r1b1 is compatible with database versions
-chado-v1r5b1,chado-v1r6b1,chado-v1r7b1,...).  Note the concept of the
-Chado tag differs from the ergatis,bsml, and prism tags which are tied
-only to code changes in the project.
-
-The rules for incrementing the Chado version-revision-build numbers
-are somewhat arbitrary but the tag should attempt to capture the
-severity of the change(s).  Keeping in mind that the tag is meant to
-guide software compatibility, we would expect that most software
-compatible with chado-v1r6b1 is also compatible with chado-v1r6b2 (in
-general, build increments shouldn't break software).  Alternatively,
-it is not expected that software compatible with chado-v1r6b1 will
-work with chado-v2r1b1 without code revisions.
 
-Note, whichever number is used, its most important that the CHANGELOG
-accurately reflects the changes.
+Code availability
+-----------------
 
-Although there are no firm rules for how to increment the Chado tag
-here are some rules of thumb:
+Each of these projects is hosted at SourceForge (sf.net) with code maintained in Subversion
+repositories hosted there.  For any project you can check out the latest sources like:
 
--Version changes are reserved for "substantial" changes to the schema
- or data model.  These kind of changes will likely break existing
- software.
+    svn checkout https://$project.svn.sourceforge.net/svnroot/$project/trunk
 
--Addition of new Chado modules will usually increment the version number (v)
+Where $project is replaced with either 'ergatis', 'bsml', 'coati-api or 'prism-api'.  Contributions
+are limited to the developer list for each, but anyone wishing to contribute updates or changes are
+encouraged to contact any of the project admins to be added as a developer.
 
--Incremental changes to the data model and usage convention constitute
- a change to the release number (r)
 
--If data model/usage convention changes are coupled with changes to
- the table definitions, this may constitute a version change (v)
+SVN code layout
+---------------
 
--Addition of fields or tables to existing modules constitutes a change
- to the release number (r)
+Within the svnroot for any project we have the following common, high-level layout:
 
--Changes to the index schema constitute a change to the release number (r)
+    svnroot/$project/trunk
+    svnroot/$project/branches
+    svnroot/$project/tags
+    svnroot/$project/release
 
--Most changes/additions to ontologies that are loaded into the cvterm
- tables constitute a release number change (r)
+The 'trunk' contains the most up-to-date version of the project, which is not guaranteed to be
+stable/functional though developers are strongly encouraged to test their individual changes before
+committing.  The layout of the code under the trunk is variable across projects.
 
--Other small changes which are not expected to "break" existing
- software constitute build number changes (b).  This includes things
- like storing an addtional featureprop with a blast match.  Removal of
- properties would constitute a release number change (r)
+The 'branches' directory contains areas of code that have forked from the trunk at some point.
+Usage of branches are project-specific - some may open and eventually merge them back to the trunk
+while others leave them open indefinitely.
 
-Optional branch creation for immediate fix
-------------------------------------------
+'Tags' are immutable, labeled snapshots of the trunk taken at a specific time.  For each released
+version of a software package there will be a corresponding tag.
 
-Occasionally one of the components (such as ergatis) within the installed code
-base will need an immediate update.  Other commits since the last release may
-not have been tested yet, so we can't just cut a new release and do an install.
-While it is tempting to just manually make the change directly in the install
-area for the fix, this breaks our release SOP and any such manual fixes
-would get lost if someone does a re-install of the currently tagged code
-release.
+Finally, the 'release' directory contains useful placeholders for generating release tarballs.  They
+are usually defined by svn:externals properties which selects and reorganizes code from the project
+into installable form.
 
-The solution is to create a branch that contains only your immediate changes,
-cut a release of that, and install.
 
-cvs co -r ?LATEST_TAG_NAME?
-cvs tag -b ?NEXT_TAG_NAME?
+Versions
+--------
 
-From this point we'll take what you chose as NEXT_TAG_NAME and refer to it
-as CURRENT_TAG_NAME
+Our releases are versioned using the following convention example:
 
-cvs co -r ?CURRENT_TAG_NAME? ergatis
+    ergatis-v2r24b3
 
-Then make your changes, commit, and carry on with the install directions using
-this CURRENT_TAG_NAME.  Make sure you remember to modify the CHANGELOG, since
-this method avoids using cvs_release.sh
+This reads as version 2, revision 24, build 3.  The conventional difference between these levels 
+reflects the level of change or updates with the code from the previous release.  Generally:
 
+    version -   Reflects a major release, usually not compatible with previous versions.  Used
+                sparingly, these are reserved for major rewrites or architecture changes.
+    revision -  The most common release type, revision updates include new functionality and
+                non-critical bug fixes.
+    build -     This last number reflects minor releases.  These are limited to bug fixes, 
+                documentation updates or other minor corrections.
 
-Install
--------
+There is currently no strict timeline for releases, though an interval on the order of once per
+month is the target.  Version, revision and build numbers each increment by one with no upper bound.
 
-This should be done as the sgc user.
 
-First, choose a target area for the install.  The name of the target
-area is determined by the latest Chado tag.  For example, in the
-example control file, the chado tag chado-v1r5b2 indicates that the
-install directory will be /usr/local/devel/ANNOTATION/chado-v1r5b2.
-In essence, this structure asserts the latest ergatis, prism, and bsml
-code versions that are compatible with a given Chado tag.
+Ergatis standard release procedure
+----------------------------------
 
-Once a target area has been identified, update/create a control file
-and store in /usr/local/devel/ANNOTATION/ard.
+When it becomes necessary or useful to generate a new revision of the Ergatis code (and any
+dependent projects) an announcement is sent to the ergatis-devel users list with as much notice
+as possible to allow developers to commit any outstanding and completed code updates.  A test area 
+is then created where all dependent software is installed along with code from the Ergatis trunk.
 
-Example of
-/usr/local/devel/ANNOTATION/ard/chado-v1r5b2
+Currently, a standard set of our most common pipelines is executed from this install to ensure
+that the code is functional.  These include:
 
-prok_prism=prism-v1r13b1
-coati=prism-v1r13b1
-euk_prism=prism-v1r13b1
-chado_prism=prism-v1r13b1
-shared_prism=prism-v1r13b1
-bsml=bsml-v2r4b1
-ergatis=ergatis-v1r8b1
-ontologies=chado-v1r5b2
-chado_schema=chado-v1r5b2
-cvdata=chado-v1r5b2
-peffect=HEAD
-server=SYBTIGR
+    - Prokaryotic annotation pipeline template
+    - Jaccard comparative pipeline template
+    - initdb -> bsml2chado -> initdb
 
-Next, run the ergatis installer.
+While not a completely exhaustive test of all components within Ergatis, these two templates do
+include a large proportion of the most commonly used ones.  A more rigorous and complete test
+suite will be available in the future.
 
-Example of running ergatis installer to install to testing_manual
+After successful execution of the test pipelines the trunk is compared with the previous release
+(via svn diff) to ensure that the CHANGELOG reflects all the changes made to the package.  Once 
+this is done, the updated CHANGELOG is committed (if necessary) and the trunk is tagged with
+the next version number like:
 
-cvs co -d install ANNOTATION/ergatis/ergatis_installer.pl
-cd install
-./ergatis_installer.pl -U sgc --installdir=/usr/local/devel/ANNOTATION/ard/testing_manual --controlfile=/usr/local/devel/ANNOTATION/ard/testing_manual.ini --workingdir=/tmp/testing_manual --chmod
+    svn copy path/to/ergatis/trunk path/to/ergatis/tags/ergatis-vNrNbN
 
+At the same time, the developer doing the release can checkout a form of the code appropriate for
+release by doing:
 
-Installing with a pre-v2 version of ergatis
---------------------------------------
-the same instructions as above still apply except you make two changes.
+    svn export https://ergatis.svn.sourceforge.net/svnroot/ergatis/release
 
-1. when you check out the ergatis_installer.pl script, specifify -r ergatis-v2r1-premerge-1
-2. within the .ini file you create listing each software component and their version numbers, change ergatis=?? to ergatis_old=??
+This will create a 'release' directory which contains another named 'ergatis-vNrNbN'.  This should
+be renamed to the current version, tarred and compressed (via tar -czf) and uploaded to SF.net.
+This final step can only be done by a developer with the 'Release Technician' role in the
+Ergatis SF.net page.
 
-everything else should be the same.
+Finally, an announcement e-mail with the new software version and notes is sent to the mailing
+lists.
 
 
-About
------
+Ergatis bugfix release procedure
+--------------------------------
 
-This document was written plaintext and then rendered into HTML using
-asciidoc.  If you make modifications, change
-link:release_install_SOP.txt[release_install_SOP.txt] and then use one of these
-commands to reformat: /usr/local/devel/ANNOTATION/angiuoli/code/asciidoc.py -b css release_install_SOP.txt
+Bugs happen.  I'll take a narrative approach of how bugfix releases are performed here.
+
+Todd is on the Ergatis development team and, using a newly released version of the software 
+(v2r24b1), uncovers a bug in the hmmpfam2bsml.pl script called within the hmmpfam component.  He 
+submits a desciption of the bug to the SF.net tracker and assigns it to Anu.  
+
+Anu sees the problem, modifies the code with a potential fix and tests it in a local development
+repository before committing it to the Ergatis trunk.  The fixed code will be released with the
+next revision (v2r25b1) at some point in the future along with all other code updates.
+
+This is correct, but doesn't address the problem that v2r24b1 has a broken component in use by
+others, so a 'bugfix release' needs to be made.  Our procedure for bugfixes on previous releases
+is as follows:
+
+    - commit fix to the trunk
+    - create a branch from the previous release point named like ergatis-v2r24b1-bugfix
+    - commit fix to this branch
+    - tag branch as new build (ergatis-v2r24b2)
+    - release source tarball on SF.net
+
+Of course, the CHANGELOG should also be updated both in the branch and on the trunk.  In the end
+the revision history will look something like this:
+
+
+                                         ----| 
+                               branch   /   tag
+                       v2r24b1-bugfix  /  v2r24b2
+                                       |
+                                       |
+trunk >---------|----------------------|------------------------|----------------> trunk
+                
+                |                      |                        |
+               tag                    tag                      tag
+             v2r23b1                v2r24b1                   (next)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
