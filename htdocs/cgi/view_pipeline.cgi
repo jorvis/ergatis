@@ -137,8 +137,8 @@ $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'rerun', is_last => 0, url => "./run_pipeline.cgi?pipeline_xml=$file&pipeline_id=$pipelineid&rerun=1" },
                                         { label => 'kill', is_last => 0, url => "./kill_wf.cgi?instancexml=$file" },
                                         { label => 'view xml', is_last => 0, url => "./view_formatted_xml_source.cgi?file=$file" },
-					{ label => 'view log', is_last => 0, url=> "./view_formatted_log_source.cgi?file=$pipelinelog"},
-					{ label => 'view stdout/stderr', is_last => 1, url=> "./view_formatted_log_source.cgi?file=$file.run.out"}
+                                        { label => 'view log', is_last => 0, url=> "./view_formatted_log_source.cgi?file=$pipelinelog"},
+                                        { label => 'view stdout/stderr', is_last => 1, url=> "./view_formatted_log_source.cgi?file=$file.run.out"}
                                      ] );
 
 print $tmpl->output;
