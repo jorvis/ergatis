@@ -1,5 +1,19 @@
 next
 ----
+
+
+ergatis-v2r10b1
+---------------
+-enzyme2obo.pl: added to convert EC -> OBO
+-chado2bsml: back to functionality after long neglect - evidence still needs work
+-jaccard: added percent coverage cutoff
+-pangenome: replaced by pangenome_blast_parse, pangenome_do_analysis, pangenome_make_graphs components
+-interface: stderr and stdout files now viewable via interface (instead of just paths)
+-pipeline builder: component definitions can now have enumerated lists that become select boxes
+-pipeline builder: now shows 10 recently-defined inputs
+-ergatis.ini: added data placement support for local file storage on compute clouds
+-interface: component viewer now shows HTC ID and log file for submitted jobs
+-interface: added 'clone pipeline' links on appropriate pages
 -repeat2legacydb.pl: now allows 'tandem_repeat's to be loaded from trf
 -prokaryotic_pipeline: removed wu-blastn against RNA database and bsml2tbl components
 -prokaryotic_pipeline: added RNAmmer to prok pipeline
@@ -26,8 +40,8 @@ next
 -updates to the pangenome component. sampling procedure that simplifies output from large pan genome runs
 -added integrated JOCs,pangenome saved pipeline
 -start_site_curation: fixed bug to correctly assign a start site frequency of 0 to start sites that don't occur.
--new component: gff3_to_fasta.pl, Extracts fasta sequences from a gff3 file for a provided feature type (part of Annotation Evaluation Pipeline)
--new component: gff3_to_annotab.pl, Extracts tabular annotation information for a provided feature type (part of Annotation Evaluation Pipeline)
+-new component: gff3_to_fasta, Extracts fasta sequences from a gff3 file for a provided feature type (part of Annotation Evaluation Pipeline)
+-new component: gff3_to_annotab, Extracts tabular annotation information for a provided feature type (part of Annotation Evaluation Pipeline)
 -new component: tabula_rasa, Allows a user-input command to be run as an iterator on an input file/list/dir
 -new component: phylip_dnadist, a wrapper for a parallelized version of PHYLIP's dnadist
 -moved RDP and STAP components into a generic 'phylogeny' component group
