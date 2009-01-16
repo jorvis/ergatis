@@ -4,9 +4,11 @@ next
 
 ergatis-v2r10b1
 ---------------
+-bsml2fasta: added option (--use_feature_ids_in_fasta) to use polypeptide feature_ids in FASTA files
+-j_ortholog_clusters: added option (--use_feature_ids_in_fasta) to use polypeptide feature_ids in FASTA files
 -enzyme2obo.pl: added to convert EC -> OBO
 -chado2bsml: back to functionality after long neglect - evidence still needs work
--jaccard: added percent coverage cutoff
+-jaccard: added percent coverage cutoff, option (--use_feature_ids_in_fasta) to use polypeptide feature_ids in FASTA files
 -pangenome: replaced by pangenome_blast_parse, pangenome_do_analysis, pangenome_make_graphs components
 -interface: stderr and stdout files now viewable via interface (instead of just paths)
 -pipeline builder: component definitions can now have enumerated lists that become select boxes
