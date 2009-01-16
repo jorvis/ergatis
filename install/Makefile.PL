@@ -127,7 +127,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir\nSAMPLE_DOCS_DIR=$sampledocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs samples shellwrappers c_apps 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome panther parse_for_ncRNAs pepstats percent_gc phage_finder phat phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
+ergatis_install : dirs samples shellwrappers c_apps 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain pangenome_blast_parse pangenome_do_analysis pangenome_make_graphs panther parse_for_ncRNAs pepstats percent_gc phage_finder phat phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -680,12 +680,26 @@ p_func	:
 	@install components/p_func/p_func.xml $(WORKFLOW_DOCS_DIR)
 	@install components/p_func/p_func.config $(WORKFLOW_DOCS_DIR)
 
-pangenome	:
-	@echo "Installing pangenome workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/pangenome/pangenome.xml $(WORKFLOW_DOCS_DIR)
-	@install components/pangenome/pangenome.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/pangenome/pangenome.config $(WORKFLOW_DOCS_DIR)
-	@install components/pangenome/pangenome.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+pangenome_blast_parse	:
+	@echo "Installing pangenome_blast_parse workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/pangenome_blast_parse/pangenome_blast_parse.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_blast_parse/pangenome_blast_parse.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_blast_parse/pangenome_blast_parse.config $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_blast_parse/pangenome_blast_parse.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
+pangenome_do_analysis	:
+	@echo "Installing pangenome_do_analysis workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/pangenome_do_analysis/pangenome_do_analysis.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_do_analysis/pangenome_do_analysis.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_do_analysis/pangenome_do_analysis.config $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_do_analysis/pangenome_do_analysis.tmpl $(WORKFLOW_DOCS_DIR)/documentation
+
+pangenome_make_graphs	:
+	@echo "Installing pangenome_make_graphs workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/pangenome_make_graphs/pangenome_make_graphs.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_make_graphs/pangenome_make_graphs.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_make_graphs/pangenome_make_graphs.config $(WORKFLOW_DOCS_DIR)
+	@install components/pangenome_make_graphs/pangenome_make_graphs.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 parse_evidence	:
 	@echo "Installing parse_evidence workflows in $(WORKFLOW_DOCS_DIR)"
