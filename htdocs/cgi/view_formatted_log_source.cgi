@@ -14,7 +14,7 @@ my $file = $q->param("file") || die "pass file";
 
 pageHeader();
 
-## don't do it if the file doesn't end in .ini or .conf or config
+## don't do it if the file doesn't end in one of the following extensions: out, log, stderr, stdout
 if ($file !~ /\.out$/ && $file !~ /\.log$/ && $file !~ /\.stderr$/ && $file !~ /\.stdout$/) {
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
