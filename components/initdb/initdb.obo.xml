@@ -58,6 +58,10 @@
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
 	    </param>
 	    <param>
+		<key>--allow_duplicates</key>
+		<value>$;ALLOW_DUPLICATES$;</value>
+	    </param>
+	    <param>
 		<key>stdout</key>
 		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/obov1p2tochado.stdout</value>
 	    </param>
