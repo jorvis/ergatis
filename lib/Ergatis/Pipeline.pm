@@ -91,25 +91,25 @@ umask(0000);
         my $run_dir = $args{ergatis_cfg}->val('paths', 'workflow_run_dir') || croak "workflow_run_dir not found in ergatis.ini";
         my $pipeline_scripts_dir = "$run_dir/scripts";
         
-	## create a directory from which to run this pipeline
-	if(-d $run_dir ) {
-	    ## make sure the scripts directory exists.  this is where the pipeline execution shell
-	    #   files are written
-	    if ( ! -d $pipeline_scripts_dir ) {
-		mkdir $pipeline_scripts_dir || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
+        ## create a directory from which to run this pipeline
+        if ( -d $run_dir ) {
+            ## make sure the scripts directory exists.  this is where the pipeline execution shell
+            #   files are written
+            if ( ! -d $pipeline_scripts_dir ) {
+                mkdir $pipeline_scripts_dir || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
+            }
+
+            # make a subdirectory for this pipelineid
+            if (!$args{ergatis_cfg}->val('grid', 'vappio_data_placement')){
+                $run_dir .= '/' . $self->id;
+                
+                if (! -d $run_dir) {
+                    mkdir $run_dir || croak "failed to create workflow_run_dir: $run_dir : $!";
+                }
+            } else {
+                croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
+            }
 	    }
-	    
-	    # make a subdirectory for this pipelineid
-	    if (!$args{ergatis_cfg}->val('grid', 'vappio_data_placement')){
-		$run_dir .= '/' . $self->id;
-		if (! -d $run_dir) {
-		    mkdir $run_dir || croak "failed to create workflow_run_dir: $run_dir : $!";
-		}
-	    }
-	} else {
-	    croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
-	}
-	
         
         if (! -e $args{ergatis_cfg}->val('paths','workflow_log4j') ) {
             croak "Invalid workflow_log4j in ergatis.ini : " . $args{ergatis_cfg}->val('paths','workflow_log4j');
@@ -206,10 +206,10 @@ umask(0000);
                 print $debugfh "preparing to run $pipeline_script\n" if $self->{debug};
 
                 #my $rc = 0xffff & system($runstring);
-		if($args{ergatis_cfg}->val('grid', 'vappio_data_placement')){
-			my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh";
-			print `sudo -u $args{run_as} $vappiosynccmd`;
-		}
+                if ($args{ergatis_cfg}->val('grid', 'vappio_data_placement')) {
+                    my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh";
+                    print `sudo -u $args{run_as} $vappiosynccmd`;
+                }
 
                 my $rc = 0xffff & system("$runprefix $pipeline_script");
 
@@ -218,7 +218,7 @@ umask(0000);
                     print $debugfh "ran with normal exit\n" if $self->{debug};
                 } elsif ( $rc == 0xff00 ) {
                     croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
-			print $debugfh "command failed: $!\n" if $self->{debug};
+                    print $debugfh "command failed: $!\n" if $self->{debug};
                 } elsif (($rc & 0xff) == 0) {
                     $rc >>= 8;
                     croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
@@ -288,9 +288,9 @@ umask(0000);
         ## for the genewise component
         $ENV{WISECONFIGDIR} = '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg';
 
-	## for local data placement 
-	$ENV{vappio_root} = $args{ergatis_cfg}->val('grid', 'vappio_root');
-	$ENV{vappio_data_placement} = $args{ergatis_cfg}->val('grid', 'vappio_data_placement');
+        ## for local data placement 
+        $ENV{vappio_root} = $args{ergatis_cfg}->val('grid', 'vappio_root');
+        $ENV{vappio_data_placement} = $args{ergatis_cfg}->val('grid', 'vappio_data_placement');
     }
     
 }
