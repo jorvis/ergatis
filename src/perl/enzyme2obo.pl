@@ -34,7 +34,10 @@ B<--help,-h>
 
 =head1  DESCRIPTION
 
-
+This script was written to provide a way of representing EC as an ontology, with the intent
+of loading into a Chado database instance to support genome annotation.  Because of some
+limitations in the cvterm table (or at least our usage of it) some modifications to the
+source data had to be made.  For details see the OUTPUT section.
 
 =head1  INPUT
 
@@ -89,14 +92,33 @@ The output conforms to version 1.2 of the OBO specification, with example entrie
     def: "UTP + alpha-D-xylose 1-phosphate = diphosphate + UDP-D-xylose." []
     synonym: "Xylose-1-phosphate uridylyltransferase." RELATED []
     xref: EC:2.7.7.11
+    is_a: EC:00001637 ! Transferases. Transferring phosphorous-containing groups. Nucleotidyltransferases.
+
 
 Note that the values for all synonym scopes are 'RELATED'.  Because the enzyme.dat file doesn't
 have an equivalent value for this I choose what I thought to be the safest assertion.  In 
 reality, the scope 'EXACT' is probably the correct value for most.
 
-Note that parentel relationships (via is_a) are not defined for deleted or transferred entries.
+Note that parental relationships (via is_a) are not defined for deleted or transferred entries.
 This is because the parent entries may be completely removed from the collection, as was done
 with 3.4.4.-
+
+=head2 Name value modifications
+
+Because the Chado schema restricts cvterm.name to be unique within a given controlled
+vocabulary and is_obsolete status, the values of the DE lines in the enzyme.dat need to be
+manipulated somewhat.
+
+Because their definitions are curated to be fully descriptive and unique, full precision 
+terms have names exported that are identical to their DE lines.  Each level above this, on
+the other hand, has a name formed by the concatenation of their parents.  This conforms to 
+the encoding strategy (manually curated) of these in the Gene Ontology.
+
+Entries annotated as 'Deleted entry.' within the input set have the original EC number
+appended to the end of the name in parentheses.
+
+Entries annotated as Transferred entry: Y are renamed like Transferred entry: (X -> Y), 
+where X is the original EC number and Y is the new one.
 
 =head1  CONTACT
 
@@ -206,6 +228,16 @@ while ( my $line = <$classfh> ) {
         
         ## make sure the ID doesn't have any spaces
         $class_id =~ s|\s||g;
+        
+        ## unless this is top-level, prepend that name with the parent's
+        my $parent_num = parent_ec_num( $class_id);
+        
+        if ( $parent_num ) {
+            my $parent_term = $ontology->get_term_by_xref( 'EC', $parent_num );
+            
+            $class_value = $parent_term->name . " $class_value";
+            #LEFT OFF HERE
+        }
     
     } elsif ( $line =~ m|^ {9,}\s*(.+)| ) {
         $class_value .= " $1";
@@ -309,7 +341,7 @@ for my $deprecated_num ( keys %$replaced_id_lookup ) {
 for my $term ( @{$ontology->get_terms()} ) {
     ## relationships are not defined for transferred and deleted entries (since their parents
     #   might have been completely removed (ex, 3.4.4.-)
-    next if ( $term->name eq 'Deleted entry.' || $term->name =~ /^Transferred entry\: / );
+    next if ( $term->name =~ /^Deleted entry\./ || $term->name =~ /^Transferred entry\: / );
     
     ## get the EC number
     my $ec_num;
@@ -325,34 +357,11 @@ for my $term ( @{$ontology->get_terms()} ) {
         die "there was a problem getting the EC xref from term with ID: " . $term->id;
     }
     
-    my @ec_num_parts = split('\.', $ec_num);
-    
-    ## this is easier backwards
-    my @new_parts = ();
-    @ec_num_parts = reverse ( @ec_num_parts );
-    my $is_parent_term = 0;
-    
-    while ( scalar @ec_num_parts ) {
-        my $part = shift @ec_num_parts;
-        
-        ## if ec_num_parts is now empty, we have a top-level term
-        if ( ! scalar @ec_num_parts ) {
-            $is_parent_term = 1;
-        
-        } elsif ( $part ne '-' ) {
-            push @new_parts, '-';
-            push @new_parts, @ec_num_parts;
-            undef @ec_num_parts;
-        } else {
-            push @new_parts, '-';
-        }
-    }
-    
-    ## parent terms don't get the is_a tag
-    next if $is_parent_term;
-    
-    my $parent_ec_num = join('.', reverse @new_parts);
+    my $parent_ec_num = parent_ec_num( $ec_num );
     my $parent_ec_id;
+    
+    ## next if we're at the top level
+    next unless defined $parent_ec_num;
     
     if ( defined $$old_ec_id_lookup{ "EC:$parent_ec_num" } ) {
         $parent_ec_id = $$old_ec_id_lookup{ "EC:$parent_ec_num" };
@@ -368,6 +377,38 @@ for my $term ( @{$ontology->get_terms()} ) {
    $ontology->create_rel( $term, 'is_a', $parent_term );
 }
 
+sub parent_ec_num {
+    my $child = shift;
+    my $parent;
+    
+    my @ec_num_parts = split('\.', $child);
+    
+    ## this is easier backwards
+    my @new_parts = ();
+    @ec_num_parts = reverse ( @ec_num_parts );
+    
+    while ( scalar @ec_num_parts ) {
+        my $part = shift @ec_num_parts;
+        
+        ## if ec_num_parts is now empty, we have a top-level term
+        if ( ! scalar @ec_num_parts ) {
+            return undef;
+        
+        } elsif ( $part ne '-' ) {
+            push @new_parts, '-';
+            push @new_parts, @ec_num_parts;
+            undef @ec_num_parts;
+        } else {
+            push @new_parts, '-';
+        }
+    }
+    
+    if ( scalar @new_parts ) {
+        $parent = join('.', reverse @new_parts);
+    }
+    
+    return $parent;
+}
 
 open(my $ofh, ">$options{output_file}") || die "failed to create output file: $!";
 
@@ -438,10 +479,16 @@ sub add_enzyme_to_obo {
     if ( $term->name eq 'Deleted entry.' ) {
         $is_obsolete = 1;
 
+        ## rename it for uniqueness
+        $term->name( "Deleted entry. ($$atts{id})" );
+
     } elsif ( $term->name =~ /Transferred entry\: (\d+\.\d+\.\d+\.\d+)/ ) {
         
         $$replaced_id_lookup{"EC:$$atts{id}"} = "EC:$1";
         $is_obsolete = 1;
+        
+        ## rename it for uniqueness
+        $term->name( "Transferred entry: ($$atts{id} -> $1)" );
     }
     
     if ( $is_obsolete ) {
