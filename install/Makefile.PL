@@ -757,7 +757,7 @@ phylip_dnadist	:
 	@install components/phylip_dnadist/phylip_dnadist.xml $(WORKFLOW_DOCS_DIR)
 	@install components/phylip_dnadist/phylip_dnadist.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/phylip_dnadist/phylip_dnadist.config $(WORKFLOW_DOCS_DIR) 
-   	@install components/phylip_dnadist/phylip_dnadist.tmpl $(WORKFLOW_DOCS_DIR) 
+	@install components/phylip_dnadist/phylip_dnadist.tmpl $(WORKFLOW_DOCS_DIR) 
 
 pipeline_summary	:
 	@echo "Installing pipeline_summary workflows in $(WORKFLOW_DOCS_DIR)"
