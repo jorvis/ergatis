@@ -4,6 +4,7 @@ next
 
 ergatis-v2r10b1
 ---------------
+-changes to some C source to support GCC 4.3
 -genewise: gave each prepare_for_genewise_best_loc its own stdout and stderr; no longer complains about missing protein fasta files when no hits pass the filter.
 -bsml2fasta: added option (--use_feature_ids_in_fasta) to use polypeptide feature_ids in FASTA files
 -j_ortholog_clusters: added option (--use_feature_ids_in_fasta) to use polypeptide feature_ids in FASTA files
