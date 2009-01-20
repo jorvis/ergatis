@@ -311,7 +311,7 @@ sub seq_pair_align_handler {
     my $seq_id = $seq_pair_alignment->{'att'}->{'refseq'};
    
     my $assembly_id = get_assembly_id($seq_id);
-    my ($comp_db, $comp_id) = split(":",  $seq_pair_alignment->{'att'}->{'compxref'});
+    my ($comp_db, $comp_id) = split(":",  $seq_pair_alignment->{'att'}->{'compxref'}, 2);
     
     if (! $comp_db || ! $comp_id) {
         die "failed parsing subject database and/or identifier from compxref '$seq_pair_alignment->{att}->{compxref}'";
