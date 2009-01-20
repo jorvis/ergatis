@@ -7,6 +7,8 @@
 #include <vector>
 #include <unistd.h>
 
+#include <cstring>
+
 using namespace std;
 
 static const char *DELIM = "//";

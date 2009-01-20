@@ -1,6 +1,7 @@
 #ifndef STRING_TOKENIZER_HPP
 #define STRING_TOKENIZER_HPP
 
+#include <cstdlib>
 #include <string>
 #include <cstring>
 #include <stdexcept>

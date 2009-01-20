@@ -1,6 +1,7 @@
 #include "SnpDataType.hpp"
-
 #include <StringTokenizer.hpp>
+
+#include <cstdlib>
 
 using namespace std;
 
