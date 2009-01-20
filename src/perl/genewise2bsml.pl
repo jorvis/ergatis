@@ -338,7 +338,7 @@ sub get_info_from_src {
     close $src;
 
     # We need to have a defline.
-    die "No defline found in input sequence: $input_seq\n";
+    die "No defline found in input sequence: $input_seq\n" unless $defline;
     
     # pull out the coords and determine the orientation, also determine the
     # 'chunk_len' for adjusting coords on the reverse
