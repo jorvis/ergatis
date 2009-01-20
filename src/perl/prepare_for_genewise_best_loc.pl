@@ -216,6 +216,9 @@ my $asmbl_source = {};
 ## stores subject db path
 my %subject_db;
 
+## track the number of seq-pair-alignments we encounter
+my $seq_pair_align_count = 0;
+
 ## flag for dealing properly with masked aat input BSML
 my $analysis_is_masked_aat;
 ## path to unmasked assembly sequences (read from masked aat BSML)
@@ -269,7 +272,7 @@ if (scalar(keys(%subject_db)) > 1) {
 }
 
 if (! -s $protein_fasta_file) {
-    die "Subject database '$protein_fasta_file' doesn't appear to exist";
+    die "Subject database '$protein_fasta_file' doesn't appear to exist" if $seq_pair_align_count;
 }
 
 # get the pep and genome seqs for each location on each asmbl_id
@@ -300,6 +303,9 @@ sub analysis_handler {
 }   
 
 sub seq_pair_align_handler {
+
+    $seq_pair_align_count++;
+
     my ($twig, $seq_pair_alignment) = @_;
 
     my $seq_id = $seq_pair_alignment->{'att'}->{'refseq'};
