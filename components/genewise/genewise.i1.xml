@@ -38,11 +38,11 @@
             </param>
             <param>
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/prepare_for_genewise_best_loc.stdout</value>
+                <value>$;TMP_DIR$;/prepare_for_genewise_best_loc.$;I_FILE_BASE$;.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/prepare_for_genewise_best_loc.stderr</value>
+                <value>$;TMP_DIR$;/prepare_for_genewise_best_loc.$;I_FILE_BASE$;.stderr</value>
             </param>
         </command>
     </commandSet>
