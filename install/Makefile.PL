@@ -397,6 +397,7 @@ genewise	:
 	@echo "Installing genewise workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/genewise/genewise.xml $(WORKFLOW_DOCS_DIR)
 	@install components/genewise/genewise.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/genewise/genewise.i2.xml $(WORKFLOW_DOCS_DIR)
 	@install components/genewise/genewise.config $(WORKFLOW_DOCS_DIR)
 
 genezilla  :
