@@ -153,9 +153,9 @@ shellwrappers:
 
 454_mplex_seq_bin_trim	:
 	@echo "Installing 454_mplex_seq_bin_trim workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/aat_aa/454_mplex_seq_bin_trim.xml $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa/454_mplex_seq_bin_trim.i1.xml $(WORKFLOW_DOCS_DIR)
-	@install components/aat_aa/454_mplex_seq_bin_trim.config $(WORKFLOW_DOCS_DIR)
+	@install components/454_mplex_seq_bin_trim/454_mplex_seq_bin_trim.xml $(WORKFLOW_DOCS_DIR)
+	@install components/454_mplex_seq_bin_trim/454_mplex_seq_bin_trim.tmpl $(WORKFLOW_DOCS_DIR)
+	@install components/454_mplex_seq_bin_trim/454_mplex_seq_bin_trim.config $(WORKFLOW_DOCS_DIR)
 
 aat_aa	:
 	@echo "Installing aat_aa workflows in $(WORKFLOW_DOCS_DIR)"
