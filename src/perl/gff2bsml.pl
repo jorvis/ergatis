@@ -321,7 +321,9 @@ my $results = GetOptions($options,
 &check_parameters($options);
 
 my $unescaped_comma_atts = {};
-map { $unescaped_comma_atts->{$_} = 1; } split(/\s*,\s*/, $options->{'atts_with_unescaped_commas'});
+if (defined($options->{'atts_with_unescaped_commas'})) {
+    map { $unescaped_comma_atts->{$_} = 1; } split(/\s*,\s*/, $options->{'atts_with_unescaped_commas'});
+}
 
 ## initialize logging
 my $logfile = $options->{'log'} || Ergatis::Logger::get_default_logfilename();
