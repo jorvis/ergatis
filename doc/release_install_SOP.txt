@@ -163,7 +163,7 @@ others, so a 'bugfix release' needs to be made.  Our procedure for bugfixes on p
 is as follows:
 
     - commit fix to the trunk
-    - create a branch from the previous release point named like ergatis-v2r24b1-bugfix
+    - create a branch from the previous release point named like ergatis-v2r24-bugfix
     - commit fix to this branch
     - tag branch as new build (ergatis-v2r24b2)
     - release source tarball on SF.net
@@ -174,7 +174,7 @@ the revision history will look something like this:
 
                                          ----| 
                                branch   /   tag
-                       v2r24b1-bugfix  /  v2r24b2
+                         v2r24-bugfix  /  v2r24b2
                                        |
                                        |
 trunk >---------|----------------------|------------------------|----------------> trunk
