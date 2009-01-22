@@ -140,10 +140,12 @@ if($options{'timestamp'}){
 print $out_fh "\n";
 
 for my $elt (@$input_elements){
+    my $path1 = ($elt->[2] eq '') ? 	"$elt->[0]" : "$elt->[0].$elt->[2]";
+    my $path2 = ($elt->[2] eq '') ? 	"$id2dir->{$elt->[1]}/$elt->[0]" : "$id2dir->{$elt->[1]}/$elt->[0].$elt->[2]";
     print $out_fh 
 	"$elt->[0]\t",
-	"$elt->[0].$elt->[2]\t",
-	"$id2dir->{$elt->[1]}/$elt->[0].$elt->[2]\t",
+	"$path1\t",
+	"$path2\t",
 	"$elt->[2]\t",
 	"$id2dir->{$elt->[1]}";
     print $out_fh "\t$timestamp" if($options{'timestamp'});
@@ -171,7 +173,7 @@ sub parse_file_parts {
     my $file = shift;
     
     ## match here if the file has an extension
-    if ( $$file =~ m|^(.+)/(([^/]+)\.(.+))$| ) {
+    if ( $$file =~ m|^(.+)/(([^/]+)\.([^\.\d]+))$| ) {
         return [ $1, $2, $3, $4 ];
 
     ## match here if the file doesn't have an extension

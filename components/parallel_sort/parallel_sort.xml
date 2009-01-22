@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>sort workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <!--Processing-->
+        <!--Iterator-->
+    <!--Example file iterator include using "file_iterator_template.xml" which requires -->
+    <!--configuration key names INPUT_FILE_LIST,INPUT_FILE,INPUT_DIRECTORY-->
+    <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;NODISTRIB$;=1,$;GROUP_COUNT$;=5">
+    <!--Example of general iterator that accepts an $;ITERATOR_LIST$; file and -->
+    <!--can be used for iterators besides files.  Requires command to build -->
+    <!--iterator list and uses generic iterator "iterator_template.xml" -->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create spit files list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;TMP_DIR$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.split\..*"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TMP_DIR$;/splitfiles.list</value>
+            </param>
+        </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create_file_iterator_list</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/create_file_iterator_list</executable>
+      <param>
+	<key>--input_file_list</key>
+	<value>$;TMP_DIR$;/splitfiles.list</value>
+      </param>
+      <param>
+	<key>--output_iter_list</key>
+	<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR2$;.list</value>
+      </param>
+    </command>
+    <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR2$;.list,$;NODISTRIB$;=0,$;GROUP_COUNT$;=150">
+    <!--Postprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create sorted files list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;TMP_DIR$;/$;ITERATOR2$;/</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.sorted"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TMP_DIR$;/sortedfiles.list</value>
+            </param>
+        </command>
+       <command>
+            <type>RunUnixCommand</type>
+            <name>merge sorted files</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/merge_sorted_files.pl</executable>
+            <arg> $;TMP_DIR$;/sortedfiles.list $;SORT_OPTS$; -T $;TMP_DIR$; | sh > $;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

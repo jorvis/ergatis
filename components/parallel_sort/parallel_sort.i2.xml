@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>sort</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort</name>
+            <state>incomplete</state>
+            <executable>sort</executable>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sorted</value>
+            </param>
+            <param>  
+                <key>stdin</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <arg> $;SORT_OPTS$; -T $;TMP_DIR$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
