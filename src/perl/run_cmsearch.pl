@@ -14,6 +14,7 @@ USAGE: run_cmsearch.pl
               --output_file=/path/to/infernal.raw
               --flanking_seq=50
               --hmm_cm_table=/path/to/some/file.table
+              --cmsearch_bin=/path/to/cmsearch
               --cm_dir=/dir/with/covariance/models/
           [   --other_opts=cmsearch options
               --log=/path/to/some/file.log
@@ -41,6 +42,9 @@ B<--flanking_seq,-f>
 B<--hmm_cm_table,-c>
     File containing a lookup for covariance models given an hmm model.  See input section of perldoc
     more specific details on this file.
+
+B<--cmsearch_bin,-b>
+    Path to the cmsearch binary. If not it will be assumed that the binary is in the PATH.
 
 B<--cm_dir,-m>
     If you don't feel like making a hmm_cm_table, you can always just put the directory where all
@@ -127,6 +131,7 @@ my $results = GetOptions (\%options,
                           'sequence_list|s=s',
                           'flanking_seq|f=i',
                           'hmm_cm_table|c=s',
+                          'cmsearch_bin|b=s',
                           'other_opts|e=s',
                           'log|l=s',
                           'debug=s',
@@ -140,11 +145,10 @@ my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
-## make sure everything passed was peachy
-&check_parameters(\%options);
 
 ############ GLOBALS AND CONSTANTS #############
-use constant PROG_NAME => 'cmsearch';
+my $PROG_NAME = 'cmsearch';
+
 my @files;
 my $input;
 my $hmmCmTable;
@@ -158,6 +162,9 @@ my $extraSeqLen = 50;
 my $other_opts = "";
 my @dirsMade;
 ################################################
+
+## make sure everything passed was peachy
+&check_parameters(\%options);
 
 
 ################## MAIN #########################
@@ -261,7 +268,10 @@ sub check_parameters {
     $other_opts = $options{other_opts} if($options{other_opts});
     $extraSeqLen = $options{flanking_seq} if($options{flanking_seq});
     
-    
+    if($options{cmsearch_bin} && $options{cmsearch_bin} ne "") {
+        &_die("Could not locate cmsearch binary at $options{cmsearch_bin}") unless(-e $options{cmsearch_bin});
+        $PROG_NAME = $options{cmsearch_bin};
+    }
 }
 
 #Name: cleanUp
@@ -304,6 +314,7 @@ sub findFile {
     my $seqID = shift;
     my ($retval,$fileFound);
     my $fileFlag = 0; 
+    $seqID =~ s/\|/\_/g;
     print "Searching with $seqID\n";
     foreach my $file (@seqList) {
         if($file =~ /$seqID\./) {
@@ -492,7 +503,7 @@ sub parseSeqAndExtra {
 sub printSeqToFile {
     my ($querySeq, $hmm, $start, $end, $tmpSeq) = @_;
     my $outFileName;
-
+    $querySeq =~ s/\|/\_/g;
     unless(-d "$outputDir/$querySeq") {
         system("mkdir $outputDir/$querySeq");
         push(@dirsMade, "$outputDir/$querySeq");
@@ -563,9 +574,8 @@ sub runProg {
 
     my $cm = &lookupCM($1) if($hmm =~ /.*::(.*)/);
     &_die("Could not parse HMM name from line $hmm") unless($cm);
-    
     #Make sure the -W option isn't used in the other opts.  
-    $other_opts =~ s/--window\s\S+//;
+    $oOpts =~ s/--window\s\S+//;
 
     #Get the length of the fasta file
     my $length;
@@ -578,8 +588,7 @@ sub runProg {
     &_die("Could not determine length of sequence in file $fsaFile") unless($length);
 
     #set up the cmsearch command
-    my $cmd = PROG_NAME." --window $length $oOpts $cm $fsaFile";
-
+    my $cmd = $PROG_NAME." $oOpts $cm $fsaFile";
     print " running [$cmd]\n" if($debug > 2);
 
     #Run the command and store it's std out and err and exitval.
