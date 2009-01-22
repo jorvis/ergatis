@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>mumsgraph workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+          <type>RunUnixCommand</type>
+          <name>mummer</name>
+          <state>incomplete</state>
+          <executable>$;BIN_DIR$;/fasta2seqlen</executable>
+          <param>
+            <key>stdin</key>
+            <value>$;REFERENCE_FASTA$;</value>
+          </param>
+          <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.seqlens.out</value>
+          </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort seqlens</name>
+            <state>incomplete</state>
+            <executable>sort</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.seqlens.out</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.seqlens.out.sorted</value>
+            </param>
+        </command>    
+        <command>
+            <type>RunUnixCommand</type>
+            <name>filter on query coverage</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/filtermummer</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;MUMMERTAB_FILE_LIST$;</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.mummertab.out</value>
+            </param>
+            <arg>--query $;COVERAGE_CUTOFF$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort mummertab</name>
+            <state>incomplete</state>
+            <executable>sort</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.mummertab.out</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.mummertab.out.sorted</value>
+            </param>
+        </command> 
+        <command>
+            <type>RunUnixCommand</type>
+            <name>join tab</name>
+            <state>incomplete</state>
+            <executable>join</executable>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.joined.out</value>
+            </param>
+            <arg> -j 1 $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.mummertab.out.sorted $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.seqlens.out.sorted</arg>
+        </command> 
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create list</name>
+            <state>incomplete</state>
+            <executable>echo</executable>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.joined.out.list</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.joined.out</arg>
+        </command> 
+        <command>
+            <type>RunUnixCommand</type>
+            <name>filter on query coverage</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/filtermummer</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.joined.out.list</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.joined.out.filt</value>
+            </param>
+            <arg>--reference $;COVERAGE_CUTOFF$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>print match graph</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/printmatchgraph</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.joined.out.filt</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.graph</value>
+            </param>
+        </command>
+       <command>
+            <type>RunUnixCommand</type>
+            <name>find connected components</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/runcc</executable>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.graph.cc</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.graph</arg>
+        </command>
+       <command>
+            <type>RunUnixCommand</type>
+            <name>print components</name>
+            <state>incomplete</state>
+            <executable>gvpr</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.graph.cc</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.clusters</value>
+            </param>
+            <arg>-f $;DOCS_DIR$;/printgraph.g</arg>
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort clusters</name>
+            <state>incomplete</state>
+            <executable>sort</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.clusters</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.clusters.sorted</value>
+            </param>
+            <arg>-k 1,1 -k 3,3 -n -r </arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>print reps</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/printrepresentative</executable>
+            <param>  
+                <key>stdin</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.out.clusters.sorted</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.cluster.id.lookup</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.cluster.fasta $;REFERENCE_FASTA$; $;COVERAGE_CUTOFF$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

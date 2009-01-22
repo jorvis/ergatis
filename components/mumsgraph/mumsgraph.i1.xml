@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="serial">
+    <name>nucmer SNPs compute</name>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>mummer</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/mummertab</executable>
+      <arg>-L -maxmatch $;REFERENCE_FASTA$; $;I_FILE_PATH$;</arg>
+      <param>
+        <key>stdin</key>
+        <value>$;I_FILE_PATH$;</value>
+      <param>
+        <key>stdout</key>
+        <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.tab</value>
+      </param>
+    </command>    
+  </commandSet>
+</commandSetRoot>

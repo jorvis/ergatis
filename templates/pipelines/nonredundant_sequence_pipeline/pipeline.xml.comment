@@ -1,0 +1,18 @@
+A pipeline for clustering redundant sequences. The input is a
+multi-FASTA file of either protein or nucleotide sequences.  The
+output is a FASTA file of representative sequences and a lookup file
+that provides a map between each redundant sequence and a
+representative sequence.  Redundant sequences are defined as identical
+subsequences over a minimum percentage length of the representative
+sequence.  This minimum is a user configurable parameter called
+COVERAGE_CUTOFF with fractional value between 0-1.  A coverage cutoff
+of 1 returns a strictly non identical set of sequences.  An optional
+second coverage parameter, limits clusters to subsequences with
+matching suffixes only. This setting is useful for clustering gene
+sequences (nucleotide or peptide) if there is greater confidence in
+the translation stop coordinate than the translation start coordinate.
+The pipeline uses MUMMER to identify exact matches between
+subsequences.  Matches are described in a graph and clustered. Each
+component in this pipeline requires user configuration where marked
+REQUIRED.
+
