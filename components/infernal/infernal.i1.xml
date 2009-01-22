@@ -36,6 +36,10 @@
            <key>--other_opts</key>
            <value>$;OTHER_OPTS$;</value>
         </param>
+        <param>
+            <key>--cmsearch_bin</key>
+            <value>$;CMSEARCH_EXEC$;</value>
+        </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
