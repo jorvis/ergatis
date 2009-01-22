@@ -32,7 +32,10 @@
                 <key>--hmm_cm_table</key>
                 <value>$;HMM_CM_TABLE$;</value>
             </param>
-	    <arg>$;OTHER_OPTS$;</arg>
+	    <param>
+           <key>--other_opts</key>
+           <value>$;OTHER_OPTS$;</value>
+        </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
