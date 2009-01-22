@@ -106,10 +106,11 @@ umask(0000);
                 if (! -d $run_dir) {
                     mkdir $run_dir || croak "failed to create workflow_run_dir: $run_dir : $!";
                 }
-            } else {
-                croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
-            }
 	    }
+	} 
+	else {
+	    croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
+	}
         
         if (! -e $args{ergatis_cfg}->val('paths','workflow_log4j') ) {
             croak "Invalid workflow_log4j in ergatis.ini : " . $args{ergatis_cfg}->val('paths','workflow_log4j');
