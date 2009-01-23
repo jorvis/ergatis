@@ -58,6 +58,7 @@ gff32bsml.pl
          --dna_id_prefix='Chr'
          --dna_id_suffix=''
          --dna_no_seqdata
+         --gene_type=gene
          --organism_genetic_code=1
          --organism_mt_genetic_code=4
          --use_cds_parent_ids
@@ -120,6 +121,12 @@ B<--dna_id_suffix>
 B<--dna_no_seqdata>
     do not create Seq-data or Seq-data-import entries for the DNA/reference sequences; use --dna_fasta,
     if specified, only to determine the sequence length(s).
+
+B<--gene_type>
+    optional.  specifies a SO type in the input GFF file that should be replaced with "gene".  this can
+    be used to handle nonstandard inputs in which, for example, the term "match" is used as the parent
+    of one or more CDS features (e.g., as in GeneWise GFF output)  Note that the SO types _are_
+    case-sensitive.
 
 B<--organism_genetic_code>
     optional.  specifies a genetic code value to appear in the BSML <Organism> element for --organism
@@ -249,8 +256,11 @@ my $GFF2BSML_SEQID_MAP = {};
 # a GFF type not found in this hashref it will fail
 my $FEAT_TYPE_MAP = {
     'gene' => 'gene',
+    'ORF' => 'gene',
     'CDS' => 'CDS',
+    'cds' => 'CDS',
     'exon' => 'exon',
+    'intron' => 'intron',
     'mRNA' => 'transcript',               
     'miRNA' => 'miRNA',
     'protein' => 'polypeptide',
@@ -294,6 +304,7 @@ my $results = GetOptions($options,
                          'dna_id_prefix=s',
                          'dna_id_suffix=s',
                          'dna_no_seqdata',
+                         'gene_type=s',
                          'organism_genetic_code=i',
                          'organism_mt_genetic_code=i',
                          'output|o=s',
@@ -323,6 +334,10 @@ my $results = GetOptions($options,
 my $unescaped_comma_atts = {};
 if (defined($options->{'atts_with_unescaped_commas'})) {
     map { $unescaped_comma_atts->{$_} = 1; } split(/\s*,\s*/, $options->{'atts_with_unescaped_commas'});
+}
+
+if (defined($options->{'gene_type'})) {
+    $FEAT_TYPE_MAP->{$options->{'gene_type'}} = $FEAT_TYPE_MAP->{'gene'};
 }
 
 ## initialize logging
@@ -367,10 +382,13 @@ if (defined($options->{'dna_fasta'})) {
 
 ## parse GFF
 open (IN, $options->{'input'}) || die "couldn't open input file '$options->{input}'";
+my $lnum = 0;
 
 while (<IN>) {
     chomp;
+    ++$lnum;
     
+    # fasta-format sequences
     if (/^>/ || /^\#.*fasta.*/i) {
         last;
     }
@@ -379,7 +397,7 @@ while (<IN>) {
         # no-op
     } 
     else {
-        my $record = parse_record($_);
+        my $record = parse_record($_, $lnum);
 
         # if it has no parents it's a root node    
         if ((!$record->{'Parent'}) && (!$record->{'Derives_from'})) {
@@ -407,7 +425,8 @@ foreach my $id(keys(%{$NODES})) {
 
 my $gene_nodes = [];
 fetch_node_type('gene', \@root_nodes, $gene_nodes);
-
+my $num_genes = scalar(@$gene_nodes);
+$logger->debug("found $num_genes gene(s)");
 my $doc = new BSML::BsmlBuilder();
 
 # add Genomes
@@ -432,7 +451,7 @@ foreach my $root (@{$gene_nodes}) {
     if ($root->{'_type'} eq 'gene') {
 
         # insert missing features if the appropriate options are set
-        my ($cds_type, $mrna_type, $exon_type) = ('CDS', 'mRNA', 'exon');
+        my ($cds_type, $mrna_type, $exon_type, $intron_type, $utr3_type, $utr5_type) = map {$FEAT_TYPE_MAP->{$_}} ('CDS', 'mRNA', 'exon', 'intron', 'three_prime_UTR', 'five_prime_UTR');
         
         # insert mRNA, if none and --insert_missing_mrnas set
         if ((!defined($root->{'children'}->{$mrna_type}) && $options->{'insert_missing_mrnas'})) {
@@ -440,7 +459,10 @@ foreach my $root (@{$gene_nodes}) {
             my $trans_id = $root->{'ID'} . "-mRNA";
             my $cds_list = $root->{'children'}->{$cds_type};
             my $exon_list = $root->{'children'}->{$exon_type};
+            my $intron_list = $root->{'children'}->{$intron_type};
             my $mrna_list = $root->{'children'}->{$mrna_type} = [];
+            my $utr3_list = $root->{'children'}->{$utr3_type};
+            my $utr5_list = $root->{'children'}->{$utr5_type};
 
             # extent of mRNA should = extent of exons (if present), of CDS feats if not
             my $feat_list = defined($exon_list) ? $exon_list : $cds_list;
@@ -465,9 +487,12 @@ foreach my $root (@{$gene_nodes}) {
                 '_record' => $feat_list->[0]->{'_record'},
             });
 
-            # make mRNA the parent of the CDS and exon features
+            # make mRNA the parent of the CDS, exon, and intron features
             map { push(@{$_->{'Parent'}}, $trans_id); } @$cds_list if (defined($cds_list));
             map { push(@{$_->{'Parent'}}, $trans_id); } @$exon_list if (defined($exon_list));
+            map { push(@{$_->{'Parent'}}, $trans_id); } @$intron_list if (defined($intron_list));
+            map { push(@{$_->{'Parent'}}, $trans_id); } @$utr3_list if (defined($utr3_list));
+            map { push(@{$_->{'Parent'}}, $trans_id); } @$utr5_list if (defined($utr5_list));
         }
 
         # insert exons, if none and --insert_missing_exons set
@@ -628,7 +653,7 @@ sub check_parameters {
 # $line - A chomp'ed GFF3 feature line.
 #
 sub parse_record {
-    my ($line) = @_;
+    my ($line, $linenum) = @_;
 
     my $record = {};
     my $attrib_hash = {};
@@ -640,8 +665,6 @@ sub parse_record {
     # convert to interbase coordinates:
     $cols[3]--;
 
-    # TODO - URL-unescape the columns that might require it
-
     # change the + and - symbols in strand column to 0 and 1, respectively
     if ($cols[6] eq '+') {
         $cols[6] = 0;
@@ -649,9 +672,9 @@ sub parse_record {
         $cols[6] = 1;
     } elsif ($cols[6] eq '.') {
         $cols[6] = 0;
-        $logger->warn("converting feature with strand='.' to BSML feature with complement=false");
+        $logger->warn("converting feature with strand='.' to BSML feature with complement=false on line $linenum");
     } else {
-        die("unknown value ($cols[6]) in strand column.  expected '+', '-', or '.'.");
+        die("unknown value ($cols[6]) in strand column on line $linenum: expected '+', '-', or '.'.");
     }
 
     $record->{'_seqid'}     = $cols[0];
@@ -662,7 +685,25 @@ sub parse_record {
     $record->{'_score'}     = $cols[5];
     $record->{'_strand'}    = $cols[6];
     $record->{'_phase'}     = $cols[7];
+
+    # TODO - URL-unescape the columns that might require it
     
+    # swap start/end if necessary
+    if ($record->{'_start'} > $record->{'_end'}) {
+        $logger->warn("start > end on line $linenum, $cols[8]");
+        $logger->logdie("start > end but strand is not '-' on line $linenum, $cols[8]") if ($record->{_strand} != 1);
+        my $tmp = $record->{'_start'};
+        $record->{'_start'} = $record->{'_end'};
+        $record->{'_end'} = $tmp;
+    }
+
+    # apply $FEAT_TYPE_MAP to _type
+    if (!defined($FEAT_TYPE_MAP->{$record->{'_type'}})) {
+        $logger->error("unexpected feature type '$record->{_type}'");
+    } else {
+        $record->{'_type'} = $FEAT_TYPE_MAP->{$record->{'_type'}};
+    }
+
     my @attribs = split(";", $cols[8]);
     foreach my $attrib(@attribs) {
         my ($type, $val) = split("=", $attrib);
@@ -741,8 +782,9 @@ sub process_node {
 # process the records and store them in the features hash
 sub process_record {
     my ($record, $features) = @_;
+    my $cds_type = $FEAT_TYPE_MAP->{'CDS'};
     
-    if ($record->{'_type'} eq 'CDS') {
+    if ($record->{'_type'} eq $cds_type) {
         # CDS records can span lines and must be merged into one CDS feature
         if (!$record->{'ID'}) {
             if ($options->{'use_cds_parent_ids'}) {
@@ -760,35 +802,26 @@ sub process_record {
                 die "CDS feature lacks ID -> bad form!";
             }
         }
-        if ($features->{'CDS'}->{$record->{'ID'}}) {
-            if ($features->{'CDS'}->{$record->{'ID'}}->{'startpos'} > $record->{'_start'}) {
-                $features->{'CDS'}->{$record->{'ID'}}->{'startpos'} = $record->{'_start'};
+        if ($features->{$cds_type}->{$record->{'ID'}}) {
+            if ($features->{$cds_type}->{$record->{'ID'}}->{'startpos'} > $record->{'_start'}) {
+                $features->{$cds_type}->{$record->{'ID'}}->{'startpos'} = $record->{'_start'};
             }
-            if ($features->{'CDS'}->{$record->{'ID'}}->{'endpos'} < $record->{'_end'}) {
-                $features->{'CDS'}->{$record->{'ID'}}->{'endpos'} = $record->{'_end'};
+            if ($features->{$cds_type}->{$record->{'ID'}}->{'endpos'} < $record->{'_end'}) {
+                $features->{$cds_type}->{$record->{'ID'}}->{'endpos'} = $record->{'_end'};
             }
         } else {
-            $features->{$FEAT_TYPE_MAP->{'CDS'}}->{$record->{'ID'}} = {
-                                                    'complement'    => $record->{'_strand'},
-                                                    'startpos'      => $record->{'_start'},
-                                                    'endpos'        => $record->{'_end'},
-                                                    'parent'        => $record->{'Parent'},
-                                                    'type'          => $record->{'_type'},
-                                                    '_record'       => $record,
-                                                };
+            $features->{$cds_type}->{$record->{'ID'}} = {
+                'complement'    => $record->{'_strand'},
+                'startpos'      => $record->{'_start'},
+                'endpos'        => $record->{'_end'},
+                'parent'        => $record->{'Parent'},
+                'type'          => $record->{'_type'},
+                '_record'       => $record,
+            };
         }
         
     } else {
         #handle all other feature types    
-        
-        my $feat_type;
-        
-        if (!defined($FEAT_TYPE_MAP->{$record->{'_type'}})) {
-            $logger->error("unexpected feature type '$record->{_type}'");
-            $feat_type = $record->{'_type'};    
-        } else {
-            $feat_type = $FEAT_TYPE_MAP->{$record->{'_type'}};
-        }
 
         my $id;
         if (!$record->{'ID'}) {
@@ -803,7 +836,7 @@ sub process_record {
             $title = $name if ($name !~ /^temp_id/);
         }
 
-        $features->{$feat_type}->{$id} = {  
+        $features->{$record->{'_type'}}->{$id} = {  
                     'complement'    => $record->{'_strand'},
                     'startpos'      => $record->{'_start'},
                     'endpos'        => $record->{'_end'},
@@ -832,7 +865,9 @@ sub get_parent_id_by_type {
     foreach my $type (keys %$types) {
         my $type_list = $features->{$type};
         foreach my $parent_id (@$parent_list) {
-            push(@$matches, $parent_id) if (defined($type_list->{$parent_id}));
+            if (defined($type_list->{$parent_id})) {
+                push(@$matches, $parent_id);
+            }
         }
     }
 
@@ -974,21 +1009,25 @@ sub gene_feature_hash_to_bsml {
         my @feats = values %{$features->{$type}};
         my @ids = keys %{$features->{$type}};
         my $nf = scalar(@feats);
-        die "trying to insert polypeptide feature but unique $type was found" if ($nf != 1);
+        if ($nf != 1) {
+            print Dumper $features;
+            die "unable to find unique $type feature associated with $seq_id ($nf $type feature(s) found)";
+        }
         return ($ids[0], $feats[0]);
     };
 
+    my $cds_type = $FEAT_TYPE_MAP->{'CDS'};
     my $pep_type = $FEAT_TYPE_MAP->{'polypeptide'};
     my $added_pep = 0;
     if ($options->{'insert_polypeptides'} && (!defined($id_counts{$pep_type}))) {
         my $id_type = $options->{'inserted_polypeptide_id_type'};
-        my($cds_id, $cds) = &$get_singleton_feat('CDS');
+        my($cds_id, $cds) = &$get_singleton_feat($cds_type);
         my($gene_id, $gene) = &$get_singleton_feat('gene');
         my($trans_id, $trans) = &$get_singleton_feat('transcript');
         my $pep_id = undef;
         if ($id_type eq 'gene') {
             $pep_id = $gene_id . '-Protein';
-        } elsif ($id_type eq 'CDS') {
+        } elsif ($id_type eq $cds_type) {
             $pep_id = $cds_id . '-Protein';
         } else { # mrna/transcript
             $pep_id = $trans_id . '-Protein';
