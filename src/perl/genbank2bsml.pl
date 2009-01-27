@@ -1409,7 +1409,7 @@ sub addFeature {
         my $identifier = $2;
 
         # die if it's some new kind of database I never saw before
-        my %known_dbxrefs = ( GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
+        my %known_dbxrefs = ( GO => 1, GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
                   HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
                   EMBL => 1, GenBank => 1, InterPro => 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1,
                   dictyBase => 1, FlyBase => 1, VectorBase => 1, SGD => 1, SGDID => 1, NCBILocus => 1);
