@@ -564,7 +564,7 @@ sub to_bsml {
                         );
 
     # add Cross-references
-    # use GO standard database names: http://www.geneontology.org/doc/GO.xrf_absb
+    # use GO standard database names: http://www.geneontology.org/doc/GO.xrf_abbs
     $xref{'accession'} = $doc->createAndAddCrossReference(
                         'parent'          => $genome, 
                         'database'        => 'GenBank',          # //Genome/Cross-reference/@database
