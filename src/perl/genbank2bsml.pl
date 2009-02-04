@@ -94,6 +94,7 @@ sub parse_options {
         'generate_new_seq_ids=s',        #whether to replace existing sequence ids with ergatis ones
         'analysis_id|a=s',
 	'skip_unknown_dbxref=s',
+	'skip_incomplete_feature_groups=s',
         ) || &print_usage("Unprocessable option");
 
     # check for required parameters
@@ -120,8 +121,13 @@ sub parse_options {
     }
 
     # default of skip_unknown_dbxref is not to skip
-    unless (defined($options{output_bsml})) {
+    unless (defined($options{skip_unknown_dbxref})) {
       $options{skip_unknown_dbxref} = 0;
+    }
+
+    # default of skip_incomplete_feature_groups is not to skip (e.g., die)
+    unless (defined($options{skip_incomplete_feature_groups})) {
+      $options{skip_incomplete_feature_groups} = 0;
     }
 
     ## Now set up the id generator stuff
@@ -558,7 +564,7 @@ sub to_bsml {
                         );
 
     # add Cross-references
-    # use GO standard database names: http://www.geneontology.org/doc/GO.xrf_abbs
+    # use GO standard database names: http://www.geneontology.org/doc/GO.xrf_absb
     $xref{'accession'} = $doc->createAndAddCrossReference(
                         'parent'          => $genome, 
                         'database'        => 'GenBank',          # //Genome/Cross-reference/@database
@@ -627,9 +633,6 @@ sub to_bsml {
     if ($options{'generate_new_seq_ids'}) {
 	my $project = $current_prefix || $options{'project'};
 	$seqid = $idcreator->next_id('type' => $seq_type, 'project' => $project);
-
-	# HACK AARON TAKE THIS OUT
-#	$seqid = 1;
 
 	$fastafile = "${odir}/${seqid}.fsa";
 	# can't use ($seqid . ' ' . $fastaname) because other components 
@@ -801,72 +804,6 @@ sub to_bsml {
       push ( @{$bsml_featref{gene}}, $gene_featref);
     }  
 
-
-   
-#     #
-#     # create gene feature
-#     #
-#     if (@{$feature_type{gene}} == 1) {
-#         &addFeature($fg->{$feature_type{gene}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-
-# 	my $feature_count = scalar(keys %{$fg});
-# 	my $tRNA_count = @{$feature_type{tRNA}};
-# 	my $rRNA_count = @{$feature_type{rRNA}};
-# 	my $promoter_count = @{$feature_type{promoter}};
-#         # support for feature_groups of a just a gene, gene+tRNA, gene+rRNA
-#         # see bug #3298 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3298, bug #5328
-# 	if ($feature_count == 1) {
-# 	  next; # goto next feature_group if this is the only thing (ie don't die)
-#         }
-# 	elsif ( ($feature_count == 2) && ($tRNA_count == 1) ) {
-#           &addFeature($fg->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-# 	  # see bug 5328: need an exon in the feature group
-# 	  derive_and_add_exons_from_Feature($feature_type{tRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#           next; # next feature_group (no die)
-#         }
-# 	# if it's just a gene + one or more rRNA then add in all of the rRNAs
-# 	elsif ( ($rRNA_count > 0) && ($feature_count - $rRNA_count - 1 == 0) ) {
-#           foreach my $rRNA (@{$feature_type{rRNA}}) {
-#             &addFeature($fg->{$rRNA}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#           }
-#           derive_and_add_exons_from_Feature($feature_type{rRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-# 	  next; 
-# 	}
-# 	# support for gene+tRNA+promoter see SACE_8025 in NC_009142
-# 	elsif ( ($feature_count == 3) && ( ($tRNA_count == 1) && ($promoter_count == 1) ) ) {
-#         &addFeature($fg->{$feature_type{tRNA}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#         derive_and_add_exons_from_Feature($feature_type{tRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#         &addFeature($fg->{$feature_type{promoter}->[0]}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);	
-#         next; # next feature_group (no die)
-#         }
-
-#     }
-#     elsif (@{$feature_type{gene}} > 1) {
-#         die "Multiple gene tags (".@{$feature_type{gene}}.") in feature group $fg_name";
-#     }
-#     # support for multiple CDSs bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299
-#     elsif (@{$feature_type{CDS}} >= 1) { # use CDSs
-#         my $gene_featref = &copy_featref($fg->{$feature_type{CDS}->[0]}, 'gene');
-#         $gene_featref->{id} =~ s/CDS/gene_from_CDS/;
-#         # obtain max span
-#         foreach my $cds (@{$feature_type{CDS}}) {
-#         if ($fg->{$cds}->{start} < $gene_featref->{start}) {
-#             $gene_featref->{start} = $fg->{$cds}->{start};
-#             $gene_featref->{start_type} = $fg->{$cds}->{start_type};
-#         }
-#         if ($fg->{$cds}->{end} > $gene_featref->{end}) {
-#             $gene_featref->{end} = $fg->{$cds}->{end};
-#             $gene_featref->{end_type} = $fg->{$cds}->{end_type};
-#         }
-#         }
-#         my $gene_elem = &addFeature($gene_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#     }
-#     else {
-#         die "Unable to create gene object in $fg_name";
-#     }
-
-
-
     # 
     # create tRNA features
     # 
@@ -895,10 +832,9 @@ sub to_bsml {
     # create exon feature
     #
     $bsml_featref{exon} = feature_group_to_exon($fg, \%feature_type, \%feature_count);
-    
 
     # Check that we have a valid logical combination of features to create a feature group
-    if ( has_a_featref(\%bsml_featref, 'gene', 'exon', 'transcript', 'CDS') && 
+    if ( has_all_featrefs(\%bsml_featref, 'gene', 'exon', 'transcript', 'CDS') && 
 	 !(has_a_featref(\%bsml_featref, 'tRNA', 'rRNA')) ) {
       foreach my $type ('gene', 'transcript') {
 	if ( @{$bsml_featref{$type}} > 1) {
@@ -922,7 +858,7 @@ sub to_bsml {
     }
     # transcript probably was created from gene so don't check for it
     # add tRNA == 1
-    elsif ( has_a_featref(\%bsml_featref, 'gene', 'exon', 'tRNA') && 
+    elsif ( has_all_featrefs(\%bsml_featref, 'gene', 'exon', 'tRNA') && 
 	 !(has_a_featref(\%bsml_featref, 'CDS', 'rRNA')) ) {
       foreach my $type ('gene', 'tRNA') {
 	if ( @{$bsml_featref{$type}} > 1) {
@@ -936,10 +872,9 @@ sub to_bsml {
 	  addFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	}
       }
-
     }
     # add rRNA >= 1 is okay
-    elsif ( has_a_featref(\%bsml_featref, 'gene', 'exon', 'rRNA') && 
+    elsif ( has_all_featrefs(\%bsml_featref, 'gene', 'exon', 'rRNA') && 
 	 !(has_a_featref(\%bsml_featref, 'CDS', 'tRNA')) ) {
       # add singulars
       foreach my $type ('gene') {
@@ -956,39 +891,13 @@ sub to_bsml {
 	}
       }
     }
+    # otherwise go to the next or die depending on the option
     else {
+      warn "Unable to create feature_group $fg_name";
+      next if ($options{skip_incomplete_feature_groups});
       print Dumper(%bsml_featref);
-      die "Unable to create feature_group $fg_name.  Cannot create";
-      next;
+      die;
     }
-
-
-#     #
-#     # create exon feature
-#     #
-#     if (@{$feature_type{exon}} > 0) { # use exons if available
-#         foreach my $exon (@{$feature_type{exon}}) {
-#         #check if joined locations?
-#         &addFeature($fg->{$exon}, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#         }
-#     }
-#     # derive from mRNA if present
-#     elsif (@{$feature_type{mRNA}} >= 1) {
-#       derive_and_add_exons_from_Feature($feature_type{mRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
-#     }
-#     # See bug #3299 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3299 for discussion of multiple CDSs
-#     # Regardless of the number of CDSs, each segment is used as an exon
-#     # see bug $3305 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3305
-#     elsif (@{$feature_type{CDS}} >= 1) { # otherwise one exon for each CDS fragment
-#       derive_and_add_exons_from_Feature($feature_type{CDS}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);      	
-#     }
-#     # what if the CDS was derived from an MRNA, see bug #3300 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3300
-#     elsif (@{$feature_type{mRNA}} == 1) {
-#       derive_and_add_exons_from_Feature($feature_type{mRNA}, $fg_name, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-#     }
-#     else {
-#         die "Unable to create exon object in $fg_name";
-#     }
 
     #
     # add promoters and introns
@@ -1216,7 +1125,6 @@ sub derive_exon_featrefs {
       ++$numexons;
     }
   }
-#  warn "In function:".Dumper(@exon_featrefs);
   return @exon_featrefs;
 }
 
@@ -1231,6 +1139,18 @@ sub has_a_featref {
     return 1 if (@{$bsml_featref->{$_}} > 0);
   }
   return 0;
+}
+
+# return 1 if the bsml_featref has at least one of EACH of the following
+# otherwise return 0
+sub has_all_featrefs {
+  my $bsml_featref = shift;
+  my @feat_keys = @_;
+
+  foreach (@feat_keys) {
+    return 0 if (@{$bsml_featref->{$_}} == 0);
+  }
+  return 1;
 }
 
 
@@ -1313,9 +1233,6 @@ sub addFeature {
     
     my $project = $current_prefix || $options{'project'};
     my $id = $idcreator->next_id('type' => $class, 'project' => $project);
-
-    # HACK AARON TAKE THIS OUT!!!
-#    $id = 1;
 
     $feature_id_lookup->{$old_id} = $id;
     
@@ -1412,7 +1329,7 @@ sub addFeature {
         my %known_dbxrefs = ( GO => 1, GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
                   HSSP => 1, PSEUDO => 1, DDBJ => 1, COG => 1, ECOCYC => 1, ASAP => 1, ISFinder => 1,
                   EMBL => 1, GenBank => 1, InterPro => 1, 'UniProtKB/TrEMBL' => 1, 'UniProtKB/Swiss-Prot' => 1,
-                  dictyBase => 1, FlyBase => 1, VectorBase => 1, SGD => 1, SGDID => 1, NCBILocus => 1);
+                  dictyBase => 1, FlyBase => 1, VectorBase => 1, SGD => 1, SGDID => 1, NCBILocus => 1, REBASE => 1,);
         unless (defined($known_dbxrefs{$database})) {
 	  warn "Unknown database in dbxref ($database)";
 	  if ($options{skip_unknown_dbxref}) {
