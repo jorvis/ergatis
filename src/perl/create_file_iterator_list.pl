@@ -225,6 +225,10 @@ sub gather_input_elements {
 
         for my $input_file_list ( split(',', $options{input_file_list}) ) {
 
+	    if (($input_file_list =~ /\.gz$/) || ($input_file_list =~ /\.gzip$/)){
+		die "Support unavailable for processing gzipped file lists";
+	    }
+
             open(my $ifl_fh, $input_file_list) || $logger->logdie("failed to read $input_file_list");
 
             while (<$ifl_fh>) {
