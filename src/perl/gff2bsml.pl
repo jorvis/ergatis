@@ -242,6 +242,7 @@ use Ergatis::IdGenerator;
 use Ergatis::Logger;
 use FileHandle;
 use File::Spec;
+use URI::Escape;
 
 ## global/default values    
 my $DEFAULT_SEQ_CLASS = '';
@@ -275,6 +276,8 @@ my $FEAT_TYPE_MAP = {
     'three_prime_utr' => 'three_prime_UTR',
     'five_prime_utr' => 'five_prime_UTR',
     'gap' => 'gap',
+    'pseudogene' => 'pseudogene',
+    'contig' => 'contig',
 };
 
 # list of types that are allowed for the mRNA; must be a subset of those
@@ -677,17 +680,17 @@ sub parse_record {
         die("unknown value ($cols[6]) in strand column on line $linenum: expected '+', '-', or '.'.");
     }
 
-    $record->{'_seqid'}     = $cols[0];
-    $record->{'_source'}    = $cols[1];
-    $record->{'_type'}      = $cols[2];
+    $record->{'_seqid'}     = uri_unescape($cols[0]);
+    $record->{'_source'}    = uri_unescape($cols[1]);
+    $record->{'_type'}      = uri_unescape($cols[2]);
+
+    # URI-unescaping should not be necessary for these columns:
     $record->{'_start'}     = $cols[3];
     $record->{'_end'}       = $cols[4];
     $record->{'_score'}     = $cols[5];
     $record->{'_strand'}    = $cols[6];
     $record->{'_phase'}     = $cols[7];
 
-    # TODO - URL-unescape the columns that might require it
-    
     # swap start/end if necessary
     if ($record->{'_start'} > $record->{'_end'}) {
         $logger->warn("start > end on line $linenum, $cols[8]");
@@ -707,11 +710,13 @@ sub parse_record {
     my @attribs = split(";", $cols[8]);
     foreach my $attrib(@attribs) {
         my ($type, $val) = split("=", $attrib);
+        $type = uri_unescape($type);
+
         if (defined($unescaped_comma_atts->{$type})) {
             # treat $val as a single value, but other parts of the code assume that all attribute values are in lists
-            $record->{$type}=[$val];
+            $record->{$type}=[uri_unescape($val)];
         } else {
-            my @vals = split(",", $val);
+            my @vals = map { uri_unescape($_) } split(",", $val);
             $record->{$type}=\@vals;
         }
     }
