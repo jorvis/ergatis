@@ -23,7 +23,7 @@
 #  -all sequences/features belong to 1 genome, the one named by --organism param
 
 # TODO
-#  -generalize to regular GFF
+#  -generalize to regular GFF?
 #  -add a strict mode in which deviations from the GFF3/canonical gene spec. are reported
 #   -see http://www.sequenceontology.org/gff3.shtml
 #  -if --use_cds_parent_ids is in effect the script should check that the CDS features under each mRNA are
@@ -35,6 +35,9 @@
 #  -create Research/Analysis elements for computed elements in the BSML (add gene_model analysis param?)
 #  -add --ref_seq_type param? change name of --default_seq_class param
 #  -need a way to specify which features get linked to Analyses in the <Research> section
+#  -replace die with logdie where permissible
+#  -make --insert_polypeptides work in the presence of alternate splicing
+#   (so long as --inserted_polypeptide_id_type=CDS)
 
 =head1 NAME
 
@@ -70,6 +73,7 @@ gff32bsml.pl
          --feat_xref_mappings='ID:mydb:accession,Name:mydb:pub_locus'
          --seq_xref_mappings='ID:mydb:seq_id'
          --atts_with_unescaped_commas='ID,Name'
+         --allow_genes_with_no_cds
          --log=/path/to/some.log
          --debug=4
          --help
@@ -82,20 +86,23 @@ B<--input, -g>
 
 B<--peptide_fasta, -e>
     optional.  path to a multi-FASTA file containing the polypeptides for the genes in the GFF file.
-    if this argument is supplied then the named file _must_ contain all of the polypeptides/proteins
-    in the input GFF file.
+    if this argument is supplied then the named file _must_ contain all the sequences for the 
+    polypeptide/protein features in the input GFF file, _except_ those that appear in the ##FASTA
+    section of the GFF file.
 
 B<--peptide_id_regex>
-    optional.  regular expression used to parse peptide unique id from FASTA deflines in --peptide_fasta.
+    optional.  regular expression used to parse peptide unique id from FASTA deflines in --peptide_fasta
+    and the FASTA section of the GFF file itself.  in the latter case, the regular expression must NOT
+    match any non-peptide ids, otherwise --peptide_id_prefix and --peptide_id_suffix may be misapplied.
     default = ^>(\S+)
 
 B<--peptide_id_prefix>
     optional. prefix to prepend to the id parsed by --peptide_id_regex to produce the polypeptide ID 
-    used in the GFF file.
+    used by the corresponding GFF feature.
 
 B<--peptide_id_suffix>
     optional. suffix to append to the id parsed by --peptide_id_regex to produce the polypeptide ID 
-    used in the GFF file.
+    used by the corresponding GFF feature.
 
 B<--peptide_no_seqdata>
     do not create Seq-data or Seq-data-import entries for the polypeptide sequences; use --peptide_fasta,
@@ -104,23 +111,26 @@ B<--peptide_no_seqdata>
 B<--dna_fasta>
     optional.  path to a multi-FASTA file containing the DNA sequences for the reference sequences
     in the GFF file.  if this argument is supplied then the named file _must_ contain all of the 
-    reference sequences in the input GFF file.
+    sequences for the genomic sequence features in the input GFF file, _except_ those that appear
+    in the ##FASTA section of the GFF file.
 
 B<--dna_id_regex>
     optional.  regular expression used to parse the sequence unique id from FASTA deflines in 
-    --dna_fasta.   default = ^>(\S+)
+    --dna_fasta and the FASTA section of the GFF file itself.  in the latter case, the regular 
+    expression must NOT match any non-peptide ids, otherwise --dna_id_prefix and --dna_id_suffix 
+    may be misapplied..   default = ^>(\S+)
 
 B<--dna_id_prefix>
     optional. prefix to prepend to the id parsed by --dna_id_regex to produce the sequence ID 
-    used in the GFF file.
+    used by the corresponding GFF feature.
 
 B<--dna_id_suffix>
     optional. suffix to append to the id parsed by --dna_id_regex to produce the sequence ID 
-    used in the GFF file.
+    used by the corresponding GFF feature.
 
 B<--dna_no_seqdata>
     do not create Seq-data or Seq-data-import entries for the DNA/reference sequences; use --dna_fasta,
-    if specified, only to determine the sequence length(s).
+    if specified, or the sequences present in the GFF file, only to determine the sequence length(s).
 
 B<--gene_type>
     optional.  specifies a SO type in the input GFF file that should be replaced with "gene".  this can
@@ -194,6 +204,13 @@ B<--atts_with_unescaped_commas>
     a single value and will parse it as though the commas embedded in the value had been correctly 
     URL-escaped.
 
+B<--allow_genes_with_no_cds>
+    optional.  normally the script expects that any non-protein-coding gene will either: 1. be assigned
+    an explicit SO type of 'pseudogene' instead of 'gene' or 2. have a non-coding RNA SO type at the
+    transcript level (e.g., ncRNA, tRNA, etc.)  therefore if the script is running with --insert_polypeptides
+    and finds a gene for which neither of these things are true, it will fail with an error if the gene
+    lacks a CDS.  use this flag to permit the conversion to continue with a warning instead.
+
 B<--log,-l>
     optional.  path to a log file the script should create.  will be overwritten if
     it already exists.
@@ -248,6 +265,7 @@ use URI::Escape;
 my $DEFAULT_SEQ_CLASS = '';
 my $DEFAULT_PEPTIDE_ID_REGEX = '^>(\S+)';
 my $DEFAULT_DNA_ID_REGEX = '^>(\S+)';
+my $GFF_SEQID_REGEX = '^(>\S.*)';
 my $GLOBAL_ID_COUNTER = 0;
 my $NODES = {};
 # mapping from GFF sequence id to BSML sequence id.  these need not be the same.
@@ -263,6 +281,7 @@ my $FEAT_TYPE_MAP = {
     'exon' => 'exon',
     'intron' => 'intron',
     'mRNA' => 'transcript',               
+    'transcript' => 'transcript',               
     'miRNA' => 'miRNA',
     'protein' => 'polypeptide',
     'polypeptide' => 'polypeptide',
@@ -278,6 +297,7 @@ my $FEAT_TYPE_MAP = {
     'gap' => 'gap',
     'pseudogene' => 'pseudogene',
     'contig' => 'contig',
+    'supercontig' => 'supercontig',
 };
 
 # list of types that are allowed for the mRNA; must be a subset of those
@@ -292,6 +312,15 @@ my $MRNA_TYPES = {
     'rRNA' => 1,
 };
 # TODO - add all posible mRNA types from SO?
+
+my $NONCODING_RNA_TYPES = {
+    'miRNA' => 1,
+    'tRNA' => 1,
+    'ncRNA' => 1,
+    'snoRNA' => 1,
+    'snRNA' => 1,
+    'rRNA' => 1,
+};
 
 ## input/options
 my $options = {};
@@ -323,6 +352,7 @@ my $results = GetOptions($options,
                          'feat_xref_mappings|x=s',
                          'seq_xref_mappings=s',
                          'atts_with_unescaped_commas=s',
+                         'allow_genes_with_no_cds',
                          'log|l=s',
                          'debug|d=i',
                          'help|h',
@@ -355,10 +385,10 @@ my($genus, $species) = ($options->{'organism'} =~ /^(\S+) (.*)$/);
 
 ## parse peptide FASTA (optional)
 my $peptides = undef;
+my $pep_prefix = $options->{'peptide_id_prefix'};
+my $pep_suffix = $options->{'peptide_id_suffix'};
 
 if (defined($options->{'peptide_fasta'})) {
-    my $pep_prefix = $options->{'peptide_id_prefix'};
-    my $pep_suffix = $options->{'peptide_id_suffix'};
     my $pep_id_fn = sub {
         my($id) = @_;
         my $new_id = (defined($pep_prefix)) ? $pep_prefix . $id : $id;
@@ -370,10 +400,10 @@ if (defined($options->{'peptide_fasta'})) {
 
 ## parse genomic DNA FASTA (optional)
 my $dna_seqs = undef;
+my $dna_prefix = $options->{'dna_id_prefix'};
+my $dna_suffix = $options->{'dna_id_suffix'};
 
 if (defined($options->{'dna_fasta'})) {
-    my $dna_prefix = $options->{'dna_id_prefix'};
-    my $dna_suffix = $options->{'dna_id_suffix'};
     my $dna_id_fn = sub {
         my($id) = @_;
         my $new_id = (defined($dna_prefix)) ? $dna_prefix . $id : $id;
@@ -386,6 +416,7 @@ if (defined($options->{'dna_fasta'})) {
 ## parse GFF
 open (IN, $options->{'input'}) || die "couldn't open input file '$options->{input}'";
 my $lnum = 0;
+my $found_fasta_header = 0;
 
 while (<IN>) {
     chomp;
@@ -393,6 +424,7 @@ while (<IN>) {
     
     # fasta-format sequences
     if (/^>/ || /^\#.*fasta.*/i) {
+        $found_fasta_header = 1;
         last;
     }
     # ignore blank lines and those beginning with '#'
@@ -413,6 +445,46 @@ while (<IN>) {
         }
     }
 }
+
+# write FASTA sequences from GFF directly to an external file
+my $gff_seqs = undef;
+my $gff_seq_file = undef;
+
+if ($found_fasta_header) {
+    $gff_seq_file = $options->{'output'} . ".fsa";
+    $logger->logdie("$gff_seq_file already exists; please remove it and rerun") if (-e $gff_seq_file);
+    my $ffh = FileHandle->new();
+    $ffh->open(">$gff_seq_file") || die "";
+    while (my $line = <IN>) {
+        $ffh->print($line);
+    }
+    $ffh->close();
+
+    my $pep_regex = $options->{'peptide_id_regex'};
+    my $dna_regex = $options->{'dna_id_regex'};
+
+    # then parse that file back to get the sequences
+    my $gff_seqid_fn = sub {
+        my($id) = @_;
+
+        if (($pep_regex ne $DEFAULT_PEPTIDE_ID_REGEX) && ($id =~ /$pep_regex/)) {
+            my $new_id = (defined($pep_prefix)) ? $pep_prefix . $1 : $1;
+            $new_id .= $pep_suffix if (defined($pep_suffix));
+            return $new_id;    
+        }
+        elsif (($dna_regex ne $DEFAULT_DNA_ID_REGEX) && ($id =~ /$dna_regex/)) {
+            my $new_id = (defined($dna_prefix)) ? $dna_prefix . $1 : $1;
+            $new_id .= $dna_suffix if (defined($dna_suffix));
+            return $new_id;    
+        }
+
+        # default
+        my ($new_id) = ($id =~ /^>(\S+)/);
+        return $new_id; 
+    };
+    $gff_seqs = &read_sequence_lengths($gff_seq_file, $GFF_SEQID_REGEX, $gff_seqid_fn);
+}
+
 close IN;
 
 # populate children for each record
@@ -547,7 +619,7 @@ foreach my $root (@{$gene_nodes}) {
 
         my $features = {};
         process_node($root, $features);
-        gene_feature_hash_to_bsml($NODES, $features, $peptides, $dna_seqs, $root->{'_seqid'});
+        gene_feature_hash_to_bsml($NODES, $features, $gff_seqs, $peptides, $dna_seqs, $root->{'_seqid'});
     }
 }
 
@@ -887,7 +959,7 @@ sub get_parent_id_by_type {
 
 # convert a gene feature hash into BSML
 sub gene_feature_hash_to_bsml {
-    my ($nodes, $features, $peptides, $dna_seqs, $seq_id) = @_;
+    my ($nodes, $features, $gff_seqs, $peptides, $dna_seqs, $seq_id) = @_;
     
     my $id_hash = {};
     my %id_counts;
@@ -921,8 +993,24 @@ sub gene_feature_hash_to_bsml {
         }
 
         my $dseq = undef;
-        if (defined($dna_seqs)) {
+        my $dseq_file = undef;
+
+        if (defined($dna_seqs) || defined($gff_seqs)) {
             $dseq = $dna_seqs->{$seq_id};
+            $dseq_file = $options->{'dna_fasta'};
+            my $dseq_i = defined($gff_seqs) ? $gff_seqs->{$seq_id} : undef;
+
+            # look in both --dna_fasta and the file containing the sequences from the GFF itself
+            if (defined($dseq) && defined($dseq_i)) {
+                $logger->logdie("ambiguous sequence id: '$seq_id' was found in both the input GFF and --dna_fasta");
+            }
+
+            # use the sequence from the GFF if --peptide_fasta does not define one
+            if (!defined($dseq)) {
+                $dseq = $dseq_i;
+                $dseq_file = $gff_seq_file;
+            }
+
             die "couldn't find DNA sequence for $seq_id" if (!defined($dseq));
             $gff_seqlen = $dseq->{'seqlen'};
         }
@@ -941,7 +1029,7 @@ sub gene_feature_hash_to_bsml {
 
         if (defined($dseq)) {
             if (!$options->{'dna_no_seqdata'}) {
-                my $path = File::Spec->rel2abs($options->{'dna_fasta'});
+                my $path = File::Spec->rel2abs($dseq_file);
                 my $seq_data_import_elem = $doc->createAndAddSeqDataImport($seq, 'fasta', $path, undef, $dseq->{'bsml_identifier'});
             }
             $doc->createAndAddBsmlAttribute($seq, 'defline', $dseq->{'defline'});
@@ -1010,10 +1098,14 @@ sub gene_feature_hash_to_bsml {
     }
 
     my $get_singleton_feat = sub {
-        my($type) = @_;
+        my($type, $return_arrays) = @_;
         my @feats = values %{$features->{$type}};
         my @ids = keys %{$features->{$type}};
         my $nf = scalar(@feats);
+        # not using wantarray because the return value is always an array/pair
+        if ($return_arrays) {
+            return (\@ids, \@feats);
+        }
         if ($nf != 1) {
             print Dumper $features;
             die "unable to find unique $type feature associated with $seq_id ($nf $type feature(s) found)";
@@ -1025,30 +1117,75 @@ sub gene_feature_hash_to_bsml {
     my $pep_type = $FEAT_TYPE_MAP->{'polypeptide'};
     my $added_pep = 0;
     if ($options->{'insert_polypeptides'} && (!defined($id_counts{$pep_type}))) {
-        my $id_type = $options->{'inserted_polypeptide_id_type'};
-        my($cds_id, $cds) = &$get_singleton_feat($cds_type);
         my($gene_id, $gene) = &$get_singleton_feat('gene');
-        my($trans_id, $trans) = &$get_singleton_feat('transcript');
-        my $pep_id = undef;
-        if ($id_type eq 'gene') {
-            $pep_id = $gene_id . '-Protein';
-        } elsif ($id_type eq $cds_type) {
-            $pep_id = $cds_id . '-Protein';
-        } else { # mrna/transcript
-            $pep_id = $trans_id . '-Protein';
+        my($trans_ids, $transs) = &$get_singleton_feat('transcript', 1);
+
+        # check whether this is a protein-coding gene
+        my $is_protein_coding = 1;
+        my $nc_mrna_type = undef;
+        my $nc_mrna_count = 0;
+
+        if (scalar(@$trans_ids) == 0) { 
+            foreach my $mrna_type (keys %$NONCODING_RNA_TYPES) {
+                my($ids, $ts) = &$get_singleton_feat($mrna_type, 1);
+                if (scalar(@$ids) == 1) {
+                    $nc_mrna_type = $mrna_type;
+                    ++$nc_mrna_count;
+                }
+            }
+            if ($nc_mrna_count == 1) {
+                $is_protein_coding = 0;
+            } else {
+                die "gene $gene_id may be noncoding but has $nc_mrna_count noncoding mRNA feature(s)";
+            }
+        } elsif (scalar(@$trans_ids) > 1) {
+                die "gene $gene_id has multiple mRNA feature(s)";
         }
 
-        $features->{$pep_type}->{$pep_id} = {
-            'parent' => [ $cds_id ],
-            'type' => $pep_type,
-            'startpos' => $cds->{'startpos'},
-            'endpos' => $cds->{'endpos'},
-            'complement' => $cds->{'complement'},
-            # TODO - propagation of cross-references to automatically-inserted features should be optional:
-            '_record' => $cds->{'_record'},
-        };
-        $added_pep = 1;
-    } 
+        my($trans_id, $trans) = ($trans_ids->[0], $transs->[0]);
+
+        if ($is_protein_coding) {
+            my($cds_ids, $cdss) = &$get_singleton_feat($cds_type, 1);
+            if (scalar(@$cds_ids) > 1) {
+                $logger->logdie("gene $gene_id has multiple CDS feature(s) after merging");
+            } 
+            # not protein coding after all (or an error)
+            elsif (scalar(@$cds_ids) == 0) {
+                my $msg = "gene $gene_id has no CDS feature and it does not appear to be an RNA gene";
+                if ($options->{'allow_genes_with_no_cds'}) { 
+                    $logger->warn($msg); 
+                    $is_protein_coding = 0;
+                }
+                else { 
+                    $logger->logdie($msg); 
+                }
+            }
+
+            if ($is_protein_coding) {
+                my($cds_id, $cds) = ($cds_ids->[0], $cdss->[0]);
+                my $pep_id = undef;
+                my $id_type = $options->{'inserted_polypeptide_id_type'};
+                if ($id_type eq 'gene') {
+                    $pep_id = $gene_id . '-Protein';
+                } elsif ($id_type eq $cds_type) {
+                    $pep_id = $cds_id . '-Protein';
+                } else { # mrna/transcript
+                    $pep_id = $trans_id . '-Protein';
+                }
+                
+                $features->{$pep_type}->{$pep_id} = {
+                    'parent' => [ $cds_id ],
+                    'type' => $pep_type,
+                    'startpos' => $cds->{'startpos'},
+                    'endpos' => $cds->{'endpos'},
+                    'complement' => $cds->{'complement'},
+                    # TODO - propagation of cross-references to automatically-inserted features should be optional:
+                    '_record' => $cds->{'_record'},
+                };
+                $added_pep = 1;
+            }
+        }
+    }
 
     foreach my $type(keys(%{$features})) {
         foreach my $feat_id(keys(%{$features->{$type}})) {
@@ -1065,22 +1202,35 @@ sub gene_feature_hash_to_bsml {
                 my $feat_title = ($feat_id =~ /temp_id/) ? undef : $feat_id;
                 my $feat = $doc->createAndAddFeature( $feat_table, $id, $feat_title, $type);
 
-                # link polypeptides to Sequences in --peptide_fasta
-                if (($type eq 'polypeptide') && defined($peptides)) {
+                # link polypeptides to Sequences in --peptide_fasta or the input GFF file
+                if (($type eq 'polypeptide') && (defined($peptides) || defined($gff_seqs))) {
                     my $fseq = $peptides->{$feat_id};
+                    my $fseq_file = $options->{'peptide_fasta'};
+                    my $fseq_i = defined($gff_seqs) ? $gff_seqs->{$feat_id} : undef;
+
+                    # look in both --peptide_fasta and the file containing the sequences from the GFF itself
+                    if (defined($fseq) && defined($fseq_i)) {
+                        $logger->logdie("ambiguous sequence id: '$feat_id' was found in both the input GFF and --peptide_fasta");
+                    }
+
+                    # use the sequence from the GFF if --peptide_fasta does not define one
+                    if (!defined($fseq)) {
+                        $fseq = $fseq_i;
+                        $fseq_file = $gff_seq_file;
+                    }
 
                     if (!defined($fseq)) {
                         if ($added_pep) {
-                            $logger->warn("couldn't find peptide sequence for $feat_id");
+                            $logger->warn("couldn't find peptide sequence for '$feat_id'");
                         } else {
-                            die "couldn't find peptide sequence for $feat_id";
+                            die "couldn't find peptide sequence for '$feat_id'";
                         }
                     } else {
                         my $pep_seq = $doc->createAndAddSequence($id . "_seq", undef, $fseq->{'seqlen'}, 'aa', 'polypeptide');
                         my $seq_genome_link = $doc->createAndAddLink($pep_seq, 'genome', '#' . $genome_id);
                         my $feat_seq_link = $doc->createAndAddLink($feat, 'sequence', '#'.$id.'_seq');
                         if (!$options->{'peptide_no_seqdata'}) {
-                            my $path = File::Spec->rel2abs($options->{'peptide_fasta'});
+                            my $path = File::Spec->rel2abs($fseq_file);
                             my $seq_data_import_elem = $doc->createAndAddSeqDataImport($pep_seq, 'fasta', $path, undef, $fseq->{'bsml_identifier'});
                         }
                         $doc->createAndAddBsmlAttribute($pep_seq, 'defline', $fseq->{'defline'});
