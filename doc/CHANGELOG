@@ -1,5 +1,6 @@
 next
 ----
+-genewise2bsml.pl: Changed CDS class names going into bsml from 'cds' to 'CDS'
 -prok_pipeline: fixed typo of lipoprotein -> Lipoprotein for parse_evidence.lipoprotein $;EVIDENCE_TYPE$; in template
 -prok_pipeline: removed hmmpfam RFAM config and also fixed consistency in config files with current release
 -parse_evidence and p_func: added to correct section of the install file (previously only in _last section)
