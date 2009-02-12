@@ -211,8 +211,8 @@ sub parseGenewiseData {
 
         } elsif ($type_id eq 'cds') {
 
-            # if this is a 'cds' we'll add a 'cds' and 'exon'
-            foreach my $type ('exon', 'cds') {
+            # if this is a 'cds' we'll add a 'CDS' and 'exon'
+            foreach my $type ('exon', 'CDS') {
                 my $featid = $idMaker->next_id ('type' => $type, 'project' => $project );
                 $tmp->addFeature($featid, $start, $end, $strand, $type);
             }
