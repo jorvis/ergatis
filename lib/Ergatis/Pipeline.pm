@@ -50,7 +50,7 @@ umask(0000);
     my %_attributes = (
                         path  => undef,
                         id    => undef,
-                        debug => 1,
+                        debug => 0,
                         debug_file => '/tmp/ergatis.run.debug',
                       );
 
