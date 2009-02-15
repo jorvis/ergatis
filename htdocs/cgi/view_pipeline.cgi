@@ -110,9 +110,10 @@ if ( -e $comment_file ) {
         $pipeline_comment .= $_;
     }
 }
-my $pipelinelog;
-if(-e "$file.log"){
-$pipelinelog = "$file.log";
+
+my $pipelinelog = '';
+if (-e "$file.log") {
+    $pipelinelog = "$file.log";
 }
 
 $tmpl->param( PIPELINE_FILE       => $file );
