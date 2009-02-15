@@ -50,7 +50,7 @@ umask(0000);
     my %_attributes = (
                         path  => undef,
                         id    => undef,
-                        debug => 0,
+                        debug => 1,
                         debug_file => '/tmp/ergatis.run.debug',
                       );
 
@@ -99,18 +99,18 @@ umask(0000);
                 mkdir $pipeline_scripts_dir || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
             }
 
-            # make a subdirectory for this pipelineid
+            # make a subdirectory for this pipelineid if doing data placement
             if (!$args{ergatis_cfg}->val('grid', 'vappio_data_placement')){
                 $run_dir .= '/' . $self->id;
                 
                 if (! -d $run_dir) {
                     mkdir $run_dir || croak "failed to create workflow_run_dir: $run_dir : $!";
                 }
-	    }
-	} 
-	else {
-	    croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
-	}
+            }
+            
+	    } else {
+                croak "Invalid workflow_run_dir (doesn't exist) in ergatis.ini: $run_dir";
+        }
         
         if (! -e $args{ergatis_cfg}->val('paths','workflow_log4j') ) {
             croak "Invalid workflow_log4j in ergatis.ini : " . $args{ergatis_cfg}->val('paths','workflow_log4j');
@@ -138,6 +138,8 @@ umask(0000);
                 
                 ##debug
                 print $debugfh "debug init\n" if $self->{debug};
+                
+                print $debugfh "attempting to chdir to $run_dir\n" if $self->{debug};
                 
                 chdir $run_dir || croak "Can't change to running directory $run_dir\n";
                 use POSIX qw(setsid);
