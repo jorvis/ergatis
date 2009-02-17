@@ -121,6 +121,7 @@ use Pod::Usage;
 use Ergatis::Logger;
 use Data::Dumper;
 use IPC::Open3;
+use POSIX ":sys_wait_h";
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -592,13 +593,14 @@ sub runProg {
     print " running [$cmd]\n" if($debug > 2);
 
     #Run the command and store it's std out and err and exitval.
-    open3(undef, \*STD, \*ERR, $cmd);
+    my $pid = open3(undef, \*STD, \*ERR, $cmd);
     my $exitVal = $? << 8;
     $retval->{exitVal} = $exitVal;
     $retval->{std} = [<STD>];
     $retval->{err} = [<ERR>];
     $retval->{cmd} = $cmd;
-
+    waitpid($pid, 0);
+    
     #Print the std out to a file.  The output file.  If it exists, concatenate, otherwise
     #just make it.
     my $openOut = "> $outputFile";
