@@ -103,6 +103,11 @@ Note that parental relationships (via is_a) are not defined for deleted or trans
 This is because the parent entries may be completely removed from the collection, as was done
 with 3.4.4.-
 
+The enzyme.dat file can define multiple synonyms within a stanza that are only different by
+alphabetic case.  This causes the non-case-sensitive indexes in MySQL to fail when loading these
+into an ontology, so I do a case-insensitive comparison of synonyms within a stanza and only
+keep the first one where there are duplicates.
+
 =head2 Name value modifications
 
 Because the Chado schema restricts cvterm.name to be unique within a given controlled
@@ -377,6 +382,19 @@ for my $term ( @{$ontology->get_terms()} ) {
    $ontology->create_rel( $term, 'is_a', $parent_term );
 }
 
+open(my $ofh, ">$options{output_file}") || die "failed to create output file: $!";
+
+$ontology->export( $ofh );
+
+exit(0);
+
+
+sub _log {
+    my $msg = shift;
+
+    print $logfh "$msg\n" if $logfh;
+}
+
 sub parent_ec_num {
     my $child = shift;
     my $parent;
@@ -409,21 +427,6 @@ sub parent_ec_num {
     
     return $parent;
 }
-
-open(my $ofh, ">$options{output_file}") || die "failed to create output file: $!";
-
-$ontology->export( $ofh );
-
-exit(0);
-
-
-sub _log {
-    my $msg = shift;
-
-    print $logfh "$msg\n" if $logfh;
-}
-
-
 sub check_parameters {
     my $options = shift;
     
@@ -496,9 +499,14 @@ sub add_enzyme_to_obo {
     }
     
     ## handle synonyms
+    my %uniq_syns;
+    
     if ( defined $$atts{an} ) {
         for my $syn_str ( @{$$atts{an}} ) {
-            $term->synonym_as_string( $syn_str, "[]", 'RELATED' );
+            if ( ! exists $uniq_syns{ lc($syn_str) } ) {
+                $uniq_syns{ lc($syn_str) } = 1;
+                $term->synonym_as_string( $syn_str, "[]", 'RELATED' );
+            }
         }
     }
     
