@@ -133,7 +133,11 @@ unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
 }
 
 ## now redirect to a monitor page
-print $q->redirect( -uri => url_dir_path($q) . "view_pipeline.cgi?instance=" . $pipeline->path() );
+if ( $$qvars{skip_instantiation} == 0 || $$qvars{skip_run} == 0 ) {
+    print $q->redirect( -uri => url_dir_path($q) . "view_pipeline.cgi?instance=" . $pipeline->path() );
+} else {
+    print $q->header( type => 'text/html' );
+}
 
 exit(0);
 
