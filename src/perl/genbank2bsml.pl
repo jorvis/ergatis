@@ -65,8 +65,8 @@ foreach my $class (keys %fsa_files) {
 
 #tag count info
 print "\nTag Counts:\n";
-foreach (sort { $TagCount{$b} <=> $TagCount{$a} } keys %TagCount) {
-    print "  $_: ".$TagCount{$_}."\n";
+foreach my $tc (sort { $TagCount{$b} <=> $TagCount{$a} } keys %TagCount) {
+    print "  $tc: ".$TagCount{$tc}."\n";
 }
 
 #
@@ -145,7 +145,7 @@ sub parse_options {
     }
 
     print "Executing $0 with options\n";
-    foreach (keys %options) { print "  $_: $options{$_}\n";}
+    foreach my $o (keys %options) { print "  $o: $options{$o}\n";}
 
     return %options;
 }
@@ -458,8 +458,8 @@ sub parse_genbank_file {
         foreach my $tag ($feat_object->get_all_tags() ) {
         if ($tag eq "db_xref") {
             # Assuming the possiblity of multiple tags of the same database
-            foreach ($feat_object->get_tag_values($tag)) {
-            push(@{$gbr{'Features'}->{$fg_name}->{$feature_id}->{db_xrefs}}, $_);
+            foreach my $tv ($feat_object->get_tag_values($tag)) {
+            push(@{$gbr{'Features'}->{$fg_name}->{$feature_id}->{db_xrefs}}, $tv);
             }
         }
 	# bug 5338 add gene_product_name and comments as shared or individual
@@ -849,8 +849,8 @@ sub to_bsml {
         }
       }
 
-      foreach ('CDS', 'exon') {
-	foreach my $featref (@{$bsml_featref{$_}}) {
+      foreach my $t ('CDS', 'exon') {
+	foreach my $featref (@{$bsml_featref{$t}}) {
 	  addFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	}
       }
@@ -867,8 +867,8 @@ sub to_bsml {
       }
       my $gene_elem = &addFeature($bsml_featref{gene}->[0], $doc, $genome_id, $feature_table_elem, $feature_group_elem);
       my $tRNA_elem = &addFeature($bsml_featref{tRNA}->[0], $doc, $genome_id, $feature_table_elem, $feature_group_elem);
-      foreach ('exon') {
-	foreach my $featref (@{$bsml_featref{$_}}) {
+      foreach my $t ('exon') {
+	foreach my $featref (@{$bsml_featref{$t}}) {
 	  addFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	}
       }
@@ -885,8 +885,8 @@ sub to_bsml {
       my $gene_elem = &addFeature($bsml_featref{gene}->[0], $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 
       # add multiples
-      foreach ('rRNA', 'exon') {
-	foreach my $featref (@{$bsml_featref{$_}}) {
+      foreach my $t ('rRNA', 'exon') {
+	foreach my $featref (@{$bsml_featref{$t}}) {
 	  addFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
 	}
       }
@@ -1135,8 +1135,8 @@ sub has_a_featref {
   my $bsml_featref = shift;
   my @feat_keys = @_;
 
-  foreach (@feat_keys) {
-    return 1 if (@{$bsml_featref->{$_}} > 0);
+  foreach my $fk (@feat_keys) {
+    return 1 if (@{$bsml_featref->{$fk}} > 0);
   }
   return 0;
 }
@@ -1147,8 +1147,8 @@ sub has_all_featrefs {
   my $bsml_featref = shift;
   my @feat_keys = @_;
 
-  foreach (@feat_keys) {
-    return 0 if (@{$bsml_featref->{$_}} == 0);
+  foreach my $fk (@feat_keys) {
+    return 0 if (@{$bsml_featref->{$fk}} == 0);
   }
   return 1;
 }
@@ -1307,8 +1307,8 @@ sub addFeature {
     # add gene_product_name, comment (others) (which may have been derived from feature_group: bug 5338)
     if (defined($featref->{attributes})) {
       foreach my $attribute (keys %{$featref->{attributes}}) {	
-	foreach (@{$featref->{attributes}->{$attribute}}) {
-	  $doc->createAndAddBsmlAttribute($feature_elem, $attribute, $_)
+	foreach my $att (@{$featref->{attributes}->{$attribute}}) {
+	  $doc->createAndAddBsmlAttribute($feature_elem, $attribute, $att)
 	}  
       }      
     }
@@ -1317,11 +1317,11 @@ sub addFeature {
     # list of database names taken from http://www.geneontology.org/doc/GO.xrf_abbs
     # list of databases in genbank records: http://www.ncbi.nlm.nih.gov/collab/db_xref.html
     if (defined($featref->{db_xrefs})) {
-    foreach (@{$featref->{db_xrefs}}) {
+    foreach my $dbx (@{$featref->{db_xrefs}}) {
         # print "\tdb_xref\t$_\n";
         # new usage convention is everything up to the first : is db, everything after (including :) is id
         # see bug #3278 comment #3 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3278#c3
-        ($_ =~ /([^:]*):(.*)/) || die "Unable to parse database and identifier from db_xref ($_)";
+        ($dbx =~ /([^:]*):(.*)/) || die "Unable to parse database and identifier from db_xref ($dbx)";
         my $database = $1;
         my $identifier = $2;
 
@@ -1507,8 +1507,8 @@ sub copy_featref {
     my $newfeat;
     my $featref = shift;
     my $class = shift;
-    foreach (keys %{$featref}) {
-    $newfeat->{$_} = $featref->{$_};
+    foreach my $fr(keys %{$featref}) {
+    $newfeat->{$fr} = $featref->{$fr};
     }
 
     if (defined($class)) {
