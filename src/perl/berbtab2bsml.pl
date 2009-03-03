@@ -72,6 +72,7 @@ use BSML::BsmlParserTwig;
 use Ergatis::IdGenerator;
 
 my %lookupDb;
+my %lookupProtDb;
 my %options = ();
 my $gzip = 0;
 my $results = GetOptions (\%options, 
@@ -121,6 +122,7 @@ my $files = &get_btab_files($options{'btab_dir'},$options{'btab_file'});
 my $doc = new BSML::BsmlBuilder();
 my %featTables;
 my $idGenerator;
+my $num_seqs_added = 0;
 
 $doc->makeCurrentDocument();
 parse_ber_btabs($files);
@@ -139,14 +141,18 @@ sub parse_ber_btabs {
     my $btab_files = shift;
     my $num;
     foreach my $file (@$btab_files) {
+
         $num++; 
         open (BTAB, "$file") or die "Unable to open \"$file\" due to $!";
         $logger->debug("opening $file $num using pvalue cutoff $options{'pvalue'}") if($logger->is_debug());
         my $query_id;
 
+        my $count = 0;
+
         while(my $line = <BTAB>) {
             chomp($line);
             my @btab = split("\t", $line);
+            $count++;
 
             #if we don't pass the pvalue cutoff
             next if($btab[20] > $options{'pvalue'} );
@@ -207,6 +213,25 @@ sub parse_ber_btabs {
         if ($query_id) {
             my $seq = $doc->returnBsmlSequenceByIDR($query_id);
         }
+
+
+        #unfortunately, if the input btab doesn't have any hits, we don't know
+        #which CDS was run (which means we don't know the parent sequence either).
+        #But we have to add a sequence. This is a hack.
+        if( $count == 0 ) {
+            my $base = $1 if( $file =~ m|^.*/([^/]+)| );
+            my $polypeptide = $1 if( $base =~ /([^\.]+\.polypeptide\.\d+(\.\d+)?)/ );
+
+            #does it exist in the lookup? (means that it's a valid sequence id)
+            if( exists( $lookupProtDb{$polypeptide} ) ) {
+                &addSequenceElement( $polypeptide, 'aa', 'polypeptide' );
+            } else {
+                print "file: $file\n";
+                print "base: $base\n";
+                print "prot: $polypeptide\n";
+                die("No hits in the btab and could not parse polypeptide name from file name");
+            }
+        }
     }
 }
 
@@ -217,7 +242,7 @@ sub get_btab_files{
 	opendir(DIR, $directory) or die "Unable to access $directory due to $!";
 	while( my $filename = readdir(DIR)) {
 	    if($filename =~ /(.+)\.btab$/) {
-		push (@files, "$directory/$filename");
+            push (@files, "$directory/$filename");
 	    }
 	}
     }
@@ -241,7 +266,7 @@ sub check_parameters{
     } 
 
     unless($options{'mapping_file'}) {
-        $logger->logdie("mapping_file option is requred.");
+        $logger->logdie("mapping_file option is required.");
     } else {
         $logger->logdie("Mapping_file ($options{mapping_file} does not exist")
             unless(-e $options{'mapping_file'});
@@ -250,6 +275,7 @@ sub check_parameters{
         while( my ($prot, $cds, $asm) = split(/\t/, <IN>) ) {
             chomp($asm);
             $lookupDb{$cds} = $asm;
+            $lookupProtDb{$prot} = $asm;
         }
 
         close(IN);
@@ -264,6 +290,16 @@ sub check_parameters{
     $idGenerator->set_pool_size( 'frameshift_mutation' => 25 );
 
     return 1;
+}
+
+sub addSequenceElement {
+    my ($seqId, $mol, $type) = @_;
+    
+    #Check to see if the sequence has already been added.
+    unless( $doc->returnBsmlSequenceByIDR( $seqId ) ){
+	    my $seq = $doc->createAndAddSequence( $seqId, $seqId, '', $mol, $type );
+		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+    }
 }
 
 sub createAndAddFrameshift {
@@ -281,11 +317,8 @@ sub createAndAddFrameshift {
     #Parse out the project id
     my $project = $1 if($seqId =~ /^([^\.]+)\./);
     
-    #Check to see if the sequence has already been added.
-    unless( $doc->returnBsmlSequenceByIDR( $seqId ) ){
-	    $seq = $doc->createAndAddSequence( $seqId, $seqId, '', 'na', 'assembly' );
-		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
-    }
+    #will add the sequence element if it doesn't already exist
+    &addSequenceElement( $seqId, 'na', 'assembly' );
 
     #Check to see if said sequence object has a feature table object
     unless(exists($featTables{$seqId})) {
@@ -333,26 +366,26 @@ sub createAndAddBtabLine {
     my $alignment_pair = '';
     if( $alignment_pair_list )
     {
-	$alignment_pair = $alignment_pair_list->[0];
+        $alignment_pair = $alignment_pair_list->[0];
     }
 
     if( $alignment_pair  )
-	  {
+    {
 	    #add a new BsmlSeqPairRun to the alignment pair and return
 	    my $seq_run = $alignment_pair->returnBsmlSeqPairRunR( $alignment_pair->addBsmlSeqPairRun() );
 
 	    if( $args{'start_query'} > $args{'stop_query'} )
-	      {
-		$seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
-		$seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
-		$seq_run->setattr( 'refcomplement', 1 );
-	      }
+        {
+            $seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
+            $seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
+            $seq_run->setattr( 'refcomplement', 1 );
+        }
 	    else
-	      {
-		$seq_run->setattr( 'refpos', $args{'start_query'}-1 );
-		$seq_run->setattr( 'runlength', $args{'stop_query'} - $args{'start_query'} + 1 );
-		$seq_run->setattr( 'refcomplement', 0 );
-	      }
+        {
+            $seq_run->setattr( 'refpos', $args{'start_query'}-1 );
+            $seq_run->setattr( 'runlength', $args{'stop_query'} - $args{'start_query'} + 1 );
+            $seq_run->setattr( 'refcomplement', 0 );
+        }
 
 	    #the database sequence is always 5' to 3'
 
@@ -371,7 +404,7 @@ sub createAndAddBtabLine {
 	    $seq_run->addBsmlAttr( 'p_value', $args{'p_value'} )                                 if (defined ($args{'p_value'}));
 
 	    return $alignment_pair;
-	  }
+    }
 
     #no alignment pair matches, add a new alignment pair and sequence run
     #check to see if sequences exist in the BsmlDoc, if not add them with basic attributes
@@ -421,17 +454,17 @@ sub createAndAddBtabLine {
     my $seq_run = $alignment_pair->returnBsmlSeqPairRunR( $alignment_pair->addBsmlSeqPairRun() );
 
     if( $args{'start_query'} > $args{'stop_query'} )
-      {
-	$seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
-	$seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
-	$seq_run->setattr( 'refcomplement', 1 );
-      }
+    {
+        $seq_run->setattr( 'refpos', $args{'stop_query'}-1 );
+        $seq_run->setattr( 'runlength', $args{'start_query'} - $args{'stop_query'} + 1 );
+        $seq_run->setattr( 'refcomplement', 1 );
+    }
     else
-      {
-	$seq_run->setattr( 'refpos', $args{'start_query'} -1);
-	$seq_run->setattr( 'runlength', $args{'stop_query'} - $args{'start_query'} + 1 );
-	$seq_run->setattr( 'refcomplement', 0 );
-      }
+    {
+        $seq_run->setattr( 'refpos', $args{'start_query'} -1);
+        $seq_run->setattr( 'runlength', $args{'stop_query'} - $args{'start_query'} + 1 );
+        $seq_run->setattr( 'refcomplement', 0 );
+    }
 
     #the database sequence is always 5' to 3'
     
