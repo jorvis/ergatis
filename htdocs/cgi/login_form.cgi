@@ -25,9 +25,12 @@ if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'open' ) {
     $form_not_ready_msg = "Sorry, authentication is set to 'open' in the ergatis.ini file, logins aren't supported in this mode."
 
 } elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ldap' ) {
-    $form_not_ready_msg = "Sorry, LDAP authenticaiton not currently supported.  Check the authentication_method parameter in the ergatis.ini file"
+    $form_ready = 1;
 
 } elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' ) {
+    $form_ready = 1;
+    
+} elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ad' ) {
     $form_ready = 1;
     
 } else {

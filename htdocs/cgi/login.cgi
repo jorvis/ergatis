@@ -1,8 +1,10 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Authen::Simple::Kerberos;
 #use Log::Cabin;
+use Authen::Simple::Kerberos;
+use Authen::Simple::LDAP;
+use Authen::Simple::ActiveDirectory;
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser);
 use CGI::Cookie;
@@ -37,6 +39,39 @@ if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' 
     if ( $kerberos->authenticate( $user_attempted, $pass_attempted) ) {
         $valid_user = $user_attempted;
     }
+
+} elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ad' ) {
+    ## validate the user here
+    my $host      = $ergatis_cfg->val('authentication', 'ldap_host');
+    my $port      = $ergatis_cfg->val('authentication', 'ldap_port');
+    my $principal = $ergatis_cfg->val('authentication', 'ad_principal');
+
+    my $ad = Authen::Simple::ActiveDirectory->new(
+        host      => $host,
+        port      => $port,
+        principal => $principal,
+    );
+
+    if ( $ad->authenticate( $user_attempted, $pass_attempted) ) {
+        $valid_user = $user_attempted;
+    }
+
+}  elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ldap' ) {
+    ## validate the user here
+    my $host   = $ergatis_cfg->val('authentication', 'ldap_host');
+    my $port   = $ergatis_cfg->val('authentication', 'ldap_port');
+    my $basedn = $ergatis_cfg->val('authentication', 'ldap_basedn');
+
+    my $ldap = Authen::Simple::LDAP->new(
+        host   => $host,
+        port   => $port,
+        basedn => $basedn,
+    );
+
+    if ( $ldap->authenticate( $user_attempted, $pass_attempted) ) {
+        $valid_user = $user_attempted;
+    }
+
 }
 
 
