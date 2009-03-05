@@ -63,6 +63,18 @@
 		<value>$;PROJECT$;</value>
  	    </param>
 	    <param>
+	    	<key>--stockholm_path</key>
+		<value>$;STOCKHOLM_PATH$;</value>
+ 	    </param>
+	    <param>
+     	    <key>--annot_bsml_list</key>
+		<value>$;ANNOT_BSML_LIST$;</value>
+ 	    </param>
+	    <param>
+	    	<key>--default_type</key>
+		<value>$;DEFAULT_TYPE$;</value>
+ 	    </param>
+	    <param>
 	    	<key>--id_repository</key>
 		<value>$;PROJECT_ID_REPOSITORY$;</value>
  	    </param>
