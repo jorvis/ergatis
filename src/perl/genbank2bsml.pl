@@ -978,7 +978,7 @@ sub feature_group_to_gene {
     return $gene_featref;
   }
   else {
-    die "Unable to create gene object (no gene or CDS)";
+    print STDERR "Unable to create gene object (no gene or CDS)";
     return undef;
   }
 }
