@@ -59,7 +59,7 @@ umask(0000);
 
     sub new {
         my ($class, %args) = @_;
-        
+
         ## create the object
         my $self = bless { %_attributes }, $class;
         
@@ -176,10 +176,19 @@ umask(0000);
                 ## are we submitting the workflow as a job?  (CURRENTLY TIED TO SGE)
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
                     $runprefix = 'qsub ';
+                    my $pipe_submission_queue = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_queue' );
+                    if( $pipe_submission_queue ) {
+                        $runprefix .= "-q $pipe_submission_queue ";
+                    }
+                    my $pipe_submission_project = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_project' );
+                    if( $pipe_submission_project ) {
+                        $runprefix .= "-P $pipe_submission_project ";
+                    }
                 }
                 
-                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap --logconf=" . 
-                                $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
+                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt ".
+                    "--init-heap=$init_heap --max-heap=$max_heap --logconf=". 
+                    $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
 #                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap >& $self->{path}.run.out";
 
@@ -216,7 +225,7 @@ umask(0000);
 
                 my $rc = 0xffff & system("$runprefix $pipeline_script");
 
-                printf $debugfh "system(%s) returned %#04x: $rc for command $runprefix $pipeline_script" if $self->{debug};
+                printf $debugfh "system(%s) returned %#04x: $rc for command $runprefix $pipeline_script\n" if $self->{debug};
                 if($rc == 0) {
                     print $debugfh "ran with normal exit\n" if $self->{debug};
                 } elsif ( $rc == 0xff00 ) {
@@ -265,7 +274,7 @@ umask(0000);
 
         $ENV{SGE_ROOT} = $args{ergatis_cfg}->val('grid', 'sge_root');
         $ENV{SGE_CELL} = $args{ergatis_cfg}->val('grid', 'sge_cell');
-        $ENV{SGE_QMASTER_PORT} = $args{ergatis_cfg}->val('grid', 'sge_qmaster_port');
+        #$ENV{SGE_QMASTER_PORT} = $args{ergatis_cfg}->val('grid', 'sge_qmaster_port');
         $ENV{SGE_EXECD_PORT} = $args{ergatis_cfg}->val('grid', 'sge_execd_port');
         $ENV{SGE_ARCH} = $args{ergatis_cfg}->val('grid', 'sge_arch');
 
