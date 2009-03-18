@@ -180,7 +180,14 @@ sub parse_genbank_file {
     $gbr{'accession'} = $seq->accession_number;
     $gbr{'taxon_id'} = $seq->species->ncbi_taxid();
     $gbr{'gi'} = $seq->primary_id();
-    defined($gbr{'gi'}) || die "No gi in $gb_file";
+
+    # workaround: if the primary_id is not useful try to fall back to the accession number
+    if ($gbr{'gi'} =~ /\=HASH\(0x/) {
+        $gbr{'gi'} = $seq->accession_number();
+        if (!defined($gbr{'gi'} || ($gbr{'gi'} eq 'unknown'))) {
+            die "No gi or accession number in $gb_file";
+        }
+    }
 
     #first word is genus, all follows is species (a workaround to encode the entire scientific name in BSML/chado)
     #this pulls the ORGANISM field up to the taxonomic lineage
