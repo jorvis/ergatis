@@ -74,6 +74,7 @@ gff32bsml.pl
          --seq_xref_mappings='ID:mydb:seq_id'
          --atts_with_unescaped_commas='ID,Name'
          --allow_genes_with_no_cds
+         --sofa_type_mappings='transcript=>CDS,ORF=>gene'
          --log=/path/to/some.log
          --debug=4
          --help
@@ -211,6 +212,14 @@ B<--allow_genes_with_no_cds>
     and finds a gene for which neither of these things are true, it will fail with an error if the gene
     lacks a CDS.  use this flag to permit the conversion to continue with a warning instead.
 
+B<--sofa_type_mappings>
+    optional.  a comma-delimited list of SOFA id or name mappings, in the form id1=>id2 or name1=>name2.
+    each occurrence of id1 or name1 in the GFF3 SOFA feature type column (GFF3 column #3) will be
+    replaced by id2/name2 prior to performing any subsequent parsing.  this option can be useful for
+    making a GFF3 file more closely match the canonical gene encoding.  for example, if a GFF3 file
+    uses the term "ORF" instead of "gene" it can be rectified by specifying
+    --sofa_type_mappings='ORF=>gene'
+
 B<--log,-l>
     optional.  path to a log file the script should create.  will be overwritten if
     it already exists.
@@ -298,6 +307,7 @@ my $FEAT_TYPE_MAP = {
     'pseudogene' => 'pseudogene',
     'contig' => 'contig',
     'supercontig' => 'supercontig',
+    'chromosome' => 'chromosome',
 };
 
 # list of types that are allowed for the mRNA; must be a subset of those
@@ -353,6 +363,7 @@ my $results = GetOptions($options,
                          'seq_xref_mappings=s',
                          'atts_with_unescaped_commas=s',
                          'allow_genes_with_no_cds',
+                         'sofa_type_mappings=s',
                          'log|l=s',
                          'debug|d=i',
                          'help|h',
@@ -377,6 +388,16 @@ if (defined($options->{'gene_type'})) {
 my $logfile = $options->{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile, 'LOG_LEVEL'=>$options->{'debug'});
 $logger = Ergatis::Logger::get_logger();
+
+if (defined($options->{'sofa_type_mappings'})) {
+    my @mappings = split(/,/, $options->{'sofa_type_mappings'});
+    foreach my $mapping (@mappings) {
+        my($from,$to) = ($mapping =~ /^(\S+)\s*\=\>\s*(\S+)$/);
+        $logger->logdie("unable to parse sofa_type_mapping from $mapping") if (!defined($to));
+        $FEAT_TYPE_MAP->{$from} = $to;
+        $logger->debug("sofa_type_mapping: $from => $to");
+    }
+}
 
 ## MAIN SECTION
 my $idcreator = Ergatis::IdGenerator->new('id_repository' => $options->{'id_repository'});
