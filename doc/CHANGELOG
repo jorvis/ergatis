@@ -1,5 +1,6 @@
 next
 ----
+-added load_ber_for_manatee component
 -added LDAP and ActiveDirectory authentication
 -genewise2bsml.pl: Changed CDS class names going into bsml from 'cds' to 'CDS'
 -prok_pipeline: fixed typo of lipoprotein -> Lipoprotein for parse_evidence.lipoprotein $;EVIDENCE_TYPE$; in template
