@@ -73,6 +73,7 @@ use Ergatis::IdGenerator;
 
 my %lookupDb;
 my %lookupProtDb;
+my %prot2cds_lookup;
 my %options = ();
 my $gzip = 0;
 my $results = GetOptions (\%options, 
@@ -224,7 +225,8 @@ sub parse_ber_btabs {
 
             #does it exist in the lookup? (means that it's a valid sequence id)
             if( exists( $lookupProtDb{$polypeptide} ) ) {
-                &addSequenceElement( $polypeptide, 'aa', 'polypeptide' );
+                my $cds = $prot2cds_lookup{$polypeptide};
+                &addSequenceElement( $cds, 'na', 'CDS' );
             } else {
                 print "file: $file\n";
                 print "base: $base\n";
@@ -276,6 +278,7 @@ sub check_parameters{
             chomp($asm);
             $lookupDb{$cds} = $asm;
             $lookupProtDb{$prot} = $asm;
+            $prot2cds_lookup{$prot} = $cds;
         }
 
         close(IN);
