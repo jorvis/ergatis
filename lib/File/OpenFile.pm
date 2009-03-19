@@ -1,5 +1,6 @@
 package File::OpenFile;
 
+use Carp;
 require Exporter;
 
 @ISA = qw(Exporter);
@@ -12,28 +13,36 @@ sub open_file {
 
     if( $direction eq 'out' ) {
         if( $file =~ /\.gz$/ ) {
-            open( $fh, ">:gzip", $file ) or die("can't open $file ($!)");
+            open( $fh, ">:gzip", $file ) or confess("can't open $file ($!)");
+            print "using gzip\n";
         } else {
-            open( $fh, "> $file" ) or die("Can't open $file ($!)");
+            open( $fh, "> $file" ) or confess("Can't open $file ($!)");
+        }
+    } elsif( $direction eq 'concat' ) {
+        if( $file =~ /\.gz$/ ) {
+            open( $fh, ">>:gzip", $file ) or confess("can't open $file ($!)");
+            print "using gzip\n";
+        } else {
+            open( $fh, ">> $file" ) or confess("Can't open $file ($!)");
         }
     } elsif( $direction eq 'in' ) {
 
         if( -e $file ) {
             
             if( $file =~ /\.gz$/ ) {
-                open( $fh, "<:gzip", $file ) or die("can't open $file ($!)");
+                open( $fh, "<:gzip", $file ) or confess("can't open $file ($!)");
             } else {
-                open( $fh, "< $file") or die("can't open $file ($!)");
+                open( $fh, "< $file") or confess("can't open $file ($!)");
             } 
         } elsif( -e $file.".gz" ) {
             my $tmp = $file.".gz";
-            open( $fh, "<:gzip", $tmp ) or die("Can't open $tmp ($!)");
+            open( $fh, "<:gzip", $tmp ) or confess("Can't open $tmp ($!)");
         } else {
-            die("Could not find $file or a gz version");
+            confess("Could not find $file or a gz version");
         }
 
     } else {
-        die("Please specifiy a direction.  'in' or 'out'");
+        confess("Please specifiy a direction.  'in', 'out', or 'concat'");
     }
 
     return $fh;
