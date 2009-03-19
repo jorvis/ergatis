@@ -85,6 +85,7 @@ use IO::File;
 use Pod::Usage;
 use Blast::BlastHitDataType;
 use POSIX;
+use File::OpenFile qw(open_file);
 
 my $min_bit_score		= 0;
 my $min_raw_score		= 0;
@@ -120,9 +121,9 @@ sub get_options
 		   "min_num_experimental|V=i",
 		   "help|h") or &print_usage;
 	&print_usage if $opts{help};
-	$in = new IO::File($opts{input}, "r") ||
-		die "Error accessing input $opts{input}: $!"
-		if $opts{input};
+	$in = open_file( $opts{input}, "in" ) ||
+        die "Error accessing input $opts{input}: $!"
+        if( $opts{input} );
 	$out = new IO::File($opts{output}, "w") ||
 		die "Error writing output $opts{output}: $!"
 		if $opts{output};
