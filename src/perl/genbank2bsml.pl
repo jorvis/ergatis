@@ -480,7 +480,7 @@ sub parse_genbank_file {
 	}
 #	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note') {  # use this to treat it as an arrayref
 	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note' ||
-	       $tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id") {  # use this to treat it as an arrayref
+	       $tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || $tag eq "systematic_id" ) {  # use this to treat it as an arrayref
 	  $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
 	}	
  #       elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
@@ -785,11 +785,15 @@ sub to_bsml {
 	}
 
 	# database=NCBILocus
-	if (exists $feature->{'locus_tag'}){
+    if(exists $feature->{'systematic_id'}) {
+      foreach my $locus_dbxref (@{$feature->{'systematic_id'}}) {
+	    push(@{$feature->{db_xrefs}}, "NCBILocus:".$locus_dbxref);
+	  }
+	}elsif (exists $feature->{'locus_tag'}){
 	  foreach my $locus_dbxref (@{$feature->{'locus_tag'}}) {
 	    push(@{$feature->{db_xrefs}}, "NCBILocus:".$locus_dbxref);
 	  }
-	}
+  }
 
 	# count the number of features of each type / class / primary_tag in the feature_group
 	if ( grep {$feature->{class} =~ /$_/} @feature_type_list ) {
