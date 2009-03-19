@@ -392,6 +392,10 @@ sub parse_genbank_file {
             $feature_tag = 'protein_id';
             $feature_value = join('_',$feat_object->get_tag_values("protein_id"));
             }
+            elsif ($feat_object->has_tag("systematic_id")) {
+            $feature_tag = 'systematic_id';
+            $feature_value = join('_',$feat_object->get_tag_values("systematic_id"));
+            }
             else {
             #no way to group feature, so put it in its own feature_group
             $feature_tag = 'unknown';
