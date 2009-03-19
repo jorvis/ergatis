@@ -255,6 +255,11 @@ sub check_parameters {
     close(FSA);
     chomp(@fsaFiles);
 
+    if( !-e $fsaFiles[0] ) {
+        die("Input fasta list ($opts->{'input_fasta_list'}) first line is not a file or does ".
+            "not exist. Perhaps this isn't a list?");
+    }
+
     # required program paths
     $glimmerDir = $opts->{'glimmer3_dir'} || $logger->logdie("Option glimmer3_dir is required");
     $elph = $opts->{'elph_bin'} || $logger->logdie("Option elph_bin is required");
