@@ -1,5 +1,8 @@
 next
 ----
+-ber_blast_hit_selector: will now accept gzipped input fsa files
+-train_for_glimmer3_iteration: now checks the first line of the --input_fsa_list to see if it's a file
+-berbtab2bsml: fixed bug where empty btab files would create polypeptide sequence element instead of CDS
 -added load_ber_for_manatee component
 -added LDAP and ActiveDirectory authentication
 -genewise2bsml.pl: Changed CDS class names going into bsml from 'cds' to 'CDS'
