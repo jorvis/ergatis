@@ -92,7 +92,7 @@ function getObject(obj) {
 
 // checks the many ways that a field can be empty
 function isEmpty( val ) {
-    var rgx = new RegExp('^\s+$');
+    var rgx = new RegExp('^\\s+$');
 
     // check for null
     // check for empty string
