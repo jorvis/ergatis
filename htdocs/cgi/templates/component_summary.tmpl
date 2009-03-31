@@ -42,6 +42,7 @@
     <a href='./view_formatted_ini_source.cgi?file=<TMPL_VAR NAME=COMPONENT_CONFIG>'>config</a>
     <a onclick="requestComponentUpdate('<TMPL_VAR NAME=PIPELINE>', '<TMPL_VAR NAME=UL_ID>', '<TMPL_VAR NAME=PARENT_PIPELINE>')">update</a>
     <a onclick="stopAutoUpdate('<TMPL_VAR NAME=UL_ID>')">stop updates</a>
+    <a href='./reset_component.cgi?component=<TMPL_VAR NAME=UL_ID>&pipeline=<TMPL_VAR NAME=PARENT_PIPELINE>&component_xml=<TMPL_VAR NAME=PIPELINE>&component_ini=<TMPL_VAR NAME=COMPONENT_CONFIG>'>reset</a>
 </li>
 <li><!-- this only exists because I have no other element to use for clearing --></li>
 <li class="pass_values">
