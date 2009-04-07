@@ -36,7 +36,14 @@ my @feature_type_list = ('gene', 'CDS', 'promoter', 'exon', 'intron', 'mRNA', 't
 
 my %TagCount; #NOTE: rename this or something
 print "Parsing $ifile\n";
-my %gbr = %{parse_genbank_file($ifile)};
+my @unique_feature_tags;
+if($options{'unique_feature_tags'}){
+    @unique_feature_tags = split(/,/,$options{'unique_feature_tags'});
+}
+else{
+    @unique_feature_tags = ("locus_tag","protein_id","systematic_id","gene");
+}
+my %gbr = %{parse_genbank_file($ifile,\@unique_feature_tags)};
 my $doc = new BSML::BsmlBuilder();
 print "Converting $ifile to bsml \n";
 &to_bsml(\%gbr, $doc);
@@ -94,6 +101,7 @@ sub parse_options {
         'generate_new_seq_ids=s',        #whether to replace existing sequence ids with ergatis ones
         'analysis_id|a=s',
 	'skip_unknown_dbxref=s',
+	'unique_feature_tags=s',
 	'skip_incomplete_feature_groups=s',
         ) || &print_usage("Unprocessable option");
 
@@ -154,6 +162,7 @@ sub parse_options {
 #out: hashref of all the info
 sub parse_genbank_file {
     my $gb_file = shift;
+    my $unique_feature_tags = shift;
     my %gbr;
 
     # support for compressed input
@@ -379,28 +388,20 @@ sub parse_genbank_file {
             my $fg_name = '';
             my $feature_tag = '';
             my $feature_value = '';
-            # could be multiples of same gene, so look for locus_tag first
-            if ($feat_object->has_tag("locus_tag")) {
-            $feature_tag = 'locus_tag';
-            $feature_value = join('_',$feat_object->get_tag_values("locus_tag"));
-            }
-            elsif ($feat_object->has_tag("gene")) {
-            $feature_tag = 'gene';
-            $feature_value = join('_',$feat_object->get_tag_values("gene"));
-            }
-            elsif ($feat_object->has_tag("protein_id")) {
-            $feature_tag = 'protein_id';
-            $feature_value = join('_',$feat_object->get_tag_values("protein_id"));
-            }
-            elsif ($feat_object->has_tag("systematic_id")) {
-            $feature_tag = 'systematic_id';
-            $feature_value = join('_',$feat_object->get_tag_values("systematic_id"));
+            foreach my $tag (@$unique_feature_tags){
+		if($feat_object->has_tag($tag)){
+		    $feature_tag = $tag;
+		    last;
+		}
+	    }
+	    if($feature_tag ne ''){
+		$feature_value = join('_',$feat_object->get_tag_values($feature_tag));
             }
             else {
-            #no way to group feature, so put it in its own feature_group
-            $feature_tag = 'unknown';
-            $feature_value = $ugc;              
-            ++$ugc;
+		#no way to group feature, so put it in its own feature_group
+		$feature_tag = 'unknown';
+		$feature_value = $ugc;              
+		++$ugc;
             }
             $fg_name = $feature_tag."_".$feature_value;
             

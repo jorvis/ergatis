@@ -21,6 +21,10 @@
                 <value>$;ORGANISM_TO_PREFIX_MAPPING$;</value>
             </param>
             <param>  
+                <key>--unique_feature_tags</key>
+                <value>$;UNIQUE_FEATURE_TAGS$;</value>
+            </param>
+            <param>  
                 <key>--generate_new_seq_ids</key>
                 <value>$;GENERATE_NEW_SEQ_IDS$;</value>
             </param>
