@@ -14,7 +14,11 @@ my %opts = &parse_options();
 my $input_list = $opts{input_list};
 my $odir = $opts{output_dir};
 
-my $bsmlfile;
+# create list of input files
+my @input_files = compile_input_files();
+
+
+my $LOG_BSML; # for purposes of the logger, the current BSML file
 my %qc; # generic hash to store all qc count info
 my $oname; # name of currently processing organism
 
@@ -45,10 +49,8 @@ my $twig= new XML::Twig(
 open(my $LOG, ">$odir/bsml_qc.log") || die "Unable to write to log ($odir/bsml_qc.log):$!";
 open(my $AC,  ">$odir/bsml_qc.annotation_counts.txt") || die "Unable to write to log ($odir/bsml_qc.annotation_counts.txt):$!";
 # process each bsml file
-open (my $FIN, "$input_list") || die "Unable to open input_list ($input_list):$!";
-while ($bsmlfile = <$FIN>) {
-  chomp($bsmlfile);
-  (-r $bsmlfile) || die "Unable to read bsml file ($bsmlfile)";
+foreach my $bsmlfile (@input_files) {
+  $LOG_BSML = $bsmlfile;
   # TODO: what if the file is .gz?
 
   # Deal w/ name junk
@@ -66,15 +68,22 @@ while ($bsmlfile = <$FIN>) {
     else { warn "going to die"; }
   }
   die "No db in basename $basename" unless (defined $db);
-  die "No asmbl_id in basename $basename" unless (defined $asmbl_id);
-
+  die "No asmbl_id in basename $basename of $bsmlfile" unless (defined $asmbl_id);
 
   die "Dup db/asmbl_id ($db / $asmbl_id)" if (exists($file_qc{$db}->{$asmbl_id}));
 
   # reset the organism name to 'unknown' in case it's missing
   $oname = 'UNKNOWN';
   print "Parsing $bsmlfile\n";
-  $twig->parsefile($bsmlfile);
+  
+  my $IFH;
+  if ($bsmlfile =~ /\.(gz|gzip)$/) {
+    open ($IFH, "<:gzip", $bsmlfile) || die "couldn't open '$bsmlfile' for reading: $!";
+  } else {
+    open ($IFH, "<".$bsmlfile) || die "couldn't open '$bsmlfile' for reading: $!";
+  }
+#  $twig->parsefile($bsmlfile);
+  $twig->parse($IFH);
 
   # print out per-file counts to match Jay's counts
   unless (exists $file_qc{$db}->{$asmbl_id}->{transcript}) { $file_qc{$db}->{$asmbl_id}->{transcript} = 0; }
@@ -82,9 +91,10 @@ while ($bsmlfile = <$FIN>) {
   print {$AC} "$db\t$asmbl_id\t".$file_qc{$db}->{$asmbl_id}->{transcript}."\t".$file_qc{$db}->{$asmbl_id}->{polypeptide}."\n";
 
   $twig->purge();
+  close($IFH);
 
 }
-close($FIN);
+#close($FIN);
 close($LOG);
 close($AC);
 
@@ -105,7 +115,7 @@ print "Done w/ script!\n";
 sub log_say {
   my $message = shift;
 
-  print {$LOG} "$bsmlfile: $message\n";
+  print {$LOG} "$LOG_BSML: $message\n";
 
 }
 
@@ -127,6 +137,41 @@ sub check_att {
 
   return $value;
 }
+
+# return all input files as an array
+sub compile_input_files {
+
+  my @input_files = ();
+  
+  if ( defined($opts{input_list}) ) {
+    open (my $FIN, $opts{input_list}) || die "Unable to open input_list ($opts{input_list}):$!";
+    while (my $bsmlfile = <$FIN>) {
+      chomp($bsmlfile);
+      push (@input_files, check_file($bsmlfile));
+    }
+  }
+  elsif ( defined($opts{input_file}) ) {
+    push (@input_files, check_file($opts{input_file}));
+  } 
+
+  return @input_files;
+}
+
+# check if file exists, or as a zip
+sub check_file {
+  my $file = shift;
+
+  return $file if (-r $file);
+
+  $file = $file.".gz";
+
+  return $file if (-r $file);
+
+  die "Unable to read file ($file)";
+
+}
+
+
 
 sub print_counts {
   my $oname = shift;
@@ -446,6 +491,7 @@ sub parse_options {
 
     GetOptions( \%options,
                 'input_list|i=s',
+                'input_file|i=s',
                 'output_dir|o=s',
 		'help|h',
                 ) || print_instructions("Unprocessable option");
@@ -454,8 +500,9 @@ sub parse_options {
       print_instructions('');
     }
 
-    (-r $options{input_list}) 
-        || print_instructions( "input_list ($options{input_list}) not readable");
+    unless ( (defined($options{input_list})) || (defined($options{input_file})) ) {
+        print_instructions( "input_list ($options{input_list}) not readable");
+      }
 
     (-d $options{output_dir}) 
         || print_instructions( "output_dir ($options{output_dir}) not a directory");
@@ -491,7 +538,7 @@ Quality Control Checks:
 - Log that each Sequence has a class 
 
 Organism Counts:
-Feature groups (valid/partial/total)
+Feature groups (valid/partial/duplicate polypeptides/total)
 Number of Features of each class
 Transcript info
 Seq-data-imports (valid/total)
