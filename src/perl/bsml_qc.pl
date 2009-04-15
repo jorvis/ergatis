@@ -19,6 +19,10 @@ my @input_files = compile_input_files();
 
 
 my $LOG_BSML; # for purposes of the logger, the current BSML file
+my $OUT_BASE; # because we want a single output file for each execution of the script (not for each input file)
+              # but when run as a component it might utilize the same output directory,
+              # so use the name of the input_file or input_list to individually identify the output data
+
 my %qc; # generic hash to store all qc count info
 my $oname; # name of currently processing organism
 
@@ -46,8 +50,8 @@ my $twig= new XML::Twig(
                        );
 
 
-open(my $LOG, ">$odir/bsml_qc.log") || die "Unable to write to log ($odir/bsml_qc.log):$!";
-open(my $AC,  ">$odir/bsml_qc.annotation_counts.txt") || die "Unable to write to log ($odir/bsml_qc.annotation_counts.txt):$!";
+open(my $LOG, ">$odir/bsml_qc.$OUT_BASE.log") || die "Unable to write to log ($odir/bsml_qc.log):$!";
+open(my $AC,  ">$odir/bsml_qc.$OUT_BASE.annotation_counts.txt") || die "Unable to write to log ($odir/bsml_qc.annotation_counts.txt):$!";
 # process each bsml file
 foreach my $bsmlfile (@input_files) {
   $LOG_BSML = $bsmlfile;
@@ -82,7 +86,6 @@ foreach my $bsmlfile (@input_files) {
   } else {
     open ($IFH, "<".$bsmlfile) || die "couldn't open '$bsmlfile' for reading: $!";
   }
-#  $twig->parsefile($bsmlfile);
   $twig->parse($IFH);
 
   # print out per-file counts to match Jay's counts
@@ -148,10 +151,12 @@ sub compile_input_files {
     while (my $bsmlfile = <$FIN>) {
       chomp($bsmlfile);
       push (@input_files, check_file($bsmlfile));
+      $OUT_BASE = basename($opts{input_list});
     }
   }
   elsif ( defined($opts{input_file}) ) {
     push (@input_files, check_file($opts{input_file}));
+    $OUT_BASE = basename($opts{input_file});
   } 
 
   return @input_files;
