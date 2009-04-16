@@ -30,6 +30,8 @@ my %file_qc;  # like above, but counts on a per file/assembly basis
 my $db;
 my $asmbl_id;
 
+my %file_fails; # record the files that fail qc tests, for purposes of throwing an error later
+
 # create twig
 my $twig= new XML::Twig( 
 			twig_handlers =>                 
@@ -41,17 +43,15 @@ my $twig= new XML::Twig(
  			 'Sequence' => \&process_Sequence,
  			 'Genome' => \&process_Genome_Crossreference,
 
-
 #			  "Genome/Cross-reference/Attribute[name=source_database]" => \&process_source_db,
 #			 'Genome/Cross-reference/Attribute' => \&process_source_db,
 #			 'Genome/Cross-reference' => \&process_Genome_Crossreference,
-
 			}
                        );
 
 
-open(my $LOG, ">$odir/bsml_qc.$OUT_BASE.log") || die "Unable to write to log ($odir/bsml_qc.log):$!";
-open(my $AC,  ">$odir/bsml_qc.$OUT_BASE.annotation_counts.txt") || die "Unable to write to log ($odir/bsml_qc.annotation_counts.txt):$!";
+open(my $LOG, ">$odir/$OUT_BASE.log") || die "Unable to write to log ($odir/bsml_qc.log):$!";
+open(my $AC,  ">$odir/$OUT_BASE.annotation_counts.txt") || die "Unable to write to log ($odir/bsml_qc.annotation_counts.txt):$!";
 # process each bsml file
 foreach my $bsmlfile (@input_files) {
   $LOG_BSML = $bsmlfile;
@@ -101,13 +101,19 @@ foreach my $bsmlfile (@input_files) {
 close($LOG);
 close($AC);
 
-open(my $SOUT, ">$odir/summary.out") || die "Unable to write to $odir/summary.out: $!";
+open(my $SOUT, ">$odir/$OUT_BASE.summary.out") || die "Unable to write to $odir/summary.out: $!";
 # output count info for each organism
 print "number of organisms: ".scalar(keys %qc)."\n";
 foreach (keys %qc) {
   print_counts($_);
 }
 close($SOUT);
+
+# Check for errors
+my $errstr = check_errors();
+
+die "$errstr" if ($errstr);
+
 print "Done w/ script!\n";
 
 
@@ -405,6 +411,7 @@ sub process_Featuregroup {
       if ($featuretypes{$_} == 0) {
 	log_say("Partial Feature-group ($group_set)");
 	++$qc{$oname}->{partial_count}->{'Feature-group'};
+	++$file_fails{partial_count}{$LOG_BSML};
 	return;
       }
     }
@@ -413,6 +420,7 @@ sub process_Featuregroup {
     if ( $featuretypes{polypeptide} > 1 ) {
       log_say("Duplicate polypeptides ($featuretypes{polypeptide}) in ($group_set)");
       	++$qc{$oname}->{dup_polypeptide_count}->{'Feature-group'};
+      	++$file_fails{dup_polypeptide_count}{$LOG_BSML};
 	return;
       }
 
@@ -490,6 +498,28 @@ sub new_oname {
 
 }
 
+# Check contents of %file_fails for any user provided options to die on
+sub check_errors {
+#	++$file_fails{partial_count}{$LOG_BSML};
+#      	++$file_fails{dup_polypeptide_count}{$LOG_BSML};
+  my $errstr = '';
+
+  if ( $opts{check_dup_polypeptide} ) {
+    foreach my $file ( keys %{$file_fails{dup_polypeptide_count}} ) {
+      $errstr .= join("\t", ('dup_polypeptide', $file, $file_fails{dup_polypeptide_count}{$file}) )."\n";
+    }
+  }
+
+  if ( $opts{check_partial} ) {
+    foreach my $file ( keys %{$file_fails{partial_count}} ) {
+      $errstr .= join("\t", ('partial_count', $file, $file_fails{partial_count}{$file}) )."\n";
+    }
+  }
+
+  return $errstr;
+
+}
+
 
 sub parse_options {
     my %options = ();
@@ -498,6 +528,8 @@ sub parse_options {
                 'input_list|i=s',
                 'input_file|i=s',
                 'output_dir|o=s',
+		'check_dup_polypeptide=s',
+		'check_partial=s',
 		'help|h',
                 ) || print_instructions("Unprocessable option");
 
