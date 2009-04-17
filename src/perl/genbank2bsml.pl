@@ -44,6 +44,9 @@ else{
     @unique_feature_tags = ("locus_tag","protein_id","systematic_id","gene");
 }
 my %gbr = %{parse_genbank_file($ifile,\@unique_feature_tags)};
+
+my $translate_empty_cds = $options{translate_empty_cds};
+
 my $doc = new BSML::BsmlBuilder();
 print "Converting $ifile to bsml \n";
 &to_bsml(\%gbr, $doc);
@@ -103,6 +106,7 @@ sub parse_options {
 	'skip_unknown_dbxref=s',
 	'unique_feature_tags=s',
 	'skip_incomplete_feature_groups=s',
+    'translate_empty_cds=s',
         ) || &print_usage("Unprocessable option");
 
     # check for required parameters
@@ -483,7 +487,10 @@ sub parse_genbank_file {
 	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note' ||
 	       $tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || $tag eq "systematic_id" ) {  # use this to treat it as an arrayref
 	  $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
-	}	
+      }	
+        elsif( $tag eq "pseudo") {
+            $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = "This gene is a pseudogene";
+        }
  #       elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
 	elsif ( $tag eq "transl_table") {
             # do nothing
@@ -749,7 +756,8 @@ sub to_bsml {
     my $shared_gene_product_name = get_shared_feature_tag($fg, 'product');
     my $shared_comment = get_shared_feature_tag($fg, 'note');
     my $ec_numbers;
-    
+    my $is_pseudogene = 0;
+
     foreach my $feature_name (keys %{$fg}) {
         my $feature = $fg->{$feature_name};
 
@@ -795,7 +803,9 @@ sub to_bsml {
 	    push(@{$feature->{db_xrefs}}, "NCBILocus:".$locus_dbxref);
 	  }
   }
-
+    if(exists $feature->{'pseudo'}){
+        $is_pseudogene = 1;
+    }
 	# count the number of features of each type / class / primary_tag in the feature_group
 	if ( grep {$feature->{class} =~ /$_/} @feature_type_list ) {
 	  push(@{$feature_type{$feature->{class}}}, $feature_name);
@@ -864,7 +874,13 @@ sub to_bsml {
 	  $trans_elem->addBsmlAttributeList([{name => 'EC', content=> $ec_number}]);
         }
       }
-
+      # Adding secondary SO cvterm if this gene is a pseudogene. This is 
+      # the spec described in  TIGR/JCVI BUG # 2125 from 9/15/2005. This
+      # encoding does NOT match the GMOD spec which replaces the primary type ('gene')
+      # with a pseudogene feature and has modified child transcript/CDS features.
+      if($is_pseudogene){
+          $trans_elem->addBsmlAttributeList([{name => 'SO', content=>'pseudogene'}]);
+      }
       foreach my $t ('CDS', 'exon') {
 	foreach my $featref (@{$bsml_featref{$t}}) {
 	  addFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
@@ -1064,8 +1080,8 @@ sub feature_group_to_CDS {
   if ($feature_count->{CDS} >= 1) { # use multiple CDSs    
     foreach my $cds (@{$feature_type->{CDS}}) {
       # create translation if there isn't one
-      unless ($fg->{$cds}->{translation}) {
-	$fg->{$cds}->{translation} = $gbr{codon_table}->translate($fg->{$cds}->{spliced_seq});
+        if(!$fg->{$cds}->{translation} && $translate_empty_cds && !exists($fg->{$cds}->{pseudo})) {
+          $fg->{$cds}->{translation} = $gbr{codon_table}->translate($fg->{$cds}->{spliced_seq});
       }
       push( @cds_featrefs, $fg->{$cds});
    }
@@ -1408,8 +1424,7 @@ sub addFeature {
     # - add polypeptide feature
     # - add aa sequence for polypeptide
     if ($class eq 'CDS') {
-    &addSeqToFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem, $feature_elem, $gbr{'molecule'});
-    if ($featref->{'translation'}) {
+        &addSeqToFeature($featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem, $feature_elem, $gbr{'molecule'});
         # create dummy featref for polypeptide
         # use copy_featref?
         my $poly_featref = {
@@ -1423,11 +1438,17 @@ sub addFeature {
                  'location_type' => $featref->{'location_type'},
                  'start_type' => $featref->{'start_type'},
                  'end_type' => $featref->{'end_type'},
-                 'feature_len' => length($featref->{'translation'}),
-                 'spliced_seq' => $featref->{'translation'}
-                 };
+             };
+
+        # Only add the feature length or sequence if one exists but create the Feature anyway
+        $poly_featref->{'feature_len'} = length($featref->{'translation'}) if $featref->{'translation'};
+        $poly_featref->{'spliced_seq'} = $featref->{'translation'} if $featref->{'translation'};
+               
         $poly_featref->{id} =~ s/CDS/polypeptide/; # change id
         my $poly_feat_elem = &addFeature($poly_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem);
+
+    # Do NOT create a Sequence element for the polypeptide if there is no sequence present.
+    if ($featref->{'translation'}) {
         &addSeqToFeature($poly_featref, $doc, $genome_id, $feature_table_elem, $feature_group_elem, $poly_feat_elem, 'aa');
     } # if translation
     }# if CDS

@@ -28,6 +28,10 @@
                 <key>--generate_new_seq_ids</key>
                 <value>$;GENERATE_NEW_SEQ_IDS$;</value>
             </param>
+            <param>
+                <key>--translate_empty_cds</key>
+                <value>$;TRANSLATE_EMPTY_CDS$;</value>
+            </param>
             <param>  
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
