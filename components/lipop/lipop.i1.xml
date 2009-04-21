@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>lipop compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>lipop</name>
+            <state>incomplete</state>
+            <executable>$;LIPOP_EXEC$;</executable>
+            <arg>$;I_FILE_PATH$; -short -cutoff $;CUTOFF$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>lipop2bsml</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/lipop2bsml</executable>
+            <param>  
+                <key>--input_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>
+            </param>
+            <param>
+                <key>--input_fasta</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--id_repository</key>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
+            </param>
+            <param>  
+                <key>--project</key>
+                <value>$;PROJECT_ABBR$;</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+            <param>  
+                <key>--sourcename</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>store config params</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <param>  
+                <key>--ergatis_control_file</key>
+                <value>$;ERGATIS_DIR$;.ini</value>
+            </param>
+            <param>  
+                <key>--conf</key>
+                <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>  
+                <key>--bsml_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml</value>
+            </param>
+            <param>  
+                <key>--componenturl</key>
+                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
+            </param>
+            <param>  
+                <key>--pipelineurl</key>
+                <value>$;PIPELINE_XML$;</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

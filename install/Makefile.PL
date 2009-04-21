@@ -127,7 +127,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir\nSAMPLE_DOCS_DIR=$sampledocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs samples shellwrappers c_apps 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipoprotein_motif load_ber_for_manatee mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain overlap_analysis p_func pangenome_blast_parse pangenome_do_analysis pangenome_make_graphs panther parse_evidence parse_for_ncRNAs pepstats percent_gc phage_finder phat phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
+ergatis_install : dirs samples shellwrappers c_apps 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipop lipoprotein_motif load_ber_for_manatee mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain overlap_analysis p_func pangenome_blast_parse pangenome_do_analysis pangenome_make_graphs panther parse_evidence parse_for_ncRNAs pepstats percent_gc phage_finder phat phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -554,6 +554,12 @@ legacyparafam2bsml  :
 	@install components/legacyparafam2bsml/legacyparafam2bsml-master.ini $(WORKFLOW_DOCS_DIR)
 	@install components/legacyparafam2bsml/legacyparafam2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/legacyparafam2bsml/legacyparafam2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
+
+lipop:
+	@echo "Installing lipop workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/lipop/lipop.xml $(WORKFLOW_DOCS_DIR)
+	@install components/lipop/lipop.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/lipop/lipop.config $(WORKFLOW_DOCS_DIR)
 
 lipoprotein_motif:
 	@echo "Installing lipoprotein_motif workflows in $(WORKFLOW_DOCS_DIR)"
