@@ -10,6 +10,7 @@ next
 -prok_pipeline: removed hmmpfam RFAM config and also fixed consistency in config files with current release
 -parse_evidence and p_func: added to correct section of the install file (previously only in _last section)
 -added bsml_qc component
+-added overlap_analysis component
 
 ergatis-v2r10b1
 ---------------
