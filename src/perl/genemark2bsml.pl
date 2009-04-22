@@ -1,8 +1,27 @@
 #!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+
+=head1 EXPECTED INPUT
+
+    Predicted genes/exons
+
+    Gene Exon Strand Exon           Exon Range     Exon      Start/End
+      #    #         Type                         Length       Frame
+
+      1     1   +  Terminal      6168      6449     282          1 3
+
+      2     3   -  Terminal     13450     13528      79          3 3
+      2     2   -  Internal     16097     16311     215          1 2
+      2     1   -  Initial      16436     16468      33          1 3
+
+      3     1   +  Initial      19541     19632      92          1 2
+      3     2   +  Terminal     19755     20169     415          3 3
+
+      4     1   +  Initial      34531     34622      92          1 2
+      4     2   +  Internal     34745     34967     223          3 3
+      4     3   +  Terminal     35854     35982     129          1 3
+
+=cut
+
 use strict;
 use warnings;
 
