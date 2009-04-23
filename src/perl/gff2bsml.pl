@@ -1412,16 +1412,25 @@ sub gene_feature_hash_to_bsml {
             }
     }
 
-    # clone BSML attributes specified by --clone_feat_attribute_mappings
-    foreach my $st (keys %$clone_feat_att_mappings) {
-        my $mappings = $clone_feat_att_mappings->{$st};
+    # clone BSML attributes specified by --clone_feat_attribute_mappings, --clone_feat_xref_mappings
+    my $all_clone_mappings = {};
+    foreach my $key (keys %$clone_feat_att_mappings, keys %$clone_feat_xref_mappings) {
+        next if defined($all_clone_mappings->{$key});
+        my $fam = $clone_feat_att_mappings->{$key};
+        my $fxm = $clone_feat_xref_mappings->{$key};
+        map { $_->{'mapping_type'} = 'attribute'; } @$fam;
+        map { $_->{'mapping_type'} = 'xref'; } @$fxm;
+        $all_clone_mappings->{$key} = [@$fam, @$fxm];
+    }
+
+    foreach my $st (keys %$all_clone_mappings) {
+        my $mappings = $all_clone_mappings->{$st};
         # get features of type $st
         my @src_feat_ids = keys %{$features->{$st}};
         $logger->debug("got src feats of type $st: @src_feat_ids");
 
         foreach my $cfm (@$mappings) {
-            my($att, $tt) = map {$cfm->{$_}} ('bsml_att', 'target_type');
-            $logger->debug("cloning $att from $st to $tt");
+            my($att, $xref_db, $tt, $mt) = map {$cfm->{$_}} ('bsml_att', 'db_name', 'target_type', 'mapping_type');
             # get features of type $tt
             my @tgt_feat_ids = keys %{$features->{$tt}};
             $logger->debug("got tgt feats of type $tt: @tgt_feat_ids");
@@ -1430,20 +1439,51 @@ sub gene_feature_hash_to_bsml {
                 foreach my $tfid (@tgt_feat_ids) {
                     my $sf = $id2bsmlfeat->{$sfid} || $logger->logdie("no feature found for id=$sfid");
                     my $tf = $id2bsmlfeat->{$tfid} || $logger->logdie("no feature found for id=$tfid");
-                    my $sval = $sf->returnBsmlAttr($att);
-                    my $tval = $tf->returnBsmlAttr($att);
-                    my $tvh = {};
-                    if (defined($tval)) {
-                        map {$tvh->{$_} = 1;} @$tval;
-                    }
                     
-                    if (defined($sval)) {
+                    # clone attribute
+                    if ($mt eq 'attribute') {
+                        $logger->debug("cloning $att from $st to $tt");
+                        my $tvh = {}; # track target atts to avoid duplication
+                        my ($sval, $tval) = map { $_->returnBsmlAttr($att) || []; } ($sf, $tf);
+                        map {$tvh->{$_} = 1;} @$tval;
                         foreach my $sv (@$sval) {
                             if (!defined($tvh->{$sv})) {
                                 $doc->createAndAddBsmlAttribute($tf, $att, $sv);
                                 $logger->debug("cloning $att value of $sv from $sfid ($st) to $tfid ($tt)");
                             }
                         }
+                    } 
+                    # clone cross-reference
+                    elsif ($mt eq 'xref') {
+                        $logger->debug("cloning $xref_db xref from $st to $tt");
+                        my $trefh = {}; # track target xrefs to avoid duplication
+                        my $trefs = $tf->returnBsmlCrossReferenceListR();
+                        foreach my $tr (@$trefs) {
+                            my($tdb,$tid_type,$tid) = map { $tr->returnattr($_) || ""; } ('database', 'identifier-type', 'identifier');
+                            $trefh->{join("\0",$tdb,$tid_type,$tid)} = 1;
+                        }
+
+                        # TODO - make this more efficient
+                        my $srefs = $sf->returnBsmlCrossReferenceListR();
+
+                        foreach my $sr (@$srefs) {
+                            my($sdb,$sid_type,$sid) = map { $sr->returnattr($_); } ('database', 'identifier-type', 'identifier');
+
+                            # add it if the target doesn't have it already
+                            if (!defined($trefh->{join("\0", $sdb,$sid_type,$sid)})) {
+                                my $cind = $tf->addBsmlCrossReference();
+                                my $cr = $tf->returnBsmlCrossReferenceR($cind);
+                                $cr->addattr('database', $sdb);
+                                $cr->addattr('identifier-type', $sid_type);
+                                $cr->addattr('identifier', $sid);
+                                $logger->debug("adding cross ref from target feature $tfid to db=$sdb idtype=$sid_type, id=$sid");
+                            } else {
+                                $logger->debug("target feature $tfid already has cross ref with db=$sdb idtype=$sid_type, id=$sid from source feature $sfid");
+                            }
+                        }
+
+                    } else {
+                        $logger->logdie("attempt to clone unknown BSML component '$mt'");
                     }
                 }
             }
