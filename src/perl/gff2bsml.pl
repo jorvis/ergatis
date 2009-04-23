@@ -70,7 +70,10 @@ gff32bsml.pl
          --insert_polypeptides
          --inserted_polypeptide_id_type=CDS
          --default_seq_class=assembly
+         --feat_attribute_mappings='Name:gene_product_name,comment:comment'
+         --clone_feat_attribute_mappings='gene:gene_product_name:transcript,gene:gene_product_name:CDS'
          --feat_xref_mappings='ID:mydb:accession,Name:mydb:pub_locus'
+         --clone_feat_xref_mappings='gene:NCBILocus:transcript,gene:NCBILocus:CDS'
          --seq_xref_mappings='ID:mydb:seq_id'
          --atts_with_unescaped_commas='ID,Name'
          --allow_genes_with_no_cds
@@ -186,6 +189,22 @@ B<--default_seq_class,-e>
     optional.  default sequence class/SO type (e.g., 'assembly', 'supercontig') to use for sequences 
     for which the type cannot be parsed from the GFF file.
 
+B<--feat_attribute_mappings>
+    optional.  a comma-delimited list of GFF attribute -> BSML Attribute mappings, each of which is
+    defined by a source (GFF) attribute name and a target (BSML) attribute name, separated by a colon,
+    for example "Name:gene_product_name" will take each BSML 'Name' value and insert it into the 
+    BSML document as an <Attribute> with name="Name" and content=the corresponding GFF attribute value.
+    Any embedded colons may be escaped with a backslash ("\:")
+
+B<--clone_feat_attribute_mappings>
+    optional.  a comma-delimited list of colon-separated values.  each member of the list is a colon-
+    separated triplet that contains 1. a source SOFA type, 2. a BSML attribute name, and 3. a target 
+    SOFA type.  e.g., "gene:gene_product_name:CDS,gene:gene_product_name:transcript"  This particular
+    example specifies that--within each gene model/feature group--any gene_product_name BSML Attributes
+    attached to the gene feature will be copied over to the associated transcript and CDS features
+    (without introducing duplicate attribute values).  This cloning/copying is done _after_ any applicable 
+    --feat_attribute_mappings have been processed for all of the involved features.
+
 B<--feat_xref_mappings,-x>
     optional.  a comma-delimited list of GFF attribute -> BSML Cross-reference mappings, each of which
     is defined by a set of 3 values separated by colons, as in 'ID:mydb:accession', which specifies
@@ -193,6 +212,10 @@ B<--feat_xref_mappings,-x>
     element with database="mydb" and identifier-type="accession" (and identifier set to the ID value.)
     Any embedded colons may be escaped with a backslash ("\:")
   
+B<--clone_feat_xref_mappings>
+    optional.  behaves similarly to --clone_feat_attribute_mappings, but copying BSML <Cross-references>
+    instead of <Attributes>
+
 B<--seq_xref_mappings>
     optional.  identical to --xref_mappings except that it defines cross-reference mappings for the 
     reference _sequences_ in the GFF files (i.e., those things whose IDs appear in GFF column 1)
@@ -359,7 +382,10 @@ my $results = GetOptions($options,
                          'insert_polypeptides',
                          'inserted_polypeptide_id_type=s',
                          'default_seq_class|e=s',
+                         'feat_attribute_mappings=s',
+                         'clone_feat_attribute_mappings=s',
                          'feat_xref_mappings|x=s',
+                         'clone_feat_xref_mappings|x=s',
                          'seq_xref_mappings=s',
                          'atts_with_unescaped_commas=s',
                          'allow_genes_with_no_cds',
@@ -543,6 +569,13 @@ $doc->{'xrefctr'}++;
 my $feat_xref_mappings = &parse_xref_mappings($options->{'feat_xref_mappings'});
 my $seq_xref_mappings = &parse_xref_mappings($options->{'seq_xref_mappings'});
 
+# GFF -> BSML Attribute mappings
+my $feat_att_mappings = &parse_attribute_mappings($options->{'feat_attribute_mappings'});
+
+# feature xrefs and attributes that must be cloned
+my $clone_feat_att_mappings = &parse_clone_attribute_mappings($options->{'clone_feat_attribute_mappings'});
+my $clone_feat_xref_mappings = &parse_clone_xref_mappings($options->{'clone_feat_xref_mappings'});
+
 foreach my $root (@{$gene_nodes}) {
     if ($root->{'_type'} eq 'gene') {
 
@@ -658,16 +691,45 @@ exit(0);
 
 sub parse_xref_mappings {
     my($mapping_str) = @_;
+    return &parse_mappings($mapping_str, 'xref', ['db_name', 'id_type']);
+}
+
+sub parse_attribute_mappings {
+    my($mapping_str) = @_;
+    return &parse_mappings($mapping_str, 'attribute', ['bsml_att']);
+}
+
+sub parse_clone_attribute_mappings {
+    my($mapping_str) = @_;
+    return &parse_mappings($mapping_str, 'cloned attribute', ['bsml_att', 'target_type']);
+}
+
+sub parse_clone_xref_mappings {
+    my($mapping_str) = @_;
+    return &parse_mappings($mapping_str, 'cloned xrefs', ['db_name', 'target_type']);
+}
+
+sub parse_mappings {
+    my($mapping_str, $type, $fieldnames) = @_;
     my $mappings = {};
+    my $nfn = scalar(@$fieldnames);
+
     if (defined($mapping_str)) {
         my @mstrs = split(',', $mapping_str);
         foreach my $mstr (@mstrs) {
-            my($gff_att, $db_name, $id_type) = split(':', $mstr);
-            $gff_att =~ s/\://g;
-            my $list = $mappings->{$gff_att};
-            $list = $mappings->{$gff_att} = [] if (!defined($list));
-            push(@$list, { 'db_name' => $db_name, 'id_type' => $id_type });
-            $logger->info("parsed xref mapping for gff_att: $gff_att, db_name: $db_name, id_type: $id_type");
+            my($key, @fields) = split(':', $mstr);
+            $key =~ s/\://g;
+            my $list = $mappings->{$key};
+            $list = $mappings->{$key} = [] if (!defined($list));
+            my $val = {};
+            my $ff = scalar(@fields);
+            die "expected $nfn fields, only found $ff in '$mstr'" if ($nfn != scalar(@fields));
+
+            for (my $i = 0;$i < $nfn;++$i) {
+                $val->{$fieldnames->[$i]} = $fields[$i];
+            }
+            push(@$list, $val);
+            $logger->info("parsed $type mapping for key: $key, " . join(", ", map {$_ . "=" . $val->{$_}} @$fieldnames));
         }
     }
     return $mappings;
@@ -984,9 +1046,12 @@ sub gene_feature_hash_to_bsml {
     
     my $id_hash = {};
     my %id_counts;
-    
+
+    $logger->debug("gene_feature_hash_to_bsml");
     foreach my $type(keys(%{$features})) {
-        $id_counts{$type} = scalar(keys(%{$features->{$type}}));
+        my $tc = scalar(keys(%{$features->{$type}}));
+        $id_counts{$type} = $tc;
+        $logger->debug("$type: $tc");
     }
     $idcreator->set_pool_size(%id_counts);
     
@@ -1200,13 +1265,16 @@ sub gene_feature_hash_to_bsml {
                     'startpos' => $cds->{'startpos'},
                     'endpos' => $cds->{'endpos'},
                     'complement' => $cds->{'complement'},
-                    # TODO - propagation of cross-references to automatically-inserted features should be optional:
+                    # TODO - propagation of cross-references and attributes to automatically-inserted features should be optional/explicit:
                     '_record' => $cds->{'_record'},
                 };
                 $added_pep = 1;
             }
         }
     }
+
+    # track BSML features for attribute/xref cloning
+    my $id2bsmlfeat = {};
 
     foreach my $type(keys(%{$features})) {
         foreach my $feat_id(keys(%{$features->{$type}})) {
@@ -1222,6 +1290,7 @@ sub gene_feature_hash_to_bsml {
 
                 my $feat_title = ($feat_id =~ /temp_id/) ? undef : $feat_id;
                 my $feat = $doc->createAndAddFeature( $feat_table, $id, $feat_title, $type);
+                $id2bsmlfeat->{$feat_id} = $feat;
 
                 # link polypeptides to Sequences in --peptide_fasta or the input GFF file
                 if (($type eq 'polypeptide') && (defined($peptides) || defined($gff_seqs))) {
@@ -1266,6 +1335,24 @@ sub gene_feature_hash_to_bsml {
                                           $features->{$type}->{$feat_id}->{'endpos'},
                                           $features->{$type}->{$feat_id}->{'complement'},
                                           );
+
+                # add attributes
+                foreach my $att (keys %$feat_att_mappings) {
+                    my $feature = $features->{$type}->{$feat_id};
+                    my $mappings = $feat_att_mappings->{$att};
+                    my $att_val = $feature->{'_record'}->{$att};
+                    unshift(@$att_val, $feature->{'title'}) if (($att eq 'Name') && (defined($feature->{'title'})) && ($feature->{'title'} =~ /\S+/));
+                    
+                    if (defined($att_val)) {
+                        my $att_vals = ((ref $att_val) eq 'ARRAY') ? $att_val : [$att_val];
+
+                        foreach my $mapping (@$mappings) {
+                            foreach my $av (@$att_vals) {
+                                $doc->createAndAddBsmlAttribute($feat, $mapping->{'bsml_att'}, $av);
+                            }
+                        }
+                    }
+                }
 
                 # add cross-references
                 foreach my $att (keys %$feat_xref_mappings) {
@@ -1324,6 +1411,47 @@ sub gene_feature_hash_to_bsml {
                 $feat_group->addBsmlFeatureGroupMember( $id, $type );
             }
     }
+
+    # clone BSML attributes specified by --clone_feat_attribute_mappings
+    foreach my $st (keys %$clone_feat_att_mappings) {
+        my $mappings = $clone_feat_att_mappings->{$st};
+        # get features of type $st
+        my @src_feat_ids = keys %{$features->{$st}};
+        $logger->debug("got src feats of type $st: @src_feat_ids");
+
+        foreach my $cfm (@$mappings) {
+            my($att, $tt) = map {$cfm->{$_}} ('bsml_att', 'target_type');
+            $logger->debug("cloning $att from $st to $tt");
+            # get features of type $tt
+            my @tgt_feat_ids = keys %{$features->{$tt}};
+            $logger->debug("got tgt feats of type $tt: @tgt_feat_ids");
+            # clone
+            foreach my $sfid (@src_feat_ids) {
+                foreach my $tfid (@tgt_feat_ids) {
+                    my $sf = $id2bsmlfeat->{$sfid} || $logger->logdie("no feature found for id=$sfid");
+                    my $tf = $id2bsmlfeat->{$tfid} || $logger->logdie("no feature found for id=$tfid");
+                    my $sval = $sf->returnBsmlAttr($att);
+                    my $tval = $tf->returnBsmlAttr($att);
+                    my $tvh = {};
+                    if (defined($tval)) {
+                        map {$tvh->{$_} = 1;} @$tval;
+                    }
+                    
+                    if (defined($sval)) {
+                        foreach my $sv (@$sval) {
+                            if (!defined($tvh->{$sv})) {
+                                $doc->createAndAddBsmlAttribute($tf, $att, $sv);
+                                $logger->debug("cloning $att value of $sv from $sfid ($st) to $tfid ($tt)");
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    # TODO - clone BSML cross-references specified by --clone_feat_xref_mappings
+    
 }
 
 # traverses an array of node references 
