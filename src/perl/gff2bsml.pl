@@ -41,7 +41,7 @@
 
 =head1 NAME
 
-gff32bsml.pl - Convert GFF(3) annotation data into BSML.
+gff32bsml.pl - Convert GFF3 annotation data into BSML.
 
 =head1 SYNOPSIS
 
@@ -1468,6 +1468,7 @@ sub gene_feature_hash_to_bsml {
 
                         foreach my $sr (@$srefs) {
                             my($sdb,$sid_type,$sid) = map { $sr->returnattr($_); } ('database', 'identifier-type', 'identifier');
+                            next unless ($sdb eq $xref_db);
 
                             # add it if the target doesn't have it already
                             if (!defined($trefh->{join("\0", $sdb,$sid_type,$sid)})) {
