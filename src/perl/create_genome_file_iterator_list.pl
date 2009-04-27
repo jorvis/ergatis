@@ -100,9 +100,25 @@ foreach my $file (@{$filelist}){
                             $funcs->{$_[1]}(@_);
                         }
                     }
-                }
-                );
-    $x->parsefile( $file );
+	    }
+			    );
+    if (!(-e $file) && -e "$file.gz") {
+        $file .= ".gz";
+    }
+    if(-e $file){
+	my $ifh;
+	if ($file =~ /\.(gz|gzip)$/) {
+	    open ($ifh, "<:gzip", $file) || $logger->logdie("can't read input file $file: $!");
+	} else {
+	    open ($ifh, "<$file") || $logger->logdie("can't read input file $file: $!");
+	}
+	$x->parse( $ifh );
+	close $ifh;
+    }
+    else{
+	$logger->logdie("Can't read jaccard bsml file $file");
+    }		    
+
     $logger->debug("Found genome $genome in file $file");
     if(! exists $genomelookup->{$genome}){
         $genomelookup->{$genome} = [];
