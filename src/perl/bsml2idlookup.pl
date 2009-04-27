@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 
+#Creates a tied lookup of the form
+#$lookup{$featureid} = $sequenceid
+#from a BSML file like
+#<Sequence id=$sequenceid>
+# ....
+#  <Feature id=$featureid>
+#
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -91,12 +99,6 @@ for my $thing ( split(/,/, ($options{bsml_input} || '') ),
     }
 }
 
-## die if no files found
-if ( scalar @files == 0 ) {
-    $logger->logdie("No files found");
-}
-
-
 #######
 ## parse out sequences from each file
 
@@ -145,6 +147,7 @@ my $funcs = {'Feature'=>
 		 }
 	 };
 
+my $parsedfiles=0;
 for my $file ( @files ) {
     my $x = new XML::Parser(Handlers => 
 			    {
@@ -157,12 +160,12 @@ for my $file ( @files ) {
 				    }
 				}
 			    );
-    
     if (!(-e $file) && -e "$file.gz") {
 	$file .= ".gz";
     }
     if(-e $file){
-	my $ifh;
+	print STDERR "Parsing $file\n";
+    	my $ifh;
 	if ($file =~ /\.(gz|gzip)$/) {
 	    open ($ifh, "<:gzip", $file) || $logger->logdie("can't read input file $file: $!");
 	} else {
@@ -170,10 +173,15 @@ for my $file ( @files ) {
 	}
 	$x->parse( $ifh );
 	close $ifh;
+	$parsedfiles++;
     }
     else{
         $logger->logdie("Can't read jaccard bsml file $file");
     }
+}
+
+if($parsedfiles==0){
+    $logger->logdie("No files found");
 }
 
 if ($options{fasta_list}){
@@ -194,14 +202,15 @@ sub add_file {
     my $file = shift;
     
     ## only do .bsml files
-    return 0 unless ( $file =~ /\.bsml$/ );
-    
+    if (!(-e $file) && -e "$file.gz") {
+	$file .= ".gz";
+    }
     if (-e $file && -s $file) {
         $logger->debug("Adding file $file for processing") if ($logger->is_debug);
         push @files, $file;
     } else {
-        $logger->warn("Error reading file $file") if ($logger->is_warn);
-        return 0;
+	$logger->warn("Error reading file $file") if ($logger->is_warn);
+	return 0;
     }
     
     return 1;
