@@ -692,7 +692,6 @@ overlap_analysis :
 	@install components/overlap_analysis/overlap_analysis.xml $(WORKFLOW_DOCS_DIR)
 	@install components/overlap_analysis/overlap_analysis.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/overlap_analysis/overlap_analysis.config $(WORKFLOW_DOCS_DIR)
-	@install components/overlap_analysis/overlap_analysis.tmpl $(WORKFLOW_DOCS_DIR)/documentation
 
 p_func	:
 	@echo "Installing p_func workflows in $(WORKFLOW_DOCS_DIR)"
