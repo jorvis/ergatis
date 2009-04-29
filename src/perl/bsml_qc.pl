@@ -525,7 +525,7 @@ sub parse_options {
     my %options = ();
 
     GetOptions( \%options,
-                'input_list|i=s',
+                'input_list|l=s',
                 'input_file|i=s',
                 'output_dir|o=s',
 		'check_dup_polypeptide=s',
