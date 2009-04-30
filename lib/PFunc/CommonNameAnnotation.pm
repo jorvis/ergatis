@@ -123,6 +123,12 @@ sub clean_common_name {
     ## multiple whitespace should be collapsed
     $new_product_name =~ s|\s{2,}| |g;
 
+    ## if the term is long (greater than 128 chars), try to remove extra info
+    ## from parens or braces.
+    if( length( $new_product_name ) > 128 ) {
+        $new_product_name =~ s/[\[\(].*[\]\)]\.?//;
+    }
+
     return $new_product_name;
 }
 

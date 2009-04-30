@@ -9,6 +9,7 @@ use Carp qw(cluck);
 use Fcntl qw( O_RDONLY );
 use MLDBM "DB_File";
 use TIGR::Roles::Omnium::OmniumToRoleLookup;
+use PFunc::EvidenceParser::ConservedHypothetical;
 use PFunc::Annotation;
 use Data::Dumper;
 
@@ -19,11 +20,6 @@ my $annotation_type = "BER";
 my $default_ber_info = "/usr/local/projects/db/tchar/tchar.db";
 my $percent_id_cutoff = 30;
 my $percent_coverage_cutoff = 80;
-my $conserved_hypo = {
-    'gene_product_name' => "conserved hypothetical protein",
-    'GO'                => ['GO:0008150', 'GO:0003674', 'GO:0005575'],
-    'TIGR_Role'         => 156,
-};
 my $ber_annot_levels = {
     'BER::characterized::full::full'         => 1,   
     'BER::characterized::full::partial'      => 2,   
@@ -128,7 +124,7 @@ sub _tigr_roles_lookup {
 
 sub _get_tigr_role {
     my ($self, $prot_id) = @_;
-    die("No protein id was pssed in") unless( defined( $prot_id ) );
+    die("No protein id was passed in") unless( defined( $prot_id ) );
     my $lookup = $self->_tigr_roles_lookup();
     my $retval = $lookup->omnium2tigr_role( $prot_id );
     return $retval;
@@ -187,11 +183,6 @@ sub _handle_sequence {
     # grab the id
     my $id = $seq->att('id') or 
         die("failed to get ID attribute of Sequence in BER alignment file");
-
-	my $trans_id = $self->lookup_feature_id( $id, 'transcript' );
-    if( defined( $trans_id ) && $trans_id eq 'gnmM04.transcript.167597423.1' ) {
-        $flag = 1;
-    }
 
     ## grab the sequence length. If we already have a length for this sequence don't
     ## set it again.  This is because we've parsed other bsml to grab the real lengths
@@ -262,7 +253,6 @@ sub _handle_seq_pair_alignment {
     if( $self->_is_name_ambiguous( $gp_name ) && !$is_char ) {
         $self->_assign_as_conserved_hypothetical( $comp_annot );
     } else {
-
         # if the current protein hasn't been annotated yet, automatically assign the current annotation
         if( !($annotation->has_annotation()) ) {
             $self->_assign_annotation( $annotation, $comp_annot );
@@ -310,6 +300,15 @@ sub _get_compseq_annotation {
         $ret_annot->set( $field, shift @header_info, $source, $confidence_level );
     }
 
+    if( my $com_name = $ret_annot->_get_value( 'gene_product_name' )->[0] ) {
+        if( $com_name !~ /hypothetical/ ) {
+            my $tigr_roles = $ret_annot->_get_value( 'TIGR_Role' );
+            if( @{$tigr_roles} == 0 ) {
+                $ret_annot->set( 'TIGR_Role', [157], $source, $confidence_level );
+            }
+        }
+    }
+
     return ($ret_annot, shift @header_info );
     
 }
@@ -327,7 +326,7 @@ sub _clean_panda_title {
     my $max_count = -1;
     foreach my $entry( @entries ) {
         my @stats = $self->_parse_protein_header_line( $entry );
-        my @valid_info = grep {  defined( $_ ) && $_ ne "" && $_ =~ "hypothetical protein" } @stats;
+        my @valid_info = grep {  defined( $_ ) && $_ ne "" && $_ !~ /hypothetical protein/ } @stats;
         if( scalar(@valid_info) > $max_count ) {
             @retval = @stats;
             $max_count = scalar(@valid_info);
@@ -359,14 +358,20 @@ sub _parse_protein_header_line {
         $com_name =~ s/^\s+//;
         $com_name =~ s/\s+$//;
 
-        if( defined( $com_name ) && $com_name =~ /\(EC\s+([^\)]+)\)/ ) {
-            $ec = $1;
+        if( defined( $com_name ) ) {
+            while( $com_name =~ /\(EC\s+([^\)]+)\)/g ) {
+                print "$1\t$2\n";
+                push( @{$ec}, $1 );
+            }
         }
 
         if( defined( $info ) ) {
             $is_char = 1;
-            $ec = $info->{'ec_num'} if( exists( $info->{'ec_num'} ) );
-            $gene_symbol = $info->{'gene_symbol'} if( exists( $info->{'gene_symbol'}  ) );
+            @{$ec} = split(/[,\s]+/, $info->{'ec_num'}) if( exists( $info->{'ec_num'} ) );
+            map { $_ =~ s/^EC\s+// } @{$ec};
+            @{$ec} = grep( $_ !~ /^\s*$/, @{$ec} );
+            $gene_symbol = $info->{'gene_symbol'} if( exists( $info->{'gene_symbol'} ) && 
+                                                      $info->{'gene_symbol'} !~ /^\s*$/ );
             $go = $info->{'go'} if( exists( $info->{'go'} ) );
 
             my $tmp_com_name = $info->{'com_name'};
@@ -489,18 +494,10 @@ sub _assign_as_conserved_hypothetical {
     my ($self, $annotation ) = @_;
     $annotation->clear_annotation;
 
-    my @fields = PFunc::Annotation::get_valid_fields;
     my $source = $annotation->get_feature_id;
     my $type = "BER::conserved_hypothetical";
 
-    foreach my $field ( @fields ) {
-        my $value;
-        if( exists( $conserved_hypo->{$field} ) ) {
-            $value = $conserved_hypo->{$field};
-        } else {
-            $value = "";
-        }
-        $annotation->set( $field, $value, $source, $type );
-    }
+    PFunc::EvidenceParser::ConservedHypothetical->_assign_as_conserved_hypothetical( $annotation, $source, $type );
+
 }
 1;

@@ -63,7 +63,6 @@ use PFunc::CommonNameAnnotation qw(clean_common_name);
 use PFunc::TIGRRolesAnnotation qw(assign_tigr_roles_by_keyword);
 use Data::Dumper;
 
-
 ##### Globals #####
 my $input_file;
 my $output;

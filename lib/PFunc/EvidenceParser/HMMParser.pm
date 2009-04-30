@@ -222,7 +222,15 @@ sub _assign_annotation {
     #clear all annotation
     $annotation->clear_annotation;
 
-    #set the new annotation
+    #if the isotype of the hmm is 
+
+    #set the new annotation $a."::hypoth_equivalog", should be conserved hypothetical
+    if( $hmm_annot_iso eq $a."::hypoth_equivalog" ) {
+        PFunc::EvidenceParser::ConservedHypothetical->_assign_as_conserved_hypothetical( $annotation, 
+                                                                                         $hmm_acc,
+                                                                                         $a."::hypoth_equivalog" );
+        return;
+    }
 
     #product name
     my $com_name = $self->_append_to_com_name( $hmm_info->{'hmm_com_name'}, $hmm_annot_iso );
@@ -242,13 +250,13 @@ sub _assign_annotation {
                          $hmm_acc, $hmm_annot_iso );
 
     #TIGR roles
-    $annotation->set_TIGR_Role( $self->_get_tigr_role( $hmm_acc ),
+    $annotation->set_TIGR_Role( $self->_get_tigr_role( $hmm_acc, $com_name ),
                                 $hmm_acc, $hmm_annot_iso );
     
 }
 
 sub _get_tigr_role {
-    my ($self, $hmm_acc) = @_;
+    my ($self, $hmm_acc, $com_name) = @_;
     my $retval;
     if( $hmm_acc =~ /^PF/ ) {
         my $lookup = $self->_tigr_role_lookup('PFAM');
@@ -256,6 +264,10 @@ sub _get_tigr_role {
     } elsif( $hmm_acc =~ /TIGR/ ) {
         my $lookup = $self->_tigr_role_lookup('TIGRFam');
         $retval = $lookup->tigrfam2tigr_role( $hmm_acc );
+    }
+
+    if( !$retval ) {
+        $retval = 157;
     }
 
     return $retval;

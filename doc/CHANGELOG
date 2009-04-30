@@ -13,6 +13,7 @@ next
 -added overlap_analysis component
 -added lipop component
 -added blast2go component
+-fixed multiple bugs to the p_func component
 
 ergatis-v2r10b1
 ---------------

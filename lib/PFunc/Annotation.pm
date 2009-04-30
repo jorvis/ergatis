@@ -13,7 +13,7 @@ our $AUTOLOAD;
 
 # define variable types
 my ($SINGLE, $MULTIPLE) = (1,2);
-my $multi_value_separator = ",";
+my $multi_value_separator = ",,";
 my $field_separator = "\t";
 my $value_source_type_separator = '-;-';
 
