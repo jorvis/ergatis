@@ -1,4 +1,4 @@
-package PFunc::EvidenceParser::BERParser2;
+package PFunc::EvidenceParser::BERParser;
 
 use strict;
 use warnings;
@@ -360,7 +360,6 @@ sub _parse_protein_header_line {
 
         if( defined( $com_name ) ) {
             while( $com_name =~ /\(EC\s+([^\)]+)\)/g ) {
-                print "$1\t$2\n";
                 push( @{$ec}, $1 );
             }
         }
