@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>blast2go compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>blast2go</name>
+            <state>incomplete</state>
+            <executable>java</executable>
+            <arg>-Xms256m -Xmx1024m -jar $;BLAST2GO_INSTALL$;/blast2go.jar -in $;I_FILE_PATH$; -out $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$; -prop $;CONFIG_FILE$; -a</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

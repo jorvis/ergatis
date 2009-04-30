@@ -12,6 +12,7 @@ next
 -added bsml_qc component
 -added overlap_analysis component
 -added lipop component
+-added blast2go component
 
 ergatis-v2r10b1
 ---------------
