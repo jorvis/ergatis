@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bsml2interevidence_fasta compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>bsml2interevidence_fasta</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bsml2interevidence_fasta</executable>
+            <param>  
+                <key>--input_bsml</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--evidence_list</key>
+                <value>$;EVIDENCE_LIST$;</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--length_cutoff</key>
+                <value>$;LENGTH_CUTOFF$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
