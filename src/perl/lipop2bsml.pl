@@ -107,7 +107,7 @@ my (undef, $id, $type, $score, $margin, $cleavage, $pos) = split( /\s+/, shift @
 
 my $doc = new BSML::BsmlBuilder;
 
-my $seq = $doc->createAndAddSequence( $id, $id, , 'aa', 'polypeptide' );
+my $seq = $doc->createAndAddSequence( $id, $id, '', 'aa', 'polypeptide' );
 
 #validate the input fasta file to make sure it contains the sequence we are looking for
 &validate_input_fasta( $options->{'input_fasta'}, $id );
