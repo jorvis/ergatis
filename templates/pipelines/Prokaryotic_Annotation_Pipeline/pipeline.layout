@@ -89,12 +89,27 @@
         </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
+            <name>overlap_analysis.default</name>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
             <name>start_site_curation.default</name>
+        </commandSet>
+        <commandSet type="parallel">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>bsml2interevidence_fasta.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>ncbi-blastx.blast_interevidence_regions</name>
+            </commandSet>
         </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
                 <name>translate_sequence.translate_new_models</name>
-            </commandSet>       
+            </commandSet>
             <commandSet type="parallel">
                 <state>incomplete</state>
                 <commandSet type="serial">
@@ -158,7 +173,7 @@
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
-                <name>lipoprotein_motif.default</name>
+                <name>lipop.default</name>
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>

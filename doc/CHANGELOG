@@ -16,6 +16,7 @@ next
 -fixed multiple bugs to the p_func component
 -added bsml2interevidence_fasta component
 -bugfixes to lipop component
+-added overlap_analyis, lipop (and pfunc parsing), interevidence search to Prok Pipeline
 
 ergatis-v2r10b1
 ---------------
