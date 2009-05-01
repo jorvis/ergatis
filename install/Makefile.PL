@@ -127,7 +127,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir\nSAMPLE_DOCS_DIR=$sampledocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs samples shellwrappers c_apps 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber blast2go bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2interevidence_fasta bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipop lipoprotein_motif load_ber_for_manatee mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain overlap_analysis p_func pangenome_blast_parse pangenome_do_analysis pangenome_make_graphs panther parse_evidence parse_for_ncRNAs pepstats percent_gc phage_finder phat phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
+ergatis_install : dirs samples shellwrappers c_apps pipeline_templates 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber blast2go bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2interevidence_fasta bsml2tbl clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus glimmer3 glimmerHMM hmmpfam infernal initdb intergenic_analysis iprscan j_ortholog_clusters jaccard legacy2bsml lipop lipoprotein_motif load_ber_for_manatee mask_by_analysis metagene muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain overlap_analysis p_func pangenome_blast_parse pangenome_do_analysis pangenome_make_graphs panther parse_evidence parse_for_ncRNAs pepstats percent_gc phage_finder phat phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -150,6 +150,103 @@ samples	: dirs
 shellwrappers:
 	@install shell/create_ber_db.sh $(PREFIX)/bin
 	@install shell/pepstats.sh $(PREFIX)/bin
+
+pipeline_templates:
+	@echo "Installing global pipeline templates in $(PREFIX)/global_pipeline_templates"
+	mkdir -p $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/bsml2fasta.fastamulti.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/bsml2fasta.genomicseq.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/jaccard.default.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/j_ortholog_clusters.default.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/muscle.jaccard.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/muscle.j_ortholog_clusters.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/pangenome.default.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/pipeline.layout $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/split_multifasta.default.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/wu-blastp.default.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/wu-tblastn.default.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/xdformat.default.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	@install global_pipeline_templates/Integrated_JOCs-pangenome_pipeline/xdformat.nuc.config $(PREFIX)/global_pipeline_templates/Integrated_JOCs-pangenome_pipeline
+	mkdir -p $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/bsml2fasta.fastamulti.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/bsml2fasta.fastasingle.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/jaccard.default.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/j_ortholog_clusters.default.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/muscle.jaccard.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/muscle.j_ortholog_clusters.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/pipeline.layout $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/pipeline.xml.comment $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/split_multifasta.default.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/wu-blastp.default.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	@install global_pipeline_templates/JOCs_comparative_pipeline/xdformat.default.config $(PREFIX)/global_pipeline_templates/JOCs_comparative_pipeline
+	mkdir -p $(PREFIX)/global_pipeline_templates/nonredundant_sequence_pipeline
+	@install global_pipeline_templates/nonredundant_sequence_pipeline/mummer.default.config $(PREFIX)/global_pipeline_templates/nonredundant_sequence_pipeline
+	@install global_pipeline_templates/nonredundant_sequence_pipeline/mumsgraph.default.config $(PREFIX)/global_pipeline_templates/nonredundant_sequence_pipeline
+	@install global_pipeline_templates/nonredundant_sequence_pipeline/pipeline.layout $(PREFIX)/global_pipeline_templates/nonredundant_sequence_pipeline
+	@install global_pipeline_templates/nonredundant_sequence_pipeline/pipeline.xml.comment $(PREFIX)/global_pipeline_templates/nonredundant_sequence_pipeline
+	@install global_pipeline_templates/nonredundant_sequence_pipeline/split_multifasta.default.config $(PREFIX)/global_pipeline_templates/nonredundant_sequence_pipeline
+	mkdir -p $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/pangenome.default.config $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/pipeline.layout $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/pipeline.xml.comment $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/split_multifasta.default.config $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/wu-blastp.default.config $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/wu-tblastn.default.config $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/xdformat.default.config $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/xdformat.nuc.config $(PREFIX)/global_pipeline_templates/Pangenome
+	@install global_pipeline_templates/Pangenome/xdformat.pepdb.config $(PREFIX)/global_pipeline_templates/Pangenome
+	mkdir -p $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/auto_gene_curation.overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/ber.post_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/ber.pre_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/bsml2fasta.final_cds.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/bsml2fasta.post_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/bsml2fasta.prediction_CDS.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/bsml2fasta.pre_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/bsml2featurerelationships.post_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/bsml2featurerelationships.pre_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/bsml2interevidence_fasta.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/glimmer3.iter1.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/glimmer3.iter2.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/hmmpfam.post_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/hmmpfam.pre_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/infernal.find_RNA.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/lipop.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/ncbi-blastx.blast_interevidence_regions.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/overlap_analysis.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.ber_post.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.ber_pre.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.hmmpfam_post.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.hmmpfam_pre.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.hypothetical.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.lipoprotein.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.priam_ec.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/parse_evidence.tmhmm.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/p_func.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/pipeline.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/pipeline.layout $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/pipeline_summary.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/priam_ec_assignment.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/promote_gene_prediction.promote_prediction.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/ps_scan.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/RNAmmer.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/rpsblast.priam.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/signalp.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/split_multifasta.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/start_site_curation.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/tmhmm.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/train_for_glimmer3_iteration.train_for_glimmer.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/translate_sequence.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/translate_sequence.final_polypeptides.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/translate_sequence.translate.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/translate_sequence.translate_new_models.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/translate_sequence.translate_prediction.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/tRNAscan-SE.find_tRNA.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/wu-blastp.COGS.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/wu-blastp.post_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/wu-blastp.pre_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/xdformat.post_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/xdformat.pre_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 
 454_mplex_seq_bin_trim	:
 	@echo "Installing 454_mplex_seq_bin_trim workflows in $(WORKFLOW_DOCS_DIR)"
