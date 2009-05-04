@@ -10,14 +10,14 @@ attach(pangenome)
 
 
 ## Calculate the means
-v4allmeans <- as.vector(tapply(V4,V1,FUN=mean))
-print(v4allmeans)
-v1allmeans <- as.vector(tapply(V1,V1,FUN=mean))
-print(v1allmeans)
+v2means <- as.vector(tapply(V2,V1,FUN=mean))
+print(v2means)
+v1means <- as.vector(tapply(V1,V1,FUN=mean))
+print(v1means)
 
 ## Calculate the medians
-v4allmedians <- as.vector(tapply(V4,V1,FUN=median))
-print(v4allmedians)
+v2allmedians <- as.vector(tapply(V2,V1,FUN=median))
+print(v2allmedians)
 v1allmedians <- as.vector(tapply(V1,V1,FUN=median))
 print(v1allmedians)
 
@@ -54,63 +54,38 @@ for ( ii in c(1:row_count) ) {
 }
 ## end of color block
 
-# Hard-coded start and end values for the iterations. Note that the set needs 
-# to have at least 5 genomes in it.
-start_count <- max(floor(genome_count/2 + 0.5),5)
-end_count <- 4
-
-# Loop through from the start count to the end count (descending)
-for(gcnt in start_count:end_count) {
-
-# Generate a subset of the data
-pansub <- pangenome[ pangenome$V1 >= gcnt, ]
-
-## Calculate the means
-v4submeans <- as.vector(tapply(pansub$V4,pansub$V1,FUN=mean))
-v1submeans <- as.vector(tapply(pansub$V1,pansub$V1,FUN=mean))
-
-## Calculate the medians
-v4submedians <- as.vector(tapply(pansub$V4,pansub$V1,FUN=median))
-v1submedians <- as.vector(tapply(pansub$V1,pansub$V1,FUN=median))
-
-## exponential model based on medianss
-nlmodel_pot <- nls(v4submedians ~ th1* v1submedians^(- th2), data=pansub,
-start=list(th1=476, th2=0.5))
-
+## power law model based on medianss
+nlmodel_pot <- nls(v2allmedians ~ th1 + th2* v1allmedians^(th3), data=pangenome, 
+start=list(th1=4000, th2=-100, th3=.5))
 
 # Open up the output file for the log graph
-postscript(file=paste(sep="", "###output_path###new_genes_power_law2_medians_log_min_",gcnt,"_error_bar.ps"))
+postscript(file="###output_path###core_genes_power_law_medians_log.ps")
 
 # Add some space on the right for the legend(s)
-par(mar=par()$mar+c(0,0,0,12))
+par(mar=par()$mar+c(0,0,0,13))
 
 # Draw the axis
-plot(V1,V4, xlab="number of genomes", ylab="new genes", main=paste("###TITLE### new genes power law 2 log axis ",gcnt," or more genomes"), col=p_color, cex=0.5, log="xy")
+plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### core genes power law log axis", col=p_color, cex=0.5, log="xy")
 
 # plot the medians
-points(tapply(pangenome$V4,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
+points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
 
 # plot the means
-points(tapply(V4,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
+points(tapply(V2,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
 
-# plot the regression
 # plot the regression
 x <- seq(par()$xaxp[1]-1,par()$xaxp[2]+1)
-lines(x, predict(nlmodel_pot,data.frame(v1submedians=x)), lwd=2, col="black")
-
+lines(x, predict(nlmodel_pot, data.frame(v1allmedians=x)), lwd=2, col="black")
 
 expr_pot <- substitute(
-                expression(y == th1 * x^(-th2)), 
+                expression(y == th1 + th2 * x^(th3)), 
                 list(
                     th1=round(nlmodel_pot$m$getPars()[1], digit=2),
-                    th2=round(nlmodel_pot$m$getPars()[2], digit=2)
+                    th2=round(nlmodel_pot$m$getPars()[2], digit=2),
+                    th3=round(nlmodel_pot$m$getPars()[3], digit=2)
                     )
                       )
-
 height<- (10^(par()$usr[4]) - 10^(par()$usr[3]))
 width<- (10^(par()$usr[2]) - 10^(par()$usr[1]))
 par(xpd=T)
 legend(10^(par()$usr[2])+(0.01*width),10^(par()$usr[3]) + height/2, c(eval(expr_pot)), lwd=c(2,2), yjust=0.5,xjust=0)
-
-dev.off()
-}

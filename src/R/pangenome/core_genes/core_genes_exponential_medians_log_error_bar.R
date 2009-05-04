@@ -56,19 +56,40 @@ start=list(th1=33, th2=476, th3=1.5))
 #summary(nlmodel_exp)
 
 # Open up the output file for the log graph
-postscript(file="###output_path###core_genes_exponential_medians_log.ps", width=11, height=8.5, paper='special')
+postscript(file="###output_path###core_genes_exponential_medians_log_error_bar.ps", width=11, height=8.5, paper='special')
 
 # Add some space on the right for the legend(s)
 par(mar=par()$mar+c(0,0,0,14))
 par(oma=par()$oma+c(1,1,1,1))
 # Draw the axis
-plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### core genes exponential log axis", cex=0.5, log="xy", col=p_color)
+plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### core genes exponential log axis", cex=0.5, log="xy", col=p_color, type="n")
+
+
+superpose.eb <-
+function (x,y, ...) {
+    sum = summary(y)
+    q1 <- quantile(y, names=FALSE)[2]
+    print(q1)
+    med <- quantile(y,names=FALSE)[3]
+    q4 <- quantile(y, names=FALSE)[4]
+    print(q4)
+    print(med)
+    print(x)
+   arrows(as.integer(x), sum[[2]],as.integer(x) , sum[[5]], angle = 90, code = 3,
+   length = 0.08, ...)
+}
+
+m <- tapply(pangenome$V2,pangenome$V1,c)
+
+for( x in names(m) ) {
+    superpose.eb(x, m[[x]])
+}
 
 # plot the medians
 points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
 
 # plot the means
-points(tapply(V2,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
+#points(tapply(V2,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
 
 # plot the regression
 x <- seq(par()$xaxp[1]-1,par()$xaxp[2]+1)

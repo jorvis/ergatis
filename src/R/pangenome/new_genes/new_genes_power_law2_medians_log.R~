@@ -79,7 +79,7 @@ start=list(th1=476, th2=0.5))
 
 
 # Open up the output file for the log graph
-postscript(file=paste(sep="", "###output_path###new_genes_power_law2_medians_log_min_",gcnt,"_error_bar.ps"))
+postscript(file=paste(sep="", "###output_path###new_genes_power_law2_medians_log_min_",gcnt,".ps"))
 
 # Add some space on the right for the legend(s)
 par(mar=par()$mar+c(0,0,0,12))
@@ -94,9 +94,7 @@ points(tapply(pangenome$V4,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenom
 points(tapply(V4,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
 
 # plot the regression
-# plot the regression
-x <- seq(par()$xaxp[1]-1,par()$xaxp[2]+1)
-lines(x, predict(nlmodel_pot,data.frame(v1submedians=x)), lwd=2, col="black")
+lines(v1allmedians, predict(nlmodel_pot,v1allmedians), lwd=2, col="black")
 
 
 expr_pot <- substitute(

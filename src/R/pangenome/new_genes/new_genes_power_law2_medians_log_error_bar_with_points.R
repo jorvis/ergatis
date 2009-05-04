@@ -79,7 +79,7 @@ start=list(th1=476, th2=0.5))
 
 
 # Open up the output file for the log graph
-postscript(file=paste(sep="", "###output_path###new_genes_power_law2_medians_log_min_",gcnt,"_error_bar.ps"))
+postscript(file=paste(sep="", "###output_path###new_genes_power_law2_medians_log_min_",gcnt,"_error_bar_with_points.ps"))
 
 # Add some space on the right for the legend(s)
 par(mar=par()$mar+c(0,0,0,12))
@@ -87,11 +87,31 @@ par(mar=par()$mar+c(0,0,0,12))
 # Draw the axis
 plot(V1,V4, xlab="number of genomes", ylab="new genes", main=paste("###TITLE### new genes power law 2 log axis ",gcnt," or more genomes"), col=p_color, cex=0.5, log="xy")
 
+superpose.eb <-
+function (x,y, ...) {
+    sum = summary(y)
+    q1 <- quantile(y, names=FALSE)[2]
+    print(q1)
+    med <- quantile(y,names=FALSE)[3]
+    q4 <- quantile(y, names=FALSE)[4]
+    print(q4)
+    print(med)
+    print(x)
+   arrows(as.integer(x), sum[[2]],as.integer(x) , sum[[5]], angle = 90, code = 3,
+   length = 0.08, ...)
+}
+
+m <- tapply(pangenome$V4,pangenome$V1,c)
+
+for( x in names(m) ) {
+    superpose.eb(x, m[[x]])
+}
+
 # plot the medians
 points(tapply(pangenome$V4,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
 
 # plot the means
-points(tapply(V4,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
+#points(tapply(V4,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
 
 # plot the regression
 # plot the regression
