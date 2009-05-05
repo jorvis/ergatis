@@ -95,23 +95,27 @@
             <state>incomplete</state>
             <name>start_site_curation.default</name>
         </commandSet>
-        <commandSet type="parallel">
-            <state>incomplete</state>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>bsml2interevidence_fasta.default</name>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>ncbi-blastx.blast_interevidence_regions</name>
-            </commandSet>
-        </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
                 <name>translate_sequence.translate_new_models</name>
             </commandSet>
-            <commandSet type="parallel">
+            <commandSet type="serial">
                 <state>incomplete</state>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>bsml2interevidence_fasta.default</name>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>split_multifasta.split_interevidence_regions</name>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>ncbi-blastx.blast_interevidence_regions</name>
+                    </commandSet>
+                </commandSet>
                 <commandSet type="serial">
                     <state>incomplete</state>
                     <name>hmmpfam.post_overlap_analysis</name>
@@ -179,7 +183,7 @@
                 <state>incomplete</state>
                 <name>tmhmm.default</name>
             </commandSet>
-            <commandSet type="parallel">
+            <commandSet type="serial">
                 <commandSet type="serial">
                     <state>incomplete</state>
                     <name>rpsblast.priam</name>
