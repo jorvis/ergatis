@@ -191,7 +191,7 @@ sub _handle_sequence {
     ## will use lengths from this file.
     unless( $self->_seq_length( $id ) ) {
         $self->_seq_length( $id, $seq->att('length') ) or 
-            die("Could not get length for sequence $id in BER evidence file");
+            return;
     }
     
     ## check for input sequences.  They will be a CDS. If it is a cds, return

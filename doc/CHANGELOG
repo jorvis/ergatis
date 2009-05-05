@@ -1,5 +1,6 @@
 next
 ----
+-fixed bug in Pfunc (BERParser)
 -pipeline templates now included in installer
 -bug 2561858: added mummer and mumsgraph components to installer
 -ber_blast_hit_selector: will now accept gzipped input fsa files

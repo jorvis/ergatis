@@ -1,11 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1 NAME
 
 parse_evidence.pl - Description
@@ -63,7 +57,6 @@ B<--help,-h>
 
 use strict;
 use warnings;
-use lib("/export/svn/kgalens/annotation/annotation_combiner/lib");
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use File::OpenFile qw(open_file);
