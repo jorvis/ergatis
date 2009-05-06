@@ -32,6 +32,11 @@
                 <key>--check_partial</key>
                 <value>$;CHECK_PARTIAL$;</value>
             </param>
+            <param>
+                <key>--use_pathema_asmbl_id</key>
+                <value>$;USE_PATHEMA_ASMBL_ID$;</value>
+            </param>
+
         </command>
     </commandSet>
 </commandSetRoot>

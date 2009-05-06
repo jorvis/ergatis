@@ -61,10 +61,14 @@ foreach my $bsmlfile (@input_files) {
   $db = undef;
   $asmbl_id = undef;
   my $basename = basename($bsmlfile);
-  ($db, $asmbl_id, my $other) = split("_", $basename);
-
-  # if neither were defined then assume we're opering on a genbank2bsml output file
-  unless ( defined($db) && defined($asmbl_id) ) {
+  # by default (to maintain backward compatability), try to parse a db and asmbl id from the filename
+  # this can cause duplicate db/asmbl_ids when parsing gff2bsml output so optionally disable it
+  # otherwise assume we're on a genbank2bsml or otherwise file and just use the basename
+  if ($opts{use_pathema_asmbl_id}) {
+      ($db, $asmbl_id, my $other) = split("_", $basename);
+  }
+  else {
+#  unless ( defined($db) && defined($asmbl_id) ) {
     if ( $basename =~ /^([^\.]+)\./ ) {
       $db = $1;
       $asmbl_id = $db;
@@ -74,7 +78,7 @@ foreach my $bsmlfile (@input_files) {
   die "No db in basename $basename" unless (defined $db);
   die "No asmbl_id in basename $basename of $bsmlfile" unless (defined $asmbl_id);
 
-  die "Dup db/asmbl_id ($db / $asmbl_id)" if (exists($file_qc{$db}->{$asmbl_id}));
+  die "Dup db/asmbl_id ($db / $asmbl_id) in basename $basename of $bsmlfile" if (exists($file_qc{$db}->{$asmbl_id}));
 
   # reset the organism name to 'unknown' in case it's missing
   $oname = 'UNKNOWN';
@@ -530,6 +534,7 @@ sub parse_options {
                 'output_dir|o=s',
 		'check_dup_polypeptide=s',
 		'check_partial=s',
+		'use_pathema_asmbl_id=s',
 		'help|h',
                 ) || print_instructions("Unprocessable option");
 
@@ -543,6 +548,10 @@ sub parse_options {
 
     (-d $options{output_dir}) 
         || print_instructions( "output_dir ($options{output_dir}) not a directory");
+
+    unless (defined $options{use_pathema_asmbl_id}) {
+	$options{use_pathema_asmbl_id} = 1;
+    }
 
 #    print "Executing $0 with options\n";
 #    foreach (sort keys %options) { print "  $_: $options{$_}\n";}
