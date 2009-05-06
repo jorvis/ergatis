@@ -1,5 +1,8 @@
 next
 ----
+-added NCBI_BLAST_NUC_NR to software.config
+-fixed regex in BERParser (for EC parsing from char proteins)
+-removed unused lib from annotation_collection_to_bsml.pl
 -corrected typo in Prok Pipeline bsml2interevidence config
 -fixed bug in Pfunc (BERParser)
 -pipeline templates now included in installer

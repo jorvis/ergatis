@@ -64,7 +64,6 @@ B<--help,-h>
 
 use strict;
 use warnings;
-use lib("/usr/local/projects/ergatis/package-devel/lib/perl5");
 use PFunc::AnnotationCollection;
 use File::OpenFile qw( open_file );
 use XML::Twig;
@@ -200,6 +199,7 @@ sub add_annotation_to_feature {
     if( $annot->has_annotation( 'GO' ) ) {
         my ($gos, $source) = $annot->get_GO;
         foreach my $go ( @{$gos} ) {
+
             my $attList = [ { 'name' => "GO", 'content' => 
                                   $go },
                             { 'name' => "IEA", 'content' => 

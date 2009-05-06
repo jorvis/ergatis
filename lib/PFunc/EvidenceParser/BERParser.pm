@@ -367,7 +367,7 @@ sub _parse_protein_header_line {
         if( defined( $info ) ) {
             $is_char = 1;
             @{$ec} = split(/[,\s]+/, $info->{'ec_num'}) if( exists( $info->{'ec_num'} ) );
-            map { $_ =~ s/^EC\s+// } @{$ec};
+            map { $_ =~ s/^EC\s*// } @{$ec};
             @{$ec} = grep( $_ !~ /^\s*$/, @{$ec} );
             $gene_symbol = $info->{'gene_symbol'} if( exists( $info->{'gene_symbol'} ) && 
                                                       $info->{'gene_symbol'} !~ /^\s*$/ );
