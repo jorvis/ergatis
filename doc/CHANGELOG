@@ -1,5 +1,6 @@
 next
 ----
+-corrected typo in Prok Pipeline bsml2interevidence config
 -fixed bug in Pfunc (BERParser)
 -pipeline templates now included in installer
 -bug 2561858: added mummer and mumsgraph components to installer
