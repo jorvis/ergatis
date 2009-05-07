@@ -289,10 +289,11 @@ if ( $options{bsml_list} ) {
             open (my $fh, $list) || $logger->logdie("Can't open file $list");
             for ( <$fh> ) {
                 chomp;
+                s/\s//g;
                 if ( -e $_ || -e "$_.gz" ) {
                     push @list_elements, $_;
                 } else {
-                    $logger->warn("Error reading $_ from list $list") if ($logger->is_warn);
+                    $logger->logdie("Error reading $_ from list $list");
                 }
             }
         } else {
@@ -719,7 +720,7 @@ sub add_file {
         push @files, $file;
         
     } else {
-        $logger->warn("Error reading file $file") if ($logger->is_warn);
+        $logger->logdie("Error reading file $file");
         return 0;
     }
     
