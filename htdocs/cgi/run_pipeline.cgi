@@ -135,6 +135,11 @@ unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
 ## now redirect to a monitor page
 if ( $$qvars{skip_instantiation} == 0 || $$qvars{skip_run} == 0 ) {
     print $q->redirect( -uri => url_dir_path($q) . "view_pipeline.cgi?instance=" . $pipeline->path() );
+} else {
+    ## this is never seen really.  We just have to send something so that the apache log doesn't
+    #   fill with errors each time this is called
+    print $q->header( -type => 'text/plain' );
+    print "pipeline template written";
 }
 
 exit(0);
