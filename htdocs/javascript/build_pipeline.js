@@ -633,8 +633,8 @@ function savePipelineLayout() {
     function ajaxBindCallback() {
         // progressive transitions are from 0 .. 4
         if (ajaxRequest.readyState == 4) {
-            // 200 is the successful response code
-            if (ajaxRequest.status == 200) {
+            // 200 is the successful response code.
+            if ( ajaxRequest.responseText ) {
                 ajaxCallback ( ajaxRequest.responseText );
             } else {
                 // error handling here
