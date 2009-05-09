@@ -313,7 +313,7 @@ sub parse_evidence_files {
         'Seq-pair-alignment' => sub {
             my $refseq = $_[1]->att('refseq');
             my $gene_id = $feature_rel_lookup->lookup( $refseq, 'gene' );
-            die("Could not find gene_id for $refseq") unless( $gene_id );
+	    next unless( defined( $gene_id ) );
             $retval{$gene_id} = 1;
         }
     } );
