@@ -1356,6 +1356,7 @@ sub addFeature {
         ($dbx =~ /([^:]*):(.*)/) || die "Unable to parse database and identifier from db_xref ($dbx)";
         my $database = $1;
         my $identifier = $2;
+	my $identifier_type = undef;
 
         # die if it's some new kind of database I never saw before
         my %known_dbxrefs = ( GO => 1, GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
@@ -1372,6 +1373,7 @@ sub addFeature {
         
         # mod database to GO xref standard as neccessary http://www.geneontology.org/doc/GO.xrf_abbs
 	# VectorBase from http://neuron.cse.nd.edu/vectorbase/index.php/GenBank_submission#db_xref
+	# Also add in identifier_type as neccessary
         if ($database eq 'GI') {
         $database = 'NCBI_gi';
         }
@@ -1392,6 +1394,9 @@ sub addFeature {
         }
         elsif ($database eq 'SGDID') {
         $database = 'SGD';
+        }
+        elsif ($database eq 'NCBILocus') {
+        $identifier_type = 'locus';
         }
         elsif ($database eq 'COG') {
         if ($identifier =~ /^\s+COG/) {
@@ -1414,7 +1419,7 @@ sub addFeature {
 					 'database'        => $database,          # //Genome/Cross-reference/@database
 					 'identifier'      => $identifier,        # //Genome/Cross-reference/@identifier
 					 # identifier-type stored as dbxref.version
-					 #'identifier-type' => 'genbank flat file' # //Genome/Cross-reference/@identifier-type
+					 'identifier-type' => $identifier_type # //Genome/Cross-reference/@identifier-type
 					);
     }
     }
