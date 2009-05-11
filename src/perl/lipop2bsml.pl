@@ -136,14 +136,14 @@ if( $type eq 'SpI' || $type eq 'SpII' ) {
     my $sp_feat = $doc->createAndAddFeature( $ft, $sp_id, $sp_id, $signal_peptide_type );
     my $endpos = $1 if( $cleavage =~ /(\d+)-(\d+)/ );
     my $sp_il = $doc->createAndAddIntervalLoc( $sp_feat, 0, $endpos, 0 );
-    my $sp_link = $doc->createAndAddLink( $sp_feat, 'analysis', "#".$analysis_id, 'created_by' );
+    my $sp_link = $doc->createAndAddLink( $sp_feat, 'analysis', "#".$analysis_id, 'computed_by' );
     
 
     #create the cleavage site feature, site loc, and analysis link
     my $cs_id = $idgen->next_id( 'type' => 'cleavage_site', 'project' => $options->{'project'} );
     my $cs_feat = $doc->createAndAddFeature( $ft, $cs_id, $cs_id, 'cleavage_site' );
     my $cs_sl = $doc->createAndAddSiteLoc( $cs_feat, $endpos, 0 );
-    my $cs_link = $doc->createAndAddLink( $cs_feat, 'analysis', '#'.$analysis_id, 'created_by' );
+    my $cs_link = $doc->createAndAddLink( $cs_feat, 'analysis', '#'.$analysis_id, 'computed_by' );
 
 }
 
@@ -152,7 +152,8 @@ if( $type eq 'SpI' || $type eq 'SpII' ) {
 my $an = $doc->createAndAddAnalysis( 'id' => $analysis_id,
                                      'algorithm' => 'lipoP',
                                      'sourcename' => $sourcename, 
-                                     'program' => 'lipoP' );
+                                     'program' => 'lipoP',
+                                     'programversion' => 'current');
 
 #write the bsml file
 $doc->write( $options->{'output'} );
