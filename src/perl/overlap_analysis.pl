@@ -1,107 +1,5 @@
 #!/usr/bin/perl
 
-=head1 NAME
-
-overlap_analysis.pl - Analyzes overlaps and attempts to resolve them
-
-=head1 SYNOPSIS
-
- USAGE: overlap_analysis.pl
-       --input_file=/path/to/some/gene_describing.bsml
-       --output=/path/to/output.bsml
-       --rna_bsml=/path/to/file1.bsml,/path/to/bsml.list
-       --evidence_bsml=/path/to/evidence1.bsml,/path/to/evidence_bsml.list
-     [ --flagged_overlaps_file=/path/to/flagged.file
-       --overlap_cutoff=60
-       --input_sequence_class=assembly
-       --log=/path/to/file.log
-       --help
-     ]
-
-=head1 OPTIONS
-
-B<--input_file,-i>
-    A gene describing bsml document.  Will parse out Feature elements.
-
-B<--output,-o>
-    The output bsml file
-
-B<--rna_bsml,-r>
-    Bsml describing RNA predictions/models.
-
-    Can take in a comma separated list of bsml files or bsml lists.  Will determine the
-    format of the file based on the extension (.bsml or .list). Can be gzipped
-    and therefore contain .gz extension.
-
-B<--evidence_bsml,-e>
-    Bsml that holds alignment evidence (Blast/Ber and HMM)
-
-    Takes a comma separated list of bsml files or bsml lists. Will determine the 
-    format of the file based on the extension (.bsml or .list). Can be gzipped
-    and therefore contain .gz extension.
-
-B<--flagged_overlaps_file,-f>
-    Output file containing information about the overlaps that could not be resolved.
-
-B<--overlap_cutoff,-c>
-    The maximum allowed overlap (in nucleotides). Default = 60 nucleotides.
-
-B<--input_sequence_class,-s>
-    Optional. Default = assembly.  The class of the parent sequence type
-
-B<--log,-l>
-    Logfile.
-
-B<--help,-h>
-    Print this message
-
-=head1  DESCRIPTION
-
- Finds overlaps between genes and between genes and RNAs. Will try to resolve the overlap:
-
- 1. If two genes overlap more than the cutoff
-   a. And one gene does not have evidence (as determined by input evidence bsml),
-      the gene with no evidence is removed.
-   b. If both genes have evidence, a line is printed to the flagged_overlaps_file
-   c. If both genes have no evidence, a line is printed to the flagged_overlaps file
- 2. If a gene overlaps an RNA (with any overlap)
-   a. Remove gene if it has no evidence
-   b. Print to flagged_overlaps_file if gene has evidence
- 
-=head1  INPUT
-
-  --input_file:
-     Should be a gene describing bsml document. Will parse out Feature[@class="gene"] elements
-     and compare the Interval-loc coordinates with other genes/RNAs with the same parent
-     Sequence (based on id).
-
-  --rna_bsml:
-     An RNA describing bsml document. Parses Feature[@class="gene"] and looks for overlaps
-     with genes
-
-  --evidence_bsml:
-     Bsml files describing sequence alignments from blast, ber, and hmm components
-       
-
-=head1 OUTPUT
-
-  Will produce a bsml file much like that provided in the --input_file, only with some
-  genes removed due to overlaps.
-
-  The flagged_overlaps_file will contain information about unresolved overlaps in the
-  following format:
-
-    feature_id1  type1  left1  right1  feature_id2  type2  left2  right2  
-
-  Where type is either gene or RNA
-
-=head1  CONTACT
-
-    Kevin Galens
-    kgalens@som.umaryland.edu
-
-=cut
-
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
@@ -160,16 +58,17 @@ foreach my $gene_id ( keys %genes ) {
     my $seq = $genes{$gene_id}->{'parent_seq'};
     my @overlaps = $iTrees{$seq}->searchInterval( $genes{$gene_id}->{'start'},
                                                   $genes{$gene_id}->{'stop'} );
+
     foreach my $ol ( @overlaps ) {
 
         #determine the amount of overlap
-        my @ordered = sort ( $genes{$gene_id}->{'start'}, $genes{$gene_id}->{'stop'}, $ol->[0], $ol->[1] );
-        my $ol_amount = (( $genes{$gene_id}->{'stop'} - $genes{$gene_id}->{'start'} ) + ( $ol->[1] - $ol->[0] )) -
-            ( $ordered[4] - $ordered[0] );
+        my @ordered = sort ( $genes{$gene_id}->{'left'}, $genes{$gene_id}->{'right'}, $ol->[0], $ol->[1] );
+        my $ol_amount = (( $genes{$gene_id}->{'right'} - $genes{$gene_id}->{'left'} ) + ( $ol->[1] - $ol->[0] )) -
+            ( $ordered[3] - $ordered[0] );
 
         #does it pass the cutoff?
         if( $ol_amount > $cutoff ) {
-            &handle_gene_overlap( $ol, [ $genes{$gene_id}->{'start'}, $genes{$gene_id}->{'stop'}, $gene_id ] );
+            &handle_gene_overlap( $ol, [ $genes{$gene_id}->{'left'}, $genes{$gene_id}->{'right'}, $gene_id ] );
         } else {
             &_log("Overlap (size: $ol_amount) found between $gene_id and $ol->[2]. Skipping because it does not".
                   "meet the maximum cutoff (cutoff: $cutoff)");
@@ -180,6 +79,7 @@ foreach my $gene_id ( keys %genes ) {
 #searching for RNA overlaps
 foreach my $rna ( @rnas ) {
     my ($id, $start, $stop, $seq) = @{$rna};
+    next if( !exists( $iTrees{$seq} ) );
     my @overlaps = $iTrees{$seq}->searchInterval( $start, $stop );
 
     foreach my $ol ( @overlaps ) {
@@ -312,8 +212,11 @@ sub parse_evidence_files {
     my $twig = new XML::Twig( 'twig_roots' => {
         'Seq-pair-alignment' => sub {
             my $refseq = $_[1]->att('refseq');
-            my $gene_id = $feature_rel_lookup->lookup( $refseq, 'gene' );
-	    next unless( defined( $gene_id ) );
+            my $gene_id;
+            eval {
+                $gene_id = $feature_rel_lookup->lookup( $refseq, 'gene' );
+            };
+            return unless( defined( $gene_id ) );
             $retval{$gene_id} = 1;
         }
     } );
@@ -442,3 +345,104 @@ sub _pod {
         -verbose => 2, 
         -output => \*STDERR} );
 }
+=head1 NAME
+
+overlap_analysis.pl - Analyzes overlaps and attempts to resolve them
+
+=head1 SYNOPSIS
+
+ USAGE: overlap_analysis.pl
+       --input_file=/path/to/some/gene_describing.bsml
+       --output=/path/to/output.bsml
+       --rna_bsml=/path/to/file1.bsml,/path/to/bsml.list
+       --evidence_bsml=/path/to/evidence1.bsml,/path/to/evidence_bsml.list
+     [ --flagged_overlaps_file=/path/to/flagged.file
+       --overlap_cutoff=60
+       --input_sequence_class=assembly
+       --log=/path/to/file.log
+       --help
+     ]
+
+=head1 OPTIONS
+
+B<--input_file,-i>
+    A gene describing bsml document.  Will parse out Feature elements.
+
+B<--output,-o>
+    The output bsml file
+
+B<--rna_bsml,-r>
+    Bsml describing RNA predictions/models.
+
+    Can take in a comma separated list of bsml files or bsml lists.  Will determine the
+    format of the file based on the extension (.bsml or .list). Can be gzipped
+    and therefore contain .gz extension.
+
+B<--evidence_bsml,-e>
+    Bsml that holds alignment evidence (Blast/Ber and HMM)
+
+    Takes a comma separated list of bsml files or bsml lists. Will determine the 
+    format of the file based on the extension (.bsml or .list). Can be gzipped
+    and therefore contain .gz extension.
+
+B<--flagged_overlaps_file,-f>
+    Output file containing information about the overlaps that could not be resolved.
+
+B<--overlap_cutoff,-c>
+    The maximum allowed overlap (in nucleotides). Default = 60 nucleotides.
+
+B<--input_sequence_class,-s>
+    Optional. Default = assembly.  The class of the parent sequence type
+
+B<--log,-l>
+    Logfile.
+
+B<--help,-h>
+    Print this message
+
+=head1  DESCRIPTION
+
+ Finds overlaps between genes and between genes and RNAs. Will try to resolve the overlap:
+
+ 1. If two genes overlap more than the cutoff
+   a. And one gene does not have evidence (as determined by input evidence bsml),
+      the gene with no evidence is removed.
+   b. If both genes have evidence, a line is printed to the flagged_overlaps_file
+   c. If both genes have no evidence, a line is printed to the flagged_overlaps file
+ 2. If a gene overlaps an RNA (with any overlap)
+   a. Remove gene if it has no evidence
+   b. Print to flagged_overlaps_file if gene has evidence
+ 
+=head1  INPUT
+
+  --input_file:
+     Should be a gene describing bsml document. Will parse out Feature[@class="gene"] elements
+     and compare the Interval-loc coordinates with other genes/RNAs with the same parent
+     Sequence (based on id).
+
+  --rna_bsml:
+     An RNA describing bsml document. Parses Feature[@class="gene"] and looks for overlaps
+     with genes
+
+  --evidence_bsml:
+     Bsml files describing sequence alignments from blast, ber, and hmm components
+       
+
+=head1 OUTPUT
+
+  Will produce a bsml file much like that provided in the --input_file, only with some
+  genes removed due to overlaps.
+
+  The flagged_overlaps_file will contain information about unresolved overlaps in the
+  following format:
+
+    feature_id1  type1  left1  right1  feature_id2  type2  left2  right2  
+
+  Where type is either gene or RNA
+
+=head1  CONTACT
+
+    Kevin Galens
+    kgalens@som.umaryland.edu
+
+=cut
