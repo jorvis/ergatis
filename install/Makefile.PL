@@ -195,6 +195,7 @@ pipeline_templates:
 	@install global_pipeline_templates/Pangenome/xdformat.default.config $(PREFIX)/global_pipeline_templates/Pangenome
 	@install global_pipeline_templates/Pangenome/xdformat.nuc.config $(PREFIX)/global_pipeline_templates/Pangenome
 	@install global_pipeline_templates/Pangenome/xdformat.pepdb.config $(PREFIX)/global_pipeline_templates/Pangenome
+    
 	mkdir -p $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/auto_gene_curation.overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/ber.post_overlap_analysis.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
@@ -233,6 +234,7 @@ pipeline_templates:
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/rpsblast.priam.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/signalp.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/split_multifasta.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
+    @install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/split_multifasta.split_interevidence_regions.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/start_site_curation.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/tmhmm.default.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
 	@install global_pipeline_templates/Prokaryotic_Annotation_Pipeline/train_for_glimmer3_iteration.train_for_glimmer.config $(PREFIX)/global_pipeline_templates/Prokaryotic_Annotation_Pipeline
