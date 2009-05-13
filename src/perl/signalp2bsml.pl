@@ -102,6 +102,7 @@ my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
 my $idcreator = new Ergatis::IdGenerator( id_repository => $options{'id_repository'});
+$idcreator->set_pool_size( 'signal_peptide' => 25 );
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
