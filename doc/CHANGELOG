@@ -1,5 +1,29 @@
 next
 ----
+
+
+ergatis-v2r11b1
+---------------
+-fixed pipeline layout save warning error
+-fixed bug where a string of s characters weren't allowed as a label
+-update of JOCs comparative pipeline
+-genbank2bsml: improved identifier support and including systematic_id tag
+-genemark2bsml: added example of expected input file
+-gff2bsml: added multiple options and a bugfix
+-added support for gzipped bsml to jaccard component
+-pangenome R scripts: Added new graphs with error bars. One set has the sampled points and one has only the error bars and medians.
+-PFunc: CommonName annotation tries to remove parens from long common names
+-added pipeline_submission_queue and pipeline_submission_project options to ergatis.ini file. These options control how pipelines are submitted as jobs (and are only used when the submit_pipelines_as_jobs = 1 [default = 0])
+-File::OpenFile: added concat option and also now uses Carp for printing error messages
+-initdb: changed default for allow_duplicates option to 1
+-infernal2bsml: added support for new version of infernal
+-software.config: added NR database to general section and also default infernal dbs
+-genbank2bsml: added a couple options to component as well as setting some defaults for the .config
+-infernal: Added multiple options to component
+-RNAmmer.config: moved $;PROJECT_ABBREVIATION$; from [input] section to [parameters] section
+-added db2bsml component
+-added split_multifasta.split_interevidence_regions to install/Makefile.PL
+-reset_component.cgi was added to the interface
 -added NCBI_BLAST_NUC_NR to software.config
 -fixed regex in BERParser (for EC parsing from char proteins)
 -removed unused lib from annotation_collection_to_bsml.pl
