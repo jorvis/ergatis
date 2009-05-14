@@ -90,11 +90,17 @@ close OUT;
 close IN;
 
 if(system("/usr/local/bin/R CMD BATCH $input_r $output_path/".$r_filename."out")==0 ) {
-    print STDERR "converting to eps\n";
-    system("ps2epsi $output_path/$ps_file $output_path/$eps_file" )==0 or warn "Unable to run ps2epsi command $!\n";
+    my @r_files = `ls $output_path/*.ps`;
+    foreach my $file(@r_files) {
+        chomp $file;
+        my $eps_file = $file;
+        $eps_file =~ s/\.ps/\.eps/;
+        print STDERR "converting $file to eps\n";
+        system("ps2epsi $file $eps_file" )==0 or warn "Unable to run ps2epsi command $!\n";
+    }
 }
 else {
-    or warn "Unable to run the R command $!\n";
+    warn "Unable to run the R command $!\n";
 }
 
 print STDERR "done.\n";
