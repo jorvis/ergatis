@@ -16,6 +16,14 @@
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
+            <param>  
+                <key>--db_list</key>
+                <value>$;DB_LIST$;</value>
+            </param>
+            <param>  
+                <key>--organism_to_db_mapping</key>
+                <value>$;ORGANISM_TO_DB_MAPPING$;</value>
+            </param>
             <dceSpec type="sge">
                 <OS>linux</OS>
             </dceSpec>
