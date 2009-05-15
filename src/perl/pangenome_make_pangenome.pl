@@ -106,16 +106,16 @@ my %seen1;
 my %seen2;
 open OUT, ">$options{'output_path'}/pangenome.output" or die "Unable to open output file $options{'output_path'}/pangenome.output";
 for (my $n=1;$n<=$num_genomes;$n++){
-	my $max1 = factorial($num_genomes)/factorial($num_genomes-$n);
+	my $max1 = int(factorial($num_genomes)/factorial($num_genomes-$n));
 	if ($n>2){$max1*=0.8};
 	my $max2 = $comparisons;
 	my $iter=0;
 	while($iter<$max1 && $iter<$max2){
-		my @genomes;
+ 		my @genomes;
 		my $string ;
 		my %seen1;
 		my $i=0;
-		while($i<$n){
+ 		while($i<$n){
 			my $lab=int(rand($num_genomes)+1);
 			unless ($seen1{$lab}){
 				$seen1{$lab}=1;
@@ -173,7 +173,7 @@ sub factorial{
                 return $facn;
         }
         else{
-                return "1";
+                return 1;
         }
 }
 sub estimate_multiplicity {
