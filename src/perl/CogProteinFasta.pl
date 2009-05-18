@@ -10,12 +10,14 @@ use Ergatis::Logger;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
-my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'maxCogSeqCount|s=s', 'extension|e=s', 'use_feature_ids_in_fasta=i', 'log|l=s', 'debug=s');
+my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'outputToken=s', 'maxCogSeqCount|s=s', 'extension|e=s', 'use_feature_ids_in_fasta=i', 'log|l=s', 'debug=s');
 
 my $cogFile = $options{'cogFile'};
 my $bsmlModelList = $options{'bsmlModelList'};
 my $outDir = $options{'outputDir'};
 my $maxCogSeqCount = $options{'maxCogSeqCount'};
+my $outputToken = $options{'outputToken'};
+$options{'outputToken'} .= "_$$";
 if($options{'extension'} eq ''){
     $options{'extension'} = 'fsa';
 }
@@ -120,7 +122,7 @@ sub outputCog {
     $logger->debug("outputting cog $cog");
     if(scalar(@{$list})>1){
 		if(@{$list} <= $maxCogSeqCount){
-		    open( OUTFILE, ">$outDir/$cog.$$.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
+		    open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
 		    foreach my $seq ( @{$list} )
 		    {
                 print OUTFILE ">$seq\n";
@@ -138,7 +140,7 @@ sub outputCog {
 		    close( OUTFILE );
 		}
 		else{
-		    open( OUTFILE, ">$outDir/$cog.$$.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
+		    open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
 		    foreach my $seq ( @{$list} )
 		    {
                 print OUTFILE ">$seq\n";
