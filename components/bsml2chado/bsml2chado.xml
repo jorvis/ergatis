@@ -128,7 +128,7 @@
 	    </param>
 	</command>
 	<!--Iterator-->
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/collatetables.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=1"/> 
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/collatetables.list,$;NODISTRIB$;=0,$;GROUP_COUNT$;=50"/> 
 	<command>
 	    <type>RunDistributedCommand</type>
 	    <name>extract checksums</name>
@@ -161,29 +161,78 @@
         <dceSpec type="sge">
             <OS>linux</OS>
         </dceSpec>
-	</command>
-	<command>
-	    <type>RunDistributedCommand</type>
-	    <name>sort checksums</name>
-	    <state>incomplete</state>
-	    <executable>sort</executable>
-	    <arg>-k1,1 -k2,2n -T $;TMP_DIR$;</arg>
-	    <param>
-		<key>stdin</key>
-		<value>$;TMP_DIR$;/checksums.out</value>
-	    </param>
-	    <param>
-		    <key>stdout</key>
-		    <value>$;TMP_DIR$;/checksums.out.sorted</value>
-        </param>
-        <param>
-		    <key>stderr</key>
-		    <value>$;TMP_DIR$;/checksums.out.sorted.stderr</value>
-	    </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>split</name>
+            <state>incomplete</state>
+            <executable>split</executable>
+            <arg> -d -l $;SORT_CHUNK_SIZE$; $;TMP_DIR$;/checksums.out  $;TMP_DIR$;/checksums.out.split.</arg>
         <dceSpec type="sge">
             <OS>linux</OS>
         </dceSpec>
-	</command>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create file list of spit checkums.out</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;TMP_DIR$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.split\..*"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TMP_DIR$;/splitchecksumsoutfiles.list</value>
+            </param>
+        </command> 
+        <command>
+         <type>RunUnixCommand</type>
+         <name>create_file_iterator_list</name>
+         <state>incomplete</state>
+         <executable>$;BIN_DIR$;/create_file_iterator_list</executable>
+         <param>
+	  <key>--input_file_list</key>
+	  <value>$;TMP_DIR$;/splitchecksumsoutfiles.list</value>
+         </param>
+         <param>
+	  <key>--output_iter_list</key>
+	  <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR8$;.list</value>
+         </param>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR8,$;ITERATOR_XML$;=ITERATOR8_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR8$;.list,$;NODISTRIB$;=0,$;GROUP_COUNT$;=50"/>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create sorted files list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;TMP_DIR$;/$;ITERATOR8$;/</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.sorted"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TMP_DIR$;/sortedfiles.list</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>merge sorted split checksum files</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/merge_sorted_files</executable>
+            <arg> $;TMP_DIR$;/sortedfiles.list $;TMP_DIR$;/checksums.out.sorted -k1,1 -k2,2n -T $;TMP_DIR$;</arg>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
+        </command>
 	<command>
 	    <type>RunDistributedCommand</type>
 	    <name>assign primary keys</name>
@@ -225,28 +274,74 @@
             <OS>linux</OS>
         </dceSpec>
 	</command> 
-	<command>
-	    <type>RunDistributedCommand</type>
-	    <name>sort checksums by file offset</name>
-	    <state>incomplete</state>
-	    <executable>sort</executable>
-	    <arg>-k1,1 -k2,2n -T $;TMP_DIR$;</arg>
-	    <param>
-		<key>stdin</key>
-		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets</value>
-	    </param>
-	    <param>
-		<key>stderr</key>
-		<value>$;TMP_DIR$;/checksums.out.sorted.pks.offsets.stderr</value>
-	    </param>
+        <command>
+            <type>RunDistributedCommand</type>
+            <name>split</name>
+            <state>incomplete</state>
+            <executable>split</executable>
+            <arg> -d -l 10000000 $;TMP_DIR$;/checksums.out.sorted.pks $;TMP_DIR$;/checksums.out.splitoffsets.</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create file list of spit checkums.out</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;TMP_DIR$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.splitoffsets\..*"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TMP_DIR$;/splitchecksumsoffsetsoutfiles.list</value>
+            </param>
+        </command>
+        <command>
+         <type>RunUnixCommand</type>
+         <name>create_file_iterator_list</name>
+         <state>incomplete</state>
+         <executable>$;BIN_DIR$;/create_file_iterator_list</executable>
+         <param>
+	  <key>--input_file_list</key>
+	  <value>$;TMP_DIR$;/splitchecksumsoffsetsoutfiles.list</value>
+         </param>
+         <param>
+	  <key>--output_iter_list</key>
+	  <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR9$;.list</value>
+         </param>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR9,$;ITERATOR_XML$;=ITERATOR9_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR9$;.list,$;NODISTRIB$;=0,$;GROUP_COUNT$;=50"/>
+       <command>
+            <type>RunUnixCommand</type>
+            <name>create sorted files list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;TMP_DIR$;/$;ITERATOR9$;/</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.sorted"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TMP_DIR$;/sortedoffsetsfiles.list</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>merge sorted split checksum files</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/merge_sorted_files</executable>
+            <arg> $;TMP_DIR$;/sortedoffsetsfiles.list $;TMP_DIR$;/checksums.out.sorted.pks.offsets -k1,1 -k2,2n -T $;TMP_DIR$;</arg>
         <dceSpec type="sge">
             <OS>linux</OS>
-        </dceSpec>
-	</command>
+        </dceSpec> 
+        </command>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>create output directory</name>
@@ -317,7 +412,7 @@
 		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_cm_indices.stderr</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR7,$;ITERATOR_XML$;=ITERATOR7_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR7,$;ITERATOR_XML$;=ITERATOR7_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Drop indexes</name>
@@ -348,7 +443,7 @@
 		<value>$;TMP_DIR$;/ddl2iterator.pl.drop_indexes.stderr</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_indexes.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR3,$;ITERATOR_XML$;=ITERATOR3_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/drop_indexes.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>list bcp files</name>
@@ -367,7 +462,7 @@
 		<value>$;TMP_DIR$;/bcp.out.list</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bcp.out.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR4,$;ITERATOR_XML$;=ITERATOR4_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bcp.out.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=50"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Rebuild indexes</name>
@@ -394,7 +489,7 @@
 		<value>$;TMP_DIR$;/ddl2iterator.pl.create_indexes.stderr</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR5,$;ITERATOR_XML$;=ITERATOR5_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_indexes.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Restore chado-mart indices</name>
@@ -421,6 +516,6 @@
 		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_indices.stderr</value>
 	    </param>
 	</command>
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR6,$;ITERATOR_XML$;=ITERATOR6_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_NUMBER$;=1"/>
+	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR6,$;ITERATOR_XML$;=ITERATOR6_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/create_cm_indices.list,$;NODISTRIB$;=1,$;GROUP_COUNT$;=1"/>
     </commandSet>
 </commandSetRoot>
