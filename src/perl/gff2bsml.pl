@@ -70,6 +70,7 @@ gff32bsml.pl
          --insert_polypeptides
          --inserted_polypeptide_id_type=CDS
          --default_seq_class=assembly
+         --default_seq_attributes='SO:contig'
          --feat_attribute_mappings='Name:gene_product_name,comment:comment'
          --clone_feat_attribute_mappings='gene:gene_product_name:transcript,gene:gene_product_name:CDS'
          --feat_xref_mappings='ID:mydb:accession,Name:mydb:pub_locus'
@@ -189,6 +190,10 @@ B<--default_seq_class,-e>
     optional.  default sequence class/SO type (e.g., 'assembly', 'supercontig') to use for sequences 
     for which the type cannot be parsed from the GFF file.
 
+B<--default_seq_attributes,-e>
+    optional.  comma-delimited list of BSML attributes (in colon-delimited key:value form) to associate
+    with each genomic sequence in the GFF file.
+
 B<--feat_attribute_mappings>
     optional.  a comma-delimited list of GFF attribute -> BSML Attribute mappings, each of which is
     defined by a source (GFF) attribute name and a target (BSML) attribute name, separated by a colon,
@@ -294,7 +299,7 @@ use File::Spec;
 use URI::Escape;
 
 ## global/default values    
-my $DEFAULT_SEQ_CLASS = '';
+my $DEFAULT_SEQ_CLASS = 'assembly';
 my $DEFAULT_PEPTIDE_ID_REGEX = '^>(\S+)';
 my $DEFAULT_DNA_ID_REGEX = '^>(\S+)';
 my $GFF_SEQID_REGEX = '^(>\S.*)';
@@ -382,6 +387,7 @@ my $results = GetOptions($options,
                          'insert_polypeptides',
                          'inserted_polypeptide_id_type=s',
                          'default_seq_class|e=s',
+                         'default_seq_attributes|e=s',
                          'feat_attribute_mappings=s',
                          'clone_feat_attribute_mappings=s',
                          'feat_xref_mappings|x=s',
@@ -550,6 +556,7 @@ fetch_node_type('gene', \@root_nodes, $gene_nodes);
 my $num_genes = scalar(@$gene_nodes);
 $logger->debug("found $num_genes gene(s)");
 my $doc = new BSML::BsmlBuilder();
+my $feat_table = undef; # global var
 
 # add Genomes
 my $genome = $doc->createAndAddGenome();
@@ -1113,6 +1120,16 @@ sub gene_feature_hash_to_bsml {
         $seq = $doc->createAndAddSequence( $bsml_id, $seq_id, $gff_seqlen, 'dna', $options->{'default_seq_class'} );
         my $genome_link = $doc->createAndAddLink($seq, 'genome', '#' . $genome_id);
 
+        my $default_atts = $options->{'default_seq_attributes'};
+        if (defined($default_atts) && ($default_atts =~ /:/)) {
+            foreach my $def_att (split(/,/, $default_atts)) {
+                my($key, $val) = split(/:/, $def_att);
+                if (defined($key) && defined($val)) {
+                    $doc->createAndAddBsmlAttribute($seq, $key, $val);
+                }                    
+            }
+        }
+
         if (defined($dseq)) {
             if (!$options->{'dna_no_seqdata'}) {
                 my $path = File::Spec->rel2abs($dseq_file);
@@ -1158,7 +1175,7 @@ sub gene_feature_hash_to_bsml {
         my @mrna_ids = map {{'id' => $_, 'type' => $ttype}} keys(%{$features->{$ttype}});
         push(@transcript_ids, @mrna_ids);
     }
-    my $feat_table = $doc->createAndAddFeatureTable($seq);
+    $feat_table = $doc->createAndAddFeatureTable($seq) if (!defined($feat_table));
 
     # $feat_groups indexed by transcript id
     my $feat_groups = {};
