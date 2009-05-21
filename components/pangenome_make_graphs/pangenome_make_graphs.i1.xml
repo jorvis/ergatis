@@ -18,7 +18,7 @@
             </param>
             <param>
                 <key>--title</key>
-                <value>$;TITLE$;</value>
+                <value>'$;TITLE$;'</value>
             </param>
             <param>  
                 <key>--output_path</key>
