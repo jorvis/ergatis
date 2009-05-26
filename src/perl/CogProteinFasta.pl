@@ -86,6 +86,9 @@ while(my $bsmlFile=<FILE>)
         $logger->debug("parsing $bsmlFile");
         $seqParser->parse( $bsmlFile );
     }
+    else {
+        $logger->logdie("could not open $bsmlFile.");
+    }
 }
 
 open( INPUTCOGS, "<$cogFile" ) or $logger->logdie("could not open $cogFile.");
