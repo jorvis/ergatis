@@ -283,18 +283,18 @@ sub parse_genbank_file {
     # check for potential misparse
     # changing these to warnings, and having taxonomic classification take priority
     # see bug #3251 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3251
-    if ( ($gbr{'molecule'} eq 'dna') && !($gbr{'polymer_type'} =~ /DNA/) ) {
+    if ( ($gbr{'molecule'} eq 'dna') && !($gbr{'polymer_type'} =~ /DNA/i) ) {
         warn "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
-        if ($gbr{'polymer_type'} =~ /RNA/) {
+        if ($gbr{'polymer_type'} =~ /RNA/i) {
         $gbr{'molecule'} = 'rna';
         }
         else {
         die "This is an unreconcialable mismatch";
         }
     }
-    if ( ($gbr{'molecule'} eq 'rna') && !($gbr{'polymer_type'} =~ /RNA/) ) {
+    if ( ($gbr{'molecule'} eq 'rna') && !($gbr{'polymer_type'} =~ /RNA/i) ) {
         warn "Mismatch between molecule ($gbr{molecule}, parsed from ".$seq->molecule().") and polymer_type ($gbr{polymer_type})";
-        if ($gbr{'polymer_type'} =~ /DNA/) {
+        if ($gbr{'polymer_type'} =~ /DNA/i) {
         $gbr{'molecule'} = 'dna';
         }
         else {
