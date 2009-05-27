@@ -328,7 +328,8 @@ for (my $i = 1; $i < $max; $i++) {
     print STDERR "Running analysis with $i reference genomes...";
     
     ## new
-    my $true_max = factorial($max - 1) / (factorial(($i + 1) - 1) * factorial($max - ($i + 1)));
+    my $true_max = int(factorial($max - 1) / (factorial(($i + 1) - 1) * factorial($max - ($i + 1))));
+    print STDERR "Maximum number of computations for $i on $max genomes: $true_max\n";
     
     for (my $j = 0; $j < $max; $j++) {
         
@@ -338,7 +339,7 @@ for (my $i = 1; $i < $max; $i++) {
         splice @ref_genomes, $j, 1;
          
         for (my $point_count=0; ($point_count < $true_max && $point_count < $options{'multiplicity'});){
-            my @reference_set = rand_set( set => \@ref_genomes, size => $i );
+            my @reference_set = rand_set( set => \@ref_genomes, size => $i, shuffle => 0 );
 
             my @seen_vec = undef;
 

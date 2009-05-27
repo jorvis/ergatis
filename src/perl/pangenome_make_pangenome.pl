@@ -50,13 +50,15 @@ B<--help,-h>
 use Pod::Usage;
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-
+use Data::Random qw(:all);
+use List::Util qw(min max);
 my %options = ();
 my $results = GetOptions( \%options,
                           'profile|p=s',
                           'comparisons|c:s',
                           'multiplicity|m:s',
                           'output_path|o=s',
+                          'respect_order|r',
                           'help|h') || pod2usage();
 
 
@@ -78,8 +80,10 @@ my $num_genomes = scalar(@a)-2;
 
 my $genome_name;
 my %genome_number;
+my @genome_names;
 for (my $i=2;$i<scalar(@a);$i++){
 	$genome_name->{$i-1}=$a[$i];
+    push(@genome_names, $a[$i]);
 	$genome_number{$a[$i]}=$i-1;
 }
 #
@@ -95,7 +99,7 @@ while($l=<IN>){
 }
 close IN;
 
-my $comparisons = $options{'comparisons'} ? $options{'comparisons'} :1000;
+my $comparisons = $options{'comparisons'} ? $options{'comparisons'} :(($num_genomes)*1000);
 my $multiplicity = $options{'multiplicity'};
 $comparisons = $multiplicity ? &estimate_comparisons($num_genomes,$multiplicity) : $comparisons;
 
@@ -104,33 +108,69 @@ $comparisons = $multiplicity ? &estimate_comparisons($num_genomes,$multiplicity)
 #
 my %seen1;
 my %seen2;
+
+# HACK - basically generating a list of indices of the matrix.
+# Could probably just use the actual names.
+my $all_genomes = [2..($num_genomes+2)];
+
+$options{'respect_order'} = defined($options{'respect_order'}) ? $options{'respect_order'} : 1;
+print STDERR "Respecting order\n" if $options{'respect_order'};
+
 open OUT, ">$options{'output_path'}/pangenome.output" or die "Unable to open output file $options{'output_path'}/pangenome.output";
 for (my $n=1;$n<=$num_genomes;$n++){
-	my $max1 = int(factorial($num_genomes)/factorial($num_genomes-$n));
-	if ($n>2){$max1*=0.8};
-	my $max2 = $comparisons;
+
+    my $max1;
+
+    # If we are respecting order (i.e. reordering a set counts as a new set) then
+    # we'll use a different formula to calculate our max.
+    if($options{'respect_order'}) {
+        $max1 = int(factorial($num_genomes)/factorial($num_genomes-$n));
+
+    }
+    else {
+        # Used to be calculating the max using the following but this assumes that order matters:
+        $max1 = int(factorial($num_genomes) / (factorial($n) * factorial($num_genomes - ($n)))); 
+    }
+
+#	if ($n>2){$max1*=0.8}; # Not sure why we would do this
+
+    # HACK - doing this so that we estimate the number of comparisons per n
+	my $max2 = $comparisons/($num_genomes);
+
 	my $iter=0;
+#    print STDERR "$iter $max1 $max2\n";
+
+    # Loop until we have the actual max (max1) or the sample max (max2)
 	while($iter<$max1 && $iter<$max2){
  		my @genomes;
 		my $string ;
 		my %seen1;
 		my $i=0;
- 		while($i<$n){
-			my $lab=int(rand($num_genomes)+1);
-			unless ($seen1{$lab}){
-				$seen1{$lab}=1;
-				$string.="-$lab";
-				push @genomes,$genome_name->{$lab};
-				$i++;
-			}
-		}
+
+        # Using the rand_set function from Math::Random
+        # If we are respecting order than we want to allow for shuffle.
+        # If not then we want to prevent shuffles.
+        if($options{'respect_order'}) {
+            @genomes = rand_set( set => \@genome_names, size => $n, shuffle => 1 );
+        }
+        else {
+            @genomes = rand_set( set => \@genome_names, size => $n, shuffle => 0 );
+        }
+
+        $string = join("-", @genomes);
 		unless ($seen2{$string}){
 			$seen2{$string}=1;
-			print OUT $n,"\t",calcpang(@genomes,),"\t",$string,"\n";
+#            my @genomes_names;
+#            map {push(@genomes_names,($genome_name->{$_}))}@genomes;
+			print OUT $n,"\t",calcpang(@genomes),"\t",join("-",@genomes),"\n";
 			$iter++;
+            print STDERR "\r".sprintf("%.0f",100*($iter/(min(($max1,$max2)))))."% done with $n";;
 		}
+        else {
+#            print STDERR "Found a duplicate $string\n";
+        }
 	}
-	print STDERR "performed $iter permutations for N=$n genomes\n";
+	print STDERR "\nperformed $iter permutations for N=$n genomes\n";
 }
 close OUT;
 print STDERR "Done.\n";
@@ -152,7 +192,7 @@ sub calcpang{
 		foreach $gene (keys %{ $matrix->{$genome1} }){
 			$count = 0;
 			foreach $genome2 (@done_genomes){
-				$count += $matrix->{$genome1}->{$gene}->{$genome2};
+                $count += $matrix->{$genome1}->{$gene}->{$genome2};
 			}
 			if ($count==0){$pangenome_size++}
 		}
