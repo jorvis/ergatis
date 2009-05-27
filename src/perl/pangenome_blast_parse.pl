@@ -227,6 +227,7 @@ sub read_organism_to_db_mapping {
         $_ =~ /^(.*)\s(\S+)$/;
         my $org = $1;
         my $db = $2;
+        $org =~ s/\s/_/g;
         $db_filter->{$db} = 1;
         $db_to_org->{$db} = $org;
     }close IN;
