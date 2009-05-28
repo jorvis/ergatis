@@ -302,6 +302,10 @@ sub parse_genbank_file {
         }
     }
 
+    if( $gbr{'polymer_type'} eq 'dna' || $gbr{'polymer_type'} eq 'rna' ) {
+        $gbr{'polymer_type'} = uc($gbr{'polymer_type'});
+    }
+
     # Add strand attribute (this may not be used)
     # direct creation supported via createAndAddExtendedSequence, but this is simpler
     # valid values are: std-not-set|ss|ds|mixed|std-other
@@ -575,12 +579,14 @@ sub to_bsml {
     # modified Cross-reference@database to exclude identifier
     # see bug #3278 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3278
     my %xref;
-    $xref{'taxon_id'} = $doc->createAndAddCrossReference(
+    if( exists( $gbr{'taxon_id'} ) && defined( $gbr{'taxon_id'} ) ) {
+        $xref{'taxon_id'} = $doc->createAndAddCrossReference(
                         'parent'          => $genome, 
                         'database'        => 'taxon',           # //Genome/Cross-reference/@database
                         'identifier'      => $gbr{'taxon_id'},  # //Genome/Cross-reference/@identifier
                         'identifier-type' => 'taxon_id'         # //Genome/Cross-reference/@identifier-type
                         );
+    }
 
     # add Cross-references
     # use GO standard database names: http://www.geneontology.org/doc/GO.xrf_abbs
