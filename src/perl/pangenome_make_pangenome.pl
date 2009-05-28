@@ -101,7 +101,10 @@ close IN;
 
 my $comparisons = $options{'comparisons'} ? $options{'comparisons'} :(($num_genomes)*1000);
 my $multiplicity = $options{'multiplicity'};
-$comparisons = $multiplicity ? &estimate_comparisons($num_genomes,$multiplicity) : $comparisons;
+if($multiplicity) {
+    my ($est_comp, $tot_comp)  =  &estimate_comparisons($num_genomes,$multiplicity);
+    $comparisons = $multiplicity ? $est_comp : $comparisons;
+}
 
 #
 # GENERATE randomly permutations to be used as sequences of genomes for the pan-genome calculation
@@ -267,7 +270,7 @@ sub estimate_comparisons{
     my $theor = 0;
     my $real = 0;
     for ($i=2; $i<=$ngenomes; $i++){
-        my $theor = factorial($ngenomes) / ( factorial($i - 1) * factorial($ngenomes - $i) );
+        my $theor = int(factorial($ngenomes) / ( factorial($i - 1) * factorial($ngenomes - $i) ));
         my $real = $multiplex * $ngenomes;
         $theor_comparisons += $theor;
         if ($theor < $real){
