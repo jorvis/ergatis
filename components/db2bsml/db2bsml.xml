@@ -51,7 +51,7 @@
 	    <type>RunJavaUnixCommand</type>
 	    <name>Create FASTA file list</name>
 	    <executable>find</executable>
-	    <arg>$;FASTA_DIRECTORY$; -name '*.fsa'</arg>
+	    <arg>$;OUTPUT_DIRECTORY$; -name '*.fsa'</arg>
             <param>
 		<key>stdout</key>
 		<value>$;FASTA_OUTPUT_LIST$;</value>
