@@ -2,20 +2,29 @@ package GenePredictionUtils::GenePredictionBsmlGenerator;
 
 use strict;
 use warnings;
-
-BEGIN {
 use BSML::BsmlBuilder;
-use Papyrus::TempIdCreator;
-}
 
-#silly hack to get it to commit in cvs
+## keep things properly scoped
+{
+
+my %_atts = ( 
+    id_generator => undef,
+);
 
 sub new
 {
-	my $class = shift;
-	my $this = {};
-	bless $this, $class;
+	my ($class, %args) = @_;
+    
+	my $this = bless { %_atts }, $class;
 	$this->Init;
+    
+    ## an id_generator reference is required
+    if ( ! $args{id_generator} ) {
+        die "you must pass an id_generator object reference when creating a new GenePredictionBsmlGenerator";
+    }
+    
+    $this->{id_generator} = $args{id_generator};
+    
 	return $this;
 }
 
@@ -47,9 +56,9 @@ sub GenerateBsml
 	    $feat_group_map) = @_;
 
 	my $doc = new BSML::BsmlBuilder;
-	my $idcreator = new Papyrus::TempIdCreator;
+	my $idcreator = $this->{id_generator};
 	my $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
-	AddLink($seq, $gene_finder_name);
+	AddLink($seq, $gene_finder_name, 'input_of');
 	my $feat_table = $doc->createAndAddFeatureTable($seq);
 	if ($fasta) {
 		$doc->createAndAddSeqDataImport($seq, 'fasta', $fasta,
@@ -77,34 +86,46 @@ sub GenerateBsml
 		if (!$gene_plus) {
 			($gene_from, $gene_to) = ($gene_to, $gene_from);
 		}
+
 		my $gene = $doc->createAndAddFeature
 			($feat_table,
-			 $idcreator->new_id(db		=> $project,
-					    so_type	=> 'gene'),
+			 $idcreator->next_id(project		=> $project,
+					    type	=> 'gene'),
 			 '', 'gene');
-		AddLink($gene, $gene_finder_name);
-		AddLoc($gene, $gene_from, $gene_to);
-		my $feat_group = $doc->createAndAddFeatureGroup
-			($seq, '', $gene->returnattr('id'));
+             
+		AddLink($gene, $gene_finder_name, 'computed_by');
+        AddLoc($gene, $gene_from, $gene_to);
+
+		my $feat_group = $doc->createAndAddFeatureGroup($seq, '', $gene->returnattr('id'));
 		if ($feat_group_map) {
 			$$feat_group_map{$gene_id} = $feat_group;
 		}
-		$feat_group->addBsmlFeatureGroupMember
-			($gene->returnattr('id'), $gene->returnattr('class'));
+
+		$feat_group->addBsmlFeatureGroupMember($gene->returnattr('id'), $gene->returnattr('class'));
+        
+        AddFeature($doc, $feat_table, $feat_group,
+				   $idcreator, $project, 'CDS',
+				   $gene_finder_name,
+				   $gene_from, $gene_to);
+        
+        AddFeature($doc, $feat_table, $feat_group,
+				   $idcreator, $project, 'transcript',
+				   $gene_finder_name,
+				   $gene_from, $gene_to);
+        
 		foreach my $coords (@$exons) {
 			AddFeature($doc, $feat_table, $feat_group,
 				   $idcreator, $project, 'exon',
-				   $gene_finder_name,
-				   $$coords[0], $$coords[1]);
-			AddFeature($doc, $feat_table, $feat_group,
-				   $idcreator, $project, 'CDS',
 				   $gene_finder_name,
 				   $$coords[0], $$coords[1]);
 		}
 	}
 	$doc->createAndAddAnalysis
 		(id		=> "$gene_finder_name\_analysis",
-		 sourcename	=> "$out");
+		 sourcename	=> "$out",
+         program => $gene_finder_name,
+         version => 'current',
+         algorithm => $gene_finder_name);
 	return $doc;
 }
 
@@ -121,8 +142,8 @@ sub AddLoc
 
 sub AddLink
 {
-	my ($elt, $gene_finder_name) = @_;
-	$elt->addBsmlLink('analysis', "#$gene_finder_name\_analysis");
+	my ($elt, $gene_finder_name, $role) = @_;
+	$elt->addBsmlLink('analysis', "#$gene_finder_name\_analysis", $role);
 }
 
 sub AddFeature
@@ -131,14 +152,16 @@ sub AddFeature
 	    $gene_finder_name, $coord1, $coord2) = @_;
 	my $feat = $doc->createAndAddFeature
 		($feat_table,
-		 $idcreator->new_id(db		=> $project,
-				    so_type	=> $type),
+		 $idcreator->next_id(project		=> $project,
+				    type	=> $type),
 				 '', $type);
-	AddLink($feat, $gene_finder_name);
+	AddLink($feat, $gene_finder_name, 'computed_by');
 	$feat_group->addBsmlFeatureGroupMember($feat->returnattr('id'),
 				 	       $feat->returnattr('class'))
 		if $feat_group;
 	AddLoc($feat, $coord1, $coord2);
+}
+
 }
 
 1;
