@@ -210,7 +210,7 @@ while (my $line = <$ifh>) {
 foreach my $s(keys(%segment_hash)) {
     my $seq = $doc->createAndAddSequence($s, $defline, '', 'aa', 'polypeptide');
     $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
-    $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_input}, $s . '_seq', $s );
+    $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_input}, "sdi_" . $s . '_seq', $s );
        $seq->addBsmlLink('analysis', '#tmhmm_analysis', 'input_of');
     
     foreach my $prop_ref(@{$property_hash{$s}}) {

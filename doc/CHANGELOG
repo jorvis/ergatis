@@ -1,6 +1,6 @@
 next
 ----
-
+-tmhmm2bsml: changed Seq-data-import[@id] value to ensure id does not start with numbers.
 
 ergatis-v2r11b1
 ---------------
