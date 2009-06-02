@@ -41,10 +41,11 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 
-BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-}
+#BEGIN {
+#    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
+#    import Workflow::Logger;
+#}
+use Ergatis::Logger;
 use XML::Twig;
 use File::Basename;
 use Annotation::Util2;
@@ -61,21 +62,26 @@ my $results = GetOptions (\%options,
 			  'logfile=s',
                           'debug=s', 
                           'help|h' ) || pod2usage();
+my $logfile = $options{'logfile'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+                                  'LOG_LEVEL'=>$options{'debug'});
+$logger = $logger->get_logger();
 
-my $logfile;
 
-if (!defined($options{logfile})){
+# my $logfile;
 
-    $logfile = '/tmp/' . File::Basename::basename($0) . '.log';
+# if (!defined($options{logfile})){
 
-} else {
+#     $logfile = '/tmp/' . File::Basename::basename($0) . '.log';
 
-    $logfile = $options{logfile};
-}
+# } else {
 
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Workflow::Logger::get_logger();
+#     $logfile = $options{logfile};
+# }
+
+# my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+# 				  'LOG_LEVEL'=>$options{'debug'});
+# $logger = Workflow::Logger::get_logger();
 
 my $outfile;
 
@@ -205,22 +211,35 @@ sub parseBSMLFile {
     my ($bsmlfile) = @_;
 
     ## Function: parse input BSML file for sequence and gene information
+    unless (-e $bsmlfile) {
+	$bsmlfile .= '.gz';
+    }
+
     my $ifh;
-
-    if (stat "$bsmlfile.gz"){
-	$bsmlfile .= ".gz";
-    }
-    
     if ($bsmlfile =~ /\.(gz|gzip)$/) {
-	open ($ifh, "<:gzip", $bsmlfile) || $logger->logdie("Could not open BSML file '$bsmlfile' ".
-							    "in read mode:$!");
+	open ($ifh, "<:gzip", $bsmlfile) || die "couldn't open '$bsmlfile' for reading: $!";
+    } else {
+	open ($ifh, "<".$bsmlfile) || die "couldn't open '$bsmlfile' for reading: $!";
     }
+#     my $ifh;
 
-    my $twig = new XML::Twig(   TwigRoots => { 'Sequence' => 1},
-				TwigHandlers => { 'Sequence' => \&sequenceCallBack }
-				);
-    
-    $twig->parsefile($bsmlfile);    # build the twig
+#     if (stat "$bsmlfile.gz"){
+# 	$bsmlfile .= ".gz";
+#     }
+     
+#     if ($bsmlfile =~ /\.(gz|gzip)$/) {
+# 	open ($ifh, "<:gzip", $bsmlfile) || $logger->logdie("Could not open BSML file '$bsmlfile' ".
+# 							    "in read mode:$!");
+#     }
+
+     my $twig = new XML::Twig(   TwigRoots => { 'Sequence' => 1},
+ 				TwigHandlers => { 'Sequence' => \&sequenceCallBack }
+ 				);
+
+#    $twig->parsefile($bsmlfile);    # build the twig
+
+    $twig->parse($ifh);
+
 }
 
 sub sequenceCallBack {
