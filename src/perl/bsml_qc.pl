@@ -1,11 +1,96 @@
 #!/usr/bin/perl
-# Input a list of BSML files
-# perform a series of QC checks on the files
-# output summary results
+
+=head1 NAME
+
+bsml_qc.pl - Perform a series of quality control checks (counts, etc) on BSML files
+
+=head1 SYNOPSIS
+
+USAGE: bsml_qc.pl 
+            --input_list|l=<list file> or
+            --input_file|i=<bsml file> 
+            --output_dir|o=<dir> 
+          [ --check_dup_polypeptide=0 
+            --check_partial=0 
+            --use_pathema_asmbl_id=0 ]
+            --help
+
+=head1 OPTIONS
+
+B<--input_list,-l>
+    A list of BSML files to be checked.  Either --input_list or --input_file is mandatory.
+
+B<--input_file,-i>
+    A single BSML file to be checked.  Either --input_list or --input_file is mandatory.
+
+B<--output_dir,-o>
+    Output directory for summary, count and log files.
+
+B<--check_dup_polypeptide>
+    optional.  Die if a feature group has > 1 polypeptides, otherwise log and continue.
+
+B<--check_partial>
+    optional.  Die if a feature group is missing 'gene', 'transcript', 'CDS', 'exon', or 'polypeptide',
+    otherwise log and continue.
+
+B<--use_pathema_asmbl_id>
+    optional.  Attempt to parse db and asmbl_id from filename <db>_<asmbl_id>_<other>.bsml.  Default is 1
+    for backwards compatibility, but you probably want 0.
+
+B<--help,-h>
+    This help message
+
+=head1  DESCRIPTION
+
+Quality Control Checks:
+- Checks that each assemble id is unique to a database.
+- Checks that Organism name and species are provided
+- Logs missing Cross-reference/Attribute for Genome
+- Logs that each Sequence assembly has a topology, molecule_name, and molecule_type Attribute
+- Logs that each Feature transcript has a locus Cross-reference and gene_product_name Attribute
+- Logs that each Feature-group has a set of gene, transcript, CDS, exon, and polypeptide Features
+- Confirm files referenced in Seq-data-import elements are present on filesystem and that they contain a source and identifier
+- Log that Genome Cross-references, Sequence Attributes, and Feature transcript Cross-references and Attributes have names and content
+- Log that each Sequence has a class 
+
+Organism Counts:
+  Feature groups (valid/partial/duplicate polypeptides/total)
+  Number of Features of each class
+  Transcript info
+  Seq-data-imports (valid/total)
+  Source files
+
+To add additional QC checks:
+  1) Add a new twig_handler or modify an existing one to identify the object(s)
+  2) Increment a counter in the %onames object
+  3) If it's something that should cause a die situation, create a new option (with the default being
+     not to die), increment a key of %file_fails, and add the check to check_errors
+  4) Add zero-ing to new_oname
+  5) Add output to print_counts
+
+=head1  INPUT
+
+A BSML file or a list of BSML files.
+
+=head1  OUTPUT
+
+Output directory will have
+  bsml_qc.log - lists all failed Quality Control Checks encountered on a file by file basis
+  summary.out - summary counts for each different Organism encountered in all files
+  annotation_counts.txt - the number of transcripts and polypeptides encountered for each db/asmbl_id
+
+
+=head1  CONTACT
+
+    Aaron Gussman
+    agussman@som.umaryland.edu
+
+=cut
+
 use strict;
 use warnings;
 use File::Basename;
-
+use Pod::Usage;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use XML::Twig;
 use Data::Dumper;
@@ -51,11 +136,10 @@ my $twig= new XML::Twig(
 
 
 open(my $LOG, ">$odir/$OUT_BASE.log") || die "Unable to write to log ($odir/bsml_qc.log):$!";
-open(my $AC,  ">$odir/$OUT_BASE.annotation_counts.txt") || die "Unable to write to log ($odir/bsml_qc.annotation_counts.txt):$!";
+open(my $AC,  ">$odir/$OUT_BASE.annotation_counts.txt") || die "Unable to write to annotation_counts ($odir/bsml_qc.annotation_counts.txt):$!";
 # process each bsml file
 foreach my $bsmlfile (@input_files) {
   $LOG_BSML = $bsmlfile;
-  # TODO: what if the file is .gz?
 
   # Deal w/ name junk
   $db = undef;
@@ -68,12 +152,17 @@ foreach my $bsmlfile (@input_files) {
       ($db, $asmbl_id, my $other) = split("_", $basename);
   }
   else {
-#  unless ( defined($db) && defined($asmbl_id) ) {
-    if ( $basename =~ /^([^\.]+)\./ ) {
-      $db = $1;
-      $asmbl_id = $db;
-    }
-    else { warn "going to die"; }
+      # support for parsing chado2bsml-named files, e.g.: ecoli.assembly.450588773.1.bsml
+      if ( $basename =~ /^(.*assembly\.[\d\.]+)/ ) {
+	  $db = $1;
+	  $db =~ s/\.$//; # remove trailing .
+	  $asmbl_id = $db	  
+      }
+      elsif ( $basename =~ /^([^\.]+)\./ ) {
+	  $db = $1;
+	  $asmbl_id = $db;
+      }
+      else { warn "going to die"; }
   }
   die "No db in basename $basename" unless (defined $db);
   die "No asmbl_id in basename $basename of $bsmlfile" unless (defined $asmbl_id);
@@ -426,7 +515,7 @@ sub process_Featuregroup {
       	++$qc{$oname}->{dup_polypeptide_count}->{'Feature-group'};
       	++$file_fails{dup_polypeptide_count}{$LOG_BSML};
 	return;
-      }
+    }
 
     # otherwise, it's valid
     ++$qc{$oname}->{valid_count}->{'Feature-group'};
@@ -498,6 +587,11 @@ sub new_oname {
 		 dup_polypeptide_count => {
 				 'Feature-group' => 0,
 				 },
+		 Sequence_info => {
+				   topology => 0, # <Sequence length="14" topology="linear">
+				   molecule_name => 0, # <Attribute name="molecule_name" >
+				   molecule_type => 0  # <Attribute name="molecule_type">
+			          },
 		 };
 
 }
@@ -536,18 +630,18 @@ sub parse_options {
 		'check_partial=s',
 		'use_pathema_asmbl_id=s',
 		'help|h',
-                ) || print_instructions("Unprocessable option");
+                ) || pod2usage({ -message =>"Unprocessable option"});
 
     if ($options{help}) {
-      print_instructions('');
+      pod2usage();
     }
 
     unless ( (defined($options{input_list})) || (defined($options{input_file})) ) {
-        print_instructions( "input_list ($options{input_list}) not readable");
+        pod2usage( { -message => "input_list ($options{input_list}) not readable" });
       }
 
     (-d $options{output_dir}) 
-        || print_instructions( "output_dir ($options{output_dir}) not a directory");
+        || pod2usage( { -message => "output_dir ($options{output_dir}) not a directory" });
 
     unless (defined $options{use_pathema_asmbl_id}) {
 	$options{use_pathema_asmbl_id} = 1;
@@ -557,40 +651,4 @@ sub parse_options {
 #    foreach (sort keys %options) { print "  $_: $options{$_}\n";}
     
     return %options;
-}
-
-
-sub print_instructions {
-  my $message = shift;
-
-  print qq{$message
-BSML QC: Counts and Format
-Executed as:
-bsml_qc.pl --input_list|i <list file> --output_dir|o <dir>
-
-Output directory will have
-bsml_qc.log - lists all failed Quality Control Checks encountered on a file by file basis
-summary.out - summary counts for each different Organism encountered in all files
-
-Quality Control Checks:
-- Checks that each assemble id is unique to a database.
-- Checks that Organism name and species are provided
-- Logs missing Cross-reference/Attribute for Genome
-- Logs that each Sequence assembly has a topology, molecule_name, and molecule_type Attribute
-- Logs that each Feature transcript has a locus Cross-reference and gene_product_name Attribute
-- Logs that each Feature-group has a set of gene, transcript, CDS, exon, and polypeptide Features
-- Confirm files referenced in Seq-data-import elements are present on filesystem and that they contain a source and identifier
-- Log that Genome Cross-references, Sequence Attributes, and Feature transcript Cross-references and Attributes have names and content
-- Log that each Sequence has a class 
-
-Organism Counts:
-Feature groups (valid/partial/duplicate polypeptides/total)
-Number of Features of each class
-Transcript info
-Seq-data-imports (valid/total)
-Source files
-};
-
-exit;
-
 }
