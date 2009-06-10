@@ -26,20 +26,20 @@
 		<value>$;USERNAME$;</value>
 	    </param>
             <param>
-		<key>--host</key>
+		<key>--server</key>
 		<value>$;HOST$;</value>
 	    </param>
             <param>
-		<key>--rdbms</key>
+		<key>--vendor</key>
 		<value>$;RDBMS$;</value>
 	    </param>
 	    <param>
 		<key>--outfile</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.bsml</value>
 	    </param>
 	    <param>
 		<key>--logfile</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.db2bsml.pl.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.db2bsml.pl.log</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
@@ -52,10 +52,6 @@
 	    <param>
 		<key>--asmbl_id</key>
 		<value>$;ASMBL_ID$;</value>
-	    </param>
-	    <param>
-		<key>--schema_type</key>
-		<value>$;SCHEMA_TYPE$;</value>
 	    </param>
 	    <param>
 		<key>--id_repository</key>
@@ -71,7 +67,7 @@
 	    </param>
 	    <param>
 		<key>--out_id_map_file</key>
-		<value>$;TMP_DIR$;/id_mapping/$;DATABASE$;_$;ASMBL_ID$;_$;SCHEMA_TYPE$;.idmap</value>
+		<value>$;TMP_DIR$;/id_mapping/$;DATABASE$;_$;ASMBL_ID$;.idmap</value>
 	    </param>
 	    <param>
 		<key>--sourcename</key>
@@ -79,11 +75,11 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/db2bsml.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/db2bsml.$;DATABASE$;.$;ASMBL_ID$;.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/db2bsml.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/db2bsml.$;DATABASE$;.$;ASMBL_ID$;.stderr</value>
 	    </param>
 	</command>
 	<command>
@@ -91,7 +87,7 @@
 	    <state>incomplete</state>
 	    <name>DTD validation</name>
 	    <executable>$;BIN_DIR$;/dtdValid.pl</executable>
-	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</arg>
+	    <arg>-d $;BSML_DTD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.bsml</arg>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
@@ -100,7 +96,7 @@
 	    <name>profileBSMLFile</name>
 	    <param>
 		<key>--infile</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.$;SCHEMA_TYPE$;.bsml</value>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;_$;ASMBL_ID$;_assembly.bsml</value>
 	    </param>
 	    <param>
 		<key>--database</key>
@@ -112,15 +108,15 @@
 	    </param>
 	    <param>
 		<key>--logfile</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.profileBSMLFile.pl.log</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;DATABASE$;.$;ASMBL_ID$;.profileBSMLFile.pl.log</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stdout</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;DATABASE$;.$;ASMBL_ID$;.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;DATABASE$;.$;ASMBL_ID$;.$;SCHEMA_TYPE$;.stderr</value>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/profileBSMLFile.$;DATABASE$;.$;ASMBL_ID$;.stderr</value>
 	    </param>
 	</command>
     </commandSet>
