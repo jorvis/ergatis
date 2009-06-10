@@ -16,8 +16,6 @@ umask(0000);
 my $organism_to_prefix_map = undef;
 my $current_prefix = undef;
 
-use Data::Dumper;
-
 my %options = &parse_options();
 # output options
 my $ifile = $options{input_file};
@@ -485,17 +483,14 @@ sub parse_genbank_file {
 	# bug 5338 add gene_product_name and comments as shared or individual
 	elsif ($tag eq 'translation') {
 	  $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag}=join('',$feat_object->get_tag_values($tag));
-	  #$gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
 	}
-#	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note') {  # use this to treat it as an arrayref
 	elsif ($tag eq 'EC_number' || $tag eq 'product' || $tag eq 'note' ||
 	       $tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || $tag eq "systematic_id" ) {  # use this to treat it as an arrayref
 	  $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = [$feat_object->get_tag_values($tag)]
-      }	
+        }	
         elsif( $tag eq "pseudo") {
             $gbr{'Features'}->{$fg_name}->{$feature_id}->{$tag} = "This gene is a pseudogene";
         }
- #       elsif ($tag eq "gene" || $tag eq "locus_tag" || $tag eq "protein_id" || 
 	elsif ( $tag eq "transl_table") {
             # do nothing
         }
@@ -793,7 +788,7 @@ sub to_bsml {
 
 	# mapping from genbank feature tag to attributes
 	if (exists $feature->{'gene'}){
-	  $feature->{attributes}->{'gene'} = $feature->{'gene'};
+	  $feature->{attributes}->{'gene_symbol'} = $feature->{'gene'};
 	}
 	if (exists $feature->{'protein_id'}){
 	  $feature->{attributes}->{'protein'} = $feature->{'protein_id'};
