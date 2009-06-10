@@ -61,6 +61,12 @@
 		<value>$;TMP_DIR$;/create_fasta_file_list.stderr</value>
 	    </param>
 	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Create mapping directory</name>
+	    <executable>mkdir</executable>
+	    <arg>-p $;REPOSITORY_ROOT$;/workflow/mapping/</arg>
+	</command>
  	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Consolidate all .idmap files</name>
