@@ -193,6 +193,9 @@ if (defined $options{output_list}) {
     open($listfh, ">>$options{output_list}") || $logger->logdie("couldn't create $options{output_list} list file");
 }
 
+## tracks which file were written to the output list
+my %written_to_list = ();
+
 ## open the input file
 open(my $ifh, "<$options{input_file}") || $logger->logdie("the input file $options{input_file} could not be read");
 
@@ -345,7 +348,10 @@ sub writeSequence {
     
     ## should we add to the list file?
     if (defined $listfh) {
-        print $listfh "$filepath\n";
+        if ( ! exists $written_to_list{$filepath} ) {
+            print $listfh "$filepath\n";
+            $written_to_list{$filepath}++
+        }
     }
     
     ## should we add to a bsml map doc?
