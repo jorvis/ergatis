@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1  NAME 
 
 nap2bsml.pl - convert nap btab output to BSML
@@ -74,7 +69,7 @@ it will be overwritten.
 =head1 CONTACT
 
     Joshua Orvis
-    jorvis@tigr.org
+    jorvis@users.sf.net
 
 =cut
 
@@ -226,6 +221,8 @@ my $align = &createAndAddNullResult(
 my $analysis = $doc->createAndAddAnalysis(
                             id => 'aat_aa_analysis',
                             sourcename => $options{'output'},
+                            program => 'AAT-nap',
+                            algorithm => 'AAT-nap'
                           );
 
 ## now write the doc
