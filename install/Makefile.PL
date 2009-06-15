@@ -423,9 +423,9 @@ c_apps	:
 
 chado2bsml  :
 	@echo "Installing chado2bsml workflows in $(WORKFLOW_DOCS_DIR)"
-    @install components/chado2bsml/chado2bsml.config $(WORKFLOW_DOCS_DIR)  
-    @install components/chado2bsml/chado2bsml.i1.xml $(WORKFLOW_DOCS_DIR)
-    @install components/chado2bsml/chado2bsml.xml $(WORKFLOW_DOCS_DIR)
+	@install components/chado2bsml/chado2bsml.config $(WORKFLOW_DOCS_DIR)  
+	@install components/chado2bsml/chado2bsml.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/chado2bsml/chado2bsml.xml $(WORKFLOW_DOCS_DIR)
 
 clustalw	:
 	@echo "Installing clustalw workflows in $(WORKFLOW_DOCS_DIR)"
