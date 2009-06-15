@@ -422,12 +422,10 @@ c_apps	:
 	@install src/SnpClusterer/SnpClusterer $(PREFIX)/bin
 
 chado2bsml  :
-	@echo "Installing chado2bmsl workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/chado2bsml/chado2bsml-master.ini $(WORKFLOW_DOCS_DIR)
-	@install components/chado2bsml/chado2bsml-master_template.xml $(WORKFLOW_DOCS_DIR)
-	@install components/chado2bsml/chado2bsml.ini $(WORKFLOW_DOCS_DIR)
-	@install components/chado2bsml/chado2bsml_template.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/chado2bsml/chado2bsmlconf.ini $(WORKFLOW_DOCS_DIR)  
+	@echo "Installing chado2bsml workflows in $(WORKFLOW_DOCS_DIR)"
+    @install components/chado2bsml/chado2bsml.config $(WORKFLOW_DOCS_DIR)  
+    @install components/chado2bsml/chado2bsml.i1.xml $(WORKFLOW_DOCS_DIR)
+    @install components/chado2bsml/chado2bsml.xml $(WORKFLOW_DOCS_DIR)
 
 clustalw	:
 	@echo "Installing clustalw workflows in $(WORKFLOW_DOCS_DIR)"
