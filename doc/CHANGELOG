@@ -4,6 +4,7 @@ next
 -genemark-es: new component
 -tmhmm2bsml: changed Seq-data-import[@id] value to ensure id does not start with numbers.
 -genbank2bsml: Changing Feature/Attribute@name="gene_symbol" instead of "gene" to agree with gff2bsml and prok pipeline
+-xdformat: added default option: -k ignore (skip) any invalid letter codes in the FASTA input
 
 ergatis-v2r11b1
 ---------------
