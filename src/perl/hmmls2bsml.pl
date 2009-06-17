@@ -184,6 +184,7 @@ while (<$ifh>) {
 
                 # If we have a seq-pair run we'll make sure we have an alignment to add the run to. If not we'll create it here.
                 if(!$alignments{$qry_id}) {
+                    $doc->createAndAddSequence($qry_id, $qry_id, undef, $options{'query_mol_type'}, $options{'model_mol_class'});
                     $alignments{$qry_id} = $doc->createAndAddSequencePairAlignment(
                                                                            refseq => $qry_id,
                                                                            refstart => 0,
