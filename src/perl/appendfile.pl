@@ -48,24 +48,19 @@ umask(0000);
 
 my %options = ();
 
-my ($directory, $extension, $log4perl, $help, $debug);
+my ($directory, $extension, $log4perl, $help, $debug, $noAssertFeature);
 
 my $results = GetOptions (\%options, 
                           'directory|D=s' => \$directory, 
                           'extension|e=s' => \$extension,
                           'log4perl|l=s'  => \$log4perl, 
 			  'debug|d=s'     => \$debug,
+			  'no_assert_feature=s' => \$noAssertFeature,
                           'help|h'        => \$help ) || pod2usage();
 
 
+my $logger = &getLogger();
 
-my $log4perl = $options{'log4perl'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
-				  'LOG_LEVEL'=>$options{'debug'});
-$logger = Ergatis::Logger::get_logger();
-
-
-#
 #
 # 1. Find all .append files in directory
 # 2. For each .append file in directory, check for existence of corresponding file
@@ -75,12 +70,19 @@ $logger = Ergatis::Logger::get_logger();
 
 &check_directory($directory);
 
-
 my ($allbcpfiles, $allappendfiles) = &get_all_bcp_files($directory);
 
 &append_files($allbcpfiles, $allappendfiles, $extension);
 
+print "$0 execution completed\n";
+print "The log file is '$log4perl'\n";
+exit(0);
 
+##--------------------------------------------------------------------
+##
+##              END OF MAIN -- SUBROUTINES FOLLOW
+##
+##--------------------------------------------------------------------
 sub append_files {
 
     my ($allbcpfiles, $allappendfiles, $extension) = @_;
@@ -106,13 +108,21 @@ sub append_files {
 
 }
 
-
-
-
-
 sub append_file_contents {
 
     my ($bcpfile, $appendfile) = @_;
+
+    if ($bcpfile =~ /feature\.out$/){
+	## Check whether the feature.out.append file has no content.
+	if (-z $appendfile){
+	    if (!$noAssertFeature){
+		$logger->logdie("appendfile '$appendfile' has no content");
+	    } else {
+		$logger->warn("appendfile '$appendfile' has no content");
+	    }
+	}
+    }
+
 
     eval {
 	print `cat $appendfile >> $bcpfile`;
@@ -123,24 +133,15 @@ sub append_file_contents {
 
     rename($appendfile, "$appendfile.$$.bak") || die "Could not mv $appendfile $appendfile.$$.bak: $!";
 
-
 }
-
-
-
-
-
 
 sub check_directory {
 
     my $directory = shift;
 
-
-
     if (!defined($directory)){
 	$logger->logdie("directory was not defined");
     }
-
 
     if (!-e $directory){
 	$logger->logdie("directory '$directory' does not exist");
@@ -149,15 +150,11 @@ sub check_directory {
     if (!-r $directory){
 	$logger->logdie("directory '$directory' does not have read permissions");
     }
+
     if (!-d $directory){
 	$logger->logdie("directory '$directory' is not a directory");
     }
 }
-
-
-
-
-
 
 sub get_all_bcp_files {
 
@@ -192,5 +189,18 @@ sub get_all_bcp_files {
 
 }
 
+sub getLogger {
 
 
+    if (!defined($options{'log4perl'})){
+	$log4perl = $directory . '/' . File::Basename::basename($0) . '.' . $$ . '.log';
+	print STDERR "--log4perl was not specified and therefore was set to '$log4perl'\n";
+    }
+
+    my $logger = new Ergatis::Logger('LOG_FILE'=>$log4perl,
+				     'LOG_LEVEL'=>$options{'debug'});
+
+    $logger = Ergatis::Logger::get_logger();
+
+    return $logger;
+}
