@@ -48,13 +48,14 @@ umask(0000);
 
 my %options = ();
 
-my ($directory, $extension, $log4perl, $help, $debug, $noAssertFeature);
+my ($directory, $extension, $log4perl, $help, $debug, $noAssertFeature, $bsmlfile);
 
 my $results = GetOptions (\%options, 
                           'directory|D=s' => \$directory, 
                           'extension|e=s' => \$extension,
                           'log4perl|l=s'  => \$log4perl, 
 			  'debug|d=s'     => \$debug,
+			  'bsmlfile=s'    => \$bsmlfile,
 			  'no_assert_feature=s' => \$noAssertFeature,
                           'help|h'        => \$help ) || pod2usage();
 
@@ -131,9 +132,40 @@ sub append_file_contents {
 	die "Caught exception while attempting to cat $appendfile >> $bcpfile: $!";
     }
 
-    rename($appendfile, "$appendfile.$$.bak") || die "Could not mv $appendfile $appendfile.$$.bak: $!";
+    my $bakfile = &getBackfile($appendfile);
 
+    rename($appendfile, "$bakfile") || die "Could not mv $appendfile $bakfile: $!";
 }
+
+sub getBackfile {
+
+    my ($appendfile) = @_;
+
+    my $bakfile;
+
+    if (defined($bsmlfile)){
+	my $refseq = &getRefSeqFromFilename($bsmlfile);
+	if (defined($refseq)){
+	    $bakfile = $appendfile . '.' . $refseq . '.bak';
+	    return $bakfile;
+	} 
+    }
+	
+    $bakfile = $appendfile . '.' . $$ . '.bak';
+    return $bakfile;
+}
+
+sub getRefSeqFromFilename {
+
+    my ($bsmlfile) = @_;
+    my $basename = File::Basename::basename($bsmlfile);
+    if ($basename =~ /(\S+_\d+_assembly)\./){
+	return $1;
+    }
+    return undef;
+}
+
+
 
 sub check_directory {
 
