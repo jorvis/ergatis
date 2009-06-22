@@ -145,11 +145,11 @@ sub parse_options {
 
         # we're going to generate ids
         $idcreator = new Ergatis::IdGenerator('id_repository' => $options{'id_repository'});
-        $idcreator->set_pool_size('exon'        => 30,
-                                  'polypeptide' => 30,
-                                  'transcript'  => 30,
-                                  'CDS'         => 30,
-                                  'gene'        => 30);
+        $idcreator->set_pool_size('exon'        => 100,
+                                  'polypeptide' => 100,
+                                  'transcript'  => 100,
+                                  'CDS'         => 100,
+                                  'gene'        => 100);
     } else {
         die "--id_repository is a required option";
     }
@@ -202,21 +202,18 @@ sub parse_genbank_file {
 
     #first word is genus, all follows is species (a workaround to encode the entire scientific name in BSML/chado)
     #this pulls the ORGANISM field up to the taxonomic lineage
+    # Note that there is additional  processing of $gbr{organism}, $gbr{genus}, $gbr{species} 
+    # at end of this sub, after pulling strain.  Still want organism_to_prefix_map to use the unadultered scientific_name
+    # Keeping molecule_name using unadultered name as well
     $gbr{'organism'} = $seq->species->scientific_name;
 
     if (defined($organism_to_prefix_map)) {
 	$current_prefix = $organism_to_prefix_map->{$gbr{'organism'}};
 	if (!defined($current_prefix) || ($current_prefix =~ /^\s*$/)) {
 	    # TODO - this should result in a warning, but logging doesn't appear to be enabled
-	    warn "No prefix defined in $options{organism_to_prefix_mapping} for organism scientific name ($gbr{organism}) "; #AARON
+	    warn "No prefix defined in $options{organism_to_prefix_mapping} for organism scientific name ($gbr{organism}) ";
 	}
     }
-
-    $gbr{'organism'} =~ m/(\S+)\s+(.*)/;
-    $gbr{'genus'} = $1;
-    $gbr{'species'} = $2;
-
-    ( ($gbr{'genus'}) && ($gbr{'species'}) ) || die "Unable to parse genus/species from organism ($gbr{organism})";
 
     $gbr{'sequence'} = $seq->seq();
     $gbr{'seq_len'} = $seq->length();
@@ -524,14 +521,41 @@ sub parse_genbank_file {
     # doc here: http://search.cpan.org/~birney/bioperl-1.2.3/Bio/Tools/CodonTable.pm
     $gbr{codon_table} = Bio::Tools::CodonTable -> new ( -id => $gbr{transl_table} );
 
-
     #if there wasn't a valid strain provided, see if one can be grabbed from organism name
     unless ($gbr{'strain'}) {
         if ($gbr{'organism'} =~ m/((sp\.)|(str\.)|(subsp\.))\s*(.*)/) {
-        $gbr{'strain'} = $+; #last match
+	    $gbr{'strain'} = $+; #last match
         }
-    }   
     }
+
+    # if there was a strain, remove it from the end of organism.  Otherwise, strain will be duplicated in organism.common_name
+    # However, in some malformed files strain == organism (aka scientific_name), in which case, remove strain
+    if ( $gbr{strain} ) {
+#	if ( $gbr{strain} eq $gbr{organism} ) {
+	# if strain matches the entire organism OR everything after the first word in organism (e.g., no species)
+	# then remove it
+	if ( $gbr{organism} =~ /^(\S* )?$gbr{strain}$/ ) {
+	    $gbr{strain} = ''; # remove strain entirely
+	}
+	# special matches for influenza which have (H#N#) included in organism name
+	# but not strain (we want to remove this and update strain)
+	elsif ($gbr{organism} =~ s/\s*\(?($gbr{strain}\s*\(\s*H\dN\d\s*\))\s*\)?$// ) {
+	    $gbr{strain} = $1;	    
+	}
+	else {
+	    $gbr{organism} =~ s/\s*\(?$gbr{strain}\)?$//; # remove strain from organism
+#	    $gbr{organism} =~ s/\Q$gbr{strain}\E//; # remove strain from organism
+#	    $gbr{organism} =~ s/$gbr{strain}//; # remove strain from organism
+	}
+    }
+    
+    $gbr{'organism'} =~ m/(\S+)\s+(.*)/;
+    $gbr{'genus'} = $1;
+    $gbr{'species'} = $2;
+
+    ( ($gbr{'genus'}) && ($gbr{'species'}) ) || die "Unable to parse genus/species from organism ($gbr{organism})";
+
+    } #    while (my $seq = $seq_obj->next_seq) {
 
     # die if we didn't actually process any records
     # see bug #3315 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3315
