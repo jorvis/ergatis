@@ -1,10 +1,5 @@
 #!/usr/bin/perl
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 =head1 NAME
 
 split_multifasta.pl - split a single FASTA file containing multiple sequences into separate files.
@@ -257,7 +252,7 @@ while (<$sfh>) {
 }
 
 ## don't forget the last sequence
-&writeSequence(\$header, \$seq);
+&writeSequence(\$header, \$seq) if( defined( $header ) );
 
 exit;
 
