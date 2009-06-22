@@ -1,5 +1,6 @@
 next
 ----
+-tRNAscan-SE: now allows no search type to be specified, in order to invoke the default search type of 'eukaryotic'
 -split_fasta: corrected problem with duplicates in the output list
 -genemark-es: new component
 -tmhmm2bsml: changed Seq-data-import[@id] value to ensure id does not start with numbers.
