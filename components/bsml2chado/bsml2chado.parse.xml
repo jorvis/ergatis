@@ -4,6 +4,40 @@
 	<command>
 	    <type>RunUnixCommand</type>
 	    <state>incomplete</state>
+	    <name>check status</name>
+	    <executable>$;BIN_DIR$;/statusChecker</executable>
+	    <param>
+		<key>--directory</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+	    </param>
+	    <param>
+		<key>--noexec</key>
+		<value>$;NO_EXEC_QUOTA_CHECK$;</value>
+	    </param>
+	    <param>
+		<key>--project_path</key>
+		<value>$;REPOSITORY_ROOT$;</value>
+	    </param>
+	    <param>
+		<key>--outfile</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.checkStatus.txt</value>
+	    </param>
+	    <param>
+		<key>--dir</key>
+		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+	    </param>
+        <param>
+            <key>stdout</key>
+            <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/checkStatus.$;I_FILE_BASE$;.stdout</value>
+        </param>
+        <param>
+            <key>stderr</key>
+            <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/checkStatus.$;I_FILE_BASE$;.stderr</value>
+        </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/bsml2chado</executable>
 	    <name>bsml2chado</name>
 	    <param>
@@ -111,6 +145,14 @@
 	    <param>
 		<key>--extension</key>
 		<value>append</value>
+	    </param>
+	    <param>
+		<key>--no_assert_feature</key>
+		<value>$;NO_ASSERT_FEATURE_FILE$;</value>
+	    </param>
+	    <param>
+		<key>--bsmldoc</key>
+		<value>$;I_FILE_PATH$;</value>
 	    </param>
 	    <param>
 		<key>--log4perl</key>
