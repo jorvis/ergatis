@@ -135,6 +135,10 @@ if ($options{compress}) {
             $logger->logdie("input file doesn't exist and no previous attempts detected.");
         }
         
+	if ($options{file} eq $output){
+	    $output $options{output} . '.gz';
+	}
+
         system("gzip -c -f $options{file} > $output");
 
         if ( $options{remove_source} ) {
