@@ -136,7 +136,7 @@ if ($options{compress}) {
         }
         
 	if ($options{file} eq $output){
-	    $output $options{output} . '.gz';
+	    $output = $options{output} . '.gz';
 	}
 
         system("gzip -c -f $options{file} > $output");
