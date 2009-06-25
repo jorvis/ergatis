@@ -124,6 +124,10 @@ if ($options{compress}) {
         
     } else {
     
+	if ($options{file} eq $output){
+	    $output = $options{output} . '.gz';
+	}
+
         ## if a previous run of this failed in the middle both the input and output files
         #   will already exist.  delete the output file and try again.
         if ( -e $output && -e $options{file} ) {
@@ -135,9 +139,6 @@ if ($options{compress}) {
             $logger->logdie("input file doesn't exist and no previous attempts detected.");
         }
         
-	if ($options{file} eq $output){
-	    $output = $options{output} . '.gz';
-	}
 
         system("gzip -c -f $options{file} > $output");
 
