@@ -1,0 +1,64 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"			xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<state>incomplete</state>
+	<name>chado_report_pages workflow</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create temp directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+	</command>
+	<!--Iterator1 for chado2bsml -->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Generate chado report pages for database '$;PROJECT$;' on server '$;SERVER$;'</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/generateChadoReportPages</executable>
+            <param>
+		<key>--username</key>
+		<value>$;USERNAME$;</value>
+	    </param>
+            <param>
+		<key>--password</key>
+		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+		<key>--database</key>    
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	    </param>
+	    <param>
+		<key>--model_list_file</key>    
+		<value>$;MODEL_LIST_FILE$;</value>
+	    </param>
+	    <param>
+		<key>--reportfile</key>    
+		<value>$;REPORTFILE$;</value>
+	    </param>
+	    <param>
+		<key>--logfile</key>    
+		<value>$;TMP_DIR$;/generateChadoReportPages.pl.log</value>
+	    </param>
+            <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/generateChadoReportPages.pl.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/generateChadoReportPages.pl.stderr</value>
+	    </param>
+	</command>
+    </commandSet>
+</commandSetRoot>
