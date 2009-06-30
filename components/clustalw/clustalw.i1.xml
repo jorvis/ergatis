@@ -20,6 +20,10 @@
                 <value>$;OUTPUT_FORMAT$;</value>
             </param>
             <param>  
+                <key>-type</key>
+                <value>$;TYPE$;</value>
+            </param>
+            <param>  
                 <key>-infile</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;</value>
             </param>
