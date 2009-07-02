@@ -109,5 +109,42 @@
         		<value>$;TMP_DIR$;/count_barcoded_seqs.stderr</value>
     	    </param>
         </command>
+        <!--create list files-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create filtered files list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.filtered"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;FILTERED_OUTPUT_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create discarded files list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.discarded"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;DISCARDED_OUTPUT_LIST$;</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>
