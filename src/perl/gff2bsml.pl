@@ -318,6 +318,7 @@ my $FEAT_TYPE_MAP = {
     'exon' => 'exon',
     'intron' => 'intron',
     'mRNA' => 'transcript',               
+    'tmRNA' => 'tmRNA',               
     'transcript' => 'transcript',               
     'miRNA' => 'miRNA',
     'protein' => 'polypeptide',
@@ -348,6 +349,7 @@ my $MRNA_TYPES = {
     'snoRNA' => 1,
     'snRNA' => 1,
     'rRNA' => 1,
+    'tmRNA' => 1,
 };
 # TODO - add all posible mRNA types from SO?
 
@@ -358,6 +360,8 @@ my $NONCODING_RNA_TYPES = {
     'snoRNA' => 1,
     'snRNA' => 1,
     'rRNA' => 1,
+    # not exactly true, but it wouldn't be handled correctly in the other category:
+    'tmRNA' => 1,
 };
 
 ## input/options
@@ -556,7 +560,7 @@ fetch_node_type('gene', \@root_nodes, $gene_nodes);
 my $num_genes = scalar(@$gene_nodes);
 $logger->debug("found $num_genes gene(s)");
 my $doc = new BSML::BsmlBuilder();
-my $feat_table = undef; # global var
+my $seq2feat_table = undef; # global var
 
 # add Genomes
 my $genome = $doc->createAndAddGenome();
@@ -604,10 +608,13 @@ foreach my $root (@{$gene_nodes}) {
             my $feat_list = defined($exon_list) ? $exon_list : $cds_list;
             my($m_start, $m_end, $m_strand) = &union_feat_intervals($feat_list);
 
-            if (($m_start != $root->{_start}) || ($m_end != $root->{_end}) || ($m_strand != $root->{_strand})) {
+            if (!defined($exon_list) && !defined($cds_list)) {
+                $logger->warn("Trying to insert mRNA $trans_id for gene " . $root->{'ID'} . " but no CDS or exons could be found: using gene coords instead.");
+                ($m_start, $m_end, $m_strand) = ($root->{_start}, $root->{_end}, $root->{_strand});
+            } elsif (($m_start != $root->{_start}) || ($m_end != $root->{_end}) || ($m_strand != $root->{_strand})) {
                 $logger->debug($root->{'ID'} . ": mrna coords=$m_start-$m_end/$m_strand gene coords=" . $root->{_start} . "-" . $root->{_end} . "/" . $root->{_strand} . "\n");
             }
-
+            
             push(@$mrna_list, {
                 'ID' => $trans_id,
                 '_seqid' => $root->{'_seqid'},
@@ -622,7 +629,7 @@ foreach my $root (@{$gene_nodes}) {
                 # TODO - propagation of cross-references to automatically-inserted features should be optional:
                 '_record' => $feat_list->[0]->{'_record'},
             });
-
+            
             # make mRNA the parent of the CDS, exon, and intron features
             map { push(@{$_->{'Parent'}}, $trans_id); } @$cds_list if (defined($cds_list));
             map { push(@{$_->{'Parent'}}, $trans_id); } @$exon_list if (defined($exon_list));
@@ -1175,7 +1182,12 @@ sub gene_feature_hash_to_bsml {
         my @mrna_ids = map {{'id' => $_, 'type' => $ttype}} keys(%{$features->{$ttype}});
         push(@transcript_ids, @mrna_ids);
     }
-    $feat_table = $doc->createAndAddFeatureTable($seq) if (!defined($feat_table));
+
+    # create at most one feature table per sequence
+    my $feat_table = $seq2feat_table->{$seq};
+    if (!defined($feat_table)) {
+        $feat_table = $seq2feat_table->{$seq} = $doc->createAndAddFeatureTable($seq);
+    }
 
     # $feat_groups indexed by transcript id
     my $feat_groups = {};
