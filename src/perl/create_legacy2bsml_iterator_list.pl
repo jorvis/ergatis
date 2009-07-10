@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 =head1  NAME 
 
 generate_asmbl_list.pl - Default output is a workflow iterator that
@@ -26,20 +26,12 @@ B<--help,-h> This help message
 
 =cut
 
-#use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
-
-BEGIN {
-    require '/usr/local/devel/ANNOTATION/cas/lib/site_perl/5.8.5/Workflow/Logger.pm';
-    import Workflow::Logger;
-}
 use File::Basename;
 use Annotation::Util2;
+use Ergatis::Logger;
 
 umask(0000);
 
@@ -71,7 +63,7 @@ my ($controlFile, $outfile, $logfile, $help, $debug, $man,
 
 &GetOptions(
 	    'control_file|f=s' => \$controlFile,
-	    'outfile|o=s'      => \$outfile,
+	    'output|o=s'      => \$outfile,
 	    'log|l=s'          => \$logfile,
 	    'help|h'           => \$help,
 	    'debug=s'          => \$debug,
@@ -82,13 +74,13 @@ my ($controlFile, $outfile, $logfile, $help, $debug, $man,
 
 
 if (!defined($logfile)){
-    $logfile = Workflow::Logger::get_default_logfilename();
+    $logfile = Ergatis::Logger::get_default_logfilename();
 }
 
-my $logger = new Workflow::Logger('LOG_FILE'=>$logfile,
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$debug);
 
-$logger = Workflow::Logger::get_logger();
+$logger = Ergatis::Logger::get_logger();
 
 
 &checkCommandLineArguments();
@@ -140,7 +132,7 @@ sub checkCommandLineArguments {
 	$fatalCtr++;
     }
     if (!$outfile){
-	print STDERR "outfile was not specified\n";
+	print STDERR "output was not specified\n";
 	$fatalCtr++;
     }
 
