@@ -1,0 +1,60 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+	<state>incomplete</state>
+	<name>cluster_mapping workflow</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directories</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$; $;TMP_DIR$;</arg>
+	</command>
+ 	<command>
+	    <type>RunUnixCommand</type>
+	    <name>Generate mapping between clusters for analysis_id1 '$;ANALYSIS_ID1$;' and analysis_id2 '$;ANALYSIS_ID2$;' on database '$;DATABASE$;' server '$;SERVER$;'</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/mapClusters</executable>
+            <param>
+		<key>--username</key>
+		<value>$;USERNAME$;</value>
+	    </param>
+            <param>
+		<key>--password</key>
+		<value>$;PASSWORD$;</value>
+	    </param>
+            <param>
+		<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+            <param>
+		<key>--server</key>
+		<value>$;SERVER$;</value>
+	    </param>
+            <param>
+		<key>--vendor</key>
+		<value>$;RDBMS$;</value>
+	    </param> 
+            <param>
+		<key>--analysis_id1</key>
+		<value>$;ANALYSIS_ID1$;</value>
+	    </param>
+            <param>
+		<key>--analysis_id2</key>
+		<value>$;ANALYSIS_ID2$;</value>
+	    </param>
+	    <param>
+		<key>--outfile</key>    
+		<value>$;REPORT_FILE$;</value>
+	    </param>
+            <param>
+		<key>stdout</key>
+		<value>$;TMP_DIR$;/mapClusters.pl.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>    
+		<value>$;TMP_DIR$;/mapClusters.pl.stderr</value>
+	    </param>
+	</command>
+    </commandSet>
+</commandSetRoot>
