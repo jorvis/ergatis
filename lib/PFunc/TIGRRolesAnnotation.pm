@@ -41,7 +41,7 @@ sub assign_tigr_roles_by_keyword {
 
         #if at this point we still don't have any TIGR roles
         if( !defined($new_tigr_roles) || @{$new_tigr_roles} == 0 ) {
-            $new_tigr_roles = [157];
+            $new_tigr_roles = [$uncategorized_tigr_role];
         }
     }
 
