@@ -16,7 +16,7 @@ sub assign_tigr_roles_by_keyword {
     my $search_keywords = 0;
     my $new_tigr_roles;
 
-    if( !defined( $cur_roles ) || @{$cur_roles} == 0 || $cur_roles->[0] == 185 ) {
+    if( !defined( $cur_roles ) || @{$cur_roles} == 0 || $cur_roles->[0] == $uncategorized_tigr_role ) {
         $search_keywords = 1;
     }
 
@@ -37,6 +37,11 @@ sub assign_tigr_roles_by_keyword {
                 $new_tigr_roles = [$keywords_tigr_role_lookup->{ $keyword }];
             }
             
+        }
+
+        #if at this point we still don't have any TIGR roles
+        if( !defined($new_tigr_roles) || @{$new_tigr_roles} == 0 ) {
+            $new_tigr_roles = [157];
         }
     }
 
