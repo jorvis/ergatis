@@ -221,7 +221,8 @@ sub _handle_seq_pair_alignment {
     my $ref_id = $spa->att('refseq');
     my $comp_id = $spa->att('compseq');
 
-    ## get the correct annotation id
+    ## get the correct annotation id (i.e. if we are annotating on transcript)
+    ## we need db1.transcript.123456.1 instead of the CDS id
     my $annotation_feature_id = $self->lookup_feature_id( $ref_id, $self->annotate_on );
     return unless( $annotation_feature_id );
 
@@ -298,15 +299,6 @@ sub _get_compseq_annotation {
 
     foreach my $field ( qw(gene_product_name EC gene_symbol TIGR_Role GO) ) {
         $ret_annot->set( $field, shift @header_info, $source, $confidence_level );
-    }
-
-    if( my $com_name = $ret_annot->_get_value( 'gene_product_name' )->[0] ) {
-        if( $com_name !~ /hypothetical/ ) {
-            my $tigr_roles = $ret_annot->_get_value( 'TIGR_Role' );
-            if( @{$tigr_roles} == 0 ) {
-                $ret_annot->set( 'TIGR_Role', [157], $source, $confidence_level );
-            }
-        }
     }
 
     return ($ret_annot, shift @header_info );
