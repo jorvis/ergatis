@@ -248,6 +248,14 @@ sub _handle_seq_pair_alignment {
     # does it pass cutoffs?
     return unless( &_match_passes_cutoff( $spa ) );
 
+    # we append the string 'domain protein' to full::partial matches
+    if( $confidence_level eq 'BER::characterized::full::partial' ||
+        $confidence_level eq 'BER::uncharacterized::full::partial' ) {
+        $gp_name =~ s/\s*protein$//;
+        $gp_name .= " domain protein";
+        $comp_annot->_set_value( 'gene_product_name', $gp_name );
+    }
+        
     # if we've made it this far and the name is ambiguous (contains general terms such as
     # putative, probable, etc.) and the match protein is not characterized, we should mark 
     # the match annotation as conserved hypothetical.
