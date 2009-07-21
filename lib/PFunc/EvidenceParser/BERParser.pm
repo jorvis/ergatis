@@ -18,7 +18,7 @@ use base qw(PFunc::EvidenceParser);
 ######################### Class Variables ###########################
 my $annotation_type = "BER";
 my $default_ber_info = "/usr/local/projects/db/tchar/tchar.db";
-my $percent_id_cutoff = 30;
+my $percent_id_cutoff = 40;
 my $percent_coverage_cutoff = 80;
 my $ber_annot_levels = {
     'BER::characterized::full::full'         => 1,   
@@ -250,36 +250,36 @@ sub _handle_seq_pair_alignment {
 
     # if we've made it this far and the name is ambiguous (contains general terms such as
     # putative, probable, etc.) and the match protein is not characterized, we should mark 
-    # the protein as conserved hypothetical.
+    # the match annotation as conserved hypothetical.
     if( $self->_is_name_ambiguous( $gp_name ) && !$is_char ) {
         $self->_assign_as_conserved_hypothetical( $comp_annot );
+    }
+
+    # if the current protein hasn't been annotated yet, automatically assign the current annotation
+    if( !($annotation->has_annotation()) ) {
+        $self->_assign_annotation( $annotation, $comp_annot );
     } else {
-        # if the current protein hasn't been annotated yet, automatically assign the current annotation
-        if( !($annotation->has_annotation()) ) {
+        
+        my $comp_type = $comp_annot->_get_type( 'gene_product_name' );
+        my $anno_type = $annotation->_get_type( 'gene_product_name' );
+        
+        #otherwise check to see if the comp_annot confidence level is better than the current annotation
+        if( $ber_annot_levels->{ $comp_annot->_get_type( 'gene_product_name' ) } <
+            $ber_annot_levels->{ $annotation->_get_type( 'gene_product_name' ) } ) {
             $self->_assign_annotation( $annotation, $comp_annot );
-        } else {
+            #if they are the same
+        } elsif( $ber_annot_levels->{ $comp_annot->_get_type( 'gene_product_name' ) } ==
+                 $ber_annot_levels->{ $annotation->_get_type( 'gene_product_name' ) } ) {
+            
+            #does one have more annotation than the other?
+            my ($cur_count, $comp_count);
+            foreach my $field( PFunc::Annotation::get_valid_fields ) {
+                $cur_count++  if( $annotation->has_annotation( $field ) );
+                $comp_count++ if( $comp_annot->has_annotation( $field ) );
+            }
 
-            my $comp_type = $comp_annot->_get_type( 'gene_product_name' );
-            my $anno_type = $annotation->_get_type( 'gene_product_name' );
-
-            #otherwise check to see if the comp_annot confidence level is better than the current annotation
-            if( $ber_annot_levels->{ $comp_annot->_get_type( 'gene_product_name' ) } <
-                $ber_annot_levels->{ $annotation->_get_type( 'gene_product_name' ) } ) {
+            if( $comp_count > $cur_count ) {
                 $self->_assign_annotation( $annotation, $comp_annot );
-                #if they are the same
-            } elsif( $ber_annot_levels->{ $comp_annot->_get_type( 'gene_product_name' ) } ==
-                     $ber_annot_levels->{ $annotation->_get_type( 'gene_product_name' ) } ) {
-                
-                #does one have more annotation than the other?
-                my ($cur_count, $comp_count);
-                foreach my $field( PFunc::Annotation::get_valid_fields ) {
-                    $cur_count++  if( $annotation->has_annotation( $field ) );
-                    $comp_count++ if( $comp_annot->has_annotation( $field ) );
-                }
-
-                if( $comp_count > $cur_count ) {
-                    $self->_assign_annotation( $annotation, $comp_annot );
-                }
             }
         }
     }
