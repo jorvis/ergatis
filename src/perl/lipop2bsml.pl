@@ -90,7 +90,7 @@ use Pod::Usage;
 
 my $options = &check_options();
 my $idgen;
-my $analysis_id = "lipoP_analysis";
+my $analysis_id = "lipop_analysis";
 my $sourcename;
 
 #grab the input
