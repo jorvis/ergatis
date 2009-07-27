@@ -10,6 +10,7 @@ use Fcntl qw( O_RDONLY );
 use MLDBM "DB_File";
 use TIGR::Roles::HMM::PfamToRoleLookup;
 use TIGR::Roles::HMM::TIGRFamToRoleLookup;
+use PFunc::EvidenceParser::ConservedHypothetical;
 use Data::Dumper;
 
 use base qw(PFunc::EvidenceParser);
@@ -231,7 +232,7 @@ sub _assign_annotation {
     if( $hmm_annot_iso eq $annotation_type."::hypoth_equivalog" ) {
         PFunc::EvidenceParser::ConservedHypothetical->_assign_as_conserved_hypothetical( $annotation, 
                                                                                          $hmm_acc,
-                                                                                         $a."::hypoth_equivalog" );
+                                                                                         $annotation_type."::hypoth_equivalog" );
         return;
     }
 
