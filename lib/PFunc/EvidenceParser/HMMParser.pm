@@ -182,6 +182,8 @@ sub _process_hmm_coding_alignment {
                     $self->_get_isotype_score( $current_type ) < $gpn_type_score ) {
 
                     #set the current annotation
+                    die("Could not get current_type [$current_type] for $comp_id")
+                        if( !defined( $current_type ) );
                     $self->_assign_annotation( $annotation, $hmm_info, $comp_id, $current_type );
                     
                 } elsif( defined( $gpn_type_score ) && 
@@ -223,9 +225,10 @@ sub _assign_annotation {
     $annotation->clear_annotation;
 
     #if the isotype of the hmm is 
-
     #set the new annotation $a."::hypoth_equivalog", should be conserved hypothetical
-    if( $hmm_annot_iso eq $a."::hypoth_equivalog" ) {
+    die("HMM_ANNOT is not defined") unless( defined( $hmm_annot_iso ) );
+    die("annotation_type is not defined") unless( defined( $annotation_type ) );
+    if( $hmm_annot_iso eq $annotation_type."::hypoth_equivalog" ) {
         PFunc::EvidenceParser::ConservedHypothetical->_assign_as_conserved_hypothetical( $annotation, 
                                                                                          $hmm_acc,
                                                                                          $a."::hypoth_equivalog" );
@@ -250,7 +253,11 @@ sub _assign_annotation {
                          $hmm_acc, $hmm_annot_iso );
 
     #TIGR roles
-    $annotation->set_TIGR_Role( $self->_get_tigr_role( $hmm_acc, $com_name ),
+    #These are keyed with the .\d\d version numbers. So make a tmp acc and
+    #remove this if it's there
+    my $tmp = $hmm_acc;
+    $tmp =~ s/\.\d+$//;
+    $annotation->set_TIGR_Role( $self->_get_tigr_role( $tmp, $com_name ),
                                 $hmm_acc, $hmm_annot_iso );
     
 }

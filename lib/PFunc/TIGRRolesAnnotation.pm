@@ -12,9 +12,11 @@ my $uncategorized_tigr_role = 185;
 my $keyword_file = "/home/kgalens/data/tigr_roles_keywords.txt";
 
 sub assign_tigr_roles_by_keyword {
-    my ($common_name, $cur_roles) = @_;
+    my ($common_name, $cur_roles, $flag) = @_;
     my $search_keywords = 0;
     my $new_tigr_roles;
+
+    print "Common name: $common_name\n" if( $flag );
 
     if( !defined( $cur_roles ) || @{$cur_roles} == 0 || $cur_roles->[0] == $uncategorized_tigr_role ) {
         $search_keywords = 1;
@@ -23,7 +25,7 @@ sub assign_tigr_roles_by_keyword {
     if( $search_keywords ) {
         my $keywords_tigr_role_lookup = &_parse_keyword_file( $keyword_file );
         
-        foreach my $keyword ( keys %{$keywords_tigr_role_lookup} ) {
+        foreach my $keyword ( sort { $keywords_tigr_role_lookup->{$b}->{'order'} <=> $keywords_tigr_role_lookup->{$a}->{'order'} } keys %{$keywords_tigr_role_lookup} ) {
 
             if( !defined( $keyword ) ) {
                 die("keyword is not defined");
@@ -33,8 +35,8 @@ sub assign_tigr_roles_by_keyword {
                 die("Don't have a common name");
             }
 
-            if( $common_name =~ /$keyword/ ) {
-                $new_tigr_roles = [$keywords_tigr_role_lookup->{ $keyword }];
+            if( $common_name =~ /$keyword/i ) {
+                $new_tigr_roles = [$keywords_tigr_role_lookup->{ $keyword }->{'role_id'}];
             }
             
         }
@@ -45,14 +47,17 @@ sub assign_tigr_roles_by_keyword {
         }
     }
 
+    print "returning ".join(" ", @{$new_tigr_roles})."\n" if( $flag && defined( $new_tigr_roles ) );
     return $new_tigr_roles;
     
 }
+
 
 sub _parse_keyword_file {
     my ($keywords_file) = @_;
     my $retval = {};
     
+    my $index = 0;
     my $in = &open_file( $keywords_file, 'in' );
     
     while( my $line = <$in> ) {
@@ -62,7 +67,10 @@ sub _parse_keyword_file {
         my $keyword = join( " ", @cols );
         die("keyword not defined [$line]") unless( $keyword );
 
-        $retval->{$keyword} = $role_id;
+        $retval->{$keyword} = {
+            'role_id' => $role_id,
+            'order' => $index++,
+        };
     }
     
     return $retval;

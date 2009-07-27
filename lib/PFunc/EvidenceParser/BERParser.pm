@@ -14,7 +14,7 @@ use PFunc::Annotation;
 use Data::Dumper;
 
 use base qw(PFunc::EvidenceParser);
-
+$|++;
 ######################### Class Variables ###########################
 my $annotation_type = "BER";
 my $default_ber_info = "/usr/local/projects/db/tchar/tchar.db";
@@ -240,7 +240,8 @@ sub _handle_seq_pair_alignment {
 
     # don't take annotation from proteins containing the words hypothetical protein
     my $gp_name = $comp_annot->_get_value( 'gene_product_name' )->[0];
-    return if( $gp_name =~ /hypothetical\s+protein/ );
+    print "$gp_name\n" if( $gp_name =~ /^\(/ );
+    return if( $gp_name =~ /hypothetical\s+protein/i );
 
     # if we don't have a common name, skip it. 
     return if( !defined($gp_name) || $gp_name eq "" );
@@ -251,9 +252,13 @@ sub _handle_seq_pair_alignment {
     # we append the string 'domain protein' to full::partial matches
     if( $confidence_level eq 'BER::characterized::full::partial' ||
         $confidence_level eq 'BER::uncharacterized::full::partial' ) {
-        $gp_name =~ s/\s*protein$//;
-        $gp_name .= " domain protein";
-        $comp_annot->_set_value( 'gene_product_name', $gp_name );
+        
+        #don't add this to hypothetical
+        if( $gp_name !~ /hypothetical/i ) {
+            $gp_name =~ s/\s*protein$//;
+            $gp_name .= " domain protein";
+            $comp_annot->_set_value( 'gene_product_name', $gp_name );
+        }
     }
         
     # if we've made it this far and the name is ambiguous (contains general terms such as
@@ -299,6 +304,7 @@ sub _get_compseq_annotation {
 
     # what infomration can we get from the protein header?
     my @header_info = $self->_clean_panda_title( $id, $self->_sequence_title( $id ) );
+    print "$header_info[1]\n" if( $header_info[1] =~ /^\(/ );
 
     # make the annotation object
     my $source = shift @header_info;
@@ -344,6 +350,7 @@ sub _parse_protein_header_line {
     my $full_id = $1 if( $line =~ /^(\S+)\s+.+/ );
     my $look_id = "not in db";
 
+
     if( $full_id ) {
 
         $look_id = $1 if( $full_id =~ /^([^\|]+\|[^\|]+)/ );
@@ -377,7 +384,7 @@ sub _parse_protein_header_line {
 
             #if it's characterized, we usually don't use the name in the lookup. But if we
             #have a crappy name from the header, we can use it.
-            if( $self->_is_name_ambiguous( $com_name ) && !$self->_is_name_ambiguous( $tmp_com_name ) ) {
+            if( $com_name =~ /hypothetical/i && !$self->_is_name_ambiguous( $tmp_com_name ) ) {
                 $com_name = $tmp_com_name;
             }
 
@@ -421,12 +428,16 @@ sub _is_name_ambiguous {
     my ($self, $name) = @_;
     my $retval = 0;
     
-    my @ambiguous_words = qw( hypothetical probably unknown putative related );
+    my @ambiguous_words = qw( hypothetical probably unknown putative related probable possible conserved );
     foreach my $aword ( @ambiguous_words ) {
-        if( $name =~ /$aword/ ) {
+        if( $name =~ /$aword/i ) {
             $retval = 1;
             last;
         }
+    }
+
+    if( !$retval && length( $name ) < 4 ) {
+        $retval = 1;
     }
     return $retval;
 }
@@ -480,6 +491,8 @@ sub _calculate_spr_coverage {
 
 sub _assign_annotation {
     my ($self, $annotation, $new_annotation) = @_;
+
+    my $gpn = $new_annotation->_get_value( 'gene_product_name' )->[0];
 
     my $feature_id = $annotation->get_feature_id;
     $new_annotation->set_feature_id( $feature_id );

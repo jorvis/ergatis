@@ -98,6 +98,8 @@ sub post_process {
     $annotation->set_gene_product_name( clean_common_name( $gene_product_name->[0] ),
                                         $gpn_source, $gpn_source_type );
 
+    ($gene_product_name, $gpn_source, $gpn_source_type) = $annotation->get_gene_product_name;
+
     ## can we assign any TIGR roles based on common name keyword? It helps if this is after the
     ## clean up function
     my ($tigr_roles, $tr_source, $tr_source_type) = $annotation->get_TIGR_Role;

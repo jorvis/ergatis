@@ -57,6 +57,9 @@ sub add_annotation {
                                                   $self->get_annotation( $annotation->get_feature_id ) );
     }
     $self->{"_annotations"}->{$annotation->get_feature_id} = $final_annot;
+    if( $final_annot->get_feature_id eq 'hph.transcript.1312294216.1' ) {
+        print Dumper( $final_annot );
+    }
     return $final_annot;
 }
 
@@ -113,28 +116,55 @@ sub _merge_annotations {
             $current_annotation->get_feature_id : $new_annotation->get_feature_id;
     }
 
+    my $flag = 0;
+    if( $feature_id eq 'hph.transcript.1312294216.1') {
+        $flag = 1;
+    }
+    print "\n" if( $flag );
+
     my $ret_annot = new PFunc::Annotation( 'feature_id' => $feature_id );
 
-    my @fields = PFunc::Annotation::get_sorted_fields();
-    
-    foreach my $field ( @fields ) {
+    #if the current annotation is hypothetical we will replace the whole set with the new annotation
+    print $current_annotation->_get_type('gene_product_name')."\n" if( $flag );
+    if( $current_annotation->_get_type('gene_product_name') eq 'hypothetical' ) {
+        print "Since the current annotation is hypothetical, were replacing with new: " if( $flag );
+        print $new_annotation->_get_type('gene_prodcut_name')."\n" if( $flag );
+        $ret_annot = $new_annotation;
+    } elsif( $new_annotation->_get_type('gene_product_name') eq 'hypothetical' ) {
+        #we only get into this subroutine if there is already annotation on the object.
+        #So if the new one is hypo, the old one can't be and we should keep it.
+        #so do nothing
+        $ret_annot = $current_annotation;
+    } else {
         
-        #If they both have the annotation
-        if( $new_annotation->is_annotated( $field ) && $current_annotation->is_annotated( $field ) ) {
-            my $cur_rank = $self->_get_annot_rank( $field, $current_annotation->_get_type( $field ) );
-            my $new_rank = $self->_get_annot_rank( $field, $new_annotation->_get_type( $field ) );
+        my @fields = PFunc::Annotation::get_sorted_fields();
+        
+        foreach my $field ( @fields ) {
+            
+            #If they both have the annotation
+            if( $new_annotation->has_annotation( $field ) && $current_annotation->has_annotation( $field ) ) {
+                my $cur_rank = $self->_get_annot_rank( $field, $current_annotation->_get_type( $field ) );
+                my $new_rank = $self->_get_annot_rank( $field, $new_annotation->_get_type( $field ) );
 
-            if( $cur_rank <= $new_rank ) {
-                $ret_annot->set( $field, $current_annotation->get( $field ) );
-            } elsif( $new_rank < $cur_rank ) {
+                if( $flag ) {
+                    print "$field:\n";
+                    print "CUR RANK: $cur_rank [".$current_annotation->_get_type( $field )."]\n";
+                    print "NEW RANK: $new_rank [".$new_annotation->_get_type( $field )."]\n";
+                }
+
+                if( $cur_rank <= $new_rank ) {
+                    $ret_annot->set( $field, $current_annotation->get( $field ) );
+                } elsif( $new_rank < $cur_rank ) {
+                    $ret_annot->set( $field, $new_annotation->get( $field ) );
+                } else {
+                    confess("Could not merge annotations");
+                }
+            } elsif( $new_annotation->has_annotation($field) ) {
                 $ret_annot->set( $field, $new_annotation->get( $field ) );
-            } else {
-                confess("Could not merge annotations");
+            } elsif( $current_annotation->has_annotation($field) ) {
+                $ret_annot->set( $field, $current_annotation->get($field) );
             }
-        } elsif( $new_annotation->is_annotated($field) ) {
-            $ret_annot->set( $field, $new_annotation->get( $field ) );
-        } elsif( $current_annotation->is_annotated($field) ) {
-            $ret_annot->set( $field, $current_annotation->get($field) );
+
         }
 
     }
@@ -143,6 +173,8 @@ sub _merge_annotations {
         print Dumper( $ret_annot );
         croak("At the end of merge, retval has no annotations");
     }
+
+    print Dumper( $ret_annot ) if( $flag );
 
     return $ret_annot;
 }

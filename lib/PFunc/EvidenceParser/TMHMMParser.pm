@@ -17,6 +17,7 @@ my $transmembrane = {
     'TIGR_Role'         => 88,
 };
 my $source = "TMHMM";
+my $minimum_membrane_spanning_regions = 3;
 ################################
 
 sub new {
@@ -53,7 +54,7 @@ sub _handle_polypeptide {
         die('Could not find Attribute[@name="tmh_count"] for sequence '.$el->att('id'));
     }
 
-    if( $tmh_count > 5 ) {
+    if( $tmh_count >= $minimum_membrane_spanning_regions ) {
         $annot_flag = 1;
     } elsif( $tmh_count > 0 ) {
         
