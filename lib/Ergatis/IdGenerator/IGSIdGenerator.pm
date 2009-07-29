@@ -270,7 +270,7 @@ umask(0000);
         ## get ID
         
         ## from pool
-        $current_num = $id_service->getNextID();
+        $current_num = $id_service->get_next_id();
         
         ## format and return the id we got
         ## if type is pipeline we just return the numerical portion.
@@ -290,7 +290,7 @@ umask(0000);
         my ($self, %args) = @_;
         my $current_num = undef;
 
-        $current_num = $id_service->getNextID();
+        $current_num = $id_service->get_next_id();
 
         $self->_log("info: got GUID $current_num");
         
