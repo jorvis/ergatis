@@ -30,23 +30,29 @@ sub _parse {
             my ($t, $feat) = @_;
             my $annot_id = $self->lookup_feature_id( $feat->att('id'), $self->annotate_on );
             my $annotation = $self->get_feature_annotation( $annot_id );
-
-            if( $annotation ) {
-                $annotation->clear_annotation;
-
-                my @fields = PFunc::Annotation::get_valid_fields;
-                foreach my $field ( @fields ) { 
-                    my $value = "";
-                    $value = $hypo->{$field} if( exists( $hypo->{$field} ) );
-                    $annotation->set( $field, $value, $source, $annotation_type );
-                }
-                
-            }
-                                                                                     
+            
+            $self->_set_annotation( $annotation );
+            
         }
     });
 
     $twig->parse( $fh );
+}
+
+sub _set_annotation {
+    my ($annotation) = @_;
+
+    if( $annotation ) {
+        $annotation->clear_annotation;
+
+        my @fields = PFunc::Annotation::get_valid_fields;
+        foreach my $field ( @fields ) { 
+            my $value = "";
+            $value = $hypo->{$field} if( exists( $hypo->{$field} ) );
+            $annotation->set( $field, $value, $source, $annotation_type );
+        }
+        
+    }
 }
 
 1;
