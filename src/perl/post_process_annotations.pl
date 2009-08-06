@@ -59,6 +59,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use File::OpenFile qw(open_file);
 use PFunc::Annotation;
+use PFunc::EvidenceParser::Hypothetical;
 use PFunc::CommonNameAnnotation qw(clean_common_name);
 use PFunc::TIGRRolesAnnotation qw(assign_tigr_roles_by_keyword);
 use Data::Dumper;
@@ -141,20 +142,19 @@ sub check_for_ec_numbers {
     my $gene_product_name = $gene_product_name_array->[0];
 
     if( !defined( $gene_product_name ) ) {
-        print Dumper( $annotation );
-        die("Don't have a gene_product_name");
-        
-    }
+        &PFunc::EvidenceParser::Hypothetical::_set_annotation( $annotation );
+    } else {
 
-    my $feature_id = $annotation->get_feature_id;
+        my $feature_id = $annotation->get_feature_id;
     
-    while( $gene_product_name =~ /ec\s+([\d\.\-]+)/gi ) {
-
-        my $ec = $1;
-        if( $annotation->has_annotation( 'EC' ) ) {
-            $annotation->add_EC( $ec );
-        } else {
-            $annotation->set_EC( $ec, $source, $type );
+        while( $gene_product_name =~ /ec\s+([\d\.\-]+)/gi ) {
+            
+            my $ec = $1;
+            if( $annotation->has_annotation( 'EC' ) ) {
+                $annotation->add_EC( $ec );
+            } else {
+                $annotation->set_EC( $ec, $source, $type );
+            }
         }
     }
 }
