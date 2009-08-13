@@ -10,6 +10,10 @@ USAGE: hmmpfam2bsml.pl
         --input=/path/to/somefile.hmmpfam.raw 
         --output=/path/to/somefile.hmmpfam.bsml
       [ --search_method=hmmpfam
+        --query_mol_type=aa
+        --query_mol_class=polypeptide
+        --model_mol_type=aa
+        --model_mol_class=polypeptide
         --fasta_input=/path/to/hmmpfam/input.fsa
         --gzip_output=1
         --log=/path/to/some.log
@@ -28,6 +32,18 @@ B<--output,-o>
 B<--search_method,-m> 
     Optional. Search method used with hmmpfam.  default is 'hmmpfam' but others
     include 'hmmsmart', 'hmmpir', etc.
+
+B<--query_mol_type,-qt> 
+    Query molecule type (like 'aa' or 'dna'). 
+
+B<--query_mol_class,-qc> 
+    Query molecule type (like 'polypeptide' or 'DNA'). 
+
+B<--model_mol_type,-mt> 
+    Model molecule type (like 'aa' or 'dna'). 
+
+B<--model_mol_class,-mc> 
+    Query molecule type (like 'polypeptide' or 'DNA'). 
 
 B<--fasta_input,-f>
     Optional.  If included, will make a seq data import element and include the 
@@ -93,6 +109,10 @@ my $results = GetOptions (\%options,
               'input|i=s',
               'output|o=s',
               'search_method|m=s',
+              'query_mol_type|qt=s',
+              'query_mol_class|qc=s',
+              'model_mol_type|mt=s',
+              'model_mol_class|mc=s',
               'fasta_input|f=s',
               'gzip_output|g=s',
               'log|l=s',
@@ -149,11 +169,12 @@ while (<$ifh>) {
         unless ($qry_id) { $logger->logdie("Query sequence definition not found in input file.") }
         
         my %alignments;
+        my $alignment_data;
         my ($model, $description, $score, $eval);
 
         ## add the query sequence file to the doc
         ##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
-        my $seq = $doc->createAndAddSequence($qry_id, $qry_id, undef, 'aa', 'polypeptide');
+        my $seq = $doc->createAndAddSequence($qry_id, $qry_id, undef, $options{'query_mol_type'}, $options{'query_mol_class'});
            $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
         my $identifier = $qry_id;
         $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $1) if($options{'fasta_input'});
@@ -174,23 +195,28 @@ while (<$ifh>) {
 
                 ## add this model sequence if we haven't already
                 if( !( $doc->returnBsmlSequenceByIDR($model)) ){
-                    my $seq = $doc->createAndAddSequence($model, $description, undef, 'aa', 'polypeptide');
+                    my $seq = $doc->createAndAddSequence($model, $description, undef, $options{'model_mol_type'}, $options{'model_mol_class'});
                 }
+            
+            # If we do not have any hits above the domain cutoff then we don't want to add this seq-pair aligment cause we
+            # will have no seq-pair runs. As a result we only add a seq-pair alignment if we have a run.
+
+            #    $alignments{$model} = $doc->createAndAddSequencePairAlignment( 
+            #                                                           refseq => $qry_id,
+            #                                                           refstart => 0,
+            #                                                           #refend => $cols[2] - 1,
+            #                                                           #reflength => $cols[2],
+            #                                                           compseq => $model,
+            #                                                           class => 'match'
+            #                                                                 );
+            #    ## add a link element inside this seq-pair-alignment
+            #    $alignments{$model}->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
         
-                $alignments{$model} = $doc->createAndAddSequencePairAlignment( 
-                                                                       refseq => $qry_id,
-                                                                       refstart => 0,
-                                                                       #refend => $cols[2] - 1,
-                                                                       #reflength => $cols[2],
-                                                                       compseq => $model,
-                                                                       class => 'match'
-                                                                             );
-                ## add a link element inside this seq-pair-alignment
-                $alignments{$model}->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
-        
-                ## add the total_score and total_eval for this pair
-                $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_score', $score);
-                $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_e_value',  $eval);
+            #    ## add the total_score and total_eval for this pair
+            #    $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_score', $score);
+            #    $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_e_value',  $eval);
+                $alignment_data->{$model}->{'score'} = $score;
+                $alignment_data->{$model}->{'eval'} = $eval;
             }
 
             ## quit once we hit domain section
@@ -218,7 +244,25 @@ while (<$ifh>) {
                 $linectr++;
 
                 ($model, $domain_num, $domain_of, $qry_start, $qry_stop, $sbj_start, $sbj_stop, $score, $eval) = ($1, $2, $3, $4, $5, $6, $7, $8, $9);
-        
+       
+
+                # If we have a seq-pair run we'll make sure we have an alignment to add the run to. If not we'll create it here.
+                if(!$alignments{$model}) {
+                    $alignments{$model} = $doc->createAndAddSequencePairAlignment(
+                                                                           refseq => $qry_id,
+                                                                           refstart => 0,
+                                                                           #refend => $cols[2] - 1,
+                                                                           #reflength => $cols[2],
+                                                                           compseq => $model,
+                                                                           class => 'match'
+                                                                              );
+                    ## add a link element inside this seq-pair-alignment
+                    $alignments{$model}->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
+
+                    ## add the total_score and total_eval for this pair
+                    $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_score', $alignment_data->{$model}->{'score'});
+                    $doc->createAndAddBsmlAttribute($alignments{$model}, 'total_e_value',  $alignment_data->{$model}->{'eval'});
+                } 
                 my $run = $doc->createAndAddSequencePairRun(   
                                                        alignment_pair => $alignments{$model},
                                                        runscore => $score,

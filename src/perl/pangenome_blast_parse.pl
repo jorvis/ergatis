@@ -132,32 +132,50 @@ sub processSeqPairAlignment {
     
     my $query_id   = $feat->{'att'}->{'refseq'};
     my $subject_id = $feat->{'att'}->{'compseq'};
-
+    print STDERR "$query_id $subject_id\n";
     my $len_total = 0;
     my $pident_sum = 0;
     my $psim_sum = 0;
-    
+    my $all_seg_p_ident = 0;
+    my $all_seg_p_sim = 0;
+
     my $parent_chain = 0;
     
-    for my $seqpairrun ( $feat->children('Seq-pair-run') ) {
-        my $run_length = $seqpairrun->{att}->{runlength};
-        $len_total += $run_length;
-        for my $attribute ( $seqpairrun->children('Attribute') ) {
-            if ($attribute->{att}->{'name'} eq 'percent_identity') {
-                $p_ident = $attribute->{att}->{'content'};
-            } elsif ($attribute->{att}->{'name'} eq 'percent_similarity') {
-                $p_sim = $attribute->{att}->{'content'};
-            } elsif ($attribute->{att}->{'name'} eq 'percent_coverage_refseq') {
-                $p_cov_ref = $attribute->{att}->{'content'};
-            } elsif ($attribute->{att}->{'name'} eq 'percent_coverage_compseq') {
-                $p_cov_comp = $attribute->{att}->{'content'};
-            }
+    for my $att ($feat->children('Attribute')) {
+        if($att->{att}->{'name'} eq 'percent_coverage_compseq') {
+            $p_cov_comp = $att->{att}->{'content'};
         }
-        $pident_sum += (($p_ident/100.0) * $run_length); 
-        $psim_sum += (($p_sim/100.0) * $run_length); 
+        elsif($att->{att}->{'name'} eq 'percent_coverage_refseq') {
+            $p_cov_ref = $att->{att}->{'content'};
+        }
+        elsif($att->{att}->{'name'} eq 'percent_similarity') {
+            $all_seg_p_sim = $att->{att}->{'content'};
+        }
+        elsif($att->{att}->{'name'} eq 'percent_identity') {
+            $all_seg_p_ident = $att->{att}->{'content'};
+        }        
     }
-    my $all_seg_p_ident = sprintf("%.1f", $pident_sum / $len_total * 100);
-    my $all_seg_p_sim = sprintf("%.1f", $psim_sum / $len_total * 100);
+#print STDERR "$p_cov_comp $p_cov_ref $all_seg_p_sim $all_seg_p_ident\n";
+
+#    for my $seqpairrun ( $feat->children('Seq-pair-run') ) {
+#        my $run_length = $seqpairrun->{att}->{runlength};
+#        $len_total += $run_length;
+#        for my $attribute ( $seqpairrun->children('Attribute') ) {
+#            if ($attribute->{att}->{'name'} eq 'percent_identity') {
+#                $p_ident = $attribute->{att}->{'content'};
+#            } elsif ($attribute->{att}->{'name'} eq 'percent_similarity') {
+#                $p_sim = $attribute->{att}->{'content'};
+#            } elsif ($attribute->{att}->{'name'} eq 'percent_coverage_refseq') {
+#                #$p_cov_ref = $attribute->{att}->{'content'};
+#            } elsif ($attribute->{att}->{'name'} eq 'percent_coverage_compseq') {
+#                #$p_cov_comp = $attribute->{att}->{'content'};
+#            }
+#        }
+#        $pident_sum += (($p_ident/100.0) * $run_length); 
+#        $psim_sum += (($p_sim/100.0) * $run_length); 
+#    }
+#    my $all_seg_p_ident = sprintf("%.1f", $pident_sum / $len_total * 100);
+#    my $all_seg_p_sim = sprintf("%.1f", $psim_sum / $len_total * 100);
 
     # $qprot may be an assembly for TBLASTN, not a protein
     my($qdb, $qprot) = ($2, $1);
@@ -190,21 +208,35 @@ sub processSeqPairAlignment {
     
     if(!$options{'db_list'} || ($dbs->{$qdb} && $dbs->{$sdb})) {
 #    if ($skip_filter || ($filter->{$qdb}->{$qprot} && $filter->{$sdb}->{$sprot})) {
-    if ($db_filter || ($db_filter->{$db_to_org->{$qdb}}->{$qprot} && $db_filter->{$db_to_org->{$sdb}}->{$sprot})) {
-    #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
-    #       push (@results, [$qdb,$qprot,$sdb,$sprot,$all_seg_p_ident,$p_cov_ref]);
-        if ($all_seg_p_sim >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {
-            push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
-        }
-    #   if ($qdb eq $sdb && $qprot ne $sprot && $all_seg_p_indent == 100 && $p_cov_ref == 100 && $p_cov_comp == 100.0) {
-        #   I won't exclude the self hit here because we do want the query id in the group of dups
-        if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
+
+#        if (!$db_filter || ($db_filter->{$db_to_org->{$qdb}}->{$qprot} && $db_filter->{$db_to_org->{$sdb}}->{$sprot})) {
+
+        if (!$db_filter || ($db_filter->{$qdb} && $db_filter->{$sdb})) {
+
+            #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
+            #       push (@results, [$qdb,$qprot,$sdb,$sprot,$all_seg_p_ident,$p_cov_ref]);
+            if ($all_seg_p_sim >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {
+                #print STDERR "$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref\n";
+                push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
+            }
+            else {
+                print STDERR "filtering 1 $qprot $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+            }
+            #   if ($qdb eq $sdb && $qprot ne $sprot && $all_seg_p_indent == 100 && $p_cov_ref == 100 && $p_cov_comp == 100.0) {
+            #   I won't exclude the self hit here because we do want the query id in the group of dups
+            if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
             push(@{$dups_temp->{$db_to_org->{$sdb}}}, $sprot);
             print $sprot."\n";
             print $p_cov_ref." ".$p_cov_comp."\n";
+            }
+#            else {
+#                print STDERR "filtering 2 $qprot $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+#            }
+        }
+        elsif($db_filter) {
+            print STDERR "Filtered from organism_to_prefix ".$db_filter->{$qdb}." or ".$db_filter->{$sdb}."\n";
         }
     }
-}
     elsif($options{'db_list'}) {
         print STDERR "Filtered $qdb or $sdb\n";
     }

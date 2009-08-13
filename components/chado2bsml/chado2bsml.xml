@@ -27,10 +27,14 @@
 		<key>--control_file</key>
 		<value>$;CHADO2BSML_CONTROL_FILE$;</value>
 	    </param>
-            <param>
+        <param>
 		<key>--bsmlfilelist</key>
 		<value>$;BSML_FILE_LIST$;</value>
 	    </param>
+        <param>
+        <key>--databaselist</key>
+        <value>$;DATABASE_LIST$;</value>
+        </param>
 	    <param>
 		<key>--output_file</key>    
 		<value>$;TMP_DIR$;/chado2bsml.list</value>

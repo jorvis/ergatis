@@ -57,6 +57,22 @@
                 <key>--gzip_output</key>
                 <value>$;COMPRESS_BSML_OUTPUT$;</value>
             </param>
+            <param>
+                <key>--model_mol_type</key>
+                <value>$;MODEL_MOL_TYPE$;</value>
+            </param>
+            <param>
+                <key>--model_mol_class</key>
+                <value>$;MODEL_MOL_CLASS$;</value>
+            </param>
+            <param>
+                <key>--query_mol_type</key>
+                <value>$;QUERY_MOL_TYPE$;</value>
+            </param>
+            <param>
+                <key>--query_mol_class</key>
+                <value>$;QUERY_MOL_CLASS$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>

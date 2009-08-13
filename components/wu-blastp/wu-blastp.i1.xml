@@ -49,6 +49,10 @@
                 <key>--pvalue</key>
                 <value>$;EXPECT$;</value>
             </param>
+            <param>
+                <key>--filter_hsps_for_stats</key>
+                <value>$;FILTER_HSPS_FOR_STATS$;</value>
+            </param>
             <param>  
                 <key>--class</key>
                 <value>polypeptide</value>

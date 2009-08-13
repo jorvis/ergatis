@@ -31,6 +31,8 @@ B<--max_hsp_count,-m> Maximum number of HSPs stored per alignment (optional)
 
 B<--pvalue,-p> Maximum P-value at and above which to exclude HSPs (optional)
 
+B<--filter_hsps_for_stats,-F> Whether to filter the HSPs by best Sum(P) when calculating the %id/coverage/similarity for the seq-pair-alignment
+
 B<--class,-c> The ref/comp sequence type.  Default is 'assembly'
 
 B<--debug,-d> 
@@ -82,6 +84,7 @@ my $results = GetOptions (\%options,
                           'bsml_dir|d=s', ## deprecated.  keeping for backward compat (for now)
                           'max_hsp_count|m=s',
                           'max_alignment_count|M=s',
+                          'filter_hsps_for_stats|F=s',
                           'pvalue|p=s', 
                           'debug=s',
                           'class|c=s',
@@ -327,8 +330,14 @@ RESULT: while( my $result = $in->next_result ) {
                $qual_stats->{$queryid} = {};
             }
             
-            my $coverage_arr_ref = &getAvgBlastPPctCoverage(\@hsp_ref_array);
-            my $id_sim_arr_ref = &getAvgBlastPIdSim(\@hsp_ref_array); 
+            my $filtered_hsp_ref_array = \@hsp_ref_array;
+            if($options{'filter_hsps_for_stats'}) {
+                $filtered_hsp_ref_array = &filterBlastpHsps(\@hsp_ref_array);
+                if(scalar(@hsp_ref_array) != scalar(@$filtered_hsp_ref_array)) {
+                }
+            }
+            my $coverage_arr_ref = &getAvgBlastPPctCoverage($filtered_hsp_ref_array);
+            my $id_sim_arr_ref = &getAvgBlastPIdSim($filtered_hsp_ref_array); 
             
             $qual_stats->{$queryid}->{$new_subject} = {
                 'percent_coverage_refseq'   =>  sprintf("%.1f",$coverage_arr_ref->[0]),
@@ -903,6 +912,33 @@ sub mergeOverlappingIntervals {
     push(@$merged, $current) if (defined($current));
 
     return $merged;
+}
+
+# Returns only those BLAST HSPs that contributed to the best Sum(P) value
+# reported for each subject/query sequence pair.
+#
+sub filterBlastpHsps {
+    my($links) = @_;
+    my $linksByQuery = &groupByMulti($links, ['query_protein_id', 'target_protein_id']);
+    my $result = [];
+
+    # Aggregate all HSPs with the same subject and query sequence
+    foreach my $queryId (keys %$linksByQuery) {
+	my $linksBySubject = $linksByQuery->{$queryId};
+
+	foreach my $subjId (keys %$linksBySubject) {
+	    my $slinks = $linksBySubject->{$subjId};
+	    my @sortedLinks = sort { $a->{'significance'} <=> $b->{'significance'} } @$slinks;
+	    # heuristic - assume that all HSPs with the same Sum(P) as the best are contributing to that Sum(p) score
+	    my $bestScore = $sortedLinks[0]->{'significance'};
+	    
+	    foreach my $sl (@sortedLinks) {
+		last if ($sl->{'significance'} > $bestScore);
+		push(@$result, $sl);
+	    }
+	}
+    }
+    return $result;
 }
 
 sub check_parameters {

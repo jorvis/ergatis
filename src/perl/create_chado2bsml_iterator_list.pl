@@ -58,6 +58,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'control_file=s', 
                           'bsmlfilelist=s', 
+                          'databaselist=s',
 			  'output_file=s',
 			  'logfile=s',
                           'debug=s', 
@@ -98,6 +99,8 @@ if (defined($options{'output_file'})){
 my $asmblCtr=0;
 my $asmblLookup={};
 my $currentAsmblId;
+my $dbCtr=0;
+my $dbLookup ={};
 
 if (defined($options{bsmlfilelist})){
 
@@ -173,8 +176,46 @@ if (defined($options{bsmlfilelist})){
 
     print "Parsed '$lineCtr' lines in control file '$controlfile'\n";
 
+}
+elsif(defined($options{databaselist})) {
+
+    my $databaselist = $options{databaselist};
+
+    if (! Annotation::Util2::checkInputFileStatus($databaselist)){
+	$logger->logdie("Detected some problem with control file '$databaselist'");
+    }
+
+    my $contents = Annotation::Util2::getFileContentsArrayRef($databaselist);
+    if (!defined($contents)){
+	$logger->logdie("Could not retrieve contents of control file '$databaselist'");
+    }
+
+    my $lineCtr=0;
+
+    foreach my $line (@{$contents}){
+	chomp $line;
+	$lineCtr++;
+
+	if ($line =~ /^\s*$/){
+	    next; ## skip blank lines
+	}
+
+	if ($line =~ /^\#+/){
+	    next;
+	}
+
+	$line =~ s/^\s+//; ## remove leading white spaces
+	$line =~ s/\s+$//; ## remove trailing white spaces
+
+	if (! exists $dbLookup->{$line}){
+	    $dbCtr++;
+	    $dbLookup->{$line}++;
+	} else {
+	    $logger->warn("Found duplicate database '$line' at line '$lineCtr' of database list '$options{'databaselist'}'");
+	}		
+    }
 } else {
-    $logger->logdie("You must specify either --bsmlfilelist or --control_file");
+    $logger->logdie("You must specify either --bsmlfilelist, --control_file or --databaselist");
 }
 
 
@@ -190,8 +231,20 @@ if ($asmblCtr>0){
     
     close OUTFILE;
 
+}elsif($dbCtr) {
+
+    open (OUTFILE, ">$outfile") || $logger->logdie("Could not open output_file '$outfile' in write mode: $!");
+
+    print OUTFILE  '$;DATABASE$;' . "\n";
+
+    foreach my $db (sort keys %{$dbLookup} ){
+	print OUTFILE "$db\n";
+    }
+    
+    close OUTFILE;
+
 } else {
-    $logger->logdie("Did not find any assembly identifiers in control_file '$options{'control_file'}'");
+    $logger->logdie("Did not find any information in the input file");
 }
 
 print "$0 execution completed\n";
