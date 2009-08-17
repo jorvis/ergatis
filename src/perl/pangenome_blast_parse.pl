@@ -74,7 +74,7 @@ my @results = ();
 my $dups_temp = {};
 my %dups = ();
 my $db_to_org = {};
-my $db_filter = {};
+my $db_filter = undef;
 my $dbs = {};
 
 my $twig = XML::Twig->new(
