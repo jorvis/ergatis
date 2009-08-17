@@ -321,8 +321,8 @@ umask(0000);
         foreach my $val(values(%{$self->{_pool_sizes}})) {
             $new_size += $val;
         }
-        if ($new_size > $id_service->getBatchSize) {
-            $id_service->setBatchSize($new_size);
+        if ($new_size > $id_service->get_batch_size) {
+            $id_service->set_batch_size($new_size);
         }
     }
 
