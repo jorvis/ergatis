@@ -57,7 +57,7 @@ function (x,y, ...) {
    length = 0.08, ...)
 }
 
-m <- tapply(pangenome$V2,pangenome$V1,c)
+m <- tapply(pangenome$V4,pangenome$V1,c)
 
 for( x in names(m) ) {
     superpose.eb(x, m[[x]])
