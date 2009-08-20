@@ -144,6 +144,7 @@ $options{new_release_tag}/lib $options{svn_repository}/tags/$options{new_release
 $options{new_release_tag}/components $options{svn_repository}/tags/$options{new_release_tag}/components
 $options{new_release_tag}/htdocs $options{svn_repository}/tags/$options{new_release_tag}/htdocs
 $options{new_release_tag}/src $options{svn_repository}/tags/$options{new_release_tag}/src/c
+$options{new_release_tag}/R $options{svn_repository}/tags/$options{new_release_tag}/src/R
 $options{new_release_tag}/samples $options{svn_repository}/tags/$options{new_release_tag}/samples
 $options{new_release_tag}/global_pipeline_templates $options{svn_repository}/tags/$options{new_release_tag}/templates/pipelines
 
