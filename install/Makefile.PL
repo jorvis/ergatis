@@ -861,7 +861,7 @@ pangenome_make_graphs	:
 	@install components/pangenome_make_graphs/pangenome_make_graphs.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/pangenome_make_graphs/pangenome_make_graphs.config $(WORKFLOW_DOCS_DIR)
 	@install components/pangenome_make_graphs/pangenome_make_graphs.tmpl $(WORKFLOW_DOCS_DIR)/documentation
-	@install src/R/pangenome $(WORKFLOW_DOCS_DIR)
+	@tar cf - R |  (cd $(WORKFLOW_DOCS_DIR); tar xf -)
 
 parse_evidence	:
 	@echo "Installing parse_evidence workflows in $(WORKFLOW_DOCS_DIR)"
