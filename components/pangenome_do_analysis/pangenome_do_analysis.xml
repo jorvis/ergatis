@@ -21,7 +21,7 @@
         </command>
         <!--Processing-->
          <command>
-            <type>RunUnixCommand</type>
+            <type>RunDistributedCommand</type>
             <name>make table</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/pangenome_make_table</executable>
@@ -54,7 +54,7 @@
             </dceSpec>
         </command>
          <command>
-            <type>RunUnixCommand</type>
+            <type>RunDistributedCommand</type>
             <name>make profile</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/pangenome_make_profile</executable>
@@ -87,7 +87,7 @@
             </dceSpec>
         </command>
          <command>
-            <type>RunUnixCommand</type>
+            <type>RunDistributedCommand</type>
             <name>make pangenome</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/pangenome_make_pangenome</executable>

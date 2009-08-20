@@ -41,7 +41,7 @@
             </param>
         </command>
         <command>
-            <type>RunUnixCommand</type>
+            <type>RunDistributedCommand</type>
             <name>merge pangenome data</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/pangenome_merge_results</executable>
