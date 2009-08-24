@@ -51,16 +51,16 @@ v4submedians <- as.vector(tapply(pansub$V4,pansub$V1,FUN=median))
 v1submedians <- as.vector(tapply(pansub$V1,pansub$V1,FUN=median))
 
 ## exponential model based on medianss
-nlmodel_pot <- nls(v4submedians ~ th1* v1submedians^(- th2), data=pansub,
+nlmodel_pot <- nls(v4submeans ~ th1* v1submeans^(- th2), data=pansub,
 start=list(th1=476, th2=0.5))
 
 
 # Open up the output file for the log graph
-postscript(file=paste(sep="", "###output_path###new_genes_power_law2_medians_log_min_",gcnt,"_error_bar.ps"), width=11, height=8.5, paper='special')
+postscript(file=paste(sep="", "###output_path###new_genes_power_law2_means_log_min_",gcnt,"_error_bar_with_points.ps"), width=11, height=8.5, paper='special')
 layout(matrix(c(1,2),byrow=TRUE), heights=c(7.5,1))
 
 # Draw the axis
-plot(V1,V4, xlab="number of genomes", ylab="new genes", main=paste("###TITLE### new genes power law 2 log axis ",gcnt," or more genomes"), col=p_color, cex=0.5, log="xy", type="n")
+plot(V1,V4, xlab="number of genomes", ylab="new genes", main=paste("###TITLE### new genes power law 2 log axis ",gcnt," or more genomes"), col=p_color, cex=0.5, log="xy")
 
 superpose.eb <-
 function (x,y, ...) {
@@ -87,20 +87,19 @@ for( x in names(m) ) {
 }
 
 # plot the medians
-points(tapply(pangenome$V4,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
+#points(tapply(pangenome$V4,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
 
 # plot the means
-#points(tapply(V4,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
+points(tapply(V4,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
 
 # plot the regression
 # plot the regression
 x <- seq(par()$xaxp[1]-1,as.integer(0.5 + 10^par()$usr[[2]]))
-lines(x, predict(nlmodel_pot,data.frame(v1submedians=x)), lwd=2, col="black")
-
+lines(x, predict(nlmodel_pot,data.frame(v1submeans=x)), lwd=2, col="black")
 
 
 expr_pot <- substitute(
-                expression(y == th1 * x^(-th2)), 
+                expression(y == th1err %+-% th1 * x^(-th2 %+-% th2err)), 
                 list(
                     th1=round(nlmodel_pot$m$getPars()[1], digit=2),
                     th1err = round(summary(nlmodel_pot)[10][[1]][3], digit=2),
