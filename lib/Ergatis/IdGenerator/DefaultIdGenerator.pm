@@ -217,12 +217,12 @@ umask(0000);
         if ($self->logging) {
             ## make sure the log directory exists (if we're logging)
             if(! -d $self->log_dir() ) {
-                mkdir($self->log_dir(), 0777);
+                mkdir($self->log_dir(), 0777) || croak ("Can't create log_dir (".$self->log_dir()."): $!");
             }
 
             ## make sure the host subdir exists
             if (! -d $self->log_dir() . "/$host") {
-                mkdir($self->log_dir() . "/$host", 0777);
+                mkdir($self->log_dir() . "/$host", 0777) || croak ("Can't create host subdir (".$self->log_dir()."/$host): $!");
             }
 
             open (my $fh, ">>" . $self->log_dir() . "/$host/$$.log") || croak ("can't create log file: $!");
