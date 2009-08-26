@@ -8,7 +8,8 @@ build_ergatis.pl - automatically install ergatis and its required packages
 
 USAGE: build_ergatis.pl 
             --install_base=/path/to/install/dir
-          [ --tmp_area=/path/to/tmp/dir
+          [ --htdocs_area=/path/to/www/ergatis
+            --tmp_area=/path/to/tmp/dir
             --software_config=/path/to/config.file
 	    --lib=/path/to/perl/lib/dir
             --log=/path/to/file
@@ -19,6 +20,9 @@ USAGE: build_ergatis.pl
 
 B<--install_base,-i>
     Location to install ergatis
+
+B<--htdocs_area>
+    optional.  Web files will be copied to this directory.  It should be accessible by your webserver.
 
 B<--tmp_area,-t>
     optional.  Location to store temporary files.  Default is /tmp/build_ergatis.
@@ -101,6 +105,10 @@ clear_install_area($install_base);
 install_ergatis($install_base);
 (-e "$opts{install_base}/software.config") || die "Missing software config";
 
+if ( $opts{htdocs_area} ) {
+    install_ergatis_htdocs( $opts{htdocs_area} );
+}
+
 install_bsml($install_base);
 
 install_coati($install_base);
@@ -128,6 +136,7 @@ sub parse_options {
     my $results = GetOptions (\%options,
                               'install_base|i=s',
                               'tmp_area|t=s',
+                              'htdocs_area=s',
 			      'software_config|s=s',
 			      'lib=s',
                               'log|l=s',
@@ -284,6 +293,18 @@ sub install_ergatis {
     run_command( "make install" );
 }
 
+sub install_ergatis_htdocs {
+    my $target = shift;
+    my $source = "$tmp_area/ergatis/ergatis-trunk/htdocs";
+
+    _log( "Moving htdocs to $source" );
+
+    mkdir( $target ) unless (-e $target);
+
+    run_command( "cp -r $source/* $target" );
+
+}
+
 sub install_euk_prism {
     my $base = shift;
  
@@ -369,6 +390,8 @@ sub replace_software_config_values {
 sub run_command {
     my $cmd = shift;
     
+    _log("System Command: $cmd");
+
     system($cmd);
     
     if ( $? == -1 ) {
