@@ -111,6 +111,8 @@ sub print_intergenic_fasta {
 
     foreach my $mol ( keys %{$f_lookup->{'molecules'}} ) {
 
+        next unless( @{$f_lookup->{'molecules'}->{$mol}} > 0 );
+
         my $ofh = open_file( "$odir/$mol.interevidence.fsa", "out" );
 
         my @sorted_ids = sort { 
