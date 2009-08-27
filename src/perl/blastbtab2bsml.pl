@@ -168,6 +168,11 @@ sub parse_blast_btabs {
     my $hsplookup;
     while(my $line = <BTAB>) {
         chomp($line);
+        
+        #Bioperl seems to place control characters in some btab files (when using wu-blast2btab)
+        #These characters are not allowed in XML, so removing them here
+        $line =~ s/\cA/ /g;
+
         my @btab = split("\t", $line);
         if(($btab[20] <= $options{'pvalue'}) && ($btab[0] ne "") && ($btab[5] ne "")){
         if(!(exists $hsplookup->{$btab[0]}->{$btab[5]})){
