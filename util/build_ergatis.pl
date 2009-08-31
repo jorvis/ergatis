@@ -403,6 +403,8 @@ sub set_idgen_configuration {
     my $base = shift;
 
     return if ( $opts{id_generator} eq 'default' );
+
+    my $idgenerator = $ID_GENERATORS{ $opts{id_generator} };
     
     for my $conf_file ( "$base/lib/perl5/Ergatis/IdGenerator/Config.pm", 
                         "$base/lib/perl5/Coati/IdGenerator/Config.pm" ) {
@@ -422,7 +424,7 @@ sub set_idgen_configuration {
         while ( my $line = <$cfh> ) {
             if ( $line !~ /^\#/ ) {
 #                $line =~ s/\:\:DefaultIdGenerator/\:\:IGSIdGenerator/g;
-                $line =~ s/\:\:DefaultIdGenerator/\:\:$opts{id_generator}/g;
+                $line =~ s/\:\:DefaultIdGenerator/\:\:$idgenerator/g;
             }
             
             push @lines, $line;
