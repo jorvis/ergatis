@@ -11,6 +11,7 @@ USAGE: build_ergatis.pl
           [ --htdocs_area=/path/to/www/ergatis
             --tmp_area=/path/to/tmp/dir
             --software_config=/path/to/config.file
+            --id_generator={default, igs}
 	    --lib=/path/to/perl/lib/dir
             --log=/path/to/file
             --help
@@ -30,6 +31,9 @@ B<--tmp_area,-t>
 B<--software_config,-s>
     optional.  If provided this script will keep any settings from this config file, overwriting the defaults from the SVN one.
 
+B<--id_generator>
+    optional.  The type of id generator perl module to use.  Will result in edits to Ergatis/IdGenerator/Config.pm & Coati/IdGenerator/Config.pm
+
 B<--lib>
     optional. Perl library directory to be included in perl -I $opt_lib Makefile.pl
 
@@ -38,6 +42,12 @@ B<--log,-l>
 
 B<--help,-h>
     This help message
+
+=head1 CAVEATS
+
+There's a good chance the script will not run automatically on your system the first time you try to use it.  This is because SVN requires
+you to manually accept the server certificates from the SVN repositories.  If you run
+ $ svn co 
 
 =cut
 
@@ -51,9 +61,16 @@ use File::Path;
 # or run script w/ perl -I <above_dir>
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use SVN::Agent;
+#use SVN::Agent;
 
 umask(0022);
+
+# Valid ID generators the script knows about
+# there are other modules, but they would need to be added to the script
+my %ID_GENERATORS = (
+		     igs => "IGSIdGenerator",
+		     default => "DefaultIdGenerator"
+		    );
 
 my %opts = &parse_options();
 
@@ -72,18 +89,21 @@ if (defined $opts{log}) {
 ##########################################
 #my $install_base='/usr/local/projects/ergatis/package-nightly';
 my $install_base=$opts{install_base};
-my $ergatis_svn_co_path='https://ergatis.svn.sourceforge.net/svnroot/ergatis/release/trunk';
-my $bsml_svn_co_path='https://bsml.svn.sourceforge.net/svnroot/bsml/release';
-my $coati_svn_co_path='https://coati-api.svn.sourceforge.net/svnroot/coati-api/release/coati_install';
-my $shared_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/shared_prism';
-my $chado_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/chado_prism';
-my $prok_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/prok_prism';
-my $euk_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/euk_prism';
-my $chado_schema_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/chado';
+# using http instead of https
+my %SVN_CO_PATH = (
+		   ergatis => 'http://ergatis.svn.sourceforge.net/svnroot/ergatis/release/trunk',
+		   bsml => 'http://bsml.svn.sourceforge.net/svnroot/bsml/release',
+		   coati_install => 'http://coati-api.svn.sourceforge.net/svnroot/coati-api/release/coati_install',
+		   shared_prism => 'http://prism-api.svn.sourceforge.net/svnroot/prism-api/release/shared_prism',
+		   chado_prism => 'http://prism-api.svn.sourceforge.net/svnroot/prism-api/release/chado_prism',
+		   prok_prism => 'http://prism-api.svn.sourceforge.net/svnroot/prism-api/release/prok_prism',
+		   euk_prism => 'http://prism-api.svn.sourceforge.net/svnroot/prism-api/release/euk_prism',
+		   chado_schema => 'http://prism-api.svn.sourceforge.net/svnroot/prism-api/release/chado',
+#		   igs_idgenerator => 'http://vader.igs.umaryland.edu/svnroot/ENGR/IGS-UIDGenerator/trunk/perl/lib/IGS',
+		   );
 
 ## this directory will be created.  If it exists already, it and everything under it
 #   will be removed
-#my $tmp_area = '/tmp/build_nightly';
 my $tmp_area = $opts{tmp_area};
 
 ## if this is set this script will keep any settings from this config file, overwriting
@@ -117,13 +137,16 @@ install_chado_prism($install_base);
 install_prok_prism($install_base);
 install_euk_prism($install_base);
 install_chado_schema($install_base);
-
-replace_software_config_values($software_config);
-set_idgen_configuration($install_base);
-
+#HACK: unable to connect to vader svn from external sources
+# once it's made public, we can fix this
+#install_igs_idgenerator($install_base);
 ## for now, also recursively copy the IGS lib dir into the area
-#`cp -r /usr/local/projects/ergatis/package-latest/lib/perl5/IGS $install_base/lib/perl5`;
+if ( $opts{id_generator} eq 'igs' ) {
+    run_command("cp -r /usr/local/projects/ergatis/package-latest/lib/perl5/IGS $install_base/lib/perl5");
+}
+replace_software_config_values($software_config);
 
+set_idgen_configuration($install_base);
 
 _log("And we're done");
 
@@ -138,6 +161,7 @@ sub parse_options {
                               'tmp_area|t=s',
                               'htdocs_area=s',
 			      'software_config|s=s',
+			      'id_generator=s',
 			      'lib=s',
                               'log|l=s',
                               'help|h') || pod2usage();
@@ -175,6 +199,13 @@ sub check_parameters {
 
     ## handle some defaults
     $options->{tmp_area} = '/tmp/build_ergatis'  unless ($options->{tmp_area});
+
+    $options->{id_generator} = 'default'  unless ($options->{id_generator});
+
+    unless ( defined( $ID_GENERATORS{$options->{id_generator}} )) {
+	die "Unknown --id_generator (".$options->{id_generator}.").  Must be one of ".join(', ', keys %ID_GENERATORS);
+    }
+
 }
 
 sub _log {
@@ -186,7 +217,6 @@ sub _log {
         print "LOG: $msg\n";
     }
 }
-
 
 sub clear_co_area {
     my $base = shift;
@@ -212,85 +242,9 @@ sub clear_install_area {
     }
 };
 
-
-sub install_bsml {
-    my $base = shift;
-    
-    my $tmp_build_area = "$tmp_area/bsml";
-
-    _log("checking out BSML\n");
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $bsml_svn_co_path );
-    
-    _log( "installing BSML");
-    chdir("$tmp_build_area/bsml-vNrNbN/") || die "couldn't cd into $tmp_build_area/bsml-vNrNbN";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base SCHEMA_DOCS_DIR=$base/docs" );
-    run_command( "make" );
-    run_command( "make install" );
-
-}
-
-sub install_chado_schema {
-    my $base = shift;
- 
-    my $tmp_build_area = "$tmp_area/chado_schema";
-
-    _log( "checking out Chado schema");    
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $chado_schema_svn_co_path );
-    
-    _log( "installing Chado schema");
-    chdir("$tmp_build_area/chado-vNrNbN/") || die "couldn't cd into $tmp_build_area/chado-vNrNbN";
-    run_command( "perl install.pl INSTALL_BASE=$base" );
-}
-
-sub install_chado_prism {
-    my $base = shift;
- 
-    my $tmp_build_area = "$tmp_area/chado_prism";
-
-    _log( "checking out Prism (chado)");    
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $chado_prism_svn_co_path );
-    
-    _log( "installing Prism (chado)");
-    chdir("$tmp_build_area/chado_prism-vNrNbN/") || die "couldn't cd into $tmp_build_area/chado_prism-vNrNbN";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
-    run_command( "make" );
-    run_command( "make install" );
-}
-
-sub install_coati {
-    my $base = shift;
-    
-    my $tmp_build_area = "$tmp_area/coati";
-
-    _log( "checking out Coati");    
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $coati_svn_co_path );
-    
-    _log( "installing Coati");
-    chdir("$tmp_build_area/coati_install-vNrNbN/") || die "couldn't cd into $tmp_build_area/coati_install-vNrNbN";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
-    run_command( "make" );
-    run_command( "make install" );
-
-}
-
 sub install_ergatis {
-    my $base = shift;
-    
-    my $tmp_build_area = "$tmp_area/ergatis";
-
-    _log( "checking out Ergatis");    
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $ergatis_svn_co_path );
-    
-    _log( "installing Ergatis");
-    chdir("$tmp_build_area/ergatis-trunk/") || die "couldn't cd into $tmp_build_area/ergatis-trunk";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
-    run_command( "make" );
-    run_command( "make install" );
+    my $base = shift;    
+    install_perl( $base, 'ergatis', 'trunk');
 }
 
 sub install_ergatis_htdocs {
@@ -302,56 +256,67 @@ sub install_ergatis_htdocs {
     mkdir( $target ) unless (-e $target);
 
     run_command( "cp -r $source/* $target" );
-
 }
 
-sub install_euk_prism {
+sub install_bsml {
     my $base = shift;
- 
-    my $tmp_build_area = "$tmp_area/euk_prism";
-
-    _log( "checking out Prism (euk)");    
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $euk_prism_svn_co_path );
-    
-    _log( "installing Prism (euk)");
-    chdir("$tmp_build_area/euk_prism-vNrNbN/") || die "couldn't cd into $tmp_build_area/euk_prism-vNrNbN";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
-    run_command( "make" );
-    run_command( "make install" );
+    install_perl( $base, 'bsml', 'vNrNbN');
 }
 
-sub install_prok_prism {
+sub install_coati {
     my $base = shift;
- 
-    my $tmp_build_area = "$tmp_area/prok_prism";
-
-    _log( "checking out Prism (prok)");    
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $prok_prism_svn_co_path );
-    
-    _log( "installing Prism (prok)");
-    chdir("$tmp_build_area/prok_prism-vNrNbN/") || die "couldn't cd into $tmp_build_area/prok_prism-vNrNbN";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
-    run_command( "make" );
-    run_command( "make install" );
+    install_perl( $base, 'coati_install', 'vNrNbN');
 }
 
 sub install_shared_prism {
     my $base = shift;
- 
-    my $tmp_build_area = "$tmp_area/shared_prism";
-
-    _log( "checking out Prism (shared)");    
-    my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    $svn->checkout( $shared_prism_svn_co_path );
-    
-    _log( "installing Prism (shared)");
-    chdir("$tmp_build_area/shared_prism-vNrNbN/") || die "couldn't cd into $tmp_build_area/shared_prism-vNrNbN";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
-    run_command( "make" );
-    run_command( "make install" );
+    install_perl( $base, 'shared_prism', 'vNrNbN');
 }
+
+sub install_chado_prism {
+    my $base = shift;
+    install_perl( $base, 'chado_prism', 'vNrNbN');
+}
+
+sub install_prok_prism {
+    my $base = shift;
+    install_perl( $base, 'prok_prism', 'vNrNbN');
+}
+
+sub install_euk_prism {
+    my $base = shift;
+    install_perl( $base, 'euk_prism', 'vNrNbN');
+}
+
+sub install_chado_schema {
+    my $base = shift;
+ 
+    my $tmp_build_area = "$tmp_area/chado_schema";
+
+    _log( "checking out Chado schema");    
+    svn_checkout( $tmp_build_area, $SVN_CO_PATH{chado_schema} );
+    
+    _log( "installing Chado schema");
+    chdir("$tmp_build_area/chado-vNrNbN/") || die "couldn't cd into $tmp_build_area/chado-vNrNbN";
+    run_command( "perl install.pl INSTALL_BASE=$base" );
+}
+
+
+sub install_igs_idgenerator {
+    my $base = shift;
+    
+    my $tmp_build_area = "$tmp_area/igs_idgenerator";
+    
+    _log( "checking out igs_idgenerator");
+    svn_checkout( $tmp_build_area, $SVN_CO_PATH{igs_idgenerator} );
+
+    my $cmd = "cp -r $tmp_area/igs_idgenerator/ENGR/IGS-UIDGenerator/trunk/perl/lib/IGS $install_base/lib/perl5";
+    run_command( $cmd );
+
+#    chdir("$tmp_build_area//") || die "couldn't cd into $tmp_build_area/chado-vNrNbN";
+#    run_command( "perl install.pl INSTALL_BASE=$base" );    
+}
+
 
 sub replace_software_config_values {
     my $old_config = shift;
@@ -387,6 +352,31 @@ sub replace_software_config_values {
     } 
 };
 
+sub install_perl {
+    my ( $base, $package, $version ) = @_;
+    
+    my $tmp_build_area = "$tmp_area/$package";
+
+    _log( "checking out $package-$version");
+    svn_checkout( $tmp_build_area, $SVN_CO_PATH{$package} );
+
+    _log( "installing $package-$version");
+    chdir("$tmp_build_area/$package-$version/") || die "couldn't cd into $tmp_build_area/$package-$version";
+    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
+    run_command( "make" );
+    run_command( "make install" );
+}
+
+
+# ripped from SVN::Agent
+sub svn_checkout {
+    my ($path, $repository) = @_;
+    mkdir($path) or die "Unable to create svn co " . $path.": $!";
+#    my $svn_cmd = "svn co --trust-server-cert --non-interactive $repository $path";  # reqs SVN >= 1.6
+    my $svn_cmd = "svn co --non-interactive $repository $path";
+    run_command( $svn_cmd );
+}
+
 sub run_command {
     my $cmd = shift;
     
@@ -411,6 +401,8 @@ sub run_command {
 
 sub set_idgen_configuration {
     my $base = shift;
+
+    return if ( $opts{id_generator} eq 'default' );
     
     for my $conf_file ( "$base/lib/perl5/Ergatis/IdGenerator/Config.pm", 
                         "$base/lib/perl5/Coati/IdGenerator/Config.pm" ) {
@@ -429,7 +421,8 @@ sub set_idgen_configuration {
 
         while ( my $line = <$cfh> ) {
             if ( $line !~ /^\#/ ) {
-                $line =~ s/\:\:DefaultIdGenerator/\:\:IGSIdGenerator/g;
+#                $line =~ s/\:\:DefaultIdGenerator/\:\:IGSIdGenerator/g;
+                $line =~ s/\:\:DefaultIdGenerator/\:\:$opts{id_generator}/g;
             }
             
             push @lines, $line;
