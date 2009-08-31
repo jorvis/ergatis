@@ -229,12 +229,12 @@ umask(0000);
                 if($rc == 0) {
                     print $debugfh "ran with normal exit\n" if $self->{debug};
                 } elsif ( $rc == 0xff00 ) {
-                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
                     print $debugfh "command failed: $!\n" if $self->{debug};
+                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
                 } elsif (($rc & 0xff) == 0) {
                     $rc >>= 8;
-                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
                     print $debugfh "ran with non-zero exit status $rc\n" if $self->{debug};
+                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
                 } else {
                     print $debugfh "ran with " if $self->{debug};
                     if($rc & 0x80){
