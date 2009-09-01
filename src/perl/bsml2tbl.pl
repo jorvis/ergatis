@@ -133,11 +133,16 @@ sub process_feature_group
         }
         elsif ($feat_type eq "repeat_region") {
             push @repeats, $feat;
+        } elsif( $feat_type eq "signal_peptide" ) {
+            $class = "signal_peptide";
         }
     }
 
     process_gene($gene, $transcript) if $gene;
     print_feat(\@repeats, "repeat_region") if scalar(@repeats);
+
+    #don't know how to handle these
+    return if( $class eq 'signal_peptide');
 
     if ($class eq "transcript") {
         my $product = $transcript->first_child('Attribute[@name="gene_product_name"]');
