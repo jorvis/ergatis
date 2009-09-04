@@ -204,6 +204,7 @@ for (my $i = 1; $i <= $max; $i++) {
                                             data  => [@genomes],
                                            );
 
+    my $cnt = 1;
     while(my @reference = $combinat->next_combination){
         my $ref_string = "(".join(",",@reference).")\n";
         my @comparison_set = @{array_diff(\@genomes, \@reference)};
@@ -267,7 +268,7 @@ for (my $i = 1; $i <= $max; $i++) {
             my $shared_dup_count = $dup_counts->{$comp_genome}->{'shared'};
             my $new_dup_count    = $dup_counts->{$comp_genome}->{'new'};
             
-            print RESULT "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\n";
+            print RESULT "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t$cnt\t$comp_genome\n";
 
             if ($options{'write_lists'}) { 
             
@@ -293,8 +294,9 @@ for (my $i = 1; $i <= $max; $i++) {
                 }
                 close OUT;
             }
-                
+            $cnt++;                
         }
+
     }
 }
 }
