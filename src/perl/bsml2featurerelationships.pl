@@ -34,6 +34,7 @@ my $results = GetOptions (\%options,
                             'bsml_dir|d=s',         ## deprecated
                             'output_order|t=s',     #eg. "polypeptide,cds". default alphabetical
                             'add_assembly|a=s',
+                            'add_feature_coordinates|c=s',
                             'debug=s',
                             'log|l=s',
                             'output|o=s',
@@ -120,8 +121,10 @@ if ( scalar @files == 0 ) {
 ## parse out sequences from each file
 
 my %lookup;
-
+my %coords;
 my $currid;
+my $currfeatid;
+my $currfeatclass;
 my $currclass;
 my $currgroup;
 my @groups;
@@ -130,7 +133,16 @@ my $funcs = {'Feature'=>
 		 sub {
 		     my ($expat,$elt,%params) = @_;
 		     $lookup{$params{'id'}} = $currid if($options{add_assembly});
+             $currfeatid = $params{'id'};
+             $currfeatclass = $params{'class'};
 		 },
+        'Interval-loc'=>
+         sub {
+            my ($expat,$elt,%params) = @_;
+             if($currfeatclass eq $options{add_feature_coordinates}) {
+                $coords{$currfeatid} = $params{'startpos'}.':'.$params{'endpos'}.'/'.$params{'complement'};
+             }
+         },
 	     'Sequence'=>
 		 sub {
 		     my ($expat,$elt,%params) = @_;
@@ -184,28 +196,35 @@ print "There are ".@groups." groups\n";
 foreach my $group (@groups){
     my @outline;
     my @types = keys %$group;
-    foreach my $type (
-		      #sort based on sort order
-		      sort {
-			  if(exists $options{'output_order'}){
-			      $output_order->{$a} <=> $output_order->{$b};
-			  }
-			  else{
-			      $a cmp $b;
-			  }
-		      }
-		      @types) {
-	#if multiple features for a type, concatenate with a ','
-	push @outline,join(',',keys %{$group->{$type}});
+
+    #sort based on sort order
+    my @srted_types = sort {
+        if(exists $options{'output_order'}){
+            $output_order->{$a} <=> $output_order->{$b};
+        }
+        else{
+            $a cmp $b;
+        } } @types;
+    foreach my $type (@srted_types) {
+        #if multiple features for a type, concatenate with a ','
+        push @outline,join(',',keys %{$group->{$type}});
+        map {
+        if($coords{$_}) {
+            $coords{$outline[0]} = $coords{$_};
+        }
+        } keys %{$group->{$type}};
     }
     #push assembly id if available
     my @vals = keys %{$group->{$types[0]}};
     if(exists $lookup{$vals[0]} && $options{add_assembly}){
 	push @outline,$lookup{$vals[0]};
     }
-    print "Printing to file\n";
+    if(exists $coords{$vals[0]}) {
+        push @outline,$coords{$vals[0]};
+    }
+#    print "Printing to file\n";
     print OUTFILE join("\t",@outline),"\n";
-}
+       }
 close OUTFILE;
 
 sub add_file {

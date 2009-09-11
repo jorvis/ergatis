@@ -40,6 +40,10 @@
                 <key>--add_assembly</key>
                 <value>$;ADD_ASSEMBLY$;</value>
             </param>
+            <param>  
+                <key>--add_feature_coordinates</key>
+                <value>$;ADD_FEATURE_COORDINATES$;</value>
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>

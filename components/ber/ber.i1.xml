@@ -111,6 +111,10 @@
                 <key>--mapping_file</key>
                 <value>$;PROTEIN_NUCLEOTIDE_ID_MAP$;</value>
             </param>
+             <param>  
+                <key>--bp_offset</key>
+                <value>$;BP_OFFSET$;</value>
+            </param>
             <param>  
                 <key>--gzip_output</key>
                 <value>$;COMPRESS_BSML_OUTPUT$;</value>

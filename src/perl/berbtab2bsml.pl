@@ -74,12 +74,19 @@ use Ergatis::IdGenerator;
 my %lookupDb;
 my %lookupProtDb;
 my %prot2cds_lookup;
+my %cds2coords;
+my %cds2bestmval;
+my @bestFrameshifts;
+my %cds2trans;
+my %cds2polyp;
 my %options = ();
 my $gzip = 0;
 my $results = GetOptions (\%options, 
 			  'btab_dir|b=s', 
 			  'btab_file|f=s',
 			  'bsml_dir|d=s', 
+              'bsml_file|bf=s',
+              'bp_offset|bo=s',
               'mapping_file=s',
 			  'output|o=s', 
               'gzip_output=s',
@@ -133,6 +140,7 @@ $doc->createAndAddAnalysis(
                             sourcename => $options{'output'},
                             program => 'ber',
                             algorithm => 'ber',
+                            programversion => 'none',
                           );
 
 $doc->write($options{'output'}, '', $options{'gzip_output'});
@@ -170,9 +178,15 @@ sub parse_ber_btabs {
             $query_id = $btab[0];	    
             my $match_name = $btab[5];
 
-            #&createAndAddFrameshift($btab[19], $btab[0]) if($btab[19]);
-            #splice(@btab, 19, 1);   Why was this happening?
-            
+            # Only take the frameshifts from the hit with the best mvalue. This is a HACK
+            # for now and should probably be replaced with something more sophisticated.
+            if(!defined($cds2bestmval{$btab[0]}) || ($btab[12] > $cds2bestmval{$btab[0]})) {
+                print STDERR "set best mvalue for $btab[0] to $btab[12] from $cds2bestmval{$btab[0]}\n";
+                $cds2bestmval{$btab[0]} = $btab[12];
+                &createFrameshifts($btab[19], $btab[0], $btab[2],$btab[12]) if($btab[19] && defined($options{bp_offset}));
+                #splice(@btab, 19, 1);   Why was this happening?
+            }
+
             for (my $i=0;$i<scalar(@btab);$i++){
                 if ($btab[$i] eq 'N/A'){
                     $btab[$i] = undef;
@@ -215,6 +229,7 @@ sub parse_ber_btabs {
             my $seq = $doc->returnBsmlSequenceByIDR($query_id);
         }
 
+        &addFrameshifts();
 
         #unfortunately, if the input btab doesn't have any hits, we don't know
         #which CDS was run (which means we don't know the parent sequence either).
@@ -227,6 +242,7 @@ sub parse_ber_btabs {
             if( exists( $lookupProtDb{$polypeptide} ) ) {
                 my $cds = $prot2cds_lookup{$polypeptide};
                 &addSequenceElement( $cds, 'na', 'CDS' );
+                &addSequenceElement( $cds2polyp{$cds}, 'aa', 'polypeptide');
             } else {
                 print "file: $file\n";
                 print "base: $base\n";
@@ -274,11 +290,15 @@ sub check_parameters{
             unless(-e $options{'mapping_file'});
         open(IN, "<", $options{'mapping_file'}) or 
             $logger->logdie("Unable to open mapping file $options{mapping_file} ($!)");
-        while( my ($prot, $cds, $asm) = split(/\t/, <IN>) ) {
+        while( my ($prot, $cds, $trans, $asm, $coords) = split(/\t/, <IN>) ) {
             chomp($asm);
             $lookupDb{$cds} = $asm;
             $lookupProtDb{$prot} = $asm;
             $prot2cds_lookup{$prot} = $cds;
+            $coords =~ /(\d+)\:(\d+)\/([01])/;
+            $cds2coords{$cds} = {'fmin' => $1, 'fmax' => $2, 'complement' => $3};
+            $cds2trans{$cds} = $trans;
+            $cds2polyp{$cds} = $prot;
         }
 
         close(IN);
@@ -300,14 +320,16 @@ sub addSequenceElement {
     
     #Check to see if the sequence has already been added.
     unless( $doc->returnBsmlSequenceByIDR( $seqId ) ){
-	    my $seq = $doc->createAndAddSequence( $seqId, $seqId, '', $mol, $type );
+	    my $seq = $doc->createAndAddSequence( $seqId, $seqId, 'na', $mol, $type );
 		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
+        return $seq;
     }
 }
 
-sub createAndAddFrameshift {
-    my ($fsString,$modelId) = @_;
+sub createFrameshifts {
+    my ($fsString,$modelId,$modelLen,$mvalue) = @_;
 
+    @bestFrameshifts = ();
     my @frameShifts = split(/:/,$fsString);
     $logger->logdie("Could not parse frameshift information from string ($fsString)") unless(@frameShifts);
 
@@ -316,20 +338,22 @@ sub createAndAddFrameshift {
 
     my $seqId = $lookupDb{$modelId};
     my $seq;
+    print STDERR "best mvalue was $mvalue\n";
 
     #Parse out the project id
     my $project = $1 if($seqId =~ /^([^\.]+)\./);
     
     #will add the sequence element if it doesn't already exist
-    &addSequenceElement( $seqId, 'na', 'assembly' );
+    $seq = &addSequenceElement( $seqId, 'dna', 'assembly' );
 
     #Check to see if said sequence object has a feature table object
     unless(exists($featTables{$seqId})) {
         $featTables{$seqId} = $doc->createAndAddFeatureTable($seq);
     }
-
+    
     #Now add the frameshifts
     foreach my $fs (@frameShifts) {
+
         my ($start, $end) = ($1, $2) if($fs =~ /(.+)-(.+)/);
         $logger->logdie("Could not parse frameshift data ($fs)")
             unless($start && $end);
@@ -341,17 +365,54 @@ sub createAndAddFrameshift {
             ($end, $start) = ($start, $end);
             $strand = 1;
         }
-        
-        my $fId = $idGenerator->next_id('type' => 'frameshift_mutation', 'project' => $project);
-        my $feat = $doc->createAndAddFeature($featTables{$seqId}, $fId, $fId, 'frameshift_mutation');
 
-        $feat->addBsmlLink('analysis', '#'.$options{'analysis_id'}, 'computed_by');
-        $feat->addBsmlIntervalLoc($start, $end, $strand);
-
-       
-        
+        # Calculate the coordinates of the frameshift using the bp_offset and the
+        # coordinates from the mapping file.
+        my $model_fmin = $cds2coords{$modelId}->{'fmin'};
+        my $model_fmax = $cds2coords{$modelId}->{'fmax'};
+        if(($model_fmax - $model_fmin + 2*$options{'bp_offset'}) != $modelLen) {
+            if($model_fmin < $options{'bp_offset'}) {
+                $model_fmin = 0;
+            }
+        }
+        else {
+            $model_fmin -= $options{'bp_offset'};
+        }
+         
+        push(@bestFrameshifts, {
+            'seq_id' => $seqId,
+            'cds_id' => $modelId,
+            'start' => $model_fmin + $start,
+            'stop' => $model_fmin + $end,
+            'strand' => $strand,
+            'project' => $project
+             });
     }
-    
+}
+
+# Add only the 'best' frameshifts to the document.
+sub addFrameshifts {
+
+    foreach my $fs (@bestFrameshifts) {
+        my $fId = $idGenerator->next_id('type' => 'frameshift', 'project' => $fs->{'project'});
+
+        # Add the frameshift feature
+        my $feat = $doc->createAndAddFeature($featTables{$fs->{'seq_id'}}, $fId, $fId, 'frameshift');
+        # Add a link to the analysis 
+        $feat->addBsmlLink('analysis', '#'.$options{'analysis_id'}, 'computed_by');
+        #Locate the frameshift on the genomic sequence assembly
+        $feat->addBsmlIntervalLoc($fs->{'start'}, $fs->{'stop'}, $fs->{'strand'});
+
+        # Add the transcript feature
+        $doc->createAndAddFeature($featTables{$fs->{'seq_id'}}, $cds2trans{$fs->{'cds_id'}}, '','transcript');
+
+        # Add a featuregroup with the frameshift and the transcript of this gene.
+        my $fg = $doc->createAndAddFeatureGroup( $doc->returnBsmlSequenceByIDR( $fs->{'seq_id'}),'');
+        $doc->createAndAddFeatureGroupMember( $fg, $cds2trans{$fs->{'cds_id'}}, 'transcript');
+        $doc->createAndAddFeatureGroupMember( $fg, $fId, 'frameshift');
+
+ 
+    }
 }
 
 sub createAndAddBtabLine {
@@ -417,7 +478,7 @@ sub createAndAddBtabLine {
 
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
         print STDOUT "Didn't find it int he doc\n";
-	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'dna', $args{'class'} );
+	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'na', $args{'class'} );
 		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
     } else {
         print STDOUT "Found it in the doc\n";
