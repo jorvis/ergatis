@@ -79,6 +79,7 @@ my %cds2bestmval;
 my @bestFrameshifts;
 my %cds2trans;
 my %cds2polyp;
+my %addedFeats;
 my %options = ();
 my $gzip = 0;
 my $results = GetOptions (\%options, 
@@ -404,7 +405,10 @@ sub addFrameshifts {
         $feat->addBsmlIntervalLoc($fs->{'start'}, $fs->{'stop'}, $fs->{'strand'});
 
         # Add the transcript feature
-        $doc->createAndAddFeature($featTables{$fs->{'seq_id'}}, $cds2trans{$fs->{'cds_id'}}, '','transcript');
+        if(!$addedFeats{$cds2trans{$fs->{'cds_id'}}}) {
+            $doc->createAndAddFeature($featTables{$fs->{'seq_id'}}, $cds2trans{$fs->{'cds_id'}}, '','transcript');
+            $addedFeats{$cds2trans{$fs->{'cds_id'}}} = 1;
+        }
 
         # Add a featuregroup with the frameshift and the transcript of this gene.
         my $fg = $doc->createAndAddFeatureGroup( $doc->returnBsmlSequenceByIDR( $fs->{'seq_id'}),'');
