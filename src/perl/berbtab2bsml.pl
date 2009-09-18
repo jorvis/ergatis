@@ -360,13 +360,19 @@ sub createFrameshifts {
             unless($start && $end);
 
         ($start--, $end--);
-        my $strand = 0;
+        my $strand = $cds2coords{$modelId}->{'complement'} ? 1 : 0;
         
         if($start > $end) {
             ($end, $start) = ($start, $end);
             $strand = 1;
         }
-
+        if($strand) {
+            $start = $modelLen - $start;
+            $end = $modelLen - $end;
+            ($end, $start) = ($start, $end);
+            ($start--, $end--);
+        }
+        
         # Calculate the coordinates of the frameshift using the bp_offset and the
         # coordinates from the mapping file.
         my $model_fmin = $cds2coords{$modelId}->{'fmin'};
