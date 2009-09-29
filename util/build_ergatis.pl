@@ -260,7 +260,8 @@ sub install_ergatis_htdocs {
 
 sub install_bsml {
     my $base = shift;
-    install_perl( $base, 'bsml', 'vNrNbN');
+    my $other_opts = "SCHEMA_DOCS_DIR=$base/docs";
+    install_perl( $base, 'bsml', 'vNrNbN', $other_opts);
 }
 
 sub install_coati {
@@ -353,8 +354,10 @@ sub replace_software_config_values {
 };
 
 sub install_perl {
-    my ( $base, $package, $version ) = @_;
+    my ( $base, $package, $version, $other_opts ) = @_;
     
+    $other_opts = defined($other_opts) ? $other_opts : ''; # default is empty string
+
     my $tmp_build_area = "$tmp_area/$package";
 
     _log( "checking out $package-$version");
@@ -362,7 +365,7 @@ sub install_perl {
 
     _log( "installing $package-$version");
     chdir("$tmp_build_area/$package-$version/") || die "couldn't cd into $tmp_build_area/$package-$version";
-    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base" );
+    run_command( "perl $opt_lib Makefile.PL INSTALL_BASE=$base $other_opts" );
     run_command( "make" );
     run_command( "make install" );
 }
