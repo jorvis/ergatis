@@ -14,6 +14,7 @@ chado2bsml: Added --databaselist parameter so a list of databases can be passed 
 --hmmpfam: Added molecule type parameters.
 --pangenome_do_analysis.pl: Removed this script as it's functionality has been rolled into pangenome_make_table and pangenome_blast_parse.
 --pangenome_blast_parse.pl: Fixed a major bug where the coverage parameter from the last HSP was being used for the entire hit. Now it uses the value attached to the Seq-pair-alignment for coverage and similarity.
+--pathway_tools_input: added compoonent to generate pathway tools input files from a chado database
 
 ergatis-v2r11b1
 ---------------
