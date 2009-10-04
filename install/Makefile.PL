@@ -893,7 +893,6 @@ pe	:
 pathway_tools_input	:
 	@echo "Installing pathway_tools_input workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/pathway_tools_input/pathway_tools_input.xml $(WORKFLOW_DOCS_DIR)
-	@install components/pathway_tools_input/pathway_tools_input.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/pathway_tools_input/pathway_tools_input.config $(WORKFLOW_DOCS_DIR)
 
 pepstats	:
