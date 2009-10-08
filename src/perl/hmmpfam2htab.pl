@@ -23,6 +23,9 @@ B<--mldbm_file,-m>
     MLDBM perl data structure (tied hash) containing HMM information.  This was previously
     queried out of egad.hmm2.  See hmmlib_to_mldbm.pl for more information.
 
+B<--donotrun>
+    skip pretty much any noticeble activity
+
 B<--log,-l>
     Logfile.
 
@@ -148,6 +151,7 @@ my @input_files;                   #Holds input files
 my $output_htab;                   #Output htab file
 my $output_alignment;              #Output alignment file
 my $debug;                         #The debug variable
+my $donotrun = 0;
 my $alignment_format;              #Holds the format to print output formats
 my %alignment_formats =            #Accepted output alignment formats
     ( 'mul' => 1,
@@ -158,6 +162,7 @@ my %alignment_formats =            #Accepted output alignment formats
 
 my %options = ();
 my $results = GetOptions (\%options, 
+                          'donotrun',
                           'input_file|i=s',
                           'output_htab|o=s',
                           'mldbm_file|m=s',
@@ -170,6 +175,11 @@ my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 				  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
+
+if ($options{'donotrun'}) {
+    $logger->warn("Exiting because --donotrun says to.");
+    exit(0);
+}
 
 # Check the options.
 &check_parameters(\%options);

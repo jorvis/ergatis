@@ -19,6 +19,10 @@
             <name>hmmpfam2htab</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/hmmpfam2htab</executable>
+            <param>
+                <key>--donotrun</key>
+                <value>$;SKIP_HTAB$;</value>
+            </param>
             <param>  
                 <key>--input_file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>

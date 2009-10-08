@@ -33,7 +33,7 @@
      For each sequence you query there will be three result files. The one ending in .raw contains the raw sequence alignment from hmmpfam. This is also converted into both htab and bsml formats.
 </p>
 <p>
-     The .htab file is currently being created using a script from the old egc pipeline, /usr/local/common/htab.pl. While this is useful for now, this script relies on libraries outside of our current framework and will eventually be deprecated in favor of BSML. The BSML file created can be used to load the database.
+     The .htab file is currently being created using a script from the old egc pipeline, /usr/local/common/htab.pl. While this is useful for now, this script relies on libraries outside of our current framework and will eventually be deprecated in favor of BSML. The BSML file created can be used to load the database.  To skip the generation of htab, set $;SKIP_HTAB$; to 1.
 </p>
 <p>
      The raw output file looks like this:
