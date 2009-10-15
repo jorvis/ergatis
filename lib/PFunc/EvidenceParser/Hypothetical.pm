@@ -40,7 +40,7 @@ sub _parse {
 }
 
 sub _set_annotation {
-    my ($annotation) = @_;
+    my ($self, $annotation) = @_;
 
     if( $annotation ) {
         $annotation->clear_annotation;
