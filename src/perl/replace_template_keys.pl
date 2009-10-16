@@ -1,10 +1,17 @@
 #!/usr/bin/perl
 
+#Create a complete workflow XML file (--output_xml) from a template
+#XML file (--template_xml) that contains a set of placeholders/keys.
+#The config file --component_conf provides a list of key=value pairs.
+#Each key found in the template file is replaced by its corresponding
+#value from the config file
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 use strict;
 use Config::IniFiles;
 use Ergatis::Logger;
 use Getopt::Long;
+use XML::LibXML;
 
 #--template_xml   Input template XML file for a component 
 #--iterator_list  Iterator list.  If iterator list specified then must specify iterator_output_dir
@@ -12,6 +19,7 @@ use Getopt::Long;
 #--output_xml     Output XML
 
 my %options;
+my $SKIPTAG='$;SKIP_WF_COMMAND$;';
 my $results = GetOptions (\%options, 
 			  'keys=s',
 			  #opts for replacing keys in a single template file
@@ -117,7 +125,7 @@ if (exists $options{'iterator_list'}) {
     }
     print FILE "</commandSet>
                </commandSetRoot>\n";
-    close FILE;
+    close FILE; 
 }
 else{
     if($options{'template_xml_conf_key'}){
@@ -140,6 +148,11 @@ else{
     }
 }
 
+#Create substitution lookup for placeholder keys
+#Reads an INI formatted config file with key=value
+#Lookup is $subs->{$key}=$value
+#Key with name "$;SKIP_WF_COMMAND$;" are handled differently
+#The key becomes $subs->{$;SKIP_WF_COMMAND$;$value}=1
 sub parseconf{
     my($conf) = @_;
     my $subs = {};
@@ -150,12 +163,45 @@ sub parseconf{
 	foreach my $parameter (@parameters){
 	    my $replacevalue = $conf->val($section,$parameter);
 	    $logger->debug("Storing $parameter as $replacevalue") if($logger->is_debug());
-	    $subs->{$parameter} = $replacevalue;
+	    if($parameter eq $SKIPTAG){
+		foreach my $name (split(/,/,$replacevalue)){
+		    $subs->{$SKIPTAG.$name}=1;
+		}
+	    }
+	    else{
+		$subs->{$parameter} = $replacevalue;
+	    }
 	}
     }
     return $subs;
 }
 
+#
+#Process LibXML $doc and remove <command> elements
+#that are marked in the substitution lookup $subs.
+sub skipcommands{
+    my($subs,$doc) = @_;
+
+    my $query  = "//command/name";    
+    my(@nodes)  = $doc->findnodes($query);
+    
+    foreach my $node (@nodes){
+	my $name = $node->textContent;
+	if(exists $subs->{$SKIPTAG.$name}){
+	    print STDERR '<!--Skipping command with name ',$name,">\n";
+	    my $commandnode = $node->parentNode;
+	    my $cmdparentnode = $commandnode->parentNode;
+	    $cmdparentnode->removeChild($commandnode);
+	}
+	else{
+	}
+    }
+}
+
+#
+#Parse file $inputfile and make substitutions as defined
+#in lookup $subs
+#Write output to file $outputfile
 sub replacekeys{
     my($subs,$inputfile,$outputfile) = @_;
 
@@ -169,6 +215,9 @@ sub replacekeys{
     }
     my $run_dist_cmd_flag = 0;
 
+    my @inputxml;
+    #keeping old code that parses XML in a simplistic way... but works
+    #TODO refactor to use LibXML
     while( my $line = <INPUTFILE> ){
         ## don't replace vals on comment lines
 	if( $line !~ /^\;/ && $line !~ /^\#/ ) {        
@@ -179,7 +228,6 @@ sub replacekeys{
 		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
 	    }
         }
-
     if($line =~ /\<type\>RunDistributedCommand\<\/type\>/) {
         my $group = &replaceval('$;PROJECT_CODE$;',$subs);
         $run_dist_cmd_flag = 1 if( $group || $group == 0 );
@@ -209,12 +257,18 @@ sub replacekeys{
 		$keys .= ',$;ITERATOR_TIMESTAMP$;=0'
 	    }
 	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
-	    &import_xml($file,$keys,$subs,*OUTPUTFILE);
+	    &import_xml($file,$keys,$subs,\@inputxml);
 	    $line = '';
 	}
-	print OUTPUTFILE $line;
+	push @inputxml,$line;
+	#print OUTPUTFILE $line;
     }
+
     close INPUTFILE;
+    my $parser = XML::LibXML->new();
+    my $xmldoc    = $parser->parse_string(join('',@inputxml));
+    &skipcommands($subs,$xmldoc);
+    print OUTPUTFILE $xmldoc->toString;
     close OUTPUTFILE;
 }
 
@@ -283,7 +337,7 @@ sub add_keys{
 }
 
 sub import_xml{
-    my($file,$keys,$subs,$outfh) = @_;
+    my($file,$keys,$subs,$outputh) = @_;
     my @keys = split(/,/,$keys);
     foreach my $k (@keys){
 	my($tok,$val) = split(/=/,$k);
@@ -296,7 +350,10 @@ sub import_xml{
     }
     open FILE, "$file" or $logger->logdie("Can't open file $file");
     my $run_dist_cmd_flag = 0;
+    my @inputxml;
     while(my $line=<FILE>){
+	#keeping old code that parses XML in a simplistic way... but works
+	#TODO refactor to use LibXML
 	if( $line !~ /^\;/ && $line !~ /^\#/ ) {
 	    if($line =~ /\<INCLUDE/){
 		$line =~ s/(\$;[\w_]+\$;)([^=])/&replaceval($1,$subs).$2/ge;
@@ -305,22 +362,22 @@ sub import_xml{
 		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
 	    }
         }
-
-    if($line =~ /\<type\>RunDistributedCommand\<\/type\>/) {
-        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        $run_dist_cmd_flag = 1 if( $group || $group == 0 );
-    }
-    if($run_dist_cmd_flag && $line =~ /<dceSpec/) {
-        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        $line .= "            <group>$group</group>\n";
-        $run_dist_cmd_flag = 0;
-    }
-    if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
-        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
-        $line = $new_line;
-        $run_dist_cmd_flag = 0;
-    }
+	
+	if($line =~ /\<type\>RunDistributedCommand\<\/type\>/) {
+	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+	    $run_dist_cmd_flag = 1 if( $group || $group == 0 );
+	}
+	if($run_dist_cmd_flag && $line =~ /<dceSpec/) {
+	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+	    $line .= "            <group>$group</group>\n";
+	    $run_dist_cmd_flag = 0;
+	}
+	if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
+	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+	    my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
+	    $line = $new_line;
+	    $run_dist_cmd_flag = 0;
+	}
 	if($line =~ /\<INCLUDE/){
 	    if($line !~ />/){
 		$logger->logdie("<INCLUDE> directive must be contained on a single line");
@@ -334,10 +391,11 @@ sub import_xml{
 		$keys .= ',$;ITERATOR_TIMESTAMP$;=0'
 	    }
 	    $logger->debug("Include file $file using keys $keys: $line") if($logger->is_debug());
-	    &import_xml($file,$keys,$subs,*OUTPUTFILE);
+	    &import_xml($file,$keys,$subs,$outputh);
 	    $line = '';
 	}
-	print $outfh $line;
+	#print $outfh $line;
+	push @$outputh,$line;
     }
     close FILE;
 }
