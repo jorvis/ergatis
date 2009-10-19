@@ -105,6 +105,8 @@ use File::OpenFile qw(open_file);
 use Data::Dumper;
 
 ####### GLOBALS AND CONSTANTS ###########
+my $LOCUS_DB = 'TIGR_moore';
+
 my @inputFiles;               #Holds input (gene prediction bsml) files
 my @otherFiles;               #Holds other bsml files.
 my $output;                   #Output directory
@@ -127,6 +129,9 @@ my $transTable;
 my $attListId = 0;
 my $crid = 0;               #Cross reference id counter
 my %seq_data_import_info;
+my %loci;
+my %top_cogs;
+my %cogId2desc;
 ########################################
 $|++;
 
@@ -167,6 +172,7 @@ foreach my $file (@inputFiles) {
 
     #Make the output file name.
     my $base = $1 if($file =~ m|.*/(([^/\.]+\.){3})|);
+    die("base was not defined") unless( defined( $base ) );
     $base =~ s/\.$//;
     my $fileName = $1 if($file =~ m|.*/([^/]+)$|);
     if( -d $output ) {
@@ -240,6 +246,9 @@ foreach my $file (@inputFiles) {
     print STDOUT "Writing to $outputFile\n";
     $bsml->write($outputFile);
 
+    #order and assign loci
+    &order_and_assign_loci( \%loci );
+
     print STDOUT "Fixing attributes\n";
     my $tmpOutputFile = $outputFile.".part";
     my $toh;
@@ -261,6 +270,20 @@ foreach my $file (@inputFiles) {
 
 
 ######################## SUB ROUTINES #######################################
+sub order_and_assign_loci {
+    my ($loci) = @_;
+    
+    my $count = 1;
+
+    #order the genes
+    map {
+        my $locus = $locusPrefix."_$count";
+        $count++;
+        $loci->{$_}->{'locus'} = $locus;
+    } sort { $loci{$a}->{'end3'} <=> $loci{$b}->{'end3'} } keys %loci;
+    
+}
+
 sub add_feature_sequence_elements {
     my ($bsml) = @_;
     
@@ -417,16 +440,6 @@ sub fixAttributes {
             $secAtt->paste( 'after' => $firstAtt );
            
             push(@{$elts{'Attribute-list'}}, $attList);
-            
-
-        } elsif( $att->att('name') eq 'locus_tag' ) {
-            my $crossRef = new XML::Twig::Elt( 'Cross-reference', { 
-                'database' => 'TIGR_moore',
-                'identifier' => $att->att('content'),
-                'id' => 'CrossReference_'.$crid++,
-                'identifier-type' => 'locus' } );
-            
-            push(@{$elts{'Cross-reference'}}, $crossRef);
 
         } elsif( $att->att('name') eq 'role_from' ) {
             
@@ -456,10 +469,22 @@ sub fixAttributes {
         
     }
 
-    #Now paste them in the correct order
+    #Now paste them in the correct order and assign loci
     foreach my $tagName ( reverse @elemOrder ) {
-        foreach my $featChild( @{$finalElts{$tagName}} ) {
-            $featChild->paste( $featElem );
+        if( $featId =~ /gene/ && $tagName eq 'Cross-reference' ) {
+            #<Cross-reference database="TIGR_moore" id="CrossReference_0" identifier="gas2_1" identifier-type="locus"/>
+            my $xref = new XML::Twig::Elt( 'Cross-reference', {
+                'database' => $LOCUS_DB,
+                'id' => "CrossReference_".$crid++,
+                'identifier' =>  $loci{$featId}->{'locus'},
+                'identifier-type' => 'locus' } );
+            $xref->paste( $featElem );
+        } else {
+
+            foreach my $featChild( @{$finalElts{$tagName}} ) {
+                $featChild->paste( $featElem );
+            }
+
         }
     }
 
@@ -468,106 +493,92 @@ sub fixAttributes {
 }
 
 sub getTopCogHit {
-	my $bsmlFiles = shift;
     my $polyId = shift;
- 	my $cogId;
-	my $maxPval = 0;
-	
-    my $parseThisFile = "";
-	foreach my $bsmlFile ( @{$bsmlFiles} ) {
-        #Find the file the contains this polypeptide and parse it
-        if($bsmlFile =~ /$polyId\./) {
-            $parseThisFile = $bsmlFile;
-            last;
-        }
+    my $cogId;
+    if( exists( $top_cogs{$polyId} ) ) {
+        $cogId = $top_cogs{$polyId};
     }
-
-    $logger->warn("couldn't find cog bsml file for $polyId") unless($parseThisFile);
-    return "" unless($parseThisFile);
-
-    my $cogTwig = new XML::Twig( twigHandlers => {
-		'Seq-pair-alignment' => sub { &cogSpaHandler( @_, \$cogId, \$maxPval ) } }
-                                 );
-
-    my $fh;
-
-    #Check for gzip extension
-    $parseThisFile =~ s/\.gz$//;
-    if( -e $parseThisFile ) {
-        open($fh, "< $parseThisFile") or 
-            $logger->logdie("Unable to open $parseThisFile ($!)");
-    } elsif( -e $parseThisFile.".gz" ) {
-        open($fh, "<:gzip", $parseThisFile.".gz") or
-            $logger->logdie("Can't open $parseThisFile.gz ($!)");
-    }
-    
-    $cogTwig->parse($fh);	
-    close($fh);
-
     return $cogId;
 }
 
-sub cogSpaHandler {
-    my ($twig, $spaElem, $retval, $maxPval) = @_;
-
-    #Get the seq-pair-run children
-    my @sprs = $spaElem->children('Seq-pair-run');
-    $logger->logdie("Couldn't find any Seq-pair-run elements in Seq-pair-aligment")
-        unless( @sprs > 0 );
-
-    my $queryId = $spaElem->att('refseq');
-    my $matchId = $spaElem->att('compseq');
-    my $cogId = &getCog($matchId);
-
-    foreach my $spr ( @sprs ) {
-        my $curPval = 'noPval';
-
-        #Get the attribute elements
-        my @attributes = $spr->children('Attribute');
-        $logger->logdie("Unable to find Attribute elements in Seq-pair-run")
-            unless( @attributes > 0 );
-
-        foreach my $attribute ( @attributes ) {
-            next unless($attribute->att('name') eq 'p_value');
-            $curPval = $attribute->att('content');
+sub pre_parse_cog_results {
+    my (@bsml_files) = @_;
+    
+    my $total = scalar(@bsml_files);
+    my $count = 0;
+    print "$count/$total\r";
+    map {
+        my $boh = open_file( $_, 'in' );
+        my ($cog,$ref,$pval, $best);
+        $best = 1;
+        while( my $line = <$boh> ) {
+            chomp( $line );            
+            if( $line =~ /\<Seq-pair-alignment.*refseq=\"([^\"]+)\"/ ) {
+                if( defined( $ref ) ) {
+                    if( $pval < $best ) {
+                        $best = $pval;
+                        my $desc = &getCog( $cog );
+                        if( defined( $desc ) ) {
+                            $top_cogs{$ref} = $desc;
+                        }
+                    }
+                }
+                
+                $pval = 1;
+                $ref = $1;
+                $cog = $1 if( $line =~ /compseq=\"([^\"]+)\"/ );
+                
+            } elsif( $line =~ /\<Seq-pair-run.*runprob=\"([^\"]+)\"/ ) {
+                if( $1 < $pval ) {
+                    $pval = $1;
+                }
+            }
         }
+        close($boh);
+
+        #and the last one
+        if( defined( $ref ) ) {
+            if( $pval < $best ) {
+                $best = $pval;
+                my $desc = &getCog( $cog );
+                if( defined( $desc ) ) {
+                    $top_cogs{$ref} = $desc;
+                }
+            }
+        }
+        $count++;
+        print "$count/$total\r";
         
-        $logger->logdie("Seq-pair-run didn't have p_value Attribute") 
-            if( $curPval eq 'noPval' );  
+    } @bsml_files;
 
-        #Check the pvalue to see if it's higher
-        if($$maxPval < $curPval) {
-            $$retval = $cogId;
-            $$maxPval = $curPval;
+    print "\n";
+}
+
+sub pre_parse_cog_lookup {
+    my $cog_lookup = shift;
+    my $in = open_file( $cog_lookup, 'in' );
+    my $desc;
+    while( my $line = <$in>) {
+        next if( $line =~ /^\s*$/ || $line =~ /^[_\s]+$/ );
+		if($line =~ /COG/) {
+			$desc = $line;
+		} elsif( $line =~ /^\s*(\w+):\s*(.*)\s*/ ) {
+            my @ids = split( /\s+/, $2 );
+            map { $cogId2desc{ $_ } = $desc } @ids;
+		} elsif( $line =~ /^\s+(.*)\s+/ ) {
+            my @ids = split( /\s+/, $1 );
+            map { $cogId2desc{ $_ } = $desc } @ids;
         }
-    }
-
+	}	
+    close($in);
 }
 
 sub getCog {
 	my $id = shift;
-	my $retval = 'nocog';
-
-    my $in;
-    $cogLookup =~ s/\.gz$//;
-	if( -e $cogLookup ) {
-        open($in, "< $cogLookup") or
-            $logger->logdie("Unable to open cog lookup file $cogLookup");
-    } elsif( -e $cogLookup.".gz" ) {
-        open($in, "<:gzip", $cogLookup.".gz") or
-            $logger->logdie("Unable to open $cogLookup.gz");
+    if( !defined( $id ) || !exists( $cogId2desc{$id} ) ) {
+        return undef;
     }
-
-	while( my $line = <$in>) {
-		if($line =~ /COG/) {
-			$retval = $line;
-		} elsif($line =~ /$id/) {
-			last;
-		}
-	}	
-    close($in);
-    
-	return $retval;
+    return $cogId2desc{$id};
 }
 
 sub printSequenceFeatures {
@@ -659,14 +670,13 @@ sub addFeatureGroup {
             $geneId = $fgm->att('featref');
             &_die("Can't parse featref from Feature-group-member in $groupSet (Feature-group)") unless($geneId);
         } elsif($fgm->att('feature-type') eq 'polypeptide') {
-            $topCogHit = &getTopCogHit(\@cogBsmls, $fgm->att('featref'));
+            $topCogHit = &getTopCogHit($fgm->att('featref'));
         } elsif($fgm->att('feature-type') eq 'CDS') {
             $cdsId = $fgm->att('featref');
         }
     }
 
     if($topCogHit) {
-
         my $featureElem = $featElemsBsml->{$cdsId};
         $logger->logdie("Wasn't able to get the feature from featElemsBsml for $cdsId\n") 
             unless($featureElem);
@@ -751,6 +761,13 @@ sub addFeature {
             }
             
             $bsmlFeature->addBsmlIntervalLoc( $startpos, $endpos, $complement );
+
+            
+            if( $class eq 'gene' ) {
+                #store the end3 for ordering of loci
+                my $e3 = ( $complement ) ? $startpos : $endpos;
+                $loci{$featId}->{'end3'} = $e3;
+            }
         }
 
     } else {
@@ -771,10 +788,6 @@ sub addFeature {
     #Add attributes if any
     my @attributes = $feature->children('Attribute');
     &addAttributes( $bsml, $bsmlFeature, \@attributes ) unless( @attributes < 1 );
-
-    unless($class ne 'gene' || exists($bsmlFeature->{'BsmlAttr'}->{'locus_tag'})) {
-        $bsmlFeature->addBsmlAttr( 'locus_tag', $locusPrefix."_".$prefixCount++);
-    }
 
     #Add attribute lists if any
     my @att_lists = $feature->children( 'Attribute-list' );
@@ -1071,15 +1084,18 @@ sub check_parameters {
             $logger->logdie("Can't find $file (or a gzipped version)");
         }
         
-
-        while (my $line = <$cogs>) {
-            chomp $line;
-            push(@cogBsmls, $line);
-        }
+        chomp( @cogBsmls = <$cogs> );
         close($cogs);
-
+        
         $cogLookup = $opts->{'cog_lookup'} if($opts->{'cog_lookup'});
         $error .= "Option --cog_lookup is required when using --cog_search_bsml\n" unless($opts->{'cog_lookup'});
+
+        print "Parsing COG Lookup file\n";
+        &pre_parse_cog_lookup( $cogLookup );
+
+        print "Preparsing COG results\n";
+        &pre_parse_cog_results( @cogBsmls );
+
     }
 
     if($opts->{'locus_prefix'}) {

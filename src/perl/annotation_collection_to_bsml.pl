@@ -84,6 +84,7 @@ my %seq_data_lookup;
 my %feat_locs;
 my $sourcename;
 my $analysis_name = "p_func_analysis";
+my %docs;
 
 &check_options;
 
@@ -92,11 +93,8 @@ print "Creating the lookup\n";
 $fr_lookup = new BSML::FeatureRelationshipLookup( 'bsml' => \@bsml_fr_files );
 
 #create the feature to parent lookup from feature relationship bsml
-print "Create the parent seq lookup\n";
+print "Creating the parent seq lookup\n";
 $sequences = &create_parent_seq_lookup( @bsml_fr_files );
-
-# create document
-my $doc = new BSML::BsmlBuilder;
 
 # print the features
 my $annot_col = new PFunc::AnnotationCollection;
@@ -108,17 +106,23 @@ while( my $annot = $annot_col->next_annotation_from_file ) {
     die("Could not find the parent sequence for ".$annot->get_feature_id) 
         unless( exists( $parent_seq_lookup{$annot->get_feature_id} ) );
     my $parent_seq = $parent_seq_lookup{$annot->get_feature_id};
-    my ($seq, $ft) = &add_sequence_to_doc( $doc, $parent_seq );
 
-    &add_gene_to_feature_table( $doc, $seq, $ft, $annot );
-    
+    if( !exists( $docs{$parent_seq} ) ) {
+        $docs{$parent_seq} = new BSML::BsmlBuilder;
+    }
+     
+    my ( $seq, $ft ) = &add_sequence_to_doc( $docs{$parent_seq}, $parent_seq );
+    &add_gene_to_feature_table( $docs{$parent_seq}, $seq, $ft, $annot );
+
 }
 
-#add analysis
-&add_analysis_to_doc( $doc, $analysis_name );
-
-print "writing $output\n";
-$doc->write( $output );
+#Add analyses and write
+foreach my $pseq ( keys %docs ) {
+    &add_analysis_to_doc( $docs{ $pseq }, $analysis_name );
+    my $outfile = $output."/$pseq.bsml";
+    $docs{$pseq}->write( $outfile );
+    print "Wrote $outfile\n";
+}
 
 sub add_analysis_to_doc {
     my ($doc, $a_name) = @_;
@@ -240,6 +244,7 @@ sub add_sequence_to_doc {
     my $ft_list = $seq->returnBsmlFeatureTableListR;
     if( !defined($ft_list) || @{$ft_list} == 0 ) {
         $ft = $doc->createAndAddFeatureTable( $seq );
+        die("But it wasn't defined! wtf") if( !defined( $ft ) );
     } else {
         $ft = $ft_list->[0];
     }
@@ -253,7 +258,7 @@ sub add_sequence_to_doc {
                                                 $seq_data_lookup{$parent_seq}->{'identifier'} );
     }
 
-    return ($seq,$ft);
+    return ($seq, $ft);
 }
 
 
@@ -339,7 +344,9 @@ sub check_options {
         die("Option --source_bsml_file is required");
     }
 
-    if( $options{'output'} ) {
+    if( $options{'output'} ) { 
+        die("Value for option --output was not a directory [$options{'output'}]") 
+            if( ! -d $options{'output'} );
         $output = $options{'output'};
     }
 
