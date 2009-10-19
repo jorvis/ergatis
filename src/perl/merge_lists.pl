@@ -123,7 +123,7 @@ sub check_parameters {
     
     ## make sure input_dir exists
     if (! -e "$options{input_dir}") {
-        $logger->logdie("the input file passed ($options{input_file}) cannot be read or does not exist");
+        $logger->logdie("the input dir passed ($options{input_dir}) cannot be read or does not exist");
     }
     
     ## handle default glob
