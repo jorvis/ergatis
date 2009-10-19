@@ -215,13 +215,37 @@ umask(0000);
                 
                 #print $debugfh "preparing to execute $runstring\n" if $self->{debug};
 
-                print $debugfh "preparing to run $pipeline_script\n" if $self->{debug};
 
                 #my $rc = 0xffff & system($runstring);
+		# If we're dealing with vappio_data_placement, then run the syncronization script prior
+		# to submitting pipeline
                 if ($args{ergatis_cfg}->val('grid', 'vappio_data_placement')) {
+	            print $debugfh "preparing to perform vappio_data_placement script synchdata.sh\n" if $self->{debug};
+
                     my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh";
-                    print `sudo -u $args{run_as} $vappiosynccmd`;
+		    my $vappio_rc = 0xffff & system("$runprefix $vappiosynccmd");
+                    # print `sudo -u $args{run_as} $vappiosynccmd`;
+		    printf $debugfh "system(%s) returned %#04x: $vappio_rc for command $runprefix $pipeline_script\n" if $self->{debug};
+		    if($vappio_rc == 0) {
+			print $debugfh "ran vappio_data_placement with normal exit\n" if $self->{debug};
+		    } elsif ( $vappio_rc == 0xff00 ) {
+			print $debugfh "command failed: $!\n" if $self->{debug};
+			croak "Unable to run vappio_data_placement $runprefix $vappiosynccmd failed : $!\n";
+		    } elsif (($vappio_rc & 0xff) == 0) {
+			$vappio_rc >>= 8;
+			print $debugfh "ran vappio_data_placement with non-zero exit status $vappio_rc\n" if $self->{debug};
+			croak "Unable to run vappio_data_placement $runprefix $vappiosynccmd failed : $!\n";
+		    } else {
+			print $debugfh "ran with " if $self->{debug};
+			if($vappio_rc & 0x80){
+			    $vappio_rc &= ~0x80;
+			    print $debugfh "coredump from " if $self->{debug};
+			}
+			print $debugfh "signal $vappio_rc\n" if $self->{debug};
+		    }
                 }
+
+                print $debugfh "preparing to run $pipeline_script\n" if $self->{debug};
 
                 my $rc = 0xffff & system("$runprefix $pipeline_script");
 
