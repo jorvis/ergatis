@@ -10,7 +10,7 @@ use Data::Dumper;
 sub read_hmmer_output {
     my $path = shift;
     my $data = {};
-
+# die "Bad Parser under reconstruction.\n\n";
     # drink in data
     my @lines;
 
@@ -56,24 +56,28 @@ sub read_hmmer_output {
     # after program name, so we are using '- -' as tha match param
     # to stop parsing for program name
     #until ( $lines[ $i ] eq "" ) {
-    until ( $lines[ $i ] =~ m/^-\s-/) {
+    #until ( $lines[ $i ] =~ m/^-\s-/) { # It doesn't work with LDhmmpfam v1.5.4
+    #until ( $lines[ $i ] =~ m/^-{8}\s+-/) {
+    while ($i < @lines) {
         if ( $lines[ $i ] =~ /^((hmmpfam|hmmsearch)\.*)/ ) {
             $data->{ 'program' } = $1;
             my $version_line = $lines[ ++$i ];
             $version_line =~ /^HMMER (\d+)\.(\S+)/;
             ( $data->{ 'version' }, $data->{ 'release' } ) = ( $1, $2 );
+            $i +=2;
+            last;
         }
-        $i++;
+        ++$i;
     }
-    $i++;
-
+    
     # next group is program parameters
     # warn "Parsing Parameters. Line $i\n";
     # amahurkar:1/15/08 the format has changed and now there is no blank space
     # after program name, so we are using '- -' as tha match param
     # to stop parsing for program parameters
-    #until ( $lines[ $i ] eq "" ) {
-    until ( $lines[ $i ] =~ m/^-\s-/) {
+    until ( $lines[ $i ] =~ /^\s*$/ ) {
+    #until ( $lines[ $i ] =~ m/^-\s-/) {
+    #until ( $lines[ $i ] =~ m/^-{8}\s+-/) {
         if ( $lines[ $i ] =~ /^HMM file:\s+(\S+)/ ) {
             $data->{ 'hmm_file' } = $1;
         }
@@ -93,15 +97,16 @@ sub read_hmmer_output {
             $data->{ 'domain_evalue_cutoff' } = $1;
         }
         $i++;
+        die "Failure to parse" if $i > @lines;
     }
     $i++;
-    $i++;
-    
+     
     # get query info
     # warn "Parsing Query Info. Line $i\n";
-    until ( $lines[ $i ] eq "" ) {
-        if ( $lines[ $i ] =~ /^Query (HMM|sequence):\s+(.+)/ ) {
-            $data->{ 'query' } = $2;
+    #until ( $lines[ $i ] eq "" ) {
+    until ( $lines[$i] =~ /^\s*$/ ) {
+        if ( $lines[ $i ] =~ /^Query (?:HMM|sequence):\s+(.+)/ ) {
+            $data->{ 'query' } = $1;
         }
         elsif ( $lines[ $i ] =~ /^Accession:\s+(.+)/ ) {
             $data->{ 'query_accession' } = $1;
@@ -110,6 +115,7 @@ sub read_hmmer_output {
             $data->{ 'query_description' } = $1;
         }
         $i++;
+        die "Failure to parse" if $i > @lines;
     }
     $i++;
 
@@ -117,7 +123,8 @@ sub read_hmmer_output {
     # warn "Parsing Global Search Results. Line $i\n";
     my $find_frame = 0;  # is datbase nucleotide sequence?
     my $hit_index;
-    until ( $lines[ $i ] eq "" ) {
+    #until ( $lines[ $i ] eq "" ) {
+    until ( $lines[$i] =~ /^\s*$/ ) {
         if ( $lines[ $i ] =~ /^Scores for/ ) {
             my $headers = $lines[ ++$i ];
             if ( $headers =~ /\bFr\b/ ) {
@@ -127,31 +134,34 @@ sub read_hmmer_output {
             $i++;        # this skips the separator row
         }
         elsif ( $lines[ $i ] !~ /no hits above thresholds/i ) {
+            
             my @c = split /\s+/, $lines[ $i ];
             if ( $find_frame ) {
                 $hit_index = $c[ 0 ] . $c[ $#c ];
                 $data->{ 'hit' }->{ $hit_index }->{ 'frame' } = pop @c;
             }
             else {
-                $hit_index = $c[ 0 ];
+                # $hit_index = $c[ 0 ]; # AP 20090807
+                ($hit_index = $c[0]) =~ s/\.\d+$//;
             }
-            $data->{ 'hit' }->{ $hit_index }->{ 'accession' }    = shift @c;
-            $data->{ 'hit' }->{ $hit_index }->{ 'domain_count' } = pop @c;
-            $data->{ 'hit' }->{ $hit_index }->{ 'total_evalue' } = pop @c;
-            $data->{ 'hit' }->{ $hit_index }->{ 'total_score' }  = pop @c;
-            $data->{ 'hit' }->{ $hit_index }->{ 'hit_description' } =
-              join " ", @c;
+            $data->{hit}{$hit_index}{accession}       = shift @c;
+            $data->{hit}{$hit_index}{domain_count}    = pop @c;
+            $data->{hit}{$hit_index}{total_evalue}    = pop @c;
+            $data->{hit}{$hit_index}{total_score}     = pop @c;
+            $data->{hit}{$hit_index}{hit_description} = join " ", @c;
         }
         else {
             return;
         }
         $i++;
+        die "Failure to parse" if $i > @lines;
     }
     $i++;
 
     # next section is domain breakdown
     # warn "Parsing Domain Breakdown. Line $i\n";
-    until ( $lines[ $i ] eq "" ) {
+    #until ( $lines[ $i ] eq "" ) {
+    until ($lines[$i] =~ /^\s*$/) {
         if ( $lines[ $i ] =~ /^Parsed for domains/ ) {
             $i += 2;  # to skip header and separator
         }
@@ -163,7 +173,8 @@ sub read_hmmer_output {
                 $hit_index = $c[ 0 ] . $c[ $#c ];
             }
             else {
-                $hit_index = $c[ 0 ];
+                #$hit_index = $c[ 0 ]; # AP 20090807
+                ($hit_index = $c[0]) =~ s/\.\d+$//;
             }
             if ( !defined $data->{ 'hit' }->{ $hit_index } ) {
                 warn
@@ -172,20 +183,15 @@ sub read_hmmer_output {
 
             # $data->{'hit'}->{$hit_index}->{'domain'}->{$2}->{'seq_f'} = $3;
             my ( $d, $t ) = split /\//, $c[ 1 ];
-            $data->{ 'hit' }->{ $hit_index }->{ 'domain' }->{ $d }
-              ->{ 'seq_f' } = $c[ 2 ];
-            $data->{ 'hit' }->{ $hit_index }->{ 'domain' }->{ $d }
-              ->{ 'seq_t' } = $c[ 3 ];
-            $data->{ 'hit' }->{ $hit_index }->{ 'domain' }->{ $d }
-              ->{ 'hmm_f' } = $c[ 5 ];
-            $data->{ 'hit' }->{ $hit_index }->{ 'domain' }->{ $d }
-              ->{ 'hmm_t' } = $c[ 6 ];
-            $data->{ 'hit' }->{ $hit_index }->{ 'domain' }->{ $d }
-              ->{ 'domain_score' } = $c[ 8 ];
-            $data->{ 'hit' }->{ $hit_index }->{ 'domain' }->{ $d }
-              ->{ 'domain_evalue' } = $c[ 9 ];
+            $data->{hit}{$hit_index}{domain}{$d}{seq_f} = $c[2];
+            $data->{hit}{$hit_index}{domain}{$d}{seq_t} = $c[3];
+            $data->{hit}{$hit_index}{domain}{$d}{hmm_f} = $c[5];
+            $data->{hit}{$hit_index}{domain}{$d}{hmm_t} = $c[6];
+            $data->{hit}{$hit_index}{domain}{$d}{domain_score} = $c[8];
+            $data->{hit}{$hit_index}{domain}{$d}{domain_evalue} = $c[9];
         }
         $i++;
+        die "Failure to parse" if $i > @lines;
     }
     $i++;
     if ( $data->{ 'program' } =~ /hmmsearch/ ) {
@@ -194,10 +200,10 @@ sub read_hmmer_output {
         # warn "Parsing Alignments. Line $i\n";
         if ( $lines[ $i ] =~ /^Alignments of top-scoring domains/ ) {
             $i++;
-            until ( $lines[ $i ] eq "" ) {
+            #until ( $lines[ $i ] eq "" ) {
+            until ( $lines[$i] =~ /^\s*$/ ) {
                 if ( $lines[ $i ] =~ /^(\S+): domain (\d+)/ ) {
-                    $hit_index = $1;
-                    ( $hit, $domain ) = ( $1, $2 );
+                    ($hit_index, $hit, $domain ) = ( $1, $1, $2 );
                     $hit =~ s/(.{10}).*/$1/;
                     # warn "  Parsing hit $hit_index. Line $i\n";
                     if ( $find_frame ) {
@@ -236,6 +242,7 @@ sub read_hmmer_output {
                       ->{ $domain }->{prot_seq} .= $2;
                 }
                 $i += 2;  # skip the blank line and move on to the next
+        die "Failure to parse" if $i > @lines;
             }
         }
         $i++;
@@ -268,6 +275,7 @@ sub read_hmmer_output {
                 $data->{ 'domain_hits_above_evalue_cutoff' } = $1;
             }
             $i++;
+        die "Failure to parse" if $i > @lines;
         }
     }
     return $data;
