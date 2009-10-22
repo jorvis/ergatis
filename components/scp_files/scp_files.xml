@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>scp_files workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>scp_files</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/scp_files</executable>
+            <param>  
+                <key>--input_directory</key>
+                <value>$;INPUTDIR$;</value>
+            </param>
+            <param>  
+                <key>--output_directory</key>
+                <value>$;OUTDIR$;</value>
+            </param>
+            <param>  
+                <key>--output_host</key>
+                <value>'$;OUTPUT_HOST$;'</value>
+            </param>
+            <param>  
+                <key>--tmp_dir</key>
+                <value>$;TMP_DIR$;</value>
+            </param>
+            <param>  
+                <key>--file_extension_filters</key>
+                <value>'$;FILE_EXTENSION_FILTERS$;'</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
