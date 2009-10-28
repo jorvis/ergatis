@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>elph compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create group output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>            
+		<command>
+			<type>RunUnixCommand</type>
+			<name>elph</name>
+			<state>incomplete</state>
+			<executable>$;ELPH_EXEC$;</executable>
+			<arg>$;I_FILE_PATH$; $;SEARCH_MULTI_FASTA$; LEN=$;MOTIF_LENGTH$; ITERNO=$;ITERATOR_NUM$; $;OTHER_OPTS$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.motif</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;I_FILE_BASE$;.stderr</value>
+            </param>                                
+		</command>
+	</commandSet>
+</commandSetRoot>

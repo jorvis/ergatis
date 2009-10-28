@@ -18,6 +18,9 @@ chado2bsml: Added --databaselist parameter so a list of databases can be passed 
 -pathway_tools_input: added compoonent to generate pathway tools input files from a chado database
 -Pfunc [annotation_collection_to_bsml]: will now print different parent molecules to different output bsml files
 -pipeline_summary: Reduced runtime and will now order loci based on end3 (within one molecule)
+--celera-assembler: New component.
+--velvet: New component.
+--elph: New component.
 
 ergatis-v2r11b1
 ---------------

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>velvet compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create velveth temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;I_FILE_BASE$;</arg>
+        </command>            
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create velvetg temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;I_FILE_BASE$;</arg>
+        </command>            
+        <command>
+            <type>RunUnixCommand</type>
+            <name>velveth</name>
+            <state>incomplete</state>
+            <executable>$;VELVETH_EXEC$;</executable>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;I_FILE_BASE$; $;HASH_LENGTH$; $;FILE_FORMAT$; $;READ_TYPE$; $;VELVETH_OPTS$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>velveth post-processing</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/velveth_post_processing</executable>
+            <param>
+                <key>--input_dir</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--output_prefix</key>
+                <value>$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;COMPONENT_NAME$;.$;I_FILE_BASE$;.log</value>                                                '
+            </param>               
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>velvetg pre-processing</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/velvetg_pre_processing</executable>
+            <param>
+                <key>--input_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;I_FILE_BASE$;</value>                            
+            </param>
+            <param>
+                <key>--prefix</key>
+                <value>$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;COMPONENT_NAME$;.$;I_FILE_BASE$;.log</value>
+            </param>
+        </command>                                            
+        <command>
+            <type>RunUnixCommand</type>
+            <name>velvetg</name>
+            <state>incomplete</state>
+            <executable>$;VELVETG_EXEC$;</executable>
+            <arg>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;I_FILE_BASE$; $;VELVETG_OPTS$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+	        </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>                               
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>velvetg post-processing</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/velvetg_post_processing</executable>
+            <param>
+                <key>--input_dir</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--output_prefix</key>
+                <value>$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;/$;COMPONENT_NAME$;.$;I_FILE_BASE$;.log</value>                                           
+            </param>
+        </command>                            
+    </commandSet>
+</commandSetRoot>
