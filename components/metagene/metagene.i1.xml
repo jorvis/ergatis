@@ -19,6 +19,10 @@
             <name>metagene2bsml</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/metagene2bsml</executable>
+            <param>
+                <key>--num_seqs</key>
+                <value>$;NUM_SEQS$;</value>
+            </param>
             <param>  
                 <key>--fasta_input</key>
                 <value>$;I_FILE_PATH$;</value>
@@ -29,7 +33,11 @@
             </param>
             <param>  
                 <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+                <value>$;I_FILE_BASE$;.$;COMPONENT_NAME$;</value>
+            </param>
+            <param>  
+                <key>--output_directory</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
             <param>  
                 <key>--project</key>
