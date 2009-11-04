@@ -165,45 +165,43 @@ foreach my $seq_id (keys(%{$orfs})) {
     if($numseqs >= $options{'num_seqs'}){
 	$outputnum++;
 	my $ofile = $output_dir."/".$options{'output'}.".$outputnum.bsml";
+	print "Writing BSML file $outputnum\n";
 	$doc->writeBsml($ofile);
-	my $doc = new BSML::GenePredictionBsml( 'glimmer3', $options{'fasta_input'} );
+	$doc = new BSML::GenePredictionBsml( 'glimmer3', $options{'fasta_input'} );
 	$numseqs=1;
     }
     
     my $addedTo = $doc->setFasta($seq_id, $options{'fasta_input'});
     die "$seq_id was not a sequence associated with the gene" unless($addedTo);
-
     my @orfs;
     foreach my $orf (@{$orfs->{$seq_id}}) {
                 
-        my $orf_id = $options{'project'}."ORF".$orfcount++;
-                     #$id_gen->next_id(
-                     #   'project' => $options{'project'}, 
-                     #   'type'    => 'CDS'
-                     #                );
+        my $orf_id = $options{'project'}.".gene.".$orfcount++;
+	#$id_gen->next_id(
+	#   'project' => $options{'project'}, 
+	#   'type'    => 'CDS'
+	#                );
 
         $orf->{'id'} = $orf_id;
-
+	
 	#Create some genes and push them ontot he $genes array
-	my $tmp = new Chado::Gene( $orfcount++,
+	my $tmp = new Chado::Gene( $orf_id,
 				   $orf->{'startpos'}-1, $orf->{'endpos'}, ($orf->{'complement'} > 0) ? 0 : 1,
 				   $seq_id);
 	
 	foreach my $type(qw(exon CDS transcript polypeptide)) {
-	    $tmp->addFeature("ORF_$orfcount",
+	    $tmp->addFeature($options{'project'}.".$type.$orfcount",
 			     $orf->{'startpos'}-1, $orf->{'endpos'}, ($orf->{'complement'} > 0) ? 0 : 1,
 			     $type);
 	}
-	
 	my $count = $tmp->addToGroup($tmp->getId, { 'all' => 1 });
+	$doc->addGene($tmp);
+	my $addedTo = $doc->addSequence($tmp->{'seq'}, $options{'fasta_input'} );
     }
     $numseqs++;
 }
 
-if($numseqs >= $options{'num_seqs'}){
-    $outputnum++;
-    my $ofile = $output_dir."/".$options{'output'}.".$outputnum.bsml";
-    $doc->writeBsml($ofile);
-    my $doc = new BSML::GenePredictionBsml( 'metagene', $options{'fasta_input'} );
-    $numseqs=1;
-}
+$outputnum++;
+my $ofile = $output_dir."/".$options{'output'}.".$outputnum.bsml";
+print "Writing final BSML for $outputnum\n";
+$doc->writeBsml($ofile);
