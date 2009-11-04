@@ -47,8 +47,9 @@ B<--help,-h>
 
 There's a good chance the script will not run automatically on your system the first time you try to use it.  This is because SVN requires
 you to manually accept the server certificates from the SVN repositories.  If you run
- $ svn co 
-
+ $ svn co SVN_CO_PATH
+for each of the paths in the the SVN_CO_PATH hash and permanently accept the 
+security certificate, then the script will run as normal
 =cut
 
 use strict;
