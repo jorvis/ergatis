@@ -11,7 +11,8 @@ USAGE: create_file_iterator_list.pl
         --input_file=/path/to/somefile.fsa
         --input_directory=/path/to/some/dir
         --input_directory_extension=fsa
-        [--log=/path/to/some.log
+        [--checksum_filenames
+        --log=/path/to/some.log
         --debug=4 ]
 
 =head1 OPTIONS
@@ -37,6 +38,9 @@ B<--output_iterator_list,-o>
 
 B<--output_iterator_list,-o>
     comma separated list of iterator keys used in the output file.  Each key will be a separate line in the output file.  There are 7 lines in the output file listing FILE, FILE_NAME, FILE_BASE, FILE_EXT, DIRECTORY, XML file
+
+B<--checksum_filenames> 
+    use checksums instead of the basename as the iterator name. The checksum will be based on the full path to the file.
 
 B<--log> 
     optional.  path to a log file the script should create.  will be overwritten if
@@ -81,6 +85,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Ergatis::Logger;
+use Digest::MD5 qw(md5_hex);
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -90,6 +95,7 @@ my $results = GetOptions (\%options,
 			  'input_directory|d=s',
 			  'input_directory_extension=s',
 			  'timestamp|t=s',
+              'checksum_filenames',
 			  'log=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
@@ -142,8 +148,9 @@ print $out_fh "\n";
 for my $elt (@$input_elements){
     my $path1 = ($elt->[2] eq '') ? 	"$elt->[0]" : "$elt->[0].$elt->[2]";
     my $path2 = ($elt->[2] eq '') ? 	"$id2dir->{$elt->[1]}/$elt->[0]" : "$id2dir->{$elt->[1]}/$elt->[0].$elt->[2]";
+    my $field1 = $options{'checksum_filenames'} ? $elt->[3]: $elt->[0];
     print $out_fh 
-	"$elt->[0]\t",
+	"$field1\t",
 	"$path1\t",
 	"$path2\t",
 	"$elt->[2]\t",
@@ -190,10 +197,16 @@ sub add_element {
     my ($elem, $input_elements) = @_;
     
     my $parts = parse_file_parts( \$elem );
+    my $checksum = md5_hex $elem;
     my $directory_id;
 
     ## we can't have encountered this name already
-    if ( exists $$elements_check{ $$parts[2] } ) {
+    if($options{'checksum_filenames'}) {
+        if(exists $$elements_check{ $checksum }) {
+            $logger->logdie("found duplicate file in input set: $elem");
+        }
+    }
+    elsif ( exists $$elements_check{ $$parts[2] } ) {
         $logger->logdie("found duplicate basename in input set: $$parts[2]");
     }
     $elements_check->{$parts->[2]}=1;
@@ -209,7 +222,7 @@ sub add_element {
     }
     
     ## store the file info
-    push @$input_elements, [$$parts[2],$directory_id, $$parts[3] ];
+    push @$input_elements, [$$parts[2],$directory_id, $$parts[3],$checksum ];
 }
 
 sub gather_input_elements {
