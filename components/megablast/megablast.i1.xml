@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>wu-blastn compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>megablast</name>
+            <state>incomplete</state>
+            <executable>/usr/local/bin/megablast</executable>
+            <arg>-i $;I_FILE_PATH$; -d $;DATABASE_PATH$; -W $;WORDSIZE$; -m8</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
