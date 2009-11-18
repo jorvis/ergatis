@@ -90,7 +90,7 @@ points(tapply(pangenome$V4,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenom
 
 # plot the regression
 # plot the regression
-x <- seq(par()$xaxp[1]-1,as.integer(0.5 + 10^par()$usr[[2]]))
+x <- seq(par()$xaxp[1]-1,as.integer(1.0 + 10^par()$usr[[2]]))
 lines(x, predict(nlmodel_pot,data.frame(v1submedians=x)), lwd=2, col="black")
 
 

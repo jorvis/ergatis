@@ -67,7 +67,7 @@ for( x in names(m) ) {
 points(tapply(V2,V1,FUN=mean)~tapply(V1,V1,FUN=mean),pch=6,col='black')
 
 # plot the regression
-x <- seq(par()$xaxp[1]-1,as.integer(0.5 + 10^par()$usr[[2]]))
+x <- seq(par()$xaxp[1]-1,as.integer(1.0 + 10^par()$usr[[2]]))
 lines(x, predict(nlmodel_exp, data.frame(v1means=x)), lwd=2, col="black")
 abline(h=nlmodel_exp$m$getPars()[1], lty=2, lwd=2,col="black")
 
