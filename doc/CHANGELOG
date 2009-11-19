@@ -1,6 +1,6 @@
 next
 ----
--PFunc: Bug fixes and minor improvements
+-PFunc: Bug fixes and minor improvements and update to component files
 -tRNAscan-SE: now allows no search type to be specified, in order to invoke the default search type of 'eukaryotic'
 -split_fasta: corrected problem with duplicates in the output list
 -genemark-es: new component
