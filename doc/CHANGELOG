@@ -1,5 +1,6 @@
 next
 ----
+-bsml2chado: Adding <state> element to cache primary keys step in bsml2chado.xml
 -PFunc: Bug fixes and minor improvements and update to component files
 -tRNAscan-SE: now allows no search type to be specified, in order to invoke the default search type of 'eukaryotic'
 -split_fasta: corrected problem with duplicates in the output list

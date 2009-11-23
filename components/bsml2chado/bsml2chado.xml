@@ -29,6 +29,7 @@
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Cache primary keys</name>
+        <state>incomplete</state>
 	    <executable>$;BIN_DIR$;/queries2Chado</executable>
 	    <param>
 		<key>--database</key>
