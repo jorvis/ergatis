@@ -1,12 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
-
 =head1 NAME
 
 pipeline_summary.pl - Creates one BSML document describing annotation from a pipeline 
@@ -88,7 +81,7 @@ B<--help,-h>
 =head1  CONTACT
 
     Kevin Galens
-    kgalens@tigr.org
+    kgalens@som.umaryland.edu
 
 =cut
 
@@ -100,405 +93,750 @@ use Ergatis::Logger;
 use Ergatis::IdGenerator;
 use BSML::BsmlBuilder;
 use XML::Twig;
-use PerlIO::gzip;
 use File::OpenFile qw(open_file);
 use Data::Dumper;
-
-####### GLOBALS AND CONSTANTS ###########
-my $LOCUS_DB = 'TIGR_moore';
-
-my @inputFiles;               #Holds input (gene prediction bsml) files
-my @otherFiles;               #Holds other bsml files.
-my $output;                   #Output directory
-
-my $outputFile;               #Output file (includes directory).
-my $debug;                    #The debug variable
-my $c;
-my $analysisId = 'pipeline_summary';
-my $sourcename;
-my $features;
-my $featureGroups;
-my $topCogHits;
-my @cogBsmls;
-my $cogLookup;
-my $locusPrefix;
-my $prefixCount = 1;
-my $featElemsBsml = {};
-my $organism = [];
-my $transTable;
-my $attListId = 0;
-my $crid = 0;               #Cross reference id counter
-my %seq_data_import_info;
-my %loci;
-my %top_cogs;
-my %cogId2desc;
-########################################
 $|++;
 
+####### GLOBALS AND CONSTANTS ###########
+my $debug = 0;
+my ($ERROR, $WARN, $DEBUG) = (1,2,3);
+
+my @input_files;
+my @other_files;
+my $output_directory;
+my $locus_prefix;
+my $locus_database = 'TIGR_moore';
+my $organism;
+my $trans_table = 11;
+my $logger;
+
+#cog related info
+my $include_cog = 0;
+my %cogId2desc;
+my %top_cogs;
+
+#for parsed fasta
+my %seq_data_import_info;
+
+#parsed data
+my %input_sequences;
+
+#convenience hash
+my %feature_index;
+
+#for the output bsml analysis element
+my $analysis_name = "pipeline_summary_analysis";
+my $sourcename;
+
+########################################
+
 my %options = ();
-my $results = GetOptions (\%options, 
+my $results = GetOptions(\%options, 
                           'input_bsml|i=s',
                           'other_bsml_lists|b=s',
                           'output|o=s',
-                          'correct_mistakes|c',
                           'locus_prefix|u=s',
+                          'locus_database|U=s',
                           'organism|r=s',
                           'translation_table|t=s',
                           'cog_search_bsml|s=s',
                           'cog_lookup|g=s',
                           'cds_fasta|f=s',
                           'polypeptide_fasta|p=s',
+                          'analysis_name=s',
+                          'sourcename=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || &_pod;
 
-#Setup the logger
-my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
-my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-				  'LOG_LEVEL'=>$options{'debug'});
-$logger = $logger->get_logger();
-
-my $genomeId;
-
 # Check the options.
 &check_parameters(\%options);
 
-foreach my $file (@inputFiles) {
-    print STDOUT "using $file\n";
-
-    $sourcename = $1 if($file =~ m|(.*\d+_[^/]+)/|);
-    &_die("Could not parse the sourcename directory for analysis section from $file") 
-        unless($sourcename);
-
-    #Make the output file name.
-    my $base = $1 if($file =~ m|.*/(([^/\.]+\.){3})|);
-    die("base was not defined") unless( defined( $base ) );
-    $base =~ s/\.$//;
-    my $fileName = $1 if($file =~ m|.*/([^/]+)$|);
-    if( -d $output ) {
-        $outputFile = "$output/$fileName";
-    } else {
-        $logger->logdie("Option --output must be a directory");
-    }
-
-    my $bsml = new BSML::BsmlBuilder;
-
-    #Add genome/organism
-    my $genome = $bsml->createAndAddGenome( );
-    $genomeId = $genome->returnattr( 'id' );
-    my $organism = $bsml->createAndAddOrganism( 'genome' => $genome, 
-                                                'genus' => $organism->[0],
-                                                'species' => $organism->[1] );
-    $logger->logdie("Couldn't get the genome id") unless($genomeId);
-
-    $bsml->createAndAddBsmlAttr( $organism, 'abbreviation', $locusPrefix );
-    $bsml->createAndAddBsmlAttr( $organism, 'translation_table', $transTable );
-
-    #Parse the bsml file
-    my $twig = new XML::Twig( twig_handlers => {
-        'Sequence' => sub { &printSequenceFeatures( $bsml, @_ ) },
-        });
-
-    my $openFile;
-    if( -e $file ) {
-        open($openFile, "< $file") or 
-            $logger->logdie("Unable to open $file ($!)");
-    } elsif( -e $file.".gz" ) {
-        open($openFile, "<:gzip", $file.".gz") or
-            $logger->logdie("Can't open $file.gz ($!)");
-    } else {
-        $logger->logdie("Couldn't find $file");
-    }
-    
-
-    $twig->parse($openFile);
-    print STDOUT "Done parsing the input file $file\n";
-
-    my @addThese;
-    foreach my $otherFile (@otherFiles) {
-        push(@addThese, $otherFile) if($otherFile =~ /$base\./);
-    }
-
-    foreach my $addThis ( @addThese ) {
-        print STDOUT "adding $addThis\n";
-        my $newTwig = new XML::Twig( twig_handlers => {
-            'Sequence' => sub { &printSequenceFeatures( $bsml, @_ ) }
-            });
-
-        my $otherOpenFile;
-
-        if( -e $addThis ) {
-            open($otherOpenFile, "< $addThis") or 
-                $logger->logdie("Unable to open $addThis ($!)");
-        } elsif( -e $addThis.".gz" ) {
-            open($otherOpenFile, "<:gzip", $addThis.".gz") or
-                $logger->logdie("Can't open $addThis.gz ($!)");
-        } else {
-            $logger->logdie("Couldn't find $addThis");
-        }
-
-        $newTwig->parse($otherOpenFile);
-    }
-
-    #Add missing sequence elements for features
-    &add_feature_sequence_elements( $bsml );
-
-    print STDOUT "Writing to $outputFile\n";
-    $bsml->write($outputFile);
-
-    #order and assign loci
-    &order_and_assign_loci( \%loci );
-
-    print STDOUT "Fixing attributes\n";
-    my $tmpOutputFile = $outputFile.".part";
-    my $toh;
-    open($toh, "> $tmpOutputFile") or $logger->logdie("Unable to open tmp output $tmpOutputFile");
-
-    #Now we have to go back and fix the attribute lists
-    my $attTwig = new XML::Twig( 'twig_roots' => { 'Feature' => \&fixAttributes },
-                                 'twig_print_outside_roots' => $toh,
-                                 'pretty_print' => 'indented' );
-
-    $attTwig->parsefile( $outputFile );
-
-    close($toh);
-
-    print STDOUT "mv $tmpOutputFile $outputFile\n";
-    system("mv $tmpOutputFile $outputFile")
-
+# We start by processing the input files
+foreach my $input_file( @input_files ) {
+    &parse_input_bsml_file( $input_file );
 }
 
+#Next we parse the other bsml files
+my $flag = 0;
+foreach my $other_file ( @other_files ) {
+    $flag = 1;
+    &parse_input_bsml_file( $other_file );
+}
+
+#Store cogs if we need to
+if( $include_cog ) {
+    &add_cogs;
+}
+
+#If we included fasta 
+if( scalar( keys %seq_data_import_info ) > 0 ) {
+    &add_seq_data_import;
+}
+
+#if we included a locus prefix, assign loci
+if( $locus_prefix ) {
+    &assign_loci;
+}
+
+&to_bsml;
 
 ######################## SUB ROUTINES #######################################
-sub order_and_assign_loci {
-    my ($loci) = @_;
+sub parse_input_bsml_file {
+    my ($input_file) = @_;
+    &_log("Parsing $input_file\n", $DEBUG );
     
-    my $count = 1;
+    my @sequences;
 
-    #order the genes
-    map {
-        my $locus = $locusPrefix."_$count";
-        $count++;
-        $loci->{$_}->{'locus'} = $locus;
-    } sort { $loci{$a}->{'end3'} <=> $loci{$b}->{'end3'} } keys %loci;
-    
+    my $twig = new XML::Twig( 'twig_roots' => {
+        'Sequence' => \&input_sequence_handler,
+    });
+
+    my $oh = open_file( $input_file, "in" );
+    $twig->parse( $oh );
 }
 
-sub add_feature_sequence_elements {
-    my ($bsml) = @_;
+sub input_sequence_handler {
+    my ($twig, $seq_elem) = @_;
     
-    #Grab all the Sequence elements to grab all the Feature elements
-    my $sequences = $bsml->returnBsmlSequenceListR;
+    #get the sequence id
+    my $seq_id = $seq_elem->att('id');
+    my $features = &get_sequence_features( $seq_elem );
+    my $atts = &get_attributes( $seq_elem );
+    my $bsml_atts = &get_bsml_attributes( $seq_elem );
+    my $links = &get_bsml_links( $seq_elem );
+    my $sdi = &get_seq_data_import( $seq_elem );
 
-    foreach my $seq ( @{$sequences} ) {
-        my $feature_tables = $seq->returnBsmlFeatureTableListR;
-        foreach my $ft ( @{$feature_tables} ) {
-            my $features = $ft->returnBsmlFeatureListR;
-            foreach my $feat ( @{$features} ) {
-                my $feat_id = $feat->returnattr('id');
-                my $class = $feat->returnattr('class');
-                $logger->logdie("Could not parse class from feature $feat_id") unless( $class );
-
-                my $molecule;
-                
-                if( $class eq 'CDS' ) {
-                    $molecule = 'dna';
-                } elsif( $class eq 'polypeptide' ) {
-                    $molecule = 'aa';
-                } else {
-                    next;
-                }
-                
-                #do we have a sequence element for it already?
-                my $feature_sequence = $bsml->returnBsmlSequenceByIDR( $feat_id );
-                undef $feature_sequence if( ref($feature_sequence) ne 'BSML::BsmLSequence' );
-                $feature_sequence = $bsml->returnBsmlSequenceByIDR( $feat_id."_seq" )
-                    unless( $feature_sequence );
-
-
-                my $seq_data_import_info = &lookup_seq_data_import_info( $feat_id );
-
-                #if we don't have the info, this probably means it's a tRNA CDS
-                next unless( $seq_data_import_info );
-
-                my $add_sdi_flag = 0;
-                if( $feature_sequence ) {
-                    #make sure the seq data import is up to date
-                    my $seq_data_import = $feature_sequence->returnBsmlSeqDataImport;
-
-                    unless( $seq_data_import->returnattr( 'source' ) eq $seq_data_import_info->{'source'} &&
-                            $seq_data_import->returnattr( 'identifier' ) eq $seq_data_import_info->{'identifier'} ) {
-                        $feature_sequence->dropBsmlSeqDataImport;
-
-                        $add_sdi_flag = 1;
-
-                    }
-                    
-
-                } else {
-                    #add a new sequence element
-                    #  my ( $id, $title, $length, $molecule, $class ) = @_;
-                    $feature_sequence = $bsml->createAndAddSequence( $feat_id."_seq", $feat_id,
-                                                                         '', $molecule, $class );
-
-                    $add_sdi_flag = 1;
-
-                    #my ($elem, $rel, $href, $role) = @_;
-                    my $link = $bsml->createAndAddLink( $feature_sequence, 'analysis', "#".$analysisId."_analysis",
-                                                        'input_of' );
-
-                }
-                
-                if( $add_sdi_flag ) {
-                    #my ( $seq, $format, $source, $id, $identifier ) = @_;
-                    my $sdi = $bsml->createAndAddSeqDataImport( $feature_sequence, $seq_data_import_info->{'format'},
-                                                                $seq_data_import_info->{'source'}, '', 
-                                                                $seq_data_import_info->{'identifier'} );
-                }
-            } #Feature
-        } #Feature-table
-    } #Sequence
+    if( exists( $input_sequences{ $seq_id } ) ) {
+        &append_data( $seq_id, { 
+            'features' => $features, 
+            'attributes' => $atts,
+            'bsml_attributes', => $bsml_atts,
+            'links' => $links,
+            'seq-data-import' => $sdi
+            });
+    } else {
+        $input_sequences{$seq_id} = {
+            'features' => $features,
+            'attributes' => $atts,
+            'bsml_attributes' => $bsml_atts,
+            'links' => $links,
+            'seq-data-import' => $sdi
+            };
+    }
 }
-sub fixAttributes {
-    my ($twig, $featElem) = @_;
-    my $featId = $featElem->att('id');
-    $logger->logdie("Couldn't parse feature id from feature") unless($featId);
-    
-    my @elemOrder = ( 'Attribute', 'Interval-loc', 'Attribute-list', 'Cross-reference', 'Link' );
-    my %finalElts;
 
-    #Grab each child and cut it out and save it for later.
-    my %elts;
-    
-    foreach my $child ( $featElem->children() ) {
-        my $tag = $child->gi();
-        push( @{$elts{$tag}}, $child );
-        $child->cut;
-    }
+sub add_cogs {
+    &_log("Adding COG information\n", $DEBUG );
 
-
-    #where did the annotation come from?
-    my $annotationFrom;
-    foreach my $att ( @{$elts{'Attribute'}} ) {
-        $annotationFrom = $att->att('content') if( $att->att('name') eq 'gene_product_name_source' );
-    }
-
-    foreach my $att ( @{$elts{'Attribute'}} ) {
-        
-        if($att->att('name') eq 'ec_number') {
-            #Where did we get the ec number from?
-            my $ecFrom = $att->att('ec_number_source') if($att->att('ec_number_source'));
-            $ecFrom = $annotationFrom if( (!$ecFrom) && $annotationFrom );
-            $logger->logdie("We should not have an ec_number if we don't know where the annotation came from") unless($ecFrom);
+    foreach my $seq_id ( keys %input_sequences ) {
+        foreach my $group_set ( keys %{$input_sequences{$seq_id}->{'features'}} ) {
+            my $fg = $input_sequences{$seq_id}->{'features'}->{$group_set};
             
-            my $attList = new XML::Twig::Elt( 'Attribute-list', { 'id' => "attList_".$attListId++ } );
+            #if we don't have a polypeptide object for this group-set, this means
+            #that it's a feature which doesn't have a translation (i.e. ncRNA) and
+            #we wouldn't have performed a COG analysis on it.
+            next unless( exists( $fg->{'polypeptide'} ) );
 
-            my $firstAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'EC',
-                                                              'content' => $att->att('content') } );
-            my $secAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'IEA',
-                                                            'content' => $ecFrom } );
-
-            $firstAtt->paste( $attList );
-            $secAtt->paste( 'after' => $firstAtt );
-          
-            push(@{$elts{'Attribute-list'}}, $attList);
-            
-        } elsif($att->att('name') eq 'role_id') {
-            #Where did we get the TIGR role from?
-            my $roleFrom = $att->att('role_from') if($att->att('role_id_from'));
-            $roleFrom = $annotationFrom if( ( (!$roleFrom) || ($roleFrom eq 'guess_role') ) && $annotationFrom );
-            $logger->logdie("We should not have an ec_number if we don't know where the annotation came from") unless($roleFrom);
-
-            my $attList = new XML::Twig::Elt( 'Attribute-list', { 'id' => "attList_".$attListId } );
-            $attListId++;
-
-            my $firstAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'TIGR_role',
-                                                              'content' => $att->att('content') } );
-            my $secAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'IEA',
-                                                            'content' => $roleFrom } );
-
-            $firstAtt->paste( $attList );
-            $secAtt->paste( 'after' => $firstAtt );
-       
-            push(@{$elts{'Attribute-list'}}, $attList);
-
-        } elsif($att->att('name') eq 'go_id') {
-            #Where did we get the GO id from?
-            my $goFrom = $att->att('go_id_from') if($att->att('go_id_from'));
-            $goFrom = $annotationFrom if( (!$goFrom) && $annotationFrom );
-            $logger->logdie("We should not have a go_id if we don't know where the annotation came from") unless($goFrom);
-
-            my $attList = new XML::Twig::Elt( 'Attribute-list', { 'id' => "attList_".$attListId } );
-            $attListId++;
-
-            my $firstAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'GO',
-                                                              'content' => $att->att('content') } );
-            my $secAtt = new XML::Twig::Elt( 'Attribute', { 'name' => 'IEA',
-                                                            'content' => $goFrom } );
-
-            $firstAtt->paste( $attList );
-            $secAtt->paste( 'after' => $firstAtt );
-           
-            push(@{$elts{'Attribute-list'}}, $attList);
-
-        } elsif( $att->att('name') eq 'role_from' ) {
-            
-        } elsif( $att->att('name') eq 'top_cog_hit' ) {
-            my $str = $att->att('content');
-            $str =~ s/\s+$//g;
-            $att->set_att('content', $str);
-            push(@{$finalElts{'Attribute'}}, $att);
-        } else {
-            push(@{$finalElts{'Attribute'}}, $att);
+            my $cog_desc = &get_cog_desc( $fg->{'polypeptide'}->{'attributes'}->{'id'} );
+            $fg->{'CDS'}->{'bsml_attributes'}->{'top_cog_hit'} = $cog_desc if( $cog_desc );
         }
     }
+}
+
+sub add_seq_data_import { 
+    #this subroutine verifies that we only keep sequences that were 
+    #parsed from the bsml.
+    &_log("Adding sequence data from input fasta sequences\n", $DEBUG);
     
-    foreach my $key ( keys %elts ) {
-        next if($key eq 'Attribute');
-        $finalElts{$key} = $elts{$key};
-    }
- 
-    if($featId =~ /(polypeptide|CDS)/) {
-            
-        #Add a link element
-        my $newLink = new XML::Twig::Elt( 'Link', {
-            'rel' => 'sequence',
-            'href' => "#${featId}_seq" } );
-
-        push( @{$finalElts{'Link'}}, $newLink);
-        
-    }
-
-    #Now paste them in the correct order and assign loci
-    foreach my $tagName ( reverse @elemOrder ) {
-        if( $featId =~ /gene/ && $tagName eq 'Cross-reference' ) {
-            #<Cross-reference database="TIGR_moore" id="CrossReference_0" identifier="gas2_1" identifier-type="locus"/>
-            my $xref = new XML::Twig::Elt( 'Cross-reference', {
-                'database' => $LOCUS_DB,
-                'id' => "CrossReference_".$crid++,
-                'identifier' =>  $loci{$featId}->{'locus'},
-                'identifier-type' => 'locus' } );
-            $xref->paste( $featElem );
-        } else {
-
-            foreach my $featChild( @{$finalElts{$tagName}} ) {
-                $featChild->paste( $featElem );
+    foreach my $seq_id ( keys %seq_data_import_info ) {
+        next unless( exists( $feature_index{ $seq_id } ) );
+        my $href = $seq_data_import_info{$seq_id};
+        $input_sequences{ $seq_id } = {
+            'seq-data-import' => {
+                'format' => $href->{'format'},
+                'source' => $href->{'source'},
+                'identifier' => $href->{'identifier'}
+            },
+            'attributes' => {
+                'id' => $seq_id."_seq",
+                'title' => $seq_id,
             }
+        };
+    }
+}
 
+sub assign_loci {
+    #we want to order the sequences based on length.  And we only want to order the sequences
+    #which contain features.
+    my @seqs_with_features = grep { exists( $input_sequences{$_}->{'features'} ) } keys %input_sequences;
+    my @ordered_seq_ids = sort by_molecule_length @seqs_with_features;
+
+    my $locus_num = 1;
+    foreach my $seq_id ( @ordered_seq_ids ) {
+        foreach my $group_set ( sort by_end3 values %{$input_sequences{$seq_id}->{'features'}} ) {
+            my $gene = $group_set->{'gene'};
+            my $tmp = {
+                'database' => $locus_database,
+                'identifier' => $locus_prefix."_".$locus_num++,
+                'identifier-type' => 'locus',
+            };
+            push( @{$gene->{'cross-references'}}, $tmp );
+        }
+    }
+}
+
+sub by_end3 {
+    my $end3_a = ( $a->{'gene'}->{'interval_loc'}->{'complement'} ) ?
+        $a->{'gene'}->{'interval_loc'}->{'startpos'} :
+        $a->{'gene'}->{'interval_loc'}->{'endpos'};
+    
+    my $end3_b = ( $b->{'gene'}->{'interval_loc'}->{'complement'} ) ?
+        $b->{'gene'}->{'interval_loc'}->{'startpos'} :
+        $b->{'gene'}->{'interval_loc'}->{'endpos'};
+
+    return $end3_a <=> $end3_b;
+}
+
+sub by_molecule_length {
+    if( !exists( $input_sequences{$a}->{'attributes'}->{'length'} ) ) {
+        &_log("Could not get length for sequence $a", $ERROR );
+    }
+    if( !exists( $input_sequences{$b}->{'attributes'}->{'length'} ) ) {
+        &_log("Could not get length for sequence $b", $ERROR );
+    }
+    $input_sequences{$b}->{'attributes'}->{'length'} <=> $input_sequences{$a}->{'attributes'}->{'length'};
+}
+
+#### Parsing Subroutines #################
+sub get_seq_data_import {
+    my ($elem) = @_;
+    my $atts = $elem->first_child('Seq-data-import')->atts();
+    delete( $atts->{'id'} );
+    return $atts;
+}
+
+#returns a hashref of feature groups keyed on gene id
+#  feature_id -> {
+#     'attributes' => { class => 'gene'...},
+#     'bsml_attributes' => ( { name => 'whatever', content => 'whatever' }, ... ),
+#     'links' => ( { sequence='polypeptide.1_seq' } ),
+#     'attribute_lists => ( bsml_attributes )
+#     'cross-reference' => ( { 'database' => 'TIGR_moore', 'identifier' => "a124",
+#                              'identifier_type' => 'locus' } )
+sub get_sequence_features {
+    my ($elem) = @_;
+    my %retval;
+
+    my $seq_id = $elem->att('id');
+
+    my $feature_tables = $elem->first_child( 'Feature-tables' );
+    return {} if( !defined( $feature_tables ) );
+
+    my @features = $feature_tables->first_child('Feature-table')->children('Feature');
+    my $total_features = scalar(@features);
+    my $count = 0;
+    &_log("There are $total_features features on sequence $seq_id\n", $DEBUG );
+    return () if( $total_features == 0 );
+    
+    foreach my $feature ( @features ) {
+        my $atts = &get_attributes( $feature );
+        my $bsml_atts = &get_bsml_attributes( $feature );
+        my $bsml_links = &get_bsml_links( $feature );
+        my $interval_loc = &get_interval_loc( $feature );
+        my @attribute_lists = &get_attribute_lists( $feature );
+        my @cross_references = &get_cross_references( $feature );
+
+        $feature_index{ $feature->att('id') } = {
+            'attributes' => $atts,
+            'bsml_attributes' => $bsml_atts,
+            'links' => $bsml_links,
+            'attribute_lists' => \@attribute_lists,
+            'interval_loc' => $interval_loc,
+            'cross-references' => \@cross_references
+        };
+
+        $count++;
+        &_log("$count/$total_features\r", $DEBUG );
+    }
+
+    my @feature_groups = $elem->find_nodes('Feature-tables/Feature-group');
+    my $total_fgs = scalar(@feature_groups);
+    $count = 0;
+    &_log("\nThere are $total_fgs feature groups\n", $DEBUG );
+
+    foreach my $feature_group ( @feature_groups ) {
+        my $tmp = {};
+        my $group_set = $feature_group->att('group-set');
+        foreach my $fgm ( $feature_group->children( 'Feature-group-member' ) ) {
+            my $id = $fgm->att('featref');
+            my $class = $fgm->att('feature-type');
+            $tmp->{$class} = $feature_index{ $id };
+        }
+        $count++;
+        &_log("$count/$total_fgs\r", $DEBUG );
+        $retval{$group_set} = $tmp;
+    }
+    &_log("\n\n", $DEBUG );
+    return \%retval;
+}
+
+sub get_cross_references {
+    my ($elem) = @_;
+    my @retval;
+    map { my $atts = $_->atts; delete( $atts->{'id'} ); push(@retval, $atts); } 
+    $elem->children('Cross-reference');
+    return @retval;
+}
+
+sub get_attribute_lists {
+    my ($elem) = @_;
+    my @retval;
+    map { push(@retval, &get_bsml_attributes( $_ ) ) } 
+    $elem->children('Attribute-list');
+    return @retval;
+}
+
+sub get_interval_loc {
+    my ($elem) = @_;
+    my $retval = {};
+    my $int_loc = $elem->first_child('Interval-loc');
+    $retval = $int_loc->atts() if( $int_loc );
+    return $retval;
+}
+
+sub get_attributes {
+    my ($elem) = @_;
+    return $elem->atts();
+}
+
+sub get_bsml_attributes {
+    my ($elem) = @_;
+    my %retval;
+
+    map {
+        $retval{ $_->att('name') } = $_->att('content');
+    } $elem->children( 'Attribute' );
+    return \%retval;
+}
+
+#Does not return analysis links.
+sub get_bsml_links {
+    my ($elem) = @_;
+    my %retval;
+    foreach my $link ( $elem->children( 'Link' ) ) {
+        next if( $link->att('rel') eq 'analysis' );
+        my $tmp = &get_attributes( $link );
+        $retval{$tmp->{'rel'}} = $tmp;
+    }
+    return \%retval;
+}
+
+#### Writing to Bsml Related Subroutines #################
+sub to_bsml {
+    #each input sequence with features gets it's own file
+    my @seqs_w_features = grep { exists( $input_sequences{$_}->{'features'} ) } keys %input_sequences;
+    
+    foreach my $seq_id ( @seqs_w_features ) {
+        my $doc = new BSML::BsmlBuilder;
+        my $seq = &add_bsml_sequence( $doc, $input_sequences{ $seq_id } );
+        my $ft;
+        my @feature_group_ids = keys %{$input_sequences{$seq_id}->{'features'}};
+        &_log("Adding features to bsml document for $seq_id\n", $DEBUG);
+        my $total_fgi = scalar( @feature_group_ids );
+        my $count = 0;
+        foreach my $group_set ( @feature_group_ids ) {
+            $ft = $doc->createAndAddFeatureTable( $seq ) unless( defined( $ft ) );
+            my $feat = &add_bsml_feature_set( $doc, $seq, $ft, 
+                                              $input_sequences{$seq_id}->{'features'}->{$group_set} );
+            $count++;
+            &_log("$count/$total_fgi\r", $DEBUG );
+        }
+        
+         &_log("\n\n", $DEBUG );
+
+        #write the analysis
+        $doc->createAndAddAnalysis( 'id' => $analysis_name, 
+                                    'sourcename' => $sourcename,
+                                    'algorithm' => 'pipeline_summary',
+                                    'program' => 'pipeline_summary' );
+
+        #add the genome
+        my $genome = &add_bsml_genome( $doc );
+
+        #Add sequence link to the genome
+        my $genome_id = $genome->returnattr( 'id' );
+        &add_bsml_link( $doc, $seq, { 'rel' => 'genome', 'href' => "#$genome_id" } );
+
+        my $output_file = $output_directory."/$seq_id.bsml";
+        &_log("Writing document\n", $DEBUG );
+        $doc->write( $output_file );
+        &_log("Wrote $output_file\n", $DEBUG);
+    }
+}
+
+sub add_bsml_genome {
+    my ($doc) = @_;
+    my $genome = $doc->createAndAddGenome( );
+    my $organism = $doc->createAndAddOrganism( 'genome' => $genome, 
+                                               'genus' => $organism->[0],
+                                               'species' => $organism->[1] );
+
+    $doc->createAndAddBsmlAttr( $organism, 'abbreviation', $locus_prefix );
+    $doc->createAndAddBsmlAttr( $organism, 'translation_table', $trans_table );
+    return $genome;
+}
+
+sub add_bsml_feature {
+    my ($doc, $ft, $feat) = @_;
+    my $atts = $feat->{'attributes'};
+    my $id = $atts->{'id'} || &_log("Could not get id for feature", $ERROR );
+    my $title = $atts->{'title'} || $id;
+    my $class = $atts->{'class'};
+    if( !defined( $class ) ) {
+        $class = $1 if( $id =~ /^[^\.]+\.([^\.]+)\./ );
+    }
+    &_log("Could not parse class out for feature $id [$title]", $ERROR) 
+        unless( defined( $class ) );
+    
+    my $bsml_feat = $doc->createAndAddFeature( $ft, $id, $title, $class );
+
+    if( exists( $feat->{'cross-references'} ) ) {
+        foreach my $cr ( @{$feat->{'cross-references'}} ) {
+            &add_bsml_cross_reference( $doc, $bsml_feat, $cr );
         }
     }
 
-    $featElem->print;
+    if( exists( $feat->{'interval_loc'} ) ) {
+        my $il = $feat->{'interval_loc'};
+        $doc->createAndAddIntervalLoc( $bsml_feat, $il->{'startpos'},
+                                       $il->{'endpos'}, $il->{'complement'} );
+    } else {
+        &_log("Could not find interval loc in feature: $id", $ERROR );
+    }
+
+    if( exists( $feat->{'attribute_lists'} ) ) {
+        foreach my $list ( @{$feat->{'attribute_lists'}} ) {
+            &add_bsml_attribute_list( $doc, $bsml_feat, $list );
+        }
+    }
+
+    if( exists( $feat->{'bsml_attributes'} ) ) {
+        foreach my $name ( keys %{$feat->{'bsml_attributes'}} ) {
+            &add_bsml_attribute( $doc, $bsml_feat, $name, $feat->{'bsml_attributes'}->{$name} );
+        }
+    }
+
+    &add_bsml_analysis_link( $doc, $bsml_feat );
+
+    return $bsml_feat;
+}
+
+sub add_bsml_attribute_list {
+    my ($doc, $feat, $list) = @_;
+    #for some reason, these api calls in bsml are commented out. So hack it instead of fix it
+    #( I know that's right )
+    
+    if( !defined( $feat->{'BsmlAttributeList'} ) ) {
+        $feat->{'BsmlAttributeList'} = [];
+    }
+    
+    &_log("Can only deal with ECO value IEA currently", $ERROR ) unless( exists( $list->{'IEA'} ) );
+
+    my ($eco, $source) = ('IEA', $list->{'IEA'} );
+    delete( $list->{'IEA'} );
+
+    my $tmp = [];
+    foreach my $name ( keys %{$list} ) {
+        push( @{$tmp}, { 'name' => $name, 'content' => $list->{$name} } );
+    }
+
+    push( @{$tmp}, { 'name' => 'IEA', 'content' => $list->{'IEA'} } );
+    push( @{$feat->{'BsmlAttributeList'}}, $tmp );
+}
+
+sub add_bsml_cross_reference {
+    my ($doc, $feat, $cr) = @_;
+    return $doc->createAndAddCrossReference( 'parent' => $feat, 'database' => $cr->{'database'}, 
+                                             'identifier' => $cr->{'identifier'},
+                                             'identifier-type' => $cr->{'identifier-type'} );
     
 }
 
-sub getTopCogHit {
-    my $polyId = shift;
-    my $cogId;
-    if( exists( $top_cogs{$polyId} ) ) {
-        $cogId = $top_cogs{$polyId};
+sub add_bsml_feature_set {
+    my ($doc, $seq, $ft, $feature_set) = @_;
+    
+    #make a feature group
+    my $fg = $doc->createAndAddFeatureGroup( $seq, undef, $feature_set->{'gene'}->{'attributes'}->{'id'} );
+
+    foreach my $class ( keys %{$feature_set} ) {
+        my $id = $feature_set->{$class}->{'attributes'}->{'id'};
+        my $feat = &add_bsml_feature( $doc, $ft, $feature_set->{$class} );
+        $doc->createAndAddFeatureGroupMember( $fg, $id, $class );
+        if( exists( $input_sequences{$id} ) ) {
+            &add_bsml_sequence( $doc, $input_sequences{$id}, $class );
+            &add_bsml_link( $doc, $feat, { 'rel' => 'sequence', 'href' => "#${id}_seq" } );
+        }
     }
-    return $cogId;
+}
+
+sub add_bsml_sequence {
+    my ($doc, $seq, $class) = @_;
+
+    if( !$seq->{'attributes'}->{'id'} ) {
+        print Dumper( $seq );
+    }
+
+    my $id = $seq->{'attributes'}->{'id'} || &_log("Could not find id for sequence", $ERROR);
+    my $title = $seq->{'attributes'}->{'title'} || $id;
+    my $len = $seq->{'attributes'}->{'length'} || undef;
+    my $mol = $seq->{'attributes'}->{'molecule'} || undef;
+    $class = $seq->{'attributes'}->{'class'} unless( !exists( $seq->{'attributes'}->{'class'} ) );
+
+    if( !defined( $class ) ) {
+        #try to parse it from the id
+        $class = $1 if( $id =~ /^[^\.]+\.([^\.]+)\./ );
+        &_log("Could not find a class for sequence $id", $ERROR)
+            unless( defined( $class ) );
+    }
+    
+    my $bsml_seq = $doc->createAndAddSequence( $id, $title, $len, $mol, $class );
+
+    if( exists( $seq->{'seq-data-import'} ) ) {
+        &add_bsml_sdi( $doc, $bsml_seq, $seq->{'seq-data-import'} );
+    }
+
+    if( exists( $seq->{'links'} ) ) {
+        foreach my $rel ( keys %{$seq->{'links'}} ) {
+            &add_bsml_link( $doc, $bsml_seq, $seq->{'links'}->{$rel} );
+        }
+    }
+    
+    #add the analysis link
+    &add_bsml_analysis_link( $doc, $bsml_seq );
+
+    if( exists( $seq->{'bsml_attributes'} ) ) {
+        foreach my $name ( keys %{$seq->{'bsml_attributes'}} ) {
+            &add_bsml_attribute( $doc, $bsml_seq, $name, $seq->{'bsml_attributes'}->{$name} );
+        }
+    }
+
+    return $bsml_seq;
+}
+
+sub add_bsml_analysis_link {
+    my ($doc, $elem) = @_;
+    return &add_bsml_link( $doc, $elem, { 'rel' => 'analysis', 
+                                         'href' => "#$analysis_name", 
+                                         'role' => 'input_of' } );
+}
+
+sub add_bsml_link {
+    my ($doc, $elem, $link) = @_;
+    unless( exists( $link->{'rel'} ) && exists( $link->{'href'} ) ) {
+        &_log("Link information provided for element was not complete", $ERROR);
+    }
+
+    if( !exists( $link->{'role'} ) ) {
+        $link->{'role'} = undef;
+    }
+    return $doc->createAndAddLink( $elem, $link->{'rel'}, $link->{'href'}, $link->{'role'} );
+}
+
+sub add_bsml_attribute {
+    my ($doc, $elem, $name, $content) = @_;
+    return $doc->createAndAddBsmlAttr( $elem, $name, $content );
+}
+
+sub add_bsml_sdi {
+    my ($doc, $seq, $sdi) = @_;
+    return $doc->createAndAddSeqDataImport( $seq, $sdi->{'format'},
+                                            $sdi->{'source'}, undef,
+                                            $sdi->{'identifier'} );
+}
+
+### other #################################
+sub get_cog_desc {
+    my ($id) = @_;
+    &_log("ID was not passed &get_cog_desc", $ERROR) if( !defined( $id ) );
+    my $retval;
+    $retval = $top_cogs{ $id } if( exists( $top_cogs{ $id } ) );
+    return $retval;
+}
+
+sub append_data {
+    my ($id, $args) = @_;
+    my $base = $input_sequences{ $id };
+
+    if( exists( $args->{'features'} ) ) {
+        foreach my $fg_id ( keys %{$args->{'features'}} ) {
+            if( exists( $base->{'features'}->{$fg_id} ) ) {
+                $base->{'features'}->{$fg_id} = 
+                    &append_features( $base->{'features'}->{$fg_id}, $args->{'features'}->{$fg_id} );
+            } else {
+                $base->{'features'}->{$fg_id} = $args->{'features'}->{$fg_id};
+            }
+        }
+
+    }
+
+    if( exists( $args->{'attributes'} ) ) {
+        foreach my $key ( keys %{$args->{'attributes'}} ) {
+            if( exists( $base->{'attributes'}->{$key} ) ) {
+                if( $base->{'attributes'}->{$key} ne $args->{'attributes'}->{$key} ) {
+                    &_log("Attributes didn't match: [".$base->{'attributes'}->{$key}.
+                          ", ".$args->{'attributes'}->{$key}."]", $ERROR );
+                } 
+            } else {
+                $base->{'attributes'}->{$key} = $args->{'attributes'}->{$key};
+            }
+        }
+    }
+
+    if( exists( $args->{'bsml_attributes'} ) ) {
+        foreach my $key ( keys %{$args->{'bsml_attributes'}} ) {
+            if( exists( $base->{'bsml_attributes'}->{$key} ) ) {
+                if( $base->{'bsml_attributes'}->{$key} ne $args->{'bsml_attributes'}->{$key} ) {
+                    &_log("BSML Attribute values didn't match: [".$base->{'bsml_attributes'}->{$key}.
+                          ", ".$args->{'bsml_attributes'}->{$key}."]", $ERROR );
+                } 
+            } else {
+                $base->{'bsml_attributes'}->{$key} = $args->{'bsml_attributes'}->{$key}
+            }
+        }
+    }
+
+    if( exists( $args->{'links'} ) ) {
+        foreach my $key ( keys %{$args->{'links'}} ) {
+            if( !exists( $base->{'links'}->{$key} ) ) {
+                $base->{'links'}->{$key} = $args->{'links'}->{$key};
+            }
+        }
+    }
+
+    #Seq-data-import: if there are two, use current. So do nothing.
+    if( exists( $args->{'seq_data_import'} ) && 
+        ( !exists( $base->{'seq_data_import'} ) || scalar( keys %{$base->{'seq_data_import'}} ) > 0 )) {
+        $base->{'seq_data_import'} = $args->{'seq_data_import'};
+    }
+}
+
+sub append_features {
+    my ($feature_a, $feature_b) = @_;
+    return $feature_a;
+}
+
+sub get_input_files {
+    my $inputStr = shift;
+    my @files;
+    
+    #comma unseparate
+    my @tokens = split( /,/, $inputStr);
+
+    foreach my $token ( @tokens ) {
+        my $tfh = open_file( $token, "in" );
+
+        my $isList = 0;
+
+        map {
+            my $line = $_;
+            next if( $line =~ /^\s*$/ );
+            if($line =~ /</ && !$isList) {
+                push(@files, $token);
+                last;
+            #It's a list.
+            } elsif($line =~ m|\.bsml|) {
+                chomp $line;
+                push(@files, $line);
+                $isList = 1;
+            }
+        } <$tfh>;
+            
+    }
+
+    return @files;
+    
+}
+
+sub check_parameters {
+    my $opts = shift;
+
+    #Print perldoc if user wants help
+    &_pod if($opts->{'help'});
+
+    #debug
+    $debug = 1 if( $opts->{'debug'} );
+
+    #logger
+    my $level = ( $debug ) ? 4 : 1;
+    my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+    $logger = new Ergatis::Logger('LOG_FILE'=>$logfile, 'LOG_LEVEL'=> $level );
+    $logger = $logger->get_logger();
+
+    #The required options
+    my @reqs = qw(input_bsml output locus_prefix organism sourcename);
+    foreach my $req ( @reqs ) {
+        &_log( "Option $req is required", $ERROR ) 
+            unless( exists( $opts->{$req} ) );
+    }
+
+    #make an array of the input files, if there are none then die
+    @input_files = &get_input_files( $opts->{'input_bsml'} );
+
+    #output directory and locus prefix
+    $output_directory = $opts->{'output'};
+    $locus_prefix = $opts->{'locus_prefix'};
+    $locus_database = $opts->{'locus_database'} if( $opts->{'locus_database'} );
+
+    #make sure we can parse the species and genus from organism
+    $organism = [ $1, $2 ] if( $opts->{'organism'} =~ /(\S+)\s+(.*)/ );
+    &_log( "Could not parse genus and species from organism options $opts->{'organism'}")
+        unless( @{$organism} == 2 );
+
+    #other bsml lists
+    @other_files = &get_input_files( $opts->{'other_bsml_lists'} )
+        if( $opts->{'other_bsml_lists'} );
+
+    #set the translation table (default: 11);
+    $trans_table = $opts->{'translation_table'} if( $opts->{'translation_table'} );
+
+    $sourcename = $opts->{'sourcename'};
+    $analysis_name = $opts->{'analysis_name'} if( $opts->{'analysis_name'} );
+    
+    #if they included cogs
+    if($opts->{'cog_search_bsml'}) {
+        my $cogs = open_file( $opts->{'cog_search_bsml'}, "in" );
+        chomp( my @cog_bsml_files = <$cogs> );
+        close($cogs);
+        
+        &_log( "Option --cog_lookup is required when using --cog_search_bsml", $ERROR )
+            unless($opts->{'cog_lookup'});
+        my $cog_lookup = $opts->{'cog_lookup'};
+
+        &_log("Preparsing COG Lookup file\n", $DEBUG );
+        &pre_parse_cog_lookup( $cog_lookup );
+
+        &_log("Preparsing COG results\n", $DEBUG );
+        &pre_parse_cog_results( @cog_bsml_files );
+
+        $include_cog = 1;
+    }
+
+    #if CDS Fasta was included
+    if( $opts->{'cds_fasta'} ) {
+        my @files = split(/,\s+/, $opts->{'cds_fasta'} );
+        &_log("Processing CDS fasta file[s]\n", $DEBUG);
+        map { &process_fasta_file_or_list( $_ ) } @files;
+    }
+
+    #If polypeptide fsa was included
+    if( $opts->{'polypeptide_fasta'} ) {
+        my @files = split(/,\s+/, $opts->{'polypeptide_fasta'} );
+        &_log( "Processing polypeptide fasta file[s]\n", $DEBUG );
+        map { &process_fasta_file_or_list( $_ ) } @files;
+        
+    }
+    
 }
 
 sub pre_parse_cog_results {
@@ -506,7 +844,7 @@ sub pre_parse_cog_results {
     
     my $total = scalar(@bsml_files);
     my $count = 0;
-    print "$count/$total\r";
+    &_log("$count/$total\r", $DEBUG );
     map {
         my $boh = open_file( $_, 'in' );
         my ($cog,$ref,$pval, $best);
@@ -517,7 +855,7 @@ sub pre_parse_cog_results {
                 if( defined( $ref ) ) {
                     if( $pval < $best ) {
                         $best = $pval;
-                        my $desc = &getCog( $cog );
+                        my $desc = $cogId2desc{$cog};
                         if( defined( $desc ) ) {
                             $top_cogs{$ref} = $desc;
                         }
@@ -540,18 +878,16 @@ sub pre_parse_cog_results {
         if( defined( $ref ) ) {
             if( $pval < $best ) {
                 $best = $pval;
-                my $desc = &getCog( $cog );
+                my $desc = $cogId2desc{$cog};
                 if( defined( $desc ) ) {
                     $top_cogs{$ref} = $desc;
                 }
             }
         }
         $count++;
-        print "$count/$total\r";
+        &_log("$count/$total\r", $DEBUG );
         
     } @bsml_files;
-
-    print "\n";
 }
 
 sub pre_parse_cog_lookup {
@@ -573,406 +909,8 @@ sub pre_parse_cog_lookup {
     close($in);
 }
 
-sub getCog {
-	my $id = shift;
-    if( !defined( $id ) || !exists( $cogId2desc{$id} ) ) {
-        return undef;
-    }
-    return $cogId2desc{$id};
-}
-
-sub printSequenceFeatures {
-    my ($bsml, $twig, $seqElem) = @_;
-    
-    my $id = $seqElem->att('id');
-    &_die("Can't parse id from Sequence in bsml file") unless($id);
-
-    my $bsmlSequence = &addSequence($bsml, $seqElem);
-
-    &_die("bsmlSequence ".$seqElem->att('id')." does not have a class") unless($seqElem->att('class'));
-
-    return unless($seqElem->att('class') eq 'assembly');
-
-    my $asmblId = $id;
-
-    my $fTables = $seqElem->first_child('Feature-tables');
-    my $fT = $fTables->first_child('Feature-table') if($fTables);
-    my @features = $fT->children('Feature') if($fT);
-
-    my $newFeatureTable;
-    #Create new feature table
-    if(@{$bsmlSequence->{'BsmlFeatureTables'}}) {
-        $newFeatureTable = $bsmlSequence->{'BsmlFeatureTables'}->[0];
-    } else {
-        $newFeatureTable = $bsml->createAndAddFeatureTable( $bsmlSequence );
-    }
-    &_die("Couldn't make the new feature table for $asmblId") unless($newFeatureTable);
-
-    print STDOUT "There are a total of ".scalar(@features)."\n";
-    my $count = 1;
-    foreach my $featElem ( @features ) {
-        print STDOUT "\r$count";
-        $count++;
-        my $bsmlFeature = &addFeature( $bsml, $newFeatureTable, $featElem );
-        $featElemsBsml->{$featElem->att('id')} = $bsmlFeature;
-        &_die("Unable to create new bsml feature for sequence $asmblId") unless($bsmlFeature);
-    }
-    print STDOUT "\n";
-
-    my @fgs = $fTables->children('Feature-group') if($fTables);
-    
-    print STDOUT "Starting feature groups\n";
-    print STDOUT "There are a total of ".scalar(@fgs)."\n";
-    $count = 1;
-    foreach my $fg ( @fgs ) {
-        print STDOUT "\r$count";
-        $count++;
-        my $bsmlFg = &addFeatureGroup( $bsml, $bsmlSequence, $fg );
-        &_die("Could not create new Feature-group") unless($bsmlFg);
-    }
-    print STDOUT "\nFinished feature groups\n";
-
-    my $analysis;
-    if($bsml->returnBsmlAnalysisR(0)) {
-        $analysis = $bsml->returnBsmlAnalysisR(0);
-    } else {
-        $analysis = $bsml->createAndAddAnalysis( 'id' => $analysisId."_analysis",
-                                                 'program' => 'pipeline_summary',
-                                                 'algorithm' => 'pipeline_summary', 
-                                                 'sourcename' => $sourcename );
-    }
-    print STDOUT "Added analysis\n";
-    &_die("Could not find or make an analysis") unless($analysis);
-    
-    
-}
-
-sub addFeatureGroup {
-    my ($bsml, $bsmlSequence, $fgElem) = @_;
-
-    my $fgId = $fgElem->att('id');
-    &_die("Can't parse id from Feature-group") unless($fgId);
-
-    
-    my $groupSet = $fgElem->att('group-set');
-    &_die("Could not parse group-set attribute from Feature-group $fgId") unless($groupSet);
-
-    return $featureGroups->{$groupSet} if(exists($featureGroups->{$groupSet}));
-
-    my @fgms = $fgElem->children('Feature-group-member');
-    &_die("There were no Feature-group-members in Feature-group id ($fgId), group-set ($groupSet)")
-        unless(@fgms > 0);
-
-
-    my ($geneId, $topCogHit, $cdsId);
-    foreach my $fgm ( @fgms ) {
-        if ($fgm->att('feature-type') eq 'gene') {
-            $geneId = $fgm->att('featref');
-            &_die("Can't parse featref from Feature-group-member in $groupSet (Feature-group)") unless($geneId);
-        } elsif($fgm->att('feature-type') eq 'polypeptide') {
-            $topCogHit = &getTopCogHit($fgm->att('featref'));
-        } elsif($fgm->att('feature-type') eq 'CDS') {
-            $cdsId = $fgm->att('featref');
-        }
-    }
-
-    if($topCogHit) {
-        my $featureElem = $featElemsBsml->{$cdsId};
-        $logger->logdie("Wasn't able to get the feature from featElemsBsml for $cdsId\n") 
-            unless($featureElem);
-        $bsml->createAndAddBsmlAttribute( $featElemsBsml->{$cdsId}, 'top_cog_hit', $topCogHit);
-    }
-
-    &_die("There was no gene Feature-group-member in the Feature-group $groupSet") unless($geneId);
-    
-    $groupSet = $geneId;
-
-    my $newFeatureGroup = $bsml->createAndAddFeatureGroup( $bsmlSequence, '', $geneId );
-
-    foreach my $fgm (@fgms) {
-        
-        my $featref = $fgm->att('featref');
-        &_die("Can't parse featref from Feature-group-member in Feature-group $groupSet") unless($featref);
-
-        my $feattype = $fgm->att('feature-type');
-        unless($feattype) {
-            &_die("Can't parse feattype from Feature-group-member $featref in Feature-group $groupSet")
-                unless($c);
-            $feattype = $1 if($featref =~ /^[^\.]+\.([^\.]+)\./);
-            &_die("Could not parse feattype from $featref") unless($feattype);
-        }
-        &_die("Could not get a feattype for Feature-group-member ($featref)") unless($feattype);
-
-        $bsml->createAndAddFeatureGroupMember( $newFeatureGroup, $featref, $feattype );
-    }
-
-    $featureGroups->{$groupSet} = $newFeatureGroup;
-    return $newFeatureGroup;
-    
-    
-}
-
-sub addFeature { 
-    my ($bsml, $fTable, $feature) = @_;
-
-    my $featId = $feature->att('id');
-    &_die("Can't parse feature id from a feature") unless($featId);
-
-    my $class = $feature->att('class');
-    
-    unless($class) {
-        &_die("Can't get Feature class from feature $featId located") unless($c);
-        $class = $1 if($featId =~ /^[^\.]+\.([^\.]+)\./);
-    }
-    &_die("Can't parse class from $featId") unless($class);
-
-    my $title = $feature->att('title');
-    unless($title) {
-        &_die("Unable to parse title from feature $featId") unless($c);
-        $title = $featId;
-    }
-
-    my $bsmlFeature;
-    if(exists($features->{$featId})) {
-        $bsmlFeature = $features->{$featId};
-    } else {
-        $bsmlFeature = $bsml->createAndAddFeature( $fTable, $featId, $title, $class );
-    }
-
-    #We only want to add this once.
-    my $intLoc;
-
-    unless($bsmlFeature && $bsmlFeature->{'BsmlInterval-loc'} && @{$bsmlFeature->{'BsmlInterval-loc'}}) {
-
-        #Now create the interval loc.
-        $intLoc = $feature->first_child('Interval-loc');
-
-        if($intLoc) {
-
-            #addBsmlIntervalLoc( $startpos, $endpos, $complement, $startopen, $endopen )
-            my ($startpos, $endpos, $complement) = ($intLoc->att('startpos'), $intLoc->att('endpos'), $intLoc->att('complement'));
-            
-            &_die("Feature $featId does not contain a complete Interval-loc element")
-                unless(defined($startpos) && defined($endpos) && defined($complement)); 
-            
-            if($startpos > $endpos) {
-                $logger->logdie("Startpos ($startpos) is greater than endpos ($endpos).  Feature $featId");
-                ($startpos, $endpos) = ($endpos, $startpos);
-            }
-            
-            $bsmlFeature->addBsmlIntervalLoc( $startpos, $endpos, $complement );
-
-            
-            if( $class eq 'gene' ) {
-                #store the end3 for ordering of loci
-                my $e3 = ( $complement ) ? $startpos : $endpos;
-                $loci{$featId}->{'end3'} = $e3;
-            }
-        }
-
-    } else {
-        $intLoc = $bsmlFeature->{'BsmlInterval-loc'}->[0];
-    }
-
-    my $link;
-
-    if( $bsmlFeature->{'BsmlLink'} && $bsmlFeature->{'BsmlLink'}->[0] ) {
-        $link = $bsmlFeature->{'BsmlLink'}->[0];
-    } else {
-        $bsml->createAndAddLink( $bsmlFeature, 'analysis', "#${analysisId}_analysis", "input_of" );
-        $link = $bsmlFeature->{'BsmlLink'}->[0];
-    }
-    &_die("Couldn't add or find link element associated with Feature $featId") unless($link);
-
-
-    #Add attributes if any
-    my @attributes = $feature->children('Attribute');
-    &addAttributes( $bsml, $bsmlFeature, \@attributes ) unless( @attributes < 1 );
-
-    #Add attribute lists if any
-    my @att_lists = $feature->children( 'Attribute-list' );
-    &addAttributeLists( $bsml, $bsmlFeature, \@att_lists ) unless( @att_lists < 1 );
-    
-
-
-    $features->{$featId} = $bsmlFeature;
-    return $bsmlFeature;
-
-}
-
-sub addAttributeLists {
-    my ($bsml, $bsmlFeature, $att_lists) = @_;
-
-    foreach my $att_list ( @{$att_lists} ) {
-        my ($name, $content);
-        my $bsml_att_list = [];
-        
-        foreach my $attribute ( $att_list->children('Attribute') ) {
-            ($name, $content) = ($attribute->att('name'), $attribute->att('content') );
-            my $att = { 'name' => $name, 'content' => $content };
-            push( @{$bsml_att_list}, $att );
-        }
-
-        push( @{$bsmlFeature->{'BsmlAttributeList'}}, $bsml_att_list );
-
-    } 
-}
-
-sub addAttributes {
-    my ($bsml, $bsmlFeature, $atts) = @_;
-
-    foreach my $att ( @{$atts} ) {
-        my ($name, $value) = ($att->att('name'), $att->att('content'));
-        $name =~ s/gene_sym$/gene_symbol/;
-        $name =~ s/gene_symbolbol/gene_symbol/;
-        $name =~ s/ec_num$/ec_number/;
-        $name =~ s/annotation_from/gene_product_name_source/;
-        $name =~ s/com_name/gene_product_name/;
-        my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, $name, $value);
-    }
-
-    my $hash = $bsmlFeature->returnattrHashR();
-    my $tmpClass = $hash->{'class'};
-
-    unless(exists($bsmlFeature->{'BsmlAttr'}->{'gene_product_name'}) || $tmpClass eq 'tRNA' ) {
-        my $bsmlAtt = $bsml->createAndAddBsmlAttribute( $bsmlFeature, 'gene_product_name', 'hypothetical protein');
-    }
-    
-}
-
-sub addSequence {
-    my ($bsml, $seq) = @_;
-
-    my $seqId = $seq->att('id');
-    &_die("Can't parse sequence id from Sequence element") unless($seqId);
-
-    my $newSeq = $bsml->returnBsmlSequenceByIDR( $seqId );
-    return $newSeq if($newSeq);
-
-    my $title = $seq->att('title');
-    unless($title) {
-        &_die("Can't parse sequence title from Sequence element $seqId") unless($c);
-        $title = $seqId if($c);
-    }
-
-    my $length;
-    $length = $seq->att('length');
-
-    my $sdi = $seq->first_child('Seq-data-import');
-    &_die("Sequence $seqId does not have Seq-data-import element") unless($sdi);
-
-    my $fsa = $sdi->att('source');
-    &_die("Seq-data-import (for sequence $seqId) does not have a source attribute") unless($fsa);
-
-    my $ident = $sdi->att('identifier');
-    &_die("Seq-data-import (for sequence $seqId) does not have an identifier attribute") unless($ident);
-    
-    unless($length) {
-        $length = &determineLength($fsa, $ident);
-    }
-    
-    my $class;
-    $class = $seq->att('class');
-    unless($class) {
-        &_die("Can't parse attribute class from Sequence $seqId") unless($c);
-        $class = $1 if($seqId =~ /^[^\.]+\.([^\.]+)\./);
-        $seq->set_att('class', $class);
-    }
-    &_die("Sequence $seqId does not have class attribute") unless($class);
-
-    my $molecule = $seq->att('molecule');
-    unless($molecule) {
-        $molecule = 'dna';
-        $molecule = 'aa' if($class eq 'polypeptide');
-    }
-    &_die("Could not assign either aa or dna for molecule attribute") unless($molecule);
-
-    my $bsmlSequence = $bsml->createAndAddSequence( $seqId, $title, $length, $molecule, $class );
-
-    #Add the seq data import  ( $seq, $format, $source, $id, $identifier ) = @_;
-    my $newSeqDataImport = $bsml->createAndAddSeqDataImport( $bsmlSequence, 'fasta', $fsa, '', $ident );
-    &_die("Can't make a new seq data import") unless($newSeqDataImport);
-    
-    # ($elem, $rel, $href, $role) = @_
-    my $link = $bsml->createAndAddLink( $bsmlSequence, 'analysis', "#${analysisId}_analysis", 'input_of');
-    
-    my $newLink;
-    if($class eq 'assembly') {
-        $newLink = $bsml->createAndAddLink( $bsmlSequence, 'genome', "#$genomeId" );
-    }
-    
-
-    return $bsmlSequence;
-
-    
-}
-
-sub determineLength {
-    my ($fsaFile, $identifier) = @_;
-    my $length;
-
-    
-}
-
-sub findFilesToCombine {
-    my ($id, $otherFiles) = @_;
-    my @retval;
-
-    foreach my $otherFile ( @{$otherFiles} ) {
-        push(@retval, $otherFile) if($otherFile =~ /$id\./);
-    }
-
-    return @retval;
-}
-
-sub getInputFiles {
-    my $inputStr = shift;
-    my @files;
-    
-    #comma unseparate
-    my @tokens = split( /,/, $inputStr);
-
-    foreach my $token ( @tokens ) {
-        my $tfh;
-        $token =~ s/\.gz$//;
-        if( -e $token ) {
-            open($tfh, "< $token") or die("Can't open $token ($!)");
-        } elsif( -e $token.".gz" ) {
-            my $compFile = $token.".gz";
-            open($tfh, "<:gzip", "$compFile") or die("Can't open $compFile ($!)");
-        } else {
-            die("Can't find file $token");
-        }
-        
-
-        my $isList = 0;
-
-        while( my $line = <$tfh> ) {
-            next if($line =~ /^\s+$/);
-            
-            #It's a bsml file.
-            if($line =~ /</ && !$isList) {
-                push(@files, $token);
-                last;
-            #It's a list.
-            } elsif($line =~ m|\.bsml|) {
-                chomp $line;
-                &_die("$line doesn't exist (from list $token) ($!)")
-                    unless(-e $line || -e $line.".gz");
-                push(@files, $line);
-                $isList = 1;
-            }
-            
-        }
-
-    }
-
-    return @files;
-    
-}
-
 sub process_fasta_file_or_list {
-    my ($file, $class) = @_;
+    my ($file) = @_;
     my @fsa_files;
 
     #Determine if it's a list or fasta
@@ -993,7 +931,7 @@ sub process_fasta_file_or_list {
                 $tmp = &open_file( $test, 'in' );
             };
             if( $@ ) {
-                croak("Could not determine the format of file $file. Required either ".
+                die("Could not determine the format of file $file. Required either ".
                       "fasta file or list of fasta files");
             }
             close($tmp);
@@ -1027,124 +965,21 @@ sub process_fasta_file_or_list {
     
 }
 
-sub lookup_seq_data_import_info {
-    my ($id) = @_;
-    my $info;
-    if( exists( $seq_data_import_info{$id} ) ) {
-        $info = $seq_data_import_info{$id};
-    }
-    return $info;
-}
-
-sub check_parameters {
-    my $opts = shift;
-
-    my $error = "";
-
-    &_pod if($opts->{'help'});
-
-    my $input;
-    if($opts->{'input_bsml'}) {
-        $input = $opts->{'input_bsml'};
-    } else {
-        $error = "Option input_bsml is required\n";
+sub _log {
+    my ($msg, $level) = @_;
+    if( $level == $DEBUG && $debug ) {
+        print $msg;
+        $logger->debug( $msg );
+    } elsif( $level == $WARN ) {
+        print STDERR $msg."\n";
+        $logger->warn( $msg );
+    } elsif( $level == $ERROR ) {
+        $logger->fatal( $msg );
+        die( $msg );
     }
 
-    @inputFiles = &getInputFiles($input) if( $input );
-
-    if($opts->{'other_bsml_lists'}) {
-        $input = $opts->{'other_bsml_lists'};
-    }
-    @otherFiles = &getInputFiles($input) if( $input );
-
-    unless($opts->{'output'}) {
-        $error .= "Option output is required\n";
-    } else {
-        $output = $opts->{'output'};
-    }
-    
-    if($opts->{'debug'}) {
-        $debug = $opts->{'debug'};
-    }
-
-    if($opts->{'correct_mistakes'}) {
-        $c = 1;
-    }
-
-    if($opts->{'cog_search_bsml'}) {
-        my $cogs;
-
-        my $file = $opts->{'cog_search_bsml'};
-        $file =~ s/\.gz$//;
-        if( -e $file  ) {
-            open($cogs, "< $file") or $logger->logdie("Can't open cog_search_bsml $file ($!)");
-        } elsif( -e $file.".gz" ) {
-            open($cogs, "<:gzip", "$file.gz") or $logger->logdie("Can't open cog_search_bsml $file.gz ($!)");
-        } else {
-            $logger->logdie("Can't find $file (or a gzipped version)");
-        }
-        
-        chomp( @cogBsmls = <$cogs> );
-        close($cogs);
-        
-        $cogLookup = $opts->{'cog_lookup'} if($opts->{'cog_lookup'});
-        $error .= "Option --cog_lookup is required when using --cog_search_bsml\n" unless($opts->{'cog_lookup'});
-
-        print "Parsing COG Lookup file\n";
-        &pre_parse_cog_lookup( $cogLookup );
-
-        print "Preparsing COG results\n";
-        &pre_parse_cog_results( @cogBsmls );
-
-    }
-
-    if($opts->{'locus_prefix'}) {
-        $locusPrefix = $opts->{'locus_prefix'};
-    }
-
-    if( $opts->{'organism'} ) {
-        $organism = [ $1, $2 ] if($opts->{'organism'} =~ /(\S+)\s+(.*)/);
-        $error .= "Coult not parse genus and species out of organism: ".$opts->{'organism'}."\n" 
-            if( @{$organism} != 2 );
-    }
-
-    if( $opts->{'translation_table'} ) {
-        $transTable = $opts->{'translation_table'};
-    } else {
-        $transTable = 11;
-    }
-
-    
-    if( $opts->{'cds_fasta'} ) {
-        my $option = $opts->{'cds_fasta'};
-        my @files = split(/,\s+/, $option );
-        print "Processing CDS fasta file[s]\n";
-        foreach my $file ( @files ) {
-            &process_fasta_file_or_list( $file, 'CDS' );
-        }
-    }
-
-    if( $opts->{'polypeptide_fasta'} ) {
-        my $option = $opts->{'polypeptide_fasta'};
-        my @files = split(/,\s+/, $option );
-        print "Processing polypeptide fasta file[s]\n";
-        foreach my $file ( @files ) {
-            &process_fasta_file_or_list( $file, 'polypeptide' );
-        }
-        
-    }
-    
-    unless($error eq "") {
-        &_die($error);
-    }
-    
 }
 
 sub _pod {   
     pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
-}
-
-sub _die {
-    my $msg = shift;
-    $logger->logdie($msg);
 }

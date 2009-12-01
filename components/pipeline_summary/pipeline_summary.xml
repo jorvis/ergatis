@@ -24,7 +24,6 @@
             <name>pipeline_summary</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/pipeline_summary</executable>
-            <arg>-c</arg>
             <param>  
                 <key>--input_bsml</key>
                 <value>$;INPUT_FILE_LIST$;</value>
@@ -64,6 +63,10 @@
             <param>
                 <key>--polypeptide_fasta</key>
                 <value>$;POLYPEPTIDE_FASTA$;</value>
+            </param>
+            <param>
+                <key>--sourcename</key>
+                <value>$;SOURCENAME$;</value>
             </param>     
         </command>
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
