@@ -1,5 +1,6 @@
 next
 ----
+-p_func: included p_func.i1.xml to Makefile.PL
 -bsml2chado: Adding <state> element to cache primary keys step in bsml2chado.xml
 -PFunc: Bug fixes and minor improvements and update to component files
 -tRNAscan-SE: now allows no search type to be specified, in order to invoke the default search type of 'eukaryotic'
