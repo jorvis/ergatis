@@ -11,7 +11,7 @@ USAGE: create_file_iterator_list.pl
         --input_file=/path/to/somefile.fsa
         --input_directory=/path/to/some/dir
         --input_directory_extension=fsa
-        [--checksum_filenames
+        [--checksum_filenames=1
         --log=/path/to/some.log
         --debug=4 ]
 
@@ -95,7 +95,7 @@ my $results = GetOptions (\%options,
 			  'input_directory|d=s',
 			  'input_directory_extension=s',
 			  'timestamp|t=s',
-              'checksum_filenames',
+              'checksum_filenames=s',
 			  'log=s',
 			  'debug=s',
 			  'help|h') || pod2usage();
