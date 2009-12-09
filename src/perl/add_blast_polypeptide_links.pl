@@ -185,6 +185,11 @@ $qry = qq{
 };
 my $analysisfeature_inserter = $dbh->prepare($qry);
 
+$qry = qq{
+    SELECT analysisfeature_id FROM analysisfeature WHERE analysis_id = ? AND feature_id = ?;
+};
+my $analysisfeature_checker = $dbh->prepare( $qry );
+
 ## read the list file
 open (my $ifh, "<$options{bsml_list}") || die "can't read input BSML list: $!";
 
@@ -258,11 +263,24 @@ sub parse_input_bsml {
         #print "analysisfeature:\n";
         #print "\t@$row\n";
         _log("INFO: inserting analysisfeature_id $$row[0] for feature $$row[1] as input of analysis_id: $current_analysis_id");
-        $analysisfeature_inserter->execute( $$row[0], $$row[1], $current_analysis_id, $$row[3] ) or die "failed to insert analysisfeature row: @$row";
+        if( analysisfeature_doesnt_exist( $$row[1], $current_analysis_id ) ) {
+            $analysisfeature_inserter->execute( $$row[0], $$row[1], $current_analysis_id, $$row[3] ) or die "failed to insert analysisfeature row: @$row";
+        }
     }
     
     ## reset the analysis ID
     $current_analysis_id = undef;
+}
+
+sub analysisfeature_doesnt_exist {
+    my ($feature_id, $analysis_id) = @_;
+    my $retval = 1;
+    $analysisfeature_checker->execute( $analysis_id, $feature_id );
+    my $results = $analysisfeature_checker->fetchall_arrayref();
+    if( @{$results} > 0 ) {
+        $retval = 0;
+    }
+    return $retval;
 }
 
 sub parse_sequence {
