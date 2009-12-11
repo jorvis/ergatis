@@ -156,6 +156,7 @@ sub get_inputsets{
 		    $input_val = $input_dir;
 		}
 		if(!exists $uniqueinputs->{$input_type}->{$input_val}){
+            next unless( defined( $input_val ) );
 		    push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
 				  'VALUE'=>$input_val,
 				  'TYPE'=>$input_type,

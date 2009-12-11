@@ -1,5 +1,6 @@
 next
 ----
+-build_pipeline.cgi: will skip adding inputs unless they have a value.
 -pipeline_summary: rewrite of pipeline_summary.pl (includes ordered locus assignment)
 -p_func: included p_func.i1.xml to Makefile.PL
 -bsml2chado: Adding <state> element to cache primary keys step in bsml2chado.xml
