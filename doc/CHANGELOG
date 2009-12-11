@@ -25,6 +25,9 @@ chado2bsml: Added --databaselist parameter so a list of databases can be passed 
 --celera-assembler: New component.
 --velvet: New component.
 --elph: New component.
+--sff_to_CA: New component.
+--mothur: New components.
+--fast_tree: New component.
 
 ergatis-v2r11b1
 ---------------
