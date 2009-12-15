@@ -206,6 +206,8 @@ sub input_sequence_handler {
     my $bsml_atts = &get_bsml_attributes( $seq_elem );
     my $links = &get_bsml_links( $seq_elem );
     my $sdi = &get_seq_data_import( $seq_elem );
+    my $title = &get_seq_title( $seq_id, $sdi );
+    $atts->{'title'} = $title if( defined( $title ) );
 
     if( exists( $input_sequences{ $seq_id } ) ) {
         &append_data( $seq_id, { 
@@ -314,6 +316,27 @@ sub get_seq_data_import {
     my $atts = $elem->first_child('Seq-data-import')->atts();
     delete( $atts->{'id'} );
     return $atts;
+}
+
+sub get_seq_title {
+    my ($seq_id, $sdi) = @_;
+    my $retval;
+    
+    #find and open the fasta file
+    my $fh = open_file( $sdi->{'source'}, 'in' );
+    my $identifier = $sdi->{'identifier'};
+
+    #find the sequence in the file
+    while( my $line = <$fh> ) {
+        if( $line =~ /^>(\S+)\s+(\S+)/ ) {
+            if( $identifier eq $1 ) {
+                $retval = $2;
+                last;
+            }
+        }
+    }
+    
+    return $retval;
 }
 
 #returns a hashref of feature groups keyed on gene id

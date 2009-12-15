@@ -1,5 +1,6 @@
 next
 ----
+-pipeline_summary: will use the second set of non-space chars in the input fasta file and set it to Sequence[@title]
 -build_pipeline.cgi: will skip adding inputs unless they have a value.
 -pipeline_summary: rewrite of pipeline_summary.pl (includes ordered locus assignment)
 -p_func: included p_func.i1.xml to Makefile.PL
