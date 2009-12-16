@@ -137,7 +137,10 @@ sub outputCog {
                 } else {
                     $residues = $Prot->{$seq};
                 }
-                $logger->logdie("no sequence data found for seq=$seq") if (!defined($residues));
+                if (!defined($residues)) {
+                    print STDERR "no sequence data found for seq=$seq";
+                    $residues = 'X';
+                }
                 print OUTFILE $residues."\n";
 		    }
 		    close( OUTFILE );
