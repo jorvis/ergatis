@@ -578,6 +578,7 @@ glimmer3	:
 	@install components/glimmer3/glimmer3.config $(WORKFLOW_DOCS_DIR)
 	@install components/glimmer3/glimmer3.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/glimmer3/glimmer3.xml $(WORKFLOW_DOCS_DIR)
+	@install components/glimmer3/glimmer3_cloud.xml $(WORKFLOW_DOCS_DIR)
 
 glimmerHMM	:
 	@echo "Installing glimmerHMM workflows in $(WORKFLOW_DOCS_DIR)"
