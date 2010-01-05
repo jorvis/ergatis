@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>wu-tblastx compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>ncbi-tblastx</name>
+            <state>incomplete</state>
+            <executable>$;BLASTALL_EXEC$;</executable>
+            <arg>-p tblastx -i $;I_FILE_PATH$; -d $;DATABASE_PATH$; -e $;EXPECT$; -F '$;FILTER$;' -b $;DATABASE_MATCHES$; -v $;DESCRIPTIONS$; $;OTHER_OPTS$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>convert raw to btab</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/wu-blast2btab</executable>
+            <param>  
+                <key>--input</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>convert btab to bsml</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/blastbtab2bsml</executable>
+            <param>  
+                <key>--btab_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--pvalue</key>
+                <value>$;EXPECT$;</value>
+            </param>
+            <param>  
+                <key>--class</key>
+                <value>dna</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>ncbi-tblastx_analysis</value>
+            </param>
+            <param>  
+                <key>--query_file_path</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>store config params</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <param>  
+                <key>--ergatis_control_file</key>
+                <value>$;ERGATIS_DIR$;.ini</value>
+            </param>
+            <param>  
+                <key>--conf</key>
+                <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>  
+                <key>--bsml_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--componenturl</key>
+                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
+            </param>
+            <param>  
+                <key>--pipelineurl</key>
+                <value>$;REPOSITORY_ROOT$;/workflow/runtime/pipeline/$;PIPELINEID$;/pipeline.xml</value>
+            </param>
+            <param>  
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>compress raw output</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/compress_file</executable>
+            <param>  
+                <key>--file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+            <param>  
+                <key>--compress</key>
+                <value>$;COMPRESS_RAW_OUTPUT$;</value>
+            </param>
+            <param>  
+                <key>--list_file</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw.list</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
