@@ -175,6 +175,11 @@ sub parse_ber_btabs {
             #make sure we have query id and match id
             next if(!$btab[0] or !$btab[5]);
 
+            #for when fastacmd is used to pull sequences from the database:
+            #it appends an lcl| to the front of the accession. Can't figure out
+            #how to stop that.
+            $btab[0] =~ s/^lcl\|//;
+
             #$btab[5] =~ s/\|//g;   #get rid of trailing |
             $query_id = $btab[0];	    
             my $match_name = $btab[5];
@@ -237,7 +242,7 @@ sub parse_ber_btabs {
         #But we have to add a sequence. This is a hack.
         if( $count == 0 ) {
             my $base = $1 if( $file =~ m|^.*/([^/]+)| );
-            my $polypeptide = $1 if( $base =~ /([^\.]+\.polypeptide\.\d+(\.\d+)?)/ );
+            my $polypeptide = $1 if( $base =~ /([^\.]+\.polypeptide\.\w+(\.\d+)?)/ );
 
             #does it exist in the lookup? (means that it's a valid sequence id)
             if( exists( $lookupProtDb{$polypeptide} ) ) {
