@@ -1,12 +1,8 @@
 #!/usr/local/bin/perl
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 =head1 NAME
 
-train_for_glimmer.pl - you should put a one-line description of your script 
-    here
+train_for_glimmer.pl - generates a training file for use with glimmer3
 
 =head1 SYNOPSIS
 
@@ -15,6 +11,7 @@ USAGE: train_for_glimmer.pl
             --long_orfs_opts='-n -t 1.15'
             --icm_file=/path/to/glimmmer/training.icm
             --input_file=/path/to/input.fsa
+            --input_list=/path/to/input.list
             --output_file=/path/to/out.icm
             --glimmer3_dir=/path/to/glimmer3/
           [ --log=/path/to/log.file
@@ -22,6 +19,12 @@ USAGE: train_for_glimmer.pl
           ]
 
 =head1 OPTIONS
+
+B<--input_list,i> 
+    List of files to use as input.  Can be used along with input_file.
+
+B<--input_file,f> 
+    A single file to use as input.  Can be used along with input_list.
 
 B<--glimmer3_dir,g> 
     Path to the glimmer3 installation directory.  This should contain a bin directory underneath.
@@ -37,17 +40,15 @@ B<--help,-h>
 
 =head1  DESCRIPTION
 
-put a longer overview of your script here.
+not yet written
 
 =head1  INPUT
 
-the input expectations of your script should be here.  pasting in examples of file format
-expected is encouraged.
+not yet written
 
 =head1  OUTPUT
 
-the output format of your script should be here.  if your script manipulates a database,
-you should document which tables and columns are affected.
+not yet written
 
 =head1  CONTACT
 
@@ -65,6 +66,7 @@ use Ergatis::Logger;
 my $training_seqs;
 my $icm_file;
 my $input_list;
+my $input_file;
 my $output;
 my $dontCreate = 0;
 my $tmp_dir;
@@ -75,6 +77,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'training_seqs|t=s',
                           'input_list|i=s',
+                          'input_file|f=s',
                           'long_orfs_opts|n=s',
                           'output_file|o=s',
                           'tmp_dir|t=s',
@@ -101,9 +104,17 @@ $logger = $logger->get_logger();
 unless($training_seqs || $icm_file) {
     
     #make the input file for build-icm
-    open(IN, "< $input_list") or &_die("Cannot open input list");
-    my @inputFiles = <IN>;
-    close(IN);
+    my @inputFiles = ();
+    
+    if ( $input_list ) {
+        open(IN, "< $input_list") or &_die("Cannot open input list");
+        @inputFiles = <IN>;
+        close(IN);
+    }
+    
+    if ( $input_file ) {
+        push @inputFiles, $input_file;
+    }
 
     $training_seqs = &makeTrainingFile($tmp_dir, \@inputFiles);
     
@@ -186,11 +197,14 @@ sub check_parameters {
     if($options{'training_seqs'}) {
         &_die("option training_seqs does not exist") unless(-e $options{'training_seqs'});
         $training_seqs = $options{'training_seqs'};
-    } elsif($options{'input_list'}) {
+    } elsif ($options{'input_list'}) {
         &_die("option input_list does not exist") unless(-e $options{'input_list'});
         $input_list = $options{'input_list'};
+    } elsif ($options{'input_file'}) {
+        &_die("option input_file does not exist") unless(-e $options{'input_file'});
+        $input_file = $options{'input_file'};
     } else {
-        &_die("one of input_list, training_seqs must exist");
+        &_die("one of input_list, input_file, training_seqs must exist");
     }
 
     unless ( defined $options{glimmer3_dir} && -d $options{glimmer3_dir} ) {

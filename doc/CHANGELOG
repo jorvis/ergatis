@@ -1,3 +1,7 @@
+next
+----
+-glimmer3: added support for single input files
+
 ergatis-v2r12b1
 ----
 -pipeline_summary: will use the second set of non-space chars in the input fasta file and set it to Sequence[@title]
