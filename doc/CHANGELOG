@@ -1,11 +1,12 @@
-next
+ergatis-v2r12b1
 ----
 -pipeline_summary: will use the second set of non-space chars in the input fasta file and set it to Sequence[@title]
 -build_pipeline.cgi: will skip adding inputs unless they have a value.
 -pipeline_summary: rewrite of pipeline_summary.pl (includes ordered locus assignment)
 -p_func: included p_func.i1.xml to Makefile.PL
 -bsml2chado: Adding <state> element to cache primary keys step in bsml2chado.xml
--PFunc: Bug fixes and minor improvements and update to component files
+-bsml2chado: Adding checksum_filename to component files
+-p_func: Bug fixes and minor improvements and update to component files
 -tRNAscan-SE: now allows no search type to be specified, in order to invoke the default search type of 'eukaryotic'
 -split_fasta: corrected problem with duplicates in the output list
 -genemark-es: new component
@@ -21,14 +22,33 @@ chado2bsml: Added --databaselist parameter so a list of databases can be passed 
 -pangenome_do_analysis.pl: Removed this script as it's functionality has been rolled into pangenome_make_table and pangenome_blast_parse.
 -pangenome_blast_parse.pl: Fixed a major bug where the coverage parameter from the last HSP was being used for the entire hit. Now it uses the value attached to the Seq-pair-alignment for coverage and similarity.
 -pathway_tools_input: added compoonent to generate pathway tools input files from a chado database
--Pfunc [annotation_collection_to_bsml]: will now print different parent molecules to different output bsml files
+-p_func [annotation_collection_to_bsml]: will now print different parent molecules to different output bsml files
 -pipeline_summary: Reduced runtime and will now order loci based on end3 (within one molecule)
---celera-assembler: New component.
---velvet: New component.
---elph: New component.
---sff_to_CA: New component.
---mothur: New components.
---fast_tree: New component.
+-celera-assembler: New component.
+-velvet: New component.
+-elph: New component.
+-sff_to_CA: New component.
+-mothur: New components.
+-fast_tree: New component.
+-Added component_stats_summary to cgi dir
+-build_pipeline.cgi - interface will not display blank inputs
+-megablast: new component
+-ncbi-tblastn - new component
+-ncbi-tblastx - new component
+-metagene: added NUM_SEQS option to config and i1.xml
+-ber: adding bp_offset option (for coordinates of frameshifts) to ber.i1.xml and config
+-bsml2featurerelationships: adding option to add feature_coordinates to output file
+-wu-blastn: changing default configuration for database
+-ncbi-blast(n/p/x): added -e -F -b and -v options to config and xml
+-glimmer3: added a new xml file for use on cloud environments (and non-shared directory structures)
+-Pipeline.pm: adding vappio support to pipeline pm to automatically run syncdata before run
+-CloudIdGenerator: added a new IdGenerator for cloud environments
+-chado_aengine_dumper: new script (used in pathway toosl input file generation)
+-replace_template_keys: Add functionality to SKIP_WF_COMMAND when add to config files
+-bsml2tbl: adding functionality to dump signal_peptides from database
+-reset_command_state_by_name: added as a new util script
+-build_ergatis: new util script that will install ergatis and require parameters
+-create_release: added R directory to create_release
 
 ergatis-v2r11b1
 ---------------
