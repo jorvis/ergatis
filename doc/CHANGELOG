@@ -1,6 +1,7 @@
 next
 ----
 -glimmer3: added support for single input files
+-prok_pipeline: replaced the single version of the prok pipeline with two new versions (one with database loading and one without)
 
 ergatis-v2r12b1
 ----
