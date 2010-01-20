@@ -64,7 +64,7 @@
             </param>
             <param>  
                 <key>--organism_name</key>
-                <value>$;ORGANISM_NAME$;</value>
+                <value>&apos;$;ORGANISM_NAME$;&apos;</value>
             </param>
             <param>  
                 <key>--database</key>
