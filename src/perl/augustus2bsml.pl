@@ -86,7 +86,7 @@ my $debug;                    #The debug variable
 ########################################
 # handle versions of the executable with different output flags like this
 # to get the right encoding in the model object & bsml.
-my %version_map = ('1.8.2' => "1", '2.0.2' => "2");
+my %version_map = ('1.8.2' => "1", '2.0.2' => "2", '2.3.1' => "2");
 
 ########################################
 my %options = ();
