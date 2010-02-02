@@ -333,7 +333,7 @@ sub get_version {
     my $first_line = <$fh>;
 
     my $version;
-    if ($first_line =~ /\(version (\d+\.\d+\.\d+)\)/) {
+    if ($first_line =~ /\(version (\d+\.\d+[\.\d+]?)\)/) {
         $version = $1;
     }
 
