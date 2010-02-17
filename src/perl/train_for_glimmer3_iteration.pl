@@ -189,6 +189,14 @@ sub createFileNameLookup {
     my ($predList, $fsaList) = @_;
     my $retval;
 
+    ## for draft genomes we can save a lot of time hashing contig names rather than iterating
+    ## over the list each time
+    my %fsaLookup;
+    foreach my $fsa ( @{$fsaList} ) {
+        $fsa =~ /\/([a-z0-9\-_.]+)\./;
+        $fsaLookup{ $1 } = $fsa;
+    }
+
     foreach my $pred ( @{$predList} ) { 
         
         #Get the id from the prediction file
@@ -200,6 +208,9 @@ sub createFileNameLookup {
             chomp $line;
             if( $line =~ /^>(\S+)/ ) {
                 $base = $1;
+                ## because it is going to be the filename, we're going to take out the characters
+                ## that are bad form to use legal characters = a-z A-Z 0-9 - . _
+                $base =~ s/[^a-z0-9\-_.]/_/gi;
                 last;
             }
         }
@@ -207,23 +218,12 @@ sub createFileNameLookup {
 
         die("Could not parse the id from $pred") unless( $base );
 
-        my $found = 0;
-
         print "\nLooking for fsa for $base\n";
 
-        foreach my $fsa ( @{$fsaList} ) {
-            
-            print "fsa: $fsa\n";
-
-            if($fsa =~ /$base\./) {
-                $retval->{$base}->{'predict'} = $pred;
-                $retval->{$base}->{'fsa'} = $fsa;
-                $found++;
-            }
-
-        }
-
-        unless($found) {
+        if ( exists $fsaLookup{$base} ) {
+            $retval->{$base}->{'predict'} = $pred;
+            $retval->{$base}->{'fsa'} = $fsaLookup{$base};
+        } else {
             $logger->logdie("Could not find matching fsa file for $pred");
         }
 
@@ -231,6 +231,7 @@ sub createFileNameLookup {
 
     return $retval;
 }
+
 
 sub check_parameters {
     my $opts = shift;
