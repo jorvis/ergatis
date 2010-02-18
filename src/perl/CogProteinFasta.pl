@@ -82,12 +82,21 @@ open FILE, $bsmlModelList or $logger->logdie("Can't open file $bsmlModelList");
 while(my $bsmlFile=<FILE>)
 {
     chomp $bsmlFile;
-    if(-e $bsmlFile){
-        $logger->debug("parsing $bsmlFile");
-        $seqParser->parse( $bsmlFile );
+    if (!(-e $bsmlFile) && -e "$bsmlFile.gz") {
+	$bsmlFile .= ".gz";
     }
-    else {
-        $logger->logdie("could not open $bsmlFile.");
+    if(-e $bsmlFile){
+	my $ifh;
+	if ($bsmlFile =~ /\.(gz|gzip)$/) {
+	    open ($ifh, "<:gzip", $bsmlFile) || die "can't read input file $bsmlFile: $!";
+	} else {
+	    open ($ifh, "<$bsmlFile") || die "can't read input file $bsmlFile: $!";
+	}
+	$seqParser->parse( $ifh );
+	close $ifh;
+    }
+    else{
+	$logger->logdie("Can't read bsml file $bsmlFile");
     }
 }
 

@@ -183,32 +183,52 @@ if( $options{'bsmlJaccardList'} && $options{'bsmlJaccardList'} ne "" )
 # polypeptide sequence identifer to genome mapping 
 my $geneGenomeMap = {};
 my $genome = '';
+my $instrain=0;
 
 # loop through the documents in the model directory to create the polypeptide genome map
-my $genomehandlers = {'Organism'=>
-              sub {
-                  my ($expat,$elt,%params) = @_;
-                  $genome = $params{'genus'}.':'.$params{'species'}.':'.$params{'strain'};
-              },
-              'Feature'=>
-              sub {
-                  my ($expat,$elt,%params) = @_;
-                  $logger->debug("Adding $params{'id'} lookup with genome $genome");
-                  $geneGenomeMap->{$params{'id'}} = $genome;
-              }
-          };
+my $genomehandlers = {
+    'Organism'=>
+	sub {
+	    my ($expat,$elt,%params) = @_;
+	    $genome = $params{'genus'}.':'.$params{'species'}.':'.$params{'strain'};
+	},
+    'Strain'=>
+	sub {
+	    my ($expat,$elt,%params) = @_;
+	    $instrain=1;
+	},
+    'Attribute' =>
+	sub {
+	    my ($expat,$elt,%params) = @_;
+	    if($instrain){
+		$genome .= $params{'content'};
+	    }
+	},  
+    'Feature'=>
+	sub {
+	    my ($expat,$elt,%params) = @_;
+	    $logger->debug("Adding $params{'id'} lookup with genome $genome");
+	    $geneGenomeMap->{$params{'id'}} = $genome;
+	}
+};
 
 my $genomeparser = new XML::Parser(Handlers => 
                    {
                        Start =>
-                       sub {
-                        #$_[1] is the name of the element
-                           if(exists $genomehandlers->{$_[1]}){
-                           $genomehandlers->{$_[1]}(@_);
-                        }
-                    }
+			   sub {
+			       #$_[1] is the name of the element
+			       if(exists $genomehandlers->{$_[1]}){
+				   $genomehandlers->{$_[1]}(@_);
+			       }
+			   },
+		       End =>
+			   sub {
+			       if($_[1] eq 'Strain'){
+				   $instrain=0;
+			       }
+			   }
                    }
-                   );
+				   );
 
 foreach my $bsmlFile (@{&get_list_from_file($options{'bsmlModelList'})}){
     
