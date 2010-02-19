@@ -223,7 +223,7 @@ umask(0000);
 	            print $debugfh "preparing to perform vappio_data_placement script synchdata.sh\n" if $self->{debug};
 
                     my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh";
-		    my $vappio_rc = 0xffff & system("$runprefix $vappiosynccmd");
+		    my $vappio_rc = 0xffff & system("$runprefix $vappiosynccmd > /dev/null 2> /dev/null");
                     # print `sudo -u $args{run_as} $vappiosynccmd`;
 		    printf $debugfh "system(%s) returned %#04x: $vappio_rc for command $runprefix $pipeline_script\n" if $self->{debug};
 		    if($vappio_rc == 0) {
