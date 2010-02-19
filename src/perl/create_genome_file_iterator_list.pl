@@ -97,7 +97,9 @@ my $funcs = {'Organism'=>
         sub {   
             my ($expat,$elt,%params) = @_;
             if($instrain){
-                $genome .= "_$params{'content'}";
+                my $strain = $params{'content'};
+                $strain =~ s/[^\w\.\-\_]/_/g;
+                $genome .= "_$strain";
                 $instrain =0;
             }   
     },
