@@ -77,6 +77,7 @@ if ($options{'input_directory'}) {
 
 my $genome;
 my $genomelookup = {};
+my $instrain = 0;
 
 my $funcs = {'Organism'=>
          sub {
@@ -86,8 +87,21 @@ my $funcs = {'Organism'=>
                  $genome =~ s/\s//g;
                  $genome =~ s/[^\w\.\-\_]/_/g;
              }
-         }
-     };
+         },
+        'Strain'=>
+        sub {
+            my ($expat,$elt,%params) = @_;
+            $instrain=1;
+        },  
+        'Attribute' =>
+        sub {   
+            my ($expat,$elt,%params) = @_;
+            if($instrain){
+                $genome .= "_$params{'content'}";
+                $instrain =0;
+            }   
+    },
+};
 
 foreach my $file (@{$filelist}){
     $logger->info("parsing file $file");
