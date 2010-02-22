@@ -295,6 +295,10 @@ sub check_parameters{
 	exit 5;
     } 
 
+    if( $options{'project_abbreviation'} ) {
+        $project = $options{'project_abbreviation'};
+    }
+
     unless($options{'mapping_file'}) {
         $logger->logdie("mapping_file option is required.");
     } else {

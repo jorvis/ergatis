@@ -125,7 +125,7 @@
             </param>
 	    <param>
 		<key>--project_abbreviation</key>
-	        <value>$;PROJECT_ABBREVIATION$</value>
+	        <value>$;PROJECT_ABBREVIATION$;</value>
 	    </param>
         </command>
         <command>
