@@ -43,6 +43,10 @@ B<--class,-c> The ref/comp sequence type.  Default is 'assembly'
 
 =item *
 
+B<--project_abbreviation,-a> The project abbreviation, used in id generation. See Ergatis::IdGenerator for details.
+
+=item *
+
 B<--help,-h> This help message
 
 =back
@@ -82,6 +86,7 @@ my %cds2polyp;
 my %addedFeats;
 my %options = ();
 my $gzip = 0;
+my $project = 'parse';
 my $results = GetOptions (\%options, 
 			  'btab_dir|b=s', 
 			  'btab_file|f=s',
@@ -98,6 +103,7 @@ my $results = GetOptions (\%options,
 			  'class|c=s',
 			  'analysis_id=s',
               'id_repository=s',
+              'project_abbreviation|a=s',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -347,7 +353,13 @@ sub createFrameshifts {
     print STDERR "best mvalue was $mvalue\n";
 
     #Parse out the project id
-    my $project = $1 if($seqId =~ /^([^\.]+)\./);
+    if( $project eq 'parse' ) {
+        undef $project;
+        $project = $1 if($seqId =~ /^([^\.]+)\./);
+        die("Could not parse project from sequence id: $seqId")
+            unless( $project );
+    }
+    die("Project was not set correctly") unless( $project );
     
     #will add the sequence element if it doesn't already exist
     $seq = &addSequenceElement( $seqId, 'dna', 'assembly' );

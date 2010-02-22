@@ -123,6 +123,10 @@
                 <key>--id_repository</key>
                 <value>$;PROJECT_ID_REPOSITORY$;</value>
             </param>
+	    <param>
+		<key>--project_abbreviation</key>
+	        <value>$;PROJECT_ABBREVIATION$</value>
+	    </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
