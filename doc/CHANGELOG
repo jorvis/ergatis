@@ -1,5 +1,6 @@
 next
 ----
+-tbl2asn: Reworked component so now it won't require a ITERATOR_LIST_FILE, and can be chained to the end of a bsml2tbl run
 -ber: added project_abbreviation config variable so berbtab2bsml isn't dependent on specific assembly id patterns.
 -augustus2bsml.pl: added 2.3.1 to version map
 -glimmer3: added support for single input files
