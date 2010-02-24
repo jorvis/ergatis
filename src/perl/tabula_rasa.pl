@@ -39,4 +39,5 @@ foreach (keys %replacements) {
 
 die "Unresolved variables in command ($cmd)" if ($cmd =~ /[\$;]/);
 
-exec $cmd;
+exec $cmd or print STDERR "couldn't exec $cmd: $!";
+die "couldn't exec $cmd: $!";
