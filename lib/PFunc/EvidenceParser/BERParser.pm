@@ -333,6 +333,7 @@ sub _clean_panda_title {
     foreach my $entry( @entries ) {
         my @stats = $self->_parse_protein_header_line( $entry );
         my @valid_info = grep {  defined( $_ ) && $_ ne "" && $_ !~ /hypothetical protein/ } @stats;
+        shift @valid_info if( defined( $stats[1] ) && $self->_is_name_ambiguous( $stats[1] ) );
         if( scalar(@valid_info) > $max_count ) {
             @retval = @stats;
             $max_count = scalar(@valid_info);
@@ -385,7 +386,7 @@ sub _parse_protein_header_line {
             #if it's characterized, we usually don't use the name in the lookup. But if we
             #have a crappy name from the header, we can use it.
             if( $com_name =~ /hypothetical/i && !$self->_is_name_ambiguous( $tmp_com_name ) ) {
-                $com_name = $tmp_com_name;
+                $com_name = $tmp_com_name unless( $tmp_com_name =~ /^\(/ );
             }
 
         }
