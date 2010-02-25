@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME
 
 metagene2bsml.pl  - converts raw metagene output into BSML
@@ -157,7 +160,7 @@ $id_gen->set_pool_size('ORF' => $orf_count, 'CDS' => $orf_count);
 
 my $orfcount=0;
 
-my $doc = new BSML::GenePredictionBsml( 'glimmer3', $options{'fasta_input'} );
+my $doc = new BSML::GenePredictionBsml( 'metagene', $options{'fasta_input'} );
 my @bsmldocs;
 my $numseqs=0;
 my $outputnum=0;
@@ -167,7 +170,7 @@ foreach my $seq_id (keys(%{$orfs})) {
 	my $ofile = $output_dir."/".$options{'output'}.".$outputnum.bsml";
 	print "Writing BSML file $outputnum\n";
 	$doc->writeBsml($ofile);
-	$doc = new BSML::GenePredictionBsml( 'glimmer3', $options{'fasta_input'} );
+	$doc = new BSML::GenePredictionBsml( 'metagene', $options{'fasta_input'} );
 	$numseqs=1;
     }
     
@@ -175,8 +178,10 @@ foreach my $seq_id (keys(%{$orfs})) {
     die "$seq_id was not a sequence associated with the gene" unless($addedTo);
     my @orfs;
     foreach my $orf (@{$orfs->{$seq_id}}) {
+        
+        my $orf_id = $id_gen->next_id( 'type' => 'gene', 'project' => $options{'project'} );
                 
-        my $orf_id = $options{'project'}.".gene.".$orfcount++;
+        #my $orf_id = $options{'project'}.".gene.".$orfcount++;
 	#$id_gen->next_id(
 	#   'project' => $options{'project'}, 
 	#   'type'    => 'CDS'
@@ -190,7 +195,8 @@ foreach my $seq_id (keys(%{$orfs})) {
 				   $seq_id);
 	
 	foreach my $type(qw(exon CDS transcript polypeptide)) {
-	    $tmp->addFeature($options{'project'}.".$type.$orfcount",
+        my $type_id = $id_gen->next_id( 'type' => $type, 'project' => $options{'project'} );
+	    $tmp->addFeature($type_id,
 			     $orf->{'startpos'}-1, $orf->{'endpos'}, ($orf->{'complement'} > 0) ? 0 : 1,
 			     $type);
 	}
