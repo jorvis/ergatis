@@ -32,6 +32,10 @@
 	    	<key>--id_repository</key>
 		<value>$;PROJECT_ID_REPOSITORY$;</value>
 	    </param> 
+        <param>
+            <key>--cleanup</key>
+            <value>$;CLEANUP$;</value>
+        </param>            
 	    <param>
 	    	<key>--project</key>
 		<value>$;PROJECT_NAME$;</value>

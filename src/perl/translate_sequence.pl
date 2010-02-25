@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME
 
 translate_sequence.pl  - translates nt fasta or gene describing BSML into polypeptide fasta
@@ -69,6 +72,9 @@ my $transeq_flags = ' -warning 1 -error 1 -fatal 1 -die 1 -trim 1';
 my %coords = ();
 my %id2title = ();
 my @genes = ();
+my @sequence_files = (); ## Any sequence files created by translate_sequence 
+                         ## are captured here to facilitate cleanup if the 
+                         ## --cleanup flag is present.
 
 my $bsml_sequences;
 my $bsml_sequences_topology;
@@ -90,6 +96,7 @@ my $results = GetOptions (\%options,
                           'output|o=s',
                           'id_repository=s',
                           'project=s',
+                          'cleanup=s',
                           'log|l=s',
                           'debug=s',
                           'help|h') || pod2usage();
@@ -269,6 +276,10 @@ if (!$fasta_flag) {
     }
     ## remove temp in file
     if (-e $temp_in_fsa) {unlink($temp_in_fsa);}
+    
+    if ($options{'cleanup'}) {
+        &cleanup_files(@sequence_files);
+    }
     
 } else {
     ## otherwise we're just going to run
@@ -518,6 +529,7 @@ sub process_sequence {
             if (length($nt_seq) > 0) {
                 my $sequence_file = $options{'output'}."/$seq_id.fsa";
                 write_seq_to_fasta($sequence_file, $seq_id, $nt_seq);
+                push (@sequence_files, $sequence_file);
 
                 $bsml_sequences->{$seq_id} = $sequence_file;
                 
@@ -536,6 +548,7 @@ sub process_sequence {
         my $sequence_file = $options{'output'}."/$seq_id.fsa";
     
         write_seq_to_fasta($sequence_file, $seq_id, $seq_data->text());
+        push (@sequence_files, $sequence_file);
         
         $bsml_sequences->{$seq_id} = $sequence_file;
         
@@ -777,4 +790,13 @@ sub constrain_exons_by_cds {
     }
     
     return \@exon_locs;
+}
+
+## Cleanup any FASTA files created by translate_sequence.
+sub cleanup_files {
+    my @files = @_;
+
+    foreach my $file (@files) {
+        unlink($file) or $logger->warn("Could not remove file $file.");
+    }
 }
