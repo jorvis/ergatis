@@ -3,16 +3,28 @@ package PFunc::TIGRRolesAnnotation;
 use strict;
 use warnings;
 use File::OpenFile qw( open_file );
-use Exporter 'import';
 use Data::Dumper;
-use vars qw(@EXPORT_OK);
-@EXPORT_OK = qw( assign_tigr_roles_by_keyword );
 
+#CONSTANTS
 my $uncategorized_tigr_role = 185;
-my $keyword_file = "/home/kgalens/data/tigr_roles_keywords.txt";
+
+sub new {
+    my ($class, %args) = @_;
+    my $self = {};
+    bless( $self, $class );
+    
+    if( $args{'database_path'} ) {
+        $self->{'_keyword_file'} = $args{'database_path'}."/tigr_roles/tigr_roles_keywords.txt";
+        die("Could not find keywords file: $self->{'_keyword_file'}") 
+            unless( -e $self->{'_keyword_file'} );
+    } else {
+        die("Argument database_path is required for creation of a TIGRRolesAnnotation object");
+    }
+    return $self;
+}
 
 sub assign_tigr_roles_by_keyword {
-    my ($common_name, $cur_roles, $flag) = @_;
+    my ($self, $common_name, $cur_roles, $flag) = @_;
     my $search_keywords = 0;
     my $new_tigr_roles;
 
@@ -23,9 +35,11 @@ sub assign_tigr_roles_by_keyword {
     }
 
     if( $search_keywords ) {
-        my $keywords_tigr_role_lookup = &_parse_keyword_file( $keyword_file );
+        $self->{'_tigr_role_lookup'} = &_parse_keyword_file( $self->{'_keyword_file'} )
+            unless( exists( $self->{'_tigr_role_lookup'} ) );
         
-        foreach my $keyword ( sort { $keywords_tigr_role_lookup->{$b}->{'order'} <=> $keywords_tigr_role_lookup->{$a}->{'order'} } keys %{$keywords_tigr_role_lookup} ) {
+        foreach my $map ( reverse( @{$self->{'_tigr_role_lookup'}} ) ) {
+            my $keyword = $map->{'keyword'};
 
             if( !defined( $keyword ) ) {
                 die("keyword is not defined");
@@ -36,7 +50,7 @@ sub assign_tigr_roles_by_keyword {
             }
 
             if( $common_name =~ /$keyword/i ) {
-                $new_tigr_roles = [$keywords_tigr_role_lookup->{ $keyword }->{'role_id'}];
+                $new_tigr_roles = [$map->{'role_id'}];
             }
             
         }
@@ -55,7 +69,7 @@ sub assign_tigr_roles_by_keyword {
 
 sub _parse_keyword_file {
     my ($keywords_file) = @_;
-    my $retval = {};
+    my $retval = [];
     
     my $index = 0;
     my $in = &open_file( $keywords_file, 'in' );
@@ -67,10 +81,10 @@ sub _parse_keyword_file {
         my $keyword = join( " ", @cols );
         die("keyword not defined [$line]") unless( $keyword );
 
-        $retval->{$keyword} = {
+        push(@{$retval}, {
             'role_id' => $role_id,
-            'order' => $index++,
-        };
+            'keyword' => $keyword
+            });
     }
     
     return $retval;

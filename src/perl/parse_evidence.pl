@@ -11,6 +11,7 @@ parse_evidence.pl - Description
        --input_list=/path/to/evidence.list
        --output=/path/to/output.tab
        --evidence_type=Pfunc
+       --database_path=/path/to/db_dir
      [ --log=/path/to/file.log
        --debug=4
        --help
@@ -28,7 +29,12 @@ B<--output,-o>
     Output tab file
 
 B<--evidence_type,-e>
-    The type of evidence being parsed.  Currently only supports Pfunc and Priam
+    The type of evidence being parsed.
+
+B<--database_path,-b>
+    Path which holds various databases which the parsers may require.  Not required, but an individual parser
+    will fail if it requires this path specifically.  For requirements, please see specific parser files in
+    EvidenceParser namespace.
 
 B<--log,-l>
     Logfile.
@@ -51,7 +57,7 @@ B<--help,-h>
 =head1  CONTACT
 
     Kevin Galens
-    kgalens@som.umaryland.edu
+    kgalens@gmail.com
 
 =cut
 
@@ -91,6 +97,7 @@ sub check_options {
                               'bsml_feature_lookup_file|bf=s',
                               'append_mode|a=s',
                               'annotate_on|c=s',
+                              'database_path|d=s',
                               'help|h',
                               );
    
@@ -149,12 +156,20 @@ sub check_options {
               "when using the --annotate_on option" ) if( @bsml_files == 0 );
           $annotation_class = $options{'annotate_on'};
     }
+
+    my $db_path;
+    if( $options{'database_path'} ) {
+        $db_path = $options{'database_path'};
+    }
+
+    my $args = "";
+    $args .= "database_path => \"$db_path\" " if $db_path;
     
     ## create the correct parser type
     eval("require $valid_evidence_types{$ev_type}") or 
         die("Could not require $valid_evidence_types{$ev_type}. Perhaps ".
             "EvidenceParser::ValidEvidenceTypes.pm is configured incorrectly [$@]");
-    eval("\$parser = new $valid_evidence_types{ $ev_type }()") or 
+    eval("\$parser = new $valid_evidence_types{ $ev_type }( $args )") or 
         die("Could not create parser object ($valid_evidence_types{ $ev_type }). [$@]");
     
 

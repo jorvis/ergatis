@@ -1,5 +1,8 @@
 package PFunc::EvidenceParser::HMMParser;
 
+#expects database_path to be set
+#uses $database_path/tigr_roles as directory to pass into TIGR::Roles modules.
+
 use strict;
 use warnings;
 use XML::Twig;
@@ -17,7 +20,7 @@ use base qw(PFunc::EvidenceParser);
 
 ##### class vars #####
 my $annotation_type = "HMM";
-my $default_hmm_info = "/usr/local/projects/db/coding_hmm/coding_hmm.lib.db";
+my $default_hmm_info = "coding_hmm/coding_hmm.lib.db";
 
 sub new {
     my ($class, %args) = @_;
@@ -29,6 +32,11 @@ sub new {
 
 sub _init_hmm_parser {
     my ($self, %args) = @_;
+
+    ## database_path is required and should have been passed to parent
+    my $db_path = $self->database_path();
+    die("Option database_path is a required argument for HMM Parsing")
+        unless( $db_path );
     
     ## hmm info
     my %tmp;
@@ -36,14 +44,14 @@ sub _init_hmm_parser {
         tie(%tmp, 'MLDBM', $args{'hmm_info'}, O_RDONLY )
             or die("Could not tie hash to $args{'ber_info'}");
     } else {
-        tie(%tmp, 'MLDBM', $default_hmm_info, O_RDONLY )
-            or die("Could not tie hash to $args{'hmm_info'}");
+        tie(%tmp, 'MLDBM', $db_path."/".$default_hmm_info, O_RDONLY )
+            or die("Could not tie hash to $db_path/$default_hmm_info");
     }
     $self->{'_hmm_info'} = \%tmp;
 
     $self->_init_valid_isotypes();
     $self->_init_name_suffixes();
-    $self->_init_tigr_roles_lookup();
+    $self->_init_tigr_roles_lookup($db_path);
     
 }
 
@@ -82,9 +90,11 @@ sub _init_name_suffixes {
 }
 
 sub _init_tigr_roles_lookup {
-    my ($self) = @_;
-    $self->_tigr_role_lookup( 'PFAM', new TIGR::Roles::HMM::PfamToRoleLookup() );
-    $self->_tigr_role_lookup( 'TIGRFam', new TIGR::Roles::HMM::TIGRFamToRoleLookup() );
+    my ($self, $db_path) = @_;
+    my $pfam_lookup = new TIGR::Roles::HMM::PfamToRoleLookup('roles_db_dir' => $db_path."/tigr_roles" );
+    my $tigr_lookup = new TIGR::Roles::HMM::TIGRFamToRoleLookup( 'roles_db_dir' => $db_path."/tigr_roles" );
+    $self->_tigr_role_lookup( 'PFAM', $pfam_lookup );
+    $self->_tigr_role_lookup( 'TIGRFam', $tigr_lookup );
 }
 
 sub _parse {

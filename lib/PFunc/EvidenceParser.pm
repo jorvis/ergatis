@@ -6,14 +6,15 @@ EvidenceParser.pm - used to parse evidence files for use in Annotation
 
 =head1 SYNOPSIS
 
-    my $parser = new EvidenceParser( 'evidence_file' => "/path/to/evidence.file",);
+    my $parser = new EvidenceParser( 'evidence_file' => "/path/to/evidence.file" );
 
     or
 
     my $parser = new EvidenceParser( 'evidence_list' => "/path/to/evidence_files.list",
                                      'bsml_file' => "/path/to/file.bsml",
                                      'bsml_list' => "/path/to/bsml.list",
-                                     'annotate_on' => 'transcript', );
+                                     'annotate_on' => 'transcript',
+                                     'database_path' => "/path/to/db_dir");
 
 =head1 DESCRIPTION
 
@@ -33,6 +34,9 @@ EvidenceParser.pm - used to parse evidence files for use in Annotation
     evidence_file | evidence_list :: File containing evidence to be parsed. One of the two options required
     bsml_file | bsml_list         :: File containing evidence to be parsed. Required if annotate_on option is used
     annotate_on                   :: The feature type to apply annotations to. 
+    database_path                 :: Some of the parsers require data stored in various database files. Example:
+                                     BERParser.pm requires the tchar database. See individual parsers for 
+                                     required files.
 
     
 
@@ -64,6 +68,7 @@ sub new {
         '_evidence_type' => undef,
         '_features' => undef,
         '_annotate_on' => undef,
+        '_database_path' => undef
     };
 
     bless($self, $class);
@@ -143,6 +148,12 @@ sub annotate_on {
         $self->{'_annotate_on'} = $feature_type;
     }
     return $self->{'_annotate_on'};
+}
+
+sub database_path {
+    my ($self, $database_path) = @_;
+    $self->{'_database_path'} = $database_path if( $database_path );
+    return $self->{'_database_path'};
 }
 
 sub lookup_feature_id {
@@ -263,6 +274,10 @@ sub _init {
         $self->annotate_on( $args{'annotate_on'} );
     } else {
         $self->annotate_on( 'transcript' );
+    }
+
+    if( $args{'database_path'} ) {
+        $self->database_path( $args{'database_path'} );
     }
 }
 

@@ -17,7 +17,7 @@ use base qw(PFunc::EvidenceParser);
 $|++;
 ######################### Class Variables ###########################
 my $annotation_type = "BER";
-my $default_ber_info = "/usr/local/projects/db/tchar/tchar.db";
+my $default_ber_info = "tchar/tchar.db";
 my $percent_id_cutoff = 40;
 my $percent_coverage_cutoff = 80;
 my $ber_annot_levels = {
@@ -47,6 +47,11 @@ sub new {
 ##### private subroutines #####
 sub _init_ber_parser {
     my ($self, %args ) = @_;
+
+    ## the database_path should have been passed to parent
+    my $db_path = $self->database_path();
+    die("The database_path argument is required for BER Parsing")
+        unless( $db_path );
     
     ## initialize instance vars
     $self->{'_seq_lengths'} = {};
@@ -59,13 +64,13 @@ sub _init_ber_parser {
         tie(%tmp, 'MLDBM', $args{'ber_info'}, O_RDONLY )
             or die("Could not tie hash to $args{'ber_info'}");
     } else {
-        tie(%tmp, 'MLDBM', $default_ber_info, O_RDONLY )
-            or die("Could not tie hash to $args{'ber_info'}");
+        tie(%tmp, 'MLDBM', $db_path."/".$default_ber_info, O_RDONLY )
+            or die("Could not tie hash to $db_path/$default_ber_info");
     }
     $self->{'_ber_info'} = \%tmp;
 
     ## tigr roles lookup
-    $self->_tigr_roles_lookup( new TIGR::Roles::Omnium::OmniumToRoleLookup() );
+    $self->_tigr_roles_lookup( new TIGR::Roles::Omnium::OmniumToRoleLookup( 'roles_db_dir' => $db_path."/tigr_roles" ) );
     
     
 }

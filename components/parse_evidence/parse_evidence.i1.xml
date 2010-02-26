@@ -9,6 +9,10 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/parse_evidence</executable>
             <param>
+               <key>--database_path</key>
+               <value>&apos;$;DATABASE_PATH$;&apos;</value>
+            </param>
+            <param>
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>

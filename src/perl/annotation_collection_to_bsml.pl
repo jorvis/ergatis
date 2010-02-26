@@ -101,6 +101,12 @@ my $annot_col = new PFunc::AnnotationCollection;
 
 $annot_col->annotations_from_file( $input );
 
+foreach my $seq ( keys %{$sequences} ) {
+    $docs{$seq}->{'doc'} = new BSML::BsmlBuilder;
+    my ( $bsml_seq, $ft ) = &add_sequence_to_doc( $docs{$seq}->{'doc'}, $seq );
+    $docs{$seq}->{'bsml_seq'} = $bsml_seq;
+}
+
 while( my $annot = $annot_col->next_annotation_from_file ) {
     #find the parent seq and make sure it's added to the document
     die("Could not find the parent sequence for ".$annot->get_feature_id) 
@@ -108,19 +114,19 @@ while( my $annot = $annot_col->next_annotation_from_file ) {
     my $parent_seq = $parent_seq_lookup{$annot->get_feature_id};
 
     if( !exists( $docs{$parent_seq} ) ) {
-        $docs{$parent_seq} = new BSML::BsmlBuilder;
+        die("Could not find document for $parent_seq");
     }
      
-    my ( $seq, $ft ) = &add_sequence_to_doc( $docs{$parent_seq}, $parent_seq );
-    &add_gene_to_feature_table( $docs{$parent_seq}, $seq, $ft, $annot );
+    &add_gene_to_feature_table( $docs{$parent_seq}->{'doc'}, $docs{$parent_seq}->{'bsml_seq'}, 
+                                $docs{$parent_seq}->{'feature_table'}, $annot );
 
 }
 
 #Add analyses and write
 foreach my $pseq ( keys %docs ) {
-    &add_analysis_to_doc( $docs{ $pseq }, $analysis_name );
+    &add_analysis_to_doc( $docs{ $pseq }->{'doc'}, $analysis_name );
     my $outfile = $output."/$pseq.bsml";
-    $docs{$pseq}->write( $outfile );
+    $docs{$pseq}->{'doc'}->write( $outfile );
     print "Wrote $outfile\n";
 }
 
@@ -271,10 +277,11 @@ sub create_parent_seq_lookup {
         'Sequence' => sub {
             my ($t, $el) = @_;
             my $seq_id = $el->att('id');
+            $retval{$seq_id} = {};
             map { push(@{$retval{$seq_id}->{'features'}}, $_->att('id') );
                   $parent_seq_lookup{ $_->att('id') } = $seq_id;
-              } $el->find_nodes('//Feature');
-            map { $feat_locs{ $_->att('id') } = &get_feature_locs( $_ ) } $el->find_nodes('//Feature[@class="transcript"]');
+              } $el->find_nodes('Feature-tables/Feature-table/Feature');
+            map { $feat_locs{ $_->att('id') } = &get_feature_locs( $_ ) } $el->find_nodes('Feature-tables/Feature-table/Feature[@class="transcript"]');
 
             my ($sdi) = $el->find_nodes( 'Seq-data-import' );
             die("Could nto find sdi for $seq_id") unless( defined( $sdi ) );

@@ -9,6 +9,7 @@ post_process_annotations.pl - Contains functionality to refine final annotations
  USAGE: post_process_annotations.pl
        --input_file=/path/to/file.tab
        --output=/path/to/output.tab
+       --database_path=/path/to/db_dir
      [ --log=/path/to/file.log
        --debug=4
        --help
@@ -22,6 +23,10 @@ B<--input_file,-i>
 
 B<--output,-o>
     Output tab file.
+
+B<--database_path,-b>
+    The path to the database directory. The directory should contain the file:
+    tigr_roles/tigr_roles_keywords.txt.
 
 B<--log,-l>
     Logfile.
@@ -61,12 +66,13 @@ use File::OpenFile qw(open_file);
 use PFunc::Annotation;
 use PFunc::EvidenceParser::Hypothetical;
 use PFunc::CommonNameAnnotation qw(clean_common_name);
-use PFunc::TIGRRolesAnnotation qw(assign_tigr_roles_by_keyword);
+use PFunc::TIGRRolesAnnotation;
 use Data::Dumper;
 
 ##### Globals #####
 my $input_file;
 my $output;
+my $tigr_roles_annot;
 ###################
 
 &check_options();
@@ -105,8 +111,8 @@ sub post_process {
     ## clean up function
     my ($tigr_roles, $tr_source, $tr_source_type) = $annotation->get_TIGR_Role;
     my $new_tigr_roles;
-    if( $new_tigr_roles = assign_tigr_roles_by_keyword( $gene_product_name->[0], $tigr_roles ) ) {
-        $annotation->set_TIGR_Role( assign_tigr_roles_by_keyword( $gene_product_name->[0], $tigr_roles ),
+    if( $new_tigr_roles = $tigr_roles_annot->assign_tigr_roles_by_keyword( $gene_product_name->[0], $tigr_roles ) ) {
+        $annotation->set_TIGR_Role( $tigr_roles_annot->assign_tigr_roles_by_keyword( $gene_product_name->[0], $tigr_roles ),
                                     'by_keyword', 'by_keyword' );
     }
 
@@ -164,6 +170,7 @@ sub check_options {
     my $results = GetOptions (\%options,
                               'input_file|i=s',
                               'output|o=s',
+                              'database_path|d=s',
                               'log|l=s',
                               'debug|d=s',
                               'help|h',
@@ -171,6 +178,12 @@ sub check_options {
 
     if( $options{'help'} ) {
         &_pod;
+    }
+
+    if( $options{'database_path'} ) {
+        $tigr_roles_annot = new PFunc::TIGRRolesAnnotation( 'database_path' => $options{'database_path'} );
+    } else {
+        die("Option --database_path is required");
     }
 
     if( $options{'input_file'} ) {

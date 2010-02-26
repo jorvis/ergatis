@@ -37,7 +37,7 @@
             <type>RunUnixCommand</type>
             <name>sort file</name>
             <state>incomplete</state>
-            <executable>/bin/sort</executable>
+            <executable>$;SORT_BIN$;</executable>
             <arg>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;.concat.tab</arg>
             <param>
                <key>stdout</key>
@@ -70,6 +70,10 @@
             <param>
                 <key>--output</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;.processed.tab</value>
+            </param>
+            <param>
+                <key>--database_path</key>
+                <value>$;DATABASE_PATH$;</value>
             </param>
         </command>
         <command>
