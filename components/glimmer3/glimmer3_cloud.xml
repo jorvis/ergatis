@@ -72,7 +72,7 @@
             <type>RunUnixCommand</type>
             <name>sync staging directory</name>
             <state>incomplete</state>
-            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <executable>/opt/vappio-scripts/syncdata.sh --synchronous</executable>
         </command>
         <!--Processing-->
         <!--Iterator-->
