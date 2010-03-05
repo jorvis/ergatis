@@ -137,6 +137,14 @@ while (<$in_fh>) {
 	    ## set flags for partial ORFs
 	    my ($five_prime_partial, $three_prime_partial) = split(//,$complete);
 	    
+        ## we need to add the frame to either the startpos or endpos depending on the   
+        ## strand we are one
+        if ($strand eq '+') {
+            $startpos += $frame;
+        } elsif ($strand eq '-') {
+            $endpos -= $frame;
+        }
+
 	    push (@{$orfs->{$seq_id}},  {    
 		'model'       =>  $usedmodel,
 		'startpos'    =>  $startpos,
@@ -164,46 +172,42 @@ my $doc = new BSML::GenePredictionBsml( 'metagene', $options{'fasta_input'} );
 my @bsmldocs;
 my $numseqs=0;
 my $outputnum=0;
+
 foreach my $seq_id (keys(%{$orfs})) {
     if($numseqs >= $options{'num_seqs'}){
-	$outputnum++;
-	my $ofile = $output_dir."/".$options{'output'}.".$outputnum.bsml";
-	print "Writing BSML file $outputnum\n";
-	$doc->writeBsml($ofile);
-	$doc = new BSML::GenePredictionBsml( 'metagene', $options{'fasta_input'} );
-	$numseqs=1;
+	    $outputnum++;
+	    my $ofile = $output_dir."/".$options{'output'}.".$outputnum.bsml";
+	    
+        print "Writing BSML file $outputnum\n";
+        $doc->writeBsml($ofile);
+    	$doc = new BSML::GenePredictionBsml( 'metagene', $options{'fasta_input'} );
+    	$numseqs = 1;
     }
     
     my $addedTo = $doc->setFasta($seq_id, $options{'fasta_input'});
     die "$seq_id was not a sequence associated with the gene" unless($addedTo);
     my @orfs;
     foreach my $orf (@{$orfs->{$seq_id}}) {
-        
         my $orf_id = $id_gen->next_id( 'type' => 'gene', 'project' => $options{'project'} );
-                
-        #my $orf_id = $options{'project'}.".gene.".$orfcount++;
-	#$id_gen->next_id(
-	#   'project' => $options{'project'}, 
-	#   'type'    => 'CDS'
-	#                );
-
         $orf->{'id'} = $orf_id;
 	
-	#Create some genes and push them ontot he $genes array
-	my $tmp = new Chado::Gene( $orf_id,
-				   $orf->{'startpos'}-1, $orf->{'endpos'}, ($orf->{'complement'} > 0) ? 0 : 1,
-				   $seq_id);
+    	#Create some genes and push them ontot he $genes array
+	    my $tmp = new Chado::Gene( $orf_id,
+		                		   $orf->{'startpos'}-1, $orf->{'endpos'}, ($orf->{'complement'} > 0) ? 1 : 0,
+				                   $seq_id);
 	
-	foreach my $type(qw(exon CDS transcript polypeptide)) {
-        my $type_id = $id_gen->next_id( 'type' => $type, 'project' => $options{'project'} );
-	    $tmp->addFeature($type_id,
-			     $orf->{'startpos'}-1, $orf->{'endpos'}, ($orf->{'complement'} > 0) ? 0 : 1,
-			     $type);
-	}
-	my $count = $tmp->addToGroup($tmp->getId, { 'all' => 1 });
-	$doc->addGene($tmp);
-	my $addedTo = $doc->addSequence($tmp->{'seq'}, $options{'fasta_input'} );
+        foreach my $type(qw(exon CDS transcript polypeptide)) {
+            my $type_id = $id_gen->next_id( 'type' => $type, 'project' => $options{'project'} );
+	        $tmp->addFeature($type_id,
+			                 $orf->{'startpos'}-1, $orf->{'endpos'}, ($orf->{'complement'} > 0) ? 1 : 0,
+			                 $type);
+	    }
+
+	    my $count = $tmp->addToGroup($tmp->getId, { 'all' => 1 });
+	    $doc->addGene($tmp);
+	    my $addedTo = $doc->addSequence($tmp->{'seq'}, $options{'fasta_input'} );
     }
+
     $numseqs++;
 }
 
