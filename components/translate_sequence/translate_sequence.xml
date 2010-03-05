@@ -59,5 +59,19 @@
                 <value>$;FSA_OUTPUT_LIST$;</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>concatenate translated sequences</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/concatenate_files</executable>
+            <param>  
+                <key>--input_lists</key>
+                <value>$;FSA_OUTPUT_LIST$;</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_TRANSLATED_FILE$;</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>
