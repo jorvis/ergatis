@@ -3,11 +3,12 @@ package TIGR::Roles::HMM::PfamToRoleLookup;
 use strict;
 use warnings;
 use MLDBM 'DB_File';
+use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
-my $default_roles_db_dir = "/usr/local/projects/db/tigr_roles";
-my $default_pfam2role_dbfile = "/pfam2role.db";
-my $default_pfam2role_tab = "/hmm/PFAM_role_id.txt";
+my $default_roles_db_dir = "/usr/local/projects/db";
+my $default_pfam2role_dbfile = "/tigr_roles/pfam2role.db";
+my $default_pfam2role_tab = "/tigr_roles/hmm/PFAM_role_id.txt";
 
 sub new {
     my ($class, %args) = @_;
@@ -52,7 +53,7 @@ sub _init {
 
     #Tie a hash
     my %pfam2role_lookup;
-    tie( %pfam2role_lookup, 'MLDBM', $self->pfam2role_dbfile );
+    tie( %pfam2role_lookup, 'MLDBM', $self->pfam2role_dbfile, O_RDONLY );
     $self->tied_lookup_hash( \%pfam2role_lookup );
 
     if( ! -e $self->pfam2role_dbfile || $args{'force'} ) {

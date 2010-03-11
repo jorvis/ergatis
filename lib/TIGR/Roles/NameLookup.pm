@@ -3,6 +3,7 @@ package TIGR::Roles::NameLookup;
 use strict;
 use warnings;
 use MLDBM "DB_File";
+use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
 my $default_roles_db_dir = "/usr/local/projects/db/tigr_roles";
@@ -48,7 +49,7 @@ sub _init {
 
     #Tie a hash
     my %role_data_lookup;
-    tie( %role_data_lookup, 'MLDBM', $self->role2name_dbfile );
+    tie( %role_data_lookup, 'MLDBM', $self->role2name_dbfile, O_RDONLY );
     $self->tied_lookup_hash( \%role_data_lookup );
 
     if( ! -e $self->role2name_dbfile || $args{'force'} ) {

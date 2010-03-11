@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use MLDBM 'DB_File';
 use Carp;
+use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
 my($LOCUS,$ROLE_ID) = (1..2);
@@ -45,7 +46,7 @@ sub _init {
 
     #Tie a hash
     my %omnium2role_lookup;
-    tie( %omnium2role_lookup, 'MLDBM', $self->omnium2role_dbfile );
+    tie( %omnium2role_lookup, 'MLDBM', $self->omnium2role_dbfile, O_RDONLY );
     $self->tied_lookup_hash( \%omnium2role_lookup );
 
     if( ! -e $self->omnium2role_dbfile || $args{'force'} ) {

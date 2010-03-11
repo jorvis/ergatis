@@ -3,11 +3,12 @@ package TIGR::Roles::HMM::TIGRFamToRoleLookup;
 use strict;
 use warnings;
 use MLDBM 'DB_File';
+use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
-my $default_roles_db_dir = "/usr/local/projects/db/tigr_roles";
-my $default_tigrfam2role_dbfile = "/tigrfam2role.db";
-my $default_tigrfam2role_tab = "/usr/local/projects/db/TIGRFAMs/TIGRFAMS_ROLE_LINK";
+my $default_roles_db_dir = "/usr/local/projects/db";
+my $default_tigrfam2role_dbfile = "/tigr_roles/tigrfam2role.db";
+my $default_tigrfam2role_tab = "/TIGRFAMs/TIGRFAMS_ROLE_LINK";
 
 sub new {
     my ($class, %args) = @_;
@@ -47,12 +48,12 @@ sub _init {
     if( $args{'tigrfam2role_tab'} ) {
         $self->tigrfam2role_tab( $args{'tigrfam2role_tab'} );
     } else {
-        $self->tigrfam2role_tab( $default_tigrfam2role_tab );
+        $self->tigrfam2role_tab( $self->roles_db_dir().$default_tigrfam2role_tab );
     }
 
     #Tie a hash
     my %tigrfam2role_lookup;
-    tie( %tigrfam2role_lookup, 'MLDBM', $self->tigrfam2role_dbfile );
+    tie( %tigrfam2role_lookup, 'MLDBM', $self->tigrfam2role_dbfile, O_RDONLY );
     $self->tied_lookup_hash( \%tigrfam2role_lookup );
 
     if( ! -e $self->tigrfam2role_dbfile || $args{'force'} ) {
