@@ -91,8 +91,8 @@ sub _init_name_suffixes {
 
 sub _init_tigr_roles_lookup {
     my ($self, $db_path) = @_;
-    my $pfam_lookup = new TIGR::Roles::HMM::PfamToRoleLookup('roles_db_dir' => $db_path."/tigr_roles" );
-    my $tigr_lookup = new TIGR::Roles::HMM::TIGRFamToRoleLookup( 'roles_db_dir' => $db_path."/tigr_roles" );
+    my $pfam_lookup = new TIGR::Roles::HMM::PfamToRoleLookup('roles_db_dir' => $db_path );
+    my $tigr_lookup = new TIGR::Roles::HMM::TIGRFamToRoleLookup( 'roles_db_dir' => $db_path );
     $self->_tigr_role_lookup( 'PFAM', $pfam_lookup );
     $self->_tigr_role_lookup( 'TIGRFam', $tigr_lookup );
 }
