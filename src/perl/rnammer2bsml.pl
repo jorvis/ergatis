@@ -381,7 +381,7 @@ sub check_parameters {
         $idcreator = new Ergatis::IdGenerator('id_repository' => $options{'id_repository'});
 
         #---------- Set the pool size ---------------
-        #$idcreator->set_pool_size('gene'=>30,'tRNA'=>30,'exon'=>30,'CDS'=>30);
+        $idcreator->set_pool_size('gene'=>30,'rRNA'=>30,'exon'=>30,'CDS'=>30);
 
     } 
     else 
