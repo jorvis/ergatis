@@ -216,13 +216,29 @@ umask(0000);
         ## if we are logging, create a file
         if ($self->logging) {
             ## make sure the log directory exists (if we're logging)
-            if(! -d $self->log_dir() ) {
-                mkdir($self->log_dir(), 0777) || croak ("Can't create log_dir (".$self->log_dir()."): $!");
+            my $loop = 1;
+            while( $loop ) {
+                select(undef, undef, undef, 0.3) if( $loop > 1 );
+                if(! -d $self->log_dir() ) {
+                    croak ("Can't create log_dir (".$self->log_dir()."): $!") if( $loop >= 5 );
+                    $loop++;
+                    mkdir($self->log_dir(), 0777) || next;
+                }
+                $loop = 0;
             }
 
             ## make sure the host subdir exists
-            if (! -d $self->log_dir() . "/$host") {
-                mkdir($self->log_dir() . "/$host", 0777) || croak ("Can't create host subdir (".$self->log_dir()."/$host): $!");
+            $loop = 1;
+            while( $loop ) {
+                select(undef, undef, undef, 0.3) if( $loop > 1 );
+                if (! -d $self->log_dir() . "/$host") {
+                    if( $loop >= 5 ) {
+                        croak("Can't create log subdir (".$self->log_dir()."/$host )");
+                    }
+                    $loop++;
+                    mkdir($self->log_dir() . "/$host", 0777) || next;
+                }
+                $loop = 0;
             }
 
             open (my $fh, ">>" . $self->log_dir() . "/$host/$$.log") || croak ("can't create log file: $!");
