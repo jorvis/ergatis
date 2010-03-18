@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>sffinfo compute</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>sffinfo</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/sffinfo</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>--sffinfo_exec</key>
+                <value>$;SFFINFO_EXEC$;</value>
+            </param>
+            <param>
+                <key>--config_opts</key>
+                <value>$;CONFIG_PARAMS$;</value>
+            </param>                
+            <param>
+                <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>               
+            </param>
+            <param>
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--output_type</key>
+                <value>$;OUTPUT_TYPES$;</value>
+			</param>
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.log</value>
+            </param>				              
+            <param>
+                <key>--debug</key>
+                <value>4</value>
+            </param>
+        </command>
+	</commandSet>
+</commandSetRoot>
