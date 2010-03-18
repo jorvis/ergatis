@@ -1,0 +1,36 @@
+<p>
+   The sffinfo program extracts read information from the SFF file, and
+   reports it in text form.  By default, a text summary of all of the
+   read information is output, but the output can be limited to only
+   the accnos, sequences, quality scores, flowgrams or manifest.  All
+   output is written to standard output.
+</p>
+<h3>input</h3>
+<p>
+    Input to the sffinfo component is a well-formed SFF files.
+</p>
+<h3>implemented options</h3>
+<p>
+    Any of the sffinfo executable options maybe passed in using the CONFIG_PARAMS option but explicit support
+    for the follwing data is supported via the OUTPUT_TYPES parameter:
+       <ul class="options">
+            <li>a: Output just the accessions</li>
+            <li>s: Output just the sequences</li>
+            <li>q: Output just the quality scores</li>
+            <li>f: Output just the flowgrams</li>
+            <li>t: Output the seq/qual/flow as tab-delimited lines</li>
+        </ul>
+    
+    Multiple output types can be specified via a comma-delimited list like so:
+            OUTPUT_TYPES = a,s,q    --> Produces accessions, sequences (FASTA), and quality files
+</p>
+<h3>output</h3>
+<p> Output is dependant on the combination of options passed into the OUTPUT_TYPES parameter:
+        <ul>
+            <li>a: Outputs a .acc file</li>
+            <li>s: Outputs a .fasta file</li>
+            <li>q: Outputs a .qual file</li>
+            <li>f: Outputs a .flow file</li>
+            <li>t: Outputs a .tab file</li>
+        </ul>
+</p>
