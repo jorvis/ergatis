@@ -64,6 +64,7 @@ use Ergatis::IdGenerator;
 use XML::Twig;
 use Data::Dumper;
 use BSML::BsmlBuilder;
+use Fasta::SimpleIndexer;
 use File::Basename;
 
 my $transeq_exec;
@@ -202,7 +203,7 @@ if (!$fasta_flag) {
         my $seq = '';
         
         ## retrieve the parent sequence
-        $seq = get_sequence($bsml_sequences->{$seq_id});
+        $seq = get_sequence_by_id($bsml_sequences->{$seq_id}, $seq_id);
     
         if (length($seq) eq 0) {
             $logger->logdie("failed to fetch the sequence for '$seq_id'");
@@ -406,14 +407,9 @@ sub replace_sequence_ids {
 sub count_fasta_records {
     my ($fname) = @_;
     my $count = 0;
-    open (IN, $fname) || $logger->logdie("couldn't open '$fname' for reading");
-    while (<IN>) {
-        if (/^>/) {
-            $count++;
-        }
-    }
-    close IN;
 
+    my $cmd = "grep -c \">\" $fname";
+    $count = &run_system_cmd($cmd);
     return $count;
 }
 
@@ -516,26 +512,19 @@ sub process_sequence {
         }
         
         my $seq_count = count_fasta_records($source);
+        $bsml_sequences->{$seq_id} = $source;
         if ($seq_count == 1) {
             unless (get_sequence_id($source) eq $identifier) {
                 print STDERR "ID disagreement between BSML Seq-data-import '$identifier' and fasta file '$source'";
             }
-
-            $bsml_sequences->{$seq_id} = $source;
             
         } elsif ($seq_count > 1) {
             my $nt_seq = get_sequence_by_id($source, $identifier);
             
-            if (length($nt_seq) > 0) {
-                my $sequence_file = $options{'output'}."/$seq_id.fsa";
-                write_seq_to_fasta($sequence_file, $seq_id, $nt_seq);
-                push (@sequence_files, $sequence_file);
-
-                $bsml_sequences->{$seq_id} = $sequence_file;
-                
-            } else {
+	    unless (length($nt_seq) > 0) {
                 $logger->logdie("couldn't extract sequence for '$seq_id' from Seq-data-import source '$source'");
-            }
+	    }
+
         } else {
             $logger->logdie("no fasta records found for BSML Seq-data-import '$source' for sequence '$seq_id'");
         }
@@ -686,51 +675,9 @@ sub write_seq_to_fasta {
 ## pulls sequence out of a fasta file by id in header
 sub get_sequence_by_id {
     my ($fname, $id) = @_;
-    my $seq_id = '';
-    my $sequence = '';
-    open (IN, $fname) || $logger->logdie("couldn't open fasta file for reading");
-    TOP: while (<IN>) {
-        chomp;
-        if (/^>([^\s]+)/) {
-            $seq_id = $1;
-            if ($seq_id eq $id) {
-                while (<IN>) {
-                    chomp;
-                    if (/^>/) {
-                        last TOP;
-                    } else {
-                        $sequence .= $_;
-                    }
-                }
-            }   
-        }
-    }
-    close IN;
 
-    return $sequence;
-}
-
-## return sequence from a fasta file (first sequence only)
-sub get_sequence {
-    my ($fname) = @_; 
-    
-    my $sequence = '';
-    my $flag = 0;
-    
-    open (IN, $fname) || $logger->logdie("couldn't open fasta file for reading");
-    while (<IN>) {
-        chomp;
-        if (/^>/) {
-            if ($flag) {
-                $logger->logdie("Unexpectedly encountered more than one fasta record in input nt sequence file");
-            }
-            $flag = 1;
-            next;
-        } else {
-            $sequence .= $_;
-        }
-    }
-    $sequence =~ s/\W+//g;
+    my $fasta = new Fasta::SimpleIndexer( $fname );
+    my $sequence = $fasta->get_sequence($id);
     return $sequence;
 }
 
@@ -797,6 +744,20 @@ sub cleanup_files {
     my @files = @_;
 
     foreach my $file (@files) {
+	&run_system_cmd("find $options{output} -name \"*.cdb\" -exec rm {} \;");
         unlink($file) or $logger->warn("Could not remove file $file.");
     }
+}
+
+sub run_system_cmd {
+    my $cmd = shift;
+    my $res = `$cmd`;
+    chomp($res);
+    my $success = $? >> 8;
+
+    unless ($success == 0) {
+        $logger->logdie("Command \"$cmd\" failed.");
+    }   
+
+    return $res;
 }
