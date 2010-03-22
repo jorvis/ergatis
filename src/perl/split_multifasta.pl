@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
+BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 =head1 NAME
 
 split_multifasta.pl - split a single FASTA file containing multiple sequences into separate files.
@@ -13,6 +21,7 @@ USAGE: split_multifasta.pl
             --output_subdir_size=1000
             --output_subdir_prefix=fasta
             --seqs_per_file=1
+            --total_files=1
             --compress_output=1
           ]
 
@@ -42,6 +51,11 @@ B<--output_subdir_prefix,-p>
     To be used along with --output_subdir_size, this allows more control of the names of the
     subdirectories created.  Rather than just incrementing numbers (like 10), each subdirectory 
     will be named with this prefix (like prefix10).
+
+B<--total_files, -t>
+    Used if the user wants to specify the total outputs files to be created. The script will
+    determine the amount of sequences per file to meet this parameter. Cannot be used in conjunction
+    with the seqs_per_file parameter.
 
 B<--compress_output,-c>
     Output fasta files will be gzipped when written.
@@ -164,6 +178,7 @@ The following will be created:
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
+use POSIX;
 BEGIN {
 use Ergatis::Logger;
 }
@@ -177,6 +192,7 @@ my $results = GetOptions (\%options,
                           'output_subdir_size|u=s',
                           'output_subdir_prefix|p=s',
                           'seqs_per_file|e=s',
+                          'total_files|t=s',
                           'compress_output|c=s',
                           'log|l=s',
                           'debug=s',
@@ -216,6 +232,13 @@ if ($options{'input_file'} =~ /\.(gz|gzip)$/) {
       || $logger->logdie("can't open sequence file:\n$!");
 }
 
+## number of sequences in the input file.
+my $seq_count = 0;
+
+## if we instead want to split sequences into a maximum number of files
+## we need to do some hacky calculations here and reset seqs_per_file
+$options{seqs_per_file} = &set_seqs_per_total_files(\$sfh, $options{total_files}) if ( defined($options{total_files}) && $options{total_files} ne "" );
+
 my $sub_dir = 1;
 my $seq_file_count = 0;
 
@@ -226,14 +249,26 @@ my $group_filename_prefix = 1;
 ## holds the output file handle
 my $ofh;
 
+# holds the total number of files created
+my $total_files_created = 0;
+
 while (<$sfh>) {
+
+    ## if the TOTAL_FILES parameter is used we want to check when we hit our last ile
+    ## to make sure that we toss all the rest of the sequence files there.
+    if (defined($options{'total_files'}) && $total_files_created eq $options{'total_files'}) {
+        ## this number tells us how many sequences we are goingto have in our final file.
+        my $remainder_seqs = $seq_count % $options{'total_files'};
+        $seqs_in_file += $remainder_seqs if ($remainder_seqs ne 0);
+    }
+
     ## if we find a header line ...
     if (/^\>(.*)/) {
 
         ## write the previous sequence before continuing with this one
         unless ($first) {
             &writeSequence(\$header, \$seq);
-            
+
             ## reset the sequence
             $seq = '';
         }
@@ -252,7 +287,7 @@ while (<$sfh>) {
 }
 
 ## don't forget the last sequence
-&writeSequence(\$header, \$seq) if( defined( $header ) );
+&writeSequence(\$header, \$seq);
 
 exit;
 
@@ -277,6 +312,17 @@ sub check_parameters {
     if (! -e "$options{output_dir}") {
         $logger->logdie("the output directory passed could not be read or does not exist");
     }
+
+    ## if the total_files parameter is being used than we want to double check that
+    ## the seqs_per_file parameter is not being used.
+    if (defined $options{total_files} && defined $options{seqs_per_file}) {
+        $logger->logdie("The seqs_per_file parameter and total_files parameter cannot be used in conjunction");
+    }
+
+    ## We also want to make sure that total files is not 0
+    if (defined $options{total_files} && $options{total_files} < 1) {
+        $logger->logdie("total_files setting cannot be less than one");
+    }
     
     ## seqs_per_file, if passed, must be at least one
     if (defined $options{seqs_per_file} && $options{seqs_per_file} < 1) {
@@ -288,6 +334,7 @@ sub check_parameters {
     $options{output_subdir_prefix} = '' unless ($options{output_subdir_prefix});
     $options{seqs_per_file}        = 1  unless ($options{seqs_per_file});
     $options{output_file_prefix} = '' unless ($options{output_file_prefix});
+    $options{total_files} = '' unless ($options{total_files});
 }
 
 sub writeSequence {
@@ -348,6 +395,7 @@ sub writeSequence {
             open ($ofh, ">$filepath") || $logger->logdie("can't create '$filepath':\n$!");
         
         }
+        $total_files_created++;
         $seq_file_count++;
         
         ## add the file we just wrote to the list, if we were asked to
@@ -372,4 +420,25 @@ sub writeSequence {
         $seqs_in_file = 0;
         $group_filename_prefix++;
     }
+}
+
+sub set_seqs_per_total_files {
+    my $fh = ${$_[0]};
+    my $tot_files = $_[1];
+
+    my @lines = <$fh>;
+    my $line = join("\n", @lines);
+    $seq_count = () = $line =~ /(\n|^)>/sg;
+
+    ## need a quick check here to make sure that the number of files wanted
+    ## is not greater than the number of sequences in the file
+    $logger->logdie("total_files $options{'total_files'} is greater than the number of sequences $seq_count") if ($tot_files > $seq_count);
+
+    ## calculate how many sequences we should have per file to meet the total_files parameter request.
+    my $seqs_per_file = int($seq_count / $tot_files);
+   
+    ## reset filehandle
+    seek $fh,0,0;
+
+    return $seqs_per_file;
 }

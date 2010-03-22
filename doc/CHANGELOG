@@ -1,5 +1,6 @@
 next
 ----
+-split_multifasta: added support for 'total_files' parameter that allows user to specify the exact amount of output files wanted
 -translate_sequence: updated to make use of the Fasta::SimpleIndexer module for sequence lookups.
 -sffinfo: new component
 -p_func/parse_evidence: Database path is now configurable
