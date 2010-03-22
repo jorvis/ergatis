@@ -28,6 +28,10 @@
                 <key>--seqs_per_file</key>
                 <value>$;SEQS_PER_FILE$;</value>
             </param>
+            <param>
+                <key>--total_files</key>
+                <value>$;TOTAL_FILES$;</value>
+            </param>                
             <param>  
                 <key>--output_subdir_size</key>
                 <value>$;FILES_PER_DIRECTORY$;</value>
