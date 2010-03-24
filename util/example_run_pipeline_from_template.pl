@@ -46,8 +46,8 @@ code (4 lines, really, the rest is common perl script template code).
 
 Described in the options above, but the main input is the directory containing an Ergatis
 pipeline template.  Once the template is loaded, you can use the Ergatis::ConfigFiles module
-to customize the component configuration files for your application.  There is a placeholder
-in the code to show where to do this.
+to customize the component configuration files for your application.  An example is shown in the
+code.
 
 =head1  OUTPUT
 
@@ -105,8 +105,15 @@ my $template = Ergatis::SavedPipeline->new(
 my $pipeline = $template->write_pipeline( repository_root => $options{repository_root}, 
                                           id_repository => $options{id_repository} );
 
-## here you could use Ergatis::ConfigFiles to edit some of the newly-written
-##  component configurations before pipeline execution.  Not doing that here.
+## here you can use Ergatis::ConfigFiles to edit some of the newly-written
+##  component configurations before pipeline execution.  One example is shown.
+##  naming and path conventions allow you to know where the component file is
+#my $xdformat_config = new Ergatis::ConfigFile( 
+#                        -file => "$options{repository_root}/workflow/runtime/xdformat/" . $pipeline->id . 
+#                                 "_default/xdformat.default.user.config"
+#                      );
+#   $xdformat_config->setval( 'parameters', '$;PRECISION$;', 5 );
+#   $xdformat_config->RewriteConfig();
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => $options{ergatis_ini} );
 
