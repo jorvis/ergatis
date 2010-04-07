@@ -933,7 +933,6 @@ pangenome_make_graphs	:
 parse_evidence	:
 	@echo "Installing parse_evidence workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/parse_evidence/parse_evidence.xml $(WORKFLOW_DOCS_DIR)
-	@install components/parse_evidence/parse_evidence.i1.xml $(WORKFLOW_DOCS_DIR)
 	@install components/parse_evidence/parse_evidence.config $(WORKFLOW_DOCS_DIR)
     
 panther	:
