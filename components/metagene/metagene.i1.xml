@@ -23,6 +23,10 @@
                 <key>--num_seqs</key>
                 <value>$;NUM_SEQS$;</value>
             </param>
+            <param>
+                <key>--cutoff</key>
+                <value>$;CUTOFF$;</value>
+            </param>
             <param>  
                 <key>--fasta_input</key>
                 <value>$;I_FILE_PATH$;</value>
@@ -50,44 +54,29 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>store config params</name>
+            <name>get_seq_by_metagene</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <executable>$;BIN_DIR$;/get_seq_by_metagene</executable>
             <param>  
-                <key>--ergatis_control_file</key>
-                <value>$;ERGATIS_DIR$;.ini</value>
+                <key>--fasta_input</key>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
-                <key>--conf</key>
-                <value>$;COMPONENT_CONFIG$;</value>
+                <key>--input_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>
             <param>  
-                <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.gbk</value>
             </param>
             <param>  
-                <key>--componenturl</key>
-                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
+                <key>--format</key>
+                <value>$;OUT_FORMAT$;</value>
             </param>
             <param>  
-                <key>--pipelineurl</key>
-                <value>$;PIPELINE_XML$;</value>
+                <key>--prefix</key>
+                <value>$;GENE_PREFIX$;</value>
             </param>
-            <param>  
-                <key>--analysis_id</key>
-                <value>$;COMPONENT_NAME$;_analysis</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>dtd validation</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
-            <param>  
-                <key>-d</key>
-                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
-            </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
         </command>
     </commandSet>
 </commandSetRoot>

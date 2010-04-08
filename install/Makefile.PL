@@ -794,6 +794,7 @@ metagene  :
 	@echo "Installing metagene workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/metagene/metagene.xml $(WORKFLOW_DOCS_DIR)
 	@install components/metagene/metagene.i1.xml $(WORKFLOW_DOCS_DIR)
+	@install components/metagene/metagene.dtd.xml $(WORKFLOW_DOCS_DIR)
 	@install components/metagene/metagene.config $(WORKFLOW_DOCS_DIR)
 
 mummer  :
