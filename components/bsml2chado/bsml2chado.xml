@@ -82,6 +82,40 @@
 	</command>
 	<!--Processing-->
 	<!--Iterator-->
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create_file_iterator_list</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/create_file_iterator_list</executable>
+      <param>
+        <key>--input_file_list</key>
+        <value>$;INPUT_FILE_LIST$;</value>
+      </param>
+      <param>
+        <key>--input_file</key>
+        <value>$;INPUT_FILE$;</value>
+      </param>
+      <param>
+        <key>--input_directory</key>
+        <value>$;INPUT_DIRECTORY$;</value>
+      </param>
+      <param>
+        <key>--input_directory_extension</key>
+        <value>$;INPUT_EXTENSION$;</value>
+      </param>
+      <param>
+        <key>--output_iter_list</key>
+        <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;.list</value>
+      </param>
+      <param>
+        <key>--checksum_filenames</key>
+        <value>$;CHECKSUM_FILENAMES$;</value>
+      </param>
+      <param>
+        <key>--timestamp</key>
+        <value>$;ITERATOR_TIMESTAMP$;</value>
+      </param>
+    </command>
 	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_TIMESTAMP$;=1"/>
 	<command>
 	    <type>RunUnixCommand</type>
