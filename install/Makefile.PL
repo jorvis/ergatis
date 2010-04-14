@@ -810,10 +810,10 @@ mumsgraph  :
 	@install components/mumsgraph/mumsgraph.config $(WORKFLOW_DOCS_DIR)
 
 mugsyprep  :
-    @echo "Installing mugsyprep workflows in $(WORKFLOW_DOCS_DIR)"
-    @install components/mugsyprep/mugsyprep.xml $(WORKFLOW_DOCS_DIR)
-    @install components/mugsyprep/mugsyprep.mugsymap.xml $(WORKFLOW_DOCS_DIR)
-    @install components/mugsyprep/mugsyprep.config $(WORKFLOW_DOCS_DIR)
+	@echo "Installing mugsyprep workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/mugsyprep/mugsyprep.xml $(WORKFLOW_DOCS_DIR)
+	@install components/mugsyprep/mugsyprep.mugsymap.xml $(WORKFLOW_DOCS_DIR)
+	@install components/mugsyprep/mugsyprep.config $(WORKFLOW_DOCS_DIR)
 
 muscle  :
 	@echo "Installing muscle workflows in $(WORKFLOW_DOCS_DIR)"
