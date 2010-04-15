@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 use strict;
 use warnings;
@@ -176,8 +179,32 @@ sub process_feature_group
     my $strand = $location->att('complement') ==0 ? 1 : -1;
     my $aa_length = int(($fmax-$fmin)/3); # HACK - obviously this is not always right. The issue is that .ptt techincally wants amino acid length.
 
+    # This is a HACK of course cause if there are more than one of these types we will have issues
+    my $pid;
+
+    foreach my $type (('transcript')) {
+        my $pid_feat = $group_by_class->{$type}->[0];
+        
+        if($pid_feat) {
+            # Need to be able to handle additional fields here.
+            $pid = $pid_feat->att('id');
+        }
+        last if $pid;
+    }
+    
     # Pulling the gene product off of the transcript.
-    my $gene_product = $transcript->first_child('Attribute[@name="gene_product_name"]')->att('content');
+    my $att = $transcript->first_child('Attribute[@name="gene_product_name"]');
+    my $gene_product;
+    if(!$att) {
+        $att = $gene->first_child('Attribute[@name="gene_product_name"]');
+    }
+    if($att) {
+        $gene_product = $att->att('content');
+    }
+    else {
+        print STDERR "Couldn't find gene product for $pid\n";
+        $gene_product = 'None specified';
+    }
 
     my $gene_val = '-';
     foreach my $type (('gene','transcript')) {
@@ -192,20 +219,6 @@ sub process_feature_group
         }
         last if $gene_val ne '-';
     }
-
-    # This is a HACK of course cause if there are more than one of these types we will have issues
-    my $pid;
-
-    foreach my $type (('transcript')) {
-        my $pid_feat = $group_by_class->{$type}->[0];
-        
-        if($pid_feat) {
-            # Need to be able to handle additional fields here.
-            $pid = $pid_feat->att('id');
-        }
-        last if $pid;
-    }
-    
 
     if($pid) {
         push(@$output_features, {'start'          => $fmin,
