@@ -155,6 +155,10 @@ sub process_feature_group
         elsif ($feat_type eq "ncRNA") {
             $class = "ncRNA";
         }
+        elsif ($feat_type eq "rRNA") {
+            $class = "rRNA";
+            $transcript = $feat;
+        }
         elsif ($feat_type eq "gene") {
             $gene = $feat;
         }
