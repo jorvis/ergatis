@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="serial">
+	<state>incomplete</state>
+	<name>mugsy cog</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create temp directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+	</command>
+	<!--Processing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>add mugsymap features to mugsy index</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/projects/angiuoli/mugsy/featureindex.pl $;MUGSY_INDEX$;</executable>
+		<key>stdin</key>
+		<value>$;MUGSY_MAP_FILE$;</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_REPOSITORY$;/featuresindex.out</value>
+	    </param>
+    </command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>fix maf</name>
+	    <state>incomplete</state>
+	    <executable>perl -ne 's/^s\s+[^\.]+\.(\S+)/s $1/;print' </executable>
+		<key>stdin</key>
+		<value>$;MUGSY_ALIGNMENT$;</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;MUGSY_ALIGNMENT$;.fixed</value>
+	    </param>
+    </command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>index alignment</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/projects/angiuoli/mugsy/mafindex.pl $;MUGSY_INDEX$;</executable>
+	    <param>
+		<key>stdin</key>
+		<value>$;MUGSY_ALIGNMENT$;.fixed</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_REPOSITORY$;/mafindex.stdout</value>
+	    </param>
+    </command>
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <name>map features to alignment</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/projects/angiuoli/mugsy/mapfeatures.pl $;MUGSY_INDEX$; </executable>
+		<key>stdin</key>
+		<value>$;MUGSY_ALIGNMENT$;</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;MUGSY_ALIGNMENT$;.fixed</value>
+	    </param>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
+    </command>
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <name>generate default mapping</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/projects/angiuoli/mugsy/mafindex.pl $;MUGSY_INDEX$; $;GENOMIC_MULTIFASTA$;</executable>
+	    <param>
+		<key>stdin</key>
+		<value>$;MUGSY_MAP_FILE$;</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_REPOSITORY$;/mapfeatures.stdout</value>
+	    </param>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
+    </command>
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <name>generate cog file</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/projects/angiuoli/mugsy/mafindex.pl --cogformat $;MUGSY_INDEX$; $;GENOMIC_MULTIFASTA$;</executable>
+	    <param>
+		<key>stdin</key>
+		<value>$;MUGSY_MAP_FILE$;</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_REPOSITORY$;/mapfeatures.cog</value>
+	    </param>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
+    </command>
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <name>generate verbose file</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/projects/angiuoli/mugsy/mafindex.pl --printalignments $;MUGSY_INDEX$; $;GENOMIC_MULTIFASTA$;</executable>
+	    <param>
+		<key>stdin</key>
+		<value>$;MUGSY_MAP_FILE$;</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_REPOSITORY$;/mapfeatures.verbose</value>
+	    </param>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
+    </command>
+
+    <!-- next step is to cog2fasta -->
+  </commandSet>
+</commandSetRoot>
