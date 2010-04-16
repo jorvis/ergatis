@@ -1,5 +1,6 @@
 next
 ----
+-celera_assembler: added cloud variants to component
 -uclust: new component
 -metagene: moved dtdvalidation into an iterator to handle multiple bsml output produced by metagene.
 -split_multifasta: added support for 'total_files' parameter that allows user to specify the exact amount of output files wanted

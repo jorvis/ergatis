@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>celera-assembler compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create file output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create file temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;I_FILE_BASE$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>runCA</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/runCA</executable>
+            <arg>-p $;I_FILE_BASE$; -d $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$; overlapper=mer useGrid=1 scriptOnGrid=0 -s $;SPEC_FILE$; $;I_FILE_PATH$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;/qsub_cmd.txt</value>
+            </param>                
+        </command>        
+        <command>
+            <type>RunUnixCommand</type>
+            <name>harvest output dir</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/submit_for_harvesting</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>--harvest_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;</value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.log</value>
+            </param>                
+            <param>
+                <key>--debug</key>
+                <value>4</value>
+            </param>                
+        </command>                                                            
+    </commandSet>
+</commandSetRoot>
