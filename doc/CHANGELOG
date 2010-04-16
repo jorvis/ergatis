@@ -1,5 +1,6 @@
 next
 ----
+-uclust: new component
 -metagene: moved dtdvalidation into an iterator to handle multiple bsml output produced by metagene.
 -split_multifasta: added support for 'total_files' parameter that allows user to specify the exact amount of output files wanted
 -translate_sequence: updated to make use of the Fasta::SimpleIndexer module for sequence lookups.

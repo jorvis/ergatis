@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>UCLUST compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort</name>
+            <state>incomplete</state>
+            <executable>$;UCLUST_EXEC$;</executable>
+            <arg>--$;SORT_ALGORITHM$; $;I_FILE_PATH$; --output $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sorted</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>cluster</name>
+            <state>incomplete</state>
+            <executable>$;UCLUST_EXEC$;</executable>
+            <arg>--input $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sorted --uc $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.uc --id $;IDENTITY_THRESHOLD$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>convert to fasta</name>
+            <state>incomplete</state>
+            <executable>$;UCLUST_EXEC$;</executable>
+            <arg>--input $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sorted --uc2fasta $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.uc --types S --output $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.cluster.raw</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>format fasta</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/format_uclust_fasta_ids</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/format_uclust_fasta_ids_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/format_uclust_fasta_ids_$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>--fasta_input</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.cluster.raw</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.cluster.fsa</value>
+            </param> 
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_format.log</value>
+            </param>
+            <param>
+                <key>--debug</key>
+                <value>4</value>
+            </param>                                               
+        </command>
+    </commandSet>
+</commandSetRoot>
