@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>sfffile compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sfffile</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/sfffile</executable>
+           	<arg>-o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sff -i $;I_FILE_PATH$; $;RAW_SFF$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+			</param>                
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>--raw_sff_files</key>
+                <value>$;RAW_SFF$;</value>
+            </param>
+            <param>
+                <key>--accession_list</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--sfffile_exe</key>
+                <value>$;SFFFILE_EXEC$;</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sff</value>
+            </param>
+            <param>
+                <key>--command_line_opts</key>
+                <value>$;CONFIG_PARAMS$;</value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.log</value>
+            </param>
+            <param>
+                <key>--debug</key>
+                <value>4</value>
+            </param>
+        </command>
+	</commandSet>
+</commandSetRoot>

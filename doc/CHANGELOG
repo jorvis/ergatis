@@ -1,5 +1,7 @@
 next
 ----
+-amoscmp: new component
+-sfffile: new component
 -nucmer: new component
 -celera_assembler: added cloud variants to component
 -uclust: new component

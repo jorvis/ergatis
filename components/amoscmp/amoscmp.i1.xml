@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>AMOScmp compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>toAmos</name>
+            <state>incomplete</state>
+            <executable>$;TOAMOS_EXEC$;</executable>
+            <arg>-s $;SEQUENCE_FILE$; -q $;QUAL_FILE$; -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.afg</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;.stderr</value>
+            </param>   
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>AMOScmp</name>
+            <state>incomplete</state>
+            <executable>$;AMOSCMP_EXEC$;</executable>
+            <arg>-D TGT=$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.afg -D REF=$;REF_GENOME$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>                
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>replace amoscmp fasta sequence identifiers</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/replace_amoscmp_fasta_seqids</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>                
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>--fasta_input_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fasta<value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/replace_amoscmp_fasta_seqids_$;I_FILE_BASE$;.log</value>
+            </param>
+            <param>
+                <key>--debug</key>
+                <value>4</value>
+            </param>
+        </command>                                                            
+    </commandSet>
+</commandSetRoot>
