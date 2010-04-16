@@ -817,8 +817,8 @@ mugsyprep  :
 
 mugsycog  :
 	@echo "Installing mugsycog workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/mugsyprep/mugsycog.xml $(WORKFLOW_DOCS_DIR)
-	@install components/mugsyprep/mugsycog.config $(WORKFLOW_DOCS_DIR)
+	@install components/mugsycog/mugsycog.xml $(WORKFLOW_DOCS_DIR)
+	@install components/mugsycog/mugsycog.config $(WORKFLOW_DOCS_DIR)
 
 muscle  :
 	@echo "Installing muscle workflows in $(WORKFLOW_DOCS_DIR)"
