@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>nucmer compute</name>
+		<command>
+			<type>RunUnixCommand</type>
+			<name>create group temp folder</name>
+			<state>incomplete</state>
+			<executable>mkdir</executable>
+			<arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+		</command>
+        <command>
+        	<type>RunUnixCommand</type>
+			<name>create group output folder</name>
+			<state>incomplete</state>
+			<executable>mkdir</executable>
+			<arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+		</command>			 
+        <command>
+            <type>RunUnixCommand</type>
+            <name>nucmer</name>
+            <state>incomplete</state>
+            <executable>$;NUCMER_EXEC$;</executable>
+            <arg>-p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;UNIQUE_BASE$; $;REFERENCE_GENOME$; $;I_FILE_PATH$;</arg>
+			<param>
+				<key>stdout</key>
+				<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+			</param>
+			<param>
+				<key>stderr</key>
+				<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+			</param>
+		</command>
+	</commandSet>
+</commandSetRoot>			

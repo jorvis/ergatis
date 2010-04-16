@@ -1,5 +1,6 @@
 next
 ----
+-nucmer: new component
 -celera_assembler: added cloud variants to component
 -uclust: new component
 -metagene: moved dtdvalidation into an iterator to handle multiple bsml output produced by metagene.
