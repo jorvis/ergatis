@@ -72,6 +72,7 @@ foreach my $org_id (keys %$org_id_to_seq_ids) {
         }
         push(@files,$seq_id_to_file->{$_})
     } keys %{$org_id_to_seq_ids->{$org_id}};
+    $org_id =~ s/[\/\.]//g;
     my $cat = "cat ".join(" ",@files)." > $options{output_dir}/$org_id.fsa";
     `$cat`;
 }
