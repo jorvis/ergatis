@@ -25,12 +25,13 @@
 	    <name>add mugsymap features to mugsy index</name>
 	    <state>incomplete</state>
 	    <executable>/usr/local/projects/angiuoli/mugsy/featureindex.pl $;MUGSY_INDEX$;</executable>
-		<key>stdin</key>
+		<param>
+        <key>stdin</key>
 		<value>$;MUGSY_MAP_FILE$;</value>
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;OUTPUT_REPOSITORY$;/featuresindex.out</value>
+		<value>$;OUTPUT_DIRECTORY$;/featuresindex.out</value>
 	    </param>
     </command>
 	<command>
@@ -38,7 +39,8 @@
 	    <name>fix maf</name>
 	    <state>incomplete</state>
 	    <executable>perl -ne 's/^s\s+[^\.]+\.(\S+)/s $1/;print' </executable>
-		<key>stdin</key>
+		<param>
+        <key>stdin</key>
 		<value>$;MUGSY_ALIGNMENT$;</value>
 	    </param>
 	    <param>
@@ -57,77 +59,84 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;OUTPUT_REPOSITORY$;/mafindex.stdout</value>
+		<value>$;OUTPUT_DIRECTORY$;/mafindex.stdout</value>
 	    </param>
     </command>
 	<command>
 	    <type>RunDistributedCommand</type>
 	    <name>map features to alignment</name>
 	    <state>incomplete</state>
-	    <executable>/usr/local/projects/angiuoli/mugsy/mapfeatures.pl $;MUGSY_INDEX$; </executable>
-		<key>stdin</key>
-		<value>$;MUGSY_ALIGNMENT$;</value>
-	    </param>
+	    <executable>cat $;MUGSY_MAP_FILE$; | /usr/local/projects/angiuoli/mugsy/mapfeatures.pl $;OTHER_OPTS$; $;MUGSY_INDEX$; $;GENOMIC_MULTIFASTA$;</executable>
+        <param>
+        <key>--coverage</key>
+        <value>$;COVERAGE$;</value>
+        </param>
+        <param>
+        <key>--identity</key>
+        <value>$;IDENTITY$;</value>
+        </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;MUGSY_ALIGNMENT$;.fixed</value>
+		<value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
 	    </param>
         <dceSpec type="sge">
             <OS>linux</OS>
         </dceSpec>
     </command>
-	<command>
-	    <type>RunDistributedCommand</type>
-	    <name>generate default mapping</name>
-	    <state>incomplete</state>
-	    <executable>/usr/local/projects/angiuoli/mugsy/mafindex.pl $;MUGSY_INDEX$; $;GENOMIC_MULTIFASTA$;</executable>
-	    <param>
-		<key>stdin</key>
-		<value>$;MUGSY_MAP_FILE$;</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;OUTPUT_REPOSITORY$;/mapfeatures.stdout</value>
-	    </param>
-        <dceSpec type="sge">
-            <OS>linux</OS>
-        </dceSpec>
-    </command>
-	<command>
-	    <type>RunDistributedCommand</type>
-	    <name>generate cog file</name>
-	    <state>incomplete</state>
-	    <executable>/usr/local/projects/angiuoli/mugsy/mafindex.pl --cogformat $;MUGSY_INDEX$; $;GENOMIC_MULTIFASTA$;</executable>
-	    <param>
-		<key>stdin</key>
-		<value>$;MUGSY_MAP_FILE$;</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;OUTPUT_REPOSITORY$;/mapfeatures.cog</value>
-	    </param>
-        <dceSpec type="sge">
-            <OS>linux</OS>
-        </dceSpec>
-    </command>
-	<command>
-	    <type>RunDistributedCommand</type>
-	    <name>generate verbose file</name>
-	    <state>incomplete</state>
-	    <executable>/usr/local/projects/angiuoli/mugsy/mafindex.pl --printalignments $;MUGSY_INDEX$; $;GENOMIC_MULTIFASTA$;</executable>
-	    <param>
-		<key>stdin</key>
-		<value>$;MUGSY_MAP_FILE$;</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;OUTPUT_REPOSITORY$;/mapfeatures.verbose</value>
-	    </param>
-        <dceSpec type="sge">
-            <OS>linux</OS>
-        </dceSpec>
-    </command>
-
     <!-- next step is to cog2fasta -->
+    <command>
+      <type>RunUnixCommand</type>
+      <name>cogs2fasta</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/CogProteinFasta</executable>
+      <param>
+        <key>--cogFile</key>
+        <value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
+      </param>
+      <param>
+        <key>--bsmlModelList</key>
+        <value>$;BSML_FILE_LIST$;</value>
+      </param>
+      <param>
+        <key>--outputDir</key>
+        <value>$;OUTPUT_DIRECTORY$;/fasta/</value>
+      </param>
+      <param>
+        <key>--maxCogSeqCount</key>
+        <value>$;MAX_MULTI_ALIGNMENT$;</value>
+      </param>
+      <param>
+        <key>--use_feature_ids_in_fasta</key>
+        <value>'$;USE_FEATURE_IDS_IN_FASTA$;'</value>
+      </param>
+      <param>
+        <key>stdout</key>
+        <value>$;TMP_DIR$;/CogProteinFasta.stdout</value>
+      </param>
+      <param>
+        <key>stderr</key>
+        <value>$;TMP_DIR$;/CogProteinFasta.stderr</value>
+      </param>
+    </command>
+    
+    <!--Postprocessing-->
+    <command>
+      <type>RunUnixCommand</type>
+      <name>create fasta list</name>
+      <state>incomplete</state>
+      <executable>$;BIN_DIR$;/create_list_file</executable>
+      <param>
+        <key>--directory</key>
+        <value>$;OUTPUT_DIRECTORY$;/fasta</value>
+      </param>
+      <param>
+        <key>--regex</key>
+        <value>".*\.fsa"</value>
+      </param>
+      <param>
+        <key>--output_list</key>
+        <value>$;FASTA_OUTPUT_LIST$;</value>
+      </param>
+    </command>
   </commandSet>
 </commandSetRoot>
