@@ -45,7 +45,7 @@
 	    </param>
 	    <param>
 		<key>stdout</key>
-		<value>$;MUGSY_ALIGNMENT$;.fixed</value>
+		<value>$;OUTPUT_DIRECTORY$;mugsyalignment.maf.fixed</value>
 	    </param>
     </command>
 	<command>
