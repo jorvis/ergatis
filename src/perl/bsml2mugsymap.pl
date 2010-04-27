@@ -115,7 +115,7 @@ sub process_organism
     my ($twig, $elt) = @_;
     my $id = $elt->att('id');
     my $spec = $elt->att('species');
-    $spec =~ s/[\s\-\\\/]//g;
+    $spec =~ s/[\s\-\\\\./]//g;
     $organism = $spec;
     $twig->purge();
 }
