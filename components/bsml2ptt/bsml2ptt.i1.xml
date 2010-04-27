@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bsml2ptt compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>bsml2ptt</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bsml2ptt</executable>
+            <param>  
+                <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gff3</value>
+            </param>
+            <param>  
+                <key>--pid_feattype</key>
+                <value>$;PID_FEATTYPE$;</value>
+            </param>
+            <param>  
+                <key>--pid_field</key>
+                <value>$;PID_FIELD$;</value>
+            </param>
+            <param>
+                <key>--gene_feattype</key>
+                <value>$;GENE_FEATTYPE$;</value>
+            </param>
+            <param>
+                <key>--gene_field</key>
+                <value>$;GENE_FIELD$;</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
