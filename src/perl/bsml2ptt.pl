@@ -46,8 +46,8 @@ sub parse_options
                "output|o=s", 
                "pid_feattype=s",
                "pid_field=s",
-               "gene_feattype=s",
-               "gene_field=s",
+               "gene_feattype:s",
+               "gene_field:s",
                "mrna|m=i", 
                "help|h");
     print_usage() if $opts{help};
@@ -197,7 +197,11 @@ sub process_feature_group
     my $aa_length = int(($fmax-$fmin)/3); # HACK - obviously this is not always right. The issue is that .ptt techincally wants amino acid length.
 
     # Pulling the gene product off of the transcript.
-    my $gene_product = $transcript->first_child('Attribute[@name="gene_product_name"]')->att('content');
+    my $gene_prod_feat_att = $transcript->first_child('Attribute[@name="gene_product_name"]');
+    my $gene_product = '-';
+    if($gene_prod_feat_att) {
+        $gene_product = $gene_prod_feat_att->att('content');
+    }
 
     my $gene_val = '-';
     foreach my $type (@$gene_feattype) {
