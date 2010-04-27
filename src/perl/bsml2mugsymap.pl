@@ -89,7 +89,7 @@ sub convert
 
     # Print them out 
     foreach my $feat (@srted_feats) {
-        print $out join("\t", ($feat->{'gene'},$feat->{'seq_id'},$feat->{'start'},$feat->{'stop'},$feat->{'strand'},$feat->{'polypeptide_id'},$feat->{'gene_id'},$organism))."\n";
+        print $out join("\t", ($feat->{'gene'},$feat->{'seq_id'},$feat->{'start'},$feat->{'stop'},$feat->{'strand'},$feat->{'polypeptide_id'},$feat->{'gene_id'},$organism,$feat->{'gene_product'}))."\n";
     }
 }
 
@@ -115,7 +115,7 @@ sub process_organism
     my ($twig, $elt) = @_;
     my $id = $elt->att('id');
     my $spec = $elt->att('species');
-    $spec =~ s/[\s-]//g;
+    $spec =~ s/[\s\-\\\/]//g;
     $organism = $spec;
     $twig->purge();
 }
