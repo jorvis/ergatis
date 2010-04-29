@@ -65,6 +65,10 @@
                 <value>'$;USE_FEATURE_IDS_IN_FASTA$;'</value>
             </param>
             <param>
+                <key>--coords</key>
+                <value>$;COORDS$;</value>
+            </param>
+            <param>
                 <key>--suffix</key>
                 <value>'$;OUTPUT_SUFFIX$;'</value>
             </param>
