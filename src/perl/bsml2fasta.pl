@@ -379,6 +379,7 @@ if(! exists $options{'bp_extension'}){
 ## parse out sequences from each file
 my $multioutputfh;
 my $byfileoutputfh;
+my $byfileoutputname;
 my $buffer_var;
 my $featurelookup = {};
 my $sequencelookup = {};
@@ -410,6 +411,7 @@ for my $file ( @files ) {
         my $ifile = basename $file;
         $ifile =~ s/\.[^\.]+$//;
         my $sf = $options{suffix} ? $options{suffix} : 'fsa';
+        $byfileoutputname = "$options{output}/$ifile\.$sf";
         open ($byfileoutputfh, ">$options{output}/$ifile\.$sf") || $logger->logdie("Unable to write to file $options{output} due to $!");
         $logger->debug("Writing $file output to multi-fasta file $options{output}/$ifile\.$sf") if ($logger->is_debug);
     }
@@ -921,7 +923,7 @@ sub write_sequence {
     } elsif ($options{format} eq 'byfile') {
         &fasta_out($header, $seqref, $byfileoutputfh);  
         if ($options{output_list}) {
-            print $olist_fh "$dirpath/$name.$suffix\n";
+            print $olist_fh "$byfileoutputname\n";
         }
     } elsif ($options{format} eq 'single') {
         ## the path depends on whether we are using output subdirectories
