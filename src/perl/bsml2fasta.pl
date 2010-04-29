@@ -412,6 +412,9 @@ for my $file ( @files ) {
         $ifile =~ s/\.[^\.]+$//;
         my $sf = $options{suffix} ? $options{suffix} : 'fsa';
         $byfileoutputname = "$options{output}/$ifile\.$sf";
+        if ($options{output_list}) {
+            print $olist_fh "$byfileoutputname\n";
+        }
         open ($byfileoutputfh, ">$options{output}/$ifile\.$sf") || $logger->logdie("Unable to write to file $options{output} due to $!");
         $logger->debug("Writing $file output to multi-fasta file $options{output}/$ifile\.$sf") if ($logger->is_debug);
     }
@@ -922,9 +925,6 @@ sub write_sequence {
         &fasta_out($header, $seqref, $multioutputfh);
     } elsif ($options{format} eq 'byfile') {
         &fasta_out($header, $seqref, $byfileoutputfh);  
-        if ($options{output_list}) {
-            print $olist_fh "$byfileoutputname\n";
-        }
     } elsif ($options{format} eq 'single') {
         ## the path depends on whether we are using output subdirectories
         if ($options{output_subdir_size}) {
