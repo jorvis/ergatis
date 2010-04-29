@@ -64,6 +64,10 @@
                 <key>--use_feature_ids_in_fasta</key>
                 <value>'$;USE_FEATURE_IDS_IN_FASTA$;'</value>
             </param>
+            <param>
+                <key>--suffix</key>
+                <value>'$;OUTPUT_SUFFIX$;'</value>
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>
