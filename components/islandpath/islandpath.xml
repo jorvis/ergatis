@@ -40,14 +40,10 @@
           </param>
           <param>
             <key>--output_iter_list</key>
-            <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;.list</value>
-          </param>
-          <param>
-            <key>--timestamp</key>
-            <value>$;ITERATOR_TIMESTAMP$;</value>
+            <value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list</value>
           </param>
         </command>
-        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=$;ITERATOR_NAME$;,$;ITERATOR_XML$;=$;ITERATOR_XML$;,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;.list,$;ITERATOR_RANDOM$;=1">
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=$;ITERATOR1$;,$;ITERATOR_XML$;=$;ITERATOR1_XML$;,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list,$;ITERATOR_RANDOM$;=1">
           
         <!--Postprocessing-->
         <command>

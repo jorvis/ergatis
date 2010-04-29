@@ -11,7 +11,7 @@
             <arg>$;OTHER_OPTS$; $;PROT_FILE_PATH$; $;NUC_FILE_PATH$; $;PTT_FILE_PATH$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PROT_FILE_NAME$;.$;COMPONENT_NAME$;.out</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$;/g$;GROUP_NUMBER$;/$;PROT_FILE_NAME$;.$;COMPONENT_NAME$;.out</value>
             </param>
         </command>
         <command>
@@ -21,11 +21,11 @@
             <executable>$;BIN_DIR$;/islandpath2bsml</executable>
             <param>  
                 <key>--input</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;.out</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$;/g$;GROUP_NUMBER$;/$;PROT_FILE_NAME$;.out</value>
             </param>
             <param>  
                 <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$;/g$;GROUP_NUMBER$;/$;PROT_FILE_NAME$;.bsml</value>
             </param>
             <param>  
                 <key>--project</key>
@@ -51,7 +51,7 @@
             </param>
             <param>  
                 <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
             </param>
             <param>  
                 <key>--componenturl</key>
@@ -75,7 +75,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
         </command>
     </commandSet>
 </commandSetRoot>
