@@ -189,6 +189,9 @@ sub process_feature_group
     }
 
 
+    if (!$transcript) {
+        return;
+    }
     # Going to pull the location info here
     my $location = $transcript->first_child('Interval-loc');
     my $fmin = $location->att('startpos');
