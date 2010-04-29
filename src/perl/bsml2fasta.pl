@@ -920,6 +920,9 @@ sub write_sequence {
         &fasta_out($header, $seqref, $multioutputfh);
     } elsif ($options{format} eq 'byfile') {
         &fasta_out($header, $seqref, $byfileoutputfh);  
+        if ($options{output_list}) {
+            print $olist_fh "$dirpath/$name.$suffix\n";
+        }
     } elsif ($options{format} eq 'single') {
         ## the path depends on whether we are using output subdirectories
         if ($options{output_subdir_size}) {
@@ -948,7 +951,7 @@ sub write_sequence {
         }
 
         if ($options{output_list}) {
-            print $olist_fh "$dirpath/$name.suffix\n";
+            print $olist_fh "$dirpath/$name.$suffix\n";
         }
     }
 
