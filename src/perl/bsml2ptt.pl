@@ -103,8 +103,15 @@ sub convert
     print $out "$organism_name\n";
     print $out scalar(@srted_feats)." proteins\n";
     print $out "Location\tStrand\tLength\tPID\tGene\tSynonym\tCode\tCOG\tProduct\n";
+    my $seen_coords = {};
     foreach my $feat (@srted_feats) {
-        print $out join("\t", ("$feat->{'start'}..$feat->{'stop'}",$feat->{'strand'},$feat->{'length'},$feat->{'pid'},$feat->{'gene'},'-','-','-',$feat->{'gene_product'}))."\n";
+        if(!$seen_coords->{"$feat->{'start'}..$feat->{'stop'}"}) {
+            print $out join("\t", ("$feat->{'start'}..$feat->{'stop'}",$feat->{'strand'},$feat->{'length'},$feat->{'pid'},$feat->{'gene'},'-','-','-',$feat->{'gene_product'}))."\n";
+            $seen_coords->{"$feat->{'start'}..$feat->{'stop'}"} = 1;
+        }
+        else {
+            print STDERR "Found duplicate genes at $feat->{'start'}..$feat->{'stop'}\n";
+        }
     }
 }
 

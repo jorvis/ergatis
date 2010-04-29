@@ -898,6 +898,7 @@ sub write_sequence {
         }
         else {
             $id = $header_feats->[0];
+            $header = $id;
         }
     }
 

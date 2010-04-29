@@ -28,6 +28,10 @@
                 <key>--class_filter</key>
                 <value>'$;CLASS_FILTER$;'</value>
             </param>
+            <param>
+                <key>--header_class</key>
+                <value>'$;HEADER_CLASS$;'</value>
+            </param>
             <param>  
                 <key>--format</key>
                 <value>'$;FORMAT$;'</value>
