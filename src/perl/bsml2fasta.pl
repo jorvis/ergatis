@@ -890,7 +890,10 @@ sub write_sequence {
     my $header = "$id $title";
 
     if($options{header_class}) {
-        my $feat_id = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0) ? $id : $seqId2FeatId->{$id};
+        my $feat_id = $id;
+        if( $options{'parse_element'} eq 'sequence' ) {
+            $feat_id = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0) ? $id : $seqId2FeatId->{$id};
+        }
         my $header_feats = $groupmemberlookup->{$grouplookup->{$feat_id}}->{$options{header_class}};
         if($header_feats && @$header_feats > 1) {
             print STDERR "Found multiple @$header_feats $options{header_class}s for $id\n";
@@ -942,7 +945,7 @@ sub write_sequence {
         $name =~ s/[^a-z0-9\.\-]/_/gi;
         my $suffix = $options{'suffix'} ? $options{'suffix'} : 'fsa';
         $logger->debug("attempting to create file $options{output}/$name.$suffix") if ($logger->is_debug);
-        open (my $sfh, ">$dirpath/$name.suffix") || $logger->logdie("Unable to write to file $options{output}/$name due to $!");
+        open (my $sfh, ">$dirpath/$name.$suffix") || $logger->logdie("Unable to write to file $options{output}/$name due to $!");
         $seq_file_count++;
         &fasta_out($header, $seqref, $sfh);
         
