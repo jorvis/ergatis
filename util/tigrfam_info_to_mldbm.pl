@@ -170,6 +170,7 @@ while ( my $file = readdir($idh) ) {
     my $ec_num = $info{$accession}{ec_num} || '';
     my $gene_symbol = $info{$accession}{gene_symbol} || '';
     my $isotype = $info{$accession}{isotype} || '';
+    my $comment = $info{$accession}{hmm_comment} || '';
 
     ## we have to store this into a variable first, make modifications, then write it
     ##  back.  this is dumb, but see the BUGS section of the MLDBM perldoc for the
@@ -188,10 +189,12 @@ while ( my $file = readdir($idh) ) {
         } elsif ( $line =~ /^EC\s+(.+)$/ ) {
             _log("INFO: $accession ec_num was [$ec_num], changing to [$1]");
             $$tied_acc{ec_num} = $1;
-            
         } elsif ( $line =~ /^GS\s+(.+)$/ ) {
             _log("INFO: $accession gene_symbol was [$gene_symbol], changing to [$1]");
             $$tied_acc{gene_symbol} = $1;
+        } elsif ( $line =~ /^CC\s+(.+)$/ ) {
+            _log("INFO: $accession hmm_comment was [$comment], changing to [$1]");
+            $$tied_acc{hmm_comment} = $1;
         }
     }
     
@@ -209,7 +212,6 @@ while ( my $file = readdir($idh) ) {
 untie(%info);
 
 exit(0);
-
 
 sub _log {
     my $msg = shift;
