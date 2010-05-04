@@ -1,0 +1,49 @@
+<!-- component documentation -->
+
+<p>
+    This component does a VERY simple perl REGEX search for homopolymeric tracts in a nucleotide 
+    sequence.
+</p>
+<h3>input</h3>
+<p>
+    This component accepts single sequence FASTA files as input.  If you have a single
+    file containing multiple sequences in FASTA format, you should use the 
+    <a href='./documentation.cgi?article=components&page=split_multifasta'>split_multifasta</a>
+    component first to generate individual sequences, allowing them to be atomically searched
+    and individually managed on the grid.
+</p>
+<h3>implemented options</h3>
+<p>
+    This component takes 2 parameters: the minimum length of a/t tracts and the minimum length of g/c tracts.
+</p>
+<h3>bsml output</h3>
+<div class='bsml_container'>
+&lt;?xml version=&quot;1.0&quot;?&gt;
+
+&lt;Bsml&gt;
+  &lt;Definitions&gt;
+    &lt;Sequences&gt;
+      &lt;Sequence class=&quot;assembly&quot; id=&quot;sphungary19a6.assembly.799331051.1&quot; molecule=&quot;dna&quot;&gt;
+        &lt;Feature-tables&gt;
+          &lt;Feature-table id=&quot;Bsml0&quot;&gt;
+            &lt;Feature class=&quot;repeat_region&quot; id=&quot;sphungary19a6.repeat_region.1779828405.1&quot;&gt;
+              &lt;Interval-loc complement=&quot;0&quot; startpos=&quot;58062&quot; endpos=&quot;58071&quot;&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel=&quot;analysis&quot; href=&quot;#findhomopolymers_analysis&quot; role=&quot;computed_by&quot;&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class=&quot;repeat_region&quot; id=&quot;sphungary19a6.repeat_region.1779828406.1&quot;&gt;
+              &lt;Interval-loc complement=&quot;0&quot; startpos=&quot;67171&quot; endpos=&quot;67181&quot;&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel=&quot;analysis&quot; href=&quot;#findhomopolymers_analysis&quot; role=&quot;computed_by&quot;&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class=&quot;repeat_region&quot; id=&quot;sphungary19a6.repeat_region.1779828407.1&quot;&gt;
+              &lt;Interval-loc complement=&quot;0&quot; startpos=&quot;196339&quot; endpos=&quot;196348&quot;&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel=&quot;analysis&quot; href=&quot;#findhomopolymers_analysis&quot; role=&quot;computed_by&quot;&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class=&quot;repeat_region&quot; id=&quot;sphungary19a6.repeat_region.1779828408.1&quot;&gt;
+              &lt;Interval-loc complement=&quot;0&quot; startpos=&quot;583937&quot; endpos=&quot;583946&quot;&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel=&quot;analysis&quot; href=&quot;#findhomopolymers_analysis&quot; role=&quot;computed_by&quot;&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+            &lt;Feature class=&quot;repeat_region&quot; id=&quot;sphungary19a6.repeat_region.1779828409.1&quot;&gt;
+              &lt;Interval-loc complement=&quot;0&quot; startpos=&quot;650930&quot; endpos=&quot;650939&quot;&gt;&lt;/Interval-loc&gt;
+              &lt;Link rel=&quot;analysis&quot; href=&quot;#findhomopolymers_analysis&quot; role=&quot;computed_by&quot;&gt;&lt;/Link&gt;
+            &lt;/Feature&gt;
+</div>
