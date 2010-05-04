@@ -16,6 +16,14 @@
                 <key>--output</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;.out</value>
             </param>
+            <param>
+                <key>--at_min_length</key>
+                <value>$;AT_MIN_LENGTH$;</value>
+            </param>
+            <param>
+                <key>--gc_min_length</key>
+                <value>$;GC_MIN_LENGTH$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>

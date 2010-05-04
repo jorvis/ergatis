@@ -151,7 +151,7 @@ sub add_sequence {
     my $ft  = $doc->createAndAddFeatureTable($seq);
     $seq_id =~ /([^\.]+)\./;
     my $prefix = $1;
-    $project = $options{project} ?  $options{project} : $prefix;
+    $project = $prefix ? $prefix : $options{project};
 
     return ($seq,$ft);
 }
