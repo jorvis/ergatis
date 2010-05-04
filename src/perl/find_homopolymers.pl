@@ -101,7 +101,7 @@ while(<IN>) {
 
 my $seqstring = join('',@seq);
 print $output "$id (".length($seqstring)."):\n";
-while ($seqstring =~ /([Aa]{$at_min_length,}|[Tt]{$at_min_length,}|Gg]{$gc_min_length,}|[Cc]{$gc_min_length,})/g) {
+while ($seqstring =~ /([Aa]{$at_min_length,}|[Tt]{$at_min_length,}|[Gg]{$gc_min_length,}|[Cc]{$gc_min_length,})/g) {
     print $output length($`)."\t".(length($`)+length($&))."\t".$1."\n";
 }
 
