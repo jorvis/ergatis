@@ -22,14 +22,14 @@
             <name>celera assembler SGE job</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/run_qsub_cmd</executable>
-            <arg>-c $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;/qsub_cmd.txt -o $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$; -l $;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.log</arg>
+            <arg>-c $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;/qsub_cmd.txt -o $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$; -l $;TMP_DIR$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.log</arg>
             <param>
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+                <value>$;TMP_DIR$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
             </param>
             <param>
                 <key>stderr</key>               
-                <value>$;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>     
+                <value>$;TMP_DIR$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>     
             </param>
         </command>
     </commandSet>

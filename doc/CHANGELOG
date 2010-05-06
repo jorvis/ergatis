@@ -1,5 +1,6 @@
 next
 ----
+-celera_assembler_cloud: updated to fix bug where stderr was being written to a non-existant folder
 -amoscmp: new component
 -sfffile: new component
 -nucmer: new component

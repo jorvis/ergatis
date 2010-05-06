@@ -27,7 +27,7 @@
 	    <executable>/opt/vappio-scripts/syncdata.sh</executable>
 	    <arg>--synchronous</arg>
 	</command>
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERLAP-TRIM,$;ITERATOR_XML$;=ITERATORQSUB_XML">                
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERLAP-TRIM,$;ITERATOR_XML$;=ITERATORQSUB_XML,$;NODISTRIB$;=1">                
 	<command>
 	    <type>RunUnixCommand</type>
             <name>sync staging directory</name>
@@ -41,7 +41,7 @@
             <executable>/opt/vappio-scripts/syncdata.sh</executable>
             <arg>--synchronous</arg>
         </command>
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERLAPPER,$;ITERATOR_XML$;=ITERATORQSUB_XML">
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERLAPPER,$;ITERATOR_XML$;=ITERATORQSUB_XML,$;NODISTRIB$;=1">
         <command>
             <type>RunUnixCommand</type>
             <name>sync staging directory</name>
@@ -55,7 +55,7 @@
             <executable>/opt/vappio-scripts/syncdata.sh</executable>
             <arg>--synchronous</arg>
         </command>
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=CONSENSUS_1,$;ITERATOR_XML$;=ITERATORQSUB_XML">    
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=CONSENSUS_1,$;ITERATOR_XML$;=ITERATORQSUB_XML,$;NODISTRIB$;=1">    
         <command>
             <type>RunUnixCommand</type>
             <name>sync staging directory</name>
@@ -69,7 +69,7 @@
             <executable>/opt/vappio-scripts/syncdata.sh</executable>
             <arg>--synchronous</arg>
         </command>
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=CONSENSUS_2,$;ITERATOR_XML$;=ITERATORQSUB_XML">
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=CONSENSUS_2,$;ITERATOR_XML$;=ITERATORQSUB_XML,$;NODISTRIB$;=1">
         <command>
             <type>RunUnixCommand</type>
             <name>sync staging directory</name>
