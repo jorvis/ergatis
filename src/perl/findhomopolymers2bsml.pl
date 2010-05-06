@@ -121,7 +121,7 @@ while (<$ifh>) {
             ## add the island
             my $id = $idcreator->next_id( project => $project, type => 'repeat_region' );
             my $island = $doc->createAndAddFeature($ft, $id, '', 'repeat_region');
-            $island->addBsmlLink('analysis', '#findhomopolymers_analysis', 'computed_by');
+            $island->addBsmlLink('analysis', '#find_homopolymers_analysis', 'computed_by');
             
             ## add the location of the repeat
             $island->addBsmlIntervalLoc( $start, $stop, 0);
@@ -131,10 +131,10 @@ while (<$ifh>) {
 
 ## add the analysis element
 $doc->createAndAddAnalysis(
-                            id => 'findhomopolymers_analysis',
+                            id => 'find_homopolymers_analysis',
                             sourcename => dirname($options{'output'}),
-                            program => 'findhomopolymers',
-                            algorithm => 'findhomopolymers',
+                            program => 'find_homopolymers',
+                            algorithm => 'find_homopolymers',
                             programversion => 'current'
                           );
 
@@ -147,7 +147,7 @@ sub add_sequence {
     my $seq_id = shift;
 
     my $seq = $doc->createAndAddSequence($seq_id, undef, '', 'dna', 'assembly');
-    $seq->addBsmlLink('analysis', '#findhomopolymers_analysis', 'input_of');
+    $seq->addBsmlLink('analysis', '#find_homopolymers_analysis', 'input_of');
     my $ft  = $doc->createAndAddFeatureTable($seq);
     $seq_id =~ /([^\.]+)\./;
     my $prefix = $1;
