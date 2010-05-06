@@ -69,6 +69,10 @@
                 <value>'$;USE_FEATURE_IDS_IN_FASTA$;'</value>
             </param>
             <param>
+                <key>--use_sequence_ids_in_fasta</key>
+                <value>'$;USE_SEQUENCE_IDS_IN_FASTA$;'</value>
+            </param>
+            <param>
                 <key>--coords</key>
                 <value>$;COORDS$;</value>
             </param>

@@ -20,6 +20,7 @@ USAGE:  bsml2fasta.pl
           --debug=debug_level 
           --log=log_file
           --use_feature_ids_in_fasta=0|1
+          --use_sequence_ids_in_fasta=0|1
         ]
 
 =head1 OPTIONS
@@ -55,6 +56,11 @@ B<--use_feature_ids_in_fasta>
     Set this to nonzero to use the BSML id of the linked feature that corresponds to each sequence being written.  
     The script will fail if any of the exported sequences are linked to multiple features. Also nNote that this 
     option will only work if --parse_element=sequence.
+
+B<--use_sequence_ids_in_fasta>
+    Set this to nonzero to use the BSML id of the sequence element (rather than the identifier for the 
+    Seq-data/Seq-data-importfor each sequence being written. Also Note that this option will only work 
+    if --parse_element=sequence.
 
 B<--output,-o> 
     Output file (if --format=multi) or directory (if --format=single)
@@ -266,6 +272,7 @@ my $results = GetOptions (\%options,
               'suffix=s',
 			  'log|l=s',
 			  'use_feature_ids_in_fasta=i',
+			  'use_sequence_ids_in_fasta=i',
 			  'output|o=s',
 			  'help|h') || pod2usage();
 
@@ -395,6 +402,7 @@ if ($options{format} eq "multi") {
 }
 
 my $use_feature_ids_in_fasta = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0);
+my $use_sequence_ids_in_fasta = defined($options{'use_sequence_ids_in_fasta'}) && ($options{'use_sequence_ids_in_fasta'} > 0);
 
 # mapping from each Sequence.id to the corresponding linked Feature.id, used for --use_feature_ids_in_fasta
 my $seqId2FeatId = {};
@@ -458,6 +466,9 @@ for my $file ( @files ) {
 			      $sequencelookup->{$sequenceid}->{'fasta_file'}=$params{'source'};
                   if ($use_feature_ids_in_fasta) {
                       # the id that the script *should* be using, according to the documentation above:
+                      $sequencelookup->{$sequenceid}->{'fasta_id'}=$sequenceid;
+                      $sequencelookup->{$sequenceid}->{'title'}=$params{'identifier'};
+                  } elsif ($use_sequence_ids_in_fasta) {
                       $sequencelookup->{$sequenceid}->{'fasta_id'}=$sequenceid;
                       $sequencelookup->{$sequenceid}->{'title'}=$params{'identifier'};
                   } else {
@@ -690,7 +701,7 @@ sub process_sequences{
         if(! exists $sequencelookup->{$sequenceid}->{'seqdata'}){
             my $seqdata = undef;
             # column containing the Seq-data-import.identifier
-            my $lookup_col = $use_feature_ids_in_fasta ? 'title' : 'fasta_id';
+            my $lookup_col = ($use_feature_ids_in_fasta || $use_sequence_ids_in_fasta) ? 'title' : 'fasta_id';
             if(exists $e{$h{$sequencelookup->{$sequenceid}->{$lookup_col}}}){
                 my ($offset, $length) = split( ',',$e{$h{$sequencelookup->{$sequenceid}->{$lookup_col}}});
                 seek($filehandle, $offset, 0);
