@@ -222,19 +222,19 @@ umask(0000);
                 if ($args{ergatis_cfg}->val('grid', 'vappio_data_placement')) {
 	            print $debugfh "preparing to perform vappio_data_placement script synchdata.sh\n" if $self->{debug};
 
-                    my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh";
-		    my $vappio_rc = 0xffff & system("$runprefix $vappiosynccmd > /dev/null 2> /dev/null");
+                    my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh --synchronous";
+		    my $vappio_rc = 0xffff & system("$vappiosynccmd > /dev/null 2> /dev/null");
                     # print `sudo -u $args{run_as} $vappiosynccmd`;
 		    printf $debugfh "system(%s) returned %#04x: $vappio_rc for command $runprefix $pipeline_script\n" if $self->{debug};
 		    if($vappio_rc == 0) {
 			print $debugfh "ran vappio_data_placement with normal exit\n" if $self->{debug};
 		    } elsif ( $vappio_rc == 0xff00 ) {
 			print $debugfh "command failed: $!\n" if $self->{debug};
-			croak "Unable to run vappio_data_placement $runprefix $vappiosynccmd failed : $!\n";
+			croak "Unable to run vappio_data_placement $vappiosynccmd failed : $!\n";
 		    } elsif (($vappio_rc & 0xff) == 0) {
 			$vappio_rc >>= 8;
 			print $debugfh "ran vappio_data_placement with non-zero exit status $vappio_rc\n" if $self->{debug};
-			croak "Unable to run vappio_data_placement $runprefix $vappiosynccmd failed : $!\n";
+			croak "Unable to run vappio_data_placement $vappiosynccmd failed : $!\n";
 		    } else {
 			print $debugfh "ran with " if $self->{debug};
 			if($vappio_rc & 0x80){
