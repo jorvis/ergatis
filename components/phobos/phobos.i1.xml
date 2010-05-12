@@ -8,35 +8,7 @@
             <name>phobos</name>
             <state>incomplete</state>
             <executable>$;PHOBOS_EXEC$;</executable>
-            <param>  
-                <key>--searchMode</key>
-                <value>$;SEARCH_MODE$;</value>
-            </param>
-            <param>  
-                <key>--indelScore</key>
-                <value>$;INDEL_SCORE$;</value>
-            </param>
-            <param>  
-                <key>--mismatchScore</key>
-                <value>$;MISMATCH_SCORE$;</value>
-            </param>
-            <param>  
-                <key>--minScore</key>
-                <value>$;MINSCORE$;</value>
-            </param>
-            <param>  
-                <key>--minLength</key>
-                <value>$;MINLENGTH$;</value>
-            </param>
-            <param>  
-                <key>--minUnitLen</key>
-                <value>$;MINUNITLEN$;</value>
-            </param>
-            <param>  
-                <key>--maxUnitLen</key>
-                <value>$;MAXUNITLEN$;</value>
-            </param>
-            <arg>--outputFormat 3 --reportUnit 0 $;OTHER_OPTS$; $;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;.out</arg>
+            <arg>--maxUnitLen $;MAXUNITLEN$; --minUnitLen $;MINUNITLEN$; --minLength $;MINLENGTH$; --minScore $;MINSCORE$; --mismatchScore $;MISMATCH_SCORE$; --indelScore $;INDEL_SCORE$; --searchMode $;SEARCH_MODE$; --outputFormat 3 --reportUnit 0 $;OTHER_OPTS$; $;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;.out</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
