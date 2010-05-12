@@ -116,6 +116,7 @@ while (<$ifh>) {
         my @fields= split(/\s+/, $_);
         if(!$added_seqs->{$fields[0]}) {
             ($seq,$ft) = &add_sequence($fields[0]);
+            $added_seqs->{$fields[0]} = 1;
         }
         next if($fields[0] eq 'seq-name');
         my $start = $fields[3];
