@@ -113,5 +113,20 @@
                 <value>$;QC_OUTPUT_LIST$;</value>
             </param>
         </command>
+        <!--Move all data to /mnt/projects/clovr so we don't gunk up the staging directory-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create component directory under output repository</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>$;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;</arg>
+        </command>            
+        <command>
+            <type>RunUnixCommand</type>
+            <name>move output files to output repository</name>
+            <state>incomplete</state>
+            <executable>mv</executable>
+            <arg>$;OUTPUT_DIRECTORY$; $;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;</arg>
+        </command>            
     </commandSet>
 </commandSetRoot>
