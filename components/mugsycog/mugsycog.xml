@@ -75,6 +75,10 @@
         <key>--identity</key>
         <value>$;IDENTITY$;</value>
         </param>
+        <param>
+        <key>--query_coverage</key>
+        <value>$;QUERY_COVERAGE$;</value>
+        </param>
 	    <param>
 		<key>stdout</key>
 		<value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
