@@ -83,7 +83,7 @@
             <type>RunUnixCommand</type>
             <name>create component directory under output repository</name>
             <state>incomplete</state>
-            <executable>mkdir</executable>
+            <executable>$;BIN_DIR$;/celera_cloud_mkdir.sh</executable>
             <arg>$;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;</arg>
         </command>            
         <command>
@@ -93,7 +93,6 @@
             <executable>mv</executable>
             <arg>$;OUTPUT_DIRECTORY$; $;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;</arg>
         </command>            
-    </commandSet>
         <command>
             <type>RunUnixCommand</type>
             <name>create scaffold file list</name>
@@ -101,7 +100,7 @@
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
                 <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>              
+                <value>$;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;</value>              
             </param>
             <param>
                 <key>--regex</key>
@@ -118,7 +117,7 @@
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
                 <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
+                <value>$;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;/$;PIPELINEID$;_$;OUTPUT_TOKEN$;</value>              
             </param>
             <param>
                 <key>--regex</key>
