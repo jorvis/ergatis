@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>mosaik workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>MosaikBuild Refs</name>
+            <state>incomplete</state>
+            <executable>$;MOSAIK_BUILD_EXEC$;</executable>
+
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/buildref.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/buildref.stderr</value>
+            </param>
+
+            <arg>-fr $;FR$; $;FR2$; $;FQ$; $;FQ2$; -oa $;OUTPUT_DIRECTORY$;/references.dat</arg>            
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>MosaikBuild Reads</name>
+            <state>incomplete</state>
+            <executable>$;MOSAIK_BUILD_EXEC$;</executable>
+
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/buildread.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/buildread.stderr</value>
+            </param>
+
+            <arg>-q $;Q$; $;Q2$; -out $;OUTPUT_DIRECTORY$;/reads.dat -st $;ST$;</arg>            
+        </command>
+
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>MosaikAligner</name>
+            <state>incomplete</state>
+            <executable>$;MOSAIK_ALIGNER_EXEC$;</executable>
+            
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/align.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/align.stderr</value>
+            </param>
+
+            <arg>-in $;OUTPUT_DIRECTORY$;/reads.dat -out $;OUTPUT_DIRECTORY$;/aligned.dat -ia $;OUTPUT_DIRECTORY$;/references.dat -hs $;HS$; -mm $;MM$; -m $;M$; -mhp $;MHP$; -act $;ACT$; -p $;P$; $;OTHER_ALIGN_OPTS$;</arg>            
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>MosaikSort</name>
+            <state>incomplete</state>
+            <executable>$;MOSAIK_SORT_EXEC$;</executable>
+
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/sort.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/sort.stderr</value>
+            </param>
+
+            <arg>-in $;OUTPUT_DIRECTORY$;/aligned.dat -out $;OUTPUT_DIRECTORY$;/aligned_sorted.dat $;OTHER_SORT_OPTS$;</arg>            
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create assembly file output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/ace_files</arg>
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>MosaikAssembler</name>
+            <state>incomplete</state>
+            <executable>$;MOSAIK_ASSEMBLER_EXEC$;</executable>
+
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/assemble.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/assemble.stderr</value>
+            </param>
+
+            <arg>-in $;OUTPUT_DIRECTORY$;/aligned_sorted.dat -ia $;OUTPUT_DIRECTORY$;/references.dat -f $;FORM$; -out $;OUTPUT_DIRECTORY$;/ace_files/assembled</arg>            
+        </command>
+
+    </commandSet>
+</commandSetRoot>
