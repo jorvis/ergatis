@@ -83,8 +83,8 @@
             <type>RunUnixCommand</type>
             <name>create component directory under output repository</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/celera_cloud_mkdir.sh</executable>
-            <arg>$;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;</arg>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;REPOSITORY_ROOT$;/output_repository/$;COMPONENT_NAME$;</arg>
         </command>            
         <command>
             <type>RunUnixCommand</type>
