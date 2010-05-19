@@ -267,6 +267,7 @@ while (<$sfh>) {
 
         ## write the previous sequence before continuing with this one
         unless ($first) {
+            chomp $seq;
             &writeSequence(\$header, \$seq);
 
             ## reset the sequence
