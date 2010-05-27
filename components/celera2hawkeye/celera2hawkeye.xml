@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>celera2hawkeye workflow</name>
+        <!--Preprocessing-->
+        <command>
+        	<type>RunUnixCommand</type>
+        	<name>create output directory</name>
+        	<state>incomplete</state>
+			<executable>mkdir</executable>
+			<arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+		</command>
+		<command>				
+			<type>RunUnixCommand</type>
+			<name>create temp directory</name>
+			<state>incomplete</state>
+			<executable>mkdir</executable>
+    	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+		</command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>toAmos</name>
+            <state>incomplete</state>
+            <executable>$;TOAMOS_EXEC$;</executable>
+            <arg>$;INPUT_FILES$; -o $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.afg $;OTHER_OPTS$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/to_amos.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/to_amos.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>bank-transact</name>
+            <state>incomplete</state>
+            <executable>$;BANK_TRANSACT_EXEC$;</executable>
+            <arg>-m $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.afg -b $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.bnk -c</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/celera_to_hawkeye.bank_transact.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/celera_to_hawkeye.bank_transact.stderr</value>
+            </param>                
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>cleanup afg file</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.afg</arg>
+        </command>            
+    </commandSet>
+</commandSetRoot>            
