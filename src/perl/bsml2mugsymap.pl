@@ -176,6 +176,10 @@ sub process_feature_group
     }
 
 
+    if(!$transcript) {
+        print STDERR "Unable to find a transcript for group".$elt->att('id')."\n";
+        return;
+    }
     # Going to pull the location info here
     my $location = $transcript->first_child('Interval-loc');
     my $fmin = $location->att('startpos');
@@ -216,7 +220,7 @@ sub process_feature_group
         if($gene_feat) {
             my @xrefs = $gene_feat->children('Cross-reference');
             map {
-                if($_->att('identifier-type') eq 'locus') {
+                if(($_->att('identifier-type')) && ($_->att('identifier-type') eq 'locus')) {
                     $gene_val = $_->att('identifier');
                 }
             }@xrefs;
