@@ -115,6 +115,10 @@ sub process_organism
     my ($twig, $elt) = @_;
     my $id = $elt->att('id');
     my $spec = $elt->att('species');
+    my $strain = $elt->first_child('Strain');
+    if($strain) {
+        $spec .= " ".($strain->first_child('Attribute')->att('content'));
+    }
     $spec =~ s/[\s\-\\\\.]//g;
     $organism = $spec;
     $twig->purge();
