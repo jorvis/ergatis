@@ -27,7 +27,7 @@ postscript(file="###output_path###pangenome_power_law_medians_log_error_bar.ps",
 layout(matrix(c(1,2),byrow=TRUE), heights=c(7.5,1))
 
 # Draw the axis
-plot(V1,V2, ylim=c(min(V2),max(V2)), xlab="number of genomes", ylab="new genes", main="###TITLE### pan-genome power law log axis", cex=0.5, log="xy",type="n")
+plot(V1,V2, ylim=c(min(V2),max(V2)), xlab="number of genomes", ylab="pan-genome size", main="###TITLE### pan-genome power law log axis", cex=0.5, log="xy",type="n")
 
 superpose.eb <-
 function (x,y, ...) {
@@ -61,14 +61,13 @@ lines(x, predict(nlmodel_pot, data.frame(v1allmedians=x)), lwd=2, col="red")
 
 
 #abline(h=nlmodel_pot$m$getPars()[1], lty=2, lwd=2,col="red")
-
 expr_pot <- substitute(
-                expression(y == th1 * x^(-th2)), 
+                expression(y == th1 %+-% th1err * x^(th2 %+-% th2err)),
                 list(
                     th1=round(nlmodel_pot$m$getPars()[1], digit=2),
                     th1err = round(summary(nlmodel_pot)[10][[1]][3], digit=2),
                     th2=round(nlmodel_pot$m$getPars()[2], digit=2),
-                    th2err = round(summary(nlmodel_pot)[10][[1]][4], digit=2)
+                    th2err = round(summary(nlmodel_pot)[10][[1]][4], digit=4)
                     )
                       )
 

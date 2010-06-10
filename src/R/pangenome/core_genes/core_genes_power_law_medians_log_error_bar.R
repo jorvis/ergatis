@@ -74,7 +74,7 @@ x <- seq(par()$xaxp[1]-1,as.integer(1.0 + 10^par()$usr[[2]]))
 lines(x, predict(nlmodel_pot, data.frame(v1allmedians=x)), lwd=2, col="black")
 
 expr_pot <- substitute(
-                expression(y == th1err %+-% th1 + th2err %+-% th2 * x^(th3 %+-% th3err)), 
+                expression(y == th1 %+-% th1err + th2 %+-% th2err * x^(th3 %+-% th3err)), 
                 list(
                     th1=round(nlmodel_pot$m$getPars()[1], digit=2),
                     th1err = round(summary(nlmodel_pot)[10][[1]][3], digit=2),
