@@ -27,7 +27,7 @@ postscript(file="###output_path###pangenome_exponential_medians_log_error_bar_wi
 layout(matrix(c(1,2),byrow=TRUE), heights=c(7.5,1))
 
 # Draw the axis
-plot(V1,V2, ylim=c(min(V2),nlmodel_exp$m$getPars()[1]), xlab="number of genomes", ylab="new genes", main="###TITLE### pangenome exponential log axis", cex=0.5, log="xy")
+plot(V1,V2, ylim=c(min(V2),nlmodel_exp$m$getPars()[1]), xlab="number of genomes", ylab="pan-genome size", main="###TITLE### pangenome exponential log axis", cex=0.5, log="xy")
 
 
 superpose.eb <-

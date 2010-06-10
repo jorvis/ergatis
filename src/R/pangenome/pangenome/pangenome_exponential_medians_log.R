@@ -27,7 +27,7 @@ postscript(file="###output_path###pangenome_exponential_medians_log.ps"), width=
 layout(matrix(c(1,2),byrow=TRUE), heights=c(7.5,1))
 
 # Draw the axis
-plot(V1,V2, ylim=c(min(V2),(nlmodel_exp$m$getPars()[1]*1.1)), xlab="number of genomes", ylab="new genes", main="###TITLE### pan-genome exponential log axis", cex=0.5, log="xy")
+plot(V1,V2, ylim=c(min(V2),(nlmodel_exp$m$getPars()[1]*1.1)), xlab="number of genomes", ylab="pan-genome size", main="###TITLE### pan-genome exponential log axis", cex=0.5, log="xy")
 
 # plot the medians
 points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='red')
