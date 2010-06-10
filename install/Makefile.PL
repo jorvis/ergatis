@@ -39,6 +39,7 @@ my @modules_to_check = qw(
     PerlIO::gzip
     Storable
     URI::Escape
+    XML::LibXML
     XML::Parser
     XML::RSS
     XML::Twig
