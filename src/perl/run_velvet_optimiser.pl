@@ -93,6 +93,7 @@ $|++;
 my $debug = 1;
 my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
+my @input_files;
 ####################################################
 
 my %options;
@@ -119,7 +120,8 @@ my $velvet_optimiser_exec = $options{'velvet_path'}."/contrib/VelvetOptimiser/Ve
       "$velvet_optimiser_exec.") unless( -e $velvet_optimiser_exec );
 
 #create the command string
-my $opts_string = "$options{'read_type'} $options{'file_format'} $options{'input_file'}";
+my $input_file_string = join(" ", @input_files);
+my $opts_string = "$options{'read_type'} $options{'file_format'} $input_file_string";
 my $cmd = "$velvet_optimiser_exec -f '$opts_string' -s $options{'start_hash_length'} -e ".
     "$options{'end_hash_length'}";
 $cmd .= " ".$options{'other_optimiser_opts'} if( $options{'other_optimiser_opts'} );
@@ -135,6 +137,7 @@ $cmd = "export PATH=\$PATH:$options{'velvet_path'}; $cmd";
 #And run it, making sure to pass along stdout
 &_log($DEBUG, $cmd);
 my $flag = 0;
+my $data_dir;
 open(CMD, "$cmd |") or &_log($ERROR, "Could not run command $cmd ($!)");
 while( <CMD> ) {
     chomp;
@@ -190,9 +193,20 @@ sub check_options {
    }
 
    foreach my $req ( qw(input_file output_directory velvet_path file_format 
-                        read_type start_hash_length end_hash_length other_optimiser_opts) ) {
+                        read_type start_hash_length end_hash_length) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
+
+   open( TEST, "< $opts->{'input_file'}" ) or &_log( $ERROR, "Could not open $opts->{'input_file'} ($!)");
+   chomp( my @lines = <TEST> );
+   my $first_line = $lines[0];
+   if( $first_line =~ m|^/| ) {
+       #must be a list file
+       @input_files = @lines;
+   } else {
+       push(@input_files, $opts->{'input_file'});
+   }
+   close(TEST);
 
 }
 
