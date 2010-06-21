@@ -1,5 +1,6 @@
 next
 ----
+-celera_assembler_mer: new component use for hybrid assemblies. Designed for use in cloud (non shared) environments
 -velvet_optimser: new component
 -celera2hawkeye: new component
 -celera_assembler_cloud: updated to fix bug where stderr was being written to a non-existant folder

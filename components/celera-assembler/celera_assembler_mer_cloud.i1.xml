@@ -19,10 +19,21 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>runCA</name>
+            <name>runCA_wrapper</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/runCA</executable>
-            <arg>-p $;I_FILE_BASE$; -d $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$; overlapper=mer useGrid=1 scriptOnGrid=0 -s $;SPEC_FILE$; $;I_FILE_PATH$;</arg>
+            <executable>$;BIN_DIR$;/runCA_wrapper</executable>
+            <param>
+               <key>--input_list</key>
+               <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+               <key>--runca_opts</key>
+               <value>&quot;-p $;I_FILE_BASE$; -d $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$; unitigger=bog overlapper=mer useGrid=1 scriptOnGrid=0 -s $;SPEC_FILE$;&quot;</value>
+            </param>
+            <param>
+               <key>--runca_bin</key>
+               <value>$;BIN_DIR$;/runCA</value>
+            </param>
             <param>
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
