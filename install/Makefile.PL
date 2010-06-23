@@ -128,7 +128,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir\nSAMPLE_DOCS_DIR=$sampledocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs samples shellwrappers c_apps pipeline_templates 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates aragorn augustus auto_gene_curation backupdb ber blast2go bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2interevidence_fasta bsml2ptt bsml2tbl bsml_qc concatenate_files clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh find_homopolymers formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus gff3_to_annotab gff3_to_fasta glimmer3 glimmerHMM hmmpfam hmmls fuzznuc infernal initdb intergenic_analysis iprscan islandpath j_ortholog_clusters jaccard legacy2bsml lipop lipoprotein_motif load_ber_for_manatee mask_by_analysis metagene mummer mumsgraph mugsyprep mugsycog muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain overlap_analysis p_func pangenome_blast_parse pangenome_do_analysis pangenome_make_graphs panther parse_evidence parse_for_ncRNAs pathway_tools_input pepstats percent_gc phage_finder phat phobos phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql scp_files seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation tabula_rasa targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress velvet_optimiser wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat sffinfo uclust nucmer
+ergatis_install : dirs samples shellwrappers c_apps pipeline_templates 454_mplex_seq_bin_trim aat_aa aat_aa_masked aat_na aat_na_masked adjust_bsml_coordinates antigenic aragorn augustus auto_gene_curation backupdb bepipred ber blast2go bsml2chado bsml2gff3 bsml2fasta bsml2featurerelationships bsml2interevidence_fasta bsml2ptt bsml2tbl bsml_qc concatenate_files clustalw combine_ncRNA_alignments cvtermpath_closure fasta2bsml fgenesh find_homopolymers formatdb genbank2bsml geneid genemark genewise genezilla genscan genscan-plus gff3_to_annotab gff3_to_fasta glimmer3 glimmerHMM hmmpfam hmmls fuzznuc infernal initdb intergenic_analysis iprscan islandpath j_ortholog_clusters jaccard legacy2bsml lipop lipoprotein_motif load_ber_for_manatee mask_by_analysis metagene mummer mumsgraph mugsyprep mugsycog muscle ncbi-blastp ncbi-blastn ncbi-blastn_compress ncbi-blastx ngap nucmer_snps obo2chado open_reading_frames outer_membrane_domain overlap_analysis p_func pangenome_blast_parse pangenome_do_analysis pangenome_make_graphs panther parse_evidence parse_for_ncRNAs pathway_tools_input pepstats percent_gc phage_finder phat phobos phylip_dnadist pipeline_summary predict_prokaryotic_gene_function predotar priam_ec_assignment promote_gene_prediction ps_scan psiblast quicktree rdp_classifier refresh_chado_mart repeatmasker RNAmmer rpsblast runsql scp_files seg signalp snap split_fasta split_multifasta stap_aligner stap_classifier start_site_curation tabula_rasa targetp tbl2asn tmhmm train_for_glimmer3_iteration translate_sequence trf tRNAscan-SE tRNAscan-SE_compress velvet_optimiser wait wu-blastp wu-blastn wu-blastx wu-tblastn xdformat sffinfo uclust nucmer
 
 	@install components/shared/iterator_template.xml $(WORKFLOW_DOCS_DIR)
 	@install components/shared/file_iterator_template.xml $(WORKFLOW_DOCS_DIR)
@@ -371,6 +371,12 @@ adjust_nap_coordinates	:
 	@install components/adjust_nap_coordinates/adjust_nap_coordinates-master_template.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/adjust_nap_coordinates/adjust_nap_coordinatesconf.ini $(WORKFLOW_DOCS_DIR) 
 
+antigenic  :
+	@echo "Installing antigenic workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/backupdb/antigenic.xml $(WORKFLOW_DOCS_DIR)
+	@install components/backupdb/antigenic.i1.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/backupdb/antigenic.config $(WORKFLOW_DOCS_DIR)  
+
 aragorn	:
 	@echo "Installing aragorn workflows in $(WORKFLOW_DOCS_DIR)"
 	@install components/aragorn/aragorn.xml $(WORKFLOW_DOCS_DIR)
@@ -396,6 +402,12 @@ backupdb  :
 	@install components/backupdb/backupdb.backuptables.xml $(WORKFLOW_DOCS_DIR)  
 	@install components/backupdb/backupdb.config $(WORKFLOW_DOCS_DIR)  
 	@install components/backupdb/backupdb.xml $(WORKFLOW_DOCS_DIR)  
+
+bepipred  :
+	@echo "Installing bepipred workflows in $(WORKFLOW_DOCS_DIR)"
+	@install components/backupdb/bepipred.xml $(WORKFLOW_DOCS_DIR)
+	@install components/backupdb/bepipred.i1.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/backupdb/bepipred.config $(WORKFLOW_DOCS_DIR)  
 
 ber	:
 	@echo "Installing ber workflows in $(WORKFLOW_DOCS_DIR)"
