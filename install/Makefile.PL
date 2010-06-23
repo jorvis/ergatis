@@ -373,9 +373,9 @@ adjust_nap_coordinates	:
 
 antigenic  :
 	@echo "Installing antigenic workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/backupdb/antigenic.xml $(WORKFLOW_DOCS_DIR)
-	@install components/backupdb/antigenic.i1.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/backupdb/antigenic.config $(WORKFLOW_DOCS_DIR)  
+	@install components/antigenic/antigenic.xml $(WORKFLOW_DOCS_DIR)
+	@install components/antigenic/antigenic.i1.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/antigenic/antigenic.config $(WORKFLOW_DOCS_DIR)  
 
 aragorn	:
 	@echo "Installing aragorn workflows in $(WORKFLOW_DOCS_DIR)"
@@ -405,9 +405,9 @@ backupdb  :
 
 bepipred  :
 	@echo "Installing bepipred workflows in $(WORKFLOW_DOCS_DIR)"
-	@install components/backupdb/bepipred.xml $(WORKFLOW_DOCS_DIR)
-	@install components/backupdb/bepipred.i1.xml $(WORKFLOW_DOCS_DIR)  
-	@install components/backupdb/bepipred.config $(WORKFLOW_DOCS_DIR)  
+	@install components/bepipred/bepipred.xml $(WORKFLOW_DOCS_DIR)
+	@install components/bepipred/bepipred.i1.xml $(WORKFLOW_DOCS_DIR)  
+	@install components/bepipred/bepipred.config $(WORKFLOW_DOCS_DIR)  
 
 ber	:
 	@echo "Installing ber workflows in $(WORKFLOW_DOCS_DIR)"
