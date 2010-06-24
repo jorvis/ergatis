@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+  <commandSet type="serial">
+	<state>incomplete</state>
+	<name>mugsy align</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create temp directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;TMP_DIR$;</arg>
+	</command>
+	<!--Processing-->
+	<command>
+	    <type>RunDistributedCommand</type>
+	    <name>run mugsy</name>
+	    <state>incomplete</state>
+	    <executable>/usr/local/projects/angiuoli/mugsy/mugsy</executable>
+	    <param>
+		<key>--directory</key>
+		<value>$;FASTA_FILE_DIR$;</value>
+	    </param>
+        <key>--prefix</key>
+		<value>$;OUTPUT_PREFIX$;</value>
+	    </param>
+		<key>stdout</key>
+		<value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stderr</value>
+	    </param>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Relocate output files</name>
+      <state>incomplete</state>
+      <executable>cp $;FASTA_FILE_DIR$;/$;OUTPUT_PREFIX$;.* $;OUTPUT_DIRECTORY$;</executable>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Relocate output files</name>
+      <state>incomplete</state>
+      <executable>rm $;FASTA_FILE_DIR$;/$;OUTPUT_PREFIX$;.*</executable>
+    </command>
+  </commandSet>
+</commandSetRoot>
