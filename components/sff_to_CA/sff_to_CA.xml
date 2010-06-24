@@ -54,11 +54,11 @@
             </param>
             <param>
                 <key>--insert_size</key>
-                <value>$;INSERT_SIZE$;</value>
+                <value>&quot;$;INSERT_SIZE$;&quot;</value>
             </param>
             <param>
                 <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.frg</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;LIBRARY$;.frg</value>
             </param>                
         </command>
         <command>
