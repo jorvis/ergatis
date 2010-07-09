@@ -164,6 +164,11 @@ while (<$in_fh>) {
     }
 }
 
+if ($orf_count == 0) {
+    $logger->warn("No ORF's found in BSML file.");
+    exit 0;
+}
+
 $id_gen->set_pool_size('ORF' => $orf_count, 'CDS' => $orf_count);
 
 my $orfcount=0;

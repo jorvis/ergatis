@@ -1,5 +1,7 @@
 next
 ----
+-metagene: fixed bug in metagene2bsml.pl script where a zero orf count would cause ungraceful termination
+-crossbow: new componet for short-read mapping. Designed for use with a hadoop cluster
 -celera_assembler_mer: new component use for hybrid assemblies. Designed for use in cloud (non shared) environments
 -velvet_optimser: new component
 -celera2hawkeye: new component
