@@ -83,6 +83,7 @@ composed of the following columns.
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
+use bigint;
 BEGIN {
 use Ergatis::Logger;
 }
@@ -179,14 +180,26 @@ while( my $result = $in->next_result ) {
             $x[19] = $hsp->evalue();
             $x[20] = $hsp->pvalue();
 
+            if( !defined( $x[20] ) ) {
+                $x[20] = &calculate_pvalue( $x[19] );
+            }
+
             my $outline = join ("\t", @x);
             print $ofh "$outline\n";
         }
     }
 }
+#See http://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html
+sub calculate_pvalue {
+    my $evalue = shift;
 
-
-exit(0);
+    my $estimate = 0.57721566490153;
+    
+    #my $p = 1 - (bexp( (-1*$evalue), 4 ) );
+    ( 1 - ( $estimate**(-1*$evalue) ) );
+    return $evalue;
+    
+}
 
 sub check_parameters {
     my $options = shift;
