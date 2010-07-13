@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>rRNA_hmm_fs compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>rRNA_hmm_fs</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/rrna_hmm_fs</executable>
+            <arg>--input $;I_FILE_PATH$; --LibHmm $;HMM_DB$; --output $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.out --Evalue $;EVALUE$; $;OTHER_OPTS$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>                                    
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>check env variables</name>
+            <state>incomplete</state>
+            <executable>env</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/env.out</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/env.err</value>
+            </param>
+        </command>                                            
+     </commandSet>
+</commandSetRoot>           
