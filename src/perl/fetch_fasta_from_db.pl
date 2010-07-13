@@ -98,6 +98,15 @@ sub dump_fasta
 	}
 	elsif ($format eq "formatdb") {
 		$cmd .= " -d $db -p " . ($protein ? "T" : "F") . " -s";
+
+        ## Warning: hack attack <gasp>.
+        ## stupid formatdb. See http://defindit.com/readme_files/blast_formatdb.html
+        foreach my $id ( @ids ) {
+            my $t = "$cmd $id | perl -ne 'if( /^>lcl\\|(.*)/ ) { print \">\$1\\n\"; } else { print \"\$_\"; }'";
+            print "$t\n";
+            print $out `$t` || die "Error fetching id $id\n";
+        }
+        return;
 	}
 	foreach my $id (@ids) {
 		print $out `$cmd "$id"` || die "Error fetching id $id\n";
