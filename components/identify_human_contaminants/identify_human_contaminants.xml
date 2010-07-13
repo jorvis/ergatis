@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>identify_human_contaminants workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>identify_human_contaminants</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/identify_human_contaminants</executable>
+            <arg>--list</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/identify_human_contaminants.pl.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/identify_human_contaminants.pl.stderr</value>
+            </param>
+            <param>
+                <key>--human_contams</key>
+                <value>$;HUMAN_ALIGN$;</value>
+            </param>
+            <param>
+                <key>--ref_geno_search</key>
+                <value>$;REF_ALIGN$;</value>
+            </param>
+            <param>
+                <key>--fasta_file</key>
+                <value>$;FASTA_LIST$;</value>
+            </param>
+            <param>
+                <key>--mincov</key>
+                <value>$;MIN_COVERAGE$;</value>
+            </param>
+            <param>
+                <key>--minpercid</key>
+                <value>$;MIN_PERC_ID$;</value>
+            </param>
+            <param>
+                <key>--output_prefix</key>
+                <value>$;OUTPUT_DIRECTORY$;/identify_human_contaminants</value>
+            </param>
+            <param>
+                <key>--algorithm</key>
+                <value>$;ALGORITHM$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create singleton fasta file</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/get_seq_included</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/get_seq_included.pl.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/get_seq_included.pl.stderr</value>
+            </param>
+            <param>
+                <key>--fasta_list</key>
+                <value>$;FASTA_LIST$;</value>
+            </param>
+            <param>
+                <key>--seq_id_list</key>
+                <value>$;OUTPUT_DIRECTORY$;/identify_human_contaminants.singleton.list</value>
+            </param>
+            <param>
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/identify_human_contaminants.singleton</value>
+            </param>                                                
+        </command>
+    </commandSet>
+</commandSetRoot>               

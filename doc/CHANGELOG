@@ -1,5 +1,7 @@
 next
 ----
+-create_amoscmp_input: new component
+-identify_human_contaminants: new component
 -rrna_hmm_fs: new component
 -metagene: fixed bug in metagene2bsml.pl script where a zero orf count would cause ungraceful termination
 -crossbow: new componet for short-read mapping. Designed for use with a hadoop cluster
