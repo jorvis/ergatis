@@ -66,7 +66,10 @@ sub initialize_pvalues
 	while (my $line = <$fh>) {
 		chomp $line;
 		my $hit = new Blast::BlastHitDataType($line);
-		$p_values{$hit->GetSubjectName} = $hit->GetPValue;
+        my $subject_name = $hit->GetSubjectName;
+        $subject_name =~ s/^lcl\|//;
+        print "Subject Name = $subject_name\n";
+		$p_values{$subject_name} = $hit->GetPValue;
 	}
 }
 
@@ -76,6 +79,7 @@ sub add_pvalues
 		chomp $line;
 		my @tokens = split /\t/, $line;
 		my $subject_name = $tokens[5];
+        $subject_name =~ s/^lcl\|//;
 		my $p_value = $p_values{$subject_name} or
 			die "No p-value found for $subject_name";
 		print $out "$line\t$p_value\n";
