@@ -625,6 +625,7 @@ sub process_feat_group {
     my @exon_coords = ();
 
     my $feat_group_id = $feat_group->{'att'}->{'group-set'};
+    die("Could not get feat_group_id from feat_group") unless( defined( $feat_group_id ) );
     my $count = 0;
     my $sum = 0;
     my $polypeptide_flag = 0;
