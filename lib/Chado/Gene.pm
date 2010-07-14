@@ -263,7 +263,12 @@ sub addFeature {
     my ($self, $id, $start, $stop, $strand, $type) = @_;
     my $feat;
 
-    if($id->isa('Gene::Feature')) {
+    my $is_object = 0;
+    eval {
+        $is_object = $id->isa('Gene::Feature');
+    };
+
+    if($is_object) {
         $feat = $id; 
         $id = $feat->id;
     } else {
