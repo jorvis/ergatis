@@ -1,4 +1,4 @@
-package PFunc::EvidenceParser::BERUniprotParser2;
+package PFunc::EvidenceParser::BERUniprotParser;
 
 use strict;
 use warnings;
@@ -66,7 +66,6 @@ sub _init_ber_parser {
 #######################################################
 sub _pre_parse {
     my ($self) = @_;
-    print "Parsing sequence lengths\n";
     $self->_parse_sequence_lengths( $self->bsml );
 }
 
@@ -108,8 +107,6 @@ sub _parse {
     });
 
     $twig->parse($fh);
-
-    print Dumper( $self->{'_features'} );
 }
 
 sub _handle_sequence {
@@ -348,10 +345,6 @@ sub _calculate_spr_coverage {
     
     my $query_hit_length = $spr->att('runlength');
     my $subject_hit_length = $spr->att('comprunlength');
-
-    print "Subject ID: $subject_id\n";
-    print "Subject hit length: $subject_hit_length\n";
-    print "Subject length: $subject_length\n";
 
     my $query_per_cov = int(( ($query_hit_length/$query_length)*10000 )+.5)/100;
     my $subject_per_cov = int(( ($subject_hit_length/$subject_length)*10000 )+.5)/100;
