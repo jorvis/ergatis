@@ -15,5 +15,7 @@ our @EXPORT = qw( %valid_evidence_types );
      'LipoP' => 'PFunc::EvidenceParser::LipoPParser',
      'TMHMM' => 'PFunc::EvidenceParser::TMHMMParser',
      'Hypothetical' => 'PFunc::EvidenceParser::Hypothetical',
+     'Blast' => "PFunc::EvidenceParser::BlastParser",
+     'BERUniprot' => "PFunc::EvidenceParser::BERUniprotParser",
      );
      
