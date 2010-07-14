@@ -103,12 +103,9 @@ my $tarbasename = "${$}_".int(rand(2000)).".tar.gz";
 my $tar_file = "$tmp_dir/$tarbasename";
 &create_tar( $tmp_dirname, $tar_file );
 
-#create the output directory
-my $mkdir_cmd = "mkdir -p $destination_directory";
-if( defined( $destination_host ) ) {
-    $mkdir_cmd = "ssh $destination_host '$mkdir_cmd'";
-}
-run_cmd( $mkdir_cmd );
+#create the output directory and set permissions
+#so that no one can read/write to it
+&create_directory( $destination_directory );
 
 #copy the file over
 my $cp_cmd = "cp $tar_file $destination_directory";
@@ -131,12 +128,40 @@ if( defined( $destination_host ) ) {
 }
 run_cmd( "$rm_cmd" );
 
+#open up permissions for the file
+my $chmod_cmd = "chmod -R 774 $destination_directory";
+if( defined( $destination_host ) ) {
+    $chmod_cmd = "ssh $destination_host '$chmod_cmd'";
+}
+run_cmd( "$chmod_cmd" );
+
 #Clean up the tmp directory
 run_cmd( "rm -rf $tmp_dirname" );
 run_cmd( "rm $tar_file" );
 ######################################################################
 
 ############################ subroutines #############################
+sub create_directory {
+    my ($destination_directory) = @_;
+    
+    #check to see if parent dirs exist
+    my $parent_dir = $1 if( $destination_directory =~ m|(.*)/[^/]+$| );
+    
+    if( ! -e $parent_dir ) {
+        my $cmd = "mkdir -p $parent_dir";
+        if( defined( $destination_host ) ) {
+            $cmd = "ssh $destination_host '$cmd'";
+        }
+        run_cmd( $cmd );
+    }
+
+    my $cmd = "mkdir -m 700 $destination_directory";
+    if( defined( $destination_host ) ) {
+        $cmd = "ssh $destination_host '$cmd'";
+    }
+    run_cmd( "$cmd" );
+
+}
 sub create_tar {
     my ($dir, $filename) = @_;
     my $cmd = "cd $dir && tar -czf $filename ./*";
