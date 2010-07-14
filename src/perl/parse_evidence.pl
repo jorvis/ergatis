@@ -174,24 +174,6 @@ sub check_options {
     
 
 }
-sub _connect {
-    my ($user, $password, $db, $server) = @_;
-
-    my $dbh;
-    eval {
-        $dbh = DBI->connect("DBI:mysql:$db:$server", "$user", "$password",
-                            { 
-                                'RaiseError' => 1,
-                                'AutoCommit' => 0,
-                          } );
-    };
-    if( $@ ) {
-        carp("Could not connect to database ".DBI->errstr);
-    }
-
-    return $dbh;
-}
-
 sub _pod {
     pod2usage( {-exitval => 0, -verbose => 2} );
 }
