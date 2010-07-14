@@ -105,6 +105,7 @@ foreach my $seq ( keys %{$sequences} ) {
     $docs{$seq}->{'doc'} = new BSML::BsmlBuilder;
     my ( $bsml_seq, $ft ) = &add_sequence_to_doc( $docs{$seq}->{'doc'}, $seq );
     $docs{$seq}->{'bsml_seq'} = $bsml_seq;
+    $docs{$seq}->{'feature_table'} = $ft;
 }
 
 while( my $annot = $annot_col->next_annotation_from_file ) {
@@ -116,7 +117,7 @@ while( my $annot = $annot_col->next_annotation_from_file ) {
     if( !exists( $docs{$parent_seq} ) ) {
         die("Could not find document for $parent_seq");
     }
-     
+    
     &add_gene_to_feature_table( $docs{$parent_seq}->{'doc'}, $docs{$parent_seq}->{'bsml_seq'}, 
                                 $docs{$parent_seq}->{'feature_table'}, $annot );
 
@@ -150,12 +151,14 @@ sub add_gene_to_feature_table {
         my $feature_id = $fr_lookup->lookup( $annot->get_feature_id, $class );
         
         #add the feature
+        die("Feature table was not defined") unless(defined($ft));
         my $feat =  $doc->createAndAddFeature( $ft, $feature_id, 
                                                $feature_id, $class );
         #add the interval loc
         my $intloc = $doc->createAndAddIntervalLoc( $feat, $loc->[0], $loc->[1], $loc->[2] );
 
         #add the link
+        die("Feature $feature_id is undefined") unless( defined($feat) );
         my $link = $doc->createAndAddLink( $feat, 'analysis', "#$analysis_name", "input_of");
         
         #indirect way of indicating where our annotation is
