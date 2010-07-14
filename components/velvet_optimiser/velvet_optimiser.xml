@@ -22,9 +22,9 @@
         <!--Processing-->
 		<command>
 			<type>RunUnixCommand</type>
-			<name>create temp directory</name>
+			<name>run velvet optimiser</name>
 			<state>incomplete</state>
-			<executable>$;BIN_DIR$;/run_velvet_optimiser.pl</executable>
+			<executable>$;BIN_DIR$;/run_velvet_optimiser</executable>
             <param>
                <key>--input_file</key>
                <value>$;INPUT_FILE$;</value>
@@ -60,6 +60,10 @@
             <param>
                <key>--other_optimiser_opts</key>
                <value>&apos;$;OTHER_OPTIMISER_OPTS$;&apos;</value>
+            </param>
+            <param>
+               <key>--output_list</key>
+               <value>$;CONTIG_OUTPUT_LIST$;</value>
             </param>
 		</command>
 	</commandSet>
