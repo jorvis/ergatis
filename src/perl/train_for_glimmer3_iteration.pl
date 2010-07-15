@@ -193,8 +193,11 @@ sub createFileNameLookup {
     ## over the list each time
     my %fsaLookup;
     foreach my $fsa ( @{$fsaList} ) {
-        $fsa =~ /\/([a-z0-9\-_.]+)\./;
-        $fsaLookup{ $1 } = $fsa;
+        if( $fsa =~ /\/([a-z0-9\-_.]+)\./i ) {
+            $fsaLookup{ $1 } = $fsa;
+        } else {
+            die("Coudl not parse fsa or something: $fsa");
+        }
     }
 
     foreach my $pred ( @{$predList} ) { 
