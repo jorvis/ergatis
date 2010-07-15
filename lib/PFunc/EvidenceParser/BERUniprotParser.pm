@@ -9,7 +9,7 @@ use Carp qw(cluck);
 use PFunc::EvidenceParser::ConservedHypothetical;
 use PFunc::Annotation;
 use lib("/export/svn/kgalens/annotation/create_tchar/lib");
-use UnirefClusters;
+use UnirefClusters::Database;
 use Data::Dumper;
 
 use base qw(PFunc::EvidenceParser);
@@ -56,8 +56,12 @@ sub _init_ber_parser {
     $self->{'_sequence_titles'} = {};
 
     ## make the uniref clusters object
-    $self->{'_uniref_clusters_annot'} = new UnirefClusters( "username" => "kgalens",
-                                                            "password" => "kgalens23" );
+    if( $args{'username'} && $args{'password'} ) {
+        $self->{'_uniref_clusters_annot'} = new UnirefClusters::Database( "username" => $args{'username'},
+                                                                          "password" => $args{'password'} );
+    } else {
+        die("Username and password arguments are required");
+    }
     
 }
 
