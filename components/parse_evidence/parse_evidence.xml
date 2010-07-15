@@ -50,6 +50,10 @@
                 <key>--annotate_on</key>
                 <value>$;ANNOTATE_ON$;</value>
             </param>
+            <param>
+                <key>--other_options</key>
+                <value>&apos;$;OTHER_PARSER_OPTS$;&apos</value>
+            </param>
         </command>
         </commandSet>
         <command>
