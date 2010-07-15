@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/env perl
 
 =head1 NAME
 
@@ -116,7 +116,7 @@ sub compare_config_vars {
 
         my @t_params = $template_config->Parameters($t_section);
         my $tc_param_hash = {};
-        map { $tc_param_hash->{$_} } @t_params;
+        map { $tc_param_hash->{$_} = 1 } @t_params;
         $tc_params{ $t_section } = $tc_param_hash;
 
         if( exists( $cc_params{ $t_section } ) ) {
@@ -147,9 +147,9 @@ sub print_differences {
     map { push( @t_diffs, keys %{$tc_params->{$_}} ) } keys %$tc_params;
 
     if( @t_diffs == 0 and @c_diffs == 0 ) {
-        print "$comp OK\n";
+        #print "$comp OK\n";
     } else {
-        print "$comp not OK\n";
+        print basename($comp)." not OK\n";
         if( @t_diffs > 0 ) {
             print "\tThere are ".scalar(@t_diffs)." variables in template config that are not found in current config\n\t\t";
             my $p_string = join( "\n\t\t", @t_diffs );
@@ -177,6 +177,8 @@ sub get_options {
 
     if( $options{'pipeline_layout'} ) {
         $pipeline_layout = $options{'pipeline_layout'};
+        die("File does not exist: $pipeline_layout")
+            unless( -e $pipeline_layout && -f $pipeline_layout );
     } else {
         &_pod("Option pipeline_layout is required.", 1);
     }
