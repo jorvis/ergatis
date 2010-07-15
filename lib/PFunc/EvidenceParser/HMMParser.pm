@@ -1,7 +1,6 @@
 package PFunc::EvidenceParser::HMMParser;
 
-#expects database_path to be set
-#uses $database_path/tigr_roles as directory to pass into TIGR::Roles modules.
+#Required options: hmm_info, tigr_roled_db_dir
 
 use strict;
 use warnings;
@@ -20,7 +19,7 @@ use base qw(PFunc::EvidenceParser);
 
 ##### class vars #####
 my $annotation_type = "HMM";
-my $default_hmm_info = "coding_hmm/coding_hmm.lib.db";
+my $default_hmm_info = "coding_hmm.lib.db";
 
 sub new {
     my ($class, %args) = @_;
@@ -32,11 +31,6 @@ sub new {
 
 sub _init_hmm_parser {
     my ($self, %args) = @_;
-
-    ## database_path is required and should have been passed to parent
-    my $db_path = $self->database_path();
-    die("Option database_path is a required argument for HMM Parsing")
-        unless( $db_path );
     
     ## hmm info
     my %tmp;
@@ -44,14 +38,21 @@ sub _init_hmm_parser {
         tie(%tmp, 'MLDBM', $args{'hmm_info'}, O_RDONLY )
             or die("Could not tie hash to $args{'ber_info'}");
     } else {
-        tie(%tmp, 'MLDBM', $db_path."/".$default_hmm_info, O_RDONLY )
-            or die("Could not tie hash to $db_path/$default_hmm_info");
+        die("Option hmm_info is required to create ".__PACKAGE__);
     }
     $self->{'_hmm_info'} = \%tmp;
 
+    ## tigr_roles dir
+    my $tigr_roles_db_dir;
+    if( $args{'tigr_roles_db_dir'} ) {
+        $tigr_roles_db_dir = $args{'tigr_roles_db_dir'}
+    } else {
+        die("Option tigr_roles_db_dir is required to create ".__PACKAGE__);
+    }
+
     $self->_init_valid_isotypes();
     $self->_init_name_suffixes();
-    $self->_init_tigr_roles_lookup($db_path);
+    $self->_init_tigr_roles_lookup($tigr_roles_db_dir);
     
 }
 

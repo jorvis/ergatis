@@ -47,11 +47,6 @@ sub new {
 ##### private subroutines #####
 sub _init_ber_parser {
     my ($self, %args ) = @_;
-
-    ## the database_path should have been passed to parent
-    my $db_path = $self->database_path();
-    die("The database_path argument is required for BER Parsing")
-        unless( $db_path );
     
     ## initialize instance vars
     $self->{'_seq_lengths'} = {};
@@ -64,13 +59,20 @@ sub _init_ber_parser {
         tie(%tmp, 'MLDBM', $args{'ber_info'}, O_RDONLY )
             or die("Could not tie hash to $args{'ber_info'}");
     } else {
-        tie(%tmp, 'MLDBM', $db_path."/".$default_ber_info, O_RDONLY )
-            or die("Could not tie hash to $db_path/$default_ber_info");
+        die("Option ber_info is required to create a ".__PACKAGE__);
     }
     $self->{'_ber_info'} = \%tmp;
 
+    ## tigr_roles_db_dir
+    my $tigr_roles_db_dir;
+    if( $args{'tigr_roles_db_dir'} ) {
+        $tigr_roles_db_dir = $args{'tigr_roles_db_dir'};
+    } else {
+        die("Option tigr_roles_db_dir is required to create a ".__PACKAGE__);
+    }
+
     ## tigr roles lookup
-    $self->_tigr_roles_lookup( new TIGR::Roles::Omnium::OmniumToRoleLookup( 'roles_db_dir' => $db_path."/tigr_roles" ) );
+    $self->_tigr_roles_lookup( new TIGR::Roles::Omnium::OmniumToRoleLookup( 'roles_db_dir' => $tigr_roles_db_dir ) );
     
     
 }
