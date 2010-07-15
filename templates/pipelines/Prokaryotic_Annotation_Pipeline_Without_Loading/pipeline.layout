@@ -63,7 +63,7 @@
                     <state>incomplete</state>
                     <commandSet type="serial">
                         <state>incomplete</state>
-                        <name>wu-blastp.pre_overlap_analysis</name>
+                        <name>ncbi-blastx.pre_overlap_analysis</name>
                     </commandSet>
                     <commandSet type="serial">
                         <state>incomplete</state>
@@ -126,7 +126,7 @@
                         <state>incomplete</state>
                         <commandSet type="serial">
                             <state>incomplete</state>
-                            <name>wu-blastp.post_overlap_analysis</name>
+                            <name>ncbi-blastx.post_overlap_analysis</name>
                         </commandSet>
                         <commandSet type="serial">
                             <state>incomplete</state>
