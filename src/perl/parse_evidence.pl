@@ -104,6 +104,7 @@ sub check_options {
                               'append_mode|a=s',
                               'annotate_on|c=s',
                               'database_path|d=s',
+                              'other_options|t=s',
                               'help|h',
                               );
    
