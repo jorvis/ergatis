@@ -51,6 +51,10 @@
             <state>incomplete</state>
             <name>translate_sequence.translate</name>
         </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>bsml2fasta.create_blastx_pre_input</name>
+        </commandSet>
         <commandSet type="parallel">
             <state>incomplete</state>
             <commandSet type="serial">
@@ -98,6 +102,10 @@
             <commandSet type="serial">
                 <state>incomplete</state>
                 <name>translate_sequence.translate_new_models</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>bsml2fasta.create_blastx_post_input</name>
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
