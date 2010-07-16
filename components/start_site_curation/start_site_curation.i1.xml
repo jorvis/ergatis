@@ -30,7 +30,15 @@
             </param>
             <param>
                 <key>--char_db</key>
-                <value>$;CHARACTERIZED_DB$;</value>
+                <value>&apos;$;CHARACTERIZED_DB$;&apos;</value>
+            </param>
+            <param>
+                <key>--username</key>
+                <value>&apos;$;DB_USERNAME$;&apos;</value>
+            </param>
+            <param>
+                <key>--password</key>
+                <value>&apos;$;DB_PASSWORD$;&apos;</value>
             </param>
             <param>
                 <key>--percent_identity_cutoff</key>
