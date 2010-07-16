@@ -13,6 +13,8 @@ start_site_curation.pl - Looks at the start sites of genes in a bsml file and wi
        --changed_features_bsml=/path/to/output.new.bsml
        --evidence=/path/to/ber.bsml.list
        --char_db=/path/to/tchar.db
+       --username=user
+       --password=pass
        --ber_extension=300
        --percent_identity_cutoff=60
        --p_value_cutoff=1e-30
@@ -71,6 +73,12 @@ B<--rbs_ag_percent_cutoff,-a>
     OPTIONAL. Default = 75.  The percent presence of As and Gs in the sliding window. If
     percent AG is higher than this cutoff, the sequence is considered to have a RBS.
 
+B<--username>
+    Database username for querying for characterized status of proteins
+
+B<--password>
+    Database password for querying for characterized status of proteins
+
 B<--log,-l>
     Logfile.
 
@@ -87,7 +95,7 @@ B<--help,-h>
     (shine delgarno consensus sequence) as well as start site probabilities.  Reads gene
     information from gene describing BSML input (such as that output from promote_gene_prediction
     or glimmer3) and also evidence (a list of BSML output files from BER alignment run).  
-
+username
     A start site will be changed according to the following algorithm:
 
     1. BER Evidence
@@ -158,6 +166,7 @@ use BSML::BsmlBuilder;
 use File::Find;
 use File::Basename;
 use File::OpenFile qw(open_file);
+use UnirefClusters::Database;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use MLDBM 'DB_File';
 use DB_File;
@@ -193,6 +202,8 @@ my %evidence;
 my %feature_relationships;
 my %characterized;
 my %changed_start_sites;
+my $use_db = 0;
+my $ur_db;
 #######################################
 
 my $results = GetOptions (\%options,
@@ -324,9 +335,18 @@ foreach my $sequence_id ( keys %{$sequences} ) {
 ############################## SUBS ############################
 sub is_characterized {
     my ($compseq) = @_;
-    my $portion = "$1|$2" if( $compseq =~ /^([^\_]+)\_([^\_]+\_?[^\_]+)\_/ );
-    $logger->logdie("Could not unbsmlize $compseq") unless( $portion );
-    return (exists( $characterized{$portion} ) );
+    my $retval = 0;
+
+    #Are we using the lookup file or the database
+    if( $use_db ) {
+        my $cluster_id = $ur_db->get_cluster_id_by_acc( $compseq );
+        $retval = $ur_db->cluster_is_trusted( $cluster_id ) if( defined( $cluster_id ) );
+    } else {
+        my $portion = "$1|$2" if( $compseq =~ /^([^\_]+)\_([^\_]+\_?[^\_]+)\_/ );
+        $retval = defined( $portion ) ? exists( $characterized{$portion} ) : exists( $characterized{$compseq} );
+    }
+
+    return $retval;
 }
 
 sub write_output {
@@ -920,6 +940,12 @@ sub check_options {
    if( $opts->{'char_db'} ) {
        tie(%characterized, 'MLDBM', $opts->{'char_db'}, O_RDONLY )
            or $logger->logdie("Could not tie $opts->{'char_db'} to hash");
+   }
+
+   if( $opts->{'username'} && $opts->{'password'} ) {
+       $use_db = 1;
+       $ur_db = new UnirefClusters::Database( "username" => $opts->{'username'},
+                                              "password" => $opts->{'password'} );
    }
 
    if( $opts->{'ber_extension'} ) {
