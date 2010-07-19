@@ -48,7 +48,7 @@
             </param>
             <param>
                 <key>--other_options</key>
-                <value>&apos;$;OTHER_PARSER_OPTS$;&apos</value>
+                <value>&apos;$;OTHER_PARSER_OPTIONS$;&apos;</value>
             </param>
         </command>
         </commandSet>
