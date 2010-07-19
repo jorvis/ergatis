@@ -19,8 +19,6 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
-        <commandSet type="serial">
-        <name>parse_evidence compute</name>
         <command>
             <type>RunUnixCommand</type>
             <name>parse_evidence</name>
@@ -51,7 +49,6 @@
                 <value>&apos;$;OTHER_PARSER_OPTIONS$;&apos;</value>
             </param>
         </command>
-        </commandSet>
         <command>
             <type>RunUnixCommand</type>
             <name>create tab list</name>
