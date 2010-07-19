@@ -13,12 +13,12 @@ sub new {
     my $self = {};
     bless( $self, $class );
     
-    if( $args{'database_path'} ) {
-        $self->{'_keyword_file'} = $args{'database_path'}."/tigr_roles/tigr_roles_keywords.txt";
+    if( $args{'tigr_roles_db_dir'} ) {
+        $self->{'_keyword_file'} = $args{'tigr_roles_db_dir'}."/tigr_roles_keywords.txt";
         die("Could not find keywords file: $self->{'_keyword_file'}") 
             unless( -e $self->{'_keyword_file'} );
     } else {
-        die("Argument database_path is required for creation of a TIGRRolesAnnotation object");
+        die("Argument tigr_roles_db_dir is required for creation of a TIGRRolesAnnotation object");
     }
     return $self;
 }

@@ -6,9 +6,8 @@ use MLDBM 'DB_File';
 use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
-my $default_roles_db_dir = "/usr/local/projects/db";
-my $default_pfam2role_dbfile = "/tigr_roles/pfam2role.db";
-my $default_pfam2role_tab = "/tigr_roles/hmm/PFAM_role_id.txt";
+my $default_pfam2role_dbfile = "/pfam2role.db";
+my $default_pfam2role_tab = "/hmm/PFAM_role_id.txt";
 
 sub new {
     my ($class, %args) = @_;
@@ -35,21 +34,25 @@ sub _init {
 
     if( $args{'roles_db_dir'} ) {
         $self->roles_db_dir($args{'roles_db_dir'});
-    } else {
-        $self->roles_db_dir($default_roles_db_dir);
     }
 
     if( $args{'pfam2role_dbfile'} ) {
         $self->pfam2role_dbfile( $args{'pfam2role_dbfile'} );
     } else {
-        $self->pfam2role_dbfile( $self->roles_db_dir().$default_pfam2role_dbfile );
+        $self->pfam2role_dbfile( $self->roles_db_dir().$default_pfam2role_dbfile )
+            if( $self->roles_db_dir() );
     }
 
     if( $args{'pfam2role_tab'} ) {
         $self->pfam2role_tab( $args{'pfam2role_tab'} );
     } else {
-        $self->pfam2role_tab( $self->roles_db_dir().$default_pfam2role_tab );
+        $self->pfam2role_tab( $self->roles_db_dir().$default_pfam2role_tab )
+            if( $self->roles_db_dir() );
     }
+
+    #die if we don't have the files we need
+    die("Please provide paths to required files by using roles_db_dir, pfam2role_dbfile and/or pfam2role_tab options")
+        unless( $self->pfam2role_tab && $self->pfam2role_dbfile );
 
     #Tie a hash
     my %pfam2role_lookup;
@@ -115,7 +118,7 @@ sub _param {
     if( $value ) {
         $self->{"_$name"} = $value;
     } else {
-        return $self->{"_$name"};
+        return $self->{"_$name"} || undef;
     }
 }
 1;

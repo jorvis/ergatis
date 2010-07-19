@@ -6,9 +6,8 @@ use MLDBM 'DB_File';
 use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
-my $default_roles_db_dir = "/usr/local/projects/db";
-my $default_tigrfam2role_dbfile = "/tigr_roles/tigrfam2role.db";
-my $default_tigrfam2role_tab = "/TIGRFAMs/TIGRFAMS_ROLE_LINK";
+my $default_tigrfam2role_dbfile = "/tigrfam2role.db";
+my $default_tigrfam2role_tab = "/TIGRFAMS_ROLE_LINK";
 
 sub new {
     my ($class, %args) = @_;
@@ -35,11 +34,13 @@ sub _init {
 
     if( $args{'roles_db_dir'} ) {
         $self->roles_db_dir($args{'roles_db_dir'});
-    } else {
-        $self->roles_db_dir($default_roles_db_dir);
+    } 
+
+    if( $args{'tigrfams_dir'} ) {
+        $self->tigrfams_dir( $args{'tigrfams_dir'} );
     }
 
-    if( $args{'pfam2role_dbfile'} ) {
+    if( $args{'tigr2role_dbfile'} ) {
         $self->tigrfam2role_dbfile( $args{'tigrfam2role_dbfile'} );
     } else {
         $self->tigrfam2role_dbfile( $self->roles_db_dir().$default_tigrfam2role_dbfile );
@@ -48,7 +49,7 @@ sub _init {
     if( $args{'tigrfam2role_tab'} ) {
         $self->tigrfam2role_tab( $args{'tigrfam2role_tab'} );
     } else {
-        $self->tigrfam2role_tab( $self->roles_db_dir().$default_tigrfam2role_tab );
+        $self->tigrfam2role_tab( $self->tigrfams_dir().$default_tigrfam2role_tab );
     }
 
     #Tie a hash
@@ -95,6 +96,11 @@ sub roles_db_dir {
     return $self->_param('roles_db_dir', $value);
 }
 
+sub tigrfams_dir {
+    my ($self, $value) = @_;
+    return $self->_param('tigrfams_dir', $value);
+}
+
 sub tigrfam2role_dbfile {
     my ($self, $value) = @_;
     return $self->_param('tigrfam2role_dbfile', $value);
@@ -115,7 +121,7 @@ sub _param {
     if( $value ) {
         $self->{"_$name"} = $value;
     } else {
-        return $self->{"_$name"};
+        return $self->{"_$name"} || undef;
     }
 }
 1;

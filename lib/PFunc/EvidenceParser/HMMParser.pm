@@ -50,9 +50,17 @@ sub _init_hmm_parser {
         die("Option tigr_roles_db_dir is required to create ".__PACKAGE__);
     }
 
+    ## tigrfams dir
+    my $tigrfams_dir;
+    if( $args{'tigrfams_dir'} ) {
+        $tigrfams_dir = $args{'tigrfams_dir'};
+    } else {
+        die("Option tigrfams_dir is required to create ".__PACKAGE__);
+    }
+
     $self->_init_valid_isotypes();
     $self->_init_name_suffixes();
-    $self->_init_tigr_roles_lookup($tigr_roles_db_dir);
+    $self->_init_tigr_roles_lookup($tigr_roles_db_dir, $tigrfams_dir);
     
 }
 
@@ -91,9 +99,10 @@ sub _init_name_suffixes {
 }
 
 sub _init_tigr_roles_lookup {
-    my ($self, $db_path) = @_;
-    my $pfam_lookup = new TIGR::Roles::HMM::PfamToRoleLookup('roles_db_dir' => $db_path );
-    my $tigr_lookup = new TIGR::Roles::HMM::TIGRFamToRoleLookup( 'roles_db_dir' => $db_path );
+    my ($self, $tr_db_dir, $tigrfams_dir) = @_;
+    my $pfam_lookup = new TIGR::Roles::HMM::PfamToRoleLookup('roles_db_dir' => $tr_db_dir );
+    my $tigr_lookup = new TIGR::Roles::HMM::TIGRFamToRoleLookup( 'roles_db_dir' => $tr_db_dir, 
+                                                                 'tigrfams_dir' => $tigrfams_dir );
     $self->_tigr_role_lookup( 'PFAM', $pfam_lookup );
     $self->_tigr_role_lookup( 'TIGRFam', $tigr_lookup );
 }

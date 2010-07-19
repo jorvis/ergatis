@@ -169,8 +169,8 @@ sub check_options {
         $db_path = $options{'database_path'};
     }
 
-    my $args = "";
-    $args .= "database_path => \"$db_path\" " if $db_path;
+    my @args = ();
+    push(@args, "database_path => \"$db_path\"") if $db_path;
 
     ## parse any other user provided options and send them to the
     ## parser object
@@ -178,15 +178,19 @@ sub check_options {
         my @pairs = split(/[,\s]+/, $options{'other_options'} );
         foreach my $p (@pairs) {
             my ($key, $value) = split(/[\s=]+/, $p );
-            $args .= ", $key => \"$value\"";
+            push(@args, "$key => \"$value\"");
         }
     }
+
+    my $arg_string = join(", ", @args);
+    my $command = "\$parser = new $valid_evidence_types{ $ev_type }( $arg_string )";
+    print "$command\n";
     
     ## create the correct parser type
     eval("require $valid_evidence_types{$ev_type}") or 
         die("Could not require $valid_evidence_types{$ev_type}. Perhaps ".
             "EvidenceParser::ValidEvidenceTypes.pm is configured incorrectly [$@]");
-    eval("\$parser = new $valid_evidence_types{ $ev_type }( $args )") or 
+    eval("\$parser = new $valid_evidence_types{ $ev_type }( $arg_string )") or 
         die("Could not create parser object ($valid_evidence_types{ $ev_type }). [$@]");
     
 
