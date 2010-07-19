@@ -176,7 +176,7 @@ sub _handle_seq_pair_alignment {
     
     ## Skipping matches that don't have a common name 
     ## or it contains the word hypothetical
-    my $gp_name = ($comp_annot->get('gene_product_name'))[0];
+    my $gp_name = ($comp_annot->get('gene_product_name'))[0]->[0];
     return unless( defined( $gp_name ) && $gp_name ne "" );
     return if( $gp_name =~ /hypothetical/i );
     
