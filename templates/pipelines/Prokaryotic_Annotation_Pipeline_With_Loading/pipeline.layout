@@ -51,6 +51,10 @@
             <state>incomplete</state>
             <name>translate_sequence.translate</name>
         </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>bsml2fasta.create_blastx_pre_input</name>
+        </commandSet>
         <commandSet type="parallel">
             <state>incomplete</state>
             <commandSet type="serial">
@@ -63,7 +67,7 @@
                     <state>incomplete</state>
                     <commandSet type="serial">
                         <state>incomplete</state>
-                        <name>wu-blastp.pre_overlap_analysis</name>
+                        <name>ncbi-blastx.pre_overlap_analysis</name>
                     </commandSet>
                     <commandSet type="serial">
                         <state>incomplete</state>
@@ -101,6 +105,10 @@
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
+                <name>bsml2fasta.create_blastx_post_input</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
                 <commandSet type="serial">
                     <state>incomplete</state>
                     <commandSet type="serial">
@@ -126,7 +134,7 @@
                         <state>incomplete</state>
                         <commandSet type="serial">
                             <state>incomplete</state>
-                            <name>wu-blastp.post_overlap_analysis</name>
+                            <name>ncbi-blastx.post_overlap_analysis</name>
                         </commandSet>
                         <commandSet type="serial">
                             <state>incomplete</state>
