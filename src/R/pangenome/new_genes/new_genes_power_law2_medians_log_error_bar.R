@@ -102,10 +102,10 @@ lines(x, predict(nlmodel_pot,data.frame(v1submedians=x)), lwd=2, col="black")
 expr_pot <- substitute(
                 expression(y == th1 * x^(-th2)), 
                 list(
-                    th1=round(nlmodel_pot$m$getPars()[1], digit=2),
-                    th1err = round(summary(nlmodel_pot)[10][[1]][3], digit=2),
-                    th2=round(nlmodel_pot$m$getPars()[2], digit=2),
-                    th2err = round(summary(nlmodel_pot)[10][[1]][4], digit=2)
+                    th1=round(nlmodel_pot$m$getPars()[1], digit=4),
+                    th1err = round(summary(nlmodel_pot)[10][[1]][3], digit=4),
+                    th2=round(nlmodel_pot$m$getPars()[2], digit=4),
+                    th2err = round(summary(nlmodel_pot)[10][[1]][4], digit=4)
                     )
                       )
 

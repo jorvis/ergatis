@@ -40,12 +40,12 @@ abline(h=nlmodel_exp$m$getPars()[1], lty=2, lwd=2,col="black")
 expr_exp <- substitute(
                 expression(y == th1 %+-% th1err + th2 %+-% th2err * italic(e)^(-x / (th3 %+-% th3err))), 
                 list(
-                    th1 = round(nlmodel_exp$m$getPars()[1], digit=2),
-                    th1err = round(summary(nlmodel_exp)[10][[1]][3], digit=2),
-                    th2 = round(nlmodel_exp$m$getPars()[2], digit=2),
-                    th2err = round(summary(nlmodel_exp)[10][[1]][4], digit=2),
-                    th3 = round(nlmodel_exp$m$getPars()[3], digit=2),
-                    th3err = round(summary(nlmodel_exp)[10][[1]][5], digit=2)
+                    th1 = round(nlmodel_exp$m$getPars()[1], digit=4),
+                    th1err = round(summary(nlmodel_exp)[10][[1]][3], digit=4),
+                    th2 = round(nlmodel_exp$m$getPars()[2], digit=4),
+                    th2err = round(summary(nlmodel_exp)[10][[1]][4], digit=4),
+                    th3 = round(nlmodel_exp$m$getPars()[3], digit=4),
+                    th3err = round(summary(nlmodel_exp)[10][[1]][5], digit=4)
                     )
                 )
 
