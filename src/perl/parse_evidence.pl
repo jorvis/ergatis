@@ -140,6 +140,7 @@ sub check_options {
     }
 
     if( @input_files == 0 ) {
+        $options{'input_file'} or $options{'input_list'} and exit;
         die("Please specify input using either the --input_file or ".
             "--input_list options");
     }
