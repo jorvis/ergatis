@@ -7,10 +7,11 @@ run_velvet_optimiser.pl - Eragtis wrapper script for running Velvet Optimiser.
 =head1 SYNOPSIS
 
  USAGE: run_velvet_optimiser.pl
-       --input_file=/path/to/file.reads
+       --shortPaired=/path/to/file.list
+       --longPaired=/path/to/file.list
+       --short=/path/to/file.list
+       --long=/path/to/file.list
        --velvet_path=/abs/path/to/velvet_dir
-       --file_format=-fasta
-       --read_type=-short
        --start_hash_length=17
        --end_hash_length=31
        --other_optimiser_opts='-a yes'
@@ -23,8 +24,13 @@ run_velvet_optimiser.pl - Eragtis wrapper script for running Velvet Optimiser.
 
 =head1 OPTIONS
 
-B<--input_file,-i>
-    Path to an input file to be passed into the optimiser
+B<--shortPaired,-sp>
+
+B<--longPaired,-lp>
+
+B<--short,-s>
+
+B<--long,-l>
 
 B<--velvet_path,-p>
     Absolute directory of where the velvet executables are held
@@ -37,7 +43,7 @@ B<--read_type,-r>
     Can be one of the following:
     [-short|-shortPaired|-short2|-shortPaired2|-long|-longPaired]
 
-B<--start_hash_length,-s>
+B<--start_hash_length,-a>
     The hash length (or kmer) for the first iteration of velvet.
     Must be an odd number
 
@@ -57,7 +63,7 @@ B<--output_list,-u>
     to the contigs.fa produced by velvet.  Optional; if not provided,
     no list will be made.
 
-B<--log,-l>
+B<--log,-L>
     Logfile.
 
 B<--debug,-d>
@@ -93,21 +99,22 @@ $|++;
 my $debug = 1;
 my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
-my @input_files;
+my %input_files;
 ####################################################
 
 my %options;
 my $results = GetOptions (\%options,
-                          "input_file|i=s",
+                          "shortPaired|sp=s",
+                          "longPaired|lp=s",
+                          "short|s=s",
+                          "long|l=s",
                           "velvet_path|v=s",
-                          "file_format|f=s",
-                          "read_type|r=s",
-                          "start_hash_length|s=s",
+                          "start_hash_length|a=s",
                           "end_hash_length|e=s",
                           "other_optimiser_opts|o=s",
                           "output_directory|O=s",
                           "output_list|u=s",
-                          "log|l=s",
+                          "log|L=s",
                           "debug|d=s",
                           "help|h"
                           );
@@ -120,8 +127,7 @@ my $velvet_optimiser_exec = $options{'velvet_path'}."/contrib/VelvetOptimiser/Ve
       "$velvet_optimiser_exec.") unless( -e $velvet_optimiser_exec );
 
 #create the command string
-my $input_file_string = join(" ", @input_files);
-my $opts_string = "$options{'read_type'} $options{'file_format'} $input_file_string";
+my $opts_string = &create_input_string( \%input_files );
 my $cmd = "$velvet_optimiser_exec -f '$opts_string' -s $options{'start_hash_length'} -e ".
     "$options{'end_hash_length'}";
 $cmd .= " ".$options{'other_optimiser_opts'} if( $options{'other_optimiser_opts'} );
@@ -177,6 +183,20 @@ if( $options{'output_list'} ) {
     close($out);
 }
 
+sub create_input_string {
+    my ($input_hash) = @_;
+
+    my $input_string = "";
+
+    foreach my $read_type ( keys %{$input_hash} ) {
+        foreach my $format ( keys %{$input_hash->{$read_type}} ) {
+            my $files = join(" ", @{$input_hash->{$read_type}->{$format}} );
+            $input_string .= " -$read_type -$format $files";
+        }
+    }
+
+    return $input_string;
+}
 
 sub check_options {
 
@@ -192,21 +212,46 @@ sub check_options {
        open( $logfh, "> $opts->{'log'}") or die("Can't open log file ($opts->{'log'}) ($!)");
    }
 
-   foreach my $req ( qw(input_file output_directory velvet_path file_format 
-                        read_type start_hash_length end_hash_length) ) {
+   foreach my $req ( qw(output_directory velvet_path start_hash_length end_hash_length) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 
-   open( TEST, "< $opts->{'input_file'}" ) or &_log( $ERROR, "Could not open $opts->{'input_file'} ($!)");
-   chomp( my @lines = <TEST> );
-   my $first_line = $lines[0];
-   if( $first_line =~ m|^/| ) {
-       #must be a list file
-       @input_files = @lines;
-   } else {
-       push(@input_files, $opts->{'input_file'});
+   foreach my $input ( qw(shortPaired longPaired short long) ) {
+       $input_files{$input} = {};
+       &get_input_files( $opts->{$input}, $input_files{$input} ) if( $opts->{$input} );
    }
-   close(TEST);
+
+
+}
+
+sub get_input_files {
+    my ($input, $data) = @_;
+
+    my @inputs = split(/[,\s]+/, $input );
+    foreach my $i ( @inputs ) {
+
+        open(IN, "< $i") or die("can't open $i: $!");
+        my $first_line = <IN>;
+
+        next unless( defined( $first_line ) );
+        
+        #is it fasta?
+        if( $first_line =~ m|^\>| ) {
+            $data->{'fasta'} = [] unless( exists( $data->{'fasta'} ) );
+            push( @{$data->{'fasta'}}, $i );
+        } elsif( $first_line =~ m|^\@| ) {
+            $data->{'fastq'} = [] unless( exists( $data->{'fastq'} ) );
+            push( @{$data->{'fastq'}}, $i );
+        } elsif( $first_line =~ m|/| ) {
+            my @lines = <IN>;
+            push(@lines, $first_line);
+            &get_input_files( join(",",@lines), $data );
+        } else {
+            die("Can't figure out the format of $i");
+        }
+        
+        close(IN);
+    }
 
 }
 
