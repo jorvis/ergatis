@@ -10,10 +10,8 @@ prepare_input_for_velvet.pl - Will read in a file and run shuffle sequences (pro
  USAGE: prepare_short_paired_input_for_velvet.pl
        --output_directory=/path/to/output_dir/
        --short_input_list=/path/to/paired_end_files.list
-       --short_format=[fasta|fastq]
        --short_output_list=/path/to/short_reads.list
        --long_input_list=/path/to/long_paired_ends.list
-       --long_format=[fasta|fastq]
        --long_output_list=/path/to/long_reads.list
        --velvet_path=/path/to/velvet_dir/
      [ --log=/path/to/file.log
@@ -30,20 +28,11 @@ B<--short_input_list,-s>
     Value should be a list (or comma separated list of lists) that contains 2 files (in the same format)
     which represent paired end files. Accepts only fasta or fastq format.
 
-B<--short_format,-s>
-    Specify the format that each of the input lists is. For example if you specified this for -i:
-      /path/to/fastq.list,/path/to/fasta.list
-
-    You would specificy -f fastq,fasta for this option.
-
 B<--short_output_list,-so>
     Will create a list of the short read output files
 
 B<--long_input_list,-l>
     Same as short input list, but these are for long reads (ex sanger, 454, etc.)
-
-B<--long_format,-lf>
-    Same as short format but for the long input
 
 B<--long_output_list,-lo>
     Sames as for short output list, but with long reads
@@ -99,10 +88,8 @@ my %options;
 my $results = GetOptions (\%options,
                           "output_directory|o=s",
                           "short_input_list|s=s",
-                          "short_format|sf=s",
                           "short_output_list|so=s",
                           "long_input_list|l=s",
-                          "long_format|lf=s",
                           "long_output_list|lo=s",
                           "velvet_path|v=s",
                           "log|l=s",
@@ -195,40 +182,58 @@ sub check_options {
    $velvet_path = $opts->{'velvet_path'};
    
    if( $opts->{'short_input_list'} ) {
-       die("Option --short_format is required with --short_input_list")
-           unless( $opts->{'short_format'} );
-       
-       @short_lists = &store_files( $opts->{'short_input_list'}, $opts->{'short_format'} );
+       @short_lists = &store_files( $opts->{'short_input_list'} );
    }
 
    if( $opts->{'long_input_list'} ) {
-       die("Option --long_format is required with --long_input_list")
-           unless( $opts->{'long_format'} );
-       
-       @long_lists = &store_files( $opts->{'long_input_list'}, $opts->{'long_format'} );
+       @long_lists = &store_files( $opts->{'long_input_list'} );
    }
 }
 
 sub store_files {
-    my ($lists, $formats) = @_;
+    my ($lists) = @_;
 
-    my @f = split(/[,\s]+/, $formats );
     my @ls = split(/[,\s]+/, $lists );
-    die("The number of items in --short_input_list and --short_format should be equal")
-        unless( scalar(@ls) == scalar(@f) );
 
     my @retval;
-    
-    for( my $i = 0; $i < @ls; $i++ ) {
-        my $list_file = $ls[$i];
+
+    foreach my $list_file( @ls ) {
         open(LIST, "< $list_file") or die("Couldn't open file $list_file");
         chomp( my @tmp = <LIST> );
         close(LIST);
         die("There should be 2 files in list: $list_file. Found ".scalar(@tmp) )
             unless( @tmp == 2 );
-        push(@retval, { "files" => \@tmp, "format" => $f[$i] } );
+        push(@retval, { "files" => \@tmp, "format" => &get_format( @tmp ) } );
     }
     return @retval;
+}
+
+sub get_format {
+    my @files = @_;
+    
+    my $format;
+
+    foreach my $file ( @files ) {
+        open(IN, "< $file") or die("Could not open $file: $!");
+        my $first_line = <IN>;
+        close(IN);
+
+        if( $first_line =~ /^>/ ) {
+            die("Formats of input files were not the same: $file is not format $format")
+                unless( $format == 'fasta' );
+            $format = 'fasta';
+        } elsif( $first_line =~ /^\@/ ) {
+            die("Formats of input files were not the same: $file is not format $format")
+                unless( $format == 'fastq' );
+            $format = 'fastq';
+        } else {
+            die("Could not detect the format of file $file");
+        }
+        
+    }
+
+
+    return $format;
 }
 
 sub _log {
