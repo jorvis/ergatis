@@ -26,8 +26,20 @@
 			<state>incomplete</state>
 			<executable>$;BIN_DIR$;/run_velvet_optimiser</executable>
             <param>
-               <key>--input_file</key>
-               <value>$;INPUT_FILE$;</value>
+               <key>--shortPaired</key>
+               <value>&quot;$;SHORT_PAIRED$;&quot;</value>
+            </param>
+            <param>
+               <key>--short</key>
+               <value>&quot;$;SHORT$;&quot;</value>
+            </param>
+            <param>
+               <key>--longPaired</key>
+               <value>&quot;$;LONG_PAIRED$;&quot;</value>
+            </param>
+            <param>
+               <key>--long</key>
+               <value>&quot;$;LONG$;&quot;</value>
             </param>
             <param>
                <key>--output_directory</key>
@@ -40,14 +52,6 @@
             <param>
                <key>--velvet_path</key>
                <value>$;VELVET_PATH$;</value>
-            </param>
-            <param>
-               <key>--file_format</key>
-               <value>$;FILE_FORMAT$;</value>
-            </param>
-            <param>
-               <key>--read_type</key>
-               <value>$;READ_TYPE$;</value>
             </param>
             <param>
                <key>--start_hash_length</key>
