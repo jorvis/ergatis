@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>celera-assembler mer workflow</name>
+        <!--Pre-processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <!--Processing-->
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=MERYL,$;ITERATOR_XML$;=ITERATOR1_XML">
+	<command>
+	    <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+	    <executable>/opt/vappio-scripts/syncdata.sh</executable>
+	    <arg>--synchronous</arg>
+	</command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERMERRY_1,$;ITERATOR_XML$;=ITERATORQSUB_XML">                
+	<command>
+	    <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+	    <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+	</command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERLAPSTORE_1,$;ITERATOR_XML$;=ITERATOR1_XML">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OLAP_FROM_SEEDS_1,$;ITERATOR_XML$;=ITERATORQSUB_XML">                
+	<command>
+	    <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+	    <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+	</command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=MERGE_TRIMMING,$;ITERATOR_XML$;=ITERATOR1_XML">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERMERRY_2,$;ITERATOR_XML$;=ITERATORQSUB_XML">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERLAPSTORE_2,$;ITERATOR_XML$;=ITERATOR1_XML">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OLAP_FROM_SEEDS_2,$;ITERATOR_XML$;=ITERATORQSUB_XML">                
+	<command>
+	    <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+	    <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+	</command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=OVERLAP_CORRECTION,$;ITERATOR_XML$;=ITERATOR1_XML">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=CONSENSUS_1,$;ITERATOR_XML$;=ITERATORQSUB_XML">    
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=CGW,$;ITERATOR_XML$;=ITERATOR1_XML">     
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=CONSENSUS_2,$;ITERATOR_XML$;=ITERATORQSUB_XML">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+            <arg>--synchronous</arg>
+        </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ASSEMBLY,$;ITERATOR_XML$;=ITERATOR1_XML"> 
+        <!--Post-processing-->                                                  
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create scaffold file list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>              
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*\.scf\.fasta"</value>                
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;SCF_OUTPUT_LIST$;</value>
+            </param>
+        </command>            
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create quality assessment file list</name>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*\.qc"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;QC_OUTPUT_LIST$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

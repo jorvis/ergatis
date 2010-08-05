@@ -19,6 +19,12 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sync staging directory</name>
+            <state>incomplete</state>
+            <executable>/opt/vappio-scripts/syncdata.sh</executable>
+        </command>
         <!--Processing-->
         <!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">

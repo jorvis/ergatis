@@ -13,14 +13,6 @@
                 <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
-                <key>--coverage_cutoff</key>
-                <value>$;COVERAGE_CUTOFF$;</value>
-            </param>
-            <param>  
-                <key>--similarity_cutoff</key>
-                <value>$;SIMILARITY_CUTOFF$;</value>
-            </param>
-            <param>  
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>

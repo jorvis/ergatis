@@ -29,10 +29,6 @@
                <value>"$;INPUT_FILE_LIST$;"</value>
             </param>
             <param>
-               <key>--input_file</key>
-               <value>"$;INPUT_FILE$;"</value>
-            </param>
-            <param>
                <key>--training_seqs</key>
                <value>"$;TRAINING_SEQ$;"</value>
             </param>

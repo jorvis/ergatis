@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <!--Pre-Processing-->
+        <name>mothur get oturep</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create get oturep iterator list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_mothur_get_oturep_iterator_list</executable>
+            <arg>--list_file=$;INPUT_FILE$; --list_file_list=$;INPUT_FILE_LIST$; --fasta_file_list=$;FASTA_LIST$; --distance_file_list=$;DISTANCE_LIST$; --names_file_list=$;NAMES_LIST$; --group_file_list=$;GROUPS_LIST$; --output=$;TMP_DIR$;/get_oturep_iterator.list --log=$;TMP_DIR$;/create_mothur_get_oturep_iterator_list.log --debug=4</arg>
+        </command>
+        <!--Processing-->
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/get_oturep_iterator.list" />
+        <!--Post-Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create rep fasta file list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*\.rep\.fasta"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;REP_FASTA_FILE_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create rep names file list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*\.rep\.names"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;REP_NAMES_FILE_LIST$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

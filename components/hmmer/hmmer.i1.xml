@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>hmmls compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>hmmls</name>
+            <state>incomplete</state>
+            <executable>$;HMMLS_EXEC$;</executable>
+            <arg>$;CONFIG_OPTIONS$; $;DATABASE_PATH$; $;I_FILE_PATH$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>                   
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>            

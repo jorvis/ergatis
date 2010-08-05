@@ -72,8 +72,8 @@
                 <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;.processed.tab</value>
             </param>
             <param>
-                <key>--tigr_roles_db_dir</key>
-                <value>$;ROLES_DB_DIR$;</value>
+                <key>--database_path</key>
+                <value>$;DATABASE_PATH$;</value>
             </param>
         </command>
         <command>

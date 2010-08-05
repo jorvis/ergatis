@@ -8,7 +8,7 @@
       <type>RunUnixCommand</type>
       <name>NUCmer</name>
       <state>incomplete</state>
-      <executable>/usr/local/common/nucmer</executable>
+      <executable>/usr/local/bin/nucmer</executable>
       <param>
         <key>--prefix</key>
         <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;PAIR_COUNT$;</value>

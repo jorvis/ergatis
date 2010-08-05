@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>celera-assembler SGE compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create file output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create file temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;I_FILE_BASE$;</arg>
+        </command>        
+        <command>
+            <type>RunUnixCommand</type>
+            <name>celera assembler SGE job</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/run_qsub_cmd</executable>
+            <arg>-c $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;/qsub_cmd.txt -o $;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$; -l $;TMP_DIR$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.log</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>               
+                <value>$;TMP_DIR$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>     
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
