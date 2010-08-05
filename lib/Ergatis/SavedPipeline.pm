@@ -374,8 +374,9 @@ use Ergatis::ConfigFile;
                 
                 ## place the component conf into the output directory
                 ##  also setting the shared conf
-                $self->_place_component_conf( $component_name, $token, "$outputdir/$component_name.$token.user.config" );
+		$self->_place_component_conf( $component_name, $token, "$outputdir/$component_name.$token.user.config" );
                 $self->_place_component_conf( $component_name, $token, "$pipeline_dir/$component_name.$token.config" );
+		$self->{user_config} = "$outputdir/$component_name.$token.user.config";
             }
         }
         
@@ -433,77 +434,55 @@ use Ergatis::ConfigFile;
 	    $self->{_logger}->logdie("Can't find directory $bin_dir\n");
 	}
         my $repository_root     = $self->{_repository_root};
+
+	
         
-        my $xmlfragment = <<XMLfraGMENt;
-  <commandSet type="serial">
-    <state>incomplete</state>
-    <name>$component_name.$token</name>
-    <command>
-      <type>RunUnixCommand</type>
-      <name>replace_config_keys</name>
-      <state>incomplete</state>
-      <executable>$bin_dir/replace_config_keys</executable>
-      <param>  
-	<key>--template_conf</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/$component_name.$token.user.config</value>
-      </param>
-      <param>  
-	<key>--output_conf</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/$component_name.$token.final.config</value>
-      </param>   
-      <param>
-	<key>--keys</key>
-        <value>PIPELINEID=$pipeline_id,PIPELINE_XML=$repository_root/$self->{_pipeline_dir}/$self->{pipeline_id}/pipeline.xml,COMPONENT_XML=$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</value>
-      </param>
-      <param>
-	<key>stdout</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_config_keys.stdout</value>
-      </param> 
-      <param>
-	<key>stderr</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_config_keys.stderr</value>
-       </param>
-    </command>
-    <command>
-      <type>RunUnixCommand</type>
-      <name>replace_template_keys</name>
-      <state>incomplete</state>
-      <executable>$bin_dir/replace_template_keys</executable>
-      <param>  
-	<key>--component_conf</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/$component_name.$token.final.config</value>
-      </param> 
-      <param>  
-	<key>--template_xml_conf_key</key>
-	<value>TEMPLATE_XML</value>
-      </param>   
-      <param>  
-	<key>--output_xml</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</value>
-      </param>
-      <param>
-	<key>stdout</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_template_keys.stdout</value>
-       </param> 
-      <param>
-	<key>stderr</key>
-	<value>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/replace_template_keys.stderr</value>
-       </param> 
-    </command>
-    <commandSet type="serial">
-      <name>$component_name</name>
-      <state>incomplete</state>
-      <fileName>$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/component.xml</fileName>
-    </commandSet>
-  </commandSet>
-XMLfraGMENt
+        my $xmlfragment;
+	my $component_twig_file = $self->_get_component_twig();
+	open FILE,"$component_twig_file" or die "Can't open file $component_twig_file";
+	my @lines;
+	while(my $line=<FILE>){
+	    if($line !~ /^\<\!\-\-/){
+		push @lines,$line;
+	    }
+	}
+	close FILE;
+	$xmlfragment = join('',@lines);
+	
+	my $tokens  = {'\$;COMPONENT_DIR\$;'=>"$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token",
+		       '\$;COMPONENT_INSTANCE\$;'=>"$component_name.$token",
+		       '\$;PIPELINE_DIR\$;' =>"$repository_root/$self->{_pipeline_dir}/$self->{pipeline_id}",
+		       '\$;PIPELINE_ID\$;' => "$pipeline_id",
+		       '\$;COMPONENT_NAME\$;' => "$component_name",
+		       '\$;BIN_DIR\$;'=>"$bin_dir"};
+	
+	foreach my $key (keys %$tokens){
+	    $xmlfragment =~ s/$key/$tokens->{$key}/eg;
+	}
 
         my $t = new XML::Twig;
-           $t->parse($xmlfragment);
+	$t->parse($xmlfragment);
 
         return $t->root;
     }
     
+    sub _get_component_twig{
+	my $self = shift;
+	
+	my $cfg = new Config::IniFiles( -file => $self->{user_config} );
+	my $scfg = new Config::IniFiles( -file => $self->{shared_config} );
+	my $twigxml;
+	if($cfg->val('component', '$;COMPONENT_TWIG_XML$;')){
+	    $twigxml = $scfg->val('project', '$;DOCS_DIR$;').'/'.$cfg->val('component', '$;COMPONENT_TWIG_XML$;')
+	}
+	else{
+	    #default component XML
+	    $twigxml = $scfg->val('project', '$;DOCS_DIR$;').'/component_template.xml';
+	}
+	print STDERR "Using $twigxml \n";
+        return $twigxml;
+    }
+
     sub _get_bin_dir {
         my $self = shift;
         
@@ -602,9 +581,9 @@ XMLfraGMENt
 	        }
 	    }
 	
-        $self->{_logger}->debug("Writing to config file $output");        
+        $self->{_logger}->debug("Writing to config file $output");
         ## write it into the proper directory
-        $cfg->WriteConfig( "$output" );
+	$cfg->WriteConfig( "$output" );
     }
 
     sub configure_saved_pipeline {
