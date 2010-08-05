@@ -104,6 +104,7 @@ $annot_col->annotations_from_file( $input );
 foreach my $seq ( keys %{$sequences} ) {
     $docs{$seq}->{'doc'} = new BSML::BsmlBuilder;
     my ( $bsml_seq, $ft ) = &add_sequence_to_doc( $docs{$seq}->{'doc'}, $seq );
+    die("Problem with adding sequence to doc. Feature table undefined") unless( defined( $ft ) );
     $docs{$seq}->{'bsml_seq'} = $bsml_seq;
     $docs{$seq}->{'feature_table'} = $ft;
 }
@@ -118,6 +119,7 @@ while( my $annot = $annot_col->next_annotation_from_file ) {
         die("Could not find document for $parent_seq");
     }
     
+    die("Couldn't get feature_tablei $parent_seq") unless( defined( $docs{$parent_seq}->{'feature_table'} )); 
     &add_gene_to_feature_table( $docs{$parent_seq}->{'doc'}, $docs{$parent_seq}->{'bsml_seq'}, 
                                 $docs{$parent_seq}->{'feature_table'}, $annot );
 
@@ -151,14 +153,13 @@ sub add_gene_to_feature_table {
         my $feature_id = $fr_lookup->lookup( $annot->get_feature_id, $class );
         
         #add the feature
-        die("Feature table was not defined") unless(defined($ft));
+        die("Feature table was not defined") unless( defined( $ft ) );
         my $feat =  $doc->createAndAddFeature( $ft, $feature_id, 
                                                $feature_id, $class );
         #add the interval loc
         my $intloc = $doc->createAndAddIntervalLoc( $feat, $loc->[0], $loc->[1], $loc->[2] );
 
         #add the link
-        die("Feature $feature_id is undefined") unless( defined($feat) );
         my $link = $doc->createAndAddLink( $feat, 'analysis', "#$analysis_name", "input_of");
         
         #indirect way of indicating where our annotation is
@@ -285,6 +286,11 @@ sub create_parent_seq_lookup {
                   $parent_seq_lookup{ $_->att('id') } = $seq_id;
               } $el->find_nodes('Feature-tables/Feature-table/Feature');
             map { $feat_locs{ $_->att('id') } = &get_feature_locs( $_ ) } $el->find_nodes('Feature-tables/Feature-table/Feature[@class="transcript"]');
+
+            if( !exists( $retval{$seq_id}->{'features'} ) ) {
+                delete( $retval{$seq_id} );
+                return;
+            }
 
             my ($sdi) = $el->find_nodes( 'Seq-data-import' );
             die("Could nto find sdi for $seq_id") unless( defined( $sdi ) );

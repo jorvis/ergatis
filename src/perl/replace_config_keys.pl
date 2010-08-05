@@ -11,6 +11,10 @@ use Getopt::Long;
 
 my %options;
 
+my $delimeter = '$;';
+my $delimeterregex = '\$\;[\w_]+\$\;';
+#Keys must match $delimeter[\w_]+$delimeter
+
 my $results = GetOptions (\%options, 
                           'template_conf|t=s', 
                           'output_conf|o=s' ,
@@ -27,7 +31,7 @@ my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
 $logger = $logger->get_logger();
 
 my $origcfg = new Config::IniFiles( -file => $options{'template_conf'});
-#Import Included files
+#Import included files
 my $included = {};
 $origcfg = &import_includes($origcfg,$included);
 
@@ -37,20 +41,19 @@ $origcfg = &import_includes($origcfg,$included);
 #Perform initial key replacement
 my $cfg = &replace_keys($origcfg);
 
-# check that the parameters that need values have them
+#Check that the parameters that need values have them
 &check_parameters($cfg,'project');
 
 #Write the output location of this file as key $;COMPONENT_CONFIG$;
-my $ret = $cfg->setval('component','$;COMPONENT_CONFIG$;',$options{'output_conf'});
+my $ret = $cfg->setval('component',$delimeter.'COMPONENT_CONFIG'.$delimeter,$options{'output_conf'});
 if(!$ret){
-    $logger->logdie("Couldn't add key \$;COMPONENT_CONFIG\$;=$options{'output_conf'}to section [component]");
+    $logger->logdie("Couldn't add key $delimeter COMPONENT_CONFIG $delimeter=$options{'output_conf'}to section [component]");
 }
 &check_parameters($cfg,'component');
 
 #Perform second key replacement for nested keys
 my $finalcfg = &replace_keys($cfg);
 $finalcfg->WriteConfig($options{'output_conf'});
-
 
 $logger->debug("Wrote configuration file $options{'output_conf'}");
 
@@ -59,7 +62,7 @@ exit;
 sub check_parameters{
     my ($cfg,$section) = @_;
 
-    my %optional = ( '$;PROJECT_CODE$;' => 1 );
+    my %optional = ( $delimeter.'PROJECT_CODE'.$delimeter => 1 );
 
     for my $param ( $cfg->Parameters($section) ) {
         ## skip checking if this one's optional
@@ -94,19 +97,19 @@ sub replace_keys{
 	    $allkeys->{$param}->{'value'} = $value;
 	    $allkeys->{$param}->{'section'} = $section;
 	    $logger->debug("Scanning $value for key $param in section [ $section ] as candidate for replacement") if($logger->is_debug());
-	    if($value =~ /\$;[\w_]+\$;/){
+	    if($value =~ /$delimeterregex/){
 		$logger->debug("Found $value for key $param in section [ $section ] as candidate for replacement") if($logger->is_debug());
 		$checkvalues->{$param} = $value;
 	    }
 	}
     }
-    #Now that we've obtained all possible values, expand...
 
+    #Now that we've obtained all possible values, expand...
     foreach my $key (keys %$checkvalues){
 	my $value = $checkvalues->{$key};
 	$logger->debug("Replacing $key with $value") if($logger->is_debug());
 	while(&checkvalue($value,$allkeys)){
-	    $value =~ s/(\$;[\w_]+\$;)/&replaceval($1,$allkeys)/ge;
+	    $value =~ s/($delimeterregex)/&replaceval($1,$allkeys)/ge;
 	    $logger->debug("Value redefined as $value") if($logger->is_debug());
 	}
 	my $setval = $cfg->setval($allkeys->{$key}->{'section'},$key,$value);
@@ -117,7 +120,6 @@ sub replace_keys{
     }
     return $cfg;
 }
-
 
 sub replaceval{
     my ($val,$keylookup) = @_;
@@ -134,8 +136,8 @@ sub replaceval{
 
 sub checkvalue{
     my ($val,$keylookup) = @_;
-    if($val =~ /\$;[\w_]+\$;/){
-	my($lookupval) = ($val =~ /(\$;[\w_]+\$;)/); 
+    if($val =~ /$delimeterregex/){
+	my($lookupval) = ($val =~ /($delimeterregex)/); 
 	if($keylookup->{$lookupval}->{'value'} eq ""){
 	    return 0;
 	}
@@ -144,6 +146,21 @@ sub checkvalue{
 	}
     }
 }
+
+#import_includes() - Support for inline import of ini formatted
+#configuration files
+
+#eg.
+#[include]
+#SOMEKEY=file.ini
+
+#The entire contents of file.ini will be imported into the current
+#configuration file (SOMKEY is ignored).  Keys with the same name will
+#take the value provided in the included file, not the original config
+#file.  If there are multiple included ini files, the values in the
+#last file have highest precedence.  The file named "software.config"
+#is handled special: only values from section [common] or
+#[$componentname] are parsed.
 
 sub import_includes{
     my($cfg,$included) = @_;
@@ -162,7 +179,7 @@ sub import_includes{
 		    if($includefile =~ /software.config$/){
 			my $softcfg = new Config::IniFiles( -file => $includefile);
 			my $newcfg = new Config::IniFiles(  -import => $currcfg);
-			my $componentname = $cfg->val("component",'$;COMPONENT_NAME$;');
+			my $componentname = $cfg->val("component",$delimeter.'COMPONENT_NAME'.$delimeter);
 			$componentname =~ s/\s//g;
 			foreach my $section ($softcfg->Sections()){
 			    if($section =~ /^common/){
@@ -185,6 +202,19 @@ sub import_includes{
 		    else{
 			my $newcfg = new Config::IniFiles( -file => $includefile, 
 							   -import => $currcfg);
+			#If keys are not properly delimeted, add delimeter here
+			foreach my $section ($newcfg->Sections()){
+			    foreach my $p ($newcfg->Parameters($section)){
+				if($p =~ /$delimeterregex/){
+				}
+				else{
+				    $logger->logdie("Parameter already contains delimeter") if($p  =~ /^\$\;/);
+				    $logger->debug("Updating parameter $p to $delimeter.$p.$delimeter") if($logger->is_debug());
+				    $newcfg->newval($section,$delimeter.$p.$delimeter,$newcfg->val($section,$p));
+				    $newcfg->delval($section,$p);
+				}
+			    }
+			}
 			$included->{$includefile} = 1;
 			#Supports nesting of includes
 			$currcfg = &import_includes($newcfg,$included);
@@ -201,13 +231,13 @@ sub import_includes{
 
 sub add_keys{
     my($cfg,$section,@keys) = @_;
-	$logger->debug("Adding user defined keys: ".@keys) if($logger->is_debug());
+    $logger->debug("Adding user defined keys: ".@keys) if($logger->is_debug());
     foreach my $kv (@keys){
 	my($key,$value) = split(/=/,$kv);
 	$logger->debug("Adding user defined key $key=$value in section [$section]") if($logger->is_debug());
-	my $ret = $cfg->setval($section,'$;'.$key.'$;',$value);
+	my $ret = $cfg->setval($section,$delimeter.$key.$delimeter,$value);
 	if(!$ret){
-	    $logger->logdie("Couldn't add key \$;$key\$;=$value to section [$section]");
+	    $logger->logdie("Couldn't add key $delimeter $key $delimeter=$value to section [$section]");
 	}
     }
 }

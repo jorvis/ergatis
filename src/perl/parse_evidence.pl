@@ -12,7 +12,6 @@ parse_evidence.pl - Description
        --output=/path/to/output.tab
        --evidence_type=Pfunc
        --database_path=/path/to/db_dir
-       --other_options="option1=value1 option2=value2..."
      [ --log=/path/to/file.log
        --debug=4
        --help
@@ -36,11 +35,6 @@ B<--database_path,-b>
     Path which holds various databases which the parsers may require.  Not required, but an individual parser
     will fail if it requires this path specifically.  For requirements, please see specific parser files in
     EvidenceParser namespace.
-
-B<--other_options,-t>
-    Allows the user to send extra options to the parser.  For specific details on options accepted
-    and what they do, see documentation for the individual parser used. Should be a space separated list
-    of key value pairs, quoted.
 
 B<--log,-l>
     Logfile.
@@ -104,7 +98,6 @@ sub check_options {
                               'append_mode|a=s',
                               'annotate_on|c=s',
                               'database_path|d=s',
-                              'other_options|t=s',
                               'help|h',
                               );
    
@@ -140,7 +133,6 @@ sub check_options {
     }
 
     if( @input_files == 0 ) {
-        $options{'input_file'} or $options{'input_list'} and exit;
         die("Please specify input using either the --input_file or ".
             "--input_list options");
     }
@@ -170,32 +162,36 @@ sub check_options {
         $db_path = $options{'database_path'};
     }
 
-    my @args = ();
-    push(@args, "database_path => \"$db_path\"") if $db_path;
-
-    ## parse any other user provided options and send them to the
-    ## parser object
-    if( $options{'other_options'} ) {
-        my @pairs = split(/[,\s]+/, $options{'other_options'} );
-        foreach my $p (@pairs) {
-            my ($key, $value) = split(/[\s=]+/, $p );
-            push(@args, "$key => \"$value\"");
-        }
-    }
-
-    my $arg_string = join(", ", @args);
-    my $command = "\$parser = new $valid_evidence_types{ $ev_type }( $arg_string )";
-    print "$command\n";
+    my $args = "";
+    $args .= "database_path => \"$db_path\" " if $db_path;
     
     ## create the correct parser type
     eval("require $valid_evidence_types{$ev_type}") or 
         die("Could not require $valid_evidence_types{$ev_type}. Perhaps ".
             "EvidenceParser::ValidEvidenceTypes.pm is configured incorrectly [$@]");
-    eval("\$parser = new $valid_evidence_types{ $ev_type }( $arg_string )") or 
+    eval("\$parser = new $valid_evidence_types{ $ev_type }( $args )") or 
         die("Could not create parser object ($valid_evidence_types{ $ev_type }). [$@]");
     
 
 }
+sub _connect {
+    my ($user, $password, $db, $server) = @_;
+
+    my $dbh;
+    eval {
+        $dbh = DBI->connect("DBI:mysql:$db:$server", "$user", "$password",
+                            { 
+                                'RaiseError' => 1,
+                                'AutoCommit' => 0,
+                          } );
+    };
+    if( $@ ) {
+        carp("Could not connect to database ".DBI->errstr);
+    }
+
+    return $dbh;
+}
+
 sub _pod {
     pod2usage( {-exitval => 0, -verbose => 2} );
 }

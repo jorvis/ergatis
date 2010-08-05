@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME
 
 pangenome_blast_parse.pl - Parses BLAST BSML output files and extracts data needed for pangenome analysis.
@@ -8,37 +11,16 @@ pangenome_blast_parse.pl - Parses BLAST BSML output files and extracts data need
 
 USAGE: pangenome_query_list.pl
         --input=/path/to/somefile.bsml
-        --output_path=/path/to/output/directory/
-        --coverage_cutoff=50
-        --similarity_cutoff=50
-      [ --log=/path/to/some/log
-        --organism_to_db_mapping=/path/to/organism_to_db_mapping.txt
-        --db_list=/path/to/database.list
-      ]
+        --output=/path/to/output.dat
+      [ --log=/path/to/some/log ]
 
 =head1 OPTIONS
 
-B<--input,-i>
+B<--input_bsml,-i>
     BSML file containing BLAST results to parse. 
 
 B<--output_path,-o>
-    Directory to write stored file
-
-B<--coverage_cutoff>
-    Coverage cutoff. Hits below this will not be considered hits.
-
-B<--similarity_cutoff>
-    Similarity cutoff. Hits below this will not be considered hits.
-
-B<--organism_to_db_mapping>
-    Mapping file of the format:
-    Genus Species strain uniquename_prefix
-    Streptococcus pneumoniae TIGR4 sptigr4
-
-B<--db_list>
-    List of uniquename prefixes that should be included in the analysis. 
-    It is not necessary to include this list if you are filtering with the
-    organism_to_db_mapping file.
+    Desired prefix of output files.
 
 B<--log,-d>
     optional. Will create a log file with summaries of all actions performed.
@@ -81,10 +63,9 @@ my %options = ();
 my $results = GetOptions (  \%options,
                             'input|i=s',
                             'output_path|o=s',
+#                           'filter|f=s',
                             'organism_to_db_mapping|odb:s',
                             'db_list|dl:s',
-                            'coverage_cutoff:s',
-                            'similarity_cutoff:s',
                             'debug|d=s',
                             'command_id=s',       ## passed by workflow
                             'logconf=s',          ## passed by workflow (not used)
@@ -97,9 +78,7 @@ my $dups_temp = {};
 my %dups = ();
 my $db_to_org = {};
 my $db_filter = undef;
-my $coverage_cutoff = $options{'coverage_cutoff'} ne '' ? $options{'coverage_cutoff'} : 50;
-my $similarity_cutoff = $options{'similarity_cutoff'} ne '' ? $options{'similarity_cutoff'} : 50;
-
+my $dbs = {};
 
 my $twig = XML::Twig->new(
                             twig_roots  => { 
@@ -156,6 +135,7 @@ sub processSeqPairAlignment {
     
     my $query_id   = $feat->{'att'}->{'refseq'};
     my $subject_id = $feat->{'att'}->{'compseq'};
+    print STDERR "$query_id $subject_id\n";
     my $len_total = 0;
     my $pident_sum = 0;
     my $psim_sum = 0;
@@ -229,34 +209,39 @@ sub processSeqPairAlignment {
         $db_to_org->{$sdb} = $sdb;
     }
     
-    # If we are doing any filtering then we will check that both the dabase names are good.
-    if (!$db_filter || ($db_filter->{$qdb} && $db_filter->{$sdb})) {
-        
-        #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
-        
-        # Check the cutoffs are reached
-        if ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
-            
-            # Add this hit to the results array
-            push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
-        }
-        else {
-            print STDERR "filtering 1 $qprot $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
-        }
-        #   if ($qdb eq $sdb && $qprot ne $sprot && $all_seg_p_indent == 100 && $p_cov_ref == 100 && $p_cov_comp == 100.0) {
-        
-        #   I won't exclude the self hit here because we do want the query id in the group of dups
-        if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
+    if(!$options{'db_list'} || ($dbs->{$qdb} && $dbs->{$sdb})) {
+#    if ($skip_filter || ($filter->{$qdb}->{$qprot} && $filter->{$sdb}->{$sprot})) {
+
+#        if (!$db_filter || ($db_filter->{$db_to_org->{$qdb}}->{$qprot} && $db_filter->{$db_to_org->{$sdb}}->{$sprot})) {
+
+        if (!$db_filter || ($db_filter->{$qdb} && $db_filter->{$sdb})) {
+
+            #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
+            #       push (@results, [$qdb,$qprot,$sdb,$sprot,$all_seg_p_ident,$p_cov_ref]);
+            if ($all_seg_p_sim >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {
+                #print STDERR "$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref\n";
+                push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
+            }
+            else {
+                print STDERR "filtering 1 $qprot $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+            }
+            #   if ($qdb eq $sdb && $qprot ne $sprot && $all_seg_p_indent == 100 && $p_cov_ref == 100 && $p_cov_comp == 100.0) {
+            #   I won't exclude the self hit here because we do want the query id in the group of dups
+            if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
             push(@{$dups_temp->{$db_to_org->{$sdb}}}, $sprot);
             print $sprot."\n";
             print $p_cov_ref." ".$p_cov_comp."\n";
+            }
+#            else {
+#                print STDERR "filtering 2 $qprot $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+#            }
+        }
+        elsif($db_filter) {
+            print STDERR "Filtered from organism_to_prefix ".$db_filter->{$qdb}." or ".$db_filter->{$sdb}."\n";
         }
     }
-    elsif($options{'organism_to_db_mapping'}) {
-        print STDERR "Filtered from organism_to_prefix ".$db_filter->{$qdb}." or ".$db_filter->{$sdb}."\n";
-    }
     elsif($options{'db_list'}) {
-        print STDERR "Filtered from db_list ".$db_filter->{$qdb}." or ".$db_filter->{$sdb}."\n";
+        print STDERR "Filtered $qdb or $sdb\n";
     }
 }
 
@@ -264,7 +249,7 @@ sub read_db_list {
     open IN, "<".$options{'db_list'} || die "couldn't open '$options{db_list}' for reading: $!";
     while(<IN>) {
         chomp;
-        $db_filter->{$_} = 1;
+        $dbs->{$_} = 1;
         $db_to_org->{$_} = $_;
     }close IN;
     
@@ -278,7 +263,7 @@ sub read_organism_to_db_mapping {
         my $org = $1;
         my $db = $2;
         $org =~ s/\s/_/g;
-        if(!$options{db_list}) {$db_filter->{$db} = 1};
+        $db_filter->{$db} = 1;
         $db_to_org->{$db} = $org;
     }close IN;
   

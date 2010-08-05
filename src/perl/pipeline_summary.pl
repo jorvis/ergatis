@@ -301,14 +301,13 @@ sub by_end3 {
 }
 
 sub by_molecule_length {
-    my ($len_a, $len_b) = (0, 0);
-    if( exists( $input_sequences{$a}->{'attributes'}->{'length'} ) ) {
-        $len_a = $input_sequences{$a}->{'attributes'}->{'length'};
+    if( !exists( $input_sequences{$a}->{'attributes'}->{'length'} ) ) {
+        &_log("Could not get length for sequence $a", $ERROR );
     }
-    if( exists( $input_sequences{$b}->{'attributes'}->{'length'} ) ) {
-        $len_b = $input_sequences{$b}->{'attributes'}->{'length'};
+    if( !exists( $input_sequences{$b}->{'attributes'}->{'length'} ) ) {
+        &_log("Could not get length for sequence $b", $ERROR );
     }
-    $len_b <=> $len_a;
+    $input_sequences{$b}->{'attributes'}->{'length'} <=> $input_sequences{$a}->{'attributes'}->{'length'};
 }
 
 #### Parsing Subroutines #################

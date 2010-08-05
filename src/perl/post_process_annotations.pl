@@ -9,7 +9,7 @@ post_process_annotations.pl - Contains functionality to refine final annotations
  USAGE: post_process_annotations.pl
        --input_file=/path/to/file.tab
        --output=/path/to/output.tab
-       --tigr_roles_db_dir=/path/to/db_dir
+       --database_path=/path/to/db_dir
      [ --log=/path/to/file.log
        --debug=4
        --help
@@ -24,7 +24,7 @@ B<--input_file,-i>
 B<--output,-o>
     Output tab file.
 
-B<--tigr_roles_db_dir,-b>
+B<--database_path,-b>
     The path to the database directory. The directory should contain the file:
     tigr_roles/tigr_roles_keywords.txt.
 
@@ -170,7 +170,7 @@ sub check_options {
     my $results = GetOptions (\%options,
                               'input_file|i=s',
                               'output|o=s',
-                              'tigr_roles_db_dir|d=s',
+                              'database_path|d=s',
                               'log|l=s',
                               'debug|d=s',
                               'help|h',
@@ -180,10 +180,10 @@ sub check_options {
         &_pod;
     }
 
-    if( $options{'tigr_roles_db_dir'} ) {
-        $tigr_roles_annot = new PFunc::TIGRRolesAnnotation( 'tigr_roles_db_dir' => $options{'tigr_roles_db_dir'} );
+    if( $options{'database_path'} ) {
+        $tigr_roles_annot = new PFunc::TIGRRolesAnnotation( 'database_path' => $options{'database_path'} );
     } else {
-        die("Option --tigr_roles_db_dir is required");
+        die("Option --database_path is required");
     }
 
     if( $options{'input_file'} ) {

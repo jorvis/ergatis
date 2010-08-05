@@ -19,6 +19,7 @@ use XML::LibXML;
 #--output_xml     Output XML
 
 my %options;
+my $delimeter = '$;';
 my $SKIPTAG='$;SKIP_WF_COMMAND$;';
 my $results = GetOptions (\%options, 
 			  'keys=s',
@@ -115,7 +116,7 @@ if (exists $options{'iterator_list'}) {
                      <fileName>$file</fileName>
                      <dceSpec type=\"sge\">
                         <OS>linux</OS>\n";
-        
+        #TODO replace with import of DCE spec to allow for addl options
         if ( $cfg->val( 'project', '$;PROJECT_CODE$;' ) ) {
             print FILE "                        <group>", $cfg->val( 'project', '$;PROJECT_CODE$;' ), "</group>\n"; 
         }
@@ -129,7 +130,7 @@ if (exists $options{'iterator_list'}) {
 }
 else{
     if($options{'template_xml_conf_key'}){
-	my $templatexml = $cfg->val('component','$;'.$options{'template_xml_conf_key'}.'$;');
+	my $templatexml = $cfg->val('component',$delimeter.$options{'template_xml_conf_key'}.$delimeter);
 	
 	if(!$templatexml){
 	    $logger->logdie("Can't find key in component config $options{'component_conf'} [component] $options{'template_xml_conf_key'}");     
@@ -148,6 +149,7 @@ else{
     }
 }
 
+#
 #Create substitution lookup for placeholder keys
 #Reads an INI formatted config file with key=value
 #Lookup is $subs->{$key}=$value
@@ -177,7 +179,7 @@ sub parseconf{
 }
 
 #
-#Process LibXML $doc and remove <command> elements
+#Process XML $doc with libxml and remove <command> elements
 #that are marked in the substitution lookup $subs.
 sub skipcommands{
     my($subs,$doc) = @_;
@@ -228,22 +230,22 @@ sub replacekeys{
 		$line =~ s/(\$;[\w_]+\$;)/&replaceval($1,$subs)/ge;	    
 	    }
         }
-    if($line =~ /\<type\>RunDistributedCommand\<\/type\>/) {
-        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        $run_dist_cmd_flag = 1 if( $group || $group == 0 );
-    }
-    if($run_dist_cmd_flag && $line =~ /<dceSpec/) {
-        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        $line .= "            <group>$group</group>\n";
-        $run_dist_cmd_flag = 0;
-    }
-    if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
-        my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-        my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
-        $line = $new_line;
-        $run_dist_cmd_flag = 0;
-    }
-
+	if($line =~ /\<type\>RunDistributedCommand\<\/type\>/) {
+	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+	    $run_dist_cmd_flag = 1 if( $group || $group == 0 );
+	}
+	if($run_dist_cmd_flag && $line =~ /<dceSpec/) {
+	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+	    $line .= "            <group>$group</group>\n";
+	    $run_dist_cmd_flag = 0;
+	}
+	if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
+	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
+	    my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
+	    $line = $new_line;
+	    $run_dist_cmd_flag = 0;
+	}
+	
 	if($line =~ /\<INCLUDE/){
 	    if($line !~ />/){
 		$logger->logdie("<INCLUDE> directive must be contained on a single line");
@@ -263,7 +265,7 @@ sub replacekeys{
 	push @inputxml,$line;
 	#print OUTPUTFILE $line;
     }
-
+    
     close INPUTFILE;
     my $parser = XML::LibXML->new();
     my $xmldoc    = $parser->parse_string(join('',@inputxml));
@@ -271,7 +273,6 @@ sub replacekeys{
     print OUTPUTFILE $xmldoc->toString;
     close OUTPUTFILE;
 }
-
 
 sub replaceval{
     my($val,$keylookup) = @_;
@@ -327,13 +328,12 @@ sub add_keys{
     foreach my $kv (@keys){
 	my($key,$value) = split(/=/,$kv);
 	$logger->debug("Adding user defined key $key=$value in section [$section]") if($logger->is_debug());
-	if($cfg->setval($section,'$;'.$key.'$;',$value)){
+	if($cfg->setval($section,$delimeter.$key.$delimeter,$value)){
 	}
 	else{
-	    $cfg->newval($section,'$;'.$key.'$;',$value);
+	    $cfg->newval($section,$delimeter.$key.$delimeter,$value);
 	}
     }
-
 }
 
 sub import_xml{
@@ -341,8 +341,8 @@ sub import_xml{
     my @keys = split(/,/,$keys);
     foreach my $k (@keys){
 	my($tok,$val) = split(/=/,$k);
-	if(exists $subs->{'$;'.$val.'$;'}){
-	    $subs->{$tok} = $subs->{'$;'.$val.'$;'};
+	if(exists $subs->{$delimeter.$val.$delimeter}){
+	    $subs->{$tok} = $subs->{$delimeter.$val.$delimeter};
 	}
 	else{
 	    $subs->{$tok} = $val;
@@ -367,7 +367,7 @@ sub import_xml{
 	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
 	    $run_dist_cmd_flag = 1 if( $group || $group == 0 );
 	}
-	if($run_dist_cmd_flag && $line =~ /<dceSpec/) {
+	if($run_dist_cmd_flag && $line =~ /\<dceSpec/) {
 	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
 	    $line .= "            <group>$group</group>\n";
 	    $run_dist_cmd_flag = 0;
