@@ -1,3 +1,16 @@
 for installation instructions please visit the Ergatis site:
 
 http://ergatis.sourceforge.net/documentation/install_guide.html
+
+Developers can also build from an SVN checkout or export
+
+1)Add symlinks for bin/ and lib/
+ln -s ../src/perl bin
+ln -s ../lib lib
+
+2)Run with LIVE_BUILD parameter
+perl Makefile.PL LIVE_BUILD INSTALL_BASE=/tmp
+make
+make install
+
+
