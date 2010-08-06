@@ -1,5 +1,6 @@
 next
 ----
+-move_hmmpfam_results.pl: now handles htab with no model name in column 6
 -prepare_paired_ends_for_velvet: new component
 -velvet_optimiser: now allows an arbitrary number of input files
 -create_amoscmp_input: new component
