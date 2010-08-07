@@ -2,13 +2,14 @@ package MG::ManFasta;
 
 use vars qw(@ISA @EXPORT $VERSION);
 use Exporter;
-use Datastore::MD5;
+use Data::Dumper;
+use XML::Simple;
 
 @ISA = qw(Exporter);
-@EXPORT = qw(&recomp &parse_fasta_format &translate_dna);
+@EXPORT = qw(&revcomp &translate_dna &find_frame);
 
 sub revcomp {
-    my $seq = shift(@_);
+    my $seq = uc(shift(@_));
     my %comp = ("A","T","T","A","C","G","G","C",'N','N','X','X');
     my @seq = split(//, $seq);
     my @revcomp = ();
@@ -16,25 +17,6 @@ sub revcomp {
 	unshift @revcomp, $comp{$_};
     }
     return join("", @revcomp);
-}
-
-sub parse_fasta_format {
-    my $infile = shift @_;
-    my %hash = ();
-    open SEQ, "<$infile" or die $!;
-    $/ = "\n>";
-    my $i = 0;
-    while (my $record = <SEQ>) {
-        chomp($record);
-	my ($header, @seq) = split(/\n/, $record);
-	$header =~ s/^>//g;
-	$header = (split(/\s+/, $header))[0];
-	$hash{$header} = join("", @seq);
-	$hash{$header} = uc($hash{$header});
-    }
-    $/ = "\n";
-    close SEQ;
-    return %hash;
 }
 
 sub translate_dna {
@@ -63,6 +45,30 @@ sub translate_dna {
 	}
     }
     my $protein = join("", @prot);
+    $protein =~ s/\*$//g;
     return $protein;
 }
+sub find_frame {
+    my $ori = shift @_;
+    my $prot_seq = shift @_;
+    $dna_seq = $ori;
+    foreach (0..2) {
+	my $trans = translate_dna($dna_seq);
+	if ($trans eq $prot_seq) {
+	    return ($_);
+	}
+	$dna_seq = substr($dna_seq,1);
+    }
+    $dna_seq = $ori;
+    foreach (0..2) {
+	my $trans = translate_dna($dna_seq);
+	unless ($trans =~ m/\*/) {
+	    return ($_);
+	}
+	$dna_seq = substr($dna_seq,1);
+    }
+    warn "No Frame Matches";
+    return (0);
+}
+
 return 1;

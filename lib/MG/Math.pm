@@ -4,9 +4,17 @@ use vars qw(@ISA @EXPORT $VERSION);
 use Exporter;
 
 @ISA = qw(Exporter);
-@EXPORT = qw(&min &max &telltime &currdate &mean_var &corr &create_matrix_jaccard &create_matrix_lnjaccard &create_matrix_spearman &create_matrix_euclidean &create_matrix_rmsd &create_matrix_nrmsd &create_matrix_abssum);
+@EXPORT = qw(&min &max &telltime &currdate &mean_var &corr &create_matrix_jaccard &create_matrix_lnjaccard &create_matrix_spearman &create_matrix_euclidean &create_matrix_rmsd &create_matrix_nrmsd &create_matrix_abssum &ncbidate &sum);
 
-
+sub sum  {
+    my @array = @_;
+    $sum = 0;
+    $total = $#array + 1;
+    foreach $element (@array) {
+        $sum += $element;
+    }
+    return $sum;
+}
 sub min {
     @ary = sort {$a <=> $b} @_;
     return $ary[0];
@@ -26,6 +34,13 @@ sub telltime {
 sub currdate {
     ($second, $minute, $hour, $dayOfMonth, $month, $year, $dayOfWeek, $dayOfYear, $daylightSavings) = localtime();
     $theday = join("-",$year+1900,sprintf("%02s",$month+1),sprintf("%02s",$dayOfMonth));
+    return $theday;
+}
+sub ncbidate {
+    @months = qw(Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec);
+    @weekDays = qw(Sun Mon Tue Wed Thu Fri Sat Sun);
+    ($second, $minute, $hour, $dayOfMonth, $month, $year, $dayOfWeek, $dayOfYear, $daylightSavings) = localtime();
+    $theday = join("-",sprintf("%02s",$dayOfMonth),$months[$month], $year+1900);
     return $theday;
 }
 sub create_matrix_jaccard {
