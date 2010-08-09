@@ -7,9 +7,11 @@ use XML::Simple;
 use MG::ManFasta;
 use MG::Common;
 use Bio::SearchIO;
+use Bio::Seq::RichSeq;
+use MG::ParseSeq;
+use MG::Math;
 @ISA = qw(Exporter);
-
-@EXPORT = qw(&run_search &parse_search &run_orthomcl &parse_orthomcl &runparse_lalign &runparse_ssearch &activesite_ssearch &runparse_metagene &remove_overlaps);
+@EXPORT = qw(&run_search &parse_search &run_orthomcl &parse_orthomcl &runparse_lalign &runparse_ssearch &activesite_ssearch &parse_metagene &remove_overlaps &runparse_showsnp &runparse_showcoords &runparse_fastx &create_db &runparse_showtiling &parse_hmmscan);
 
 my %global = MG::Common::initialize();
 
@@ -18,6 +20,8 @@ sub parse_search {
     my $report = shift @_;
     my $eval_min = shift @_;
     my $dna2prot = shift @_;
+    my $rev = shift @_;
+    my $one_hsp = shift @_;
     my %bhits = ();
     my %trans = ();
     my $sio = new Bio::SearchIO(-format => $algo,
@@ -25,11 +29,11 @@ sub parse_search {
     
  W1:while (my $result = $sio->next_result) {
 	my $query_length = $result->query_length;
-	my $query = $result->query_name;
+	my $query_name = $result->query_name;
     W2:while (my $hit = $result->next_hit) {
 	    my $hit_name = $hit->name; #could also be $hit->description
-	    my $per_qcov = $hit->frac_aligned_query;
-	    my $per_hcov = $hit->frac_aligned_hit;
+	    my $per_qcov = $hit->frac_aligned_query if ($result->query_length);
+	    my $per_hcov = $hit->frac_aligned_hit if ($hit->length);
 	    my $hit_length = $hit->length;
 	    my $hit_desc = $hit->description;
 	W3:while (my $hsp = $hit->next_hsp) {
@@ -38,7 +42,7 @@ sub parse_search {
 		$eval = "1".$eval if $eval =~ m/^e/;
 		my $bits = $hsp->bits;
 		my $alen = $hsp->length("hit");
-		my $percid = 100 * sprintf("%.2f", $hsp->frac_identical);
+		my $percid = sprintf("%.2f", $hsp->frac_identical);
 		my $percsim = sprintf("%.2f", $hsp->frac_conserved);
 		my $qbegin = $hsp->start('query');
 		my $qend = $hsp->end('query');
@@ -46,7 +50,8 @@ sub parse_search {
 		my $lend = $hsp->end('hit');	
 		next W2 unless ($eval < $eval_min);
 		if ($dna2prot) {
-		    my $strand = "+";
+		    my $strand = '+';
+		    $strand = '-' if ($hsp->strand == -1);
 		    if ($qbegin > $qend) {
 			$strand = '-';
 			my $t = $qbegin;
@@ -56,16 +61,21 @@ sub parse_search {
 		    my $query_seq =  $hsp->seq_str;
 		    $query_seq =~ s/-|\\|\///g;
 		    $query_seq =~ s/\*/X/g;
-		    my $gap = $hsp->generate_cigar_string;
-		    $trans{$query}{$strand}{$hit_name} = $query_seq;
-		    push @{$bhits{$query}{$strand}}, [$hit_name, $eval, $percid, $strand, 
-						      $qbegin, $qend, $query_length, $lbegin, 
-						      $lend, $hit_length];
+		    my $gap = $hsp->cigar_string;
+		    $trans{$query_name}{$strand}{$hit_name} .=  $query_seq;
+		    push @{$bhits{$query_name}{$strand}}, [$hit_name, $eval, $percid, $strand, 
+							   $qbegin, $qend, $query_length, $lbegin, 
+							   $lend, $hit_length];
+		}elsif ($rev) {
+		    push @{$bhits{$hit_name}}, [$query_name, $eval, $bits, $alen, $percid, $percsim, 
+						$per_qcov, $per_hcov, $query_length, $hit_length, 
+						$lbegin,$lend, $hit_desc,$qbegin, $qend,];
 		}else {
-		    push @{$bhits{$query}}, [$hit_name, $eval, $bits, $alen, $percid, $percsim, 
-					     $per_qcov, $per_hcov, $query_length, $hit_length, 
-					     $lbegin, $lend,$hit_desc,$qbegin, $qend];
+		    push @{$bhits{$query_name}}, [$hit_name, $eval, $bits, $alen, $percid, $percsim, 
+						  $per_qcov, $per_hcov, $query_length, $hit_length, 
+						  $lbegin,$lend, $hit_desc,$qbegin, $qend];
 		}
+		next W1 if $one_hsp;
 	    }
 	}
     }
@@ -74,6 +84,76 @@ sub parse_search {
     }else {
 	return %bhits;
     }
+}
+sub runparse_showsnp {
+    my $deltafile = shift @_;
+    my %snps;
+    system("show-snps -I -T -H $deltafile > $deltafile\.snps") unless (-e "$deltafile\.snps");
+    open IN, "<$deltafile\.snps" or die $!;
+    while (my $line = <IN>) {
+	chomp($line);
+	my($chrpos,$orint,$newnt,$readpos,$buff,$dist,$r,$q,
+	   $from1,$from2,$chr,$read) = split(/\s+/, $line);
+	next if ($orint eq '.' || $newnt eq '.');
+	$snps{$chr}{$read}{$chrpos}{$newnt} ++;
+    }
+    return %snps;
+}
+sub runparse_showtiling {
+    my $deltafile = shift @_;
+    my $minpercid = shift @_;
+    $minpercid = $minpercid *100 if ($minpercid < 1);
+    my $mincov = shift @_;
+    $mincov = $mincov *100 if ($mincov < 1);
+    my %tiles = ();
+    system("show-tiling -c -i $minpercid -V 0 -R -v $mincov $deltafile > $delta.tiling") unless (-e "$deltafile\.tiling");
+    open IN, "<$deltafile\.tiling" or die $!;
+    $/ = "\n>";
+    while (my $record = <IN>) {
+	chomp($record);
+	$record =~ s/^>//g;
+	my ($ref_info, @reads) = split(/\n/, $record);
+	$ref_info =~ m/(.+)\s+(\d+)\s+bases/;
+	my ($header, $ref_len) = ($1,$2);
+	my $ref_name = (split(/\s+/, $header))[0];
+	foreach $line (@reads) {
+	    my ($ref_start,$ref_end,$gap,$q_len,$q_cov,
+		$q_percid,$strand,$q_name) = split(/\s+/,$line);
+	    push @{$tiles{$ref_name}}, [$q_name,$q_percid,$q_cov,$q_len,
+					$strand,$ref_len,$ref_start,$ref_end];
+	}
+    }
+    $/ = "\n";
+    return %tiles;
+}
+
+sub runparse_showcoords {
+    my $deltafile = shift @_;
+    my $minpercid = shift @_;
+    my $mincov = shift @_;
+    my $revname = shift @_;
+    $minpercid = $minpercid *100 if ($minpercid < 1);
+    $mincov = $mincov *100 if ($mincov < 1);
+    my %coords;
+    system("/usr/local/bin/show-coords -H -l -I $minpercid -c -T $deltafile > $deltafile\.coords") unless (-e "$deltafile\.coords");
+    open IN, "<$deltafile\.coords" or die $!;
+    while (my $line = <IN>) {
+	chomp($line);
+	my($ref_begin, $ref_end, $qbegin, $qend, $ref_alen, $qalen, $percid,
+	   $rlen,$qlen, $rcov, $qcov, $ref_name, $query_name) = split(/\s+/, $line);
+	next if ($percid < $minpercid || $qcov < $mincov);
+	$perc_qcov = sprintf("%.2f",$qcov/100);
+	$perc_hcov = sprintf("%.2f",$rcov/100);
+	$percid = sprintf("%.2f",$percid/100);
+	if ($revname) {
+	    push @{$coords{$ref_name}}, [$query_name,$qalen, $percid,$perc_qcov,$perc_hcov,$qlen,$rlen, 
+					 $ref_begin,$ref_end,$qbegin, $qend];
+	}else {
+	    push @{$coords{$query_name}}, [$ref_name,$qalen,$percid,$perc_qcov,$perc_hcov,$qlen,$rlen, 
+					   $ref_begin,$ref_end,$qbegin, $qend];
+	}
+    }
+    return %coords;
 }
 sub remove_overlaps {
     my @ali = sort {$a->[4] <=> $b->[4]} @{shift @_};
@@ -97,6 +177,28 @@ sub remove_overlaps {
 	@{$limits{$j}} = ($hit, $eval,$qbegin,$qend);
     }
     return values %hash;
+}
+sub create_db {
+    my ($outfile,$seqfile,@acc) = @_;
+    my %h = ();
+    foreach (@acc) {
+	$h{$_} = 1;
+    }
+    open IN, "<$seqfile" or die $!;
+    open OUT, ">$outfile" or die $!;
+    $/ = "\n>";
+    while (my $record = <IN>) {
+	chomp($record);
+	my ($header, @seq) = split(/\n/, $record);
+	$header =~ s/^>//g;
+	my $acc = (split(/\s+/, $header))[0];
+	if ($h{$acc}) {
+	    print OUT ">".$header."\n".join("",@seq)."\n";
+	}
+    }
+    close OUT;
+    close IN;
+    return 1;
 }
 sub runparse_lalign {
     my ($ref, $test) = @_;
@@ -166,7 +268,157 @@ sub runparse_ssearch {
     }
     return %hash;
 }
+sub runparse_fastx {
+    my ($ref, $test,$outname,$done) = @_;
+    my ($report,$sfile)= @{$done};
+    unless ($done) {
+	system("mv $ref $global{scratch}\/$outname\.query");
+	system("mv $test $global{scratch}\/$outname\.lib");
+	system("$global{local_bin}\/fastx36 -m 9c -H $global{scratch}\/$outname\.query $global{scratch}\/$outname\.lib > $global{scratch}\/$outname\.fxout");
+	
+	$report = "$global{scratch}\/$outname\.fxout";
+	$sfile  = "$global{scratch}\/$outname\.query";
+    }
+    my ($nt, $oname) = parsefasta($sfile);
+    
+    my %seq = %{$nt};
+    foreach (keys %seq) {
+	$acc = $seq{$_}{db_acc};
+	$seq{$acc} = $seq{$_};
+	delete $seq{$_};
+    }
+    my %seen;
+    my %seqobj;
+    my $j = 0;
+    my $in = Bio::SearchIO->new(-file  => $report,
+				-format => 'fasta');
+ W1:while (my $r = $in->next_result) {
+	my $qname = $r->query_name;
+	my $i = 0;
+	unless ($seq{$r->query_name}{sequence}) {
+	    warn "Trouble in Denmark: Seqname in Search and Fasta file do not match!\n";
+	    next W1;
+	}
+	$newseq = Bio::Seq::RichSeq->new(-seq=>$seq{$r->query_name}{sequence},
+					 -accession_number=>$qname,-id=>$qname,
+					 -primary_id=>$qname,-display_id=>$qname);
+	$newseq->desc($qname);
+	my @tax_class = ('human metagenome','organismal metagenomes,metagenomes','unclassified sequences');
+	my $species = Bio::Species->new(-ncbi_taxid=>646099,-classification => \@tax_class);
+	$newseq->species($species);
+	$newseq->add_date(ncbidate());
+	my $feat = Bio::SeqFeature::Generic->new(-start=>1,-end=>length($seq{$r->query_name}{sequence}),
+						 -primary=>'source',
+						 -tag=>{organism=>'human metagenome',
+							mol_type=>'genomic DNA',
+							isolation_source=>'Homo sapiens',
+							collection_date=>ncbidate()});
+	$newseq->add_SeqFeature($feat) unless (length($seq{$r->query_name}{sequence}) < 20);
+    W2:while (my $h = $r->next_hit) {
+	W3:while (my $hsp = $h->next_hsp) {
+		if ($seen{$qname}{$hsp->strand}) {
+		    foreach (@{$seen{$qname}{$hsp->strand}}) {
+			next W2 if ($hsp->start('query') >= $_->{begin} && $hsp->start('query') <= $_->{end});
+			next W2 if ($hsp->end('query') >= $_->{begin} && $hsp->end('query') <= $_->{end});
+			next W2 if ($_->{begin} >= $hsp->start('query') && $_->{begin} <= $hsp->end('query'));
+			next W2 if ($_->{end} >= $hsp->start('query') &&  $_->{end} <= $hsp->end('query'));
 
+		    }
+		}
+		my $prot_seq = $hsp->seq_str;
+		my $location = new Bio::Location::Split->new();
+		if ($hsp->strand eq -1) {
+		    my $start = $hsp->end('query');
+		    my $offset = 0;
+		    my $len;
+		    while ($prot_seq ne '') {
+			if ($prot_seq =~ m/^(\w+)/) {
+			    $len = length($1);
+			    $plen = 3*$len - $offset;
+			    $location->add_sub_Location(Bio::Location::Simple->new(-end=>$start,
+										   -start=>$start - $plen +1,
+										   -strand=>$hsp->strand
+										  ));
+			    $start = $start - $plen;
+			    $offset = 0;
+			}elsif ($prot_seq =~ m/^(\*+)/) {
+			    $len = length($1);
+			    $plen = 3*$len - $offset;
+			    $start = $start - $plen;
+			    $offset = 0;
+			}elsif ($prot_seq =~ m/^(\/+)/) {
+			    $len = length($1);
+			    $offset = $len;
+			}elsif ($prot_seq =~ m/^(\\+)/) {
+			    $len = length($1);
+			    $start -= $len;
+			}elsif ($prot_seq =~ m/(-+)/) {
+			    $len = length($1);
+			}else {
+			    warn "Forgot about this Character: $prot_seq";
+			}
+			substr($prot_seq,0,$len,'');
+		    }
+		} else {
+		    my $start = $hsp->start('query');
+		    my $offset = 0;
+		    my $len;
+		    while ($prot_seq ne '') {
+			if ($prot_seq =~ m/^(\w+)/) {
+			    $len = length($1);
+			    $plen = 3*length($1) - $offset;
+			    $location->add_sub_Location(Bio::Location::Simple->new(-start=>$start,
+										   -end=>$start + $plen - 1,
+										   -strand=>$hsp->strand
+										  ));
+			    $start = $start + $plen;
+			    $offset = 0;
+			}elsif ($prot_seq =~ m/^(\*+)/) {
+			    $len = length($1);
+			    $plen = 3*length($1) - $offset;
+			    $start = $start + $plen;
+			    $offset = 0;
+			}elsif ($prot_seq =~ m/^(\/+)/) {
+			    $len = length($1);
+			    $offset = $len;
+			}elsif ($prot_seq =~ m/^(\\+)/) {
+			    $len = length($1);
+			    $start += $len;
+			}elsif ($prot_seq =~ m/(-+)/) {
+			    $len = length($1);
+			}else {
+			    warn "Forgot about this Character: $prot_seq";
+			}
+			substr($prot_seq,0,$len,'');
+		    }
+		}
+		my $fasta_pseq = $hsp->seq_str;
+		$fasta_pseq =~ s/\\|\/|-//g;
+		$i++;
+		my $did = $qname.'|fastx|gene_'.$i;
+		my $feat = Bio::SeqFeature::Generic->new(-start=>$hsp->start('query'),-end=>$hsp->end('query'),
+							 -strand=>$hsp->strand,-primary=>'CDS',-source_tag=>'fastx',
+							 -display_name=>$did,-score=>$hsp->bits,
+							 -frame=>0,-tag=>{translation=>$fasta_pseq,
+									  organism=>'human metagenome',
+									  mol_type=>'genomic DNA',
+									  locus_tag=>$did,
+									  product=>'hypotetical protein',
+									  isolation_source=>'Homo sapiens',
+									  best_hit=>$h->name,
+									  collection_date=>ncbidate(),
+									 },
+							);
+		$feat->location($location);
+		$newseq->add_SeqFeature($feat);
+		push @{$seen{$qname}{$hsp->strand}}, {begin=>$hsp->start('query'),end=>$hsp->end('query')};
+	    }
+	}
+	$seqobj{$r->query_name} = $newseq;
+    }
+    system("rm $global{scratch}\/$outname.fxout $global{scratch}\/$outname\.query $global{scratch}\/$outname\.lib");
+    return %seqobj;
+}
 sub activesite_ssearch {
     my ($ref, $test) = @_;
     system("$global{local_bin}\/ssearch35 -m9c -E 1e-6 -H -d 0 -V '&*@#%' $ref $test > $global{tmp}\/lalign.out");
@@ -207,6 +459,33 @@ sub activesite_ssearch {
 	}
     }
     return ($annotation, \%hash);
+}
+sub parse_hmmscan {
+    my $in = shift @_;
+    $/ = "\n//\n";
+    my %results;
+    open IN, "<$in" or die $!;
+ W1:while (my $record = <IN>) {
+	chomp($record);
+	next W1 if ($record =~ m/No hits detected/);
+	my ($query_info, @hits) = split(/\n\s*>>\s*/, $record);
+	$query_info =~ m/Query:\s+(\S+)\s+\[L=(\d+)\]/;
+	my ($query,$qlen) = ($1,$2);
+    F1:foreach $hit (@hits) {
+	    my ($hit_descript, @lines) = split(/\n/, $hit);
+	    my ($hit_acc, @hit_desc) = split(/\s+/, $hit_descript);
+	    my $hit_desc = join(" ", @hit_desc);
+	F2:foreach $line (@lines) {
+		next F2 unless ($line =~ m/^\s+(\d+)\s+\S+\s+(.+)/);
+		my ($num, $scores) = ($1,$2);
+		my ($bit, $bias, $eval1, $eval2,$hmmstart, $hmmend,$sym,$qstart,$qend,$sym2) = split(/\s+/, $scores);
+		next F2 unless ($eval1 <= 1e-5 and $eval2 <= 1e-5);
+		push @{$results{$query}{$hit_acc}}, [$hit_desc,$bit,$eval1,$eval2,$qstart,$qend,$hmmstart,$hmmend]
+	    }
+	}
+    }
+    $/ = "\n";
+    return %results;
 }
 sub parse_metagene {
     my $infile = shift @_;
@@ -250,16 +529,17 @@ sub parse_metagene {
 				     'complement'  =>  ($strand eq '+') ? 0 : 1,
 				     'frame'       =>  $frame,
 				     'score'       =>  $score,
+				     'strand'      =>  $strand,
 				     '5_partial'   =>  ($five_prime_complete == 1) ? 1 : 0,
 				     '3_partial'   =>  ($three_prime_complete == 1) ? 1 : 0,
-				    });
+				     'id'          =>   join("|",$id,'metagene',$gid)
+});
 	    $orf_count++;
 	}
     }
     $/ = "\n";
     return ($orfs, $orf_count);
 }
-
 sub run_orthomcl {
     my @seqfiles = @_;
     my $fref = join(",", @seqfiles);
