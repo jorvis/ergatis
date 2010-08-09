@@ -168,13 +168,13 @@ while (my $infile = <$listfh>) {
         next if ($line =~ /^\s*$/);
         
         my @cols = split("\t", $line);
-        if ( $cols[5] ) {
+        if ($line =~ /No hits above thresholds/i) {
+            print $ofh "$line\n";
+            
+        } elsif ( $cols[5] || ($cols[5] eq '')) {
             $cols[5] = $model;
             print $ofh join("\t", @cols), "\n";
                       
-        } elsif ($line =~ /No hits above thresholds/i) {
-            print $ofh "$line\n";
-            
         } else {
             _log("WARNING: unrecognized line: $line");
         }

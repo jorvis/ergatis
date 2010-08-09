@@ -1,8 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1  NAME 
 
 bsml2fasta.pl - convert BSML files to fasta
@@ -18,9 +15,12 @@ USAGE:  bsml2fasta.pl
           --parse_element=sequence|feature
           --class_filter=someclass 
           --bp_extension=#bpadjacentgenomicseq
+          --coords=0|1
+          --suffix=fsa
           --debug=debug_level 
           --log=log_file
           --use_feature_ids_in_fasta=0|1
+          --use_sequence_ids_in_fasta=0|1
         ]
 
 =head1 OPTIONS
@@ -46,6 +46,9 @@ B<--debug,-d>
 B<--format,-f> 
     Format.  'multi' (default) writes all sequences to a multi-fasta file, and 'single' writes each sequence in a separate file named like $id.fsa
 
+B<--suffix> 
+    suffix of the output files. Defaults to fsa
+
 B<--log,-l> 
     Log file
 
@@ -53,6 +56,11 @@ B<--use_feature_ids_in_fasta>
     Set this to nonzero to use the BSML id of the linked feature that corresponds to each sequence being written.  
     The script will fail if any of the exported sequences are linked to multiple features. Also nNote that this 
     option will only work if --parse_element=sequence.
+
+B<--use_sequence_ids_in_fasta>
+    Set this to nonzero to use the BSML id of the sequence element (rather than the identifier for the 
+    Seq-data/Seq-data-importfor each sequence being written. Also Note that this option will only work 
+    if --parse_element=sequence.
 
 B<--output,-o> 
     Output file (if --format=multi) or directory (if --format=single)
@@ -70,6 +78,9 @@ B<--output_subdir_prefix,-x>
 
 B<--bp_extension>
     Optional. Number of genomic bp to retrieve adjacent to feature
+
+B<--coords>
+    Optional. Output the coordinates in the header of the fasta.
 
 B<--help,-h> 
     This help message
@@ -235,6 +246,7 @@ use XML::Parser;
 use BSML::Indexer::Fasta;
 use Ergatis::Logger;
 use File::OpenFile qw(open_file);
+use File::Basename;
 
 #######
 ## ubiquitous options parsing and logger creation
@@ -245,6 +257,7 @@ my $results = GetOptions (\%options,
 			  'bsml_file|b=s',        ## deprecated
 			  'bsml_dir|d=s',         ## deprecated
 			  'parse_element|p=s',
+              'header_class:s',
 			  'class_filter|c=s',
 			  'role_exclude=s',
 			  'role_include=s',
@@ -253,10 +266,13 @@ my $results = GetOptions (\%options,
 			  'output_subdir_size|z=s',
 			  'output_subdir_prefix|x=s',
 			  'bp_extension=s',
+              'coords=s',
 			  'debug=s',
 			  'format|m=s',
+              'suffix=s',
 			  'log|l=s',
 			  'use_feature_ids_in_fasta=i',
+			  'use_sequence_ids_in_fasta=i',
 			  'output|o=s',
 			  'help|h') || pod2usage();
 
@@ -369,9 +385,13 @@ if(! exists $options{'bp_extension'}){
 #######
 ## parse out sequences from each file
 my $multioutputfh;
+my $byfileoutputfh;
+my $byfileoutputname;
 my $buffer_var;
 my $featurelookup = {};
 my $sequencelookup = {};
+my $grouplookup = {};
+my $groupmemberlookup = {};
 my $includeflags = {};
 my $excludeflags = {};
 
@@ -382,6 +402,7 @@ if ($options{format} eq "multi") {
 }
 
 my $use_feature_ids_in_fasta = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0);
+my $use_sequence_ids_in_fasta = defined($options{'use_sequence_ids_in_fasta'}) && ($options{'use_sequence_ids_in_fasta'} > 0);
 
 # mapping from each Sequence.id to the corresponding linked Feature.id, used for --use_feature_ids_in_fasta
 my $seqId2FeatId = {};
@@ -394,9 +415,23 @@ for my $file ( @files ) {
         $logger->debug("Writing output to multi-fasta file $options{output}") if ($logger->is_debug);
         
     }
+    elsif($options{format} eq "byfile") {
+        my $ifile = basename $file;
+        $ifile =~ s/\.[^\.]+$//;
+        my $sf = $options{suffix} ? $options{suffix} : 'fsa';
+        $byfileoutputname = "$options{output}/$ifile\.$sf";
+        if ($options{output_list}) {
+            print $olist_fh "$byfileoutputname\n";
+        }
+        open ($byfileoutputfh, ">$options{output}/$ifile\.$sf") || $logger->logdie("Unable to write to file $options{output} due to $!");
+        $logger->debug("Writing $file output to multi-fasta file $options{output}/$ifile\.$sf") if ($logger->is_debug);
+    }
 
     my $sequenceid;
     my $featureid;
+
+    my $feat_id;
+    my $group_id;
     my $charfuncs = {'Seq-data'=>
 			 sub {
 			     my ($expat,$char) = @_;
@@ -433,6 +468,9 @@ for my $file ( @files ) {
                       # the id that the script *should* be using, according to the documentation above:
                       $sequencelookup->{$sequenceid}->{'fasta_id'}=$sequenceid;
                       $sequencelookup->{$sequenceid}->{'title'}=$params{'identifier'};
+                  } elsif ($use_sequence_ids_in_fasta) {
+                      $sequencelookup->{$sequenceid}->{'fasta_id'}=$sequenceid;
+                      $sequencelookup->{$sequenceid}->{'title'}=$params{'identifier'};
                   } else {
                       $sequencelookup->{$sequenceid}->{'fasta_id'}=$params{'identifier'};
                   }
@@ -442,6 +480,7 @@ for my $file ( @files ) {
 			      my ($expat,$elt,%params) = @_;
 			      $featureid = $params{'id'};
                   die "sequence id undefined" if (!defined($sequenceid));
+                  $feat_id = $params{'id'};
 			      $sequencelookup->{$sequenceid}->{'features'}->{$featureid}++;
 			      $featurelookup->{$params{'id'}}->{'sequence'} = $sequenceid;
 			      $featurelookup->{$params{'id'}}->{'class'} = $params{'class'};		
@@ -469,7 +508,25 @@ for my $file ( @files ) {
 				      $excludeflags->{$objectid} = 1;
 				  }
 			      }
-			  }
+			  },
+              'Feature-group' =>
+              sub{
+  			      my ($expat,$elt,%params) = @_;
+                  $group_id = $params{'group-set'};
+              },
+              'Feature-group-member' =>
+              sub{
+  			      my ($expat,$elt,%params) = @_;
+                  $grouplookup->{$params{'featref'}} = $group_id;
+                  if(!$groupmemberlookup->{$group_id}) {
+                      $groupmemberlookup->{$group_id} = {};
+                  }
+                 if(!$groupmemberlookup->{$group_id}->{$params{'feature-type'}}) {
+                      $groupmemberlookup->{$group_id}->{$params{'feature-type'}} = [];
+                 }
+                 push(@{$groupmemberlookup->{$group_id}->{$params{'feature-type'}}},$params{'featref'});
+                      
+              }
 		  };
 
     my $endfuncs = {};
@@ -479,12 +536,14 @@ for my $file ( @files ) {
     }
 
     if($options{parse_element} eq 'sequence'){
-        delete $startfuncs->{'Feature'};
-        delete $startfuncs->{'Interval-loc'};
-        my $feat_id;
+        if(!$options{'coords'}) {
+            delete $startfuncs->{'Feature'};
+            delete $startfuncs->{'Interval-loc'};
+        }
+
 
         # handle --use_feature_ids_in_fasta; need to track links between features and sequences
-        if ($use_feature_ids_in_fasta) {
+#        if ($use_feature_ids_in_fasta) {
             my $lf = $startfuncs->{'Link'};
             $startfuncs->{'Link'} = sub {
                 my ($expat,$elt,%params) = @_;
@@ -500,7 +559,7 @@ for my $file ( @files ) {
                 # call original start func
                 &$lf($expat,$elt,%params) if (defined($lf));
             };
-
+            if(!$options{'coords'}) {
             $startfuncs->{'Feature'} = sub {
                 my ($expat,$elt,%params) = @_;
                 $feat_id = $params{'id'};
@@ -509,7 +568,8 @@ for my $file ( @files ) {
             $endfuncs->{'Feature'} = sub {
                 $feat_id = undef;
             };
-        }
+            }
+#        }
     }
 
     my $handlers = {
@@ -534,15 +594,30 @@ for my $file ( @files ) {
     my $x = new XML::Parser( Handlers => $handlers );
     my $x_fh = open_file( $file, 'in' );
     $x->parse( $x_fh );
+
+    if($options{format} eq 'byfile') {
+        if($options{parse_element} eq 'sequence'){
+            &process_sequences($sequencelookup,$includeflags,$excludeflags);
+        }
+        elsif($options{parse_element} eq 'feature'){
+            &process_features($sequencelookup,$featurelookup,$includeflags,$excludeflags);
+        }
+        $sequencelookup = {};
+        $featurelookup = {};
+        $grouplookup = {};
+        $groupmemberlookup = {};
+        close $byfileoutputfh;
+    }
 }
 
+if($options{format} ne 'byfile') {
 if($options{parse_element} eq 'sequence'){
     &process_sequences($sequencelookup,$includeflags,$excludeflags);
 }
 elsif($options{parse_element} eq 'feature'){
     &process_features($sequencelookup,$featurelookup,$includeflags,$excludeflags);
 }
-
+}
 #######
 ## fin   
 exit;
@@ -551,9 +626,8 @@ sub process_sequences{
     my($sequencelookup,$includeflags,$excludeflags) = @_;
 
     my $fastafiles = {};
-    foreach my $sequenceid (sort {$a cmp $b} keys %$sequencelookup){
-        #print "DEBUG: processing sequence ID $sequenceid\n";
-    
+    foreach my $sequenceid (sort {$featurelookup->{$seqId2FeatId->{$a}}->{'startpos'} <=> $featurelookup->{$seqId2FeatId->{$b}}->{'startpos'}} keys %$sequencelookup){
+#        print STDERR "DEBUG: processing sequence ID $sequenceid\n";
 	if(exists $sequencelookup->{$sequenceid}->{'fasta_file'}){
 	    if(! exists $fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}}){
 		$fastafiles->{$sequencelookup->{$sequenceid}->{'fasta_file'}} = [];
@@ -612,7 +686,6 @@ sub process_sequences{
     my $filehandle = open_file( $fasta_file, 'in' );
 
 	foreach my $sequenceid (@{$fastafiles->{$fasta_file}}){
-    
 	    if ($options{class_filter} && (lc($options{class_filter}) ne lc($sequencelookup->{$sequenceid}->{'class'}))) {
 		$logger->debug("Skipping $sequenceid because it does not match the class filter") if ($logger->is_debug);
 		next;
@@ -625,11 +698,10 @@ sub process_sequences{
 		$logger->debug("Skipping $sequenceid because it does not match the role include filter") if ($logger->is_debug);
 		next;
 	    }
-
         if(! exists $sequencelookup->{$sequenceid}->{'seqdata'}){
             my $seqdata = undef;
             # column containing the Seq-data-import.identifier
-            my $lookup_col = $use_feature_ids_in_fasta ? 'title' : 'fasta_id';
+            my $lookup_col = ($use_feature_ids_in_fasta || $use_sequence_ids_in_fasta) ? 'title' : 'fasta_id';
             if(exists $e{$h{$sequencelookup->{$sequenceid}->{$lookup_col}}}){
                 my ($offset, $length) = split( ',',$e{$h{$sequencelookup->{$sequenceid}->{$lookup_col}}});
                 seek($filehandle, $offset, 0);
@@ -757,14 +829,14 @@ sub check_parameters {
     ## check the format setting or set a default if it wasn't passed
     if (! $options{format}) {
         $options{format} = 'multi';
-    } elsif ( $options{format} ne 'single' && $options{format} ne 'multi' ) {
-        $logger->logdie("--format must be either 'single' or 'multi'");
+    } elsif ( $options{format} ne 'single' && $options{format} ne 'multi' && $options{format} ne 'byfile' ) {
+        $logger->logdie("--format must be either 'single' or 'multi' or 'byfile'");
     }
     
     ## if format is single, output must be a directory
-    if ($options{format} eq 'single') {
+    if ($options{format} eq 'single' || $options{format} eq 'byfile') {
         unless (-d $options{output}) {
-            $logger->logdie("if using --format=single then --output must point to a directory");
+            $logger->logdie("if using --format=single or --format=byfile then --output must point to a directory");
         }
     ## else if format is multi, output must NOT be a directory
     } elsif ($options{format} eq 'multi') {
@@ -826,9 +898,48 @@ sub write_sequence {
         $id = $feat_id;
     }
     
-    if ($options{format} eq 'multi') {
-        &fasta_out("$id $title", $seqref, $multioutputfh);
+    my $header = "$id $title";
 
+    if($options{header_class}) {
+        my $feat_id = $id;
+        if( $options{'parse_element'} eq 'sequence' ) {
+            $feat_id = defined($options{'use_feature_ids_in_fasta'}) && ($options{'use_feature_ids_in_fasta'} > 0) ? $id : $seqId2FeatId->{$id};
+        }
+        my $header_feats = $groupmemberlookup->{$grouplookup->{$feat_id}}->{$options{header_class}};
+        if($header_feats && @$header_feats > 1) {
+            print STDERR "Found multiple @$header_feats $options{header_class}s for $id\n";
+            die;
+        }
+        else {
+            $id = $header_feats->[0];
+            $header = $id;
+        }
+    }
+
+    if($options{'coords'} == 1) {
+        my $start;
+        my $stop;
+        my $comp;
+        if($sequencelookup->{$id}) {
+            $start = $sequencelookup->{$id}->{'startpos'};
+            $stop = $sequencelookup->{$id}->{'endpos'};
+            $comp = $sequencelookup->{$id}->{'complement'};
+        }
+        else {
+            $start = $featurelookup->{$id}->{'startpos'};
+            $stop = $featurelookup->{$id}->{'endpos'};
+            $comp = $featurelookup->{$id}->{'complement'};
+        }
+        my $loc_string = "|:$start-$stop";
+        if($comp == 1) {
+            $loc_string = "|:c$stop-$start";
+        }
+        $header = "$id$loc_string";
+    }
+    if ($options{format} eq 'multi') {
+        &fasta_out($header, $seqref, $multioutputfh);
+    } elsif ($options{format} eq 'byfile') {
+        &fasta_out($header, $seqref, $byfileoutputfh);  
     } elsif ($options{format} eq 'single') {
         ## the path depends on whether we are using output subdirectories
         if ($options{output_subdir_size}) {
@@ -843,11 +954,11 @@ sub write_sequence {
         ## legal characters only in the output file name:
         my $name = $id;
         $name =~ s/[^a-z0-9\.\-]/_/gi;
-
-        $logger->debug("attempting to create file $options{output}/$name.fsa") if ($logger->is_debug);
-        open (my $sfh, ">$dirpath/$name.fsa") || $logger->logdie("Unable to write to file $options{output}/$name due to $!");
+        my $suffix = $options{'suffix'} ? $options{'suffix'} : 'fsa';
+        $logger->debug("attempting to create file $options{output}/$name.$suffix") if ($logger->is_debug);
+        open (my $sfh, ">$dirpath/$name.$suffix") || $logger->logdie("Unable to write to file $options{output}/$name due to $!");
         $seq_file_count++;
-        &fasta_out("$id $title", $seqref, $sfh);
+        &fasta_out($header, $seqref, $sfh);
         
         ## if we are writing multiple subdirectories and have hit our size limit,
         ##  increase the counter to the next one
@@ -857,7 +968,7 @@ sub write_sequence {
         }
 
         if ($options{output_list}) {
-            print $olist_fh "$dirpath/$name.fsa\n";
+            print $olist_fh "$dirpath/$name.$suffix\n";
         }
     }
 
