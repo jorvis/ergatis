@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>parse_for_ncRNAs</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>parse_for_ncRNAs</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/parse_for_ncRNAs</executable>
+            <param>  
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+	    <param>  
+                <key>--bsml_lists</key>
+                <value>$;BSML_LISTS$;</value>
+            </param>
+	    <param>  
+                <key>--id_repository</key>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
+            </param>
+	    <param>  
+                <key>--project</key>
+                <value>$;PROJECT$;</value>
+            </param>
+	    <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>dtd validation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
+            <param>  
+                <key>-d</key>
+                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

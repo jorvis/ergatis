@@ -1,0 +1,141 @@
+<!--Twig to build components-->
+
+<!--This snippet previously resided in Ergatis/SavedPipeline.pm-->
+<!--$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/ == $;COMPONENT_DIR$;-->
+<!--$component_name.$token== $;COMPONENT_INSTANCE$;-->
+<!--$repository_root/$self->{_pipeline_dir}/$self->{pipeline_id} == $;PIPELINE_DIR$;-->
+<!--$pipeline_id == $;PIPELINE_ID$;-->
+<!--$component_name == $;COMPONENT_NAME$;-->
+<!--$bin_dir == $;BIN_DIR$;-->
+<!--$;PRECOMPONENT_BIN$;, $;POSTCOMPONENT_BIN$; sets for vappio scripts. Take component config as an argument-->
+
+<commandSet type="serial">
+  <state>incomplete</state>
+  <name>$;COMPONENT_INSTANCE$;</name>
+<!--Replace configuration values with runtime parameters-->
+  <command>
+    <type>RunUnixCommand</type>
+    <name>replace_config_keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_config_keys</executable>
+    <param>  
+      <key>--template_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.user.config</value>
+    </param>
+    <param>  
+      <key>--output_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.final.config</value>
+    </param>   
+    <param>
+      <key>--keys</key>
+      <value>PIPELINEID=$;PIPELINE_ID$;,PIPELINE_XML=$;PIPELINE_DIR$;/pipeline.xml,COMPONENT_XML=$;COMPONENT_DIR$;/component.xml</value>
+    </param>
+    <param>
+      <key>stdout</key>
+      <value>$;COMPONENT_DIR$;/replace_config_keys.stdout</value>
+    </param> 
+    <param>
+      <key>stderr</key>
+      <value>$;COMPONENT_DIR$;/replace_config_keys.stderr</value>
+    </param>
+  </command>
+<!--Generate component workflow XML-->
+  <command>
+    <type>RunUnixCommand</type>
+    <name>replace_template_keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>  
+      <key>--component_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.final.config</value>
+    </param> 
+    <param>  
+      <key>--template_xml_conf_key</key>
+      <value>TEMPLATE_XML</value>
+    </param>   
+    <param>  
+      <key>--output_xml</key>
+      <value>$;COMPONENT_DIR$;/component.xml</value>
+    </param>
+    <param>
+      <key>stdout</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys.stdout</value>
+    </param> 
+    <param>
+      <key>stderr</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys.stderr</value>
+    </param> 
+  </command>
+<!--Generate preprocessing workflow XML-->
+  <command>
+    <type>RunUnixCommand</type>
+    <name>replace_template_keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>  
+      <key>--component_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.final.config</value>
+    </param> 
+    <param>  
+      <key>--template_xml_conf_key</key>
+      <value>PREPROC_XML</value>
+    </param>   
+    <param>  
+      <key>--output_xml</key>
+      <value>$;COMPONENT_DIR$;/component_pre.xml</value>
+    </param>
+    <param>
+      <key>stdout</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys_pre.stdout</value>
+    </param> 
+    <param>
+      <key>stderr</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys_pre.stderr</value>
+    </param> 
+  </command>
+<!--Generate postprocessing workflow XML-->
+  <command>
+    <type>RunUnixCommand</type>
+    <name>replace_template_keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>  
+      <key>--component_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.final.config</value>
+    </param> 
+    <param>  
+      <key>--template_xml_conf_key</key>
+      <value>POSTPROC_XML</value>
+    </param>   
+    <param>  
+      <key>--output_xml</key>
+      <value>$;COMPONENT_DIR$;/component_post.xml</value>
+    </param>
+    <param>
+      <key>stdout</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys_post.stdout</value>
+    </param> 
+    <param>
+      <key>stderr</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys_post.stderr</value>
+    </param> 
+  </command>
+<!--Run component pre-processing -->
+  <commandSet type="serial">
+    <name>pre_$;COMPONENT_NAME$;</name>
+    <state>incomplete</state>
+    <fileName>$;COMPONENT_DIR$;/component_pre.xml</fileName>
+  </commandSet>
+<!--Run component XML-->
+  <commandSet type="serial">
+    <name>$;COMPONENT_NAME$;</name>
+    <state>incomplete</state>
+    <fileName>$;COMPONENT_DIR$;/component.xml</fileName>
+  </commandSet>
+<!--Run component post processing-->
+  <commandSet type="serial">
+    <name>post_$;COMPONENT_NAME$;</name>
+    <state>incomplete</state>
+    <fileName>$;COMPONENT_DIR$;/component_post.xml</fileName>
+  </commandSet>
+</commandSet>

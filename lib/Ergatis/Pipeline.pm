@@ -190,6 +190,13 @@ umask(0000);
                     "--init-heap=$init_heap --max-heap=$max_heap --logconf=". 
                     $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
+		## Support observer scripts
+		if ( $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts') ) {
+		    $runstring .= " --scripts=" . $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts');
+		}
+
+		$runstring .= " --logconf=" . $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
+
 #                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap >& $self->{path}.run.out";
 
                 ## write all this to a file

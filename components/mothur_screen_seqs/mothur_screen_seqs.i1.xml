@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>mothur screen seqs</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>screen seqs</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/mothur</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>--mothur_exe</key>
+                <value>$;MOTHUR_EXEC$;</value>
+            </param>
+            <param>
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            </param>
+            <param>
+                <key>--args</key>
+                <value>"#screen.seqs(fasta=$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;, group=$;GROUP_FILE$;, name=$;NAME_FILE$;, alignreport=$;REPORT_FILE$;, $;CONFIG_OPTIONS$;)"</value>
+            </param>                                                                
+        </command>
+    </commandSet>
+</commandSetRoot>

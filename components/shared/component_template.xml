@@ -1,0 +1,70 @@
+<!--Twig to build components-->
+<!--$repository_root/$self->{_component_dir}/$component_name/${pipeline_id}_$token/ == $;COMPONENT_DIR$;-->
+<!--$component_name.$token== $;COMPONENT_INSTANCE$;-->
+<!--$repository_root/$self->{_pipeline_dir}/$self->{pipeline_id} == $;PIPELINE_DIR$;-->
+<!--$pipeline_id == $;PIPELINE_ID$;-->
+<!--$component_name == $;COMPONENT_NAME$;-->
+<!--$bin_dir == $;BIN_DIR$;-->
+
+<commandSet type="serial">
+  <state>incomplete</state>
+  <name>$;COMPONENT_INSTANCE$;</name>
+  <command>
+    <type>RunUnixCommand</type>
+    <name>replace_config_keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_config_keys</executable>
+    <param>  
+      <key>--template_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.user.config</value>
+    </param>
+    <param>  
+      <key>--output_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.final.config</value>
+    </param>   
+    <param>
+      <key>--keys</key>
+      <value>PIPELINEID=$;PIPELINE_ID$;,PIPELINE_XML=$;PIPELINE_DIR$;/pipeline.xml,COMPONENT_XML=$;COMPONENT_DIR$;/component.xml</value>
+    </param>
+    <param>
+      <key>stdout</key>
+      <value>$;COMPONENT_DIR$;/replace_config_keys.stdout</value>
+    </param> 
+    <param>
+      <key>stderr</key>
+      <value>$;COMPONENT_DIR$;/replace_config_keys.stderr</value>
+    </param>
+  </command>
+  <command>
+    <type>RunUnixCommand</type>
+    <name>replace_template_keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>  
+      <key>--component_conf</key>
+      <value>$;COMPONENT_DIR$;/$;COMPONENT_INSTANCE$;.final.config</value>
+    </param> 
+<!--This key must exist in the --component_conf specified above-->
+    <param>  
+      <key>--template_xml_conf_key</key>
+      <value>TEMPLATE_XML</value>
+    </param>   
+    <param>  
+      <key>--output_xml</key>
+      <value>$;COMPONENT_DIR$;/component.xml</value>
+    </param>
+    <param>
+      <key>stdout</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys.stdout</value>
+    </param> 
+    <param>
+      <key>stderr</key>
+      <value>$;COMPONENT_DIR$;/replace_template_keys.stderr</value>
+    </param> 
+  </command>
+  <commandSet type="serial">
+    <name>$;COMPONENT_NAME$;</name>
+    <state>incomplete</state>
+    <fileName>$;COMPONENT_DIR$;/component.xml</fileName>
+  </commandSet>
+</commandSet>

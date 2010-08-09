@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>megablast</name>
             <state>incomplete</state>
-            <executable>/usr/local/bin/megablast</executable>
+            <executable>$;MEGABLAST_EXEC$;</executable>
             <arg>-i $;I_FILE_PATH$; -d $;DATABASE_PATH$; -W $;WORDSIZE$; -m8</arg>
             <param>  
                 <key>stdout</key>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>QIIME pick_otus_through_otu_table workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>pick_otus_through_otu_table</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/pick_otus_through_otu_table.py</executable>
+            <arg> -i `cat $;INPUT_FILE_LIST$;` -p $;CUSTOM_PARAMETERS_FILE$; -o $;OUTPUT_DIRECTORY$;/results</arg>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;COMPONENT_NAME$;.stderr</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;COMPONENT_NAME$;.stdout</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create otu_table list file</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;/results</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*_otu_table\.txt"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;OTU_TABLE_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create fasttree list file</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;/results</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*_rep_set\.tre"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;FASTTREE_FILE_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>make_otu_heatmap_html_file</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/make_otu_heatmap_html.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_heatmap/</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>make_otu_network</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/make_otu_network.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -m $;MAPPING_FILE$; -o $;OUTPUT_DIRECTORY$;/results/otu_network/</arg>
+        </command> 
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create otu_table summary output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/results/otu_summary_tables</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>summarizing taxa analysis (phyla)</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level3.txt -L 3 -r 0</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>summarizing taxa analysis (class)</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level4.txt -L 4 -r 0</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>summarizing taxa analysis (order)</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level5.txt -L 5 -r 0</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>summarizing taxa analysis (family)</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level6.txt -L 6 -r 0</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>summarizing taxa analysis (genus)</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level7.txt -L 7 -r 0</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create alpha rarefaction curves</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/alpha_rarefaction.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -m `cat $;MAPPING_FILE$;` -o $;OUTPUT_DIRECTORY$;/results/alpha_rarefaction/ -p $;CUSTOM_PARAMETERS_FILE$; -t `cat $;FASTTREE_FILE_LIST$;`</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create beta diversity and PCoA plots</name>
+            <state>incomplete</state>
+            <executable>$;QIIME_PATH$;/bin/beta_diversity_through_3d_plots.py</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -m `cat $;MAPPING_FILE$;` -o $;OUTPUT_DIRECTORY$;/results/beta_diversity/ -p $;CUSTOM_PARAMETERS_FILE$; -t `cat $;FASTTREE_FILE_LIST$;`</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
