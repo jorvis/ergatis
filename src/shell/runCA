@@ -1,0 +1,36 @@
+#!/bin/sh
+if [ -z "$SCHEMA_DOCS_DIR" ]
+then
+    SCHEMA_DOCS_DIR=
+export SCHEMA_DOCS_DIR
+fi
+if [ -z "$WORKFLOW_WRAPPERS_DIR" ]
+then
+    WORKFLOW_WRAPPERS_DIR=/opt/ergatis/bin
+export WORKFLOW_WRAPPERS_DIR
+fi
+if [ -z "$WORKFLOW_DOCS_DIR" ]
+then
+    WORKFLOW_DOCS_DIR=
+export WORKFLOW_DOCS_DIR
+fi
+
+umask 0000
+
+unset PERL5LIB
+unset LD_LIBRARY_PATH
+unset SGE_TASK_ID
+
+LANG=C
+export LANG
+LC_ALL=C
+
+source /opt/sge/default/common/settings.sh
+
+PERL_MOD_DIR=/opt/ergatis/lib/5.8.8
+export PERL_MOD_DIR
+
+export PERL5LIB=/opt/ergatis/lib/perl5/
+
+    /usr/bin/perl /usr/local/bioinf/celera-assembler/wgs-5.4/Linux-amd64/bin/runCA "$@"
+
