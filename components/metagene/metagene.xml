@@ -43,22 +43,22 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>create fasta list</name>
+            <name>create bsml file iterator</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>  
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
+            <executable>$;BIN_DIR$;/create_metagene_bsml_iterator_list</executable>
+            <arg>--bsml_list=$;BSML_OUTPUT_LIST$; --output=$;TMP_DIR$;/bsml_iterator.list --log=$;TMP_DIR$;/create_metagene_bsml_iterator_list.log --debug=4</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/metagene.dtdval.stdout</value>
             </param>
-            <param>  
-                <key>--regex</key>
-                <value>".*\.fsa"</value>
-            </param>
-            <param>  
-                <key>--output_list</key>
-                <value>$;FASTA_OUTPUT_LIST$;</value>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/metagene.dtdval.stderr</value>
             </param>
         </command>
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATORVAL,$;ITERATOR_XML$;=ITERATORVAL_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/bsml_iterator.list" />
+        <!--More postprocessing-->
         <command>
             <type>RunUnixCommand</type>
             <name>create raw list</name>
@@ -75,6 +75,42 @@
             <param>  
                 <key>--output_list</key>
                 <value>$;RAW_OUTPUT_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create tbl list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.tbl"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;TBL_OUTPUT_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create gbk list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.gbk"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;GBK_OUTPUT_LIST$;</value>
             </param>
         </command>
     </commandSet>

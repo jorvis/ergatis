@@ -28,6 +28,10 @@
                 <key>--class_filter</key>
                 <value>'$;CLASS_FILTER$;'</value>
             </param>
+            <param>
+                <key>--header_class</key>
+                <value>'$;HEADER_CLASS$;'</value>
+            </param>
             <param>  
                 <key>--format</key>
                 <value>'$;FORMAT$;'</value>
@@ -63,6 +67,18 @@
             <param>  
                 <key>--use_feature_ids_in_fasta</key>
                 <value>'$;USE_FEATURE_IDS_IN_FASTA$;'</value>
+            </param>
+            <param>
+                <key>--use_sequence_ids_in_fasta</key>
+                <value>'$;USE_SEQUENCE_IDS_IN_FASTA$;'</value>
+            </param>
+            <param>
+                <key>--coords</key>
+                <value>$;COORDS$;</value>
+            </param>
+            <param>
+                <key>--suffix</key>
+                <value>'$;OUTPUT_SUFFIX$;'</value>
             </param>
         </command>
     </commandSet>
