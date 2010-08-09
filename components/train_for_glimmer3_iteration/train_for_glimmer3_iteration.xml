@@ -21,13 +21,6 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>create staging directory</name>
-            <state>incomplete</state>
-            <executable>mkdir</executable>
-            <arg>-p -m 777 $;STAGING_DIR$;</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
             <name>train for glimmer3 iteration</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/train_for_glimmer3_iteration</executable>
