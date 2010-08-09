@@ -133,9 +133,11 @@ sub createPWM {
     #see if the directory where the PWM is written exists. If not, make it
     my $dir = $1 if( $outputPWM =~ m|^(.*?)[^/]+$/| );
     die("Could not parse directory from $outputPWM") unless( defined( $dir ) );
-    system('mkdir -p -m 777 $dir');
-    die("Something went wrong with mkdir command. Return value: $?")
-        unless( $? == 0 );
+    unless( -d $dir ) {
+        system('mkdir -p -m 777 $dir');
+        die("Something went wrong with mkdir command. Return value: $?")
+            unless( $? == 0 );
+    }
 
     my $elphOut = $outputPWM;
     my $elphCmd = "$elph $outFile LEN=6 | $glimmerDir/scripts/get-motif-counts.awk > $elphOut";

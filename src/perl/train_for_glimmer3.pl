@@ -187,8 +187,10 @@ sub makeIcmFile {
     
     my $dir = $1 if( $output =~ m|^(.*?)[^/]+$| );
     die("Could not parse dir from file $output") unless( defined( $dir ) );
-    system("mkdir -p -m 777 $dir");
-    die("Problem running mkdir command [$dir]. Exit value: $?") unless( $? == 0 );
+    unless( -d $dir ) {
+        system("mkdir -p -m 777 $dir"); 
+        die("Problem running mkdir command [$dir]. Exit value: $?") unless( $? == 0 );
+    }
 
     my $buildIcmCmd = "$options{glimmer3_dir}/bin/build-icm -r $output < $training_seqs";
     print "Running\n$buildIcmCmd\n";
