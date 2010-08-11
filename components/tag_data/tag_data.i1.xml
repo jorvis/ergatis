@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>tag_data compute</name>
+        <command>
+	    <type>RunUnixCommand</type>
+            <name>tag_data</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/tag_data</executable>
+	    <arg>--tag-name=$;TAG_NAME$; --input_file=$;INPUT_FILE$; --input_file_type=$;INPUT_FILE_TYPE$;</arg>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;TAG_NAME$;.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;TAG_NAME$;.stderr</value>			
+    	    </param>
+	</command>
+    </commandSet>
+</commandSetRoot>							
