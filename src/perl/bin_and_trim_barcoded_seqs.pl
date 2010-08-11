@@ -297,18 +297,26 @@ check_and_reset( $options, $logger, $barcodes, $output_file_prefix, $headers[-1]
 # print edit distance histogram
 print "\nLevenshtein edit distance histogram for reverse primer:\n\n";
 my @dists = sort { $a <=> $b } keys %$REV_EDIT_DIST_HIST;
-&print_histogram( $REV_EDIT_DIST_HIST, 0, $dists[-1], 'distance',
-                  'num_seqs', { $options->{max_edit_dist} => '*' }, 
-                  $NUM_SEQS_WITH_BARCODE_AND_REV_PRIMER );
-print "* - setting for --max_edit_dist\n";
+if (scalar(@dists) == 0) { 
+    print " ERROR - reverse primer not found in any sequence\n";
+} else {
+    &print_histogram( $REV_EDIT_DIST_HIST, 0, $dists[-1], 'distance',
+                      'num_seqs', { $options->{max_edit_dist} => '*' }, 
+                      $NUM_SEQS_WITH_BARCODE_AND_REV_PRIMER );
+    print "* - setting for --max_edit_dist\n";
+}
 
 # print indel count histogram
 print "\nIndel count histogram for reverse primer:\n\n";
 my @nindels = sort { $a <=> $b } keys %$REV_INDEL_HIST;
-&print_histogram( $REV_INDEL_HIST, $nindels[0], $nindels[-1], 'indels',
-                  'num_seqs', {}, $NUM_SEQS_WITH_BARCODE_AND_REV_PRIMER );
-
-print "\nNumber of reverse primers that match exactly except for missing dinucleotide linker: $NUM_MISSING_DINUC\n";
+if (scalar(@nindels) == 0) { 
+    print " ERROR - reverse primer not found in any sequence\n";
+} else {
+    &print_histogram( $REV_INDEL_HIST, $nindels[0], $nindels[-1], 'indels',
+                      'num_seqs', {}, $NUM_SEQS_WITH_BARCODE_AND_REV_PRIMER );
+    print "\nNumber of reverse primers that match exactly except for missing dinucleotide linker: $NUM_MISSING_DINUC\n";
+}
+print "\n";
 
 &close_write_fhs();
 exit(0);
@@ -445,6 +453,8 @@ sub check_for_barcode {
     my $max_barcode_end_offset = $options->{'max_barcode_offset'} + $MAX_BARCODE_LENGTH;
 	my $primer_seq = substr( $$seq_ref, 0, $max_barcode_end_offset );
     my $matches = {};
+
+    $logger->debug("checking for barcode in seq '$primer_seq'");
 
 	foreach my $bc ( keys %$barcodes ) {
 		if ( $primer_seq =~ /$bc/g ) {
@@ -663,6 +673,7 @@ sub get_barcode_plate_mapping {
         chomp;
         my ( $id, $well ) = split( /\s+/, $_ );
         # keys _must_ be in all-caps as all matching is done in uppercase
+        $logger->logdie("barcode file contains multiple rows for '$id'") if (defined($barcodes{uc($id)}));
         $barcodes{uc($id)} = $well;
         my $bl = length($id);
         $MAX_BARCODE_LENGTH = $bl if (!defined($MAX_BARCODE_LENGTH) || ($bl > $MAX_BARCODE_LENGTH));
@@ -674,7 +685,11 @@ sub get_barcode_plate_mapping {
 
     $logger->warn("barcode lengths are not uniform") if ($different_lengths);
     my $nb = scalar(keys %barcodes);
-    $logger->warn("no barcodes read from $barcode_file") if ($nb == 0);
+    if ($nb == 0) {
+        $logger->logdie("no barcodes read from $barcode_file");
+    } else {
+        $logger->info("$nb barcode(s) read from $barcode_file");
+    }
     $logger->error("max_barcode_length = 0") if ($MAX_BARCODE_LENGTH == 0);
     $logger->warn("max_barcode_length < 6") if ($MAX_BARCODE_LENGTH < 6);
 
