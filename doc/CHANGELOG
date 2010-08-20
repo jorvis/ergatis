@@ -32,6 +32,13 @@ next
 -prok_pipeline: replaced the single version of the prok pipeline with two new versions (one with database loading and one without)
 -ncbi-blastall: new component
 -mosaik: new component
+-core_qiime: new component
+-mothur_unique_seq_limit: new component
+-qiime_mothur_cnvr: new component
+-Create_Qiime_tables.pl: formatting support script
+-mothur_unique_seq_limit.pl: 16S pipeline support script
+-qiime_to_mothur_meta.pl: 16S pipeline support script
+
 
 ergatis-v2r12b1
 ----
