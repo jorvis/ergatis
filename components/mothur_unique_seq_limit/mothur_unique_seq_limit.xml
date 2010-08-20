@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>Mothur workflow step</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>mothur check for unique seq limit</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/mothur_unique_seq_limit.pl</executable>
+            <arg>-f `cat $;INPUT_FILE_LIST$;` -g `cat $;NAMES_LIST$;` -n $;SEQLIMIT$; -e $;FAUX_FASTA$; -m $;FAUX_NAMES$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

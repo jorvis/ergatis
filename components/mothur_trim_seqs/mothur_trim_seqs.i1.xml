@@ -30,7 +30,7 @@
             </param>
 	    <param>
 		<key>--args</key>
-		<value>"#trim.seqs(fasta=$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;, oligos=`cat $;OLIGOS_FILE$;`, flip=$;FLIP$;, minlength=$;MINIMUM_LENGTH$;, maxlength=$;MAXIMUM_LENGTH$;, qfile=`cat $;QUALITY_FILE$;`, maxhomop=$;MAXIMUM_HOMOPOLYMER_LENGTH$;, maxambig=$;MAXIMUM_AMBIGUOUS_BASES$;, qaverage=$;Q_AVERAGE$;, $;CONFIG_OPTIONS$;)"</value>
+		<value>"#trim.seqs(fasta=$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_NAME$;, oligos=$;OLIGOS_FILE$;, flip=$;FLIP$;, minlength=$;MINIMUM_LENGTH$;, maxlength=$;MAXIMUM_LENGTH$;, maxhomop=$;MAXIMUM_HOMOPOLYMER_LENGTH$;, maxambig=$;MAXIMUM_AMBIGUOUS_BASES$;, qaverage=$;Q_AVERAGE$;, $;CONFIG_OPTIONS$;)"</value>
 	    </param>
         </command>
     </commandSet>

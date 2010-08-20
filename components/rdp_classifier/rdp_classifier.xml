@@ -46,7 +46,7 @@
             <name>create output tables</name>
             <state>incomplete</state>
             <executable>$;RDP_DIR$;/Create_RDP_tables.pl</executable>
-            <arg>-p $;OUTPUT_DIRECTORY$;/RDP -m `cat $;META_FILE$;` -r `cat $;RESULTS_OUTPUT_LIST$;` -g `cat $;GROUPS_FILE$;`</arg>
+            <arg>-p $;OUTPUT_DIRECTORY$;/RDP -m $;META_FILE$; -r `cat $;RESULTS_OUTPUT_LIST$;` -g `cat $;GROUPS_FILE$;`</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
