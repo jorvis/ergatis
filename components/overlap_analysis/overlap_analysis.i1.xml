@@ -2,41 +2,7 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>overlap_analysis</name>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>overlap_analysis</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/overlap_analysis</executable>
-            <param>  
-                <key>--input_file</key>
-                <value>$;I_FILE_PATH$;</value>
-            </param>
-            <param>  
-                <key>--rna_bsml</key>
-                <value>$;RNA_BSML$;</value>
-            </param>
-            <param>  
-                <key>--evidence_bsml</key>
-                <value>$;EVIDENCE_BSML$;</value>
-            </param>
-            <param>  
-                <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bsml</value>
-            </param>
-            <param>  
-                <key>--cutoff</key>
-                <value>$;CUTOFF$;</value>
-            </param>
-            <param>  
-                <key>--flagged_overlaps_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.flagged_overlaps.txt</value>
-            </param>
-            <param>  
-                <key>--log</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.log</value>
-            </param>
-        </command>
+        <name>overlap analysis post processing</name>
         <command>
             <type>RunUnixCommand</type>
             <name>store config params</name>

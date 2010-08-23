@@ -9,10 +9,11 @@ use File::OpenFile qw (open_file);
 use IntervalTree;
 use Data::Dumper;
 use BSML::FeatureRelationshipLookup;
+use Benchmark::Timer;
 
 ###################### Globals #####################
 my $logfh = \*STDOUT;
-my $input_file;
+my @input_files;
 my $output;
 my @rna_bsml;
 my @evidence_bsml;
@@ -26,10 +27,10 @@ my %delete;
 
 #parse all the genes from the input file
 print "Parsing input file\n";
-my %genes = &get_genes( $input_file );
+my %genes = &get_genes( \@input_files );
 
 #get the relationships between feature types
-my $feature_rel_lookup = new BSML::FeatureRelationshipLookup( 'bsml' => $input_file );
+my $feature_rel_lookup = new BSML::FeatureRelationshipLookup( 'bsml' => \@input_files );
 
 #parse all the rnas 
 my @rnas;
@@ -37,6 +38,7 @@ print "Parsing RNA files\n";
 foreach my $rna_file ( @rna_bsml ) {
     push(@rnas, &get_rnas( $rna_file ) );
 }
+
 #parse evidence files
 print "Parsing evidence files\n";
 my %evidence = &parse_evidence_files( \@evidence_bsml );
@@ -44,34 +46,39 @@ my %evidence = &parse_evidence_files( \@evidence_bsml );
 #create the IntervalTrees
 my %iTrees;
 
-foreach my $gene_id ( keys %genes ) {
-    my $seq_id = $genes{$gene_id}->{'parent_seq'};
-    $iTrees{$seq_id} = new IntervalTree if( !defined( $iTrees{$seq_id} ) );
-    $iTrees{$seq_id}->addInterval( $gene_id, $genes{$gene_id}->{'left'}, $genes{$gene_id}->{'right'} );
+foreach my $asmbl_id ( keys %genes ) {
+    foreach my $gene_id ( keys %{$genes{$asmbl_id}} ) {
+        my $seq_id = $genes{$asmbl_id}->{$gene_id}->{'parent_seq'};
+        $iTrees{$seq_id} = new IntervalTree if( !defined( $iTrees{$seq_id} ) );
+        $iTrees{$seq_id}->addInterval( $gene_id, $genes{$gene_id}->{'left'}, $genes{$gene_id}->{'right'} );
+    }
 }
 
 print "Building Trees\n";
 map { $iTrees{$_}->buildTree } keys %iTrees;
 
 #searching for gene overlaps
-foreach my $gene_id ( keys %genes ) {
-    my $seq = $genes{$gene_id}->{'parent_seq'};
-    my @overlaps = $iTrees{$seq}->searchInterval( $genes{$gene_id}->{'start'},
-                                                  $genes{$gene_id}->{'stop'} );
+foreach my $asmbl_id ( keys %genes ) {
+    foreach my $gene_id ( keys %{$genes{$asmbl_id}} ) {
+        my $gene = $genes{$asmbl_id}->{$gene_id};
+        my $seq = $gene->{'parent_seq'};
+        my @overlaps = $iTrees{$seq}->searchInterval( $gene->{'start'},
+                                                      $gene->{'stop'} );
 
-    foreach my $ol ( @overlaps ) {
+        foreach my $ol ( @overlaps ) {
 
-        #determine the amount of overlap
-        my @ordered = sort ( $genes{$gene_id}->{'left'}, $genes{$gene_id}->{'right'}, $ol->[0], $ol->[1] );
-        my $ol_amount = (( $genes{$gene_id}->{'right'} - $genes{$gene_id}->{'left'} ) + ( $ol->[1] - $ol->[0] )) -
-            ( $ordered[3] - $ordered[0] );
+            #determine the amount of overlap
+            my @ordered = sort ( $gene->{'left'}, $gene->{'right'}, $ol->[0], $ol->[1] );
+            my $ol_amount = (( $gene->{'right'} - $gene->{'left'} ) + ( $ol->[1] - $ol->[0] )) -
+                ( $ordered[3] - $ordered[0] );
 
-        #does it pass the cutoff?
-        if( $ol_amount > $cutoff ) {
-            &handle_gene_overlap( $ol, [ $genes{$gene_id}->{'left'}, $genes{$gene_id}->{'right'}, $gene_id ] );
-        } else {
-            &_log("Overlap (size: $ol_amount) found between $gene_id and $ol->[2]. Skipping because it does not".
-                  "meet the maximum cutoff (cutoff: $cutoff)");
+            #does it pass the cutoff?
+            if( $ol_amount > $cutoff ) {
+                &handle_gene_overlap( $ol, [ $gene->{'left'}, $gene->{'right'}, $gene_id ] );
+            } else {
+                &_log("Overlap (size: $ol_amount) found between $gene_id and $ol->[2]. Skipping because it does not".
+                      "meet the maximum cutoff (cutoff: $cutoff)");
+            }
         }
     }
 }
@@ -87,8 +94,8 @@ foreach my $rna ( @rnas ) {
     }
 
 }
- 
-my $outfh = open_file( $output, 'out' );
+
+my $outfh = open_file("/tmp/whatever.bsml", "out");
 my $twig = new XML::Twig( 'twig_roots' => {
     'Sequence' => sub {
         my $id = $_[1]->att('id');
@@ -141,14 +148,44 @@ my $twig = new XML::Twig( 'twig_roots' => {
 },
                           'twig_print_outside_roots' => $outfh,
                           'pretty_print' => 'indented' );
-my $in = open_file( $input_file, 'in' );
-$twig->parse( $in );
-close($in);
-close($outfh);
+
+foreach my $input_file ( @input_files ) {
+    my $in = open_file( $input_file, 'in' );
+    my $basename;
+    
+    ## Legacy naming style. Remove other application names from output file to prevent propagation.
+    $basename = $1 if( $input_file =~ m|/([^/]+)\.glimmer3\.promote_gene_prediction\.bsml| );
+    
+    ## Will use the id of the first $sequence_class sequence it finds as the filename
+    $basename = &get_id_from_bsml( $input_file ) unless( defined( $basename ) );
+
+    my $output_file = $output."/$basename.bsml";
+    $outfh = open_file( $output_file, "out" );
+    $twig->{'twig_output_fh'} = $outfh;
+    $twig->{'twig_default_print'} = $outfh;
+    $twig->parse( $in );
+    close($in);
+    close($outfh);
+}
 
 
 
 ################################### SUBS ###################################
+sub get_id_from_bsml {
+    my ($file) = @_;
+    my $in = open_file( $file, "in" );
+    my $retval;
+
+    while(my $line = <$in>) {
+        if( $line =~ /Sequence.*class=\"$sequence_class\"/ ) {
+            $retval = $1 if( $line =~ /id=\"([^\"]+)\"/ );
+            last if( defined( $retval ) );
+        }
+    }
+
+    return $retval;
+}
+
 sub handle_gene_overlap {
     my ($gene1, $gene2) = @_;
     
@@ -208,22 +245,20 @@ sub flag_overlap {
 sub parse_evidence_files {
     my ($files) = @_;
     my %retval;
-
-    my $twig = new XML::Twig( 'twig_roots' => {
-        'Seq-pair-alignment' => sub {
-            my $refseq = $_[1]->att('refseq');
-            my $gene_id;
-            eval {
-                $gene_id = $feature_rel_lookup->lookup( $refseq, 'gene' );
-            };
-            return unless( defined( $gene_id ) );
-            $retval{$gene_id} = 1;
-        }
-    } );
     
     foreach my $file (@{$files}) {
         my $in = open_file( $file, "in" );
-        $twig->parse( $in );
+
+        while( my $line = <$in> ) {
+            if( $line =~ /Seq-pair-alignment.*refseq=\"([^\"]+)\"/ ) {
+                my $gene_id;
+                eval {
+                    $gene_id = $feature_rel_lookup->lookup( $1, 'gene' );
+                };
+                $retval{$gene_id} = 1 if( defined( $gene_id ) );
+            }
+        }
+
         close($in);
     }
 
@@ -254,32 +289,38 @@ sub get_rnas {
 }
 
 sub get_genes {
-    my ($file) = @_;
+    my ($files) = @_;
     my %retval;
 
-    my $twig = new XML::Twig( 'twig_roots' => {
-        'Sequence[@class="'.$sequence_class.'"]' => sub {
-            my $seq_id = $_[1]->att('id');
-            my @features = $_[1]->find_nodes('//Feature[@class="gene"]');
-            foreach my $feature ( @features ) {
-                my $feat_id = $feature->att('id');
-                my $int_loc = $feature->first_child('Interval-loc');
-                my ($left,$right,$comp) = ( $int_loc->att('startpos'),
-                                            $int_loc->att('endpos'),
-                                            $int_loc->att('complement') );
-                $retval{$feat_id} = {
-                    'left' => $left,
-                    'right' => $right,
-                    'comp' => $comp,
-                    'parent_seq' => $seq_id,
-                    };
-            }
-            
-        } } );
+    foreach my $file ( @{$files} ) {
+        my $in = open_file( $file, 'in' );
+        
+        my $asmbl_id;
+        my $feat_id;
+        while( my $line = <$in> ) {
+            if( $line =~ /Sequence.*class=\"$sequence_class\"/ ) {
+                $asmbl_id = $1 if( $line =~ /id=\"([^\"]+)\"/ );
+            } elsif( $asmbl_id && $line =~ /Feature.*class=\"gene\"/ ) {
+                $feat_id = $1 if( $line =~ /id=\"([^\"]+)\"/ );
+            } elsif( $asmbl_id && $feat_id && $line =~ /Interval-loc/ ) {
+                my $start = $1 if( $line =~ /startpos=\"([^\"]+)\"/ );
+                my $stop = $1 if( $line =~ /endpos=\"([^\"]+)\"/ );
+                my $comp = $1 if( $line =~ /complement=\"([^\"]+)\"/ );
 
-    my $in = open_file( $file, 'in' );
-    $twig->parse( $in );
-    close($in);
+                $retval{$asmbl_id} = {} unless( exists( $retval{$asmbl_id} ) );
+
+                $retval{$asmbl_id}->{$feat_id} = {
+                    'left' => $start,
+                    'right' => $stop,
+                    'comp' => $comp,
+                    'parent_seq' => $asmbl_id
+                    };
+                undef $feat_id;
+            }
+        }
+        close($in);
+    }
+
     return %retval;
 }
 
@@ -287,7 +328,8 @@ sub check_options {
     my %options;
     my $results = GetOptions (\%options,
                               'input_file|i=s',
-                              'output|o=s',
+                              'input_list|n=s',
+                              'output_directory|o=s',
                               'rna_bsml|r=s',
                               'evidence_bsml|e=s',
                               'overlap_cutoff|c=s',
@@ -300,13 +342,17 @@ sub check_options {
     &_pod if( $options{'help'} );
     $logfh = open_file( $options{'log'}, "out" ) if( $options{'log'} );
 
-    my @reqs = qw(input_file output rna_bsml evidence_bsml);
+    my @reqs = qw(output_directory rna_bsml evidence_bsml);
     foreach my $req ( @reqs ) {
         die("Option $req is required") unless( $options{$req} );
     }
 
-    $input_file = $options{'input_file'};
-    $output = $options{'output'};
+    @input_files = &get_input_files( $options{'input_list'} );
+    push(@input_files, $options{'input_file'} ) if( $options{'input_file'} );
+
+    die("Either --input_list or --input_file should be specified") unless( @input_files );
+
+    $output = $options{'output_directory'};
     @rna_bsml = &get_input_files( $options{'rna_bsml'} );
     @evidence_bsml = &get_input_files( $options{'evidence_bsml'} );
     $flagfh = open_file( $options{'flagged_overlaps_file'}, 'out' ) if( $options{'flagged_overlaps_file'} );
