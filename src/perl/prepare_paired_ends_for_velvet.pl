@@ -220,11 +220,11 @@ sub get_format {
 
         if( $first_line =~ /^>/ ) {
             die("Formats of input files were not the same: $file is not format $format")
-                unless( $format == 'fasta' );
+                unless( !defined( $format ) || $format eq 'fasta' );
             $format = 'fasta';
         } elsif( $first_line =~ /^\@/ ) {
             die("Formats of input files were not the same: $file is not format $format")
-                unless( $format == 'fastq' );
+                unless( !defined( $format ) || $format eq 'fastq' );
             $format = 'fastq';
         } else {
             die("Could not detect the format of file $file");
