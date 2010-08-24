@@ -162,7 +162,7 @@ my %alignment_formats =            #Accepted output alignment formats
 
 my %options = ();
 my $results = GetOptions (\%options, 
-                          'donotrun',
+                          'donotrun=s',
                           'input_file|i=s',
                           'output_htab|o=s',
                           'mldbm_file|m=s',
