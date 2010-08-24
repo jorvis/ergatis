@@ -62,7 +62,8 @@ exit;
 sub check_parameters{
     my ($cfg,$section) = @_;
 
-    my %optional = ( $delimeter.'PROJECT_CODE'.$delimeter => 1 );
+    my %optional = ( $delimeter.'$;PROJECT_CODE$;'.$delimeter => 1,
+                     $delimeter.'$;SKIP_WF_COMMAND$;'.$delimeter => 1);
 
     for my $param ( $cfg->Parameters($section) ) {
         ## skip checking if this one's optional
