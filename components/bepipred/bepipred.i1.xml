@@ -30,14 +30,7 @@
             <name>bepipred</name>
             <state>incomplete</state>
             <executable>/local/projects/STREP/bepipred-1.0b/bepipred</executable>
-            <param>
-                <key>--input</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixed.fsa</value>
-            </param>
-            <param>
-                <key>--threshold</key>
-                <value>$;THRESHOLD$;</value>
-            </param>
+            <arg>-t $;THRESHOLD$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixed.fsa</arg> 
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
