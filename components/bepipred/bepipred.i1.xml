@@ -57,6 +57,10 @@
                 <key>--do_nothing</key>
                 <value>$;LEAVE_FASTA_HEADERS$;</value>
             </param>
+           <param>
+                <key>--replace</key>
+                <value>1</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
