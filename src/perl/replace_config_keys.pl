@@ -47,7 +47,7 @@ my $cfg = &replace_keys($origcfg);
 #Write the output location of this file as key $;COMPONENT_CONFIG$;
 my $ret = $cfg->setval('component',$delimeter.'COMPONENT_CONFIG'.$delimeter,$options{'output_conf'});
 if(!$ret){
-    $logger->logdie("Couldn't add key $delimeter COMPONENT_CONFIG $delimeter=$options{'output_conf'}to section [component]");
+    $logger->logdie("Couldn't add key ${delimeter}COMPONENT_CONFIG$delimeter=$options{'output_conf'}to section [component]");
 }
 &check_parameters($cfg,'component');
 
@@ -62,8 +62,8 @@ exit;
 sub check_parameters{
     my ($cfg,$section) = @_;
 
-    my %optional = ( $delimeter.'$;PROJECT_CODE$;'.$delimeter => 1,
-                     $delimeter.'$;SKIP_WF_COMMAND$;'.$delimeter => 1);
+    my %optional = ( $delimeter . 'PROJECT_CODE' . $delimeter => 1,
+                     $delimeter . 'SKIP_WF_COMMAND' . $delimeter => 1);
 
     for my $param ( $cfg->Parameters($section) ) {
         ## skip checking if this one's optional
