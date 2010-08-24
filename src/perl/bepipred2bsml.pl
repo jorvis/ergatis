@@ -85,7 +85,7 @@ my $results = GetOptions (\%options,
               'output|o=s',
               'debug|d=s',
               'id_repository|r=s',
-              'input=s',
+              'fasta_input=s',
               'compress_bsml_output=s',
               'project|p=s',
               'log|l=s',
@@ -201,9 +201,9 @@ exit;
 sub create_doc {
     my($epitopes) = @_;
     foreach my $s (keys %$epitopes) {
-        my $seq = $doc->createAndAddSequence($s, $defline, '', 'aa', 'polypeptide');
+        my $seq = $doc->createAndAddSequence($s, $s, '', 'aa', 'polypeptide');
         $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
-        $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{input}, "sdi_" . $s . '_seq', $s );
+        $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_input}, "sdi_" . $s . '_seq', $s );
         $seq->addBsmlLink('analysis', '#bepipred_analysis', 'input_of');
         my $feature_table;
         $feature_table  = $doc->createAndAddFeatureTable($seq);
@@ -218,6 +218,7 @@ sub create_doc {
                 $feature_table,
                 $idgen->next_id( project => $options{'project'},
                                  type => 'epitope'),
+                'epitope',
                 'epitope');
             $ep->addBsmlLink('analysis', '#bepipred_analysis', 'computed_by');
             $ep->addBsmlIntervalLoc(
@@ -241,7 +242,7 @@ exit();
 sub check_parameters {
 
     ## required params
-    my @required = qw( input output id_repository );
+    my @required = qw( fasta_input input output id_repository );
     for ( @required ) {
         if (! defined $options{$_}) {
             $logger->logdie( "$_ is a required option" );
@@ -258,10 +259,10 @@ sub check_parameters {
     } 
     
     ## make sure the fasta input was provided. (Bug 3781)
-    if($options{'input'}) {
-        $fastaFile = $options{'input'};
+    if($options{'fasta_input'}) {
+        $fastaFile = $options{'fasta_input'};
         open(IN, "$fastaFile") 
-            or pod2usage({-message => "Could not open input $fastaFile ($!)"});
+            or pod2usage({-message => "Could not open fasta_input $fastaFile ($!)"});
         while(<IN>) {
             chomp;
             if(/^>(.*)/) {
@@ -271,7 +272,7 @@ sub check_parameters {
         }
         close(IN);
     } else {
-        pod2usage({-message => "Option input is required"});
+        pod2usage({-message => "Option fasta_input is required"});
     }
 
     ## in case they want to compress the bsml output (bug 2591)
