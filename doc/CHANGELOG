@@ -1,5 +1,6 @@
 next
 ----
+-SavedPipeline.pm: Now supports <INCLUDE elements for including other pipelines
 -overlap_analysis: non-iterative analysis (still contains iterator for post-processing). Made speed improvements to script.
 -tag_data: new component (designed for use in CloVR)
 -move_hmmpfam_results.pl: now handles htab with no model name in column 6
