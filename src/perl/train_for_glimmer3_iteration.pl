@@ -131,7 +131,7 @@ sub createPWM {
     my $startCodonUsage = &consolidateStartCodonUsages( $files );
 
     #see if the directory where the PWM is written exists. If not, make it
-    my $dir = $1 if( $outputPWM =~ m|^(.*?)[^/]+$/| );
+    my $dir = $1 if( $outputPWM =~ m|^(.*)?/[^/]+$/| );
     die("Could not parse directory from $outputPWM") unless( defined( $dir ) );
     unless( -d $dir ) {
         system('mkdir -p -m 777 $dir');
