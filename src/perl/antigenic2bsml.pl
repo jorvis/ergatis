@@ -65,7 +65,7 @@ will fail if it already exists.
 =head1 CONTACT
 
 David Riley
-driley@som.igs.umaryland.edu
+driley@som.umaryland.edu
 
 =cut
 
@@ -176,6 +176,7 @@ while (<$ifh>) {
             $feature_table,
             $idgen->next_id( project => $project,
                              type => 'epitope'),
+            'epitope',
             'epitope');
         $ep->addBsmlLink('analysis', '#antigenic_analysis', 'computed_by');
         $ep->addBsmlIntervalLoc(
@@ -213,23 +214,6 @@ sub check_parameters {
         }
     } 
     
-    ## make sure the fasta input was provided. (Bug 3781)
-    if($options{'input'}) {
-        $fastaFile = $options{'input'};
-        open(IN, "$fastaFile") 
-            or pod2usage({-message => "Could not open input $fastaFile ($!)"});
-        while(<IN>) {
-            chomp;
-            if(/^>(.*)/) {
-                $defline = $1;
-                last;
-            }
-        }
-        close(IN);
-    } else {
-        pod2usage({-message => "Option input is required"});
-    }
-
     ## in case they want to compress the bsml output (bug 2591)
     if($options{'compress_bsml_output'}) {
         $gzip = 1;
