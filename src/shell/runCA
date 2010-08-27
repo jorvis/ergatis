@@ -25,7 +25,7 @@ LANG=C
 export LANG
 LC_ALL=C
 
-source /opt/sge/default/common/settings.sh
+#source /opt/sge/default/common/settings.sh
 
 PERL_MOD_DIR=/opt/ergatis/lib/5.8.8
 export PERL_MOD_DIR

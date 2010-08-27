@@ -65,7 +65,7 @@ if (-d $harvest_dir && -e $harvest_dir && -r $harvest_dir) {
 my $hostname = `hostname -f`;
 chomp($hostname);
 
-my $cmd = "/opt/sge/bin/lx24-amd64/qsub -o /mnt/scratch -e /mnt/scratch -S /bin/sh -b n -sync y -q harvesting.q /opt/vappio-scripts/harvesting.sh $hostname $harvest_dir";
+my $cmd = "/usr/bin/qsub -o /mnt/scratch -e /mnt/scratch -S /bin/sh -b n -sync y -q harvesting.q /opt/vappio-scripts/harvesting.sh $hostname $harvest_dir";
 system($cmd);
 
 ###################################################################

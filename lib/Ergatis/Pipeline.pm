@@ -318,7 +318,7 @@ umask(0000);
         $ENV{SYBASE} = '/usr/local/packages/sybase';
         $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
-        
+        $ENV{TERMCAP} = ''; #can contain bad characters which crash wrapper shell script
         ## some application-specific env vars
         ############
         
