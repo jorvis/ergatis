@@ -40,6 +40,10 @@ next
 -Create_Qiime_tables.pl: formatting support script
 -mothur_unique_seq_limit.pl: 16S pipeline support script
 -qiime_to_mothur_meta.pl: 16S pipeline support script
+-clovr_metagenomics_prep: preprocessing component for clovr_metagenomics pipeline
+-clovr_metagenomics_tables: postprocessing component for clovr_metagenomics pipeline
+-UCLUST component: new variable 'CLUSTER_OUTPUT_LIST' output
+
 
 
 ergatis-v2r12b1
