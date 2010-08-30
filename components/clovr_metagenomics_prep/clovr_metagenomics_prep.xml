@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>clovr_metagenomics_prep workflow</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>clovr_metagenomics_prep</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/clovr_metagenomics_prep.pl</executable>
+            <arg>-f $;INPUT_FILE_LIST$; -m `cat $;MAPPING_FILE$;` -p $;OUTPUT_PREFIX$;</arg>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
