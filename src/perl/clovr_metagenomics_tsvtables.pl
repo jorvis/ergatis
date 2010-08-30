@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 #******************************************************************************
-# *create_feature_tables.pl
+# *clovr_metagenomics_tsvtables.pl
 # Author: james robert white, james.dna.white@gmail.com
 
 # This function takesa list blast outputs (-m 8) and some metadata and creates
