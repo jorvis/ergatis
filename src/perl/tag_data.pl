@@ -7,26 +7,27 @@ transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
 =head1 SYNOPSIS
 
 ./tag_data.pl 
-        --input_file=/path/to/input/file
-        --input_file_type=<input file type>
-        --tag-name=<clovr tag name>
+        --map_file=/path/to/map/file
+        --repository_root=/path/to/ergatis/repository/root
+        --pipeline_id=<ergatis pipeline ID>
        [--log=/path/to/log/file
-        --debug=/debug/lvl
+        --debug=<debug level>
         --help]
         
 =head1 PARAMETERS
 
-B<--input_file, -i>
-	Input files which should be tagged by CloVR. Input files can be either individual 
-	files, a directory containing many files or a file containing a list of files
-    
-B<--input_file_type, -t>
-	The type of file specified in the input_file parameter. Valid options here are DIR, FILE,
-	and LIST
-	
-B<--tag-name, -n>
-	The unique name to tag these data with in CloVR.	
+B<--map_file, -i>
+    A tab delimited file containing the files to be tagged as well as the desired tag-name
+    for these set of files.
 
+B<--repository_root, -r>
+    The repository where output files to be tagged reside. This value is replaced in the mapping
+    file when present
+    
+B<--pipeline_id, -p>
+    The pipeline ID whose files should be downloaded. This value is replaced in the mapping file
+    when present    
+    
 B<--log, -l>
     Optional. Log file.
     
@@ -43,7 +44,16 @@ This wrapper script is meant to allow for custom tagging of output data from a p
 
 =head1 INPUT
 
-Input is a single input file, either a directory, file, or file list that contains data to be tagged.
+Input is a tab delimited file containing all files to be tagged and the associated tag-name for
+the files. Files can be a single file, directories, a list containing multiple files or a list of comma-separated
+files.
+
+#TAG_NAME\tFILE
+test_tag\tfile1.txt,file2.txt,files.list,/usr/local/test_data/
+
+=head OUTPUT
+
+A file containing all tag names will be written for use by the accompanying download_tag component
 
 =head1 CONTACT
 
@@ -54,40 +64,140 @@ Input is a single input file, either a directory, file, or file list that contai
 
 use strict;
 use warnings;
-use strict;
 use warnings;
-use Pod::Usage;		
+use Pod::Usage;        
 use Ergatis::Logger;
+use File::OpenFile qw(open_file);
+use UNIVERSAL qw(isa);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+
+## Need to setup the PYTHONPATH env variable here...
+$ENV{'PYTHONPATH'} = "/opt/vappio-py:/opt/vappio-py:/opt/opt-packages/bioinf-v1r4b1//Denoiser/" .
+		     ":/opt/opt-packages/bioinf-v1r4b1//PyNAST/lib/:/opt/opt-packages/bioinf-v1r4b1//qiime/lib/";
 
 #----------------------------------------------------------
 # GLOBALS/COMMAND-LINE OPTIONS
 #----------------------------------------------------------
 my $logger;
+my $TAG_DATA_EXEC = "/opt/vappio-py/vappio/cli/tagData.py"; 
 
 my %options = parse_options();
-my $input = $options{'input_file'};
-my $input_file_type = $options{'input_file_type'};
-my $tag_name = $options{'tag-name'};
+my $input = $options{'map_file'};
+my $repo_root = $options{'repository_root'};
+my $pipeline_id = $options{'pipeline_id'};
 
-my $cmd = qq{/opt/vappio-py/vappio/cli/tagData.py --name=local --tag-name="$tag_name" --overwrite --recursive };
+my $files_to_tag = parse_mapping_file($input);
 
-if ( uc($input_file_type) eq "LIST" ) {
-	open (INFILE, $input);
-	chomp( my @files = <INFILE> );
-	close (INFILE);
-
-	$cmd .= join(" ", @files);
-} else {
-	$cmd .= "$input";
+## Now that we have our files to tag we can go ahead with the tagging
+foreach my $tag_name (keys %$files_to_tag) {
+    my @files = @{ $files_to_tag->{$tag_name} };
+    my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
+                  join(" ", @files);
+    run_system_cmd($cmd);                  
 }
-
-run_system_cmd($cmd);
 
 ###############################################################################
 #####                          SUBROUTINES                                #####
 ###############################################################################
 
+#----------------------------------------------------------
+# parse input mapping file and return an array 
+# containing hash containing all files and the associated
+# tag-name.
+#----------------------------------------------------------
+sub parse_mapping_file {
+    my $map_file = shift;
+    my $tag_files = ();
+    
+    my $map_fh = open_file($map_file, "in");
+    while (my $line = <$map_fh>) {
+        next if ($line =~ /^#/);
+        chomp($line);
+        
+        my @files = ();
+        my ($tag_name, $files_list) = split(/\t/, $line);
+        
+        ## Currently tagData will break if any spaces are in the tag name
+        ## so we need to replace spaces with underscores
+        $tag_name =~ s/\s+/_/;
+        
+        my @file_tokens = split(/,/, $files_list);
+        foreach my $file_token (@file_tokens) {
+            my $file = _verify_file($file_token);
+            
+            ## Our return file can be an array if we were dealing
+            ## with a list of files
+            if ( isa($file, 'ARRAY') ) {
+                push (@files, @$file);
+            } else {
+                push (@files, $file);
+            }
+        }
+        
+        push ( @{ $tag_files->{$tag_name} }, @files);
+    }    
+    
+    return $tag_files;
+}
+
+#----------------------------------------------------------
+# verify whether a file exists, is readable and if it is a 
+# directory; if the file is a list then the list of files 
+# will be iterated over and verified as well
+#----------------------------------------------------------
+sub _verify_file {
+    my $file = shift;
+    my $ret_file;
+    
+
+    ## If this is being run in conjunction with an ergatis pipeline 
+    ## we need to account for files having $;REPOSITORY_ROOT$; and
+    ## $;PIPELINEID$; in them.
+    $file =~ s/\$\;REPOSITORY_ROOT\$\;/$repo_root/;
+    $file =~ s/\$\;PIPELINE_ID\$\;/$pipeline_id/;
+
+    ## First check if our file is a directory
+    if ( -e $file) {
+        
+        ## We are dealing with either a single file or a list if 
+        ## the "file" is not a directory
+        unless (-d $file) {
+            my $fh = open_file($file, "in");
+            chomp( my $line_peek = <$fh> );
+            
+            ## Now check if our first line of this file exists, if it does most 
+            ## likely we have a list of files here
+            if (-e $line_peek) {
+                seek ($fh, 0, 0);
+                chomp( my @files = <$fh> );
+                
+                foreach my $list_file (@files) {
+                    ## Check again for any presecense of $;REPOSITORY_ROOT$; or $;PIPELINEID$;
+                    $list_file =~ s/\$\;REPOSITORY_ROOT\$\;/$repo_root/;
+                    $list_file =~ s/\$\;PIPELINE_ID\$\;/$pipeline_id/;
+                    
+                    $logger->logdie("File $list_file does not exist.") unless (-e $list_file);
+                    push(@$ret_file, $list_file);
+                }
+            } else {
+                $ret_file = $file;
+            }
+            
+            close ($fh); 
+        } else {
+            $ret_file = $file;
+        }
+    } else {
+        $logger->logdie("File $file does not exist.");
+    }
+    
+    return $ret_file;
+}
+
+#----------------------------------------------------------
+# run unix system command and determine whether or not
+# the command executed successfully
+#----------------------------------------------------------
 sub run_system_cmd {
     my $cmd = shift;
    
@@ -99,18 +209,21 @@ sub run_system_cmd {
     }   
 }
 
+#----------------------------------------------------------
+# parse command-line options
+#----------------------------------------------------------
 sub parse_options {
-	my %opts = ();
-	GetOptions(\%opts,
-				'input_file|i=s',
-				'input_file_type|t=s',
-				'tag-name|n=s',
+    my %opts = ();
+    GetOptions(\%opts,
+                'map_file|i=s',
+                'repository_root|r:s',
+                'pipeline_id|p:s',
                 'log|l:s',
                 'debug|d:s',
                 'help') || pod2usage();
                  
-	&pod2usage( {-exitval => 1, -verbose => 1, -output => \*STDOUT}) if ($opts{'help'} );		
-	
+    &pod2usage( {-exitval => 1, -verbose => 1, -output => \*STDOUT}) if ($opts{'help'} );        
+    
     ## Configure logger
     my $logfile = $opts{'log'} || Ergatis::Logger::get_default_logfilename();
     $logger = new Ergatis::Logger( 'LOG_FILE'   =>  $opts{'log'},
@@ -118,9 +231,9 @@ sub parse_options {
     $logger = Ergatis::Logger::get_logger();
     
     ## Make sure our parameter are declared correctly
-    defined($opts{'input_file'}) || $logger->logdie('Please specify a valid input file');
-    defined($opts{'input_file_type'}) || $logger->logdie('Please specify a valid input file type [DIR, FILE, FILE LIST]');
-    defined($opts{'tag-name'}) || $logger->logdie('Please specify a valid tag name');
-	
-	return %opts;
+    defined ($opts{'map_file'}) || $logger->logdie('Please specify a valid input map file');
+    defined ($opts{'repository_root'}) || $logger->logdie('Path to the repository root must be specified');
+    defined ($opts{'pipeline_id'}) || $logger->logdie('A valid ergatis pipeline ID must be specified');
+    
+    return %opts;
 }
