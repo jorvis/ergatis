@@ -19,15 +19,17 @@ use Getopt::Std;
 use Data::Dumper;
 use File::Copy;
 
-use vars qw/$opt_b $opt_c $opt_m $opt_a $opt_p/;
+use vars qw/$opt_b $opt_c $opt_m $opt_a $opt_y $opt_z $opt_p/;
 
-getopts("b:c:m:a:p:");
+getopts("b:c:m:a:y:z:p:");
 
 my $usage = "Usage:  $0 \
                 -b list of blast output files\
                 -c list of clusters from uclust (optional)\ 
                 -m input mapping file\
 		-a annotation file\
+                -y bsml list from metagene runs (optional)\
+                -z list of polypeptide clusters from uclust (optional)
                 -p output prefix for the processed files\
                 \n";
 
@@ -42,8 +44,19 @@ my $annotationfile = $opt_a;
 my $prefix         = $opt_p;
 my $clusterlist    = "";
 if (defined($opt_c)){
-  $clusterlist = $opt_c;
+  $clusterlist     = $opt_c;
 }
+
+my $bsml_list      = "";
+if (defined($opt_y) and $opt_y ne ""){
+  $bsml_list       = $opt_y;
+}
+
+my $polypep_clusterlist = "";
+if (defined($opt_z) and $opt_z ne ""){
+  $polypep_clusterlist  = $opt_z;
+}
+
 #
 my %samples         = ();
 my %mapdata         = ();
@@ -54,33 +67,32 @@ my %antndata        = ();
 my %antn_levels     = ();
 my %antn_types      = ();
 my $num_antn_levels = 0;
+my %polyrepmap      = ();  # maps translated polypeptides to orig reads
+my %polyclusters    = ();
 #
 my @orderedsamples  = (); 
 my %clusters        = ();
 my %COUNTS          = ();
 #
+if ($bsml_list eq "" and $polypep_clusterlist ne ""){
+  die "**ERROR** a polypeptide clustering is provided but no bsml list of initial polypeptides!!\n";
+}
+#
+
+# load of polypeptide mapping to DNA sequences
+if ($bsml_list ne ""){
+  print "loading polypeptide map\n";
+  loadUpPolyMap($bsml_list);
+}
+
+# load up polypeptide clusters from UCLUST
+if ($polypep_clusterlist ne ""){
+  print "loading polypeptide clusters\n";
+  loadPolyPepClusters($polypep_clusterlist);    
+}
 
 # load up the mapping_data
-open IN, "$mapfile" or die "Can't open mapping file: $mapfile\n";
-while(<IN>){
-  chomp($_);
-  next if ($_ eq "");
-  my @A = split "\t", $_;
-  if ($_ =~ /^\#File/){
-    $num_map_levels = $#A+1-1;            
-    for my $i (1 .. $#A){
-      $map_levels{$i} = $A[$i];
-    }
-  }else{
-    $samples{$A[0]} = 0;
-    for my $i (1 .. $#A){
-      $mapdata{$A[0]}{$i} = $A[$i];
-      $map_types{$i}{$A[$i]} = 0;   
-    }
-  }  
-}
-close IN;
-
+loadMappingData();
 
 # order samples by the first mapping feature
 if ($num_map_levels == 0){
@@ -95,54 +107,22 @@ if ($num_map_levels == 0){
   }    
 }
 
-
 # load up annotation data
-open IN, "$annotationfile" or die "Can't open annotation file: $annotationfile\n";
-while(<IN>){
-  chomp($_);
-  next if ($_ eq "");
-  my @A = split "\t", $_;
-  if ($_ =~ /^Name/){
-    $num_antn_levels = $#A+1-1;
-    for my $i (1 .. $#A){
-      $antn_levels{$i} = $A[$i];
-    }
-  }else{
-    for my $i (1 .. $#A){
-      $antndata{$A[0]}{$i} = $A[$i];
-    }
-  }
-}
-close IN;
-
+loadAnnotationData();
 
 # load up cluster info if necessary
 if ($clusterlist ne ""){
-  my $catclustlist = `cat $clusterlist`;
-  my @catclustlist = split "\n", $catclustlist;
-  for my $i (0 .. $#catclustlist){
-    open IN, "$catclustlist[$i]" or die "Can't open $catclustlist[$i] for processing!\n"; 
-    my $seed = "";
-    while(<IN>){
-      chomp($_);
-      next if ($_ eq "");
-      next if ($_ =~ /^>Cluster/);
-      my @A = split ">", $_;
-      my @B = split /\.\.\./, $A[1]; 
-      if ($_ =~ /^0/){
-        $seed = $B[0];
-      }else{
-        push @{$clusters{$seed}}, $B[0];
-      }
-    }
-  }
+  loadUpDNAClusters();
 }
 
+#**************************************
+#***** BEGIN BLAST FILE ANALYSIS *****#
+#**************************************
 # how many blast files are provided?
 my $listlength = `wc $list`;
 my @listlength = split " ", $listlength;
 
-# one hit per seq
+# keep track -- one hit per blasted seq
 my %query_hit = ();
 
 # we assume that each file represents a different specific sample
@@ -161,32 +141,24 @@ for my $i (0 .. ($listlength[0]-1)){
     my @blastline = split "\t", $_;
 
     next if (defined($query_hit{$blastline[0]})); # one hit allowed per sequence
-    $query_hit{$blastline[0]} = 1; # if you havent seen this query before, catalog it
+    $query_hit{$blastline[0]} = 1;                # if you havent seen this query before, catalog it
 
-    my @qname = split /\_/, $blastline[0];
-    my $qname = join("", @qname[0..($#qname-1)]);     
-    my $hit   = $blastline[1];
-    
-    if (!defined($antndata{$hit})){ # if we don't have a record for it, don't count it
-      next;
+    if ($bsml_list eq "" and $polypep_clusterlist eq ""){
+      catalog($blastline[0], $blastline[1]);
     }
 
-    # catalog the hit in the COUNTS datatype
-    foreach my $a (keys %antn_levels){
-      $COUNTS{$qname}{$a}{$antndata{$hit}{$a}}++;   
-      $antn_types{$a}{$antndata{$hit}{$a}} = 1; 
-
-      # also count this hit for any seqs in the associated cluster
-      if (defined($clusters{$blastline[0]})){
-        foreach my $qclust (@{$clusters{$blastline[0]}}){
-          my @sampstr = split /\_/, $qclust;
-          my $sampstr  = join("", @sampstr[0..($#sampstr-1)]);
-          if (!defined($COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}})){
-            $COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}} = 1;
-          }else{
-            $COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}}++;  
-          }
-        }
+    # if just a bsml file list is provided then convert it to a rep DNA sequence:
+    if ($bsml_list ne "" and $polypep_clusterlist eq ""){
+      catalog($polyrepmap{$blastline[0]}, $blastline[1]); 
+    }
+  
+    # if a bsml file list is provided and a polypep cluster list then account
+    # for all propagated hits: a peptide spreads to the whole cluster and each
+    # peptide in the cluster goes to a rep sequence...
+    if ($bsml_list ne "" and $polypep_clusterlist ne ""){
+      catalog($polyrepmap{$blastline[0]}, $blastline[1]);  
+      foreach my $pclustmember (@{$polyclusters{$blastline[0]}}){
+        catalog($polyrepmap{$pclustmember}, $blastline[1]);  
       }
     }
   }
@@ -194,21 +166,10 @@ for my $i (0 .. ($listlength[0]-1)){
   # end of this file
   # move on to the next file
 } 
-# End of all blast list
+#***** End of all blast file list *****#
 
+zeroOutEmptyEntries();
 
-# zero out empty entries
-foreach my $a (keys %antn_levels){
-foreach my $s (keys %samples){
-foreach my $t (keys %{$antn_types{$a}}){
-  if (!defined($COUNTS{$s}{$a}{$t})){
-    $COUNTS{$s}{$a}{$t} = 0;
-  }
-}  
-}
-}
-
-#
 # now print out the revelant tables
 foreach my $a (keys %antn_levels){
   printTable($a);
@@ -306,6 +267,177 @@ sub printTable
 }
 
 
+sub loadUpPolyMap
+{
+  my ($bsmlliststr) = @_;
+  my $catbsmllist = `cat $bsmlliststr`;
+  my @catbsmllist = split "\n", $catbsmllist;
+  for my $i (0 .. $#catbsmllist){
+    open IN, "$catbsmllist[$i]" or die "Can't open $catbsmllist[$i] for processing!\n";
+    my $rep = "";
+    while(<IN>){
+      chomp($_);
+      next if ($_ eq "");
+
+      if ($_ =~ /<Sequence length=/){
+        #  <Sequence length="999" class="assembly" id="sludgeUS.small.fna_49" molecule="dna">
+        my @A = split /id=\"/, $_;
+        my @B = split /\"/, $A[1];
+        $rep = $B[0];
+      }
+
+      if ($_ =~ /<Feature class="polypeptide" id=/){
+        #  <Feature class="polypeptide" id="new.polypeptide.X88029X879.1">
+        my @A = split /id=\"/, $_;
+        my @B = split /\"/, $A[1];
+        my $poly = $B[0];
+        $polyrepmap{$poly} = $rep;         
+      }
+    }
+  }
+}
 
 
+
+sub loadPolyPepClusters
+{
+  my ($pp_clusterlist) = @_;
+
+  my $catclustlist = `cat $pp_clusterlist`;
+  my @catclustlist = split "\n", $catclustlist;
+  for my $i (0 .. $#catclustlist){
+    open IN, "$catclustlist[$i]" or die "Can't open $catclustlist[$i] for processing!\n";
+    my $seed = "";
+    while(<IN>){
+      chomp($_);
+      next if ($_ eq "");
+      next if ($_ =~ /^>Cluster/);
+      my @A = split ">", $_;
+      my @B = split /\.\.\./, $A[1];
+      if ($_ =~ /^0/){
+        $seed = $B[0];
+      }else{
+        push @{$polyclusters{$seed}}, $B[0];
+      }
+    }
+  }
+}
+
+
+sub catalog
+{
+  my ($repseqhit, $hit) = @_;
+
+  my @qname = split /\_/, $repseqhit;
+  my $qname = join("", @qname[0..($#qname-1)]);
+
+  if (!defined($antndata{$hit})){ # if we don't have a record for it, don't count it
+    next;
+  }
+
+  # catalog the hit in the COUNTS datatype
+  foreach my $a (keys %antn_levels){
+    $COUNTS{$qname}{$a}{$antndata{$hit}{$a}}++;
+    $antn_types{$a}{$antndata{$hit}{$a}} = 1;
+
+    # also count this hit for any seqs in the associated nucleotide sequence cluster
+    if (defined($clusters{$repseqhit})){
+      foreach my $qclust (@{$clusters{$repseqhit}}){
+        my @sampstr  = split /\_/, $qclust;
+        my $sampstr  = join("", @sampstr[0..($#sampstr-1)]);
+        if (!defined($COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}})){
+          $COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}} = 1;
+        }else{
+          $COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}}++;
+        }
+      }
+    }
+  }
+}
+
+
+
+sub loadMappingData
+{
+  open IN, "$mapfile" or die "Can't open mapping file: $mapfile\n";
+  while(<IN>){
+    chomp($_);
+    next if ($_ eq "");
+    my @A = split "\t", $_;
+    if ($_ =~ /^\#File/){
+      $num_map_levels = $#A+1-1;
+      for my $i (1 .. $#A){
+        $map_levels{$i} = $A[$i];
+      }
+    }else{
+      $samples{$A[0]} = 0;
+      for my $i (1 .. $#A){
+        $mapdata{$A[0]}{$i} = $A[$i];
+        $map_types{$i}{$A[$i]} = 0;
+      }
+    }
+  }
+  close IN;
+}
+
+
+sub loadAnnotationData
+{
+  open IN, "$annotationfile" or die "Can't open annotation file: $annotationfile\n";
+  while(<IN>){
+    chomp($_);
+    next if ($_ eq "");
+    my @A = split "\t", $_;
+    if ($_ =~ /^Name/){
+      $num_antn_levels = $#A+1-1;
+      for my $i (1 .. $#A){
+        $antn_levels{$i} = $A[$i];
+      }
+    }else{
+      for my $i (1 .. $#A){
+        $antndata{$A[0]}{$i} = $A[$i];
+      }
+    }
+  }
+  close IN;
+}
+
+
+
+sub zeroOutEmptyEntries
+{
+  # zero out empty entries
+  foreach my $a (keys %antn_levels){
+  foreach my $s (keys %samples){
+  foreach my $t (keys %{$antn_types{$a}}){
+    if (!defined($COUNTS{$s}{$a}{$t})){
+      $COUNTS{$s}{$a}{$t} = 0;
+    }
+  }
+  }
+  }
+}
+
+
+sub loadUpDNAClusters
+{
+  my $catclustlist = `cat $clusterlist`;
+  my @catclustlist = split "\n", $catclustlist;
+  for my $i (0 .. $#catclustlist){
+    open IN, "$catclustlist[$i]" or die "Can't open $catclustlist[$i] for processing!\n";
+    my $seed = "";
+    while(<IN>){
+      chomp($_);
+      next if ($_ eq "");
+      next if ($_ =~ /^>Cluster/);
+      my @A = split ">", $_;
+      my @B = split /\.\.\./, $A[1];
+      if ($_ =~ /^0/){
+        $seed = $B[0];
+      }else{
+        push @{$clusters{$seed}}, $B[0];
+      }
+    }
+  }
+}
 
