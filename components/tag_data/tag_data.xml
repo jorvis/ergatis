@@ -19,7 +19,39 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
-	<!-- Skip creation of iterator and jump right into the creation of iterator groupings-->
-	<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=$;ITERATOR1$;,$;ITERATOR_XML$;=$;ITERATOR1_XML$;,$;ITERATOR_LIST$;=$;CLOVR_OUTPUT_LIST$;,$;ITERATOR_RANDOM$;=1,$;NODISTRIB$;=1">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>tag_data</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/tag_data</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/tag_data.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/tag_data.stderr</value>         
+            </param>
+            <param>
+                <key>--map_file</key>
+                <value>$;INPUT_FILE$;</value>
+            </param>
+            <param>
+                <key>--repository_root</key>
+                <value>$;REPOSITORY_ROOT$;</value>
+            </param>
+            <param>
+                <key>--pipeline_id</key>
+                <value>$;PIPELINE_ID$;</value>
+            </param>
+            <param>
+                <key>--log_file</key>
+                <value>$;TMP_DIR$;/tag_data_ergatis.log</value>
+            </param>
+            <param>
+                <key>--debug</key>
+                <value>4</value>
+            </param>
+        </command>        
     </commandSet>
-</commandSetRoot>	
+</commandSetRoot>    
