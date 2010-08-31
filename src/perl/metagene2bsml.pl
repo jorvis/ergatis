@@ -61,6 +61,7 @@ my $results = GetOptions (\%options,
                           'output_directory=s',
                           'output|o=s',
                           'num_seqs|n=s',
+                          'cutoff:s',
                           'id_repository=s',
                           'analysis_id=s',
                           'project=s',
@@ -88,6 +89,11 @@ if (!$options{'project'}) {
     pod2usage("project name must be provided with --project");
 }
 my $id_gen = Ergatis::IdGenerator->new('id_repository' => $options{'id_repository'});
+
+unless ($options{'cutoff'} =~ /\d+/) {
+    $logger->warn("Cutoff parameter not correctly formatted, skipping use.");
+    undef $options{'cutoff'};
+}
 
 unless ($options{'input_file'}) {
     pod2usage("raw metagene output must be provided with --input_file");
@@ -133,7 +139,12 @@ while (<$in_fh>) {
 		$rbsend,
 		$rbsscore
 		) = @elts;
-	    
+	
+        ## if the user has supplied a cutoff size we want to toss out any 
+        ## ORFS that are shorter than it
+        my $orf_len = $endpos - $startpos;
+        next if ( ( defined($options{'cutoff'}) ) && ($orf_len < $options{'cutoff'}) );
+        
 	    ## set flags for partial ORFs
 	    my ($five_prime_partial, $three_prime_partial) = split(//,$complete);
 	    
