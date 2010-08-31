@@ -222,9 +222,9 @@ sub time_info {
         $runtime = '';
         
         if ($end_time_obj) {
-            $diffstring = DateCalc($start_time_obj, $end_time_obj, undef, 1);
+            $diffstring = DateCalc($start_time_obj, $end_time_obj);
         } else {
-            $diffstring = DateCalc($start_time_obj, "now", undef, 1);
+            $diffstring = DateCalc($start_time_obj, "now");
         }
         
         ## take out any non \d: characters
