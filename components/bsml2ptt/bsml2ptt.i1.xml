@@ -12,8 +12,8 @@
                 <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
-                <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ptt</value>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
             <param>  
                 <key>--pid_feattype</key>

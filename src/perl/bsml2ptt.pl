@@ -19,6 +19,7 @@ my $gene_feattype       = ["gene"];
 my $gene_field          = "locus";
 my $asmbl_seq = '';
 my $asmbl_length;
+my $outdir = '';
 ## genes with equal or more than this % of Ns will be skiped (warning printed)
 
 
@@ -43,7 +44,7 @@ sub parse_options
     my %opts = ();
     GetOptions(\%opts, 
                "input|i=s", 
-               "output|o=s", 
+               "output_dir|o=s",
                "pid_feattype=s",
                "pid_field=s",
                "gene_feattype:s",
@@ -52,9 +53,11 @@ sub parse_options
                "help|h");
     print_usage() if $opts{help};
     $in = $opts{input} if $opts{input};
-    $out = new IO::File($opts{output}, "w") or
-        die "Error writing tbl to $opts{output}: $!"
-        if $opts{output};
+    
+    $outdir = $opts{output_dir};
+#    $out = new IO::File($opts{output}, "w") or
+#        die "Error writing tbl to $opts{output}: $!"
+#        if $opts{output};
     $output_mrna_feats = 0 unless $opts{mrna};
     $extract_all_ec = 1 if $opts{ec_all};
     if ( defined $opts{percent_n_cutoff} ) {
@@ -121,6 +124,9 @@ sub process_seq
     return if $elt->att('class') ne "assembly";
 #    print $out ">Features ", $elt->att('id'), "\n";
     
+    $out = new IO::File($outdir."/".$elt->att('id').".ptt", "w") or
+        die "Error writing tbl to $outdir/$elt->att('id').ptt: $!"
+        if $outdir;
     ## get the sequence length
     if ( $elt->has_child('Seq-data-import') ) {
         open(my $ifh, "<" . $elt->first_child('Seq-data-import')->att('source')) || die "can't open seq-data-import: $!";
