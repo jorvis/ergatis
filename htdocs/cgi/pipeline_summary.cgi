@@ -64,6 +64,7 @@ $endtime = '?' unless $endtime;
 my $filestat = stat($pipeline);
 my $user = getpwuid($filestat->uid);
 my $lastmodtime = time - $filestat->mtime;
+$lastmodtime = 0 if( $lastmodtime < 0 );
 $lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
 
 ## quota information (only works if in /usr/local/annotation/SOMETHING)
