@@ -128,7 +128,12 @@ while (<$ifh>) {
         
         ## add the location of the repeat
         ## 1 is subtracted from each position to give interbase numbering
-        $island->addBsmlIntervalLoc( $start, $stop, 0);
+        if($start < $stop) }
+            $island->addBsmlIntervalLoc( $start, $stop, 0);
+        }
+        else {
+            $island->addBsmlIntervalLoc( $stop, $start, 1);
+        }
     }
 }
 
