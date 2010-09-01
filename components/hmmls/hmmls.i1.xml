@@ -5,15 +5,58 @@
         <name>hmmls compute</name>
         <command>
             <type>RunUnixCommand</type>
+            <name>replace fasta headers</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/replace_fasta_headers.pl</executable>
+            <param>
+                <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--map_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.map</value>
+            </param>
+            <param>
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixed.fsa</value>
+            </param>
+            <param>
+                <key>--do_nothing</key>
+                <value>$;LEAVE_FASTA_HEADERS$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
             <name>hmmls</name>
             <state>incomplete</state>
             <executable>$;HMMLS_EXEC$;</executable>
-            <arg>-w $;SEARCH_WINDOW$; -t $;THRESHOLD_CUTOFF$; $;OTHER_OPTS$; $;DATABASE_PATH$; $;I_FILE_PATH$;</arg>
+            <arg>-w $;SEARCH_WINDOW$; -t $;THRESHOLD_CUTOFF$; $;OTHER_OPTS$; $;DATABASE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixed.fsa</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>fix output file</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/replace_fasta_headers.pl</executable>
+            <param>
+                <key>--input</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>
+            </param>
+            <param>
+                <key>--map_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.map</value>
+            </param>
+            <param>
+                <key>--do_nothing</key>
+                <value>$;LEAVE_FASTA_HEADERS$;</value>
+            </param>
+           <param>
+                <key>--replace</key>
+                <value>1</value>
+            </param>
         <command>
             <type>RunUnixCommand</type>
             <name>hmmls2bsml</name>
