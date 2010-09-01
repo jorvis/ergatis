@@ -82,6 +82,7 @@ if ( $commandSet->first_child('state') ) {
 my $filestat = stat($file);
 my $user = getpwuid($filestat->uid);
 $lastmodtime = time - $filestat->mtime;
+$lastmodtime = 0 if( $lastmodtime < 0 );
 $lastmodtime = strftime( "%H hr %M min %S sec", reverse split(/:/, DateCalc("today", ParseDate(DateCalc("now", "- ${lastmodtime} seconds")) ) ));
 
 ## quota information (only works if in /usr/local/annotation/SOMETHING)
