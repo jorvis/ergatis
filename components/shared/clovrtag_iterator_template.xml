@@ -16,4 +16,4 @@
     <value>$;ITERATOR_TIMESTAMP$;</value>
   </param>
 </command>
-<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=$;ITERATOR_NAME$;,$;ITERATOR_XML$;=$;ITERATOR_XML$;,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;.list,$;ITERATOR_RANDOM$;=1">
+<INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=$;ITERATOR_NAME$;,$;ITERATOR_XML$;=$;DOCS_DIR$;/clovrtag_upload.iterator.xml,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR_NAME$;.list,$;ITERATOR_RANDOM$;=1">

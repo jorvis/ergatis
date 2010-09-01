@@ -27,20 +27,12 @@
                <value>&quot;$;SHORT_INPUT_LIST$;&quot;</value>
             </param>
             <param>
-               <key>--short_format</key>
-               <value>&quot;$;SHORT_FORMAT$;&quot;</value>
-            </param>
-            <param>
                <key>--short_output_list</key>
                <value>&quot;$;SHORT_OUTPUT_LIST$;&quot;</value>
             </param>
             <param>
                <key>--long_input_list</key>
                <value>&quot;$;LONG_INPUT_LIST$;&quot;</value>
-            </param>
-            <param>
-               <key>--long_format</key>
-               <value>&quot;$;LONG_FORMAT$;&quot;</value>
             </param>
             <param>
                <key>--long_output_list</key>

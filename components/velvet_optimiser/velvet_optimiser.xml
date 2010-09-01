@@ -69,6 +69,15 @@
                <key>--output_list</key>
                <value>$;CONTIG_OUTPUT_LIST$;</value>
             </param>
+            <param>
+               <key>stderr</key>
+               <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
+            </param>
+            <param>
+               <key>stdout</key>
+               <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
+            </param>
+	
 		</command>
 	</commandSet>
 </commandSetRoot>

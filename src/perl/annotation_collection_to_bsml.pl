@@ -280,6 +280,17 @@ sub create_parent_seq_lookup {
         'Sequence' => sub {
             my ($t, $el) = @_;
             my $seq_id = $el->att('id');
+
+            #check to make sure this sequence was 'input_of' an analysis
+            my $input_of = 0;
+            foreach my $link ( $el->children('Link') ) {
+                if( $link->att('role') eq 'input_of' ) {
+                    $input_of = 1;
+                    last;
+                }
+            }
+            return unless( $input_of );
+
             $retval{$seq_id} = {};
             map { push(@{$retval{$seq_id}->{'features'}}, $_->att('id') );
                   $parent_seq_lookup{ $_->att('id') } = $seq_id;

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+   <commandSet type="serial">
+      <name>upload tag</name>
+      <command>
+         <type>RunUnixCommand</type>
+         <name>upload tag</name>
+         <state>incomplete</state>
+         <executable>/opt/vappio-py/vappio/cli/uploadTag.py</executable>
+         <param>
+            <key>--tag-name</key>
+            <value>$;INPUT_TAG_NAME$;</value>
+         </param>
+         <param>
+            <key>--dst-cluster</key>
+            <value>$;CLUSTER_TAG$;</value>
+         </param>
+         <arg>--block --expand</arg>
+      </command>
+   </commandSet>
+</commandSetRoot>
