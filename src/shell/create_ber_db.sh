@@ -5,7 +5,7 @@ print_usage()
 	progname=`basename $0`
 	cat << END
 usage: $progname -i <btab_hits> -o <nucdb_fasta_out>
-	-d <db> -f <db_format> -b <bin_dir> [-p] [-m <prot_nuc_id_map>]
+	-d <db> -f <db_format> -b <bin_dir> -y <fetch_bin_dir> [-p] [-m <prot_nuc_id_map>]
 END
 	exit 1
 }
@@ -21,6 +21,7 @@ do
 		f) db_format=$OPTARG;;
 		m) id_map=$OPTARG;;
 		b) bin_dir=$OPTARG;;
+        y) fetch_bin_dir=$OPTARG;;
 		p) protein='T';;
 	esac
 done
@@ -51,7 +52,7 @@ fi
 
 if [ "$id_to_fetch" ]
 then
-	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out
+	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out -b $fetch_bin_dir
 	ec=$?
 	if [ $ec -ne 0 ]
 	then

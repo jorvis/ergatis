@@ -13,13 +13,14 @@ use File::Basename;
 my $input_file	= 0;
 my $input_list	= 0;
 my @ids		= ();
+my $bindir  = "";
 my $out		= new IO::File("/dev/stdout", "w");
 my $db		= 0;
 my $format	= "xdformat";
 my $protein	= 0;
-my %BINS	= ( "cdbfasta"	=> "/usr/local/bin/cdbyank -w",
-		    "xdformat"	=> "/usr/local/bin/xdget",
-		    "formatdb"	=> "/usr/local/bin/fastacmd"
+my %BINS	= ( "cdbfasta"	=> "/cdbyank -w",
+		    "xdformat"	=> "/xdget",
+		    "formatdb"	=> "/fastacmd"
 		  );
 
 sub parse_options;
@@ -34,7 +35,7 @@ sub print_usage
 	my $progname = basename($0);
 	die << "END";
 usage: $progname [-i <id> | -I <id_list>] -d <database>
-	[-o <output>] -f <format> -p <[t,T]/[f,F]> [-h]
+	[-o <output>] -f <format> -p <[t,T]/[f,F]> -b <bindir> [-h]
 
 	f:	format [cdbfasta, xdformat, formatdb]
 	p:	t/T if database contains protein data
@@ -51,6 +52,7 @@ sub parse_options
 		   "d|database=s",
 		   "f|format=s",
 		   "p|protein=s",
+           "b|bindir=s",
 		   "h|help") || &print_usage;
 	while (my ($key, $val) = each %opts) {
 		if ($key eq "i") {
@@ -83,13 +85,16 @@ sub parse_options
 		}
 		elsif ($key eq "h") {
 			&print_usage;
-		}
+		} 
+        elsif( $key eq "b" ) {
+            $bindir = $val;
+        }
 	}
 }
 
 sub dump_fasta
 {
-	my $cmd = "$BINS{$format}";
+	my $cmd = $bindir."/".$BINS{$format};
 	if ($format eq "cdbfasta") {
 		$cmd .= " $db.cidx -a";
 	}
