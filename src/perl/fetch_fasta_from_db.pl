@@ -18,9 +18,9 @@ my $out		= new IO::File("/dev/stdout", "w");
 my $db		= 0;
 my $format	= "xdformat";
 my $protein	= 0;
-my %BINS	= ( "cdbfasta"	=> "/cdbyank -w",
-		    "xdformat"	=> "/xdget",
-		    "formatdb"	=> "/fastacmd"
+my %BINS	= ( "cdbfasta"	=> "/usr/local/bin/cdbyank -w",
+		    "xdformat"	=> "/usr/local/bin/xdget",
+		    "formatdb"	=> "/usr/local/bin/fastacmd"
 		  );
 
 sub parse_options;
@@ -46,14 +46,17 @@ sub parse_options
 {
 	my %opts	= ();
 	GetOptions(\%opts,
-		   "i|input_id=s",
-		   "I|input_list=s",
-		   "o|output=s",
-		   "d|database=s",
-		   "f|format=s",
-		   "p|protein=s",
-           "b|bindir=s",
-		   "h|help") || &print_usage;
+               "i|input_id=s",
+               "I|input_list=s",
+               "o|output=s",
+               "d|database=s",
+               "f|format=s",
+               "p|protein=s",
+               "b|bindir=s",
+               "c|cdbfasta_path=s",
+               "a|formatdb_path=s",
+               "x|xdformat_path=s",
+               "h|help") || &print_usage;
 	while (my ($key, $val) = each %opts) {
 		if ($key eq "i") {
 			my @tokens = split /\s+/, $val;
@@ -89,6 +92,16 @@ sub parse_options
         elsif( $key eq "b" ) {
             $bindir = $val;
         }
+        elsif( $key eq "c" ) {
+            $BINS{"cdbfasta"} = $val."/cdbyank -w";
+        }
+        elsif( $key eq "a" ) {
+            $BINS{"formatdb"} = $val."/fastacmd";
+        }
+        elsif( $key eq "c" ) {
+            $BINS{"xdformat"} = $val."/xdget";
+        }
+        
 	}
 }
 

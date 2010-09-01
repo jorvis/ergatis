@@ -41,7 +41,7 @@
             <name>create mini db</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_ber_db.sh</executable>
-            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb.tmp -d $;PROTEIN_DB$; -f $;PROTEIN_DB_FORMAT$; -p -y $;FETCH_BIN_DIR$;</arg>
+            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb.tmp -d $;PROTEIN_DB$; -f $;PROTEIN_DB_FORMAT$; -p -c &apos;$;CDBFASTA_PATH$;&apos; -a &apos;$;FORMATDB_PATH$;&apos; -x &apos;$;XDFORMAT_PATH$;&apos;</arg>
         </command>
          <command>
             <type>RunUnixCommand</type>
@@ -59,7 +59,7 @@
             <name>create nuc db</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_ber_db.sh</executable>
-            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nuc -d $;NUCLEOTIDE_DB$; -f $;NUCLEOTIDE_DB_FORMAT$; -m $;PROTEIN_NUCLEOTIDE_ID_MAP$;</arg>
+            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.nuc -d $;NUCLEOTIDE_DB$; -f $;NUCLEOTIDE_DB_FORMAT$; -m $;PROTEIN_NUCLEOTIDE_ID_MAP$; -c &apos;$;CDBFASTA_PATH$;&apos; -a &apos;$;FORMATDB_PATH$;&apos; -x &apos;$;XDFORMAT_PATH$;&apos;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>

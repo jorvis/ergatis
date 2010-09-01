@@ -12,7 +12,7 @@ END
 
 protein=F
 
-while getopts "i:o:d:f:m:b:y:p" opt
+while getopts "i:o:d:f:m:b:c:a:x:p" opt
 do
 	case $opt in
 		i) hits=$OPTARG;;
@@ -21,7 +21,9 @@ do
 		f) db_format=$OPTARG;;
 		m) id_map=$OPTARG;;
 		b) bin_dir=$OPTARG;;
-	        y) fetch_bin_dir=$OPTARG;;
+	        c) cdbfasta_path=$OPTARG;;
+		a) formatdb_path=$OPTARG;;
+		x) xdformat_path=$OPTARG;;
 		p) protein='T';;
 	esac
 done
@@ -31,7 +33,6 @@ test -z $out &&	echo "No output nucleotide fasta provided" && print_usage
 test -z $db && echo "No db provided" && print_usage
 test -z $db_format && echo "No db format provided" && print_usage
 test -z $bin_dir && echo "No bin directory provided" && print_usage
-test -z $fetch_bin_dir && echo "No fetch bin dir provided" && print_usage
 test $protein == 'F' -a -z "$id_map" && echo "No protein/nucleotide map provided" && print_usage
 
 if [ -f $hits ] && [ ! -s $hits ]
@@ -53,7 +54,7 @@ fi
 
 if [ "$id_to_fetch" ]
 then
-	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out -b $fetch_bin_dir
+	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out --cdbfasta_path "$cdbfasta_path" --formatdb_path "$formatdb_path" --xdformat_path "$xdformat_path"
 	ec=$?
 	if [ $ec -ne 0 ]
 	then
