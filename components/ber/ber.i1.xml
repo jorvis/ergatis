@@ -41,7 +41,7 @@
             <name>create mini db</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_ber_db.sh</executable>
-            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb.tmp -d $;PROTEIN_DB$; -f $;PROTEIN_DB_FORMAT$; -p </arg>
+            <arg>-b $;BIN_DIR$; -i $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.filtered.btab -o $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.minidb.tmp -d $;PROTEIN_DB$; -f $;PROTEIN_DB_FORMAT$; -p -y $;FETCH_BIN_DIR$;</arg>
         </command>
          <command>
             <type>RunUnixCommand</type>
