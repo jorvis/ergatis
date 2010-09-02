@@ -84,40 +84,46 @@ sub replace_keys{
     my @sections = $cfg->Sections();
     my $currcfg = $cfg;
     foreach my $section (@sections){
-	my @parameters = $cfg->Parameters ($section);
-	foreach my $param (@parameters){
-	    my $value = $cfg->val($section,$param);
-	    
-	    ## take spaces off front and back of value, leaving internal ones
-	    $value =~ s/^\s*(.+?)\s*$/$1/;
-	    
-	    my $ret = $cfg->setval($section,$param,$value);
-	    if(!$ret){
-		$logger->logdie("Couldn't add key $param=$value to section [$section]");
-	    }
-	    $allkeys->{$param}->{'value'} = $value;
-	    $allkeys->{$param}->{'section'} = $section;
-	    $logger->debug("Scanning $value for key $param in section [ $section ] as candidate for replacement") if($logger->is_debug());
-	    if($value =~ /$delimeterregex/){
-		$logger->debug("Found $value for key $param in section [ $section ] as candidate for replacement") if($logger->is_debug());
-		$checkvalues->{$param} = $value;
-	    }
-	}
+        my @parameters = $cfg->Parameters ($section);
+        foreach my $param (@parameters){
+            my $value = $cfg->val($section,$param);
+            
+            ## take spaces off front and back of value, leaving internal ones
+            $value =~ s/^\s*(.+?)\s*$/$1/;
+            
+            my $ret = $cfg->setval($section,$param,$value);
+            if(!$ret){
+                $logger->logdie("Couldn't add key $param=$value to section [$section]");
+            }
+            $allkeys->{$param}->{'value'} = $value;
+            $allkeys->{$param}->{'section'} = $section;
+            $logger->debug("Scanning $value for key $param in section [ $section ] as candidate for replacement") if($logger->is_debug());
+            if($value =~ /$delimeterregex/){
+                $logger->debug("Found $value for key $param in section [ $section ] as candidate for replacement") if($logger->is_debug());
+                $checkvalues->{$param} = $value;
+            }
+        }
     }
+
+    use Data::Dumper;
+    print "These are the keys with values that need replacing:\n";
+    print Dumper( $checkvalues );    
 
     #Now that we've obtained all possible values, expand...
     foreach my $key (keys %$checkvalues){
-	my $value = $checkvalues->{$key};
-	$logger->debug("Replacing $key with $value") if($logger->is_debug());
-	while(&checkvalue($value,$allkeys)){
-	    $value =~ s/($delimeterregex)/&replaceval($1,$allkeys)/ge;
-	    $logger->debug("Value redefined as $value") if($logger->is_debug());
-	}
-	my $setval = $cfg->setval($allkeys->{$key}->{'section'},$key,$value);
-	$logger->debug("Replaced $key in section [ $allkeys->{$key}->{'section'} ] with $value. Return val $setval") if($logger->is_debug());
-	if(!$setval){
-	    $logger->logdie("Key $key in section [ $allkeys->{$key}->{'section'} ] is not valid");
-	}
+        my $value = $checkvalues->{$key};
+        $logger->debug("Replacing $key with $value") if($logger->is_debug());
+        while(&checkvalue($value,$allkeys)){
+            print "\nValue before: $value\n";
+            $value =~ s/($delimeterregex)/&replaceval($1,$allkeys)/ge;
+            print "Value after: $value\n";
+            $logger->debug("Value redefined as $value") if($logger->is_debug());
+        }
+        my $setval = $cfg->setval($allkeys->{$key}->{'section'},$key,$value);
+        $logger->debug("Replaced $key in section [ $allkeys->{$key}->{'section'} ] with $value. Return val $setval") if($logger->is_debug());
+        if(!$setval){
+            $logger->logdie("Key $key in section [ $allkeys->{$key}->{'section'} ] is not valid");
+        }
     }
     return $cfg;
 }
@@ -125,27 +131,19 @@ sub replace_keys{
 sub replaceval{
     my ($val,$keylookup) = @_;
     if(!(exists $keylookup->{$val})){
-	$logger->logdie("Bad key $1 in configuration file") if($logger->is_debug());
+        $logger->logdie("Bad key $1 in configuration file") if($logger->is_debug());
     }
-    elsif($keylookup->{$val}->{'value'} eq ''){
-	return $val;
-    }
-    else{
-	return $keylookup->{$val}->{'value'};
-    }
+    return $keylookup->{$val}->{'value'};
 }
 
 sub checkvalue{
     my ($val,$keylookup) = @_;
+    my $retval = 0;
     if($val =~ /$delimeterregex/){
-	my($lookupval) = ($val =~ /($delimeterregex)/); 
-	if($keylookup->{$lookupval}->{'value'} eq ""){
-	    return 0;
-	}
-	else{
-	    return 1;
-	}
+        my($lookupval) = ($val =~ /($delimeterregex)/); 
+        $retval = 1 if( exists( $keylookup->{$lookupval} ) );
     }
+    $retval;
 }
 
 #import_includes() - Support for inline import of ini formatted
