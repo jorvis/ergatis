@@ -14,7 +14,7 @@
          </param>
          <param>
             <key>--dst-cluster</key>
-            <value>$;CLUSTER_TAG$;</value>
+            <value>$;CLUSTER_NAME$;</value>
          </param>
          <arg>--block --expand</arg>
       </command>
