@@ -146,7 +146,17 @@ sub shuffle_sequences {
         } elsif( $l->{'format'} eq 'fastq' ) {
             $exe = $fastq_exe;
         } else {
-            die("Bad format: $l->{'format'}");
+            #open one and try to figure it out
+            open(IN, "< $l->{'files'}->[0]") or die("Can't open $l->{'files'}->[0] for reading: $!");
+            my $line = <IN>;
+            close(IN);
+            if( $line =~ /^@/ ) {
+                $exe = $fastq_exe;
+            } elsif( $line =~ /^>/ ) {
+                $exe = $fasta_exe;
+            } else {
+                die("Could not determine format of input file: $l->{'files'}->[0]");
+            }
         }
 
         my $file_string = join(" ", @{$l->{'files'}} );
@@ -198,7 +208,7 @@ sub store_files {
     my @retval;
 
     foreach my $list_file( @ls ) {
-        open(LIST, "< $list_file") or die("Couldn't open file $list_file");
+        open(LIST, "< $list_file") or die("Couldn't open list file $list_file $?");
         chomp( my @tmp = <LIST> );
         close(LIST);
         die("There should be 2 files in list: $list_file. Found ".scalar(@tmp) )
