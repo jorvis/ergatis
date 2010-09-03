@@ -57,6 +57,7 @@
                 <key>--replace</key>
                 <value>1</value>
             </param>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>hmmls2bsml</name>
