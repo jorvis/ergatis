@@ -18,7 +18,7 @@ USAGE:  clusterBsmlPairwiseAlignments.pl  -b bsml_list -m match_list -k linkscor
     
     List of bsml files containing polypeptides and assemblies
 
-=item B<--match_list,-m>
+=item B<--bsmlSearchList,-m>
     
     List of bsml files containing pairwise matches
 
