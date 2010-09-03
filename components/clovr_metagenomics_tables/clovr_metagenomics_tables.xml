@@ -15,7 +15,7 @@
             <type>RunUnixCommand</type>
             <name>create summary tables</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_feature_tables.pl</executable>
+            <executable>$;BIN_DIR$;/clovr_metagenomics_tsvtables.pl</executable>
             <arg>-b $;BLAST_LIST$; -c $;CLUSTER_LIST$; -m `cat $;MAPPING_FILE$;` -a $;ANNOTATION_FILE$; -y $;BSML_METAGENE_LIST$; -z $;POLYPEPTIDE_CLUSTER_LIST$; -p $;OUTPUT_PREFIX$;</arg>
         </command>
         <command>
