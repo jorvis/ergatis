@@ -153,7 +153,7 @@ sub _verify_file {
     ## If this is being run in conjunction with an ergatis pipeline 
     ## we need to account for files having $;REPOSITORY_ROOT$; and
     ## $;PIPELINEID$; in them.
-    $file =~ s/\$\;REPOSITORY_ROOT\$\;/$repo_root/;
+    $file =~ s/\$\;REPO_ROOT\$\;/$repo_root/;
     $file =~ s/\$\;PIPELINE_ID\$\;/$pipeline_id/;
 
     ## First check if our file is a directory
