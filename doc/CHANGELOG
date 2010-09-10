@@ -47,7 +47,7 @@ next
 -clovr_metagenomics_tables: postprocessing component for clovr_metagenomics pipeline
 -UCLUST component: new variable 'CLUSTER_OUTPUT_LIST' output
 -clovr_metagenomics_tsvtables.pl: postprocessing component for clovr_metagenomics pipeline
-
+-blast_seq_screen: new component that will filter a set of sequences using blast output and a fasta.
 
 ergatis-v2r12b1
 ----
