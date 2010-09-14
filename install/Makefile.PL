@@ -141,7 +141,7 @@ sub MY::postamble {
     my $postamble = "WORKFLOW_DOCS_DIR=$workflowdocsdir\nSAMPLE_DOCS_DIR=$sampledocsdir";
     $postamble .= << 'END';
 
-ergatis_install : dirs samples shellwrappers c_apps pipeline_templates 
+ergatis_install : dirs samples shellwrappers c_apps pipeline_templates r_scripts 
 	@echo "Installing components"
 	find $(BUILD_DIR)/components -path '*svn*' -prune -o -print -type f -not -name software.config -not -name "*.tmpl" -exec install  {} ${WORKFLOW_DOCS_DIR} \;
 	find $(BUILD_DIR)/components -type f -name "*.tmpl" -exec install  {} ${WORKFLOW_DOCS_DIR}/documentation \;
