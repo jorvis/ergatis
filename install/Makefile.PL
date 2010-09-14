@@ -176,6 +176,10 @@ c_apps	:
 	${MAKE} -C $(C_BUILD_DIR)/SnpClusterer
 	@install $(C_BUILD_DIR)/SnpClusterer/SnpClusterer $(PREFIX)/bin
 
+r_scripts:
+	@echo "Installing R scripts to $(PREFIX)/docs"
+	@tar cf - R |  (cd $(WORKFLOW_DOCS_DIR); tar xf -)
+
 END
 
     $postamble;
