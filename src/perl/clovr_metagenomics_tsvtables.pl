@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 
@@ -6,7 +9,7 @@ use warnings;
 # *clovr_metagenomics_tsvtables.pl
 # Author: james robert white, james.dna.white@gmail.com
 
-# This function takesa list blast outputs (-m 8) and some metadata and creates
+# This function takes a list blast outputs (-m 8) and some metadata and creates
 # a set of files for postprocessing in the clovr metagenomics pipeline.
 
 # A list of 1 or more blast output files is given
@@ -335,23 +338,26 @@ sub catalog
     next;
   }
 
+
   # catalog the hit in the COUNTS datatype
   foreach my $a (keys %antn_levels){
-    $COUNTS{$qname}{$a}{$antndata{$hit}{$a}}++;
-    $antn_types{$a}{$antndata{$hit}{$a}} = 1;
+  foreach my $b (@{$antndata{$hit}{$a}}){
+    $COUNTS{$qname}{$a}{$b}++;
+    $antn_types{$a}{$b} = 1;
 
     # also count this hit for any seqs in the associated nucleotide sequence cluster
     if (defined($clusters{$repseqhit})){
       foreach my $qclust (@{$clusters{$repseqhit}}){
         my @sampstr  = split /\_/, $qclust;
         my $sampstr  = join("", @sampstr[0..($#sampstr-1)]);
-        if (!defined($COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}})){
-          $COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}} = 1;
+        if (!defined($COUNTS{$sampstr}{$a}{$b})){
+          $COUNTS{$sampstr}{$a}{$b} = 1;
         }else{
-          $COUNTS{$sampstr}{$a}{$antndata{$hit}{$a}}++;
+          $COUNTS{$sampstr}{$a}{$b}++;
         }
       }
     }
+  }
   }
 }
 
@@ -395,7 +401,11 @@ sub loadAnnotationData
       }
     }else{
       for my $i (1 .. $#A){
-        $antndata{$A[0]}{$i} = $A[$i];
+        my @B = split /\$/, $A[$i]; # if there is more than one annotation at this level, 
+                                    #  then we delimit by $ symbols.
+        for my $b (0 .. $#B){
+          push @{$antndata{$A[0]}{$i}}, $B[$b];
+        }
       }
     }
   }
