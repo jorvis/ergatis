@@ -1,5 +1,6 @@
 next
 ----
+-download_tag: New CloVR component to download a list of tags
 -clusterBsmlPairwiseAlignments.pl: fixed documentation to display true name of bsmlSearchList parameter.
 -prepare_paired_ends_for_velvet: will now auto detect format of input files if format is ambiguous.
 -replace_config_keys: if a var is found that has no value (ie. is blank), replace_config_keys will still replace the var with blank within the config.
