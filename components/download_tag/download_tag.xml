@@ -27,7 +27,7 @@
 		</command>
         <!--Processing-->
         <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/download_tag_iterator.list" />
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=DOWNLOAD_TAG_ITERATOR_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/download_tag_iterator.list" />
         <!--Postprocessing-->
 	</commandSet>
 </commandSetRoot>
