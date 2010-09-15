@@ -55,16 +55,12 @@ sub parse_tag_list {
 	my $tag_list = shift;
 	my $ret_tags = ();
 	
-	open (TAGS, $tag_list) or $logger->logdie("Could not open tag-list input file: $!");
-	while (my $line = <TAGS>) {
-		next if ($line =~ /^#/);
-		chomp ($line);
-		
-		my ($tag_name, $files) = split(/\t/, $line);
-		push (@$ret_tags, $tag_name);
+    my @tag_list = split(/,/, $tag_list);
+    foreach my $tag (@tag_list) {
+        $tag = trim($tag);
+		push (@$ret_tags, $tag);
 	}
 	
-	close TAGS;
 	return $ret_tags;
 }
 
@@ -78,6 +74,16 @@ sub create_empty_tag_list {
 	open (ITEROUT, "> $output_iter") or $logger->logdie("Could not open output iterator $output_iter for writing: $!");
 	print ITEROUT "\$;I_FILE_BASE\$;\n";    ## Print the header identification line
     close ITEROUT;
+}
+
+#--------------------------------------------------
+# trim white space from start and end of string
+#--------------------------------------------------
+sub trim {
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
 }
 
 #--------------------------------------------------
