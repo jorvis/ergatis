@@ -25,7 +25,7 @@
         <!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
-            <name>Create .asn list</name>
+            <name>Create .sqn list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>  
@@ -34,11 +34,11 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.asn"</value>
+                <value>".*\.sqn"</value>
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;ASN_OUTPUT_LIST$;</value>
+                <value>$;SQN_OUTPUT_LIST$;</value>
             </param>
         </command>
         <command>
