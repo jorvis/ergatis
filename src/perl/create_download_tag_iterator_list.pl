@@ -14,11 +14,18 @@ umask(0000);
 my $logger;
 
 my %options = &parse_options();
-my $tag_list = $options{'tag_list'};
 my $output_iter = $options{'output'};
 
-my $tags_to_download = &parse_tag_list($tag_list);
-print_download_tag_iterator($tags_to_download, $output_iter);
+## If our tag list is not provided we create an empty
+## iterator file so that the download_tag component 
+## does not error out but does not download anything.
+if ( defined($options{'tag_list'}) ) {
+    my $tag_list = $options{'tag_list'};
+    my $tags_to_download = &parse_tag_list($tag_list);
+    print_download_tag_iterator($tags_to_download, $output_iter);
+} else {
+    create_empty_tag_list($output_iter);
+}
 
 #############################################################
 ####                  SUBROUTINES                        ####
@@ -61,6 +68,17 @@ sub parse_tag_list {
 	return $ret_tags;
 }
 
+#--------------------------------------------------
+# create an empty iterator file if no tags should
+# be downloaded.
+#--------------------------------------------------
+sub create_empty_tag_list {
+    my $output_iter = shift;
+
+	open (ITEROUT, "> $output_iter") or $logger->logdie("Could not open output iterator $output_iter for writing: $!");
+	print ITEROUT "\$;I_FILE_BASE\$;\n";    ## Print the header identification line
+    close ITEROUT;
+}
 
 #--------------------------------------------------
 # parse command line arguments
@@ -82,7 +100,6 @@ sub parse_options {
     $logger = Ergatis::Logger::get_logger();
     
     ## We need to make sure our tag_list parameter and output parameter are defined
-    defined ($opts{'tag_list'}) || $logger->logdie("Please provide the path to a valid tag list file.");
     defined ($opts{'output'}) || $logger->logdie("Please provide a proper output file iterator path");   	                   
     
     return %opts;
