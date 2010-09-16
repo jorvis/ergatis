@@ -348,10 +348,11 @@ sub import_xml{
 	    $subs->{$tok} = $val;
 	}
     }
-    open FILE, "$file" or $logger->logdie("Can't open file $file");
+    my $fh;
+    open $fh, "$file" or $logger->logdie("Can't open file $file");
     my $run_dist_cmd_flag = 0;
     my @inputxml;
-    while(my $line=<FILE>){
+    while(my $line=<$fh>){
 	#keeping old code that parses XML in a simplistic way... but works
 	#TODO refactor to use LibXML
 	if( $line !~ /^\;/ && $line !~ /^\#/ ) {
@@ -397,7 +398,7 @@ sub import_xml{
 	#print $outfh $line;
 	push @$outputh,$line;
     }
-    close FILE;
+    close $fh;
 }
 
 1;
