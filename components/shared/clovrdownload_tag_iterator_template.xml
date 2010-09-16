@@ -1,0 +1,36 @@
+<commandSet type="serial">
+        <state>incomplete</state>
+        <name>nucmer workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create download_tag iterator list</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_download_tag_iterator_list</executable>
+	    <param>
+		<key>--tag_list</key>
+		<value>$;DOWNLOAD_TAG_MAP_FILE$;</value>
+	    </param>
+	    <param>
+		<key>--output</key>
+		<value>$;WORKFLOW_REPOSITORY$;/i1.list</value>
+	    </param>
+	</command>
+        <!--Processing-->
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=i1,$;ITERATOR_XML$;=DOWNLOAD_TAG_ITERATOR_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/i1.list" />
+</commandSet>
