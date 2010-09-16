@@ -23,7 +23,7 @@
 	    <executable>$;BIN_DIR$;/create_download_tag_iterator_list</executable>
 	    <param>
 		<key>--tag_list</key>
-		<value>$;DOWNLOAD_TAG_MAP_FILE$;</value>
+		<value>$;TAGS_TO_DOWNLOAD$;</value>
 	    </param>
 	    <param>
 		<key>--output</key>
