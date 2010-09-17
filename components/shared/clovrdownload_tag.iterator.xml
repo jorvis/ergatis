@@ -3,27 +3,34 @@
     <commandSet type="serial">
         <name>download_tag computer</name>
         <command>
-			<type>RunUnixCommand</type>
-			<name>download_tag</name>
-			<state>incomplete</state>
-			<executable>/opt/vappio-py/vappio/cli/downloadTag.py</executable>
-			<arg>--block</arg>			
-			<param>
-				<key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
-			</param>			
-			<param>
-				<key>stderr</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
-			</param>
-			<param>
-				<key>--tag-name</key>
-				<value>$;I_FILE_BASE$;</value>			
-			</param>
-			<param>
-				<key>--src-cluster</key>
-				<value>$;CLUSTER_NAME$;</value>
-			</param>	
-		</command>
-	</commandSet>
+            <type>RunUnixCommand</type>
+            <name>download_tag</name>
+            <state>incomplete</state>
+            <executable>/opt/vappio-py/vappio/cli/downloadTag.py</executable>
+            <arg>--block</arg>            
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>            
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>--tag-name</key>
+                <value>$;I_FILE_BASE$;</value>            
+            </param>
+            <param>
+                <key>--src-cluster</key>
+                <value>$;CLUSTER_NAME$;</value>
+            </param>    
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>move data to output folder</name>
+            <state>incomplete</state>
+            <executable>mv</executable>
+            <arg>/mnt/staging/data/$;I_FILE_BASE$; $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+    </commandSet>
 </commandSetRoot>
