@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
@@ -68,7 +71,6 @@ use warnings;
 use Pod::Usage;        
 use Ergatis::Logger;
 use File::OpenFile qw(open_file);
-use UNIVERSAL qw(isa);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 ## Need to setup the PYTHONPATH env variable here...
@@ -80,8 +82,6 @@ $ENV{'PYTHONPATH'} = "/opt/vappio-py:/opt/vappio-py:/opt/opt-packages/bioinf-v1r
 #----------------------------------------------------------
 my $logger;
 my $TAG_DATA_EXEC = "/opt/vappio-py/vappio/cli/tagData.py"; 
-## hard-coded for now
-my $tag_base_dir = "/mnt/projects/clovr/output_repository";
 
 my %options = parse_options();
 my $input = $options{'map_file'};
@@ -93,7 +93,7 @@ my $files_to_tag = parse_mapping_file($input);
 ## Now that we have our files to tag we can go ahead with the tagging
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
-    my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive --tag-base-dir $tag_base_dir " .
+    my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
                   join(" ", @files);
     run_system_cmd($cmd);                  
 }
@@ -125,15 +125,7 @@ sub parse_mapping_file {
         
         my @file_tokens = split(/,/, $files_list);
         foreach my $file_token (@file_tokens) {
-            my $file = _verify_file($file_token);
-            
-            ## Our return file can be an array if we were dealing
-            ## with a list of files
-            if ( isa($file, 'ARRAY') ) {
-                push (@files, @$file);
-            } else {
-                push (@files, $file);
-            }
+            _verify_file($file_token, \@files);            
         }
         
         push ( @{ $tag_files->{$tag_name} }, @files);
@@ -148,10 +140,9 @@ sub parse_mapping_file {
 # will be iterated over and verified as well
 #----------------------------------------------------------
 sub _verify_file {
-    my $file = shift;
+    my ($file, $files_ref) = @_;
     my $ret_file;
     
-
     ## If this is being run in conjunction with an ergatis pipeline 
     ## we need to account for files having $;REPOSITORY_ROOT$; and
     ## $;PIPELINEID$; in them.
@@ -174,26 +165,19 @@ sub _verify_file {
                 chomp( my @files = <$fh> );
                 
                 foreach my $list_file (@files) {
-                    ## Check again for any presecense of $;REPOSITORY_ROOT$; or $;PIPELINEID$;
-                    $list_file =~ s/\$\;REPOSITORY_ROOT\$\;/$repo_root/;
-                    $list_file =~ s/\$\;PIPELINE_ID\$\;/$pipeline_id/;
-                    
-                    $logger->logdie("File $list_file does not exist.") unless (-e $list_file);
-                    push(@$ret_file, $list_file);
+		    _verify_file($list_file, $files_ref);
                 }
             } else {
-                $ret_file = $file;
+                push(@$files_ref, $file);
             }
             
             close ($fh); 
         } else {
-            $ret_file = $file;
+            push(@$files_ref, $file);
         }
     } else {
         $logger->logdie("File $file does not exist.");
     }
-    
-    return $ret_file;
 }
 
 #----------------------------------------------------------
