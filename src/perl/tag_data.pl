@@ -80,6 +80,8 @@ $ENV{'PYTHONPATH'} = "/opt/vappio-py:/opt/vappio-py:/opt/opt-packages/bioinf-v1r
 #----------------------------------------------------------
 my $logger;
 my $TAG_DATA_EXEC = "/opt/vappio-py/vappio/cli/tagData.py"; 
+## hard-coded for now
+my $tag_base_dir = "/mnt/projects/clovr/output_repository";
 
 my %options = parse_options();
 my $input = $options{'map_file'};
@@ -91,7 +93,7 @@ my $files_to_tag = parse_mapping_file($input);
 ## Now that we have our files to tag we can go ahead with the tagging
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
-    my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
+    my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive --tag-base-dir $tag_base_dir " .
                   join(" ", @files);
     run_system_cmd($cmd);                  
 }
