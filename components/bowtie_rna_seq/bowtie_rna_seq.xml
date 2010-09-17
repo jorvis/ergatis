@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>bowtie_rna_seq workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Bowtie build index</name>
+            <state>incomplete</state>
+            <executable>$;BOWTIE_BUILD_EXEC$;</executable>            
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/build.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/build.stderr</value>
+            </param>
+            <arg>$;OTHER_BUILD_ARGS$; -f $;REFERENCE$; $;OUTPUT_DIRECTORY$;reference</arg>
+        </command>
+
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Bowtie align</name>
+            <state>incomplete</state>
+            <executable>$;BOWTIE_EXEC$;</executable>            
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/align.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/align.stderr</value>
+            </param>
+            <arg>-X $;X$; -v $;V$; -m $;M$; -S $;OUTPUT_DIRECTORY$;reference -1 $;Q$; -2 $;Q2$; $;OUTPUT_DIRECTORY$;hits.sam</arg>
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Gene expression script</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/gene_expr_from_sam.pl</executable>            
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/expression.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/expression.stderr</value>
+            </param>
+            <arg>$;OUTPUT_DIRECTORY$;hits.sam</arg>
+        </command>
+
+    </commandSet>
+</commandSetRoot>
