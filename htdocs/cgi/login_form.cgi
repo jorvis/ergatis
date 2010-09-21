@@ -27,6 +27,9 @@ if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'open' ) {
 } elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ldap' ) {
     $form_ready = 1;
 
+} elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ldap-tls' ) {
+    $form_ready = 1;
+
 } elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' ) {
     $form_ready = 1;
     

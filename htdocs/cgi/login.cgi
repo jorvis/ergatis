@@ -1,10 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-#use Log::Cabin;
-use Authen::Simple::Kerberos;
-use Authen::Simple::LDAP;
-use Authen::Simple::ActiveDirectory;
+
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser);
 use CGI::Cookie;
@@ -20,20 +17,19 @@ my $pass_attempted = $q->param('login_pass');
 ## for now, this will be a user name
 my $valid_user = '';
 
+my $auth_module = '';
+
 if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' ) {
+    
+    $auth_module = "Authen::Simple::Kerberos";
+    eval "use $auth_module";
+        die "Couldn't load module : $!n" if ($@);
+
     ## validate the user here
     my $realm = $ergatis_cfg->val('authentication', 'kerberos_realm');
 
-#    my $logsimple = new Log::Cabin;
-#       $logsimple->level( 8 );
-#       $logsimple->set_output(*STDERR);
-
-#    my $logger = $logsimple->get_logger('kerberos');
-
-
     my $kerberos = Authen::Simple::Kerberos->new(
         realm => $realm,
-#        log => $logger,
     );
 
     if ( $kerberos->authenticate( $user_attempted, $pass_attempted) ) {
@@ -41,6 +37,11 @@ if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' 
     }
 
 } elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ad' ) {
+    
+    $auth_module = "Authen::Simple::ActiveDirectory";
+    eval "use $auth_module";
+        die "Couldn't load module : $!n" if ($@);
+
     ## validate the user here
     my $host      = $ergatis_cfg->val('authentication', 'ldap_host');
     my $port      = $ergatis_cfg->val('authentication', 'ldap_port');
@@ -57,6 +58,11 @@ if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' 
     }
 
 }  elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ldap' ) {
+
+    $auth_module = "Authen::Simple::LDAP";
+    eval "use $auth_module";
+        die "Couldn't load module : $!n" if ($@);
+
     ## validate the user here
     my $host   = $ergatis_cfg->val('authentication', 'ldap_host');
     my $port   = $ergatis_cfg->val('authentication', 'ldap_port');
@@ -72,7 +78,43 @@ if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' 
         $valid_user = $user_attempted;
     }
 
-}
+} elsif ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'ldap-tls' ) {
+
+    $auth_module = "Net::LDAP";
+    eval "use $auth_module";
+        die "Couldn't load module : $!n" if ($@);
+
+    ## validate the user here
+    my $host   = $ergatis_cfg->val('authentication', 'ldap_host');
+    my $basedn = $ergatis_cfg->val('authentication', 'ldap_basedn');
+
+    my $ldap;
+    
+    eval {
+        $ldap = Net::LDAP->new($host);
+    };
+
+    if ($@) {
+        croak("Unable to establish Net::LDAP connection to $host.");
+    }
+    
+    my $msg = $ldap->start_tls(
+        verify => 'require',
+        cafile => $ergatis_cfg->val('authentication', 'ldap_tls_certificate'),
+    );
+
+    if ( $msg->code() ) {
+        croak("Unable to start TLS connection to LDAP server.");
+    }
+
+    my $dn_string = "uid=$user_attempted," . $ergatis_cfg->val('authentication', 'ldap_basedn');
+
+    my $login_msg = $ldap->bind("$dn_string", password => $pass_attempted );
+    
+    if ( ! $login_msg->code() ) {
+        $valid_user = $user_attempted;
+    }
+} 
 
 
 if ( $valid_user ) {
