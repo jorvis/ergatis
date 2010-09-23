@@ -97,6 +97,7 @@ my $files_to_tag = parse_mapping_file($input);
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
     my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
+                  "--tag-base-dir $repo_root/output_repository/" .
                   join(" ", @files);
     run_system_cmd($cmd);                  
 }
