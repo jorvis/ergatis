@@ -45,6 +45,10 @@
                 <value>$;PIPELINE_ID$;</value>
             </param>
             <param>
+                <key>--pipeline_name</key>
+                <value>$;PIPELINE_NAME$;</value>
+            </param>
+            <param>
                 <key>--log_file</key>
                 <value>$;TMP_DIR$;/tag_data_ergatis.log</value>
             </param>

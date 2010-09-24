@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
@@ -15,6 +18,7 @@ my $logger;
 
 my %options = &parse_options();
 my $output_iter = $options{'output'};
+my $pipeline_name = $options{'pipeline_name'};
 
 ## If our tag list is not provided we create an empty
 ## iterator file so that the download_tag component 
@@ -36,15 +40,15 @@ if ( defined($options{'tag_list'}) ) {
 # by ergatis
 #--------------------------------------------------
 sub print_download_tag_iterator {
-	my ($tags, $output_iter) = @_;
-	
-	open (ITEROUT, "> $output_iter") or $logger->logdie("Could not open output iterator $output_iter for writing: $!");
-	print ITEROUT "\$;I_FILE_BASE\$;\n";    ## Print the header identification line
-	foreach my $tag (@$tags) {
-		print ITEROUT "$tag\n";
-	}
-	
-	close ITEROUT;
+    my ($tags, $output_iter) = @_;
+    
+    open (ITEROUT, "> $output_iter") or $logger->logdie("Could not open output iterator $output_iter for writing: $!");
+    print ITEROUT "\$;I_FILE_BASE\$;\n";    ## Print the header identification line
+    foreach my $tag (@$tags) {
+        print ITEROUT "$tag\n";
+    }
+    
+    close ITEROUT;
 }
 
 #--------------------------------------------------
@@ -52,16 +56,17 @@ sub print_download_tag_iterator {
 # names to be downloaded.
 #--------------------------------------------------
 sub parse_tag_list {
-	my $tag_list = shift;
-	my $ret_tags = ();
-	
+    my $tag_list = shift;
+    my $ret_tags = ();
+    
     my @tag_list = split(/,/, $tag_list);
     foreach my $tag (@tag_list) {
         $tag = trim($tag);
-		push (@$ret_tags, $tag);
-	}
-	
-	return $ret_tags;
+        $tag = $pipeline_name . "_" . $tag;
+        push (@$ret_tags, $tag);
+    }
+    
+    return $ret_tags;
 }
 
 #--------------------------------------------------
@@ -71,8 +76,8 @@ sub parse_tag_list {
 sub create_empty_tag_list {
     my $output_iter = shift;
 
-	open (ITEROUT, "> $output_iter") or $logger->logdie("Could not open output iterator $output_iter for writing: $!");
-	print ITEROUT "\$;I_FILE_BASE\$;\n";    ## Print the header identification line
+    open (ITEROUT, "> $output_iter") or $logger->logdie("Could not open output iterator $output_iter for writing: $!");
+    print ITEROUT "\$;I_FILE_BASE\$;\n";    ## Print the header identification line
     close ITEROUT;
 }
 
@@ -90,14 +95,15 @@ sub trim {
 # parse command line arguments
 #--------------------------------------------------
 sub parse_options {
-	my %opts = ();
-	GetOptions(\%opts,
-	           'tag_list|i=s',
-	           'output|o=s',
-	           'log|l:s',
-	           'debug|d:s',
-	           'help') || pod2usage();
-	           
+    my %opts = ();
+    GetOptions(\%opts,
+               'tag_list|i=s',
+               'output|o=s',
+               'pipeline_name|p=s',
+               'log|l:s',
+               'debug|d:s',
+               'help') || pod2usage();
+               
     if ( $opts{'help'} ) { pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ); }
     ## Set logger
     my $logfile = $opts{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -106,7 +112,8 @@ sub parse_options {
     $logger = Ergatis::Logger::get_logger();
     
     ## We need to make sure our tag_list parameter and output parameter are defined
-    defined ($opts{'output'}) || $logger->logdie("Please provide a proper output file iterator path");   	                   
-    
+    defined ($opts{'output'}) || $logger->logdie("Please provide a proper output file iterator path");
+    defined ($opts{'pipeline_name'}) || $logger->logdie("Please provide a valid pipeline name");
+
     return %opts;
 }

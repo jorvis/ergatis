@@ -3,9 +3,6 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1 NAME
 
 transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
@@ -16,6 +13,7 @@ transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
         --map_file=/path/to/map/file
         --repository_root=/path/to/ergatis/repository/root
         --pipeline_id=<ergatis pipeline ID>
+        --pipeline_name=<clovr pipeline name>
        [--log=/path/to/log/file
         --debug=<debug level>
         --help]
@@ -33,7 +31,11 @@ B<--repository_root, -r>
 B<--pipeline_id, -p>
     The pipeline ID whose files should be downloaded. This value is replaced in the mapping file
     when present    
-    
+ 
+B<--pipeline_name, -n>
+    The pipeline name (provided in the clovr wrapper config) that will be used to create a unique
+    tag name for output.
+
 B<--log, -l>
     Optional. Log file.
     
@@ -78,7 +80,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 ## Need to setup the PYTHONPATH env variable here...
 $ENV{'PYTHONPATH'} = "/opt/vappio-py:/opt/vappio-py:/opt/opt-packages/bioinf-v1r4b1//Denoiser/" .
-		     ":/opt/opt-packages/bioinf-v1r4b1//PyNAST/lib/:/opt/opt-packages/bioinf-v1r4b1//qiime/lib/";
+             ":/opt/opt-packages/bioinf-v1r4b1//PyNAST/lib/:/opt/opt-packages/bioinf-v1r4b1//qiime/lib/";
 
 #----------------------------------------------------------
 # GLOBALS/COMMAND-LINE OPTIONS
@@ -90,6 +92,7 @@ my %options = parse_options();
 my $input = $options{'map_file'};
 my $repo_root = $options{'repository_root'};
 my $pipeline_id = $options{'pipeline_id'};
+my $pipeline_name = $options{'pipeline_name'};
 
 my $files_to_tag = parse_mapping_file($input);
 
@@ -97,7 +100,7 @@ my $files_to_tag = parse_mapping_file($input);
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
     my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
-                  "--tag-base-dir $repo_root/output_repository/" .
+                  "--tag-base-dir $repo_root/output_repository/ " .
                   join(" ", @files);
     run_system_cmd($cmd);                  
 }
@@ -124,8 +127,11 @@ sub parse_mapping_file {
         my ($tag_name, $files_list) = split(/\t/, $line);
         
         ## Currently tagData will break if any spaces are in the tag name
-        ## so we need to replace spaces with underscores
+        ## so we need to replace spaces with underscores.
         $tag_name =~ s/\s+/_/;
+        ## Pipeline name will also be attached to the tag name to ensure
+        ## our tag names are unique
+        $tag_name = $pipeline_name . "_" . $tag_name;
         
         my @file_tokens = split(/,/, $files_list);
         foreach my $file_token (@file_tokens) {
@@ -146,7 +152,7 @@ sub parse_mapping_file {
 sub _verify_file {
     my ($file, $files_ref) = @_;
     my $ret_file;
-    
+        
     ## If this is being run in conjunction with an ergatis pipeline 
     ## we need to account for files having $;REPOSITORY_ROOT$; and
     ## $;PIPELINEID$; in them.
@@ -161,7 +167,7 @@ sub _verify_file {
         unless (-d $file) {
             my $fh = open_file($file, "in");
             chomp( my $line_peek = <$fh> );
-            
+
             ## Now check if our first line of this file exists, if it does most 
             ## likely we have a list of files here
             if (-e $line_peek) {
@@ -169,7 +175,7 @@ sub _verify_file {
                 chomp( my @files = <$fh> );
                 
                 foreach my $list_file (@files) {
-		    _verify_file($list_file, $files_ref);
+                    _verify_file($list_file, $files_ref);
                 }
             } else {
                 push(@$files_ref, $file);
@@ -206,8 +212,9 @@ sub parse_options {
     my %opts = ();
     GetOptions(\%opts,
                 'map_file|i=s',
-                'repository_root|r:s',
-                'pipeline_id|p:s',
+                'repository_root|r=s',
+                'pipeline_id|p=s',
+                'pipeline_name|n=s',
                 'log|l:s',
                 'debug|d:s',
                 'help') || pod2usage();
@@ -224,6 +231,7 @@ sub parse_options {
     defined ($opts{'map_file'}) || $logger->logdie('Please specify a valid input map file');
     defined ($opts{'repository_root'}) || $logger->logdie('Path to the repository root must be specified');
     defined ($opts{'pipeline_id'}) || $logger->logdie('A valid ergatis pipeline ID must be specified');
+    defined ($opts{'pipeline_name'}) || $logger->logdie('Please provide a valid clovr pipeline name');
     
     return %opts;
 }

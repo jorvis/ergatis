@@ -1,5 +1,6 @@
 next
 ----
+-tag_data: Fixed bug that occurred when re-running the same pipeline
 -download_tag: New CloVR component to download a list of tags
 -clusterBsmlPairwiseAlignments.pl: fixed documentation to display true name of bsmlSearchList parameter.
 -prepare_paired_ends_for_velvet: will now auto detect format of input files if format is ambiguous.
