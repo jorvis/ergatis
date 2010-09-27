@@ -153,7 +153,7 @@ sub _handle_seq_pair_alignment {
     ## Grab the cluster id and see if the match is characterized
     my $db = $self->{'_uniref_clusters_annot'};
     my $cluster_id = $db->get_cluster_id_by_acc( $comp_id );
-    die("Could not find cluster id for $comp_id") unless( defined( $cluster_id ) );
+    return unless( defined( $cluster_id ) );
     my $comp_trusted = $db->cluster_is_trusted( $cluster_id );
     
     ## assign confidence level
