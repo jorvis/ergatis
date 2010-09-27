@@ -74,8 +74,7 @@ $pipe->write_template( template => 'save/pipeline/dir/' );
 
 =cut
 
-
-    use strict;
+use strict;
 use Carp;
 use Config::IniFiles;
 use Cwd;
@@ -419,6 +418,16 @@ use Ergatis::ConfigFile;
             my $basename = basename( $parent_file );
             $new_template = "$tmpdir/$basename.child";
         }
+
+        # copy all the configs in the current templates directory to
+        # tmpdir
+        my $templ_dir = dirname( $template );
+        copy( $_, $tmpdir ) foreach( glob("$templ_dir/*config") );
+
+        #where is the other template file in question? In case
+        #the include path is relative
+        my $temp_basedir = dirname( $template );
+
         my $outfh;
         open($outfh, "> $new_template") or croak("Could not open $new_template for writing: $!"); 
 
@@ -427,6 +436,10 @@ use Ergatis::ConfigFile;
             chomp $line;
             if( $line =~ /\<INCLUDE.*file\s*=\s*[\"\'](\S+)[\"\']/ ) {
                 my $i_file = $1;
+
+                #In case of relative directory
+                $i_file = $temp_basedir."/".$i_file unless( $i_file =~ m|^/| );
+
                 my $i_base = basename( $i_file );
 
                 croak("Include file $i_file does not exist") unless( -e $i_file );
