@@ -459,7 +459,6 @@ use Ergatis::ConfigFile;
                             unless( $start_pipeline_commandSet );
                         foreach my $cs ( $start_pipeline_commandSet->children('commandSet') ) {
                             $cs->print( $outfh );
-                            $t->flush;
                         }	
                     }
                 });
@@ -567,7 +566,6 @@ use Ergatis::ConfigFile;
             #default component XML
             $twigxml = $scfg->val('project', '$;DOCS_DIR$;').'/component_template.xml';
         }
-        print STDERR "Using $twigxml \n";
         return $twigxml;
     }
 
