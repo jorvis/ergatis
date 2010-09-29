@@ -39,8 +39,6 @@ next
 -prok_pipeline: replaced the single version of the prok pipeline with two new versions (one with database loading and one without)
 -ncbi-blastall: new component
 -mosaik: new component
--mosaik_rna_seq: new component for RNA-Seq analysis using mosaik
--bowtie_rna_seq: new component for RNA-Seq analysis using bowtie
 -core_qiime: new component
 -mothur_unique_seq_limit: new component
 -qiime_mothur_cnvr: new component
