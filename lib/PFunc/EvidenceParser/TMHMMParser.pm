@@ -17,7 +17,7 @@ my $transmembrane = {
     'TIGR_Role'         => 88,
 };
 my $source = "TMHMM";
-my $minimum_membrane_spanning_regions = 3;
+my $minimum_membrane_spanning_regions = 5;
 ################################
 
 sub new {

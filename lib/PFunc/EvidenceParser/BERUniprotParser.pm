@@ -25,9 +25,7 @@ my $ber_annot_levels = {
     'BER::uncharacterized::full::full'       => 3,
     'BER::uncharacterized::full::partial'    => 4,
     'BER::uncharacterized::partial::full'    => 4,   
-    'BER::characterized::partial::partial'   => 5,
-    'BER::uncharacterized::partial::partial' => 6,
-    'BER::conserved_hypothetical'            => 7,
+    'BER::conserved_hypothetical'            => 5,
 };
 my $count = 0;
 ######################################################################
@@ -160,12 +158,18 @@ sub _handle_seq_pair_alignment {
     my ($query_coverage, $subject_coverage) = $self->_calculate_spr_coverage( $ref_id, $comp_id, $spa );
     my $confidence_level = $self->_assign_confidence_level( $query_coverage, $subject_coverage, 
                                                             $comp_trusted );
+
+    ## we don't use annotation from partial::partial matches.
+    return if( $confidence_level eq 'BER::uncharacterized::partial::partial' ||
+               $confidence_level eq 'BER::characterized::partial::partial' );
+
     ## get the annotation related to the compseq
     my $comp_annot = $self->_get_compseq_annotation( $comp_id, $cluster_id, $confidence_level );
 
     ## -> Skip matches that contain the words 'hypothetical' in the common name
     ## -> Skip matches that don't have a common name
-    ## -> Add the string 'domain protein' to non-hypothetical, full::partial matches
+    ## -> Add the string 'domain protein' to non-hypothetical, full::partial and 
+    ##    partial::full matches
     ##       -> Make sure there isn't the word protein already in the common name to 
     ##          avoid names like "zinc finger protein domain protein"
     ## -> If the match is not characterized and contains vague words ('putatative', 'probable', etc.)
@@ -184,7 +188,9 @@ sub _handle_seq_pair_alignment {
     ## Make sure there isn't the word protein already in the common name to 
     ## avoid names like "zinc finger protein domain protein"
     if( $confidence_level eq 'BER::characterized::full::partial' ||
-        $confidence_level eq 'BER::uncharacterized::full::partial' ) {
+        $confidence_level eq 'BER::uncharacterized::full::partial' ||
+        $confidence_level eq 'BER::characterized::partial::full' ||
+        $confidence_level eq 'BER::uncharacterized::partial::full') {
 
         $gp_name =~ s/\s*protein$//;
         $gp_name .= " domain protein";
@@ -195,6 +201,11 @@ sub _handle_seq_pair_alignment {
     ## then annotation is changed to conserved hypothetical
     if( $self->_is_name_ambiguous( $gp_name ) && !$comp_trusted ) {
         $self->_assign_as_conserved_hypothetical( $comp_annot );
+
+    ## We add the string 'possible' to the beginning of uncharacterized 
+    ## matches but not to those which were just annotated as a conserved hypothetical
+    } elsif( $confidence_level =~ /BER::uncharacterized/ ) {
+        $gp_name = "possible ".$gp_name;
     }
 
     ##If the match doesn't have any annotation, assign this

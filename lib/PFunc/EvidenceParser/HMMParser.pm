@@ -310,6 +310,7 @@ sub _append_to_com_name {
         my $action = $self->{'_name_suffixes'}->{$isotype}->{'action'};
 
         if( $action eq 'append' ) {
+            $com_name =~ s/$suffix//;
             $com_name .= $suffix;
         } elsif( $action eq 'replace' ) {
             $com_name = $suffix;

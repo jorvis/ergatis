@@ -120,8 +120,28 @@ sub clean_common_name {
         $new_product_name = lc($1) . $2;
     }
     
+    ## make sure we don't have some words more than once.
+    ## something like abc domain domain protein
+    while( $new_product_name =~ /(protein|domain|family|possible).*\1/ ) {
+        $new_product_name =~ s/protein\s*//;
+    }
+
     ## multiple whitespace should be collapsed
     $new_product_name =~ s|\s{2,}| |g;
+
+    ## remove periods that that come before 'domain protein'
+    if( $new_product_name =~ /\.\s*(domain protein|family protein)?$/ ) {
+        my $dp = $1 if( $1 );
+        $new_product_name =~ s/\s*\.\s*(domain protein|family protein)?$//;
+        $new_product_name .= " $dp" if( $dp );
+    }
+
+    ## remove strings with trailing parens
+    if( $new_product_name =~ /\(.*\)\s*(domain protein|family protein)?$/ ) {
+        my $dp = $1 if( $1 );
+        $new_product_name =~ s/\s*\(.*\)\s*(domain protein|family protein)?$//;
+        $new_product_name .= " $dp" if( $dp );
+    }
 
     ## if the term is long (greater than 128 chars), try to remove extra info
     ## from parens or braces.
