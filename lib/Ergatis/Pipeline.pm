@@ -96,7 +96,7 @@ umask(0000);
             ## make sure the scripts directory exists.  this is where the pipeline execution shell
             #   files are written
             if ( ! -d $pipeline_scripts_dir ) {
-                mkdir $pipeline_scripts_dir || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
+                ( mkdir $pipeline_scripts_dir ) || croak "filed to create pipeline scripts directory: $pipeline_scripts_dir : $!";
             }
 
             # make a subdirectory for this pipelineid if doing data placement
@@ -104,7 +104,7 @@ umask(0000);
                 $run_dir .= '/' . $self->id;
                 
                 if (! -d $run_dir) {
-                    mkdir $run_dir || croak "failed to create workflow_run_dir: $run_dir : $!";
+                    ( mkdir $run_dir ) || croak "failed to create workflow_run_dir: $run_dir : $!";
                 }
             }
             
