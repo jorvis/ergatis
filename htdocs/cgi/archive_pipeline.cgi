@@ -6,6 +6,7 @@ use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::Common;
 use Ergatis::ConfigFile;
 use HTML::Template;
+use File::Path;
 
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
@@ -33,7 +34,7 @@ my $log_file;
 
 ## create the archive root if it doesn't exist
 unless ( -d $archive_root ) {
-    mkdir( $archive_root ) || die "failed to create $archive_root: $!";
+    mkpath( $archive_root ) || die "failed to create $archive_root: $!";
 }
 
 if ($action eq 'delete') {
