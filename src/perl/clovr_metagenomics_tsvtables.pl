@@ -332,7 +332,7 @@ sub catalog
   my ($repseqhit, $hit) = @_;
 
   my @qname = split /\_/, $repseqhit;
-  my $qname = join("", @qname[0..($#qname-1)]);
+  my $qname = join("_", @qname[0..($#qname-1)]);
 
   if (!defined($antndata{$hit})){ # if we don't have a record for it, don't count it
     next;
