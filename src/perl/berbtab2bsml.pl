@@ -249,18 +249,21 @@ sub parse_ber_btabs {
         if( $count == 0 ) {
             my $base = $1 if( $file =~ m|^.*/([^/]+)| );
             my $polypeptide = $1 if( $base =~ /([^\.]+\.polypeptide\.\w+(\.\d+)?)/ );
+            my $cds;
+            $cds = $1 if( $base =~ /([^\.]+\.CDS\.\w+(\.\d+)?)/ ) unless(defined( $polypeptide ));
 
             #does it exist in the lookup? (means that it's a valid sequence id)
-            if( exists( $lookupProtDb{$polypeptide} ) ) {
-                my $cds = $prot2cds_lookup{$polypeptide};
-                &addSequenceElement( $cds, 'na', 'CDS' );
-                &addSequenceElement( $cds2polyp{$cds}, 'aa', 'polypeptide');
+            if( !defined( $cds ) && exists( $lookupProtDb{$polypeptide} ) ) {
+                $cds = $prot2cds_lookup{$polypeptide};
             } else {
                 print "file: $file\n";
                 print "base: $base\n";
                 print "prot: $polypeptide\n";
                 die("No hits in the btab and could not parse polypeptide name from file name");
             }
+                
+            &addSequenceElement( $cds, 'na', 'CDS' );
+            &addSequenceElement( $cds2polyp{$cds}, 'aa', 'polypeptide');
         }
     }
 }
