@@ -250,12 +250,17 @@ sub parse_ber_btabs {
             my $base = $1 if( $file =~ m|^.*/([^/]+)| );
             my $polypeptide = $1 if( $base =~ /([^\.]+\.polypeptide\.\w+(\.\d+)?)/ );
             my $cds;
-            $cds = $1 if( $base =~ /([^\.]+\.CDS\.\w+(\.\d+)?)/ ) unless(defined( $polypeptide ));
+            unless(defined( $polypeptide )) {
+                $cds = $1 if( $base =~ /([^\.]+\.CDS\.\w+(\.\d+)?)/ );
+            }
 
             #does it exist in the lookup? (means that it's a valid sequence id)
             if( !defined( $cds ) && exists( $lookupProtDb{$polypeptide} ) ) {
                 $cds = $prot2cds_lookup{$polypeptide};
-            } else {
+            } 
+            
+            #if it's still not defined
+            if( !defined( $cds ) ) {
                 print "file: $file\n";
                 print "base: $base\n";
                 print "prot: $polypeptide\n";
