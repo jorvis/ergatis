@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
 no lib ".";
@@ -105,18 +108,18 @@ if($options{'pvalue'} eq ""){
 }
 
 my $ref_molecule = {
-                        'wu-blastn' => 'na',
-                        'wu-blastp' => 'aa',
-                        'wu-blastx' => 'na',
-                        'wu-tblastn' => 'aa',
-                        'wu-tblastx' => 'na',
+                        'blastn' => 'na',
+                        'blastp' => 'aa',
+                        'blastx' => 'na',
+                        'tblastn' => 'aa',
+                        'tblastx' => 'na',
                     };
 my $comp_molecule = {
-                        'wu-blastn' => 'na',
-                        'wu-blastp' => 'aa',
-                        'wu-blastx' => 'aa',
-                        'wu-tblastn' => 'na',
-                        'wu-tblastx' => 'na',
+                        'blastn' => 'na',
+                        'blastp' => 'aa',
+                        'blastx' => 'aa',
+                        'tblastn' => 'na',
+                        'tblastx' => 'na',
                     };
 
 
@@ -134,6 +137,7 @@ if (!defined($options{'class'})){
 my $blast_program;
 if ($options{'analysis_id'} =~ /^([^_]+)_analysis/) {
     $blast_program = $1;
+    $blast_program =~ s/.*-//;
 } else {
     $logger->logdie("analysis_id '$options{analysis_id}' has unexpected structure");
 }
@@ -217,6 +221,13 @@ RESULT: while( my $result = $in->next_result ) {
             $x[18] = $hit->length();
             $x[19] = $hsp->evalue();
             $x[20] = $hsp->pvalue();
+		
+		################          Generating p-value from e-value          ##################
+                ################          if p-value is undefined.                 ##################
+            unless($x[20]) {
+                $x[20] = calculate_pvalue($x[19]);
+            }
+                #####################################################################################
 
             if(($x[20] <= $options{'pvalue'}) && ($x[0] ne "") && ($x[5] ne "")){
                 ## pvalue is less than cutoff parameter
@@ -1004,3 +1015,16 @@ sub get_deflines {
 
     return $deflines;
 }
+
+#See http://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html
+sub calculate_pvalue {
+    my $evalue = shift;
+
+    my $estimate = 0.57721566490153;
+
+    #my $p = 1 - (bexp( (-1*$evalue), 4 ) );
+    ( 1 - ( $estimate**(-1*$evalue) ) );
+    return $evalue;
+
+}
+
