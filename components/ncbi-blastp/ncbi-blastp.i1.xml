@@ -28,34 +28,42 @@
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
             </param>
         </command>
-        <command>
+	 <command>
             <type>RunUnixCommand</type>
-            <name>convert btab to bsml</name>
+            <name>ncbi-blast2bsml</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/blastbtab2bsml</executable>
-            <param>  
-                <key>--btab_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
+            <executable>$;BIN_DIR$;/wu-blast2bsml</executable>
+            <param>
+                <key>--query_file_path</key>
+                <value>$;I_FILE_PATH$;</value>
             </param>
-            <param>  
+            <param>
+                <key>--input</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+            <param>
                 <key>--output</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
             </param>
-            <param>  
+            <param>
                 <key>--pvalue</key>
                 <value>$;EXPECT$;</value>
             </param>
-            <param>  
+            <param>
+                <key>--filter_hsps_for_stats</key>
+                <value>$;FILTER_HSPS_FOR_STATS$;</value>
+            </param>
+            <param>
                 <key>--class</key>
-                <value>protein</value>
+                <value>polypeptide</value>
             </param>
-            <param>  
+            <param>
                 <key>--analysis_id</key>
-                <value>ncbi-blastp_analysis</value>
+                <value>$;COMPONENT_NAME$;_analysis</value>
             </param>
-            <param>  
-                <key>--query_file_path</key>
-                <value>$;I_FILE_PATH$;</value>
+            <param>
+                <key>--gzip_output</key>
+                <value>$;COMPRESS_BSML_OUTPUT$;</value>
             </param>
         </command>
         <command>
