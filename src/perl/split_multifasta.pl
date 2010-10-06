@@ -427,9 +427,9 @@ sub set_seqs_per_total_files {
     my $fh = ${$_[0]};
     my $tot_files = $_[1];
 
-    my @lines = <$fh>;
-    my $line = join("\n", @lines);
-    $seq_count = () = $line =~ /(\n|^)>/sg;
+    my $seq_count = 0;
+    local $/ = ">";
+    while(my $line = <$fh>) { $seq_count += 1; }
 
     ## need a quick check here to make sure that the number of files wanted
     ## is not greater than the number of sequences in the file
