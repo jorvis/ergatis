@@ -1,5 +1,8 @@
 next
 ----
+
+ergatis-v2r13b2
+---------------
 -archive_pipeline.cgi: Now uses &File::Path::mkpath to recursively create $archive_root
 -histogram_stacked: a component that generated stacked histograms from tab-delimited count data files. Uses R. 
 
