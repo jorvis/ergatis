@@ -41,9 +41,16 @@ sub trim {
 sub printMapInfo {
 	my ($genbankFile) = @_;
 	open (FH, "<$genbankFile") or die "Error in opening the file, $genbankFile, $!\n";
+	my $locus;
 	while(my $line = <FH>) {
-		if(trim($line) =~ /^ORGANISM\s+(.+)\s+(\d+)$/) {
-			print OFH $1." ".$2." ".$2."\n";
+		if(trim($line) =~ /^LOCUS\s+(\S+)\s+/) {
+			$locus = $1;
+		}
+		elsif(trim($line) =~ /^ORGANISM\s+(.+)\s*$/) {
+			unless($locus) {
+				die "No locus found in the genbank file, $genbankFile, $!\n";
+			}
+			print OFH $1." ".$locus."\n";
 			last;
 		}
 	}
