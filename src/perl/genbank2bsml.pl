@@ -577,7 +577,7 @@ sub parse_organism_to_prefix_mapping {
 	++$lnum;
 	if ($line =~ /^\s*$|^[\#]|^\/\//) {
 	    next;
-	} elsif ($line =~ /^\s*(\S.*)\s+(\S+)$/) {
+	} elsif ($line =~ /^\s*(\S.*)\s+(\S+)\s*$/) {
 	    my($organism, $prefix) = ($1, $2);
 	    $map->{$organism} = $prefix;
 	} else {
