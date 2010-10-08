@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>createpangenomemapfile workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <!--Processing-->
+        <!--Iterator-->
+	<!--we don't need the iterator for this component-->
+        <!--Postprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create pangenome map file</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/createpangenomemapfile</executable>
+	    <param>
+		<key>--input_file_list</key>
+		<value>$;INPUT_FILE_LIST$;</value>
+	    </param>
+            <param>  
+                <key>--output_file</key>
+                <value>$;MAP_FILE$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
