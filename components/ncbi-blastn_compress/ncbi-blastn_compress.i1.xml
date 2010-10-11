@@ -62,6 +62,44 @@
                 <value>1</value>
             </param>
         </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>ncbi-blast2bsml</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/wu-blast2bsml</executable>
+            <param>
+                <key>--query_file_path</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--input</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>
+            <param>
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>
+                <key>--pvalue</key>
+                <value>$;EXPECT$;</value>
+            </param>
+            <param>
+                <key>--filter_hsps_for_stats</key>
+                <value>$;FILTER_HSPS_FOR_STATS$;</value>
+            </param>
+            <param>
+                <key>--class</key>
+                <value>polypeptide</value>
+            </param>
+            <param>
+                <key>--analysis_id</key>
+                <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+            <param>
+                <key>--gzip_output</key>
+                <value>$;COMPRESS_BSML_OUTPUT$;</value>
+            </param>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>store config params</name>
