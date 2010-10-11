@@ -71,8 +71,7 @@ A file containing all tag names will be written for use by the accompanying down
 =cut
 
 use strict;
-use warnings;
-use warnings;
+#use warnings;
 use Pod::Usage;        
 use Ergatis::Logger;
 use File::OpenFile qw(open_file);
@@ -125,7 +124,9 @@ sub parse_mapping_file {
         
         my @files = ();
         my ($tag_name, $files_list) = split(/\t/, $line);
-        
+	
+	print "DEBUG: $tag_name\t$files_list\n";        
+
         ## Currently tagData will break if any spaces are in the tag name
         ## so we need to replace spaces with underscores.
         $tag_name =~ s/\s+/_/;
@@ -158,7 +159,12 @@ sub _verify_file {
     ## $;PIPELINEID$; in them.
     $file =~ s/\$\;REPO_ROOT\$\;/$repo_root/;
     $file =~ s/\$\;PIPELINE_ID\$\;/$pipeline_id/;
-
+	##############         MAHESH VANGALA      ###########
+	# For some pipelines the files are writtend and then gzipped
+	######################################################
+	if(-e $file.'.gz') {
+		$file .= '.gz';
+	}
     ## First check if our file is a directory
     if ( -e $file) {
         
