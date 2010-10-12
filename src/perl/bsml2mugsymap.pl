@@ -9,7 +9,7 @@ use Data::Dumper;
 use XML::Twig;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use File::Basename;
-use IO::File;
+use File::OpenFile qw(open_file);
 
 my $in                  = "/dev/stdin";
 my $out                 = *STDOUT;
@@ -18,6 +18,7 @@ my $extract_all_ec      = 0;
 my $percent_n_cutoff    = 10;
 my $feat_id_to_seq_id;
 my $organism;
+my %opts = ();
 ## genes with equal or more than this % of Ns will be skiped (warning printed)
 
 
@@ -39,7 +40,6 @@ END
 
 sub parse_options
 {
-    my %opts = ();
     GetOptions(\%opts, 
                "input|i=s", 
                "output_dir|o=s", 
@@ -48,8 +48,8 @@ sub parse_options
     print_usage() if $opts{help};
     $in = $opts{input} if $opts{input};
 
-    my $file = basename($opts{input}, ['bsml']);
-    $out = new IO::File($opts{output_dir}."/$file.mugsymap", "w") or
+    my $file = basename($opts{input}, ('.bsml','.bsml.gz', '.bsml.gzip'));
+    $out = open_file($opts{output_dir}."/$file.mugsymap", "out") or
         die "Error writing tbl to $opts{output}: $!"
         if $opts{output_dir};
     $output_mrna_feats = 0 unless $opts{mrna};
@@ -75,14 +75,23 @@ sub convert
 #        'Sequence[@class="assembly"]' => \&process_sequence,
         'Organism' => \&process_organism,
         'Feature' => sub { process_feature(\%feats, @_); }});
-    $twig->parsefile($in);
+
+    my $ifh = $in;
+    if($opts{input}) {
+        $ifh = open_file($in, 'in');
+    }
+    $twig->parse($ifh);
     $twig = new XML::Twig();
+    close $ifh;
 
     # Next pull out all of the featuregroups
     $twig->setTwigRoots({'Feature-group' =>
             sub { process_feature_group(\%feats, $output_features, @_); } });
-    $twig->parsefile($in);
-
+    if($opts{input}) {
+        $ifh = open_file($in, 'in');
+    }
+    $twig->parse($ifh);
+    close $ifh;
 
     # Sort the features based on location
     my @srted_feats = sort {$a->{'start'} <=> $b->{'start'}} @$output_features;
