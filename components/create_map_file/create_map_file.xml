@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
-        <name>createmapfile workflow</name>
+        <name>create_map_file workflow</name>
         <!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
@@ -27,7 +27,7 @@
             <type>RunUnixCommand</type>
             <name>create map file</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/createmapfile</executable>
+            <executable>$;BIN_DIR$;/create_map_file</executable>
 	    <param>
 		<key>--input_file_list</key>
 		<value>$;INPUT_FILE_LIST$;</value>
