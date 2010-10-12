@@ -73,7 +73,7 @@ $File::Find::dont_use_nlink = 1;
 
 #GLOBAL VARIABLES##########################################################
 my $directory = getcwd;     #The directory to search
-my $gz = 0;                 #Flag indicating the inclusion of .gz extension
+my $gz = 1;                 #Flag indicating the inclusion of .gz extension
 my $regex = qr/".*"/;           #The regular expression to search for
 my $out;                    #Output file handle
 ###########################################################################
