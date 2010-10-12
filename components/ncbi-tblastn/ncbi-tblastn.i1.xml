@@ -18,7 +18,7 @@
             <type>RunUnixCommand</type>
             <name>convert raw to btab</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/wu-blast2btab</executable>
+            <executable>$;BIN_DIR$;/blast2btab</executable>
             <param>  
                 <key>--input</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
@@ -30,39 +30,9 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>convert btab to bsml</name>
+            <name>convert blast to bsml</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/blastbtab2bsml</executable>
-            <param>  
-                <key>--btab_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
-            </param>
-            <param>  
-                <key>--output</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
-            </param>
-            <param>  
-                <key>--pvalue</key>
-                <value>$;EXPECT$;</value>
-            </param>
-            <param>  
-                <key>--class</key>
-                <value>dna</value>
-            </param>
-            <param>  
-                <key>--analysis_id</key>
-                <value>ncbi-tblastn_analysis</value>
-            </param>
-            <param>  
-                <key>--query_file_path</key>
-                <value>$;I_FILE_PATH$;</value>
-            </param>
-        </command>
-	<command>
-            <type>RunUnixCommand</type>
-            <name>ncbi-blast2bsml</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/wu-blast2bsml</executable>
+            <executable>$;BIN_DIR$;/blast2bsml</executable>
             <param>
                 <key>--query_file_path</key>
                 <value>$;I_FILE_PATH$;</value>

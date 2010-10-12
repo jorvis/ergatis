@@ -1,5 +1,9 @@
 next
 ----
+-blast2bsml: Deprecated blast2bsml.pl becuase it wasn't being used by any components. Still in SVN (deprecated_blast2bsml.pl)
+-wu-blast2bsml/wu-blast2btab: renamed to blast2bsml.pl and blast2btab.pl. Was being used by both ncbi and wu versions of blast.
+-blast_components: change wu-blast2btab/bsml -> blast2btab/bsml where applicable
+-blast_components: added new var to configs which was missing ($;FILTER_HSPS_FOR_STATS$;)
 -create_map_file: new component
 
 ergatis-v2r13b2
