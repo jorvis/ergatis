@@ -52,6 +52,11 @@ B<--cm_dir,-m>
     each hmm.  Needless to say, hmm_cm_table is a better option.  Turns out, computers are bad
     guessers.
 
+B<--sequence_list,-s>
+    A list of absolute paths to files which contain the input fasta sequence from the HMMER search.
+    In most cases will be the chromosome/assembly sequence used as input. Used to grab extra flanking
+    sequence.
+
 B<--other_opts,-e>
     Other options to be passed into the cmsearch program.  
     *Note: The -W option is used by this script and therefore will be parsed out of the other_opts
