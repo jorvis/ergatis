@@ -29,9 +29,14 @@
 		<key>--directory</key>
 		<value>$;FASTA_FILE_DIR$;</value>
 	    </param>
-        <key>--prefix</key>
+        	<key>--prefix</key>
 		<value>$;OUTPUT_PREFIX$;</value>
 	    </param>
+	    <param>
+		<key>--fasta_file_list</key>
+		<value>$;FASTA_FILE_LIST$;</value>
+	    </param>
+	    <param>
 		<key>stdout</key>
 		<value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stdout</value>
 	    </param>
