@@ -1,5 +1,6 @@
 next
 ----
+-mugsyalign: Added FASTA_FILE_DIR key in <param> section as this value is critical for mugsy to write output to.
 -blast2bsml: Deprecated blast2bsml.pl becuase it wasn't being used by any components. Still in SVN (deprecated_blast2bsml.pl)
 -wu-blast2bsml/wu-blast2btab: renamed to blast2bsml.pl and blast2btab.pl. Was being used by both ncbi and wu versions of blast.
 -blast_components: change wu-blast2btab/bsml -> blast2btab/bsml where applicable
