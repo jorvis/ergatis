@@ -41,48 +41,5 @@
                 <value>$;RESULTS_OUTPUT_LIST$;</value>
             </param>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>create output tables</name>
-            <state>incomplete</state>
-            <executable>$;RDP_DIR$;/Create_RDP_tables.pl</executable>
-            <arg>-p $;OUTPUT_DIRECTORY$;/RDP -m $;META_FILE$; -r `cat $;RESULTS_OUTPUT_LIST$;` -g `cat $;GROUPS_FILE$;`</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>create tables list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>
-                <key>--regex</key>
-                <value>".*\.tsv"</value>
-            </param>
-            <param>
-                <key>--output_list</key>
-                <value>$;TABLE_OUTPUT_LIST$;</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>create paired tables list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>
-                <key>--regex</key>
-                <value>".*\.2tsv"</value>
-            </param>
-            <param>
-                <key>--output_list</key>
-                <value>$;PAIRED_TABLE_OUTPUT_LIST$;</value>
-            </param>
-        </command>
     </commandSet>
 </commandSetRoot>
