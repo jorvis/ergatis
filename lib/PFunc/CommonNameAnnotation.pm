@@ -123,7 +123,7 @@ sub clean_common_name {
     ## make sure we don't have some words more than once.
     ## something like abc domain domain protein
     while( $new_product_name =~ /(protein|domain|family|possible).*\1/ ) {
-        $new_product_name =~ s/protein\s*//;
+        $new_product_name =~ s/$1\s*//;
     }
 
     ## multiple whitespace should be collapsed
