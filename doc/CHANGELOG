@@ -1,5 +1,7 @@
 next
 ----
+-software.config: added MUGSY_EXEC variable that holds mugsy installation
+-mugsycog: modified mugsycog.xml so that MUGSY_EXEC variable holds the mugsy path. Also, added --map_file param needed for mapfeatures.pl
 -pfunc modules. Now assigns annotation sets and keeps uniref100 id instead of uniprot member ids for annotation source information regarding BER parsing
 -rdp_classifer: removed script associated with CloVR, will make it a separate component.
 -mugsyalign: Added FASTA_FILE_DIR key in <param> section as this value is critical for mugsy to write output to.
