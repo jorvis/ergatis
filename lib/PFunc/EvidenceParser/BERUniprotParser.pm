@@ -302,7 +302,7 @@ sub _get_compseq_annotation {
         my $assert_key = $field_set->[1];
         next unless( exists( $assertions{$assert_key} ) );
         $ret_annot->set( $field, $assertions{$assert_key}->{'value'},
-                         $assertions{$assert_key}->{'source'}, $confidence_level );
+                         $comp_id, $confidence_level );
     }
 
     ## store the array field from the assertion
@@ -310,7 +310,7 @@ sub _get_compseq_annotation {
         next unless( exists( $assertions{$field} ) );
         my $value = [];
         map { push(@{$value}, $_->{'value'} ); } @{$assertions{$field}};
-        $ret_annot->set( $field, $value, $assertions{$field}->[0]->{'source'}, 
+        $ret_annot->set( $field, $value, $comp_id, 
                          $confidence_level );
     }
 

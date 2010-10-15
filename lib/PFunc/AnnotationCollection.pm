@@ -58,9 +58,6 @@ sub add_annotation {
                                                   $self->get_annotation( $annotation->get_feature_id ) );
     }
     $self->{"_annotations"}->{$annotation->get_feature_id} = $final_annot;
-    if( $final_annot->get_feature_id eq 'hph.transcript.1312294216.1' ) {
-        print Dumper( $final_annot );
-    }
     return $final_annot;
 }
 
@@ -121,11 +118,9 @@ sub _merge_annotations {
 
     #if the current annotation is hypothetical we will replace the whole set with the new annotation
     if( $current_annotation->_get_type('gene_product_name') eq 'hypothetical' ) {
-
         $ret_annot = $new_annotation;
 
     } elsif( !$current_annotation->is_annotated( 'gene_product_name' ) )  {
-
         #This means that the current annotation does not have a gene_product_name
         #and we should replace it with the current annotation
         $ret_annot = $new_annotation;
@@ -137,29 +132,45 @@ sub _merge_annotations {
         $ret_annot = $current_annotation;
     } else {
         
-        my @fields = PFunc::Annotation::get_sorted_fields();
-        
-        foreach my $field ( @fields ) {
-            
-            #If they both have the annotation
-            if( $new_annotation->has_annotation( $field ) && $current_annotation->has_annotation( $field ) ) {
-                my $cur_rank = $self->_get_annot_rank( $field, $current_annotation->_get_type( $field ) );
-                my $new_rank = $self->_get_annot_rank( $field, $new_annotation->_get_type( $field ) );
+        ## We are assigning the annotation as a complete set. Would eventually like to build in 
+        ## a system which allows configuration in AnnotationOrder.pm whether everything is replaced
+        ## or not.
 
-                if( $cur_rank <= $new_rank ) {
-                    $ret_annot->set( $field, $current_annotation->get( $field ) );
-                } elsif( $new_rank < $cur_rank ) {
-                    $ret_annot->set( $field, $new_annotation->get( $field ) );
-                } else {
-                    confess("Could not merge annotations");
-                }
-            } elsif( $new_annotation->has_annotation($field) ) {
-                $ret_annot->set( $field, $new_annotation->get( $field ) );
-            } elsif( $current_annotation->has_annotation($field) ) {
-                $ret_annot->set( $field, $current_annotation->get($field) );
-            }
+        my $field = 'gene_product_name';
+        my $cur_rank = $self->_get_annot_rank( $field, $current_annotation->_get_type( $field ) );
+        my $new_rank = $self->_get_annot_rank( $field, $new_annotation->_get_type( $field ) );
 
+        if( $cur_rank <= $new_rank ) {
+            $ret_annot = $current_annotation;
+        } elsif( $new_rank < $cur_rank ) {
+            $ret_annot = $new_annotation;
+        } else {
+            confess("Could not merge annotations");
         }
+
+        # my @fields = PFunc::Annotation::get_sorted_fields();
+        
+#         foreach my $field ( @fields ) {
+            
+#             #If they both have the annotation
+#             if( $new_annotation->has_annotation( $field ) && $current_annotation->has_annotation( $field ) ) {
+#                 my $cur_rank = $self->_get_annot_rank( $field, $current_annotation->_get_type( $field ) );
+#                 my $new_rank = $self->_get_annot_rank( $field, $new_annotation->_get_type( $field ) );
+
+#                 if( $cur_rank <= $new_rank ) {
+#                     $ret_annot->set( $field, $current_annotation->get( $field ) );
+#                 } elsif( $new_rank < $cur_rank ) {
+#                     $ret_annot->set( $field, $new_annotation->get( $field ) );
+#                 } else {
+#                     confess("Could not merge annotations");
+#                 }
+#             } elsif( $new_annotation->has_annotation($field) ) {
+#                 $ret_annot->set( $field, $new_annotation->get( $field ) );
+#             } elsif( $current_annotation->has_annotation($field) ) {
+#                 $ret_annot->set( $field, $current_annotation->get($field) );
+#             }
+
+#         }
 
     }
 
