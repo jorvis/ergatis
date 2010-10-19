@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>Remove replicates from uclust</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>uclust replicate removal</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/uclust_replicate_removal</executable>
+            <arg>-f $;I_FILE_PATH$; -l $;LENGTH_DIFFERENCE$; -k $;PREFIX_LENGTH$; -p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
