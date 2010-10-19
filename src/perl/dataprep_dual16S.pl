@@ -87,7 +87,7 @@ for my $i (0 .. ($listlength[0]-1)){
   my @line = split /\//, $catstr[$i];
   $data{$line[$#line]} = $bc;
   my @linesplit = split /\./, $line[$#line];
-  my $fileprefix = $linesplit[0];
+  my $fileprefix = join(".", @linesplit[0..($#linesplit-1)]);
 
 
   #open and process this file
