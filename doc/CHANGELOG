@@ -1,5 +1,6 @@
 next
 ----
+-clovrdownload: Commented out moving downloaded output from /mnt/data to user specified out directory. This is done as the tags are not being updated.
 -clovr_16S_rdptables: new CloVR related component, was part of rdp_classifier, but made external for non-clovr users
 -software.config: added MUGSY_EXEC variable that holds mugsy installation
 -mugsycog: modified mugsycog.xml so that MUGSY_EXEC variable holds the mugsy path. Also, added --map_file param needed for mapfeatures.pl
