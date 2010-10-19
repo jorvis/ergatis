@@ -25,6 +25,7 @@
                 <value>$;CLUSTER_NAME$;</value>
             </param>    
         </command>
+	<!--
         <command>
             <type>RunUnixCommand</type>
             <name>move data to output folder</name>
@@ -32,5 +33,6 @@
             <executable>mv</executable>
             <arg>/mnt/staging/data/$;I_FILE_BASE$; $;OUTPUT_DIRECTORY$;</arg>
         </command>
+	-->
     </commandSet>
 </commandSetRoot>
