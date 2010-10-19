@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>metagenemark compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>metagenemark</name>
+            <state>incomplete</state>
+            <executable>$;METAGENEMARK_EXEC$;</executable>
+            <arg>$;OTHER_OPTS$; -f g -m $;TRAINING_MODEL$; $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.metagenemark.gff</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

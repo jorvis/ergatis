@@ -1,0 +1,47 @@
+<p>
+    MetaGeneMark is an ab initio gene prediction tool designed for metagenomic sequences.  The following
+    is the abstract from the paper (PMID: 20403810)
+</p>
+<blockquote>
+    We describe an algorithm for gene identification in DNA sequences derived from shotgun 
+    sequencing of microbial communities. Accurate ab initio gene prediction in a short 
+    nucleotide sequence of anonymous origin is hampered by uncertainty in model parameters. 
+    While several machine learning approaches could be proposed to bypass this difficulty, 
+    one effective method is to estimate parameters from dependencies, formed in evolution, 
+    between frequencies of oligonucleotides in protein-coding regions and genome nucleotide 
+    composition. Original version of the method was proposed in 1999 and has been used since 
+    for (i) reconstructing codon frequency vector needed for gene finding in viral genomes 
+    and (ii) initializing parameters of self-training gene finding algorithms. With advent 
+    of new prokaryotic genomes en masse it became possible to enhance the original approach 
+    by using direct polynomial and logistic approximations of oligonucleotide frequencies, 
+    as well as by separating models for bacteria and archaea. These advances have increased 
+    the accuracy of model reconstruction and, subsequently, gene prediction. We describe 
+    the refined method and assess its accuracy on known prokaryotic genomes split into short 
+    sequences. Also, we show that as a result of application of the new method, several 
+    thousands of new genes could be added to existing annotations of several human and 
+    mouse gut metagenomes.
+</blockquote>
+<p>
+    This component has been modified to output GFF rather than the default format.
+</p>
+
+<h3>reference</h3>
+<p>
+    Zhu W, Lomsadze A, Borodovsky M.<br>
+    Ab initio gene identification in metagenomic sequences.<br>
+    <a href='http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=Retrieve&db=pubmed&dopt=Abstract&list_uids=20403810'>Nucleic Acids Res. 2010 Jul 1;38(12):e132. Epub 2010 Apr 19.</a>
+</p>
+
+<h3>required license file</h3>
+<p>
+    MetaGeneMark requires a license file (gm_key) to be located in either the working directory
+    or saved as ~/.gm_key.   This is a requirement created by the tool's author, not Ergatis.
+</p>
+
+<h3>input</h3>
+<p>
+    Metagenemark takes a FASTA file as its input. Using this component, you can define 
+    multiple iterations over a larger input set using either an input list file or defining a 
+    directory of sequence files ending with the '.fsa' extension (by default).
+</p>
+
