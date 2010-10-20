@@ -86,6 +86,7 @@ if ($listlength[0] == 1){
 # represents a different specific sample.
 my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
+my %filenames = ();
 open SEQ, ">$finalseqfile" or die;
 for my $i (0 .. ($listlength[0]-1)){
   my $bc = $barcodes[$i]; # this is the associated barcode for the sample
@@ -96,6 +97,14 @@ for my $i (0 .. ($listlength[0]-1)){
   $data{$line[$#line]} = $bc;
   my @linesplit = split /\./, $line[$#line];
   my $fileprefix = join(".", @linesplit[0..($#linesplit-1)]);
+
+  if (!defined($filenames{$catstr[$i]})){
+    $filenames{$catstr[$i]} = 1;  
+  }else{
+    print STDERR "$catstr[$i] is being used more than once! Check your file names. Stopping ...\n";
+    exit(1);
+  }
+
 
   if(!(-e $catstr[$i])){
     print STDERR "$catstr[$i] does not exist! Check your file names. Stopping ...\n";

@@ -56,11 +56,19 @@ my @listlength = split " ", $listlength;
 # we assume that each file represents a different specific sample
 my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
+my %filenames = ();
 open SEQ, ">$finalseqfile" or die;
 for my $i (0 .. ($listlength[0]-1)){
 
   if(!(-e $catstr[$i])){
     print STDERR "$catstr[$i] does not exist! Check your file names. Stopping ...\n";
+    exit(1);
+  }
+
+  if (!defined($filenames{$catstr[$i]})){
+    $filenames{$catstr[$i]} = 1;
+  }else{
+    print STDERR "$catstr[$i] is being used more than once! Check your file names. Stopping ...\n";
     exit(1);
   }
 
