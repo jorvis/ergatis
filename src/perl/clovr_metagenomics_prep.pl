@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 
@@ -40,6 +43,10 @@ my $finalseqfile = "$prefix.processed.fasta";
 my $finalmapfile = "$prefix.processed.map";
 
 # for now we're just copying the map file
+if(!(-e $mapfile)){
+  print STDERR "$mapfile does not exist! Stopping ...\n";
+  exit(1);
+}
 copy($mapfile, $finalmapfile);
 
 # how many fasta files are provided?
@@ -51,6 +58,12 @@ my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
 open SEQ, ">$finalseqfile" or die;
 for my $i (0 .. ($listlength[0]-1)){
+
+  if(!(-e $catstr[$i])){
+    print STDERR "$catstr[$i] does not exist! Check your file names. Stopping ...\n";
+    exit(1);
+  }
+
 
   # do some processing of the filename to get the prefix
   # and store the associated barcode

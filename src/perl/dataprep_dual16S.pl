@@ -67,10 +67,18 @@ if ($listlength[0] > $#barcodes-1){
 if ($listlength[0] == 1){
   my $file = `cat $list`;
   chomp($file);
-  copy($file, $finalseqfile);
-  copy($mapfile, $finalmapfile);
-  print STDOUT "One fasta file detected. We assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\n"; 
-  exit(0);
+  if((-e $file) and (-e $mapfile)){
+    copy($file, $finalseqfile);
+    copy($mapfile, $finalmapfile);
+    print STDOUT "One fasta file detected. We assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\n"; 
+    exit(0);
+  }elsif(!(-e $file)){
+    print STDERR "$file does not exist! Stopping ...\n";
+    exit(1);
+  }elsif(!(-e $mapfile)){
+    print STDERR "$mapfile does not exist! Stopping ...\n";
+    exit(1);
+  }
 }
 
 # otherwise we've got multiple fasta files
@@ -89,6 +97,10 @@ for my $i (0 .. ($listlength[0]-1)){
   my @linesplit = split /\./, $line[$#line];
   my $fileprefix = join(".", @linesplit[0..($#linesplit-1)]);
 
+  if(!(-e $catstr[$i])){
+    print STDERR "$catstr[$i] does not exist! Check your file names. Stopping ...\n";
+    exit(1);
+  }
 
   #open and process this file
   open IN, "$catstr[$i]" or die "Can't open $catstr[$i] for preprocessing!\n";
@@ -135,6 +147,11 @@ for my $i (0 .. ($listlength[0]-1)){
 close SEQ;
 
 # now create the corresponding mapping file
+if(!(-e $mapfile)){
+  print STDERR "$mapfile does not exist! Stopping ...\n";
+  exit(1);
+}
+
 open MAP, ">$finalmapfile" or die;
 open IMAP, "$mapfile" or die "Can't open $mapfile!!\n";
 while(<IMAP>){
