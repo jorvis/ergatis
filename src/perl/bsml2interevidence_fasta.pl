@@ -111,38 +111,42 @@ sub print_intergenic_fasta {
 
     foreach my $mol ( keys %{$f_lookup->{'molecules'}} ) {
 
-        next unless( @{$f_lookup->{'molecules'}->{$mol}} > 0 );
-
         my $ofh = open_file( "$odir/$mol.interevidence.fsa", "out" );
 
-        my @sorted_ids = sort { 
-            if( !exists( $polys->{$a} ) ) {
-                die("Could not find poly $a in hash\n");
-            }
-            $polys->{$a}->{'startpos'} <=> $polys->{$b}->{'startpos'};
-        } grep( exists( $polys->{$_} ), @{$f_lookup->{'molecules'}->{$mol}} );
+        if( @{$f_lookup->{'molecules'}->{$mol}} > 0 ) {
+            print $ofh ">${mol}\n";
+            print $ofh $1."\n" while( $seqs->{$mol}->{'residues'} =~ /(\w{1,60})/g );
+        } else {
 
-        #using interbase numbering (from bsml)
-        my $left = 0;
-        my $right;
-        foreach my $pid ( @sorted_ids ) {
-            my $p = $polys->{$pid};
-            $right = $p->{'startpos'};
-            
+            my @sorted_ids = sort { 
+                if( !exists( $polys->{$a} ) ) {
+                    die("Could not find poly $a in hash\n");
+                }
+                $polys->{$a}->{'startpos'} <=> $polys->{$b}->{'startpos'};
+            } grep( exists( $polys->{$_} ), @{$f_lookup->{'molecules'}->{$mol}} );
+
+            #using interbase numbering (from bsml)
+            my $left = 0;
+            my $right;
+            foreach my $pid ( @sorted_ids ) {
+                my $p = $polys->{$pid};
+                $right = $p->{'startpos'};
+                
+                if( ($right - $left) >= $length_cutoff ) {
+                    my $subseq = substr( $seqs->{$mol}->{'residues'},
+                                         $left, $right - $left );
+                    print $ofh ">${mol}_$left-$right\n";
+                    print $ofh $1."\n" while( $subseq =~ /(\w{1,60})/g );
+                }
+                $left = $p->{'endpos'};
+            }
+
             if( ($right - $left) >= $length_cutoff ) {
                 my $subseq = substr( $seqs->{$mol}->{'residues'},
                                      $left, $right - $left );
-                print $ofh ">${mol}_$left-$right\n";
+                print $ofh ">${mol}_$left-".length($seqs->{$mol}->{'residues'})."\n";
                 print $ofh $1."\n" while( $subseq =~ /(\w{1,60})/g );
             }
-            $left = $p->{'endpos'};
-        }
-
-        if( ($right - $left) >= $length_cutoff ) {
-            my $subseq = substr( $seqs->{$mol}->{'residues'},
-                                 $left, $right - $left );
-            print $ofh ">${mol}_$left-".length($seqs->{$mol}->{'residues'})."\n";
-            print $ofh $1."\n" while( $subseq =~ /(\w{1,60})/g );
         }
         close($ofh);
         print "$odir/$mol.interevidence.fsa\n";
