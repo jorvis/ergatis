@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 =head1  NAME
 
 pangenome_do_R.pl - Runs a specified R file on the specified input file.
@@ -53,6 +56,7 @@ my %options = ();
 my $results = GetOptions( \%options,
                           'input_table|i=s',
                           'r_script|r=s',
+			  'r_exec_path|p=s',
                           'output_path|o=s',
                           'title|g=s',
                           'help|h') || pod2usage();
@@ -66,6 +70,7 @@ my $title = $options{'title'};
 my $pangenome_table = $options{'input_table'};
 my $r_script = $options{'r_script'};
 my $output_path = $options{'output_path'};
+my $R_EXEC_PATH = $options{'r_exec_path'};
 
 my $r_filename = $r_script;
 $r_filename =~  s/^.*\/([^\/]*)/$1/;
@@ -89,7 +94,7 @@ while (<IN>) {
 close OUT;
 close IN;
 
-if(system("/usr/local/bin/R CMD BATCH $input_r $output_path/".$r_filename."out")==0 ) {
+if(system("$R_EXEC_PATH CMD BATCH $input_r $output_path/".$r_filename."out")==0 ) {
     my @r_files = `ls $output_path/*.ps`;
     foreach my $file(@r_files) {
         chomp $file;
