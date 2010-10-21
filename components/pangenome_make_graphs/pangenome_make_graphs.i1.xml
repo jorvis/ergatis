@@ -24,6 +24,10 @@
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
+	    <param>
+		<key>--r_exec_path</key>
+		<value>$;R_EXEC$;</value>
+	    </param>
             <dceSpec type="sge">
                 <OS>linux</OS>
             </dceSpec>
