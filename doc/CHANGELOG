@@ -1,5 +1,6 @@
 next
 ----
+-$;R_EXEC$; - a variable that holds path to R program is added to software.config and to pangenome_make_graphs component
 -uclust_replicate_removal: new component and program for removing artificial pyrosequencing replicates from uclust output. component is called: uclust_remove_replicates
 -metagenemark: new component
 -clovrdownload: Commented out moving downloaded output from /mnt/data to user specified out directory. This is done as the tags are not being updated.
