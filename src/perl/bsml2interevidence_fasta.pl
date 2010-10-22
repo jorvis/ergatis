@@ -104,7 +104,6 @@ grep( $feature_lookup{'polypeptides'}->{$_}->{'has_evidence'} == 0,
 
 &print_intergenic_fasta( \%feature_lookup, \%sequences, $output_dir );
 
-
 sub print_intergenic_fasta {
     my ($f_lookup, $seqs, $odir) = @_;
     my $polys = $f_lookup->{'polypeptides'};
@@ -113,15 +112,12 @@ sub print_intergenic_fasta {
 
         my $ofh = open_file( "$odir/$mol.interevidence.fsa", "out" );
 
-        if( @{$f_lookup->{'molecules'}->{$mol}} > 0 ) {
+        if( @{$f_lookup->{'molecules'}->{$mol}} == 0 ) {
             print $ofh ">${mol}\n";
             print $ofh $1."\n" while( $seqs->{$mol}->{'residues'} =~ /(\w{1,60})/g );
         } else {
 
             my @sorted_ids = sort { 
-                if( !exists( $polys->{$a} ) ) {
-                    die("Could not find poly $a in hash\n");
-                }
                 $polys->{$a}->{'startpos'} <=> $polys->{$b}->{'startpos'};
             } grep( exists( $polys->{$_} ), @{$f_lookup->{'molecules'}->{$mol}} );
 

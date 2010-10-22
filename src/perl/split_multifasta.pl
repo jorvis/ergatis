@@ -288,7 +288,7 @@ while (<$sfh>) {
 }
 
 ## don't forget the last sequence
-&writeSequence(\$header, \$seq);
+&writeSequence(\$header, \$seq) if(defined( $header ));
 
 exit;
 
