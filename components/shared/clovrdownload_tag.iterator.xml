@@ -23,7 +23,11 @@
             <param>
                 <key>--src-cluster</key>
                 <value>$;CLUSTER_NAME$;</value>
-            </param>    
+            </param>
+	    <param>
+	        <key>--output-dir</key>
+		<value>$;OUTPUT_DIRECTORY$;/$PIPELINE_NAME$;</value>
+	    </param>
         </command>
 	<!--
         <command>
