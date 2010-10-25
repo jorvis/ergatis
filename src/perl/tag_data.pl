@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
@@ -85,7 +88,7 @@ $ENV{'PYTHONPATH'} = "/opt/vappio-py:/opt/vappio-py:/opt/opt-packages/bioinf-v1r
 # GLOBALS/COMMAND-LINE OPTIONS
 #----------------------------------------------------------
 my $logger;
-my $TAG_DATA_EXEC = "/opt/vappio-py/vappio/cli/tagData.py"; 
+my $TAG_DATA_EXEC = "/opt/vappio-py/vappio/cli/tagData.py";
 
 my %options = parse_options();
 my $input = $options{'map_file'};
@@ -93,15 +96,22 @@ my $repo_root = $options{'repository_root'};
 my $pipeline_id = $options{'pipeline_id'};
 my $pipeline_name = $options{'pipeline_name'};
 
-my $files_to_tag = parse_mapping_file($input);
+my ($files_to_tag,$meta_data) = parse_mapping_file($input);
 
 ## Now that we have our files to tag we can go ahead with the tagging
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
-    my $cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
+    my $cmd;
+    if($$meta_data{$tag_name}{'key_vals_exist'}) {
+    	$cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
                   "--tag-base-dir $repo_root/output_repository/ " .
-                  join(" ", @files);
-    run_system_cmd($cmd);                  
+                  join(" ", @files) . " -m " . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
+    } else {
+	$cmd = $TAG_DATA_EXEC. " --tag-name " . $tag_name . " --overwrite --recursive " .
+		"--tag-base-dir $repo_root/output_repository/ " .
+		join(" ", @files);
+    }
+    run_system_cmd($cmd);                      
 }
 
 ###############################################################################
@@ -116,6 +126,8 @@ foreach my $tag_name (keys %$files_to_tag) {
 sub parse_mapping_file {
     my $map_file = shift;
     my $tag_files = ();
+    my $meta_data;     	# a ref to hash; key => tag_name
+                       	# value is an array of key:val pairs for that tag
     
     my $map_fh = open_file($map_file, "in");
     while (my $line = <$map_fh>) {
@@ -123,9 +135,8 @@ sub parse_mapping_file {
         chomp($line);
         
         my @files = ();
-        my ($tag_name, $files_list) = split(/\t/, $line);
-	
-	print "DEBUG: $tag_name\t$files_list\n";        
+        my ($tag_name, $files_list, $key_vals) = split(/\t/, $line);
+	print "DEBUG: $tag_name\t$files_list". ($key_vals ? "\t$key_vals\n" : "\n");        
 
         ## Currently tagData will break if any spaces are in the tag name
         ## so we need to replace spaces with underscores.
@@ -140,9 +151,16 @@ sub parse_mapping_file {
         }
         
         push ( @{ $tag_files->{$tag_name} }, @files);
+	## push key vals into array and hold the ref of that array as a value of key tag_name
+	if($key_vals) {
+		$$meta_data{$tag_name}{'key_vals_exist'} = 1;
+		push @{$$meta_data{$tag_name}{'key_vals'}}, split(",",$key_vals);
+	} else {
+		$$meta_data{$tag_name}{'key_vals_exist'} = 0;
+	}
     }    
     
-    return $tag_files;
+    return ($tag_files, $meta_data);
 }
 
 #----------------------------------------------------------
