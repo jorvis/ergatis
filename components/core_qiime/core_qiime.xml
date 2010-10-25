@@ -24,7 +24,7 @@
             <name>pick_otus_through_otu_table</name>
             <state>incomplete</state>
             <executable>$;QIIME_PATH$;/bin/pick_otus_through_otu_table.py</executable>
-            <arg> -i $;INPUT_FILE$; -p $;CUSTOM_PARAMETERS_FILE$; -o $;OUTPUT_DIRECTORY$;/results</arg>
+            <arg> -i $;INPUT_FILE$; -p $;CUSTOM_PARAMETERS_FILE$; -f -o $;OUTPUT_DIRECTORY$;/results</arg>
             <param>
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/$;COMPONENT_NAME$;.stderr</value>
