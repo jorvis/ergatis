@@ -7,7 +7,7 @@
             <name>download_tag</name>
             <state>incomplete</state>
             <executable>/opt/vappio-py/vappio/cli/downloadTag.py</executable>
-            <arg>--block</arg>            
+            <arg>--block --compress</arg>
             <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
@@ -26,7 +26,7 @@
             </param>
 	    <param>
 	        <key>--output-dir</key>
-		<value>$;OUTPUT_DIRECTORY$;/$PIPELINE_NAME$;</value>
+		<value>$;OUTPUT_DIRECTORY$;/$;PIPELINE_NAME$;</value>
 	    </param>
         </command>
 	<!--
