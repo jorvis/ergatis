@@ -49,6 +49,36 @@ for my $child ( $parent_commandset->children() ) {
     }
 }
 
+#add links to command
+for(my $i=0;$i<@$elements;$i++){
+    my $cs_string=$elements->[$i]->{'command_string'};
+    my $cs_formatted_string = $cs_string;
+    my @cs_string_elts = split(/\s+/,$cs_string);
+    print STDERR $cs_string,"\n";
+    foreach my $e (@cs_string_elts){
+	if( -f "$e"){
+	    if($e =~ /\.xml/){
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_xml_source.cgi?file=$e'>$e\<\/a\>/;
+	    }
+	    else{
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_log_source.cgi?file=$e'>$e\<\/a\>/;
+	    }
+	}
+	elsif($e =~ /\=/){
+	    my($key,$value) = split(/=/,$e);
+	    if( -f "$value"){
+		if($value =~ /\.xml/){
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_xml_source.cgi?file=$value'>$value\<\/a\>/;
+		}
+		else{
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_log_source.cgi?file=$value'>$value\<\/a\>/;
+		}
+	    }
+	}
+    }
+    $elements->[$i]->{'command_string'} = $cs_formatted_string;
+}
+
 $tmpl->param( ELEMENTS => $elements );
 print $tmpl->output;
 

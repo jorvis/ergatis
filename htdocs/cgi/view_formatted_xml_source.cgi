@@ -32,7 +32,8 @@ if ( ! -e $file && -e "$file.gz" ) {
 if ($file !~ /\.xml$/ && 
     $file !~ /\.instance$/ && 
     $file !~ /\.bsml$/ &&
-    $file !~ /\.gz$/ ) {
+    $file !~ /\.gz$/ &&
+    ! $ergatis_cfg->val('display_settings', 'show_all_files')) {
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }

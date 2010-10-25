@@ -117,6 +117,20 @@ if (-e "$file.log") {
     $pipelinelog = "$file.log";
 }
 
+my $numerrorsout;
+my $numerrorslog;
+if (-e "$file.run.out"){
+    $numerrorsout = `grep -c -P 'FATAL|ERROR' $file.run.out`;
+    chomp $numerrorsout;
+    $numerrorsout = "-$numerrorsout errors";
+}
+if (-e "$file.run.log"){
+    $numerrorslog = `grep -c -P 'FATAL|ERROR' $pipelinelog`;
+    chomp $numerrorslog;
+    $numerrorslog = "-$numerrorslog errors";
+}
+    
+
 $tmpl->param( PIPELINE_FILE       => $file );
 $tmpl->param( START_TIME          => $starttime );
 $tmpl->param( END_TIME            => $endtime );
@@ -139,8 +153,8 @@ $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'rerun', is_last => 0, url => "./run_pipeline.cgi?pipeline_xml=$file&pipeline_id=$pipelineid&rerun=1" },
                                         { label => 'kill', is_last => 0, url => "./kill_wf.cgi?instancexml=$file" },
                                         { label => 'view xml', is_last => 0, url => "./view_formatted_xml_source.cgi?file=$file" },
-                                        { label => 'view log', is_last => 0, url=> "./view_formatted_log_source.cgi?file=$pipelinelog"},
-                                        { label => 'view stdout/stderr', is_last => 1, url=> "./view_formatted_log_source.cgi?file=$file.run.out"}
+                                        { label => "view log<font color=\"red\">$numerrorslog</font>", is_last => 0, url=> "./view_formatted_log_source.cgi?file=$pipelinelog"},
+                                        { label => "view stdout/stderr<font color=\"red\">$numerrorsout</font>", is_last => 1, url=> "./view_formatted_log_source.cgi?file=$file.run.out"}
                                      ] );
 
 print $tmpl->output;
@@ -179,6 +193,7 @@ sub parseCommandSet {
     } elsif ( $commandSet_name =~ /^((.+?)\.(.+))/) {
         my $filebased_subflow = '';
         my $name_token = $1;
+	my ($component_name) = ($name_token =~ /([^\.]+)+\.(.*)/);
 
         ## this should be changed to 0 if the interface shouldn't auto-update the 
         #   box for this component.
@@ -193,19 +208,21 @@ sub parseCommandSet {
         ## TODO: check the replace_config_keys step
         ## TODO: check the replace_template_keys step
         
-        my $subcommandSet = $commandSet->first_child('commandSet') || 0;
-        if ( $subcommandSet ) {
-            my $fileName = $subcommandSet->first_child('fileName') || 0;
-            if ($fileName) {
-                $filebased_subflow = $fileName->text;
-            } else {
-                ## we expected a fileName here
-                ##  TODO: handle error?
-            }
-        } else {
-            ## we expected a commandSet here.  
-            ##  TODO: handle error?
-        }
+        #my $subcommandSet = $commandSet->first_child('commandSet') || 0;
+	foreach my $subcommandSet ($commandSet->children('commandSet')){
+	    if ( $subcommandSet ) {
+		my $fileName = $subcommandSet->first_child('fileName') || 0;
+		if ($fileName && $fileName->text =~ /component\.xml/) {
+		    $filebased_subflow = $fileName->text;
+		} else {
+		    ## we expected a fileName here
+		    ##  TODO: handle error?
+		}
+	    } else {
+		## we expected a commandSet here.  
+		##  TODO: handle error?
+	    }
+	}
         
         $component_html .= <<ComponeNTBlock;
 <ul class='component' id='$name_token'>

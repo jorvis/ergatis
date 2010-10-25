@@ -26,7 +26,8 @@ if ($file !~ /\.xml$/ &&
     $file !~ /\.config/ &&
     $file !~ /\.list/ &&
     $file !~ /\.stderr/ &&
-    $file !~ /\.stdout/ ) {
+    $file !~ /\.stdout/ && 
+    ! $ergatis_cfg->val('display_settings', 'show_all_files')) {
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }

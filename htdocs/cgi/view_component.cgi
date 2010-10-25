@@ -106,6 +106,35 @@ foreach my $child ( $parent_commandset->children() ) {
     }
 }
 
+#add links to command
+for(my $i=0;$i<@$elements;$i++){
+    my $cs_string=$elements->[$i]->{'command_string'};
+    my $cs_formatted_string = $cs_string;
+    my @cs_string_elts = split(/\s+/,$cs_string);
+    print STDERR $cs_string,"\n";
+    foreach my $e (@cs_string_elts){
+	if( -f "$e"){
+	    if($e =~ /\.xml/){
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_xml_source.cgi?file=$e'>$e\<\/a\>/;
+	    }
+	    else{
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_log_source.cgi?file=$e'>$e\<\/a\>/;
+	    }
+	}
+	elsif($e =~ /\=/){
+	    my($key,$value) = split(/=/,$e);
+	    if( -f "$value"){
+		if($value =~ /\.xml/){
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_xml_source.cgi?file=$value'>$value\<\/a\>/;
+		}
+		else{
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_log_source.cgi?file=$value'>$value\<\/a\>/;
+		}
+	    }
+	}
+    }
+    $elements->[$i]->{'command_string'} = $cs_formatted_string;
+}
 ## reformat the states into data structure for HTML::Template
 my $state_counts;
 my $state_ids;
@@ -227,9 +256,16 @@ sub process_subflowgroup {
         if($commandSet->first_child('dceSpec')->first_child('jobID')){
 	    $sg_props{htc_id} = $commandSet->first_child('dceSpec')->first_child('jobID')->text();
 	}
+	#MOD for clovr
         if ( $commandSet->first_child('dceSpec')->first_child('executionHost') ) {
             $sg_props{execution_host} = $commandSet->first_child('dceSpec')->first_child('executionHost')->text();
+	    $sg_props{execution_ip} = $sg_props{execution_host};
+	    if($sg_props{execution_ip} =~ /^clovr/){
+		my($i1,$i2,$i3,$i4) = ($sg_props{execution_ip} =~ /clovr-(\d+)-(\d+)-(\d+)-(\d+)/);
+		$sg_props{execution_ip} = "$i1\.$i2\.$i3\.$i4";
+	    }
         }
+	
 	if ( $commandSet->first_child('dceSpec')->first_child('gridID') ) {
             $sg_props{grid_id} = $commandSet->first_child('dceSpec')->first_child('gridID')->text();
         }

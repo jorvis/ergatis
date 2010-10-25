@@ -23,7 +23,8 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $file = $q->param("file") || die "pass file";
 
 ## don't do it if the file doesn't end in .ini or .conf or config
-if ($file !~ /\.ini$/ && $file !~ /\.conf$/ && $file !~ /\.config$/) {
+if ($file !~ /\.ini$/ && $file !~ /\.conf$/ && $file !~ /\.config$/ && 
+    ! $ergatis_cfg->val('display_settings', 'show_all_files')) {
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }

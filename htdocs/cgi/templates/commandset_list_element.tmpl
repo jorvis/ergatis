@@ -24,6 +24,7 @@
         <tr><th>duration:</th><td><TMPL_VAR NAME=RUN_TIME></td></tr>
         <tr><th>grid id:</th><td><TMPL_VAR NAME=GRID_ID></td></tr>
         <tr><th>workflow grid id:</th><td><TMPL_VAR NAME=HTC_ID></td></tr>
+	<tr><th>execution host</th><td><TMPL_VAR NAME=EXECUTION_HOST> <a href='http://<TMPL_VAR NAME=EXECUTION_IP>/ganglia'>[ganglia]</a><a href='http://<TMPL_VAR NAME=EXECUTION_IP>/ergatis'>[ergatis]</a>
         <tr><th>workflow event log:</th><td><a href='view_formatted_log_source.cgi?file=<TMPL_VAR NAME=LOG>'><TMPL_VAR NAME=LOG></a></td></tr>
         <tr><th>remote wf stderr/sdout</th><td><TMPL_VAR NAME=EXECUTION_HOST>:/mnt/wf-working/RunWorkflow.o<TMPL_VAR NAME=GRID_ID>,/mnt/wf-working/RunWorkflow.e<TMPL_VAR NAME=GRID_ID></td></tr>
         <tr><th>prolog/epilog stderr/stdout</th><td>/home/guest/staging.*,home/guest/harvesting.*</td></tr>

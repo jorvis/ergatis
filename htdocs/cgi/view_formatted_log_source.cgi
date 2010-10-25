@@ -15,7 +15,8 @@ my $file = $q->param("file") || die "pass file";
 pageHeader();
 
 ## don't do it if the file doesn't end in one of the following extensions: out, log, stderr, stdout
-if ($file !~ /\.out$/ && $file !~ /\.log$/ && $file !~ /\.stderr$/ && $file !~ /\.stdout$/) {
+if ($file !~ /\.out$/ && $file !~ /\.log$/ && $file !~ /\.stderr$/ && $file !~ /\.stdout$/ &&
+    ! $ergatis_cfg->val('display_settings', 'show_all_files')) {
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }
@@ -41,8 +42,12 @@ while (my $line = readline $ifh) {
         $newline =~ s|\$\;$var\$\;|\$\;<span class="inivar">$var</span>\$\;|;
     }
     $line = $newline;
-    
-    
+    $newline=$line;
+    if ($line =~ /FATAL|ERROR/) {
+	$newline =~ s|FATAL(.*)|<font color="red">FATAL$1</font>|g;
+        $newline =~ s|ERROR(.*)|<font color="red">ERROR$1</font>|g;
+    }
+    $line=$newline;
     ## embolden section headers
     if ($line =~ /^\[/) {
         $line = '<span class="inihead">' . $line . '</span>';
@@ -62,6 +67,11 @@ while (my $line = readline $ifh) {
     
     ## look for any linkable lists
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)\s*$^i ) {
+        $url = $1;
+        $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+    }
+
+    if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.iter)\s*$^i ) {
         $url = $1;
         $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
     }

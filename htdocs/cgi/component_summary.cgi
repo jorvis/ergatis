@@ -7,6 +7,7 @@ use Ergatis::ConfigFile;
 use Ergatis::Monitor;
 use HTML::Template;
 use XML::Twig;
+use File::Basename;
 
 my $q = new CGI;
 
@@ -62,7 +63,7 @@ if ($pipeline =~ m|(.+/(.+)/workflow/runtime/(.+?)/(\d+)_(.+?))/component.xml|) 
     exit(1);
 }
 
-if (-e $pipeline || -e "$pipeline.gz") {
+if (-s $pipeline || -s "$pipeline.gz") {
     $pipeline_exists = 1;
     
     my $pipeline_fh;
@@ -132,11 +133,38 @@ if (-e $pipeline || -e "$pipeline.gz") {
     }
 
 } else {
-    ## if the component.xml doesn't exist, that file-based subflow step in the pipeline.xml
-    #    hasn't started yet.  pipeline_summary.cgi should take care of those levels.
-    ## all we have here is the component state
-    $component_state = 'incomplete';
-    push @state_elements, { state => $component_state, count => 1, width => $progress_image_width };        
+    my $dname = dirname("$pipeline");
+    #Check for misconfigured pipeline
+    if (-z $pipeline || -z "$pipeline.gz") {
+
+	#Error creating XML file
+	if(-s "$dname/replace_template_keys.stderr"){
+	    $messages_line .= "Possible mismatch between component template and configuration file";
+	    $messages_line .= "<br>".`cat $dname/replace_template_keys.stderr`;
+	    $messages_line .= "<br>Check <a href='view_formatted_ini_source.cgi?file=$component_conf_varreplaced'>$component_conf_varreplaced</a>";
+	}
+	else{
+
+	}
+	$component_state = 'component configuration error';
+
+	push @state_elements, { state => $component_state, count => 1, width => $progress_image_width };  
+    }
+    else{
+	#Error creating config file
+	if(-s "$dname/replace_config_keys.stderr"){
+	    $messages_line .= "<br>Check <a href='view_formatted_ini_source.cgi?file=$component_conf_nonvarreplaced'>$component_conf_nonvarreplaced</a>";
+	    $component_state = 'component configuration error';
+	    push @state_elements, { state => $component_state, count => 1, width => $progress_image_width };  
+	}
+	else{
+	    ## if the component.xml doesn't exist, that file-based subflow step in the pipeline.xml
+	    #    hasn't started yet.  pipeline_summary.cgi should take care of those levels.
+	    ## all we have here is the component state
+	    $component_state = 'incomplete';
+	    push @state_elements, { state => $component_state, count => 1, width => $progress_image_width };        
+	}
+    }
 }
 
 $tmpl->param( ACTION_COUNT => $command_count );
