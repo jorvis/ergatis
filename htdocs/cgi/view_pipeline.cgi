@@ -122,12 +122,22 @@ my $numerrorslog;
 if (-e "$file.run.out"){
     $numerrorsout = `grep -c -P 'FATAL|ERROR' $file.run.out`;
     chomp $numerrorsout;
-    $numerrorsout = "-$numerrorsout errors";
+    if($numerrorslog){
+	$numerrorsout = " $numerrorsout errors";
+    }
+    else{
+	$numerrorsout = "";
+    }
 }
-if (-e "$file.run.log"){
+if (-e "$file.log"){
     $numerrorslog = `grep -c -P 'FATAL|ERROR' $pipelinelog`;
     chomp $numerrorslog;
-    $numerrorslog = "-$numerrorslog errors";
+    if($numerrorslog){
+	$numerrorslog = " $numerrorslog errors";
+    }
+    else{
+	$numerrorslog = "";
+    }
 }
     
 
