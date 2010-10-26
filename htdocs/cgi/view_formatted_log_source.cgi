@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::ConfigFile;
 
 my $q = new CGI;
 
@@ -13,6 +14,8 @@ print $q->header( -type => 'text/html' );
 my $file = $q->param("file") || die "pass file";
 
 pageHeader();
+
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 ## don't do it if the file doesn't end in one of the following extensions: out, log, stderr, stdout
 if ($file !~ /\.out$/ && $file !~ /\.log$/ && $file !~ /\.stderr$/ && $file !~ /\.stdout$/ &&
