@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::ConfigFile;
 
 my $q = new CGI;
 
@@ -11,10 +12,14 @@ print $q->header( -type => 'text/plain' );
 ## will be like:
 my $file = $q->param("file") || die "pass file";
 
+
 ## the file may have been compressed
 if ( ! -e $file && -e "$file.gz" ) {
     $file .= '.gz';
 }
+
+## read the ergatis config file
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 ## only print certain file types (for minor security)
 if ($file !~ /\.xml$/ && 
