@@ -57,20 +57,5 @@
                 <value>4</value>
             </param>
         </command>        
-        <command>
-            <type>RunUnixCommand</type>
-            <name>add pipeline metadata to tag</name>
-            <state>incomplete</state>
-            <executable>/opt/vappio-py/vappio/cli/vp-describe-task</executable>
-            <arg>--block --exit-code `vp-run-metrics -t --pipeline-name=$;PIPELINE_NAME$; "add-config-to-tag-metadata"`</arg>
-            <param>
-                <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/add_config_to_tag.stdout</value>
-            </param>
-            <param>
-                <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/add_config_to_tag.stderr</value>         
-            </param>
-        </command>            
     </commandSet>
 </commandSetRoot>    
