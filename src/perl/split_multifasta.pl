@@ -433,7 +433,11 @@ sub set_seqs_per_total_files {
 
     ## need a quick check here to make sure that the number of files wanted
     ## is not greater than the number of sequences in the file
-    $logger->logdie("total_files $options{'total_files'} is greater than the number of sequences $seq_count") if ($tot_files > $seq_count);
+    if ($tot_files > $seq_count){
+	$logger->warn("total_files $options{'total_files'} is greater than the number of sequences $seq_count. setting $options{'total_files'} to $seq_count");
+	$options{'total_files'}=$seq_count;
+	$tot_files=$seq_count;
+    }
 
     ## calculate how many sequences we should have per file to meet the total_files parameter request.
     my $seqs_per_file = int($seq_count / $tot_files);
