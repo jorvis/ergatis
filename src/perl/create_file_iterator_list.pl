@@ -180,7 +180,7 @@ sub parse_file_parts {
     my $file = shift;
     
     ## match here if the file has an extension
-    if ( $$file =~ m|^(.+)/(([^/]+)\.([^\.\d]+))$| ) {
+    if ( $$file =~ m|^(.+)/(([^/]+)\.([^\.]+))$| ) {
         return [ $1, $2, $3, $4 ];
 
     ## match here if the file doesn't have an extension
