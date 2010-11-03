@@ -1,5 +1,6 @@
 next
 ----
+-create_file_iterator_list.pl: changed file extension matching regex to allow digits
 -fastq_to_CA: new component
 -tag_data: updated to make use of vappio add-config-metadata-to-tag metric
 -core_qiime component uses a new flag (-f) which overwrites it's working directory
