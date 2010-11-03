@@ -145,7 +145,7 @@ sub parse_mapping_file {
         ## our tag names are unique
         $tag_name = $pipeline_name . "_" . $tag_name;
         
-        my @file_tokens = split(/,/, $files_list);
+        my @file_tokens = split(/[,\s]+/, $files_list);
         foreach my $file_token (@file_tokens) {
             _verify_file($file_token, \@files);            
         }
@@ -154,7 +154,7 @@ sub parse_mapping_file {
 	## push key vals into array and hold the ref of that array as a value of key tag_name
 	if($key_vals) {
 		$$meta_data{$tag_name}{'key_vals_exist'} = 1;
-		push @{$$meta_data{$tag_name}{'key_vals'}}, split(",",$key_vals);
+		push @{$$meta_data{$tag_name}{'key_vals'}}, split(/[,\s]+/, $key_vals);
 	} else {
 		$$meta_data{$tag_name}{'key_vals_exist'} = 0;
 	}
