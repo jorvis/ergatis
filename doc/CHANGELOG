@@ -1,5 +1,6 @@
 next
 ----
+-tag_data.pl: Before file1,file2,file3 only works. Changed code so that file1, file2  file3,   file4 also works
 -create_file_iterator_list.pl: changed file extension matching regex to allow digits
 -fastq_to_CA: new component
 -tag_data: updated to make use of vappio add-config-metadata-to-tag metric
