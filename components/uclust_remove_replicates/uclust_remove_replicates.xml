@@ -43,7 +43,7 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>create clstr list</name>
+            <name>create artificial replicates list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
