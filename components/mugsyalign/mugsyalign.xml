@@ -24,7 +24,8 @@
 	    <type>RunDistributedCommand</type>
 	    <name>run mugsy</name>
 	    <state>incomplete</state>
-	    <executable>/opt/opt-packages/mugsy_x86-64-v1r1/mugsy</executable>
+	    <executable>$;MUGSY_EXEC$;/mugsy</executable>
+	    <arg>$;OTHER_OPTS$;</arg>
 	    <param>
 		<key>--directory</key>
 		<value>$;FASTA_FILE_DIR$;</value>
