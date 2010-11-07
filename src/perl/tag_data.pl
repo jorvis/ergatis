@@ -101,16 +101,19 @@ my ($files_to_tag,$meta_data) = parse_mapping_file($input);
 ## Now that we have our files to tag we can go ahead with the tagging
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
-    my $cmd;
+    open FILE,"+>/tmp/tag$$.filelist";
+    print FILE join(' ',@files);
+    close FILE;
+    my $cmd = $TAG_DATA_EXEC;
     if($$meta_data{$tag_name}{'key_vals_exist'}) {
-    	$cmd = $TAG_DATA_EXEC . " --tag-name " . $tag_name . " --overwrite --recursive " .
-                  "--tag-base-dir $repo_root/output_repository/ " .
-                  join(" ", @files) . " -m " . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
-    } else {
-	$cmd = $TAG_DATA_EXEC. " --tag-name " . $tag_name . " --overwrite --recursive " .
-		"--tag-base-dir $repo_root/output_repository/ " .
-		join(" ", @files);
+	$cmd .= " -o --tag-name " . $tag_name . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
     }
+    else{
+	$cmd .= " -o --tag-name " . $tag_name;
+    }
+    run_system_cmd($cmd);                      
+    $cmd = "cat /tmp/tag$$.filelist | xargs -n 50 $TAG_DATA_EXEC -a --tag-name " . $tag_name . " --recursive " .
+	"--tag-base-dir $repo_root/output_repository/ ";
     run_system_cmd($cmd);                      
 }
 
