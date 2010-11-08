@@ -63,7 +63,7 @@
       <executable>$;BIN_DIR$;/create_list_file</executable>
       <param>  
         <key>--directory</key>
-        <value>$;TMP_DIR$;/$;ITERATOR1$;/</value>
+        <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$;/</value>
       </param>
       <param>  
         <key>--regex</key>
