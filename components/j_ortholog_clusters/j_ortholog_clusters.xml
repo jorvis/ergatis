@@ -39,7 +39,7 @@
             </param>
             <param>  
                 <key>--outfile</key>
-                <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;PROJECT$;.$;PIPELINEID$;.btab</value>
             </param>
             <param>  
                 <key>--pvalcut</key>
@@ -51,11 +51,11 @@
             </param>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/bsml2cogbtab.stdout</value>
+                <value>$;OUTPUT_DIRECTORY$;/bsml2cogbtab.stdout</value>
             </param>
             <param>  
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/bsml2cogbtab.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/bsml2cogbtab.stderr</value>
             </param>
             <dceSpec type="sge">
                 <OS>linux</OS>
@@ -66,14 +66,14 @@
             <name>best hit</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/best_hit</executable>
-            <arg>-i $;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.btab -j $;JACCARD_CUTOFF$;</arg>
+            <arg>-i $;OUTPUT_DIRECTORY$;/$;PROJECT$;.$;PIPELINEID$;.btab -j $;JACCARD_CUTOFF$;</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
             </param>
             <param>  
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/besthit.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/besthit.stderr</value>
             </param>
             <dceSpec type="sge">
                 <OS>linux</OS>
@@ -86,7 +86,7 @@
             <executable>$;BIN_DIR$;/CogProteinFasta</executable>
             <param>  
                 <key>--cogFile</key>
-                <value>$;TMP_DIR$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;PROJECT$;.$;PIPELINEID$;.cog</value>
             </param>
             <param>  
                 <key>--bsmlModelList</key>
@@ -106,11 +106,11 @@
             </param>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/CogProteinFasta.stdout</value>
+                <value>$;OUTPUT_DIRECTORY$;/CogProteinFasta.stdout</value>
             </param>
             <param>  
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/CogProteinFasta.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/CogProteinFasta.stderr</value>
             </param>
         </command>
         <!--Postprocessing-->

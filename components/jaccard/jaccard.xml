@@ -39,7 +39,7 @@
             </param>
             <param>  
                 <key>--output_dir</key>
-                <value>$;TMP_DIR$;</value>
+                <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
             <param>  
                 <key>--output_iter_list</key>
@@ -56,7 +56,7 @@
             <executable>$;BIN_DIR$;/merge_lists</executable>
             <param>  
                 <key>--input_dir</key>
-                <value>$;TMP_DIR$;</value>
+                <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
             <param>  
                 <key>--output_list</key>

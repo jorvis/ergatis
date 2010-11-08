@@ -3,6 +3,17 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <name>jaccard compute</name>
+	
+	 <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+	<!-- end of pre processing -->
+
         <command>
             <type>RunUnixCommand</type>
             <name>make asmbl lookup</name>
@@ -14,7 +25,7 @@
             </param>
             <param>  
                 <key>--output</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.lookup</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.lookup</value>
             </param>
         </command>
         <command>
@@ -28,11 +39,11 @@
             </param>
             <param>  
                 <key>--asmbl_lookup</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.lookup</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.asmbl.lookup</value>
             </param>
             <param>  
                 <key>--log</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.cluster.log</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.cluster.log</value>
             </param>
             <param>  
                 <key>--linkscore</key>
@@ -52,7 +63,7 @@
             </param>
             <param>  
                 <key>--outfile</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
             </param>
             <param>
                 <key>--cluster_path</key>
@@ -66,7 +77,7 @@
             <executable>$;BIN_DIR$;/CogProteinFasta</executable>
             <param>  
                 <key>--cogFile</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.jkcluster.out</value>
             </param>
             <param>  
                 <key>--bsmlModelList</key>
@@ -97,7 +108,7 @@
             <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$; -name '*.fsa'</arg>
             <param>  
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.$;COMPONENT_NAME$;.fsa.list</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_GENOME$;.$;COMPONENT_NAME$;.fsa.list</value>
             </param>
         </command>
     </commandSet>
