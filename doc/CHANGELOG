@@ -1,5 +1,6 @@
 next
 ----
+-genbank2bsml.i1.xml, mugsyprep.xml, mugsyprep.mugsymap.xml, muscle.i1.xml : changed $;TMP_DIR$; to $;OUTPUT_DIRECTORY$; and added create req dir commands to iterator files
 -software.config : added MUGSY_EXEC variable for mugsyalign component
 -mugsyaling.xml : added MUGSY_EXEC variable instead of hard typing the mugsy path; added OTHER_OPTS 
 -tag_data.pl: Before file1,file2,file3 only works. Changed code so that file1, file2  file3,   file4 also works
