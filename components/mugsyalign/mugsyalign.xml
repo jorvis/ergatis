@@ -21,7 +21,7 @@
 	</command>
 	<!--Processing-->
 	<command>
-	    <type>RunUnixCommand</type>
+	    <type>RunDistributedCommand</type>
 	    <name>run mugsy</name>
 	    <state>incomplete</state>
 	    <executable>$;MUGSY_EXEC$;/mugsy</executable>
@@ -46,6 +46,9 @@
 		<key>stderr</key>
 		<value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stderr</value>
 	    </param>
+        <dceSpec type="sge">
+            <OS>linux</OS>
+        </dceSpec>
     </command>
     <command>
       <type>RunUnixCommand</type>
