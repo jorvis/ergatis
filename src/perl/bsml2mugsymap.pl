@@ -236,6 +236,9 @@ sub process_feature_group
                 if(($_->att('identifier-type')) && ($_->att('identifier-type') eq 'locus')) {
                     $gene_val = $_->att('identifier');
                 }
+                elsif(($_->att('database')) && ($_->att('database') eq 'NCBILocus')) {
+                    $gene_val = $_->att('identifier');
+                }
             }@xrefs;
         }
         last if $gene_val ne '-';

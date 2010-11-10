@@ -187,6 +187,7 @@ while (my $line = <$ifh>) {
             push(@{$epitope_hash->{$seq_id}}, {'start' => $epitope_start, 'stop' => $epitope_stop});
 #            &create_epitope($seq_id, $epitope_start, $epitope_stop);
             $seq_id = $fields[0];
+            $in_epitope=0;
         }
         else {
             $seq_id = $fields[0];
@@ -202,7 +203,7 @@ sub create_doc {
     my($epitopes) = @_;
     foreach my $s (keys %$epitopes) {
         my $seq = $doc->createAndAddSequence($s, $s, '', 'aa', 'polypeptide');
-        $doc->createAndAddBsmlAttribute( $seq, 'defline', $defline);
+        $doc->createAndAddBsmlAttribute( $seq, 'defline', $s);
         $doc->createAndAddSeqDataImport( $seq, 'fasta', $options{fasta_input}, "sdi_" . $s . '_seq', $s );
         $seq->addBsmlLink('analysis', '#bepipred_analysis', 'input_of');
         my $feature_table;
