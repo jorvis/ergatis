@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot type="instance">
+  <commandSet type="serial">
+        <state>incomplete</state>
+        <name>grouped sub flow</name>
+
+	 <!--Processing-->
+         <command>
+            <type>RunUnixCommand</type>
+            <name>make table</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/pangenome_make_table</executable>
+            <param>
+                <key>--blast_stored_file</key>
+                <value>$;BLAST_STORED_FILE$;</value>
+            </param>
+            <param>
+                <key>--output_path</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--multiplicity</key>
+                <value>$;MULTIPLICITY$;</value>
+            </param>
+            <param>
+                <key>--comparisons</key>
+                <value>$;COMPARISONS$;</value>
+            </param>
+            <param>
+                <key>--write_lists</key>
+                <value>$;WRITE_LISTS$;</value>
+            </param>
+            <param>
+                <key>--db_list</key>
+                <value>$;DB_FILTER_LIST$;</value>
+            </param>
+        </command>
+	 <command>
+            <type>RunUnixCommand</type>
+            <name>make profile</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/pangenome_make_profile</executable>
+            <param>
+                <key>--blast_stored_file</key>
+                <value>$;BLAST_STORED_FILE$;</value>
+            </param>
+            <param>
+                <key>--output_path</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--multiplicity</key>
+                <value>$;MULTIPLICITY$;</value>
+            </param>
+            <param>
+                <key>--comparisons</key>
+                <value>$;COMPARISONS$;</value>
+            </param>
+            <param>
+                <key>--write_lists</key>
+                <value>$;WRITE_LISTS$;</value>
+            </param>
+            <param>
+                <key>--db_list</key>
+                <value>$;DB_FILTER_LIST$;</value>
+            </param>
+        </command>
+	 <command>
+            <type>RunUnixCommand</type>
+            <name>make pangenome</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/pangenome_make_pangenome</executable>
+            <param>
+                <key>--profile</key>
+                <value>$;OUTPUT_DIRECTORY$;/pangenome.profile.txt</value>
+            </param>
+            <param>
+                <key>--output_path</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--multiplicity</key>
+                <value>$;MULTIPLICITY$;</value>
+            </param>
+            <param>
+                <key>--comparisons</key>
+                <value>$;COMPARISONS$;</value>
+            </param>
+            <param>
+                <key>--write_lists</key>
+                <value>$;WRITE_LISTS$;</value>
+            </param>
+            <param>
+                <key>--db_list</key>
+                <value>$;DB_FILTER_LIST$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
+

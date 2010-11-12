@@ -20,47 +20,46 @@
 	    <arg>-p -m 777 $;TMP_DIR$;</arg>
 	</command>
 	<!--Processing-->
-	<command>
-	    <type>RunDistributedCommand</type>
-	    <name>run mugsy</name>
-	    <state>incomplete</state>
-	    <executable>$;MUGSY_EXEC$;/mugsy</executable>
-	    <arg>$;OTHER_OPTS$;</arg>
-	    <param>
-		<key>--directory</key>
-		<value>$;FASTA_FILE_DIR$;</value>
-	    </param>
-	    <param>
-		<key>--fasta_file_list</key>
-		<value>$;FASTA_FILE_LIST$;</value>
-	    </param>
-	    <param>
-        	<key>--prefix</key>
-		<value>$;OUTPUT_PREFIX$;</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stdout</value>
-	    </param>
-	    <param>
-		<key>stderr</key>
-		<value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stderr</value>
-	    </param>
-        <dceSpec type="sge">
-            <OS>linux</OS>
-        </dceSpec>
-    </command>
-    <command>
-      <type>RunUnixCommand</type>
-      <name>Relocate output files</name>
-      <state>incomplete</state>
-      <executable>cp $;FASTA_FILE_DIR$;/$;OUTPUT_PREFIX$;.* $;OUTPUT_DIRECTORY$;</executable>
-    </command>
-    <command>
-      <type>RunUnixCommand</type>
-      <name>Relocate output files</name>
-      <state>incomplete</state>
-      <executable>rm $;FASTA_FILE_DIR$;/$;OUTPUT_PREFIX$;.*</executable>
-    </command>
+ <!-- hack to make sure these following commands will run other than master node -->
+<command>
+    <type>RunUnixCommand</type>
+    <name>replace template keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>
+        <key>--template_xml</key>
+        <value>$;DOCS_DIR$;/mugsyalign_distributed_work.xml</value>
+    </param>
+    <param>
+        <key>--component_conf</key>
+        <value>$;COMPONENT_CONFIG$;</value>
+    </param>
+    <param>
+        <key>--output_xml</key>
+        <value>$;WORKFLOW_REPOSITORY$;/mugsyalign_distributed_work.xml.gz</value>
+    </param>
+    <param>
+        <key>--distribopts</key>
+        <value>nodistrib=$;NODISTRIB$;</value>
+    </param>
+    <param>
+        <key>stdout</key>
+        <value>$;TMP_DIR$;/replace_template_keys.stdout</value>
+    </param>
+    <param>
+        <key>stderr</key>
+        <value>$;TMP_DIR$;/replace_template_keys.stderr</value>
+    </param>
+</command>
+
+	<commandSet type="remote-serial">
+                <state>incomplete</state>
+                <name>mugsyalign distributed work</name>
+                <fileName>$;WORKFLOW_REPOSITORY$;/mugsyalign_distributed_work.xml.gz</fileName>
+                <dceSpec type="sge">
+                        <OS>linux</OS>
+                </dceSpec>
+	</commandSet>
   </commandSet>
 </commandSetRoot>
+

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot type="instance">
+  <commandSet type="serial">
+        <state>incomplete</state>
+        <name>grouped sub flow</name>
+
+	 <command>
+            <type>RunUnixCommand</type>
+            <name>run mugsy</name>
+            <state>incomplete</state>
+            <executable>$;MUGSY_EXEC$;/mugsy</executable>
+            <arg>$;OTHER_OPTS$;</arg>
+            <param>
+                <key>--directory</key>
+                <value>$;FASTA_FILE_DIR$;</value>
+            </param>
+            <param>
+                <key>--fasta_file_list</key>
+                <value>$;FASTA_FILE_LIST$;</value>
+            </param>
+            <param>
+                <key>--prefix</key>
+                <value>$;OUTPUT_PREFIX$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stderr</value>
+            </param>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Relocate output files</name>
+      <state>incomplete</state>
+      <executable>cp $;FASTA_FILE_DIR$;/$;OUTPUT_PREFIX$;.* $;OUTPUT_DIRECTORY$;</executable>
+    </command>
+    <command>
+      <type>RunUnixCommand</type>
+      <name>Relocate output files</name>
+      <state>incomplete</state>
+      <executable>rm $;FASTA_FILE_DIR$;/$;OUTPUT_PREFIX$;.*</executable>
+    </command>
+  </commandSet>
+</commandSetRoot>
+
