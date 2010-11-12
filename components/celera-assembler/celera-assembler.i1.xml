@@ -21,8 +21,8 @@
             <type>RunUnixCommand</type>
             <name>celera assembler</name>
             <state>incomplete</state>
-            <executable>$;CELERA_ASSEMBLER_EXEC$;</executable>
-            <arg>-p $;I_FILE_BASE$; -d $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; -i $;SPEC_FILE$; $;I_FILE_PATH$;</arg>
+            <executable>$;BIN_DIR$;/runCA</executable>
+            <arg>-p $;I_FILE_BASE$; -d $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; -s $;SPEC_FILE$; $;I_FILE_PATH$;</arg>
             <param>
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;COMPONENT_NAME$;.stdout</value>
