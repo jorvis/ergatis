@@ -1,5 +1,7 @@
 next
 ----
+-mugsyalig_distributed_work.xml, j_ortholog_clusters_distributed_work.xml, pangenome_blast_parse_distributed_work.xml, pangenome_do_analysis_distributed_work.xml: added these xmls that contain distributed commands
+-mugsyalign.xml, j_ortholog_clusters.xml, pangenome_blast_parse.xml, pangenome_do_analysis.xml: modified so that all distributed commands are placed in their own files and then called as remote-serial. This way they can be run on any cluster and on igs grid with out choking the master node at IGS.
 -genbank2bsml.i1.xml, mugsyprep.xml, mugsyprep.mugsymap.xml, muscle.i1.xml : changed $;TMP_DIR$; to $;OUTPUT_DIRECTORY$; and added create req dir commands to iterator files
 -software.config : added MUGSY_EXEC variable for mugsyalign component
 -mugsyaling.xml : added MUGSY_EXEC variable instead of hard typing the mugsy path; added OTHER_OPTS 
