@@ -166,10 +166,8 @@ use BSML::BsmlBuilder;
 use File::Find;
 use File::Basename;
 use File::OpenFile qw(open_file);
-use UnirefClusters::Database;
+use UnirefAnnotation::Lookup;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
-use MLDBM 'DB_File';
-use DB_File;
 
 ## required for proper operation on NFS
 ##  see SF.net bug 2142533 - https://sourceforge.net/tracker2/?func=detail&aid=2142533&group_id=148765&atid=772583
@@ -202,8 +200,7 @@ my %evidence;
 my %feature_relationships;
 my %characterized;
 my %changed_start_sites;
-my $use_db = 0;
-my $ur_db;
+my $poly_lookup;
 #######################################
 
 my $results = GetOptions (\%options,
@@ -213,6 +210,8 @@ my $results = GetOptions (\%options,
                           'evidence|e=s',
                           'ber_extension|b=s',
                           'char_db|c=s',
+                          'username|u=s',
+                          'password|a=s',
                           'percent_identity_cutoff|p=s',
                           'p_value_cutoff|P=s',
                           'characterized_vote_bonus|C=s',
@@ -233,13 +232,16 @@ $logger = Ergatis::Logger::get_logger();
 ## Check the options
 &check_options(\%options);
 
+print "Parsing evidence file\n";
 %evidence = &parse_evidence_files( \@evidence_files );
 
 ## Get all the sequences (and features)
+print "Parsing input bsml files\n";
 my $sequences = &parse_input_bsml( $input_file );
 
 SEQUENCE:
 foreach my $sequence_id ( keys %{$sequences} ) {
+    print "Checking sequence $sequence_id\n";
 
     my $genes = $sequences->{$sequence_id}->{'genes'};
     $logger->info( "Analyzing ".scalar( @{$genes} )." genes on sequence $sequence_id");
@@ -249,7 +251,8 @@ foreach my $sequence_id ( keys %{$sequences} ) {
 
   GENE:
     foreach my $gene ( sort { $a->{'endpos'} <=> $b->{'endpos'} } @{$genes} ) {
-        
+        print "Checking gene $gene->{'id'}\n";
+
         my $gene_id = $gene->{'id'};
 
         my $evidence = &get_evidence($gene_id);
@@ -334,19 +337,7 @@ foreach my $sequence_id ( keys %{$sequences} ) {
 
 ############################## SUBS ############################
 sub is_characterized {
-    my ($compseq) = @_;
-    my $retval = 0;
-
-    #Are we using the lookup file or the database
-    if( $use_db ) {
-        my $cluster_id = $ur_db->get_cluster_id_by_acc( $compseq );
-        $retval = $ur_db->cluster_is_trusted( $cluster_id ) if( defined( $cluster_id ) );
-    } else {
-        my $portion = "$1|$2" if( $compseq =~ /^([^\_]+)\_([^\_]+\_?[^\_]+)\_/ );
-        $retval = defined( $portion ) ? exists( $characterized{$portion} ) : exists( $characterized{$compseq} );
-    }
-
-    return $retval;
+    return $poly_lookup->is_trusted($_[0]);
 }
 
 sub write_output {
@@ -787,6 +778,7 @@ sub parse_evidence_files {
     #Parse each of the evidence files
     foreach my $evidence_file ( @{$evidence_files} ) {
         print "\r$count/$total";
+        last if( $count == 100 );
         $count++;
 
         my $af = new BSML::BsmlAlignmentFilter( { 
@@ -803,6 +795,8 @@ sub parse_evidence_files {
             $evidence{$refseq} = $af->get_alignment_interval( $refseq );
         }
     }
+
+    print Dumper( \%evidence );
 
     return %evidence;
     
@@ -938,14 +932,15 @@ sub check_options {
    }
 
    if( $opts->{'char_db'} ) {
-       tie(%characterized, 'MLDBM', $opts->{'char_db'}, O_RDONLY )
-           or $logger->logdie("Could not tie $opts->{'char_db'} to hash");
-   }
-
-   if( $opts->{'username'} && $opts->{'password'} ) {
-       $use_db = 1;
-       $ur_db = new UnirefClusters::Database( "username" => $opts->{'username'},
-                                              "password" => $opts->{'password'} );
+       $poly_lookup = new UnirefAnnotation::Lookup("path=$opts->{'char_db'}");
+   } elsif( $opts->{'username'} && $opts->{'password'} ) {
+       $poly_lookup = new UnirefAnnotation::Lookup("username=$opts->{'username'} ".
+                                                        "password=$opts->{'password'}");
+   } else {
+       use Data::Dumper;
+       print Dumper( $opts );
+       $logger->logdie("Must provide path to characterized db (--char_db) or ".
+                       "--username and --password for mysql db");
    }
 
    if( $opts->{'ber_extension'} ) {
