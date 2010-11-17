@@ -36,5 +36,93 @@
         </command>
         <!--Processing-->
         <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=i1,$;ITERATOR_XML$;=DOWNLOAD_TAG_ITERATOR_XML,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/i1.list" />
+<command>
+    <type>RunUnixCommand</type>
+    <name>create iterator i1 groupings</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/create_iterator_groups</executable>
+    <param>
+	<key>--input_iter_list</key>
+	<value>$;WORKFLOW_REPOSITORY$;/i1.list</value>
+    </param>
+    <param>
+	<key>--group_count</key>
+	<value>$;GROUP_COUNT$;</value>
+    </param>
+    <param>
+	<key>--output_directory</key>
+	<value>$;WORKFLOW_REPOSITORY$;/i1</value>
+    </param>
+    <param>
+	<key>--output_iter_list</key>
+	<value>$;WORKFLOW_REPOSITORY$;/i1/i1.iter</value>
+    </param>
+    <param>
+	<key>--group_size_limit</key>
+	<value>1000</value>
+    </param>
+    <param>
+	<key>--randomize</key>
+	<value>'$;ITERATOR_RANDOM$;'</value>
+    </param>
+    <param>
+	<key>stdout</key>
+	<value>$;TMP_DIR$;/create_iterator_groups.stdout</value>
+    </param>
+    <param>
+	<key>stderr</key>    
+	<value>$;TMP_DIR$;/create_iterator_groups.stderr</value>
+    </param>
+</command>
+<command>
+    <type>RunUnixCommand</type>
+    <name>replace template keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>  
+	<key>--template_xml</key>
+	<value>$;DOCS_DIR$;/groups_template.xml</value>
+    </param>
+    <param>  
+	<key>--component_conf</key>
+	<value>$;COMPONENT_CONFIG$;</value>
+    </param>
+    <param>  
+	<key>--output_dir</key>
+	<value>$;WORKFLOW_REPOSITORY$;/i1</value>
+    </param>
+    <param>  
+	<key>--iterator_list</key>
+	<value>$;WORKFLOW_REPOSITORY$;/i1/i1.iter</value>
+    </param>
+    <param>  
+	<key>--output_xml</key>
+	<value>$;WORKFLOW_REPOSITORY$;/i1/i1.xml.gz</value>
+    </param>
+    <param>  
+	<key>--keys</key>
+	<value>ITERATOR_NAME=i1,ITERATOR_XML=DOWNLOAD_TAG_ITERATOR_XML</value>
+    </param>
+    <param>  
+	<key>--distribopts</key>
+	<value>nodistrib=$;NODISTRIB$;</value>
+    </param>
+    <param>
+        <key>--sgespec</key>
+        <value>&lt;queue&gt;harvesting.q&lt;/queue&gt;</value>
+    </param>
+    <param>
+	<key>stdout</key>
+	<value>$;TMP_DIR$;/replace_template_keys.stdout</value>
+    </param>
+    <param>
+	<key>stderr</key>    
+	<value>$;TMP_DIR$;/replace_template_keys.stderr</value>
+    </param>
+</command>
+<commandSet type="parallel">
+    <state>incomplete</state>
+    <name>iterator i1</name>
+    <fileName>$;WORKFLOW_REPOSITORY$;/i1/i1.xml.gz</fileName>
 </commandSet>
+
