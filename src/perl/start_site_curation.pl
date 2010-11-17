@@ -9,8 +9,8 @@ start_site_curation.pl - Looks at the start sites of genes in a bsml file and wi
 
  USAGE: start_site_curation.pl
        --input_file=/path/to/some/glimmer3.bsml
+       --input_list=/path/to/some/bsml.list
        --output_bsml=/path/to/output.all.bsml
-       --changed_features_bsml=/path/to/output.new.bsml
        --evidence=/path/to/ber.bsml.list
        --char_db=/path/to/tchar.db
        --username=user
@@ -30,15 +30,13 @@ start_site_curation.pl - Looks at the start sites of genes in a bsml file and wi
 =head1 OPTIONS
 
 B<--input_file,-i>
-    REQUIRED. Path to input gene describing bsml file.
+    Either --input_file or --input_list REQUIRED. Path to input gene describing bsml file.
 
-B<--output_file,-o>
-    REQUIRED. Path to output bsml file.  All features (those that have not changed
-    and those features which have) are included in this file.
+B<--input_list,-L>
+    Either --input_file or --input_list REQUIRED. List file of BSML files.
 
-B<--changed_features_bsml,-O>
-    OPTIONAL. Path to output bsml file which will contain only those features that
-    have changed.  If not specified will not print to this file.
+B<--output_directory,-o>
+    REQUIRED. Path to output directory. 
 
 B<--evidence,-e>
     REQUIRED. BER evidence list for genes (bsml).
@@ -146,9 +144,7 @@ username
 
     The script can print two sets of bsml files.  The first set includes the all genes
     and is representative of the working models for the sequence.  The second set is a 
-    collection of bsml files which only list the genes which have changed.  The second
-    set bsml files (only changed features) is optional and will not be printed if the 
-    --changed_features_bsml option is not used.
+    collection of bsml files which only list the genes which have changed.  
 
 =head1  CONTACT
 
@@ -192,9 +188,8 @@ my $analysis_name = 'start_site_curation';
 
 ########### GLOBALS ##################
 my %options;
-my $input_file;
-my $output_file;
-my $changed_features_bsml;
+my @input_files;
+my $output_directory;
 my @evidence_files;
 my %evidence;
 my %feature_relationships;
@@ -205,8 +200,8 @@ my $poly_lookup;
 
 my $results = GetOptions (\%options,
                           'input_file|i=s',
-                          'output_bsml|o=s',
-                          'changed_features_bsml|O=s',
+                          'input_list|L=s',
+                          'output_directory|o=s',
                           'evidence|e=s',
                           'ber_extension|b=s',
                           'char_db|c=s',
@@ -237,11 +232,13 @@ print "Parsing evidence file\n";
 
 ## Get all the sequences (and features)
 print "Parsing input bsml files\n";
-my $sequences = &parse_input_bsml( $input_file );
+my $sequences = {};
+foreach my $input_file ( @input_files ) {
+    &parse_input_bsml( $input_file, $sequences );
+}
 
 SEQUENCE:
 foreach my $sequence_id ( keys %{$sequences} ) {
-    print "Checking sequence $sequence_id\n";
 
     my $genes = $sequences->{$sequence_id}->{'genes'};
     $logger->info( "Analyzing ".scalar( @{$genes} )." genes on sequence $sequence_id");
@@ -251,7 +248,6 @@ foreach my $sequence_id ( keys %{$sequences} ) {
 
   GENE:
     foreach my $gene ( sort { $a->{'endpos'} <=> $b->{'endpos'} } @{$genes} ) {
-        print "Checking gene $gene->{'id'}\n";
 
         my $gene_id = $gene->{'id'};
 
@@ -332,8 +328,8 @@ foreach my $sequence_id ( keys %{$sequences} ) {
 
 } ## END SEQUENCES
 
-
-&write_output( $input_file, $output_file, $sequences, $changed_features_bsml );
+print "Calling write_output\n";
+&write_output( $sequences );
 
 ############################## SUBS ############################
 sub is_characterized {
@@ -341,24 +337,23 @@ sub is_characterized {
 }
 
 sub write_output {
-    my ($in_file, $out_file, $sequences, $changed_features_out ) = @_;
+    my ( $sequences ) = @_;
 
-    &write_bsml( $in_file, $out_file, $sequences );
-    print STDERR "$out_file\n";
-
-    if( $changed_features_out ) {
-        &write_bsml( $in_file, $changed_features_out, $sequences, 1 );
-        print STDERR "$changed_features_out\n";
-    }
+    print "Writing regular bsml\n";
+    &write_bsml( $sequences );
+    print "Writing changed bsml\n";
+    &write_bsml( $sequences, 1 );
 }
 
 sub write_bsml {
-    my ($in_file, $out_file, $sequences, $only_new_features) = @_;
-
-    my $doc = new BSML::BsmlBuilder;
+    my ($sequences, $only_new_features) = @_;
 
   SEQUENCE:
     foreach my $seq_id ( keys %{$sequences} ) {
+        
+        #Create a new document for each sequence
+        my $doc = new BSML::BsmlBuilder;
+
         #Add sequence
         my $seq = $doc->createAndAddSequence( $seq_id, $seq_id, $sequences->{$seq_id}->{'length'},
                                               $sequences->{$seq_id}->{'molecule'}, 
@@ -378,7 +373,7 @@ sub write_bsml {
         #tmp
         my $count = 0;
 
-        #Cycle through the genes\
+        #Cycle through the genes
       GENE:
         foreach my $gene ( @{$sequences->{$seq_id}->{'genes'}} ) {
 
@@ -394,24 +389,33 @@ sub write_bsml {
             &add_gene_to_doc( $doc, $seq, $feature_table, $gene );
             
         }
+
+        #Add analysis
+        my $in_file = $sequences->{$seq_id}->{'input_file'};
+        my $source_dir = dirname( $in_file );
+        my $analysis = $doc->createAndAddAnalysis( 'id'         => $analysis_name."_analysis",
+                                                   'sourcename' => $source_dir,
+                                                   'algorithm'  => $analysis_name,
+                                                   'program'    => $analysis_name
+                                                   );
+        
+        my $out_file = $output_directory."/$seq_id";
+        if( $only_new_features ) {
+            $out_file .= ".changed.bsml";
+        } else {
+            $out_file .= ".all.bsml";
+        }
+        my $oh = open_file( $out_file, 'out' );
+        eval {
+            $doc->write( $oh );
+        };
+        if( $@ ) {
+            $logger->logdie("$@");
+        }
+        close( $oh );
+        
     }
 
-    #Add analysis
-    my $source_dir = dirname( $in_file );
-    my $analysis = $doc->createAndAddAnalysis( 'id'         => $analysis_name."_analysis",
-                                               'sourcename' => $source_dir,
-                                               'algorithm'  => $analysis_name,
-                                               'program'    => $analysis_name
-                                               );
-
-    my $oh = open_file( $out_file, 'out' );
-    eval {
-        $doc->write( $oh );
-    };
-    if( $@ ) {
-        $logger->logdie("$@");
-    }
-    close( $oh );
 }
 
 sub add_gene_to_doc {
@@ -614,12 +618,12 @@ sub get_top_start_sites {
     my @values;
     
     my ($max) = sort{ $b <=> $a } values( %{$votes} );
-    
+
     #If the start site with the most votes doesn't beat the minimum
     #vote cutoff, then none of them will.  So just push on the extension
     #which indicates the original start site (i.e. the alignments weren't good enough
     #to determine new start site, so default to gene caller).
-    if( $max < $min_vote_cutoff ) {
+    if( !defined($max) || $max < $min_vote_cutoff ) {
         push(@values, $ber_extension );
     } else {
 
@@ -667,9 +671,8 @@ sub reverse_complement {
 }
 
 sub parse_input_bsml {
-    my ($bsml_file) = @_;
+    my ($bsml_file, $sequences) = @_;
     my @genes = ();
-    my %sequences;
 
     $logger->logdie("File does not exist [$bsml_file]") unless( -e $bsml_file );
 
@@ -708,9 +711,10 @@ sub parse_input_bsml {
                     'identifier' => $seq_data_import->att('identifier'),
                     'genes' => \@genes,
                     'class' => $seq_elem->att('class'),
-                    'molecule' => $seq_elem->att('molecule') 
+                    'molecule' => $seq_elem->att('molecule'),
+                    'input_file' => $bsml_file
                     };
-                $sequences{$seq_id} = $sequence;
+                $sequences->{$seq_id} = $sequence;
                 
             }
 
@@ -734,7 +738,7 @@ sub parse_input_bsml {
     $twig->parse($fh);
     close($fh);
 
-    return \%sequences;
+    return $sequences;
             
 }
 
@@ -777,9 +781,8 @@ sub parse_evidence_files {
 
     #Parse each of the evidence files
     foreach my $evidence_file ( @{$evidence_files} ) {
-        print "\r$count/$total";
-        last if( $count == 100 );
         $count++;
+        print "$count/$total\r";
 
         my $af = new BSML::BsmlAlignmentFilter( { 
             'file' => $evidence_file
@@ -795,9 +798,7 @@ sub parse_evidence_files {
             $evidence{$refseq} = $af->get_alignment_interval( $refseq );
         }
     }
-
-    print Dumper( \%evidence );
-
+    print "\n";
     return %evidence;
     
 }
@@ -892,7 +893,6 @@ sub get_feature_relationship {
 
 }
 
-
 ## Checks the input options.  See pod for specifics.
 sub check_options {
    my $opts = shift;
@@ -902,22 +902,26 @@ sub check_options {
    }
 
    if( $opts->{'input_file'} ) {
-       $input_file = $opts->{'input_file'};
-   } else {
-       $logger->logdie("Option input_file is required");
+       push(@input_files, $opts->{'input_file'} );
    }
 
-   if( $opts->{'output_bsml'} ) {
-       $output_file = $opts->{'output_bsml'};
-   } else {
-       $logger->logdie("Option output_bsml is required");
+   if( $opts->{'input_list'} ) {
+       open(IN, "< $opts->{'input_list'}");
+       chomp( my @tmp = <IN>);
+       close(IN);
+       push(@input_files, @tmp);
    }
 
-   if( $opts->{'changed_features_bsml'} ) {
-       $changed_features_bsml = $opts->{'changed_features_bsml'};
-   } else {
-       undef $changed_features_bsml;
+   if( @input_files == 0 ) {
+       $logger->logdie("Either option --input_list or --input_file are required. Please ".
+                       "check the values for these options is specified");
    }
+
+   if( $opts->{'output_directory'} ) {
+       $output_directory = $opts->{'output_directory'};
+   } else {
+       $logger->logdie("Option output_directory is required");
+   } 
 
    if( $opts->{'evidence'} ) {
        my @lists = split(/[,\s]+/, $opts->{'evidence'} );
@@ -937,8 +941,6 @@ sub check_options {
        $poly_lookup = new UnirefAnnotation::Lookup("username=$opts->{'username'} ".
                                                         "password=$opts->{'password'}");
    } else {
-       use Data::Dumper;
-       print Dumper( $opts );
        $logger->logdie("Must provide path to characterized db (--char_db) or ".
                        "--username and --password for mysql db");
    }

@@ -18,11 +18,77 @@
             <state>incomplete</state>
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>        
+        <command>
+            <type>RunUnixCommand</type>
+            <name>start_site_curation</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/start_site_curation</executable>
+            <param>
+                <key>--input_file</key>
+                <value>&quot;$;BSML_INPUT_FILE$;&quot;</value>
+            </param>
+            <param>
+                <key>--input_list</key>
+                <value>&quot;$;BSML_INPUT_LIST$;&quot;</value>
+            </param>
+            <param>
+                <key>--output_directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--evidence</key>
+                <value>$;BER_EVIDENCE$;</value>
+            </param>
+            <param>
+                <key>--ber_extension</key>
+                <value>$;BER_EXTENSION$;</value>
+            </param>
+            <param>
+                <key>--char_db</key>
+                <value>&apos;$;CHARACTERIZED_DB$;&apos;</value>
+            </param>
+            <param>
+                <key>--username</key>
+                <value>&apos;$;DB_USERNAME$;&apos;</value>
+            </param>
+            <param>
+                <key>--password</key>
+                <value>&apos;$;DB_PASSWORD$;&apos;</value>
+            </param>
+            <param>
+                <key>--percent_identity_cutoff</key>
+                <value>$;PERCENT_IDENTITY_CUTOFF$;</value>
+            </param>
+            <param>
+                <key>--p_value_cutoff</key>
+                <value>$;P_VALUE_CUTOFF$;</value>
+            </param>
+            <param>
+                <key>--characterized_vote_bonus</key>
+                <value>$;CHARACTERIZED_VOTE_BONUS$;</value>
+            </param>
+            <param>
+                <key>--min_vote_cutoff</key>
+                <value>$;MIN_VOTE_CUTOFF$;</value>
+            </param>
+            <param>
+                <key>--rbs_sliding_window_size</key>
+                <value>$;RBS_SLIDING_WINDOW_SIZE$;</value>
+            </param>
+            <param>
+                <key>--rbs_ag_percent_cutoff</key>
+                <value>$;RBS_AG_PERCENT_CUTOFF$;</value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.log</value>
+            </param>
+            <param>
+                <key>--debug</key>
+                <value>5</value>
+            </param>
         </command>
-        <!--Processing-->
-        <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
-        <!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
             <name>create all bsml list</name>
@@ -59,5 +125,25 @@
                 <value>$;ONLY_CHANGED_BSML_OUTPUT_LIST$;</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create changed bsml list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.bsml"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;ALL_BSML_LIST$;</value>
+            </param>
+        </command>
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
     </commandSet>
 </commandSetRoot>

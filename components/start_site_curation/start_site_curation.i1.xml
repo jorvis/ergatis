@@ -5,121 +5,21 @@
         <name>start_site_curation compute</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>start_site_curation</name>
+            <name>store config params</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/start_site_curation</executable>
-            <param>
-                <key>--input_file</key>
+            <executable>$;BIN_DIR$;/analysis2bsml</executable>
+            <param>  
+                <key>--ergatis_control_file</key>
+                <value>$;ERGATIS_DIR$;.ini</value>
+            </param>
+            <param>  
+                <key>--conf</key>
+                <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>  
+                <key>--bsml_file</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
-            <param>
-                <key>--output_bsml</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.all.bsml</value>
-            </param>
-            <param>
-                <key>--changed_features_bsml</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.changed.bsml</value>
-            </param>
-            <param>
-                <key>--evidence</key>
-                <value>$;BER_EVIDENCE$;</value>
-            </param>
-            <param>
-                <key>--ber_extension</key>
-                <value>$;BER_EXTENSION$;</value>
-            </param>
-            <param>
-                <key>--char_db</key>
-                <value>&apos;$;CHARACTERIZED_DB$;&apos;</value>
-            </param>
-            <param>
-                <key>--username</key>
-                <value>&apos;$;DB_USERNAME$;&apos;</value>
-            </param>
-            <param>
-                <key>--password</key>
-                <value>&apos;$;DB_PASSWORD$;&apos;</value>
-            </param>
-            <param>
-                <key>--percent_identity_cutoff</key>
-                <value>$;PERCENT_IDENTITY_CUTOFF$;</value>
-            </param>
-            <param>
-                <key>--p_value_cutoff</key>
-                <value>$;P_VALUE_CUTOFF$;</value>
-            </param>
-            <param>
-                <key>--characterized_vote_bonus</key>
-                <value>$;CHARACTERIZED_VOTE_BONUS$;</value>
-            </param>
-            <param>
-                <key>--min_vote_cutoff</key>
-                <value>$;MIN_VOTE_CUTOFF$;</value>
-            </param>
-            <param>
-                <key>--rbs_sliding_window_size</key>
-                <value>$;RBS_SLIDING_WINDOW_SIZE$;</value>
-            </param>
-            <param>
-                <key>--rbs_ag_percent_cutoff</key>
-                <value>$;RBS_AG_PERCENT_CUTOFF$;</value>
-            </param>
-            <param>
-                <key>--log</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.log</value>
-            </param>
-            <param>
-                <key>--debug</key>
-                <value>5</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>store config params</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/analysis2bsml</executable>
-            <param>  
-                <key>--ergatis_control_file</key>
-                <value>$;ERGATIS_DIR$;.ini</value>
-            </param>
-            <param>  
-                <key>--conf</key>
-                <value>$;COMPONENT_CONFIG$;</value>
-            </param>
-            <param>  
-                <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.all.bsml</value>
-            </param>
-            <param>  
-                <key>--componenturl</key>
-                <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
-            </param>
-            <param>  
-                <key>--pipelineurl</key>
-                <value>$;PIPELINE_XML$;</value>
-            </param>
-            <param>  
-                <key>--analysis_id</key>
-                <value>$;COMPONENT_NAME$;_analysis</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>store config params</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/analysis2bsml</executable>
-            <param>  
-                <key>--ergatis_control_file</key>
-                <value>$;ERGATIS_DIR$;.ini</value>
-            </param>
-            <param>  
-                <key>--conf</key>
-                <value>$;COMPONENT_CONFIG$;</value>
-            </param>
-            <param>  
-                <key>--bsml_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.changed.bsml</value>
-            </param>
             <param>  
                 <key>--componenturl</key>
                 <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
@@ -142,18 +42,7 @@
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.all.bsml</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>dtd validation</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/dtdValid.pl</executable>
-            <param>  
-                <key>-d</key>
-                <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
-            </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.changed.bsml</arg>
+            <arg>$;I_FILE_PATH$;</arg>
         </command>
     </commandSet>
 </commandSetRoot>
