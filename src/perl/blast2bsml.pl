@@ -8,11 +8,11 @@ no lib ".";
 
 =head1  NAME 
 
-wu-blast2bsml.pl  - convert raw blast output to BSML documents
+blast2bsml.pl  - convert raw blast output to BSML documents
 
 =head1 SYNOPSIS
 
-USAGE:  wu-blast2bsml.pl -i blastp.raw -o blastp.bsml -q /path/to/query_file.fsa -l /path/to/logfile.log
+USAGE:  blast2bsml.pl -i blastp.raw -o blastp.bsml -q /path/to/query_file.fsa -l /path/to/logfile.log
 
 =head1 OPTIONS
 
@@ -37,6 +37,8 @@ B<--pvalue,-p> Maximum P-value at and above which to exclude HSPs (optional)
 B<--filter_hsps_for_stats,-F> Whether to filter the HSPs by best Sum(P) when calculating the %id/coverage/similarity for the seq-pair-alignment
 
 B<--class,-c> The ref/comp sequence type.  Default is 'assembly'
+
+B<--split,-s> Split the output into one file per query sequence even if the BLAST output represents multiple query sequences.  Default is off.
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -84,6 +86,7 @@ my $results = GetOptions (\%options,
                           'log|l=s',
                           'debug|d=s',
                           'analysis_id|a=s',
+			  'split=s',
                           'bsml_dir|d=s', ## deprecated.  keeping for backward compat (for now)
                           'max_hsp_count|m=s',
                           'max_alignment_count|M=s',
@@ -157,8 +160,16 @@ my $in = new Bio::SearchIO(-format => 'blast',
 
 ## open the output file:
 ##open (my $ofh, ">$options{output}") || $logger->logdie("can't create output file for BLAST report: $!");
-my $doc = new BSML::BsmlBuilder();
-$doc->makeCurrentDocument();
+my $currdoc;
+my $docs = {};
+
+if(exists $options{'split'} && $options{'split'}){
+    
+}
+else{
+    $currdoc = new BSML::BsmlBuilder();
+    $currdoc->makeCurrentDocument();
+}
 
 my $hsplookup = {};
 my @hsp_ref_array;
@@ -252,8 +263,17 @@ RESULT: while( my $result = $in->next_result ) {
         }
     }
     if ($hsp_counter == 0) {
+	if(exists $options{'split'} && $options{'split'}){
+	    my $queryname = $result->query_name();
+	    if(!exists $docs->{$queryname}){
+		my $doc = new BSML::BsmlBuilder();
+		$docs->{$queryname} = $doc;
+	    }
+	    $docs->{$queryname}->makeCurrentDocument();
+	    $currdoc = $docs->{$queryname};
+	}
         my $align = &createAndAddNullResult(
-                                            doc             => $doc,
+                                            doc             => $currdoc,
                                             query_name      => $result->query_name(),
                                             query_length    => $result->query_length(),
                                             class           => $class,
@@ -263,9 +283,7 @@ RESULT: while( my $result = $in->next_result ) {
 
     my $qual_stats = {};
     foreach my $query (keys %{$hsplookup}){
-        #   print "Query: $query\n";
         foreach my $subject (keys %{$hsplookup->{$query}}) {
-        #   print "Subject: $subject\n";
             my @hsps = sort {$a->{'pvalue'} <=> $b->{'pvalue'}} @{$hsplookup->{$query}->{$subject}};
             my $maxhsp;
             if ($options{'max_hsp_count'} ne "") {
@@ -378,8 +396,17 @@ RESULT: while( my $result = $in->next_result ) {
                 my $orig_dbmatch_accession = $btab[5];
                 #$btab[5] =~ s/[^a-z0-9\_\.\-]/_/gi;
 
+		if(exists $options{'split'} && $options{'split'}){
+		    my $queryname = $btab[0];
+		    if(!exists $docs->{$queryname}){
+			my $doc = new BSML::BsmlBuilder();
+			$docs->{$queryname} = $doc;
+		    }
+		    $docs->{$queryname}->makeCurrentDocument();
+		    $currdoc = $docs->{$queryname};
+		}
                 my $align = &createAndAddBlastResultLine(
-                              doc                => $doc,
+                              doc                => $currdoc,
                               query_name         => $btab[0],
                               date               => $btab[1],
                               query_length       => $btab[2],
@@ -408,11 +435,11 @@ RESULT: while( my $result = $in->next_result ) {
                               orig_dbmatch_accession     => $orig_dbmatch_accession
                                                     );
 
-                my $seq = $doc->returnBsmlSequenceByIDR($btab[5]);
+                my $seq = $currdoc->returnBsmlSequenceByIDR($btab[5]);
 
             }
             if ($queryid) {
-                my $seq = $doc->returnBsmlSequenceByIDR($queryid);
+		my $seq = $currdoc->returnBsmlSequenceByIDR($queryid);
             }
         }
     }
@@ -421,15 +448,34 @@ my $algorithm = $options{analysis_id};
 if ( $options{analysis_id} =~ /(.+)_analysis/ ) {
     $algorithm = $1;
 }
-    
-$doc->createAndAddAnalysis(
-                            id => $options{analysis_id},
-                            sourcename => $options{'output'},
-                            algorithm => $algorithm,
-                            program => $algorithm,
-                          );
 
-$doc->write($options{'output'}, '', $options{'gzip_output'});
+if(exists $options{'split'} && $options{'split'}){
+    foreach my $query (keys %$docs){
+	my $dname = `dirname $options{'output'}`;
+	chomp $dname;
+	my $outputfile = "$dname/$query.bsml";
+	$outputfile =~ s/\|/_/g;
+	my $doc = $docs->{$query};
+	$doc->makeCurrentDocument();
+	$doc->createAndAddAnalysis(
+	    id => $options{analysis_id},
+	    sourcename => $outputfile,
+	    algorithm => $algorithm,
+	    program => $algorithm,
+	    );
+	#print STDERR "Writing $query to $outputfile\n";
+	$doc->write($outputfile, '', $options{'gzip_output'});
+    }
+}
+else{
+    $currdoc->createAndAddAnalysis(
+	id => $options{analysis_id},
+	sourcename => $options{output},
+	algorithm => $algorithm,
+	program => $algorithm,
+	);
+    $currdoc->write($options{'output'}, '', $options{'gzip_output'});
+}
 
 exit(0);
 

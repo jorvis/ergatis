@@ -27,6 +27,10 @@
                 <key>--output</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
             </param>
+	    <param>
+                <key>--split</key>
+                <value>$;SPLIT_BTAB$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -60,6 +64,10 @@
             <param>
                 <key>--analysis_id</key>
                 <value>$;COMPONENT_NAME$;_analysis</value>
+            </param>
+	    <param>
+                <key>--split</key>
+                <value>$;SPLIT_BSML$;</value>
             </param>
             <param>
                 <key>--gzip_output</key>

@@ -6,11 +6,11 @@ no lib ".";
 
 =head1 NAME
 
-wu-blast2btab.pl - convert a raw wu-blast output file to btab.
+blast2btab.pl - convert a raw wu-blast output file to btab.
 
 =head1 SYNOPSIS
 
-USAGE: wu-blast2btab.pl 
+USAGE: blast2btab.pl 
             --input=/path/to/input_file.raw
             --output=/path/to/output_file.btab
           [ --log=/path/to/logfile
@@ -24,6 +24,9 @@ B<--input,-i>
 
 B<--output,-o>
     The file to which the parsed output will be written.
+
+B<--split,-s>
+    Split output to one file per query. Writes files with names basename --output/queryname.btab
 
 B<--debug,-d> 
     Debug level.  Use a large number to turn on verbose debugging. 
@@ -93,8 +96,9 @@ my %options = ();
 my $results = GetOptions (\%options, 
                           'input|i=s',
                           'output|o=s',
+			  'split|s=s',
                           'log|l=s',
-                          'debug|d=s',
+			  'debug|d=s',
                           'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -124,8 +128,14 @@ my $in = new Bio::SearchIO(-format => 'blast',
                            -fh     => $ifh);
 
 ## open the output file:
-open (my $ofh, ">$options{output}") || $logger->logdie("can't create output file for BLAST report: $!");
+my $outputs = {};
+my $currofh;
+if(exists $options{'split'} && $options{'split'}){
 
+}
+else{
+    open ($currofh, ">$options{output}") || $logger->logdie("can't create output file for BLAST report: $!");
+}
 # parse each blast record:
 while( my $result = $in->next_result ) {
 
@@ -184,8 +194,20 @@ while( my $result = $in->next_result ) {
                 $x[20] = &calculate_pvalue( $x[19] );
             }
 
-            my $outline = join ("\t", @x);
-            print $ofh "$outline\n";
+	    my $outline = join ("\t", @x);
+	    if(exists $options{'split'} && $options{'split'}){
+		my $queryname=$x[0];
+		if(!exists $outputs->{$queryname}){
+		    my $dname = `dirname $options{'output'}`;
+		    chomp $dname;
+		    my $outputname = "$dname/$queryname.btab";
+		    my $cofh;
+		    open ($cofh, ">$outputname") || $logger->logdie("can't create output file for BLAST report: $!");
+		    $outputs->{$queryname} = $cofh;
+		}
+		$currofh = $outputs->{$queryname};
+	    }
+            print $currofh "$outline\n";
         }
     }
 }
