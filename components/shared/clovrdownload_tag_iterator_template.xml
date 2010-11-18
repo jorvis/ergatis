@@ -101,15 +101,15 @@
     </param>
     <param>  
 	<key>--keys</key>
-	<value>ITERATOR_NAME=i1,ITERATOR_XML=DOWNLOAD_TAG_ITERATOR_XML</value>
+	<value>ITERATOR_NAME=i1,ITERATOR_XML=$;DOWNLOAD_TAG_ITERATOR_XML$;</value>
     </param>
     <param>  
 	<key>--distribopts</key>
 	<value>nodistrib=$;NODISTRIB$;</value>
     </param>
     <param>
-        <key>--sgespec</key>
-        <value>&lt;queue&gt;harvesting.q&lt;/queue&gt;</value>
+        <key>--dcespec</key>
+        <value>"&lt;queue&gt;harvesting.q&lt;/queue&gt;"</value>
     </param>
     <param>
 	<key>stdout</key>
