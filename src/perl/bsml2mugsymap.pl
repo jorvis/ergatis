@@ -233,7 +233,7 @@ sub process_feature_group
         if($gene_feat) {
             my @xrefs = $gene_feat->children('Cross-reference');
             map {
-                if(($_->att('identifier-type')) && ($_->att('identifier-type') eq 'locus')) {
+                if(($_->att('identifier-type')) && ($_->att('identifier-type') eq 'locus') && $_->att('identifier') ne "") {
                     $gene_val = $_->att('identifier');
                 }
                 elsif(($_->att('database')) && ($_->att('database') eq 'NCBILocus')) {
@@ -243,7 +243,7 @@ sub process_feature_group
         }
         last if $gene_val ne '-';
     }
-
+    die "Unable to set name for gene: ",$gene->att('id') if($gene_val eq '-' || $gene_val eq '');
     if($pid) {
         push(@$output_features, {'start'          => $fmin,
                                  'stop'           => $fmax,
