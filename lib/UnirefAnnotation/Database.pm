@@ -18,12 +18,10 @@ sub get_annotation {
     my $udb = $self->{'_db'};
 
     my $clust_id = $udb->get_cluster_id_by_acc( $cluster_acc );
-    die("Could not find cluster with accession: $cluster_acc")
-        unless( defined( $clust_id ) );
+    return [] unless( defined( $clust_id ) );
     
     my %assertions = $udb->get_cluster_assertions( $clust_id );
-    die("Cluster did not have any assertions: $cluster_acc [$clust_id]")
-        unless( keys %assertions );
+    return [] unless( keys %assertions );
 
     return \%assertions;
 }
@@ -33,8 +31,7 @@ sub is_trusted {
     my $udb = $self->{'_db'};
 
     my $clust_id = $udb->get_cluster_id_by_acc( $cluster_acc );
-    die("Could not find cluster with accession: $cluster_acc")
-        unless( defined( $clust_id ) );
+    return 0 unless( defined( $clust_id ) );
     
     return $udb->cluster_is_trusted( $clust_id );
 }

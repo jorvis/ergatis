@@ -8,8 +8,8 @@ use File::OpenFile qw( open_file );
 use Carp qw(cluck);
 use PFunc::EvidenceParser::ConservedHypothetical;
 use PFunc::Annotation;
-use lib("/export/svn/kgalens/annotation/create_tchar/lib");
-use UnirefClusters::Database;
+use UnirefAnnotation::Lookup;
+#use UnirefClusters::Database;
 use Data::Dumper;
 
 use base qw(PFunc::EvidenceParser);
@@ -53,13 +53,17 @@ sub _init_ber_parser {
     $self->{'_seq_ids'} = {};
     $self->{'_sequence_titles'} = {};
 
-    ## make the uniref clusters object
-    if( $args{'username'} && $args{'password'} ) {
-        $self->{'_uniref_clusters_annot'} = new UnirefClusters::Database( "username" => $args{'username'},
-                                                                          "password" => $args{'password'} );
-    } else {
-        die("Username and password arguments are required");
-    }
+    ## make the uniref clusters object    
+    if( $args{'char_db'} ) {
+        $self->{'_uniref_clusters_annot'} = new UnirefAnnotation::Lookup("path=$args{'char_db'}");
+    } elsif( $args{'username'} && $args{'password'} ) {
+        $self->{'_uniref_clusters_annot'} = new UnirefAnnotation::Lookup("username=$args{'username'} ".
+                                                                         "password=$args{'password'}");
+   } else {
+       die("Must provide path to characterized db (char_db) or ".
+           "username and password for mysql db");
+   }
+
     
 }
 
@@ -150,9 +154,7 @@ sub _handle_seq_pair_alignment {
 
     ## Grab the cluster id and see if the match is characterized
     my $db = $self->{'_uniref_clusters_annot'};
-    my $cluster_id = $db->get_cluster_id_by_acc( $comp_id );
-    return unless( defined( $cluster_id ) );
-    my $comp_trusted = $db->cluster_is_trusted( $cluster_id );
+    my $comp_trusted = $db->is_trusted( $comp_id );
     
     ## assign confidence level
     my ($query_coverage, $subject_coverage) = $self->_calculate_spr_coverage( $ref_id, $comp_id, $spa );
@@ -164,7 +166,7 @@ sub _handle_seq_pair_alignment {
                $confidence_level eq 'BER::characterized::partial::partial' );
 
     ## get the annotation related to the compseq
-    my $comp_annot = $self->_get_compseq_annotation( $comp_id, $cluster_id, $confidence_level );
+    my $comp_annot = $self->_get_compseq_annotation( $comp_id, $confidence_level );
 
     ## -> Skip matches that contain the words 'hypothetical' in the common name
     ## -> Skip matches that don't have a common name
@@ -287,34 +289,31 @@ sub _assign_annotation {
 ## Grabs the annotation from the database and creates
 ## an annotation object from it.
 sub _get_compseq_annotation {
-    my ($self, $comp_id, $cluster_id, $confidence_level) = @_;
+    my ($self, $comp_id, $confidence_level) = @_;
 
     my $db = $self->{'_uniref_clusters_annot'};
-    my %assertions = $db->get_cluster_assertions( $cluster_id );
+    my $assert_array = $db->get_annotation( $comp_id );
+    my %assertions = ();
 
     ## make the annotation object
     ## just set the feature id to the compseq id.  This will be changed later.
     my $ret_annot = new PFunc::Annotation( 'feature_id' => $comp_id );
 
-    ## set the non-array fields from the assertion
-    foreach my $field_set ( ( ['gene_product_name', 'common_name'], ['gene_symbol', 'gene_symbol'] ) ) {
-        my $field = $field_set->[0];
-        my $assert_key = $field_set->[1];
-        next unless( exists( $assertions{$assert_key} ) );
-        $ret_annot->set( $field, $assertions{$assert_key}->{'value'},
-                         $comp_id, $confidence_level );
-    }
+    map {
+        
+        #initialize to empty array ref
+        $assertions{$_->{'type'}} = [] unless( exists $assertions{$_->{'type'}} );
 
-    ## store the array field from the assertion
-    foreach my $field ( qw(EC GO) ) {
-        next unless( exists( $assertions{$field} ) );
-        my $value = [];
-        map { push(@{$value}, $_->{'value'} ); } @{$assertions{$field}};
-        $ret_annot->set( $field, $value, $comp_id, 
-                         $confidence_level );
+        #push on values.
+        push( @{$assertions{$_->{'type'}}}, $_->{'value'} );
+        
+    } @{$assert_array};
+    
+    foreach my $type ( keys %assertions ) {
+        my $field = $type;
+        $field = "gene_product_name" if( $type eq 'common_name' );
+        $ret_annot->set( $field, $assertions{$type}, $comp_id, $confidence_level );
     }
-
-    ## And no TIGR Roles as of now. Because they're just awful.
 
     return $ret_annot;
     
