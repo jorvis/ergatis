@@ -3,7 +3,7 @@ package UnirefAnnotation::Database;
 use strict;
 use warnings;
 use Data::Dumper;
-use UnirefClusters;
+use UnirefAnnotation::DBUtil;
 
 sub new {
     my ($class, %opts) = @_;
@@ -49,9 +49,9 @@ sub _init {
     my $test = 0;
     $test = $opts->{'test'} if( exists( $opts->{'test'} ) );
 
-    my $db = new UnirefClusters( 'username' => $opts->{'username'},
-                                  'password' => $opts->{'password'},
-                                  'testt' => $test );
+    my $db = new UnirefAnnotation::DBUtil( 'username' => $opts->{'username'},
+                                           'password' => $opts->{'password'},
+                                           'testt' => $test );
     $self->{'_db'} = $db;
                                                  
 }

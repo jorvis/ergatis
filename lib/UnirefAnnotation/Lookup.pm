@@ -2,19 +2,19 @@ package UnirefAnnotation::Lookup;
 
 use strict;
 use warnings;
-use PolypeptideAnnotation::Database;
-use PolypeptideAnnotation::NestedDB;
+use UnirefAnnotation::Database;
+use UnirefAnnotation::NestedDB;
 
 use Data::Dumper;
 
 my $OPTIONS = {
-    'PolypeptideAnnotation::Database' => 
+    'UnirefAnnotation::Database' => 
     {
         "username" => { 'required' => 1 },
         "password" => { 'required' => 1 },
         "test" => { 'required' => 0, 'default' => 1 },
     },
-    'PolypeptideAnnotation::NestedDB' =>
+    'UnirefAnnotation::NestedDB' =>
     {
         "path" => { 'required' => 1 }
     }
