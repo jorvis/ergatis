@@ -18,45 +18,46 @@
             <state>incomplete</state>
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
-        </command>        
-        <command>
-            <type>RunDistributedCommand</type>
-            <name>analyze overlaps</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/overlap_analysis</executable>
-            <param>  
-                <key>--input_list</key>
-                <value>&quot;$;BSML_INPUT_LIST$;&quot;</value>
-            </param>
-            <param>  
-                <key>--input_file</key>
-                <value>&quot;$;BSML_INPUT_FILE$;&quot;</value>
-            </param>
-            <param>  
-                <key>--rna_bsml</key>
-                <value>$;RNA_BSML$;</value>
-            </param>
-            <param>  
-                <key>--evidence_bsml</key>
-                <value>$;EVIDENCE_BSML$;</value>
-            </param>
-            <param>  
-                <key>--output_directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>  
-                <key>--cutoff</key>
-                <value>$;CUTOFF$;</value>
-            </param>
-            <param>  
-                <key>--flagged_overlaps_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/flagged_overlaps.txt</value>
-            </param>
-            <param>  
-                <key>--log</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.log</value>
-            </param>
-        </command>
+        </command>       
+	<command>
+    <type>RunUnixCommand</type>
+    <name>replace template keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>
+        <key>--template_xml</key>
+        <value>$;DOCS_DIR$;/overlap_analysis_distributed.xml</value>
+    </param>
+    <param>
+        <key>--component_conf</key>
+        <value>$;COMPONENT_CONFIG$;</value>
+    </param>
+    <param>
+        <key>--output_xml</key>
+        <value>$;WORKFLOW_REPOSITORY$;/overlap_analysis_distributed.xml</value>
+    </param>
+    <param>
+        <key>--distribopts</key>
+        <value>nodistrib=$;NODISTRIB$;</value>
+    </param>
+    <param>
+        <key>stdout</key>
+        <value>$;TMP_DIR$;/replace_template_keys.stdout</value>
+    </param>
+    <param>
+        <key>stderr</key>
+        <value>$;TMP_DIR$;/replace_template_keys.stderr</value>
+    </param>
+</command>
+
+	<commandSet type="remote-serial"> 
+		<state>incomplete</state>
+                <name>analyze overlaps</name>
+                <fileName>$;WORKFLOW_REPOSITORY$;/overlap_analysis_distributed.xml</fileName>
+                <dceSpec type="sge">
+                        <OS>linux</OS>
+                </dceSpec>
+	</commandSet>
         <command>
             <type>RunUnixCommand</type>
             <name>create bsml list</name>

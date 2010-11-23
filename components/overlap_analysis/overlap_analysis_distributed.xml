@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot type="instance">
+  <commandSet type="serial">
+        <state>incomplete</state>
+        <name>grouped sub flow</name>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>analyze overlaps</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/overlap_analysis</executable>
+            <param>
+                <key>--input_list</key>
+                <value>&quot;$;BSML_INPUT_LIST$;&quot;</value>
+            </param>
+            <param>
+                <key>--input_file</key>
+                <value>&quot;$;BSML_INPUT_FILE$;&quot;</value>
+            </param>
+            <param>
+                <key>--rna_bsml</key>
+                <value>$;RNA_BSML$;</value>
+            </param>
+            <param>
+                <key>--evidence_bsml</key>
+                <value>$;EVIDENCE_BSML$;</value>
+            </param>
+            <param>
+                <key>--output_directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--cutoff</key>
+                <value>$;CUTOFF$;</value>
+            </param>
+            <param>
+                <key>--flagged_overlaps_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/flagged_overlaps.txt</value>
+            </param>
+            <param>
+                <key>--log</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.log</value>
+            </param>
+        </command>
+  </commandSet>
+</commandSetRoot>
