@@ -6,6 +6,21 @@
         <name>grouped sub flow</name>
 	<command>
             <type>RunUnixCommand</type>
+            <name>mkdir</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+		<arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+	</command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>mkdir</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+                <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+	
+	<command>
+            <type>RunUnixCommand</type>
             <name>analyze overlaps</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/overlap_analysis</executable>
