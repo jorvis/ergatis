@@ -106,7 +106,7 @@ foreach my $tag_name (keys %$files_to_tag) {
     close FILE;
     my $cmd = $TAG_DATA_EXEC;
     if($$meta_data{$tag_name}{'key_vals_exist'}) {
-	$cmd .= " -o --tag-name " . $tag_name . " -m" . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
+	$cmd .= " -o --tag-name " . $tag_name . " -m " . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
     }
     else{
 	$cmd .= " -o --tag-name " . $tag_name;
