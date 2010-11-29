@@ -48,6 +48,10 @@
                 <value>&apos;$;CHARACTERIZED_DB$;&apos;</value>
             </param>
             <param>
+                <key>--hmm_coding_db</key>
+                <value>$;HMM_CODING_DB$;</value>
+            </param>
+            <param>
                 <key>--username</key>
                 <value>&apos;$;DB_USERNAME$;&apos;</value>
             </param>

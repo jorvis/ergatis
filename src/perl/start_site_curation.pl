@@ -13,6 +13,7 @@ start_site_curation.pl - Looks at the start sites of genes in a bsml file and wi
        --output_bsml=/path/to/output.all.bsml
        --evidence=/path/to/ber.bsml.list
        --char_db=/path/to/tchar.db
+       --hmm_coding_db=/path/to/coding_hmm.lib.db
        --username=user
        --password=pass
        --ber_extension=300
@@ -44,6 +45,9 @@ B<--evidence,-e>
 B<--char_db,-c>
     OPTIONAL. Stored hash of characterized proteins. If not specified, will not score
     characterized proteins more
+
+B<--hmm_coding_db,-M>
+    REQUIRED. Used to make sure that HMM matches pass cutoff scores.
 
 B<--ber_extension,-b>
     OPTIONAL. Default = 300.  The number of nucleotides used in the ber extension
@@ -194,6 +198,7 @@ my @evidence_files;
 my %evidence;
 my %feature_relationships;
 my %characterized;
+my $hmm_coding_db;
 my %changed_start_sites;
 my $poly_lookup;
 #######################################
@@ -205,6 +210,7 @@ my $results = GetOptions (\%options,
                           'evidence|e=s',
                           'ber_extension|b=s',
                           'char_db|c=s',
+                          'hmm_coding_db|M=s',
                           'username|u=s',
                           'password|a=s',
                           'percent_identity_cutoff|p=s',
@@ -785,7 +791,8 @@ sub parse_evidence_files {
         print "$count/$total\r";
 
         my $af = new BSML::BsmlAlignmentFilter( { 
-            'file' => $evidence_file
+            'file' => $evidence_file,
+            'hmm_data' => $hmm_coding_db
             });
 
         $af->add_filter( 'p_value', "-".$p_value_cutoff );
@@ -943,6 +950,12 @@ sub check_options {
    } else {
        $logger->logdie("Must provide path to characterized db (--char_db) or ".
                        "--username and --password for mysql db");
+   }
+
+   if( $opts->{'hmm_coding_db'} ) {
+       $hmm_coding_db = $opts->{'hmm_coding_db'};
+   } else {
+       $logger->logdie("Must provide path to hmm_coding_db [--hmm_coding_db]");
    }
 
    if( $opts->{'ber_extension'} ) {
