@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>gff3_to_gbrowse compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>gff32GBrowse</name>
+            <state>incomplete</state>
+            <executable>$;PYTHON_EXEC$; $;BIN_DIR$;/gff3_to_gbrowse.py</executable>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+            </param>
+            <param>
+                <key>--input_gff3_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--input_sam_file</key>
+                <value>$;SAM_FILE$;</value>
+            </param>
+            <param>
+                <key>--gbrowse_conf_template</key>
+                <value>$;GBROWSE_CONF_TEMPLATE$;</value>
+            </param>
+            <param>
+                <key>--organism</key>
+                <value>"$;ORGANISM$;"</value>
+            </param>
+            <param>
+                <key>--gbrowse_master_conf</key>
+                <value>$;GBROWSE_MASTER_CONF$;</value>
+            </param>
+            <param>
+                <key>--gbrowse_conf_dir</key>
+                <value>$;GBROWSE_CONF_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--database</key>
+                <value>"$;DB_NAME$;"</value>
+            </param>
+            <param>
+                <key>--hostname</key>
+                <value>$;HOSTNAME$;</value>
+            </param>
+            <param>
+                <key>--username</key>
+                <value>$;USERNAME$;</value>                                                                                                                                
+            </param>
+            <param>
+                <key>--password</key>
+                <value>$;PASSWORD$;</value>
+            </param>                
+        </command>
+    </commandSet>
+</commandSetRoot>

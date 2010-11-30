@@ -1,5 +1,6 @@
 next
 ----
+-gff3_to_gbrowse: new component
 -bowtie: new component
 -bsml2gff3 - Added gbrowse_dbxref_map parameter
 -mugsyalig_distributed_work.xml, j_ortholog_clusters_distributed_work.xml, pangenome_blast_parse_distributed_work.xml, pangenome_do_analysis_distributed_work.xml: added these xmls that contain distributed commands
