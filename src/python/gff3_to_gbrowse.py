@@ -11,7 +11,7 @@ import subprocess
 
 from shutil import copy
 from tempfile import gettempdir
-from filelock import FileLock, FileLockException
+from igs.utils.filelock import FileLock, FileLockException
 
 ##
 # Regex to find variables in a string so we can replace on them
