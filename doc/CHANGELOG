@@ -1,5 +1,7 @@
 next
 ----
+-bowtie: Updated component to make use of an iterator
+-bowtie_build: Updated component to make use of an iterator
 -mugsycog.xml: removed all the commands and added them into mugsycog_distributed_work.xml so that all these memory intensive ones will be run on exec node
 -gff3_to_gbrowse: new component
 -bowtie: new component

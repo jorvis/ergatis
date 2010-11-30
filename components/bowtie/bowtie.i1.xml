@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bowtie compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>bowtie</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bowtie</executable>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+            <param>
+                <key>--reads</key>
+                <value>$;READS$;</value>
+            </param>
+            <param>
+                <key>--bowtie_exec</key>
+                <value>$;BOWTIE_EXEC$;</value>
+            </param>
+            <param>
+                <key>--reference</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--sam_output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sam</value>
+            </param>
+            <param>
+                <key>--max_insert</key>
+                <value>$;X$;</value>
+            </param>
+            <param>
+                <key>--max_mismatches</key>
+                <value>$;V$;</value>
+            </param>
+            <param>
+                <key>--max_aligns</key>
+                <value>$;M$;</value>
+            </param>
+            <param>
+                <key>--more_options</key>
+                <value>$;OTHER_OPTS$;</value>                                                                             
+            </param>                
+        </command>
+    </commandSet>
+</commandSetRoot>

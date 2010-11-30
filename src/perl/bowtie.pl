@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 bowtie.pl - run the bowtie short-read aligner
@@ -53,9 +56,21 @@ my $max_mismatches = $options{'max_mismatches'};
 my $max_aligns = $options{'max_aligns'};
 my $more_options = $options{'more_options'};
 
+## Our list file does not directly reference the bowtie indices (these have extension of ebwt) but instead 
+## contain a list of placeholder files (idx files) which can be parsed to produce the path to the reference
+## that bowtie understands. 
+##
+## e.x. reference files = e_coli.ebwt, e_coli.1.ebwt, e_coli.2.ebwt, e_coli.rev.1.ebwt
+##      idx file = e_coli.idx
+##
+##      (the reference passed to the bowtie executble would be /path/to/e_coli with no extension)
+##
+## e.x. bowtie -S /local/references/e_coli sequences_1.fastq /local/reads/sequences.fastq /local/output/sequences.sam
+$reference =~ s/\.idx$//;
+
 if($reads =~ /,/g){ #paired end reads
     my @p = split(",", $reads);
-    system("$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 $p[0] -2 $p[1] $sam_output");
+    system("$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 " . trim($p[0]) . " -2 " . trim($p[1]) . " $sam_output");
 
 }
 else{ #unpaired reads
@@ -75,5 +90,15 @@ sub check_parameters {
     $options{max_insert}   = 300  unless ($options{output_subdir_size});
     $options{max_mismatches} = 2 unless ($options{output_subdir_prefix});
     $options{max_aligns}        = 1  unless ($options{seqs_per_file});
+}
+
+#-------------------------------------
+# Trims whitespace from a string
+#-------------------------------------
+sub trim {
+    my $string = shift;
+    $string =~ s/^\s+//;
+    $string =~ s/\s+$//;
+    return $string;
 }
 
