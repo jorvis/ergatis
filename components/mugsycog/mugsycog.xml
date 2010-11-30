@@ -20,134 +20,46 @@
 	    <arg>-p -m 777 $;TMP_DIR$;</arg>
 	</command>
 	<!--Processing-->
-	<command>
-	    <type>RunUnixCommand</type>
-	    <name>add mugsymap features to mugsy index</name>
-	    <state>incomplete</state>
-	    <executable>$;MUGSY_EXEC$;/featureindex.pl $;MUGSY_INDEX$; $;OTHER_OPTS$;</executable>
-		<param>
-	        <key>stdin</key>
-		<value>$;MUGSY_MAP_FILE$;</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;OUTPUT_DIRECTORY$;/featuresindex.out</value>
-	    </param>
-    </command>
-	<command>
-	    <type>RunUnixCommand</type>
-	    <name>fix maf</name>
-	    <state>incomplete</state>
-	    <executable>perl -ne 's/^s\s+[^\.]+\.(\S+)/s $1/;print' </executable>
-		<param>
-        <key>stdin</key>
-		<value>$;MUGSY_ALIGNMENT$;</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;FIXED_MUGSY_ALIGNMENT$;</value>
-	    </param>
-    </command>
-	<command>
-	    <type>RunUnixCommand</type>
-	    <name>index alignment</name>
-	    <state>incomplete</state>
-	    <executable>$;MUGSY_EXEC$;/mafindex.pl $;MUGSY_INDEX$;</executable>
-	    <param>
-		<key>stdin</key>
-		<value>$;FIXED_MUGSY_ALIGNMENT$;</value>
-	    </param>
-	    <param>
-		<key>stdout</key>
-		<value>$;OUTPUT_DIRECTORY$;/mafindex.stdout</value>
-	    </param>
-    </command>
-    <command>
-        <type>RunUnixCommand</type>
-        <name>copy fasta</name>
-        <state>incomplete</state>
-        <executable>cp $;GENOMIC_MULTIFASTA$; $;GENOMIC_FASTA_COPY$;</executable>
-    </command>
-	<command>
-	    <type>RunUnixCommand</type>
-	    <name>map features to alignment</name>
-	    <state>incomplete</state>
-	    <executable>$;MUGSY_EXEC$;/mapfeatures.pl $;MUGSY_INDEX$; $;GENOMIC_FASTA_COPY$; $;OTHER_OPTS$;</executable>
-	<param>
-	  <key>--map_file</key>
-	  <value>$;MUGSY_MAP_FILE$;</value>
-	</param>
-	<param>
-        <key>--coverage</key>
-        <value>$;COVERAGE$;</value>
-        </param>
-        <param>
-        <key>--identity</key>
-        <value>$;IDENTITY$;</value>
-        </param>
-        <param>
-        <key>--query_coverage</key>
-        <value>$;QUERY_COVERAGE$;</value>
-        </param>
-	<param>
-	<key>stdout</key>
-	<value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
-	</param>
-    </command>
-    <!-- next step is to cog2fasta -->
-    <command>
-      <type>RunUnixCommand</type>
-      <name>cogs2fasta</name>
-      <state>incomplete</state>
-      <executable>$;BIN_DIR$;/CogProteinFasta</executable>
-      <param>
-        <key>--cogFile</key>
-        <value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
-      </param>
-      <param>
-        <key>--bsmlModelList</key>
-        <value>$;BSML_FILE_LIST$;</value>
-      </param>
-      <param>
-        <key>--outputDir</key>
-        <value>$;OUTPUT_DIRECTORY$;/fasta/</value>
-      </param>
-      <param>
-        <key>--maxCogSeqCount</key>
-        <value>$;MAX_MULTI_ALIGNMENT$;</value>
-      </param>
-      <param>
-        <key>--use_feature_ids_in_fasta</key>
-        <value>'$;USE_FEATURE_IDS_IN_FASTA$;'</value>
-      </param>
-      <param>
+<!-- hack to make sure these following commands will run other than master node -->
+<command>
+    <type>RunUnixCommand</type>
+    <name>replace template keys</name>
+    <state>incomplete</state>
+    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+    <param>
+        <key>--template_xml</key>
+        <value>$;DOCS_DIR$;/mugsycog_distributed_work.xml</value>
+    </param>
+    <param>
+        <key>--component_conf</key>
+        <value>$;COMPONENT_CONFIG$;</value>
+    </param>
+    <param>
+        <key>--output_xml</key>
+        <value>$;WORKFLOW_REPOSITORY$;/mugsycog_distributed_work.xml.gz</value>
+    </param>
+    <param>
+        <key>--distribopts</key>
+        <value>nodistrib=$;NODISTRIB$;</value>
+    </param>
+    <param>
         <key>stdout</key>
-        <value>$;TMP_DIR$;/CogProteinFasta.stdout</value>
-      </param>
-      <param>
+        <value>$;TMP_DIR$;/replace_template_keys.stdout</value>
+    </param>
+    <param>
         <key>stderr</key>
-        <value>$;TMP_DIR$;/CogProteinFasta.stderr</value>
-      </param>
-    </command>
-    
-    <!--Postprocessing-->
-    <command>
-      <type>RunUnixCommand</type>
-      <name>create fasta list</name>
-      <state>incomplete</state>
-      <executable>$;BIN_DIR$;/create_list_file</executable>
-      <param>
-        <key>--directory</key>
-        <value>$;OUTPUT_DIRECTORY$;/fasta</value>
-      </param>
-      <param>
-        <key>--regex</key>
-        <value>".*\.fsa"</value>
-      </param>
-      <param>
-        <key>--output_list</key>
-        <value>$;FASTA_OUTPUT_LIST$;</value>
-      </param>
-    </command>
+        <value>$;TMP_DIR$;/replace_template_keys.stderr</value>
+    </param>
+</command>
+<commandSet type="remote-serial">
+                <state>incomplete</state>
+                <name>mugsycog distributed work</name>
+                <fileName>$;WORKFLOW_REPOSITORY$;/mugsycog_distributed_work.xml.gz</fileName>
+                <dceSpec type="sge">
+                        <OS>linux</OS>
+                </dceSpec>
+        </commandSet>
   </commandSet>
 </commandSetRoot>
+
+
