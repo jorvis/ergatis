@@ -11,6 +11,7 @@ import subprocess
 
 from shutil import copy
 from tempfile import gettempdir
+from filelock import FileLock, FileLockException
 
 ##
 # Regex to find variables in a string so we can replace on them
@@ -75,17 +76,12 @@ def openDatabaseConnection(hostname, username, dbpass):
     connection = MySQLdb.connect(host=hostname, user=username, passwd=dbpass)
     return connection
 
-def createAndInitializeDatabase(conn, rawDBName):
+def createAndInitializeDatabase(conn, dbName):
     """
     Utility function that creates a database on the provided host (using he supplied
     username and password) and ensures that permissions are set correctly to allow the 
     gmod and www-data users to work on the database.
     """
-
-    # We want to double check and make sure we replace all spaces in our database names
-    # with underscores so that the following statements don't fail
-    dbName = rawDBName.replace(' ', '_')
-
     cursor = conn.cursor()
     cursor.execute("CREATE DATABASE %s" % dbName)
     cursor.execute("grant all privileges on %s.* to gmod@localhost" % dbName)
@@ -164,15 +160,20 @@ def updateGBrowseMasterConfiguration(master_conf, organism, databaseName, dbConf
     
     # Prior to appending to our GBrowse master conf we want to have some insurance
     # in case something screws up so we will copy the conf file to tmp 
-    copy(master_conf, os.path.join( gettempdir(), os.path.basename(master_conf) ))
+    tmpMaster = os.path.join( gettempdir(), os.path.basename(master_conf) )
+    copy(master_conf, tmpMaster)
+    os.chmod(tmpMaster, 0777) # Need to open up permissions here
 
-    master = open(master_conf, 'a')
+    # Implementing a simple form of file locking here to make sure that we 
+    # don't run into a race condition while writing to the master conf
+    with FileLock(master_conf, timeout=5) as lock:
+        master = open(master_conf, 'a')
 
-    # Create new stanza
-    master.write( gbrowse_db_wrapper % { 'SECTION_NAME': databaseName,
-                                         'DESCRIPTION': organism,
-                                         'CONF_FILENAME': os.path.basename(dbConf) } )
-    master.close()
+        # Create new stanza
+        master.write( gbrowse_db_wrapper % { 'SECTION_NAME': databaseName,
+                                             'DESCRIPTION': organism,
+                                             'CONF_FILENAME': os.path.basename(dbConf) } )
+        master.close()
 
 def checkForDuplicateConfSection(conf, sectionName):
     """
@@ -218,6 +219,9 @@ def main(parser):
     # minimum starting point for this script. Additionally a SAM file can be provided
     # that will be mapped against the annotations + sequence loaded.
     dbConn = None
+    
+    # We want to make sure we have no spaces in our database name
+    dbName = parser.database.replace(' ', '_')
 
     try:
         # Open a connection to the MySQL server for the database operations that will be used
@@ -225,35 +229,39 @@ def main(parser):
         dbConn = openDatabaseConnection(parser.hostname, parser.username, parser.password)
 
         # Start out by creating the database we will use and setting the proper permissions
-        createAndInitializeDatabase(dbConn, parser.database)
+        createAndInitializeDatabase(dbConn, dbName)
         
         # Once our DB has been initialized we want to load our GFF3 and FASTA files into the
         # DB
         # TODO: Making a huge assumption here that bioperl and the bp_seqfeature_load script is in 
         # the PATH 
-        subprocess.check_call(["bp_seqfeature_load.pl", "-c", "-f", "-d", parser.database, 
+        subprocess.check_call(["bp_seqfeature_load.pl", "-c", "-f", "-d", dbName, 
                                 "-u", parser.username,
                                 "-p", parser.password,
                                 parser.input_gff3_file])
 
         # Now we need to build our gbrowse config file from the template provided and also append the new
         # entry into the GBrowse master configuration
-        confFile = createGBrowseDBConfiguration(parser.gbrowse_conf_template, parser.gbrowse_conf_dir, parser.organism, parser.database, dbConn)
-        updateGBrowseMasterConfiguration(parser.gbrowse_master_conf, parser.organism, parser.database, confFile)
+        confFile = createGBrowseDBConfiguration(parser.gbrowse_conf_template, parser.gbrowse_conf_dir, parser.organism, dbName, dbConn)
+        updateGBrowseMasterConfiguration(parser.gbrowse_master_conf, parser.organism, dbName, confFile)
     except MySQLdb.Error, e:
         print "Error initializing database: %s (Error No. %d)" % (e.args[1], e.args[0])
-        cleanUp(dbName=parser.database, conn=dbConn)
+        cleanUp(dbName=dbName, conn=dbConn)
         sys.exit(1)
     except subprocess.CalledProcessError, e:
         print "Error loading GFF3 file into database %s (Error No. %d)" % (parser.database, e.returncode)
-        cleanUp(dbName=parser.database, conn=dbConn)
+        cleanUp(dbName=dbName, conn=dbConn)
         sys.exit(1)
     except IOError, e:
         print "Error writing GBrowse configuration files: %s (Error No. %d)" % (e.args[1], e.args[0])
-        cleanUp(dbName=parser.database, conn=dbConn, confFile=confFile, masterConf=parser.gbrowse_master_conf)
+        cleanUp(dbName=dbName, conn=dbConn, confFile=confFile, masterConf=parser.gbrowse_master_conf)
         sys.exit(1)
     except GBrowseConfDuplicateSectionError, e:
         print "Error adding database to GBrowse master configuration file: %s" % e.error_msg
+        cleanUp(dbName=dbName, conn=dbConn, confFile=confFile)
+        sys.exit(1)
+    except FileLockException:
+        print "Error writing to GBrowse master configuration: Could not acquire file lock on file %s" % parser.gbrowse_master_conf
         cleanUp(dbName=parser.database, conn=dbConn, confFile=confFile)
         sys.exit(1)
 
