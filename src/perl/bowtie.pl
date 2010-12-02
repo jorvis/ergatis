@@ -29,14 +29,14 @@ use POSIX;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'bowtie_exec|bin=s',
+                          'bowtie_exec|bin=s',
                           'reference|r=s',
-			  'reads|q=s',
+                          'reads|q=s',
                           'sam_output|o=s',
                           'max_insert|X=s',
                           'max_mismatches|v=s',
                           'max_aligns|m=s',
-			  'more_options|more_options=s',
+                          'more_options|more_options=s',
                           'help|h') || pod2usage();
 
 ## display documentation
@@ -86,7 +86,7 @@ sub check_parameters {
     }
     
     ## handle some defaults
-    $options{bowtie_exec} = "/usr/local/packages/bowtie/bowtie" unless ($options{bowtie});
+    $options{bowtie_exec} = "/usr/local/packages/bowtie/bowtie" unless ($options{bowtie_exec});
     $options{max_insert}   = 300  unless ($options{output_subdir_size});
     $options{max_mismatches} = 2 unless ($options{output_subdir_prefix});
     $options{max_aligns}        = 1  unless ($options{seqs_per_file});
