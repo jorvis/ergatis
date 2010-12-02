@@ -68,14 +68,18 @@ my $more_options = $options{'more_options'};
 ## e.x. bowtie -S /local/references/e_coli sequences_1.fastq /local/reads/sequences.fastq /local/output/sequences.sam
 $reference =~ s/\.idx$//;
 
+my $cmd;
 if($reads =~ /,/g){ #paired end reads
     my @p = split(",", $reads);
-    system("$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 " . trim($p[0]) . " -2 " . trim($p[1]) . " $sam_output");
+    $cmd = "$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 " . trim($p[0]) . " -2 " . trim($p[1]) . " $sam_output";
 
 }
 else{ #unpaired reads
-    system("$bin $more_options -v $max_mismatches -m $max_aligns -S $reference $reads $sam_output");
+    $cmd = "$bin $more_options -v $max_mismatches -m $max_aligns -S $reference $reads $sam_output";
 }    
+
+# Execute bowtie
+run_system_cmd($cmd);
 
 sub check_parameters {
     my $options = shift;
@@ -102,3 +106,18 @@ sub trim {
     return $string;
 }
 
+#------------------------------------------------
+# run system command
+#------------------------------------------------
+sub run_system_cmd {
+    my $cmd = shift;
+    my $res = `$cmd`;
+    chomp($res);
+    my $success = $? >> 8;
+
+    unless ($success == 0) {
+        die("Command \"$cmd\" failed.");
+    }
+
+    return $res;
+}
