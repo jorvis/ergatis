@@ -45,7 +45,7 @@
             <name>crossbow</name>
             <state>incomplete</state>
             <executable>$;CROSSBOW_EXEC$;</executable>
-            <arg>--preprocess --all-haploids</arg>
+            <arg>$;CROSSBOW_OPTS$;</arg>
             <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
@@ -68,5 +68,30 @@
             </param>
         </command>
         <!--Postprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>download crossbow output</name>
+            <state>incomplete</state>
+            <executable>$;HADOOP_EXEC$;</executable>
+            <arg>fs -get /users/clovr/ergatis/$;PIPELINEID$;/output/*.gz</arg>
+        </command>        
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create snps list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.gz"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;SNPS_OUTPUT_LIST$;</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>
