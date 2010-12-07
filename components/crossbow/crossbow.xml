@@ -73,7 +73,7 @@
             <name>download crossbow output</name>
             <state>incomplete</state>
             <executable>$;HADOOP_EXEC$;</executable>
-            <arg>fs -get /users/clovr/ergatis/$;PIPELINEID$;/output/*.gz</arg>
+            <arg>fs -get /users/clovr/ergatis/$;PIPELINEID$;/output/*.gz $;OUTPUT_DIRECTORY$;/</arg>
         </command>        
         <command>
             <type>RunUnixCommand</type>
