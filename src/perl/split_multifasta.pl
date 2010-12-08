@@ -254,16 +254,14 @@ my $total_files_created = 0;
 
 while (<$sfh>) {
 
-    ## if the TOTAL_FILES parameter is used we want to check when we hit our last ile
-    ## to make sure that we toss all the rest of the sequence files there.
-    if (defined($options{'total_files'}) && $total_files_created eq $options{'total_files'}) {
-        ## this number tells us how many sequences we are goingto have in our final file.
-        my $remainder_seqs = $seq_count % $options{'total_files'};
-        $seqs_in_file += $remainder_seqs if ($remainder_seqs ne 0);
-    }
-
     ## if we find a header line ...
     if (/^\>(.*)/) {
+
+        $options{'seqs_per_file'}--
+            if( $options{'total_files'} && $options{'total_files'} ne "" &&
+                $seq_count % $options{'total_files'} &&
+                $seq_file_count == ( $seq_count % $options{'total_files'} ) 
+                && $seqs_in_file == 0 );
 
         ## write the previous sequence before continuing with this one
         unless ($first) {
@@ -427,21 +425,25 @@ sub set_seqs_per_total_files {
     my $fh = ${$_[0]};
     my $tot_files = $_[1];
 
-    my $seq_count = 0;
     local $/ = ">";
     while(my $line = <$fh>) { $seq_count += 1; }
+    $seq_count--;
 
     ## need a quick check here to make sure that the number of files wanted
     ## is not greater than the number of sequences in the file
     if ($tot_files > $seq_count){
-	$logger->warn("total_files $options{'total_files'} is greater than the number of sequences $seq_count. setting $options{'total_files'} to $seq_count");
-	$options{'total_files'}=$seq_count;
-	$tot_files=$seq_count;
+        $logger->warn("total_files $options{'total_files'} is greater than the number of sequences $seq_count. setting $options{'total_files'} to $seq_count");
+        $options{'total_files'}=$seq_count;
+        $tot_files=$seq_count;
     }
 
     ## calculate how many sequences we should have per file to meet the total_files parameter request.
     my $seqs_per_file = int($seq_count / $tot_files);
-   
+    
+    if( $seq_count % $tot_files ) {
+        $seqs_per_file++;
+    }
+    
     ## reset filehandle
     seek $fh,0,0;
 
