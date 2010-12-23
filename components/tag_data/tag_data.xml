@@ -19,6 +19,18 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
+	<command>
+		<type>RunUnixCommand</type>
+		<name>generate component workflow xml paths</name>
+		<state>incomplete</state>
+		<executable>find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d -print > /tmp/workflow_xml.txt</executable>
+	</command>
+	<command>
+                <type>RunUnixCommand</type>
+                <name>generate pipeline workflow xml paths</name>
+                <state>incomplete</state>
+                <executable>find /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d -print >> /tmp/workflow_xml.txt</executable>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>tag_data</name>
