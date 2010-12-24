@@ -197,7 +197,7 @@
                     <state>incomplete</state>
                     <name>rpsblast.priam</name>
                 </commandSet>
-                <commandSet>
+                <commandSet type="serial">
                     <state>incomplete</state>
                     <name>priam_ec_assignment.default</name>
                 </commandSet>
