@@ -98,7 +98,7 @@ sub parse_options
         elsif( $key eq "a" ) {
             $BINS{"formatdb"} = $val."/fastacmd";
         }
-        elsif( $key eq "c" ) {
+        elsif( $key eq "x" ) {
             $BINS{"xdformat"} = $val."/xdget";
         }
         
