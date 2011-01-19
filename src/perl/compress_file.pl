@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME 
 
 compress_file.pl - wrapper to gzip an output file
@@ -84,6 +87,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Ergatis::Logger;
+use File::Basename;
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -139,7 +143,8 @@ if ($options{compress}) {
             $logger->logdie("input file doesn't exist and no previous attempts detected.");
         }
         
-
+        my $dirname=dirname($options{file});
+	print `mkdir -p $dirname`;
         system("gzip -c -f $options{file} > $output");
 
         if ( $options{remove_source} ) {
@@ -153,6 +158,8 @@ if ($options{compress}) {
     
 } else {
     if($options{output}){
+        my $dirname=dirname($options{output});
+        print `mkdir -p $dirname`;
 	system("cp $options{file} $options{output}");
     }
     $logger->debug("skipping compression of file $options{file} because --compress=$options{compress}") if ($logger->is_debug);
@@ -160,6 +167,8 @@ if ($options{compress}) {
 
 if ($options{list_file}) {
     $logger->debug("creating list file $options{list_file}") if ($logger->is_debug);
+    my $dirname=dirname($options{list_file});
+    print `mkdir -p $dirname`;
     open(my $lfh, ">$options{list_file}") || $logger->logdie("can't create list file $options{list_file}");
     
     print $lfh "$options{file}";
