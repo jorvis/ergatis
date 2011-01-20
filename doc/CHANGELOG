@@ -1,5 +1,6 @@
 next
 ----
+-tag_data.xml & tag_data.config : added INPUT variable and removed INPUT_FILE
 -bowtie: Updated component to make use of an iterator
 -bowtie_build: Updated component to make use of an iterator
 -mugsycog.xml: removed all the commands and added them into mugsycog_distributed_work.xml so that all these memory intensive ones will be run on exec node
