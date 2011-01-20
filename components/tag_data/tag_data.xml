@@ -23,13 +23,13 @@
 		<type>RunUnixCommand</type>
 		<name>generate component workflow xml paths</name>
 		<state>incomplete</state>
-		<executable>find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d -print > /tmp/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
+		<executable>find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d -print > $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
 	</command>
 	<command>
                 <type>RunUnixCommand</type>
                 <name>generate pipeline workflow xml paths</name>
                 <state>incomplete</state>
-                <executable>find /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d -print >> /tmp/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
+                <executable>find /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d -print >> $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
         </command>
 	 <command>
             <type>RunUnixCommand</type>
