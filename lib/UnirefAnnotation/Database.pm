@@ -20,10 +20,10 @@ sub get_annotation {
     my $clust_id = $udb->get_cluster_id_by_acc( $cluster_acc );
     return [] unless( defined( $clust_id ) );
     
-    my %assertions = $udb->get_cluster_assertions( $clust_id );
+    my @assertions = $udb->get_cluster_assertions( $clust_id );
     return [] unless( keys %assertions );
 
-    return \%assertions;
+    return \@assertions;
 }
 
 sub is_trusted {

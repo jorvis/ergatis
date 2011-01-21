@@ -126,23 +126,19 @@ sub get_cluster_assertions {
         "WHERE cluster_id = ?";
     my $results = $self->do_select_query( $query, $cluster_id );
 
-    my %retval;
+    my @retval;
     foreach my $res ( @{$results} ) {
         my $tmp = {
+			'type' => $res->[0],
             'value' => $res->[1],
             'is_manual' => $res->[2],
             'source' => $res->[3],
             'assigned_by' => $res->[4],
             'id' => $res->[5]
             };
-        if( $res->[0] eq 'GO' || $res->[0] eq 'EC' ) {
-            $retval{$res->[0]} = [] unless( exists( $retval{$res->[0]} ) );
-            push(@{$retval{$res->[0]}}, $tmp);
-        } else {
-            $retval{$res->[0]} = $tmp;
-        }
+		push(@retval, $tmp);
     }
-    return %retval;
+    return @retval;
 }
 
 sub get_cluster_assertions_by_type {
