@@ -6,6 +6,9 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
@@ -81,8 +84,8 @@ use File::OpenFile qw(open_file);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 ## Need to setup the PYTHONPATH env variable here...
-$ENV{'PYTHONPATH'} = "/opt/vappio-py:/opt/vappio-py:/opt/opt-packages/bioinf-v1r4b1//Denoiser/" .
-             ":/opt/opt-packages/bioinf-v1r4b1//PyNAST/lib/:/opt/opt-packages/bioinf-v1r4b1//qiime/lib/";
+$ENV{'PYTHONPATH'} = "/opt/vappio-twisted:/opt/vappio-py:/opt/vappio-py:/opt/opt-packages/bioinf-v1r4b1//Denoiser/" .
+             ":/opt/opt-packages/bioinf-v1r4b1//PyNAST/lib/:/opt/opt-packages/bioinf-v1r4b1//qiime/lib/" ;
 
 #----------------------------------------------------------
 # GLOBALS/COMMAND-LINE OPTIONS
