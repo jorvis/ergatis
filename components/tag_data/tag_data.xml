@@ -53,7 +53,7 @@
             </param>
             <param>
                 <key>--map_file</key>
-                <value>$;INPUT_FILE$;</value>
+                <value>$;MAP_FILE$;</value>
             </param>
             <param>
                 <key>--repository_root</key>
