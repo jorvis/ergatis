@@ -575,7 +575,7 @@ sub add_bsml_attribute_list {
         push( @{$tmp}, { 'name' => $name, 'content' => $list->{$name} } );
     }
 
-    push( @{$tmp}, { 'name' => 'IEA', 'content' => $list->{'IEA'} } );
+    push( @{$tmp}, { 'name' => 'IEA', 'content' => $source } );
     push( @{$feat->{'BsmlAttributeList'}}, $tmp );
 }
 

@@ -292,27 +292,22 @@ sub _get_compseq_annotation {
     my ($self, $comp_id, $confidence_level) = @_;
 
     my $db = $self->{'_uniref_clusters_annot'};
-    my $assert_array = $db->get_annotation( $comp_id );
-    my %assertions = ();
+    my $asserts = $db->get_annotation( $comp_id );
 
     ## make the annotation object
     ## just set the feature id to the compseq id.  This will be changed later.
     my $ret_annot = new PFunc::Annotation( 'feature_id' => $comp_id );
 
-    map {
-        
-        #initialize to empty array ref
-        $assertions{$_->{'type'}} = [] unless( exists $assertions{$_->{'type'}} );
-
-        #push on values.
-        push( @{$assertions{$_->{'type'}}}, $_->{'value'} );
-        
-    } @{$assert_array};
-    
-    foreach my $type ( keys %assertions ) {
+    foreach my $type ( keys %{$asserts} ) {
         my $field = $type;
         $field = "gene_product_name" if( $type eq 'common_name' );
-        $ret_annot->set( $field, $assertions{$type}, $comp_id, $confidence_level );
+		my $tmp = [];
+		if( ref( $asserts->{$type} ) eq 'ARRAY' ) {
+			map { push(@{$tmp}, $_->{'value'}) } @{$asserts->{$type}};
+		} else {
+			push(@{$tmp}, $asserts->{$type}->{'value'});
+		}
+        $ret_annot->set( $field, $tmp, $comp_id, $confidence_level );
     }
 
     return $ret_annot;

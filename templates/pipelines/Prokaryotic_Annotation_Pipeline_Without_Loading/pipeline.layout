@@ -107,23 +107,8 @@
                 <state>incomplete</state>
                 <name>bsml2fasta.create_blastx_post_input</name>
             </commandSet>
-            <commandSet type="serial">
+            <commandSet type="parallel">
                 <state>incomplete</state>
-                <commandSet type="serial">
-                    <state>incomplete</state>
-                    <commandSet type="serial">
-                        <state>incomplete</state>
-                        <name>bsml2interevidence_fasta.default</name>
-                    </commandSet>
-                    <commandSet type="serial">
-                        <state>incomplete</state>
-                        <name>split_multifasta.split_interevidence_regions</name>
-                    </commandSet>
-                    <commandSet type="serial">
-                        <state>incomplete</state>
-                        <name>ncbi-blastx.blast_interevidence_regions</name>
-                    </commandSet>
-                </commandSet>
                 <commandSet type="serial">
                     <state>incomplete</state>
                     <name>hmmpfam.post_overlap_analysis</name>
@@ -191,17 +176,6 @@
                 <state>incomplete</state>
                 <name>tmhmm.default</name>
             </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <commandSet type="serial">
-                    <state>incomplete</state>
-                    <name>rpsblast.priam</name>
-                </commandSet>
-                <commandSet type="serial">
-                    <state>incomplete</state>
-                    <name>priam_ec_assignment.default</name>
-                </commandSet>
-            </commandSet>
         </commandSet>
         <commandSet type="parallel">
             <state>incomplete</state>
@@ -228,10 +202,6 @@
             <commandSet type="serial">
                 <state>incomplete</state>
                 <name>parse_evidence.lipoprotein</name>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>parse_evidence.priam_ec</name>
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
