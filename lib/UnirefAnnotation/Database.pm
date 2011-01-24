@@ -21,7 +21,7 @@ sub get_annotation {
     return [] unless( defined( $clust_id ) );
     
     my @assertions = $udb->get_cluster_assertions( $clust_id );
-    return [] unless( keys %assertions );
+    return [] unless( @assertions );
 
     return \@assertions;
 }

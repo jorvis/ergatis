@@ -166,7 +166,7 @@
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
-                <name>wu-blastp.COGS</name>
+                <name>ncbi-blastp.COGS</name>
             </commandSet>
             <commandSet type="serial">
                 <state>incomplete</state>
