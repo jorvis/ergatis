@@ -143,20 +143,21 @@ sub get_inputsets{
 		my $input_dir = $component_cfg->val( 'input', '$;INPUT_DIRECTORY$;');
 		my $input_type;
 		my $input_val;
-		if($input_file ne ""){
+		if(defined($input_file) && $input_file ne ""){
 		    $input_type = "file";
 		    $input_val = $input_file;
 		}
-		elsif($input_list ne ""){
+		elsif(defined($input_list) && $input_list ne ""){
 		    $input_type = "list";
 		    $input_val = $input_list;
 		}
-		elsif($input_dir ne ""){
+		elsif(defined($input_dir) && $input_dir ne ""){
 		    $input_type = "directory";
 		    $input_val = $input_dir;
 		}
+            	next unless( defined( $input_val ) ); # move here from below
 		if(!exists $uniqueinputs->{$input_type}->{$input_val}){
-            next unless( defined( $input_val ) );
+            	# next unless( defined( $input_val ) ); # was here, think this was wrong spot
 		    push @inputs,{'NAME'=>"$cname.$token (".scalar localtime($fstats[9]).")",
 				  'VALUE'=>$input_val,
 				  'TYPE'=>$input_type,
