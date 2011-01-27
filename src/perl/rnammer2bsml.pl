@@ -210,7 +210,7 @@ sub parse_RNAmmer_input
 
 						#print "arr[2]= $$arr[2]\n arr[3] = $$arr[3]\n\n";
             ## Determine strandedness
-            my $complement = ($$arr[2] > $$arr[3]) ? 1 : 0;
+            my $complement = ($$arr[5] eq "-") ? 1 : 0; 
 
             ## correct for interbase numbering
             if ($complement) {
