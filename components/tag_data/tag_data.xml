@@ -21,9 +21,15 @@
         </command>
 	<command>
 		<type>RunUnixCommand</type>
+		<name>touch</name>
+		<state>incomplete</state>
+		<executable>touch $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
+	</command>
+	<command>
+		<type>RunUnixCommand</type>
 		<name>generate component workflow xml paths</name>
 		<state>incomplete</state>
-		<executable>find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d -print > $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
+		<executable>find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d -print >> $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
 	</command>
 	<command>
                 <type>RunUnixCommand</type>
