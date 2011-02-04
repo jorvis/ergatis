@@ -134,6 +134,10 @@ sub get_pipeline_lists {
                 next;
             }
             
+            if ( -M $pipeline_file > $ergatis_cfg->val('display_settings', 'max_pipeline_age') ) {
+                next;
+            }
+            
             my $pipeline_file_fh;
             if ($pipeline_file =~ /\.gz/) {
                 open($pipeline_file_fh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
