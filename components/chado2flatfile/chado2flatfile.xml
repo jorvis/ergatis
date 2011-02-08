@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>chado2flatfile workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$; $;TMP_DIR$; $;TMP_DIR$;/id_mapping</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>chado2flatfile</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/chado2flatfile</executable>
+            <param>
+		<key>--host</key>
+		<value>$;SERVER$;</value>
+	    </param>
+            <param>
+	    	<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--username</key>
+		<value>$;USERNAME$;</value>
+	    </param>
+	    <param>
+	    	<key>--password</key>
+		<value>$;PASSWORD$;</value>
+            </param>
+	    <param>  
+                <key>--pep_file</key>
+                <value>$;PEP_OUTPUT_FILE$;</value>
+            </param>
+            <param>  
+                <key>--seq_file</key>
+                <value>$;SEQ_OUTPUT_FILE$;</value>
+            </param>
+            <param>  
+                <key>--coords_file</key>
+                <value>$;COORDS_OUTPUT_FILE$;</value>
+            </param>
+            <param>  
+                <key>--locus_ids</key>
+                <value>$;LOCUS_ID$;</value>
+            </param>
+	    <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/chado2flatfile.pl.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>    
+                <value>$;TMP_DIR$;/chado2flatfile.pl.stderr</value>
+            </param>
+	</command>
+    </commandSet>
+</commandSetRoot>

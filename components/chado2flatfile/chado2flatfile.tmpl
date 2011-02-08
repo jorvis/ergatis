@@ -1,0 +1,24 @@
+<p>
+     Reads information from a chado database and creates a pep file, a seq file and a coords file
+     for the features described in the database.
+</p>
+
+<h3>input</h3>
+<p>
+     This component calls the perl script chado2flatfile.pl to do the extraction.
+     The only input is the name of database, host, username and password
+</p>
+<p>
+     Use perldoc on chado2flatfile.pl for complete script usage information.
+</p>
+
+<h3>output</h3>
+<p>
+     The following three files are created in the output directory:
+<ul>.pep file - Multi fasta file of peptides. Headers have identifiers (feature.uniquename, unless --locus_ids option is used)
+		followed by the common name (featureprop.value for 'gene_product_name' cvterm) then followed by the
+		molecule unique name on which the feature is located.</ul>
+<ul>.seq file - Same as pep file but with nucleotide sequences.</ul>
+<ul>.coords file - Tab separated file with identifiers (uniquename unless --locus_ids option is used)
+		   followed by molecule name, end5 and end3.</ul>	 
+</p>

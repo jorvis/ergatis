@@ -1,5 +1,5 @@
 next
-----
+-added chado2flatfile component which creates flat files like .pep, .seq and .coords 
 -tag_data.xml & tag_data.config : added INPUT variable and removed INPUT_FILE
 -bowtie: Updated component to make use of an iterator
 -bowtie_build: Updated component to make use of an iterator
