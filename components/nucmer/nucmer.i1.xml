@@ -9,19 +9,19 @@
 			<executable>mkdir</executable>
 			<arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
 		</command>
-        <command>
-        	<type>RunUnixCommand</type>
+        	<command>
+        		<type>RunUnixCommand</type>
 			<name>create group output folder</name>
 			<state>incomplete</state>
 			<executable>mkdir</executable>
 			<arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
 		</command>			 
-        <command>
-            <type>RunUnixCommand</type>
-            <name>nucmer</name>
-            <state>incomplete</state>
-            <executable>$;NUCMER_EXEC$;</executable>
-            <arg>-p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;UNIQUE_BASE$; $;REFERENCE_GENOME$; $;I_FILE_PATH$;</arg>
+        	<command>
+            		<type>RunUnixCommand</type>
+            		<name>nucmer</name>
+            		<state>incomplete</state>
+            		<executable>$;NUCMER_EXEC$;</executable>
+            		<arg>$;CONFIG_OPTIONS$; -p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;UNIQUE_BASE$; $;REFERENCE_GENOME$; $;I_FILE_PATH$;</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
@@ -31,5 +31,12 @@
 				<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
 			</param>
 		</command>
-	</commandSet>
+		<command>
+			<type>RunUnixCommand</type>
+			<name>create coordinates file</name>
+			<state>incomplete</state>
+			<executable>$;COORDS_EXEC$;</executable>
+			<arg>-T $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;UNIQUE_BASE$;.delta > $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;UNIQUE_BASE$;.coords</arg>
+		</command>
+     </commandSet>
 </commandSetRoot>			
