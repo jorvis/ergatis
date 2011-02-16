@@ -149,7 +149,7 @@ sub parse_reference_genomes {
 	my @refs = ();
 	
 	push (@refs, $ref_genome) if ( defined ($ref_genome) && &verify_file($ref_genome) );
-	if ( &verify_file($ref_list) ) {
+	if ( defined($ref_list) ) {
 		open(REFLIST, $ref_list) or $logger->logdie("Could not open reference genome list $ref_list: $!");
 		
 		while (my $line = <REFLIST>) {
