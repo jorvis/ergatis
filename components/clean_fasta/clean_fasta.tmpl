@@ -1,0 +1,27 @@
+<p>
+     This component takes one or more input FASTA files and modifies them according to the, 
+     FASTA specifications.
+</p>
+<h3>input</h3>
+<p>
+     The input is a single fasta file or a file with list of fasta files to be modified or a name. 
+     of directory and file extension to be processed. It takes the following parameters:
+     -u  make the identifiers of all the records unique.
+     -o  If the user does not specify a filename with the option, the original file is replaced with 
+         the "clean" file and the original file is copied into a file with a "_orig" suffix.
+</p>
+<h3>output</h3>
+<p>
+     The original file in FASTA format.The script makes the following changes to a FASTA file:
+     1. All the data lines in the FASTA file are made equal to 60 bases.
+     2. Non-graphical characters are removed from the data.
+     3. Spaces, forward slashes and <CTRL-A>s are removed from the identifier.
+     4. Non-graphical characters (other than <CTRL-A> from the non identifier 
+        portion) are removed from the headers.
+     5. Empty lines are removed from the file.
+     6. If the -uniq option is specified, the record identifiers are made unique.
+</p>
+<p>
+     This component will also create a text file listing the file names of each of the output files it creates. 
+     When running as a step in a serial compute, this could be useful to pass as input to the next component.
+</p>
