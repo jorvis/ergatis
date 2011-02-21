@@ -155,7 +155,7 @@ umask(0000);
                 
                 my $marshal_interval_opt = '';
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'marshal_interval') ) {
-                   $marshal_interval_opt = "-m " . $args{ergatis_cfg}->val('workflow_settings', 'marshal_interval');
+                    $marshal_interval_opt = "-m " . $args{ergatis_cfg}->val('workflow_settings', 'marshal_interval');
                 }
                 
                 my $init_heap = $args{ergatis_cfg}->val('workflow_settings', 'init_heap') || '100m';
@@ -168,11 +168,11 @@ umask(0000);
                 
                 ## should we sudo to a different user?
                 if ( defined $args{run_as} ) {
-                     
+                    
                     $runprefix = "sudo -u $args{run_as} ";
-	
+                    
                 }
-	
+                
                 ## are we submitting the workflow as a job?  (CURRENTLY TIED TO SGE)
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
                     $runprefix = 'qsub ';
@@ -189,12 +189,12 @@ umask(0000);
                 my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt ".
                     "--init-heap=$init_heap --max-heap=$max_heap "; 
 
-		## Support observer scripts
-		if ( $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts') ) {
-		    $runstring .= " --scripts=" . $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts');
-		}
+                ## Support observer scripts
+                if ( $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts') ) {
+                    $runstring .= " --scripts=" . $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts');
+                }
 
-		$runstring .= " --logconf=" . $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
+                $runstring .= " --logconf=" . $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
 #                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap >& $self->{path}.run.out";
 
@@ -217,38 +217,38 @@ umask(0000);
                 close $pipeline_fh;
                 
                 ## the script needs to be executable
-                chmod 0755, $pipeline_script;
+                chmod 0775, $pipeline_script;
                 
                 #print $debugfh "preparing to execute $runstring\n" if $self->{debug};
 
 
                 #my $rc = 0xffff & system($runstring);
-		# If we're dealing with vappio_data_placement, then run the syncronization script prior
-		# to submitting pipeline
+                # If we're dealing with vappio_data_placement, then run the syncronization script prior
+                # to submitting pipeline
                 if ($args{ergatis_cfg}->val('grid', 'vappio_data_placement')) {
-	            print $debugfh "preparing to perform vappio_data_placement script synchdata.sh\n" if $self->{debug};
+                    print $debugfh "preparing to perform vappio_data_placement script synchdata.sh\n" if $self->{debug};
 
                     my $vappiosynccmd = $args{ergatis_cfg}->val('grid', 'vappio_root')."/syncdata.sh --synchronous";
-		    my $vappio_rc = 0xffff & system("$vappiosynccmd > /dev/null 2> /dev/null");
+                    my $vappio_rc = 0xffff & system("$vappiosynccmd > /dev/null 2> /dev/null");
                     # print `sudo -u $args{run_as} $vappiosynccmd`;
-		    printf $debugfh "system(%s) returned %#04x: $vappio_rc for command $runprefix $pipeline_script\n" if $self->{debug};
-		    if($vappio_rc == 0) {
-			print $debugfh "ran vappio_data_placement with normal exit\n" if $self->{debug};
-		    } elsif ( $vappio_rc == 0xff00 ) {
-			print $debugfh "command failed: $!\n" if $self->{debug};
-			croak "Unable to run vappio_data_placement $vappiosynccmd failed : $!\n";
-		    } elsif (($vappio_rc & 0xff) == 0) {
-			$vappio_rc >>= 8;
-			print $debugfh "ran vappio_data_placement with non-zero exit status $vappio_rc\n" if $self->{debug};
-			croak "Unable to run vappio_data_placement $vappiosynccmd failed : $!\n";
-		    } else {
-			print $debugfh "ran with " if $self->{debug};
-			if($vappio_rc & 0x80){
-			    $vappio_rc &= ~0x80;
-			    print $debugfh "coredump from " if $self->{debug};
-			}
-			print $debugfh "signal $vappio_rc\n" if $self->{debug};
-		    }
+                    printf $debugfh "system(%s) returned %#04x: $vappio_rc for command $runprefix $pipeline_script\n" if $self->{debug};
+                    if($vappio_rc == 0) {
+                        print $debugfh "ran vappio_data_placement with normal exit\n" if $self->{debug};
+                    } elsif ( $vappio_rc == 0xff00 ) {
+                        print $debugfh "command failed: $!\n" if $self->{debug};
+                        croak "Unable to run vappio_data_placement $vappiosynccmd failed : $!\n";
+                    } elsif (($vappio_rc & 0xff) == 0) {
+                        $vappio_rc >>= 8;
+                        print $debugfh "ran vappio_data_placement with non-zero exit status $vappio_rc\n" if $self->{debug};
+                        croak "Unable to run vappio_data_placement $vappiosynccmd failed : $!\n";
+                    } else {
+                        print $debugfh "ran with " if $self->{debug};
+                        if($vappio_rc & 0x80){
+                            $vappio_rc &= ~0x80;
+                            print $debugfh "coredump from " if $self->{debug};
+                        }
+                        print $debugfh "signal $vappio_rc\n" if $self->{debug};
+                    }
                 }
 
                 print $debugfh "preparing to run $pipeline_script\n" if $self->{debug};
