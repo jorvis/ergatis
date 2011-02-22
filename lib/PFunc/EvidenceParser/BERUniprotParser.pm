@@ -302,6 +302,7 @@ sub _get_compseq_annotation {
     map {
         
         #initialize to empty array ref
+        $_->{'type'} = 'TIGR_Role' if( $_->{'type'} eq 'TIGRrole' );
         $assertions{$_->{'type'}} = [] unless( exists $assertions{$_->{'type'}} );
 
         #push on values.
