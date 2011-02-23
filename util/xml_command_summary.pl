@@ -72,11 +72,7 @@ sub get_conditional_read_fh {
         return $fh;
     }
 
-    if ( $path =~ /\.gz$/ ) {
-        open($fh, "<:gzip", $path) || die "can't read file $path: $!";
-    } else {
         open($fh, "<$path") || die "can't read file $path: $!";
-    }
     
     return $fh;
 }

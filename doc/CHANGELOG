@@ -1,4 +1,5 @@
 next
+-prepare_for_genewise_best_loc.pl: no longer ignores unzipped bsml_files when passed in with -I
 -added clean_fasta component which modifies fasta files according to FASTA specifications
 -modified Makefile.PL to install global_template_pipelines
 -fixed the nucmer component bug for taking it a reference file 

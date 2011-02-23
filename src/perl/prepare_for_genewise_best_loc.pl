@@ -187,6 +187,8 @@ if ($bsml_list) {
         } else {
             die "specified bsml input file '$bsml_file' doesn't exist";
         }
+    } else {
+        push(@bsml_files, $bsml_file);
     }
 }
 if (! @bsml_files) {
