@@ -175,13 +175,17 @@ umask(0000);
                 
                 ## are we submitting the workflow as a job?  (CURRENTLY TIED TO SGE)
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
-                    $runprefix = 'qsub ';
+                    $runprefix = "qsub -wd $run_dir ";
+                    
                     my $pipe_submission_queue = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_queue' );
-                    if( $pipe_submission_queue ) {
+                    
+                    if ( $pipe_submission_queue ) {
                         $runprefix .= "-q $pipe_submission_queue ";
                     }
+                    
                     my $pipe_submission_project = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_project' );
-                    if( $pipe_submission_project ) {
+                    
+                    if ( $pipe_submission_project ) {
                         $runprefix .= "-P $pipe_submission_project ";
                     }
                 }
