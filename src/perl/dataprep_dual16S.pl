@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 
@@ -42,6 +45,7 @@ my $prefix  = $opt_p;
 
 my $finalseqfile = "$prefix.processed.fasta"; 
 my $finalmapfile = "$prefix.processed.map";
+my $finalreadmapfile = "$prefix.processed.readmap.txt";
 
 my %data = ();
 my $ARTIFICIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT";
@@ -423,6 +427,7 @@ if ($listlength[0] == 1){
 my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
 open SEQ, ">$finalseqfile" or die;
+open READMAP, ">$finalreadmapfile" or die;
 for my $i (0 .. ($listlength[0]-1)){
   my $bc = $barcodes[$i]; # this is the associated barcode for the sample
 
@@ -446,6 +451,7 @@ for my $i (0 .. ($listlength[0]-1)){
       my @A = split " ", $_;
       if ($seq ne ""){
         print SEQ ">$fileprefix\_$seqcount\n";
+        print READMAP "$line[$#line] :: $seqname :: $fileprefix\_$seqcount\n";
         my $tmp  = $bc;
         $tmp    .= $ARTIFICIAL_PRIMER;
         $tmp    .= $seq;
@@ -464,7 +470,8 @@ for my $i (0 .. ($listlength[0]-1)){
   }
   close IN;
 
-  print SEQ ">$fileprefix\_$seqcount\n";    
+  print SEQ ">$fileprefix\_$seqcount\n"; 
+  print READMAP "$line[$#line] :: $seqname :: $fileprefix\_$seqcount\n";
   my $tmp = $bc;
   $tmp .= $ARTIFICIAL_PRIMER;
   $tmp .= $seq;
@@ -477,6 +484,7 @@ for my $i (0 .. ($listlength[0]-1)){
 
 }
 close SEQ;
+close READMAP;
 
 # now create the corresponding mapping file
 open MAP, ">$finalmapfile" or die;
