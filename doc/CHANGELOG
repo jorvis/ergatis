@@ -1,4 +1,5 @@
 next
+-dataprep_dual16S now outputs a read mapping file if multiple fasta files are given
 -added create_pseudomolecules component to create pseudo molecules from contigs
 -prepare_for_genewise_best_loc.pl: no longer ignores unzipped bsml_files when passed in with -I
 -added clean_fasta component which modifies fasta files according to FASTA specifications
