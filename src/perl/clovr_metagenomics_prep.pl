@@ -2,6 +2,9 @@
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 
@@ -41,6 +44,7 @@ my $prefix  = $opt_p;
 #
 my $finalseqfile = "$prefix.processed.fasta"; 
 my $finalmapfile = "$prefix.processed.map";
+my $finalreadmapfile = "$prefix.processed.readmap.txt";
 
 # for now we're just copying the map file
 if(!(-e $mapfile)){
@@ -58,6 +62,7 @@ my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
 my %filenames = ();
 open SEQ, ">$finalseqfile" or die;
+open READMAP, ">$finalreadmapfile" or die;
 for my $i (0 .. ($listlength[0]-1)){
 
   if(!(-e $catstr[$i])){
@@ -84,6 +89,9 @@ for my $i (0 .. ($listlength[0]-1)){
   while(<IN>){
     chomp($_);
     if ($_ =~ /^>/){ #we've reached a new sequence in this fasta file
+      my @A = split " ", $_;
+      my $seqname = substr($A[0],1);
+      print READMAP "$filename :: $seqname :: $filename\_$seqcount\n";
       print SEQ ">$filename\_$seqcount\n";
       $seqcount++;
     }else{ 
@@ -96,6 +104,7 @@ for my $i (0 .. ($listlength[0]-1)){
 } 
 #end of all files
 close SEQ;
+close READMAP;
 
 
 

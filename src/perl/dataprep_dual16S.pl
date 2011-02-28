@@ -418,6 +418,9 @@ if ($listlength[0] == 1){
   copy($file, $finalseqfile);
   copy($mapfile, $finalmapfile);
   print STDOUT "One fasta file detected. We assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\n"; 
+  open READMAP, ">$finalreadmapfile" or die;
+  print READMAP "One fasta file detected.\nWe assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\nTherefore no read name mapping was needed for this run.\n";
+  close READMAP;
   exit(0);
 }
 
