@@ -46,6 +46,7 @@ my $prefix  = $opt_p;
 my $finalseqfile = "$prefix.processed.fasta"; 
 my $finalmapfile = "$prefix.processed.map";
 my $finalreadmapfile = "$prefix.processed.readmap.txt";
+my $endlistfile = "$prefix.processed.list";
 
 my %data = ();
 my $ARTIFICIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT";
@@ -412,6 +413,12 @@ if ($listlength[0] > $#barcodes-1){
   print STDERR "We have not implemented enough artificial barcodes to properly handle your multple fasta file input to the pipeline.\nSorry!\n"; 
   exit(1);
 }
+
+# create list file for download tag
+open OUT, ">$endlistfile" or die "Can't open $endlistfile!!\n";
+print OUT "$finalreadmapfile";
+close OUT;
+
 if ($listlength[0] == 1){
   my $file = `cat $list`;
   chomp($file);

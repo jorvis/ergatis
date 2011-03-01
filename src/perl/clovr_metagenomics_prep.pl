@@ -2,9 +2,6 @@
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
-
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
 use strict;
 use warnings;
 
@@ -45,7 +42,7 @@ my $prefix  = $opt_p;
 my $finalseqfile = "$prefix.processed.fasta"; 
 my $finalmapfile = "$prefix.processed.map";
 my $finalreadmapfile = "$prefix.processed.readmap.txt";
-
+my $endlistfile  = "$prefix.processed.list";
 # for now we're just copying the map file
 if(!(-e $mapfile)){
   print STDERR "$mapfile does not exist! Stopping ...\n";
@@ -56,6 +53,11 @@ copy($mapfile, $finalmapfile);
 # how many fasta files are provided?
 my $listlength = `wc $list`;
 my @listlength = split " ", $listlength;
+
+# create list file for download tag
+open OUT, ">$endlistfile" or die "Can't open $endlistfile!!\n";
+print OUT "$finalreadmapfile";
+close OUT;
 
 # we assume that each file represents a different specific sample
 my $catstr = `cat $list`;
