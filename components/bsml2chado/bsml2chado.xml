@@ -345,8 +345,12 @@
          <state>incomplete</state>
          <executable>$;BIN_DIR$;/create_file_iterator_list</executable>
          <param>
-	  <key>--input_file_list</key>
-	  <value>$;TMP_DIR$;/splitchecksumsoffsetsoutfiles.list</value>
+             <key>--checksum_filenames</key>
+             <value>$;CHECKSUM_FILENAMES$;</value>
+         </param>
+         <param>
+             <key>--input_file_list</key>
+	         <value>$;TMP_DIR$;/splitchecksumsoffsetsoutfiles.list</value>
          </param>
          <param>
 	  <key>--output_iter_list</key>
