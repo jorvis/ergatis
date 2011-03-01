@@ -12,7 +12,7 @@ function loadPipelineLists() {
                 ajaxCallback ( ajaxRequest.responseText );
             } else {
                 // error handling here
-                alert("there was a problem getting the template lists");
+                //alert("there was a problem getting the template lists");
             }
         }
     }
