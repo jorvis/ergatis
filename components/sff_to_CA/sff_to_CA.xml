@@ -6,24 +6,32 @@
         <name>sff_to_CA workflow</name>
         <!--Preprocessing-->
         <command>
-        	<type>RunUnixCommand</type>
-        	<name>create output directory</name>
-        	<state>incomplete</state>
-			<executable>mkdir</executable>
-			<arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
-		</command>
-		<command>				
-			<type>RunUnixCommand</type>
-			<name>create temp directory</name>
-			<state>incomplete</state>
-			<executable>mkdir</executable>
-    	    <arg>-p -m 777 $;TMP_DIR$;</arg>
-		</command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>                
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>sffToCA</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/sff_to_CA</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/sff_to_CA.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/sff_to_CA.stderr</value>
+            </param>
             <param>
                 <key>--sff_to_CA_exe</key>
                 <value>$;SFFTOCA_EXEC$;</value>
