@@ -290,10 +290,17 @@ sub print_coords_file {
         my $print_id = $uniquename;
         $print_id = $locus_lookup->{$uniquename} if( $locus );
         print $crd "$print_id\t".$polypeptide->{'molname'}."\t";
-        my ($start, $end) = ( $data->{$uniquename}->{'strand'} == -1 ) ? 
-            ( $data->{$uniquename}->{'fmax'}, $data->{$uniquename}->{'fmin'} ) :
-            ( $data->{$uniquename}->{'fmin'}, $data->{$uniquename}->{'fmax'} );
-        print $crd "$start\t$end\n";
+	if(($data->{$uniquename}->{'strand'} == 1) && ($data->{$uniquename}->{'fmin'} < 0)) {
+##	If the "<" symbol precedes a base span, the sequence is partial on the 5' end (e.g., CDS  <1..206).  
+	     $data->{$uniquename}->{'fmin'} = "<1";
+	} elsif(($data->{$uniquename}->{'strand'} == -1) && ($data->{$uniquename}->{'fmin'} < 0)) {
+##	If the ">" symbol follows a base span, the sequence is partial on the 3' end (e.g., CDS   435..915>).
+	     $data->{$uniquename}->{'fmin'} = "1>";
+	}
+        my ($start, $end, $str) = ( $data->{$uniquename}->{'strand'} == -1 ) ? 
+            ( $data->{$uniquename}->{'fmax'}, $data->{$uniquename}->{'fmin'}, "-" ) :
+            ( $data->{$uniquename}->{'fmin'}, $data->{$uniquename}->{'fmax'}, "+" );
+        print $crd "$start\t$end\t$str\n";
     }
 
     close($crd);
