@@ -1,4 +1,5 @@
 next
+-tag_data.pl now has additional checking method for file existence to avoid errors.
 -updating chado2flatfile.pl to resolve negative coordinates bug in .coords file
 -clovr_mapfasta_check.pl & cloVRMapFileCheck.pl is a new script that quality checks an input mapping file for pipelines
 -dataprep_dual16S now outputs a read mapping file if multiple fasta files are given
