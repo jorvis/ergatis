@@ -9,6 +9,9 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
@@ -200,7 +203,7 @@ sub _verify_file {
 
             ## Now check if our first line of this file exists, if it does most 
             ## likely we have a list of files here
-            if (-e $line_peek) {
+            if (file_exists($line_peek)) {
                 seek ($fh, 0, 0);
                 chomp( my @files = <$fh> );
                 
@@ -218,6 +221,23 @@ sub _verify_file {
     } else {
         $logger->logdie("File $file does not exist.");
     }
+}
+
+#----------------------------------------------------------
+# function for robust examination of file existence
+# return 1 if exists, 0 if not.
+#----------------------------------------------------------
+sub file_exists
+{
+  my ($lp) = @_;
+  my $ck = 0;
+  if (-e $lp){ 
+    $ck = 1; # make sure it can be opened
+    open LP, "$lp" or return 0;
+    close LP;   
+  }
+
+  return $ck;
 }
 
 #----------------------------------------------------------
