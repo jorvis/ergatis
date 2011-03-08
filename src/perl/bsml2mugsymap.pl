@@ -239,6 +239,9 @@ sub process_feature_group
                 elsif(($_->att('database')) && ($_->att('database') eq 'NCBILocus')) {
                     $gene_val = $_->att('identifier');
                 }
+                elsif(($_->att('database')) && ($_->att('database') eq 'NCBI_locus_tag')) {
+                    $gene_val = $_->att('identifier');
+                }
             }@xrefs;
         }
         last if $gene_val ne '-';
