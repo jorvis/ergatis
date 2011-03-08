@@ -77,7 +77,7 @@ if ($maptype eq "qiime" and $listlength[0] > 1){
 }
 
 if ($maptype eq "qiime"){
-  return;
+  exit(0);
 } # everything below this is for clovr-formatted mapping files
 
 # we assume that each file represents a different specific sample
