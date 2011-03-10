@@ -122,7 +122,7 @@ while (my $infile = <$listfh>) {
     my ($asmblid, $modelnum, $model);
 
     ## files must end in .hmmpfam.htab
-    if ( $infile =~ /(\d+)_(\d+)\.wu-blastp.btab/ ) {
+    if ( $infile =~ /(\d+)_(\d+)\.(?:wu|ncbi)-blastp.btab/ ) {
         $asmblid = $1;
         $modelnum = $2;
         $model = "$asmblid.m$modelnum";
@@ -130,7 +130,7 @@ while (my $infile = <$listfh>) {
         _log("processing file $infile");
         
     } else {
-        _log("ERROR: file $_ does not match naming convention! quitting.");
+        _log("ERROR: file $infile does not match naming convention! quitting.");
         exit(1);
     }
     
@@ -182,7 +182,7 @@ while (my $infile = <$listfh>) {
     my ($asmblid, $modelnum, $model);
 
     ## files must end in .hmmpfam.htab
-    if ( $infile =~ /(\d+)_(\d+)\.wu-blastp.raw/ ) {
+    if ( $infile =~ /(\d+)_(\d+)\.(?:wu|ncbi)-blastp.raw/ ) {
         $asmblid = $1;
         $modelnum = $2;
         $model = "$asmblid.m$modelnum";
@@ -190,7 +190,7 @@ while (my $infile = <$listfh>) {
         _log("processing file $infile");
         
     } else {
-        _log("ERROR: file $_ does not match naming convention! quitting.");
+        _log("ERROR: file $infile does not match naming convention! quitting.");
         exit(1);
     }
     
