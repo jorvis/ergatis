@@ -17,6 +17,8 @@ use warnings;
 # the annotation file provided as input.
 # 
 # The outputs of this program are tab-delimited tables of hits
+# Also outputs internal read names + annotations in tab delimited form
+# for cross-annotation later on
 #******************************************************************************
 use Getopt::Std;
 use Data::Dumper;
@@ -68,6 +70,7 @@ my %map_types       = ();
 my $num_map_levels  = 0;
 my %antndata        = ();
 my %antn_levels     = ();
+my @ordered_antn_levels = ();
 my %antn_types      = ();
 my $num_antn_levels = 0;
 my %polyrepmap      = ();  # maps translated polypeptides to orig reads
@@ -81,6 +84,10 @@ if ($bsml_list eq "" and $polypep_clusterlist ne ""){
   die "**ERROR** a polypeptide clustering is provided but no bsml list of initial polypeptides!!\n";
 }
 #
+
+#*****************************************************************
+# ************* DATA LOADING ************************************#
+#*****************************************************************
 
 # load of polypeptide mapping to DNA sequences
 if ($bsml_list ne ""){
@@ -110,51 +117,64 @@ if ($num_map_levels == 0){
   }    
 }
 
-# load up annotation data
+# load up annotation data from the db
 loadAnnotationData();
 
-# load up cluster info if necessary
+# load up cluster information
 if ($clusterlist ne ""){
   loadUpDNAClusters();
 }
 
-#**************************************
-#***** BEGIN BLAST FILE ANALYSIS *****#
-#**************************************
+# define the raw output annotation to be written
+open RAW, ">$prefix.rawannotation.tsv" or die "Can't open $prefix.rawannotation.tsv for writing!\n";
+print RAW "SequenceName";
+foreach my $aa (@ordered_antn_levels){
+  print RAW "\t$aa";
+}
+print RAW "\n";
+
+#*******************************************************************
+#***** BEGIN BLAST FILE ANALYSIS **********************************#
+#*******************************************************************
 # how many blast files are provided?
 my $listlength = `wc $list`;
 my @listlength = split " ", $listlength;
 
 # keep track -- one hit per blasted seq
+# if the sequence is already defined in this
+# hash it's already been recorded...
 my %query_hit = ();
 
-# we assume that each file represents a different specific sample
+# recall that $list is the list of raw blast output files
 my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
 for my $i (0 .. ($listlength[0]-1)){
-  # do some processing of the filename to get the prefix
-  # and store the associated barcode
+
+  # get the filename within the directory
   my @line = split /\//, $catstr[$i];
   my $filename = $line[$#line];
 
-  #open and process this file
+  # open and process this file
   open IN, "$catstr[$i]" or die "Can't open $catstr[$i] for preprocessing!\n";
   while(<IN>){
     chomp($_);
     my @blastline = split "\t", $_;
 
     next if (defined($query_hit{$blastline[0]})); # one hit allowed per sequence
-    $query_hit{$blastline[0]} = 1;                # if you havent seen this query before, catalog it
+    $query_hit{$blastline[0]} = 1;                # if you havent seen this query before, catalog it, we output multiple hits now
 
-    if ($bsml_list eq "" and $polypep_clusterlist eq ""){
+    # scenario 1:
+    if ($bsml_list eq "" and $polypep_clusterlist eq ""){ # then there are no clusters to think about
       catalog($blastline[0], $blastline[1]);
     }
 
-    # if just a bsml file list is provided then convert it to a rep DNA sequence:
+    # scenario 2:
+    # if just a bsml file list is provided then convert the hit name to a rep DNA sequence:
     if ($bsml_list ne "" and $polypep_clusterlist eq ""){
       catalog($polyrepmap{$blastline[0]}, $blastline[1]); 
     }
   
+    # scenario 3:
     # if a bsml file list is provided and a polypep cluster list then account
     # for all propagated hits: a peptide spreads to the whole cluster and each
     # peptide in the cluster goes to a rep sequence...
@@ -166,10 +186,14 @@ for my $i (0 .. ($listlength[0]-1)){
     }
   }
   close IN;
+
   # end of this file
   # move on to the next file
 } 
-#***** End of all blast file list *****#
+close RAW;
+#***************************************************************
+#***************************** End of all blast files *********#
+#***************************************************************
 
 zeroOutEmptyEntries();
 
@@ -178,6 +202,9 @@ foreach my $a (keys %antn_levels){
   printTable($a);
 }
 
+#***********************************************************************************
+# PAIRED GROUP TABLES
+#***********************************************************************************
 # now if there are map_types that require pairwise comparisons
 # print out those tables now
 foreach my $aa (keys %antn_levels){
@@ -194,6 +221,8 @@ foreach my $a (keys %map_levels){
 }  
 }
 
+#**********************************************************************************
+# Subroutines
 #**********************************************************************************
 sub printPairedGroups
 {
@@ -269,7 +298,8 @@ sub printTable
   close OUT;
 }
 
-
+# takes a list of BSML files and 
+# creates a mapping from DNA reads to predicted polypeptides from Metagene
 sub loadUpPolyMap
 {
   my ($bsmlliststr) = @_;
@@ -300,8 +330,10 @@ sub loadUpPolyMap
   }
 }
 
-
-
+# takes a list of cluster files
+# from UCLUST and defined the polyclusters type
+# a peptide points to an array of others representing
+# the cluster
 sub loadPolyPepClusters
 {
   my ($pp_clusterlist) = @_;
@@ -334,20 +366,59 @@ sub catalog
   my @qname = split /\_/, $repseqhit;
   my $qname = join("_", @qname[0..($#qname-1)]);
 
-  if (!defined($antndata{$hit})){ # if we don't have a record for it, don't count it
+  if (!defined($antndata{$hit})){ # if we don't have a record for it, so don't count it
     next;
   }
 
+  my %mini_antn_hash = ();
+  my $a = 0;
 
   # catalog the hit in the COUNTS datatype
-  foreach my $a (keys %antn_levels){
-  foreach my $b (@{$antndata{$hit}{$a}}){
+  foreach my $levelname (@ordered_antn_levels){
+    $a++;
+    if (defined($mini_antn_hash{$repseqhit})){
+      $mini_antn_hash{$repseqhit} .= "\t"; # tab-delimit between levels
+  
+      if (defined($clusters{$repseqhit})){
+        foreach my $qclust (@{$clusters{$repseqhit}}){
+          $mini_antn_hash{$qclust} .= "\t";   
+        }
+      }
+    } 
+
+  foreach my $b (@{$antndata{$hit}{$a}}){ # this ref sequence may have multiple annotations at this level
+
     $COUNTS{$qname}{$a}{$b}++;
     $antn_types{$a}{$b} = 1;
 
-    # also count this hit for any seqs in the associated nucleotide sequence cluster
+   
+    if (!defined($mini_antn_hash{$repseqhit})){ # then start the string
+      $mini_antn_hash{$repseqhit}  = $b;
+    }else{ # the string has been started
+      my $lastchar = substr($mini_antn_hash{$repseqhit},-1);
+      if ($lastchar eq "\t"){ # then this is a new level of annotation
+        $mini_antn_hash{$repseqhit} .= $b;
+      }else{ # then it's not a new level of annotation
+        $mini_antn_hash{$repseqhit} .= ",$b";
+      }
+    }
+
+    # this sequence hit, $repseqhit may be associated with a cluster of DNA seqs
+    # so, also count this hit for any seqs in the associated nucleotide sequence cluster
     if (defined($clusters{$repseqhit})){
       foreach my $qclust (@{$clusters{$repseqhit}}){
+
+        if (!defined($mini_antn_hash{$qclust})){
+          $mini_antn_hash{$qclust}  = $b;
+        }else{
+          my $lastchar = substr($mini_antn_hash{$qclust},-1);
+          if ($lastchar eq "\t"){ # then this is a new level of annotation
+            $mini_antn_hash{$qclust} .= $b;
+          }else{ # then it's not a new level of annotation
+            $mini_antn_hash{$qclust} .= ",$b";
+          }
+        }
+
         my @sampstr  = split /\_/, $qclust;
         my $sampstr  = join("", @sampstr[0..($#sampstr-1)]);
         if (!defined($COUNTS{$sampstr}{$a}{$b})){
@@ -359,6 +430,12 @@ sub catalog
     }
   }
   }
+
+  # print out the mini hash 
+  foreach my $mem (keys %mini_antn_hash){
+    print RAW "$mem\t$mini_antn_hash{$mem}\n";
+  }
+
 }
 
 
@@ -398,6 +475,7 @@ sub loadAnnotationData
       $num_antn_levels = $#A+1-1;
       for my $i (1 .. $#A){
         $antn_levels{$i} = $A[$i];
+        push @ordered_antn_levels, $A[$i];
       }
     }else{
       for my $i (1 .. $#A){
@@ -428,7 +506,8 @@ sub zeroOutEmptyEntries
   }
 }
 
-
+# defines cluster type
+# a rep dna sequence points to a cluster of other dna sequences
 sub loadUpDNAClusters
 {
   my $catclustlist = `cat $clusterlist`;
