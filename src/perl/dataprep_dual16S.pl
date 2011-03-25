@@ -410,7 +410,7 @@ TTTTTAGA TTTTTAGC TTTTTAGG TTTTTAGT TTTTTATA TTTTTATC TTTTTATG TTTTTATT
 my $listlength = `wc $list`;
 my @listlength = split " ", $listlength;
 if ($listlength[0] > $#barcodes-1){
-  print STDERR "We have not implemented enough artificial barcodes to properly handle your multple fasta file input to the pipeline.\nSorry!\n"; 
+  print STDERR "We have not implemented enough artificial barcodes to properly handle your multiple fasta file input to the pipeline.\nApologies!!\n"; 
   exit(1);
 }
 
@@ -419,10 +419,15 @@ open OUT, ">$endlistfile" or die "Can't open $endlistfile!!\n";
 print OUT "$finalreadmapfile";
 close OUT;
 
+# first let's handle the case where we have a Qiime-formatted mapping file:
 if ($listlength[0] == 1){
   my $file = `cat $list`;
   chomp($file);
   copy($file, $finalseqfile);
+
+  # correct Qiime-formatted mapping file if necessary
+  qiimemapCorrection($mapfile);
+
   copy($mapfile, $finalmapfile);
   print STDOUT "One fasta file detected. We assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\n"; 
   open READMAP, ">$finalreadmapfile" or die;
@@ -496,16 +501,24 @@ for my $i (0 .. ($listlength[0]-1)){
 close SEQ;
 close READMAP;
 
-# now create the corresponding mapping file
+
+# now create the corresponding mapping file for Qiime
+# and be sure it ends in Description
+
+my $qiimeDescCk = 1;
 open MAP, ">$finalmapfile" or die;
 open IMAP, "$mapfile" or die "Can't open $mapfile!!\n";
 while(<IMAP>){
   chomp($_);
-  my @A = split " ", $_;
+  my @A = split "\t", $_;
   if ($_ =~ /^#/){
     print MAP "#SampleID\tBarcodeSequence\tLinkerPrimerSequence";
     for my $j (1 .. $#A){
       print MAP "\t$A[$j]";
+    }
+    if ($A[$#A] ne "Description"){
+      $qiimeDescCk = 0;
+      print MAP "\tDescription";
     }
     print MAP "\n";
   }else{
@@ -513,11 +526,53 @@ while(<IMAP>){
     for my $j (1 .. $#A){
       print MAP "\t$A[$j]";
     }
+    if ($qiimeDescCk == 0){
+      print MAP "\tnone";
+    } 
     print MAP "\n";
   }
 }
 close IMAP;
 close MAP;
+
+
+# takes a qiime formatted mapping file and adds
+# a "Description" column if it's not there.
+sub qiimemapCorrection
+{
+   my ($qm) = @_;
+   open IN, "$qm" or die "Can't open $qm for reading!\n";
+   my $mapfilestring = "";
+   my $ck = 0;
+   while(<IN>){
+     chomp($_);
+     if ($ck == 0){ #header line       
+       my @A = split "\t", $_;
+       if ($A[$#A] eq "Description"){ # then we're good
+         $ck = 2;       
+         last;
+       }else{
+         $ck = 1;
+         $mapfilestring .= "$_\tDescription";
+       }
+     }else{
+         $mapfilestring .= "\n$_\tnone";
+     }
+   }
+   close IN;
+
+  if ($ck == 2){
+    print STDOUT "Qiime-formatted mapping file appears correct ...\n";
+    return;
+  }else{ # we hit a problem and need to edit the mapping file
+    open OUT, ">$qm" or die "Can't open $qm for editing!!\n";
+    print OUT "$mapfilestring";
+    close OUT;
+    print STDOUT "Correcting Qiime-formatted mapping file...(must end with the column Description)\n";
+    return;
+  }
+}
+
 
 
 
