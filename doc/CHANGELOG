@@ -1,4 +1,5 @@
 next
+-clovr_metagenomics_tsvtables.pl now outputs additional annotation information.
 -dataprep_dual16S.pl now has more robust error checking
 -move_wublastp_nr_results.pl can now be used with ncbi-blast files
 -tag_data.pl now has additional checking method for file existence to avoid errors.
