@@ -1,6 +1,7 @@
 next
--clovr_metagenomics_tsvtables.pl now outputs additional annotation information.
--dataprep_dual16S.pl now has more robust error checking
+-tophat: updated component to deal with paired/non-paired reads and run correctly
+-bowtie: Updated component to deal with paired/non-paired reads and removed iterator over reference, in hopes to eventually develop a better distribution strategy
+-bowtie_build: Updated to remove iterator in hopes to eventually develop a better distribution strategy
 -move_wublastp_nr_results.pl can now be used with ncbi-blast files
 -tag_data.pl now has additional checking method for file existence to avoid errors.
 -updating chado2flatfile.pl to resolve negative coordinates bug in .coords file

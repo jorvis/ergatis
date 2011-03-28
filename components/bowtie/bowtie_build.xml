@@ -19,27 +19,22 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
-        <!--Processing-->
-        <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
-        <!--Postprocessing-->
+
         <command>
             <type>RunUnixCommand</type>
-            <name>create bowtie index list</name>
+            <name>Bowtie build index</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>  
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
+            <executable>$;BOWTIE_BUILD_EXEC$;</executable>            
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/build.stdout</value>
             </param>
-            <param>  
-                <key>--regex</key>
-                <value>".*\.idx"</value>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/build.stderr</value>
             </param>
-            <param>  
-                <key>--output_list</key>
-                <value>$;INDEX_OUTPUT_LIST$;</value>
-            </param>
+            <arg>$;OTHER_BUILD_ARGS$; -f $;REFERENCE$; $;BOWTIE_INDEX$;</arg>
         </command>
+
     </commandSet>
 </commandSetRoot>

@@ -1,8 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1 NAME
 
 bowtie.pl - run the bowtie short-read aligner
@@ -12,7 +9,8 @@ bowtie.pl - run the bowtie short-read aligner
   USAGE: bowtie.pl [
             --bowtie_exec=full path to bowtie binary
             --reference=full path to bowtie reference index
-            --reads=full path to reads fastq files, if paired-end then comma-separated paths to each mate
+            --reads=full path to reads fastq file
+            --reads_mates=full path to reads mates fastq file if paired-end
             --sam_output=full path to output sam file
             --max_insert=maximum length of insert for paired-end reads, default 300
             --max_mismatches=maxixmum number base-pairs that can mismatch, default 2
@@ -29,14 +27,15 @@ use POSIX;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-                          'bowtie_exec|bin=s',
+			  'bowtie_exec|bin=s',
                           'reference|r=s',
-                          'reads|q=s',
+			  'reads|q=s',
+			  'reads_mates|q2=s',
                           'sam_output|o=s',
                           'max_insert|X=s',
                           'max_mismatches|v=s',
                           'max_aligns|m=s',
-                          'more_options|more_options=s',
+			  'more_options|more_options=s',
                           'help|h') || pod2usage();
 
 ## display documentation
@@ -50,36 +49,19 @@ if( $options{'help'} ){
 my $bin = $options{'bowtie_exec'};
 my $reference = $options{'reference'};
 my $reads = $options{'reads'};
+my $reads_mates = $options{'reads_mates'};
 my $sam_output = $options{'sam_output'};
 my $max_insert = $options{'max_insert'};
 my $max_mismatches = $options{'max_mismatches'};
 my $max_aligns = $options{'max_aligns'};
 my $more_options = $options{'more_options'};
 
-## Our list file does not directly reference the bowtie indices (these have extension of ebwt) but instead 
-## contain a list of placeholder files (idx files) which can be parsed to produce the path to the reference
-## that bowtie understands. 
-##
-## e.x. reference files = e_coli.ebwt, e_coli.1.ebwt, e_coli.2.ebwt, e_coli.rev.1.ebwt
-##      idx file = e_coli.idx
-##
-##      (the reference passed to the bowtie executble would be /path/to/e_coli with no extension)
-##
-## e.x. bowtie -S /local/references/e_coli sequences_1.fastq /local/reads/sequences.fastq /local/output/sequences.sam
-$reference =~ s/\.idx$//;
-
-my $cmd;
-if($reads =~ /,/g){ #paired end reads
-    my @p = split(",", $reads);
-    $cmd = "$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 " . trim($p[0]) . " -2 " . trim($p[1]) . " $sam_output";
-
+if($reads_mates eq ""){
+    system("$bin $more_options -v $max_mismatches -m $max_aligns -S $reference $reads $sam_output");
 }
-else{ #unpaired reads
-    $cmd = "$bin $more_options -v $max_mismatches -m $max_aligns -S $reference $reads $sam_output";
-}    
-
-# Execute bowtie
-run_system_cmd($cmd);
+else{
+    system("$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 $reads -2 $reads_mates $sam_output");
+}
 
 sub check_parameters {
     my $options = shift;
@@ -90,34 +72,10 @@ sub check_parameters {
     }
     
     ## handle some defaults
-    $options{bowtie_exec} = "/usr/local/packages/bowtie/bowtie" unless ($options{bowtie_exec});
-    $options{max_insert}   = 300  unless ($options{output_subdir_size});
-    $options{max_mismatches} = 2 unless ($options{output_subdir_prefix});
-    $options{max_aligns}        = 1  unless ($options{seqs_per_file});
+    $options{bowtie_exec} = "/usr/local/packages/bowtie/bowtie" unless ($options{bowtie});
+    $options{reads_mates} = ""  unless ($options{reads_mates});
+    $options{max_insert}   = 300  unless ($options{max_insert});
+    $options{max_mismatches} = 2 unless ($options{max_mismatches});
+    $options{max_aligns}        = 1  unless ($options{max_aligns});
 }
 
-#-------------------------------------
-# Trims whitespace from a string
-#-------------------------------------
-sub trim {
-    my $string = shift;
-    $string =~ s/^\s+//;
-    $string =~ s/\s+$//;
-    return $string;
-}
-
-#------------------------------------------------
-# run system command
-#------------------------------------------------
-sub run_system_cmd {
-    my $cmd = shift;
-    my $res = `$cmd`;
-    chomp($res);
-    my $success = $? >> 8;
-
-    unless ($success == 0) {
-        die("Command \"$cmd\" failed.");
-    }
-
-    return $res;
-}

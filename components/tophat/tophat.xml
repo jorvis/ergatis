@@ -30,102 +30,16 @@
             into the PATH. We therefore call a wrapper that performs some PATH environment variable manipulations.
             This will place the bowtie binaries into the PATH before Tophat invokes it. -->
             <executable>$;BIN_DIR$;/tophat.pl</executable>
-            <param>  
-                <key>--output-dir</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/tophat_stderr</value>
             </param>
-            <param>  
-                <key>--min-anchor</key>
-                <value>$;TOPHAT_MIN_ANCHOR$;</value>
+           <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/tophat_stdout</value>
             </param>
-            <param>  
-                <key>--splice-mismatches</key>
-                <value>$;TOPHAT_SPLICE_MISMATCHES$;</value>
-            </param>
-            <param>  
-                <key>--min-intron</key>
-                <value>$;TOPHAT_MIN_ANCHOR$;</value>
-            </param>
-            <param>  
-                <key>--max-intron</key>
-                <value>$;TOPHAT_MAX_INTRON$;</value>
-            </param>
-            <param>  
-                <key>--max-multihits</key>
-                <value>$;TOPHAT_MAX_MULTIHITS$;</value>
-            </param>
-            <param>  
-                <key>--min-isoform-fraction</key>
-                <value>$;TOPHAT_MIN_ISOFORM_FRACTION$;</value>
-            </param>
-            <param>  
-                <key>--directory</key>
-                <value>$;INPUT_DIRECTORY$;</value>
-            </param>
-            <param>  
-                <key>--extension</key>
-                <value>$;INPUT_EXTENSION$;</value>
-            </param>
-            <param>  
-                <key>--bowtie_index_dir</key>
-                <value>$;BOWTIE_INDEX_DIR$;</value>
-            </param>
-        </command>
- 
-        <!--Postprocessing-->
-        <command>
-            <type>RunUnixCommand</type>
-            <name>Create tophat wig output list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>  
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>  
-                <key>--regex</key>
-                <value>".*\.wig"</value>
-            </param>
-            <param>  
-                <key>--output_list</key>
-                <value>$;TOPHAT_WIG_OUTPUT_LIST$;</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>Create tophat bed output list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>  
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>  
-                <key>--regex</key>
-                <value>".*\.bed"</value>
-            </param>
-            <param>  
-                <key>--output_list</key>
-                <value>$;TOPHAT_BED_OUTPUT_LIST$;</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>Create tophat sam output list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>  
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>  
-                <key>--regex</key>
-                <value>".*\.sam"</value>
-            </param>
-            <param>  
-                <key>--output_list</key>
-                <value>$;TOPHAT_SAM_OUTPUT_LIST$;</value>
-            </param>
+
+            <arg>$;BOWTIE_EXEC_PATH$; $;SAMTOOLS_EXEC_PATH$; $;TOPHAT_EXEC$; -o $;OUTPUT_DIRECTORY$; -a $;MIN_ANCHOR$; -m $;SPLICE_MISMATCHES$; -i $;MIN_INTRON_LENGTH$; -I $;MAX_INTRON_LENGTH$; -g $;MAX_MULTIHITS$; -F $;MIN_ISOFORM_FRACTION$; -p $;NUMBER_THREADS$; -r $;MATE_INNER_DIST$; --mate-std-dev $;MATE_STD_DEV$; --segment-mismatches $;SEGMENT_MISMATCHES$; --segment-length $;SEGMENT_LENGTH$; --min-closure-exon $;MIN_CLOSURE_EXON$; --min-closure-intron $;MIN_CLOSURE_INTRON$; --max-closure-intron $;MAX_CLOSURE_INTRON$; --min-coverage-intron $;MIN_COVERAGE_INTRON$; --max-coverage-intron $;MAX_COVERAGE_INTRON$; --min-segment-intron $;MIN_SEGMENT_INTRON$; --max-segment-intron $;MAX_SEGMENT_INTRON$; $;OTHER_ARGS$; $;BOWTIE_INDEX_DIR$; $;READS1$; $;READS2$;</arg>
         </command>
     </commandSet>
 </commandSetRoot>
