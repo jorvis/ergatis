@@ -126,7 +126,7 @@ if ($clusterlist ne ""){
 }
 
 # define the raw output annotation to be written
-open RAW, ">$prefix.rawannotation.tsv" or die "Can't open $prefix.rawannotation.tsv for writing!\n";
+open RAW, ">$prefix.raw.antn" or die "Can't open $prefix.raw.antn for writing!\n";
 print RAW "SequenceName";
 foreach my $aa (@ordered_antn_levels){
   print RAW "\t$aa";
