@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME 
 
 berbtab2bsml.pl  - convert info stored in BER btab files into BSML documents 
@@ -142,9 +145,14 @@ my $num_seqs_added = 0;
 $doc->makeCurrentDocument();
 parse_ber_btabs($files);
 
+## Removing i1 from the sourcename so that this modification doesnt have to be made manually in the DB 
+## when bsml file is loaded after the pipeline is run
+my $srcname = $options{'output'};
+$srcname =~ s/\/i1//;
+
 $doc->createAndAddAnalysis(
                             id => $options{analysis_id},
-                            sourcename => $options{'output'},
+                            sourcename => $srcname,
                             program => 'ber',
                             algorithm => 'ber',
                             programversion => 'none',

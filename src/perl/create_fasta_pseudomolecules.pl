@@ -111,24 +111,25 @@ BEGIN {
 
 my %options = ();
 my $results = GetOptions (\%options, 
-                          'input_fasta_list=s',
-                          'map_file=s',
-                          'output_file=s',
-                          'input_fasta_file=s',
-                          'unmapped_output=s',
-                          'linker_sequence=s',
-                          'log|l=s',
-			  'debug|b=s',
-                          'help|h') || pod2usage();
+		'input_fasta_list=s',
+		'map_file=s',
+		'output_file=s',
+		'input_fasta_file=s',
+		'unmapped_output=s',
+		'linker_sequence=s',
+		'log|l=s',
+		'debug|b=s',
+		'help|h') || pod2usage();
+
 
 ## display documentation
 if( $options{'help'} ){
-    pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
+	pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
 }
 
 ## make sure everything passed was peachy
 &check_parameters(\%options);
-
+my $linker_len = length($options{'linker_sequence'});
 ## open the log if requested
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
@@ -149,157 +150,170 @@ my $seqs = {};
 ## read in the sequence files
 for my $file ( @fasta_infiles ) {
 #    _log("INFO: reading sequences in file $file");
-    open(my $seq_fh, "<$file") || $logger->logdie("Could not open sequence file $file for reading: $!");
-    
-    my $current_id;
-    ## using an array here is faster and uses less memory
-    my @current_seq = ();
-    
-    while (my $line = <$seq_fh>) {
-        next if $line =~ /^\s*$/;
-        
-        if ( $line =~ /^\>(\S+)/ ) {
-            my $new_id = $1;
-        
-            ## current_id will be undefined if this is the first sequence in the file
-            if ( defined $current_id ) {
-                ## Bad Things if this sequence already exists
-                if ( exists $$seqs{$current_id} ) {
-                    $logger->logdie("Duplicate input sequence ($current_id) found.Quitting.");
-                }
-            
-                ## save the current sequence
-                $$seqs{$current_id} = join('', @current_seq);
-            
-                ## remove whitespace from the sequence
-                $$seqs{$current_id} =~ s|\s+||g;
-                
-                ## reset the array
-                @current_seq = ();
-            }
-            
-            ## set the new ID
-            $current_id = $new_id;
-            
-        } else {
-            push @current_seq, $line;
-        }
-    }
-    
-    ## remove whitespace from the last sequence
-    $$seqs{$current_id} = join('', @current_seq);
-    $$seqs{$current_id} =~ s|\s+||g;
+	open(my $seq_fh, "<$file") || $logger->logdie("Could not open sequence file $file for reading: $!");
+
+	my $current_id;
+## using an array here is faster and uses less memory
+	my @current_seq = ();
+
+	while (my $line = <$seq_fh>) {
+		next if $line =~ /^\s*$/;
+
+		if ( $line =~ /^\>(\S+)/ ) {
+			my $new_id = $1;
+
+## current_id will be undefined if this is the first sequence in the file
+			if ( defined $current_id ) {
+## Bad Things if this sequence already exists
+				if ( exists $$seqs{$current_id} ) {
+                    			$logger->logdie("Duplicate input sequence ($current_id) found.Quitting.");
+				}
+
+## save the current sequence
+				$$seqs{$current_id} = join('', @current_seq);
+
+## remove whitespace from the sequence
+				$$seqs{$current_id} =~ s|\s+||g;
+
+## reset the array
+				@current_seq = ();
+			}
+
+## set the new ID
+			$current_id = $new_id;
+
+		} else {
+			push @current_seq, $line;
+		}
+	}
+
+## remove whitespace from the last sequence
+	$$seqs{$current_id} = join('', @current_seq);
+	$$seqs{$current_id} =~ s|\s+||g;
 }
 
 open( my $outfh, ">$options{output_file}" ) || $logger->logdie("Failed to create $options{'output_file'} file for writing: $!");
-
+my $start_file = 0;
 open( my $mapfh, "<$options{map_file}" ) || $logger->logdie("Failed to open $options{'map_file'} map file for reading: $!");
-
+my $pmarks_out = $options{output_file}.".pmarks";
+open(my $pmarksfh, "> $pmarks_out") || $logger->logdie("Failed to open $options{'pmarks_output'} pmarks file for writing: $!");
 my $mapped_assembly_ids = {};
 my $mapped_pseudomolecule_ids = {};
-
+my $linker_start = 0;
+my $linker_end = $linker_len;
+my $linker_point = $linker_end;
 while ( my $line = <$mapfh> ) {
-    chomp $line;
-    next if $line =~ /^\s*$/;
-    
-    my @cols = split(/\t/, $line);
-    if ( scalar @cols != 3 ) {
-#        _log("WARN: skipping the current map line");
-        next;
-    }
-    
-    ## if this pseudomolecule ID isn't mapped write the header line before continuing
-    if ( ! exists $$mapped_pseudomolecule_ids{$cols[0]} ) {
-        print $outfh ">$cols[0]\n";
-        $$mapped_pseudomolecule_ids{$cols[0]}++;
-    }
-    
-    ## make sure we know about the sequence in the map file
-    if ( ! exists $$seqs{$cols[1]} ) {
-        $logger->logdie("Sequence ($cols[1]) defined in map file was not found among input FASTA seqs.");
-    }
-    
-    ## add the current assembly with linker
-    $$mapped_assembly_ids{$cols[1]}++;
-    
-    if ( $cols[2] eq '+' ) {
-#        _log("INFO: writing assembly $cols[1] to $cols[0] in forward orientation");
-        print $outfh "$$seqs{$cols[1]}$options{linker_sequence}";
-        
-    } elsif ( $cols[2] eq '-' ) {
-        my $seq = reverse $$seqs{$cols[1]};
-           $seq =~ tr/ATGCatgc/TACGtacg/;
-        
-#        _log("INFO: writing assembly $cols[1] to $cols[0] in reverse orientation");
-        print $outfh "$seq$options{linker_sequence}";
-    
-    } else {
-        $logger->logdie("Unrecognized direction ($cols[2]) defined for sequence $cols[1]");
-    }
-}
+	chomp $line;
+	next if $line =~ /^\s*$/;
 
+	my @cols = split(/\t/, $line);
+	if ( scalar @cols != 3 ) {
+#        _log("WARN: skipping the current map line");
+		next;
+	}
+
+## if this pseudomolecule ID isn't mapped write the header line before continuing
+	if ( ! exists $$mapped_pseudomolecule_ids{$cols[0]} ) {
+		print $outfh ">$cols[0]\n";
+		print $pmarksfh ">$cols[0]\n";
+		$$mapped_pseudomolecule_ids{$cols[0]}++;
+	}
+
+## make sure we know about the sequence in the map file
+	if ( ! exists $$seqs{$cols[1]} ) {
+        	$logger->logdie("Sequence ($cols[1]) defined in map file was not found among input FASTA seqs.");
+	}
+
+## add the current assembly with linker
+	$$mapped_assembly_ids{$cols[1]}++;
+## get the linker sequence coordinates in the pseudomolecule
+	my $seq_len = length($$seqs{$cols[1]});
+	print $pmarksfh "$linker_start\t$linker_end\n";
+	$linker_start = $linker_point + $seq_len; 
+	$linker_end = $linker_start + $linker_len;
+	if(length($line) > 0 && ($start_file == 0)) {
+		print $outfh "$options{linker_sequence}";
+		$start_file = 1;
+	}
+	if ( $cols[2] eq '+' ) {
+#        _log("INFO: writing assembly $cols[1] to $cols[0] in forward orientation");
+		print $outfh "$$seqs{$cols[1]}$options{linker_sequence}";
+	} elsif ( $cols[2] eq '-' ) {
+		my $seq = reverse $$seqs{$cols[1]};
+		$seq =~ tr/ATGCatgc/TACGtacg/;
+#        _log("INFO: writing assembly $cols[1] to $cols[0] in reverse orientation");
+		print $outfh "$seq$options{linker_sequence}";
+
+	} else {
+        	$logger->logdie("Unrecognized direction ($cols[2]) defined for sequence $cols[1]");
+	}
+	$linker_point = $linker_end;
+}
+# Printing the last pmark positions
+print $pmarksfh "$linker_start\t$linker_end\n";
+close($pmarksfh);
 ## if requested dump any unmapped sequences
 if ( defined $options{unmapped_output} ) {
-    open(my $unmapped_fh, ">$options{unmapped_output}") || $logger->logdie("Failed to create unmapped output file $options{unmapped_output} for writing: $!");
-    
-    for my $seq_id ( keys %$seqs ) {
-        if ( ! exists $$mapped_assembly_ids{$seq_id} ) {
-            print $unmapped_fh ">$seq_id\n$$seqs{$seq_id}\n";
-        }
-    }
+	open(my $unmapped_fh, ">$options{unmapped_output}") || $logger->logdie("Failed to create unmapped output file $options{unmapped_output} for writing: $!");
+
+	for my $seq_id ( keys %$seqs ) {
+		if ( ! exists $$mapped_assembly_ids{$seq_id} ) {
+			print $unmapped_fh ">$seq_id\n$$seqs{$seq_id}\n";
+		}
+	}
 }
 
 
 exit(0);
 
 sub parse_inputs {
-    my @files = ();
+	my @files = ();
 
-    if ( defined $options{input_fasta_list} ) {
-        open(my $ilistfh, "<$options{input_fasta_list}") || $logger->logdie("Failed to open input list $options{input_fasta_list} for reading: $!");
+	if ( defined $options{input_fasta_list} ) {
+		open(my $ilistfh, "<$options{input_fasta_list}") || $logger->logdie("Failed to open input list $options{input_fasta_list} for reading: $!");
 
-        while ( <$ilistfh> ) {
-            chomp;
-            next if /^\s*$/;
+		while ( <$ilistfh> ) {
+			chomp;
+			next if /^\s*$/;
 
-            push @files, $_;
-        }
-    }
+			push @files, $_;
+		}
+	}
 
-    if ( defined $options{input_fasta_file} ) {
-        push @files, $options{input_fasta_file};
-    }
-        return @files;
-    }
-
-
-sub _log {
-    my $msg = shift;
-
-    print $logfh "$msg\n" if $logfh;
+	if ( defined $options{input_fasta_file} ) {
+		push @files, $options{input_fasta_file};
+	}
+	return @files;
 }
 
 
+#sub _log {
+#	my $msg = shift;
+
+#	print $logfh "$msg\n" if $logfh;
+#}
+
+
 sub check_parameters {
-    my $options = shift;
-    
-    ## make sure required arguments were passed
-    my @required = qw( map_file output_file );
-    for my $option ( @required ) {
-        unless  ( defined $$options{$option} ) {
-            $logger->logdie("--$option is a required option");
-        }
-    }
-    
-    ## either input_fasta_list or input_fasta_file is required
-    if ( ! defined $$options{input_fasta_list} && ! defined $$options{input_fasta_file} ) {
-        $logger->logdie("you must pass either --input_fasta_list or --input_fasta_file");
-    }
-    
-    ##
-    ## you can do other things here, such as checking that files exist, etc.
-    ##
-    
-    ## handle some defaults
-    $$options{linker_sequence} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless ( defined $$options{linker_sequence});
+	my $options = shift;
+
+## make sure required arguments were passed
+	my @required = qw( map_file output_file);
+	for my $option ( @required ) {
+		unless  ( defined $$options{$option} ) {
+            		$logger->logdie("--$option is a required option");
+		}
+	}
+
+## either input_fasta_list or input_fasta_file is required
+	if ( ! defined $$options{input_fasta_list} && ! defined $$options{input_fasta_file} ) {
+        	$logger->logdie("you must pass either --input_fasta_list or --input_fasta_file");
+	}
+
+##
+## you can do other things here, such as checking that files exist, etc.
+##
+
+## handle some defaults
+	$$options{linker_sequence} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless ( defined $$options{linker_sequence});
 }

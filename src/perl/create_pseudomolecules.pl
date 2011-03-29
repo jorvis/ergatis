@@ -17,37 +17,42 @@ create_pseudomolecules.pl - program to generate pseudomolecules from contigs for
 
 =head1 SYNOPSIS
 
-    create_pseudomolecules.pl --input_file <reference accession ids file> --output_dir <outdir> --database <genBank database> --format <reference file format> --contig_file <contig file> --strain <strain name> --config_param <nucmer config params> [--log <log file> --debug <debug level> --help <usgae>]
+    create_pseudomolecules.pl --output_dir <outdir>  --contig_file <contig file> --strain <strain name> [--input_file <reference accession ids file> --database <genBank database> --format <reference file format> --config_param <nucmer config params> --log <log file> --debug <debug level> --help <usgae>]
 
     parameters in [] are optional
     do NOT type the carets when specifying options
 
 =head1 OPTIONS
 
-    --input_file  = /path/to/input_file. This is a tab-delimited file containing
-		    genBank accession ids and a serial group number indicating which
-		    reference sequences should be concatenated together for analysis .
-		    e.g.CP000803.1	1
-			CP000804.1	2
+    --output_dir  	= /path/to/output_dir. This is the directory where all output 
+		    	  files generated during the script execution will be stored.
 
-    --output_dir  = /path/to/output_dir. This is the directory where all output 
-		    files generated during the script execution will be stored.
-
-    --database 	  = Name of the genBank database used to download the reference 
-		    genomes.e.g.nucleotide
-
-    --format      = Format in which the reference genome sequence is downloaded
-		    e.g.FASTA
-
-    --contig_file = /path/to/contig_file. This is a fasta file containing the
-		    strain genome contigs.
+    --contig_file 	= /path/to/contig_file. This is a fasta file containing the
+		    	  strain genome contigs.
     
-    --strain      = Name of the strain used for naming the output files.
+    --strain      	= Name of the strain used for naming the output files.
 
-    --config_param= Configuration parameters to execute nucmer.
-		    e.g. -c 100 -maxmatch
+   [--config_param	= Configuration parameters to execute nucmer.
+		    	  e.g. -c 100 -maxmatch
 
-   [--log 	  = /path/to/log_file. Log file. Optional
+    --input_file  	= /path/to/input_file. This is a tab-delimited file containing
+		    	  genBank accession ids and a serial group number indicating which
+		    	  reference sequences should be concatenated together for analysis .
+		    	  e.g.CP000803.1	1
+			      CP000804.1	2
+
+    --database 	  	= Name of the genBank database used to download the reference 
+		    	  genomes.e.g.nucleotide
+
+    --format      	= Format in which the reference genome sequence is downloaded
+		    	  e.g.FASTA
+    
+    --linker_sequence	= This sequence will be inserted after each sequence stitched together into
+			  a pseudomolecule.  The default sequence (NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN) will be
+			  inserted if this isn't specified and contains 6-frame translational stop codons.  This
+			  can be an empty string.
+
+    --log 	  = /path/to/log_file. Log file. Optional
 
     --debug       = Debug level. Optional
 
@@ -56,16 +61,17 @@ create_pseudomolecules.pl - program to generate pseudomolecules from contigs for
 =head1 DESCRIPTION
 
 The program creates pseudomolecules from contigs for annotation purposes. Following steps are taken in pseudomolecule creation:
-1. Download reference genome sequences from genBank.
-2. Concatenate reference genomes based on the groups provided by the user.
-3. Run nucmer to create .delta file by aligning reference genome with input contigs file
-4. Run show-coords to create .coords file for the alignment.
-5. Run reference_genome_match_tiler.pl to produce .map file and  for the contigs that mapped with the reference.
-6. Run create_fasta_pseudomolecules.pl to produce a pseudomolecule and unmapped contigs fasta file using the .map file.
-7. Run cleanFasta.pl to clean up the pseudomolecule file and generate a FASTA format file.
-8. If there is more than 1 reference group then re-run all the steps above starting from step 3 with unmapped contigs file as the 
+1. If no reference file is passed then concatenate the contigs based on length - longest to shortest to create a pseudomolecule.
+2. If a reference accession ids file is specified then download reference genome sequences from genBank.
+3. Concatenate reference genomes based on the groups provided by the user.
+4. Run nucmer to create .delta file by aligning reference genome with input contigs file
+5. Run show-coords to create .coords file for the alignment.
+6. Run reference_genome_match_tiler.pl to produce .map file and  for the contigs that mapped with the reference.
+7. Run create_fasta_pseudomolecules.pl to produce a pseudomolecule and unmapped contigs fasta file using the .map file.
+8. Run cleanFasta.pl to clean up the pseudomolecule file and generate a FASTA format file.
+9. If there is more than 1 reference group then re-run all the steps above starting from step 4 with unmapped contigs file as the 
    new contig file and next group of reference genomes as the reference sequence. 
-9. At the end generate the pseudomolecule of unmapped contigs using create_fasta_pseudomolecules.pl
+10. At the end generate the pseudomolecule of unmapped contigs using create_fasta_pseudomolecules.pl
 
 =head1  CONTACT
 
@@ -104,6 +110,7 @@ $results = GetOptions (\%options,
 		'config_param|p=s',
 		'nucmer_exec|n=s',
 		'coords_exec|e=s',
+		'linker_sequence|k=s',
                 'log|l=s',
                 'debug|b=s',
                 'help|h') || pod2usage();
@@ -141,7 +148,7 @@ $contig_file = $options{contig_file};
 
 for my $group (sort {$a<=>$b} keys %accHash) {
 	chomp($accHash{$group});
-	system("/usr/local/projects/ergatis/package-nightly/bin/fetch_genbank --output_dir=$options{output_dir} --database=$options{database} --query=$accHash{$group} --format=$options{format}");		       my @acc = split(/,/,$accHash{$group});
+	system("$Bin/fetch_genbank --output_dir=$options{output_dir} --database=$options{database} --query=$accHash{$group} --format=$options{format}");		       my @acc = split(/,/,$accHash{$group});
 	my $ref_file = $options{output_dir}."/reference_grp".$group.".".$options{format};
 	foreach my $id (@acc) {
 		my $filename = $options{output_dir}."/reference_".$id.".".$options{format};
@@ -182,7 +189,7 @@ for my $group (sort {$a<=>$b} keys %accHash) {
 if(-e $contig_file) {
 	my @unmapp = &read_file($contig_file);
 	my $unmap_file = $options{output_dir}."/".$options{strain}."_unmapped.map";
-	open(OUTFH, "> $unmap_file") or $logger->logdie("Could not open $unmap_file file for writing\n");
+	open(OUTFH, "> $unmap_file")  or $logger->logdie("Could not open $unmap_file file for writing\n");
 	my $molnum = $groupnum + 1;
 	my $unmap_mol = "$options{strain}.pseudomolecule.$molnum";
 	my $unmap_pseudo = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$molnum.".fasta";
@@ -207,33 +214,106 @@ if(-e $contig_file) {
 sub check_parameters {
         my $options = shift;
 
-## make sure output directory, database, contig file, strain name, accession ids input file and format were passed
-        unless ( $options{database} && $options{output_dir} && $options{format} && $options{input_file} && $options{contig_file} && $options{strain} ) {
+## make sure output directory, contig file and strain name were passed
+        unless ($options{output_dir} && $options{contig_file} && $options{strain}) {
 		$logger->logdie("All the manadatory parameters should be passed");
 	}
 
 ## make sure the output directory exists
         if (! -e "$options{output_dir}") {
-		$logger->logdie("The output directory passed could not be read or does not exist");
-        	
-	}
-
-## make sure the input file exists and is readable
-	if (! -e "$options{input_file}") {
-		$logger->logdie("The input file passed could not be read or does not exist");
-	}
-
+		$logger->logdie("The $options{output_dir} output directory passed could not be read or does not exist");
+       	}
 ## make sure the contig file exists and is readable
 	if (! -e "$options{contig_file}") {
-		$logger->logdie("The contigs file passed could not be read or does not exist");
+		$logger->logdie("The $options{contig_file} contigs file passed could not be read or does not exist");
+	} else {
+## make sure the input file exists and is readable
+		if ($options{'input_file'}) {
+			if(-e "$options{input_file}") {
+				my @fetch_opts = qw(database format);
+				foreach my $fetch_opt( @fetch_opts ) {
+					if( !$options->{$fetch_opt} ) {
+						$logger->logdie("The --input_file was passed but required $fetch_opt was missing");
+					}
+				}
+			} else {
+				$logger->logdie("The $options{input_file} file passed could not be read or does not exist");
+			}
+		} else {
+			my $pmarks_file = "";
+## Assign default linker sequence if not supplied	
+			$options{linker_sequence} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless ( defined $options{linker_sequence});
+			$pmarks_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.1.fasta.pmarks";
+## If input file containing reference ids is not passed then sort the contigs file based on contigs length - longest to shortest 
+			my $contig_out = $options{output_dir}."/".$options{strain}.".pseudomolecule.1.fasta";
+			&sort_contigs($options{'contig_file'},$contig_out, $options{'linker_sequence'}, $pmarks_file);
+			system("$Bin/clean_fasta $contig_out");
+			exit;
+		}
 	}
+}
+
+## Subroutine to arrange the contigs from longest to shortest in a pseudomolecule
+sub sort_contigs {
+	my ($in_file,$out_file,$linker,$pmarks_file) = @_;
+	my $seq = "";
+	my $header;
+	my $flag = 1;
+	my $linker_start = 0;
+	my $linker_len = length($linker);
+	my $linker_end = $linker_len;
+	my $linker_point = $linker_end;
+	my %contig_hash;
+	open(OUTFH, "> $out_file")  or $logger->logdie("Could not open $out_file file for writing\n");
+	open(POUT, "> $pmarks_file")  or $logger->logdie("Could not open $pmarks_file file for writing\n") if (defined $pmarks_file);
+	
+## Read input contig file
+	my @contigs = &read_file($in_file);
+	foreach my $line (@contigs) {
+		chomp($line);
+		if($line =~ /^>(.*)/) {
+			unless($flag) {
+				chomp($seq);
+				my $seq_len = length($seq);
+				$contig_hash{$seq_len}{$header} = $seq;
+				$seq = "";
+			}
+			$flag = 0;
+			$header = $1;
+		} else {
+			## skip it if it is just whitespace
+			next if ($line =~ /^\s*$/);
+			$seq .= $line;
+		}
+	}
+## Concatenate the last contig sequence
+	my $seq_len = length($seq);
+	$contig_hash{$seq_len}{$header} = $seq if(defined($header));
+## Header for the pseudomolecule	
+	my ($out_base,$out_dir,$out_ext) = fileparse($out_file,qr/\.[^.]*/);
+	print OUTFH ">$out_base\n";
+	print POUT ">$out_base\n";
+## Adding linker sequence between each contig and at the beginning and end of the pseudomolecule
+	print OUTFH "$linker";
+	foreach my $seqlen (sort {$b<=>$a} keys %contig_hash) {
+		foreach my $head (keys %{$contig_hash{$seqlen}}) {
+			print POUT "$linker_start\t$linker_end\n" if (defined $pmarks_file);
+			print OUTFH "$contig_hash{$seqlen}{$head}$linker";
+			$linker_start = $linker_point + $seqlen; 
+        		$linker_end = $linker_start + $linker_len;
+			$linker_point = $linker_end;
+		}
+	}
+	print POUT "$linker_start\t$linker_end\n" if (defined $pmarks_file);
+	close(OUTFH);
+	close(POUT) if (defined $pmarks_file);
 }
 
 ## Subroutine to read files
 sub read_file {
 	my $filename = shift;
 	my @lines;
-	open(FH , "< $filename") || $logger->logdie("Could not open $filename file for reading.$!");
+	open(FH , "< $filename")  || $logger->logdie("Could not open $filename file for reading.$!");
 	@lines = <FH>;
 	close(FH);
 	return(@lines);
