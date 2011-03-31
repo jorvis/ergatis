@@ -1,4 +1,7 @@
 next
+-added gsnap component
+-added scripture component
+-added bwa_align and bwa_index components
 -berbtab2bsml.pl: updated to remove "i1" from the path of ber files in bsml.
 -pmarks2bsml: new component added to convert pmarks information to bsml to be loaded in DB.
 -create_pseudomolecule: updated component to create pmarks information
