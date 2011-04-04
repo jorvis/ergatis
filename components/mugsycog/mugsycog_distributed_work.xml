@@ -91,8 +91,12 @@
         <value>$;QUERY_COVERAGE$;</value>
         </param>
         <param>
-        <key>stdout</key>
+        <key>--cogformat</key>
         <value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
+        </param>
+        <param>
+        <key>stdout</key>
+        <value>$;OUTPUT_DIRECTORY$;/mugsyoutput.raw</value>
         </param>
     </command>
     <!-- next step is to cog2fasta -->
