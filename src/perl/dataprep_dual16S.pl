@@ -45,8 +45,6 @@ my $prefix  = $opt_p;
 
 my $finalseqfile = "$prefix.processed.fasta"; 
 my $finalmapfile = "$prefix.processed.map";
-my $finalreadmapfile = "$prefix.processed.readmap.txt";
-my $endlistfile = "$prefix.processed.list";
 
 my %data = ();
 my $ARTIFICIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT";
@@ -406,6 +404,8 @@ TTTTTAAA TTTTTAAC TTTTTAAG TTTTTAAT TTTTTACA TTTTTACC TTTTTACG TTTTTACT
 TTTTTAGA TTTTTAGC TTTTTAGG TTTTTAGT TTTTTATA TTTTTATC TTTTTATG TTTTTATT 
 /;
 
+
+
 # how many fasta files are provided?
 my $listlength = `wc $list`;
 my @listlength = split " ", $listlength;
@@ -413,11 +413,6 @@ if ($listlength[0] > $#barcodes-1){
   print STDERR "We have not implemented enough artificial barcodes to properly handle your multiple fasta file input to the pipeline.\nApologies!!\n"; 
   exit(1);
 }
-
-# create list file for download tag
-open OUT, ">$endlistfile" or die "Can't open $endlistfile!!\n";
-print OUT "$finalreadmapfile";
-close OUT;
 
 # first let's handle the case where we have a Qiime-formatted mapping file:
 if ($listlength[0] == 1){
@@ -430,9 +425,6 @@ if ($listlength[0] == 1){
 
   copy($mapfile, $finalmapfile);
   print STDOUT "One fasta file detected. We assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\n"; 
-  open READMAP, ">$finalreadmapfile" or die;
-  print READMAP "One fasta file detected.\nWe assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\nTherefore no read name mapping was needed for this run.\n";
-  close READMAP;
   exit(0);
 }
 
@@ -442,7 +434,6 @@ if ($listlength[0] == 1){
 my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
 open SEQ, ">$finalseqfile" or die;
-open READMAP, ">$finalreadmapfile" or die;
 for my $i (0 .. ($listlength[0]-1)){
   my $bc = $barcodes[$i]; # this is the associated barcode for the sample
 
@@ -466,7 +457,6 @@ for my $i (0 .. ($listlength[0]-1)){
       my @A = split " ", $_;
       if ($seq ne ""){
         print SEQ ">$fileprefix\_$seqcount\n";
-        print READMAP "$line[$#line] :: $seqname :: $fileprefix\_$seqcount\n";
         my $tmp  = $bc;
         $tmp    .= $ARTIFICIAL_PRIMER;
         $tmp    .= $seq;
@@ -486,7 +476,6 @@ for my $i (0 .. ($listlength[0]-1)){
   close IN;
 
   print SEQ ">$fileprefix\_$seqcount\n"; 
-  print READMAP "$line[$#line] :: $seqname :: $fileprefix\_$seqcount\n";
   my $tmp = $bc;
   $tmp .= $ARTIFICIAL_PRIMER;
   $tmp .= $seq;
@@ -499,8 +488,6 @@ for my $i (0 .. ($listlength[0]-1)){
 
 }
 close SEQ;
-close READMAP;
-
 
 # now create the corresponding mapping file for Qiime
 # and be sure it ends in Description
@@ -522,7 +509,9 @@ while(<IMAP>){
     }
     print MAP "\n";
   }else{
-    print MAP "$A[0]\t$data{$A[0]}\t$ARTIFICIAL_PRIMER";
+    my @B    = split /\./,$A[0];
+    my $mapprefix = join(".", @B[0..($#B-1)]);
+    print MAP "$mapprefix\t$data{$A[0]}\t$ARTIFICIAL_PRIMER";
     for my $j (1 .. $#A){
       print MAP "\t$A[$j]";
     }

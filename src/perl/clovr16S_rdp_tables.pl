@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 use Data::Dumper;
@@ -38,7 +41,7 @@ my $prefix = $opt_p;
 #*********************************************************************
 # GLOBALS
 #*********************************************************************
-my $THRESHOLD = 0.80;
+my $THRESHOLD = 0.50;
 my %samples        = ();
 my %activesamples  = ();
 my @orderedsamples = ();

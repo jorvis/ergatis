@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 
@@ -13,22 +16,42 @@ use warnings;
 use Getopt::Std;
 use warnings;
 
-use vars qw/$opt_m $opt_p/;
+use vars qw/$opt_f $opt_m $opt_p/;
 
-getopts("m:p:");
+getopts("f:m:p:");
 
 my $usage = "Usage:  $0 \
-                -m qiime formatted mapping file\
-                -p output prefix for the oligos and meta files\
+                -f seqs.fna file from split libraries in Qiime\
+                -m mapping file from Qiime \
+                -p output prefix for the mothur files\
                 \n";
 
-die $usage unless defined $opt_m
+die $usage unless defined $opt_f
+              and defined $opt_m
               and defined $opt_p;
 
+my $splitlibsfile = $opt_f;
 my $mapfile = $opt_m;
 my $prefix  = $opt_p;
 
-open OLI, ">$prefix.oligos" or die;
+open GROUP, ">$prefix.groups" or die;
+#create list file
+`echo $prefix.groups >$prefix.groups.list`;
+open IN, "$splitlibsfile" or die "Can't open $splitlibsfile!!\n";
+while(<IN>){
+  if ($_ =~ /^>/){
+    chomp($_);
+    my @A = split " ", $_;
+    my $name  = substr($A[0],1);
+    my @namesplit = split /\_/, $name;
+    my $gr = join("_", @namesplit[0..($#namesplit-1)]);
+    print GROUP "$name\t$gr\n";
+  }
+}
+close IN;
+close GROUP;
+
+
 open META, ">$prefix.meta" or die;
 open IN, "$mapfile" or die;
 my $pri = 0;
@@ -48,10 +71,8 @@ while(<IN>){
   }else{
     my @A = split "\t", $_;
     if ($pri == 0){
-      print OLI "forward\t$A[2]\n";
       $pri = 1;  
     }
-    print OLI  "barcode\t$A[1]\t$A[0]\n";
     print META "barcode, $A[1], $A[0]";
     if ($#A > 2){
       for my $i (3 .. $#A){
@@ -64,5 +85,5 @@ while(<IN>){
   }  
 }
 close IN;
-
+close META;
 

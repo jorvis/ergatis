@@ -2,6 +2,9 @@
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -91,6 +94,10 @@ foreach my $otu (@otu_files) {
     my $filename = basename($otu);
     my $file_base = fileparse($otu, '\.(.*)');
     my $group = $group_files->{$file_base};
+    if (!defined($group)){
+      $group = `cat $groups_list`;
+      chomp($group);
+    }
     
     print OUTFILE "$file_base\t$filename\t$otu\t$group\n";    
 }              
