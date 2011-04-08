@@ -1,4 +1,6 @@
 next
+-added leech component
+-added mothur_chimera_slayer component
 -added gsnap component
 -added scripture component
 -added bwa_align and bwa_index components
