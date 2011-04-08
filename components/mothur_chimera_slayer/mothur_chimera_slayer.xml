@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <!--Pre-Processing-->
-        <name>mothur unique seqs</name>
+        <name>mothur chimera slayer</name>
         <command>
             <type>RunUnixCommand</type>
             <name>create output directory</name>
@@ -18,51 +18,44 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>create unique seqs iterator list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_mothur_unique_seqs_iterator_list</executable>
-            <arg>--sequence_file=$;INPUT_FILE$; --sequence_file_list=$;INPUT_FILE_LIST$; --names_file_list=$;NAMES_LIST$; --output=$;TMP_DIR$;/unique_seqs_iterator.list --log=$;TMP_DIR$;/create_mothur_unique_seqs_iterator_list.log --debug=4</arg>
-        </command>
         <!--Processing-->
         <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/unique_seqs_iterator.list" />
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML"/>
         <!--Post-Processing-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create unique seqs file list</name>
+            <name>create chimera report file list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
                 <key>--directory</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>            
+            </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.unique.*a"</value>
+                <value>".*\.slayer.chimera"</value>
             </param>
             <param>
                 <key>--output_list</key>
-                <value>$;UNIQUE_SEQS_LIST$;</value>
+                <value>$;CHIMERA_REPORT_FILE_LIST$;</value>
             </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>create names file list</name>
+            <name>create chimera assignments file list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
                 <key>--directory</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>    
+            </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.names"</value>
+                <value>".*\.slayer.accnos"</value>
             </param>
             <param>
                 <key>--output_list</key>
-                <value>$;NAMES_OUTPUT_LIST$;</value>
+                <value>$;CHIMERA_FILE_LIST$;</value>
             </param>
         </command>
     </commandSet>

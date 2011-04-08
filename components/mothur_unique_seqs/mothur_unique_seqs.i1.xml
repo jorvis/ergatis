@@ -5,7 +5,7 @@
         <name>mothur unique seqs compute</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>unqiue seqs</name>
+            <name>unique seqs</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/mothur</executable>
             <param>
