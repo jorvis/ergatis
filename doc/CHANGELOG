@@ -1,4 +1,5 @@
 next
+-fixed create_pseudomolecules.pl to create a single molecule when the full sequence maps with the reference
 -added prodigal component
 -added leech component
 -added mothur_chimera_slayer component
