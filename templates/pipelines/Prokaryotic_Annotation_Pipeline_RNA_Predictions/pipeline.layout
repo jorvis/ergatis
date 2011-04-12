@@ -1,0 +1,14 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>start pipeline:</name>	
+		<commandSet type="serial">
+        		<state>incomplete</state>
+                	<name>tRNAscan-SE.find_tRNA</name>
+		</commandSet>
+        	<commandSet type="serial">
+        		<state>incomplete</state>
+                	<name>RNAmmer.default</name>
+        	</commandSet>
+	</commandSet>
+</commandSetRoot>

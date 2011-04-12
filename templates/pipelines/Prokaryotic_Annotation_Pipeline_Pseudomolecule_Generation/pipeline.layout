@@ -1,0 +1,18 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start pipeline:</name>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>clean_fasta.default</name>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>create_pseudomolecules.default</name>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>pmarks2bsml.default</name>
+        </commandSet>
+   </commandSet>
+</commandSetRoot>

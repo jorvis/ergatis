@@ -1,0 +1,14 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+	<commandSet type="serial">
+		<state>incomplete</state>
+        	<name>start pipeline:</name>
+		<INCLUDE file="../Prokaryotic_Annotation_Pipeline_Pseudomolecule_Generation/pipeline.layout" />
+                <INCLUDE file="../Prokaryotic_Annotation_Pipeline_Input_Processing/pipeline.layout" />
+		<commandSet type="parallel">
+                        <state>incomplete</state>
+			<INCLUDE file="../Prokaryotic_Annotation_Pipeline_RNA_Predictions/pipeline.layout" />
+			<INCLUDE file="../Prokaryotic_Annotation_Pipeline_Prodigal_Predictions/pipeline.layout" />
+		</commandSet>
+		<INCLUDE file="../Prokaryotic_Annotation_Pipeline_Gene_Annotations/pipeline.layout" />
+    	</commandSet>
+</commandSetRoot>

@@ -1,0 +1,8 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+	<commandSet type="serial">
+		<state>incomplete</state>
+        	<name>start pipeline:</name>
+		<INCLUDE file="../Pseudo_Glimmer_NonLoad_Pipeline/pipeline.layout" />
+    		<INCLUDE file="../Prokaryotic_Annotation_Pipeline_Chado_Loading/pipeline_pmarks.layout" />
+	</commandSet>
+</commandSetRoot>

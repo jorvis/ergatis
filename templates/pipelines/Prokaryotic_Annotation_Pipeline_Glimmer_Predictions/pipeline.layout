@@ -1,0 +1,36 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+	<commandSet type="serial">
+        	<state>incomplete</state>
+		<name>start pipeline:</name>
+		<commandSet type="serial">
+			<state>incomplete</state>
+			<commandSet type="serial">
+				<state>incomplete</state>
+                    		<name>glimmer3.iter1</name>
+                	</commandSet>
+                	<commandSet type="serial">
+                    		<state>incomplete</state>
+                    		<name>train_for_glimmer3_iteration.train_for_glimmer</name>
+                	</commandSet>
+                	<commandSet type="serial">
+                    		<state>incomplete</state>
+                    		<name>glimmer3.iter2</name>
+                	</commandSet>
+			<commandSet type="parallel">
+                		<state>incomplete</state>
+                    		<commandSet type="serial">
+                        		<state>incomplete</state>
+                        		<name>translate_sequence.translate_prediction</name>
+                    		</commandSet>
+                    		<commandSet type="serial">
+                        		<state>incomplete</state>
+                        		<name>bsml2fasta.prediction_CDS</name>
+                    		</commandSet>
+                	</commandSet>
+                	<commandSet type="serial">
+                    		<state>incomplete</state>
+                    		<name>promote_gene_prediction.promote_prediction</name>
+                	</commandSet>
+		</commandSet>
+	</commandSet>
+</commandSetRoot>
