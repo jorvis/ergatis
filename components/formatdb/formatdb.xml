@@ -16,8 +16,27 @@
             <type>RunUnixCommand</type>
             <name>formatdb</name>
             <state>incomplete</state>
-            <executable>$;FORMATDB_EXEC$;</executable>
-            <arg>-p $;PROTEIN$; -oT -i '$;INPUT_FILES$;' -n $;OUTPUT_DIRECTORY$;/$;DATABASE_NAME$;</arg>
+	    <executable>$;BIN_DIR$;/formatdb</executable>
+	    <param>
+		<key>--input_file_list</key>
+		<value>$;INPUT_FILE_LIST$;</value>
+	    </param>
+	    <param>
+		<key>--input_files</key>
+		<value>$;INPUT_FILES$;</value>
+	    </param>
+	    <param>
+		<key>--formatdb_path</key>
+		<value>$;FORMATDB_EXEC$;</value>
+	    </param>
+	    <param>
+		<key>--protein</key>
+		<value>$;PROTEIN$;</value>
+	    </param>
+	    <param>
+		<key>--database_name</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;DATABASE_NAME$;</value>
+	    </param>
         </command>
     </commandSet>
 </commandSetRoot>
