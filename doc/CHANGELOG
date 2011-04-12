@@ -1,4 +1,5 @@
 next
+-added a script that generates updated pipeline_tmpl.config file after checking for the diffs bw clovr and ergatis comp configfiles.
 -added resistome component
 -modified formatdb.xml to support INPUT_FILE_LIST in addition to INPUT_FILES
 -added rotate molecule component
