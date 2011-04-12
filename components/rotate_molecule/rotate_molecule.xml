@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>rotate_molecule workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$; $;TMP_DIR$; $;TMP_DIR$;/id_mapping</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>rotate_molecule</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/rotate_molecule</executable>
+            <param>
+		<key>--host</key>
+		<value>$;SERVER$;</value>
+	    </param>
+            <param>
+	    	<key>--database</key>
+		<value>$;DATABASE$;</value>
+	    </param>
+	    <param>
+		<key>--username</key>
+		<value>$;USERNAME$;</value>
+	    </param>
+	    <param>
+	    	<key>--password</key>
+		<value>$;PASSWORD$;</value>
+            </param>
+            <param>  
+                <key>--coord</key>
+                <value>$;COORD$;</value>
+            </param>
+            <param>  
+                <key>--asmbl</key>
+                <value>$;ASSEMBLY$;</value>
+            </param>
+	    <param>
+                <key>--log</key>
+                <value>$;TMP_DIR$;/rotate_molecule.log</value>
+            </param>
+	    <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/rotate_molecule.pl.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>    
+                <value>$;TMP_DIR$;/rotate_molecule.pl.stderr</value>
+            </param>
+	</command>
+    </commandSet>
+</commandSetRoot>
