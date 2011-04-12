@@ -188,21 +188,24 @@ for my $group (sort {$a<=>$b} keys %accHash) {
 # The last unmapped set of contigs will be the last pseudomolecule
 if(-e $contig_file) {
 	my @unmapp = &read_file($contig_file);
-	my $unmap_file = $options{output_dir}."/".$options{strain}."_unmapped.map";
-	open(OUTFH, "> $unmap_file")  or $logger->logdie("Could not open $unmap_file file for writing\n");
-	my $molnum = $groupnum + 1;
-	my $unmap_mol = "$options{strain}.pseudomolecule.$molnum";
-	my $unmap_pseudo = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$molnum.".fasta";
-	foreach my $line (@unmapp) {
-		chomp($line);
-		if($line =~ /^>/) {
-			$line =~ s/>//;
-			print OUTFH "$unmap_mol\t" . "$line\t" . "+\n";
+	my $size_arr = @unmapp;
+	if ($size_arr > 0) {
+		my $unmap_file = $options{output_dir}."/".$options{strain}."_unmapped.map";
+		open(OUTFH, "> $unmap_file")  or $logger->logdie("Could not open $unmap_file file for writing\n");
+		my $molnum = $groupnum + 1;
+		my $unmap_mol = "$options{strain}.pseudomolecule.$molnum";
+		my $unmap_pseudo = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$molnum.".fasta";
+		foreach my $line (@unmapp) {
+			chomp($line);
+			if($line =~ /^>/) {
+				$line =~ s/>//;
+				print OUTFH "$unmap_mol\t" . "$line\t" . "+\n";
+			}
 		}
+		close(OUTFH);
+		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$options{contig_file} --map_file=$unmap_file --output_file=$unmap_pseudo");
+		system("$Bin/clean_fasta $unmap_pseudo");
 	}
-	close(OUTFH);
-	system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$options{contig_file} --map_file=$unmap_file --output_file=$unmap_pseudo");
-	system("$Bin/clean_fasta $unmap_pseudo");
 }
 
 
