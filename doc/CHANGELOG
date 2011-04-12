@@ -1,4 +1,6 @@
 next
+-added resistome component
+-modified formatdb.xml to support INPUT_FILE_LIST in addition to INPUT_FILES
 -added rotate molecule component
 -fixed create_pseudomolecules.pl to create a single molecule when the full sequence maps with the reference
 -added prodigal component
