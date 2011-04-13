@@ -1,4 +1,5 @@
 next
+-added formatdb.pl
 -added different options of the prokaryotic pipelines
 -added a script that generates updated pipeline_tmpl.config file after checking for the diffs bw clovr and ergatis comp configfiles.
 -added resistome component
