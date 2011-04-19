@@ -163,7 +163,8 @@ shellwrappers:
 pipeline_templates:
 	@echo "Installing global pipeline templates in $(PREFIX)/global_pipeline_templates"
 	find $(T_BUILD_DIR) -type d -exec mkdir -p $(PREFIX)/{} \;
-	find $(T_BUILD_DIR) -path '*svn*' -prune -o -print -type d -exec install {} ${PREFIX} \;
+    find $(T_BUILD_DIR) -path '*svn*' -prune -o -print -exec install {} $(PREFIX)/{} \;
+    #find $(T_BUILD_DIR) -path '*svn*' -prune -o -print -type d -exec install {} ${PREFIX} \;
 
 c_apps	:
 	@echo "Compiling C applications and installing in $(PREFIX)/bin"
