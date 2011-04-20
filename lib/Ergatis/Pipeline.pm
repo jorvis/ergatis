@@ -337,6 +337,9 @@ umask(0000);
         ## for local data placement 
         $ENV{vappio_root} = $args{ergatis_cfg}->val('grid', 'vappio_root');
         $ENV{vappio_data_placement} = $args{ergatis_cfg}->val('grid', 'vappio_data_placement');
+
+        ## for overwriting SGEs default
+        $ENV{TMPDIR} = "/tmp";
     }
     
 }
