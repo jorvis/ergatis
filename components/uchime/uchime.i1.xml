@@ -2,13 +2,13 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>Leech plotting visualization</name>
+        <name>chimera chimera detection compute</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>leech plotting</name>
+            <name>uchime chimera checker</name>
             <state>incomplete</state>
-            <executable>/opt/leech/leech</executable>
-            <arg>-F $;I_FILE_PATH$; -X $;XAXIS_NAME$; -Y $;YAXIS_NAME$; -T $;TYPE$; -P $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+            <executable>$;UCHIMEPATH$;</executable>
+            <arg> --input $;I_FILE_PATH$; --db $;TEMPLATE_FILE$; --uchimeout $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.uchime --minh $;MINH$; --mindiv $;MINDIVERGENCE$;</arg>
             <param>
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
@@ -20,3 +20,4 @@
         </command>
     </commandSet>
 </commandSetRoot>
+
