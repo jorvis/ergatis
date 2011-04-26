@@ -1,5 +1,6 @@
 next
 ----
+-fixed create_pseudomolecules.pl to accept file list
 -added pipeline.config to different prokaryotic pipeline versions
 ergatis-v2r14b1
 ---------------

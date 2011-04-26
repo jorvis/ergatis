@@ -109,7 +109,7 @@ $results = GetOptions (\%options,
 		'database|d=s',
 		'format|f=s',
 		'contig_file|c=s',
-		'contig_list|t=s'
+		'contig_list|t=s',
 		'strain|s=s',
 		'config_param|p=s',
 		'nucmer_exec|n=s',
@@ -151,43 +151,47 @@ foreach my $line (@contents) {
 $contig_file = $orig_contig_file;
 
 for my $group (sort {$a<=>$b} keys %accHash) {
-	chomp($accHash{$group});
-	system("$Bin/fetch_genbank --output_dir=$options{output_dir} --database=$options{database} --query=$accHash{$group} --format=$options{format}");		       
-	my @acc = split(/,/,$accHash{$group});
-	my $ref_file = $options{output_dir}."/reference_grp".$group.".".$options{format};
-	foreach my $id (@acc) {
-		my $filename = $options{output_dir}."/reference_".$id.".".$options{format};
-		if (-e $filename) {
-			system("cat $filename >> $ref_file");
+	my @contig_file_size = &read_file($contig_file);
+	my $file_size = @contig_file_size;
+	if ($file_size > 0) {
+		chomp($accHash{$group});
+		system("$Bin/fetch_genbank --output_dir=$options{output_dir} --database=$options{database} --query=$accHash{$group} --format=$options{format}");		       
+		my @acc = split(/,/,$accHash{$group});
+		my $ref_file = $options{output_dir}."/reference_grp".$group.".".$options{format};
+		foreach my $id (@acc) {
+			my $filename = $options{output_dir}."/reference_".$id.".".$options{format};
+			if (-e $filename) {
+				system("cat $filename >> $ref_file");
+			}
 		}
+		my ($ref_base,$ref_dir,$ref_ext) = fileparse($ref_file,qr/\.[^.]*/);
+		my ($contig_base,$contig_dir,$contig_ext) = fileparse($contig_file,qr/\.[^.]*/);
+		my $nucmer_prefix = $options{output_dir}."/".$ref_base.$contig_base;
+		system("$options{'nucmer_exec'} -p $nucmer_prefix $options{config_param} $ref_file $contig_file");
+		my $nucout_file = "$nucmer_prefix.delta";
+		my @nucout = &read_file($nucout_file);
+		my $is_full = 0;
+		foreach my $line (@nucout) {
+			chomp($line);
+			if($line =~ /^>/) {
+				$is_full = 1;
+				last; 
+			}	
+		}
+		if($is_full == 0) {
+			next;
+		}
+		my $delta_file = $options{output_dir}."/".$ref_base.$contig_base.".delta";
+		my $coords_file = $options{output_dir}."/".$ref_base.$contig_base.".coords";
+		system("$options{coords_exec} -T $delta_file > $coords_file");
+		system("$Bin/reference_genome_match_tiler --mummer_coords_file $coords_file --min_match_length 100 --mummer_delta_file $delta_file --method nucmer --strain $options{strain} --pseudonum $group --output_dir $options{output_dir}");
+		my $map_file = $options{output_dir}."/".$options{strain}."_".$group.".map";
+		my $pseudo_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$group.".fasta";
+		$contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
+		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$orig_contig_file --map_file=$map_file --output_file=$pseudo_file  --unmapped_output=$contig_file");
+		system("$Bin/clean_fasta $pseudo_file");
+		$groupnum = $group;
 	}
-	my ($ref_base,$ref_dir,$ref_ext) = fileparse($ref_file,qr/\.[^.]*/);
-	my ($contig_base,$contig_dir,$contig_ext) = fileparse($contig_file,qr/\.[^.]*/);
-	my $nucmer_prefix = $options{output_dir}."/".$ref_base.$contig_base;
-	system("$options{'nucmer_exec'} -p $nucmer_prefix $options{config_param} $ref_file $contig_file");
-	my $nucout_file = "$nucmer_prefix.delta";
-	my @nucout = &read_file($nucout_file);
-	my $is_full = 0;
-	foreach my $line (@nucout) {
-		chomp($line);
-		if($line =~ /^>/) {
-			$is_full = 1;
-			last; 
-		}	
-	}
-	if($is_full == 0) {
-		next;
-	}
-	my $delta_file = $options{output_dir}."/".$ref_base.$contig_base.".delta";
-	my $coords_file = $options{output_dir}."/".$ref_base.$contig_base.".coords";
-	system("$options{coords_exec} -T $delta_file > $coords_file");
-	system("$Bin/reference_genome_match_tiler --mummer_coords_file $coords_file --min_match_length 100 --mummer_delta_file $delta_file --method nucmer --strain $options{strain} --pseudonum $group --output_dir $options{output_dir}");
-	my $map_file = $options{output_dir}."/".$options{strain}."_".$group.".map";
-	my $pseudo_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$group.".fasta";
-	$contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
-	system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$orig_contig_file --map_file=$map_file --output_file=$pseudo_file  --unmapped_output=$contig_file");
-	system("$Bin/clean_fasta $pseudo_file");
-	$groupnum = $group;
 }	
 
 # The last unmapped set of contigs will be the last pseudomolecule
@@ -271,8 +275,8 @@ sub concat_contigs {
 	my @contig_files = &read_file($options{'contig_list'});
 	foreach my $path (@contig_files) {
 		chomp($path);
-		next if ($line =~ /^\s*$/);
-		next if ($line =~ /^#/);
+		next if ($path =~ /^\s*$/);
+		next if ($path =~ /^#/);
 		if(-e $path) {
 			system("cat $path >> $orig_contig_file");			
 		}
