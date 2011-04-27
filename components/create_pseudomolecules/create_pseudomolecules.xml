@@ -20,10 +20,18 @@
             		<arg>-p -m 777 $;TMP_DIR$;</arg>
         	</command>
         	<command>
-            		<type>RunUnixCommand</type>
-            		<name>create_pseudomolecules</name>
-            		<state>incomplete</state>
-            		<executable>$;BIN_DIR$;/create_pseudomolecules</executable>
+                <type>RunUnixCommand</type>
+                <name>create_pseudomolecules</name>
+                <state>incomplete</state>
+                <executable>$;BIN_DIR$;/create_pseudomolecules</executable>
+                <param>
+                   <key>stdout</key>
+                   <value>$;OUTPUT_DIRECTORY$;/create_pseudomolecules.stdout</value>
+                </param>
+                <param>
+                   <key>stderr</key>
+                   <value>$;OUTPUT_DIRECTORY$;/create_pseudomolecules.stderr</value>
+                </param>
 	    		<param>
 				<key>--input_file</key>
 				<value>$;ACSN_FILE$;</value>
