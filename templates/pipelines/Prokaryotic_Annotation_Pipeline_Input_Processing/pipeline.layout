@@ -4,7 +4,7 @@
 		<name>start pipeline:</name>	
 		<commandSet type="serial">
             		<state>incomplete</state>
-            		<name>clean_fasta.default</name>
+            		<name>clean_fasta.clean_fasta</name>
         	</commandSet>
 		<commandSet type="serial">
         		<state>incomplete</state>
