@@ -1,5 +1,6 @@
 next
 ----
+-included contig list in config and xml for create_pseudomolecule
 -modified filter_blastx_output.pl so that longest match will be considered (resistome)
 -added get_genbank_entries.pl script
 -fixed create_pseudomolecules.pl to accept file list

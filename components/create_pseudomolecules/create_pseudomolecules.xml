@@ -40,6 +40,10 @@
 				<key>--contig_file</key>
 				<value>$;CONTIG_FILE$;</value>
 	    		</param>
+			<param>
+                                <key>--contig_list</key>
+                                <value>$;CONTIG_LIST$;</value>
+                        </param>
 	    		<param>
 				<key>--strain</key>
 				<value>$;STRAIN_NAME$;</value>
