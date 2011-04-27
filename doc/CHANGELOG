@@ -1,5 +1,7 @@
 next
 ----
+-modified filter_blastx_output.pl so that longest match will be considered (resistome)
+-added get_genbank_entries.pl script
 -fixed create_pseudomolecules.pl to accept file list
 -added pipeline.config to different prokaryotic pipeline versions
 ergatis-v2r14b1
