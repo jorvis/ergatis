@@ -1,5 +1,13 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+if 0; # not running under some shell
+
+BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 ###########################################################
 # POD DOCUMENTATION                                       #
 ###########################################################
@@ -9,7 +17,7 @@ create_pseudomolecules.pl - program to generate pseudomolecules from contigs for
 
 =head1 SYNOPSIS
 
-    create_pseudomolecules.pl --output_dir <outdir>  --contig_file <contig file> --strain <strain name> [--contig_list <contig list file> --input_file <reference accession ids file> --database <genBank database> --format <reference file format> --config_param <nucmer config params> --log <log file> --debug <debug level> --help <usgae>]
+    create_pseudomolecules.pl --output_dir <outdir>  --contig_input <contig file> --strain <strain name> [--input_file <reference accession ids file> --database <genBank database> --format <reference file format> --config_param <nucmer config params> --log <log file> --debug <debug level> --help <usgae>]
 
     parameters in [] are optional
     do NOT type the carets when specifying options
@@ -19,15 +27,13 @@ create_pseudomolecules.pl - program to generate pseudomolecules from contigs for
     --output_dir  	= /path/to/output_dir. This is the directory where all output 
 		    	  files generated during the script execution will be stored.
 
-    --contig_file 	= /path/to/contig_file. This is a fasta file containing the
-		    	  strain genome contigs.
+    --contig_input 	= /path/to/contig_file or contig_list_file. This is a file 
+			  containing the strain genome contigs in fasta format 
+			  or paths to contig files.
     
     --strain      	= Name of the strain used for naming the output files.
 
-   [--contig_list	= /path/to/contig_list_file. This is a list of input contigs fasta files
-			  paths.
-
-    --config_param	= Configuration parameters to execute nucmer.
+   [--config_param	= Configuration parameters to execute nucmer.
 		    	  e.g. -c 100 -maxmatch
 
     --input_file  	= /path/to/input_file. This is a tab-delimited file containing
@@ -100,8 +106,7 @@ $results = GetOptions (\%options,
 		'output_dir|o=s',
 		'database|d=s',
 		'format|f=s',
-		'contig_file|c=s',
-		'contig_list|t=s',
+		'contig_input|c=s',
 		'strain|s=s',
 		'config_param|p=s',
 		'nucmer_exec|n=s',
@@ -219,7 +224,7 @@ sub check_parameters {
         my $options = shift;
 
 ## make sure output directory, contig file and strain name were passed
-        unless ($options{output_dir} && ($options{contig_file} || $options{contig_list}) && $options{strain}) {
+        unless ($options{output_dir} && $options{contig_input} && $options{strain}) {
 		$logger->logdie("All the manadatory parameters should be passed");
 	}
 
@@ -228,14 +233,27 @@ sub check_parameters {
 		$logger->logdie("The $options{output_dir} output directory passed could not be read or does not exist");
        	}
 ## make sure the contig file exists and is readable
-	if (! -e "$options{contig_file}") {
-		if (-e "$options{contig_list}") {
-			&concat_contigs();
-		} else {
-			$logger->logdie("The $options{contig_list} contigs list passed could not be read or does not exist");
-		}
+	if (! -e "$options{contig_input}") {
+		$logger->logdie("The $options{contig_input} contigs input file passed could not be read or does not exist");
 	} else {
-		$orig_contig_file = $options{'contig_file'}; 
+		my @ctg_ip = &read_file($options{'contig_input'});
+		foreach my $content (@ctg_ip) {
+			chomp($content);
+			next if ($content =~ /^\s*$/);
+			next if ($content =~ /^#/);
+			if($content =~ /^>/) {
+## If the contig_input is a multi fasta file containing contigs				
+				$orig_contig_file = $options{'contig_input'};
+				last;
+			} elsif ($content =~ /\//g) {
+## If the contig_input is a list file containing paths to contig files 
+				&concat_contigs();
+				last;
+			} else {
+## Else the contig_input does not contain correct data - neither fasta sequence nor list of file paths
+				$logger->logdie("The $options{contig_input} file is neither a fasta file nor a list file of paths. Incorrect input");
+			}
+		}
 ## make sure the input file exists and is readable
 		if ($options{'input_file'}) {
 			if(-e "$options{input_file}") {
@@ -264,7 +282,7 @@ sub check_parameters {
 
 sub concat_contigs {
 	$orig_contig_file = $options{output_dir}."/".$options{strain}.".multi.fasta";
-	my @contig_files = &read_file($options{'contig_list'});
+	my @contig_files = &read_file($options{'contig_input'});
 	foreach my $path (@contig_files) {
 		chomp($path);
 		next if ($path =~ /^\s*$/);
