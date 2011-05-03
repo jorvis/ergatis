@@ -197,6 +197,9 @@ foreach my $sp ( keys %included_subpipelines ) {
     if( $sp eq 'gene_prediction' && $included_subpipelines{$sp} ne 'none' ) {
         print "Adding config for $sp\n";
         &add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
+    } elsif( $sp eq 'load' && $included_subpipelines{$sp} && $included_subpipelines{'pseudomolecule'} ) {
+        print "Adding config for $sp\n";
+        &add_config( \%config, $pipelines->{ $sp }, "pipeline_pmarks.config" );
     } elsif( $sp ne 'gene_prediction' && $included_subpipelines{$sp} ) {
         print "Adding config for $sp\n";
         &add_config( \%config, $pipelines->{ $sp } );
@@ -279,8 +282,9 @@ sub write_section {
 }
 
 sub add_config {
-    my ($config, $subpipeline) = @_;
+    my ($config, $subpipeline, $config_name) = @_;
     my $pc = "$template_directory/$subpipeline/pipeline.config";
+    $pc = "$template_directory/$subpipeline/$config_name" if( $config_name );
     open(IN, "< $pc") or &_log($ERROR, "Could not open $pc for reading: $!");
     
     my $section;
