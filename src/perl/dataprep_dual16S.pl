@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 
@@ -445,7 +448,7 @@ for my $i (0 .. ($listlength[0]-1)){
   my $fileprefix = join(".", @linesplit[0..($#linesplit-1)]);
 
 
-  #open and process this file
+  # open and process this file
   open IN, "$catstr[$i]" or die "Can't open $catstr[$i] for preprocessing!\n";
   my $seq = "";
   my $seqname = "";
@@ -453,10 +456,10 @@ for my $i (0 .. ($listlength[0]-1)){
   my $fL = 70;
   while(<IN>){
     chomp($_);
-    if ($_ =~ /^>/){ #we've reached a new sequence in this fasta file
+    if ($_ =~ /^>/){ # we've reached a new sequence in this fasta file
       my @A = split " ", $_;
       if ($seq ne ""){
-        print SEQ ">$fileprefix\_$seqcount\n";
+        print SEQ ">$fileprefix\_$seqname\n";
         my $tmp  = $bc;
         $tmp    .= $ARTIFICIAL_PRIMER;
         $tmp    .= $seq;
@@ -475,7 +478,7 @@ for my $i (0 .. ($listlength[0]-1)){
   }
   close IN;
 
-  print SEQ ">$fileprefix\_$seqcount\n"; 
+  print SEQ ">$fileprefix\_$seqname\n"; 
   my $tmp = $bc;
   $tmp .= $ARTIFICIAL_PRIMER;
   $tmp .= $seq;
