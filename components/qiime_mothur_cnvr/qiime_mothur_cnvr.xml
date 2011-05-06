@@ -24,14 +24,14 @@
             <name>preprocess input data for split libraries</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/dataprep_dual16S.pl</executable>
-            <arg>-m `cat $;MAPPING_FILE$;` -f $;INPUT_FILE_LIST$; -p $;OUTPUT_DIRECTORY$;/Data</arg>
+            <arg>-m `cat $;MAPPING_FILE$;` -f $;INPUT_FILE_LIST$; -q $;QUAL_FILE_LIST$; -p $;OUTPUT_DIRECTORY$;/Data</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>split libraries for Qiime workflows</name>
             <state>incomplete</state>
             <executable>split_libraries.py</executable>
-            <arg>-m $;OUTPUT_DIRECTORY$;/Data.processed.map -f $;OUTPUT_DIRECTORY$;/Data.processed.fasta -o $;OUTPUT_DIRECTORY$;/splitlibs/ -b $;BARCODES$; -l $;MIN_LENGTH$; -L $;MAX_LENGTH$; -H $;MAXIMUM_HOMOPOLYMER_LENGTH$; -a $;MAXAMBIGUOUS$; $;OTHEROPTS$;</arg>
+            <arg>-m $;OUTPUT_DIRECTORY$;/Data.processed.map -f $;OUTPUT_DIRECTORY$;/Data.processed.fasta -q $;OUTPUT_DIRECTORY$;/Data.processed.qual -o $;OUTPUT_DIRECTORY$;/splitlibs/ -b $;BARCODES$; -l $;MIN_LENGTH$; -L $;MAX_LENGTH$; -H $;MAXIMUM_HOMOPOLYMER_LENGTH$; -a $;MAXAMBIGUOUS$; $;OTHEROPTS$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
