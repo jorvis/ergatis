@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>samtools idxstats</name>
+            <state>incomplete</state>
+            <executable>$;SAMTOOLS_EXEC$;</executable>
+
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.idxstats.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.idxstats.stderr</value>
+            </param>
+
+            <arg>idxstats $;I_FILE_PATH$;</arg>            
+        </command>
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>samtools flagstat</name>
+            <state>incomplete</state>
+            <executable>$;SAMTOOLS_EXEC$;</executable>
+
+            <param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.flagstat.stdout</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.flagstat.stderr</value>
+            </param>
+            <arg>flagstat $;I_FILE_PATH$;</arg>            
+        </command>
+
+
+     </commandSet>
+</commandSetRoot>
+

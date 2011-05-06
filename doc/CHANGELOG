@@ -1,5 +1,9 @@
 next
 ----
+-added pileup_to_wig component
+-added samtools_pileup component
+-added basic_alignment_stats component
+-added sam_to_bam component
 -included contig list in config and xml for create_pseudomolecule
 -modified filter_blastx_output.pl so that longest match will be considered (resistome)
 -added get_genbank_entries.pl script
