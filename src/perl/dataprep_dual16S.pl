@@ -447,6 +447,9 @@ if ($listlength[0] == 1){
     my $qfile = `cat $quallist`;
     chomp($qfile);
     copy($qfile, $finalqualfile);
+  }else{
+    open Q, ">$finalqualfile"; 
+    close Q;
   }
 
   # correct Qiime-formatted mapping file if necessary
