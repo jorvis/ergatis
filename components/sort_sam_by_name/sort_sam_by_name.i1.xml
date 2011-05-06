@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>sort sam by read name</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/sort_sam_by_name.sh</executable>
+            <arg>$;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sort_sam_by_name.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sort_sam_by_name.stderr</value>
+            </param>
+        </command>
+     </commandSet>
+</commandSetRoot>

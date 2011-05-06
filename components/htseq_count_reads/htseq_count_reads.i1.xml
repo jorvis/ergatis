@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>HTSeq counting</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/htseq_count_reads.sh</executable>            
+            <arg>$;COUNT_MODE$; $;COUNTING_FEATURE$; $;MIN_ALIGN_QUAL$; $;ID_ATTRIBUTE$; $;IS_STRANDED$; $;GTF_FILE$; $;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.gene.counts</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.htseq.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.htseq.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

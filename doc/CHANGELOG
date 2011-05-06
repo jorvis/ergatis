@@ -1,5 +1,8 @@
 next
 ----
+-added htseq_count_reads component
+-added deseq component
+-added sort_sam_by_name component
 -added pileup_to_wig component
 -added samtools_pileup component
 -added basic_alignment_stats component
