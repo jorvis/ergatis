@@ -28,12 +28,13 @@ use warnings;
 use Getopt::Std;
 use File::Copy;
 
-use vars qw/$opt_f $opt_m $opt_p/;
+use vars qw/$opt_f $opt_q $opt_m $opt_p/;
 
-getopts("f:m:p:");
+getopts("f:m:q:p:");
 
 my $usage = "Usage:  $0 \
                 -f list of fasta input files\
+                -q list of qual score files\
                 -m input mapping file\
                 -p output prefix for the processed files\
                 \n";
@@ -42,15 +43,22 @@ die $usage unless defined $opt_f
               and defined $opt_m
               and defined $opt_p;
 
-my $list    = $opt_f;
-my $mapfile = $opt_m;
-my $prefix  = $opt_p;
+my $list     = $opt_f;
+my $quallist = "";
+my $mapfile  = $opt_m;
+my $prefix   = $opt_p;
+if (-T $opt_q){
+  $quallist = $opt_q;
+}
 
-my $finalseqfile = "$prefix.processed.fasta"; 
-my $finalmapfile = "$prefix.processed.map";
+
+my $finalseqfile  = "$prefix.processed.fasta"; 
+my $finalqualfile = "$prefix.processed.qual";
+my $finalmapfile  = "$prefix.processed.map";
 
 my %data = ();
-my $ARTIFICIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT";
+my $ARTIFICIAL_PRIMER  = "CATGCTGCCTCCCGTAGGAGT";
+my $ARTIFICIAL_QUALSTR = "40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40 40";
 my @barcodes = qw/AAAAAAAA AAAAAAAC AAAAAAAG AAAAAAAT AAAAAACA AAAAAACC AAAAAACG AAAAAACT 
 AAAAAAGA AAAAAAGC AAAAAAGG AAAAAAGT AAAAAATA AAAAAATC AAAAAATG AAAAAATT 
 AAAAACAA AAAAACAC AAAAACAG AAAAACAT AAAAACCA AAAAACCC AAAAACCG AAAAACCT 
@@ -417,26 +425,45 @@ if ($listlength[0] > $#barcodes-1){
   exit(1);
 }
 
+# check for quality filelist
+if ($quallist ne ""){
+  my $qlistlength = `wc $list`;
+  my @qlistlength = split " ", $listlength;
+  if($listlength[0] != $qlistlength[0]){
+    print STDERR "The number of input fasta files is not the same as the number of quality files!\nCheck your inputs.\n";
+    exit(1);
+  }
+}
+
+
 # first let's handle the case where we have a Qiime-formatted mapping file:
 if ($listlength[0] == 1){
   my $file = `cat $list`;
   chomp($file);
   copy($file, $finalseqfile);
 
+  # quality file
+  if ($quallist ne ""){
+    my $qfile = `cat $quallist`;
+    chomp($qfile);
+    copy($qfile, $finalqualfile);
+  }
+
   # correct Qiime-formatted mapping file if necessary
   qiimemapCorrection($mapfile);
-
   copy($mapfile, $finalmapfile);
   print STDOUT "One fasta file detected. We assume this file is barcoded to determine samples and also that the mapping file provided in formatted for Qiime.\n"; 
   exit(0);
 }
 
-# otherwise we've got multiple fasta files
-# we assume that these files are trimmed of barcodes/primers and that each file
-# represents a different specific sample.
+#  otherwise we've got multiple fasta files
+#  we assume that these files are trimmed of barcodes/primers and that each file
+#  represents a different specific sample.
 my $catstr = `cat $list`;
 my @catstr = split "\n", $catstr;
 open SEQ, ">$finalseqfile" or die;
+open QUAL, ">$finalqualfile" or die;
+
 for my $i (0 .. ($listlength[0]-1)){
   my $bc = $barcodes[$i]; # this is the associated barcode for the sample
 
@@ -446,7 +473,6 @@ for my $i (0 .. ($listlength[0]-1)){
   $data{$line[$#line]} = $bc;
   my @linesplit = split /\./, $line[$#line];
   my $fileprefix = join(".", @linesplit[0..($#linesplit-1)]);
-
 
   # open and process this file
   open IN, "$catstr[$i]" or die "Can't open $catstr[$i] for preprocessing!\n";
@@ -479,18 +505,84 @@ for my $i (0 .. ($listlength[0]-1)){
   close IN;
 
   print SEQ ">$fileprefix\_$seqname\n"; 
-  my $tmp = $bc;
-  $tmp .= $ARTIFICIAL_PRIMER;
-  $tmp .= $seq;
+  my $tmp2 = $bc;
+  $tmp2   .= $ARTIFICIAL_PRIMER;
+  $tmp2   .= $seq;
 
-  for (my $i = 0; $i<length($tmp); $i+=$fL){
-    my $substr = substr($tmp, $i, $fL);
+  for (my $i = 0; $i<length($tmp2); $i+=$fL){
+    my $substr = substr($tmp2, $i, $fL);
     print SEQ "$substr\n";
   }
   # end of this file
 
+  # Now if there are quality scores you should be able to go through the list
+  # and find the matching file name
+  if ($quallist ne ""){
+    my $qcatstr = `cat $quallist`;
+    my @qcatstr = split "\n", $qcatstr;
+
+    # search the list
+    my $targetQualFile = "";
+    my $targetQualPrefix = "";
+    foreach my $qf (@qcatstr){
+      my @qline = split /\//, $qf;
+      my @qlinesplit = split /\./, $qline[$#qline];
+      my $qfprefix = join(".", @qlinesplit[0..($#qlinesplit-1)]);
+      
+      if ($fileprefix eq $qfprefix){ # we found a match
+        $targetQualFile = $qf;
+        $targetQualPrefix = $qfprefix;
+        last;  
+      }
+    }
+
+    if ($targetQualFile eq ""){
+      print STDERR "Error: No quality score file could be found for fasta file $fileprefix!\n";
+      exit(1);
+    } 
+    
+    # go through this matching qual file        
+    open QF, "$targetQualFile" or die "Cannot open $targetQualFile!\n"; 
+    $seq = "";
+    $seqname = "";
+    $seqcount = 1;
+    $fL = 1e10;
+    while(<QF>){
+      chomp($_);
+      if ($_ =~ /^>/){ # we've reached a new sequence in this fasta file
+        my @A = split " ", $_;
+        if ($seq ne ""){
+          print QUAL ">$fileprefix\_$seqname\n";
+          my $tmp  = $ARTIFICIAL_QUALSTR;
+          $tmp    .= " $seq";
+
+          for (my $i = 0; $i<length($tmp); $i+=$fL){
+            my $substr = substr($tmp, $i, $fL);
+            print QUAL "$substr\n";
+          }
+          $seqcount++;
+        }
+        $seqname = substr($A[0],1);
+        $seq = "";
+      }else{
+        $seq .= " $_";
+      }
+    } 
+    close QF; #end of file    
+
+    print QUAL ">$fileprefix\_$seqname\n";
+    $tmp2   = $ARTIFICIAL_QUALSTR;
+    $tmp2  .= " $seq";
+    for (my $i = 0; $i<length($tmp2); $i+=$fL){
+      my $substr = substr($tmp2, $i, $fL);
+      print QUAL "$substr\n";
+    }
+  }
 }
 close SEQ;
+close QUAL;
+
+
 
 # now create the corresponding mapping file for Qiime
 # and be sure it ends in Description
