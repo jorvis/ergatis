@@ -23,6 +23,42 @@
         <!--Iterator-->
 	<!--we don't need the iterator for this component-->
         <!--Postprocessing-->
+	 <command>
+            <type>RunUnixCommand</type>
+            <name>store read and source map query</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/store_read_dataset_info</executable>
+            <param>
+                <key>--input_file</key>
+                <value>$;QUERY_FILE$;</value>
+            </param>
+            <param>
+                <key>--input_file_list</key>
+                <value>$;QUERY_FILE_LIST$;</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;TMP_DIR$;/read_dataset_map_query.bin</value>
+            </param>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>store read and source map db</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/store_read_dataset_info</executable>
+            <param>
+                <key>--input_file</key>
+                <value>$;DB_FILE$;</value>
+            </param>
+            <param>
+                <key>--input_file_list</key>
+                <value>$;DB_FILE_LIST$;</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;TMP_DIR$;/read_dataset_map_db.bin</value>
+            </param>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>fetch read length</name>
@@ -30,11 +66,15 @@
             <executable>$;BIN_DIR$;/get_read_length</executable>
 	    <param>
                 <key>--input_file</key>
-                <value>$;INPUT_FILE$;</value>
+                <value>$;DB_FILE$;</value>
             </param>
 	    <param>
 		<key>--input_file_list</key>
-		<value>$;INPUT_FILE_LIST$;</value>
+		<value>$;DB_FILE_LIST$;</value>
+	    </param>
+	    <param>
+		<key>--read_dataset_info</key>
+		<value>$;TMP_DIR$;/read_dataset_map_db.bin</value>
 	    </param>
             <param>  
                 <key>--output_file</key>
@@ -43,20 +83,20 @@
         </command>
 	<command>
             <type>RunUnixCommand</type>
-            <name>filter blastx output</name>
+            <name>filter blast output</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/filter_blastx_output</executable>
+            <executable>$;BIN_DIR$;/filter_blast_output</executable>
             <param>
                 <key>--read_length_file</key>
                 <value>$;READ_LENGTH_FILE$;</value>
             </param>
 	    <param>
-		<key>--blastx_file_list</key>
-		<value>$;BLASTX_FILE_LIST$;</value>
+		<key>--blast_file_list</key>
+		<value>$;BLAST_FILE_LIST$;</value>
 	    </param>
             <param>
                 <key>--output_file</key>
-                <value>$;FILTERED_BLASTX_FILE$;</value>
+                <value>$;FILTERED_BLAST_FILE$;</value>
             </param>
 	    <param>
 		<key>--identity_percentage</key>
@@ -74,11 +114,33 @@
             <executable>$;BIN_DIR$;/get_resistome_table</executable>
 	    <param>
                 <key>--input_file</key>
-                <value>$;FILTERED_BLASTX_FILE$;</value>
+                <value>$;FILTERED_BLAST_FILE$;</value>
             </param>
+	    <param>
+		<key>--read_dataset_info</key>
+		<value>$;TMP_DIR$;/read_dataset_map_query.bin</value>
+	    </param>
             <param>
                 <key>--output_file</key>
                 <value>$;RESISTOME_TABLE$;</value>
+            </param>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>get filtered reads</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/get_filtered_reads</executable>
+            <param>
+                <key>--input_file</key>
+                <value>$;FILTERED_BLAST_FILE$;</value>
+            </param>
+            <param>
+                <key>--dataset_info</key>
+                <value>$;TMP_DIR$;/read_dataset_map_query.bin</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;FILTERED_READS_FILE$;</value>
             </param>
         </command>
     </commandSet>
