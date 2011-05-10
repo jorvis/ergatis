@@ -1,5 +1,6 @@
 next
 ----
+-added scripts to create Pfam and TIGRFAM HMM libraries and MLDBM
 -added htseq_count_reads component
 -added deseq component
 -added sort_sam_by_name component

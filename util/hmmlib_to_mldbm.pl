@@ -167,29 +167,35 @@ while ( my $line = <$ifh> ) {
     
     ## are we at the end of an entry?
     if ( $line =~ m|^//| && defined $att ) {
-        
+        if(length($$att{ACC}) == 0) {
+		$$att{ACC} = $$att{NAME};
+	} 
+	
         my ($trusted_global, $trusted_domain, $noise_global, $noise_domain);
         my ($gathering_global, $gathering_domain);
-        
-        if ( $$att{TC} =~ /([0-9\.\-]+)\s+([0-9\.\-]+)/ ) {
+        if ( $$att{TC} =~ /([0-9\.\-]*)\s+([0-9\.\-]*)/ ) {
             ($trusted_global, $trusted_domain) = ($1, $2);
             
         } else {
-            die "failed to parse trusted global and trusted domains for $$att{ACC}\n";
+#	    $trusted_global = 0.00;
+#	    $trusted_domain = 0.00;
+#            die "failed to parse trusted global and trusted domains for $$att{ACC}\n";
         }
         
         if ( $$att{NC} =~ /([0-9\.\-]+)\s+([0-9\.\-]+)/ ) {
             ($noise_global, $noise_domain) = ($1, $2);
             
         } else {
-            die "failed to parse noise global and noise domains for $$att{ACC}\n";
+#	    $noise_global = 0.00;
+#	    $noise_domain = 0.00;
+#            die "failed to parse noise global and noise domains for $$att{ACC}\n";
         }
         
         if ( $$att{GA} =~ /([0-9\.\-]+)\s+([0-9\.\-]+)/ ) {
             ($gathering_global, $gathering_domain) = ($1, $2);
             
         } else {
-            die "failed to parse gathering global and gathering domains for $$att{GA}\n";
+#            die "failed to parse gathering global and gathering domains for $$att{GA}\n";
         }
         
         ## handle the product name.  if it contains the NAME at the beginning, remove that
@@ -224,7 +230,9 @@ while ( my $line = <$ifh> ) {
                                 ec_num => $$att{EC} || '',
                                 gene_symbol => $$att{GS} || '',
                                 isotype => $$att{IT} || '',
+				hmm_comment => $$att{CC} || '',
                                 go => [],
+				role_id => []
                             };
         
         undef $att;

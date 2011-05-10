@@ -10,7 +10,9 @@ existing HmmInfo MLDBM file.
 USAGE: tigrfam_info_to_mldbm.pl 
             --mldbm_file=/path/to/some_file.db
             --info_dir=/path/to/some_dir
-          [ --go_link=/path/to/TIGRFAMS_GO_LINK ]
+          [ --go_link=/path/to/TIGRFAMS_GO_LINK 
+	    --role_link=/path/to/TIGRFAMS_ROLE_LINK
+	  ]
 
 =head1 OPTIONS
 
@@ -23,6 +25,9 @@ B<--info_dir>
 B<--go_link>
     A tab-delimited file containing relationships of TIGRFAMs to GO terms
     
+B<--role_link>
+    A tab-delimited file containing relationships of TIGRFAMs to TIGR role ids
+
 B<--log,-l> 
     Log file
 
@@ -61,6 +66,10 @@ The only fields I currently look for are these:
     IT  equivalog_domain
     GS  purD
     EC  6.3.4.13
+    AC  TIGR00877
+    TC  200.00 200.00
+    NC  -50.00 -50.00
+    CC  This enzyme appears as a monofunctional protein in prokaryotes but as part of a larger, multidomain protein in eukaryotes.  
 
 The --go_link is a tab-delimited text file with this format:
 
@@ -74,6 +83,19 @@ The --go_link is a tab-delimited text file with this format:
 
 Currently, this script only considers the first two columns.  This file is optional.
 
+The --role_link is a tab-delimited test file with this format:
+
+    TIGR00001	158
+    TIGR00002	158
+    TIGR00003	145
+    TIGR00004	134
+    TIGR00005	168
+    TIGR00006	89
+    TIGR00007	161
+    TIGR00008	169
+    TIGR00009	158
+
+
 =head1  OUTPUT
 
 The following are added to the existing tied hash.  Each accession entry should exist alraedy.
@@ -83,6 +105,7 @@ The following are added to the existing tied hash.  Each accession entry should 
                             ec_num => '6.3.4.13',
                             gene_sym => 'purD',
                             go => [ 'GO:0003735', 'GO:0006412', ... ]
+			    roleid => 158
                        };
 
 =head1  CONTACT
@@ -103,6 +126,7 @@ my $results = GetOptions (\%options,
                           'mldbm_file=s',
                           'info_dir=s',
                           'go_link=s',
+			  'role_link=s', 
                           'log|l=s',
                           'help|h') || pod2usage();
 
@@ -132,6 +156,19 @@ if ( $options{go_link} ) {
         
         my @cols = split(/\t/, $line);
         push @{$$go_terms{$cols[0]}}, $cols[1];
+    }
+}
+
+## read all role ids for TIGRFAMs
+my $role_ids = {};
+if ($options{role_link}) {
+    _log("INFO: reading role_link file $options{role_link}");
+    open(my $role_fh, "<$options{role_link}") || die "couldn't read --role_link file: $!";
+    while ( my $line = <$role_fh> ) {
+         chomp $line;
+         next if $line =~ /^\s*$/;
+         my @cols = split(/\t/, $line);
+	 push @{$$role_ids{$cols[0]}}, $cols[1];
     }
 }
 
@@ -171,6 +208,12 @@ while ( my $file = readdir($idh) ) {
     my $gene_symbol = $info{$accession}{gene_symbol} || '';
     my $isotype = $info{$accession}{isotype} || '';
     my $comment = $info{$accession}{hmm_comment} || '';
+    my $trusted_cutoff = $info{$accession}{trusted_cutoff} || '';
+    my $trusted_cutoff2 = $info{$accession}{trusted_cutoff2} || '';
+    my $noise_cutoff = $info{$accession}{noise_cutoff} || '';
+    my $noise_cutoff2 = $info{$accession}{noise_cutoff2} || '';
+    my $gathering_cutoff = $info{$accession}{gathering_cutoff} || '';
+    my $gathering_cutoff2 = $info{$accession}{gathering_cutoff2} || '';
 
     ## we have to store this into a variable first, make modifications, then write it
     ##  back.  this is dumb, but see the BUGS section of the MLDBM perldoc for the
@@ -195,6 +238,18 @@ while ( my $file = readdir($idh) ) {
         } elsif ( $line =~ /^CC\s+(.+)$/ ) {
             _log("INFO: $accession hmm_comment was [$comment], changing to [$1]");
             $$tied_acc{hmm_comment} = $1;
+        } elsif ( $line =~ /^TC\s+([0-9\.\-]*)\s+([0-9\.\-]*)$/ ) {
+	    _log("INFO: $accession trusted global cutoff was [$trusted_cutoff], changing to [$1] and trusted domain cutoff was [$trusted_cutoff2], changing to [$2]");
+	    $$tied_acc{trusted_cutoff} = $1;
+            $$tied_acc{trusted_cutoff2} = $2;
+	} elsif ( $line =~ /^NC\s+([0-9\.\-]*)\s+([0-9\.\-]*)$/ ) { 
+            _log("INFO: $accession noise global cutoff was [$noise_cutoff], changing to [$1] and noise domain cutoff was [$noise_cutoff2], changing to [$2]");
+            $$tied_acc{noise_cutoff} = $1; 
+            $$tied_acc{noise_cutoff2} = $2; 
+        } elsif ( $line =~ /^GA\s+([0-9\.\-]*)\s+([0-9\.\-]*)$/ ) { 
+            _log("INFO: $accession gathering global cutoff was [$gathering_cutoff], changing to [$1] and gathering domain cutoff was [$gathering_cutoff2], changing to [$2]");
+            $$tied_acc{gathering_cutoff} = $1; 
+            $$tied_acc{gathering_cutoff2} = $2; 
         }
     }
     
@@ -205,7 +260,15 @@ while ( my $file = readdir($idh) ) {
     } else {
         _log("INFO: no GO terms found for accession $accession");
     }
-    
+        
+    ## now add any role_ids
+    if ( exists $$role_ids{$accession} ) { 
+        _log("INFO: attaching " . scalar(@{$$role_ids{$accession}}) . " to accession $accession");
+        $$tied_acc{role_id} = $$role_ids{$accession};
+    } else {
+        _log("INFO: no role_id found for accession $accession");
+    } 
+
     $info{$accession} = $tied_acc;
 }
 
@@ -237,4 +300,5 @@ sub check_parameters {
     
     ## handle some defaults
     $options{go_link} = '' unless ($options{go_link});
+    $options{role_link} = '' unless ($options{role_link});
 }
