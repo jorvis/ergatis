@@ -20,7 +20,7 @@
             		<arg>-p -m 777 $;TMP_DIR$;</arg>
         	</command>
         	<command>
-            		<type>RunUnixCommand</type>
+            		<type>RunDistributedCommand</type>
             		<name>create_pseudomolecules</name>
             		<state>incomplete</state>
             		<executable>$;BIN_DIR$;/create_pseudomolecules</executable>
