@@ -1,5 +1,7 @@
 next
 ----
+-bowtie_build: updated to make use of an iterator
+-bowite: updated bowtie to handle paired-end data more efficiently
 -added scripts to create Pfam and TIGRFAM HMM libraries and MLDBM
 -added htseq_count_reads component
 -added deseq component

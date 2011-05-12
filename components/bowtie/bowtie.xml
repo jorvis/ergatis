@@ -21,19 +21,44 @@
         </command>
 
         <command>
-            <type>RunDistributedCommand</type>
-            <name>Bowtie align</name>
+            <type>RunUnixCommand</type>
+            <name>create new_line separated iterator list</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/bowtie.pl</executable>            
+            <executable>$;BIN_DIR$;/create_newline_sep_file_iterator_list</executable>
+            <arg>--input_file=$;INPUT_FILE$; --input_file_list=$;INPUT_FILE_LIST$; --input_directory=$;INPUT_DIRECTORY$; --input_directory_extension=$;INPUT_EXTENSION$; --log=$;TMP_DIR$;/create_newline_sep_iterator_list.log --output_iter_list=$;TMP_DIR$;/newline_iterator.list</arg>
+        </command>
+
+        <!--Processing-->
+        <!--Iterator-->
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ITERATOR_LIST$;=$;TMP_DIR$;/newline_iterator.list">
+
+        <!--Postprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Create SAM output list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_multi_file_list_file.pl</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*aligned\.sam"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;OUTPUT_SAM_LIST$;</value>
+            </param>
             <param>
             <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/align.stdout</value>
+            <value>$;OUTPUT_DIRECTORY$;/create_sam_output_list.stdout</value>
             </param>
             <param>
             <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/align.stderr</value>
+            <value>$;OUTPUT_DIRECTORY$;/create_sam_output_list.stderr</value>
             </param>
-            <arg>--bowtie_exec=$;BOWTIE_EXEC$; --reference=$;REFERENCE$; --reads=$;Q$; --reads_mates=$;Q2$; --sam_output=$;SAM_OUTPUT$; --max_insert=$;X$; --max_mismatches=$;V$; --max_aligns=$;M$; --more_options=$;OTHER_OPTS$;</arg>
         </command>
+
     </commandSet>
 </commandSetRoot>

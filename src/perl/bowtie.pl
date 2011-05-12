@@ -9,8 +9,7 @@ bowtie.pl - run the bowtie short-read aligner
   USAGE: bowtie.pl [
             --bowtie_exec=full path to bowtie binary
             --reference=full path to bowtie reference index
-            --reads=full path to reads fastq file
-            --reads_mates=full path to reads mates fastq file if paired-end
+            --reads=full path to reads fastq file(s) (comma separated if paired end)
             --sam_output=full path to output sam file
             --max_insert=maximum length of insert for paired-end reads, default 300
             --max_mismatches=maxixmum number base-pairs that can mismatch, default 2
@@ -27,15 +26,14 @@ use POSIX;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'bowtie_exec|bin=s',
+						  'bowtie_exec|bin=s',
                           'reference|r=s',
-			  'reads|q=s',
-			  'reads_mates|q2=s',
+						  'reads=s',
                           'sam_output|o=s',
                           'max_insert|X=s',
                           'max_mismatches|v=s',
                           'max_aligns|m=s',
-			  'more_options|more_options=s',
+						  'more_options|more_options=s',
                           'help|h') || pod2usage();
 
 ## display documentation
@@ -49,18 +47,18 @@ if( $options{'help'} ){
 my $bin = $options{'bowtie_exec'};
 my $reference = $options{'reference'};
 my $reads = $options{'reads'};
-my $reads_mates = $options{'reads_mates'};
 my $sam_output = $options{'sam_output'};
 my $max_insert = $options{'max_insert'};
 my $max_mismatches = $options{'max_mismatches'};
 my $max_aligns = $options{'max_aligns'};
 my $more_options = $options{'more_options'};
 
-if($reads_mates eq ""){
-    system("$bin $more_options -v $max_mismatches -m $max_aligns -S $reference $reads $sam_output");
-}
-else{
-    system("$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 $reads -2 $reads_mates $sam_output");
+# if reads has a comma, assuming paired end, else single end
+if( $reads =~ /\,/ || $reads =~ /\s/) {
+	my ($q1, $q2) = split(/,|\s/, $reads);
+	system("$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference -1 $q1 -2 $q2 $sam_output");
+} else {
+	system("$bin $more_options -X $max_insert -v $max_mismatches -m $max_aligns -S $reference $reads $sam_output");
 }
 
 sub check_parameters {
@@ -72,8 +70,7 @@ sub check_parameters {
     }
     
     ## handle some defaults
-    $options{bowtie_exec} = "/usr/local/packages/bowtie/bowtie" unless ($options{bowtie});
-    $options{reads_mates} = ""  unless ($options{reads_mates});
+    $options{bowtie_exec} = "/usr/local/packages/bowtie/bowtie" unless ($options{bowtie_exec});
     $options{max_insert}   = 300  unless ($options{max_insert});
     $options{max_mismatches} = 2 unless ($options{max_mismatches});
     $options{max_aligns}        = 1  unless ($options{max_aligns});
