@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 if 0; # not running under some shell
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
@@ -207,6 +210,9 @@ while ( my $line = <$mapfh> ) {
 	next if $line =~ /^\s*$/;
 
 	my @cols = split(/\t/, $line);
+	$cols[0] =~ s/\s+$//;
+	$cols[1] =~ s/\s+$//;
+	$cols[2] =~ s/\s+$//;
 	if ( scalar @cols != 3 ) {
 #        _log("WARN: skipping the current map line");
 		next;

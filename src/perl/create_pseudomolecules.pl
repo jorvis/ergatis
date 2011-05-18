@@ -1,13 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-if 0; # not running under some shell
-
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
-
 ###########################################################
 # POD DOCUMENTATION                                       #
 ###########################################################
@@ -184,10 +176,12 @@ for my $group (sort {$a<=>$b} keys %accHash) {
 		system("$Bin/reference_genome_match_tiler --mummer_coords_file $coords_file --min_match_length 100 --mummer_delta_file $delta_file --method nucmer --strain $options{strain} --pseudonum $group --output_dir $options{output_dir}");
 		my $map_file = $options{output_dir}."/".$options{strain}."_".$group.".map";
 		my $pseudo_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$group.".fasta";
-		$contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
-		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$orig_contig_file --map_file=$map_file --output_file=$pseudo_file  --unmapped_output=$contig_file");
+		my $unmapped_contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
+		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$contig_file --map_file=$map_file --output_file=$pseudo_file  --unmapped_output=$unmapped_contig_file");
 		system("$Bin/clean_fasta $pseudo_file");
+		system("$Bin/clean_fasta $unmapped_contig_file");
 		$groupnum = $group;
+		$contig_file = $unmapped_contig_file;
 	}
 }	
 
@@ -209,7 +203,7 @@ if(-e $contig_file) {
 			}
 		}
 		close(OUTFH);
-		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$orig_contig_file --map_file=$unmap_file --output_file=$unmap_pseudo");
+		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$contig_file --map_file=$unmap_file --output_file=$unmap_pseudo");
 		system("$Bin/clean_fasta $unmap_pseudo");
 	}
 }

@@ -62,6 +62,7 @@ special file extension.  The regular output of prodigal looks like this:
 
 Where the columns from left to right separated by '_' contain:
 prediction_id   start_position   end_position   strand 
+start_position is always less than the end_position
 
 =head1 OUTPUT
 
@@ -142,56 +143,42 @@ sub parseProdigalData {
 	open(IN, "<$file") or &_die("Unable to open $file");
 
 	while(<IN>) {
+		chomp($_);	
 		if(/seqhdr\=\"(.*?)\"/g) {
-
 			$foundId = $1;
 			$foundId =~ s/\s+$//;
-		if( $project eq 'parse' ) {
-			$project = $1 if($foundId =~ /^(\w+?)\./);
-			$logger->logdie("Could not parse project name out of id $foundId.")
-				unless($project);
-		}
+			if( $project eq 'parse' ) {
+				$project = $1 if($foundId =~ /^(\w+?)\./);
+				$logger->logdie("Could not parse project name out of id $foundId.") unless($project);
+			}
 
-	} elsif($foundId) {
-		next if(/^#/);	
-		my @cols = split(/_/,$_);
-
-		if($cols[3] eq '+' && $cols[1] > $cols[2]) {
-			die("Couldn't find this id $foundId in length hash") 
-				unless(defined($length->{$foundId}));
-			$cols[1]  = 0 - (($length->{$foundId} - $cols[1]) - 1);
-		} elsif( $cols[3] eq '-' && $cols[1] > $cols[2]) {
-			($cols[1], $cols[2]) = ($cols[2], $cols[1]);
-		} elsif( $cols[3] eq '-' && $cols[1] < $cols[2]) {
-			die("Couldn't find this id $foundId in length hash") 
-				unless(defined($length->{$foundId}));
-			$cols[2]  = 0 - (($length->{$foundId} - $cols[1]) - 1);
-			($cols[1], $cols[2]) = ($cols[2], $cols[1]);
-		}
-
-
-
-#Create some genes and push them ontot he $genes array
-		my $tmp = new Chado::Gene( $idMaker->next_id( 'type' => 'gene',
+		} elsif($foundId) {
+			next if(/^#/);
+			my @cols = split(/_/,$_);
+			my $strand = ($cols[3] eq '+') ? 0 : 1;
+# Correcting for interbase numbering
+			$cols[1]--;
+#Create some genes and push them onto the $genes array
+			my $tmp = new Chado::Gene( $idMaker->next_id( 'type' => 'gene',
 					'project' => $project),
-				$cols[1]-1, $cols[2], ($cols[3] eq '+') ? 0 : 1,
+				$cols[1], $cols[2], $strand,
 				$foundId);
 
-		foreach my $type(qw(exon CDS transcript polypeptide)) {
-			my $typeid =$idMaker->next_id( 'type' => $type,
+			foreach my $type(qw(exon CDS transcript polypeptide)) {
+				my $typeid =$idMaker->next_id( 'type' => $type,
 					'project' => $project);
-			$tmp->addFeature($typeid, $cols[1]-1, $cols[2], ($cols[3] eq '+') ? 0 : 1,
+				$tmp->addFeature($typeid, $cols[1], $cols[2], $strand,
 					$type);
+			}
+
+			my $count = $tmp->addToGroup($tmp->getId, { 'all' => 1 });
+			&_die("Nothing was added to group") unless($count);
+
+			push(@{$genes}, $tmp);
+
+		} else {
+			&_die("Didn't find the id");
 		}
-
-		my $count = $tmp->addToGroup($tmp->getId, { 'all' => 1 });
-		&_die("Nothing was added to group") unless($count);
-
-		push(@{$genes}, $tmp);
-
-	} else {
-		&_die("Didn't find the id");
-	}
 	}
 
 	close(IN);
@@ -237,8 +224,7 @@ sub check_parameters {
 	&_pod if($options{'help'});
 
 	if($options{'input_list'}) {
-		$error .= "Option input_list ($options{'input_list'}) does not exist\n" 
-			unless(-e $options{'input_list'});
+		$error .= "Option input_list ($options{'input_list'}) does not exist\n" unless(-e $options{'input_list'});
 		open(IN, "< $options{'input_list'}") || &_die("Unable to open $options{'input_list'} ($!)");
 		@inputFiles = <IN>;
 		close(IN);
@@ -273,13 +259,11 @@ sub check_parameters {
 	unless($options{'fasta_input'}) {
 		$error .= "Option fasta_input is required\n";
 	} else {
-		$error .= "$options{'fasta_input'} (fasta_input) does not exist\n" 
-			unless(-e $options{'fasta_input'});
+		$error .= "$options{'fasta_input'} (fasta_input) does not exist\n" unless(-e $options{'fasta_input'});
 		$inputFsa = $options{'fasta_input'};
 
 #Find the length of the sequence
-		open(IN, "<$options{'fasta_input'}") or 
-			$logger->logdie("Can't open $options->{'fasta_input'}");
+		open(IN, "<$options{'fasta_input'}") or $logger->logdie("Can't open $options->{'fasta_input'}");
 		my $seq = "";
 		my $curId;
 		while(<IN>) {
