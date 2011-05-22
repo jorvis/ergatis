@@ -1,5 +1,6 @@
 next
 ----
+-assign_taxa: postprocessing work of resistome is added
 -fixed prodigal2bsml.pl bug
 -fixed create_pseudomolecule bug in case of more than one reference genome groups
 -bowtie_build: updated to make use of an iterator
