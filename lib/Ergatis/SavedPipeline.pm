@@ -647,7 +647,7 @@ use Ergatis::ConfigFile;
                                          );
         
         if ( ! defined $cfg ) {
-            croak("failed to parse expected ini file: $self->{_template_dir}/$component_name.$token.config");
+            croak("failed to parse expected ini file: $self->{_template_dir}/$component_name.$token.config with errors:\n".join("\n",@Config::IniFiles::errors));
         }
         
         ## set the shared conf
