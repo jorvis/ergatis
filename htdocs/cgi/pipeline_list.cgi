@@ -7,6 +7,7 @@ use Ergatis::Common;
 use Ergatis::ConfigFile;
 use Ergatis::Monitor;
 use HTML::Template;
+use POSIX;
 use XML::Twig;
 
 my $q = new CGI;
@@ -18,6 +19,8 @@ my $tmpl = HTML::Template->new( filename => 'templates/pipeline_list.tmpl',
                               );
 
 my $repository_root = $q->param("repository_root") || die "pass a repository root";
+my $view_page_num = $q->param("page_num") || 1;
+my $max_pages_to_show = 10;
 
 ## quota information (only works if in /usr/local/annotation/SOMETHING)
 my $quotastring = &quota_string($repository_root);
@@ -27,10 +30,9 @@ my $display_codebase = $ergatis_cfg->val( 'display_settings', 'display_codebase'
 
 my $pipeline_root = "$repository_root/workflow/runtime/pipeline";
 my $project_conf_path = "$repository_root/workflow/project.config";
+my $pipelines_per_page = $ergatis_cfg->val( 'display_settings', 'pipelines_per_page');
 my $errors_found  = 0;
 my $error_msgs = [];
-my %pipelines;
-my $pipeline_count = 0;
 my %components;
 
 ## make sure it has a project conf file, else throw the warning and quit
@@ -88,17 +90,131 @@ my $ergatis_dir = $project_conf->val('project', '$;ERGATIS_DIR$;');
 ## views are either component or pipeline (how the list is organized)
 my $view = $q->param('view') || 'pipeline';
 
+## read through the directory just to get a quick list of what pipelines
+#   are there along with their ages.  this enables faster paginated views
+my %pipeline_quickstats;
 foreach my $pipeline_id ( readdir $rdh ) {
     next unless ( $pipeline_id =~ /^\d+$/ );
+
+    my $pipeline_file = "$pipeline_root/$pipeline_id/pipeline.xml";  ## may be modified below
     
-    $pipeline_count++;
+    ## if only the pipeline.xml exists, we can do less
+    if (! -e $pipeline_file ) {
+
+        if ( -e "$pipeline_file.gz" ) {
+            $pipeline_file .= '.gz';
+        } else {
+            ## didn't actually find a pipeline file
+            next;
+        }
+    }
+    
+    my $filestat = stat($pipeline_file);
+    my $pipeline_user = getpwuid($filestat->uid);
+    my $last_mod = $filestat->mtime;
+    
+    $pipeline_quickstats{$pipeline_id} = { 
+                        pipeline_id     => $pipeline_id,  ## set again so we can directly export to HTML::Template
+                        last_mod        => $last_mod,
+                        path            => $pipeline_file,
+                        pipeline_user   => $pipeline_user,
+    };
+}
+
+my $pipeline_count = scalar keys %pipeline_quickstats;
+my $page_count;
+
+if ( $pipeline_count > $pipelines_per_page ) {
+    if ( $pipeline_count % $pipelines_per_page ) {
+        $page_count = int($pipeline_count / $pipelines_per_page) + 1;
+    } else {
+        $page_count = int($pipeline_count / $pipelines_per_page);
+    }
+} else {
+    $page_count = 1;
+}
+
+## calculate the min/max pipeline positions to show based on the page requested
+my $min_pipeline_pos;
+my $max_pipeline_pos;
+
+if ( $view_page_num == 1 ) {
+    $min_pipeline_pos = 1;
+} else {
+    $min_pipeline_pos = ($pipelines_per_page * ($view_page_num - 1)) + 1;
+}
+
+if ( $view_page_num * $pipelines_per_page >= $pipeline_count ) {
+    $max_pipeline_pos = $pipeline_count;
+} else {
+    $max_pipeline_pos = $view_page_num * $pipelines_per_page;
+}
+
+my $page_links = [];
+
+## we can't show ALL pages since there could be dozens.  
+## calculate the next highest/lowest interval of '10', then hide anything outside of that range
+my ($next_lower_interval, $next_higher_interval);
+
+if ( $view_page_num == $max_pages_to_show ) {
+    $next_lower_interval  = ( $view_page_num / $max_pages_to_show );
+} elsif ( $view_page_num % $max_pages_to_show ) {
+    $next_lower_interval  = floor($view_page_num/$max_pages_to_show)*$max_pages_to_show + 1;
+} else {
+    $next_lower_interval  = $view_page_num - $max_pages_to_show + 1;
+}
+
+$next_higher_interval = ceil($view_page_num/$max_pages_to_show)*$max_pages_to_show + 1;
+
+## these are calculated later and control the display of the boxes with '...' on either
+#   of the pagination ranges
+my $show_pre_continuation  = $next_lower_interval > 1 ? 1 : 0;
+my $show_post_continuation = $next_higher_interval < $page_count ? 1 : 0;
+
+for ( my $i=1; $i<=$page_count; $i++ ) {
+    next if $i >= $next_higher_interval || $i < $next_lower_interval;
+
+    push @$page_links, {
+        page_num => $i,
+        is_active => $i == $view_page_num ? 1 : 0,
+        url => "./pipeline_list.cgi?repository_root=$repository_root&page_num=$i"
+    };
+    
+    #last if scalar(@$page_links) == $max_pages_to_show;
+}
+
+## filter the full %pipelines has to include only those that need to be parsed.
+#   create @ids to keep
+#   populate a new %pipelines as we parse, TODO: rename old %pipelines
+my @pipelines_to_parse = ();
+my %pipelines;
+
+if ( $view eq 'group' || $view eq 'component' ) {
+    ## no current pagination on grouped or component-based pipeline list views
+    @pipelines_to_parse = keys %pipeline_quickstats;
+} else {
+    ## sort and record which to parse
+    my $current_pipeline_pos = 0;
+    for my $pipeline_id ( sort { $pipeline_quickstats{$b}{last_mod} cmp $pipeline_quickstats{$a}{last_mod} } keys %pipeline_quickstats ) {
+        $current_pipeline_pos++;
+        
+        ## check and see if this pipeline is in our page range
+        next if ( $current_pipeline_pos < $min_pipeline_pos || $current_pipeline_pos > $max_pipeline_pos );
+        
+        push @pipelines_to_parse, $pipeline_id;
+        
+        if ( scalar(@pipelines_to_parse) >= $pipelines_per_page ) {
+            last;
+        }
+    }
+}
+
+foreach my $pipeline_id ( @pipelines_to_parse ) {
 
     my $state = 'unknown';
-    my $last_mod = 'unknown';
     my $start_time = 'unknown';
     my $end_time = 'unknown';
     my $run_time = 'unknown';
-    my $pipeline_user = 'unknown';
     my $component_count = 0;
     my $component_aref = [];
     my $component_label = ' components';
@@ -166,10 +282,6 @@ foreach my $pipeline_id ( readdir $rdh ) {
         }
 
         ($start_time, $end_time, $run_time) = &time_info( $commandSet );
-
-        my $filestat = stat($pipeline_file);
-        $pipeline_user = getpwuid($filestat->uid);
-        $last_mod = $filestat->mtime;
         
         ## depending on the state, grab the top-level error message if there is one
         ##  there's no use doing this for running pipelines, since workflow won't
@@ -212,22 +324,24 @@ foreach my $pipeline_id ( readdir $rdh ) {
     my $view_link = "./view_pipeline.cgi?instance=$pipeline_file";
     
     $pipelines{$pipeline_id} = { 
-                        pipeline_id     => $pipeline_id,
                         state           => $state,
                         is_running      => $state eq 'running' ? 1 : 0,
-                        last_mod        => $last_mod,
                         run_time        => $run_time,
-                        pipeline_user   => $pipeline_user,
                         components      => $component_aref,
                         component_count => $component_count,
                         component_label => $component_label,
                         view_link       => $view_link,
                         archive_link    => $archive_link,
-                        clone_link    => "clone_pipeline.cgi?instance=$pipeline_file&repository_root=$repository_root",
+                        clone_link      => "clone_pipeline.cgi?instance=$pipeline_file&repository_root=$repository_root",
                         links_enabled   => $links_enabled,
                         error_message   => $error_message,
                         has_comment     => length($pipeline_comment),
                         pipeline_comment => $pipeline_comment,
+                        
+                        ## these were set previously, but carried over here
+                        pipeline_id     => $pipeline_id,
+                        last_mod        => $pipeline_quickstats{$pipeline_id}{last_mod},
+                        pipeline_user   => $pipeline_quickstats{$pipeline_id}{pipeline_user},
                       };
 }
 
@@ -278,6 +392,7 @@ if ( $view eq 'component' ) {
         
         for my $group ( @groups ) {
             push @{$pipeline_groups{$group}}, $pipelines{$pipeline};
+            ${$pipeline_groups{$group}}[-1]{last_mod} = localtime( ${$pipeline_groups{$group}}[-1]{last_mod} );
         }
     }    
 
@@ -289,8 +404,8 @@ if ( $view eq 'component' ) {
 } else {
 
     for my $pipeline ( sort { $pipelines{$b}{last_mod} cmp $pipelines{$a}{last_mod} } keys %pipelines ) {
-        $pipelines{$pipeline}{last_mod} = localtime( $pipelines{$pipeline}{last_mod} );
         push @pipelines_sorted, $pipelines{$pipeline};
+        $pipelines_sorted[-1]{last_mod} = localtime( $pipelines_sorted[-1]{last_mod} );
     }
 }
 
@@ -343,7 +458,6 @@ sub print_template {
     $tmpl->param( ERRORS_FOUND     => $errors_found );
     $tmpl->param( REPOSITORY_ROOT  => $repository_root );
     $tmpl->param( ERROR_MSGS       => $error_msgs );
-    $tmpl->param( PIPELINE_COUNT   => $pipeline_count );
     $tmpl->param( QUOTA_STRING     => $quotastring );
     $tmpl->param( ERGATIS_DIR      => $ergatis_dir );
     $tmpl->param( DISPLAY_CODEBASE => $display_codebase );
@@ -351,6 +465,18 @@ sub print_template {
     $tmpl->param( GROUP_VIEW       => $view eq 'group' ? 1 : 0 );
     $tmpl->param( QUICK_LINKS      => &get_quick_links($ergatis_cfg) );
     $tmpl->param( SUBMENU_LINKS    => $submenu_links );
+    ## for pagination
+    $tmpl->param( NEEDS_PAGINATION => $pipeline_count > $pipelines_per_page ? 1 : 0 );
+    $tmpl->param( PIPELINE_COUNT   => $pipeline_count );
+    $tmpl->param( PAGE_LINKS       => $page_links );
+    $tmpl->param( IS_FIRST_PAGE    => $view_page_num == 1 ? 1 : 0 );
+    $tmpl->param( IS_LAST_PAGE     => ($view_page_num * $pipelines_per_page) > $pipeline_count ? 1 : 0 );
+    $tmpl->param( MIN_PIPELINE_POS => $min_pipeline_pos );
+    $tmpl->param( MAX_PIPELINE_POS => $max_pipeline_pos );
+    $tmpl->param( PREVIOUS_PAGE_URL => "./pipeline_list.cgi?repository_root=$repository_root&page_num=" . ($view_page_num - 1));
+    $tmpl->param( NEXT_PAGE_URL    => "./pipeline_list.cgi?repository_root=$repository_root&page_num=" . ($view_page_num + 1));
+    $tmpl->param( SHOW_PRE_CONTINUATION => $show_pre_continuation );
+    $tmpl->param( SHOW_POST_CONTINUATION => $show_post_continuation );
 
     ## print the template
     print $tmpl->output();

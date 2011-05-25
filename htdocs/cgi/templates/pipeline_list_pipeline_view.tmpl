@@ -1,4 +1,37 @@
 <h2>pipeline list</h2>
+
+<TMPL_IF NEEDS_PAGINATION>
+<div id='pagination_container'>
+    <ul id="pagination">
+        <li class="pipeline_count">Displaying <TMPL_VAR MIN_PIPELINE_POS>-<TMPL_VAR MAX_PIPELINE_POS> of <TMPL_VAR PIPELINE_COUNT></li>
+        <TMPL_IF IS_FIRST_PAGE>
+        <li class="previous-off">« Previous</li>
+        <TMPL_ELSE>
+        <li class="previous"><a href="<TMPL_VAR PREVIOUS_PAGE_URL>">« Previous</a></li>
+        </TMPL_IF> <!-- end IS_FIRST_PAGE IF -->
+        <TMPL_IF SHOW_PRE_CONTINUATION>
+        <li class='continuation' id='pre_continuation'>...</li>
+        </TMPL_IF> <!-- end SHOW_PRE_CONTINUATION IF -->
+        <TMPL_LOOP PAGE_LINKS>
+            <TMPL_IF IS_ACTIVE>
+        <li<TMPL_IF IS_ACTIVE> class="active"</TMPL_IF>><TMPL_VAR PAGE_NUM></li>
+            <TMPL_ELSE>
+        <li><a href="<TMPL_VAR URL>"><TMPL_VAR PAGE_NUM></a></li>
+            </TMPL_IF> <!-- end IS_ACTIVE IF -->
+        </TMPL_LOOP><!-- end PAGE LINKS LOOP -->
+        <TMPL_IF SHOW_POST_CONTINUATION>
+        <li class='continuation' id='post_continuation'>...</li>
+        </TMPL_IF> <!-- end SHOW_POST_CONTINUATION -->
+        <TMPL_IF IS_LAST_PAGE>
+        <li class="next-off">Next »</li>
+        <TMPL_ELSE>
+        <li class="next"><a href="<TMPL_VAR NEXT_PAGE_URL>">Next »</a></li>
+        </TMPL_IF> <!-- end IS_LAST_PAGE IF -->
+    </ul>
+    <div class="clear_hack"></div>
+</div> <!-- end pagination_container -->
+</TMPL_IF>  <!-- end NEEDS_PAGINATION IF -->
+
 <TMPL_IF NAME=PIPELINE_COUNT>
     <table class='pipeline_list'>
         <tr>

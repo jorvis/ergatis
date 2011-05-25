@@ -28,7 +28,9 @@ div {
     margin: 0;
     padding: 0;
 }
-
+div.clear_hack {
+    clear: both;
+}
 div#content_container {
     clear: both;
     padding: 10px;

@@ -52,3 +52,71 @@ th.checkbox {
 .checkbox input {
     border: 1px solid black !important;
 }
+
+/*
+    I was lazy and didn't write my own pagination style, instead borrowing
+    it from here (and modifying a bit):
+    
+    http://woork.blogspot.com/2008/03/perfect-pagination-style-using-css.html
+*/
+
+#pagination {
+    margin: 0; 
+    padding: 0;
+}
+#pagination_container {
+    float: right;
+    margin-bottom: 20px;
+}
+#pagination li {
+    border:0; margin:0; padding:0;
+    font-size:11px;
+    list-style:none;
+    margin-right:4px;
+    float: left;
+}
+#pagination a {
+    border:solid 1px rgb(73,81,92);
+    margin-right:2px;
+}
+#pagination .pipeline_count {
+    display:block;
+    float:left;
+    margin-right: 10px;
+    padding:3px 4px;
+}
+#pagination .previous-off,
+#pagination .next-off,
+#pagination .continuation {
+    border:solid 1px #DEDEDE;
+    color:#888888;
+    display:block;
+    float:left;
+    font-weight:bold;
+    margin-right:4px;
+    padding:3px 4px;
+}
+#pagination .next a,
+#pagination .previous a {
+    font-weight:bold;
+}
+#pagination .active {
+    background-color: rgb(73,81,92);
+    color:#FFFFFF;
+    font-weight:bold;
+    display:block;
+    float:left;
+    padding:4px 6px;
+}
+#pagination a:link,
+#pagination a:visited {
+    color: rgb(73,81,92);
+    display:block;
+    float:left;
+    padding:3px 6px;
+    text-decoration:none;
+}
+#pagination a:hover{
+    border:solid 1px #0e509e;
+    background-color: rgb(230,230,230);
+}
