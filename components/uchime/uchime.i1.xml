@@ -7,7 +7,7 @@
             <type>RunUnixCommand</type>
             <name>uchime chimera checker</name>
             <state>incomplete</state>
-            <executable>$;UCHIMEPATH$;</executable>
+            <executable>$;UCHIME_EXEC$;</executable>
             <arg> --input $;I_FILE_PATH$; --db $;TEMPLATE_FILE$; --uchimeout $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.uchime --minh $;MINH$; --mindiv $;MINDIVERGENCE$;</arg>
             <param>
                 <key>stderr</key>
