@@ -201,7 +201,6 @@ sub parse_ber_btabs {
             # Only take the frameshifts from the hit with the best mvalue. This is a HACK
             # for now and should probably be replaced with something more sophisticated.
             if(!defined($cds2bestmval{$btab[0]}) || ($btab[12] > $cds2bestmval{$btab[0]})) {
-                print STDERR "set best mvalue for $btab[0] to $btab[12] from $cds2bestmval{$btab[0]}\n";
                 $cds2bestmval{$btab[0]} = $btab[12];
                 &createFrameshifts($btab[19], $btab[0], $btab[2],$btab[12]) if($btab[19] && defined($options{bp_offset}));
                 #splice(@btab, 19, 1);   Why was this happening?
@@ -269,9 +268,6 @@ sub parse_ber_btabs {
             
             #if it's still not defined
             if( !defined( $cds ) ) {
-                print "file: $file\n";
-                print "base: $base\n";
-                print "prot: $polypeptide\n";
                 die("No hits in the btab and could not parse polypeptide name from file name");
             }
                 
@@ -370,7 +366,6 @@ sub createFrameshifts {
 
     my $seqId = $lookupDb{$modelId};
     my $seq;
-    print STDERR "best mvalue was $mvalue\n";
 
     #Parse out the project id
     if( $project eq 'parse' ) {
@@ -521,14 +516,10 @@ sub createAndAddBtabLine {
     #check to see if sequences exist in the BsmlDoc, if not add them with basic attributes
     my $seq;
     
-    print STDOUT "Checking for query: $args{'query_name'}\n";
 
     if( !( $doc->returnBsmlSequenceByIDR( "$args{'query_name'}")) ){
-        print STDOUT "Didn't find it int he doc\n";
 	    $seq = $doc->createAndAddSequence( "$args{'query_name'}", "$args{'query_name'}", $args{'query_length'}, 'na', $args{'class'} );
 		$seq->addBsmlLink('analysis', '#' . $options{analysis_id}, 'input_of');
-    } else {
-        print STDOUT "Found it in the doc\n";
     }
 
     
