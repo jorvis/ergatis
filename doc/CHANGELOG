@@ -1,5 +1,6 @@
 next
 ----
+-modified hmmer3 to hmmpfam3
 -added hmmer3 component
 -added pagination to the pipeline list interface
 -assign_taxa: postprocessing work of resistome is added
