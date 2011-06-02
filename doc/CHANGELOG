@@ -1,5 +1,6 @@
 next
 ----
+-added hmmer3 component
 -added pagination to the pipeline list interface
 -assign_taxa: postprocessing work of resistome is added
 -fixed prodigal2bsml.pl bug
