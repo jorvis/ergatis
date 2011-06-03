@@ -24,7 +24,7 @@
             <name>preprocess input data for split libraries</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/dataprep_dual16S.pl</executable>
-            <arg>-m `cat $;MAPPING_FILE$;` -f $;INPUT_FILE_LIST$; -q $;QUAL_FILE_LIST$; -p $;OUTPUT_DIRECTORY$;/Data</arg>
+            <arg>-m `cat $;MAPPING_FILE$;` -f $;INPUT_FILE_LIST$; -q " $;QUAL_FILE_LIST$; " -p $;OUTPUT_DIRECTORY$;/Data</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
