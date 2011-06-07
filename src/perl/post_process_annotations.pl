@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 post_process_annotations.pl - Contains functionality to refine final annotations.
@@ -73,12 +76,14 @@ use Data::Dumper;
 my $input_file;
 my $output;
 my $tigr_roles_annot;
+my $input_ec_dat;
+my $chp;
 ###################
 
 &check_options();
-
-my $in = open_file( $input_file, 'in' );
-my $out = open_file( $output, 'out' );
+my $enzymes = &parse_dat_file($input_ec_dat);
+my $in = open_file( $input_file, 'in' ); 
+my $out = open_file( $output, 'out' ); 
 
 while( my $line = <$in> ) {
     chomp( $line );
@@ -102,10 +107,13 @@ sub post_process {
 
     ## clean up the common name with the CommonNameAnnotation module
     my ($gene_product_name, $gpn_source, $gpn_source_type) = $annotation->get_gene_product_name;
-    $annotation->set_gene_product_name( clean_common_name( $gene_product_name->[0] ),
+    $annotation->set_gene_product_name( clean_common_name( $gene_product_name->[0],$chp ),
                                         $gpn_source, $gpn_source_type );
 
     ($gene_product_name, $gpn_source, $gpn_source_type) = $annotation->get_gene_product_name;
+
+    ## Assign changed GO terms to conserved hypothetical proteins
+    &correct_go_terms($annotation, $gene_product_name->[0]);
 
     ## can we assign any TIGR roles based on common name keyword? It helps if this is after the
     ## clean up function
@@ -132,7 +140,17 @@ sub format_ec_numbers {
                 $change = 1;
                 $ec = $tmp_ec;
             }
-            push( @new_ecs, $ec );
+	    next if( $ec =~ /-/ );
+	    if( exists( $enzymes->{'obsolete'}->{$ec} ) ) {
+		$change = 1;
+		print  "Change $ec to $enzymes->{'obsolete'}->{$ec}\n";
+		$ec = $enzymes->{'obsolete'}->{$ec};
+            } elsif( !exists( $enzymes->{'current'}->{$ec} ) ) {
+            	$change = 1;
+		print "Remove from $ec\n";
+         	$ec = "";
+	    }
+	    push( @new_ecs, $ec );
         }
     }
 
@@ -165,12 +183,79 @@ sub check_for_ec_numbers {
     }
 }
 
+sub correct_go_terms {
+    my ($annotation, $gene_product) = @_;
+## In case where protein is 'hypothetical protein' assign 'GO:0008150', 'GO:0003674', 'GO:0005575 GO terms    
+    if ($gene_product eq $chp) {
+    	my ($go_terms, $go_source, $go_source_type) = $annotation->get_GO;
+    	my @new_go = ('GO:0008150', 'GO:0003674', 'GO:0005575');
+    	$annotation->set_GO(\@new_go, $go_source, $go_source_type);
+     }
+}
+
+sub parse_dat_file {
+    my ($file) = @_; 
+    open(IN, "< $file") or die("Could not open $file: $!");
+
+    my %data = ('current'=>{},'obsolete'=>{});
+    my ($current, $transfer, $def, $name);
+    while( my $line = <IN> ) { 
+        chomp($line);
+        if( $line =~ m|^//| ) { 
+
+            if( defined( $current )  ) { 
+                ## we should store current
+                if( $transfer ) { 
+                    $data{'obsolete'}->{$current} = $transfer;
+                } else {
+                    $data{'current'}->{$current} = { 
+                        'name' => $name,
+                        'def' => $def
+                        };
+                }
+            }
+
+            ## reset the variables
+            map { undef($_); } ($current, $transfer, $def, $name);
+
+        } elsif( $line =~ /^ID\s+(.*)/ ) { 
+            $current = $1; 
+        } elsif( $line =~ /^DE\s+(.*)/ ) { 
+            my $deline = $1; 
+            if( $deline =~ /Transferred entry:\s+(\S*)/ ) {
+		if($deline =~ /and|\,/) {
+			map { undef($_); } ($current, $transfer, $def, $name);
+		} else {
+                	$transfer = $1; 
+	   		$transfer =~ s/\.$//;
+		}
+            } elsif($deline =~ /Deleted entry/) {
+		map { undef($_); } ($current, $transfer, $def, $name);
+	    } else {
+                if(defined($current)) {
+			$name = $deline." [$current]";
+		}
+            }
+        } elsif( $line =~ /^CA\s+(.*)/ ) { 
+            if(defined($def)) {
+                $def.= " ".$1;
+            } else {
+                $def = $1; 
+            }
+        }
+    }   
+    close(IN);
+    return \%data;
+}
+
 sub check_options {
-    my %options;
-    my $results = GetOptions (\%options,
+     my %options;
+     my $results = GetOptions (\%options,
                               'input_file|i=s',
                               'output|o=s',
                               'tigr_roles_db_dir|d=s',
+			      'input_ec_dat|e=s',
+			      'hypo|h=s',
                               'log|l=s',
                               'debug|d=s',
                               'help|h',
@@ -197,5 +282,17 @@ sub check_options {
     } else {
         die("Option --output is required");
     }
+    
+    if( $options{'input_ec_dat'} ) { 
+        $input_ec_dat = $options{'input_ec_dat'};
+    } else {
+        die("Option --input_ec_dat is required");
+    }
+ 
+    if($options{'hypo'}) {
+	$chp = $options{'hypo'};
+    } else {
+	$chp = 'hypothetical protein';
+    }	
 
 }
