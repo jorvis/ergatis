@@ -1,5 +1,6 @@
 next
 ----
+-modified post_process_annotations.pl to include ec number and comman name corrections
 -modified hmmer3 to hmmpfam3
 -added hmmer3 component
 -added pagination to the pipeline list interface

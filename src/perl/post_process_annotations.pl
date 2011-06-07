@@ -13,7 +13,9 @@ post_process_annotations.pl - Contains functionality to refine final annotations
        --input_file=/path/to/file.tab
        --output=/path/to/output.tab
        --tigr_roles_db_dir=/path/to/db_dir
-     [ --log=/path/to/file.log
+       --input_ec_dat=/path/to/enzyme.dat       
+     [ --hypo="conserved hypothetical protein" or "hypothetical protein"
+       --log=/path/to/file.log
        --debug=4
        --help
      ]
@@ -30,6 +32,13 @@ B<--output,-o>
 B<--tigr_roles_db_dir,-b>
     The path to the database directory. The directory should contain the file:
     tigr_roles/tigr_roles_keywords.txt.
+
+B<--input_ec_dat,-e>
+    Path to the enzyme.dat containing EC numbers file downloaded from 
+    [ftp://ftp.expasy.org/databases/enzyme/enzyme.dat]
+
+B<--hypo,-h>
+    Default is hypothetical protein. Option is conserved hypothetical protein
 
 B<--log,-l>
     Logfile.
