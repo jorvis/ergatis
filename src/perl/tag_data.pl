@@ -12,6 +12,9 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 transform_WWARN_input.pl - Transforms input data to WWARN to a common format.
@@ -108,18 +111,14 @@ my ($files_to_tag,$meta_data) = parse_mapping_file($input);
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
     open FILE,"+>/tmp/tag$$.filelist";
-    print FILE join(' ',@files);
+    print FILE join("\n", @files);
     close FILE;
     my $cmd = $TAG_DATA_EXEC;
+    $cmd .= " --stdin --tag-base-dir $repo_root/output_repository/ -o --recursive --tag-name " . $tag_name;
     if($$meta_data{$tag_name}{'key_vals_exist'}) {
-	$cmd .= " -o --tag-name " . $tag_name . " -m " . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
+	$cmd .= " -m " . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
     }
-    else{
-	$cmd .= " -o --tag-name " . $tag_name;
-    }
-    run_system_cmd($cmd);                      
-    $cmd = "cat /tmp/tag$$.filelist | xargs -n 50 $TAG_DATA_EXEC -a --tag-name " . $tag_name . " --recursive " .
-	"--tag-base-dir $repo_root/output_repository/ ";
+    $cmd = "cat /tmp/tag$$.filelist | $cmd";
     run_system_cmd($cmd);                      
 }
 
