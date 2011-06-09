@@ -75,6 +75,14 @@
                 <key>--tigr_roles_db_dir</key>
                 <value>$;ROLES_DB_DIR$;</value>
             </param>
+	    <param>
+		<key>--input_ec_dat</key>
+		<value>&apos;$;EC_DAT_FILE$;&apos;</value>
+	    </param>
+	    <param>
+		<key>--hypo</key>
+		<value>&apos;$;HYPOTHETICAL$;&apos;</value>
+	    </param>
         </command>
         <command>
             <type>RunUnixCommand</type>

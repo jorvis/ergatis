@@ -13,8 +13,8 @@ post_process_annotations.pl - Contains functionality to refine final annotations
        --input_file=/path/to/file.tab
        --output=/path/to/output.tab
        --tigr_roles_db_dir=/path/to/db_dir
-       --input_ec_dat=/path/to/enzyme.dat       
-     [ --hypo="conserved hypothetical protein" or "hypothetical protein"
+     [ --input_ec_dat=/path/to/enzyme.dat       
+       --hypo="conserved hypothetical protein" or "hypothetical protein"
        --log=/path/to/file.log
        --debug=4
        --help
@@ -90,7 +90,7 @@ my $chp;
 ###################
 
 &check_options();
-my $enzymes = &parse_dat_file($input_ec_dat);
+my $enzymes = &parse_dat_file($input_ec_dat) if (defined $input_ec_dat);
 my $in = open_file( $input_file, 'in' ); 
 my $out = open_file( $output, 'out' ); 
 
@@ -149,15 +149,17 @@ sub format_ec_numbers {
                 $change = 1;
                 $ec = $tmp_ec;
             }
-	    next if( $ec =~ /-/ );
-	    if( exists( $enzymes->{'obsolete'}->{$ec} ) ) {
-		$change = 1;
-		print  "Change $ec to $enzymes->{'obsolete'}->{$ec}\n";
-		$ec = $enzymes->{'obsolete'}->{$ec};
-            } elsif( !exists( $enzymes->{'current'}->{$ec} ) ) {
-            	$change = 1;
-		print "Remove from $ec\n";
-         	$ec = "";
+	    if(defined $input_ec_dat) { 
+	    	next if( $ec =~ /-/ );
+	   	if( exists( $enzymes->{'obsolete'}->{$ec} ) ) {
+			$change = 1;
+#			print  "Change $ec to $enzymes->{'obsolete'}->{$ec}\n";
+			$ec = $enzymes->{'obsolete'}->{$ec};
+            	} elsif( !exists( $enzymes->{'current'}->{$ec} ) ) {
+            		$change = 1;
+#			print "Remove from $ec\n";
+         		$ec = "";
+	    	}
 	    }
 	    push( @new_ecs, $ec );
         }
@@ -294,9 +296,7 @@ sub check_options {
     
     if( $options{'input_ec_dat'} ) { 
         $input_ec_dat = $options{'input_ec_dat'};
-    } else {
-        die("Option --input_ec_dat is required");
-    }
+    } 
  
     if($options{'hypo'}) {
 	$chp = $options{'hypo'};
