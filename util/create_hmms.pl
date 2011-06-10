@@ -67,7 +67,7 @@ use POSIX;
 # GLOBAL VARIABLES                              #
 #################################################
 my %options;
-my ($results,$merged_lib,$merged_lib_bin,$mldbm_file, $logfh);
+my ($results,$merged_lib,$merged_lib_bin,$mldbm_file, $logfh, $logfile, $log_dir);
 my $hmmer_loc = "/usr/local/packages/hmmer-3.0/bin";
 #################################################
 # MAIN PROGRAM                                  #
@@ -87,15 +87,15 @@ if( $options{'help'} ){
         pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
 }
 
-## Getting the log file
-my $logfile = $options{'log'};
-my ($log_base,$log_dir,$log_ext) = fileparse($logfile,qr/\.[^.]*/);
-if (defined $logfile) {
-	open($logfh, "> $logfile") or die "Could open $logfile log file for writing\n";
-}
-
 ## Make sure everything passed was correct
 &check_parameters();
+
+## Getting the log file
+if (defined $logfile) {
+	my ($log_base,$log_ext);
+	($log_base,$log_dir,$log_ext) = fileparse($logfile,qr/\.[^.]*/);
+	open($logfh, "> $logfile") or die "Could open $logfile log file for writing\n";
+}
 
 ## Merged HMM library file
 $merged_lib = $options{'output_dir'}."/coding_hmm.lib"; 
@@ -108,7 +108,11 @@ $mldbm_file = $merged_lib.".db";
 
 ## Merge HMM library files specified in the input list file
 log_msg("INFO : Merging HMMs provided in $options{'hmm_list'}\n", "");
-system("perl $Bin/merge_hmm_libraries.pl --input_list $options{'hmm_list'} --output_lib $merged_lib --log $log_dir/merge_hmm_libraries.log");
+if (defined $logfile) {
+	system("perl $Bin/merge_hmm_libraries.pl --input_list $options{'hmm_list'} --output_lib $merged_lib --log $log_dir/merge_hmm_libraries.log");
+} else {
+	system("perl $Bin/merge_hmm_libraries.pl --input_list $options{'hmm_list'} --output_lib $merged_lib");
+}
 if (-e $merged_lib) {
 	log_msg("INFO : Created merged HMM library file $merged_lib\n", "");
 } else {
@@ -126,12 +130,20 @@ if (-e $merged_lib_bin) {
 
 ## Create .h3f, .h3i, .h3m and .h3p files
 log_msg("INFO : Pressing merged binary library file $merged_lib_bin\n", "");
-system("$hmmer_loc/hmmpress -f $merged_lib_bin > $logfile");
+if (defined $logfile) {
+	system("$hmmer_loc/hmmpress -f $merged_lib_bin > $logfile");
+} else {
+	system("$hmmer_loc/hmmpress -f $merged_lib_bin");
+}
 log_msg("INFO : Created .h3f, .h3i, .h3m and .h3p files\n", "");
 
 ## Create MLDBM from the merged library file
 log_msg("INFO : Creating MLDBM from merged library file $merged_lib\n", "");
-system("perl $Bin/hmmlib_to_mldbm.pl --hmm_file $merged_lib --output_file $mldbm_file --log $log_dir/hmmlib_to_mldbm.log");
+if (defined $logfile) {
+	system("perl $Bin/hmmlib_to_mldbm.pl --hmm_file $merged_lib --output_file $mldbm_file --log $log_dir/hmmlib_to_mldbm.log");
+} else {
+	system("perl $Bin/hmmlib_to_mldbm.pl --hmm_file $merged_lib --output_file $mldbm_file");
+}
 if (-e $mldbm_file) {
 	log_msg("INFO : Created MLDBM $mldbm_file\n", "");
 } else {
@@ -140,7 +152,11 @@ if (-e $mldbm_file) {
 
 ## Add supplemental information to TIGRFAMs from TIGR_INFO
 log_msg("INFO : Adding supplemental information to TIGRFAMs in MLDBM $mldbm_file\n", "");
-system("perl $Bin/tigrfam_info_to_mldbm.pl --mldbm_file $mldbm_file --info_dir $options{'tigrinfo_dir'} --go_link $options{'tigrgo_link'} --role_link '$options{'tigrrole_link'}' --log $log_dir/tigrfam_info_to_mldbm.log");
+if (defined $logfile) {
+	system("perl $Bin/tigrfam_info_to_mldbm.pl --mldbm_file $mldbm_file --info_dir $options{'tigrinfo_dir'} --go_link $options{'tigrgo_link'} --role_link '$options{'tigrrole_link'}' --log $log_dir/tigrfam_info_to_mldbm.log");
+} else {
+	system("perl $Bin/tigrfam_info_to_mldbm.pl --mldbm_file $mldbm_file --info_dir $options{'tigrinfo_dir'} --go_link $options{'tigrgo_link'} --role_link '$options{'tigrrole_link'}'");
+}
 log_msg("INFO : Added supplemental information to TIGRFAMs in MLDBM $mldbm_file\nCompleted process\n", "");
 
 close($logfh) if $logfh;
@@ -155,12 +171,13 @@ sub check_parameters {
 	my @params = qw(hmm_list tigrinfo_dir tigrgo_link);
 	foreach my $param_opt (@params) {
 		## Check for all mandatory options
-		unless ($param_opt) {
+		unless ($options{$param_opt}) {
+			pod2usage( {-exitval => 0 -verbose => 2, -output => \*STDERR} );
 			log_msg("ERROR : Manadatory parameter $param_opt not passed\n","die");
 		}
 		## Check if the file exist
 		unless (-e $options{$param_opt}) {
-			log_msg("ERROR : Required file $options{$param_opt} does not exist\n", "die");
+			log_msg("ERROR : Required file $param_opt $options{$param_opt} does not exist\n", "die");
 		}
 		## Check if the file is readable
 		unless (-r $options{$param_opt}) {
@@ -171,6 +188,10 @@ sub check_parameters {
 		$options{'tigrrole_link'} = "";
 		log_msg("INFO : TIGRFAMS_ROLE_LINK file not provided. Thus, TIGR_Role_Id information could not be incorporated into MLDBM file\n", "");
 	}
+
+	if($options{'log'}) {
+		$logfile = $options{'log'};
+	} 
 }
 
 sub log_msg {
@@ -178,6 +199,8 @@ sub log_msg {
 	print $logfh "$msg" if $logfh;
 	if ($action eq "die") {
 		die "$msg";
+	} else {
+		print "$msg";
 	}
 }
 __END__		
