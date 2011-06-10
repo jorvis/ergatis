@@ -9,7 +9,7 @@ create_hmms.pl - Program to create Pfam and TIGRFAM HMM library and MLDB
 
 =head1 SYNOPSIS
 
-	create_hmm.pl --hmm_list <list_file> --tigrinfo_dir <TIGRFAMs_INFO> --tigrgo_link <TIGRFAMS_GO_LINK> --output_dir <output_dir> [--log <log file> --debug <debug level> --help <usage>]
+	create_hmm.pl --hmm_list <list_file> --tigrinfo_dir <TIGRFAMs_INFO> --tigrgo_link <TIGRFAMS_GO_LINK> --output_dir <output_dir> [--tigrrole_link <TIGRFAMS_ROLE_LINK> --log <log file> --debug <debug level> --help <usage>]
 	
 	parameters in [] are optional
     	do NOT type the carets when specifying options
@@ -25,14 +25,18 @@ create_hmms.pl - Program to create Pfam and TIGRFAM HMM library and MLDB
  	
 	--tigrgo_link	= /path/to/TIGRFAMS_GO_LINK. This is the most current TIGRFAMS_GO_LINK file
 			  [Latest : 10.1_Release]
-
+	
 	--output_dir	= /path/to/output_dir. This is the output directory where created files will be stored.
 
-       [--log		= /path/to/log_file.log. Log file. Optional
+      [ --tigrrole_link = /path/to/TIGRFAMS_ROLE_LINK. This is the most current TIGRFAMS_ROLE_LINK file
+			  [Latest : 10.1_Release]. Optional
+
+        --log		= /path/to/log_file.log. Log file. Optional
 
 	--debug		= Debug level. Optional
 
 	--help		= Help message, script usage. Optional
+      ]
 
 =head1 DESCRIPTION
 
@@ -64,7 +68,7 @@ use POSIX;
 #################################################
 my %options;
 my ($results,$merged_lib,$merged_lib_bin,$mldbm_file, $logfh);
-my $hmmer_loc = "/home/sagrawal/softwares/hmmer-3.0/src";
+my $hmmer_loc = "/usr/local/packages/hmmer-3.0/bin";
 #################################################
 # MAIN PROGRAM                                  #
 #################################################
@@ -72,6 +76,7 @@ $results = GetOptions (\%options,
                 'hmm_list|h=s',
                 'tigrinfo_dir|i=s',
                 'tigrgo_link|g=s',
+		'tigrrole_link|r=s',
 		'output_dir|o=s',
                 'log|l=s',
                 'debug|b=s',
@@ -135,7 +140,7 @@ if (-e $mldbm_file) {
 
 ## Add supplemental information to TIGRFAMs from TIGR_INFO
 log_msg("INFO : Adding supplemental information to TIGRFAMs in MLDBM $mldbm_file\n", "");
-system("perl $Bin/tigrfam_info_to_mldbm.pl --mldbm_file $mldbm_file --info_dir $options{'tigrinfo_dir'} --go_link $options{'tigrgo_link'} --log $log_dir/tigrfam_info_to_mldbm.log");
+system("perl $Bin/tigrfam_info_to_mldbm.pl --mldbm_file $mldbm_file --info_dir $options{'tigrinfo_dir'} --go_link $options{'tigrgo_link'} --role_link '$options{'tigrrole_link'}' --log $log_dir/tigrfam_info_to_mldbm.log");
 log_msg("INFO : Added supplemental information to TIGRFAMs in MLDBM $mldbm_file\nCompleted process\n", "");
 
 close($logfh) if $logfh;
@@ -161,6 +166,10 @@ sub check_parameters {
 		unless (-r $options{$param_opt}) {
 			log_msg("ERROR : Required file $options{$param_opt} is not readable\n", "die");
 		}
+	}
+	if(!($options{'tigrrole_link'})) {
+		$options{'tigrrole_link'} = "";
+		log_msg("INFO : TIGRFAMS_ROLE_LINK file not provided. Thus, TIGR_Role_Id information could not be incorporated into MLDBM file\n", "");
 	}
 }
 
