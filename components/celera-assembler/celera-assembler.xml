@@ -18,10 +18,38 @@
 			<state>incomplete</state>
 			<executable>mkdir</executable>
     	    <arg>-p -m 777 $;TMP_DIR$;</arg>
-		</command>
+	</command>
         <!--Processing-->
-        <!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+	<command>
+		<type>RunDistributedCommand</type>
+		<name>run Celera Assembler</name>
+		<state>incomplete</state>
+		<executable>$;BIN_DIR$;/runCA_wrapper</executable>
+		<param>
+			<key>--input_list</key>
+			<value>&apos;$;INPUT_FILE_LIST$;&apos;</value>
+		</param>
+		<param>
+			<key>--input_file</key>
+			<value>&apos;$;INPUT_FILE$;&apos;</value>
+		</param>
+		<param>
+			<key>--runca_opts</key>
+			<value>&quot;-p $;OUTPUT_PREFIX$; -d $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$; -s $;SPEC_FILE$;&quot;</value>
+		</param>
+		<param>
+			<key>--runca_bin</key>
+			<value>$;BIN_DIR$;/runCA</value>
+		</param>
+		<param>
+			<key>stdout</key>
+			<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stdout</value>
+		</param>
+		<param>
+			<key>stderr</key>
+			<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stderr</value>
+		</param>
+	</command>
         <!--Postprocessing-->		 
         <command>
             <type>RunUnixCommand</type>
