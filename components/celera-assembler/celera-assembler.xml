@@ -18,38 +18,38 @@
 			<state>incomplete</state>
 			<executable>mkdir</executable>
     	    <arg>-p -m 777 $;TMP_DIR$;</arg>
-	</command>
-        <!--Processing-->
-	<command>
-		<type>RunDistributedCommand</type>
-		<name>run Celera Assembler</name>
-		<state>incomplete</state>
-		<executable>$;BIN_DIR$;/runCA_wrapper</executable>
-		<param>
-			<key>--input_list</key>
-			<value>&apos;$;INPUT_FILE_LIST$;&apos;</value>
-		</param>
-		<param>
-			<key>--input_file</key>
-			<value>&apos;$;INPUT_FILE$;&apos;</value>
-		</param>
-		<param>
-			<key>--runca_opts</key>
-			<value>&quot;-p $;OUTPUT_PREFIX$; -d $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$; -s $;SPEC_FILE$;&quot;</value>
-		</param>
-		<param>
-			<key>--runca_bin</key>
-			<value>$;BIN_DIR$;/runCA</value>
-		</param>
-		<param>
-			<key>stdout</key>
-			<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stdout</value>
-		</param>
-		<param>
-			<key>stderr</key>
-			<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stderr</value>
-		</param>
-	</command>
+		</command>
+    	<!--Processing-->
+		<command>
+			<type>RunDistributedCommand</type>
+			<name>run Celera Assembler</name>
+			<state>incomplete</state>
+			<executable>$;BIN_DIR$;/runCA_wrapper</executable>
+			<param>
+				<key>--input_list</key>
+				<value>&quot;$;INPUT_FILE_LIST$;&quot;</value>
+			</param>
+			<param>
+				<key>--input_file</key>
+				<value>&quot;$;INPUT_FILE$;&quot;</value>
+			</param>
+			<param>
+				<key>--runca_opts</key>
+				<value>&quot;-p $;OUTPUT_PREFIX$; -d $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$; -s $;SPEC_FILE$;&quot;</value>
+			</param>
+			<param>
+				<key>--runca_bin</key>
+				<value>$;BIN_DIR$;/runCA</value>
+			</param>
+			<param>
+				<key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stdout</value>
+			</param>
+			<param>
+				<key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stderr</value>
+			</param>
+		</command>
         <!--Postprocessing-->		 
         <command>
             <type>RunUnixCommand</type>
@@ -139,6 +139,24 @@
                 <key>--output_list</key>
                 <value>$;MERGE_LOG_OUTPUT_LIST$;</value>
             </param>
-        </command>                   				
+        </command>     
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create scf fasta list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>              
+            <param>
+                <key>--regex</key>
+                <value>".*\.scf.fasta"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;SCF_FASTA_OUTPUT_LIST$;</value>
+            </param>
+        </command>                				
 	</commandSet>	
 </commandSetRoot>				
