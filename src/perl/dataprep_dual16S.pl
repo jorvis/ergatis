@@ -6,6 +6,9 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 
@@ -47,10 +50,11 @@ my $list     = $opt_f;
 my $quallist = "";
 my $mapfile  = $opt_m;
 my $prefix   = $opt_p;
-if (-T $opt_q){
+if (defined($opt_q)){
   $quallist = $opt_q;
 }
 
+print "quallist: $quallist $opt_q\n";
 
 my $finalseqfile  = "$prefix.processed.fasta"; 
 my $finalqualfile = "$prefix.processed.qual";
@@ -528,6 +532,7 @@ for my $i (0 .. ($listlength[0]-1)){
     my $targetQualFile = "";
     my $targetQualPrefix = "";
     foreach my $qf (@qcatstr){
+      print "$qf\n";
       my @qline = split /\//, $qf;
       my @qlinesplit = split /\./, $qline[$#qline];
       my $qfprefix = join(".", @qlinesplit[0..($#qlinesplit-1)]);
