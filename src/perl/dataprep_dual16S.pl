@@ -3,14 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 use strict;
 use warnings;
+use Data::Dumper;
 
 #******************************************************************************
 # *dataprep_dual16S.pl
@@ -47,14 +42,10 @@ die $usage unless defined $opt_f
               and defined $opt_p;
 
 my $list     = $opt_f;
-my $quallist = "";
+my $quallist = $opt_q;
 my $mapfile  = $opt_m;
 my $prefix   = $opt_p;
-if (defined($opt_q)){
-  $quallist = $opt_q;
-}
 
-print "quallist: $quallist $opt_q\n";
 
 my $finalseqfile  = "$prefix.processed.fasta"; 
 my $finalqualfile = "$prefix.processed.qual";
@@ -430,7 +421,8 @@ if ($listlength[0] > $#barcodes-1){
 }
 
 # check for quality filelist
-if ($quallist ne ""){
+if ($quallist =~ /[A-Za-z0-9]/){
+  print "looking at quallist b/c I think it exists!\n";
   my $qlistlength = `wc $list`;
   my @qlistlength = split " ", $listlength;
   if($listlength[0] != $qlistlength[0]){
@@ -447,7 +439,7 @@ if ($listlength[0] == 1){
   copy($file, $finalseqfile);
 
   # quality file
-  if ($quallist ne ""){
+  if ($quallist =~ /[A-Za-z0-9]/){
     my $qfile = `cat $quallist`;
     chomp($qfile);
     copy($qfile, $finalqualfile);
@@ -471,8 +463,10 @@ my @catstr = split "\n", $catstr;
 open SEQ, ">$finalseqfile" or die;
 open QUAL, ">$finalqualfile" or die;
 
+
 for my $i (0 .. ($listlength[0]-1)){
   my $bc = $barcodes[$i]; # this is the associated barcode for the sample
+  # print "$bc\n";
 
   # do some processing of the filename to get the prefix
   # and store the associated barcode
@@ -524,7 +518,7 @@ for my $i (0 .. ($listlength[0]-1)){
 
   # Now if there are quality scores you should be able to go through the list
   # and find the matching file name
-  if ($quallist ne ""){
+  if ($quallist =~ /[A-Za-z0-9]/){
     my $qcatstr = `cat $quallist`;
     my @qcatstr = split "\n", $qcatstr;
 
@@ -532,7 +526,7 @@ for my $i (0 .. ($listlength[0]-1)){
     my $targetQualFile = "";
     my $targetQualPrefix = "";
     foreach my $qf (@qcatstr){
-      print "$qf\n";
+      # print "$qf\n";
       my @qline = split /\//, $qf;
       my @qlinesplit = split /\./, $qline[$#qline];
       my $qfprefix = join(".", @qlinesplit[0..($#qlinesplit-1)]);
@@ -594,7 +588,6 @@ close QUAL;
 
 # now create the corresponding mapping file for Qiime
 # and be sure it ends in Description
-
 my $qiimeDescCk = 1;
 open MAP, ">$finalmapfile" or die;
 open IMAP, "$mapfile" or die "Can't open $mapfile!!\n";
@@ -626,6 +619,8 @@ while(<IMAP>){
 }
 close IMAP;
 close MAP;
+
+exit(0);
 
 
 # takes a qiime formatted mapping file and adds
