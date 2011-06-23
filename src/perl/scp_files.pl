@@ -135,6 +135,14 @@ if( defined( $destination_host ) ) {
 }
 run_cmd( "$chmod_cmd" );
 
+# flag file to signal staging complete (specifically needed for BER files)
+my $stage_flag = $destination_directory."/staged_complete.flag";
+my $stage_flag_cmd = "touch $stage_flag";
+if( defined( $destination_host ) ) {
+	$stage_flag_cmd = "ssh $destination_host '$stage_flag_cmd'";
+}
+run_cmd( "$stage_flag_cmd");
+
 #Clean up the tmp directory
 run_cmd( "rm -rf $tmp_dirname" );
 run_cmd( "rm $tar_file" );
