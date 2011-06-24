@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 use Data::Dumper;
@@ -82,7 +85,7 @@ while(<IN>){
     }                
   }else{
     my @B = split /\;/, $A[0];
-    my $f = $B[$#B];      
+    my $f = join("_", @B[($#B-1) .. $#B]);      
     $activefeatures{$f} = 1;
     for my $i (1 ..$#A){
       $data{$samples[$i-1]}{$f} = substr($A[$i], 0, length($A[$i])-2);  
