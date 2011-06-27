@@ -33,7 +33,7 @@
             <key>stderr</key>
             <value>$;OUTPUT_DIRECTORY$;/build.stderr</value>
             </param>
-            <arg>$;OTHER_BUILD_ARGS$; -f $;REFERENCE$; $;BOWTIE_INDEX$;</arg>
+            <arg>$;BUILD_ARGS$; -f $;REFERENCE$; $;BOWTIE_INDEX$;</arg>
         </command>
 
     </commandSet>
