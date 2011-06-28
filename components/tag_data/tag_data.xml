@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
@@ -21,23 +20,11 @@
         </command>
 	<command>
 		<type>RunUnixCommand</type>
-		<name>tarring component workflow xml paths</name>
+		<name>tarring workflow xml paths</name>
 		<state>incomplete</state>
-		<executable>tar -cf $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar $(find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d)</executable>
+		<executable>tar -czf $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar.gz $(find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d)</executable>
 	</command>
 	<command>
-                <type>RunUnixCommand</type>
-                <name>tarring pipeline workflow xml paths</name>
-                <state>incomplete</state>
-                <executable>tar --append --file $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar $(find /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d)</executable>
-        </command>
-	<command>
-		<type>RunUnixCommand</type>
-		<name>gzip the tarred files</name>
-		<state>incomplete</state>
-		<executable>gzip $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar</executable>
-	</command>
-	 <command>
             <type>RunUnixCommand</type>
             <name>select files to tag</name>
             <state>incomplete</state>
