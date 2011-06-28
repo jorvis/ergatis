@@ -21,22 +21,22 @@
         </command>
 	<command>
 		<type>RunUnixCommand</type>
-		<name>touch</name>
+		<name>tarring component workflow xml paths</name>
 		<state>incomplete</state>
-		<executable>touch $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
-	</command>
-	<command>
-		<type>RunUnixCommand</type>
-		<name>generate component workflow xml paths</name>
-		<state>incomplete</state>
-		<executable>find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d -print >> $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
+		<executable>tar -cf $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar $(find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* -type d)</executable>
 	</command>
 	<command>
                 <type>RunUnixCommand</type>
-                <name>generate pipeline workflow xml paths</name>
+                <name>tarring pipeline workflow xml paths</name>
                 <state>incomplete</state>
-                <executable>find /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d -print >> $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.txt</executable>
+                <executable>tar --append --file $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar $(find /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d)</executable>
         </command>
+	<command>
+		<type>RunUnixCommand</type>
+		<name>gzip the tarred files</name>
+		<state>incomplete</state>
+		<executable>gzip $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar</executable>
+	</command>
 	 <command>
             <type>RunUnixCommand</type>
             <name>select files to tag</name>
