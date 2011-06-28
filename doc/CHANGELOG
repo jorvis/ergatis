@@ -1,5 +1,6 @@
 next
 ----
+-modified tag_data.xml to tar the workflow xmls instead of tagging the individual files
 -modified scp_files.pl to create a staging flag file after copy complete
 -included TIGRFAMS_ROLE_LINK file read in create_hmms.pl
 -changed p_func.xml and config
