@@ -135,7 +135,7 @@ if (defined $logfile) {
 } else {
 	system("$hmmer_loc/hmmpress -f $merged_lib_bin");
 }
-log_msg("INFO : Created .h3f, .h3i, .h3m and .h3p files\n", "");
+log_msg("\nINFO : Created .h3f, .h3i, .h3m and .h3p files\n", "");
 
 ## Create MLDBM from the merged library file
 log_msg("INFO : Creating MLDBM from merged library file $merged_lib\n", "");
@@ -168,7 +168,7 @@ close($logfh) if $logfh;
 # Subroutine to check the supplied paramaters are correct
 sub check_parameters {
 	
-	my @params = qw(hmm_list tigrinfo_dir tigrgo_link);
+	my @params = qw(hmm_list tigrinfo_dir tigrgo_link output_dir);
 	foreach my $param_opt (@params) {
 		## Check for all mandatory options
 		unless ($options{$param_opt}) {
@@ -196,11 +196,13 @@ sub check_parameters {
 
 sub log_msg {
 	my ($msg,$action) = @_;
-	print $logfh "$msg" if $logfh;
-	if ($action eq "die") {
-		die "$msg";
+	if ($logfh) {
+		print $logfh "$msg";
 	} else {
-		print "$msg";
+		print "$msg\n";
 	}
+	if ($action eq "die") {
+		die "";
+	} 
 }
 __END__		

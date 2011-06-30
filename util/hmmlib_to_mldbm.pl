@@ -208,14 +208,15 @@ while ( my $line = <$ifh> ) {
         ## make sure it doesn't exist already
         if ( exists $info{$$att{ACC}} )  {
             _log("WARNING: duplicate accession ($$att{ACC}) added to data structure.  old one overwritten.");
-        }
-        
+        } else {
+            _log("INFO: writing entry with accession $$att{ACC}");	
+	}
         ## if this looks like a pfam accession (PF03372.14), set the isotype to 'pfam'
         if ( $$att{ACC} =~ /^PF\d+\.\d+/ ) {
             $$att{IT} = 'pfam';
         }
         
-        _log("INFO: writing entry with accession $$att{ACC}");
+#        _log("INFO: writing entry with accession $$att{ACC}");
         ## add entry to MLDBM with the accession as the key
         $info{$$att{ACC}} = {
                                 name => $$att{NAME},
