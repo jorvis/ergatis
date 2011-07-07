@@ -14,7 +14,7 @@
 			<state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
-				<name>hmmpfam.pre_overlap_analysis</name>
+				<name>hmmpfam3.pre_overlap_analysis</name>
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
@@ -66,7 +66,7 @@
 			<state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
-				<name>hmmpfam.post_overlap_analysis</name>
+				<name>hmmpfam3.post_overlap_analysis</name>
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
@@ -136,11 +136,11 @@
 			<state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
-				<name>parse_evidence.hmmpfam_pre</name>
+				<name>parse_evidence.hmmpfam3_pre</name>
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
-				<name>parse_evidence.hmmpfam_post</name>
+				<name>parse_evidence.hmmpfam3_post</name>
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>

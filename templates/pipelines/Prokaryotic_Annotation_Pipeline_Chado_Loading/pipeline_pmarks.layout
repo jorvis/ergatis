@@ -46,9 +46,23 @@
             <state>incomplete</state>
             <name>bsml2chado.ber_post</name>
         </commandSet>
-        <commandSet type="serial">
-            <state>incomplete</state>
-            <name>pathway_tools_input.default</name>
-        </commandSet>
+	<commandSet type="parallel"> 
+            <state>incomplete</state> 
+            <commandSet type="serial"> 
+                <state>incomplete</state>
+                <commandSet type="serial"> 
+                   <state>incomplete</state>
+                   <name>scp_files.copy_ber_pre</name> 
+                </commandSet>
+                <commandSet type="serial"> 
+                    <state>incomplete</state>
+                    <name>scp_files.copy_ber_post</name>
+                </commandSet> 
+            </commandSet>
+            <commandSet type="serial">
+            	<state>incomplete</state>
+            	<name>pathway_tools_input.default</name>
+            </commandSet>
+	</commandSet>
     </commandSet>
 </commandSetRoot>
