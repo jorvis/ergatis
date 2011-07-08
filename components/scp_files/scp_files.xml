@@ -44,6 +44,10 @@
                 <key>--file_extension_filters</key>
                 <value>'$;FILE_EXTENSION_FILTERS$;'</value>
             </param>
+	    <param>
+	   	<key>--flag</key>
+		<value>&apos;$;COPY_BER_FLAG$;&apos;</value>
+	    </param>
         </command>
     </commandSet>
 </commandSetRoot>

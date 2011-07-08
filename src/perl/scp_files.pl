@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 scp_files.pl - Will scp some files.
@@ -12,6 +15,7 @@ USAGE: scp_files.pl
     [ --file_extension_filters=btab,list
       --output_host=destination_server
       --tmp_dir=/tmp
+      --flag=1
       --log 
       --help
     ]
@@ -34,6 +38,9 @@ B<--output_host,-O>
 B<--tmp,-t>
     Tmp directory. Files will be copied to this directory and a gzipped tarball will be created there.
     Default=/tmp
+
+B<--flag,-F>
+    Flag to signal copying of BER files is completed from output_repository to /local/scratch area.
 
 B<--log,-o> 
     Log file
@@ -75,6 +82,7 @@ my $results = GetOptions (\%options,
                           'output_host|O=s',
                           'file_extension_filters|f=s',
                           'tmp_dir|t=s',
+			  'flag|F=s',
                           'help|h');
 
 &check_options(\%options);
@@ -129,19 +137,21 @@ if( defined( $destination_host ) ) {
 run_cmd( "$rm_cmd" );
 
 #open up permissions for the file
-my $chmod_cmd = "chmod -R 774 $destination_directory";
+my $chmod_cmd = "chmod -R 777 $destination_directory";
 if( defined( $destination_host ) ) {
     $chmod_cmd = "ssh $destination_host '$chmod_cmd'";
 }
 run_cmd( "$chmod_cmd" );
 
 # flag file to signal staging complete (specifically needed for BER files)
-my $stage_flag = $destination_directory."/staged_complete.flag";
-my $stage_flag_cmd = "touch $stage_flag";
-if( defined( $destination_host ) ) {
+if (defined($options{'flag'}) && $options{'flag'} == 1) {
+    my $stage_flag = $destination_directory."/staged_complete.flag";
+    my $stage_flag_cmd = "touch $stage_flag";
+    if( defined( $destination_host ) ) {
 	$stage_flag_cmd = "ssh $destination_host '$stage_flag_cmd'";
+    }
+    run_cmd( "$stage_flag_cmd");
 }
-run_cmd( "$stage_flag_cmd");
 
 #Clean up the tmp directory
 run_cmd( "rm -rf $tmp_dirname" );
@@ -162,10 +172,14 @@ sub create_directory {
         }
         run_cmd( $cmd );
     }
-
-    my $cmd = "mkdir -m 700 $destination_directory";
+    my $cmd;
+    if (! -e $destination_directory) {
+    	$cmd = "mkdir -m 700 $destination_directory";
+    } else {
+	$cmd = "chmod 700 $destination_directory";
+    }
     if( defined( $destination_host ) ) {
-        $cmd = "ssh $destination_host '$cmd'";
+	$cmd = "ssh $destination_host '$cmd'";
     }
     run_cmd( "$cmd" );
 
