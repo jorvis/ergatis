@@ -1,5 +1,6 @@
 next
 ----
+-updated scp component to create dest dir with DB name
 -updated enzyme.dat path in p_func
 -modified scp_files.pl to pass staging flag creation file as a parameter
 -modified prok pipeline template directory to include hmmpfam3
