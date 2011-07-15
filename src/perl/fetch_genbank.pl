@@ -1,6 +1,9 @@
 #!/usr/bin/perl 
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 if 0; # not running under some shell
 
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
@@ -119,25 +122,26 @@ foreach my $id (@ids) {
 
 	my $esearch_result = get($esearch . $id);
 
-#print "\nESEARCH RESULT: $esearch_result\n";
+	print "\nESEARCH RESULT: $esearch_result\n";
 
 	$esearch_result =~ 
-		m|<Count>(\d+)</Count>.*<QueryKey>(\d+)</QueryKey>.*<WebEnv>(\S+)</WebEnv>|s;
-
+#		m|<Count>(\d+)</Count>.*<QueryKey>(\d+)</QueryKey>.*<WebEnv>(\S+)</WebEnv>|s;
+		m|<Count>(\d+)</Count>.*<Id>(\d+)</Id>|s;
 	my $Count    = $1;
-	my $QueryKey = $2;
-	my $WebEnv   = $3;
+	my $Id = $2;
+#	my $QueryKey = $2;
+#	my $WebEnv   = $3;
 
-#print "Count = $Count; QueryKey = $QueryKey; WebEnv = $WebEnv\n";
-
+#	print "Count = $Count; QueryKey = $QueryKey; WebEnv = $WebEnv\n";
+#	print "Count = $Count; Id = $Id\n";
 	my $retstart;
 	my $retmax=3;
 	for($retstart = 0; $retstart < $Count; $retstart += $retmax) {
 		my $efetch = "$utils/efetch.fcgi?" .
 			"rettype=$report&retmode=text&retstart=$retstart&retmax=$retmax&" .
-			"db=$db&query_key=$QueryKey&WebEnv=$WebEnv";
-
-#print "\nEF_QUERY=$efetch\n";     
+#			"db=$db&query_key=$QueryKey&WebEnv=$WebEnv";
+			"db=$db&id=$Id";
+#		print "\nEF_QUERY=$efetch\n";     
 
 		my $efetch_result = get($efetch);
 
