@@ -6,7 +6,7 @@ sub get_python_bins{
     my(@binfiles) = ();
     my($wrapper_str) = '';
     my $python_path = `which python`;  ## can be overwritten below
-    
+    chomp $python_path;   
     foreach my $arg (@ARGV){
         if($arg =~ /INSTALL_BASE/){
             ($instdir) = ($arg =~ /INSTALL_BASE=(.*)/);
