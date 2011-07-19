@@ -3,6 +3,7 @@ use ExtUtils::MakeMaker::Config;
 require ExtUtils::Manifest;
 use Term::ANSIColor;
 require "perl2wrapper_ergatis.pl";
+require "python2wrapper_ergatis.pl";
 use strict;
 
 $|++;
@@ -126,7 +127,12 @@ my $sampledocsdir = "$install_base/samples";
 ## workflow and schema docs dirs have always been the same
 my $schemadocsdir = $workflowdocsdir;
 
-my($scripts,$wrapperstr) = &get_bins();
+my($perl_scripts,$perl_wrapperstr) = &get_perl_bins();
+my($python_scripts,$python_wrapperstr) = &get_python_bins();
+my @script_array = (@$perl_scripts,@$python_scripts);
+my $wrapperstr = (join(' ',$perl_wrapperstr,$python_wrapperstr));
+my $scripts = \@script_array;
+
 print "Writing makefile to install directory $build_dir to $install_base\n";
 my $mm = WriteMakefile(
 	      'NAME'=>'ergatis',

@@ -1,11 +1,11 @@
 use File::Basename;
 use File::Find;
 
-sub get_perl_bins{
+sub get_python_bins{
     my($instdir,$workflowdocsdir,$schemadocsdir);
-    my(@binfiles);
-    my($wrapper_str);
-    my $perl_path = $^X;  ## can be overwritten below
+    my(@binfiles) = ();
+    my($wrapper_str) = '';
+    my $python_path = `which python`;  ## can be overwritten below
     
     foreach my $arg (@ARGV){
         if($arg =~ /INSTALL_BASE/){
@@ -17,8 +17,8 @@ sub get_perl_bins{
         if($arg =~ /SCHEMA_DOCS_DIR/){
             ($schemadocsdir) = ($arg =~ /SCHEMA_DOCS_DIR=(.*)/);
         }
-        if($arg =~ /PERL_PATH/){
-            ($perl_path) = ($arg =~ /PERL_PATH=(.*)/);
+        if($arg =~ /PYTHON_PATH/){
+            ($python_path) = ($arg =~ /PYTHON_PATH=(.*)/);
         }
     }
 
@@ -39,9 +39,9 @@ sub get_perl_bins{
 
     while(my $line = <FILE>){
 	chomp $line;
-	if($line =~ m|bin/[\w-]+\.pl| || $line =~ m|workflow/[\w-]+\.pl|){
+	if($line =~ m|bin/[\w-]+\.py| || $line =~ m|workflow/[\w-]+\.py|){
 	    my($fname) = basename($line);
-	    my($strip_fname) = ($fname =~ /(.*)\.pl$/);
+	    my($strip_fname) = ($fname =~ /(.*)\.py$/);
 	    open WRAPPER, "+>bin/$strip_fname" or die "Can't open file bin/$strip_fname\n";
 	    my($shell_args)  = q/"$@"/;
 	    my $addbuffer = $envbuffer;
@@ -64,7 +64,7 @@ export PERL_MOD_DIR
 
 export PERL5LIB=$instdir/lib/perl5/
 
-    $perl_path $instdir/bin/$fname $shell_args    
+    $python_path $instdir/bin/$fname $shell_args    
 
 _END_WRAPPER_
    ;
