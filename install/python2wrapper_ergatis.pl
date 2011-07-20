@@ -39,9 +39,9 @@ sub get_python_bins{
 
     while(my $line = <FILE>){
 	chomp $line;
-	if($line =~ m|bin/[\w-]+\.py| || $line =~ m|workflow/[\w-]+\.py|){
+	if($line =~ m|python/[\w-]+\.pyc?|){
 	    my($fname) = basename($line);
-	    my($strip_fname) = ($fname =~ /(.*)\.py$/);
+	    my($strip_fname) = ($fname =~ /(.*)\.pyc?$/);
 	    open WRAPPER, "+>bin/$strip_fname" or die "Can't open file bin/$strip_fname\n";
 	    my($shell_args)  = q/"$@"/;
 	    my $addbuffer = $envbuffer;
