@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME 
 
 lgt_bwa.pl
@@ -69,7 +72,8 @@ my $options_string = '';
 &check_parameters(\%options);
 
 # Check if the data are paired or not
-my $PAIRED = `ls -l $options{input_dir}/$options{input_base}*_1.fastq`;
+my $PAIRED = 0;
+$PAIRED=1 if(-e "$options{output_dir}/$options{input_base}_1.fastq");
 
 if($options{use_bwasw}) {
     die "bwasw is not implemented yet\n";
@@ -82,14 +86,16 @@ else {
 sub run_bwa {
 
     foreach my $ref (@$ref_files) {
-
+        chomp $ref;
+        $ref =~ /.*\/([^\/]+)\.[^\.]+$/;
+        my $refname = $1;
         # In here if we're paired
         if($PAIRED) {
 
             my $in1 = "$options{input_dir}/$options{input_base}_1.fastq";
-            my $out1 = "$options{output_dir}/$ref\_$options{input_base}_aln_sa1.sai";
+            my $out1 = "$options{output_dir}/$refname\_$options{input_base}_aln_sa1.sai";
             my $in2 = "$options{input_dir}/$options{input_base}_2.fastq";
-            my $out2 = "$options{output_dir}/$ref\_$options{input_base}_aln_sa2.sai";
+            my $out2 = "$options{output_dir}/$refname\_$options{input_base}_aln_sa2.sai";
             
             # Run the first one through aln
             my $cmd = "$options{bwa_path} aln $options_string $ref $in1 > $out1";
@@ -118,13 +124,13 @@ sub run_bwa {
         else {
 
             my $in = "$options{input_dir}/$options{input_base}.fastq";
-            my $out = "$options{output_dir}/$ref\_$options{input_base}_aln_sa.sai";
+            my $out = "$options{output_dir}/$refname\_$options{input_base}_aln_sa.sai";
             my $cmd = "$options{bwa_path} aln $options_string $ref $in > $out";
 
             print "Running: $cmd\n";
             system($cmd) or die "Unable to run $cmd\n";
 
-            $cmd = "$options{bwa_path} samse -n $options{num_aligns} $ref \"$out\" \"$in\" > $options{output_dir}/$ref\_$options{input_base}.sam";
+            $cmd = "$options{bwa_path} samse -n $options{num_aligns} $ref \"$out\" \"$in\" > $options{output_dir}/$refname\_$options{input_base}.sam";
             print "Running: $cmd\n";
             system($cmd) or die "Unable to run $cmd\n";
 
