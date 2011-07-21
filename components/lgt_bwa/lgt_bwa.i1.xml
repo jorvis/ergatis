@@ -178,7 +178,7 @@
             <type>RunUnixCommand</type>
             <name>POST PROCESSING</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lgt_bwa_post_process.py</executable>            
+            <executable>$;BIN_DIR$;/lgt_bwa_post_process</executable>            
             <param>
             <key>stdout</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.postprocess_exec.stdout</value>
