@@ -40,59 +40,59 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/lgt_bwa</executable>            
             <param>
-            <key>input_dir</key>
+            <key>--input_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
             <param>
-            <key>input_base</key>
+            <key>--input_base</key>
             <value>$;I_FILE_BASE$;</value>
             </param>
             <param>
-            <key>ref_file_list</key>
+            <key>--ref_file_list</key>
             <value>$;REF_FILE_LIST1$;</value>
             </param>
             <param>
-            <key>output_dir</key>
+            <key>--output_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>  
             <param>
-            <key>mistmatch</key>
+            <key>--mistmatch</key>
             <value>$;MISMATCH_PENALTY$;</value>
             </param>  
             <param>
-            <key>max_gaps</key>
+            <key>--max_gaps</key>
             <value>$;MAX_GAP_OPENS$;</value>
             </param>
             <param>
-            <key>max_gap_extensions</key>
+            <key>--max_gap_extensions</key>
             <value>$;MAX_GAP_EXTNS$;</value>
             </param>
             <param>
-            <key>open_gap_penalty</key>
+            <key>--open_gap_penalty</key>
             <value>$;GAP_OPEN_PENALTY$;</value>
             </param> 
             <param>    
-            <key>extend_gap_penalty</key>
+            <key>--extend_gap_penalty</key>
             <value>$;GAP_EXTN_PENALTY$;</value>
             </param>     
             <param>
-            <key>threads</key>
+            <key>--threads</key>
             <value>$;MAX_THREADS$;</value>
             </param>     
             <param>
-            <key>use_bwasw</key>
+            <key>--use_bwasw</key>
             <value>$;BWASW$;</value>
             </param> 
             <param>
-            <key>num_aligns</key>
+            <key>--num_aligns</key>
             <value>$;MAX_ALIGN$;</value>
             </param> 
             <param>
-            <key>bwa_path</key>
+            <key>--bwa_path</key>
             <value>$;BWA_EXEC$;</value>
             </param>
             <param>
-            <key>cleanup_sai</key>
+            <key>--cleanup_sai</key>
             <value>$;CLEANUP$;</value>
             </param>
             <param>
@@ -110,59 +110,59 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/lgt_bwa</executable>            
             <param>
-            <key>input_dir</key>
+            <key>--input_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
             <param>
-            <key>input_base</key>
+            <key>--input_base</key>
             <value>$;I_FILE_BASE$;</value>
             </param>
             <param>
-            <key>ref_file_list</key>
+            <key>--ref_file_list</key>
             <value>$;REF_FILE_LIST2$;</value>
             </param>
             <param>
-            <key>output_dir</key>
+            <key>--output_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>         
             <param>
-            <key>mistmatch</key>
+            <key>--mistmatch</key>
             <value>$;MISMATCH_PENALTY$;</value>
             </param>  
             <param>
-            <key>max_gaps</key>
+            <key>--max_gaps</key>
             <value>$;MAX_GAP_OPENS$;</value>
             </param>  
             <param>
-            <key>max_gap_extensions</key>
+            <key>--max_gap_extensions</key>
             <value>$;MAX_GAP_EXTNS$;</value>
             </param>     
             <param>
-            <key>open_gap_penalty</key>
+            <key>--open_gap_penalty</key>
             <value>$;GAP_OPEN_PENALTY$;</value>
             </param>     
             <param>
-            <key>extend_gap_penalty</key>
+            <key>--extend_gap_penalty</key>
             <value>$;GAP_EXTN_PENALTY$;</value>
             </param>     
             <param>
-            <key>threads</key>
+            <key>--threads</key>
             <value>$;MAX_THREADS$;</value>
             </param>     
             <param>
-            <key>use_bwasw</key>
+            <key>--use_bwasw</key>
             <value>$;BWASW$;</value>
             </param> 
             <param>
-            <key>num_aligns</key>
+            <key>--num_aligns</key>
             <value>$;MAX_ALIGN$;</value>
             </param> 
             <param>
-            <key>bwa_path</key>
+            <key>--bwa_path</key>
             <value>$;BWA_EXEC$;</value>
             </param>
             <param>
-            <key>cleanup_sai</key>
+            <key>--cleanup_sai</key>
             <value>$;CLEANUP$;</value>
             </param>
             <param>
