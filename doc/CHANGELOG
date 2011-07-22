@@ -1,5 +1,7 @@
 next
 ----
+-added enzyme.dat path in software.config
+-added more common name rules in post_process_annotations.pl
 
 ergatis-v2r15b1
 ---------------

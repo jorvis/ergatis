@@ -5,7 +5,7 @@ use warnings;
 use Exporter 'import';
 use vars qw(@EXPORT_OK);
 
-@EXPORT_OK = qw(clean_common_name);
+@EXPORT_OK = qw(clean_common_name clean_gene_symbol);
 
 sub clean_common_name {
     my ($new_product_name, $chp) = @_;
@@ -81,6 +81,44 @@ sub clean_common_name {
         $new_product_name = "bacteriophage N4 adsorption protein B";
     } elsif( $new_product_name eq "transcriptional activator of defense systems" ) {
         $new_product_name = "multiple antibiotic resistance protein MarA";
+    } elsif($new_product_name eq "type IV secretory pathway VirD2 components") {
+	$new_product_name = "type IV secretory pathway protein";
+    } elsif($new_product_name eq "hydro-lases, Fe-S type, tartrate/fumarate subfamily, beta region domain protein") {
+	$new_product_name = "fumarate hydratase family protein";
+    } elsif($new_product_name eq "glycogen/starch synthases, ADP-glucose type family protein") {
+	$new_product_name = "glycogen/starch synthase";
+    } elsif($new_product_name eq "glutamate synthases, NADH/NADPH, small subunit domain protein") {
+	$new_product_name = "glutamate synthase, NADH/NADPH, small subunit";
+    } elsif($new_product_name eq "K+ potassium transporter family protein") {
+	$new_product_name = "potassium uptake protein";
+    } elsif($new_product_name eq "domain related to MnhB subunit of Na+/H+ antiporter family protein") {
+	$new_product_name = "Na+/H+ antiporter family protein";	
+    } elsif($new_product_name eq "arginine-tRNA-transferase, C terminus family protein") {
+	$new_product_name = "putative arginine-tRNA-transferase";
+    } elsif($new_product_name eq "cytochrome b(C-terminal)/b6/petD family protein") {
+	$new_product_name = "cytochrome b family protein";
+    } elsif($new_product_name eq "traG-like , N-terminal region family protein") {
+	$new_product_name = "putative traG protein";
+    } elsif($new_product_name eq "cyclic di-GMP binding protein VCA0042") {
+	$new_product_name = "cyclic di-GMP binding protein";
+    } elsif($new_product_name eq "alr5027 protein") {
+	$new_product_name = "heme-binding protein HutZ";
+    } elsif($new_product_name eq "putative 2-hydroxyacid dehydrogenase HI_1556") {
+	$new_product_name = "putative 2-hydroxyacid dehydrogenase";
+    } elsif($new_product_name eq "SULFATE TRANSPORTER SULFATE TRANSPORTER FAMILY PROTEIN") {
+	$new_product_name = "sulfate permease family protein";
+    } elsif($new_product_name eq "conserved protein with nucleoside triphosphate hydrolase domain") {
+	$new_product_name = "putative ATP-dependent endonuclease";
+    } elsif($new_product_name eq "gene 25-like lysozyme family protein") {
+	$new_product_name = "lysozyme family protein";
+    } elsif($new_product_name eq "bordetella uptake gene (bug) product family protein") {
+	$new_product_name = "bug family protein";
+    } elsif($new_product_name eq "phage/plasmid replication , gene II/X family protein") {
+	$new_product_name = "phage/plasmid replication protein, gene II/X family";
+    } elsif($new_product_name eq "invasion gene expression up-regulator, SirB family protein") {
+	$new_product_name = "invasion gene expression up-regulator";
+    } elsif(($new_product_name eq "PIII") || ($new_product_name eq "zn-dependent hydrolase of the beta-lactamase fold")) {
+	$new_product_name = $chp;
     }
 
     ## If protein name begins with 'orf' or 'residues' or 'ttg start' or contains 'similar to' 
@@ -95,7 +133,8 @@ sub clean_common_name {
         $new_product_name =~ /^residues\b/i ||
         $new_product_name =~ /^\w{1,2}\d{1,3}$/ ||
         $new_product_name =~ /^ttg start/i ||
-	$new_product_name =~ /gene \d+ protein/ ) {
+	$new_product_name =~ /gene \d+ protein/ ||
+	$new_product_name =~ /conserved domain protein/ ) {
 	$new_product_name = $chp;
     }
 
@@ -117,7 +156,8 @@ sub clean_common_name {
     #   conserved hypothetical protein 
     #   exs conserved hypothetical family protein; Protein of unknown function (DUF454) family protein -> 
     #   conserved hypothetical protein
-    if ( $new_product_name =~ m|conserved hypothetical|i ||
+    if ( 
+#	 $new_product_name =~ m|conserved hypothetical|i ||
 	 $new_product_name =~ /conserved hypothetica\b/i || 
          $new_product_name =~ m|DUF.*protein| ||
 	 $new_product_name =~ /\b(DUF|UPF)/ ||
@@ -126,8 +166,8 @@ sub clean_common_name {
          $new_product_name = $chp;
     } elsif ($new_product_name =~ /hypothetica\b/) {
 	$new_product_name = 'hypothetical protein';
-    }
-    
+    } 
+
     ## anything with 'uncharacterized ACR' should be changed to conserved hypothetical
     if ( $new_product_name =~ /\buncharacteri(z|s)ed\b/i || $new_product_name =~ m/ncharacteri(z|s)ed ACR/ ) {
         $new_product_name = $chp;
@@ -153,6 +193,8 @@ sub clean_common_name {
     
     ## Americanize some words
     $new_product_name =~ s/utilisation/utilization/g;
+    $new_product_name =~ s/utilising/utilizing/g;
+    $new_product_name =~ s/mobilisation/mobilization/g;
     $new_product_name =~ s/dimerisation/dimerization/g;
     $new_product_name =~ s/disulphide/disulfide/g;
     $new_product_name =~ s/sulphur/sulfur/g;
@@ -160,15 +202,28 @@ sub clean_common_name {
         my $p = $1;
         $new_product_name =~ s/haem$p/hem$p/;
     }
+    
+    $new_product_name =~ s/\d*\s*C-terminus//;
+    $new_product_name =~ s/\d*\s*N-terminus//;
 
+    ## Make the words singular
+    $new_product_name =~ s/desulfurases/desulfurase/g;
+    $new_product_name =~ s/synthases/synthase/g;
+    $new_product_name =~ s/kinases/kinase/g;
+    $new_product_name =~ s/decarboxylases/decarboxylase/g;
+    $new_product_name =~ s/oxidases/oxidase/g;
+    $new_product_name =~ s/\bgenes\b/gene/g;
+    ## Spelling corrections
+    $new_product_name =~ s/hypotheical|hypothetic\b/hypothetical/g;
+    
     ## replace 'or' with /. 
     #   ex. succinate dehydrogenase or fumarate reductase, flavoprotein subunit family protein -> 
     #   succinate dehydrogenase/fumarate reductase, flavoprotein subunit
     $new_product_name =~ s| or |\/|i;
     
-    ## remove leading predicted from names
-    #   ex. Predicted permease family protein -> permease family protein
-    $new_product_name =~ s|^predicted\s+||i;
+    ## Change leading predicted, possible, potential, probable from names to putative
+    #   ex. Predicted permease family protein -> putative permease family protein
+    $new_product_name =~ s/^(predicted|possible|potential|probable)/putative/i;
     
     ## remove 'precursor' from the protein name
     #   ex. halocyanin precursor -> halocyanin
@@ -190,8 +245,8 @@ sub clean_common_name {
         $new_product_name = $1;
     }
     
-    ## remove trailing periods
-    if ( $new_product_name =~ /^(.+?)\.$/ ) {
+    ## remove trailing periods, comma, hyphen, underscore, colon or forward slash
+    if ( $new_product_name =~ /^(.+?)(\.|\,|\-|\_|\:|\/)$/ ) {
         $new_product_name = $1;
     }
     
@@ -220,7 +275,13 @@ sub clean_common_name {
         $new_product_name =~ s/\s*\.\s*(domain protein|family protein)?$//;
         $new_product_name .= " $dp" if( $dp );
     }
-
+    
+    ## if protein name ends with "binding" or "like", add "protein" to the end
+    ## and remove "protein from the beginning"
+    if ($new_product_name =~ /(binding|like)\s*$/) {
+	$new_product_name =~ s/^(protein)\s//;
+	$new_product_name .= ' protein';
+    }
     ## remove strings with trailing parens
     if( $new_product_name =~ /\(.*\)\s*(domain protein|family protein)?$/ ) {
         my $dp = $1 if( $1 );
@@ -237,4 +298,14 @@ sub clean_common_name {
     return $new_product_name;
 }
 
+# Subroutine to clean gene symbol
+sub clean_gene_symbol {
+	my ($new_gene_symbol) = @_;
+	
+	## gene sysmbol should not start with orf. It cannot have 4 consecutive numbers
+	if(($new_gene_symbol =~ /^orf/i) || ($new_gene_symbol =~ /\d{4}/)) {
+		$new_gene_symbol = "";
+	}
+	return $new_gene_symbol;
+}
 1;

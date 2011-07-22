@@ -77,7 +77,7 @@ use Pod::Usage;
 use File::OpenFile qw(open_file);
 use PFunc::Annotation;
 use PFunc::EvidenceParser::Hypothetical;
-use PFunc::CommonNameAnnotation qw(clean_common_name);
+use PFunc::CommonNameAnnotation qw(clean_common_name clean_gene_symbol);
 use PFunc::TIGRRolesAnnotation;
 use Data::Dumper;
 
@@ -114,11 +114,14 @@ sub post_process {
     ## format ec numbers
     &format_ec_numbers( $annotation );
 
-    ## clean up the common name with the CommonNameAnnotation module
+    ## clean up the common name  with the CommonNameAnnotation module
     my ($gene_product_name, $gpn_source, $gpn_source_type) = $annotation->get_gene_product_name;
     $annotation->set_gene_product_name( clean_common_name( $gene_product_name->[0],$chp ),
                                         $gpn_source, $gpn_source_type );
-
+    my ($gene_symbol, $gene_source, $gene_source_type) = $annotation->get_gene_symbol;
+    if(defined($gene_symbol->[0])) {
+    	$annotation->set_gene_symbol(clean_gene_symbol($gene_symbol->[0]), $gene_source, $gene_source_type);
+    }
     ($gene_product_name, $gpn_source, $gpn_source_type) = $annotation->get_gene_product_name;
 
     ## Assign changed GO terms to conserved hypothetical proteins
@@ -301,7 +304,7 @@ sub check_options {
     if($options{'hypo'}) {
 	$chp = $options{'hypo'};
     } else {
-	$chp = 'hypothetical protein';
+	$chp = 'conserved hypothetical protein';
     }	
 
 }
