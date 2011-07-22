@@ -1,36 +1,50 @@
 next
 ----
--modified fetch_genbank.pl to create the correct url for downloading reference genome
--updated scp component to create dest dir with DB name
--updated enzyme.dat path in p_func
--modified scp_files.pl to pass staging flag creation file as a parameter
--modified prok pipeline template directory to include hmmpfam3
--modified tag_data.xml to tar the workflow xmls instead of tagging the individual files
--modified scp_files.pl to create a staging flag file after copy complete
--included TIGRFAMS_ROLE_LINK file read in create_hmms.pl
--changed p_func.xml and config
--modified post_process_annotations.pl to include ec number and comman name corrections
--modified hmmer3 to hmmpfam3
--added hmmer3 component
+
+ergatis-v2r15b1
+---------------
 -added pagination to the pipeline list interface
--assign_taxa: postprocessing work of resistome is added
--fixed prodigal2bsml.pl bug
--fixed create_pseudomolecule bug in case of more than one reference genome groups
 -bowtie_build: updated to make use of an iterator
 -bowite: updated bowtie to handle paired-end data more efficiently
+-qiime-mothur-cnvr: added option for qual file list
+-modified hmmer3 to hmmpfam3
+-added hmmer3 component
+-fixed create_pseudomolecules.pl to accept file list
+-fixed create_pseudomolecule bug in case of more than one reference genome groups
+-included contig list in config and xml for create_pseudomolecule
+-celera: removed obsolete components. merged into one component
+-assign_taxa: postprocessing work of resistome is added
+-resistome: modified filter_blastx_output.pl so that longest match will be considered
+-leech: path to executable now stored in a variable
+-modified tag_data.xml to tar the workflow xmls instead of tagging the individual files
+-updated scp component to create dest dir with DB name
+-modified scp_files.pl to pass staging flag creation file as a parameter
+-modified scp_files.pl to create a staging flag file after copy complete
+-added clovr terminate cluster component
+-download_tag_iterator uses vp tools (vp-transfer-dataset) by default instead of downloadTag.py
+-added the ability to include python scripts in ergaits install
+-added additional checks in CommonNameAnnotation.pm for pFunc
+-made changes to HMMTools.pm to accomdate hmm3 upgrade
+-added deseq component
+-added merge_uchime script
 -added scripts to create Pfam and TIGRFAM HMM libraries and MLDBM
 -added htseq_count_reads component
--added deseq component
 -added sort_sam_by_name component
 -added pileup_to_wig component
 -added samtools_pileup component
 -added basic_alignment_stats component
 -added sam_to_bam component
--included contig list in config and xml for create_pseudomolecule
--modified filter_blastx_output.pl so that longest match will be considered (resistome)
 -added get_genbank_entries.pl script
--fixed create_pseudomolecules.pl to accept file list
+-modified fetch_genbank.pl to create the correct url for downloading reference genome
+-updated enzyme.dat path in p_func
+-modified prok pipeline template directory to include hmmpfam3
+-included TIGRFAMS_ROLE_LINK file read in create_hmms.pl
+-changed p_func.xml and config
+-modified post_process_annotations.pl to include ec number and comman name corrections
+-fixed prodigal2bsml.pl bug
 -added pipeline.config to different prokaryotic pipeline versions
+-created new iterator maker: create_newline_sep_file_iterator_list.pl
+
 ergatis-v2r14b1
 ---------------
 -added formatdb.pl
