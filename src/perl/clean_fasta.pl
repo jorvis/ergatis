@@ -1,4 +1,7 @@
 #!/usr/bin/perl -w
+
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 # Copyright @ 2002 - 2010 The Institute for Genomic Research (TIGR).
 # All rights reserved.
 # 
@@ -137,7 +140,9 @@ sub cleanRecord($$) {
             $idenTable{$identifier} = $freq + 1;
             $identifier.="_$freq";}
       }
-      $header =~ s/^>\S+\s*/>$identifier /g;
+#      $header =~ s/^>\S+\s*/>$identifier /g;
+      # Grabbing only the header part until the first space character 
+      $header = ">".$identifier;
       $tf_obj->logLocal("Cleaned the identifier for $identifier", 3);
       
       #removing all non-graphical characters from the header except CTRL-A
@@ -152,6 +157,9 @@ sub cleanRecord($$) {
          $ctrl_str.=$ctrl_list[$i];
       }
       $header =~ s/[$ctrl_str\t\n\f\a\e]//g;
+      # Replacing pipe [|] with underscore in the header 
+      # as it creates problem later in the BSML file creation
+      $header =~ s/\|/\_/g;
       $header =~ s/[^[:graph:][:cntrl:]\s]//g;
       $tf_obj->logLocal("Cleaned the header for $identifier", 3);
    
