@@ -1,11 +1,5 @@
 #!/usr/bin/perl
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1  NAME 
 
 lgt_bwa.pl
@@ -100,17 +94,17 @@ sub run_bwa {
             # Run the first one through aln
             my $cmd = "$options{bwa_path} aln $options_string $ref $in1 > $out1";
             print "Running: $cmd\n";
-            system($cmd) or die "Unable to run $cmd\n";
+            system($cmd) == 0 or die "Unable to run $cmd\n";
             
             # Run the second one through aln
             $cmd = "$options{bwa_path} aln $options_string $ref $in2 > $out2";
             print "Running: $cmd\n";
-            system($cmd) or die "Unable to run $cmd\n";
+            system($cmd) == 0 or die "Unable to run $cmd\n";
 
             # Run sampe
-            $cmd = "$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" > $options{output_dir}/$ref\_$options{input_base}.sam";
+            $cmd = "$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" > $options{output_dir}/$refname\_$options{input_base}.sam";
             print "Running: $cmd\n";
-            system($cmd) or die "Unable to run $cmd\n";
+            system($cmd) == 0 or die "Unable to run $cmd\n";
 
 
             if($options{cleanup_sai}) {
