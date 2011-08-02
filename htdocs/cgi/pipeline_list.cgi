@@ -468,7 +468,7 @@ sub print_template {
     ## for pagination
     $tmpl->param( NEEDS_PAGINATION => $pipeline_count > $pipelines_per_page ? 1 : 0 );
     $tmpl->param( PIPELINE_COUNT   => $pipeline_count );
-    $tmpl->param( PAGE_LINKS       => $page_links );
+    if($page_links) {$tmpl->param( PAGE_LINKS       => $page_links )};
     $tmpl->param( IS_FIRST_PAGE    => $view_page_num == 1 ? 1 : 0 );
     $tmpl->param( IS_LAST_PAGE     => ($view_page_num * $pipelines_per_page) > $pipeline_count ? 1 : 0 );
     $tmpl->param( MIN_PIPELINE_POS => $min_pipeline_pos );
