@@ -813,9 +813,12 @@ sub check_parameters {
     $locus_database = $opts->{'locus_database'} if( $opts->{'locus_database'} );
 
     #make sure we can parse the species and genus from organism
-    $organism = [ $1, $2 ] if( $opts->{'organism'} =~ /(\S+)\s+(.*)/ );
-    &_log( "Could not parse genus and species from organism options $opts->{'organism'}")
-        unless( @{$organism} == 2 );
+    #if organism name is just a genus, then species is listed as 'unknown'
+    if( $opts->{'organism'} =~ /(\S+)\s+(.*)/ ){
+	$organism = [ $1, $2 ];
+    } elsif ( $opts->{'organism'} =~ /^(\S+)$/ ){
+	$organism = [ $1, 'unknown' ];
+    } 
 
     #other bsml lists
     @other_files = &get_input_files( $opts->{'other_bsml_lists'} )
