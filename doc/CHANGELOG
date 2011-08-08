@@ -1,5 +1,6 @@
 next
 ----
+-changed run_prok_pipeline.pl to include comments on pipeline creation
 -modified clean_fasta.pl to clean up input FASTA file header 
 -included scp parameters in pipeline_pmarks.config in prok global_pipeline_templates
 -added enzyme.dat path in software.config
