@@ -110,7 +110,7 @@ sub run_bwa {
             if($options{cleanup_sai}) {
                 $cmd = "rm -f $out1 $out2";
                 print "Running: $cmd\n";
-                system($cmd) or die "Unable to run $cmd\n";
+                system($cmd) == 0 or die "Unable to run $cmd\n";
             }
         }
         
@@ -122,16 +122,16 @@ sub run_bwa {
             my $cmd = "$options{bwa_path} aln $options_string $ref $in > $out";
 
             print "Running: $cmd\n";
-            system($cmd) or die "Unable to run $cmd\n";
+            system($cmd) == 0 or die "Unable to run $cmd\n";
 
             $cmd = "$options{bwa_path} samse -n $options{num_aligns} $ref \"$out\" \"$in\" > $options{output_dir}/$refname\_$options{input_base}.sam";
             print "Running: $cmd\n";
-            system($cmd) or die "Unable to run $cmd\n";
+            system($cmd) == 0 or die "Unable to run $cmd\n";
 
             if($options{cleanup_sai}) {
                 $cmd = "rm -f $out";
                 print "Running: $cmd\n";
-                system($cmd) or die "Unable to run $cmd\n";
+                system($cmd) == 0 or die "Unable to run $cmd\n";
             }
         }
     }
@@ -143,7 +143,8 @@ sub check_parameters {
     if (! -e $options{'input_dir'}) { print STDERR "Input invalid\n"; pod2usage( {-exitval=>0, -verbose => 0, -output => \*STDOUT})};
 
     if($options{ref_file}) {
-        $ref_files = [$options{ref_file}];
+        my @files = split(/,/,$options{ref_file});
+        $ref_files = \@files;
     }
     elsif($options{ref_file_list}) {
         my @lines = `cat $options{ref_file_list}`;

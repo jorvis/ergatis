@@ -32,7 +32,7 @@
             <key>stderr</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stderr</value>
             </param>
-            <arg>-O $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;I_FILE_PATH$;</arg>
+            <arg>--split-3 -O $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;I_FILE_PATH$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -50,6 +50,10 @@
             <param>
             <key>--ref_file_list</key>
             <value>$;REF_FILE_LIST1$;</value>
+            </param>
+            <param>
+            <key>--ref_file</key>
+            <value>$;REF_FILE1$;</value>
             </param>
             <param>
             <key>--output_dir</key>
@@ -120,6 +124,10 @@
             <param>
             <key>--ref_file_list</key>
             <value>$;REF_FILE_LIST2$;</value>
+            </param>
+            <param>
+            <key>--ref_file</key>
+            <value>$;REF_FILE2$;</value>
             </param>
             <param>
             <key>--output_dir</key>
