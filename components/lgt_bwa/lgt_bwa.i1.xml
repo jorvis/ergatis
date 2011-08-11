@@ -32,7 +32,7 @@
             <key>stderr</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stderr</value>
             </param>
-            <arg>--split-3 -O $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;I_FILE_PATH$;</arg>
+            <arg> -O $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;I_FILE_PATH$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
