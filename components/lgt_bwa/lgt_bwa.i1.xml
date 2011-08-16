@@ -203,12 +203,15 @@
             <key>--ref1</key>
             <value>$;REF_FILE1$;</value>
             </param>
+            <param>
             <key>--ref2</key>
             <value>$;REF_FILE2$;</value>
             </param>
+            <param>
             <key>--ref_list1</key>
             <value>$;REF_FILE_LIST1$;</value>
             </param>
+            <param>
             <key>--ref_list2</key>
             <value>$;REF_FILE_LIST2$;</value>
             </param>
