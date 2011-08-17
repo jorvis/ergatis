@@ -104,6 +104,7 @@ my $db = $options{database};
 my @ids = split(/,/,$options{query}); 
 foreach my $id (@ids) {
 	chomp($id);
+	next if ($id =~ /\/|\\/g);
 ## open the output file for writing 
 	my $fh;
 	my $filename = $options{output_dir}."/reference_".$id.".".$options{format}; 

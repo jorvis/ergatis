@@ -1,5 +1,16 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+if 0; # not running under some shell
+
+BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+use lib (@INC,$ENV{"PERL_MOD_DIR"});
+no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+no lib ".";
+
 ###########################################################
 # POD DOCUMENTATION                                       #
 ###########################################################
@@ -29,10 +40,13 @@ create_pseudomolecules.pl - program to generate pseudomolecules from contigs for
 		    	  e.g. -c 100 -maxmatch
 
     --input_file  	= /path/to/input_file. This is a tab-delimited file containing
-		    	  genBank accession ids and a serial group number indicating which
-		    	  reference sequences should be concatenated together for analysis .
+		    	  genBank accession ids or paths to reference genome files and 
+			  a serial group number indicating which reference sequences 
+			  should be concatenated together for analysis .
 		    	  e.g.CP000803.1	1
+			      /path/to/ref_file	1 	
 			      CP000804.1	2
+			      CP000806.1	2
 
     --database 	  	= Name of the genBank database used to download the reference 
 		    	  genomes.e.g.nucleotide
@@ -55,7 +69,8 @@ create_pseudomolecules.pl - program to generate pseudomolecules from contigs for
 
 The program creates pseudomolecules from contigs for annotation purposes. Following steps are taken in pseudomolecule creation:
 1. If no reference file is passed then concatenate the contigs based on length - longest to shortest to create a pseudomolecule.
-2. If a reference accession ids file is specified then download reference genome sequences from genBank.
+2. If a reference accession file containing accession ids or file paths is specified then download reference genome sequences from genBank.
+   Always provide absolute paths for the reference genome files
 3. Concatenate reference genomes based on the groups provided by the user.
 4. Run nucmer to create .delta file by aligning reference genome with input contigs file
 5. Run show-coords to create .coords file for the alignment.
@@ -128,6 +143,7 @@ $logger = $logger->get_logger();
 foreach my $line (@contents) {
 	chomp($line);
 	next if($line =~ /^#/);
+	next if ($line =~ /^\s*$/);
 	my @fline = split(/\t/,$line);
 ## Hash keyed on group number, value is the accession number.
 	if(exists($accHash{$fline[1]})) {
@@ -136,6 +152,10 @@ foreach my $line (@contents) {
 		$accHash{$fline[1]} = $fline[0];
 	}
 }
+
+if(keys(%accHash) == 0) {
+	$logger->logdie("Empty reference accession file $options{'input_file'} passed.");
+} 
 
 $contig_file = $orig_contig_file;
 
@@ -148,40 +168,51 @@ for my $group (sort {$a<=>$b} keys %accHash) {
 		my @acc = split(/,/,$accHash{$group});
 		my $ref_file = $options{output_dir}."/reference_grp".$group.".".$options{format};
 		foreach my $id (@acc) {
-			my $filename = $options{output_dir}."/reference_".$id.".".$options{format};
+			my $filename;
+			if ($id =~ /\/|\\/g) {
+				$filename = $id;
+			} else {
+				$filename = $options{output_dir}."/reference_".$id.".".$options{format};
+			}
 			if (-e $filename) {
 				system("cat $filename >> $ref_file");
+			} else {
+				$logger->logdie("Unable to download $id and create $filename or provided $filename does not exist");
 			}
 		}
-		my ($ref_base,$ref_dir,$ref_ext) = fileparse($ref_file,qr/\.[^.]*/);
-		my ($contig_base,$contig_dir,$contig_ext) = fileparse($contig_file,qr/\.[^.]*/);
-		my $nucmer_prefix = $options{output_dir}."/".$ref_base.$contig_base;
-		system("$options{'nucmer_exec'} -p $nucmer_prefix $options{config_param} $ref_file $contig_file");
-		my $nucout_file = "$nucmer_prefix.delta";
-		my @nucout = &read_file($nucout_file);
-		my $is_full = 0;
-		foreach my $line (@nucout) {
-			chomp($line);
-			if($line =~ /^>/) {
-				$is_full = 1;
-				last; 
-			}	
+		if (-s $ref_file) {
+			my ($ref_base,$ref_dir,$ref_ext) = fileparse($ref_file,qr/\.[^.]*/);
+			my ($contig_base,$contig_dir,$contig_ext) = fileparse($contig_file,qr/\.[^.]*/);
+			my $nucmer_prefix = $options{output_dir}."/".$ref_base.$contig_base;
+			system("$options{'nucmer_exec'} -p $nucmer_prefix $options{config_param} $ref_file $contig_file");
+			my $nucout_file = "$nucmer_prefix.delta";
+			my @nucout = &read_file($nucout_file);
+			my $is_full = 0;
+			foreach my $line (@nucout) {
+				chomp($line);
+				if($line =~ /^>/) {
+					$is_full = 1;
+					last; 
+				}	
+			}
+			if($is_full == 0) {
+				next;
+			}
+			my $delta_file = $options{output_dir}."/".$ref_base.$contig_base.".delta";
+			my $coords_file = $options{output_dir}."/".$ref_base.$contig_base.".coords";
+			system("$options{coords_exec} -T $delta_file > $coords_file");
+			system("$Bin/reference_genome_match_tiler --mummer_coords_file $coords_file --min_match_length 100 --mummer_delta_file $delta_file --method nucmer --strain $options{strain} --pseudonum $group --output_dir $options{output_dir}");
+			my $map_file = $options{output_dir}."/".$options{strain}."_".$group.".map";
+			my $pseudo_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$group.".fasta";
+			my $unmapped_contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
+			system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$contig_file --map_file=$map_file --output_file=$pseudo_file  --unmapped_output=$unmapped_contig_file --linker_sequence=$options{'linker_sequence'}");
+			system("$Bin/clean_fasta $pseudo_file");
+			system("$Bin/clean_fasta $unmapped_contig_file");
+			$groupnum = $group;
+			$contig_file = $unmapped_contig_file;
+		} else {
+			$logger->logdie("$ref_file file is empty. Some error in creating the reference genomes file");
 		}
-		if($is_full == 0) {
-			next;
-		}
-		my $delta_file = $options{output_dir}."/".$ref_base.$contig_base.".delta";
-		my $coords_file = $options{output_dir}."/".$ref_base.$contig_base.".coords";
-		system("$options{coords_exec} -T $delta_file > $coords_file");
-		system("$Bin/reference_genome_match_tiler --mummer_coords_file $coords_file --min_match_length 100 --mummer_delta_file $delta_file --method nucmer --strain $options{strain} --pseudonum $group --output_dir $options{output_dir}");
-		my $map_file = $options{output_dir}."/".$options{strain}."_".$group.".map";
-		my $pseudo_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$group.".fasta";
-		my $unmapped_contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
-		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$contig_file --map_file=$map_file --output_file=$pseudo_file  --unmapped_output=$unmapped_contig_file");
-		system("$Bin/clean_fasta $pseudo_file");
-		system("$Bin/clean_fasta $unmapped_contig_file");
-		$groupnum = $group;
-		$contig_file = $unmapped_contig_file;
 	}
 }	
 
@@ -203,7 +234,7 @@ if(-e $contig_file) {
 			}
 		}
 		close(OUTFH);
-		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$contig_file --map_file=$unmap_file --output_file=$unmap_pseudo");
+		system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$contig_file --map_file=$unmap_file --output_file=$unmap_pseudo --linker_sequence=$options{'linker_sequence'}");
 		system("$Bin/clean_fasta $unmap_pseudo");
 	}
 }
@@ -248,8 +279,10 @@ sub check_parameters {
 				$logger->logdie("The $options{contig_input} file is neither a fasta file nor a list file of paths. Incorrect input");
 			}
 		}
+## Assign default linker sequence if not supplied	
+		$options{'linker_sequence'} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless ( defined $options{linker_sequence});
 ## make sure the input file exists and is readable
-		if ($options{'input_file'}) {
+		if ($options{'input_file'} && (-s $options{'input_file'})) {
 			if(-e "$options{input_file}") {
 				my @fetch_opts = qw(database format);
 				foreach my $fetch_opt( @fetch_opts ) {
@@ -262,8 +295,6 @@ sub check_parameters {
 			}
 		} else {
 			my $pmarks_file = "";
-## Assign default linker sequence if not supplied	
-			$options{linker_sequence} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless ( defined $options{linker_sequence});
 			$pmarks_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.1.fasta.pmarks";
 ## If input file containing reference ids is not passed then sort the contigs file based on contigs length - longest to shortest 
 			my $contig_out = $options{output_dir}."/".$options{strain}.".pseudomolecule.1.fasta";
