@@ -141,7 +141,8 @@ sub parse_mapping_file {
     while (my $line = <$map_fh>) {
         next if ($line =~ /^#/);
         chomp($line);
-        
+        next if($line =~ /^$/);
+
         my @files = ();
         my ($tag_name, $files_list, $key_vals) = split(/\t/, $line);
 	print "DEBUG: $tag_name\t$files_list". ($key_vals ? "\t$key_vals\n" : "\n");        
