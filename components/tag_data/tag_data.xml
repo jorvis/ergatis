@@ -22,7 +22,7 @@
 		<type>RunUnixCommand</type>
 		<name>tarring workflow xml paths</name>
 		<state>incomplete</state>
-		<executable>tar -czf $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar.gz $(find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d)</executable>
+		<executable>tar -czf $;TMP_DIR$;/$;PIPELINE_NAME$;_workflow_xml.tar.gz $(find /mnt/projects/clovr/workflow/runtime/*/$;PIPELINEID$;_* /mnt/projects/clovr/workflow/runtime/pipeline/$;PIPELINEID$; -type d) || true</executable>
 	</command>
 	<command>
             <type>RunUnixCommand</type>
