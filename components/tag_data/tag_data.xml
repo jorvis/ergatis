@@ -28,7 +28,7 @@
             <type>RunUnixCommand</type>
             <name>select files to tag</name>
             <state>incomplete</state>
-            <executable>echo</executable>
+            <executable>printf</executable>
             <arg>"$;INPUT$;" &gt; $;MAP_FILE$;</arg>
         </command>
         <command>
