@@ -26,6 +26,13 @@
 	    <executable>mkdir</executable>
 	    <arg>-p -m 777 $;TMP_DIR$;/cache_dir</arg>
 	</command>
+    <command>
+        <type>RunUnixCommand</type>
+        <name>create parse temp directory</name>
+        <state>incomplete</state>
+        <executable>mkdir</executable>
+        <arg>-p -m 777 $;TMP_DIR$;/parse</arg>
+    </command>
 	<command>
 	    <type>RunUnixCommand</type>
 	    <name>Cache primary keys</name>
