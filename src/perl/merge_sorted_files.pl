@@ -12,7 +12,8 @@ chomp @files;
 $ENV{'LC_ALL'} = undef;
 $ENV{'LC_COLLATE'} = undef;
 $ENV{'LANG'} = 'en_US.UTF-8';
-
-my $cmd = "sort -m ".join(' ',@ARGV)." ".join(' ',@files). " > $outputfile";
-print STDERR "Running $cmd\n";
-print `$cmd`;
+if(@files) {
+    my $cmd = "sort -m ".join(' ',@ARGV)." ".join(' ',@files). " > $outputfile";
+    print STDERR "Running $cmd\n";
+    print `$cmd`;
+}
