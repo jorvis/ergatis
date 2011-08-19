@@ -23,5 +23,20 @@
 	<!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
 	<!--Iterator Done-->
+        <command>
+            <type>RunJavaUnixCommand</type>
+            <name>Create SAM file list</name>
+            <executable>find</executable>
+            <arg>$;OUTPUT_DIRECTORY$; -name '*.sam'</arg>
+              <param>
+                <key>stdout</key>
+                <value>$;SAM_OUTPUT_LIST$;</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/create_bsml_file_list.stderr</value>
+            </param>
+        </command>
+
     </commandSet>
 </commandSetRoot>
