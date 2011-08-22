@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 #eval 'exec /usr/local/packages/perl-5.8.5/bin/perl  -S $0 ${1+"$@"}'
 #    if 0; # not running under some shell
 #BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
@@ -90,7 +93,7 @@ use Pod::Usage;
 use Ergatis::Logger;
 
 #use Papyrus::TempIdCreator;
-use Ergatis::IdGenerator;
+use Ergatis::IdGenerator::IGSIdGenerator;
 
 use BSML::GenePredictionBsml;
 #use BSML::BsmlRepository;
@@ -127,7 +130,8 @@ if( $options{'help'} ){
 my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
-my $idcreator = new Papyrus::TempIdCreator();
+#my $idcreator = new Papyrus::TempIdCreator();
+my $idcreator = new Ergatis::IdGenerator::IGSIdGenerator( id_repository => "/usr/local/projects/clovr/mvangala/ergatis/workflow/project_id_repository" );
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
@@ -179,8 +183,8 @@ while (<$ifh>) {
         $last_group_name = $current_group_name;
         
         ## pull a new gene id
-        $current_transcript_id = $idcreator->new_id( db      => $options{project},
-                                                     so_type => 'gene',
+        $current_transcript_id = $idcreator->next_id( project      => $options{project},
+                                                     type => 'gene',
                                                      prefix  => $options{command_id}
                                                    );
         $logger->debug("adding new feature group with parent $current_transcript_id") if $logger->is_debug;
@@ -224,19 +228,19 @@ exit;
 sub add_feature {
     my ($type, $start, $stop, $strand) = @_;
     
-    $id = $idcreator->new_id( db => $options{project}, so_type => $type, prefix => $options{command_id} );
-    $thing = $doc->createAndAddFeature( $ft, $id, '', $idcreator->so_used($type) );
+    $id = $idcreator->next_id( project => $options{project}, type => $type, prefix => $options{command_id} );
+    $thing = $doc->createAndAddFeature( $ft, $id, '', $type );
     $thing->addBsmlLink('analysis', '#snap_analysis', 'computed_by');
     $thing->addBsmlIntervalLoc($start, $stop, $strand);
 
-    $fg->addBsmlFeatureGroupMember( $id, $idcreator->so_used($type) );
+    $fg->addBsmlFeatureGroupMember( $id, $type );
     
     ## if type is a primary_transcript we need to add a gene too
     if ($type eq 'primary_transcript') {
-        $thing = $doc->createAndAddFeature( $ft, $current_transcript_id, '', $idcreator->so_used('gene') );
+        $thing = $doc->createAndAddFeature( $ft, $current_transcript_id, '', 'gene' );
         $thing->addBsmlLink('analysis', '#snap_analysis', 'computed_by');
         $thing->addBsmlIntervalLoc($start, $stop, $strand);
-        $fg->addBsmlFeatureGroupMember( $current_transcript_id, $idcreator->so_used('gene') );
+        $fg->addBsmlFeatureGroupMember( $current_transcript_id, 'gene' );
     }
 }
 
