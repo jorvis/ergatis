@@ -1,5 +1,6 @@
 next
 ----
+-fixed snap2bsml.pl by using IGSIdGenerator module instead of archaic Papyrus::TempIdGenerator
 -fixed component bsml2interevidence_fasta 
 -modified create_pseudomolecule component to accept file paths in reference file
 -changed run_prok_pipeline.pl to include comments on pipeline creation
