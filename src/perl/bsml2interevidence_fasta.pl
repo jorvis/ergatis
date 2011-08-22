@@ -97,37 +97,40 @@ my %feature_lookup = &parse_input_files( @input_files );
 &parse_evidence_files( \@evidence_files, \%feature_lookup );
 
 #remove all the records in the feature_lookup{'polypeptides'} hashref
-#that have a value of zero for 'has_evidence'
-map { delete( $feature_lookup{'polypeptides'}->{$_} ) } 
-grep( $feature_lookup{'polypeptides'}->{$_}->{'has_evidence'} == 0, 
+#that have a value of zero for 'has_evidence' except when no evidence
+# for any of the genes
+my $flag = 0;
+map { $flag = 1 }
+grep( $feature_lookup{'polypeptides'}->{$_}->{'has_evidence'} == 1,
+keys %{$feature_lookup{'polypeptides'}} ); 
+
+if ($flag) {
+    map { delete( $feature_lookup{'polypeptides'}->{$_} ) } 
+    grep( $feature_lookup{'polypeptides'}->{$_}->{'has_evidence'} == 0, 
       keys %{$feature_lookup{'polypeptides'}} );
+}
 
 &print_intergenic_fasta( \%feature_lookup, \%sequences, $output_dir );
 
 sub print_intergenic_fasta {
     my ($f_lookup, $seqs, $odir) = @_;
     my $polys = $f_lookup->{'polypeptides'};
-
     foreach my $mol ( keys %{$f_lookup->{'molecules'}} ) {
-
         my $ofh = open_file( "$odir/$mol.interevidence.fsa", "out" );
-
-        if( @{$f_lookup->{'molecules'}->{$mol}} == 0 ) {
+#	open($ofh, "> $odir/$mol.interevidence.fsa") or die "Could not open file for writing\n";
+        if( @{$f_lookup->{'molecules'}->{$mol}} == 0 || $flag == 0 ) {
             print $ofh ">${mol}\n";
             print $ofh $1."\n" while( $seqs->{$mol}->{'residues'} =~ /(\w{1,60})/g );
         } else {
-
-            my @sorted_ids = sort { 
+            my @sorted_ids = sort {
                 $polys->{$a}->{'startpos'} <=> $polys->{$b}->{'startpos'};
-            } grep( exists( $polys->{$_} ), @{$f_lookup->{'molecules'}->{$mol}} );
-
-            #using interbase numbering (from bsml)
+            } grep(  exists($polys->{$_}) , @{$f_lookup->{'molecules'}->{$mol}} );
+		#using interbase numbering (from bsml)
             my $left = 0;
             my $right;
             foreach my $pid ( @sorted_ids ) {
                 my $p = $polys->{$pid};
                 $right = $p->{'startpos'};
-                
                 if( ($right - $left) >= $length_cutoff ) {
                     my $subseq = substr( $seqs->{$mol}->{'residues'},
                                          $left, $right - $left );
@@ -152,19 +155,29 @@ sub print_intergenic_fasta {
 
 sub parse_evidence_files {
     my ($ev_files, $f_lookup) = @_;
-    
     foreach my $e ( @{$ev_files} ) {
         my $in = open_file( $e, "in" );
-        chomp( my @spas = grep( $_ =~ /\<Seq-pair-alignment/, <$in> ) );
+#        open($in, "< $e") or die "Could not open $e file for reading\n";
+	chomp( my @spas = grep( $_ =~ /\<Seq-pair-alignment/, <$in> ) );
         close($in);
         map {
             my $cid = $1 if( $_ =~ /refseq=\"(\S+)\"/ );
-            next unless( exists( $f_lookup->{'CDS'}->{$cid} ) );
-            my $pid = $f_lookup->{'CDS'}->{$cid};
-            $f_lookup->{'polypeptides'}->{$pid}->{'has_evidence'} = 1;
+	    my $pid;
+	    if ($cid =~ /CDS/) {
+		next unless( exists( $f_lookup->{'CDS'}->{$cid} ) );
+		$pid = $f_lookup->{'CDS'}->{$cid};
+	    } elsif ($cid =~ /polypeptide/) {
+		$pid = $cid;
+	    } else {
+		next;
+	    }
+	    if (exists( $f_lookup->{'polypeptides'}->{$pid})) {
+            	$f_lookup->{'polypeptides'}->{$pid}->{'has_evidence'} = 1;
+	    }
         } @spas;
     }
 }
+
 sub parse_input_files {
     my @input_files = @_;
     my %retval;
@@ -173,11 +186,12 @@ sub parse_input_files {
         'Sequence' => sub {
             my ($t, $seq) = @_;
             my $sid = $seq->att('id');
+	    @{$retval{'molecules'}->{$sid}} = ();
             map {
                 my $pid = $_->att('id');
                 my $il = $_->first_child('Interval-loc');
                 my ($left, $right) = ( $il->att('startpos'), $il->att('endpos') );
-                $retval{'polypeptides'}->{$pid} = {
+		 $retval{'polypeptides'}->{$pid} = {
                     'startpos'   => $left,
                     'endpos'     => $right,
                     'has_evidence' => 0
@@ -199,7 +213,6 @@ sub parse_input_files {
     } );
 
     map { $twig->parsefile( $_ ) } @input_files;
-                              
     return %retval;
 }
 
@@ -208,6 +221,7 @@ sub parse_sequence {
     my $flag = 0;
     my $seq;
     my $in = open_file( $file, "in");
+#    open($in, "< $file") or die "Could not open $file file for reading\n";
     for( <$in> ) {
         chomp;
         if( /^>(\S+)/ ) {
@@ -240,14 +254,15 @@ sub check_options {
    my @evidence_lists = split(/[,\s]+/, $opts->{'evidence_list'});
    map {
        my $in = open_file( $_, 'in' );
+#       open($in, "< $_") or die "Could not open $_ file for reading\n";
        chomp( my @tmp = <$in> );
        close($in);
        push(@evidence_files, @tmp);
    } @evidence_lists;
-
    if( $opts->{'input_list'} ) {
        map {
            my $in = open_file( $_, 'in' );
+#	   open($in, "< $_") or die "Could not open $_ file for reading\n";
            chomp( my @tmp = <$in> );
            close($in);
            push(@input_files, @tmp );
