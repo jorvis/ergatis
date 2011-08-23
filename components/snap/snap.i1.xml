@@ -39,6 +39,10 @@
                 <key>--seq_class</key>
                 <value>$;INPUT_SEQ_CLASS$;</value>
             </param>
+	    <param>
+		<key>--id_repo</key>
+		<value>$;PROJECT_ID_REPOSITORY$;</value>
+	    </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
