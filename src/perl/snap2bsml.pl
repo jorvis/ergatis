@@ -110,6 +110,7 @@ my $results = GetOptions (\%options,
                           'command_id=s',       ## passed by workflow
                           'logconf=s',          ## passed by workflow (not used)
                           'seq_class=s',
+			  'id_repo=s',		## project id repository 
                           'debug=s',
 			  'help|h') || pod2usage();
 
@@ -131,7 +132,7 @@ my $doc = new BSML::BsmlBuilder();
 
 ## we're going to generate ids
 #my $idcreator = new Papyrus::TempIdCreator();
-my $idcreator = new Ergatis::IdGenerator::IGSIdGenerator( id_repository => "/usr/local/projects/clovr/mvangala/ergatis/workflow/project_id_repository" );
+my $idcreator = new Ergatis::IdGenerator::IGSIdGenerator( id_repository => $options{ 'id_repo' } );
 
 ## open the input file for parsing
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
