@@ -214,6 +214,7 @@
             <param>
             <key>--ref_list2</key>
             <value>$;REF_FILE_LIST2$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
