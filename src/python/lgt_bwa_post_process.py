@@ -6,6 +6,7 @@ from lgtanalysis import LGTNode
 import sys
 import os
 import argparse
+import glob
 
 RefFile1List = []
 RefFile2List = []
@@ -14,28 +15,31 @@ RefFile2UMMCreated = []
 
 class ParseListFile(argparse.Action):
     def __call__(self,parser,namespace,values,option_string=None):
-        FILE = open(values,"r")
-        retlist = []
-        for line in FILE:
-            retlist.append(line)
-        if(self.dest == 'ref_list1'):
-            RefFile1List.extend(retlist)
-        if(self.dest == 'ref_list2'):
-            RefFile2UMUMCreated.append(0)
-            RefFile2UMMCreated.append(0)
-            RefFile2List.extend(retlist)
-        setattr(namespace, self.dest,retlist);
+        if(values != ''):
+            FILE = open(values,"r")
+            retlist = []
+            for line in FILE:
+                line.rstrip('\n')
+                retlist.append(line)
+                if(self.dest == 'ref_list1'):
+                    RefFile1List.extend(retlist)
+                if(self.dest == 'ref_list2'):
+                    RefFile2UMUMCreated.append(0)
+                    RefFile2UMMCreated.append(0)
+                    RefFile2List.extend(retlist)
+                    setattr(namespace, self.dest,retlist);
 
 class ParseList(argparse.Action):
     def __call__(self,parser,namespace,values,option_string=None):
-       retlist = values.split(',')
-       if(self.dest == 'ref1'):
-           RefFile1List.extend(retlist)
-       if(self.dest == 'ref2'):
-           RefFile2UMUMCreated.append(0)
-           RefFile2UMMCreated.append(0)
-           RefFile2List.extend(retlist)
-       setattr(namespace, self.dest, retlist)
+       if(values != ''):
+           retlist = values.split(',')
+           if(self.dest == 'ref1'):
+               RefFile1List.extend(retlist)
+               if(self.dest == 'ref2'):
+                   RefFile2UMUMCreated.append(0)
+                   RefFile2UMMCreated.append(0)
+                   RefFile2List.extend(retlist)
+                   setattr(namespace, self.dest, retlist)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output')
@@ -49,9 +53,11 @@ args = parser.parse_args();
 FileLocation = args.input
 #FileLocation = sys.argv[1]
 FilePath = FileLocation.split("/")
-print FilePath
+FilePathString=""
+for i in range(1,len(FilePath)-1):
+  FilePathString = FilePathString + "/" + FilePath[i]
 
-
+FileName = FilePath[len(FilePath)-1]
 #RefFileLocation1 = sys.argv[2]
 #RefFileLocation1 = 
 #print RefFileLocation1
@@ -59,12 +65,11 @@ print FilePath
 #RefFileLocation2 = sys.argv[3]
 #print RefFileLocation2
 
-CheckSingleFastq = FileLocation + "_1.fastq"
+CheckSingleFastq = glob.glob(FilePathString + "/*" + FileName + "_aln_sa2.sai")
 print CheckSingleFastq
 
 #RefFilePtr1 = open(RefFileLocation1,"r")
 #RefFilePtr2 = open(RefFileLocation2,"r")
-print args
 
 #RefFile2UMUMCreated = []
 #RefFile2UMMCreated = []
@@ -79,11 +84,9 @@ print RefFile2List
 #   RefFile2UMUMCreated.append(0)
 #   RefFile2UMMCreated.append(0)
 
-if(os.access(CheckSingleFastq, os.F_OK) != 0):
-   FilePathString=""
-   for i in range(1,len(FilePath)-1):
-      FilePathString = FilePathString + "/" + FilePath[i]
+PairedEnd = all((os.access(f, os.F_OK) for f in CheckSingleFastq))
 
+if(PairedEnd):
    for RefFile1 in RefFile1List:
       # De-construct the reference file name.
       RefFileNameList1 = RefFile1.split("/")
