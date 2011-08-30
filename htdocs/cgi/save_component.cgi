@@ -24,7 +24,7 @@ my $docs_dir = $shared_cfg->val('project', '$;DOCS_DIR$;') || die "failed to det
 
 ## if the build directory doesn't exist yet, create it
 if (! -d $build_directory ) {
-    mkdir( $build_directory ) || die "can't create build directory $build_directory: $!";
+    mkdir( $build_directory ) || check_mkdir_error("can't create build directory $build_directory:", $!);
 }
 
 ## make sure the output token doesn't have any leading or trailing whitespace
@@ -76,3 +76,21 @@ while (my $line = <$template_fh>) {
 
 ## if we get this far, make sure we exit correctly so the right response code is sent.
 exit(0);
+
+## since save_component.cgi is called multiple times simultaneously on the interface in the
+#   sample pipeline via AJAX calls (such as when cloning) there can be a race condition
+#   when creating directories.  If this fails, it checks to see if the failure is due to the
+#   directory already existing.  If so, it is ignored, else it dies.
+#
+#   This check happens via the error message, which is admittedly tied to the OS and even
+#   version.  It can be expanded for other platform messages.  There be dragons in the details
+#   of trying to do it other ways.
+sub check_mkdir_error {
+    my ($usr_msg, $os_msg) = @_;
+    
+    if ( $os_msg =~ /File exists/i ) { 
+        print STDERR "WARN: mkdir race condition caught and handled for build directory $build_directory";
+    } else {
+        die "$usr_msg : $os_msg";
+    } 
+}
