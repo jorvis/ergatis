@@ -97,6 +97,10 @@
 					<name>ber.post_overlap_analysis</name>
 				</commandSet>
 			</commandSet>
+			<commandSet type="serial">
+				<state>incomplete</state>
+				<name>bsml2interevidence_fasta.default</name>
+			</commandSet>
 		</commandSet>
 		<commandSet type="parallel">
 			<state>incomplete</state>
