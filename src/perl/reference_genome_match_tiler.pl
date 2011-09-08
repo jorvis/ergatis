@@ -4,7 +4,6 @@ use strict;
 #use warnings;
 use Carp;
 #use lib ($ENV{EUK_MODULES});
-use lib "/home/sdaugherty/bin/legacy_bin";
 use Overlap_piler;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use Data::Dumper;

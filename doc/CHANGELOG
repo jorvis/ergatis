@@ -1,5 +1,6 @@
 next
 ----
+-modified reference_genome_match_tiler.pl to include a perl module Overlap_piler.pm
 -included component bsml2interevidence_fasta in prok pipeline
 -added --id_repo command line option to snap2bsml.pl and PROJECT_ID_REPOSITORY key to snap.config and snap.i1.xml files.
 -fixed snap2bsml.pl by using IGSIdGenerator module instead of archaic Papyrus::TempIdGenerator
