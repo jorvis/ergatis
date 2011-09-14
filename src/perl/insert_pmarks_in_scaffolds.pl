@@ -48,6 +48,7 @@ sadkins@som.umaryland.edu
 =cut
 
 use strict;
+use lib ("/usr/local/projects/ergatis/package-latest/lib/perl5");
 use File::Basename;
 use FindBin qw($Bin);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
