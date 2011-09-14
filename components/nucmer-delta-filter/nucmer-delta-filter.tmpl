@@ -1,0 +1,47 @@
+<!-- component documentation -->
+
+<p>
+    This component runs the delta-filter program that's distributed with nucmer
+</p>
+<h3>input</h3>
+<p>
+	Input should be output delta alignments from nucmer or promer.
+</p>
+<h3>delta-filter documentation</h3>
+<p>
+USAGE: delta-filter  [options]  <deltafile>
+
+-1            1-to-1 alignment allowing for rearrangements
+              (intersection of -r and -q alignments)
+-g            1-to-1 global alignment not allowing rearrangements
+-h            Display help information
+-i float      Set the minimum alignment identity [0, 100], default 0
+-l int        Set the minimum alignment length, default 0
+-m            Many-to-many alignment allowing for rearrangements
+              (union of -r and -q alignments)
+-q            Maps each position of each query to its best hit in
+              the reference, allowing for reference overlaps
+-r            Maps each position of each reference to its best hit
+              in the query, allowing for query overlaps
+-u float      Set the minimum alignment uniqueness, i.e. percent of
+              the alignment matching to unique reference AND query
+              sequence [0, 100], default 0
+-o float      Set the maximum alignment overlap for -r and -q options
+              as a percent of the alignment length [0, 100], default 100
+
+  Reads a delta alignment file from either nucmer or promer and
+filters the alignments based on the command-line switches, leaving
+only the desired alignments which are output to stdout in the same
+delta format as the input. For multiple switches, order of operations
+is as follows: -i -l -u -q -r -g -m -1. If an alignment is excluded
+by a preceding operation, it will be ignored by the succeeding
+operations.
+  An important distinction between the -g option and the -1 and -m
+options is that -g requires the alignments to be mutually consistent
+in their order, while the -1 and -m options are not required to be
+mutually consistent and therefore tolerate translocations,
+inversions, etc. In general cases, the -m option is the best choice,
+however -1 can be handy for applications such as SNP finding which
+require a 1-to-1 mapping. Finally, for mapping query contigs, or
+sequencing reads, to a reference genome, use -q.
+</p>
