@@ -64,5 +64,38 @@
             	<name>pathway_tools_input.default</name>
             </commandSet>
 	</commandSet>
+ 	<commandSet type="parallel">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>concatenate_files.prot</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>formatdb.prot</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>scp_files.copy_formatdb_prot</name>
+                </commandSet>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>concatenate_files.nuc</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>formatdb.nuc</name>
+                </commandSet>
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <name>scp_files.copy_formatdb_nuc</name>
+                </commandSet>
+            </commandSet>
+        </commandSet>
     </commandSet>
 </commandSetRoot>
