@@ -4,7 +4,7 @@
     <commandSet type="serial">
         <name>nucmer-delta-filter</name>
 
-	<!--Preprocessing-->
+		<!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
             <name>create output directory</name>
@@ -21,12 +21,13 @@
         </command>
 		<!-- end of preprocessing -->
 
+		<!-- Processing -->
         <command>
             <type>RunUnixCommand</type>
             <name>delta-filter</name>
             <state>incomplete</state>
             <executable>$;DELTA_FILTER_EXEC$;</executable>
-			<args>$;FILTER_OPTS$;</args>
+			<arg>$;FILTER_OPTS$; $;I_FILE_PATH$;</arg>
             <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filtered.delta</value>
@@ -36,5 +37,6 @@
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
             </param>
         </command>
+		<!-- end of processing -->
     </commandSet>
 </commandSetRoot>
