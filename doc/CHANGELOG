@@ -14,6 +14,7 @@ next
 -added COORDS_EXEC variable to nucmer component section of software.config.
 -new component: genbank2fasta
 -new component: nucmer-detla-filter
+-new component: nucmer-show-snps
 
 ergatis-v2r15b1
 ---------------

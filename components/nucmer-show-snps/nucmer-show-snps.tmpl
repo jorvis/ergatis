@@ -1,0 +1,42 @@
+<!-- component documentation -->
+
+<p>
+    This component runs the show-snps program that's distributed with nucmer
+</p>
+<h3>input</h3>
+<p>
+	Input should be delta alignment output from nucmer or promer.
+</p>
+<h3>show-snps documentation</h3>
+<p>
+USAGE: show-snps  [options]  <deltafile>
+
+-C            Do not report SNPs from alignments with an ambiguous
+              mapping, i.e. only report SNPs where the [R] and [Q]
+              columns equal 0 and do not output these columns
+-h            Display help information
+-H            Do not print the output header
+-I            Do not report indels
+-l            Include sequence length information in the output
+-q            Sort output lines by query IDs and SNP positions
+-r            Sort output lines by reference IDs and SNP positions
+-S            Specify which alignments to report by passing
+              'show-coords' lines to stdin
+-T            Switch to tab-delimited format
+-x int        Include x characters of surrounding SNP context in the
+              output, default 0
+
+  Input is the .delta output of either the nucmer or promer program
+passed on the command line.
+  Output is to stdout, and consists of a list of SNPs (or amino acid
+substitutions for promer) with positions and other useful info.
+Output will be sorted with -r by default and the [BUFF] column will
+always refer to the sequence whose positions have been sorted. This
+value specifies the distance from this SNP to the nearest mismatch
+(end of alignment, indel, SNP, etc) in the same alignment, while the
+[DIST] column specifies the distance from this SNP to the nearest
+sequence end. SNPs for which the [R] and [Q] columns are greater than
+0 should be evaluated with caution, as these columns specify the
+number of other alignments which overlap this position. Use -C to
+assure SNPs are only reported from unique alignment regions.
+</p>
