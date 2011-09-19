@@ -1,5 +1,6 @@
 next
 ----
+-adding release dates to CHANGELOG file. 
 -modified reference_genome_match_tiler.pl to include a perl module Overlap_piler.pm
 -included component bsml2interevidence_fasta in prok pipeline
 -added --id_repo command line option to snap2bsml.pl and PROJECT_ID_REPOSITORY key to snap.config and snap.i1.xml files.
@@ -16,8 +17,8 @@ next
 -new component: nucmer-detla-filter
 -new component: nucmer-show-snps
 
-ergatis-v2r15b1
----------------
+ergatis-v2r15b1 (2011-07-22)
+----------------------------
 -added pagination to the pipeline list interface
 -bowtie_build: updated to make use of an iterator
 -bowite: updated bowtie to handle paired-end data more efficiently
@@ -60,8 +61,8 @@ ergatis-v2r15b1
 -added pipeline.config to different prokaryotic pipeline versions
 -created new iterator maker: create_newline_sep_file_iterator_list.pl
 
-ergatis-v2r14b1
----------------
+ergatis-v2r14b1 (2011-04-18)
+----------------------------
 -added formatdb.pl
 -added different options of the prokaryotic pipelines
 -added a script that generates updated pipeline_tmpl.config file after checking for the diffs bw clovr and ergatis comp configfiles.
@@ -129,13 +130,13 @@ ergatis-v2r14b1
 -blast_components: added new var to configs COMPRESS_BSML_OUTPUT and EXPECT (where needed).
 -create_map_file: new component
 
-ergatis-v2r13b2
----------------
+ergatis-v2r13b2 (2010-10-06)
+----------------------------
 -archive_pipeline.cgi: Now uses &File::Path::mkpath to recursively create $archive_root
 -histogram_stacked: a component that generated stacked histograms from tab-delimited count data files. Uses R. 
 
-ergatis-v2r13b1
----------------
+ergatis-v2r13b1 (2010-09-29)
+----------------------------
 -tag_data: Fixed bug that occurred when re-running the same pipeline
 -download_tag: New CloVR component to download a list of tags
 -clusterBsmlPairwiseAlignments.pl: fixed documentation to display true name of bsmlSearchList parameter.
@@ -187,8 +188,8 @@ ergatis-v2r13b1
 -clovr_metagenomics_tsvtables.pl: postprocessing component for clovr_metagenomics pipeline
 -blast_seq_screen: new component that will filter a set of sequences using blast output and a fasta.
 
-ergatis-v2r12b1
-----
+ergatis-v2r12b1 (2010-01-20)
+----------------------------
 -pipeline_summary: will use the second set of non-space chars in the input fasta file and set it to Sequence[@title]
 -build_pipeline.cgi: will skip adding inputs unless they have a value.
 -pipeline_summary: rewrite of pipeline_summary.pl (includes ordered locus assignment)
@@ -239,8 +240,8 @@ chado2bsml: Added --databaselist parameter so a list of databases can be passed 
 -build_ergatis: new util script that will install ergatis and require parameters
 -create_release: added R directory to create_release
 
-ergatis-v2r11b1
----------------
+ergatis-v2r11b1 (2009-05-14)
+----------------------------
 -fixed pipeline layout save warning error
 -fixed bug where a string of s characters weren't allowed as a label
 -update of JOCs comparative pipeline
@@ -286,8 +287,8 @@ ergatis-v2r11b1
 -bugfixes to lipop component
 -added overlap_analyis, lipop (and pfunc parsing), interevidence search to Prok Pipeline
 
-ergatis-v2r10b1
----------------
+ergatis-v2r10b1 (2009-01-21)
+----------------------------
 -changes to some C source to support GCC 4.3
 -genewise: gave each prepare_for_genewise_best_loc its own stdout and stderr; no longer complains about missing protein fasta files when no hits pass the filter.
 -bsml2fasta: added option (--use_feature_ids_in_fasta) to use polypeptide feature_ids in FASTA files
@@ -337,8 +338,8 @@ ergatis-v2r10b1
 -hmmpfam2htab.pl: Appended process id ($$) to /tmp directory to prevent concurrent executions from sharing (and wiping) the tmp dir
 -new component: concatenate_files, Concatenate the files in an input file list into a single output file
 
-ergatis-v2r9b1
---------------
+ergatis-v2r9b1 (2008-08-28)
+---------------------------
 -added refresh_chado_mart to the installer
 -bsml2fasta: fixed bug 2008114 - was failing to read compressed BSML files from input lists.
 -installer: now compiles/installs C sources (chado_record_uniq, cluster, etc.)
@@ -346,8 +347,8 @@ ergatis-v2r9b1
 -legacy2bsml: Now supports mysql/euk.  Fixed bug in handling of 1 base exon features.
 -interface: project list in templates tab now sorted alphabetically
 
-ergatis-v2r8b1
---------------
+ergatis-v2r8b1 (2008-08-22)
+---------------------------
 -software.config: added sections for rdp_classifier, stap_aligner, stap_classifier
 -targetp2legacydb.pl: revised pattern match on model name during raw file parsing
 -get_pipeline_lists.cgi: now checks for the existance of the path stored in 'temp_space' of ergatis.ini and creates it if it doesn't exist
@@ -375,8 +376,8 @@ ergatis-v2r8b1
 -refresh_chado_mart: Updated the component to work with the newly optimized chadoToChadoMart script. Changes included replacing analysis_id with cluster_analysis_id, supporting blast_analysis_id and use_cm_blast and a few extra comments.
 -initdb: now has PostgreSQL support and can be run as non-superuser
 
-ergatis-v2r8b1-rc2
-------------------
+ergatis-v2r8b1-rc2 (2008-07-08)
+-------------------------------
 -Chado::Gene: Fixed a small bug when applying filters to a gene group
 -pipeline_summary: added TRANS_TABLE option to pipeline_summary config
 -lipoprotein_motif: fixed a typo in the lipoprotein motif bsml output analysis links
@@ -394,8 +395,8 @@ ergatis-v2r8b1-rc2
 -pipeline templates: added Sybil comparative and Pangenome pipeline templates
 -hmmpfam: made --acc passed by default (still configurable)
 
-ergatis-v2r8b1-rc1
-------------------
+ergatis-v2r8b1-rc1 (2008-07-07)
+-------------------------------
 -interface: added pipeline comment display in pipeline list view
 -interface: added pipeline ID to pipeline view page titles (feat request 1930140)
 -bsml2chado: now has mysql support
@@ -421,8 +422,8 @@ ergatis-v2r8b1-rc1
 -interface: new project configuration page now auto-fills most settings
 -installer: checks for correct ExtUtils::MakeMaker version (>= 6.31)
 
-ergatis-v2r7b1
---------------
+ergatis-v2r7b1 (2008-03-02)
+---------------------------
 -geneidgff2bsml.pl: now correctly converts to interbase
 -pipeline list page for a project now shows project code
 -changed all /usr/local/bin/perl paths to /usr/bin/perl in cgi-bin
@@ -447,12 +448,12 @@ ergatis-v2r7b1
 -ergatis.ini: added grid_enabled option, allowing toggling of grid support
 -converted genscan and genscan-plus to version 2
 
-ergatis-v2r6b2
---------------
+ergatis-v2r6b2 (2007-11-02)
+---------------------------
 -bugfix release for installer.  was failing on predotar component
 
-ergatis-v2r6b1
---------------
+ergatis-v2r6b1 (2007-09-03)
+---------------------------
 -promote_gene_prediction: now with valid bsml!
 -bsml2featurerelationships: There are more than one relationship, bug fix to call plural executable.
 -infernal2bsml: fixed syntax error
@@ -506,8 +507,8 @@ ergatis-v2r6b1
     -Added option to phage_finder component for user to include their own info_file
     -Added project parameter to aragorn2bsml.pl script
 
-ergatis-v2r5b1
---------------------------------------
+ergatis-v2r5b1 (2007-06-04)
+---------------------------
 -all: code repository converted from local CVS to SVN on SourceForge
 -interface: pipeline lists on index page now loaded via ajax call to eliminate long waits before page display
 -interface: can now save a pipeline building as a project pipeline template
@@ -573,13 +574,13 @@ ergatis-v2r5b1
 
 An ergatis-v2r4b2 bug-fix/development branch was established on 2007-04-24 and was labeled ergatis-v2r4b2-bugfix.
 
-ergatis-v2r4b3 (ergatis-v2r4b2-bugfix)
---------------------------------------
+ergatis-v2r4b3 (ergatis-v2r4b2-bugfix) (2007-04-24)
+---------------------------------------------------
 -bsml2chado: capturing stdout and stderr for appendfile.pl
 -appendfile.pl: catching exceptions
 
-ergatis-v2r4b2
---------------
+ergatis-v2r4b2 (2007-04-10)
+---------------------------
 -installer: now checks for Log::Cabin, IO::Tee and PerlIO::gzip
 -legacy2bsml: fixed config keys without assignment operators
 -interface: repository root box on index page now reads from paths:default_project_root setting
@@ -588,8 +589,8 @@ ergatis-v2r4b2
 -sourceforge: updated sf site pages for 2.x release
 -sourceforge: added first version of install guide (not yet complete)
 
-ergatis-v2r4b1
---------------
+ergatis-v2r4b1 (2007-04-09)
+---------------------------
 -interface: added ability to add recent pipelines to a new pipeline
 -interface: added ability to add project template pipelines to a new pipeline
 -interface: added an ajax call queue class to reduce server load
@@ -618,8 +619,8 @@ ergatis-v2r4b1
 -auto_annotate: various improvements
 -genewise: coordinate correction in preparation script
 
-ergatis-v2r3b1
---------------
+ergatis-v2r3b1 (2007-03-23)
+---------------------------
 -added open_reading_frames component
 -added ergatis/src/perl/new_id.pl; can be used to generate new ids in Apollo
 -created new v2 component geneid
@@ -645,15 +646,15 @@ ergatis-v2r3b1
 -numerous prok pipeline updates
 -wu-blast: multi-fasta input support added
 
-ergatis-v2r2b2
---------------
+ergatis-v2r2b2 (N/A)
+--------------------
 -fixed lipoprotein and ps_scan targets in Makefile
 -made augustus a v2 component
 -added pipeline summary to Makefile
 -fixed hmmpfam, iprscan, tmhmm, signalp Analysis element encoding (needed program and version Attributes)
 
-ergatis-v2r2b1
----------------
+ergatis-v2r2b1 (2007-02-05)
+---------------------------
 -now supports auto-compressed workflow XML during pipeline execution on iterative steps.
 -added component lipoprotein_motif to Makefile.PL
 -changed "RunLoggedUnixCommand" to "RunUnixCommand" for tRNAscan-SE2bsml step intRNAscan-SE_template.xml
@@ -703,8 +704,8 @@ ergatis-v2r2b1
 -made genezilla a v2 component
 -made lipoprotein a v2 component
 
-ergatis-v2r1b1
----------------
+ergatis-v2r1b1 (2007-01-10)
+---------------------------
 **Major restructuring of architecture for simplification and added scalability**
 Highlights
 -Support for multiple iterators and iterator names (example default name: i1)
@@ -741,8 +742,8 @@ wait-master_template.xml -> wait.xml
 -fixed bug in translate_sequence.pl that would die if there were no Feature-tables element in the input bsml
 -fixed bug in prepare_for_transterm that would die if there were no Feature-tables element in the input bsml=======
 
-ergatis-v1r22b1
---------------
+ergatis-v1r22b1 (2006-10-18)
+----------------------------
 -121 files, 5572 cvs diff lines
 -removed check_repository.pl because BSML_repository deprecated.
 -fixed typo ber-master.ini
@@ -767,16 +768,16 @@ ergatis-v1r22b1
 -initdb component changed to add chado_mart object manipulation support
 -clustalw now points at custom version allowing longer sequence IDs
 
-ergatis-v1r21b3
---------------
+ergatis-v1r21b3 (N/A)
+---------------------
 -bugfix release for ber
 
-ergatis-v1r21b2
---------------
+ergatis-v1r21b2 (N/A)
+---------------------
 -fixed chado_record_uniq bug which caused incorrect clustal alignment strings to be loaded.
 
-ergatis-v1r21b1
---------------
+ergatis-v1r21b1 (2006-09-01)
+----------------------------
 -added glimmer3 component
 -added legacyparafam2bsml component
 -added mask_by_analysis component
@@ -803,13 +804,13 @@ ergatis-v1r21b1
 -test pipeline refactoring
 -lots more nifty things that I'll comment on later.
 
-ergatis-v1r20b7
---------------
+ergatis-v1r20b7 (2006-08-17)
+----------------------------
 -changed tRNAscan-SE to use Gene.pm and BSML::GenePredictionsBsml
 -changed aat_aa, aat_aa_masked, aat_na, aat_na_masked to point to elee's dps and dds.
 
-ergatis-v1r20b6
---------------
+ergatis-v1r20b6 (N/A)
+---------------------
 -BER fixes
 -fixed clustalw component.  was failing when configured to run on non-cog output
 -ber component now automatically extracts and prepares required extended nt database
@@ -822,25 +823,25 @@ ergatis-v1r20b6
 -added translate_sequence component
 -added transterm and ps_scan components
 
-ergatis-v1r20b5
---------------
+ergatis-v1r20b5 (N/A)
+---------------------
 -changed IdGenerator.pm to use File::NFSLock, handle sigints and support ID pooling
 -changed genemark component to use new version
 
-ergatis-v1r20b4
-------------
+ergatis-v1r20b4 (2006-07-12)
+----------------------------
 -inclusion of new functionality of legacy2bsml and bsml2chado components, including new checksum strategy for database loading
-
-ergatis-v1r20b3
---------------
+ 
+ergatis-v1r20b3 (2006-07-12)
+----------------------------
 -reimpl of cog component script to use XML::Parser for performance boost
 
-ergatis-v1r20b2
---------------
+ergatis-v1r20b2 (N/A)
+---------------------
 -reverted legacy2bsml and bsml2chado components back to ergatis-v1r19b2 version
-
-ergatis-v1r20b1
---------------
+ 
+ergatis-v1r20b1 (2006-07-11)
+----------------------------
 -wu-blast2bsml.pl fix to properly set Sequence stub molecule type based on blast program used
 -changed analysis2bsml to store ergatis version tags from an installer control file
 -added gff2bsml component to installer
@@ -864,13 +865,13 @@ ergatis-v1r20b1
 -updates to delete_analysis
 -updates to initdb
 
-ergatis-v1r19b2
---------------
+ergatis-v1r19b2 (N/A)
+---------------------
 -fixed adjust_bsml_coordinates to install all needed files
 -hmmpfam2bsml was failing to parse when match IDs were long.
 
-ergatis-v1r19b1
---------------
+ergatis-v1r19b1 (2006-05-03)
+----------------------------
 -all blast components (both wu- and ncbi- ) make .list files from files with or without trailing .gz in the filename.
 -added output compression options to signalP component
 -adjust_bsml_coordinates.pl and the component have been changed to remove duplicate sequence locations in overlap regions.  Works for both Feature and Seq-pair-align elements
@@ -881,12 +882,12 @@ ergatis-v1r19b1
 -ergatis test suite script now checks out the current installer version
 -initdb bugfix (added create_tigr_schemas_scratch and parse_tigr_schemas_onto steps)
 
-ergatis-v1r18b2
---------------
+ergatis-v1r18b2 (N/A)
+---------------------
 -bugfix release
 
-ergatis-v1r18b1
---------------
+ergatis-v1r18b1 (2006-04-26)
+----------------------------
 -aat_na and aat_na_masked now REALLY allow selective compression of output like aat_aa and aat_aa_masked.
 -Log::Cabin now default logger (used by Workflow::Logger)
 -added Log::Cabin to installer
@@ -899,12 +900,12 @@ ergatis-v1r18b1
 -run_wf.pl now accepts WORKFLOW_ROOT argument
 -nucmer_snps: added maxmatch param, delta-filter step
 
-ergatis-v1r17b2
---------------
+ergatis-v1r17b2 (2006-04-19)
+----------------------------
 -bug fix release for nucmer_snps component and dependencies
 
-ergatis-v1r17b1
---------------
+ergatis-v1r17b1 (2006-04-14)
+----------------------------
 -added ngap, nucmer_snps, targetp, tmhmm components to Makefile.PL
 -added infernal component
 -added mepipe component
@@ -932,12 +933,12 @@ ergatis-v1r17b1
 -all wu-blast components now parse directly from raw output -> bsml
 -minor bug fixes
 
-ergatis-v1r16b2
---------------
+ergatis-v1r16b2 (N/A)
+---------------------
 -bug fix release.  aat_aa components point temporarily to a new dps version from bhaas.  will later replace the standard dps.
 
-ergatis-v1r16b1
---------------
+ergatis-v1r16b1 (2006-02-27)
+----------------------------
 -added file marshal interval timing to run workflow steps.
 -added delete/archive pipeline function to the viewer
 -moved output log for ergatis install to /usr/local/devel/ANNOTATION/ard/install_log.txt
@@ -957,25 +958,25 @@ ergatis-v1r16b1
 -update to legacy2bsml component to require a control file as input
 -reworking of initdb and bsml2chado, mostly to deal with scalability problems
 
-ergatis-v1r15b1
---------------
+ergatis-v1r15b1 (N/A)
+---------------------
 -fixed fgenesh bsml output, wasn't creating CDS features
 
-ergatis-v1r14b1
---------------
+ergatis-v1r14b1 (N/A)
+---------------------
 -added support for different database paths between dps and nap steps in aat_aa 
 -corrected Seq-data-import elements in gene prediction output bsml
 
-ergatis-v1r13b1
---------------
+ergatis-v1r13b1 (2006-01-30)
+----------------------------
 -fixed bug in bsml2chado that introduced duplicates when running in append mode
 
-ergatis-v1r12b1
---------------
+ergatis-v1r12b1 (2006-01-29)
+----------------------------
 -fixed bug in initdb when parsing OBO files in parallel
 
-ergatis-v1r11b1
---------------
+ergatis-v1r11b1 (2006-01-27)
+----------------------------
 -added panther component
 -added build_supercontig component
 -added copydb component
@@ -992,31 +993,31 @@ ergatis-v1r11b1
 -added hit_length to output of blastbtab2bsml
 -removed hard coded paths to perl modules
 
-ergatis-v1r10b1
---------------
+ergatis-v1r10b1 (N/A)
+---------------------
 -added os=linux in default iterator
 
-ergatis-v1r9b1
--------------
+ergatis-v1r9b1 (N/A)
+--------------------
 -added brett and ed's fixes for ber component
 -jonathan committed a performance increase of 2 orders of magnitude on best_hit.pl
 
-ergatis-v1r8b1
--------------
+ergatis-v1r8b1 (N/A)
+--------------------
 -changed iprscan executable path to a new location on read-only filesystem.
 
-ergatis-v1r7b1
--------------
+ergatis-v1r7b1 (2006-01-06)
+---------------------------
 -updates to ID creation and cgi-bin scripts for building/monitoring
 -additional fixes to tiling component. added link elements
 -various fixes to snp2bsml and tcov2bsml
 
-ergatis-v1r6b1
--------------
+ergatis-v1r6b1 (2006-01-04)
+---------------------------
 -additional fixes to tiling component
 
-ergatis-v1r5b1
-------------
+ergatis-v1r5b1 (2005-12-29)
+---------------------------
 -fixed hard coded lib paths to point to the correct install location
 -added logdie to Workflow::Logger to capture fatal errors when Log4perl is disabled
 -fixed bug in specifying the sourcename Attribute of an Analysis for pe,jaccard, cogs workflows. 
@@ -1024,16 +1025,16 @@ ergatis-v1r5b1
 -disabled debugging in legacy2bsml,bsml2chado workflows
 -fixed tiling component
 
-ergatis-v1r4b1
-------------
+ergatis-v1r4b1 (2005-12-22)
+---------------------------
 -fixed bug in clustalw workflow component that truncated names at 30 chars
 
-ergatis-v1r3b1
-------------
+ergatis-v1r3b1 (2005-12-21)
+---------------------------
 -added initial creator framework.
 -changed AAT components to use Brian's filter.pl script.
 -changed wu-blast components to use soft instead of hard masking.
 
-ergatis-v1r2b1
-------------
+ergatis-v1r2b1 (2005-12-19)
+---------------------------
 no notes entered
