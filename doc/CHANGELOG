@@ -1,6 +1,8 @@
 next
 ----
--adding release dates to CHANGELOG file. 
+-added scripts to download files like genBank, pep, seq, coords for a number of databases
+-removed hard-coded TMHMM lib path from tmhmm.default.config
+-adding release dates to CHANGELOG file.
 -modified reference_genome_match_tiler.pl to include a perl module Overlap_piler.pm
 -included component bsml2interevidence_fasta in prok pipeline
 -added --id_repo command line option to snap2bsml.pl and PROJECT_ID_REPOSITORY key to snap.config and snap.i1.xml files.
