@@ -3,6 +3,7 @@ package UnirefAnnotation::NestedDB;
 use strict;
 use warnings;
 use NestedDB;
+use Fcntl;
 use Data::Dumper;
 
 sub new {
@@ -35,8 +36,13 @@ sub _init {
     die("Path to the lookup file is required")
         unless( exists( $opts->{'path'} ));
     
+	my $rdonly;
+	if( $opts->{'read_only'} ) {
+		$rdonly = O_RDONLY;
+	}
+
     my %db;
-    tie( %db, "NestedDB", $opts->{'path'} ) or die("Couldn't tie hash to file $!");
+    tie( %db, "NestedDB", $opts->{'path'}, $rdonly ) or die("Couldn't tie hash to file $!");
     
     $self->{'_db'} = \%db;
 }

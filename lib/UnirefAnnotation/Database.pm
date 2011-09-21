@@ -45,10 +45,14 @@ sub _init {
     die("Option password is  required") unless( exists( $opts->{'password'} ) );
     my $test = 0;
     $test = $opts->{'test'} if( exists( $opts->{'test'} ) );
+    
+    my %options = ( 'username' => $opts->{'username'},
+                    'password' => $opts->{'password'} );
+    $options{'test'} = 1 if( $test );
+    $options{'database'} = $opts->{'database'} if( $opts->{'database'} );
+    $options{'host'} = $opts->{'host'} if( $opts->{'host'} );
 
-    my $db = new UnirefAnnotation::DBUtil( 'username' => $opts->{'username'},
-                                           'password' => $opts->{'password'},
-                                           'testt' => $test );
+    my $db = new UnirefAnnotation::DBUtil(%options);
     $self->{'_db'} = $db;
                                                  
 }

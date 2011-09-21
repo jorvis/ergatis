@@ -16,7 +16,8 @@ my $OPTIONS = {
     },
     'UnirefAnnotation::NestedDB' =>
     {
-        "path" => { 'required' => 1 }
+        "path" => { 'required' => 1 },
+		"read_only" => { 'required' => 0, 'default' => 1 }
     }
 };
 
