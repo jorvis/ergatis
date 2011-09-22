@@ -6,6 +6,7 @@ use Carp;
 use Data::Dumper;
 use MLDBM "DB_File";
 use File::Copy;
+use Fcntl;
 
 {
 sub whowasi { (caller(1))[3]  }
@@ -13,6 +14,7 @@ sub usage { croak("usage: @{[&whowasi]}(dbtype, filename)") }
 sub _die { croak("@{[&whowasi]}: $_[0]") }
 sub _warn { carp("@{[&whowasi]}: $_[0]") }
 my $DEBUG = 0;
+my $logfh;
 sub debug { $DEBUG = @_ ? shift : 1 }
 
 ## User provies path to a file
@@ -23,15 +25,33 @@ sub TIEHASH {
     _warn &whowasi if $DEBUG;
     my ($class, @args) = @_;
     my $f = $args[0] || usage;
-    
+	my $mode;
+	$mode = $args[1] if( defined( $args[1] ) );
+
+	## Not sure how to handle the other modes, so for now
+	## default is read/write, but can pass in Read only.
+	undef $mode if( defined( $mode ) && $mode != O_RDONLY );
+
+    open($logfh, "> /tmp/nesteddb.log") unless( $logfh );
+
     croak( "$f is not a valid ".__PACKAGE__." [no Tchar index file (expected $f.tci)]")
         if( -e $f && !-e "$f.tci");
     
     my %tci;
-    tie(%tci, "MLDBM", "$f.tci") or _die("Can't tie $f.tci to hash");
+	my @params = ("MLDBM", "$f.tci");
+	if( defined( $mode ) ) {
+		tie(%tci, "MLDBM", "$f.tci", $mode) or _die("Can't tie $f.tci to hash");
+	} else {
+		tie(%tci, "MLDBM", "$f.tci") or _die("Can't tie $f.tci to hash");
+	}
 
     my $data;
-    open($data, "+>> $f") || croak("Could not open file for writing: $f [$!]");
+
+	if( defined( $mode ) && $mode == O_RDONLY ) {
+		open($data, "< $f") || croak("Could not open file: $f [$!]");
+	} else {
+		open($data, "+>> $f") || croak("Could not open file for writing: $f [$!]");
+	}
 
     my $self = {
         'tci' => \%tci,
@@ -49,6 +69,7 @@ sub DESTROY {
     my ($self) = @_;
     my $fh = $self->{'data'};
     close($fh);
+    close($logfh);
     untie( %{$self->{'tci'}} );
 }
 
@@ -92,6 +113,7 @@ sub STORE {
     print $data $d;
 
     $self->{'tci'}->{$key} = [$p,$l];
+    print $logfh "Storing: $key: [$p,$l]\n";
  
 }
 
