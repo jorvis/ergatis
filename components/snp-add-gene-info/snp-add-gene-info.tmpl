@@ -1,0 +1,31 @@
+<!-- component documentation -->
+<h2>snp-add-gene-info</h2>
+<p>
+    Will take output from the nucmer show-snps program and add gene context.
+</p>
+<h3>Input</h3>
+<p>
+	Required: 
+	 Referenece genome genbank file.
+	 show-snps output [tabular output, -T]
+	 Output file path.
+	 Query fasta list
+
+</p>
+<h3>Output</h3>
+<p>
+	It can be very useful to look at the output of show-snps in the context of annotation. Looking at
+	synonomous vs non-synonomous SNPs or indels which may have been created by homopolymer runs [possible
+	sequencing issue.]
+
+	The output of this component will be the same columns as the show-snps program [see show-snps for
+	description of columns]:
+
+	p1, ref_base, query_base, p2, buff, dist, len_r, len_q, frm1, frm2, ref_contig, query_contig
+
+	with these additional columns:
+
+	gene_id, position_in_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_amino_acid, query_codon, query_amino_acid
+
+	If the HOMOPOLYMER option is also specified, another column will be added, including the length of a homopolymer run in indels.
+</p>
