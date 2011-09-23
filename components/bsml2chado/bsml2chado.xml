@@ -558,6 +558,10 @@
 		<key>--logfile</key>    
 		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_indices.log</value>
 	    </param>
+        <param>
+		<key>--database_type</key>    
+		<value>$;RDBMS$;</value>
+	    </param>
 	    <param>
 		<key>stdout</key>    
 		<value>$;TMP_DIR$;/ddl2iterator.pl.create_cm_indices.stdout</value>
