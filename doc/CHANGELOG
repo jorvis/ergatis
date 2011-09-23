@@ -1,5 +1,6 @@
 next
 ----
+-fixed pipeline.config to correct the position of bsml2interevidence execution in the pipeline
 -added missing scp_files.copy_formatdb_prot.config and scp_files.copy_formatdb_nuc.config in prok pipeline templates
 -added scripts to download files like genBank, pep, seq, coords for a number of databases
 -removed hard-coded TMHMM lib path from tmhmm.default.config
