@@ -55,5 +55,16 @@
 				<value>$;ALL_RESULTS_FILE$;</value>
 			</param>
         </command>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>create no indels file</name>
+            <state>incomplete</state>
+            <executable>/usr/bin/awk</executable>
+			<arg>&apos;{ if( $2 != "." &amp;&amp; $3 != "." ) print}&apos; $;ALL_RESULTS_FILE$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;NO_INDELS_FILE$;</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>

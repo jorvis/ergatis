@@ -19,6 +19,7 @@ next
 -new component: genbank2fasta
 -new component: nucmer-detla-filter
 -new component: nucmer-show-snps
+-new component: snp-add-gene-info
 
 ergatis-v2r15b1 (2011-07-22)
 ----------------------------
