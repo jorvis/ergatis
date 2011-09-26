@@ -165,113 +165,32 @@ sub insert_pmarks($) {
 	my $new_scaffold_file = $options{output_dir}."/".$options{strain}.".pmark.multi.fasta";
 	my @fasta = read_file($scaffold_file);
 	open (NEW, ">$new_scaffold_file"), or $logger->logdie("Could not open $new_scaffold_file file for writing: $!\n");
-	my ($header, $sequence);
-	my $new_sequence = "";
-	my $n_counter = 0;
-	my $n_start = -1;
-	my $n_end = -1;
-	my $append_seq = 0;
+        my($header, $sequence) = (undef, '');
+       
+## Subroutine to insert pmarks where any number of N's are present in the sequence
+        my $ins_pmarks = sub {
+            return if (!defined($header));
+	    $sequence =~ s/(n+)/(length($1) <= $length_cutoff) ? $options{'linker_sequence'} : $options{'linker_sequence'} . $1 . $options{'linker_sequence'}/gie;  	
+            print NEW ">".$header, "\n";
+            print NEW $sequence, "\n";
+        };
 
-	foreach my $line (@fasta) {
-		chomp $line;
-		if ($line =~ /^>/) {
-## 1st header/sequence combo is not defined yet
-			if (defined $header) {
-## Go through scaffold sequence and check for N's
-				foreach my $nuc (0..(length($sequence) - 1)) {
-					if (uc(substr($sequence, $nuc, 1)) eq 'N') {
-						$n_counter++;
-						$n_start = $nuc if ($n_counter == 1);
-					} else {
-						$n_counter = 0;
-## If the start site has been established, declare the end site where the first non-N occurs
-						if ($n_start > -1) {
-							$n_end = $nuc;
-## Contruct and add to new sequence with PMARKS based on the number of consecutive N's
-							if (($n_end - $n_start) <= $length_cutoff) {
-								if (length($new_sequence) == 0) {
-									$new_sequence = substr($sequence, 0, $n_start);
-								} else {
-									$new_sequence .= substr($sequence, $append_seq, $n_start-$append_seq);
-								}
-								$new_sequence .= $options{linker_sequence};
-							} else {
-								if (length($new_sequence) == 0) {
-									$new_sequence = substr($sequence, 0, $n_start);
-								} else {
-									$new_sequence .= substr($sequence, $append_seq, $n_start-$append_seq);
-								}
-								$new_sequence .= $options{linker_sequence};
-								for (my $i = 0; $i < ($n_end - $n_start); $i++) {
-									$new_sequence .= 'N';
-								}
-								$new_sequence .= $options{linker_sequence};
-							}
-## Reset the start site to mark the site of new N-strings later in the same scaffold
-## No need to reset the end site as the start site dictates when it is updated
-## The final instance of the end site will help to finish appending the sequence
-							$n_start = -1;
-							$append_seq = $n_end;
-						}
-					}
-				}
-				$new_sequence .= substr($sequence, $append_seq);
-## prints previously saved header/new_sequence combo
-				print NEW ">".$header, "\n";
-				print NEW $new_sequence, "\n";
-			}
-## Save header of next sequence and initialize next sequence, counter, start and end sites
-			$header = substr($line,1);
-			$sequence = "";	
-			$new_sequence = "";
-			$n_counter = 0;
-			$n_start = -1;
-			$n_end = 0;
-			$append_seq = 0;
-		} else {
-			next if ($line =~ /^\s*$/);	#ignore whitespace
-			$sequence .= uc($line);
-		}
-	}	
-
-## Print last set of header and new sequence
-	foreach my $nuc (0..(length($sequence) - 1)) {
-		if (uc(substr($sequence, $nuc, 1)) eq 'N') {
-			$n_counter++;
-			$n_start = $nuc if ($n_counter == 1);
-		} else {
-			$n_counter = 0;
-			if ($n_start > -1) {
-				$n_end = $nuc;
-				if (($n_end - $n_start) <= $length_cutoff) {
-					if (length($new_sequence) == 0) {
-						$new_sequence = substr($sequence, 0, $n_start);
-					} else {						
-						$new_sequence .= substr($sequence, $append_seq, $n_start-$append_seq);
-					}
-					$new_sequence .= $options{linker_sequence};
-				} else {
-					if (length($new_sequence) == 0) {
-						$new_sequence = substr($sequence, 0, $n_start);
-					} else {
-						$new_sequence .= substr($sequence, $append_seq, $n_start-$append_seq);
-					}
-					$new_sequence .= $options{linker_sequence};
-					for (my $i = 0; $i < ($n_end - $n_start); $i++) {
-						$new_sequence .= 'N';
-					}
-					$new_sequence .= $options{linker_sequence};
-				}
-				$n_start = -1;
-				$append_seq = $n_end;
-			}
-		}
-	}
-	$new_sequence .= substr($sequence,- $append_seq);
-	print NEW ">".$header, "\n";
-	print NEW $new_sequence, "\n";
-	close NEW;
-}
+## Go through line by line and run the ins_pmarks subroutine
+        foreach my $line (@fasta) {
+            chomp $line;
+            if ($line =~ /^>/) {
+                my $next_header = substr($line, 1);
+                &$ins_pmarks();
+                $header = $next_header;
+                $sequence = '';
+            } else {
+                next if ($line =~ /^\s*$/);  #ignore whitespace
+                $sequence .= uc($line);
+            }
+        }
+## Run ins_pmarks on the final sequence
+        &$ins_pmarks();
+        close NEW;}
 
 # Subroutine to read files
 sub read_file($) {
