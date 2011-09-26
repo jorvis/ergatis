@@ -169,10 +169,30 @@ sub insert_pmarks($) {
        
 ## Subroutine to insert pmarks where any number of N's are present in the sequence
         my $ins_pmarks = sub {
-            return if (!defined($header));
-	    $sequence =~ s/(n+)/(length($1) <= $length_cutoff) ? $options{'linker_sequence'} : $options{'linker_sequence'} . $1 . $options{'linker_sequence'}/gie;  	
+	    my $old_seq_length = length($sequence);
+	    my ($pmark_added, $n_removed) = (0,0);
+	    my $pmark_len = length($options{'linker_sequence'});
+            
+	    return if (!defined($header));
+	    my @n_array = ($sequence =~ /(n+)/gi);
+	    foreach my $string (@n_array) {
+		if (length($string) <= $length_cutoff) {
+		    $n_removed += length($string);
+		    $pmark_added ++;    
+		} else {
+		    $pmark_added += 2;
+		}
+	    }
+	    my $new_seq_length = $old_seq_length + ($pmark_added * $pmark_len) - $n_removed;
+
+	    $sequence =~ s/(n+)/(length($1) <= $length_cutoff) ? $options{'linker_sequence'} : $options{'linker_sequence'} . $1 . $options{'linker_sequence'}/gie;  
+	    my $actual_seq_length = length($sequence);
+
             print NEW ">".$header, "\n";
-            print NEW $sequence, "\n";
+            print NEW $sequence, "\n";	    
+	    if ($new_seq_length != $actual_seq_length) {
+	    	$logger->logdie("Projected sequence length ($new_seq_length) does not match actual sequence length ($actual_seq_length).  Please report this bug.");
+	    }	
         };
 
 ## Go through line by line and run the ins_pmarks subroutine
