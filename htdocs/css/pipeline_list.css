@@ -4,7 +4,7 @@ div#modify_groups_container {
     padding: 1px 0 10px 35px;
     border-bottom: 3px solid rgb(73,81,92);
 }
-div.pipeline_comment {
+div.comment {
     display: none;
     position: absolute;
     border: 1px solid rgb(100,100,100);
@@ -15,12 +15,12 @@ div.pipeline_comment {
     margin-top: -2em;
     opacity: 0.9;
 }
-div.pipeline_comment_container {
+div.comment_container {
     background: url("../images/icon_comment.png") no-repeat left top;
     width: 20px;
     height: 16px;
 }
-div.pipeline_comment_container:hover div.pipeline_comment {
+div.comment_container:hover div.comment {
     display: block;
 }
 form#modify_groups_form {

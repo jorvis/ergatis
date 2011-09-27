@@ -38,6 +38,12 @@ if ($file !~ /\.xml$/ &&
     quitNicely("i decline to show this type of file.");
 }
 
+## Grab the repository root from our file path
+my $repository_root = "unknown";
+if ( $file =~ m|(.+/(.+?))/workflow/runtime/| ) { 
+        $repository_root = $1; 
+}
+
 my $progress_image_width = 500;
 
 ## open the file and print it to the screen.
@@ -199,6 +205,14 @@ if (scalar keys %states) {
     }
 }
 
+## If we were able to parse a project out of the XML file we are viewing add a link back to the projects
+## pipeline list
+my @submenu_links = ();
+if ($repository_root ne "unknown") {
+        push(@submenu_links, { label => 'pipeline list', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" })
+}
+push(@submenu_links, { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file" });
+
 $tmpl->param( FILE                => $file );
 $tmpl->param( DISPLAY_SOURCE      => $display_source );
 $tmpl->param( STATE_ELEMENTS      => $state_elements );
@@ -208,9 +222,7 @@ $tmpl->param( HAS_MULTIPLE_STATES => $has_multiple_states );
 $tmpl->param( UNSHOWN_FILE_COUNT  => $unshown_file_count );
 
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
-$tmpl->param( SUBMENU_LINKS       => [
-                                        { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file" },
-                                     ] );
+$tmpl->param( SUBMENU_LINKS       => \@submenu_links);
 
 print $tmpl->output;
 

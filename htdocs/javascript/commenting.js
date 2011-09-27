@@ -5,37 +5,37 @@
 var pcomment;
 
 function initializeCommentContainer () {
-    pcomment = getObject('pipeline_comment_shadow').innerHTML;
+    pcomment = getObject('comment_shadow').innerHTML;
 
     if ( isEmpty( pcomment ) ) {
         getObject('comment_add').style.display = 'inline';
     
     } else {
         getObject('comment_add').style.display = 'none';
-        getObject('pipeline_comment_shadow').style.display = 'block';
+        getObject('comment_shadow').style.display = 'block';
     }
     
     addEvent( getObject('comment_add'), 'click', editComment, false );
     addEvent( getObject('comment_cancel'), 'click', cancelComment, false );
     addEvent( getObject('comment_save'), 'click', saveComment, false );
-    addEvent( getObject('pipeline_comment_shadow'), 'click', editComment, false );
-    addEvent( getObject('pipeline_comment_shadow'), 'mouseover', lookEditable, false );
-    addEvent( getObject('pipeline_comment_shadow'), 'mouseout', lookUneditable, false );
+    addEvent( getObject('comment_shadow'), 'click', editComment, false );
+    addEvent( getObject('comment_shadow'), 'mouseover', lookEditable, false );
+    addEvent( getObject('comment_shadow'), 'mouseout', lookUneditable, false );
 }
 
 function cancelComment() {
     // hide edit box
-    getObject('pipeline_comment').style.display = 'none';
+    getObject('comment').style.display = 'none';
 
     // display the shadow
-    getObject('pipeline_comment_shadow').style.display = 'block';
+    getObject('comment_shadow').style.display = 'block';
     
     if ( isEmpty( pcomment ) ) {
         getObject('comment_add').style.display = 'inline';
     
     } else {
         getObject('comment_add').style.display = 'none';
-        getObject('pipeline_comment_shadow').style.display = 'block';
+        getObject('comment_shadow').style.display = 'block';
     }
     
     // hide the save and cancel labels
@@ -46,16 +46,16 @@ function cancelComment() {
 
 function editComment() {
     // populate the edit box
-    getObject('pipeline_comment').value = pcomment;
+    getObject('comment').value = pcomment;
 
     // hide the shadow
-    getObject('pipeline_comment_shadow').style.display = 'none';
+    getObject('comment_shadow').style.display = 'none';
 
     // display edit box
-    getObject('pipeline_comment').style.display = 'block';
+    getObject('comment').style.display = 'block';
     
     // toss cursor
-    getObject('pipeline_comment').focus();
+    getObject('comment').focus();
     
     // hide click label
     getObject('comment_add').style.display = 'none';
@@ -66,7 +66,7 @@ function editComment() {
 }
 
 function lookEditable() {
-    var container = getObject('pipeline_comment_shadow');
+    var container = getObject('comment_shadow');
     
     container.style.backgroundColor = 'rgb(230,230,230)';
     container.style.borderTop = '1px solid rgb(160,160,160)';
@@ -76,7 +76,7 @@ function lookEditable() {
 }
 
 function lookUneditable() {
-    var container = getObject('pipeline_comment_shadow');
+    var container = getObject('comment_shadow');
     
     container.style.backgroundColor = 'rgb(255,255,255)';
     container.style.border = '1px solid rgb(255,255,255)';
@@ -100,8 +100,8 @@ function saveComment() {
     }
 
     var ajaxRequest = null;
-    var ajaxCallback = _save_pipeline_comment_handler;
-    var url = './save_pipeline_comment.cgi';
+    var ajaxCallback = _save_comment_handler;
+    var url = './save_comment.cgi';
     var form_string = formData2QueryString( document.forms['comment_form'] );
 
     // bind the call back, then do the request
@@ -128,13 +128,13 @@ function saveComment() {
     }
 
     // display 'pipeline build progress saved' label
-    getObject('user_message_container').innerHTML = 'pipeline comment saved';
+    getObject('user_message_container').innerHTML = 'comment saved';
     window.setTimeout( "getObject('user_message_container').style.display = 'none'", 2000);
 }
 
-function _save_pipeline_comment_handler() {
-    pcomment = getObject('pipeline_comment').value;
-    getObject('pipeline_comment_shadow').innerHTML = pcomment;
+function _save_comment_handler() {
+    pcomment = getObject('comment').value;
+    getObject('comment_shadow').innerHTML = pcomment;
     
     cancelComment();
 }

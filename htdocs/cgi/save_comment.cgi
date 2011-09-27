@@ -5,8 +5,8 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 
 my $q = new CGI;
-my $comment = $q->param('pipeline_comment') || carp("pipeline_comment is a required argument");
-my $file = $q->param('pipeline_comment_file') || carp("pipeline_comment_file is a required argument");
+my $comment = $q->param('comment') || carp("pipeline_comment is a required argument");
+my $file = $q->param('comment_file') || carp("pipeline_comment_file is a required argument");
 
 print $q->header( -type => 'text/plain' );
 

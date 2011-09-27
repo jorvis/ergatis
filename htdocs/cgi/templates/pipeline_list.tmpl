@@ -9,10 +9,12 @@
     <link rel='stylesheet' type='text/css' href='../css/common.css'>
     <link rel='stylesheet' type='text/css' href='../css/header.css'>
     <link rel='stylesheet' type='text/css' href='../css/monitor.css'>
+    <link rel='stylesheet' type='text/css' href='../css/commenting.css'>
     <link rel='stylesheet' type='text/css' href='../css/pipeline_list.css'>
     <!-- functionality -->
     <script type='text/javascript' src='../javascript/common.js'></script>
     <script type='text/javascript' src='../javascript/pipeline_list.js'></script>
+    <script type='text/javascript' src='../javascript/commenting.js'></script>
     <title>ergatis | pipeline list</title>
 </head>
 
@@ -21,7 +23,6 @@
 <div id='page_container'>
 
 <TMPL_INCLUDE NAME="header.tmpl">
-
     <div id='modify_groups_container'>
         <p id='modify_groups_instructions'>
             Choose pipelines below, enter one or more group labels separated by commas then click 'add' or 'remove'
@@ -50,9 +51,24 @@
             <li><span class='info_label'>project code:</span> <TMPL_VAR NAME=PROJECT_CODE></li>
             </TMPL_IF>
         </ul>
+
+        <div id="comment_container">
+            <form name='comment_form'>
+                <label for='comment'>
+                    project comment: 
+                    <span class='comment_control' id='comment_add'>click to add</span>
+                    <span class='comment_control' id='comment_save'>save</span>
+                    <span class='comment_control' id='comment_cancel'>cancel</span>
+                </label>
+                <textarea name='comment' id='comment' cols='10' rows='5'></textarea>
+                <input type='hidden' name='comment_file' value='<TMPL_VAR NAME=PROJECT_COMMENT_FILE>'>
+                <div id='comment_shadow'><TMPL_VAR NAME=PROJECT_COMMENT></div>
+            </form>
+        </div>
     </div>
 
     <div id='content_container'>
+
 
         <TMPL_IF NAME=ERRORS_FOUND>
         <div class='error_container'>
@@ -75,12 +91,14 @@
                 </TMPL_IF> 
             </TMPL_IF> <!-- if COMPONENT_VIEW -->   
             
+           <!--  <div class="actions" id="archdel_all"><a href="www.google.com">archive/delete all selected</a></div> -->
         </div> <!-- end pipelinelist -->
 
         </TMPL_IF> <!-- if ERRORS_FOUND -->
+
     </div>
 </div>
-
+<div id='user_message_container'></div>
 </body>
 
 </html>

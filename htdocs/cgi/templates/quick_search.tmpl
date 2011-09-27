@@ -10,28 +10,147 @@
     <!-- bring in the styles -->
     <link rel="stylesheet" type="text/css" href="../css/common.css">
     <link rel="stylesheet" type="text/css" href="../css/header.css">
+    <link rel='stylesheet' type='text/css' href='../css/pipeline_list.css'>
+    <link rel='stylesheet' type='text/css' href='../css/monitor.css'>
     <!-- functionality -->
     <script type='text/javascript' src='../javascript/common.js'></script>
+    <title>ergatis | search results</title>
 </head>
 
 <body>
 
 <div id='page_container'>
-
-<TMPL_INCLUDE NAME="header.tmpl">
-
+    <TMPL_INCLUDE NAME="header.tmpl">
     <div id='content_container'>
-        <h2>search results - no matches found</h2>
-        <p>
-            The quick search box in the upper-right hand corner can be used to enter project names
-            like aa1, which are registered in the ergatis.ini file, or any pipeline ID for any
-            registered project.
-        </p>
-        
+        <TMPL_IF NAME=RESULT_COUNT>
+            <h2>search results - no matches found</h2>
+            <p>
+                The quick search box in the upper-right hand corner can be used to enter project names
+                like aa1, which are registered in the ergatis.ini file, any pipeline ID for any
+                registered project, or text that would match any pipeline comment.
+            </p>
+        <TMPL_ELSE>
+            <div id="pipeline_list">
+                <h2>search results (query: <TMPL_VAR NAME=QUERY>)</h2>
+
+                <TMPL_IF NEEDS_PAGINATION>
+                    <div id='pagination_container'>
+                        <ul id="pagination">
+                            <li class="pipeline_count">Displaying <TMPL_VAR MIN_PIPELINE_POS>-<TMPL_VAR MAX_PIPELINE_POS> of <TMPL_VAR PIPELINE_COUNT></li>
+                            <TMPL_IF IS_FIRST_PAGE>
+                            <li class="previous-off">&laquo; Previous</li>
+                            <TMPL_ELSE>
+                            <li class="previous"><a href="<TMPL_VAR PREVIOUS_PAGE_URL>">&laquo; Previous</a></li>
+                            </TMPL_IF> <!-- end IS_FIRST_PAGE IF -->
+                            <TMPL_IF SHOW_PRE_CONTINUATION>
+                            <li class='continuation' id='pre_continuation'>...</li>
+                            </TMPL_IF> <!-- end SHOW_PRE_CONTINUATION IF -->
+                            <TMPL_LOOP PAGE_LINKS>
+                                <TMPL_IF IS_ACTIVE>
+                            <li<TMPL_IF IS_ACTIVE> class="active"</TMPL_IF>><TMPL_VAR PAGE_NUM></li>
+                                <TMPL_ELSE>
+                            <li><a href="<TMPL_VAR URL>"><TMPL_VAR PAGE_NUM></a></li>
+                                </TMPL_IF> <!-- end IS_ACTIVE IF -->
+                            </TMPL_LOOP><!-- end PAGE LINKS LOOP -->
+                            <TMPL_IF SHOW_POST_CONTINUATION>
+                            <li class='continuation' id='post_continuation'>...</li>
+                            </TMPL_IF> <!-- end SHOW_POST_CONTINUATION -->
+                            <TMPL_IF IS_LAST_PAGE>
+                            <li class="next-off">Next &raquo;</li>
+                            <TMPL_ELSE>
+                            <li class="next"><a href="<TMPL_VAR NEXT_PAGE_URL>">Next &raquo;</a></li>
+                            </TMPL_IF> <!-- end IS_LAST_PAGE IF -->
+                        </ul>
+                        <div class="clear_hack"></div>
+                    </div> <!-- end pagination_container -->
+                </TMPL_IF>  <!-- end NEEDS_PAGINATION IF -->
+
+                <table class="pipeline_list">
+                    <tr>
+                        <th>project</th>
+                        <th>id</th>
+                        <th>&nbsp;</th>
+                        <th>state</th>
+                        <th>user</th>
+                        <th>contents</th>
+                        <th>last mod</th>
+                        <th>run time</th>
+                        <th>query hits</th>
+                        <th>actions</th>
+                    <tr>
+
+                    <TMPL_LOOP NAME=PIPELINES>
+                        <tr>
+                            <td><TMPL_VAR NAME="PROJECT"></td>
+                            <td><a href='<TMPL_VAR NAME=VIEW_LINK>'><TMPL_VAR NAME=PIPELINE_ID></a></td>
+                            <td>
+                            <TMPL_IF NAME=HAS_COMMENT>
+                                <div class='comment_container'>
+                                    <div class='comment'>
+                                        <p class='comment_label'>pipeline comment</p>
+                                        <hr/>
+                                        <TMPL_VAR NAME=PIPELINE_COMMENT>
+                                    </div>
+                                </div>
+                            <TMPL_ELSE>
+                                &nbsp;
+                             </TMPL_IF>
+                            </td>
+                            <td class='pipeline_state'>
+                                <span class='state <TMPL_VAR NAME=STATE>'><TMPL_VAR NAME=STATE></span>
+                                <TMPL_IF NAME=ERROR_MESSAGE>
+                                <div>
+                                    <span class='error_message_header'>top-level error message</span>
+                                    <hr>
+                                    <TMPL_VAR NAME=ERROR_MESSAGE>
+                                </div>
+                                </TMPL_IF>
+                            </td>
+                            <td><TMPL_VAR NAME=PIPELINE_USER></td>
+                            <td class='component_review'>
+                                <TMPL_IF NAME=LINKS_ENABLED>
+                                    <a href='<TMPL_VAR NAME=VIEW_LINK>'><TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL></a>
+                                <TMPL_ELSE>
+                                    <TMPL_VAR NAME=COMPONENT_COUNT><TMPL_VAR NAME=COMPONENT_LABEL>
+                                </TMPL_IF>
+                                <div>
+                                    <span class='component_review_header'>pipeline <TMPL_VAR NAME=PIPELINE_ID> component list</span><br />
+                                    <hr/>
+                                    <TMPL_IF NAME=COMPONENT_COUNT>
+                                        <TMPL_LOOP NAME=COMPONENTS>
+                                            <TMPL_IF NAME=ERROR_COUNT>
+                                            <span class='error'><TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME></span><br>
+                                            <TMPL_ELSE>
+                                            <TMPL_VAR NAME=COUNT> x <TMPL_VAR NAME=NAME><br>
+                                            </TMPL_IF> <!-- ERROR_COUNT if -->
+                                        </TMPL_LOOP> <!-- COMPONENT_COUNT loop -->
+                                    <TMPL_ELSE>
+                                        no components found
+                                    </TMPL_IF>
+                                </div>
+                            </td>
+                            <td><TMPL_VAR NAME=LAST_MOD></td>
+                            <td><TMPL_VAR NAME=RUN_TIME></td>
+                            <td><TMPL_VAR NAME=QUERY_HITS></td>
+                            <td class='actions'>
+                                <TMPL_IF NAME=LINKS_ENABLED>
+                                    <a href='<TMPL_VAR NAME=VIEW_LINK>'>view</a>
+                                    <a href='<TMPL_VAR NAME=CLONE_LINK>'>clone</a>
+                                    <TMPL_IF NAME=IS_RUNNING>
+                                    <a class='disabled'>archive/delete</a>
+                                    <TMPL_ELSE>
+                                    <a href='<TMPL_VAR NAME=ARCHIVE_LINK>'>archive/delete</a>
+                                    </TMPL_IF>
+                                <TMPL_ELSE>
+                                    <a class='disabled'>view</a>
+                                </TMPL_IF>
+                            </td>
+                        </tr>
+                    </TMPL_LOOP>
+                </table>
+            </div>
+        </TMPL_IF>        
     </div> <!-- end content_container -->
-
 </div> <!-- end page_container -->
-
 </body>
-
 </html>
