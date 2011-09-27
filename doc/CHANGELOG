@@ -1,5 +1,5 @@
-next
-----
+ergatis-v2r16b1 (2011-09-27)
+----------------------------
 -fixed pipeline.config to correct the position of bsml2interevidence execution in the pipeline
 -added missing scp_files.copy_formatdb_prot.config and scp_files.copy_formatdb_nuc.config in prok pipeline templates
 -added scripts to download files like genBank, pep, seq, coords for a number of databases
@@ -9,7 +9,7 @@ next
 -included component bsml2interevidence_fasta in prok pipeline
 -added --id_repo command line option to snap2bsml.pl and PROJECT_ID_REPOSITORY key to snap.config and snap.i1.xml files.
 -fixed snap2bsml.pl by using IGSIdGenerator module instead of archaic Papyrus::TempIdGenerator
--fixed component bsml2interevidence_fasta 
+-fixed typos in component bsml2interevidence_fasta 
 -modified create_pseudomolecule component to accept file paths in reference file
 -changed run_prok_pipeline.pl to include comments on pipeline creation
 -modified clean_fasta.pl to clean up input FASTA file header 
@@ -21,6 +21,21 @@ next
 -new component: nucmer-detla-filter
 -new component: nucmer-show-snps
 -new component: snp-add-gene-info
+-interface: code added to handle race condition when cloning a pipeline
+-new component: blast_lgt_finder
+-Added lgt_bwa_fq and changed classification to LGT for lgt_bwa and blast_lgt_finder.
+-pipeline_list.cgi: Added a check that page_links is defined.
+-tbl2asn: Added CODON_TABLE parameter
+-tag_data: Forcing tar to always be a success
+-bsml2chado: missing option was causing load failures when using chadomarts
+-NestedDB now has readonly option (so it can tie non-writable db files)
+-lgt_bwa_post_process: Will more acurately detect paired end files
+-new component: insert_pmarks_in_scaffolds
+-new component: btab2taxon
+-pipeline_summary: fixed bug when entering organism name with only one word
+-merge_sorted_files.pl: Fixed bug where script hangs if the list is empty.
+-prok pipeline: formatdb database files are automatically created with loading step.
+
 
 ergatis-v2r15b1 (2011-07-22)
 ----------------------------
