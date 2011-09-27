@@ -48,15 +48,10 @@ sadkins@som.umaryland.edu
 =cut
 
 use strict;
-use lib ("/usr/local/projects/ergatis/package-latest/lib/perl5");
-use File::Basename;
 use FindBin qw($Bin);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use POSIX;
-BEGIN {
-        use Ergatis::Logger;
-}
+use Ergatis::Logger;
 
 ##### Prototypes #####
 
@@ -189,7 +184,8 @@ sub insert_pmarks($) {
 	    my $actual_seq_length = length($sequence);
 
             print NEW ">".$header, "\n";
-            print NEW $sequence, "\n";	    
+		print NEW "$1\n" while( $sequence =~ /(\w{1,60})/g );
+		#print NEW $sequence, "\n";	    
 	    if ($new_seq_length != $actual_seq_length) {
 	    	$logger->logdie("Projected sequence length ($new_seq_length) does not match actual sequence length ($actual_seq_length).  Please report this bug.");
 	    }	
