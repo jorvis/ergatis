@@ -158,8 +158,10 @@ sub concat_files() {
 sub insert_pmarks($) {
 	my $scaffold_file = shift;
 	my $new_scaffold_file = $options{output_dir}."/".$options{strain}.".pmark.multi.fasta";
+	my $coord_file = $options{output_dir}."/".$options{strain}.".pmark.coords";
 	my @fasta = read_file($scaffold_file);
 	open (NEW, ">$new_scaffold_file"), or $logger->logdie("Could not open $new_scaffold_file file for writing: $!\n");
+	open (COORD, ">$coord_file"), or $logger->logdie("Could not open $coord_file file for writing: $!\n");
         my($header, $sequence) = (undef, '');
        
 ## Subroutine to insert pmarks where any number of N's are present in the sequence
@@ -184,8 +186,15 @@ sub insert_pmarks($) {
 	    my $actual_seq_length = length($sequence);
 
             print NEW ">".$header, "\n";
-		print NEW "$1\n" while( $sequence =~ /(\w{1,60})/g );
-		#print NEW $sequence, "\n";	    
+	    print NEW "$1\n" while( $sequence =~ /(\w{1,60})/g );
+	    #print NEW $sequence, "\n";	 
+
+	    print COORD ">".$header, "\n";   
+   	    while ($sequence =~ /$options{'linker_sequence'}/gi) {
+		my $l_end = pos($sequence);
+		my $l_start = $l_end - length($options{'linker_sequence'}) +1;
+		print COORD $l_start, "\t", $l_end,"\n"
+	    }
 	    if ($new_seq_length != $actual_seq_length) {
 	    	$logger->logdie("Projected sequence length ($new_seq_length) does not match actual sequence length ($actual_seq_length).  Please report this bug.");
 	    }	
@@ -206,7 +215,9 @@ sub insert_pmarks($) {
         }
 ## Run ins_pmarks on the final sequence
         &$ins_pmarks();
-        close NEW;}
+        close NEW;
+	close COORD;
+}
 
 # Subroutine to read files
 sub read_file($) {
