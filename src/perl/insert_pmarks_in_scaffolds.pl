@@ -157,8 +157,8 @@ sub concat_files() {
 # Replaces the string of N's from a scaffold sequencing gap with PMARKS
 sub insert_pmarks($) {
 	my $scaffold_file = shift;
-	my $new_scaffold_file = $options{output_dir}."/".$options{strain}.".pmark.multi.fasta";
-	my $coord_file = $options{output_dir}."/".$options{strain}.".pmark.coords";
+	my $new_scaffold_file = $options{output_dir}."/".$options{strain}.".fasta";
+	my $coord_file = $options{output_dir}."/".$options{strain}.".fasta.pmarks";
 	my @fasta = read_file($scaffold_file);
 	open (NEW, ">$new_scaffold_file"), or $logger->logdie("Could not open $new_scaffold_file file for writing: $!\n");
 	open (COORD, ">$coord_file"), or $logger->logdie("Could not open $coord_file file for writing: $!\n");
@@ -192,7 +192,7 @@ sub insert_pmarks($) {
 	    print COORD ">".$header, "\n";   
    	    while ($sequence =~ /$options{'linker_sequence'}/gi) {
 		my $l_end = pos($sequence);
-		my $l_start = $l_end - length($options{'linker_sequence'}) +1;
+		my $l_start = $l_end - length($options{'linker_sequence'});
 		print COORD $l_start, "\t", $l_end,"\n"
 	    }
 	    if ($new_seq_length != $actual_seq_length) {
