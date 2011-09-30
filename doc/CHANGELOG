@@ -1,3 +1,13 @@
+next
+----
+-modified the quick_search.cgi script to allow for searching of pipeline comments
+-modified the pipeline_list.cgi script to replace the XML::Twig code with XML::LibXML code to speed up parsing 
+-disabled the reset button when a pipeline is running on the view pipeline page; renables when the pipeline is in a non-running state
+-modified the reset_component.cgi script to be more robust in catching error situations and not proceeding
+-added the ability to create a project comment (similar to pipeline comments)
+-added group timing information when viewing component details in the interface
+-added a link back to a projects pipeline list from the XML viewer
+
 ergatis-v2r16b1 (2011-09-27)
 ----------------------------
 -fixed pipeline.config to correct the position of bsml2interevidence execution in the pipeline
