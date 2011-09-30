@@ -29,6 +29,7 @@ div#comment_container textarea {
 }
 
 div#comment_shadow {
+    display: none;
     padding: 4px;
     width: 600px;
     border: 1px solid rgb(255,255,255);

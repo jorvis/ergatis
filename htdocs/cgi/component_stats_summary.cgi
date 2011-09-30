@@ -27,6 +27,7 @@ print $q->header( -type => 'text/plain' );
 
 
 my $pipeline_xml = $q->param("pipeline_xml") || die "pass pipeline_xml";
+my $pipeline_state = $q->param("pipeline_state") || die "pass pipeline state";
 
 # Print summary info or all the native data rows?
 my $is_summary = $q->param("summary");

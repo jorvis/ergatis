@@ -239,7 +239,9 @@ ul.add_panel li.serial {
 ul.add_panel li.parallel {
     list-style-image: url('../images/icon_parallel.png');
 }
-
+ul.add_panel li.save_run_pipe {
+    list-style-image: url('../images/icon_save_run.png');
+}
 
 /* WARNING: the following is temporary until the input types are supported */
 .input_element_type {

@@ -1,5 +1,6 @@
 var timers = new Array();
 var parent_pipeline = 'X';
+var parent_pipeline_state = 'undefined';
 
 var pipeline_update_req;
 
@@ -8,9 +9,10 @@ timers['pipeline'] = 11;
 
 window.onload = function() {
     pipelineCountdown();
+    parent_pipeline_state = document.getElementById('pipeline_state').innerHTML;
 }
 
-function requestComponentUpdate (subflow, ul_id, p_pipeline) {
+function requestComponentUpdate (subflow, ul_id, p_pipeline, p_pipeline_state) {
     // change border color to show we've started an update
     document.getElementById(ul_id).style.borderColor = 'black';
     
@@ -22,7 +24,8 @@ function requestComponentUpdate (subflow, ul_id, p_pipeline) {
 
     sendComponentUpdateRequest('./component_summary.cgi?pipeline=' + subflow + 
                                '&ul_id=' + ul_id +
-                               '&parent_pipeline=' + p_pipeline,
+                               '&parent_pipeline=' + p_pipeline +
+                               '&parent_pipeline_state=' + p_pipeline_state,
                                updateComponent, ul_id, subflow, p_pipeline);
 }
 
@@ -56,7 +59,7 @@ function componentCountdown (subflow, ul_id) {
     if (timers[ul_id] > 0) {
         window.setTimeout( "componentCountdown('" + subflow + "', '" + ul_id + "')", 1000);
     } else {
-        requestComponentUpdate( subflow, ul_id, parent_pipeline );
+        requestComponentUpdate( subflow, ul_id, parent_pipeline, parent_pipeline_state);
     }
 }
 
@@ -114,9 +117,11 @@ function updateComponent (sometext, component, pipeline, updateinterval) {
     // start the countdown for the next update of this component
     // if we are going to continue updating
     if ( document.getElementById(component + '_continue_update').innerHTML == 0 ) {
+        // We need to issue one last component update to get our 'reset' button to enable
+        requestComponentUpdate(pipeline, component, parent_pipeline, parent_pipeline_state);
+
         // clear out the timer label since we're done updating
         document.getElementById(component + '_timer_label').innerHTML = '<span id="' + component + '_counter"></span>';
-
     } else {
         updateinterval = parseInt( document.getElementById(component + '_continue_update').innerHTML );
         startAutoUpdate(pipeline, component, parseInt(updateinterval));
@@ -163,6 +168,8 @@ function processPipelineUpdate() {
         document.title = document.getElementById('projectid').innerHTML + ' | ' +
                          document.getElementById('pipelineid').innerHTML + ' | ' +
                          document.getElementById('pipeline_state').innerHTML;
+
+        parent_pipeline_state = document.getElementById('pipeline_state').innerHTML;
 
         // set the border back
         document.getElementById('info_container').style.borderColor = 'rgb(150,150,150)';

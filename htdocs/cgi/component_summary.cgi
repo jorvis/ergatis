@@ -24,6 +24,7 @@ my $max_command_resolution = 0;
 ## will be like:
 ## /usr/local/annotation/TGA1/workflow/runtime/split_fasta/29134_test2/component.xml
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
+my $p_pipeline_state = $q->param("parent_pipeline_state") || die "pass parent pipeline state";
 
 ## will be like:
 ## split_fasta.test2
@@ -174,6 +175,8 @@ $tmpl->param( CURRENT_STEP => $current_step );
 $tmpl->param( HAS_MULTIPLE_STATES => $has_multiple_states );
 $tmpl->param( MESSAGES_LINE => $messages_line );
 $tmpl->param( PARENT_PIPELINE => $parent_pipeline );
+$tmpl->param( PARENT_IS_RUNNING => $p_pipeline_state eq "running" ? 1 : 0 );
+$tmpl->param( PARENT_PIPELINE_STATE => $p_pipeline_state );
 $tmpl->param( PIPELINE => $pipeline );
 $tmpl->param( PIPELINE_EXISTS => $pipeline_exists );
 $tmpl->param( RUNTIME => $runtime );

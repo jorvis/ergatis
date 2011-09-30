@@ -1019,25 +1019,18 @@ function parsePipelineNode( pipeline_node, insert_loc, template_path ) {
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+/**
+* A quick-link shortcut to save and run a pipeline in the build area of 
+* the build pipeline CGI script. This allows the user to quickly run the pipeline
+* without having to scroll to the top of the page and click the run pipeline link.
+*/
+function saveAndRunPipeline() {
+    // Check to make sure we have some components in place already.
+    components = getElementsByClassName(document.getElementById('build_area'), 'div', 'component');
+    if (components.length == 0) {
+        alert("Please add one or more components before attempting to run the pipeline");
+        return false;
+    } 
+   
+    checkAndRunPipeline();   
+}

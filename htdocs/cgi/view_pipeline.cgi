@@ -245,7 +245,7 @@ ComponeNTBlock
 
         ## should we spawn an autoupdate?
         if ( $do_auto_update ) {
-            $component_html .= "<script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token&parent_pipeline=$xml_input', updateComponent, '$name_token', '$filebased_subflow', '$xml_input');</script>\n";
+            $component_html .= "<script>sendComponentUpdateRequest('./component_summary.cgi?pipeline=$filebased_subflow&ul_id=$name_token&parent_pipeline=$xml_input&parent_pipeline_state=$state', updateComponent, '$name_token', '$filebased_subflow', '$xml_input', '$state');</script>\n";
         }
     }
 }
