@@ -250,6 +250,266 @@ sub time_info {
     return ($start_time, $end_time, $runtime);
 }
 
+###
+# Retrieves all pipeline XML for the given project and some preliminary metadata 
+# on each pipeline to aid in pagination.
+###
+sub get_pipeline_quickstats {
+    my ($rdh, $pipeline_root) = @_;
+    my %pipeline_quickstats;
 
+    foreach my $pipeline_id ( readdir $rdh ) {
+        next unless ( $pipeline_id =~ /^\d+$/ );
+
+        my $pipeline_file = "$pipeline_root/$pipeline_id/pipeline.xml";  ## may be modified below
+        
+        ## if only the pipeline.xml exists, we can do less
+        if (! -e $pipeline_file ) {
+
+            if ( -e "$pipeline_file.gz" ) {
+                $pipeline_file .= '.gz';
+            } else {
+                ## didn't actually find a pipeline file
+                next;
+            }
+        }
+       
+        my $filestat = stat($pipeline_file);
+        my $pipeline_user = getpwuid($filestat->uid);
+        my $last_mod = $filestat->mtime;
+       
+        $pipeline_quickstats{$pipeline_id} = { 
+                            pipeline_id     => $pipeline_id,  ## set again so we can directly export to HTML::Template
+                            last_mod        => $last_mod,
+                            path            => $pipeline_file,
+                            pipeline_user   => $pipeline_user,
+        };
+    }
+
+    return %pipeline_quickstats;
+}
+
+
+###
+# The time_info method implemented using the XML::LibXML module
+###
+sub time_info_libxml {
+    my $command = shift;
+
+    my $start_time_str = $command->findvalue('startTime');
+    if (! $start_time_str ) {
+        return ('unavailable', 'unavailable', 'unavailable');
+    }
+    
+    my $start_time_obj = ParseDate($start_time_str);
+    my $start_time = UnixDate($start_time_obj, "%c");
+
+    my ($end_time_obj, $end_time);
+    my $end_time_str = $command->findvalue('endTime');
+    if ($end_time_str) {
+        $end_time_obj = ParseDate($end_time_str);
+        $end_time = UnixDate($end_time_obj, "%c");
+    }
+
+    my $runtime = "?";
+
+    if ($start_time_obj) {
+        my $diffstring;
+        $runtime = '';
+        
+        if ($end_time_obj) {
+            $diffstring = DateCalc($start_time_obj, $end_time_obj);
+        } else {
+            $diffstring = DateCalc($start_time_obj, "now");
+        }
+        
+       ## take out any non \d: characters
+        $diffstring =~ s/[^0-9\:]//g;
+
+        my @parts = split(/:/, $diffstring);
+        
+        ## years + months + weeks + days
+        my $val = ($parts[0] * 365) + ($parts[1] * 30) + ($parts[2] * 7) + ($parts[3]);
+        if ($val > 1) {
+            $runtime .= "$val days ";
+        } elsif ($val == 1) {
+            $runtime .= "$val day ";
+        }
+        
+        $runtime .= "$parts[4] hr " if $parts[4];
+        $runtime .= "$parts[5] min " if $parts[5];
+        $runtime .= "$parts[6] sec";
+    }
+
+    $runtime = '&lt; 1 sec' if $runtime eq '0 sec';
+
+    return ($start_time, $end_time, $runtime);
+}
+
+###
+# The component_count_aref subroutine implemented using XML::LibXML
+##
+sub get_component_hash {
+    my $command = shift;
+    my @components;
+
+    foreach my $node ($command->findnodes('//commandSet')) {
+        my $name = $node->findvalue('name');
+        if ($name && $name =~ /^(.+?)\.(.+)/) {
+            push (@components, { name => $1, token => $2, error_count => 0 });
+
+            my $state = $node->findvalue('state');
+            if ($state) {
+                $components[-1]{'state'} = $state;
+
+                if ($state eq 'error' || $state eq 'failed') {
+                    $components[-1]{error_count}++;
+                }
+            }
+            
+            ($components[-1]{'start_time'}, $components[-1]{'end_time'}, $components[-1]{'run_time'}) = time_info_libxml($node);
+        }
+    }
+
+    return \@components;
+}
+
+###
+# The component_count_hash subroutine implemented in XML::LibXML
+###
+sub get_component_list {
+    my $command = shift;
+    my %components;
+    my $component_aref = [];
+    my $component_count = 0;
+
+    foreach my $node ($command->findnodes('//commandSet')) {
+        my $name = $node->findvalue('name');
+        if ($name && $name=~ /^(.+?)\./) {
+            $components{$1}{'count'}++;
+    
+            my $state = $node->findvalue('state');
+            if ($state) {
+                if ($state eq 'error' || $state eq 'failed') {
+                    $components{$1}{'error_count'}++;
+                }
+            }
+        }
+    }
+
+    # HTML::Template requires us to pass any complex data structures in an 
+    # array of hashes so we need to convert
+    foreach my $component (sort keys %components) {
+        $component_count++;
+        push (@{ $component_aref }, {
+            'name'          => $component,
+            'count'         => $components{$component}{'count'},
+            'error_count'   => $components{$component}{'error_count'} || 0
+        });
+    }
+
+    return ($component_count, $component_aref);
+}
+
+###
+# Generates the range of pipeline ID's that should be displayed for this
+# specific page of pipelines.
+###
+sub get_pipeline_ids_range {
+    my ($view, $min_pipeline_pos, $max_pipeline_pos, $pipelines_per_page, $quickstats_ref) = @_;
+    my %pipeline_quickstats = %$quickstats_ref;
+    my @pipelines_to_parse = ();
+
+    if ( $view eq 'group' || $view eq 'component' ) {
+        ## No current pagination on grouped or component-based pipeline list views
+        @pipelines_to_parse = keys %pipeline_quickstats;
+    } else {
+        ## Sort and record which to parse
+        my $current_pipeline_pos = 0;
+        for my $pipeline_id ( sort { $pipeline_quickstats{$b}{last_mod} cmp $pipeline_quickstats{$a}{last_mod} } keys %pipeline_quickstats ) {
+            $current_pipeline_pos++;
+            
+            ## Check and see if this pipeline is in our page range
+            next if ( $current_pipeline_pos < $min_pipeline_pos || $current_pipeline_pos > $max_pipeline_pos );
+            
+            push (@pipelines_to_parse, $pipeline_id);
+            
+            if ( scalar(@pipelines_to_parse) >= $pipelines_per_page ) {
+                last;
+            }
+        }
+    }
+
+    return @pipelines_to_parse;
+}
+
+###
+# Calculates several statistics/values that are needed to properly pagination 
+# the pipelines for this project.
+###
+sub prepare_pipeline_pagination {
+    my ($view_page_num, $repository_root, $max_pages_to_show, $pipelines_per_page, $pipeline_count) = @_;
+    my $page_count;
+    
+    if ( $pipeline_count > $pipelines_per_page ) {
+        if ( $pipeline_count % $pipelines_per_page ) {
+            $page_count = int($pipeline_count / $pipelines_per_page) + 1;
+        } else {
+            $page_count = int($pipeline_count / $pipelines_per_page);
+        }
+    } else {
+        $page_count = 1;
+    }
+
+    ## Calculate the min/max pipeline positions to show based on the page requested
+    my $min_pipeline_pos;
+    my $max_pipeline_pos;
+
+    if ( $view_page_num == 1 ) {
+        $min_pipeline_pos = 1;
+    } else {
+        $min_pipeline_pos = ($pipelines_per_page * ($view_page_num - 1)) + 1;
+    }
+
+    if ( $view_page_num * $pipelines_per_page >= $pipeline_count ) {
+        $max_pipeline_pos = $pipeline_count;
+    } else {
+        $max_pipeline_pos = $view_page_num * $pipelines_per_page;
+    }
+
+    my $page_links = [];
+
+    ## We can't show ALL pages since there could be dozens.  
+    ## Calculate the next highest/lowest interval of '10', then hide anything outside of that range
+    my ($next_lower_interval, $next_higher_interval);
+
+    if ( $view_page_num == $max_pages_to_show ) {
+        $next_lower_interval  = ( $view_page_num / $max_pages_to_show );
+    } elsif ( $view_page_num % $max_pages_to_show ) {
+        $next_lower_interval  = floor($view_page_num/$max_pages_to_show)*$max_pages_to_show + 1;
+    } else {
+        $next_lower_interval  = $view_page_num - $max_pages_to_show + 1;
+    }
+
+    $next_higher_interval = ceil($view_page_num/$max_pages_to_show)*$max_pages_to_show + 1;
+
+    ## These are calculated later and control the display of the boxes with '...' on either
+    ## of the pagination ranges
+    my $show_pre_continuation  = $next_lower_interval > 1 ? 1 : 0;
+    my $show_post_continuation = $next_higher_interval < $page_count ? 1 : 0;
+
+    for ( my $i=1; $i<=$page_count; $i++ ) {
+        next if $i >= $next_higher_interval || $i < $next_lower_interval;
+
+        push @$page_links, {
+            page_num => $i,
+            is_active => $i == $view_page_num ? 1 : 0,
+            url => "./pipeline_list.cgi?repository_root=$repository_root&page_num=$i"
+        };
+    }
+
+    return  ($page_count, $min_pipeline_pos, $max_pipeline_pos, $show_pre_continuation, 
+             $show_post_continuation, $page_links);
+}
 
 1==1;
