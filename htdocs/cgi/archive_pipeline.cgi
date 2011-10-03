@@ -107,14 +107,16 @@ sub fork_and_action {
 
 sub print_page {
     my ( $header, $msg ) = @_;
-    
+    my $pipeline_list_url = "./pipeline_list.cgi?repository_root=$repository_root";
+
 #    $tmpl->param( REPOSITORY_ROOT => $repository_root );
     $tmpl->param( MESSAGE_HEADER => $header );
     $tmpl->param( MESSAGE => $msg );
 
     $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
+    $tmpl->param( PIPELINE_LIST_URL   => $pipeline_list_url );
     $tmpl->param( SUBMENU_LINKS       => [
-                                            { label => 'pipeline list', is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" },
+                                            { label => 'pipeline list', is_last => 1, url => $pipeline_list_url },
                                          ] );
 
     print $tmpl->output;

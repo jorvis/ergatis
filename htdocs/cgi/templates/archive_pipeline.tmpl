@@ -11,6 +11,7 @@
     <link rel="stylesheet" type="text/css" href="../css/header.css">
     <!-- functionality -->
     <script type='text/javascript' src='../javascript/common.js'></script>
+    <script type='text/javascript' src='../javascript/archive_pipeline.js'></script>
 </head>
 
 <body class='pipelines'>
@@ -18,11 +19,16 @@
 <div id='page_container'>
 
 <TMPL_INCLUDE NAME="header.tmpl">
+    <!-- Hidden input needed for our redirect to the pipeline list page-->
+    <input id="pipeline_list_input" type="hidden" value="<TMPL_VAR NAME=PIPELINE_LIST_URL>" />
 
     <div id='content_container'>
         <h2><TMPL_VAR NAME=MESSAGE_HEADER></h2>
         <p>
             <TMPL_VAR NAME=MESSAGE>
+        </p>
+        <p>
+            Redirecting to pipeline list in 5 seconds...
         </p>
     </div>
 
