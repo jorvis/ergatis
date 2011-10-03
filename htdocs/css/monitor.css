@@ -238,6 +238,9 @@ h1.subflowgroup_label {
 img.status {
     margin-right: 5px;
 }
+.expander {
+    cursor: pointer;
+}
 span.hidden {
     display: none;
 }
