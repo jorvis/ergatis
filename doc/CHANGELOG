@@ -1,5 +1,6 @@
 next
 ----
+-modified HMM library creation script to correct TIGRFAM names
 -modified the quick_search.cgi script to allow for searching of pipeline comments
 -modified the pipeline_list.cgi script to replace the XML::Twig code with XML::LibXML code to speed up parsing 
 -disabled the reset button when a pipeline is running on the view pipeline page; renables when the pipeline is in a non-running state

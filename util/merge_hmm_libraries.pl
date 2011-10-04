@@ -110,7 +110,8 @@ open (my $ofh, ">$options{output_lib}") || die "can't create output file: $!";
 
 while ( my $hmm_file = <$listfh> ) {
     chomp $hmm_file;
-    next if ($hmm_file =~ /#/);    
+    next if ($hmm_file =~ /#/); 
+    next if ($hmm_file =~ /^\s*$/);   
     _log("INFO: processing file $hmm_file");
     
     $$sources{$hmm_file} = { kept => 0, skipped => 0 };
@@ -133,6 +134,17 @@ while ( my $hmm_file = <$listfh> ) {
             if ( $export_last_record ) {
                 ## the second line of record should have the NAME key
                 _log("INFO: exporting record: $last_record[1]");
+		if(($last_record[1] =~ /^NAME\s*TIGR/) || ($last_record[2] =~ /^ACC\s*TIGR/)) {
+			if($last_record[3] =~ /^DESC(\s*)(.+)/) {
+				my $desc = $2;
+				my $spacer = $1;
+				if ($desc =~ /^.+:\s*(.+)/) {
+					$desc = $1;
+					$last_record[3] = "DESC".$spacer.$desc; 
+				}
+			}
+			_log("INFO: correcting record -  $last_record[1] for $last_record[3]");
+		}
                 print $ofh join("\n", @last_record);
                 print $ofh "\n";
                 $$sources{$hmm_file}{kept}++;
@@ -144,7 +156,7 @@ while ( my $hmm_file = <$listfh> ) {
             $export_last_record = 1;
             next();
         }
-        
+      
         if ( $line =~ /^NAME\s+(.+)/ ) {
             my $name = $1;
         
@@ -184,7 +196,7 @@ _log("HMM count summary:\n");
 for ( keys %$sources ) {
     _log("\t$_");
     _log("\t\tkept: $$sources{$_}{kept}");
-    _log("\t\tskipped: $$sources{$_}{kept}");
+    _log("\t\tskipped: $$sources{$_}{skipped}");
 }
 
 
