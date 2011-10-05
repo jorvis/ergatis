@@ -135,15 +135,18 @@ while ( my $hmm_file = <$listfh> ) {
                 ## the second line of record should have the NAME key
                 _log("INFO: exporting record: $last_record[1]");
 		if(($last_record[1] =~ /^NAME\s*TIGR/) || ($last_record[2] =~ /^ACC\s*TIGR/)) {
-			if($last_record[3] =~ /^DESC(\s*)(.+)/) {
-				my $desc = $2;
-				my $spacer = $1;
-				if ($desc =~ /^.+:\s*(.+)/) {
-					$desc = $1;
-					$last_record[3] = "DESC".$spacer.$desc; 
+			for(my $rec=1;$rec<@last_record;$rec++) {
+				if($last_record[$rec] =~ /^DESC(\s*)(.+)/) {
+					my $desc = $2;
+					my $spacer = $1;
+					if ($desc =~ /^.+:\s*(.+)/) {
+						$desc = $1;
+						$last_record[$rec] = "DESC".$spacer.$desc; 
+					}
+					_log("INFO: correcting record -  $last_record[1] for $last_record[$rec]");
+					last;
 				}
 			}
-			_log("INFO: correcting record -  $last_record[1] for $last_record[3]");
 		}
                 print $ofh join("\n", @last_record);
                 print $ofh "\n";
