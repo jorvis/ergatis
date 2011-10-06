@@ -33,7 +33,7 @@ Returns the ID of a given pipeline.
 =head1 AUTHOR
 
     Joshua Orvis
-    jorvis@tigr.org
+    jorvis@users.sf.net
 
 =cut
 
@@ -90,6 +90,8 @@ umask(0000);
         if (! defined $args{ergatis_cfg} ) { croak("ergatis_cfg is a required option") };
         my $run_dir = $args{ergatis_cfg}->val('paths', 'workflow_run_dir') || croak "workflow_run_dir not found in ergatis.ini";
         my $pipeline_scripts_dir = "$run_dir/scripts";
+
+        my $current_user = $args{run_as} || '';
         
         ## create a directory from which to run this pipeline
         if ( -d $run_dir ) {
@@ -145,12 +147,8 @@ umask(0000);
                 use POSIX qw(setsid);
                 setsid() or die "Can't start a new session: $!";
 
-                ##debug
                 print $debugfh "got past the POSIX section\n" if $self->{debug};
-
                 $self->_setup_environment( ergatis_cfg => $args{ergatis_cfg} );
-
-                ##debug
                 print $debugfh "got past ENV setup section\n" if $self->{debug};
                 
                 my $marshal_interval_opt = '';
@@ -161,36 +159,36 @@ umask(0000);
                 my $init_heap = $args{ergatis_cfg}->val('workflow_settings', 'init_heap') || '100m';
                 my $max_heap = $args{ergatis_cfg}->val('workflow_settings', 'max_heap') || '1024m';
                 
-                ## building the runstring now
-                
-                ## which user's logged in?  (maybe none)
+                my $sudo_prefix = '';
                 my $runprefix = '';
+                my $runstring = '';
                 
                 ## should we sudo to a different user?
-                if ( defined $args{run_as} ) {
-                    
-                    $runprefix = "sudo -u $args{run_as} ";
-                    
+                if ( $args{run_as} ) {
+                    print $debugfh "INFO: run_as parameter was set\n" if $self->{debug};
+                    $sudo_prefix = "sudo -E -u $current_user";
+                } else {
+                    print $debugfh "INFO: run_as parameter not set\n" if $self->{debug};
                 }
                 
                 ## are we submitting the workflow as a job?  (CURRENTLY TIED TO SGE)
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
-                    $runprefix = $args{ergatis_cfg}->val('grid', 'sge_qsub') . " -wd $run_dir ";
+                    $runprefix = $args{ergatis_cfg}->val('grid', 'sge_qsub') . " -V -wd $run_dir -b y";
                     
                     my $pipe_submission_queue = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_queue' );
                     
                     if ( $pipe_submission_queue ) {
-                        $runprefix .= "-q $pipe_submission_queue ";
+                        $runprefix .= " -q $pipe_submission_queue";
                     }
                     
                     my $pipe_submission_project = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_project' );
                     
                     if ( $pipe_submission_project ) {
-                        $runprefix .= "-P $pipe_submission_project ";
+                        $runprefix .= " -P $pipe_submission_project";
                     }
                 }
                 
-                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt ".
+                $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt ".
                     "--init-heap=$init_heap --max-heap=$max_heap "; 
 
                 ## Support observer scripts
@@ -200,10 +198,7 @@ umask(0000);
 
                 $runstring .= " --logconf=" . $args{ergatis_cfg}->val('paths','workflow_log4j') . " >& $self->{path}.run.out";
 
-#                my $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt --init-heap=$init_heap --max-heap=$max_heap >& $self->{path}.run.out";
-
                 ## write all this to a file
-#                sysopen(my $pipeline_fh, ">$self->{path}.sh", O_RDWR|O_EXCL|O_TRUNC, 0600) || die "can't write pipeline shell file: $!";
                 my $pipeline_script = "$pipeline_scripts_dir/pipeline." . $self->id . ".run.sh";
                 open(my $pipeline_fh, ">$pipeline_script") || die "can't write pipeline shell file $pipeline_script: $!";
                 
@@ -214,31 +209,36 @@ umask(0000);
                     next if $env =~ /^HTTP_/;
                     
                     print $pipeline_fh "export $env=\"$ENV{$env}\"\n";
+                    print $debugfh "ENV $env=\"$ENV{$env}\"\n" if $self->{debug};
                 }
                 
-                print $pipeline_fh "\n$runstring";
+                print $pipeline_fh "\n$sudo_prefix $runprefix $runstring";
                 
                 close $pipeline_fh;
                 
                 ## the script needs to be executable
                 chmod 0775, $pipeline_script;
                 
-                #print $debugfh "preparing to execute $runstring\n" if $self->{debug};
+                ## create a marker file showing that the pipeline has been started (or attempted to start)
+                #   we can't rely completely on XML here, since a pipeline submitted as a job won't have any
+                #   xml changes until the job starts running.  this allows us to show a 'pending' state
+                #   on the pipeline itself.
+                my $final_run_command = "$pipeline_script";
 
-                print $debugfh "preparing to run $pipeline_script\n" if $self->{debug};
+                print $debugfh "preparing to run $final_run_command\n" if $self->{debug};
 
-                my $rc = 0xffff & system("$runprefix $pipeline_script");
+                my $rc = 0xffff & system($final_run_command);
 
-                printf $debugfh "system(%s) returned %#04x: $rc for command $runprefix $pipeline_script\n" if $self->{debug};
+                printf $debugfh "system(%s) returned %#04x: $rc for command $final_run_command\n" if $self->{debug};
                 if($rc == 0) {
                     print $debugfh "ran with normal exit\n" if $self->{debug};
                 } elsif ( $rc == 0xff00 ) {
                     print $debugfh "command failed: $!\n" if $self->{debug};
-                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
+                    croak "Unable to run workflow command $final_run_command failed : $!\n";
                 } elsif (($rc & 0xff) == 0) {
                     $rc >>= 8;
                     print $debugfh "ran with non-zero exit status $rc\n" if $self->{debug};
-                    croak "Unable to run workflow command $runprefix $pipeline_script failed : $!\n";
+                    croak "Unable to run workflow command $final_run_command failed : $!\n";
                 } else {
                     print $debugfh "ran with " if $self->{debug};
                     if($rc & 0x80){
@@ -288,7 +288,7 @@ umask(0000);
         $ENV{WF_ROOT_INSTALL} = $ENV{WF_ROOT};
         $ENV{WF_TEMPLATE} = "$ENV{WF_ROOT}/templates";
 
-        $ENV{SYBASE} = '/usr/local/packages/sybase';
+        #$ENV{SYBASE} = '/usr/local/packages/sybase';
         $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
         $ENV{TERMCAP} = ''; #can contain bad characters which crash wrapper shell script
