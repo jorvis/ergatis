@@ -75,6 +75,13 @@ my ($starttime, $endtime, $lastmodtime, $state, $runtime) = ('n/a', 'n/a', '', '
 
 if ( $commandSet->first_child('state') ) {
     $state  = $commandSet->first_child('state')->text();
+    
+    ## if the state is 'incomplete', check for a token file that indicates
+    #   that this pipeline was submitted to a job manager.  this allows us to
+    #   show a 'pending' state of the parent pipeline before the XML is parsed.
+    if ( $state eq 'incomplete' || -e "$file.submitted" ) {
+        $state = 'pending';
+    }
 }
 
 ($starttime, $endtime, $runtime) = &time_info($commandSet);
@@ -117,26 +124,26 @@ if (-e "$file.log") {
     $pipelinelog = "$file.log";
 }
 
-my $numerrorsout;
-my $numerrorslog;
-if (-e "$file.run.out"){
-    $numerrorsout = `grep -c -P 'FATAL|ERROR' $file.run.out`;
-    chomp $numerrorsout;
-    if($numerrorslog){
-	$numerrorsout = " $numerrorsout errors";
-    }
-    else{
-	$numerrorsout = "";
+## are we running this as another user?
+my $sudo_pipeline_execution = 0;
+if ( $ergatis_cfg->val('authentication', 'sudo_pipeline_execution') ) {
+    $sudo_pipeline_execution = 1;
+}
+
+my $numerrorsout = '';
+my $numerrorslog = '';
+if (-e "$file.run.out") {
+    my $numerrorsout_count = `grep -c -P 'FATAL|ERROR' $file.run.out`;
+    chomp $numerrorsout_count;
+    if ($numerrorsout_count) {
+        $numerrorsout = " $numerrorsout_count errors";
     }
 }
-if (-e "$file.log"){
-    $numerrorslog = `grep -c -P 'FATAL|ERROR' $pipelinelog`;
-    chomp $numerrorslog;
-    if($numerrorslog){
-	$numerrorslog = " $numerrorslog errors";
-    }
-    else{
-	$numerrorslog = "";
+if (-e "$file.log") {
+    my $numerrorslog_count = `grep -c -P 'FATAL|ERROR' $pipelinelog`;
+    chomp $numerrorslog_count;
+    if ($numerrorslog_count) {
+        $numerrorslog = " $numerrorslog_count errors";
     }
 }
     
@@ -160,11 +167,11 @@ $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'pipeline list', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" },
                                         { label => 'new pipeline', is_last => 0, url => "./build_pipeline.cgi?repository_root=$repository_root" },
                                         { label => 'clone this pipeline', is_last => 0, url => "./clone_pipeline.cgi?instance=$xml_input&repository_root=$repository_root" },
-                                        { label => 'rerun', is_last => 0, url => "./run_pipeline.cgi?pipeline_xml=$file&pipeline_id=$pipelineid&rerun=1" },
+                                        { label => 'rerun', is_last => 0, url => "./run_pipeline.cgi?pipeline_xml=$file&pipeline_id=$pipelineid&rerun=1&repository_root=$repository_root&sudo_pipeline_execution=$sudo_pipeline_execution" },
                                         { label => 'kill', is_last => 0, url => "./kill_wf.cgi?instancexml=$file" },
                                         { label => 'view xml', is_last => 0, url => "./view_formatted_xml_source.cgi?file=$file" },
-                                        { label => "view log<font color=\"red\">$numerrorslog</font>", is_last => 0, url=> "./view_formatted_log_source.cgi?file=$pipelinelog"},
-                                        { label => "view stdout/stderr<font color=\"red\">$numerrorsout</font>", is_last => 1, url=> "./view_formatted_log_source.cgi?file=$file.run.out"}
+                                        { label => "view log <span class='error'>$numerrorslog</span>", is_last => 0, url=> "./view_formatted_log_source.cgi?file=$pipelinelog"},
+                                        { label => "view stdout/stderr <span class='error'>$numerrorsout</span>", is_last => 1, url=> "./view_formatted_log_source.cgi?file=$file.run.out"}
                                      ] );
 
 print $tmpl->output;
