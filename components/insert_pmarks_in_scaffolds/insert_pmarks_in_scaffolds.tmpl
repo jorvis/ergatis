@@ -1,0 +1,27 @@
+<p>
+	The insert_pmarks_in_scaffolds program searches for subsequences containing one or more N's within a given scaffold sequence and replaces the string of N's with a pmark linker subsequence. If the string of N's is greater than 70 N's then two pmark linker sequences will be added around the string of N's instead of replacing it.
+</p>
+<h3>input</h3>
+<p>
+	The program either accepts a fasta-formatted file or a list file that points to fasta files.
+</p>
+<h3>options</h3>
+<p>
+       <ul class="options">
+            <li>o: Specify the output directory</li>
+            <li>i: Specify the input file (or list)</li>
+            <li>s: Set the strain name (just one name)</li>
+            <li>l: Set the pmark linker sequence [optional-will use default if not set]</li>
+        </ul>
+    
+</p>
+<h3>output</h3>
+<p> Output consists of two files:
+
+filename.fasta
+--An edited version of the original fasta file with the pmark linker substitutions added
+
+filename.fasta.pmarks
+--A coordinate file that specifies the start and end coordinates for each pmark linker sequence in the sequence.
+--This file can be used in conjunction with the pmarks2bsml component within Ergatis
+</p>
