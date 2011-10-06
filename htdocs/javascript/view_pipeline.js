@@ -118,9 +118,13 @@ function updateComponent (sometext, component, pipeline, updateinterval) {
     // if we are going to continue updating
     if ( document.getElementById(component + '_continue_update').innerHTML == 0 ) {
         // We need to issue one last component update to get our 'reset' button to enable
-        requestComponentUpdate(pipeline, component, parent_pipeline, parent_pipeline_state);
-
         // clear out the timer label since we're done updating
+        sendComponentUpdateRequest('./component_summary.cgi?pipeline=' + pipeline + 
+                                   '&ul_id=' + component +
+                                   '&parent_pipeline=' + parent_pipeline +
+                                   '&parent_pipeline_state=' + parent_pipeline_state,
+                                   null, component, pipeline, parent_pipeline);
+
         document.getElementById(component + '_timer_label').innerHTML = '<span id="' + component + '_counter"></span>';
     } else {
         updateinterval = parseInt( document.getElementById(component + '_continue_update').innerHTML );
