@@ -79,7 +79,7 @@ if ( $commandSet->first_child('state') ) {
     ## if the state is 'incomplete', check for a token file that indicates
     #   that this pipeline was submitted to a job manager.  this allows us to
     #   show a 'pending' state of the parent pipeline before the XML is parsed.
-    if ( $state eq 'incomplete' || -e "$file.submitted" ) {
+    if ( $state eq 'incomplete' && -e "$file.submitted" ) {
         $state = 'pending';
     }
 }
