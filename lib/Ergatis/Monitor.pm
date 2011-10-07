@@ -400,7 +400,8 @@ sub get_component_list {
     # HTML::Template requires us to pass any complex data structures in an 
     # array of hashes so we need to convert
     foreach my $component (sort keys %components) {
-        $component_count++;
+        $component_count += $components{$component}{'count'};
+
         push (@{ $component_aref }, {
             'name'          => $component,
             'count'         => $components{$component}{'count'},
