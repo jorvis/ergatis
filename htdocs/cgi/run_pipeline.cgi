@@ -129,7 +129,7 @@ unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
         $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user->value );
         
         ## create a token file to indicate that it has been submitted
-        open($submitted_fh, ">" . $pipeline->path() . '.submitted') || 
+        open(my $submitted_fh, ">" . $pipeline->path() . '.submitted') || 
             die "failed to write token file when the pipeline was started: $!";;
         
     } else {
