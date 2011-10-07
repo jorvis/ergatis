@@ -10,7 +10,6 @@ use Ergatis::Monitor;
 use HTML::Template;
 use POSIX;
 use XML::LibXML;
-use JSON;
 
 my $q = new CGI;
 
