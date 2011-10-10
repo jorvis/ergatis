@@ -8,7 +8,7 @@
             <name>repeatmasker</name>
             <state>incomplete</state>
             <executable>$;REPEATMASKER_EXEC$;</executable>
-            <arg>-dir $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; -lib $;REPEAT_LIB$; $;OTHER_OPTS$; $;I_FILE_PATH$;</arg>
+            <arg>-dir $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;REPEAT_DEF$; $;OTHER_OPTS$; $;I_FILE_PATH$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
