@@ -40,6 +40,7 @@ my $error_msgs = [];
 
 if (! -e $project_conf_path ) {
     &record_error("$project_conf_path not found");
+    print $q->header( -type => 'text/html' );
     &print_template();
 }
 
@@ -92,7 +93,10 @@ if (! opendir $rdh, "$pipeline_root" ) {
 
 ## If we've run into any errors at this point quit and print our template 
 ## with any errors that occurred.
-&print_template() if scalar @{$error_msgs};
+if ( scalar @{$error_msgs} ) {
+    print $q->header( -type => 'text/html' );
+    &print_template();
+}
 
 ## Do some groundwork to setup everything we need to paginate our pipelines.
 my %pipeline_quickstats = get_pipeline_quickstats($rdh, $pipeline_root);
