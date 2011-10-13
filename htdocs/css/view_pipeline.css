@@ -14,3 +14,40 @@ div#content_container {
 div#info_container {
     padding-bottom: 0;
 }
+
+/*
+
+    view pipeline modal window style
+
+*/ 
+#boxes .window {
+    position:absolute;
+    width:440px;
+    height:200px;
+    display:none;
+    z-index:9999;
+    padding:20px;
+}
+
+#boxes .reset-warning {
+    color: red;
+}
+
+#boxes .actions {
+    padding-top: 15px;
+}
+
+#boxes .actions a {
+    margin: 0 5px 0 5px;
+}
+
+#boxes #dialog {
+    width:375px; 
+    height:203px;
+    border: 2px solid #49515C;
+    background-color: white;
+}
+
+#dialog #delete {
+    text-decoration: underline;
+}

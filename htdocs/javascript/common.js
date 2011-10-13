@@ -1,4 +1,15 @@
 /*
+    allows us to easily center any element selected using jquery
+*/
+jQuery.fn.center = function () {
+    this.css("position","absolute");
+    this.css("top", (($(window).height() - this.outerHeight()) / 2) + $(window).scrollTop() + "px");
+    this.css("left", (($(window).width() - this.outerWidth()) / 2) + $(window).scrollLeft() + "px");
+    return this;
+}
+
+
+/*
     this document is for common script portions and shouldn't contain any
     completely ergatis-specific methods.  most should be common house-keeping
     and utility functions or functions javascript should have that don't.

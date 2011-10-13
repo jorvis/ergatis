@@ -14,6 +14,7 @@
     <link rel="stylesheet" type="text/css" href="../css/commenting.css">
     <link rel="stylesheet" type="text/css" href="../css/view_pipeline.css">
     <!-- functionality -->
+    <script type='text/javascript' src='../javascript/jquery/jquery.min.js'></script>
     <script type='text/javascript' src='../javascript/common.js'></script>
     <script type="text/javascript" src="../javascript/commenting.js"></script>
     <script type="text/javascript" src="../javascript/view_pipeline.js"></script>
@@ -24,6 +25,17 @@
 <div id='page_container'>
 
 <TMPL_INCLUDE NAME="header.tmpl">
+
+    <div id="boxes">
+        <div id="dialog" class="window">
+            <h3 class='reset-warning'>component reset verification</h3>
+            <p>Are you sure you want to reset this component? Please be aware that reseting a component will <span id='delete'>delete all</span> current output.</p>
+            <div class='actions'>
+                <a id='action_yes'>Yes</a>
+                <a class='close'>No</a>
+            </div>
+        </div>
+    </div>
 
     <div id='info_container'>
 <TMPL_INCLUDE NAME="pipeline_summary.tmpl">

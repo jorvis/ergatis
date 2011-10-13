@@ -45,7 +45,7 @@
     <TMPL_IF NAME=PARENT_IS_RUNNING>
         <a id='reset_button' class='disabled'>reset</a>
     <TMPL_ELSE>
-        <a id='reset_button' href='./reset_component.cgi?component=<TMPL_VAR NAME=UL_ID>&pipeline=<TMPL_VAR NAME=PARENT_PIPELINE>&component_xml=<TMPL_VAR NAME=PIPELINE>&component_ini=<TMPL_VAR NAME=COMPONENT_CONFIG>'>reset</a>
+       <a id='reset_button' href='./reset_component_form.cgi?component=<TMPL_VAR NAME=UL_ID>&pipeline=<TMPL_VAR NAME=PARENT_PIPELINE>&component_xml=<TMPL_VAR NAME=PIPELINE>&component_ini=<TMPL_VAR NAME=COMPONENT_CONFIG>' name="reset_confirm">reset</a>
     </TMPL_IF>        
 </li>
 <li><!-- this only exists because I have no other element to use for clearing --></li>
