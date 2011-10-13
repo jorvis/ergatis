@@ -32,7 +32,7 @@
 						</commandSet>
 						<commandSet type="serial">
 							<state>incomplete</state>
-							<name>xdformat.pre_overlap_analysis</name>
+							<name>formatdb.pre_overlap_analysis</name>
 						</commandSet>
 					</commandSet>
 					<commandSet type="serial">
@@ -84,7 +84,7 @@
 						</commandSet>
 						<commandSet type="serial">
 							<state>incomplete</state>
-							<name>xdformat.post_overlap_analysis</name>
+							<name>formatdb.post_overlap_analysis</name>
 						</commandSet>
 					</commandSet>
 					<commandSet type="serial">
