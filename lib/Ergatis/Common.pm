@@ -327,4 +327,31 @@ sub url_dir_path {
     return $1;
 }
 
+=head2 run_system_cmd($cmd)
+
+=over 4
+
+Runs a system command wrapped in an eval to catch any issues that 
+could occur during the process. If an error occurs this script will die
+spitting out an error.
+
+=back
+
+=cut
+sub run_system_cmd {
+    my $cmd = shift;
+    my @cmd_output;
+
+    eval {
+        @cmd_output = qx{$cmd 2>&1};
+        if ( ($? << 8) != 0 ) { 
+            die "@cmd_output";
+        }   
+    };  
+    if ($@) {
+        die "Error executing command $cmd: $@";
+    }   
+}
+
+
 1==1;
