@@ -2,21 +2,16 @@
 
 =head1 NAME
 
-check_pipeline_template_configs.pl - Verifies software used by the Ergatis pipeline
-	is installed in the specified path.
+check_pipeline_template_configs.pl - Verifies software used by the Ergatis 
+	prokaryotic pipeline is installed in the specified path.
 
 =head1 SYNOPSIS
 
 USAGE: create_evidence_file_mapping.pl
-    --pipeline_layout=/path/to/pipeline.layout
     --software_config=/path/to/software.config/
   [ --help ]
 
 =head1 OPTIONS
-
-B<--pipeline_layout,-p>
-
-    REQUIRED. Path to pipeline.layout file.
 
 B<--software_config,-s>
 
@@ -28,10 +23,9 @@ B<--help,-h>
 
 =head1  DESCRIPTION
 
-    This program checks the program layout file to determine what components are
-    required for this pipeline.  Next for each component the program finds each
-    software path or data path associated and verifies that the paths exist or
-    dies if they aren't.
+    This program checks the Ergatis software.config file to verify if the software
+    file path associated with a given prokaryotic pipeline component exists and is
+    installed.  Note this is run before a pipeline is instantiated.
  
 =head1  INPUT
     
@@ -54,37 +48,23 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 
 sub check_for_software($);
-sub collect_unique_components();
 sub get_options();
 sub _pod($$);
 
 my $software_config;
-my $pipeline_layout;
 my @components;
 get_options; 
 
+@components = qw(ncbi-blastx ncbi-blastp glimmer3 hmmpfam3 lipop 
+		create_pseudomolecules ber prodigal ps_scan RNAmmer signalp 
+		tmhmm translate_sequence tRNAscan-SE formatdb p_func 
+		parse_evidence pipeline_summary train_for_glimmer3_iteration);
 
-collect_unique_components;
+#print $components[0], "\n";
+
 check_for_software ($software_config);
 print "Everything came out OK\n";
 exit 0;
-
-#Runs through the pipeline layout file and adds unique components to an array
-sub collect_unique_components() {
-    my $pl_line;
-    my %seen = ();
-    open PL, "<$pipeline_layout" or die "Can't open $pipeline_layout: $!\n";
-    while(<PL>) {
-	chomp;
-	$pl_line = $_;
-	#print "$pl_line\n";
-	while ($pl_line =~ /<name>([^\s\.]+)\.[^\s\.]+<\/name>/g) {
-	    #print "BEF: $1\n";
-	    push (@components, $1) unless $seen{$1}++;	#add element to array if it isn't in array already	
-	}
-    }
-    close PL;
-}
 
 #Uses component array to check software config file and verify paths to software
 #	the component uses are still valid
@@ -94,7 +74,7 @@ sub check_for_software($) {
     my $sc_line2;
     
     foreach my $component (@components) {
-	#print "AFTER: $component\n";
+	print "$component\n";
 	open SH, "<$software_config" or die "Can't open $software_config: $!\n";
 	while (<SH>) {
 	    chomp;
@@ -106,7 +86,7 @@ sub check_for_software($) {
 		    chomp $sc_line2;
 		    #print "$sc_line2\n";
 		    if ($sc_line2 =~ /=(\/.+)$/) {
-			#print "PATH: $1\n";
+			print "PATH: $1\n";
 			die ("Software $1 for component $_ cannot be found: $!\n")
 				unless (-e $1);
 		    }
@@ -135,7 +115,6 @@ sub get_options() {
     my %options = ();
     my $results = GetOptions (\%options, 
                               'software_config|s=s',
-			      'pipeline_layout|p=s',
                               'help|h');
 
     if( $options{'help'} ){
@@ -148,14 +127,6 @@ sub get_options() {
             unless( -e $software_config && -f $software_config );
     } else {
         _pod("The software.config filepath is required.",1);
-    }
-
-    if ($options{'pipeline_layout'}) {
-	$pipeline_layout = $options{'pipeline_layout'};
-        die("File does not exist: $pipeline_layout")
-            unless( -e $pipeline_layout && -f $pipeline_layout );
-    } else {
-	_pod("The pipeline.layout filepath for the current pipeline is required.",1);
     }
    
 }
