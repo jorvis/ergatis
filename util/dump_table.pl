@@ -324,9 +324,8 @@ sub add_feature {
 
         $feature_type = 'CDS' if( $feature_type eq 'transcript' );
         print $ofh $s."\t".$e."\t$feature_type\n";
-print $s."\t".$e."\t$feature_type\n";
-        print $ofh "\t\t\tproduct\t$1-Xxx\n";    
-print "\t\t\tproduct\t$1Xxx\n";  
+        print $ofh "\t\t\tproduct\t$1Xxx\n";   
+ 
     } else {
 
         print $ofh $s."\t".$e."\tgene\n";
