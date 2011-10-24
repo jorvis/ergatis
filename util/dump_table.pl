@@ -313,6 +313,20 @@ sub add_feature {
         print $ofh $s."\t".$e."\t$feature_type\n";
         print $ofh "\t\t\tnote\t$g->{'gpn'}\n";
         
+    } elsif ($g->{'gpn'} =~/(tRNA-)Pseudo/i) {       
+        print $ofh $s."\t".$e."\tgene\n";
+        $QUERIES{'get_locus'}->execute( $g->{'feature_id'} );
+        my $r = $QUERIES{'get_locus'}->fetchall_arrayref();
+        my $locus = $r->[0]->[0];
+        die("Can't find locus for $g->{'feature_id'}") unless( $locus );
+        print $ofh "\t\t\tlocus_tag\t$locus\n";
+        print $ofh "\t\t\tpseudo\n";
+
+        $feature_type = 'CDS' if( $feature_type eq 'transcript' );
+        print $ofh $s."\t".$e."\t$feature_type\n";
+print $s."\t".$e."\t$feature_type\n";
+        print $ofh "\t\t\tproduct\t$1-Xxx\n";    
+print "\t\t\tproduct\t$1Xxx\n";  
     } else {
 
         print $ofh $s."\t".$e."\tgene\n";
