@@ -66,12 +66,11 @@ use strict;
 use warnings;
 use PFunc::AnnotationCollection;
 use File::OpenFile qw( open_file );
-use XML::Twig;
 use BSML::FeatureRelationshipLookup;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use BSML::BsmlBuilder;
-use Data::Dumper;
+use XML::LibXML;
 
 my $input;
 my @bsml_fr_files = ();
@@ -270,66 +269,61 @@ sub add_sequence_to_doc {
     return ($seq, $ft);
 }
 
-
 sub create_parent_seq_lookup {
     my @bsmls = @_;
 
     my %retval;
-    
-    my $twig = new XML::Twig( 'twig_roots' => {
-        'Sequence' => sub {
-            my ($t, $el) = @_;
-            my $seq_id = $el->att('id');
 
-            #check to make sure this sequence was 'input_of' an analysis
-            my $input_of = 0;
-            foreach my $link ( $el->children('Link') ) {
-                if( $link->att('role') eq 'input_of' ) {
-                    $input_of = 1;
-                    last;
-                }
-            }
-            return unless( $input_of );
+	my $parser = new XML::LibXML;
+	foreach my $bsml ( @bsmls ) {
+		my $doc = $parser->parse_file( $bsml );
+		
+		foreach my $seq ( $doc->findnodes("//Sequence/Link[\@role='input_of']/..") ) {
+			my $seq_id = $seq->getAttribute("id");
+		
+			# Push all feature ids onto retval.
+			# And parent_seq_lookup.
+			die("Already parsed sequence. Do we have 2 sequences with the same id in bsml file $bsml? $seq_id")
+				if( exists( $retval{$seq_id} ) );
+			$retval{$seq_id} = {'features'=>[]};
+			map {
+				push( @{$retval{$seq_id}->{'features'}}, $_->getAttribute("id") );
+				$parent_seq_lookup{ $_->getAttribute("id") } = $seq_id;
+			} $seq->findnodes('Feature-tables/Feature-table/Feature');
 
-            $retval{$seq_id} = {};
-            map { push(@{$retval{$seq_id}->{'features'}}, $_->att('id') );
-                  $parent_seq_lookup{ $_->att('id') } = $seq_id;
-              } $el->find_nodes('Feature-tables/Feature-table/Feature');
-            map { $feat_locs{ $_->att('id') } = &get_feature_locs( $_ ) } $el->find_nodes('Feature-tables/Feature-table/Feature[@class="transcript"]');
-
-            my ($sdi) = $el->find_nodes( 'Seq-data-import' );
-            die("Could nto find sdi for $seq_id") unless( defined( $sdi ) );
-            my ($source, $identifier, $format) = ($sdi->att('source'), $sdi->att('identifier'),
-                                                  $sdi->att('format') );
-
-            $seq_data_lookup{$seq_id} = {
+			# Pull the Interval-loc (feature location)
+			map { 
+				$feat_locs{ $_->getAttribute('id') } = &get_feature_locs( $_ ); 
+			} $seq->findnodes('Feature-tables/Feature-table/Feature[@class="transcript"]');
+			
+			# Pull the seq-data-import
+			my ($sdi) = $seq->findnodes("Seq-data-import[1]");
+			die("Could nto find sdi for $seq_id") unless( defined( $sdi ) );
+			my ($source, $identifier, $format) = ($sdi->getAttribute('source'), 
+												  $sdi->getAttribute('identifier'),
+                                                  $sdi->getAttribute('format') );
+			
+			$seq_data_lookup{$seq_id} = {
                 'source'     => $source,
                 'identifier' => $identifier,
                 'format'     => $format,
             };
 
-            $retval{$seq_id}->{'length'} = $el->att('length') if( $el->att('length') );
-            $retval{$seq_id}->{'class'} = $el->att('class') if( $el->att('class') );
-            $retval{$seq_id}->{'molecule'} = $el->att('molecule') if( $el->att('molecule') );
-            $retval{$seq_id}->{'title'} = $el->att('title') if( $el->att('title') );
-
-        },
-    } );
-
-    foreach my $bsml ( @bsmls ) {       
-        my $in = open_file( $bsml, 'in' );
-        $twig->parse( $in );
-        close($in);
-    }
+            $retval{$seq_id}->{'length'} = $seq->getAttribute('length') if( $seq->hasAttribute('length') );
+            $retval{$seq_id}->{'class'} = $seq->getAttribute('class') if( $seq->hasAttribute('class') );
+            $retval{$seq_id}->{'molecule'} = $seq->getAttribute('molecule') if( $seq->hasAttribute('molecule') );
+            $retval{$seq_id}->{'title'} = $seq->getAttribute('title') if( $seq->hasAttribute('title') );
+		}
+	}
 
     return \%retval;
 }
 
 sub get_feature_locs {
     my ($feat) = @_;
-    my $intloc = $feat->first_child('Interval-loc');
-    my @coords = ($intloc->att('startpos'), $intloc->att('endpos'), 
-                  $intloc->att('complement') );
+	my ($intloc) = $feat->findnodes("Interval-loc[1]");
+    my @coords = ($intloc->getAttribute('startpos'), $intloc->getAttribute('endpos'), 
+                  $intloc->getAttribute('complement') );
     return \@coords;
 }
 
