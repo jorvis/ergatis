@@ -35,11 +35,11 @@ class ParseList(argparse.Action):
            retlist = values.split(',')
            if(self.dest == 'ref1'):
                RefFile1List.extend(retlist)
-               if(self.dest == 'ref2'):
-                   RefFile2UMUMCreated.append(0)
-                   RefFile2UMMCreated.append(0)
-                   RefFile2List.extend(retlist)
-                   setattr(namespace, self.dest, retlist)
+           if(self.dest == 'ref2'):
+               RefFile2UMUMCreated.append(0)
+               RefFile2UMMCreated.append(0)
+               RefFile2List.extend(retlist)
+               setattr(namespace, self.dest, retlist)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-o', '--output')
@@ -88,12 +88,14 @@ PairedEnd = all((os.access(f, os.F_OK) for f in CheckSingleFastq))
 
 if(PairedEnd):
    for RefFile1 in RefFile1List:
+      print "File 1: "+RefFile1
       # De-construct the reference file name.
       RefFileNameList1 = RefFile1.split("/")
       RefFileName1 = RefFileNameList1[len(RefFileNameList1) - 1]
       RefFileName1 = os.path.splitext(RefFileName1)[0]
       j = 0
       for RefFile2 in RefFile2List:
+         print "File 2: "+RefFile2
          # De-construct the reference file name.
          RefFileNameList2 = RefFile2.split("/")
          RefFileName2 = RefFileNameList2[len(RefFileNameList2) - 1]
