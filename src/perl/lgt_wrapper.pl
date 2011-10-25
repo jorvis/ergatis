@@ -33,12 +33,14 @@ my $input_lists = undef;
 my $finished = 0;
 my @tags_to_upload = split(/\,/, $options{tags_to_upload});
 $options{output_directory} =~ s/\/$//;
+my $data_directory = "$options{output_directory}/data";
 my $task_file = $options{output_directory}."/pipeline_tasks.txt";
 my $wait = $options{wait_time} ? $options{wait_time} : 100;
 my $max_pipes = $options{max_pipelines} ? $options{max_pipelines} : 50;
 my $resize_interval = 3600;
 my $time_since_resize = $resize_interval;
-
+my $num_retries = $options{num_retries} ? $options{num_retries} : 2;
+    
 my $num_running = 0;
 
 while(!$finished) {
@@ -83,7 +85,7 @@ sub submit_pipeline {
     my $task = shift;
     my $fname = fileparse($input,qr/\.[^.]*$/);
     
-    if(!$task && $num_running >= $max_pipes) {
+    if(!$task || $num_running >= $max_pipes) {
         return;
     }
     
@@ -149,7 +151,7 @@ sub submit_pipeline {
     # Run Pipeline
     print "LOG: Running pipeline with $output_dir/$fname\_pipeline.config on $fname\_cluster\n";
 
-    my $cmd = "vp-run-pipeline --pipeline-config=$output_dir/$fname\_pipeline.config --bare --cluster=$fname\_cluster -t --overwrite";
+    my $cmd = "vp-run-pipeline --pipeline-config=$output_dir/$fname\_pipeline.config --pipeline-queue=pipeline.q --bare --cluster=$fname\_cluster -t --overwrite";
     if($options{pipeline_parent}) {
         $cmd .= " --pipeline-parent=$options{pipeline_parent}";
     }
@@ -163,11 +165,13 @@ sub submit_pipeline {
     map{
         push(@$downloads,"$fname\_$_");
     } split(/,/,$options{tags_to_download});
+
     my $newtask = {
             input_list => $input,
             task_id => $tid,
             completed => 0,
-            num_retries => 2,
+            num_retries => $num_retries,
+            num_task_retries => $num_retries,
             cluster => "$fname\_cluster",
             download_tags => $downloads,
             num_execs => $num_execs
@@ -175,7 +179,6 @@ sub submit_pipeline {
     # If a task was passed in then we are resubmitting    
     if(!$task) {
         # Create pipeline task entry and write out pipeline tasks
-        my $nr = $options{num_retries} ? $options{num_retries} : 2;
         push(@$pipe_tasks,$newtask);
     }
     else {
@@ -271,6 +274,26 @@ sub terminate_cluster {
     }
 }
 
+sub clear_data {
+
+    if(-d $data_directory) {
+        print "LOG: Clearing out the data directory\n";
+        my $cmd = "rm $data_directory/*";
+        `$cmd`;
+        if($?) {
+            print "WARNING: Had a problem clearing the output directory\n$?\n";
+        }
+    }
+    if(-d "$data_directory/decrypt") {
+        print "LOG: Clearing the decrypt directory\n";
+        my $cmd = "rm $data_directory/decrypt/*";
+        `$cmd`;
+        if($?) {
+            print "WARNING: Had a problem clearing the decrypt directory\n$?\n";
+        }
+    }
+}
+
 sub check_task_complete {
     my $task = shift;
     my $tid = $task->{task_id};
@@ -281,7 +304,11 @@ sub check_task_complete {
     my $ret = `$cmd`;
     if($?) {
         print "FAILURE: Failed to get info about task $tid on $cluster:\n$cmd\n$?";
-        if($task->{num_retries} > 0) {
+        if($task->{num_task_retries} > 0) {
+            print "LOG: Couldn't get info for $tid on $cluster will try again at the next iteration. $task->{num_task_retries} retries remain.\n";
+            $task->{num_task_retries}--;
+        }
+        elsif($task->{num_retries} > 0) {
             $task->{num_retries}--;
             &terminate_cluster($task->{cluster});
             print "LOG: Retrying $tid on $cluster $task->{num_retries} remain\n";
@@ -291,7 +318,9 @@ sub check_task_complete {
             $complete = 'failed';
         }
     }
-
+    else {
+        $task->{num_task_retries} = $num_retries;
+    }
     
     if($ret =~ /State: complete/) {
         $complete = 1;
@@ -311,6 +340,8 @@ sub check_task_complete {
 
 sub harvest_data {
     my $task = shift;
+    print "LOG: Harvesting data from $task->{cluster}\n";
+    &clear_data();
     foreach my $tag (@{$task->{download_tags}}) {
         # First step is transfering the dataset back to the local node.
         print "LOG: transfering $tag from $task->{cluster}\n";
@@ -348,10 +379,16 @@ sub transfer_file {
 sub copy_files {
     my $file_list = shift;
     my $output_list = shift;
-    if(! -d "$options{output_directory}/decrypt") {
-        print "LOG: Making temporary decrypt directory in $options{output_directory}\n";
-        `mkdir $options{output_directory}/decrypt`;
+    if(! -d "$data_directory") {
+        print "LOG: Making temporary data directory in $data_directory\n";
+        `mkdir $data_directory`;
     }
+    if(! -d "$data_directory/decrypt") {
+        print "LOG: Making temporary decrypt directory in $data_directory\n";
+        `mkdir $data_directory/decrypt`;
+    }
+    print "LOG: Copying a new list of files $file_list from the data server\n";
+    &clear_data();
     open IN, "<$file_list" or die "unable to open list\n";
     open OUT, ">$output_list" or die "unable to open output list\n";
     while(<IN>) {
@@ -360,7 +397,7 @@ sub copy_files {
             print "Copying $_\n";
             &transfer_file({
                 src => "$options{user}\@$options{host}:$_",
-                dst => "$options{output_directory}",
+                dst => "$data_directory",
                 key => $options{key}
             });
         }
@@ -369,17 +406,17 @@ sub copy_files {
         my $decrypt_fname = $fname;
 
         if($options{decrypt_script}) {
-            print "Decrypting $options{output_directory}/$fname\n";
-            my $cmd = "$options{decrypt_script} $options{output_directory}/$fname -out-dir $options{output_directory}/decrypt -remove-encrypted";
+            print "Decrypting $data_directory/$fname\n";
+            my $cmd = "$options{decrypt_script} $data_directory/$fname -out-dir $data_directory/decrypt -remove-encrypted";
             print "Running:\n $cmd\n";
             my $res = `$cmd`; 
             print $res;
             if($res !~ /File validation is skipped/ && $?) {
                 die "$?\n";
             }
-            my $dfname = `ls $options{output_directory}/decrypt/`;
+            my $dfname = `ls $data_directory/decrypt/`;
         	chomp $dfname;
-            my $cmd = "mv $options{output_directory}/decrypt/$dfname $options{output_directory}";
+            my $cmd = "mv $data_directory/decrypt/$dfname $data_directory";
             print "Running $cmd\n";
             my $res = `$cmd`;
             if( $?) {
@@ -387,12 +424,12 @@ sub copy_files {
             }
             $decrypt_fname = basename $dfname;
         }
-        elsif(! -e "$options{output_directory}/$decrypt_fname") {
+        elsif(! -e "$data_directory/$decrypt_fname") {
             my $fname = basename($decrypt_fname,'.ncbi_enc');
             $decrypt_fname = $fname;
         }
         $options{output_dir} =~ s/\/$//;
-        print OUT "$options{output_directory}/$decrypt_fname\n";
+        print OUT "$data_directory/$decrypt_fname\n";
     }
     close OUT;
 }
