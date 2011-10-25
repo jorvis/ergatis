@@ -117,12 +117,12 @@ my %query_fsa_files;
 %query_fsa_files = &map_fasta_inputs( $options{'query_fasta_list'} );
 
 # parse the reference genbank file for gene information
-print "Parsing genbank file\n";
+&_log($DEBUG, "Parsing genbank file");
 my %reference_genes = &parse_genbank( $options{'reference_genbank'} );
 
 # Build the interval tree. Will be used in searching for location of
 # SNPs within genes.
-print "Building Tree\n";
+&_log($DEBUG, "Building Tree");
 $iTree->buildTree();
 
 # read in the input show_snps_file
@@ -180,7 +180,13 @@ sub additional_columns {
 		push( @{$numh}, $ret[$NUM_HOMOPOLYMER] );
 	}
 	my @cols;
-	map { push(@cols, join("/", @{$_}) ) } ($gene_id, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh);
+	map { 
+		if( @{$_} == 0 || !defined( $_->[0] ) ) {
+			print Dumper( ($gene_id, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh) );
+			exit(1);
+		}
+		push(@cols, join("/", @{$_}) );
+	} ($gene_id, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh);
 	return join("\t", @cols);
 }
 
@@ -240,10 +246,17 @@ sub process_overlap {
 
 	# At this point, make sure we have a CDS feature. Otherwise, grabbing codons/translations
 	# doesn't really make sense. Do the same if this is an indel.
-	if( !exists( $reference_genes{$gene_id}->{'CDS'} ) || $refbase eq '.' || $querybase eq '.' ) {
-		return ($gene_id, $pos_in_gene, "NA", $reference_genes{$gene_id}->{'product'}, 
+	if( !exists( $reference_genes{$gene_id}->{'CDS'} ) || $refbase eq '.' || $querybase eq '.') {
+		my $product = $reference_genes{$gene_id}->{'product'} || "NA";
+		return ($gene_id, $pos_in_gene, "NA", $product, 
 				$reference_genes{$gene_id}->{'strand'}, "NA", "NA", "NA", "NA", $numh);
 	}
+
+	# Make sure everything is okay with the parsed information
+	unless( exists( $reference_genes{$gene_id}->{'product'} ) &&
+			defined( $reference_genes{$gene_id}->{'product'} ) ) {
+		&_log($ERROR, "Could not find product for gene: $gene_id");
+	}		
 
 	# Grab the codons
 	my $pos_in_codon = ( ( $pos_in_gene - 1 ) % 3 ); # Will be 0, 1 or 2
@@ -251,14 +264,27 @@ sub process_overlap {
 										 $pos_in_gene - $pos_in_codon,
 										 $pos_in_gene + ( 2 - $pos_in_codon ),
 										 1 );
-	my @tmp = split("",$refcodon);
-	$tmp[$pos_in_codon] = $querybase;
-	my $querycodon = join("",@tmp);
+
+	# Calculate query coordinates
+	my ($qstart, $qstop);
+	if( $reference_genes{$gene_id}->{'strand'} == 1 ) {
+		$qstart = $qsnploc - $pos_in_codon;
+		$qstop = $qsnploc + 2 - $pos_in_codon;
+	} elsif( $reference_genes{$gene_id}->{'strand'} == -1 ) {
+		$qstart = $qsnploc - 2 + $pos_in_codon;
+		$qstop = $qsnploc + $pos_in_codon;
+	} else {
+		&_log($ERROR, "Could not understand strand: $reference_genes{$gene_id}->{'strand'}. Expected 1 or -1");
+	}
+
+	my $querycodon = &get_sequence_from_parent( $query, $qstart, $qstop, $reference_genes{$gene_id}->{'strand'} );
+
 
 	if( $refcodon =~ /\./ || $querycodon =~ /\./ ) {
+		print "Either reference or query codons contain a '.'. This is not expected.\n";
 		print "ref: $ref, query: $query\n";
 		print "refcodon: $refcodon, querycodon: $querycodon\n";
-		die("Ruh roh");
+		&_log($ERROR, "Ruh roh");
 	}
 
 	my $refaa = &translate_codon( $refcodon );
@@ -442,9 +468,9 @@ sub reverse_complement {
 sub translate_codon {
 	my ($codon) = @_;
 	&init_codons unless( keys %codons > 0 );
-	&_log($ERROR, "Couldn't find amino acid for codon $codon")
-		unless( exists( $codons{$codon} ) );
-	return $codons{$codon};
+	my $retval = "UNK";
+	$retval = $codons{$codon} if( exists( $codons{$codon} ) );
+	return $retval;
 }
 
 sub map_fasta_inputs {

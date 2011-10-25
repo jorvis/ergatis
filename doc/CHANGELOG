@@ -1,5 +1,6 @@
 next
 ----
+-snp-add-gene-info: Fixed issue in snp-add-gene-info when discovering wildcard bases in the reference
 -repeatmasker: changed to support both -lib and -species arguments
 -modified HMM library creation script to correct TIGRFAM names
 -modified the quick_search.cgi script to allow for searching of pipeline comments
