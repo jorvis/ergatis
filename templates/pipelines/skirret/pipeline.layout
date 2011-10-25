@@ -1,0 +1,25 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>genbank2fasta.reference</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>nucmer.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>nucmer-delta-filter.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>nucmer-show-snps.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>snp-add-gene-info.default</name>
+            </commandSet>
+        </commandSet>
+</commandSetRoot>
