@@ -111,15 +111,14 @@ foreach my $input_file ( @input_files ) {
 sub process_line {
     my $line = shift;
     
-    $line_count++;
-
-    if($line_count > $num_lines) {
+    if($line_count >= $num_lines) {
         $line_count = 0;
         $file_num++;
         close $fh;
         $fname = $prefix."_".(sprintf("%0$num_digits\d",$file_num)).".splitlist";
         open $fh, ">$output_dir/$fname" or die "Unable to open $fname for writing\n";
     }
+    $line_count++;
     print $fh $line;
 }
 
