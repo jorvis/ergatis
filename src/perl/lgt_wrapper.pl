@@ -5,6 +5,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use File::Basename;
 use JSON;
+use POSIX qw(strftime);
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -47,13 +48,13 @@ while(!$finished) {
 
     # Read in the pipeline tasks if we haven't already
     if(-e $task_file && !(@$pipe_tasks)) {
-        print "LOG: Loading task file\n";
+        print &get_time()." - LOG: Loading task file\n";
         $pipe_tasks = &load_state($task_file);
     }
     
     # Load the input list of lists
     if(not defined $input_lists) {
-        print "LOG: Loading Input Lists\n";
+        print &get_time()." - LOG: Loading Input Lists\n";
         &load_input_lists();
     }
     
@@ -72,20 +73,24 @@ while(!$finished) {
         $time_since_resize = $resize_interval;
     }
     
-    print "LOG: Finished with an iteration, waiting $wait seconds\n";
+    print &get_time()." - LOG: Finished with an iteration, waiting $wait seconds\n";
     sleep $wait;
 }
 
-print "LOG: Finished!\n";
+print &get_time()." - LOG: Finished!\n";
 
 exit(0);
+
+sub get_time {
+    return strftime "%a %b %e %H:%M:%S %Y", gmtime;
+}
 
 sub submit_pipeline {
     my $input = shift;
     my $task = shift;
     my $fname = fileparse($input,qr/\.[^.]*$/);
-    
-    if(!$task || $num_running >= $max_pipes) {
+    print &get_time()." - LOG: Going to submit $fname since $num_running >= $max_pipes\n";
+    if(!defined($task) && $num_running >= $max_pipes) {
         return;
     }
     
@@ -95,61 +100,77 @@ sub submit_pipeline {
         my $cmd = "mkdir $output_dir";
        `$cmd`;
         if($?) {
-            die "FAILURE: Failed running:\n$cmd\n$?";
+            die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
         }
     }
     else {
-        print "WARNING: output directory $output_dir already exists\n";
+        print &get_time()." - WARNING: output directory $output_dir already exists\n";
     }
     
     # Start new cluster
     my $cmd = "vp-start-cluster --cluster=$fname\_cluster --num-exec=0 --cred=$options{credential} -t";
    `$cmd`;
     if($?) {
-       die "FAILURE: Failed running:\n$cmd\n$?";
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }
     
     # Copy files and decrypt files (if necessary)
     my $localfl = "$output_dir/$fname.list";
-    print "LOG: Local file list will be $localfl\n";
+    print &get_time()." - LOG: Local file list will be $localfl\n";
     &copy_files($input,$localfl);
     
     # Create tag
-    print "LOG: Tagging $fname\n";
+    print &get_time()." - LOG: Tagging $fname\n";
     &create_tag($fname,$localfl);
     
     # Check cluster status, wait till it's up to continue
-    print "LOG: Waiting for cluster $fname\_cluster to come up\n";
+    print &get_time()." - LOG: Waiting for cluster $fname\_cluster to come up\n";
     my $cmd = "vp-start-cluster --cluster=$fname\_cluster --num-exec=0 --cred=$options{credential}";
    `$cmd`;
     if($?) {
-       die "FAILURE: Failed running:\n$cmd\n$?";
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }
-    print "LOG: Cluster $fname\_cluster came up\n";
+    print &get_time()." - LOG: Cluster $fname\_cluster came up\n";
+    
+    # Configure queues on exec nodes
+    print &get_time()." - LOG: Getting the master hostname for cluster $fname\_cluster\n";
+    my $cmd = "vp-describe-cluster --cluster=$fname\_cluster";
+    my @ret = `$cmd`;
+    if($?) {
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+    }
+    my $master = '';
+    map {if(/MASTER\s+\S+\s+(\S+)\s+/) {$master = $1;}}@ret;
+    print &get_time()." - LOG: Setting the exec queues to 1 slot for master host $master on $fname\_cluster\n";
+    my $cmd = "/opt/ergatis/global_saved_templates/clovr_lgt_wrapper/set_queue.sh $master";
+    `$cmd`;
+    if($?) {
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+    }    
     
     # Add instances
     my $num_lines = `wc -l $localfl`;
     my $num_execs = int($num_lines/2+1);
-    print "LOG: Resizing cluster $fname\_cluster with $num_execs execs\n";
+    print &get_time()." - LOG: Resizing cluster $fname\_cluster with $num_execs execs\n";
     my $cmd = "vp-run-metrics -c cluster.CLUSTER_NAME=$fname\_cluster -c pipeline.EXEC_WANT_INSTANCES=$num_execs resize-cluster";
    `$cmd`;
     if($?) {
-       die "FAILURE: Failed running:\n$cmd\n$?";
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }
     # Upload tags
-    print "LOG: Uploading several tags to $fname\_cluster\n";
+    print &get_time()." - LOG: Uploading several tags to $fname\_cluster\n";
     &upload_tags([$fname,@tags_to_upload],"$fname\_cluster");
     # Write configuration
     
-    print "LOG: Writing config options to $output_dir/$fname\_pipeline.config\n";
+    print &get_time()." - LOG: Writing config options to $output_dir/$fname\_pipeline.config\n";
     my $ipn = $options{input_param_name} ? $options{input_param_name} : 'input.INPUT_TAG';
     my $cmd = "vp-describe-protocols --config-from-protocol=$options{child_config} -c $ipn=$fname -c pipeline.PIPELINE_WRAPPER_NAME=$fname $options{child_config_params} > $output_dir/$fname\_pipeline.config";
     `$cmd`;
     if($?) {
-       die "FAILURE: Failed running:\n$cmd\n$?";
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }
     # Run Pipeline
-    print "LOG: Running pipeline with $output_dir/$fname\_pipeline.config on $fname\_cluster\n";
+    print &get_time()." - LOG: Running pipeline with $output_dir/$fname\_pipeline.config on $fname\_cluster\n";
 
     my $cmd = "vp-run-pipeline --pipeline-config=$output_dir/$fname\_pipeline.config --pipeline-queue=pipeline.q --bare --cluster=$fname\_cluster -t --overwrite";
     if($options{pipeline_parent}) {
@@ -158,7 +179,7 @@ sub submit_pipeline {
     my $tid = `$cmd`;
     chomp $tid;
     if($?) {
-       die "FAILURE: Failed running:\n$cmd\n$?";
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }    
 
     my $downloads = [];
@@ -180,6 +201,7 @@ sub submit_pipeline {
     if(!$task) {
         # Create pipeline task entry and write out pipeline tasks
         push(@$pipe_tasks,$newtask);
+        $num_running++;
     }
     else {
         $newtask->{num_retries} = $task->{num_retries};
@@ -196,7 +218,7 @@ sub load_input_lists {
     while(<IN>) {
         chomp;
         if(!$submitted_lists->{$_}) {
-            print "LOG: Need to process $_\n";
+            print &get_time()." - LOG: Need to process $_\n";
             push(@$input_lists, $_);
         }
     }
@@ -204,13 +226,13 @@ sub load_input_lists {
 
 sub resize_clusters {
 
-    print "LOG: Checking Cluster sizes\n";
+    print &get_time()." - LOG: Checking Cluster sizes\n";
     foreach my $task (@{$pipe_tasks}) {
         if(!$task->{completed}) {
             my $cmd = "vp-run-metrics -c cluster.CLUSTER_NAME=$task->{cluster} -c pipeline.EXEC_WANT_INSTANCES=$task->{num_execs} resize-cluster";
            `$cmd`;
             if($?) {
-               print "FAILURE: Failed running:\n$cmd\n$?";
+               print &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
             }
         }
     }
@@ -245,6 +267,7 @@ sub check_tasks {
                 }
                 $task->{completed} = 1;
                 &dump_tasks();
+                $num_running--;
             }
         }
         if($task->{completed}) {
@@ -252,6 +275,7 @@ sub check_tasks {
         }
     }
     if($num_complete == @$tasks && scalar @$input_lists ==0) {
+        print &get_time()." - LOG: It looks like we're done, $num_complete complete of ".(scalar @$tasks)." and ".(scalar @$input_lists)." inputs left\n"; 
         $finished = 1;
     }
     return $finished;
@@ -266,30 +290,30 @@ sub dump_tasks {
 sub terminate_cluster {
     my $cluster = shift;
     
-    print "LOG: Terminating cluster $cluster\n";
+    print &get_time()." - LOG: Terminating cluster $cluster\n";
     my $cmd = "vp-terminate-cluster --cluster=$cluster";
     my $ret = `$cmd`;
     if($?) {
-        print "WARNING: Failed to terminate cluster $cluster, will move on anyway\n$?";
+        print &get_time()." - WARNING: Failed to terminate cluster $cluster, will move on anyway\n$?";
     }
 }
 
 sub clear_data {
 
     if(-d $data_directory) {
-        print "LOG: Clearing out the data directory\n";
+        print &get_time()." - LOG: Clearing out the data directory\n";
         my $cmd = "rm $data_directory/*";
         `$cmd`;
         if($?) {
-            print "WARNING: Had a problem clearing the output directory\n$?\n";
+            print &get_time()." - WARNING: Had a problem clearing the output directory\n$?\n";
         }
     }
     if(-d "$data_directory/decrypt") {
-        print "LOG: Clearing the decrypt directory\n";
+        print &get_time()." - LOG: Clearing the decrypt directory\n";
         my $cmd = "rm $data_directory/decrypt/*";
         `$cmd`;
         if($?) {
-            print "WARNING: Had a problem clearing the decrypt directory\n$?\n";
+            print &get_time()." - WARNING: Had a problem clearing the decrypt directory\n$?\n";
         }
     }
 }
@@ -299,19 +323,19 @@ sub check_task_complete {
     my $tid = $task->{task_id};
     my $cluster = $task->{cluster};
     my $complete = 0;
-    print "LOG: Checking status of task $tid running on $cluster\n";
+    print &get_time()." - LOG: Checking status of task $tid running on $cluster\n";
     my $cmd = "vp-describe-task $tid --name=$cluster";
     my $ret = `$cmd`;
     if($?) {
-        print "FAILURE: Failed to get info about task $tid on $cluster:\n$cmd\n$?";
+        print &get_time()." - FAILURE: Failed to get info about task $tid on $cluster:\n$cmd\n$?";
         if($task->{num_task_retries} > 0) {
-            print "LOG: Couldn't get info for $tid on $cluster will try again at the next iteration. $task->{num_task_retries} retries remain.\n";
+            print &get_time()." - LOG: Couldn't get info for $tid on $cluster will try again at the next iteration. $task->{num_task_retries} retries remain.\n";
             $task->{num_task_retries}--;
         }
         elsif($task->{num_retries} > 0) {
             $task->{num_retries}--;
             &terminate_cluster($task->{cluster});
-            print "LOG: Retrying $tid on $cluster $task->{num_retries} remain\n";
+            print &get_time()." - LOG: Retrying $tid on $cluster $task->{num_retries} remain\n";
             &submit_pipeline($task->{input_list},$task);
         }
         else {
@@ -328,7 +352,7 @@ sub check_task_complete {
     elsif($ret =~ /State: failed/) {
         if($task->{num_retries} > 0) {
             $task->{num_retries}--;
-            print "LOG: Retrying $tid on $cluster $task->{num_retries} remain\n";
+            print &get_time()." - LOG: Retrying $tid on $cluster $task->{num_retries} remain\n";
             &submit_pipeline($task->{input_list},$task);
         }
         else {
@@ -340,20 +364,20 @@ sub check_task_complete {
 
 sub harvest_data {
     my $task = shift;
-    print "LOG: Harvesting data from $task->{cluster}\n";
+    print &get_time()." - LOG: Harvesting data from $task->{cluster}\n";
     &clear_data();
     foreach my $tag (@{$task->{download_tags}}) {
         # First step is transfering the dataset back to the local node.
-        print "LOG: transfering $tag from $task->{cluster}\n";
+        print &get_time()." - LOG: transfering $tag from $task->{cluster}\n";
         my $cmd = "vp-transfer-dataset --src-cluster=$task->{cluster} --dst-cluster=local --cluster=local --block --tag-name=$tag";
         `$cmd`;
         if($?) {
-            die "FAILURE: Failed running:\n$cmd\n$?";
+            die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
         }
         my @files = `vp-describe-dataset --tag-name=$tag|grep FILE|cut -f2`;
         foreach my $file (@files) {
             chomp $file;
-            print "LOG: Transfering file $file to $options{user}\@$options{host}:$options{data_output_directory}/$task->{cluster}/\n";
+            print &get_time()." - LOG: Transfering file $file to $options{user}\@$options{host}:$options{data_output_directory}/$task->{cluster}/\n";
             &transfer_file({
                 src => $file,
                 dst => "$options{user}\@$options{host}:$options{data_output_directory}/$tag/"
@@ -367,11 +391,11 @@ sub transfer_file {
 
     my $cmd = "rsync -rlptD -e \"ssh -o PasswordAuthentication=no -o ConnectTimeout=30 -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o UserKnownHostsFile=/dev/null -i $options{key}\" $config->{src} $config->{dst}";
 
-    print "LOG: Running:\n$cmd\n";
+    print &get_time()." - LOG: Running:\n$cmd\n";
     `$cmd`;
 
     if($?) {
-       die "FAILURE: Failed running:\n$cmd\n$?";
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }
 
 }
@@ -380,14 +404,14 @@ sub copy_files {
     my $file_list = shift;
     my $output_list = shift;
     if(! -d "$data_directory") {
-        print "LOG: Making temporary data directory in $data_directory\n";
+        print &get_time()." - LOG: Making temporary data directory in $data_directory\n";
         `mkdir $data_directory`;
     }
     if(! -d "$data_directory/decrypt") {
-        print "LOG: Making temporary decrypt directory in $data_directory\n";
+        print &get_time()." - LOG: Making temporary decrypt directory in $data_directory\n";
         `mkdir $data_directory/decrypt`;
     }
-    print "LOG: Copying a new list of files $file_list from the data server\n";
+    print &get_time()." - LOG: Copying a new list of files $file_list from the data server\n";
     &clear_data();
     open IN, "<$file_list" or die "unable to open list\n";
     open OUT, ">$output_list" or die "unable to open output list\n";
@@ -438,11 +462,11 @@ sub create_tag {
     my $tag_name = shift;
     my $filelist = shift;
     
-    print "LOG: Tagging $filelist as $tag_name\n";
+    print &get_time()." - LOG: Tagging $filelist as $tag_name\n";
     my $cmd = "cat $filelist | vp-add-dataset --tag-name=$tag_name -o --stdin";
     `$cmd`;
     if( $?) {
-       die "FAILURE: Failed running:\n$cmd\n$?";
+       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }
 }
 
@@ -450,11 +474,14 @@ sub upload_tags {
     my $tags = shift;
     my $dest = shift;
     foreach my $tag (@$tags) {
-        print "LOG: Transfering $tag to $dest\n";
-        my $cmd = "vp-transfer-dataset --tag-name=$tag --dst-cluster=$dest --block --expand";
-        `$cmd`;
-        if( $?) {
-            die "FAILURE: Failed running:\n$cmd\n$?";
-        }        
+        print &get_time()." - LOG: Transfering $tag to $dest\n";
+        map {
+#            my $cmd = "/opt/ergatis/global_saved_templates/clovr_lgt_wrapper/upload_list.pl $tag $dest";
+            my $cmd = "vp-transfer-dataset --tag-name=$_ --dst-cluster=$dest --block --expand";
+            `$cmd`;
+            if( $?) {
+                die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+            }
+        }split(/,/, $tag)
     }
 }
