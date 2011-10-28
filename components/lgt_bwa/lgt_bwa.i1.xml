@@ -220,7 +220,7 @@
             <type>RunUnixCommand</type>
             <name>ZIP FILES</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lgt_bwa_zip.sh</executable>            
+            <executable>find</executable>            
             <param>
             <key>stdout</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.zip_files_exec.stdout</value>
@@ -229,7 +229,7 @@
             <key>stderr</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.zip_files_exec.stderr</value>
             </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; -name '*.sam' -exec gzip {} \;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
