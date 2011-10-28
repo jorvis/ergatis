@@ -1,8 +1,13 @@
 use strict;
+use CGI;
 use CGI::Cookie;
+use CGI::Session;
+use Cwd qw(abs_path);
 use Ergatis::ConfigFile;
 use File::Find;
+use File::Basename;
 use HTML::Template;
+use Storable;
 
 =head1 DESCRIPTION
 
@@ -201,19 +206,217 @@ user name or undef.
 
 =cut
 
-    sub user_logged_in {
-        my (%args) = @_;
+sub user_logged_in {
+    my $ergatis_cfg = shift;
+    my %cookies = fetch CGI::Cookie;
+    my $username = undef;
+    
+    my $session = get_session($ergatis_cfg);
+
+    if ($session) {
+        $username = $session->param('username') || undef;
+    }
+
+    return $username;
+}
+
+
+=head2 get_session($ergatis_cfg)
+
+=over 4
+
+Retrieves the session for the given user. If a session does not exist a 
+session will be created.
+
+=back
+
+=cut
+sub get_session {
+    my ($ergatis_cfg, $username) = @_;
+    my %cookies = fetch CGI::Cookie;
+    my $session = undef;
+
+    ## The english-readable username var should only be passed in
+    ## when a new session is being created, otherwise we grab the username
+    ## from the ergatis_user cookie
+    $username = $cookies{'ergatis_user'}->value if ( defined($cookies{'ergatis_user'}) );
+
+    if ( $ergatis_cfg->val('authentication', 'session_db_dir') ) {
+        my $session_dir = $ergatis_cfg->val('authentication', 'session_db_dir');
+        $session = new CGI::Session("driver:File",
+                                    $username,
+                                    { Directory => $session_dir }
+        );
+    }
+
+    return $session;
+}
+
+=head2 validate_user_authorization($ergatis_cfg, $project, $pipeline_id)
+
+=over 4
+
+If per-account pipeline security is enabled via the ergatis.ini config
+file this subroutine will authorize a user to view only pipelines (and 
+any components of a pipeline) that the user has created himself/herself.
+
+If a user attempts to view a pipeline (or any components of a pipeline)
+that they did not create they will be redirected to an error page indicating
+they do not have proper authorization.
+
+=back
+
+=cut
+sub validate_user_authorization {                                                                                                                                                                                                       
+    my ($ergatis_cfg, $project, $repository_root, $pipeline_id, $defer_exit) = @_;                                                                                                                                                        
+    my $authorized_user = 1;                                                                                                                                                                                                             
+    ## Authorization should only proceed if we have per-account security                                                                                                                                                                
+    ## enabled                                                                                                                                                                                                                           
+    if ( $ergatis_cfg->val('authentication' ,'per_account_pipeline_security') ) {                                                                                                                                                        
+        my $pipelines = get_account_pipelines($ergatis_cfg);                                                                                                                                                               
+                                                                                                                                                                                                                                         
+        unless( exists($pipelines->{$pipeline_id}) ) {                                                                                                                                                                                   
+            $authorized_user = 0;                                                                                                                                                                                                       
+            ## At time we may not want to juse print an error page and exit but                                                                                                                                                          
+            ## return a boolean as to whether or not the user has permission to                                                                                                                                                           
+            ## view a resource.                                                                                                                                                                                                          
+            unless ($defer_exit) {                                                                                                                                                                                                        
+                my $username = user_logged_in($ergatis_cfg);                                                                                                                                                                              
+                print_error_page( ergatis_cfg => $ergatis_cfg,                                                                                                                                                                          
+                                  message => "User $username does not have authorization to view this resource.",                                                          
+                                  links => [                                                                                                                                                                                             
+                                                { label => "$project pipeline list", is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" },                                                                      
+                                           ],                                                                                                                                                                                             
+                                );                                                                                                                                                                                                        
+                exit(0);                                                                                                                                                                                                                  
+            }                                                                                                                                                                                                                             
+        }                                                                                                                                                                                                                                 
+    }                                                                                                                                                                                                                                
+                                                                                                                                                                                                                                          
+    return $authorized_user;                                                                                                                                                                                                             
+} 
+
+=head2 get_account_pipelines($ergatis_cfg)
+
+=over 4
+
+Retrieves all pipelines tied to a given account. If a CGI::Session session 
+cannot be retrieved or the per_account_pipelines_list flag is not toggled
+in the ergatis.ini file an empty hash will be returned.
+
+If the last modified time on the account pipeline list file is newer than
+the one recorded in the session metadata the sessions pipeline list will be
+refreshed from file.
+
+=back
+
+=cut
+sub get_account_pipelines {
+    my $ergatis_cfg = shift;
+    my $account_pipelines = {};
+
+    my $session = get_session($ergatis_cfg);
+
+    if ( $session && $session->param('username') &&
+        $ergatis_cfg->val('authentication', 'per_account_pipeline_security') ) {
+        ## Check if our pipelines list file has updated since the last time we updated
+        ## our sessions pipeline list and reload if needed
+        my $pipelines_file = $ergatis_cfg->val('authentication', 'session_db_dir') .
+            "/" . $session->param('username') . ".pipelines";
+        my $last_mod = (stat ($pipelines_file))[9] || undef;
         
-        my %cookies = fetch CGI::Cookie;
+        if ($session->param('pipelines_last_mod') && $last_mod &&
+            $session->param('pipelines_last_mod') < $last_mod) {
+            
+            $account_pipelines = retrieve($pipelines_file);
+            $session->param('pipelines', $account_pipelines);
+            $session->param('pipelines_last_mod', $last_mod);
 
-        if ( defined $cookies{ergatis_user} ) {
-            return $cookies{ergatis_user};
-
+            $session->flush();
         } else {
-            return undef;
+            $account_pipelines = $session->param('pipelines') || {};
         }
     }
 
+    return $account_pipelines;
+}
+
+=head2 add_pipeline_to_user_pipeline_list( $ergatis_cfg, $pipeline_id )
+
+=over 4
+
+Adds a pipeline to the users pipeline list if the per-account pipeline
+list flag is enabled in the ergatis.ini
+
+=back
+
+=cut
+sub add_pipeline_to_user_pipeline_list {
+    my ($ergatis_cfg, $pipeline_id) = @_;
+    my $session = get_session($ergatis_cfg);        
+    my $pipelines = {};
+
+    ## TODO: Figure out whether we need to use file-locking here.
+    if ( $session && $session->param('username') &&
+        $ergatis_cfg->val('authentication', 'per_account_pipeline_security') ) {
+        my $session_db_dir = $ergatis_cfg->val('authentication', 'session_db_dir');
+        my $pipelines_file = $session_db_dir . "/" . $session->param('username') .
+                             ".pipelines";
+
+        $pipelines = retrieve($pipelines_file) if (-e $pipelines_file);
+
+        ## If this pipeline already exists in our list we are attempting to 
+        ## re-run it or something has gone wrong. Either way issue a warning
+        ## into our apache log
+        if ( exists($pipelines->{$pipeline_id}) ) {
+            print STDERR "Duplicate pipeline detected in user pipeline list " .
+                         " - $pipeline_id";
+        } else {
+            ## Add the pipeline ID to our pipeline list.
+            $pipelines->{$pipeline_id} = 1;
+        }
+
+        $session->param('pipelines', $pipelines);
+        store $pipelines, $pipelines_file;                                     
+
+        $session->param('pipelines_last_mod', (stat ($pipelines_file))[9]);
+        $session->flush();
+    }
+}
+
+=head2 delete_pipeline_from_user_pipeline_list( $ergatis_cfg, $pipeline_id )
+
+=over 4
+
+Deletes a pipeline from the users pipeline list.
+
+=back
+
+=cut
+sub delete_pipeline_from_user_pipeline_list {
+    my ($ergatis_cfg, $pipeline_id) = @_;
+    my $session = get_session($ergatis_cfg);        
+    my $pipelines = {};
+
+    if ( $session && $session->param('username') &&
+        $ergatis_cfg->val('authentication', 'per_account_pipeline_security') ) {
+        my $session_db_dir = $ergatis_cfg->val('authentication', 'session_db_dir');
+        my $pipelines_file = $session_db_dir . "/" . $session->param('username') .
+                             ".pipelines";
+
+        $pipelines = retrieve($pipelines_file) if (-e $pipelines_file);
+        if ( exists($pipelines->{$pipeline_id}) ) {
+            print STDERR "Deleting pipeline ID $pipeline_id from user pipeline list\n";
+            delete $pipelines->{$pipeline_id};
+        }
+
+        $session->param('pipelines', $pipelines);
+        store $pipelines, $pipelines_file;                                     
+
+        $session->param('pipelines_last_mod', (stat ($pipelines_file))[9]);
+        $session->flush();
+    }
+}
 
 =head2 get_quick_links( config_ref )
 
@@ -232,13 +435,13 @@ sub get_quick_links {
     my $quick_links = [];
     
     ## is the user logged in?
-    my $current_user = &user_logged_in(  );
+    my $current_user = &user_logged_in($ergatis_cfg);
     
     if ( $current_user ) {
 
         ## display the logout button
         push @$quick_links, {  
-                                label => $current_user->value . " [logout]",
+                                label => $current_user . " [logout]",
                                 url => './logout.cgi',
                                 is_last => 0
                             };
@@ -297,8 +500,13 @@ perform an explicit exit() afterwards (as appropriate).
 =cut
 sub print_error_page {
     my %args = @_;
-    
-    my $tmpl = HTML::Template->new( filename => 'templates/error.tmpl',
+    my $templates_dir = "templates/";   
+
+    if ( exists($args{templates_dir}) ) {
+        $templates_dir = $args{templates_dir};
+    } 
+
+    my $tmpl = HTML::Template->new( filename => "$templates_dir/error.tmpl",
                                     die_on_bad_params => 0,
                                   );
 
@@ -339,19 +547,32 @@ spitting out an error.
 
 =cut
 sub run_system_cmd {
-    my $cmd = shift;
+    my ($cmd, $redirect_on_error) = @_;
     my @cmd_output;
 
     eval {
         @cmd_output = qx{$cmd 2>&1};
         if ( ($? << 8) != 0 ) { 
             die "@cmd_output";
-        }   
+        } 
     };  
-    if ($@) {
-        die "Error executing command $cmd: $@";
+    if ($@) {	
+	if ($redirect_on_error) {		
+            print $redirect_on_error->{'cgi'}->header( -type => 'text/html' );
+
+            my $ergatis_cfg = new Ergatis::ConfigFile( -file => dirname( abs_path($0) ) . "/ergatis.ini" );
+            print_error_page( ergatis_cfg => $ergatis_cfg,
+                              message => "Command $cmd failed to execute:<br /><br /> <i>$@</i>",
+                              links => [ 
+                                            { label => $redirect_on_error->{'label'}, is_last => 1, url => $redirect_on_error->{'url'} },
+                                       ],  
+                              templates_dir => dirname( abs_path($0) ) . "/templates/",
+                            );  
+            exit(0);
+	} else {
+        	die "Error executing command $cmd: $@";
+	}
     }   
 }
-
 
 1==1;

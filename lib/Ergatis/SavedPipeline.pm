@@ -164,9 +164,8 @@ use Ergatis::ConfigFile;
         #get repository root and pipeline_id of input xml
         #(this might be incorrect, could result in user overwriting pipeline.xml)
         #(if write pipeline called on same repository_root, pipeline_id would already be stored)
-        if ( $self->{source} =~ m|(.+/([^/]+))/$self->{_pipeline_dir}/(\d+)| ) {
+        if ( $self->{source} =~ m|(.+/([^/]+))/$self->{_pipeline_dir}/([A-Z0-9]+)| ) {
             $self->{_repository_root} = $1;
-#	    $project_id = $2;
             $self->{pipeline_id} = $3;
         } else {
             croak("failed to extract repository root, project id, or pipeline id from ".$self->{source});

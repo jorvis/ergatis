@@ -255,11 +255,15 @@ sub time_info {
 # on each pipeline to aid in pagination.
 ###
 sub get_pipeline_quickstats {
-    my ($rdh, $pipeline_root) = @_;
+    my ($ergatis_cfg, $rdh, $pipeline_root) = @_;
     my %pipeline_quickstats;
 
+    my $per_account_pipelines = $ergatis_cfg->val('authentication', 'per_account_pipeline_security');
+    my $account_pipelines = get_account_pipelines($ergatis_cfg);
+
     foreach my $pipeline_id ( readdir $rdh ) {
-        next unless ( $pipeline_id =~ /^\d+$/ );
+        next unless ( $pipeline_id =~ /^[A-Z0-9]+$/ );
+        next if ($per_account_pipelines && ! exists($account_pipelines->{$pipeline_id}));
 
         my $pipeline_file = "$pipeline_root/$pipeline_id/pipeline.xml";  ## may be modified below
         
@@ -288,7 +292,6 @@ sub get_pipeline_quickstats {
 
     return %pipeline_quickstats;
 }
-
 
 ###
 # The time_info method implemented using the XML::LibXML module
