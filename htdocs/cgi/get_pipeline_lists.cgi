@@ -31,6 +31,8 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $temp_space = $ergatis_cfg->val( 'paths', 'temp_space' ) || die "temp_space not defined in ergatis.ini file";
 mkpath ($temp_space, 0, 0777) unless (-e $temp_space);  ## Make it if it doesn't exist.
 
+my $username = user_logged_in($ergatis_cfg);
+
 ## an MD5 is used on the project list so that many installations can
 ## share the same storable object.
 my $cfg_md5 = $ergatis_cfg->project_list_md5();
@@ -39,6 +41,10 @@ my $table_cache_update_time = $ergatis_cfg->val( 'display_settings', 'pipeline_l
    $table_cache_update_time /= ( 60 * 24 );  ## convert to number of days (usually a decimal)
 
 my $active_pipeline_age = $ergatis_cfg->val( 'display_settings', 'active_pipeline_age') || 24;
+
+## If we have a sessions directory defined and we are restricting pipel
+my $per_account_pipelines = $ergatis_cfg->val('authentication', 'per_account_pipeline_security') || 0;
+my $account_pipelines = get_account_pipelines($ergatis_cfg);
 
 ## build the project list
 my $registered_projects = [];
@@ -98,6 +104,8 @@ $tmpl->param( ACTIVE_PIPELINES    => $active_pipelines );
 $tmpl->param( ACTIVE_PIPELINE_COUNT => scalar @$active_pipelines );
 $tmpl->param( ACTIVE_PIPELINE_AGE => $active_pipeline_age );
 $tmpl->param( CACHE_FILE_AGE      => int($cache_file_age * 1440) );
+$tmpl->param( IS_PER_ACCOUNT_PIPELINES => $per_account_pipelines );
+$tmpl->param( USER      => $username );
 
 print $tmpl->output;
 
@@ -138,6 +146,11 @@ sub get_pipeline_lists {
                 next;
             }
             
+            ## If we are displaying pipelines tied to accounts we will only want to display those pipelines
+            if ( $per_account_pipelines && ! exists($account_pipelines->{$pipeline_id}) ) {
+                next;
+            }
+		
             my $pipeline_file_fh;
             if ($pipeline_file =~ /\.gz/) {
                 open($pipeline_file_fh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 

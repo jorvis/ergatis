@@ -48,6 +48,13 @@ div#info_container {
     background-color: white;
 }
 
+#boxes #spinner {
+    position: absolute;
+    display: block;
+    top: 190px;
+    left: 205px;
+}
+
 #dialog #delete {
     text-decoration: underline;
 }

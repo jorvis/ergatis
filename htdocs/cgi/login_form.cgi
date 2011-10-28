@@ -3,12 +3,19 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use CGI::Cookie;
 use Ergatis::Common;
 use Ergatis::ConfigFile;
 use HTML::Template;
 
 my $q = new CGI;
-print $q->header( -type => 'text/html' );
+
+## Store the referer to this page in a cookie so we can redirect to said page upon successful login
+my $login_cookie = new CGI::Cookie(-name    => 'ergatis_login_referer',
+                                   -value   => parse_referer_url($ENV{HTTP_REFERER}),
+                                   -expires => '+6h',);
+
+print $q->header( -type => 'text/html', -cookie => $login_cookie );
 
 my $tmpl = HTML::Template->new( filename => 'templates/login_form.tmpl',
                                 die_on_bad_params => 1,
@@ -52,3 +59,8 @@ $tmpl->param( SUBMENU_LINKS       => [
 
 print $tmpl->output;
 
+sub parse_referer_url {
+     my $referer = shift;
+     $referer =~ /\/(\w+\.cgi.*$)/;
+     return $1;
+}

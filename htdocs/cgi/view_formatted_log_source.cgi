@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use Ergatis::Common;
 use Ergatis::ConfigFile;
 
 my $q = new CGI;
@@ -13,8 +14,6 @@ print $q->header( -type => 'text/html' );
 ## /usr/local/scratch/annotation/TTA1/workflow/runtime/wu-blastp/20724_AllGroup.niaa/component.conf.bld.ini
 my $file = $q->param("file") || die "pass file";
 
-pageHeader();
-
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 ## don't do it if the file doesn't end in one of the following extensions: out, log, stderr, stdout
@@ -23,6 +22,21 @@ if ($file !~ /\.out$/ && $file !~ /\.log$/ && $file !~ /\.stderr$/ && $file !~ /
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }
+
+my ($repository_root, $project, $pipelineid);
+if ( $file =~ m|(.+/(.+?))/workflow/runtime/pipeline/([A-Z0-9]+)/| ) {
+    $repository_root = $1;
+    $project = $2;
+    $pipelineid = $3;
+} else {
+    die "failed to extract a repository_root from $file.  expected a workflow/runtime subdirectory somewhere."
+}
+
+## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+## has access to this pipeline.
+validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);
+
+pageHeader();
 
 print "<pre>";
 

@@ -24,13 +24,32 @@ my $tmpl = HTML::Template->new( filename => 'templates/view_component.tmpl',
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
-
 my $pipeline_xml = $q->param("pipeline_xml") || die "pass pipeline_xml";
 
 ## it may have been compressed
 if (! -e $pipeline_xml && -e "$pipeline_xml.gz") {
     $pipeline_xml .= '.gz';
 }
+
+my $component_name = 'component';
+my $project = '?';
+my $repository_root = '';
+my $pipeline_id = '';
+my $output_token = '';
+my %states;
+
+if ( $pipeline_xml =~ m|(.+/(.+?))/workflow/runtime/(.+?)/([A-Z0-9]+)_(.+?)/| ) {
+    $repository_root = $1;
+    $project = $2;
+    $component_name = $3;
+    $pipeline_id = $4;
+    $output_token = $5;
+}
+
+
+## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+## has access to this pipeline.
+validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipeline_id);
 
 my $pipeline_xml_fh;
 if ($pipeline_xml =~ /\.gz/) {
@@ -44,21 +63,6 @@ $twig->parse($pipeline_xml_fh);
 
 my $parent_commandset = $twig->root->first_child('commandSet');
 my $component_state = $parent_commandset->first_child('state')->text || 'unknown';
-
-my $component_name = 'component';
-my $project = '?';
-my $repository_root = '';
-my $pipeline_id = '';
-my $output_token = '';
-my %states;
-
-if ( $pipeline_xml =~ m|(.+/(.+?))/workflow/runtime/(.+?)/(\d+)_(.+?)/| ) {
-    $repository_root = $1;
-    $project = $2;
-    $component_name = $3;
-    $pipeline_id = $4;
-    $output_token = $5;
-}
 
 my $parent_pipeline = '';
 if ( $parent_commandset->first_child('parentFileName') ) {

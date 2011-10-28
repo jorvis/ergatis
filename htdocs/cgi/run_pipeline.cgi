@@ -121,12 +121,12 @@ if ( $$qvars{rerun} ) {
 unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
     ## how we run the pipeline depends on some settings in the ergatis config file
     ## should we run as a different user?
-    my $current_user = &user_logged_in();
+    my $current_user = &user_logged_in($ergatis_cfg);
     
     if ( $ergatis_cfg->val('authentication', 'authentication_method') ne 'open' && 
          $ergatis_cfg->val('authentication', 'sudo_pipeline_execution') && $current_user ) {
 
-        $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user->value );
+        $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user );
         
         ## create a token file to indicate that it has been submitted
         open(my $submitted_fh, ">" . $pipeline->path() . '.submitted') || 
@@ -136,6 +136,14 @@ unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
         $pipeline->run( ergatis_cfg => $ergatis_cfg );
     }
 }
+
+## By this point we can probably assume that the pipeline has been created 
+## correctly and we are safe to add the pipeline ID to the users pipeline list
+## This subroutine will only run if the proper flags have been toggled in the 
+## ergatis.ini
+
+## TOOD: Double-check with jorvis that this is ok
+add_pipeline_to_user_pipeline_list( $ergatis_cfg, $pipeline->id() ) if ($pipeline);
 
 ## now redirect to a monitor page
 if ( $$qvars{skip_instantiation} == 0 || $$qvars{skip_run} == 0 ) {

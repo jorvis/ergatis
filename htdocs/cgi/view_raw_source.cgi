@@ -4,6 +4,7 @@ use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::ConfigFile;
+use Ergatis::Common;
 
 my $q = new CGI;
 
@@ -36,6 +37,22 @@ if ($file !~ /\.xml$/ &&
     print STDERR "skipped display of $file in source viewer\n";
     quitNicely("i decline to show this type of file.");
 }
+
+## If our file is a component of a specific pipeline we will want to restrict 
+## access to it if account pipeline security is enabled
+if ( $file =~ m|(.+/(.+?))/workflow/runtime/(.+?)/([A-Z0-9]+)_(.+?)/| ) {
+    my $repository_root = $1;
+    my $project = $2;
+    my $component_name = $3;
+    my $pipeline_id = $4;
+    my $output_token = $5;
+
+    ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+    ## has access to this pipeline.
+    my $auth = validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipeline_id, 1);
+    quitNicely("User does not have authorization to view this resource") if (! $auth);
+}
+
 
 ## open the file and print it to the screen.
 my $ifh;

@@ -20,7 +20,7 @@ my $tmpl = HTML::Template->new( filename => 'templates/pipeline_summary.tmpl',
 my $pipeline = $q->param("pipeline") || die "pass pipeline";
 my $project;
 my $pipelineid;
-if ( $pipeline =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
+if ( $pipeline =~ m|(.+/(.+?))/workflow/runtime/pipeline/([A-Z0-9]+)/| ) {
     $repository_root = $1;
     $project = $2;
     $pipelineid = $3;

@@ -3,6 +3,7 @@ var parent_pipeline = 'X';
 var parent_pipeline_state = 'undefined';
 
 var pipeline_update_req;
+var resetInProgress = false;
 
 var currentResetButton;
 
@@ -10,20 +11,11 @@ var currentResetButton;
 timers['pipeline'] = 11;
 
 $(document).ready(function() {
+    // Handle our 'reset component' popup 
     $('a[name=reset_confirm]').live('click', function(e) {
         e.preventDefault();
 
         if ( $('#dialog').is(':hidden') ) { 
-            // get the current position of th reset button pushed
-	    var scrolledX = document.body.scrollLeft || document.documentElement.scrollLeft || self.pageXOffset;
-	    var scrolledY = document.body.scrollTop || document.documentElement.scrollTop || self.pageYOffset;
-
-	    var screenWidth = document.body.clientWidth || document.documentElement.clientWidth || self.innerWidth;
-	    var screenHeight = document.body.clientHeight || document.documentElement.clientHeight || self.innerHeight;
-
-	    var left = scrolledX + (screenWidth - $("#dialog").width())/2;
-	    var top = scrolledY + (screenHeight - $("#dialog").height())/2;
-
             var resetURL = $(this).attr('href');
             $('#action_yes').attr('href', resetURL);
 
@@ -31,24 +23,36 @@ $(document).ready(function() {
             $(this).css('opacity', '0.4');
             currentResetButton = $(this);
 
-            var winH = $(window).height();
-            var winW = $(window).width();
-
-            //Set the popup window to center
-            //$('#dialog').css('top',  top);
-            //$('#dialog').css('left', left);
             $('#dialog').center();         
-
-            //transition effect
-            //$('#dialog').fadeIn(2000); 
-	      $('#dialog').show();
+	    $('#dialog').show();
         }
     });
 
+    $('.window #action_yes').click(function(e) {
+        $('.window .close').css('opacity', '0.4');
+        $('.window .close').css('cursor', 'default');
+
+        resetInProgress = true;
+
+        $('#spinner').spin({
+            lines: 12,
+            length: 7,
+            width: 4,
+            radius: 10,
+            color: '#000',
+            speed: 1,
+            trail: 60,
+            shadow: false
+        });
+    });
+
     $('.window .close').click(function (e) {
-        e.preventDefault();
-        $('#mask, .window').hide();
-        currentResetButton.css('opacity', '1');
+        if (resetInProgress == false) {
+            e.preventDefault();
+            $('#mask, .window').hide();
+            currentResetButton.css('opacity', '1');
+            currentResetButton.css('cursor', 'pointer');
+        }
     });     
 
     pipelineCountdown();

@@ -71,7 +71,7 @@ use Pod::Usage;
 
 my %options = ();
 my $results = GetOptions (\%options, 
-			  'pipeline_id|i=i',
+			  'pipeline_id|i=s',
               'repository_root|r=s',
               'lock_file|k=s',
               'archive_output|o=i',

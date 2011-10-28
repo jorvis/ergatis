@@ -40,9 +40,16 @@ if ($file !~ /\.xml$/ &&
 
 ## Grab the repository root from our file path
 my $repository_root = "unknown";
-if ( $file =~ m|(.+/(.+?))/workflow/runtime/| ) { 
-        $repository_root = $1; 
-}
+my ($project, $pipelineid);
+if ( $file =~ m|(.+/(.+?))/workflow/runtime/.+?/([A-Z0-9]+)(_.+)?/| ) { 
+    $repository_root = $1; 
+    $project = $2;
+    $pipelineid = $3;
+
+    ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+    ## has access to this pipeline.
+    validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);
+} 
 
 my $progress_image_width = 500;
 

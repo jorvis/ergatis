@@ -18,12 +18,11 @@ my $tmpl = HTML::Template->new( filename => 'templates/pipeline_list.tmpl',
                                 global_vars => 1
                               );
 
+
 my $repository_root = $q->param("repository_root") || die "pass a repository root";
 my $view_page_num = $q->param("page_num") || 1;
 my $view = $q->param('view') || 'pipeline';
 my $max_pages_to_show = 10;
-
-my $json_flag = $q->param("json") || 0;
 
 ## Quota information only availbe if project is in /usr/local/annotation/...
 my $quotastring = &quota_string($repository_root);
@@ -31,12 +30,17 @@ my $quotastring = &quota_string($repository_root);
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $display_codebase = $ergatis_cfg->val( 'display_settings', 'display_codebase') || 0;
 
+my $username = user_logged_in($ergatis_cfg);
+
 my $pipeline_root = "$repository_root/workflow/runtime/pipeline";
 my $project_conf_path = "$repository_root/workflow/project.config";
 my $project_comment_file = "$repository_root/workflow/project.comment";
 my $pipelines_per_page = $ergatis_cfg->val( 'display_settings', 'pipelines_per_page');
 my $errors_found  = 0;
 my $error_msgs = [];
+
+## Should we limit our display list to just those pipelines that the user has created
+my $per_account_pipelines = $ergatis_cfg->val('authentication', 'per_account_pipeline_security') || 0;
 
 if (! -e $project_conf_path ) {
     &record_error("$project_conf_path not found");
@@ -93,13 +97,13 @@ if (! opendir $rdh, "$pipeline_root" ) {
 
 ## If we've run into any errors at this point quit and print our template 
 ## with any errors that occurred.
-if ( scalar @{$error_msgs} ) {
+if (scalar @{$error_msgs}) {
     print $q->header( -type => 'text/html' );
     &print_template();
 }
 
 ## Do some groundwork to setup everything we need to paginate our pipelines.
-my %pipeline_quickstats = get_pipeline_quickstats($rdh, $pipeline_root);
+my %pipeline_quickstats = get_pipeline_quickstats($ergatis_cfg, $rdh, $pipeline_root);
 my $pipeline_count = scalar keys %pipeline_quickstats;
 
 my @pagination_vars = prepare_pipeline_pagination($view_page_num, $repository_root, $max_pages_to_show, $pipelines_per_page, $pipeline_count);
@@ -114,14 +118,8 @@ my @pipelines_to_parse = get_pipeline_ids_range($view, $min_pipeline_pos, $max_p
 my @pipelines_sorted = parse_pipeline_xmls($view, $pipeline_root, $repository_root, \%pipeline_quickstats, \@pipelines_to_parse);
 
 ## Populate the template
-if ($json_flag) {
-    print $q->header( -type => 'application/json' );
-    @pipelines_sorted = generate_json_pipeline_metadata(\@pipelines_sorted);
-    print encode_json \@pipelines_sorted;
-} else {
-    print $q->header( -type => 'text/html' );
-    print_template();
-}
+print $q->header( -type => 'text/html' );
+print_template();
 
 
 #############################################################
@@ -201,6 +199,8 @@ sub print_template {
     $tmpl->param( NEXT_PAGE_URL    => "./pipeline_list.cgi?repository_root=$repository_root&page_num=" . ($view_page_num + 1));
     $tmpl->param( SHOW_PRE_CONTINUATION => $show_pre_continuation );
     $tmpl->param( SHOW_POST_CONTINUATION => $show_post_continuation );
+    $tmpl->param( IS_PER_ACCOUNT_PIPELINES => $per_account_pipelines );
+    $tmpl->param( USER => $username );
 
     ## print the template
     print $tmpl->output();

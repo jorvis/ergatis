@@ -5,14 +5,19 @@ use strict;
 use CGI qw(:standard);
 use CGI::Carp qw(fatalsToBrowser);
 use CGI::Cookie;
+use CGI::Session;
 use Ergatis::ConfigFile;
+use Ergatis::Common;
+use Storable;
 
 my $q = new CGI;
+
 
 ## read the config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $user_attempted = $q->param('login_user');
 my $pass_attempted = $q->param('login_pass');
+my $referer = $q->param('referer_url');
 
 ## for now, this will be a user name
 my $valid_user = '';
@@ -118,19 +123,52 @@ if ( $ergatis_cfg->val('authentication', 'authentication_method') eq 'kerberos' 
 
 
 if ( $valid_user ) {
+ 
+    unless ( $ergatis_cfg->val('authentication', 'session_db_dir') ) {
+        croak("A session database directory is required for authentication to function in Ergatis")
+    }
+    
+    ## We will be using sessions to handle recording state that is tied to the user logged in.
+    ## Specifically here we want to record the users english-readable name
+    my $session = get_session($ergatis_cfg, $valid_user);
+    if ( ! $session->param('username') ) {
+        $session->param('username', $valid_user);  
+        $session->flush();
+    }
 
-    ## set cookie
+    my $pipelines_file = $ergatis_cfg->val('authentication', 'session_db_dir') . "/$valid_user.pipelines";
+    if ( $ergatis_cfg->val('authentication', 'per_account_pipeline_security') ) {
+        my $last_mod = 0;
+        if (-e $pipelines_file) {
+            $session->param( 'pipelines', retrieve($pipelines_file) );
+            $last_mod = (stat ($pipelines_file))[9];
+        }
+
+        $session->param('pipelines_last_mod', $last_mod);
+        $session->flush();
+    }
+
+    ## Use a plain cookie to handle any user state information
     my $c = new CGI::Cookie(-name    =>  'ergatis_user',
-                            -value   =>  $valid_user,
+                            -value   =>  $session->id,
                             -expires =>  '+1M',);
 
     print "Set-Cookie: $c\n";
     
-    ## redirect to the index page
-    print redirect(-uri => "./index.cgi");
+    ## Redirect to the page we just came from. Cookies might be a terrible idea here 
+    ## as they could be spoofed.
+    my %cookies = CGI::Cookie->fetch;
+    my $redirect_url = "./index.cgi";
+
+    if ( $cookies{'ergatis_login_referer'} ) {
+        $redirect_url = $cookies{'ergatis_login_referer'}->value;
+    }
+
+    print redirect(-uri => $redirect_url);
 
 ## if don't pass
 } else {
     ## redirect back to login form
     print redirect(-uri => "./login_form.cgi?failed=1");
 }
+

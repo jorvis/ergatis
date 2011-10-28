@@ -2,7 +2,6 @@
 
 use strict;
 use CGI;
-use CGI::Carp qw(fatalsToBrowser);
 use File::Mirror;
 use File::Basename;
 use XML::Twig;
@@ -25,7 +24,6 @@ if ($pipeline =~ /\.gz/) {
 } else {
     open($pipeline_fh, "<$pipeline") || die "can't read $pipeline: $!";       
 }
-
 
 my $component_cfg = new Ergatis::ConfigFile( -file => $component_ini );
 
@@ -79,6 +77,12 @@ my $twig = new XML::Twig(
 $twig->parse($pipeline_fh);
 $twig->print_to_file("$pipeline.reset");
 run_system_cmd("mv $pipeline.reset $pipeline");
+
+## if we have a pipeline.xml.submitted file present we also want
+## to get rid of it to
+if (-e "$pipeline.submitted") {
+    run_system_cmd("rm $pipeline.submitted");
+}
 
 if(-e "$component_xml"){
     run_system_cmd("mv $component_xml $component_xml.old");

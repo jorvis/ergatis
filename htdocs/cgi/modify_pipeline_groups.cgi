@@ -37,7 +37,7 @@ my $pipeline_root = "$repository_root/workflow/runtime/pipeline";
 my @ids_passed = split(' ', $ids_passed);
 
 for my $id ( @ids_passed ) {
-    next unless ($id =~ /^\d+$/);
+    next unless ($id =~ /^[A-Z0-9]+$/);
     
     if ( -d "$pipeline_root/$id" ) {
 

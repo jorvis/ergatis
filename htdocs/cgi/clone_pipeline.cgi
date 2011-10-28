@@ -14,8 +14,8 @@ my $q = new CGI;
 my $instance = $q->param('instance');
 my $repository_root = $q->param('repository_root');
 my $template_name = "temp$$";
-my ($pipeline_dir) = ($instance =~ /(.*\/pipeline\/\d+\/)pipeline.xml/);
-my ($pipeline_id) = ($instance =~ /.*\/pipeline\/(\d+)\//);
+my ($pipeline_dir) = ($instance =~ /(.*\/pipeline\/[A-Z0-9]+\/)pipeline.xml/);
+my ($pipeline_id) = ($instance =~ /.*\/pipeline\/([A-Z0-9]+)\//);
 my $pipeline_layout = $pipeline_dir."pipeline.layout";
 my @pipeline_configs = glob($pipeline_dir."*.config");
 

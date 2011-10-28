@@ -15,6 +15,7 @@
     <link rel="stylesheet" type="text/css" href="../css/view_pipeline.css">
     <!-- functionality -->
     <script type='text/javascript' src='../javascript/jquery/jquery.min.js'></script>
+    <script type='text/javascript' src='../javascript/spin.min.js'></script>
     <script type='text/javascript' src='../javascript/common.js'></script>
     <script type="text/javascript" src="../javascript/commenting.js"></script>
     <script type="text/javascript" src="../javascript/view_pipeline.js"></script>
@@ -30,10 +31,15 @@
         <div id="dialog" class="window">
             <h3 class='reset-warning'>component reset verification</h3>
             <p>Are you sure you want to reset this component? Please be aware that reseting a component will <span id='delete'>delete all</span> current output.</p>
+            <TMPL_IF NAME="LOGGED_IN">
+	    <TMPL_ELSE>
+	    	<p class='reset-warning'>You are currently not logged into Ergatis. This may cause issues when resetting a component</p>
+            </TMPL_IF>
             <div class='actions'>
                 <a id='action_yes'>Yes</a>
                 <a class='close'>No</a>
             </div>
+            <div id="spinner"></div>
         </div>
     </div>
 

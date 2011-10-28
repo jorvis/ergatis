@@ -112,7 +112,5 @@
     </TMPL_LOOP>
     </table>
 <TMPL_ELSE> <!-- else PIPELINE_COUNT -->
-<p>
-    no pipelines found
-</p>
+    <TMPL_INCLUDE NAME="pipeline_list_empty.tmpl">
 </TMPL_IF> <!-- if PIPELINE_COUNT -->

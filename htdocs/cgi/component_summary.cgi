@@ -55,7 +55,7 @@ my $update_interval = 61;
 ## we can parse some information out of the standardized instance file path
 ##  like: /usr/local/scratch/annotation/EHA1/workflow/runtime/iprscan/30835_default/component.xml
 my ($root_dir, $project, $component, $token, $pipelineid, $component_conf_varreplaced, $component_conf_nonvarreplaced);
-if ($pipeline =~ m|(.+/(.+)/workflow/runtime/(.+?)/(\d+)_(.+?))/component.xml|) {
+if ($pipeline =~ m|(.+/(.+)/workflow/runtime/(.+?)/([A-Z0-9]+)_(.+?))/component.xml|) {
     ($project, $component, $pipelineid, $token) = ($2, $3, $4, $5);
     $component_conf_nonvarreplaced = "$1/$component.$token.user.config";
     $component_conf_varreplaced = "$1/$component.$token.final.config";

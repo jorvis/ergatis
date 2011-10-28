@@ -71,5 +71,3 @@ function showGroupModificationMenu() {
         boxes[i].style.display = 'table-cell';
     }
 }
-
-

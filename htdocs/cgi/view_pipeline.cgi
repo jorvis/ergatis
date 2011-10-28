@@ -10,7 +10,6 @@ use Ergatis::Monitor;
 use HTML::Template;
 use XML::Twig;
 
-
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
 
@@ -28,13 +27,17 @@ my $project = '?';
 my $pipelineid;
 
 ## extract the project
-if ( $xml_input =~ m|(.+/(.+?))/workflow/runtime/pipeline/(\d+)/| ) {
+if ( $xml_input =~ m|(.+/(.+?))/workflow/runtime/pipeline/([A-Z0-9]+)/| ) {
     $repository_root = $1;
     $project = $2;
     $pipelineid = $3;
 } else {
     die "failed to extract a repository_root from $xml_input.  expected a workflow/runtime subdirectory somewhere."
 }
+
+## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+## has access to this pipeline.
+validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);
 
 ## make sure the file exists, check for .gz version
 if (! -f $xml_input ) {
@@ -153,7 +156,8 @@ $tmpl->param( START_TIME          => $starttime );
 $tmpl->param( END_TIME            => $endtime );
 $tmpl->param( LAST_MOD_TIME       => $lastmodtime );
 $tmpl->param( PIPELINE_STATE      => $state );
-$tmpl->param( USER                => $user );
+$tmpl->param( USER                => $user);
+$tmpl->param( LOGGED_IN                => user_logged_in($ergatis_cfg) ? 1 : 0);
 $tmpl->param( RUNTIME             => $runtime );
 $tmpl->param( PROJECT             => $project );
 $tmpl->param( QUOTA_STRING        => $quotastring );

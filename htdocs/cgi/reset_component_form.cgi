@@ -17,15 +17,16 @@ my $pipeline = $q->param('pipeline');
 my $component_ini = $q->param('component_ini');
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => 'ergatis.ini' );
-
+my $pipeline_url = $ENV{HTTP_REFERER};
 my $cgi_script_dir = dirname( File::Spec->rel2abs( __FILE__ ) );
 my $reset_script = "$cgi_script_dir/reset_component.cgi";
 
 ## Check whether or not we are logged-in and if so sudo to the current user 
 ## and execute our reset_component.cgi script as said user.
 my $run_as = user_logged_in($ergatis_cfg);
-$run_as = $run_as->value;
-print STDERR "DEBUG: running as $run_as\n";
+
+## If we get an error we want to redirect to our built-in ergatis error page
+my $error = { 'label' => 'last pipeline viewed', 'url' => $pipeline_url, 'cgi' => $q };
 
 if ($run_as) {
     my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
@@ -49,11 +50,12 @@ if ($run_as) {
     close $reset_fh;                   
     chmod 0775, $reset_shell_script;
 
-    run_system_cmd("sudo -u $run_as $reset_shell_script");
+    run_system_cmd("sudo -u $run_as $reset_shell_script", $error);
 } else{
     run_system_cmd("perl -I $cgi_script_dir/Ergatis $reset_script " .
                    "component=$component component_xml=$component_xml " .
-                   "pipeline=$pipeline component_ini=$component_ini");
+                   "pipeline=$pipeline component_ini=$component_ini ",
+  	  	   $error);
 }
 
 print $q->redirect( -uri => url_dir_path($q) . "view_pipeline.cgi?instance=$pipeline" );
