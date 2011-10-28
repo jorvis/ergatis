@@ -86,7 +86,7 @@ print RefFile2List
 
 PairedEnd = all((os.access(f, os.F_OK) for f in CheckSingleFastq))
 
-if(PairedEnd):
+if(len(CheckSingleFastq) > 0 & PairedEnd):
    for RefFile1 in RefFile1List:
       print "File 1: "+RefFile1
       # De-construct the reference file name.
