@@ -6,6 +6,7 @@ use Pod::Usage;
 use File::Basename;
 use JSON;
 use POSIX qw(strftime);
+$| = 1;
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -38,8 +39,9 @@ my $data_directory = "$options{output_directory}/data";
 my $task_file = $options{output_directory}."/pipeline_tasks.txt";
 my $wait = $options{wait_time} ? $options{wait_time} : 100;
 my $max_pipes = $options{max_pipelines} ? $options{max_pipelines} : 50;
+my $max_pipes_file = "$options{output_directory}/throttle.txt";
 my $resize_interval = 3600;
-my $time_since_resize = $resize_interval;
+my $last_resize = time;
 my $num_retries = $options{num_retries} ? $options{num_retries} : 2;
     
 my $num_running = 0;
@@ -50,6 +52,11 @@ while(!$finished) {
     if(-e $task_file && !(@$pipe_tasks)) {
         print &get_time()." - LOG: Loading task file\n";
         $pipe_tasks = &load_state($task_file);
+        map{
+            if(!$_->{completed}) {
+                $num_running++;
+            }
+        }@$pipe_tasks;
     }
     
     # Load the input list of lists
@@ -57,7 +64,13 @@ while(!$finished) {
         print &get_time()." - LOG: Loading Input Lists\n";
         &load_input_lists();
     }
-    
+    if(-e $max_pipes_file) {
+        print &get_time()." - LOG: Found throttle file\n";
+        my $num = `cat $max_pipes_file`;
+        $num =~ s/[\D]//g;
+        $max_pipes = $num;
+        print &get_time()." - LOG: now throttling to $max_pipes pipelines\n";
+    }
     # Check if any tasks have finished and download the data if they have
     $finished = &check_tasks($pipe_tasks);
     
@@ -67,10 +80,9 @@ while(!$finished) {
     }
     
     # Check that all clusters are the right size (avoids losing all execs)
-    $time_since_resize -= $wait;
-    if($time_since_resize <= 0) {
+    if(time - $last_resize >= $resize_interval) {
         &resize_clusters();
-        $time_since_resize = $resize_interval;
+        $last_resize = time;
     }
     
     print &get_time()." - LOG: Finished with an iteration, waiting $wait seconds\n";
@@ -141,7 +153,7 @@ sub submit_pipeline {
     }
     my $master = '';
     map {if(/MASTER\s+\S+\s+(\S+)\s+/) {$master = $1;}}@ret;
-    print &get_time()." - LOG: Setting the exec queues to 1 slot for master host $master on $fname\_cluster\n";
+    print &get_time()." - LOG: Setting the exec queues to 1 slot and turning off autoshutdown for master host $master on $fname\_cluster\n";
     my $cmd = "/opt/ergatis/global_saved_templates/clovr_lgt_wrapper/set_queue.sh $master";
     `$cmd`;
     if($?) {
@@ -150,7 +162,9 @@ sub submit_pipeline {
     
     # Add instances
     my $num_lines = `wc -l $localfl`;
-    my $num_execs = int($num_lines/2+1);
+    $num_lines =~ s/(\d+)\s+.*/$1/;
+    chomp $num_lines;
+    my $num_execs = $num_lines;
     print &get_time()." - LOG: Resizing cluster $fname\_cluster with $num_execs execs\n";
     my $cmd = "vp-run-metrics -c cluster.CLUSTER_NAME=$fname\_cluster -c pipeline.EXEC_WANT_INSTANCES=$num_execs resize-cluster";
    `$cmd`;
@@ -165,6 +179,7 @@ sub submit_pipeline {
     print &get_time()." - LOG: Writing config options to $output_dir/$fname\_pipeline.config\n";
     my $ipn = $options{input_param_name} ? $options{input_param_name} : 'input.INPUT_TAG';
     my $cmd = "vp-describe-protocols --config-from-protocol=$options{child_config} -c $ipn=$fname -c pipeline.PIPELINE_WRAPPER_NAME=$fname $options{child_config_params} > $output_dir/$fname\_pipeline.config";
+    print &get_time()." - LOG: running $cmd\n";
     `$cmd`;
     if($?) {
        die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
@@ -265,6 +280,7 @@ sub check_tasks {
                     print "Harvesting data from $task->{cluster}\n";
                     &harvest_data($task);
                 }
+                &terminate_cluster($task->{cluster});
                 $task->{completed} = 1;
                 &dump_tasks();
                 $num_running--;
@@ -382,6 +398,12 @@ sub harvest_data {
                 src => $file,
                 dst => "$options{user}\@$options{host}:$options{data_output_directory}/$tag/"
             });
+            print &get_time()." - LOG: Removing $file from the local master.\n";
+            my $cmd = "rm $file";
+            `$cmd`;
+            if($?) {
+               die &get_time()." - FAILURE: Couldn't remove $file\n$cmd\n$?";
+            }            
         }
     }
 }
