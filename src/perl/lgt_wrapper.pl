@@ -75,7 +75,7 @@ while(!$finished) {
     $finished = &check_tasks($pipe_tasks);
     
     # Submit the next task
-    if(@$input_lists) {
+    if(@$input_lists && ($num_running < $max_pipes)) {
         &submit_pipeline(shift(@$input_lists));
     }
     
@@ -101,7 +101,7 @@ sub submit_pipeline {
     my $input = shift;
     my $task = shift;
     my $fname = fileparse($input,qr/\.[^.]*$/);
-    print &get_time()." - LOG: Going to submit $fname since $num_running >= $max_pipes\n";
+    print &get_time()." - LOG: Going to submit $fname since $num_running < $max_pipes\n";
     if(!defined($task) && $num_running >= $max_pipes) {
         return;
     }
