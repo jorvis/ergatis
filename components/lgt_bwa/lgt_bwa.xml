@@ -27,7 +27,7 @@
             <type>RunJavaUnixCommand</type>
             <name>Create SAM file list</name>
             <executable>find</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$; -name '*.sam*'</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR1$; -name '*.sam.gz'</arg>
               <param>
                 <key>stdout</key>
                 <value>$;SAM_OUTPUT_LIST$;</value>
