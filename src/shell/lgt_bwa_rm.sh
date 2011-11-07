@@ -1,6 +1,16 @@
 # This is shell script to delete the FASTQ files which are generated.
 # Author: Ashwinkumar Ganesan.
 
+# forcing the removal of any fastq or sam files that aren't compressed.
+find $1 -name '*.fastq' -exec rm {} \;
+find $1 -name '*.sam' -exec rm {} \;
+
+
+
+
+
+
+exit
 FILENAME_LEN=`expr length $1`
 FILENAME_WITHOUT_LOC=`echo $1 | awk -F"/" '{print $NF}'`
 FILENAME_WITHOUT_LOC_LEN=`expr length $FILENAME_WITHOUT_LOC`
