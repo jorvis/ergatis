@@ -4,7 +4,7 @@
 # forcing the removal of any fastq or sam files that aren't compressed.
 find $1 -name '*.fastq' -exec rm {} \;
 find $1 -name '*.sam' -exec rm {} \;
-
+find $1 -name '*.sai' -exec rm {} \;
 
 
 
