@@ -94,6 +94,7 @@ my $results = GetOptions (\%options,
                           'pvalue|p=s', 
                           'debug=s',
                           'class|c=s',
+                          'do_nothing=s',
                           'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -104,6 +105,10 @@ $logger = $logger->get_logger();
 ## display documentation
 if( $options{'help'} || scalar keys(%options) == 0 ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
+}
+
+if($options{'do_nothing'}) {
+    exit;
 }
 
 if($options{'pvalue'} eq ""){
