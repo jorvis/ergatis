@@ -108,7 +108,7 @@ elsif($options{input_file_list}) {
 
 sub process_file {
     my $file = shift;
-    $file =~ /_(\w+).out$/;
+    $file =~ /_([^_]+).out$/;
     my $type = $1;
     if($type eq 'overall') {
         &_process_overall($file);
