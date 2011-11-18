@@ -28,6 +28,29 @@ $.fn.spin = function(opts) {
 };
 
 /*
+* Makes an input element look un-editable
+*/
+function inputDisplayUneditable(element) {
+    jQuery(element).css('background-color', 'rgb(255, 255, 255)');               
+    jQuery(element).css('borderTop', '0px');               
+    jQuery(element).css('borderLeft', '0px');               
+    jQuery(element).css('borderRight', '0px');               
+    jQuery(element).css('borderBottom', '0px');               
+
+}
+
+/*
+* Makes an input element look editable
+*/
+function inputDisplayEditable(element) {
+    jQuery(this).css('background-color', 'rgb(230,230,230)');               
+    jQuery(this).css('borderTop', '1px solid rgb(160,160,160)');               
+    jQuery(this).css('borderLeft', '1px solid rgb(160,160,160)');               
+    jQuery(this).css('borderRight', '1px solid rgb(160,160,160)');               
+    jQuery(this).css('borderBottom', '1px solid rgb(160,160,160)');               
+}
+
+/*
     this document is for common script portions and shouldn't contain any
     completely ergatis-specific methods.  most should be common house-keeping
     and utility functions or functions javascript should have that don't.

@@ -71,22 +71,18 @@ jQuery(document).ready(function() {
         jQuery('#save_email').show();
     });
 
-    jQuery('#email_input').mouseover(function() {
-        jQuery(this).css('background-color', 'rgb(230,230,230)');               
-        jQuery(this).css('borderTop', '1px solid rgb(160,160,160)');               
-        jQuery(this).css('borderLeft', '1px solid rgb(160,160,160)');               
-        jQuery(this).css('borderRight', '1px solid rgb(160,160,160)');               
-        jQuery(this).css('borderBottom', '1px solid rgb(160,160,160)');               
-
+    jQuery('#email_input').keypress(function(e) {
+        if (e.keyCode == 13) {
+            jQuery('#save_email').mousedown();
+            jQuery('#email_input').blur();
+        }
     });
+
+    jQuery('#email_input').mouseover(inputDisplayEditable(this));
 
     jQuery('#email_input').mouseout(function() {
         if (! jQuery(this).is(":focus")) {
-            jQuery(this).css('backgroundColor', '');               
-            jQuery(this).css('borderTop', '');               
-            jQuery(this).css('borderLeft', '');               
-            jQuery(this).css('borderRight', '');               
-            jQuery(this).css('borderBottom', '');               
+            inputDisplayUneditable(this);
             jQuery('#save_email').hide();
         } 
     });
@@ -96,11 +92,7 @@ jQuery(document).ready(function() {
     });
 
     jQuery('#email_input').blur(function() {
-        jQuery(this).css('backgroundColor', '');               
-        jQuery(this).css('borderTop', '');               
-        jQuery(this).css('borderLeft', '');               
-        jQuery(this).css('borderRight', '');               
-        jQuery(this).css('borderBottom', '');               
+        inputDisplayUneditable(this)
 
         if (! saveClicked ) {
             jQuery(this).val(email_address);
