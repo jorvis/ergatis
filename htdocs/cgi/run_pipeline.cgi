@@ -25,6 +25,8 @@ my $pipeline;
 $$qvars{skip_run} = 0 unless ( exists $$qvars{skip_run} );
 $$qvars{skip_instantiation} = 0 unless ( exists $$qvars{skip_instantiation} );
 
+## Are we enabling email notification?
+my $email_user = $$qvars{email_notify} || "";
 
 ## we're either creating a new pipeline, or re-running
 if ( $$qvars{rerun} ) {
@@ -126,14 +128,14 @@ unless ( $$qvars{skip_instantiation} == 1 || $$qvars{skip_run} == 1 ) {
     if ( $ergatis_cfg->val('authentication', 'authentication_method') ne 'open' && 
          $ergatis_cfg->val('authentication', 'sudo_pipeline_execution') && $current_user ) {
 
-        $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user );
+        $pipeline->run( ergatis_cfg => $ergatis_cfg, run_as => $current_user, email_user => $email_user );
         
         ## create a token file to indicate that it has been submitted
         open(my $submitted_fh, ">" . $pipeline->path() . '.submitted') || 
             die "failed to write token file when the pipeline was started: $!";;
         
     } else {
-        $pipeline->run( ergatis_cfg => $ergatis_cfg );
+        $pipeline->run( ergatis_cfg => $ergatis_cfg, email_user => $email_user );
     }
 }
 

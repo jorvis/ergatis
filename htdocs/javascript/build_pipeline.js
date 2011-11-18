@@ -22,8 +22,11 @@ var pipeline_root_panel_node;
 var component_being_configured;
 var pipeline_insert_location;
 
+var email_address;
+var emailNotify = false;
+var saveClicked = false;
 
-window.onload = function() {
+jQuery(document).ready(function() {
     // make sure the form is reset here.
     document.pipeline.reset();
 
@@ -52,7 +55,72 @@ window.onload = function() {
         pipeline_insert_location = 'pipeline_root';
         selectPipelineTemplate( getObject('autoload_template').value );
     }
-}
+
+    // If someone clicks the 'click to add' button for the email notification 
+    // label we'll need to pop-up our input box
+    jQuery('#add_email').click(function() {
+        jQuery('#email_input').show();
+        jQuery('#save_email').show();
+        jQuery('#add_email').hide();
+        jQuery('#add_email').css('visibility', 'hidden');
+        emailNotify = true;
+    });
+
+    jQuery('#email_input').click(function() {
+        email_address = jQuery(this).val();
+        jQuery('#save_email').show();
+    });
+
+    jQuery('#email_input').mouseover(function() {
+        jQuery(this).css('background-color', 'rgb(230,230,230)');               
+        jQuery(this).css('borderTop', '1px solid rgb(160,160,160)');               
+        jQuery(this).css('borderLeft', '1px solid rgb(160,160,160)');               
+        jQuery(this).css('borderRight', '1px solid rgb(160,160,160)');               
+        jQuery(this).css('borderBottom', '1px solid rgb(160,160,160)');               
+
+    });
+
+    jQuery('#email_input').mouseout(function() {
+        if (! jQuery(this).is(":focus")) {
+            jQuery(this).css('backgroundColor', '');               
+            jQuery(this).css('borderTop', '');               
+            jQuery(this).css('borderLeft', '');               
+            jQuery(this).css('borderRight', '');               
+            jQuery(this).css('borderBottom', '');               
+            jQuery('#save_email').hide();
+        } 
+    });
+
+    jQuery('#save_email').mousedown(function() {
+        saveClicked = true;
+    });
+
+    jQuery('#email_input').blur(function() {
+        jQuery(this).css('backgroundColor', '');               
+        jQuery(this).css('borderTop', '');               
+        jQuery(this).css('borderLeft', '');               
+        jQuery(this).css('borderRight', '');               
+        jQuery(this).css('borderBottom', '');               
+
+        if (! saveClicked ) {
+            jQuery(this).val(email_address);
+        } else {
+            if ( jQuery(this).val() ) {
+                emailNotify = true;
+            } else { 
+                jQuery(this).hide();
+                jQuery('#add_email').show();
+                jQuery('#add_email').css('visibility', 'visible');
+                emailNotify = false;
+            }
+
+            saveClicked = false;
+        }
+
+        jQuery('#save_email').hide();
+    });
+
+});
 
 // we need to pass some linking information about each numbered component ID
 //  that will get passed in the pipeline form submission
@@ -257,6 +325,14 @@ function cancelNewInput() {
 
 function checkAndRunPipeline() {
     if ( checkPipeline() ) {
+        // Quick little hack regarding our email notification. 
+        // If our input is not empty go ahead and replicate it onto our
+        // form
+        var emailInput = jQuery("#email_input").val();
+        if (emailInput && emailNotify) {
+            jQuery("#email_notify").val(emailInput);
+        }
+
         getObject('instantiate').value = 1;
         document.pipeline.submit();
     } else {

@@ -23,6 +23,15 @@ my $repository_root = $q->param('repository_root') || die "need a repository roo
 my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
 my $workflowdocs_dir = $shared_cfg->val( 'project', '$;DOCS_DIR$;' );
 
+## Grab the current logged in user and the email domain (if both of these are specificed)
+## and craft together our email.
+my $email_user = "";
+my $email_domain = $ergatis_cfg->val('workflow_settings', 'email_domain');
+my $username = user_logged_in($ergatis_cfg);
+if ($username && $email_domain) {
+    $email_user = "$username\@$email_domain";
+}
+
 ## make sure the build area exists
 if (! -d $build_area) {
     mkdir($build_area) || die "failed to make build directory $build_area: $!";
@@ -111,6 +120,7 @@ $tmpl->param( BUILD_DIRECTORY => $build_directory );
 $tmpl->param( AUTOLOAD_TEMPLATE => $q->param('autoload_template') || '' );
 $tmpl->param( PIPELINE_COMMENT_FILE => "$build_directory/pipeline.xml.comment" );
 $tmpl->param( PIPELINE_COMMENT => '' );
+$tmpl->param( EMAIL_USER => $email_user );
 $tmpl->param( BUILDER_ANIMATIONS => $ergatis_cfg->val( 'display_settings', 'builder_animations' ) || 0 );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [

@@ -134,6 +134,14 @@
             <a id='save_control' onclick="saveNewInput()"><img src='../images/bullet_disk.png' alt='add input'>save new input</a>
             <a id='cancel_control' onclick="cancelNewInput()"><img src='../images/bullet_delete.png' alt='add input'>cancel</a>
         </div>
+        <div id='email_notification'>
+            <label for='email_input'>
+                email notification:
+                <span id='add_email' class='email_control'>click to add</span>
+            </label>
+            <input type='text' id='email_input' name='email_input' value='<TMPL_VAR NAME=EMAIL_USER>'>
+            <span id='save_email' class='email_control'>save</span>
+        </div>
 <TMPL_INCLUDE NAME="commenting.tmpl">
         <div id='build_area'>
             <div class='pipeline_marker'>start</div>
@@ -167,6 +175,7 @@
             <input name='instantiate' id='instantiate' value='0'>
             <input name='builder_animations' id='builder_animations' value='<TMPL_VAR NAME=BUILDER_ANIMATIONS>'>
             <input name='autoload_template' id='autoload_template' value='<TMPL_VAR NAME=AUTOLOAD_TEMPLATE>'>
+            <input name='email_notify' id='email_notify' value=''>
         </div>
         <div id='locators'>
             <input type='text' class='locator' id='pipeline_root_up' name='pipeline_root_up' value=''>
