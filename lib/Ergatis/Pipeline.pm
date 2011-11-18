@@ -191,6 +191,11 @@ umask(0000);
                 $runstring = "$ENV{'WF_ROOT'}/RunWorkflow -i $self->{path} $marshal_interval_opt ".
                     "--init-heap=$init_heap --max-heap=$max_heap "; 
 
+                ## If email notification is toggled
+                if ($args{email_user}) {
+                    $runstring .= " --notify $args{'email_user'} ";
+                }
+
                 ## Support observer scripts
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts') ) {
                     $runstring .= " --scripts=" . $args{ergatis_cfg}->val('workflow_settings', 'observer_scripts');
