@@ -43,11 +43,11 @@ function inputDisplayUneditable(element) {
 * Makes an input element look editable
 */
 function inputDisplayEditable(element) {
-    jQuery(this).css('background-color', 'rgb(230,230,230)');               
-    jQuery(this).css('borderTop', '1px solid rgb(160,160,160)');               
-    jQuery(this).css('borderLeft', '1px solid rgb(160,160,160)');               
-    jQuery(this).css('borderRight', '1px solid rgb(160,160,160)');               
-    jQuery(this).css('borderBottom', '1px solid rgb(160,160,160)');               
+    jQuery(element).css('background-color', 'rgb(230,230,230)');               
+    jQuery(element).css('borderTop', '1px solid rgb(160,160,160)');               
+    jQuery(element).css('borderLeft', '1px solid rgb(160,160,160)');               
+    jQuery(element).css('borderRight', '1px solid rgb(160,160,160)');               
+    jQuery(element).css('borderBottom', '1px solid rgb(160,160,160)');               
 }
 
 /*

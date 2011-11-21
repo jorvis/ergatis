@@ -78,7 +78,9 @@ jQuery(document).ready(function() {
         }
     });
 
-    jQuery('#email_input').mouseover(inputDisplayEditable(this));
+    jQuery('#email_input').mouseover(function() {
+        inputDisplayEditable(this);
+    });
 
     jQuery('#email_input').mouseout(function() {
         if (! jQuery(this).is(":focus")) {
