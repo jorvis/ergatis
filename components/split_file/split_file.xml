@@ -54,7 +54,7 @@
             <type>RunUnixCommand</type>
             <name>Create file list</name>
             <executable>find</executable>
-            <arg>$;OUTPUT_DIRECTORY$; -name '*.splitlist'</arg>
+            <arg>$;OUTPUT_DIRECTORY$; -name '*.splitlist'|sort -n</arg>
               <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_LIST$;</value>
