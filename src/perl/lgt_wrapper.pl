@@ -81,10 +81,15 @@ while(!$finished) {
     
     # Check that all clusters are the right size (avoids losing all execs)
     if(time - $last_resize >= $resize_interval) {
+        # Check if any tasks have finished and download the data if they have
+        # Need to do this here as well. Don't want to resize if we are finished.
+        $finished = &check_tasks($pipe_tasks);
+        
         &resize_clusters();
         $last_resize = time;
     }
-    
+    print &get_time()." - LOG: Dumping Tasks at the end of an iteration\n";    
+    &dump_tasks();
     print &get_time()." - LOG: Finished with an iteration, waiting $wait seconds\n";
     sleep $wait;
 }
@@ -112,7 +117,7 @@ sub submit_pipeline {
         my $cmd = "mkdir $output_dir";
        `$cmd`;
         if($?) {
-            die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+            die &get_time()." - FAILURE: Failed running:\n\t$cmd\n$?";
         }
     }
     else {
@@ -123,7 +128,8 @@ sub submit_pipeline {
     my $cmd = "vp-start-cluster --cluster=$fname\_cluster --num-exec=0 --cred=$options{credential} -t";
    `$cmd`;
     if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+        &print_error($cmd,$input);
+        return;
     }
     
     # Copy files and decrypt files (if necessary)
@@ -139,8 +145,16 @@ sub submit_pipeline {
     print &get_time()." - LOG: Waiting for cluster $fname\_cluster to come up\n";
     my $cmd = "vp-start-cluster --cluster=$fname\_cluster --num-exec=0 --cred=$options{credential}";
    `$cmd`;
-    if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+    if($?) {     
+        &print_error($cmd,$input);
+        # WORST THING EVER, submitting a bogus cluster to take the place of a good cluster.
+        print  &get_time()." - LOG: Submitting bogus cluster $fname\_bogus to try to recover\n";
+        my $cmd = "vp-start-cluster --cluster=$fname\_bogus --num-exec=0 --cred=$options{credential} -t";
+        `$cmd`;
+        if($?) {
+            &print_error($cmd);
+        }
+        return;
     }
     print &get_time()." - LOG: Cluster $fname\_cluster came up\n";
     
@@ -149,7 +163,8 @@ sub submit_pipeline {
     my $cmd = "vp-describe-cluster --cluster=$fname\_cluster";
     my @ret = `$cmd`;
     if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+        &print_error($cmd,$input);
+        return;
     }
     my $master = '';
     map {if(/MASTER\s+\S+\s+(\S+)\s+/) {$master = $1;}}@ret;
@@ -157,7 +172,8 @@ sub submit_pipeline {
     my $cmd = "/opt/ergatis/global_saved_templates/clovr_lgt_wrapper/set_queue.sh $master";
     `$cmd`;
     if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+        &print_error($cmd,$input);
+        return;
     }    
     
     # Add instances
@@ -169,8 +185,9 @@ sub submit_pipeline {
     my $cmd = "vp-run-metrics -c cluster.CLUSTER_NAME=$fname\_cluster -c pipeline.EXEC_WANT_INSTANCES=$num_execs resize-cluster";
    `$cmd`;
     if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
-    }
+        &print_error($cmd,$input);
+        return;
+    }    
     # Upload tags
     print &get_time()." - LOG: Uploading several tags to $fname\_cluster\n";
     &upload_tags([$fname,@tags_to_upload],"$fname\_cluster");
@@ -182,8 +199,9 @@ sub submit_pipeline {
     print &get_time()." - LOG: running $cmd\n";
     `$cmd`;
     if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
-    }
+        &print_error($cmd,$input);
+        return;
+    }    
     # Run Pipeline
     print &get_time()." - LOG: Running pipeline with $output_dir/$fname\_pipeline.config on $fname\_cluster\n";
 
@@ -194,8 +212,9 @@ sub submit_pipeline {
     my $tid = `$cmd`;
     chomp $tid;
     if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
-    }    
+        &print_error($cmd,$input);
+        return;
+    }      
 
     my $downloads = [];
     map{
@@ -220,9 +239,20 @@ sub submit_pipeline {
     }
     else {
         $newtask->{num_retries} = $task->{num_retries};
+        $newtask->{num_task_retries} = $task->{num_retries};        
         $task = $newtask;
     }
     &dump_tasks();    
+}
+
+sub print_error {
+    my $cmd = shift;
+    my $file = shift;
+    print &get_time()." - FAILURE: Failed running:\n$cmd\n$?";    
+    if($file) {
+        print &get_time()." - LOG: Putting $file back on the list\n";
+        unshift(@$input_lists, $file);        
+    }
 }
 
 sub load_input_lists {
@@ -306,6 +336,13 @@ sub dump_tasks {
 sub terminate_cluster {
     my $cluster = shift;
     
+    print &get_time()." - LOG: Checking status of tasks on $cluster\n";
+    my $cmd = "vp-describe-task --name=$cluster --block";
+    `$cmd`;
+    my $ret = `$cmd`;
+    if($?) {
+        print &get_time()." - WARNING: Task status not available for $cluster, will terminate anyway\n$?";
+    }
     print &get_time()." - LOG: Terminating cluster $cluster\n";
     my $cmd = "vp-terminate-cluster --cluster=$cluster";
     my $ret = `$cmd`;
@@ -388,7 +425,9 @@ sub harvest_data {
         my $cmd = "vp-transfer-dataset --src-cluster=$task->{cluster} --dst-cluster=local --cluster=local --block --tag-name=$tag";
         `$cmd`;
         if($?) {
-            die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+            $task->{num_retries}--;
+            print &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+            next;
         }
         my @files = `vp-describe-dataset --tag-name=$tag|grep FILE|cut -f2`;
         foreach my $file (@files) {
@@ -402,7 +441,7 @@ sub harvest_data {
             my $cmd = "rm $file";
             `$cmd`;
             if($?) {
-               die &get_time()." - FAILURE: Couldn't remove $file\n$cmd\n$?";
+               print &get_time()." - FAILURE: Couldn't remove $file\n$cmd\n$?";
             }            
         }
     }
@@ -417,7 +456,7 @@ sub transfer_file {
     `$cmd`;
 
     if($?) {
-       die &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
+       print &get_time()." - FAILURE: Failed running:\n$cmd\n$?";
     }
 
 }
