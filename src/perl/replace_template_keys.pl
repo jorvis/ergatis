@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 #Create a complete workflow XML file (--output_xml) from a template
 #XML file (--template_xml) that contains a set of placeholders/keys.
 #The config file --component_conf provides a list of key=value pairs.
@@ -21,6 +24,9 @@ use XML::LibXML;
 my %options;
 my $delimeter = '$;';
 my $SKIPTAG='$;SKIP_WF_COMMAND$;';
+## TODO: Figure out a better way to do this mapping
+my $dce_param_map = { 'OS' => "OS", 'EXECUTION_HOST' => "executionHost", 
+                      'WORKINGDIR' => "workingDir", 'reqStartTime' => "reqStartTime" };
 my $results = GetOptions (\%options, 
 			  'keys=s',
 			  #opts for replacing keys in a single template file
@@ -60,7 +66,7 @@ if (exists $options{'iterator_list'}) {
     }
     
     if (! -d $options{'output_dir'}) {
-        $logger->logdie("$options{'output_dir'} is not a valid output directory");
+        logger->logdie("$options{'output_dir'} is not a valid output directory");
     }
     
     $options{'output_dir'} .= "/" if ($options{'output_dir'} !~ /\/$/);
@@ -113,16 +119,10 @@ if (exists $options{'iterator_list'}) {
                      <name>$name</name>
                      <state>incomplete</state>
                      <id>$i</id>
-                     <fileName>$file</fileName>
-                     <dceSpec type=\"sge\">
-                        <OS>linux</OS>\n";
-        #TODO replace with import of DCE spec to allow for addl options
-        if ( $cfg->val( 'project', '$;PROJECT_CODE$;' ) ) {
-            print FILE "                        <group>", $cfg->val( 'project', '$;PROJECT_CODE$;' ), "</group>\n"; 
-        }
-        
-        print FILE " </dceSpec>
-                    </commandSet>\n";
+                     <fileName>$file</fileName>\n";
+
+        print FILE get_dce_spec_parameters($cfg);
+        print FILE " </commandSet>\n";
     }
     print FILE "</commandSet>
                </commandSetRoot>\n";
@@ -147,6 +147,42 @@ else{
 	}
 	&replacekeys($replacevals,$options{'template_xml'},$options{'output_xml'});
     }
+}
+
+#--------------------------------------------------------------------
+# Replaces any DCE spec parameters that have been set by the user 
+# in the interface
+#--------------------------------------------------------------------
+sub get_dce_spec_parameters {
+    my $cfg = shift;
+    my $dce_block = "<dceSpec type=\"sge\">\n";
+
+    if ($cfg->SectionExists('dce')) {
+        for my $parameter ($cfg->Parameters('dce')) {
+            my $val = $cfg->val('dce', $parameter);
+
+            if ($val) {
+                $parameter =~ s/\$;//g;
+                $parameter = exists($dce_param_map->{$parameter}) ? $dce_param_map->{$parameter} : lc($parameter);
+                $dce_block .= "<$parameter>$val</$parameter>\n";
+            }
+        }
+    }
+        
+    ## Kind of kludgy but we want to check if we have the OS parameter 
+    ## in our dceSpec block as this is always required. If not we add it
+    $dce_block .= "<OS>linux</OS>\n" if ($dce_block !~ /<OS>\w+<\/OS>/);
+    
+    ## At this point we may also be missing a group (could be critical 
+    ## depending on your SGE install) and will want to add it.
+    if ($dce_block !~ /<group>.+<\/group>/ && 
+        $cfg->val('project', '$;PROJECT_CODE$;')) {
+        $dce_block .= "<group>" . $cfg->val('project', '$;PROJECT_CODE$;') . 
+                      "</group>\n";
+    }
+
+    $dce_block .= "</dceSpec>\n";
+    return $dce_block;
 }
 
 #
@@ -241,7 +277,7 @@ sub replacekeys{
 	}
 	if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
 	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-	    my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
+        my $new_line = get_dce_spec_parameters($cfg) . $line;
 	    $line = $new_line;
 	    $run_dist_cmd_flag = 0;
 	}
@@ -374,8 +410,7 @@ sub import_xml{
 	    $run_dist_cmd_flag = 0;
 	}
 	if($run_dist_cmd_flag && $line =~ /\<\/command\>/ ) {
-	    my $group = &replaceval('$;PROJECT_CODE$;',$subs);
-	    my $new_line = "        <dceSpec type=\"sge\">\n            <group>$group</group>\n        </dceSpec>\n$line";
+        my $new_line = get_dce_spec_parameters($cfg) . $line;
 	    $line = $new_line;
 	    $run_dist_cmd_flag = 0;
 	}
