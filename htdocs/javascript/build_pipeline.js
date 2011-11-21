@@ -56,6 +56,13 @@ jQuery(document).ready(function() {
         selectPipelineTemplate( getObject('autoload_template').value );
     }
 
+    emailNotify = jQuery('#email_on_default').val();
+
+    if (emailNotify) {
+        jQuery('#add_email').hide();
+        jQuery('#email_input').show();
+    }
+
     // If someone clicks the 'click to add' button for the email notification 
     // label we'll need to pop-up our input box
     jQuery('#add_email').click(function() {

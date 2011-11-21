@@ -23,6 +23,9 @@ my $repository_root = $q->param('repository_root') || die "need a repository roo
 my $shared_cfg = new Ergatis::ConfigFile( -file => "$repository_root/workflow/project.config" );
 my $workflowdocs_dir = $shared_cfg->val( 'project', '$;DOCS_DIR$;' );
 
+## Whether or not to enable email notification by default
+my $email_on_default = $shared_cfg->val('project', '$;EMAIL_NOTIFICATION$;') || 0;
+
 ## Grab the current logged in user and the email domain (if both of these are specificed)
 ## and craft together our email.
 my $email_user = "";
@@ -120,6 +123,7 @@ $tmpl->param( BUILD_DIRECTORY => $build_directory );
 $tmpl->param( AUTOLOAD_TEMPLATE => $q->param('autoload_template') || '' );
 $tmpl->param( PIPELINE_COMMENT_FILE => "$build_directory/pipeline.xml.comment" );
 $tmpl->param( PIPELINE_COMMENT => '' );
+$tmpl->param( EMAIL_ON_DEFAULT => $email_on_default );
 $tmpl->param( EMAIL_USER => $email_user );
 $tmpl->param( BUILDER_ANIMATIONS => $ergatis_cfg->val( 'display_settings', 'builder_animations' ) || 0 );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
