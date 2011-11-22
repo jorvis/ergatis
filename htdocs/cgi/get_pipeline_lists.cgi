@@ -10,7 +10,7 @@ use Ergatis::Monitor;
 use File::Path;
 use HTML::Template;
 use Storable;
-use XML::Twig;
+use XML::LibXML;
 
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
@@ -112,7 +112,8 @@ print $tmpl->output;
 sub get_pipeline_lists {
     my $running_list = [];
     my $active_list  = [];
-    
+    my $parser = XML::LibXML->new();
+
     for ( @$registered_projects ) {
         my $label           = $_->{label};
         my $repository_root = $_->{repository_root};
@@ -151,33 +152,16 @@ sub get_pipeline_lists {
                 next;
             }
 		
-            my $pipeline_file_fh;
-            if ($pipeline_file =~ /\.gz/) {
-                open($pipeline_file_fh, "<:gzip", "$pipeline_file") || die "can't read $pipeline_file: $!"; 
-            } else {
-                open($pipeline_file_fh, "<$pipeline_file") || die "can't read $pipeline_file: $!";       
-            }
-
-            my $twig = new XML::Twig;
-            
-            ## this would otherwise die if the pipeline file is 0 bytes
-            if (! eval { $twig->parse($pipeline_file_fh) } ) {
-                ## note, this would be better handled with some message showing that the file empty
-                next;
-            }
-
-            my $commandSetRoot = $twig->root;
-            my $commandSet = $commandSetRoot->first_child('commandSet');
+            my $doc = $parser->parse_file($pipeline_file);                
+            my $root = $doc->getDocumentElement;
+            my $commandSet = ($root->findnodes('commandSet'))[0];
 
             next if (! $commandSet );
 
-            if ( $commandSet->first_child('state') ) {
-                $state  = $commandSet->first_child('state')->text();
-            }
-            
             ## if the state is 'incomplete', check for a token file that indicates
             #   that this pipeline was submitted to a job manager.  this allows us to
             #   show a 'pending' state of the parent pipeline before the XML is parsed.
+            $state = $commandSet->findvalue('state') || "unknown";
             if ( $state eq 'incomplete' && -e "$pipeline_file.submitted" ) {
                 $state = 'pending';
             }
@@ -192,33 +176,18 @@ sub get_pipeline_lists {
             
             
             my $pipeline_user = getpwuid($filestat->uid);
-            my ($start_time, $end_time, $run_time) = &time_info( $commandSet );
+            my ($start_time, $end_time, $run_time) = time_info_libxml($commandSet);
 
             ## depending on the state, grab the top-level error message if there is one
             ##  there's no use doing this for running pipelines, since workflow won't
             ##  propagate the error until it's finished.
             my $error_message = 0;
             if ( $state eq 'error' || $state eq 'failed' ) {
-                if ( $commandSet->has_child('status') && 
-                     $commandSet->first_child('status')->has_child('message') ) {
-
-                    $error_message = $commandSet->first_child('status')->first_child('message')->text();
-                    
-                    ## handle illegal characters
-                    $error_message = CGI::escapeHTML($error_message);
-                }
+                $error_message = $commandSet->findvalue('status/message') || 0;
+                $error_message = CGI::escapeHTML($error_message);
             }
             
-            my %components = &component_count_hash( $pipeline_file );
-            my $component_count = 0;
-            my $component_aref;
-            foreach my $component (sort keys %components) {
-                $component_count += $components{$component}{count};
-                push @$component_aref, { name => $component, 
-                                         count => $components{$component}{count},
-                                         error_count => $components{$component}{error_count},
-                                       };
-            }
+            my ($component_count, $component_aref) = get_component_list($commandSet);
             
             ## reformat component_count to include a label
             my $component_label = ' component';
