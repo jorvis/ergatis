@@ -175,5 +175,9 @@
 			<state>incomplete</state>
 			<name>pipeline_summary.default</name>
 		</commandSet>
+		<commandSet type="serial">
+			<state=incomplete></state>
+			<name>error_detector.bsml</name>
+		</commandSet>
 	</commandSet>
 </commandSetRoot>
