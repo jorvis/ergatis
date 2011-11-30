@@ -42,7 +42,7 @@
                         </param>
                         <param>
                                 <key>--user</key>
-                                <value>$;USERNAMW$;</value>
+                                <value>$;USERNAME$;</value>
                         </param>
                         <param>
                                 <key>--pass</key>
