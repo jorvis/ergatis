@@ -199,15 +199,17 @@ sub _handle_seq_pair_alignment {
         $comp_annot->_set_value( 'gene_product_name', $gp_name );
     }
 
-    ## If the match is not characterized and contains vague words ('putatative', 'probable', etc.)
+    ## If the match is not characterized and contains vague words ('putative', 'probable', etc.)
     ## then annotation is changed to conserved hypothetical
     if( $self->_is_name_ambiguous( $gp_name ) && !$comp_trusted ) {
         $self->_assign_as_conserved_hypothetical( $comp_annot );
 
     ## We add the string 'possible' to the beginning of uncharacterized 
     ## matches but not to those which were just annotated as a conserved hypothetical
-    } elsif( $confidence_level =~ /BER::uncharacterized/ ) {
-        $gp_name = "possible ".$gp_name;
+    } elsif( $confidence_level =~ /BER::uncharacterized::full::full/ ) {
+	$gp_name =~ s/(putative|possible|probable)\s//gi;
+	$gp_name = "Putative ".lc(substr($gp_name,0,1)).substr($gp_name,1);
+	$comp_annot->_set_value( 'gene_product_name', $gp_name );
     }
 
     ##If the match doesn't have any annotation, assign this
