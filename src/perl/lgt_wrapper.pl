@@ -238,9 +238,10 @@ sub submit_pipeline {
         $num_running++;
     }
     else {
+        print &get_time()." - LOG: Ran $fname on $fname\_cluster with task_id: $tid Old task_id: $task->{task_id}\n";
         $newtask->{num_retries} = $task->{num_retries};
         $newtask->{num_task_retries} = $task->{num_retries};        
-        $task = $newtask;
+        %$task = %$newtask;
     }
     &dump_tasks();    
 }
@@ -329,7 +330,7 @@ sub check_tasks {
 
 sub dump_tasks {
     open OUT, ">$task_file" or die "Unable to open $task_file\n";
-    print OUT to_json($pipe_tasks);
+    print OUT to_json($pipe_tasks,{pretty => 1});
     close OUT;
 }
 
