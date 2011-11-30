@@ -20,7 +20,7 @@
                         <arg>-p -m 777 $;TMP_DIR$;</arg>
                 </command>
                 <command>
-                        <type>RunDistributedCommand</type>
+                        <type>RunUnixCommand</type>
                         <name>error detector</name>
                         <state>incomplete</state>
                         <executable>$;BIN_DIR$;/error_detector</executable>
