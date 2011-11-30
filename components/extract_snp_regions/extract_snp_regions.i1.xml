@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>extract snp regions</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>extract_snp_regions</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/extract_snp_regions</executable>
+            <param>  
+                <key>--ref_genbank</key>
+                <value>$;INPUT_FILE_1$;</value>
+            </param>
+            <param>  
+                <key>--snp_positions</key>
+                <value>$;INPUT_FILE_2$;</value>
+            </param>
+            <param>  
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--flanking_bases</key>
+                <value>'$;FLANKING_BASES$;'</value>
+            </param>
+	<param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+	<commandSet type="serial">
+		<name>SNP verify compute</name>
+		<command>
+			<type>RunUnixCommand</type>
+			<name>snp_verify</name>
+			<state>incomplete</state>
+			<executable>$;BIN_DIR$;/snp_verify</executable>
+			<param>
+				<key>--input_list</key>
+				<value>$;I_FILE_PATH$;</value>
+			</param>
+			<param>
+				<key>--output_dir</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+			</param>
+			<param>  
+				<key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+			</param>
+			<param>
+				<key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+			</param>
+		</command>
+	</commandSet>
+</commandSetRoot>

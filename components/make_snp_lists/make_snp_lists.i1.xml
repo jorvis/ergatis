@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>make snp lists</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>make_snp_lists</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/make_snp_lists</executable>
+            <param>  
+                <key>--ref_genbank</key>
+                <value>$;INPUT_FILE_1$;</value>
+            </param>
+            <param>  
+                <key>--snp_positions</key>
+                <value>$;INPUT_FILE_2$;</value>
+            </param>
+            <param>  
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--blast_list</key>
+                <value>$;PARSED_BLAST_LIST$;</value>
+            </param>
+	<param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,5 +1,12 @@
 next
 ----
+-new component: snp_verify
+-new component: make_snp_lists
+-new component: blast_snp_regions
+-new component: formatdb_snp
+-new component: extract_snp_regions
+-modified BERUniprotParser.pm to correct for BER uncharacterized gene annotations
+-modified post_process_annotations.pl to correct for gene symbols and EC numbers
 -skirret: added pipeline template for predicting SNPs from Assemblies using nucmer.
 -snp-add-gene-info: Fixed issue in snp-add-gene-info when discovering wildcard bases in the reference
 -repeatmasker: changed to support both -lib and -species arguments

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+	<commandSet type="serial">
+		<name>SNP blastn compute</name>
+		<command>
+			<type>RunUnixCommand</type>
+			<name>ncbi-blastn</name>
+			<state>incomplete</state>
+			<executable>$;BIN_DIR$;/blast_snp_regions</executable>
+			<param>
+				<key>--blast_exec</key>
+				<value>/usr/local/bin/blastall</value>
+			</param>
+			<param>
+				<key>--database</key>
+				<value>$;I_FILE_PATH$;</value>
+			</param>
+			<param>
+				<key>--query_list</key>
+				<value>$;QUERY_LIST$;</value>
+			</param>
+			<param>
+				<key>--evalue</key>
+				<value>$;EXPECT$;</value>
+			</param>
+			<param>
+				<key>--filter</key>
+				<value>$;FILTER$;</value>
+			</param>
+			<param>
+				<key>--other_args</key>
+				<value>'$;OTHER_OPTS$;'</value>
+			</param>
+			<param>
+				<key>--output_dir</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+			</param>
+			<param>  
+				<key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+			</param>
+			<param>
+				<key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+			</param>
+		</command>
+		<command>
+			<type>RunUnixCommand</type>
+			<name>parse raw BLAST results</name>
+			<state>incomplete</state>
+			<executable>$;BIN_DIR$;/parse_snp_blast</executable>
+			<param>  
+				<key>--input_dir</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+			</param>
+			<param>
+				<key>--file_extension</key>
+				<value>"raw"</value>
+			</param>
+			<param>  
+				<key>--output_dir</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+			</param>
+		</command>
+	</commandSet>
+</commandSetRoot>
