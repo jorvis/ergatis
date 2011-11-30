@@ -202,6 +202,7 @@
 		<value>$;WORKFLOW_REPOSITORY$;/extract_checksums.stderr</value>
 	    </param>
         <dceSpec type="sge">
+            <group>$;PROJECT_CODE$;</group>
             <OS>linux</OS>
         </dceSpec>
         </command>
@@ -318,6 +319,7 @@
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
 	    </param>
         <dceSpec type="sge">
+            <group>$;PROJECT_CODE$;</group>
             <OS>linux</OS>
         </dceSpec>
 	</command> 
@@ -327,6 +329,10 @@
             <state>incomplete</state>
             <executable>split</executable>
             <arg> -d -l 10000000 $;TMP_DIR$;/checksums.out.sorted.pks $;TMP_DIR$;/checksums.out.splitoffsets.</arg>
+        <dceSpec type="sge">
+            <group>$;PROJECT_CODE$;</group>
+            <OS>linux</OS>
+        </dceSpec>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -430,6 +436,7 @@
 		<value>$;TMP_DIR$;/replace_checksums.stderr</value>
 	    </param>
         <dceSpec type="sge">
+            <group>$;PROJECT_CODE$;</group>
             <OS>linux</OS>
         </dceSpec>
 	</command>

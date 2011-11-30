@@ -56,7 +56,8 @@
                 <name>j_ortholog_clusters distributed work</name>
                 <fileName>$;WORKFLOW_REPOSITORY$;/j_ortholog_clusters_distributed_work.xml.gz</fileName>
                 <dceSpec type="sge">
-                        <OS>linux</OS>
+                <group>$;PROJECT_CODE$;</group>
+                <OS>linux</OS>
                 </dceSpec>
         </commandSet>
   </commandSet>
