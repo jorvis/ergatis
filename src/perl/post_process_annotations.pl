@@ -122,11 +122,13 @@ sub post_process {
     if(defined($gene_symbol->[0])) {
     	$annotation->set_gene_symbol(clean_gene_symbol($gene_symbol->[0]), $gene_source, $gene_source_type);
     }
+    
     ($gene_product_name, $gpn_source, $gpn_source_type) = $annotation->get_gene_product_name;
 
+    &correct_gene_symbol($annotation, $gene_product_name->[0]);
     ## Assign changed GO terms to conserved hypothetical proteins
     &correct_go_terms($annotation, $gene_product_name->[0]);
-
+    &correct_ec_number($annotation, $gene_product_name->[0]);
     ## can we assign any TIGR roles based on common name keyword? It helps if this is after the
     ## clean up function
     my ($tigr_roles, $tr_source, $tr_source_type) = $annotation->get_TIGR_Role;
@@ -205,6 +207,30 @@ sub correct_go_terms {
     	my @new_go = ('GO:0008150', 'GO:0003674', 'GO:0005575');
     	$annotation->set_GO(\@new_go, $go_source, $go_source_type);
      }
+}
+
+sub correct_gene_symbol {
+	my ($annotation, $gene_product) = @_;
+	my ($gene_symbol, $gene_source, $gene_source_type) = $annotation->get_gene_symbol;
+# Gene symbol should be blank if gene product name is "conserved hypothetical protein" or begins with putative 	
+	if (($gene_product eq $chp) || ($gene_product eq "hypothetical protein")) {
+		$annotation->set_gene_symbol("", $gene_source, $gene_source_type);		
+	} 
+	if($gene_product =~ /^putative/i) {
+		$annotation->set_gene_symbol("", $gene_source, $gene_source_type);
+	}
+}
+
+sub correct_ec_number {
+	my ($annotation, $gene_product) = @_;
+	my ($ecs, $source, $type) = $annotation->get_EC;
+# EC number should be blank if gene product name is "conserved hypothetical protein" or begins with putative 	
+	if (($gene_product eq $chp) || ($gene_product eq "hypothetical protein")) {
+		$annotation->set_EC("", $source, $type);
+	} 
+	if($gene_product =~ /^putative/i) {
+		$annotation->set_EC("", $source, $type);
+	}
 }
 
 sub parse_dat_file {
