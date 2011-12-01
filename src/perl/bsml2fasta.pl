@@ -387,6 +387,7 @@ if(! exists $options{'bp_extension'}){
 my $multioutputfh;
 my $byfileoutputfh;
 my $byfileoutputname;
+my $byassemblyoutputfh;
 my $buffer_var;
 my $featurelookup = {};
 my $sequencelookup = {};
@@ -426,7 +427,10 @@ for my $file ( @files ) {
         open ($byfileoutputfh, ">$options{output}/$ifile\.$sf") || $logger->logdie("Unable to write to file $options{output} due to $!");
         $logger->debug("Writing $file output to multi-fasta file $options{output}/$ifile\.$sf") if ($logger->is_debug);
     }
+    elsif($options{format} eq "byassembly") {
 
+
+    }
     my $sequenceid;
     my $featureid;
 
@@ -451,6 +455,10 @@ for my $file ( @files ) {
 			      $sequencelookup->{$params{'id'}}->{'title'} = $params{'title'};
 			      $sequenceid = $params{'id'};
                   $iscircular = 1 if($params{'topology'} && $params{'topology'} eq 'circular');
+
+                  if($params{'class'} eq 'assembly' && $options{format} eq 'byassembly') {
+                      open($byassemblyoutputfh, ">$options{output}/$params{'id'}\.$sf") || $logger->logdie("Unable to write to file $options{output} due to $!");
+                  }
 			  },
 		      'Seq-data'=>
 			  sub{

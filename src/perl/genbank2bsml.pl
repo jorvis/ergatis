@@ -313,7 +313,7 @@ sub parse_genbank_file {
     elsif ($gbr{'polymer_type'} =~ /ds/ ) {
         $gbr{'strand'} = "ds";      
     }
-
+my
     # correct polymer_type (this could be earlier, but then
     # have to change strand setting)
     if ($gbr{polymer_type} eq 'ss-RNA') {

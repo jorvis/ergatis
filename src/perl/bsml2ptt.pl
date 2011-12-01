@@ -20,6 +20,11 @@ my $gene_field          = "locus";
 my $asmbl_seq = '';
 my $asmbl_length;
 my $outdir = '';
+my %feats = ();
+my $output_features = [];
+my $organism_name;
+my $asmbl_id = '';
+
 ## genes with equal or more than this % of Ns will be skiped (warning printed)
 
 
@@ -82,27 +87,27 @@ sub parse_options
 sub convert
 {
     my $twig = new XML::Twig();
-    my %feats = ();
+#    my %feats = ();
 
-    my $output_features = [];
-    my $organism_name;
+#    my $output_features = [];
+#    my $organism_name;
     $twig->setTwigRoots({'Organism' => sub {
                          my ($twig,$elt) = @_;
                          $organism_name = $elt->att('genus')." ".$elt->att('species');
                          },
                          'Feature' => sub { process_feature(\%feats, @_); },
-                         'Sequence' => \&process_seq });
+                         'Sequence' => \&process_seq,
+                         'Feature-group' => sub { process_feature_group(\%feats, $output_features, @_); } 
+                        });
     $twig->parsefile($in);
     $twig = new XML::Twig();
-    $twig->setTwigRoots({'Feature-group' =>
-            sub { process_feature_group(\%feats, $output_features, @_); } });
-    $twig->parsefile($in);
-    process_misc_feats(\%feats);
+    #process_misc_feats(\%feats);
+    &print_file();
+}
 
-    my @srted_feats = sort {$a->{'start'} <=> $b->{'start'}} @$output_features;
-    
-
+sub print_file {
     # First print out headers
+    my @srted_feats = sort {$a->{'start'} <=> $b->{'start'}} @$output_features;
     print $out "$organism_name\n";
     print $out scalar(@srted_feats)." proteins\n";
     print $out "Location\tStrand\tLength\tPID\tGene\tSynonym\tCode\tCOG\tProduct\n";
@@ -116,14 +121,19 @@ sub convert
             print STDERR "Found duplicate genes at $feat->{'start'}..$feat->{'stop'}\n";
         }
     }
+    $output_features = [];
 }
-
 sub process_seq
 {
     my ($twig, $elt) = @_;
     return if $elt->att('class') ne "assembly";
 #    print $out ">Features ", $elt->att('id'), "\n";
-    
+    if($asmbl_id) {
+    print STDERR "Here with $asmbl_id\n";
+        &print_file();
+        close $out;
+    }
+    $asmbl_id = $elt->att('id');
     $out = new IO::File($outdir."/".$elt->att('id').".ptt", "w") or
         die "Error writing tbl to $outdir/$elt->att('id').ptt: $!"
         if $outdir;

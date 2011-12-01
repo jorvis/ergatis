@@ -288,9 +288,10 @@ sub load_state {
     my $file = shift;
     
     open IN, "<$file" or die "Unable to open $file\n";
-    my $text = <IN>;
+    my @text = <IN>;
     close IN;
-    return decode_json($text);
+    my $str = join('',@text);
+    return decode_json($str);
 }
 
 sub check_tasks {

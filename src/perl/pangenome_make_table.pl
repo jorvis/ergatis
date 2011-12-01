@@ -149,6 +149,7 @@ my $genes={};
 print STDERR "Processing results...";
 
 foreach (@results) {
+    #print STDERR "$_->[0] $_->[2]\n";
     if(!$db_filter || ($db_filter->{$_->[0]} && $db_filter->{$_->[2]})) {
         if (!defined($genes->{$_->[0]})) {
             $genes->{$_->[0]} = {};
