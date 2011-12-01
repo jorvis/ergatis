@@ -25,7 +25,7 @@ sub get_annotation {
 sub is_trusted {
     my ($self, $cluster_acc) = @_;
     my $db = $self->{'_db'};
-    return 0 unless( exists( $db->{$cluster_acc} ) );
+    return unless( exists( $db->{$cluster_acc} ) );
     return $db->{$cluster_acc}->{'is_trusted'};
 }
 
