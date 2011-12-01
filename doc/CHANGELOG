@@ -1,5 +1,6 @@
 next
 ----
+-added snp_verification pipeline template
 -new component: snp_verify
 -new component: make_snp_lists
 -new component: blast_snp_regions
