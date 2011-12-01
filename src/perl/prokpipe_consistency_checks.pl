@@ -1,7 +1,7 @@
 #!/usr/local/bin/perl
 
 =head1 NAME
-error_detector.pl
+prokpipe_consistency_checks.pl
     Automated pipeline and database error detection
     Checks BSML files and DB for consistencies and either warns or errors out
 	dependng on the failed check and its severity
@@ -37,7 +37,7 @@ B<--help>
     error_detector.pl -i path/to/files.bmsl.list -o path/to/output/dir
     
     For checking databases:
-    error_detector.pl -d database -h host -u username -p password -o path/to/output/dir
+    prokpipe_consistency_checks.pl -d database -h host -u username -p password -o path/to/output/dir
     
 =head1 CONTACT
     Shaun Adkins
