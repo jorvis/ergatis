@@ -451,6 +451,7 @@ for my $file ( @files ) {
     my $startfuncs = {'Sequence'=>
 			  sub{
 			      my ($expat,$elt,%params) = @_;
+			      my $sf = $options{suffix} ? $options{suffix} : 'fsa';
 			      $sequencelookup->{$params{'id'}}->{'class'} = $params{'class'};		
 			      $sequencelookup->{$params{'id'}}->{'title'} = $params{'title'};
 			      $sequenceid = $params{'id'};
