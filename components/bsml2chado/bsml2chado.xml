@@ -201,10 +201,6 @@
 		<key>stderr</key>
 		<value>$;WORKFLOW_REPOSITORY$;/extract_checksums.stderr</value>
 	    </param>
-        <dceSpec type="sge">
-            <group>$;PROJECT_CODE$;</group>
-            <OS>linux</OS>
-        </dceSpec>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -212,9 +208,6 @@
             <state>incomplete</state>
             <executable>split</executable>
             <arg> -d -l $;SORT_CHUNK_SIZE$; $;TMP_DIR$;/checksums.out  $;TMP_DIR$;/checksums.out.split.</arg>
-        <dceSpec type="sge">
-            <OS>linux</OS>
-        </dceSpec>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -277,9 +270,6 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/merge_sorted_files</executable>
             <arg> $;TMP_DIR$;/sortedfiles.list $;TMP_DIR$;/checksums.out.sorted -k1,1 -k2,2n -T $;TMP_DIR$;</arg>
-        <dceSpec type="sge">
-            <OS>linux</OS>
-        </dceSpec>
         </command>
 	<command>
 	    <type>RunDistributedCommand</type>
@@ -318,10 +308,6 @@
 		<key>--output_file</key>
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
 	    </param>
-        <dceSpec type="sge">
-            <group>$;PROJECT_CODE$;</group>
-            <OS>linux</OS>
-        </dceSpec>
 	</command> 
         <command>
             <type>RunDistributedCommand</type>
@@ -329,10 +315,6 @@
             <state>incomplete</state>
             <executable>split</executable>
             <arg> -d -l 10000000 $;TMP_DIR$;/checksums.out.sorted.pks $;TMP_DIR$;/checksums.out.splitoffsets.</arg>
-        <dceSpec type="sge">
-            <group>$;PROJECT_CODE$;</group>
-            <OS>linux</OS>
-        </dceSpec>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -395,9 +377,6 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/merge_sorted_files</executable>
             <arg> $;TMP_DIR$;/sortedoffsetsfiles.list $;TMP_DIR$;/checksums.out.sorted.pks.offsets -k1,1 -k2,2n -T $;TMP_DIR$;</arg>
-        <dceSpec type="sge">
-            <OS>linux</OS>
-        </dceSpec> 
         </command>
 	<command>
 	    <type>RunUnixCommand</type>
@@ -435,10 +414,6 @@
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/replace_checksums.stderr</value>
 	    </param>
-        <dceSpec type="sge">
-            <group>$;PROJECT_CODE$;</group>
-            <OS>linux</OS>
-        </dceSpec>
 	</command>
 	<command>
 	    <type>RunUnixCommand</type>
