@@ -58,12 +58,12 @@ B<--help,-h>
 
 =head1 OUTPUT
 
-	The first 12 columsn are the same as those output from show-snps [see show-snps documentation for 
+	The first 12 columns are the same as those output from show-snps [see show-snps documentation for 
 	description of columns]:
 	p1, ref_base, query_base, p2, buff, dist, len_r, len_q, frm1, frm2, ref_contig, query_contig
 
 	This script will add these additional columns:
-	gene_id, position_in_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_amino_acid, query_codon, query_amino_acid, num_homopolymer
+	gene_id, gene_start, gene_stop, position_in_gene, snps_per_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_amino_acid, query_codon, query_amino_acid, num_homopolymer
 
 =head1  CONTACT
 
@@ -91,8 +91,8 @@ my $seq_cache = {};
 my %codons;
 my ($P1, $REF_BASE, $QUERY_BASE, $P2, $BUFF, $DIST, $LEN_R, $LEN_Q, $FRM1, $FRM2, $REF_CONFIG, $QUERY_CONFIG) =
 	(0 .. 11); #SNPs file columns
-my ($GENE_ID, $POS_IN_GENE, $SYN_NONSYN, $PRODUCT, $GENE_DIRECTION, $REF_CODON, $REF_AMINO_ACID, $QUERY_CODON, $QUERY_AMINO_ACID, $NUM_HOMOPOLYMER) =
-	(0 .. 9); # Additional Columns
+my ($GENE_ID, $GENE_START, $GENE_STOP, $POS_IN_GENE, $SYN_NONSYN, $PRODUCT, $GENE_DIRECTION, $REF_CODON, $REF_AMINO_ACID, $QUERY_CODON, $QUERY_AMINO_ACID, $NUM_HOMOPOLYMER) =
+	(0 .. 11); # Additional Columns
 ####################################################
 
 my %options;
@@ -143,7 +143,7 @@ sub parse_and_print_snps {
 	my ($infh, $outfh, $subref) = @_;
 	
 	print $outfh join("\t", qw(p1 ref_base query_base p2 buff dist len_r len_q frm1 frm2 ref_contig query_contig) )."\t";
-	print $outfh join("\t", qw(gene_id position_in_gene syn_nonsyn product gene_direction ref_codon ref_amino_acid) )."\t";
+	print $outfh join("\t", qw(gene_id gene_start gene_stop position_in_gene syn_nonsyn product gene_direction ref_codon ref_amino_acid) )."\t";
 	print $outfh join("\t", qw(query_codon query_amino_acid) )."\n";
 	
 	while( my $line = <$infh> ) {
@@ -154,44 +154,51 @@ sub parse_and_print_snps {
 	}
 }
 
-# gene_id, position_in_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_amino_acid, query_codon, query_amino_acid
+# gene_id, gene_start, gene_stop, position_in_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_amino_acid, query_codon, query_amino_acid
 sub additional_columns {
-	my ($rsnploc, $qsnploc, $refbase, $querybase, $qorient, $ref, $query) = ($_[0], $_[3], $_[1], $_[2], $_[9], $_[10], $_[11]);
-	my @retval;
+  my ($rsnploc, $qsnploc, $refbase, $querybase, $qorient, $ref, $query) = ($_[0], $_[3], $_[1], $_[2], $_[9], $_[10], $_[11]);
+  my @retval;
 
-	# Is the SNP within a gene?
-	my @ols = $iTree->searchInterval( $rsnploc, $rsnploc );
+  # Is the SNP within a gene?
+  my @ols = $iTree->searchInterval( $rsnploc, $rsnploc );
 
-	# If the SNP is not within a gene, all NA
-	return join("\t", qw(intergenic NA NA NA NA NA NA NA NA) ) if( @ols == 0 );
+  # If the SNP is not within a gene, all NA
+  return join("\t", qw(intergenic NA NA NA NA NA NA NA NA NA NA) ) if( @ols == 0 );
 
-	my ($gene_id, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh) = ([],[],[],[],[],[],[],[],[],[]);
-	foreach my $ol ( @ols ) {
-		my @ret = &process_overlap( $rsnploc, $qsnploc, $refbase, $ref, $querybase, $query, $qorient, $ol );
-		push( @{$gene_id}, $ret[$GENE_ID] );
-		push( @{$pos_in_gene}, $ret[$POS_IN_GENE] );
-		push( @{$syn}, $ret[$SYN_NONSYN] );
-		push( @{$prod}, $ret[$PRODUCT] );
-		push( @{$strand}, $ret[$GENE_DIRECTION] );
-		push( @{$rcodon}, $ret[$REF_CODON] );
-		push( @{$raa}, $ret[$REF_AMINO_ACID] );
-		push( @{$qcodon}, $ret[$QUERY_CODON] );
-		push( @{$qaa}, $ret[$QUERY_AMINO_ACID] );
-		push( @{$numh}, $ret[$NUM_HOMOPOLYMER] );
+  my ($gene_id, $gene_start, $gene_stop, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh) = 
+	([],[],[],[],[],[],[],[],[],[],[],[]);
+  foreach my $ol ( @ols ) {
+	my @ret = &process_overlap( $rsnploc, $qsnploc, $refbase, $ref, $querybase, $query, $qorient, $ol );
+	push( @{$gene_id}, $ret[$GENE_ID] );
+	push( @{$gene_start}, $ret[$GENE_START] );
+	push( @{$gene_stop}, $ret[$GENE_STOP] );
+	push( @{$pos_in_gene}, $ret[$POS_IN_GENE] );
+	push( @{$syn}, $ret[$SYN_NONSYN] );
+	push( @{$prod}, $ret[$PRODUCT] );
+	push( @{$strand}, $ret[$GENE_DIRECTION] );
+	push( @{$rcodon}, $ret[$REF_CODON] );
+	push( @{$raa}, $ret[$REF_AMINO_ACID] );
+	push( @{$qcodon}, $ret[$QUERY_CODON] );
+	push( @{$qaa}, $ret[$QUERY_AMINO_ACID] );
+	push( @{$numh}, $ret[$NUM_HOMOPOLYMER] );
+  }
+  my @cols;
+  my $count = 0;
+  map { 
+	  
+	if ( @{$_} == 0 || !defined( $_->[0] ) ) {
+	  print "BAD THINGS [$count]\n";
+	  die Dumper( ($gene_id, $gene_start, $gene_stop, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh) );
+	  exit(1);
 	}
-	my @cols;
-	map { 
-		if( @{$_} == 0 || !defined( $_->[0] ) ) {
-			print Dumper( ($gene_id, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh) );
-			exit(1);
-		}
-		push(@cols, join("/", @{$_}) );
-	} ($gene_id, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh);
-	return join("\t", @cols);
+	push(@cols, join("/", @{$_}) );
+	$count++;
+  } ($gene_id, $gene_start, $gene_stop, $pos_in_gene, $syn, $prod, $strand, $rcodon, $raa, $qcodon, $qaa, $numh);
+  return join("\t", @cols);
 }
 
 
-# gene_id, position_in_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_amino_acid, query_codon, query_amino_acid
+# gene_id, gene_start, gene_stop, position_in_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_amino_acid, query_codon, query_amino_acid
 sub process_overlap {
 	my ($rsnploc, $qsnploc, $refbase, $ref, $querybase, $query, $qorient, $ol) = @_;
 
@@ -248,7 +255,7 @@ sub process_overlap {
 	# doesn't really make sense. Do the same if this is an indel.
 	if( !exists( $reference_genes{$gene_id}->{'CDS'} ) || $refbase eq '.' || $querybase eq '.') {
 		my $product = $reference_genes{$gene_id}->{'product'} || "NA";
-		return ($gene_id, $pos_in_gene, "NA", $product, 
+		return ($gene_id, $start, $end, $pos_in_gene, "NA", $product, 
 				$reference_genes{$gene_id}->{'strand'}, "NA", "NA", "NA", "NA", $numh);
 	}
 
@@ -291,7 +298,7 @@ sub process_overlap {
 	my $qaa = &translate_codon( $querycodon );
 	my $syn = ( $refaa eq $qaa ) ? "SYN" : "NSYN";
 
-	return ($gene_id, $pos_in_gene, $syn, $reference_genes{$gene_id}->{'product'}, 
+	return ($gene_id, $start, $end, $pos_in_gene, $syn, $reference_genes{$gene_id}->{'product'}, 
 			$reference_genes{$gene_id}->{'strand'}, $refcodon, $refaa, $querycodon, $qaa, $numh);
 	
 }

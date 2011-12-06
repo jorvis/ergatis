@@ -2,7 +2,7 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>nucmer-delta-filter</name>
+        <name>snp-add-gene-info</name>
 
 		<!--Preprocessing-->
         <command>
