@@ -101,8 +101,14 @@
 		<commandSet type="parallel">
 			<state>incomplete</state>
 			<commandSet type="serial">
-				<state>incomplete</state>
-				<name>bsml2interevidence_fasta.default</name>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>bsml2interevidence_fasta.default</name>
+				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>ncbi-blastx.interevidence_search</name>
+				</commandSet>
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
