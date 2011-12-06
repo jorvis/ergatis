@@ -1,5 +1,7 @@
 next
 ----
+-added the ability to set an email through which to receieve pipeline status updates on completion or failure
+-added ability to specify SGE directives on the component level through the interface
 -nucmer-snp2merged: added new component
 -added snp_verification pipeline template
 -new component: snp_verify
