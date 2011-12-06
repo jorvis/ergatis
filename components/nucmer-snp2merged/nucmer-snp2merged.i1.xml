@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>nucmer-snp2merged</name>
+
+		<!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+		<!-- end of preprocessing -->
+
+		<!-- Processing -->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>nucmer-snp2merged</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/nucmer-snp2merged</executable>
+			<param>
+			    <key>--output_file</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.merged.tab</value>
+			</param>
+			<param>
+			    <key>--input_file</key>
+				<value>$;I_FILE_PATH$;</value>
+			</param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.snps</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+		<!-- end of processing -->
+    </commandSet>
+</commandSetRoot>

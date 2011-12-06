@@ -1,0 +1,46 @@
+<!-- component documentation -->
+
+<p>
+    This component reads the no_indels output from snp-add-gene-info
+	and formats the output to a 'MergedTable' (described below).
+</p>
+<h3>Input</h3>
+<p>
+	Input should be the tab delimited output from snp-add-gene-info. Described below:
+
+	The first 12 columns are the same as from the show-snps program from nucmer [see nucmer show-snps documentation
+	for description of columns]:
+	p1, ref_base, query_base, p2, buff, dist, len_r, len_q, frm1, frm2, ref_contig, query_contig
+
+	This script will add these additional columns:
+	gene_id, gene_start, gene_stop, position_in_gene, snps_per_gene, syn_nonsyn, product, gene_direction, 
+	ref_codon, ref_amino_acid, query_codon, query_amino_acid, num_homopolymer
+	
+</p>
+<h3>Output</h3>
+<p>
+	The merged table format is an internal format which allows the user to see a single SNP on one line (including the 
+	base in each of the represented queries). It also includes a few other columns which can aid in SNP analysis. This is
+	also a tab delimited format. See below for documentation on the format:
+
+	molecule:        An identifier for the molecule.
+ 	refpos:          Position of SNP in reference
+ 	syn?:            SYN or NSYN if within gene, 'NA' otherwise
+ 	refbase:         The base in the reference
+ 	<queries>:       Variable number of columns, one for each query. The value will be the base of the SNP in the query. 
+    	             If the region was not found in the query, the string 'No Hit' will be here.
+ 	gene_name:       If the SNP is with a gene, the name of that gene, otherwise the string 'None'
+ 	product:         The common name of the gene this SNP is within. The string "intergenic" if not in a gene
+ 	gene_start:      Start of the gene.
+ 	gene_stop:       Stop of the gene.
+ 	gene_length:     Length of gene if SNP is within gene.
+ 	snps_per_gene:   The number of SNPs in this gene.
+ 	pos_in_gene:     Position of SNP within gene.
+ 	ref_codon:       The reference codon
+ 	ref_aa:          The reference amino acid.
+ 	query_codon:     The query codon (if multiple, separated by /, example ACT/AGT)
+ 	query_aa:        The query amino acid (if multiple, separatedy by /, example T/S)
+ 	<num_hits>:      A column for each query, listing the number of hits from blast results [used in snp-verify]. Optional.
+ 	properties:      Column of key-value pairs in the format of <key>=<value> (ex. verfified=false) separated by
+   	                 semi-colons. Optional.
+</p>
