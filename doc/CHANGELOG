@@ -1,5 +1,6 @@
 next
 ----
+Changed CommonNameAnnotation.pm to remove the rule for gene starting with 'Y'
 -p_func: Change most of bsml parsing for BERUniprotParser to use XML::LibXML
 -snp-add-gene-info: Fixed some typos in component files
 -added the ability to set an email through which to receieve pipeline status updates on completion or failure

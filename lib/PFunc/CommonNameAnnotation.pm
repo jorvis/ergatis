@@ -175,7 +175,8 @@ sub clean_common_name {
     
     ## any gene symbol family starting with Y or beginning with ZB locus should be a conserved hypothetical
     #   ex. YfiH family COG1496 family protein -> conserved hypothetical protein
-    if ( $new_product_name =~ m|Y\S*[A-Z] family| || $new_product_name =~ /^\s*(Z|B)\d+\s+gene\s+product/ ) {
+#    if ( $new_product_name =~ m|Y\S*[A-Z] family| || $new_product_name =~ /^\s*(Z|B)\d+\s+gene\s+product/ ) {
+     if ($new_product_name =~ /^\s*(Z|B)\d+\s+gene\s+product/) {
         $new_product_name = $chp;
     }
     
