@@ -28,6 +28,7 @@ use CGI;
 use CGI::Carp qw(fatalsToBrowser);
 use Ergatis::ConfigFile;
 use HTML::Template;
+use File::Basename;
 
 my $q = new CGI;
 print $q->header( -type => 'text/html' );
@@ -55,11 +56,19 @@ if ( -e $component_ini ) {
     
     ## read this config file
     my $component_cfg = new Ergatis::ConfigFile( -file => $component_ini );
-    
+
+    ## A configuration file that contains a set of common parameters that should
+    ## be in every component
+    my $common_ini = dirname($component_ini) . "/shared_parameters.config";
+    if (-e $common_ini) {
+        my $common_cfg = new Ergatis::ConfigFile( -file => $common_ini );
+        $component_cfg->merge_configs($common_cfg);
+    }
+
     ## it's possible that later the first dd could be comments and the second the value
     for my $section ( $component_cfg->Sections() ) {
         my $section_type = 'basic';
-        if ($section =~ /workflowdocs|include|component|interface/) {
+        if ($section =~ /workflowdocs|include|component|interface|dce/) {
             $section_type = 'advanced';
         }
        

@@ -50,11 +50,19 @@ if ( $ergatis_cfg->val('grid', 'grid_enabled') == 0 ) {
 ## loop through each element of the template and replace with the user's settings.
 ## open the template for this component
 open(my $template_fh, "<$docs_dir/$component_name.config") || die "failed to find template file for $component_name in $docs_dir: $!";
+my @config_template_lines = <$template_fh>;
+
+if (-e "$docs_dir/shared_parameters.config") {
+    open(my $common_template_fh, "<$docs_dir/shared_parameters.config") || die "failed to find shared_parameters.config in $docs_dir: $!";
+    my @common_lines = <$common_template_fh>;
+    @config_template_lines = (@config_template_lines, @common_lines);
+}
 
 ## open the output component file
 open(my $user_fh, ">$build_directory/$component_name.$output_token.config") || die "can't create temporary component file; $!";
 
-while (my $line = <$template_fh>) {
+#while (my $line = <$template_fh>) {
+for my $line (@config_template_lines) {
     chomp $line;
     
     ## if this isn't a comment and has an X = Y pattern
