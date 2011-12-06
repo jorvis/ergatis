@@ -46,7 +46,6 @@ EvidenceParser.pm - used to parse evidence files for use in Annotation
 
 =cut
 
-
 use strict;
 use warnings;
 use Carp;
@@ -201,19 +200,19 @@ sub parse {
 
     ## do we need to parse the feature_lookup bsml?
     if( !defined($self->{'_lookup'}) && $self->bsml ) {
-        ## parse the bsml files to create id lookup
-        print "Parsing bsml feature lookup\n";
-        my $fr = new BSML::FeatureRelationshipLookup( 'bsml' => $self->bsml );
-        $self->{'_lookup'} = $fr;
+	  ## parse the bsml files to create id lookup
+	  $self->log("Parsing bsml feature lookup");
+	  my $fr = new BSML::FeatureRelationshipLookup( 'bsml' => $self->bsml );
+	  $self->{'_lookup'} = $fr;
     }
 
-    print "Pre parse\n";
+    $self->log("Starting pre_parse");
     $self->_pre_parse;
 
     my $total = scalar( @{$evidence} );
     my $count = 0;
 
-    print "starting evidence parse\n";
+    $self->log("starting evidence parse");
     foreach my $ev ( @{$evidence} ) {
         my $in = &open_file( $ev, 'in' );
         $self->_parse( $in );
@@ -221,6 +220,13 @@ sub parse {
         print "\r$count/$total";
         close( $in );
     }
+	$self->log("finishing evidence parse");
+}
+
+sub log {
+  my ($self, $msg) = @_;
+  my $time = localtime();
+  print "[$time] $msg\n";
 }
 
 ############ private subroutines ################

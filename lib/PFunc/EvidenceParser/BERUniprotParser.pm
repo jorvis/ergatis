@@ -4,12 +4,12 @@ use strict;
 use warnings;
 use Carp;
 use XML::Twig;
+use XML::LibXML;
 use File::OpenFile qw( open_file );
 use Carp qw(cluck);
 use PFunc::EvidenceParser::ConservedHypothetical;
 use PFunc::Annotation;
 use UnirefAnnotation::Lookup;
-#use UnirefClusters::Database;
 use Data::Dumper;
 
 use base qw(PFunc::EvidenceParser);
@@ -50,6 +50,7 @@ sub _init_ber_parser {
     
     ## initialize instance vars
     $self->{'_seq_lengths'} = {};
+	$self->{'_specific_seq_lengths'} = {};
     $self->{'_seq_ids'} = {};
     $self->{'_sequence_titles'} = {};
 
@@ -76,29 +77,30 @@ sub _pre_parse {
 }
 
 sub _parse_sequence_lengths {
-    my ($self, $bsmls) = @_;
-    my $twig = new XML::Twig( 'twig_roots' => {
-        'Sequence' => sub {
-            my ($t,$e) = @_;
-            my $id = $e->att('id');
-            my $len = $e->att('length');
-            $self->_seq_length( $id, $len )
-                if( defined( $len ) && defined( $id ) );
-        },
-        'Feature' => sub {
-            my($t, $e) = @_;
-            my $id = $e->att('id');
-            my $intloc = $e->first_child('Interval-loc');
-            my ($start,$end) = ($intloc->att('startpos'), $intloc->att('endpos'));
-            $self->_seq_length( $id, $end-$start );
-        }
-    } );
+  my ($self, $bsmls) = @_;
+  my $twig = new XML::Twig('twig_roots' => {'Sequence' => sub {
+											  my ($t,$e) = @_;
+											  my $id = $e->att('id');
+											  my $len = $e->att('length');
+											  $self->_seq_length( $id, $len )
+												if ( defined( $len ) && defined( $id ) && !$self->_seq_length( $id ) );
+											},
+											'Feature[@class="CDS"]' => sub { $self->_store_feature_length( @_ ) },
+											} );
 
-    foreach my $bsml( @{$bsmls} ) {
-        my $in = open_file( $bsml, 'in' );
-        $twig->parse( $in );
-        close($in);
-    }
+  foreach my $bsml ( @{$bsmls} ) {
+	my $in = open_file( $bsml, 'in' );
+	$twig->parse( $in );
+	close($in);
+  }
+}
+
+sub _store_feature_length {
+  my ($self, $t, $e) = @_;
+  my $id = $e->att('id');
+  my $intloc = $e->first_child('Interval-loc');
+  my ($start,$end) = ($intloc->att('startpos'), $intloc->att('endpos'));
+  $self->_seq_length( $id, $end-$start ) unless( $self->_seq_length( $id ) );
 }
 
 #######################################################
@@ -107,19 +109,28 @@ sub _parse_sequence_lengths {
 sub _parse {
     my ($self, $fh) = @_;
 
-    my $twig = new XML::Twig( 'twig_handlers' => {
-        'Sequence' => sub { $self->_handle_sequence(@_) },
-        'Seq-pair-alignment' => sub { $self->_handle_seq_pair_alignment(@_) },
-    });
+	#print "\n".scalar(keys %{$self->{"_seq_lengths"}} )." keys in length hash\n";
 
-    $twig->parse($fh);
+	my $parser = new XML::LibXML;
+	my $doc = $parser->parse_fh( $fh );
+
+	foreach my $seq ( $doc->findnodes("//Sequence") ) {
+	  $self->_handle_sequence( $seq );
+	}
+
+	foreach my $spa ( $doc->findnodes("//Seq-pair-alignment") ) {
+	  $self->_handle_seq_pair_alignment( $spa );
+	}
+
+	$self->{'_specific_seq_length'} = {};
+						   
 }
 
 sub _handle_sequence {
-    my ($self, $twig, $seq) = @_;
+    my ($self, $seq) = @_;
     
     # grab the id
-    my $id = $seq->att('id') or 
+    my $id = $seq->getAttribute('id') or 
         die("failed to get ID attribute of Sequence in BER alignment file");
 
     ## grab the sequence length. If we already have a length for this sequence don't
@@ -128,16 +139,16 @@ sub _handle_sequence {
     ## this from the gene describing bsml that was passed in.  If this wasn't passed
     ## will use lengths from this file.
     unless( $self->_seq_length( $id ) ) {
-        $self->_seq_length( $id, $seq->att('length') ) or 
+        $self->_specific_seq_length( $id, $seq->getAttribute('length') ) or 
             return;
     }
 }
 
 sub _handle_seq_pair_alignment {
-    my ($self, $twig, $spa) = @_;
+    my ($self, $spa) = @_;
  
-    my $ref_id = $spa->att('refseq');
-    my $comp_id = $spa->att('compseq');
+    my $ref_id = $spa->getAttribute('refseq');
+    my $comp_id = $spa->getAttribute('compseq');
 
     ## get the correct annotation id (i.e. if we are annotating on transcript)
     ## we need db1.transcript.123456.1 instead of the CDS id
@@ -154,7 +165,7 @@ sub _handle_seq_pair_alignment {
 
     ## Grab the cluster id and see if the match is characterized
     my $db = $self->{'_uniref_clusters_annot'};
-    my $comp_trusted = $db->is_trusted( $comp_id );
+    my $comp_trusted = 1;#$db->is_trusted( $comp_id );
     
     ## assign confidence level
     my ($query_coverage, $subject_coverage) = $self->_calculate_spr_coverage( $ref_id, $comp_id, $spa );
@@ -330,14 +341,14 @@ sub _match_passes_cutoff {
     my $retval = 0;
 
     # should only have 1 spr
-    my @sprs = $spa->children('Seq-pair-run');
+	my @sprs = $spa->findnodes("Seq-pair-run");
     die("SPA had more than one SPR.  Is this supposed to happen with BER results?")
         unless( @sprs == 1 );
     my $spr = shift @sprs;
 
-    my ($attribute) = $spr->find_nodes('Attribute[@name="percent_identity"]');
+    my ($attribute) = $spr->findnodes('Attribute[@name="percent_identity"]');
     if( $attribute ) {
-        my $per_id = $attribute->att('content');
+        my $per_id = $attribute->getAttribute('content');
         $retval = 1 if( $per_id >= $percent_id_cutoff );
     } else {
         die("Could not find percent identity from spr");
@@ -350,7 +361,7 @@ sub _match_passes_cutoff {
 sub _calculate_spr_coverage {
     my ($self, $query_id, $subject_id, $spa) = @_;
     
-    my @sprs = $spa->children( 'Seq-pair-run' );
+    my @sprs = $spa->findnodes( 'Seq-pair-run' );
 
     #I'm pretty sure ber will only ever have one of these
     die("There were multiple Seq-pair-run children for this Seq-pair-alignment.")
@@ -358,10 +369,13 @@ sub _calculate_spr_coverage {
     my $spr = $sprs[0];
 
     my $query_length = $self->_seq_length( $query_id );
-    my $subject_length = $self->_seq_length( $subject_id );
+    my $subject_length = $self->_specific_seq_length( $subject_id );
+	
+	die("Could not get length for $query_id") unless( $query_length );	
+	die("Could not get length for $subject_id") unless( $subject_length );
     
-    my $query_hit_length = $spr->att('runlength');
-    my $subject_hit_length = $spr->att('comprunlength');
+    my $query_hit_length = $spr->getAttribute('runlength');
+    my $subject_hit_length = $spr->getAttribute('comprunlength');
 
     my $query_per_cov = int(( ($query_hit_length/$query_length)*10000 )+.5)/100;
     my $subject_per_cov = int(( ($subject_hit_length/$subject_length)*10000 )+.5)/100;
@@ -392,6 +406,18 @@ sub _assign_confidence_level {
     }
     
     return $retval;
+}
+
+sub _specific_seq_length {
+  my ($self, $seq_id, $length) = @_;
+  my $retval;
+  if( defined($length) ) {
+	$self->{'_specific_seq_lengths'}->{$seq_id} = $length;
+	$retval = $length;
+  } elsif( exists( $self->{'_specific_seq_lengths'}->{$seq_id} ) ) {
+	$retval = $self->{'_specific_seq_lengths'}->{$seq_id};
+  }
+  return $retval;
 }
 
 sub _seq_length {
