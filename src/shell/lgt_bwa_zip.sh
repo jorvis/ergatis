@@ -4,6 +4,10 @@
 
 # This is to find the path only.
 
+
+find $1 -name '*M_*.sam' -exec gzip {} \;
+
+exit
 FILENAME_LEN=`expr length $1`
 FILENAME_WITHOUT_LOC=`echo $1 | awk -F"/" '{print $NF}'`
 FILENAME_WITHOUT_LOC_LEN=`expr length $FILENAME_WITHOUT_LOC`
