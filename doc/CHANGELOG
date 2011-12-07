@@ -1,5 +1,13 @@
 next
 ----
+-snp_verification: added blast based snp verification pipeline
+-skirret: added nucmer based snp prediction pipeline
+-Prok Pipeline: no longer uses xdformat
+-Prok Pipeline: added formatdb components to automatically create blastable databases from polypeptides and CDS sequences
+-dump_table: added utility to dump chado database as tbl file
+-replace_template_keys: automatically create dceSpec elements for RunDistributedCommands
+-blast2bsml: Added a do_nothing parameter to blast2bsml so this step can be easily skipped.
+-lgt_wrapper: Fixed bug in lgt_wrapper where multiline json was not being parsed properly.
 -when logging into Ergatis you should now be redirected to the last page viewed
 -added RandomIdGenerator which generates random ID's consisting of alphanumeric characters that are unique.
 -updated several of the interface CGI scripts to make use of the speedier XML::LibXML module
@@ -7,6 +15,9 @@ next
 -added a warning prompt when attempting to reset a component
 -added the ability to set project level comments
 -added the ability to restrict the view of pipelines (and any of its parts i.e. config, component view) to only the user who created the pipeline
+-pangenome_make_table: fixed bug
+-lgt_bwa_post_process.py: Fixed bug where single read check was not working
+-clean_fasta: added library (TIGR::Foundation) which was missing for the clean_fasta component
 -bsml2chado: fixed bug with duplicate group tags in generated component xml
 -strictly_paired_iterator: added ability to create iterator list on two input files
 -shared_parameters: added shared parameters config, to hold configuration options common to all ergatis components
