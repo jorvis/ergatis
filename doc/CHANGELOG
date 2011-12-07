@@ -1,6 +1,12 @@
 next
 ----
-
+-when logging into Ergatis you should now be redirected to the last page viewed
+-added RandomIdGenerator which generates random ID's consisting of alphanumeric characters that are unique.
+-updated several of the interface CGI scripts to make use of the speedier XML::LibXML module
+-resetting a component now should reset as the user logged in
+-added a warning prompt when attempting to reset a component
+-added the ability to set project level comments
+-added the ability to restrict the view of pipelines (and any of its parts i.e. config, component view) to only the user who created the pipeline
 -bsml2chado: fixed bug with duplicate group tags in generated component xml
 -strictly_paired_iterator: added ability to create iterator list on two input files
 -shared_parameters: added shared parameters config, to hold configuration options common to all ergatis components
