@@ -1,6 +1,20 @@
 next
 ----
-Changed CommonNameAnnotation.pm to remove the rule for gene starting with 'Y'
+
+-bsml2chado: fixed bug with duplicate group tags in generated component xml
+-strictly_paired_iterator: added ability to create iterator list on two input files
+-shared_parameters: added shared parameters config, to hold configuration options common to all ergatis components
+-new component: exonerate
+-snp-add-gene-info: fixed bug in default NO_INDELS_FILE configuration
+-tRNAscanSE: fixed occasional TMPDIR error when running workflow on grid node
+-lgt_bwa: hopefully fixed bug in compression step
+-insert_pmarks_in_scaffolds: fixed bug in the creation of fasta lists
+-insert_pmarks_in_scaffolds: added component documentation
+-new component: split_file
+-j_ortholog_clusters: Added some dceSpec <group> tags to RunDistributedCommands.
+-repeat_masker: changed repeatmasker to support both -lib and -species arguments
+-new component: prokpipe_consistency_checks
+-p_func: Changed CommonNameAnnotation.pm to remove the rule for gene starting with 'Y'
 -p_func: Change most of bsml parsing for BERUniprotParser to use XML::LibXML
 -snp-add-gene-info: Fixed some typos in component files
 -added the ability to set an email through which to receieve pipeline status updates on completion or failure
