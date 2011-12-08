@@ -224,6 +224,9 @@ RESULT: while( my $result = $in->next_result ) {
             $x[12] = $hsp->score();
             $x[13] = $hsp->bits();
             $x[15] = $hit->description();
+	    # replace ctrl-a's inserted by recent versions of bioperl
+	    $x[15] =~ s/\cA/ /g;
+
             $x[16] = ( ($hsp->query->frame + 1) * $hsp->query->strand); #blast frame (1, 2, 3, -1, -2, -3).
 
             my $strandDescript = "null";
