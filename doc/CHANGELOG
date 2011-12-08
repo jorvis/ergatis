@@ -1,5 +1,6 @@
 next
 ----
+-fixing bugs associated with project level email notification controls
 -snp_verification: added blast based snp verification pipeline
 -skirret: added nucmer based snp prediction pipeline
 -Prok Pipeline: no longer uses xdformat

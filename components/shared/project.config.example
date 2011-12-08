@@ -34,6 +34,10 @@ $;BIN_DIR$;=/opt/ergatis/bin
 ;; Path to the ergatis docs directory, usually under the ERGATIS_DIR
 $;DOCS_DIR$;=/opt/ergatis/docs
 
+;; Turn on pipeline email notification by default. If this flag is set any user creating a pipeline under
+;; this project will always receive email notifications regarding the pipelines status upon completion or failure
+$;EMAIL_NOTIFICATION$;=0
+
 ;; Default debug setting
 $;DEBUG$;=0
 

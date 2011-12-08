@@ -58,7 +58,7 @@ jQuery(document).ready(function() {
 
     emailNotify = jQuery('#email_on_default').val();
 
-    if (emailNotify) {
+    if (emailNotify == "1") {
         jQuery('#add_email').hide();
         jQuery('#email_input').show();
     }
@@ -103,19 +103,19 @@ jQuery(document).ready(function() {
     jQuery('#email_input').blur(function() {
         inputDisplayUneditable(this)
 
-        if (! saveClicked ) {
-            jQuery(this).val(email_address);
-        } else {
-            if ( jQuery(this).val() ) {
+        if (! jQuery(this).val() ) {
+            jQuery(this).hide();
+            jQuery('#add_email').show();
+            jQuery('#add_email').css('visibility', 'visible');
+            emailNotify = false;
+         
+        } else{
+            if (! saveClicked ) {
+                jQuery(this).val(email_address);
+            } else {
                 emailNotify = true;
-            } else { 
-                jQuery(this).hide();
-                jQuery('#add_email').show();
-                jQuery('#add_email').css('visibility', 'visible');
-                emailNotify = false;
+                saveClicked = false;
             }
-
-            saveClicked = false;
         }
 
         jQuery('#save_email').hide();

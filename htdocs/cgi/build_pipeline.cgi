@@ -33,6 +33,10 @@ my $email_domain = $ergatis_cfg->val('workflow_settings', 'email_domain');
 my $username = user_logged_in($ergatis_cfg);
 if ($username && $email_domain) {
     $email_user = "$username\@$email_domain";
+} else {
+    ## If the user isn't logged in and default email notifications is set to true 
+    ## we want to behave is if it isn't (i.e. make them add in email).
+    $email_on_default = 0;
 }
 
 ## make sure the build area exists
