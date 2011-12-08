@@ -73,7 +73,7 @@ jQuery(document).ready(function() {
         emailNotify = true;
     });
 
-    jQuery('#email_input input').click(function() {
+    jQuery('#email_input').click(function() {
         email_address = jQuery(this).val();
         jQuery('#save_email').show();
     });
@@ -103,7 +103,7 @@ jQuery(document).ready(function() {
     jQuery('#email_input').blur(function() {
         inputDisplayUneditable(this)
 
-        if (! jQuery(this).val() || jQuery("#email_on_default").val() == "0") {
+        if (! jQuery(this).val() ) {
             jQuery(this).hide();
             jQuery('#add_email').show();
             jQuery('#add_email').css('visibility', 'visible');
