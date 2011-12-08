@@ -144,9 +144,9 @@ sub parseProdigalData {
 
 	while(<IN>) {
 		chomp($_);	
-		if(/seqhdr\=\"(.*?)\"/g) {
+		# return header to first space to be consistent with glimmer3
+                if(/seqhdr\=\"(\S+)[^\"]*\"/g) {
 			$foundId = $1;
-			$foundId =~ s/\s+$//;
 			if( $project eq 'parse' ) {
 				$project = $1 if($foundId =~ /^(\w+?)\./);
 				$logger->logdie("Could not parse project name out of id $foundId.") unless($project);
