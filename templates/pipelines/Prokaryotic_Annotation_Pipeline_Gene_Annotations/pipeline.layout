@@ -107,6 +107,10 @@
 				</commandSet>
 				<commandSet type="serial">
 					<state>incomplete</state>
+					<name>split_multifasta.split_interevidence</name>
+				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
 					<name>ncbi-blastx.interevidence_search</name>
 				</commandSet>
 			</commandSet>

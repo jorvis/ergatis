@@ -1,6 +1,10 @@
 next
 ----
 -fixing bugs associated with project level email notification controls
+-prok pipeline: added split_multifasta to split interevidence nucelotides for searching.
+
+ergatis-v2r17 (2011-12-11)
+--------------------------
 -snp_verification: added blast based snp verification pipeline
 -skirret: added nucmer based snp prediction pipeline
 -Prok Pipeline: no longer uses xdformat
