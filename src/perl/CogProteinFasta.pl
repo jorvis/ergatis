@@ -141,8 +141,11 @@ sub outputCog {
                 my $residues = undef;
                 if ($use_feature_ids_in_fasta) {
                     my $seq_id = $Feat->{$seq};
-                    $logger->logdie("no sequence id found for feature with id=$seq") if (!defined($seq_id));
-                    $residues = $Prot->{$seq_id};
+                    # Not sure why we would need to die here if we aren't dying below.
+                    #$logger->logdie("no sequence id found for feature with id=$seq") if (!defined($seq_id));
+                    if($seq_id) {
+                        $residues = $Prot->{$seq_id};
+                    }
                 } else {
                     $residues = $Prot->{$seq};
                 }
