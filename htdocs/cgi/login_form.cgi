@@ -10,12 +10,9 @@ use HTML::Template;
 
 my $q = new CGI;
 
-## Store the referer to this page in a cookie so we can redirect to said page upon successful login
-my $login_cookie = new CGI::Cookie(-name    => 'ergatis_login_referer',
-                                   -value   => parse_referer_url($ENV{HTTP_REFERER}),
-                                   -expires => '+6h',);
-
-print $q->header( -type => 'text/html', -cookie => $login_cookie );
+print $q->header( -type => 'text/html');
+my $redirect_url = $q->param('redirect_url') || $ENV{HTTP_REFERER};
+$redirect_url = parse_referer_url($redirect_url);
 
 my $tmpl = HTML::Template->new( filename => 'templates/login_form.tmpl',
                                 die_on_bad_params => 1,
@@ -53,14 +50,9 @@ $tmpl->param( FAILED              => $q->param('failed') || 0 );
 $tmpl->param( FORM_READY          => $form_ready );
 $tmpl->param( FORM_NOT_READY_MSG  => $form_not_ready_msg );
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
+$tmpl->param( REDIRECT_URL         => $redirect_url );
 $tmpl->param( SUBMENU_LINKS       => [
                                         #{ label => 'create project', is_last => 1, url => './create_project_form.cgi' },
                                      ] );
 
 print $tmpl->output;
-
-sub parse_referer_url {
-     my $referer = shift;
-     $referer =~ /\/(\w+\.cgi.*$)/;
-     return $1;
-}

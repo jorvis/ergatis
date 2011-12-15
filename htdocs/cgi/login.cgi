@@ -11,13 +11,13 @@ use Ergatis::Common;
 use Storable;
 
 my $q = new CGI;
-
+my %cookies = fetch CGI::Cookie;
 
 ## read the config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 my $user_attempted = $q->param('login_user');
 my $pass_attempted = $q->param('login_pass');
-my $referer = $q->param('referer_url');
+my $referer = $q->param('redirect_url');
 
 ## for now, this will be a user name
 my $valid_user = '';
@@ -129,8 +129,14 @@ if ( $valid_user ) {
     }
     
     ## We will be using sessions to handle recording state that is tied to the user logged in.
-    ## Specifically here we want to record the users english-readable name
-    my $session = get_session($ergatis_cfg, $valid_user);
+    ## We want to check if a session ID already exists for the user attemping to login and if so
+    ## retrive the already created session for use.
+    my $sid = undef;
+    if ($cookies{'CGISESSID'}) {
+        $sid = $cookies{'CGISESSID'}->value;
+    }
+
+    my $session = get_session($ergatis_cfg, $sid);
     if ( ! $session->param('username') ) {
         $session->param('username', $valid_user);  
         $session->flush();
@@ -151,19 +157,13 @@ if ( $valid_user ) {
     ## Use a plain cookie to handle any user state information
     my $c = new CGI::Cookie(-name    =>  'ergatis_user',
                             -value   =>  $session->id,
-                            -expires =>  '+1M',);
+                            -expires =>  '+3M',);
 
     print "Set-Cookie: $c\n";
     
     ## Redirect to the page we just came from. Cookies might be a terrible idea here 
     ## as they could be spoofed.
-    my %cookies = CGI::Cookie->fetch;
-    my $redirect_url = "./index.cgi";
-
-    if ( $cookies{'ergatis_login_referer'} ) {
-        $redirect_url = $cookies{'ergatis_login_referer'}->value;
-    }
-
+    my $redirect_url = $referer || "./index.cgi";
     print redirect(-uri => $redirect_url);
 
 ## if don't pass

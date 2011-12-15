@@ -1,5 +1,7 @@
 next
 ----
+-fixed issue with duplicate sessions being created on each login
+-refactored login to allow for passing of a parameter to control page to redirect to after successful login
 -fixing bugs associated with project level email notification controls
 -prok pipeline: added split_multifasta to split interevidence nucelotides for searching.
 
