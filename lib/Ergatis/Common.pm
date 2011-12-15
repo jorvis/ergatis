@@ -80,6 +80,26 @@ sub get_conditional_write_fh {
 }
 
 
+=head2 parser_referer_url( url )
+
+=over 4
+
+Sanitizes a URL that will be redirected too if needed.
+
+=back
+
+=cut
+sub parse_referer_url {
+    my $referer = shift;
+    my $ret_url = $referer;   
+
+    if ($referer =~ /\/cgi\/(\w+\.cgi.*$)/) {
+        $ret_url = $1;
+    } 
+
+    return $ret_url;
+}
+
 =head2 get_project_conf_param( repository_root, section, parameter )
 
 =over 4
@@ -210,16 +230,21 @@ sub user_logged_in {
     my $ergatis_cfg = shift;
     my %cookies = fetch CGI::Cookie;
     my $username = undef;
-    
-    my $session = get_session($ergatis_cfg);
+    my $sid = undef;
 
-    if ($session) {
-        $username = $session->param('username') || undef;
+    if ($cookies{'ergatis_user'}) {
+        $sid = $cookies{'ergatis_user'}->value;
+    } 
+
+    if ($sid) {
+        my $session = get_session($ergatis_cfg, $sid);
+        if ($session) {
+            $username = $session->param('username') || undef;
+        }
     }
 
     return $username;
 }
-
 
 =head2 get_session($ergatis_cfg)
 
@@ -232,19 +257,13 @@ session will be created.
 
 =cut
 sub get_session {
-    my ($ergatis_cfg, $username) = @_;
-    my %cookies = fetch CGI::Cookie;
+    my ($ergatis_cfg, $sid) = @_;
     my $session = undef;
-
-    ## The english-readable username var should only be passed in
-    ## when a new session is being created, otherwise we grab the username
-    ## from the ergatis_user cookie
-    $username = $cookies{'ergatis_user'}->value if ( defined($cookies{'ergatis_user'}) );
 
     if ( $ergatis_cfg->val('authentication', 'session_db_dir') ) {
         my $session_dir = $ergatis_cfg->val('authentication', 'session_db_dir');
         $session = new CGI::Session("driver:File",
-                                    $username,
+                                    $sid,
                                     { Directory => $session_dir }
         );
     }
@@ -314,8 +333,13 @@ refreshed from file.
 sub get_account_pipelines {
     my $ergatis_cfg = shift;
     my $account_pipelines = {};
+    my %cookies = fetch CGI::Cookie;
+    my $session = undef;
 
-    my $session = get_session($ergatis_cfg);
+    if ( defined($cookies{'ergatis_user'}) ) {
+        my $sid = $cookies{'ergatis_user'}->value;
+        $session = get_session($ergatis_cfg, $sid);
+    }
 
     if ( $session && $session->param('username') &&
         $ergatis_cfg->val('authentication', 'per_account_pipeline_security') ) {
@@ -353,8 +377,14 @@ list flag is enabled in the ergatis.ini
 =cut
 sub add_pipeline_to_user_pipeline_list {
     my ($ergatis_cfg, $pipeline_id) = @_;
-    my $session = get_session($ergatis_cfg);        
+    my %cookies = fetch CGI::Cookie;
+    my $session = undef;
     my $pipelines = {};
+
+    if ( defined($cookies{'ergatis_user'}) ) {
+        my $sid = $cookies{'ergatis_user'}->value;
+        $session = get_session($ergatis_cfg, $sid);
+    }
 
     ## TODO: Figure out whether we need to use file-locking here.
     if ( $session && $session->param('username') &&
@@ -395,8 +425,15 @@ Deletes a pipeline from the users pipeline list.
 =cut
 sub delete_pipeline_from_user_pipeline_list {
     my ($ergatis_cfg, $pipeline_id) = @_;
-    my $session = get_session($ergatis_cfg);        
+    my %cookies = fetch CGI::Cookie;
+    my $session = undef;
     my $pipelines = {};
+
+    if ( defined($cookies{'ergatis_user'}) ) {
+        my $sid = $cookies{'ergatis_user'}->value;
+        $session = get_session($ergatis_cfg, $sid);
+    }
+
 
     if ( $session && $session->param('username') &&
         $ergatis_cfg->val('authentication', 'per_account_pipeline_security') ) {
