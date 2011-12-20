@@ -342,7 +342,7 @@ sub check_options {
     &_pod if( $options{'help'} );
     $logfh = open_file( $options{'log'}, "out" ) if( $options{'log'} );
 
-    my @reqs = qw(output_directory rna_bsml evidence_bsml);
+    my @reqs = qw(output_directory evidence_bsml);
     foreach my $req ( @reqs ) {
         die("Option $req is required") unless( $options{$req} );
     }
