@@ -1020,7 +1020,7 @@ sub parse_multi_fasta {
     
     my $seqdata = undef;
     
-    if(exists $e{$h{$sequencelookup->{$specified_header}->{'fasta_id'}}}){
+    if(exists $e{$h{$specified_header}}){
 		    my ($offset, $length) = split( ',',$e{$h{$specified_header}});
 		    seek($filehandle, $offset, 0);
 		    read($filehandle, $seqdata, $length);

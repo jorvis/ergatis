@@ -78,6 +78,7 @@ my @sequence_files = (); ## Any sequence files created by translate_sequence
                          ## --cleanup flag is present.
 
 my $bsml_sequences;
+my $bsml_fasta_ids;
 my $bsml_sequences_topology;
 my $sequence_children;
 my $exon_locs;
@@ -203,7 +204,7 @@ if (!$fasta_flag) {
         my $seq = '';
         
         ## retrieve the parent sequence
-        $seq = get_sequence_by_id($bsml_sequences->{$seq_id}, $seq_id);
+        $seq = get_sequence_by_id($bsml_sequences->{$seq_id}, $bsml_fasta_ids->{$seq_id});
     
         if (length($seq) eq 0) {
             $logger->logdie("failed to fetch the sequence for '$seq_id'");
@@ -513,6 +514,7 @@ sub process_sequence {
         
         my $seq_count = count_fasta_records($source);
         $bsml_sequences->{$seq_id} = $source;
+	$bsml_fasta_ids->{$seq_id} = $identifier;
         if ($seq_count == 1) {
             unless (get_sequence_id($source) eq $identifier) {
                 print STDERR "ID disagreement between BSML Seq-data-import '$identifier' and fasta file '$source'";
@@ -540,6 +542,7 @@ sub process_sequence {
         push (@sequence_files, $sequence_file);
         
         $bsml_sequences->{$seq_id} = $sequence_file;
+	$bsml_fasta_ids->{$seq_id} = $seq_id;
         
     } else {
         
