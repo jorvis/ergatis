@@ -39,7 +39,7 @@
 			</param>
 			<param>
 				<key>--runca_bin</key>
-				<value>$;BIN_DIR$;/runCA</value>
+				<value>$;CELERA_ASSEMBLER_EXEC$;</value>
 			</param>
 			<param>
 				<key>stdout</key>
