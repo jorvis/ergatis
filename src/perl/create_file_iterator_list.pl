@@ -136,7 +136,7 @@ my $input_element_count = &gather_input_elements( $input_elements );
 
 open(my $out_fh, ">$options{output_iter_list}") || die "can't create output_iter_list: $!";
 
-print $out_fh '$;I_FILE_BASE$;',"\t",'$;I_FILE_NAME$;',"\t",'$;I_FILE_PATH$;',"\t",'$;I_FILE_EXT$;',"\t",'$;I_DIR$;';
+print $out_fh '$;I_FILE_BASE$;',"\t",'$;I_FILE_NAME$;',"\t",'$;I_FILE_PATH$;',"\t",'$;I_FILE_EXT$;',"\t",'$;I_DIR$;',"\t",'$;I_URL$;';
 
 my $timestamp;
 if($options{'timestamp'}){
@@ -147,14 +147,19 @@ print $out_fh "\n";
 
 for my $elt (@$input_elements){
     my $path1 = ($elt->[2] eq '') ? 	"$elt->[0]" : "$elt->[0].$elt->[2]";
-    my $path2 = ($elt->[2] eq '') ? 	"$id2dir->{$elt->[1]}/$elt->[0]" : "$id2dir->{$elt->[1]}/$elt->[0].$elt->[2]";
+    my $path2 = '';
+    if($id2dir && defined($elt->[1]) && $id2dir->{$elt->[1]}) {
+        $path2 = ($elt->[2] eq '') ? "$id2dir->{$elt->[1]}/$elt->[0]" : "$id2dir->{$elt->[1]}/$elt->[0].$elt->[2]";
+    }
+    my $dir = ($id2dir && defined($elt->[1]) && $id2dir->{$elt->[1]}) ? $id2dir->{$elt->[1]} : '';
     my $field1 = $options{'checksum_filenames'} ? $elt->[3]: $elt->[0];
     print $out_fh 
 	"$field1\t",
 	"$path1\t",
 	"$path2\t",
 	"$elt->[2]\t",
-	"$id2dir->{$elt->[1]}";
+	"$dir\t",
+    "$elt->[4]";
     print $out_fh "\t$timestamp" if($options{'timestamp'});
     print $out_fh "\n";	
 }
@@ -196,33 +201,46 @@ sub parse_file_parts {
 sub add_element {
     my ($elem, $input_elements) = @_;
     
-    my $parts = parse_file_parts( \$elem );
+    my $parts = [];
+
     my $checksum = md5_hex $elem;
     my $directory_id;
 
-    ## we can't have encountered this name already
-    if($options{'checksum_filenames'}) {
-        if(exists $$elements_check{ $checksum }) {
-            $logger->logdie("found duplicate file in input set: $elem");
+    # Check if we have a URL instead of a file. If we do then we'll 
+    # just add a value for the $;I_URL$; and nothing else.
+    if($elem =~ /^(http|ftp):\/\//) {
+        $parts = ['', '', '', '', $elem];
+    }
+    else {
+        $parts = parse_file_parts( \$elem );
+        
+        # Add an empty URL
+        push(@$parts, '');
+        
+        ## we can't have encountered this name already
+        if($options{'checksum_filenames'}) {
+            if(exists $$elements_check{ $checksum }) {
+                $logger->logdie("found duplicate file in input set: $elem");
+            }
         }
-    }
-    elsif ( exists $$elements_check{ $$parts[2] } ) {
-        $logger->logdie("found duplicate basename in input set: $$parts[2]");
-    }
-    $elements_check->{$parts->[2]}=1;
-    ## make sure we have an ID for this directory.  else create one
-    if ( exists $$dir2id{ $$parts[0] } ) {
-        $directory_id = $$dir2id{ $$parts[0] };
-    } else {
-        $$dir2id{ $$parts[0] } = $next_directory_id;
-        $$id2dir{ $next_directory_id } = $$parts[0];
-        $next_directory_id++;
-        $directory_id = $$dir2id{ $$parts[0] };
-        $logger->debug("keying directory $$parts[0]") if $logger->is_debug();
+        elsif ( exists $$elements_check{ $$parts[2] } ) {
+            $logger->logdie("found duplicate basename in input set: $$parts[2]");
+        }
+        $elements_check->{$parts->[2]}=1;
+        ## make sure we have an ID for this directory.  else create one
+        if ( exists $$dir2id{ $$parts[0] } ) {
+            $directory_id = $$dir2id{ $$parts[0] };
+        } else {
+            $$dir2id{ $$parts[0] } = $next_directory_id;
+            $$id2dir{ $next_directory_id } = $$parts[0];
+            $next_directory_id++;
+            $directory_id = $$dir2id{ $$parts[0] };
+            $logger->debug("keying directory $$parts[0]") if $logger->is_debug();
+        }
     }
     
     ## store the file info
-    push @$input_elements, [$$parts[2],$directory_id, $$parts[3],$checksum ];
+    push @$input_elements, [$$parts[2],$directory_id, $$parts[3],$checksum,$$parts[4] ];
 }
 
 sub gather_input_elements {
