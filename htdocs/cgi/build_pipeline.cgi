@@ -153,6 +153,10 @@ sub get_inputsets{
 		chomp $file;
 		my @fstats = stat($file);
 		my $component_cfg = new Ergatis::ConfigFile( -file => "$file" );
+		
+		## skip this config if it is invalid
+		next if( !defined( $component_cfg ) );
+
 		my $cname = $component_cfg->val( 'component', '$;COMPONENT_NAME$;' );
 		$cname =~ s/\s//g;
 		my $token = $component_cfg->val( 'output', '$;OUTPUT_TOKEN$;');
