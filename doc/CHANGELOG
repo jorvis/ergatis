@@ -1,5 +1,7 @@
 next
 ----
+-added CGI:Session to list of required/checked modules in the Makefile
+-fixed bug when attempting to view ergatis configuration from admin tab
 -fixed issue with duplicate sessions being created on each login
 -refactored login to allow for passing of a parameter to control page to redirect to after successful login
 -fixing bugs associated with project level email notification controls

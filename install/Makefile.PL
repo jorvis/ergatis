@@ -16,6 +16,7 @@ my @modules_to_check = qw(
     Bio::Seq
     CDB_File
     Class::Struct
+    CGI::Session
     Config::IniFiles
     DB_File
     Data::Dumper

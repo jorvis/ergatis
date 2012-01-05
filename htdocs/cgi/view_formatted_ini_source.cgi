@@ -34,13 +34,13 @@ if ( $file =~ m|(.+/(.+?))/workflow/runtime/.+?/([A-Z0-9]+)_(.+?)/| ) {
     $repository_root = $1;
     $project = $2;
     $pipelineid = $3;
-} else {
+
+    ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+    ## has access to this pipeline.
+    validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);    
+} elsif ($file !~ /ergatis.ini/) {
     die "failed to extract a repository root, project identifier or pipeline ID from $file. Expected a workflow/runtime subdirectory somewhere."
 }
-
-## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
-## has access to this pipeline.
-validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);
 
 my $sections = [];
 
