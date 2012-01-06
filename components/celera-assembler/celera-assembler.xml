@@ -49,6 +49,9 @@
 				<key>stderr</key>
 				<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stderr</value>
 			</param>
+            <dceSpec type="sge">
+			    <memory>12G</memory>
+			</dceSpec>
 		</command>
         <!--Postprocessing-->		 
         <command>
