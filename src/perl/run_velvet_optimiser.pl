@@ -122,7 +122,9 @@ my $results = GetOptions (\%options,
 &check_options(\%options);
 
 #find the necessary executables
-my $velvet_optimiser_exec = $options{'velvet_path'}."/contrib/VelvetOptimiser/VelvetOptimiser.pl";
+my $velvet_optimiser_exec = &find_velvet_opt_exe( $options{'velvet_path'} );
+&_log($ERROR, "Could not locate directory for VelvetOptimiser executeable in $options{'velvet_path'}")
+  unless( $velvet_optimiser_exec );
 &_log($ERROR, "Could not find VelvetOptimiser.pl (executable). Thought it would be here: ".
       "$velvet_optimiser_exec.") unless( -e $velvet_optimiser_exec );
 
@@ -181,6 +183,32 @@ if( $options{'output_list'} ) {
     }
     print $out $contig_file."\n";
     close($out);
+}
+
+sub find_velvet_opt_exe {
+  my ($velvet_dir) = @_;
+
+  ## is it here?
+  my $retval = $velvet_dir."/contrib/VelvetOptimiser/VelvetOptimiser.pl";
+  return $retval if( -e $retval );
+
+  ## make sure there is a contrib dir. If not, can't find it.
+  return 0 unless( -d $velvet_dir."/contrib" );
+
+  ## Sometimes we see version numbers in the velvet_optimiser directory
+  opendir( my $dh, "$velvet_dir/contrib" ) or die("Can't open dir $velvet_dir/contrib");
+  my @dir = grep { /^VelvetOptimiser/ } readdir( $dh );
+  closedir( $dh );
+
+  # if we didn't find any dirs, or found more than 1.
+  if( @dir == 1 ) {
+	$retval = $velvet_dir."/contrib/".$dir[0]."/VelvetOptimiser.pl";
+	return 0 unless( -e $retval );
+  } else {
+	return 0;
+  }
+
+  return $retval;
 }
 
 sub create_input_string {
