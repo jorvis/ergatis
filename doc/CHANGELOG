@@ -1,5 +1,8 @@
 next
 ----
+-Added memory requirement to celera-assembler component.
+-Fixed issue in Gene_Annotation portion of prok pipeline: interevidence blast reads from split_multifasta now
+-added template: Prokaryotic_Annotation_Pipeline_Celera_Assembly
 -added CGI:Session to list of required/checked modules in the Makefile
 -fixed bug when attempting to view ergatis configuration from admin tab
 -fixed issue with duplicate sessions being created on each login
