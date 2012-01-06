@@ -1,5 +1,7 @@
 next
 ----
+-Removed configurations from skirret pipeline
+-added template: Prokaryotic_Annotation_Pipeline_Velvet_Assembly
 -Added memory requirement to celera-assembler component.
 -Fixed issue in Gene_Annotation portion of prok pipeline: interevidence blast reads from split_multifasta now
 -added template: Prokaryotic_Annotation_Pipeline_Celera_Assembly

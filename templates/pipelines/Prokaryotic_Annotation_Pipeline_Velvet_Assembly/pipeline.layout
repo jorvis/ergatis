@@ -1,0 +1,14 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>start pipeline:</name>	
+		<commandSet type="serial">
+			<state>incomplete</state>
+			<name>prepare_paired_ends_for_velvet.default</name>
+        </commandSet>
+		<commandSet type="serial">
+        	<state>incomplete</state>
+        	<name>velvet_optimiser.assembly</name>
+		</commandSet>
+	</commandSet>
+</commandSetRoot>
