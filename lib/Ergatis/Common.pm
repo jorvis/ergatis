@@ -287,7 +287,7 @@ they do not have proper authorization.
 
 =cut
 sub validate_user_authorization {                                                                                                                                                                                                       
-    my ($ergatis_cfg, $project, $repository_root, $pipeline_id, $defer_exit) = @_;                                                                                                                                                        
+    my ($ergatis_cfg, $pipeline_id, $defer_exit) = @_;                                                                                                                                                        
     my $authorized_user = 1;                                                                                                                                                                                                             
     ## Authorization should only proceed if we have per-account security                                                                                                                                                                
     ## enabled                                                                                                                                                                                                                           
@@ -299,13 +299,12 @@ sub validate_user_authorization {
             ## At time we may not want to juse print an error page and exit but                                                                                                                                                          
             ## return a boolean as to whether or not the user has permission to                                                                                                                                                           
             ## view a resource.                                                                                                                                                                                                          
-            unless ($defer_exit) {                                                                                                                                                                                                        
-                my $username = user_logged_in($ergatis_cfg);                                                                                                                                                                              
+            unless ($defer_exit) {                                                                                                                                                                                                       
+                my $username = user_logged_in($ergatis_cfg);
+
                 print_error_page( ergatis_cfg => $ergatis_cfg,                                                                                                                                                                          
-                                  message => "User $username does not have authorization to view this resource.",                                                          
-                                  links => [                                                                                                                                                                                             
-                                                { label => "$project pipeline list", is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" },                                                                      
-                                           ],                                                                                                                                                                                             
+                                  message => "User $username does not have authorization to view this resource.",
+                                  links => [ { label => "previous page", is_last => 1, url => $ENV{'HTTP_REFERER'} } ]
                                 );                                                                                                                                                                                                        
                 exit(0);                                                                                                                                                                                                                  
             }                                                                                                                                                                                                                             
