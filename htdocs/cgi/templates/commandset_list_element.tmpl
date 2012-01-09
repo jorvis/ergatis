@@ -1,3 +1,4 @@
+<div id='id<TMPL_VAR NAME=WORKFLOW_ID>'>
 <div id='id<TMPL_VAR NAME=WORKFLOW_ID>_bar' class='subflowgroupbar'>
     <div class='leftside'>
         <img id='id<TMPL_VAR NAME=WORKFLOW_ID>_arrow' class='expander' src='../images/arrow_right.gif' onclick='toggle_subflowgroup_display("id<TMPL_VAR NAME=WORKFLOW_ID>", "<TMPL_VAR NAME=FILE>");' alt='expand' title='expand'>
@@ -26,12 +27,12 @@
         <tr><th>grid id:</th><td><TMPL_VAR NAME=GRID_ID></td></tr>
         <tr><th>workflow grid id:</th><td><TMPL_VAR NAME=HTC_ID></td></tr>
 	<tr><th>execution host</th><td><TMPL_VAR NAME=EXECUTION_HOST> <a href='http://<TMPL_VAR NAME=EXECUTION_IP>/ganglia'>[ganglia]</a><a href='http://<TMPL_VAR NAME=EXECUTION_IP>/ergatis'>[ergatis]</a>
-        <tr><th>workflow event log:</th><td><a href='view_formatted_log_source.cgi?file=<TMPL_VAR NAME=LOG>'><TMPL_VAR NAME=LOG></a></td></tr>
+        <tr><th>workflow event log:</th><td><a href='view_formatted_log_source.cgi?file=<TMPL_VAR NAME=LOG>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>'><TMPL_VAR NAME=LOG></a></td></tr>
         <tr><th>remote wf stderr/sdout</th><td><TMPL_VAR NAME=EXECUTION_HOST>:/mnt/wf-working/RunWorkflow.o<TMPL_VAR NAME=GRID_ID>,/mnt/wf-working/RunWorkflow.e<TMPL_VAR NAME=GRID_ID></td></tr>
         <tr><th>prolog/epilog stderr/stdout</th><td>/home/guest/staging.*,home/guest/harvesting.*</td></tr>
         <tr><th colspan='2'>xml:</th></tr>
-        <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=FILE>'><TMPL_VAR NAME=FILE></a></td></tr>
+        <tr><td colspan='2'><a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=FILE>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>'><TMPL_VAR NAME=FILE></a></td></tr>
     </table>
 </div>
 <div id='id<TMPL_VAR NAME=WORKFLOW_ID>_data' class='subflowgroupdata'></div>
-
+</div>

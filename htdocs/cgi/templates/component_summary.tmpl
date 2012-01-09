@@ -34,12 +34,12 @@
 <li class="actions">
     <TMPL_IF NAME=PIPELINE_EXISTS>
     <a href='./view_component.cgi?pipeline_xml=<TMPL_VAR NAME=PIPELINE>'>view</a> 
-    <a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=PIPELINE>'>xml</a>
+    <a href='./view_formatted_xml_source.cgi?file=<TMPL_VAR NAME=PIPELINE>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>'>xml</a>
     <TMPL_ELSE> 
     <a class='disabled'>view</a> 
     <a class='disabled'>xml</a>    
     </TMPL_IF>
-    <a href='./view_formatted_ini_source.cgi?file=<TMPL_VAR NAME=COMPONENT_CONFIG>'>config</a>
+    <a href='./view_formatted_ini_source.cgi?file=<TMPL_VAR NAME=COMPONENT_CONFIG>&pipeline_id=<TMPL_VAR NAME=PIPELINE_ID>'>config</a>
     <a onclick="requestComponentUpdate('<TMPL_VAR NAME=PIPELINE>', '<TMPL_VAR NAME=UL_ID>', '<TMPL_VAR NAME=PARENT_PIPELINE>', '<TMPL_VAR NAME=PARENT_PIPELINE_STATE>')">update</a>
     <a onclick="stopAutoUpdate('<TMPL_VAR NAME=UL_ID>')">stop updates</a>
     <TMPL_IF NAME=PARENT_IS_RUNNING>
