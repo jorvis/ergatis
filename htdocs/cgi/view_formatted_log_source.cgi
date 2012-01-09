@@ -13,6 +13,7 @@ print $q->header( -type => 'text/html' );
 ## will be like:
 ## /usr/local/scratch/annotation/TTA1/workflow/runtime/wu-blastp/20724_AllGroup.niaa/component.conf.bld.ini
 my $file = $q->param("file") || die "pass file";
+my $pipeline_id = $q->param("pipeline_id") || undef;
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
@@ -23,18 +24,9 @@ if ($file !~ /\.out$/ && $file !~ /\.log$/ && $file !~ /\.stderr$/ && $file !~ /
     quitNicely("i decline to show this type of file.");
 }
 
-my ($repository_root, $project, $pipelineid);
-if ( $file =~ m|(.+/(.+?))/workflow/runtime/pipeline/([A-Z0-9]+)/| ) {
-    $repository_root = $1;
-    $project = $2;
-    $pipelineid = $3;
-} else {
-    die "failed to extract a repository_root from $file.  expected a workflow/runtime subdirectory somewhere."
-}
-
 ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
 ## has access to this pipeline.
-validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);
+validate_user_authorization($ergatis_cfg, $pipeline_id);
 
 pageHeader();
 
@@ -73,24 +65,24 @@ while (my $line = readline $ifh) {
     ## look for any linkable xml
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))\s*$^i ) {
         $url = $1;
-        $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
+        $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
     }
     
     ## look for any linkable ini
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))\s*$^i ) {
         $url = $1;
-        $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
+        $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
     }
     
     ## look for any linkable lists
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)\s*$^i ) {
         $url = $1;
-        $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+        $line =~ s|$url|<a href="./view_raw_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
     }
 
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.iter)\s*$^i ) {
         $url = $1;
-        $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+        $line =~ s|$url|<a href="./view_raw_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
     }
     
     print "$line\n";

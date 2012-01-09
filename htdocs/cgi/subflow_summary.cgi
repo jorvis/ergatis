@@ -18,6 +18,11 @@ my $tmpl = HTML::Template->new( filename => 'templates/subflow_summary.tmpl',
 
 my $xml_input = $q->param("xml_input") || die "pass xml_input";
 
+my $pipeline_id = '';
+if ( $xml_input =~ m|(.+/(.+?))/workflow/runtime/(.+?)/([A-Z0-9]+)_(.+?)/| ) {
+    $pipeline_id = $4;
+}
+
 my $subflow_name  = basename($xml_input, ('.xml', '.gz'));
 my $subflow_state = 'unknown';
 my $subflow_start = '';
@@ -48,6 +53,7 @@ if ($subflow_found) {
                                     'command'              => sub {
                                                                 my ($t, $elt) = @_;
                                                                 my %parts = &process_command($t, $elt);
+                                                                $parts{'pipeline_id'} = $pipeline_id;
                                                                 push @$elements, \%parts;
                                                               }
                                },
@@ -63,20 +69,20 @@ for(my $i=0;$i<@$elements;$i++){
     foreach my $e (@cs_string_elts){
 	if( -f "$e"){
 	    if($e =~ /\.xml/){
-		$cs_formatted_string =~ s/$e/<a href='view_formatted_xml_source.cgi?file=$e'>$e\<\/a\>/;
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_xml_source.cgi?file=$e&pipeline_id=$pipeline_id'>$e\<\/a\>/;
 	    }
 	    else{
-		$cs_formatted_string =~ s/$e/<a href='view_formatted_log_source.cgi?file=$e'>$e\<\/a\>/;
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_log_source.cgi?file=$e&pipeline_id=$pipeline_id'>$e\<\/a\>/;
 	    }
 	}
 	elsif($e =~ /\=/){
 	    my($key,$value) = split(/=/,$e);
 	    if( -f "$value"){
 		if($value =~ /\.xml/){
-		    $cs_formatted_string =~ s/$value/<a href='view_formatted_xml_source.cgi?file=$value'>$value\<\/a\>/;
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_xml_source.cgi?file=$value&pipeline_id=$pipeline_id'>$value\<\/a\>/;
 		}
 		else{
-		    $cs_formatted_string =~ s/$value/<a href='view_formatted_log_source.cgi?file=$value'>$value\<\/a\>/;
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_log_source.cgi?file=$value&pipeline_id=$pipeline_id'>$value\<\/a\>/;
 		}
 	    }
 	}

@@ -22,6 +22,7 @@ my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 ## will be like:
 ## /usr/local/scratch/annotation/TGA1/workflow/runtime/split_fasta/29134_test2/pipeline.xml
 my $file = $q->param("file") || die "pass file";
+my $pipeline_id = $q->param("pipeline_id") || undef;
 
 ## the file may have been compressed
 if ( ! -e $file && -e "$file.gz" ) {
@@ -40,16 +41,18 @@ if ($file !~ /\.xml$/ &&
 
 ## Grab the repository root from our file path
 my $repository_root = "unknown";
-my ($project, $pipelineid);
-if ( $file =~ m|(.+/(.+?))/workflow/runtime/.+?/([A-Z0-9]+)(_.+)?/| ) { 
+my $project;
+
+## If we aren't passed in an ID attempt to grab it from the path
+if ( !($pipeline_id) && $file =~ m|(.+/(.+?))/workflow/runtime/.+?/([A-Z0-9]+)(_.+)?/| ) { 
     $repository_root = $1; 
     $project = $2;
-    $pipelineid = $3;
-
-    ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
-    ## has access to this pipeline.
-    validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);
+    $pipeline_id = $3;
 } 
+
+## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+## has access to this pipeline.
+validate_user_authorization($ergatis_cfg, $pipeline_id);
 
 my $progress_image_width = 500;
 
@@ -121,35 +124,35 @@ while (my $line = readline $ifh) {
     ## look for any linkable xml
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))^i ) {
         $url = $1;
-        $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
+        $line =~ s|$url|<a href="./view_formatted_xml_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
         $xmlfiles{$url}++;
     }
     
     ## look for any linkable ini
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))^i ) {
         $url = $1;
-        $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
+        $line =~ s|$url|<a href="./view_formatted_ini_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
     }
 
     ## look for any linkable log/stderr/sdtout
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:log|stderr|stdout))^i ) {
         if(-z $url){
             $url = $1;
-            $line =~ s|$url|<a href="./view_formatted_log_source.cgi?file=$url">$url</a>|;
+            $line =~ s|$url|<a href="./view_formatted_log_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
         }
     }
 
     ## look for any linkable lists
     if ( $line =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)\s*$^i ) {
         $url = $1;
-        $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+        $line =~ s|$url|<a href="./view_raw_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
     }
 
     ##match any other files
     if ( $line =~ m|(?<!\$\;)(/[/a-z0-9_\-\.]+)\&|i ) {
         $url = $1;
         if(-f $url){
-            $line =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+            $line =~ s|$url|<a href="./view_raw_source.cgi?pipeline_id=$pipeline_id&file=$url">$url</a>|;
         }
     }
 
@@ -205,7 +208,7 @@ if (scalar keys %states) {
         my @stats = stat $_; 
         
         push @$linked_files, {
-                                url => "./view_formatted_xml_source.cgi?file=$_",
+                                url => "./view_formatted_xml_source.cgi?pipeline_id=$pipeline_id&file=$_",
                                 label => basename($_),
                                 size => sprintf("%.1f", $stats[7]/1024) . ' kb',
                              };
@@ -218,7 +221,7 @@ my @submenu_links = ();
 if ($repository_root ne "unknown") {
         push(@submenu_links, { label => 'pipeline list', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" })
 }
-push(@submenu_links, { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file" });
+push(@submenu_links, { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file&pipeline_id=$pipeline_id" });
 
 $tmpl->param( FILE                => $file );
 $tmpl->param( DISPLAY_SOURCE      => $display_source );

@@ -49,7 +49,7 @@ if ( $pipeline_xml =~ m|(.+/(.+?))/workflow/runtime/(.+?)/([A-Z0-9]+)_(.+?)/| ) 
 
 ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
 ## has access to this pipeline.
-validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipeline_id);
+validate_user_authorization($ergatis_cfg, $pipeline_id);
 
 my $pipeline_xml_fh;
 if ($pipeline_xml =~ /\.gz/) {
@@ -91,6 +91,7 @@ foreach my $child ( $parent_commandset->children() ) {
     if ($child->gi eq 'command') {
         
         my %parts = &process_command($twig, $child);
+        $parts{'pipeline_id'} = $pipeline_id;
         push @{$elements}, \%parts;
         push @{$states{ $parts{state} }}, $parts{id};
     
@@ -119,20 +120,20 @@ for(my $i=0;$i<@$elements;$i++){
     foreach my $e (@cs_string_elts){
 	if( -f "$e"){
 	    if($e =~ /\.xml/){
-		$cs_formatted_string =~ s/$e/<a href='view_formatted_xml_source.cgi?file=$e'>$e\<\/a\>/;
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_xml_source.cgi?pipeline_id=$pipeline_id&file=$e'>$e\<\/a\>/;
 	    }
 	    else{
-		$cs_formatted_string =~ s/$e/<a href='view_formatted_log_source.cgi?file=$e'>$e\<\/a\>/;
+		$cs_formatted_string =~ s/$e/<a href='view_formatted_log_source.cgi?pipeline_id=$pipeline_id&file=$e'>$e\<\/a\>/;
 	    }
 	}
 	elsif($e =~ /\=/){
 	    my($key,$value) = split(/=/,$e);
 	    if( -f "$value"){
 		if($value =~ /\.xml/){
-		    $cs_formatted_string =~ s/$value/<a href='view_formatted_xml_source.cgi?file=$value'>$value\<\/a\>/;
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_xml_source.cgi?pipeline_id=$pipeline_id&file=$value'>$value\<\/a\>/;
 		}
 		else{
-		    $cs_formatted_string =~ s/$value/<a href='view_formatted_log_source.cgi?file=$value'>$value\<\/a\>/;
+		    $cs_formatted_string =~ s/$value/<a href='view_formatted_log_source.cgi?pipeline_id=$pipeline_id&file=$value'>$value\<\/a\>/;
 		}
 	    }
 	}
@@ -175,8 +176,8 @@ $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'pipeline list', is_last => 0, url => "./pipeline_list.cgi?repository_root=$repository_root" },
                                         { label => 'pipeline view', is_last => 0, url => "./view_pipeline.cgi?instance=$parent_pipeline" },
                                         { label => 'view configuration', is_last => 0, url => 
-                                        "./view_formatted_ini_source.cgi?file=$repository_root/workflow/runtime/$component_name/${pipeline_id}_$output_token/$component_name.$output_token.final.config" },
-                                        { label => 'view xml', is_last => 1, url => "./view_formatted_xml_source.cgi?file=$pipeline_xml" },
+                                        "./view_formatted_ini_source.cgi?pipeline_id=$pipeline_id&file=$repository_root/workflow/runtime/$component_name/${pipeline_id}_$output_token/$component_name.$output_token.final.config" },
+                                        { label => 'view xml', is_last => 1, url => "./view_formatted_xml_source.cgi?pipeline_id=$pipeline_id&file=$pipeline_xml" },
                                      ] );
 
 print $tmpl->output;
@@ -234,6 +235,7 @@ sub process_subflowgroup {
                       ret_value => 'unknown',
                       state => 'unknown',
                       workflow_id => '?',
+                      pipeline_id => $pipeline_id,
                       htc_id => '?',
                       log => '?',
                    );

@@ -370,14 +370,14 @@ sub sort_pipelines {
                         "$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/" .
                         "$$component_ref{name}.$$component_ref{token}.final.config" ) {
                     $components{ $$component_ref{name} }[-1]{component_config_link} = 
-                            "./view_formatted_ini_source.cgi?file=$repository_root" .
-                            "/workflow/runtime/$$component_ref{name}/" .
+                            "./view_formatted_ini_source.cgi?pipeline_id=$pipelines{$pipeline}{pipeline_id}&" .
+                            "file=$repository_root/workflow/runtime/$$component_ref{name}/" .
                             "$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}" .
                             "/$$component_ref{name}.$$component_ref{token}.final.config";
                 } else {
                     $components{ $$component_ref{name} }[-1]{component_config_link} = 
-                            "./view_formatted_ini_source.cgi?file=$repository_root/" .
-                            "workflow/runtime/$$component_ref{name}/" .
+                            "./view_formatted_ini_source.cgi?pipeline_id=$pipelines{$pipeline}{pipeline_id}&" .
+                            "file=$repository_root/workflow/runtime/$$component_ref{name}/" .
                             "$pipelines{$pipeline}{pipeline_id}_$$component_ref{token}/" .
                             "$$component_ref{name}.$$component_ref{token}.user.config";
                 }

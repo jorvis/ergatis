@@ -12,7 +12,7 @@ print $q->header( -type => 'text/plain' );
 
 ## will be like:
 my $file = $q->param("file") || die "pass file";
-
+my $pipeline_id = $q->param("pipeline_id") || undef;
 
 ## the file may have been compressed
 if ( ! -e $file && -e "$file.gz" ) {
@@ -40,19 +40,11 @@ if ($file !~ /\.xml$/ &&
 
 ## If our file is a component of a specific pipeline we will want to restrict 
 ## access to it if account pipeline security is enabled
-if ( $file =~ m|(.+/(.+?))/workflow/runtime/(.+?)/([A-Z0-9]+)_(.+?)/| ) {
-    my $repository_root = $1;
-    my $project = $2;
-    my $component_name = $3;
-    my $pipeline_id = $4;
-    my $output_token = $5;
 
-    ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
-    ## has access to this pipeline.
-    my $auth = validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipeline_id, 1);
-    quitNicely("User does not have authorization to view this resource") if (! $auth);
-}
-
+## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
+## has access to this pipeline.
+my $auth = validate_user_authorization($ergatis_cfg, $pipeline_id, 1) if ($file !~ /\.ini$/);
+quitNicely("User does not have authorization to view this resource") if (! $auth);
 
 ## open the file and print it to the screen.
 my $ifh;

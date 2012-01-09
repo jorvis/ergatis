@@ -142,7 +142,7 @@ if (-s $pipeline || -s "$pipeline.gz") {
 	if(-s "$dname/replace_template_keys.stderr"){
 	    $messages_line .= "Possible mismatch between component template and configuration file";
 	    $messages_line .= "<br>".`cat $dname/replace_template_keys.stderr`;
-	    $messages_line .= "<br>Check <a href='view_formatted_ini_source.cgi?file=$component_conf_varreplaced'>$component_conf_varreplaced</a>";
+	    $messages_line .= "<br>Check <a href='view_formatted_ini_source.cgi?pipeline_id=$pipelineid&file=$component_conf_varreplaced'>$component_conf_varreplaced</a>";
 	}
 	else{
 
@@ -154,7 +154,7 @@ if (-s $pipeline || -s "$pipeline.gz") {
     else{
 	#Error creating config file
 	if(-s "$dname/replace_config_keys.stderr"){
-	    $messages_line .= "<br>Check <a href='view_formatted_ini_source.cgi?file=$component_conf_nonvarreplaced'>$component_conf_nonvarreplaced</a>";
+	    $messages_line .= "<br>Check <a href='view_formatted_ini_source.cgi?pipeline_id=$pipelineid&file=$component_conf_nonvarreplaced'>$component_conf_nonvarreplaced</a>";
 	    $component_state = 'component configuration error';
 	    push @state_elements, { state => $component_state, count => 1, width => $progress_image_width };  
 	}
@@ -178,6 +178,7 @@ $tmpl->param( PARENT_PIPELINE => $parent_pipeline );
 $tmpl->param( PARENT_IS_RUNNING => $p_pipeline_state eq "running" ? 1 : 0 );
 $tmpl->param( PARENT_PIPELINE_STATE => $p_pipeline_state );
 $tmpl->param( PIPELINE => $pipeline );
+$tmpl->param( PIPELINE_ID => $pipelineid);
 $tmpl->param( PIPELINE_EXISTS => $pipeline_exists );
 $tmpl->param( RUNTIME => $runtime );
 $tmpl->param( STATE_ELEMENTS => \@state_elements );

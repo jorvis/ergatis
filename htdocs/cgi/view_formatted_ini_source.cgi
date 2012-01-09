@@ -3,6 +3,7 @@
 use strict;
 use CGI;
 use CGI::Carp qw(fatalsToBrowser);
+use File::Basename;
 use Ergatis::Common;
 use Ergatis::ConfigFile;
 use HTML::Template;
@@ -18,9 +19,15 @@ my $tmpl = HTML::Template->new( filename => 'templates/view_formatted_ini_source
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
+## Pretty damn messy way of ensuring user can view non-protected files (i.e. ergatis.ini)
+## when authentication is on
+## TODO: Figure out a better way to allow access to non-critical configurations
+my %exempt_files = ( 'ergatis.ini' => 1 );
+
 ## will be like:
 ## /usr/local/scratch/annotation/TTA1/workflow/runtime/wu-blastp/20724_AllGroup.niaa/component.conf.bld.ini
 my $file = $q->param("file") || die "pass file";
+my $pipeline_id = $q->param("pipeline_id") || undef;
 
 ## don't do it if the file doesn't end in .ini or .conf or config
 if ($file !~ /\.ini$/ && $file !~ /\.conf$/ && $file !~ /\.config$/ && 
@@ -29,18 +36,7 @@ if ($file !~ /\.ini$/ && $file !~ /\.conf$/ && $file !~ /\.config$/ &&
     quitNicely("i decline to show this type of file.");
 }
 
-my ($repository_root, $project, $pipelineid);
-if ( $file =~ m|(.+/(.+?))/workflow/runtime/.+?/([A-Z0-9]+)_(.+?)/| ) {
-    $repository_root = $1;
-    $project = $2;
-    $pipelineid = $3;
-
-    ## If per-account pipeline security is enabled we will want to ensure that the user currently logged in
-    ## has access to this pipeline.
-    validate_user_authorization($ergatis_cfg, $project, $repository_root, $pipelineid);    
-} elsif ($file !~ /ergatis.ini/) {
-    die "failed to extract a repository root, project identifier or pipeline ID from $file. Expected a workflow/runtime subdirectory somewhere."
-}
+validate_user_authorization($ergatis_cfg, $pipeline_id) if (! exists($exempt_files{basename($file)}));
 
 my $sections = [];
 
@@ -62,19 +58,19 @@ for my $section ( $ini->Sections ) {
         ## look for any linkable xml
         if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:xml|instance|bsml))\s*$^i ) {
             $url = $1;
-            $value =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url">$url</a>|;
+            $value =~ s|$url|<a href="./view_formatted_xml_source.cgi?file=$url&pipeline_id=$pipeline_id">$url</a>|;
         }
 
         ## look for any linkable ini
         if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.(?:ini|config|conf))\s*$^i ) {
             $url = $1;
-            $value =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url">$url</a>|;
+            $value =~ s|$url|<a href="./view_formatted_ini_source.cgi?file=$url&pipeline_id=$pipeline_id">$url</a>|;
         }
 
         ## look for any linkable lists
         if ( $value =~ m^(?<!\$\;)(/[/a-z0-9_\-.]+\.list)\s*$^i ) {
             $url = $1;
-            $value =~ s|$url|<a href="./view_raw_source.cgi?file=$url">$url</a>|;
+            $value =~ s|$url|<a href="./view_raw_source.cgi?file=$url&pipeline_id=$pipeline_id">$url</a>|;
         }
         
         push @$parameters, { parameter => $parameter, value => $value, comment => $comment };
@@ -88,7 +84,7 @@ $tmpl->param( SECTIONS            => $sections );
 
 $tmpl->param( QUICK_LINKS         => &get_quick_links($ergatis_cfg) );
 $tmpl->param( SUBMENU_LINKS       => [
-                                        { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file" },
+                                        { label => 'view unformatted version', is_last => 1, url => "./view_raw_source.cgi?file=$file&pipeline_id=$pipeline_id" },
                                      ] );
 
 print $tmpl->output;
