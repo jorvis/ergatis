@@ -60,10 +60,6 @@ gene_id, position_in_gene, syn_nonsyn, product, gene_direction, ref_codon, ref_a
  Kevin Galens
  kgalens@gmail.com
 
-=head1 DEVEL
-
-/export/svn/ergatis/src/perl/nucmer-snp2merged.pl --input_file /usr/local/projects/PVCHO/kgalens/output_repository/snp-add-gene-info/9031_default/snp-add-gene-info.default.no_indels.snps --output_file /tmp/output.file
-
 =cut
 
 use strict;
@@ -172,13 +168,27 @@ sub create_merged_table_row {
 
 	$row->molecule( $cols[10] );
 	$row->refpos( $cols[0] );
-	$row->syn( $cols[15] );
+	$row->syn( $cols[16] );
 	$row->refbase( $cols[1] );
 	$row->gene_name( $cols[12] );
 	$row->product( $cols[17] );
-	$row->gene_start( $cols[13] );
-	$row->gene_stop( $cols[14] );
-	$row->pos_in_gene( $cols[16] );
+	
+	# Determine start and stop coordinates. There could be two overlapping genes
+	# so we need to split on / and check both individually.
+	my @strands = split(m|/|, $cols[18] );
+	my @left = split(m|/|, $cols[13]);
+	my @right = split(m|/|, $cols[14]);
+	my (@start, @stop);
+	for( my $i = 0; $i < @strands; $i++ ) {
+	  my ($start, $stop) = ($left[$i],$right[$i]);
+	  ($start, $stop) = ($stop, $start) if( $left[$i] ne 'NA' && $strands[$i] == -1 );
+	  push(@start, $start);
+	  push(@stop, $stop);
+	}
+	$row->gene_start( join("/", @start) );
+	$row->gene_stop( join("/", @stop) );
+
+	$row->pos_in_gene( $cols[15] );
 	$row->ref_codon( $cols[19] );
 	$row->ref_aa( $cols[20] );
 
