@@ -35,8 +35,8 @@ sub new {
 			  'query_bases' => {},
 			  'num_hits' => {}
 			 };
-  $self->row( $row ) if( defined( $row ) );
   bless($self, $class);
+  $self->row( $row ) if( defined( $row ) );
   return $self;
 }
 
@@ -47,7 +47,8 @@ sub row {
 }
 
 sub is_column_multiple {
-  my ($class, $col) = @_;
+  my ($col) = @_;
+  die("Could not find col: $col") unless( exists( $columns{$col} ) );
   return $columns{$col}->{'multiple'};
 }
 
@@ -58,38 +59,65 @@ sub query_base {
   return $self->{'query_bases'}->{$query} or undef;
 }
 
+sub num_hit {
+  my ($self, $query, $num_hit) = @_;
+  croak("Subroutine num_hit requires query name") unless( defined( $query ) );
+  $self->{'num_hits'}->{$query} = $num_hit if( defined( $num_hit ) );
+  return $self->{'num_hits'}->{$query};
+}
+
 sub get_queries {
   my ($self) = @_;
   return keys %{$self->{'query_bases'}};
 }
 
-sub num_hit {
-  my ($self, $query, $num_hit) = @_;
-  croak("Subroutine num_hit requires query name") unless( defined( $query ) );
-  $self->{'num_hits'}->{$query} = $num_hit if( defined( $num_hit ) );
-  return $self->{'num_hits'}->{$query} or undef;
-}
-
 sub to_obj {
   my ($string, @queries) = @_;
- #  my @c = split(/\t/, $string);
-#   my @row;
-  
-#   foreach my $col ( &get_sorted_columns() ) {
-# 	if( &is_columns_multiple( $col ) ) {
-# 	  # Add columns for multiple
-# 	  my @tmp = @c[$columns{$col}->{'index'} .. ($columns{$col}->{'index'} + $num_queries - 1)];
-# 	  push(@row, \@tmp);
 
-# 	  ## Slice the rows out so indexes will correctly match
-# 	  @c = @c[0..$columns{$col}->{'index'},($columns{$col}->{'index'}+$num_queries)..(scalar(@c))];
+  # Delimited by tabs
+  my @c = split(/\t/, $string);
 
-# 	} else {
-# 	  push(@row, $c[$columns{$col}->{'index'}]);
-# 	}
-#   }
+  # Count the number of queries
+  my $num_queries = scalar(@queries);
 
-#   new MergedTable::Row( \@row );
+  # We should make sure we have the correct number of columns
+  # based on the passed in queries. We have two options, because
+  # the num_hits columns are optional.
+  my @all_columns = &get_columns();
+  my ($e1, $e2) = ( ( (@all_columns-2) + $num_queries ), ( (@all_columns-2) + (2 * $num_queries) ) );
+  die("Row did not contain the expected number of columns based on the queries passed in. ".
+	  "Number of queries passed in: $num_queries. Number of columns parsed: ".scalar(@c).". ".
+	  "Expected either ".$e1." or ".$e2." columns")
+	unless( @c == $e1 || @c == $e2 );
+
+  # Create the object we will eventually return
+  my $row = new SNP::MergedTable::Row;
+
+  # Grab all the columns and add the values to the object
+  foreach my $col ( &get_sorted_columns() ) {
+ 	if( &is_column_multiple( $col ) ) {
+
+ 	  # Add columns for multiple
+ 	  my @tmp = @c[$columns{$col}->{'index'} .. ($columns{$col}->{'index'} + $num_queries - 1)];
+	  die("Didn't slice correctly") unless( @tmp == $num_queries );
+	  for( my $i = 0; $i < scalar(@tmp); $i++ ) {
+		if( $col eq 'query_bases' ) {
+		  $row->query_base( $queries[$i], $tmp[$i] );
+		} elsif( $col eq 'num_hits' ) {
+		  $row->num_hit($queries[$i], $tmp[$i]);
+		}
+	  }
+
+ 	  ## Slice the rows out so indexes will correctly match
+ 	  @c = @c[0..$columns{$col}->{'index'},($columns{$col}->{'index'}+$num_queries)..(scalar(@c))];
+
+ 	} else {
+	  $row->set_column( $col, $c[$columns{$col}->{'index'}] );
+ 	}
+  }
+
+  return $row;
+
 }
 
 sub to_string {
@@ -97,7 +125,7 @@ sub to_string {
 
   ########## Deal with the options ##########
   foreach my $req ( qw(queries) ) {
-	die("Option 'queries' is required to ".__PACKAGE__."::to_string")
+	die("Option '$req' is required to ".__PACKAGE__."::to_string")
 	  unless( exists( $options->{$req} ) );
   }
 
@@ -118,7 +146,7 @@ sub to_string {
   foreach my $col ( &get_sorted_columns() ) {
 	next if( $col eq 'num_hits' && !$include_num_hits );
 
-	if( $self->is_column_multiple( $col ) ) {
+	if( &is_column_multiple( $col ) ) {
 	  my $missing_value;
 	  if( $col eq 'query_bases' ) {
 		$missing_value = ($missing_query_bases_nohit) ? "No Hit" : $self->{'row'}->{'refbase'};
@@ -159,6 +187,26 @@ sub get_columns {
   return keys %columns;
 }
 
+sub get_index_by_column_name {
+  my ($column_name) = @_;
+  return unless( exists( $columns{$column_name} ) );
+  return $columns{$column_name}->{'index'};
+}
+
+sub get_column_name_by_index {
+  my ($index) = @_;
+
+  my $retval;
+  foreach my $column ( &get_columns() ) {
+	if( $columns{$column}->{'index'} == $index ) {
+	  $retval = $column;
+	  last;
+	}
+  }
+  return $retval;
+  
+}
+
 ## Checks to see that the row is valid. 
 sub is_row_valid {
   my ($self) = @_;
@@ -183,6 +231,20 @@ sub is_row_valid {
   
 }
 
+sub set_column {
+  my ($self, $name, $value) = @_;
+  
+  if( $columns{$name}->{'multiple'} == 1 ) {
+	my $aref = $value;
+	croak("Subroutine $AUTOLOAD requires one argument, an arrayref.") 
+	  unless( ref( $aref ) eq 'ARRAY' );
+	$self->{'row'}->{ $name } = $aref;
+  } else {
+	$self->{'row'}->{ $name } = $value;
+  }
+  return $self->{'row'}->{ $name };
+}
+
 sub AUTOLOAD {
   my $self = shift;
   my $name = $AUTOLOAD;
@@ -192,14 +254,8 @@ sub AUTOLOAD {
   croak("Method missing: $AUTOLOAD") unless( exists( $columns{$name} ) );
   
   if( @_ ) {
-	if( $columns{$name}->{'multiple'} == 1 ) {
-	  my $aref = shift;
-	  croak("Subroutine $AUTOLOAD requires one argument, an arrayref.") 
-		unless( ref( $aref ) eq 'ARRAY' );
-	  $self->{'row'}->{ $name } = $aref;
-	} else {
-	  return $self->{'row'}->{ $name } = shift;
-	}
+	my $value = shift;
+	$self->set_column( $name, $value );
   } else {
 	return $self->{'row'}->{ $name };
   }
