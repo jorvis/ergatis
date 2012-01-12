@@ -99,7 +99,7 @@ while( my $line = <TBL> ) {
 	unless( exists( $snps->{$refpos} ) ) {
 		print STDERR "No query blast hits at SNP location $refpos\n";
 	}
-
+	
 	print $outfh "$refpos\t$gene\t$syn\t$refbase\t";
 
 	my $num_hits = "";
@@ -275,14 +275,9 @@ sub get_codon_info {
 		$retval->{'pos_in_gene'} =  $coords->{$gene}->{'start'} - $refpos + 1;
 	}
 
-	my $pos_in_codon = (($retval->{'pos_in_gene'} + 1) % 3) + 1;;
-	if( !$forward ) {
-		if( $pos_in_codon == 3 ) {
-			$pos_in_codon = 1;
-		} elsif( $pos_in_codon == 1 ) {
-			$pos_in_codon = 3;
-		}
-	} 
+	my $pos_in_codon = $retval->{'pos_in_gene'} % 3;
+	$pos_in_codon = 3 if( $pos_in_codon == 0);
+
 	my ($rcodon, $qcodon);
   QUERY:
 	foreach my $q ( keys %{$hits} ) {
@@ -298,10 +293,18 @@ sub get_codon_info {
 			next HIT if( $qstart > 21 || $qend < 21 );
 
 			my $offset = 20 - ($qstart - 1);
-			$offset = $offset - ($pos_in_codon - 1);
+			if( $forward ) {
+			  $offset = $offset - ($pos_in_codon - 1);
+			} else {
+			  my $t = 0;
+			  $t = 1 if( $pos_in_codon == 2 );
+			  $t = 2 if( $pos_in_codon == 1 );
+			  $offset -= $t;
+			}
 
 			my $refcodon = substr( $qseq, $offset, 3 );
 			my $query_codon = substr( $sseq, $offset, 3 );
+
 
 			if( !$forward ) {
 				$refcodon = &reverse_complement( $refcodon );
@@ -342,12 +345,13 @@ sub get_codon_info {
 		$retval->{'query_codon'} = uc($qcodon);
 		$retval->{'query_aa'} = &aa(uc($qcodon));
 	}
+
 	return $retval;
 }
 sub reverse_complement {
 	my ($codon) = @_;
 	my $rev = reverse($codon);
-	$rev =~ tr/acgt/tgca/;
+	$rev =~ tr/acgtACGT/tgcaTGCA/;
 	return $rev;
 }
 
