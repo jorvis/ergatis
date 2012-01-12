@@ -116,9 +116,13 @@ sub parse_ref_genbank {
                                 } else {
                                        print FTAB $feat_object->location->start."\t".$feat_object->location->end."\t";
                                 }
-                                for my $product ($feat_object->get_tag_values("product")) {
-                                        print FTAB "$product\n";
-                                }
+				if($feat_object->has_tag("product")) {
+                                	for my $product ($feat_object->get_tag_values("product")) {
+                                        	print FTAB "$product\n";
+                                	}
+				} else {
+					print FTAB "NA\n";
+				}
                         }
                 }
         }
