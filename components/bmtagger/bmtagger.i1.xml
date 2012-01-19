@@ -33,7 +33,7 @@
             </param>
             <param>  
                 <key>--input_file1</key>
-                <value>$;ITER_FILE_PATH$;</value>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
                 <key>--reference_bitmask</key>

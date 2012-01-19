@@ -93,7 +93,7 @@ my %options = ();
 GetOptions(\%options, 
            'bmtagger_path|b=s',
            'input_file1|i=s',
-           'input_file2|j=s'
+           'input_file2|j=s',
            'reference_bitmask|r=s',
            'reference_srprism|s=s',
            'input_format|f=s',
@@ -117,6 +117,15 @@ my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE' =>$logfile,
                                  'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
+
+## add the path to bmtagger to PATH
+my $bmtagger_base = '';
+if ( $options{bmtagger_path} =~ /(.+)bmtagger.sh$/ ) {
+    $ENV{PATH} = "$1:$ENV{PATH}";
+    print STDERR "INFO: PATH is now: $ENV{PATH}\n";
+} else {
+    die "ERROR: Unable to glean path from bmtagger_path argument value\n";
+}
 
 my $cmd = $options{bmtagger_path} . " -b " . $options{reference_bitmask} . 
           " -x " . $options{reference_srprism} . " -T " . $options{tmp_dir};
@@ -170,8 +179,8 @@ sub check_parameters {
     ##
     ## you can do other things here, such as checking that files exist, etc.
     ##
-    if ( $$options{input_format} =~ /^fast[qa]$/ ) {
-        die "ERROR: --input_format must be either 'fasta' or 'fastq'";
+    if ( $$options{input_format} ne 'fastq' && $$options{input_format} ne 'fasta' ) {
+        die "ERROR: --input_format ($$options{input_format}) must be either 'fasta' or 'fastq'";
     }
 
     if ( $$options{input_class} ne 'single' && $$options{input_class} ne 'paired' ) {
