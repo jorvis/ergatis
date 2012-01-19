@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bmtagger compute</name>
+	
+	 <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+	<!-- end of pre processing -->
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>bmtagger</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/run_bmtagger</executable>
+            <arg></arg>
+            <param>  
+                <key>--bmtagger_path</key>
+                <value>$;BMTAGGER_EXEC$;</value>
+            </param>
+            <param>  
+                <key>--input_file1</key>
+                <value>$;ITER_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--reference_bitmask</key>
+                <value>$;REFERENCE_BITMASK$;</value>
+            </param>
+            <param>  
+                <key>--reference_srprism</key>
+                <value>$;REFERENCE_SRPRISM$;</value>
+            </param>
+            <param>  
+                <key>--input_format</key>
+                <value>$;INPUT_FORMAT$;</value>
+            </param>
+            <param>  
+                <key>--input_class</key>
+                <value>single</value>
+            </param>
+            <param>  
+                <key>--tmp_dir</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.raw</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>bmtagger_index workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunDistributedCommand</type>
+            <name>Make index for bmfilter</name>
+            <state>incomplete</state>
+            <executable>$;BMTOOL_EXEC$;</executable>
+            <arg>-d $;INPUT_FILE$; -o $;OUTPUT_DIRECTORY$;/$;OUTPUT_LABEL$;.bitmask -A $;MAX_AMBIGUITIES$; -w $;WORD_SIZE$;</arg>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+                <memory>$;MEMORY_REQUIRED$;M</memory>
+            </dceSpec>
+        </command>
+        <command>
+            <type>RunDistributedCommand</type>
+            <name>Make index for srprism</name>
+            <state>incomplete</state>
+            <executable>$;SRPRISM_EXEC$;</executable>
+            <arg>mkindex -i $;INPUT_FILE$; -o $;OUTPUT_DIRECTORY$;/$;OUTPUT_LABEL$;.srprism -M 7168</arg>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+                <memory>$;MEMORY_REQUIRED$;M</memory>
+            </dceSpec>
+        </command>
+        <command>
+            <type>RunDistributedCommand</type>
+            <name>Make blastdb for BLAST</name>
+            <state>incomplete</state>
+            <executable>$;MAKEBLASTDB_EXEC$;</executable>
+            <arg>-in $;INPUT_FILE$; -dbtype nucl</arg>
+            <dceSpec type="sge">
+                <OS>linux</OS>
+                <memory>$;MEMORY_REQUIRED$;M</memory>
+            </dceSpec>
+        </command>
+    </commandSet>
+</commandSetRoot>
