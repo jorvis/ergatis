@@ -121,7 +121,7 @@ $logger = $logger->get_logger();
 ## add the path to bmtagger to PATH
 my $bmtagger_base = '';
 if ( $options{bmtagger_path} =~ /(.+)bmtagger.sh$/ ) {
-    $ENV{PATH} = "$1:$ENV{PATH}";
+    $ENV{PATH} = "$1:/usr/local/packages/ncbi-blast-2.2.21+/bin:$ENV{PATH}";
     print STDERR "INFO: PATH is now: $ENV{PATH}\n";
 } else {
     die "ERROR: Unable to glean path from bmtagger_path argument value\n";
@@ -149,17 +149,9 @@ print STDERR "INFO: running command: $cmd\n";
 
 system($cmd);
 
-if ($? == -1) {
-    print "failed to execute: $!\n";
-    exit(1);
-} elsif ($? & 127) {
-    printf "child died with signal %d, %s coredump\n",
-           ($? & 127),  ($? & 128) ? 'with' : 'without';
-    exit(1);
-} else {
-    printf "child exited with value %d\n", $? >> 8;
-    exit(0);
-}
+my $exit_val = $? >> 8;
+
+exit($exit_val);
 
 
 
