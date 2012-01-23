@@ -1,5 +1,6 @@
 next
 ----
+-changed CA component to use remote-serial type instead of RunDistributedCommand
 -fixed bug when viewing any xml and config ini files associated with a pipeline
 -Removed configurations from skirret pipeline
 -added template: Prokaryotic_Annotation_Pipeline_Velvet_Assembly
