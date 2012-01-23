@@ -6,54 +6,60 @@
         <name>velvet workflow</name>
         <!--Preprocessing-->
         <command>
-        	<type>RunUnixCommand</type>
-        	<name>create output directory</name>
-        	<state>incomplete</state>
-			<executable>mkdir</executable>
-			<arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
-		</command>
-		<command>				
-			<type>RunUnixCommand</type>
-			<name>create temp directory</name>
-			<state>incomplete</state>
-			<executable>mkdir</executable>
-    	    <arg>-p -m 777 $;TMP_DIR$;</arg>
-		</command>
-    	<!--Processing-->
-		<command>
-			<type>RunDistributedCommand</type>
-			<name>run Celera Assembler</name>
-			<state>incomplete</state>
-			<executable>$;BIN_DIR$;/runCA_wrapper</executable>
-			<param>
-				<key>--input_list</key>
-				<value>&quot;$;INPUT_FILE_LIST$;&quot;</value>
-			</param>
-			<param>
-				<key>--input_file</key>
-				<value>&quot;$;INPUT_FILE$;&quot;</value>
-			</param>
-			<param>
-				<key>--runca_opts</key>
-				<value>&quot;-p $;OUTPUT_PREFIX$; -d $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$; -s $;SPEC_FILE$;&quot;</value>
-			</param>
-			<param>
-				<key>--runca_bin</key>
-				<value>$;CELERA_ASSEMBLER_EXEC$;</value>
-			</param>
-			<param>
-				<key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stdout</value>
-			</param>
-			<param>
-				<key>stderr</key>
-				<value>$;OUTPUT_DIRECTORY$;/runCA_wrapper.stderr</value>
-			</param>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>                
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>replace template keys</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/replace_template_keys</executable>
+            <param>
+               <key>--template_xml</key>
+               <value>$;DOCS_DIR$;/celera-assembler-distributed.xml</value>
+            </param>
+            <param>
+               <key>--component_conf</key>
+               <value>$;COMPONENT_CONFIG$;</value>
+            </param>
+            <param>
+               <key>--output_xml</key>
+               <value>$;WORKFLOW_REPOSITORY$;/celera-assembler-distributed.xml</value>
+            </param>
+            <param>
+               <key>--distribopts</key>
+               <value>nodistrib=$;NODISTRIB$;</value>
+            </param>
+            <param>
+               <key>stdout</key>
+               <value>$;TMP_DIR$;/replace_template_keys.stdout</value>
+            </param>
+            <param>
+               <key>stderr</key>
+               <value>$;TMP_DIR$;/replace_template_keys.stderr</value>
+            </param>
+        </command>
+        <!--Processing-->
+        <commandSet type="remote-serial">
+            <state>incomplete</state>
+            <name>run Celera Assembler</name>
+            <fileName>$;WORKFLOW_REPOSITORY$;/celera-assembler-distributed.xml</fileName>
             <dceSpec type="sge">
-			    <memory>12G</memory>
-			</dceSpec>
-		</command>
-        <!--Postprocessing-->		 
+                <group>$;PROJECT_CODE$;</group>
+                <OS>linux</OS>
+            </dceSpec>
+        </commandSet>
+        <!--Postprocessing-->         
         <command>
             <type>RunUnixCommand</type>
             <name>create assembly file list</name>
@@ -160,6 +166,6 @@
                 <key>--output_list</key>
                 <value>$;SCF_FASTA_OUTPUT_LIST$;</value>
             </param>
-        </command>                				
-	</commandSet>	
-</commandSetRoot>				
+        </command>                                
+    </commandSet>    
+</commandSetRoot>                
