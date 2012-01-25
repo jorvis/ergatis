@@ -1,5 +1,6 @@
 next
 ----
+-fixed issue with CGI::Session ID's being passed to SGE in environmental variables
 -changed CA component to use remote-serial type instead of RunDistributedCommand
 -fixed bug when viewing any xml and config ini files associated with a pipeline
 -Removed configurations from skirret pipeline

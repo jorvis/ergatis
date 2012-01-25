@@ -216,7 +216,11 @@ umask(0000);
                     print $pipeline_fh "export $env=\"$ENV{$env}\"\n";
                     print $debugfh "ENV $env=\"$ENV{$env}\"\n" if $self->{debug};
                 }
-                
+                ## Unset the HTTP_COOKIE env var as it contains our session ID
+                ## and would otherwise pass it to SGE where it can be seen by 
+                ## anyone
+                print $pipeline_fh "unset HTTP_COOKIE\n";
+
                 print $pipeline_fh "\n$sudo_prefix $runprefix $runstring";
                 
                 close $pipeline_fh;
