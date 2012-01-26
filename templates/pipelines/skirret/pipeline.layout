@@ -21,5 +21,9 @@
                 <state>incomplete</state>
                 <name>snp-add-gene-info.default</name>
             </commandSet>
+			<commandSet type="serial">
+				<state>incomplete</state>
+				<name>nucmer-snp2merged.default</name>
+			</commandSet>
         </commandSet>
 </commandSetRoot>
