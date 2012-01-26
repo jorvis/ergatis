@@ -1,5 +1,6 @@
 next
 ----
+-removed more extraneous env vars that are passed along to SGE.
 -fixed issue with CGI::Session ID's being passed to SGE in environmental variables
 -changed CA component to use remote-serial type instead of RunDistributedCommand
 -fixed bug when viewing any xml and config ini files associated with a pipeline

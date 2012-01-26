@@ -210,17 +210,21 @@ umask(0000);
                 print $pipeline_fh '#!/bin/bash', "\n\n";
                 
                 for my $env ( keys %ENV ) {
+                    ## We don't want HTTP_* or REMOTE_* env variables to 
+                    ## be pushed to SGE. 
+                    if ($env =~ /(^HTTP_|^REMOTE_)/) {
+                        print $debugfh "UNSETTING ENV $env\n" if $self->{debug};
+                        print $pipeline_fh "unset $env\n";
+                        next;
+                    }
+
                     ## don't do HTTP_ variables
                     next if $env =~ /^HTTP_/;
                     
                     print $pipeline_fh "export $env=\"$ENV{$env}\"\n";
                     print $debugfh "ENV $env=\"$ENV{$env}\"\n" if $self->{debug};
                 }
-                ## Unset the HTTP_COOKIE env var as it contains our session ID
-                ## and would otherwise pass it to SGE where it can be seen by 
-                ## anyone
-                print $pipeline_fh "unset HTTP_COOKIE\n";
-
+                
                 print $pipeline_fh "\n$sudo_prefix $runprefix $runstring";
                 
                 close $pipeline_fh;
