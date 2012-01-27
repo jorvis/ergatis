@@ -50,7 +50,7 @@ sub filter_excluded_regions {
     foreach my $row ( $table->get_rows ) {
        my $mol = $row->molecule();
        next unless( exists( $int_trees{$mol} ) );
-       my @overlaps = $int_trees{$mol}->searchInterval( $row->refpos, $row->refpos );
+       my @overlaps = $int_trees{$mol}->searchInterval( ($row->refpos -1), $row->refpos );
        if( @overlaps > 0 ) {
            my $c = $table->remove_row( $row );
            $removed += $c;
