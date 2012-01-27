@@ -55,6 +55,8 @@ use strict;
 use warnings;
 use Carp;
 use SNP::MergedTable::Row;
+use SNP::MergedTable::Filter;
+use Data::Dumper;
 
 sub new {
   my ($class, %options) = @_;
@@ -62,6 +64,7 @@ sub new {
 			  'rows' => {},
 			  'queries' => [],
 			  'query_hash' => {},
+			  'total_rows' => 0,
 			  'missing_query_bases_nohit' => 0,
 			  'include_num_hits' => 0
 			 };
@@ -127,6 +130,8 @@ sub parse {
 	my $row = SNP::MergedTable::Row::to_obj( $row_string, $self->queries() );
 	$self->add_row( $row );
   }
+  
+  return $self;
 }
 
 =back
@@ -235,7 +240,7 @@ sub add_query {
 
   # Also store it in the hash for quicker retrieval
   $self->{'query_hash'}->{$query} = 0 unless( exists( $self->{'query_hash'}->{$query} ) );
-  $self->{'query_hash'}->{'query'}++;
+  $self->{'query_hash'}->{$query}++;
 
   return 1;
 }
@@ -285,7 +290,7 @@ B<Description:> Will accept a string representation of a row or a SNP::MergedTab
  and store it as a row in the table. 
 
  *NOTE: If a string representation of a row is passed in, the current list of queries is
- used to determine the column headers unless specified with the $queries parameters. 
+ used to determine the column headers unless specified with the $queries parameter. 
  If a row string is passed in before the queries are set and the $queries parameter is not set,
  this method will fail.
 
@@ -299,16 +304,144 @@ B<Returns:> Nothing
 
 =cut 
 sub add_row {
-  my ($self, $row, $queries) = @_;
+    my ($self, $row, $queries) = @_;
+    
+    my $obj = $row;
+    if( ref( $row ) ne 'SNP::MergedTable::Row' ) {
+        $queries = $self->queries() unless( defined( $queries ) );
+        $obj = SNP::MergedTable::Row::to_obj( $queries );
+    }
 
-  my $obj = $row;
-  if( ref( $row ) ne 'SNP::MergedTable::Row' ) {
-	$queries = $self->queries() unless( defined( $queries ) );
-	$obj = SNP::MergedTable::Row::to_obj( $queries );
+    $self->{'rows'}->{$row->molecule} = {} unless( exists( $self->{'rows'}->{$row->molecule} ) );
+    $self->{'rows'}->{$row->molecule}->{$row->refpos} = {}
+        unless( exists( $self->{'rows'}->{$row->molecule}->{$row->refpos} ) );
+    $self->{'rows'}->{$row->molecule}->{$row->refpos}->{$row->gene_name} = $row;
+    
+    $self->{'total_rows'}++;
+
+}
+
+=head3 $merged_table->remove_row( )
+
+=over 3
+
+B<Description:> Will remove a row (or rows) if they exist. If row specified does
+    not exist, program will die. 
+
+B<Parameters:> $row: a SNP::MergedTable::Row object.
+
+B<Returns:> The number of rows removed from the table (should only ever be 1).
+
+=back
+
+=cut
+sub remove_row {
+    my ($self, $row) = @_;
+    die("remove_row requires a SNP::MergedTable::Row object")
+        unless( defined( $row ) && ref( $row ) eq 'SNP::MergedTable::Row' );
+        
+    my $gene;
+    $gene = $row->gene_name unless( $row->gene_name eq 'intergenic' );
+    my $count = $self->remove_row_by_position( $row->molecule, $row->refpos, $gene );
+    die("Expected to remove 1 and only 1 row. Removed $count rows.") unless( $count == 1 );
+    
+    return $count;
+}
+
+=head3 $merged_table->remove_row_by_position( )
+
+=over 3
+
+B<Description:> Will remove a row (or rows) if they exist. If row specified does
+    not exist, program will die. If a gene name is provided, only the SNP located
+    on that specified gene will be removed. If no gene name is provided, multiple
+    rows might be removed if multiple SNPs occur at the specified refpos.
+
+B<Parameters:> $molecule: Molecule name on which the SNP is located.
+               $refpos: The position on the molecule.
+               $gene: [Optional] The gene name on which the SNP is located.
+
+B<Returns:> The number of rows removed from the table.
+
+=back
+
+=cut
+sub remove_row_by_position {
+    my ($self, $molecule, $refpos, $gene) = @_;
+    die("Cannot remove row [$molecule, $refpos, $gene]. Does not exist")
+        unless( $self->row_exists( $molecule, $refpos, $gene ) );
+        
+    my $count = 0;
+    if( defined( $gene ) ) {
+        delete( $self->{'rows'}->{$molecule}->{$refpos}->{$gene} );
+        $count++;
+    } else {
+        my @genes = keys %{$self->{'rows'}->{$molecule}->{$refpos}};
+        delete( $self->{'rows'}->{$molecule}->{$refpos} );
+        $count = scalar(@genes);
+    }
+    
+    $self->{'total_rows'} -= $count;
+    return $count;
+}
+
+=head3 $merged_table->row_exists( )
+
+=over 3
+
+B<Description:> Checks to see if a specified row exists. If gene name is provided
+    will specifically look for a SNP stored under that gene name. If no gene name 
+    is provided, will return non-zero if any SNP is present at that refpos.
+
+B<Parameters:> $molecule: Molecule name on which the SNP is located.
+               $refpos: The position on the molecule.
+               $gene: [Optional] The gene name on which the SNP is located.
+
+B<Returns:> Non-zero if a row exists describing the SNP.
+
+=back
+
+=cut
+sub row_exists {
+    my ($self, $molecule, $refpos, $gene) = @_;
+    my $retval = 0;
+    
+    if( exists( $self->{'rows'}->{$molecule}->{$refpos} ) ) {
+        if( defined( $gene ) ) {
+            $retval = 1 if( exists( $self->{'rows'}->{$molecule}->{$refpos}->{$gene} ) );
+        } else {
+            $retval = 1;
+        }
+    }
+    return $retval;
+}
+
+=head3 $merged_table->get_rows( )
+
+=over 3
+
+B<Description:> Retrieves the rows for the table.
+
+B<Parameters:> None
+
+B<Returns:> An array of rows, sorted by molecule name then reference SNP position
+
+=back
+
+=cut 
+sub get_rows {
+  my ($self) = @_;
+  my @retval;
+  
+  foreach my $mol ( sort { $a cmp $b } keys %{$self->{'rows'}} ) {
+      foreach my $refpos ( sort { $a <=> $b } keys %{$self->{'rows'}->{$mol}} ) {
+          foreach my $gene_name ( sort { $a cmp $b } keys %{$self->{'rows'}->{$mol}->{$refpos}} ) {
+              push(@retval, $self->{'rows'}->{$mol}->{$refpos}->{$gene_name});
+          }
+      }
   }
-
-  $self->{'rows'}->{$row->molecule} = {} unless( exists( $self->{'rows'}->{$row->molecule} ) );
-  $self->{'rows'}->{$row->molecule}->{$row->refpos} = $row;
+  
+  return @retval;
 }
 
 =head3 $merged_table->get_row_by_position( $molecule, $refpos )
@@ -328,11 +461,11 @@ B<Returns:> Returns a SNP::MergedTable::Row object reference is row exists for a
 =cut 
 sub get_row_by_position {
   my ($self, $molecule, $refpos) = @_;
-  my $retval;
+  my @retval;
   if( exists( $self->{'rows'}->{$molecule} ) && exists(  $self->{'rows'}->{$molecule}->{$refpos} ) ) {
-	$retval = $self->{'rows'}->{$molecule}->{$refpos};
+      @retval = values( %{$self->{'rows'}->{$molecule}->{$refpos}} );
   }
-  return $retval;
+  return @retval;
 }
 
 =head3 $merged_table->get_header( )
@@ -356,7 +489,11 @@ sub get_header {
 	next if( $col eq 'num_hits' && !$self->include_num_hits );
 	if( SNP::MergedTable::Row::is_column_multiple( $col ) ) {
 	  $self->_determine_queries() unless( $self->num_queries > 0 );
-	  push( @header, $self->queries );
+	  my @queries = $self->queries;
+	  if( $col eq 'num_hits' ) {
+	      map { $_ = "num_hits: $_" } @queries;
+	  }
+	  push( @header, @queries );
 	} else {
 	  push( @header, $col );
 	}
@@ -377,28 +514,23 @@ sub _determine_queries {
   }
 }
 
-=head3 $merged_table->get_rows( )
+=head3 $merged_table->filter( $fh )
 
 =over 3
 
-B<Description:> Retrieves the rows for the table.
+B<Description:> Will filter the merged table file. Will only work with current
+    rows. Any future rows added will not be filtered.
 
-B<Parameters:> None
+B<Parameters:> $filter_name: the name of the filter. Must be valid
 
-B<Returns:> An array of rows, sorted by molecule name then reference SNP position
+B<Returns:> Nothing.
 
 =back
 
-=cut 
-sub get_rows {
-  my ($self) = @_;
-  my @retval;
-  foreach my $mol ( sort { $a cmp $b } keys %{$self->{'snps'}} ) {
-	foreach my $refpos ( sort { $a <=> $b } keys %{$self->{'snps'}->{$mol}} ) {
-	  push(@retval, $self->{'rows'}->{$mol}->{$refpos});
-	}
-  }
-  return @retval;
+=cut
+sub filter {
+    my ($self, $filter_name, @args) = @_;    
+    SNP::MergedTable::Filter::filter( $filter_name, $self, @args );
 }
 
 =head3 $merged_table->print_to_fh( $fh )

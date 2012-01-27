@@ -81,14 +81,14 @@ sub to_obj {
   my $num_queries = scalar(@queries);
 
   # We should make sure we have the correct number of columns
-  # based on the passed in queries. We have two options, because
-  # the num_hits columns are optional.
+  # based on the passed in queries. We have four options, because
+  # the num_hits columns are optional as well as the last column, properties.
   my @all_columns = &get_columns();
   my ($e1, $e2) = ( ( (@all_columns-2) + $num_queries ), ( (@all_columns-2) + (2 * $num_queries) ) );
   die("Row did not contain the expected number of columns based on the queries passed in. ".
 	  "Number of queries passed in: $num_queries. Number of columns parsed: ".scalar(@c).". ".
 	  "Expected either ".$e1." or ".$e2." columns")
-	unless( @c == $e1 || @c == $e2 );
+	unless( @c == $e1 || @c == $e2 || @c == $e1 - 1 || @c == $e2 - 1 );
 
   # Create the object we will eventually return
   my $row = new SNP::MergedTable::Row;
@@ -155,9 +155,11 @@ sub to_string {
 	  } else {
 		croak("Multiple column $col is not supported");
 	  }
-	  push(@retval, $self->multiple_column_to_string( $col, $queries, $missing_value ) );
+	  my $val = $self->multiple_column_to_string( $col, $queries, $missing_value ) || "";
+	  push(@retval, $val);
 	} else {
-	  push(@retval, $self->{'row'}->{$col});
+	  my $val = $self->{'row'}->{$col} || "";
+	  push(@retval, $val);
 	}
   }
 
@@ -225,6 +227,30 @@ sub is_row_valid {
 	}
 
 	last unless( $valid );
+  }
+  
+  # Check to make sure synonomous and non-synonomous labels make sense.
+  if( $valid ) {
+      unless( $self->gene_name eq 'intergenic' ) {
+          my $syn = $self->syn();
+          my @syn = split(/\//, $syn );
+          my $ref_aa = $self->ref_aa();
+          my $snp_aa = $self->snp_aa();
+          my @snpaa = split(/\//, $snp_aa );
+          for( my $i = 0; $i < @syn; $i++ ) {
+              if( !defined( $snpaa[$i] ) ) {
+                    print "SNPAA undefined:\n";
+                  print Dumper( \@snpaa );
+                  die("but why?");
+              }
+              if( ( $syn[$i] eq 'SYN' && $ref_aa ne $snpaa[$i] ) || ( $syn[$i] eq 'NSYN' && $ref_aa eq $snpaa[$i] )) {
+                  $valid = 0;
+                  my $pos = $self->refpos();
+                  $message = "SYN/NSYN not correct. [Position: $pos, $syn[$i], RefAA: $ref_aa, SNPAA: $snpaa[$i]]";
+                  print Dumper( $self );
+              }
+          }
+      }
   }
 
   return ($valid, $message);

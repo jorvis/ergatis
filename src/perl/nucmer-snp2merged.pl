@@ -91,9 +91,11 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
+print "Parsing nucmer snp file: $options{'input_file'}\n";
 my $table = &parse_nucmer_snp_file( $options{'input_file'} );
+print "Done parsing input file. Printing to output file: $options{'output_file'}\n";
 $table->print_to_file( $options{'output_file'} );
-print "$options{'output_file'}\n";
+print "Finished. Output here: $options{'output_file'}\n";
 
 sub parse_nucmer_snp_file {
   my ($input_file) = @_;
@@ -115,6 +117,9 @@ sub parse_nucmer_snp_file {
   return $table;
 }
 
+## We add the SNP codon, SNP aa and SYN/NSYN at the very end, in case we have
+# multiple variants. This is also the time we count the number of 
+# snps per gene.
 sub add_snp_counts {
   my ($table) = @_;
   foreach my $row ( $table->get_rows ) {
@@ -124,13 +129,21 @@ sub add_snp_counts {
 	  die("Could not find snp codon/aa info for ".$row->refpos) 
 		unless( exists( $snp_nucleotides->{$row->refpos} ) );
 
-	  my (@codons, @aas);
-	  map {
-		push(@codons, $snp_nucleotides->{$row->refpos}->{$_}->{'codon'} );
-		push(@aas, $snp_nucleotides->{$row->refpos}->{$_}->{'aa'});
-	  } keys %{$snp_nucleotides->{$row->refpos}};
+	  my (@codons, @aas, @syn);
+	  foreach my $refbase ( keys %{$snp_nucleotides->{$row->refpos}} ) {
+	      foreach my $gene_name ( keys %{$snp_nucleotides->{$row->refpos}->{$refbase}} ) {
+	          next unless( $gene_name eq $row->gene_name );
+	          my $codon = $snp_nucleotides->{$row->refpos}->{$refbase}->{$gene_name}->{'codon'};
+	          my $snpaa = $snp_nucleotides->{$row->refpos}->{$refbase}->{$gene_name}->{'aa'};
+	          push(@codons, $codon);
+	          push(@aas, $snpaa);
+	          my $t = ( $row->ref_aa() eq $snpaa ) ? 'SYN' : 'NSYN';
+	          push(@syn, $t);
+	      }
+	  }
 	  $row->snp_codon( join("/", @codons) );
 	  $row->snp_aa( join("/", @aas) );
+	  $row->syn( join("/", @syn) );
 	}
 
 	my @genes = split("/", $row->gene_name);
@@ -155,96 +168,124 @@ sub add_snp_counts {
 sub create_merged_table_row {
   my ($table, @cols) = @_;
 
-  my $row = $table->get_row_by_position( $cols[10], $cols[0] );
-  
-  if ( !defined( $row ) ) {
-	$row = new SNP::MergedTable::Row;
+  # We might have multiple rows at a certain position if the SNP
+  # is found within overlapping genes. This would result in the reference
+  # position having multiple codons/amino acids, each being represented by
+  # an individual row.
+  my @rows = $table->get_row_by_position( $cols[10], $cols[0] );
+
+  if ( @rows == 0 ) {
 
 	# Check to see if there is an indel here.
 	# merged table doesn't support indels.
 	if ( $cols[1] eq '.' || $cols[2] eq '.' ) {
 	  die("Input file should not have indels. Please use input file without indels");
 	}
-
-	$row->molecule( $cols[10] );
-	$row->refpos( $cols[0] );
-	$row->syn( $cols[16] );
-	$row->refbase( $cols[1] );
-	$row->gene_name( $cols[12] );
-	$row->product( $cols[17] );
 	
-	# Determine start and stop coordinates. There could be two overlapping genes
-	# so we need to split on / and check both individually.
-	my @strands = split(m|/|, $cols[18] );
-	my @left = split(m|/|, $cols[13]);
-	my @right = split(m|/|, $cols[14]);
-	my (@start, @stop);
-	for( my $i = 0; $i < @strands; $i++ ) {
-	  my ($start, $stop) = ($left[$i],$right[$i]);
-	  ($start, $stop) = ($stop, $start) if( $left[$i] ne 'NA' && $strands[$i] == -1 );
-	  push(@start, $start);
-	  push(@stop, $stop);
-	}
-	$row->gene_start( join("/", @start) );
-	$row->gene_stop( join("/", @stop) );
-
-	$row->pos_in_gene( $cols[15] );
-	$row->ref_codon( $cols[19] );
-	$row->ref_aa( $cols[20] );
-
-	$row->query_base( $cols[11], $cols[2] );
+	# Does this position overlap multiple genes? We should have
+	# multiple gene names, gene starts, gene stops, position_in_gene, 
+	# product, gene_direction, reference codons and reference amino acids
+	# if this is the case.
+	my @genes = &_get_multi_values( $cols[12] );
+	my @strands = &_get_multi_values( $cols[18] );
+	my @lefts = &_get_multi_values( $cols[13] );
+	my @rights = &_get_multi_values( $cols[14] );
+	my @positions_in_genes = &_get_multi_values( $cols[15] );
+	my @products = &_get_multi_values( $cols[17] );
+	my @ref_codons = &_get_multi_values( $cols[19] );
+	my @ref_aas = &_get_multi_values( $cols[20] );
+	my @query_codons = &_get_multi_values( $cols[21] );
+	my @query_aas = &_get_multi_values( $cols[22] );
 	
-	if( $row->gene_name eq 'intergenic' ) {
-	  $row->gene_length( "NA" );
-	  $row->snp_codon( "NA" );
-	  $row->snp_aa( "NA" );
-	} else {
-	  ## If the query base is different from reference
-	  if( $row->refbase ne $cols[2] ) {
-		$snp_nucleotides->{$row->refpos} = {} unless( exists( $snp_nucleotides->{$row->refpos} ) );
-		$snp_nucleotides->{$row->refpos}->{$cols[2]} = {'codon' => $cols[21],'aa' => $cols[22]};
-	  }
+	for( my $i = 0; $i < scalar( @genes ); $i ++ ) {
+	    my $row = new SNP::MergedTable::Row;
 
-	  my @lengths = ();
-	  my @starts = split( "/", $cols[13] );
-	  my @stops = split( "/", $cols[14] );
-	  for ( my $i = 0; $i < @starts; $i++ ) {
-		my $tmp = ($row->product eq 'NA') ? 'NA' : ($stops[$i] - $starts[$i]) + 1;
-		push(@lengths, $tmp);
-	  }
-	  $row->gene_length( join("/", @lengths) );
+    	$row->molecule( $cols[10] );
+    	$row->refpos( $cols[0] );
+    	$row->refbase( $cols[1] );
+    	$row->query_base( $cols[11], $cols[2] );
+    	$row->gene_name( $genes[$i] );
+    	
+    	if( $row->gene_name eq 'intergenic' ) {
+    	  $row->gene_length( "NA" );
+    	  $row->snp_codon( "NA" );
+    	  $row->snp_aa( "NA" );
+    	  $row->syn("NA");
+    	  $row->gene_start( "NA" );
+          $row->gene_stop( "NA" );
+      	  $row->pos_in_gene( "NA" );
+      	  $row->ref_codon( "NA" );
+      	  $row->ref_aa( "NA" );
+      	  $row->product( "NA" );
+    	} else {
+    	    
+            # For some reason, if we have multiple genes, sometimes multiple strands
+            # aren't specified. So just use the first one (maybe this is bad?)
+            # Needs to work.
+            my $length = $rights[$i] - $lefts[$i] + 1;
+            my $strand = ( defined($strands[$i]) ) ? $strands[$i] : $strands[0];
+            my ($start, $stop) = ($lefts[$i], $rights[$i]);
+            ($stop, $start) = ($start, $stop) if( $strand == -1 );
+        
+            $row->gene_start( $start );
+            $row->gene_stop( $stop );
+            $row->gene_length( $length );
+        	$row->pos_in_gene( $positions_in_genes[$i] );
+        	$row->ref_codon( $ref_codons[$i] );
+        	$row->ref_aa( $ref_aas[$i] );
+        	$row->product( $products[$i]  );
+	    
+    	  ## If the query base is different from reference
+    	  if( $row->refbase ne $cols[2] ) {
+    		$snp_nucleotides->{$row->refpos} = {} unless( exists( $snp_nucleotides->{$row->refpos} ) );
+    		$snp_nucleotides->{$row->refpos}->{$cols[2]} = {} unless( exists( $snp_nucleotides->{$row->refpos}->{$cols[2]} ) );
+    		$snp_nucleotides->{$row->refpos}->{$cols[2]}->{$row->gene_name} = {'codon' => $query_codons[$i],'aa' => $query_aas[$i]};
+    	  }
+          
+          # Count snps per gene
+          $snps_per_gene->{$row->molecule} = {} unless( exists( $snps_per_gene->{$row->molecule} ) );
+          $snps_per_gene->{$row->molecule}->{$row->gene_name} = 0
+            unless( exists( $snps_per_gene->{$row->molecule}->{$row->gene_name} ) );
+          $snps_per_gene->{$row->molecule}->{$row->gene_name}++;
 
-	  ## Count snps_per_gene
-	  # Sometimes we have a SNP located in multiple genes. Make sure to count it for both genes.
-	  my @genes = split("/", $cols[12]);
-	  foreach my $g ( @genes ) {
-		$snps_per_gene->{$cols[10]} = {} unless( exists( $snps_per_gene->{$cols[10]} ) );
-		unless ( exists( $snps_per_gene->{$cols[10]}->{$g} ) ) {
-		  $snps_per_gene->{$cols[10]}->{$g} = 0;
-		}
-	  
-		$snps_per_gene->{$cols[10]}->{$g}++;
-
-	  }
-	}
-	
-	$table->add_row( $row );
-
+    	}
+    	
+    	$table->add_row( $row );
+    }
   } else {
-	my $base = $row->query_base( $cols[11] );
-	die("Already have query base for query $cols[11] [refpos: $cols[0]]") if( defined( $base ) );
-	$row->query_base( $cols[11], $cols[2] );
+      
+      for( my $i = 0; $i < scalar(@rows); $i++ ) {
+        my $row = $rows[$i];
+          my $base = $row->query_base( $cols[11] );
+          die("Already have query base for query $cols[11] [refpos: $cols[0]]") if( defined( $base ) );
+          $row->query_base( $cols[11], $cols[2] );
 
-	unless( $row->gene_name eq 'intergenic' ) {
-
-	  ## If the query base is different from reference
-	  if( $row->refbase ne $cols[2] ) {
-		$snp_nucleotides->{$row->refpos} = {} unless( exists( $snp_nucleotides->{$row->refpos} ) );
-		$snp_nucleotides->{$row->refpos}->{$cols[2]} = {'codon' => $cols[21],'aa' => $cols[22]};
-	  }
-	}
+          unless( $row->gene_name eq 'intergenic' ) {
+            my @gene_names= &_get_multi_values( $cols[12] );
+            my @query_codons = &_get_multi_values( $cols[21] );
+            my @query_aas = &_get_multi_values( $cols[22] );
+            
+            for( my $j = 0; $j < scalar(@query_codons); $j++ ) {
+                next unless( $gene_names[$j] eq $row->gene_name );
+                
+              ## If the query base is different from reference
+              if( $row->refbase ne $cols[2] ) {
+          		$snp_nucleotides->{$row->refpos} = {} unless( exists( $snp_nucleotides->{$row->refpos} ) );
+          		$snp_nucleotides->{$row->refpos}->{$cols[2]} = {} unless( exists( $snp_nucleotides->{$row->refpos}->{$cols[2]} ) );
+          		$snp_nucleotides->{$row->refpos}->{$cols[2]}->{$row->gene_name} = {'codon' => $query_codons[$j],'aa' => $query_aas[$j]};
+              }
+            }
+          }
+      }
   }
-  
+}
+
+sub _get_multi_values {
+    my ($value, $expect) = @_;
+    my @retval = split(/\//, $value);
+    die("Expected to find $expect values, found ".scalar(@retval) ) 
+        if( defined( $expect ) && scalar(@retval) != $expect );
+    return @retval;
 }
 
 sub check_options {
