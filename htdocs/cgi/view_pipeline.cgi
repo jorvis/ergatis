@@ -172,7 +172,7 @@ $tmpl->param( SUBMENU_LINKS       => [
                                         { label => 'new pipeline', is_last => 0, url => "./build_pipeline.cgi?repository_root=$repository_root" },
                                         { label => 'clone this pipeline', is_last => 0, url => "./clone_pipeline.cgi?instance=$xml_input&repository_root=$repository_root" },
                                         { label => 'rerun', is_last => 0, url => "./run_pipeline.cgi?pipeline_xml=$file&pipeline_id=$pipelineid&rerun=1&repository_root=$repository_root&sudo_pipeline_execution=$sudo_pipeline_execution" },
-                                        { label => 'kill', is_last => 0, url => "javascript:confirmPipelineKill(\"$file\")" },
+                                        { label => 'kill', is_last => 0, url => "./kill_wf.cgi?instancexml=$file" },
                                         { label => 'view xml', is_last => 0, url => "./view_formatted_xml_source.cgi?pipeline_id=$pipelineid&file=$file" },
                                         { label => "view log <span class='error'>$numerrorslog</span>", is_last => 0, url=> "./view_formatted_log_source.cgi?file=$pipelinelog&pipeline_id=$pipelineid"},
                                         { label => "view stdout/stderr <span class='error'>$numerrorsout</span>", is_last => 1, url=> "./view_formatted_log_source.cgi?file=$file.run.out&pipeline_id=$pipelineid"}
