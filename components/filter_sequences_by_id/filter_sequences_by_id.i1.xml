@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>filter_sequences_by_id compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>filter</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/filter_sequences_by_id</executable>
+            <param>  
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filtered.$;INPUT_FORMAT$;</value>
+            </param>
+            <param>  
+                <key>--id_file</key>
+                <value>$;ID_FILE$;</value>
+            </param>
+            <param>  
+                <key>--id_file_list</key>
+                <value>$;ID_FILE_LIST$;</value>
+            </param>
+            <param>  
+                <key>--mode</key>
+                <value>$;FILTER_MODE$;</value>
+            </param>
+            <param>  
+                <key>--format</key>
+                <value>$;INPUT_FORMAT$;</value>
+            </param>
+            <param>  
+                <key>--id_column_num</key>
+                <value>$;ID_COLUMN_NUM$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

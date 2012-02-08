@@ -1,5 +1,7 @@
 next
 ----
+-Added bmtagger and bmtagger_index components
+-Added filter_sequence_by_id component
 -Adding filter functionality to SNP::MergedTable
 -Adding nucmer-snp2merged component to skirret pipeline
 -removed more extraneous env vars that are passed along to SGE.
