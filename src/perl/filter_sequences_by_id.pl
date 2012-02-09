@@ -208,10 +208,18 @@ sub process_fasta {
         if ($line =~ /^\>(\S+)/) {
             $seq_count++;
             
-            if ( exists $$ids{$1} ) {
-                $keep_this_seq = 1;
-            } else {
-                $keep_this_seq = 0;
+            if ( $options{mode} eq 'include' ) {
+                if ( exists $$ids{$1} ) {
+                    $keep_this_seq = 1;
+                } else {
+                    $keep_this_seq = 0;
+                }
+            } elsif ( $options{mode} eq 'exclude' ) {
+                if ( exists $$ids{$1} ) {
+                    $keep_this_seq = 0;
+                } else {
+                    $keep_this_seq = 1;
+                }
             }
         }
         
@@ -232,10 +240,19 @@ sub process_fastq {
         #   the first of each should start with @, and the 3rd the + symbol
         if ( $line_num % 4 == 1 ) {
             if ( $line =~ /^\@(\S+)/ ) {
-                if ( exists $$ids{$1} ) {
-                    $keep_this_seq = 1;
-                } else {
-                    $keep_this_seq = 0;
+                
+                if ( $options{mode} eq 'include' ) {
+                    if ( exists $$ids{$1} ) {
+                        $keep_this_seq = 1;
+                    } else {
+                        $keep_this_seq = 0;
+                    }
+                } elsif ( $options{mode} eq 'exclude' ) {
+                    if ( exists $$ids{$1} ) {
+                        $keep_this_seq = 0;
+                    } else {
+                        $keep_this_seq = 1;
+                    }
                 }
                 
             } else {
