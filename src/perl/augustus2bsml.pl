@@ -86,7 +86,7 @@ my $debug;                    #The debug variable
 ########################################
 # handle versions of the executable with different output flags like this
 # to get the right encoding in the model object & bsml.
-my %version_map = ('1.8.2' => "1", '2.0.2' => "2", '2.3.1' => "2");
+my %version_map = ('1.8.2' => "1", '2.0.2' => "2", '2.3.1' => "2", '2.5.5' => '2');
 
 ########################################
 my %options = ();
@@ -333,7 +333,8 @@ sub get_version {
     my $first_line = <$fh>;
 
     my $version;
-    if ($first_line =~ /\(version (\d+\.\d+[\.\d+]?)\)/) {
+#    if ($first_line =~ /\(version (\d+\.\d+[\.\d+]?)\)/) {
+    if( $first_line =~ /\(version\s*(\d+\.\d+[\.\d]+)\)/ ) {
         $version = $1;
     }
 
