@@ -5,6 +5,7 @@ prokpipe_consistency_checks.pl
     Automated pipeline and database error detection
     Checks BSML files and DB for consistencies and either warns or errors out
 	dependng on the failed check and its severity
+    Used in the Prokaryotic Annotation Pipeline run by Ergatis
 
 =head1 OPTIONS (more to be added later)
 B<--input_list, -i>
@@ -47,13 +48,13 @@ B<--help>
 
 use strict;
 use warnings;
-use lib ("/usr/local/projects/ergatis/package-nightly/lib/perl5");
+
 use File::Basename;
 use FindBin qw($Bin);
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use BSMLChecker;
-use DBChecker;
+use Prokpipe_Checks::BSMLChecker;
+use Prokpipe_Checks::DBChecker;
 use Ergatis::Logger;
 use DBI;
 
@@ -113,30 +114,35 @@ close VF;
 # Subroutine to run various checks to make sure all is well
 sub run_checks($) {
     my $paths = shift;
-    my $good = 0;
+    my $die = 0;
     my $name = "";
     my $id = "";
+    my $warn_flag = 0;	#currently have not decided what to do with this... may have separate one for warn and error
+    my $error_flag = 0;	# Plan on killing component after running tests, to get all errors present
+
     
 # Check for proper feature-type count in each file
 # If a file contains none of a particular type, the module will return an error
     foreach my $file (@{$paths}){
 	print VF ">$file\n";
-        $good = $type->count_genes($file);
-        $logger->logdie("ERROR, No genes present in $file")if ($good == $ERROR);
-        $good = $type->count_cds($file);
-        $logger->logdie("ERROR, No CDS domains present in $file")if ($good == $ERROR);
-        $good = $type->count_polypeptides($file);
-        $logger->logdie("ERROR, No polypeptides present in $file")if ($good == $ERROR);
-        $good = $type->count_transcripts($file);
-        $logger->logdie("ERROR, No transcripts present in $file")if ($good == $ERROR);
-        $good = $type->count_exons($file);
-        $logger->logdie("ERROR, No exons present in $file")if ($good == $ERROR);
+        $die = $type->count_genes($file);
+        $logger->logdie("ERROR, No genes present in $file")if ($die == $ERROR);
+        $die = $type->count_cds($file);
+        $logger->logdie("ERROR, No CDS domains present in $file")if ($die == $ERROR);
+        $die = $type->count_polypeptides($file);
+        $logger->logdie("ERROR, No polypeptides present in $file")if ($die == $ERROR);
+        $die = $type->count_transcripts($file);
+        $logger->logdie("ERROR, No transcripts present in $file")if ($die == $ERROR);
+        $die = $type->count_exons($file);
+        $logger->logdie("ERROR, No exons present in $file")if ($die == $ERROR);
 	$type->count_tRNA($file);
-	$type->divide_by_3($file);
-#	$type->bad_gene_symbols($file);
-	$type->duplicate_gene_symbols($file);
-	$type->should_not_have_gs($file);
-
+	$warn_flag = 1 if ($type->divide_by_3($file));
+#	$warn_flag = 1 if ($type->bad_gene_symbols($file));
+	$warn_flag = 1 if ($type->duplicate_gene_symbols($file));
+	$warn_flag = 1 if ($type->should_not_have_gs($file));
+	$warn_flag = 1 if ($type->ec_check($file));
+	$warn_flag = 1 if ($type->TIGR_role_check($file));
+	$warn_flag = 1 if ($type->valid_start_stop_codons($file));
     
 
 	print VF $type->return_counts();
@@ -147,7 +153,7 @@ sub run_checks($) {
     
     print "Looks like everything is A-ok for loading!\n";
 
-    print VF "The file $options{'input_list'} has no errors and is good for Chado loading\n";
+    print VF "The file $options{'input_list'} has no errors and is die for Chado loading\n";
     #This is more of a test output since every component has to have an output.
     #Once we know what checks we want to run, then the output will be adjusted accordingly
 }
@@ -156,12 +162,12 @@ sub run_checks($) {
 sub run_checks_db() {
     print "TO BE IMPLEMENTED LATER\n";
 
-    my $good = 0;
+    my $die = 0;
     
-    $good = $type->no_GO_evidence;
-    $logger->logdie("ERROR, GO Role Links found with no evidence") if ($good == $ERROR);
-    $good = $type->no_GS_EC;
-    $logger->logdie("ERROR, No gene symbol or EC number present in conserved hypotheical protein") if ($good == $ERROR);#change error later
+    $die = $type->no_GO_evidence;
+    $logger->logdie("ERROR, GO Role Links found with no evidence") if ($die == $ERROR);
+    $die = $type->no_GS_EC;
+    $logger->logdie("ERROR, No gene symbol or EC number present in conserved hypotheical protein") if ($die == $ERROR);#change error later
 
 }
 
@@ -175,13 +181,13 @@ sub check_parameters($) {
     if (defined($options{'database'})) {
         $database_flag = 1;
         $database = $options{'database'};
-        $type = "DBChecker";    #Decide which perl module to use for the checks
+        $type = "Prokpipe_Checks::DBChecker";    #Decide which perl module to use for the checks
         foreach $req ( qw(user pass database host output_dir) ) {
             $logger->logdie("ERROR: Option $req is required") unless( $options{$req} );
         }
         _connect( $options{'user'}, $options{'pass'}, $options{'database'}, $options{'host'} );
     } else {
-        $type = "BSMLChecker";
+        $type = "Prokpipe_Checks::BSMLChecker";
 	## make sure the input list file exists and is readable
         foreach $req ( qw(input_list output_dir) ) {
             $logger->logdie("ERROR: Option $req is required") unless( $options{$req} );

@@ -1,9 +1,14 @@
 #!/usr/bin/perl -w
+
 #DBChecker.pm
 
-package DBChecker;
+# This module is designed to run consistency checks on the database created after
+# Chado loading in the Prokaryotic Annotation Pipeline.  If a check fails,
+# either a warning will be written to the Ergatis prokpipe_consistency_checks
+# component log or an error will be written and kill off the pipeline.
 
-use lib ('/usr/local/projects/ergatis/package-latest/lib/perl5');
+package Prokpipe_Checks::DBChecker;
+
 use Ergatis::Logger;
 
 my $query = "";

@@ -17,5 +17,6 @@ our @EXPORT = qw( %valid_evidence_types );
      'Hypothetical' => 'PFunc::EvidenceParser::Hypothetical',
      'Blast' => "PFunc::EvidenceParser::BlastParser",
      'BERUniprot' => "PFunc::EvidenceParser::BERUniprotParser",
+     'eggNOG' => 'PFunc::EvidenceParser::EggnogParser'
      );
      

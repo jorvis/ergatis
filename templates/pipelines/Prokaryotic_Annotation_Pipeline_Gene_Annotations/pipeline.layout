@@ -139,6 +139,10 @@
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
+				<name>ncbi-blastp.eggNOG</name>
+			</commandSet>			
+			<commandSet type="serial">
+				<state>incomplete</state>
 				<name>lipop.default</name>
 			</commandSet>
 			<commandSet type="serial">
@@ -167,6 +171,10 @@
 			<commandSet type="serial">
 				<state>incomplete</state>
 				<name>parse_evidence.tmhmm</name>
+			</commandSet>
+			<commandSet type='serial'>
+				<state>incomplete</state>
+				<name>parse_evidence.eggNOG</name>
 			</commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>

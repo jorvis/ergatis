@@ -29,7 +29,7 @@ sub _init {
     if( $args{'roles_db_dir'} ) {
         $self->roles_db_dir($args{'roles_db_dir'});
     } else {
-        $self->roles_db_dir("/usr/local/projects/db/tigr_roles");
+        $self->roles_db_dir("/usr/local/db/tigr_roles/latest");
     }
 
     if( $args{'omnium2role_dbfile'} ) {

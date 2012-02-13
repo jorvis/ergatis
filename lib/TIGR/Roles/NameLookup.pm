@@ -6,7 +6,7 @@ use MLDBM "DB_File";
 use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
-my $default_roles_db_dir = "/usr/local/projects/db/tigr_roles";
+my $default_roles_db_dir = "/usr/local/db/tigr_roles/latest";
 my $default_role2name_dbfile = "/role_data.db";
 my $default_role2name_bcp = "/omnium/bcp/bcp_egad_roles";
 

@@ -79,14 +79,13 @@ sub _pre_parse {
 sub _parse_sequence_lengths {
   my ($self, $bsmls) = @_;
   my $twig = new XML::Twig('twig_roots' => {'Sequence' => sub {
-											  my ($t,$e) = @_;
-											  my $id = $e->att('id');
-											  my $len = $e->att('length');
-											  $self->_seq_length( $id, $len )
-												if ( defined( $len ) && defined( $id ) && !$self->_seq_length( $id ) );
-											},
-											'Feature[@class="CDS"]' => sub { $self->_store_feature_length( @_ ) },
-											} );
+		my ($t,$e) = @_;
+		my $id = $e->att('id');
+		my $len = $e->att('length');
+		$self->_seq_length( $id, $len )
+		if ( defined( $len ) && defined( $id ) && !$self->_seq_length( $id ) );
+  		}, 'Feature[@class="CDS"]' => sub { $self->_store_feature_length( @_ ) },
+	} );
 
   foreach my $bsml ( @{$bsmls} ) {
 	my $in = open_file( $bsml, 'in' );
