@@ -1,5 +1,6 @@
 next
 ----
+-added a few more checks to prokpipe_consistency_checks, and changed the module structure of the two modules DBChecker.pm and BSMLChecker.pm (now in a Prokpipe_Checks folder)
 -Added bmtagger and bmtagger_index components
 -Added filter_sequence_by_id component
 -Adding filter functionality to SNP::MergedTable
@@ -19,6 +20,7 @@ next
 -refactored login to allow for passing of a parameter to control page to redirect to after successful login
 -fixing bugs associated with project level email notification controls
 -prok pipeline: added split_multifasta to split interevidence nucelotides for searching.
+-prok pipeline: added parse-evidence.eggNOG and ncbi-blastp.eggNOG components
 
 ergatis-v2r17 (2011-12-11)
 --------------------------
