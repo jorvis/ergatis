@@ -1,5 +1,6 @@
 next
 ----
+-added a prokpipe consistency check to skip other checks when the molecule is < 1000 bp
 -added a few more checks to prokpipe_consistency_checks, and changed the module structure of the two modules DBChecker.pm and BSMLChecker.pm (now in a Prokpipe_Checks folder)
 -Added bmtagger and bmtagger_index components
 -Added filter_sequence_by_id component
