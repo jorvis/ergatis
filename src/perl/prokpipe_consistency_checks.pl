@@ -114,27 +114,36 @@ close VF;
 # Subroutine to run various checks to make sure all is well
 sub run_checks($) {
     my $paths = shift;
-    my $die = 0;
+    my $state = 0;
     my $name = "";
     my $id = "";
     my $warn_flag = 0;	#currently have not decided what to do with this... may have separate one for warn and error
     my $error_flag = 0;	# Plan on killing component after running tests, to get all errors present
-
+    my $length_flag = 0; # Flag is raised if the assembly length is less than the cutoff (1000 bp)
     
 # Check for proper feature-type count in each file
 # If a file contains none of a particular type, the module will return an error
     foreach my $file (@{$paths}){
 	print VF ">$file\n";
-        $die = $type->count_genes($file);
-        $logger->logdie("ERROR, No genes present in $file")if ($die == $ERROR);
-        $die = $type->count_cds($file);
-        $logger->logdie("ERROR, No CDS domains present in $file")if ($die == $ERROR);
-        $die = $type->count_polypeptides($file);
-        $logger->logdie("ERROR, No polypeptides present in $file")if ($die == $ERROR);
-        $die = $type->count_transcripts($file);
-        $logger->logdie("ERROR, No transcripts present in $file")if ($die == $ERROR);
-        $die = $type->count_exons($file);
-        $logger->logdie("ERROR, No exons present in $file")if ($die == $ERROR);
+	$state = $type->get_length($file);
+	$length_flag = 1 if ($state);
+
+	if (!$length_flag) {
+        $state = $type->count_genes($file);
+        $logger->logdie("ERROR, No genes present in $file")if ($state == $ERROR);
+
+        $state = $type->count_cds($file);
+        $logger->logdie("ERROR, No CDS domains present in $file")if ($state == $ERROR);
+
+        $state = $type->count_polypeptides($file);
+        $logger->logdie("ERROR, No polypeptides present in $file")if ($state == $ERROR);
+
+        $state = $type->count_transcripts($file);
+        $logger->logdie("ERROR, No transcripts present in $file")if ($state == $ERROR);
+
+        $state = $type->count_exons($file);
+        $logger->logdie("ERROR, No exons present in $file")if ($state == $ERROR);
+	
 	$type->count_tRNA($file);
 	$warn_flag = 1 if ($type->divide_by_3($file));
 #	$warn_flag = 1 if ($type->bad_gene_symbols($file));
@@ -143,7 +152,7 @@ sub run_checks($) {
 	$warn_flag = 1 if ($type->ec_check($file));
 	$warn_flag = 1 if ($type->TIGR_role_check($file));
 	$warn_flag = 1 if ($type->valid_start_stop_codons($file));
-    
+    	}
 
 	print VF $type->return_counts();
 	$type->_reset();

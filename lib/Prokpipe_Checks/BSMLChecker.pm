@@ -22,6 +22,7 @@ my $tRNA_count = 0;
 my %gene_hash = ();
 my $id = "";
 my $warn_flag = 0;
+my $length_cutoff = 1000;
 
 
 # Reset gene hash and counts for the next bsml file
@@ -34,6 +35,28 @@ sub _reset {
     $exon_count = 0;
     $tRNA_count = 0;
     $id = "";
+}
+
+# Determines length of assembly.  If less than 1000 bp, then gene counts are ignored
+sub get_length {
+    my $class = shift;
+    my $file = shift;
+    my $length = -1;
+    my $title;
+
+    open FH, "<$file" or die "Cannot open $file for reading: $!";
+    while (<FH>) {
+	chomp;
+	if (/Sequence length=\"(\d+)\" class=\"\w+\" title=\"(.+)\"\s/) {
+	    $length = $1;
+	    $title = $2;
+	}
+    }
+    if ($length < $length_cutoff) {
+	$main::logger->warn( "WARN: $title is less than 1000 bp (length: $length) in file $file\n");
+	return 1;
+    }
+    return 0;
 }
 
 sub count_genes {
@@ -160,7 +183,7 @@ sub bad_gene_symbols {	#not entirely sure if this is correct but I'm writing bas
     open FH, "<$file" or die "Cannot open $file for reading: $!";
     while (<FH>) {
 	chomp;
-	if (/id=\"([\w\d]+\.\w+\.\d+.\d+)\"/) {
+	if (/id=\"([a-z]{3}\w*)\"/) {
 	    $id = $1;
 	}
 	unless (/name=\"gene_symbol\" content=\"[a-zA-Z]+\d*\"/) {
