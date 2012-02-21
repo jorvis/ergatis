@@ -261,7 +261,7 @@ sub ec_check {	# All gene product names except hypothetical proteins and conserv
 	if (/\"gene_product_name\" content=\"([A-Za-z]+[^\"]*)\"/) {
 	    $gene_product = $1;
 	}
-	if (/\"EC\" content=\"(([\d]+\.){3}[\d]+)\"/) {
+	if (/\"EC\" content=\"(([\d-]+\.){3}[\d-]+)\"/) {
 	    $ec = $1;
 	    if ($gene_product =~ /(hypothetical protein)|(conserved domain protein)|(family protein)|(putative)/){
 	    	$main::logger->warn("WARN, ID: $id should not contain an EC number as gene product is $gene_product\n in file: $file") if ($ec ne "");
