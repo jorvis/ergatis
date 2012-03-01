@@ -204,10 +204,17 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
+            <name>mkdir splitchecksums</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/splitchecksums</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
             <name>split</name>
             <state>incomplete</state>
             <executable>split</executable>
-            <arg> -d -l $;SORT_CHUNK_SIZE$; $;TMP_DIR$;/checksums.out  $;TMP_DIR$;/checksums.out.split.</arg>
+            <arg> -d -l $;SORT_CHUNK_SIZE$; $;TMP_DIR$;/checksums.out  $;TMP_DIR$;/splitchecksums/checksums.out.split.</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -216,7 +223,7 @@
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>  
                 <key>--directory</key>
-                <value>$;TMP_DIR$;</value>
+                <value>$;TMP_DIR$;/splitchecksums</value>
             </param>
             <param>  
                 <key>--regex</key>
@@ -309,12 +316,19 @@
 		<value>$;TMP_DIR$;/checksums.out.sorted.pks</value>
 	    </param>
 	</command> 
+    <command>
+        <type>RunUnixCommand</type>
+        <name>create splitoffsets directory</name>
+        <state>incomplete</state>
+        <executable>mkdir</executable>
+        <arg>-p -m 777 $;TMP_DIR$;/splitoffsets</arg>
+    </command>
         <command>
             <type>RunDistributedCommand</type>
             <name>split</name>
             <state>incomplete</state>
             <executable>split</executable>
-            <arg> -d -l 10000000 $;TMP_DIR$;/checksums.out.sorted.pks $;TMP_DIR$;/checksums.out.splitoffsets.</arg>
+            <arg> -d -l 10000000 $;TMP_DIR$;/checksums.out.sorted.pks $;TMP_DIR$;/splitoffsets/checksums.out.splitoffsets.</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -323,7 +337,7 @@
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>  
                 <key>--directory</key>
-                <value>$;TMP_DIR$;</value>
+                <value>$;TMP_DIR$;/splitoffsets</value>
             </param>
             <param>  
                 <key>--regex</key>
