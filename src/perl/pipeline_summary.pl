@@ -58,6 +58,15 @@ B<--cog_search_bsml,-c>
 B<--cog_lookup,-g>
     [Optional] NCBI Cogs file
 
+B<--nog_search_bsml, -S>
+    [Optional] Bsml file containing a blast against EMBL's eggNOG database.
+
+B<--nog_members, -n>
+    [Optional] File that maps protein aliases to NOG IDs
+
+B<--nog_description, -d>
+    [Optional] File that maps NOG IDs to protein descriptions
+
 B<--log,-l>
     [Optional] Logfile.
 
@@ -115,6 +124,11 @@ my $include_cog = 0;
 my %cogId2desc;
 my %top_cogs;
 
+#eggnog related info
+my $include_eggnog = 0;
+my %nogId2desc;
+my %top_nogs;
+
 #for parsed fasta
 my %seq_data_import_info;
 
@@ -141,6 +155,9 @@ my $results = GetOptions(\%options,
                           'translation_table|t=s',
                           'cog_search_bsml|s=s',
                           'cog_lookup|g=s',
+			  'nog_search_bsml|S=s',
+			  'nog_members|n=s',
+			  'nog_description|d=s',
                           'cds_fasta|f=s',
                           'polypeptide_fasta|p=s',
                           'analysis_name=s',
@@ -167,6 +184,10 @@ foreach my $other_file ( @other_files ) {
 #Store cogs if we need to
 if( $include_cog ) {
     &add_cogs;
+}
+
+if( $include_eggnog ) {
+    &add_nogs;
 }
 
 #If we included fasta 
@@ -242,6 +263,24 @@ sub add_cogs {
 
             my $cog_desc = &get_cog_desc( $fg->{'polypeptide'}->{'attributes'}->{'id'} );
             $fg->{'CDS'}->{'bsml_attributes'}->{'top_cog_hit'} = $cog_desc if( $cog_desc );
+        }
+    }
+}
+
+sub add_nogs {
+    &_log("Adding eggNOG information\n", $DEBUG );
+
+    foreach my $seq_id ( keys %input_sequences ) {
+        foreach my $group_set ( keys %{$input_sequences{$seq_id}->{'features'}} ) {
+            my $fg = $input_sequences{$seq_id}->{'features'}->{$group_set};
+            
+            #if we don't have a polypeptide object for this group-set, this means
+            #that it's a feature which doesn't have a translation (i.e. ncRNA) and
+            #we wouldn't have performed a aggNOG analysis on it.
+            next unless( exists( $fg->{'polypeptide'} ) );
+
+            my $nog_desc = &get_nog_desc( $fg->{'polypeptide'}->{'attributes'}->{'id'} );
+            $fg->{'CDS'}->{'bsml_attributes'}->{'top_eggnog_hit'} = $nog_desc if( $nog_desc );
         }
     }
 }
@@ -688,6 +727,14 @@ sub get_cog_desc {
     return $retval;
 }
 
+sub get_nog_desc {
+    my ($id) = @_;
+    &_log("ID was not passed &get_nog_desc", $ERROR) if( !defined( $id ) );
+    my $retval;
+    $retval = $top_nogs{ $id } if( exists( $top_nogs{ $id } ) );
+    return $retval;  
+}
+
 sub append_data {
     my ($id, $args) = @_;
     my $base = $input_sequences{ $id };
@@ -849,6 +896,26 @@ sub check_parameters {
         $include_cog = 1;
     }
 
+    #if they included nogs
+    if($opts->{'nog_search_bsml'}) {
+        my $nogs = open_file( $opts->{'nog_search_bsml'}, "in" );
+        chomp( my @nog_bsml_files = <$nogs> );
+        close($nogs);
+        
+        &_log( "Options --nog_members and --nog_description are required when using --nog_search_bsml", $ERROR )
+            unless($opts->{'nog_members'} && $opts->{'nog_description'});
+        my $eggnog_members = $opts->{'nog_members'};
+	my $eggnog_description = $opts->{'nog_description'};
+
+        &_log("Preparsing eggNOG Lookup file\n", $DEBUG );
+        &pre_parse_nog_lookup( $eggnog_members, $eggnog_description );
+
+        &_log("Preparsing eggNOG results\n", $DEBUG );
+        &pre_parse_nog_results( @nog_bsml_files );
+print "WE ARE HERE\n";
+        $include_eggnog = 1;
+    }
+
     #if CDS Fasta was included
     if( $opts->{'cds_fasta'} ) {
         my @files = split(/,\s+/, $opts->{'cds_fasta'} );
@@ -934,6 +1001,76 @@ sub pre_parse_cog_lookup {
         }
 	}	
     close($in);
+}
+
+sub pre_parse_nog_results {
+    my (@bsml_files) = @_;
+    
+    my $total = scalar(@bsml_files);
+    my $count = 0;
+    &_log("$count/$total\r", $DEBUG );
+    map {
+        my $boh = open_file( $_, 'in' );
+        my ($nog,$ref,$pval, $best);
+        $best = 1;
+        while( my $line = <$boh> ) {
+            chomp( $line );            
+            if( $line =~ /\<Seq-pair-alignment.*refseq=\"([^\"]+)\"/ ) {
+                if( defined( $ref ) ) {
+                    if( $pval < $best ) {
+                        $best = $pval;
+                        my $desc = $nogId2desc{$nog};
+                        if( defined( $desc ) ) {
+                            $top_nogs{$ref} = $desc;
+                        }
+                    }
+                }
+                
+                $pval = 1;
+                $ref = $1;
+                $nog = $1 if( $line =~ /compseq=\"([^\"]+)\"/ );
+                
+            } elsif( $line =~ /\<Seq-pair-run.*runprob=\"([^\"]+)\"/ ) {
+                if( $1 < $pval ) {
+                    $pval = $1;
+                }
+            }
+        }
+        close($boh);
+
+        #and the last one
+        if( defined( $ref ) ) {
+            if( $pval < $best ) {
+                $best = $pval;
+                my $desc = $nogId2desc{$nog};
+                if( defined( $desc ) ) {
+                    $top_nogs{$ref} = $desc;
+                }
+            }
+        }
+        $count++;
+        &_log("$count/$total\r", $DEBUG );
+        
+    } @bsml_files;
+}
+
+sub pre_parse_nog_lookup {
+    my $nm = open_file(shift, 'in');
+    my $nd = open_file(shift, 'in');
+    my %desc = ();
+    while (<$nd>) {
+	chomp;
+	my ($id, $description) = split(/\t/);
+	$desc{$id} = $description if defined($description);	#hash with NOG_IDs and descriptions
+    }
+    close($nd);
+    while (<$nm>) {
+	chomp;
+	my @line = split;
+	my $alias = $line[1] =~ s/\d+\.//;	# protein alias ID
+	$nogId2desc{$alias} = $desc{$line[0]} if defined($desc{$line[0]});
+    }
+    close($nm);
 }
 
 sub process_fasta_file_or_list {

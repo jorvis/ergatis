@@ -48,6 +48,18 @@
                 <key>--cog_lookup</key>
                 <value>$;COG_LOOKUP$;</value>
             </param>
+            <param>  
+                <key>--nog_search_bsml</key>
+                <value>$;NOG_BSML_LIST$;</value>
+            </param>
+            <param>  
+                <key>--nog_members</key>
+                <value>$;NOG_MEMBERS$;</value>
+            </param>
+            <param>  
+                <key>--nog_description</key>
+                <value>$;NOG_DESCRIPTION$;</value>
+            </param>
             <param>
                 <key>--organism</key>
                 <value>&apos;$;ORGANISM$;&apos;</value>
