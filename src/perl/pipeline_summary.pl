@@ -912,7 +912,6 @@ sub check_parameters {
 
         &_log("Preparsing eggNOG results\n", $DEBUG );
         &pre_parse_nog_results( @nog_bsml_files );
-print "WE ARE HERE\n";
         $include_eggnog = 1;
     }
 
