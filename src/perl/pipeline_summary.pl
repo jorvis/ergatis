@@ -1066,7 +1066,8 @@ sub pre_parse_nog_lookup {
     while (<$nm>) {
 	chomp;
 	my @line = split;
-	my $alias = $line[1] =~ s/\d+\.//;	# protein alias ID
+	$line[1] =~ s/\d+\.//;	# protein alias ID
+	my $alias = $line[1];
 	$nogId2desc{$alias} = $desc{$line[0]} if defined($desc{$line[0]});
     }
     close($nm);
