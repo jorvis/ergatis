@@ -81,6 +81,7 @@ use Pod::Usage;
 use Bio::SeqIO;
 use IntervalTree;
 use Data::Dumper;
+use File::Basename;
 
 ############# GLOBALS AND CONSTANTS ################
 my $debug = 1;
@@ -144,13 +145,18 @@ sub parse_and_print_snps {
 	
 	print $outfh join("\t", qw(p1 ref_base query_base p2 buff dist len_r len_q frm1 frm2 ref_contig query_contig) )."\t";
 	print $outfh join("\t", qw(gene_id gene_start gene_stop position_in_gene syn_nonsyn product gene_direction ref_codon ref_amino_acid) )."\t";
-	print $outfh join("\t", qw(query_codon query_amino_acid) )."\n";
+	print $outfh join("\t", qw(query_codon query_amino_acid num_homopolymer) )."\n";
 	
 	while( my $line = <$infh> ) {
 		chomp($line);
 		my @col = split(/\t/, $line);
 		my $additional = $subref->(@col);
-		print $outfh "$line\t$additional\n";
+		if (exists($query_fsa_files{$col[11]})) {
+			my $qcontig = $query_fsa_files{$col[11]};
+			my ($file_base,$file_dir,$file_ext) = fileparse($qcontig,qr/\.[^.]*/);
+			$col[11] = $file_base;
+		}
+		print $outfh join("\t", @col)."\t$additional\n";
 	}
 }
 
@@ -238,7 +244,7 @@ sub process_overlap {
 		my $seqbase = &get_sequence_from_parent( $query, $qsnploc, $qsnploc, $qorient );
 		&_log($ERROR, "Query nucleotide parsed from fasta does not match SNP predicted in snps file. ".
 			  "Possible incorrect fasta provided. [SNP: $rsnploc, ($querybase != $seqbase)]")
-			if( $querybase ne $seqbase );
+			if( $querybase ne uc($seqbase));
 	}
 
 
@@ -428,25 +434,31 @@ sub get_locus_tag {
 
 sub get_sequence_from_parent {
 	my ($parent, $start, $stop, $strand) = @_;
-	&_log($ERROR, "Start should always be less that stop for get_sequence_region [$start $stop]")
-		if( $start > $stop );
-
+	&_log($ERROR, "Start should always be less that stop for get_sequence_region [$start $stop]") if( $start > $stop );
 	# Have we parsed this sequence yet?
 	unless( exists( $seq_cache->{$parent} ) ) {
-		&_log($ERROR, "Could not find query sequence fasta file for sequence $parent")
-			unless( exists( $query_fsa_files{$parent} ) );
-		open(IN, "< $query_fsa_files{$parent}") or 
-			&_log($ERROR, "Could not open file: $query_fsa_files{$parent} $!");
+		&_log($ERROR, "Could not find query sequence fasta file for sequence $parent") unless( exists( $query_fsa_files{$parent} ) );
+		open(IN, "< $query_fsa_files{$parent}") or &_log($ERROR, "Could not open file: $query_fsa_files{$parent} $!");
 		my $seq;
+		my $first = 1;
+		my $head;
 		while(<IN>) {
 			next if( /^\s*$/ );
 			chomp;
-			$seq .= $_ unless( /^>/ );
+			if($_ =~ /^>(\S+)/) {
+				unless ($first) {
+					$seq_cache->{$head} = $seq;
+					$seq = '';
+				}
+				$first = 0;
+				$head = $1;
+			} else {
+				$seq .= $_ ;
+			}
 		}
-		$seq_cache->{$parent} = $seq;
+		$seq_cache->{$head} = $seq if(defined( $head ));
 		close(IN);
 	}
-
 	&get_sequence_region( $seq_cache->{$parent}, $start, $stop, $strand );
 	
 }
@@ -461,7 +473,7 @@ sub get_sequence_region {
 	my $length = ( $stop - $start ) + 1;
 	my $subseq = substr( $seq, $start - 1, $length );
 	$subseq = &reverse_complement( $subseq ) if( $strand == -1 );
-	$subseq;
+	uc($subseq);
 
 }
 
@@ -487,12 +499,14 @@ sub map_fasta_inputs {
 	map {
 		chomp;
 		open(FSA, "< $_") or &_log($ERROR, "Can't open fsa file $_: $!");
-		my $fl = <FSA>;
+		while(my $fl = <FSA>) {
+			chomp($fl);
+			if( $fl =~ /^>(\S+)/ ) {
+				&_log($ERROR, "Couldn't parse header from defline from fasta file: $_") unless( $1 );
+				$retval{$1} = $_;
+			}
+		}
 		close(FSA);
-		my $id = $1 if( $fl =~ /^>(\S+)/ );
-		&_log($ERROR, "Couldn't parse header from defline from fasta file: $_")
-			unless( $id );
-		$retval{$id} = $_;
 	} <IN>;
 	return %retval;
 }
