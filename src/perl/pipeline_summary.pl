@@ -897,7 +897,7 @@ sub check_parameters {
     }
 
     #if they included nogs
-    if($opts->{'nog_search_bsml'}) {
+    if(-e $opts->{'nog_search_bsml'}) {
         my $nogs = open_file( $opts->{'nog_search_bsml'}, "in" );
         chomp( my @nog_bsml_files = <$nogs> );
         close($nogs);
