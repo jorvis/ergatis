@@ -2,31 +2,28 @@
     <commandSet type="serial">
         <state>incomplete</state>
         <name>start</name>
+        <commandSet type="parallel">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>extract_snp_regions.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>formatdb.default</name>
+            </commandSet>
+        </commandSet>
         <commandSet type="serial">
             <state>incomplete</state>
-            <commandSet type="parallel">
-                <state>incomplete</state>
-                <commandSet type="serial">
-                    <state>incomplete</state>
-                    <name>extract_snp_regions.default</name>
-                </commandSet>
-                <commandSet type="serial">
-                    <state>incomplete</state>
-                    <name>formatdb_snp.default</name>
-                </commandSet>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>blast_snp_regions.default</name>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>make_snp_lists.default</name>
-            </commandSet>
-            <commandSet type="serial">
-                <state>incomplete</state>
-                <name>snp_verify.default</name>
-            </commandSet>
+            <name>split_multifasta.default</name>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>ncbi-blastn.default</name>
+        </commandSet>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <name>snp_verify.default</name>
         </commandSet>
     </commandSet>
 </commandSetRoot>
