@@ -10,11 +10,11 @@
             <executable>$;BIN_DIR$;/extract_snp_regions</executable>
             <param>  
                 <key>--ref_genbank</key>
-                <value>$;INPUT_FILE_1$;</value>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
                 <key>--snp_positions</key>
-                <value>$;INPUT_FILE_2$;</value>
+                <value>$;SNP_PANEL_LIST$;</value>
             </param>
             <param>  
                 <key>--output_dir</key>

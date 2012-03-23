@@ -1,5 +1,6 @@
 next
 ----
+-New version of SNP verification pipeline.
 -Fixed the bug in snp-add-gene-info.pl so that it takes in multi-fasta query files and uppercase the query bases
 -adding top eggNOG hits to the output files of the pipeline_summary component
 -added a prokpipe consistency check to skip other checks when the molecule is < 1000 bp

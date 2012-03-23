@@ -19,10 +19,8 @@
             		<executable>mkdir</executable>
             		<arg>-p -m 777 $;TMP_DIR$;</arg>
         	</command>
-        <!--Iterator-->
-        	<INCLUDE file="$;DOCS_DIR$;/strictly_paired_list_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
-			<!--Postprocessing-->
-        	<command>
+        	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+		<command>
             		<type>RunUnixCommand</type>
             		<name>create multi-fasta list</name>
             		<state>incomplete</state>
@@ -39,6 +37,20 @@
                 		<key>--output_list</key>
                 		<value>$;OUTPUT_LIST$;</value>
             		</param>
+        	</command>
+		<command>
+            		<type>RunUnixCommand</type>
+            		<name>concatenate files</name>
+            		<state>incomplete</state>
+            		<executable>$;BIN_DIR$;/concatenate_files</executable>
+            		<param>  
+                		<key>--input_lists</key>
+                		<value>$;OUTPUT_LIST$;</value>
+            		</param>
+                        <param>
+                           	<key>--output</key>
+                            	<value>$;ALL_EXTRACTED_FILE$;</value>
+                        </param>
         	</command>
 	</commandSet>
 </commandSetRoot>

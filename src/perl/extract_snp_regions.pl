@@ -1,15 +1,17 @@
 #!/usr/local/bin/perl -w
 
-#########################################################################################
-#											#
-# Name	      :	extract_snp_regions.pl							#
-# Version     :	1.0									#
-# Project     :	Prokaryotic SNP Verification Pipeline					#
-# Description : Script to extract reference sequence surrounding predicted SNP position #
-# Author      : Sonia Agrawal								#
-# Date        :	November 4, 2011							#
-#											#
-#########################################################################################
+#################################################################################################
+#												#
+# Name	      	: extract_snp_regions.pl							#
+# Version     	: 2.0										#
+# Project     	: Prokaryotic SNP Verification Pipeline						#
+# Description 	: Script to extract reference sequence surrounding predicted SNP position 	#
+# Modifications	: 2.0 - Accomodate for change in SNP panel format				#
+# Author      	: Sonia Agrawal									#
+# Date        	: November 4, 2011								#
+#		  January 11, 2012		  						#
+#												#
+#################################################################################################
 
 use strict;
 # Extended processing of command line options
@@ -51,8 +53,6 @@ pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($cmdLineArg
 
 &checkCmdLineArgs();
 
-#&parse_ref_genbank($cmdLineArgs{'ref_genbank'}, $cmdLineArgs{'output_dir'});
-
 $snp_pos = &parse_snp_positions($cmdLineArgs{'snp_positions'});
 
 &extract_seq($cmdLineArgs{'ref_genbank'}, $snp_pos, $flanking_bases, $cmdLineArgs{'output_dir'});
@@ -61,112 +61,92 @@ $snp_pos = &parse_snp_positions($cmdLineArgs{'snp_positions'});
 # SUBROUTINES #
 ###############
 
-# Description   : 
-# Parameters    : Reference genome's genBank file path
-#		: Output directory to store reference genome annotation file
-# Returns       : NA
-# Modifications :
-
-sub parse_ref_genbank {
-	my ($genbank, $result_dir) = @_;
-	my ($ref_base,$ref_dir,$ref_ext) = fileparse($genbank,qr/\.[^.]*/);
-	my $annot_file = "$result_dir/".$ref_base.".coords";
-	open(FTAB, "> $annot_file") or die "Could not open $annot_file for writing.\nReason : $!\n";
-	my $seqio_obj = Bio::SeqIO->new(-file => "$genbank", -format => "GenBank" );
-	while (my $seqobj = $seqio_obj->next_seq()) {
-		for my $feat_object ($seqobj->get_SeqFeatures) {
-			if ($feat_object->primary_tag eq "CDS") {
-				for my $locus ($feat_object->get_tag_values("locus_tag")) {
-					$locus =~ s/\_//;
-					print FTAB "$locus\t";
-				}
-				if ($feat_object->location->strand == -1) {
-					print FTAB $feat_object->location->end."\t".$feat_object->location->start."\t";
-				} else {
-					print FTAB $feat_object->location->start."\t".$feat_object->location->end."\t";
-				}
-				for my $product ($feat_object->get_tag_values("product")) {
-					print FTAB "$product\n";
-				}
-			}
-		}
-	}
-	close(FTAB);
-#	while(<FR>) {
-#		my $line = $_;
-#		chomp($line);
-#		next if ($line =~ /^\s*$/);
-#		next if ($line =~ /^#/);
-#		my ($ref_id, $ref_path) = split(/\s+/,$line,2);
-#		if (-e $ref_path) {
-#			$ref_data->{$ref_id} = $ref_path;
-#		} else {
-#			die "File $ref_path does not exist. Check the reference file paths in $cmdLineArgs{'ref_info'}\n";
-#		}
-#	}
-#	close(FR);
-#	return $ref_data;
-}
-
-####################################################################################################################################################
-
-# Description   :
-# Parameters    : Path to the SNP positions file
-# Returns       : Hash reference having snp position in reference genome as keys and rest of the 
+# Description   : Parse SNP panel files to create a unique SNP panel
+# Parameters    : snp_file = Path to the SNP positions file
+# Returns       : snp_data = Hash reference having snp position in reference genome as keys and rest of the 
 #		  information in the snp_positions file as values	
-# Modifications :
+# Modifications : The return hash reference has molecule (LOCUS id) as first key and then snp position as second key
+#		  Accepts path to a list of SNP panels and creates a merged hash of all the SNPs in all the panels in the list
 
 sub parse_snp_positions {
 	my ($snp_file) = @_;
 	my $snp_data;
-	open(FR,"< $snp_file") or die "Could not open $snp_file file for reading.\nReason : $!\n";
-	readline(FR);
-	while(<FR>) {
-		my $line = $_;
-		chomp($line);
-		next if ($line =~ /^\s*$/);
-		next if ($line =~ /^#/);
-		my ($refpos, $rest) = split(/\s+/,$line,2);
-		$snp_data->{$refpos} = $rest;
-	} 
+	open(SL,"< $snp_file") or printLogMsg($ERROR, "ERROR! : Could not open $snp_file file for reading.Reason : $!");
+	# Loop through SNP panel files list
+	while(my $file = <SL>) {
+		chomp($file);
+		next if($file =~ /^\s*$/);
+		next if($file =~ /^#/);
+		# Foreach SNP panel file extract the SNP position and molecule name
+		if(-e $file) {
+			open(FR,"< $file") or printLogMsg($ERROR, "ERROR! : Could not open $file file for reading.Reason : $!");
+			readline(FR);
+			while(<FR>) {
+				my $line = $_;
+				chomp($line);
+				next if ($line =~ /^\s*$/);
+				next if ($line =~ /^#/);
+				my ($mol, $refpos, $rest) = split(/\s+/, $line, 3);
+				$snp_data->{$mol}{$refpos} = $rest;
+			}	
+			close(FR); 
+		}
+	}
+	close(SL);
 	return $snp_data;
 }
 
 ####################################################################################################################################################
 
-# Description   :
-# Parameters    : Reference genome's GenBank file path
-#		: Hash of SNP positions
-#		: Number of flanking bases required 
-#		: Output directory to store file containing extracted SNP regions
+# Description   : Extracts sub-sequence from the reference genome FASTA sequence SNP position along with flanking bases upstream and downstream of it
+# Parameters    : genbank = Reference genome's GenBank file path
+#		: snp_data = Hash of SNP positions
+#		: flank_num = Number of flanking bases required 
+#		: result_dir = Output directory to store file containing extracted SNP regions
 # Returns       : NA	
-# Modifications :
+# Modifications : Added code to accomodate for multiple reference GenBank files and extracting sequences from them based on information from 
+#		  SNP panel file ie. LOCUS id of the SNP position
 
 sub extract_seq {
 	my ($genbank, $snp_data, $flank_num, $result_dir) = @_;
-	my $seqio_obj = Bio::SeqIO->new(-file => "$genbank", -format => "GenBank" );
-	my $seq_obj = $seqio_obj->next_seq;
-	my $ref_seq = $seq_obj->seq();
-	my $ref_length = length($ref_seq);
-	if($ref_length <= 0) {
-		die "GenBank file $genbank does not conatin the reference FASTA sequence\n";
-	}
-	my ($ref_base,$ref_dir,$ref_ext) = fileparse($genbank,qr/\.[^.]*/);
-	my $seq_file = "$result_dir/extracted_snps_".$ref_base.".fna";
-	open(FW, "> $seq_file") or die "Could not open $seq_file for writing.\nReason : $!\n";
-	foreach my $pos (sort { $a <=> $b } keys %$snp_data) {
-		print FW ">SNP_".$pos."\n";
-		my $left_limit = $pos - $flank_num;
-		if ($left_limit < 1) {
-			$left_limit = 1;
-		}
-		my $right_limit = $pos + $flank_num;
-		if ($right_limit > $ref_length) {
-			$right_limit = $ref_length;
-		}
-		my $snp_region = substr($ref_seq, ($left_limit - 1), ($right_limit - $left_limit + 1));
-		print FW "$snp_region\n";
-	}
+#	open(RL, "< $genbank") or printLogMsg(1,"ERROR! : Could not open $genbank file for reading.Reason : $!");
+	my $seq_file = "$result_dir/extracted_snps.fna";
+	open(FW, "> $seq_file") or printLogMsg(1,"ERROR! : Could not open $seq_file for writing.\nReason : $!");
+#	while(my $file = <RL>) {
+#		chomp($file);
+#		next if($file =~ /^\s*$/);
+#		next if($file =~ /^#/);
+#		if(-e $file) {
+			my $seqio_obj = Bio::SeqIO->new(-file => "$genbank", -format => "GenBank" );
+			my $seq_obj = $seqio_obj->next_seq;
+			my $locus = $seq_obj->display_id();
+			if(exists($snp_data->{$locus})) {
+				my $ref_seq = $seq_obj->seq();
+				my $ref_length = length($ref_seq);
+				if($ref_length <= 0) {
+					printLogMsg($ERROR,"ERROR! : GenBank file $genbank does not conatin the reference FASTA sequence. Unable to extract sequences from $genbank");
+				} else {
+					foreach my $pos (sort { $a <=> $b } keys %{$snp_data->{$locus}}) {
+						print FW ">".$locus."_SNP_".$pos."\n";
+						my $left_limit = $pos - $flank_num;
+						if ($left_limit < 1) {
+							$left_limit = 1;
+						}
+						my $right_limit = $pos + $flank_num;
+						if ($right_limit > $ref_length) {
+							$right_limit = $ref_length;
+						}
+						my $snp_region = substr($ref_seq, ($left_limit - 1), ($right_limit - $left_limit + 1));
+						print FW "$snp_region\n";
+					}
+				}
+			} else {
+				printLogMsg($ERROR, "ERROR! : SNPs for $locus is not found in the SNP panel. Unable to extract sequences for $locus from GenBank file $genbank");
+			}
+#		} else {
+#			printLogMsg(2, "WARNING! : Reference GenBank file $file does not exist. Unable to extract sequences from $file");
+#		}
+#	}
 	close(FW);
 }
 
@@ -181,14 +161,14 @@ sub checkCmdLineArgs {
 	my @required = qw(ref_genbank snp_positions output_dir);
 	foreach my $option(@required) {
 		if(!defined($cmdLineArgs{$option})) {
-			die "ERROR! : Required option $option not passed\n";
+			printLogMsg(1,"ERROR! : Required option $option not passed");
 		}
 	}
-	if(exists($cmdLineArgs{'flanking_bases'})) {
+	if(exists($cmdLineArgs{'flanking_bases'}) && defined($cmdLineArgs{'flanking_bases'})) {
 		$flanking_bases = $cmdLineArgs{'flanking_bases'};	
 	}
 	if(exists($cmdLineArgs{'log'})) {
-		open($logfh, "> $cmdLineArgs{'log'}") or die "Could not open $cmdLineArgs{'log'} file for writing.Reason : $!\n"
+		open($logfh, "> $cmdLineArgs{'log'}") or printLogMsg(1,"Could not open $cmdLineArgs{'log'} file for writing.Reason : $!");
 	}
 }
 
@@ -205,7 +185,7 @@ sub printLogMsg {
 	if( $level <= $DEBUG ) {
 		print STDERR "$msg\n";
 		print $logfh "$msg\n" if(defined($logfh));
-		die "$msg\n" if($level == $ERROR);
+		die "\n" if($level == $ERROR);
 	}	
 }
 
@@ -217,17 +197,23 @@ __END__
 
 =head1 NAME
 
-# Name of the script and a 1 line desc
+extract_snp_regions.pl - Script to extract reference sequence surrounding predicted SNP positions
 
 =head1 SYNOPSIS
 
-# USAGE : 
+USAGE : perl extract_snp_regions.pl --ref_genbank <reference genbank file> --snp_positions <snp_panel_file> --output_dir <output_dir> [ --flanking_bases <number of flanking bases> --log <log_file> ]
 
 	parameters in [] are optional
 
 =head1 OPTIONS
 
+	-ref_genbank	: Path to reference GenBank file, for a chromosome. Mandatory   
 
+	-snp_positions	: path to SNP panel file having reference positions as first column and LOCUS id from the reference GenBank file as the second column, may have additional columns. Mandatory
+
+	-output_dir	: /path/to/output_dir. Mandatory
+
+	-flanking_bases	: number of bases to be used as flanking bases on either side of the SNP base. Default is 20. Optional
 
 =head1 DESCRIPTION
 
