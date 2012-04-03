@@ -183,7 +183,9 @@ foreach $molecule (keys %$snp_panel) {
 				if(exists($results->{$snp_tag}{$q})) {
 					$num = 0;
 					$snp_string = join("", keys %{$results->{$snp_tag}{$q}});
-					$num += values %{$results->{$snp_tag}{$q}};
+					map {
+						$num += $results->{$snp_tag}{$q}{$_};
+					} keys %{$results->{$snp_tag}{$q}};
 					$num_hits .= "$num\t";
 				} else {
 					$num_hits .= "0\t";
@@ -564,7 +566,8 @@ sub parseRawBlast {
 						$qstart = $hsp->start('query');
 						$offset = $flanking_base - ($qstart - 1);
 						$sseq = $hsp->hit_string;
-						$base = uc(substr( $sseq, $offset, 1 ));
+						$base = "";
+						$base = uc(substr( $sseq, $offset, 1 )) if(length($sseq) > $offset);
 						if($base eq "") {
 							$base = "No Hit";
 						} elsif ($base eq "-") {
