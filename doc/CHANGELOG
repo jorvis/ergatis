@@ -1,5 +1,6 @@
 next
 ----
+-Added user-configurable setting to require login before pipelines can be built
 -Fixed a bug in snp_verify.pl to count the number of hits per query genome
 -New version of SNP verification pipeline.
 -Fixed the bug in snp-add-gene-info.pl so that it takes in multi-fasta query files and uppercase the query bases

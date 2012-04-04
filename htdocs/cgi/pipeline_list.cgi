@@ -42,6 +42,9 @@ my $error_msgs = [];
 ## Should we limit our display list to just those pipelines that the user has created
 my $per_account_pipelines = $ergatis_cfg->val('authentication', 'per_account_pipeline_security') || 0;
 
+## Check user configured build access
+my $require_login_for_pipeline_build = $ergatis_cfg->val('authentication', 'require_login_for_pipeline_build') || 0;
+
 if (! -e $project_conf_path ) {
     &record_error("$project_conf_path not found");
     print $q->header( -type => 'text/html' );
@@ -130,12 +133,19 @@ print_template();
 # Render our template with corresponding variables
 ###
 sub print_template {
-    my $submenu_links = [
-                            { label   => 'new pipeline', 
-                              is_last => 0, 
-                              url     => "./build_pipeline.cgi?repository_root=$repository_root"
-                            },
-                        ];
+    my $submenu_links = [ ];
+                        
+    if ( $require_login_for_pipeline_build && ! $username ) {
+        push @$submenu_links, { label   => 'new pipeline (login)', 
+                                is_last => 0, 
+                                url     => "./login_form.cgi?redirect_url=" . CGI::escape("./build_pipeline.cgi?repository_root=$repository_root"),         
+                              };
+    } else {
+        push @$submenu_links, { label   => 'new pipeline', 
+                                is_last => 0, 
+                                url     => "./build_pipeline.cgi?repository_root=$repository_root"
+                              };
+    }
 
     if ( $view eq 'component' ) {
         $tmpl->param( COMPONENTS => \@pipelines_sorted );
