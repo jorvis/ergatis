@@ -250,7 +250,7 @@ sub addSnpsPerGene {
 		}
 		@snps_for_gene = ();
 		# In case of overlapping genes, display the count for both the genes at that SNP position
-		@genes = split("/",$row[$col_gn]);
+		@genes = split(/\//,$row[$col_gn]);
 		foreach $g (@genes) {
 			if(exists($snps_count->{$row[0]}{$g})) {
 				push(@snps_for_gene,$snps_count->{$row[0]}{$g});
