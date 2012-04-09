@@ -27,6 +27,7 @@ next
 -fixing bugs associated with project level email notification controls
 -prok pipeline: added split_multifasta to split interevidence nucelotides for searching.
 -prok pipeline: added parse-evidence.eggNOG and ncbi-blastp.eggNOG components
+-fixed bug when deleting a pipeline that would cause a redirect loop
 
 ergatis-v2r17 (2011-12-11)
 --------------------------
