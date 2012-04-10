@@ -31,7 +31,7 @@ my $email_on_default = $shared_cfg->val('project', '$;EMAIL_NOTIFICATION$;') || 
 my $email_user = "";
 my $email_domain = $ergatis_cfg->val('workflow_settings', 'email_domain');
 my $username = user_logged_in($ergatis_cfg);
-if ($username && $email_domain) {
+if ($username && $email_domain && $email_on_default) {
     $email_user = "$username\@$email_domain";
 } else {
     ## If the user isn't logged in and default email notifications is set to true 
