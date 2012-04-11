@@ -52,7 +52,7 @@ my $results = GetOptions (\%options,
               'use_bwasw',
               'num_aligns|na=s',
               'bwa_path|b=s',
-              'cleanup_sai',
+              'cleanup_sai:s',
               'help|h');
 
 # display documentation
@@ -66,8 +66,10 @@ my $options_string = '';
 &check_parameters(\%options);
 
 # Check if the data are paired or not
+# HUGE HACK - need to remove .lite if it exists
+$options{input_base} =~ s/\.lite//;
 my $PAIRED = 0;
-$PAIRED=1 if(-e "$options{output_dir}/$options{input_base}_1.fastq");
+$PAIRED=1 if(-e "$options{input_dir}/$options{input_base}_1.fastq");
 
 if($options{use_bwasw}) {
     die "bwasw is not implemented yet\n";
@@ -81,8 +83,22 @@ sub run_bwa {
 
     foreach my $ref (@$ref_files) {
         chomp $ref;
-        $ref =~ /.*\/([^\/]+)\.[^\.]+$/;
-        my $refname = $1;
+        my $refname = '';
+        if( $ref =~ /.*\/([^\/]+)\.[^\.]+$/) {
+            $refname = $1;
+        }
+        else {
+            $ref =~ /.*\/([^\/]+)\.?[^\.]*$/;
+            $refname = $1;
+        }
+
+        if(! -e "$ref.bwt") {
+            print "Did not find reference file $ref.bwt\n";
+
+            print "Indexing $ref\n";
+            my $cmd = "$options{bwa_path} index $ref";
+            system($cmd) == 0 or die "Unable to index $ref\n";
+        }
         # In here if we're paired
         if($PAIRED) {
 
