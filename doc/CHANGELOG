@@ -1,5 +1,6 @@
 next
 ----
+-New component: filter_merged_table for SNP verification pipeline
 -New component: bwa. This component should replace the other bwa components.
 -New component: filter_fastq (will filter a fastq based on a list of read_names)
 -Added paired file iterator for paired files
