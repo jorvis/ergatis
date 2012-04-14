@@ -132,10 +132,13 @@ sub run_bwa {
         
         # In here if we aren't paired
         else {
+            my $single_read_file = "$options{output_dir}/$options{input_base}_single_read.txt";
+            my $cmd = "touch $single_read_file";
+            system($cmd) ==0 or die "Unable to run $cmd\n";
 
             my $in = "$options{input_dir}/$options{input_base}.fastq";
             my $out = "$options{output_dir}/$refname\_$options{input_base}_aln_sa.sai";
-            my $cmd = "$options{bwa_path} aln $options_string $ref $in > $out";
+            $cmd = "$options{bwa_path} aln $options_string $ref $in > $out";
 
             print "Running: $cmd\n";
             system($cmd) == 0 or die "Unable to run $cmd\n";
