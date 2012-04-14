@@ -7,6 +7,7 @@ import sys
 import os
 import argparse
 import glob
+import re
 
 RefFile1List = []
 RefFile2List = []
@@ -50,7 +51,10 @@ parser.add_argument('-r2', '--ref2',action=ParseList)
 parser.add_argument('-i', '--input')
 args = parser.parse_args();
 
-FileLocation = args.input
+#FileLocation = args.input
+regex = re.compile('\.lite')
+FileLocation = regex.sub('',args.input)
+print FileLocation
 #FileLocation = sys.argv[1]
 FilePath = FileLocation.split("/")
 FilePathString=""
@@ -65,8 +69,8 @@ FileName = FilePath[len(FilePath)-1]
 #RefFileLocation2 = sys.argv[3]
 #print RefFileLocation2
 
-CheckSingleFastq = glob.glob(FilePathString + "/*" + FileName + "_aln_sa2.sai")
-print CheckSingleFastq
+SingleEnd = glob.glob(FilePathString + "/*" + FileName + "_single_read.txt")
+print SingleEnd
 
 #RefFilePtr1 = open(RefFileLocation1,"r")
 #RefFilePtr2 = open(RefFileLocation2,"r")
@@ -84,9 +88,8 @@ print RefFile2List
 #   RefFile2UMUMCreated.append(0)
 #   RefFile2UMMCreated.append(0)
 
-PairedEnd = all((os.access(f, os.F_OK) for f in CheckSingleFastq))
-
-if(len(CheckSingleFastq) > 0 & PairedEnd):
+CheckSingleEnd = all((os.access(f, os.F_OK) for f in SingleEnd))
+if(len(SingleEnd) == 0 and CheckSingleEnd):
    for RefFile1 in RefFile1List:
       print "File 1: "+RefFile1
       # De-construct the reference file name.
