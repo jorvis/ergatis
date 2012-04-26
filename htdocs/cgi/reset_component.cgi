@@ -67,8 +67,11 @@ my $twig = new XML::Twig(
                  $elt->first_child('commandSet')->first_child('state')->set_text('incomplete');
                  }
                  elsif($name eq 'serial' || $name eq 'parallel' || $name eq "start pipeline:"){
-                 #Set all serial/parallel nestings incomplete
-                 $elt->first_child('state')->set_text('incomplete');
+                    # Set all serial/parallel nestings incomplete
+                    # Valid to not have a state here so check if it exists before tyring to reset
+                    if ( $elt->first_child('state') ) {
+                        $elt->first_child('state')->set_text('incomplete');
+                    }
                  }
              }
                },
