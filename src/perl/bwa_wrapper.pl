@@ -12,7 +12,7 @@ lgt_bwa.pl
 
 =over 8
 
-This help message
+This help message is no good.
 
 =back
 
@@ -42,146 +42,125 @@ use Pod::Usage;
 my %options = ();
 my $results = GetOptions (\%options, 
 						  'query_file|q=s',
-						  'query_list|ql=s',
 						  'ref_file|r=s',
-						  'ref_file_list|rl=s',
 						  'output_dir|o=s',
+						  'tmp_dir|td=s',
+
+						  'index_bam|ib=s',
+
+						  'bwa_path|b=s',
+						  'samtools_path|st=s',
+
 						  'mismatch|mm=s',
 						  'max_gaps|mg=s',
 						  'max_gap_extensions|mge=s',
 						  'open_gap_penalty|og=s',
 						  'extend_gap_penalty|eg=s',
 						  'threads|t=s',
-						  'use_bwasw|ub=s',
 						  'num_aligns|na=s',
-						  'bwa_path|b=s',
-						  'samtools_path|st=s',
+
 						  'cleanup|c=s',
 						  'help|h');
 
-# display documentation
-if( $options{'help'} ){
-    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
-}
-
+##############################
+# Global Vars                #
+##############################
 my $PAIRED = 0;
-my $ref_files = [];
 my $query_files = [];
+my $prefix = "";
 my $options_string = '';
+##############################
 
 ## make sure all passed options are peachy
 &check_parameters(\%options);
 
-if($options{use_bwasw}) {
-    die "bwasw is not implemented yet\n";
-}
-else {
-    &run_bwa();
-}
+## are the input reference files indexed?
+my $ref_file = $options{'ref_file'};
+$ref_file = &create_index( $ref_file ) unless( index_exists( $ref_file ) );
 
-sub run_bwa {
+## create bam file
+my $bam = &create_bam( $ref_file, $query_files, $prefix );
 
-  foreach my $ref (@$ref_files) {
-	#Is the reference indexed? If not, index it.
-	my $temp_index = 0;
-	unless( index_exists( $ref ) ) {
-	  $ref = &create_index( $ref );
-	  $temp_index = 1;
-	}
+## sort/index the bam if if necessary
+&index_bam( $bam ) if( $options{'index_bam'} );
 
-	chomp $ref;
-	$ref =~ /.*\/([^\/]+)\.[^\.]+$/;
-	my $refname = $1;
-
-	my $sam_file;
-
-	# In here if we're paired
-	if ($PAIRED) {
-
-	  my $in1 = $query_files->[0];
-	  my $basename1 = basename( $in1, qw(fastq,fq,txt) );
-	  my $out1 = "$options{output_dir}/${refname}_${basename1}_aln_sa1.sai";
-	  my $in2 = $query_files->[1];
-	  my $basename2 = basename( $in2, qw(fastq,fq,txt) );
-	  my $out2 = "$options{output_dir}/${refname}_${basename2}_aln_sa2.sai";
-
-            
-	  # Run the first one through aln
-	  my $cmd = "$options{bwa_path} aln $options_string $ref $in1 > $out1";
-	  print "Running: $cmd\n";
-	  system($cmd) == 0 or die "Unable to run $cmd\n";
-            
-	  # Run the second one through aln
-	  $cmd = "$options{bwa_path} aln $options_string $ref $in2 > $out2";
-	  print "Running: $cmd\n";
-	  system($cmd) == 0 or die "Unable to run $cmd\n";
-
-	  # Run sampe
-	  my $prefix = &longest_common_prefix( basename($in1), basename($in2) );
-	  $prefix =~ s/_$//;
-	  $sam_file = "$options{output_dir}/$refname\_$prefix.sam";
-	  $cmd = "$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" > $sam_file";
-	  print "Running: $cmd\n";
-	  system($cmd) == 0 or die "Unable to run $cmd\n";
-
-	  if ($options{cleanup}) {
-		$cmd = "rm -f $out1 $out2";
-		print "Running: $cmd\n";
-		system($cmd) == 0 or die "Unable to run $cmd\n";
-	  }
-
-	} else {
-
-	  my $in = $query_files->[0];
-	  my $basename = basename( $in, qw(fastq,fq,txt) );
-	  my $out = "$options{output_dir}/$refname\_${basename}_aln_sa.sai";
-	  my $cmd = "$options{bwa_path} aln $options_string $ref $in > $out";
-
-	  print "Running: $cmd\n";
-	  system($cmd) == 0 or die "Unable to run $cmd\n";
-
-	  $sam_file = "$options{output_dir}/$refname\_${basename}.sam";
-	  $cmd = "$options{bwa_path} samse -n $options{num_aligns} $ref \"$out\" \"$in\" > $sam_file";
-	  print "Running: $cmd\n";
-	  system($cmd) == 0 or die "Unable to run $cmd\n";
-
-	  if ($options{cleanup}) {
-		$cmd = "rm -f $out";
-		print "Running: $cmd\n";
-		system($cmd) == 0 or die "Unable to run $cmd\n";
-	  }
-	}
-	
-	# And convert to bam
-	my $basename = basename( $sam_file, '.sam' );
-	my $bam_file = "$options{'output_dir'}/$basename.bam";
-	my $cmd = "$options{'samtools_path'} view -bS $sam_file > $bam_file";
-	print "Running: $cmd\n";
-	system($cmd) == 0 or die("Unable to run $cmd");
-
-	if( $options{'cleanup'} ) {
-	  $cmd = "rm -f $sam_file";
-	  print "Running: $cmd\n";
-	  system($cmd) == 0 or die "Unable to run $cmd\n";
-
-	  if( $temp_index ) {
-		$cmd = "rm -f $ref*";
-		print "Running: $cmd\n";
-		system($cmd) == 0 or die "Unable to run $cmd\n";
-	  }
-	}
-  }
-
-}
-
+##################################################
+# fasta indexing                                 #
+##################################################
 sub index_exists { -e $_.".bwt" }
 sub create_index {
   my ($file) = @_;
   my $basename = basename( $file );
-  my $index = "$options{'output_dir'}/$basename";
+  my $index = "$options{'tmp_dir'}/$basename";
   my $cmd = "$options{'bwa_path'} index -p $index $file";
-  system($cmd) && die("Could not run cmd $cmd: $!");
+  &run( $cmd );
   return $index;
+}
+##################################################
+
+##################################################
+# Create the bam file                            #
+##################################################
+sub create_bam {
+  my ($ref, $query_files, $prefix) = @_;
+
+  # Remove extension
+  my $refname = $1 if( $ref =~ /.*\/([^\/]+)\.[^\.]+$/ );
+  die("Could not remove extension from reference filename $ref") unless( $refname );
+
+  my @sais;
+  foreach my $in ( @{$query_files} ) {
+	my $basename = basename( $in, qw(fastq,fq,txt) );
+	my $out = "$options{output_dir}/$refname\_${basename}_aln_sa.sai";
+	&aln( $ref, $in, $out, $options_string );
+	push(@sais, $out);
+  }
+
+  my $basename;
+  if ( @sais > 1 ) {
+	$basename = &longest_common_prefix( basename($sais[0]), basename($sais[1]) );
+  } else {
+	$basename = basename( $sais[0], qw(_aln_sa.sai) );
+  }
+  my $sam_file = "$options{output_dir}/$prefix.sam";
+  &sam( $ref, \@sais, $query_files, $sam_file, "-n $options{'num_aligns'}" );
+	
+  # And convert to bam
+  my $basename = basename( $sam_file, '.sam' );
+  my $bam_file = "$options{'output_dir'}/$basename.bam";
+  &to_bam( $sam_file, $bam_file );
+
+  ## Remove the sam file if the user wants
+  &run("rm -f $sam_file") if( $options{'cleanup'} );
+
+  return $bam_file;
+}
+
+sub aln {
+  my ($ref, $in, $out, $options) = @_;
+  my $cmd = "$options{bwa_path} aln $options $ref $in > $out";
+  &run($cmd);
+}
+
+sub sam {
+  my ($ref, $sais, $fastqs, $out, $options) = @_;
+  
+  ## The number of sais and fastqs should be the same
+  die("Expected same number of sai and fastq files. Got ".scalar(@{$sais})." sai files and ".
+	  scalar(@{$fastqs})." fastq files") unless( @{$sais} == @{$fastqs} );
+
+  ## Determine if paired end or not
+  my $method = (@{$fastqs} > 1) ? "sampe" : "samse";
+
+  my $inputs_string = join(" ", map { "\"$_\"" } (@{$sais}, @{$fastqs}) );
+  my $cmd = "$options{bwa_path} $method $options $ref $inputs_string > $out";
+  &run($cmd);
+}
+
+sub to_bam {
+  my ($sam_file, $bam_file) = @_;
+  my $cmd = "$options{'samtools_path'} view -bS $sam_file > $bam_file";
+  &run($cmd);
 }
 
 sub longest_common_prefix {
@@ -189,69 +168,99 @@ sub longest_common_prefix {
   for( @_ ) {
 	chop $prefix while(! /^\Q$prefix\E/);
   }
-  $prefix;
+  $prefix =~ s/_$//;
+  return $prefix;
+}
+##################################################
+
+##################################################
+#  Index the bam file                            #
+##################################################
+# This will replace the existing bam file.
+sub index_bam {
+  my ($bam) = @_;
+  my ($name, $path) = fileparse( $bam, qw(.bam) );
+  my $backup = $path."/$name.unsorted.bam";
+  &run("mv $bam $backup");
+  &bam_sort( $backup, "$path/$name" );
+  &bam_index( $bam );
+  &run("rm -rf $backup") if( $options{'cleanup'} );
+}
+sub bam_sort {
+  my ($bam, $out) = @_;
+  my $cmd = "$options{'samtools_path'} sort $bam $out";
+  &run( $cmd );
+}
+
+sub bam_index {
+  my ($bam) = @_;
+  my $cmd = "$options{'samtools_path'} index $bam";
+  &run($cmd);
+}
+##################################################
+
+
+sub run {
+  my ($cmd) = @_;
+  system($cmd) == 0 or die("Unable to run $cmd");
 }
 
 sub check_parameters {
+  
+  # display documentation
+  if( $options{'help'} ){
+    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
+  }
+ 
+  ## make sure we have both tmp and output directories
+  foreach my $req ( qw(output_dir tmp_dir ref_file query_file) ) {
+	die("Option $req is required") unless( exists( $options{$req} ) );
+  }
+
+  # get the query files
+  open(IN, "< $options{'query_file'} ") or die("Could not open $options{'query_file'}: $!");
+  chomp( my $l = <IN> );
+  if ( $l =~ /^\@/ ) {
+	push(@{$query_files}, $options{'query_file'});
+  } elsif ( -e $l ) {
+	push( @{$query_files}, $l );
+	chomp( my @therest = <IN> );
+	push( @{$query_files}, @therest );
+  } else {
+	die("Could not determine the format of file: $options{'query_file'}. Expected fastq or list of fastq files");
+  }
+  close(IN);
+
+  my $query_prefix= $1 if( $options{'query_file'} =~ m|/([^/\.]+)\.[^/]+$| );
+  die("Could not parse prefix from $options{'query_file'}") unless( defined( $query_prefix ) );
+  
+  my $ref_prefix = $1 if( $options{'ref_file'} =~ m|/([^/\.]+)\.[^/]+$| );
+  die("Could not parse prefix from $options{'ref_file'}") unless( defined( $ref_prefix ) );
+
+  $prefix = $ref_prefix."_".$query_prefix;
+
+  # only allow 1 or 2 query files
+  if ( @{$query_files} < 1 || @{$query_files} > 2 ) {
+	die("Found ".scalar(@{$query_files})." query files. Will only accept 1 (single end) or 2 (paired end)");
+  }
+	
+  # The options which will be passed into aln
+  my $options_to_param_keys = {
+							   'mismatch' => '-M',
+							   'max_gaps' => '-o',
+							   'max_gap_extensions' => '-e',
+							   'open_gap_penalty' => '-O',
+							   'extend_gap_penalty' => '-E',
+							   'threads' => '-t'
+							  };
+
+  my $opts = [];
+  foreach my $key (keys %$options_to_param_keys) {
+	if ($options{$key}) {
+	  push(@$opts, "$options_to_param_keys->{$key} $options{$key}");
+	}
+  }
+  $options_string = join(" ",@$opts);
     
-    if($options{ref_file}) {
-        my @files = split(/,/,$options{ref_file});
-        $ref_files = \@files;
-    }
-    elsif($options{ref_file_list}) {
-        my @lines = `cat $options{ref_file_list}`;
-        $ref_files = \@lines;
-    }
-    else {
-        die "No reference file specified in ref_file or ref_file_list"
-    }
-
-	my @qfiles;
-	if( $options{'query_file'} ) {
-	  @qfiles = split(/,/,$options{'query_file'});
-	} else {
-	  die("No query file specified.");
-	}
-
-	foreach my $qf ( @qfiles ) {
-	  open(IN, "< $qf") or die("Could not open $qf: $!");
-	  chomp( my $l = <IN> );
-	  if( $l =~ /^\@/ ) {
-		push(@{$query_files}, $qf);
-	  } elsif( -e $l ) {
-		push( @qfiles, $l );
-		chomp( my @therest = <IN> );
-		push( @qfiles, @therest );
-	  } else {
-		die("Could not determine the format of file: $qf");
-	  }
-	  close(IN);
-	}
-
-	# only allow 1 or 2 query files
-	if( @{$query_files} == 2 ) {
-	  $PAIRED=1;
-	} elsif( @{$query_files} != 1 ) {
-	  die("Found ".scalar(@{$query_files})." query files. Will only accept 1 (single end) or 2 (paired end)");
-	}
-	  
-
-    my $options_to_param_keys = {
-        'mismatch' => '-M',
-        'max_gaps' => '-o',
-        'max_gap_extensions' => '-e',
-        'open_gap_penalty' => '-O',
-        'extend_gap_penalty' => '-E',
-        'threads' => '-t'
-    };
-
-    my $opts = [];
-    foreach my $key (keys %$options_to_param_keys) {
-        if($options{$key}) {
-            push(@$opts, "$options_to_param_keys->{$key} $options{$key}");
-        }
-    }
-    $options_string = join(" ",@$opts);
-    
-    return 1;
+  return 1;
 }

@@ -35,7 +35,11 @@
             <param>
             <key>--output_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>  
+            </param>
+            <param>
+            <key>--tmp_dir</key>
+            <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>    
             <param>
             <key>--mismatch</key>
             <value>$;MISMATCH_PENALTY$;</value>
@@ -61,10 +65,6 @@
             <value>$;MAX_THREADS$;</value>
             </param>     
             <param>
-            <key>--use_bwasw</key>
-            <value>$;BWASW$;</value>
-            </param> 
-            <param>
             <key>--num_aligns</key>
             <value>$;MAX_ALIGN$;</value>
             </param> 
@@ -79,6 +79,10 @@
             <param>
             <key>--cleanup</key>
             <value>$;CLEANUP$;</value>
+            </param>
+            <param>
+            <key>--index_bam</key>
+            <value>$;INDEX_BAM$;</value>
             </param>
             <param>
             <key>stdout</key>
