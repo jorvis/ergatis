@@ -87,7 +87,7 @@ foreach my $fq ( @fastqs ) {
 
 #Create a list file for the output filtered fastq files.
 my $basename = basename( $options{'fastq_input'}, qw(.list .fastq .fq .txt) );
-my $outlist = $options{'output_dir'}."/$basename";
+my $outlist = $options{'output_dir'}."/$basename.fastq.list";
 open(OUT, "> $outlist");
 local $" = "\n";
 print OUT "@filtered_fastqs\n";
