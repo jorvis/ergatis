@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>bwa Iterator workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>mpileup Execution</name>
+            <state>incomplete</state>
+            <executable>$;SAMTOOLS_EXEC$; mpileup</executable>       
+			<arg>$;OTHER_MPILEUP_PARAMETERS$; -f $;I_FILE_PATH_1$; $;I_FILE_PATH_2$;</arg>     
+			<param>
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE_2$;.mpileup</value>
+            </param>
+            <param>
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE_2$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
