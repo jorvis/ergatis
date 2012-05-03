@@ -23,8 +23,23 @@
             <type>RunUnixCommand</type>
             <name>mpileup Execution</name>
             <state>incomplete</state>
-            <executable>$;SAMTOOLS_EXEC$; mpileup</executable>       
-			<arg>$;OTHER_MPILEUP_PARAMETERS$; -f $;I_FILE_PATH_1$; $;I_FILE_PATH_2$;</arg>     
+            <executable>$;BIN_DIR$;/mpileup_wrapper</executable>  
+			<param>
+			<key>--samtools_exec</key>
+			<value>$;SAMTOOLS_EXEC$;</value>
+			</param>
+			<param>
+			<key>--fasta_file</key>
+			<value>$;I_FILE_PATH_1$;</value>
+			</param>
+			<param>
+			<key>--mpileup_options</key>
+			<value>&quot;$;OTHER_MPILEUP_PARAMETERS$; $;I_FILE_PATH_2$;&quot;</value>
+			</param>
+			<param>
+			<key>--tmp_directory</key>
+			<value>$;TMP_DIR$;</value>
+			</param>
 			<param>
             <key>stdout</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE_2$;.mpileup</value>
