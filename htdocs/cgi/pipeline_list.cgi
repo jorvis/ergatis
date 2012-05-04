@@ -76,11 +76,6 @@ my @required_dirs = ( $pipeline_root, "$repository_root/workflow", "$repository_
 for my $dir ( @required_dirs ) {
     if (! -d $dir ) {
         &record_error("directory $dir not found");
-    } else {
-        ## make sure it is writeable
-        if (! -w $dir) {
-            &record_error("$dir not writable");
-        }
     }
 }
 
