@@ -101,6 +101,7 @@ use Chado::Gene;
 use BSML::GenePredictionBsml;
 use Ergatis::IdGenerator;
 use Ergatis::Logger;
+use XML::Simple;
 
 ####### GLOBALS AND CONSTANTS ###########
 my @inputFiles;               #Holds input files
@@ -141,6 +142,11 @@ foreach my $file (@inputFiles) {
 }
 
 $bsml->writeBsml($output);
+
+## Double-check to ensure that our BSML is well-formed before moving on.
+## Avoids a situation where we move on from this step and have retry attempts
+## occuring on the wrong step of the component.
+XMLin($output);
 
 exit(0);
 
