@@ -2,6 +2,7 @@
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
+
 use strict;
 use warnings;
 
@@ -30,7 +31,7 @@ getopts("b:c:m:a:y:z:p:");
 
 my $usage = "Usage:  $0 \
                 -b list of blast output files\
-                -c list of clusters from uclust (optional)\ 
+                -c list of clusters from uclust (optional for clovr-metagenomics)\ 
                 -m input mapping file\
 		-a annotation file\
                 -y bsml list from metagene runs (optional)\
@@ -79,6 +80,7 @@ my %polyclusters    = ();
 my @orderedsamples  = (); 
 my %clusters        = ();
 my %COUNTS          = ();
+my $QIIMEOTUs       = 0;
 #
 if ($bsml_list eq "" and $polypep_clusterlist ne ""){
   die "**ERROR** a polypeptide clustering is provided but no bsml list of initial polypeptides!!\n";
@@ -101,6 +103,11 @@ if ($polypep_clusterlist ne ""){
   loadPolyPepClusters($polypep_clusterlist);    
 }
 
+# load up cluster information
+if ($clusterlist ne "" and $clusterlist ne "none"){
+  loadUpDNAClusters();
+}
+
 # load up the mapping_data
 loadMappingData();
 
@@ -119,11 +126,6 @@ if ($num_map_levels == 0){
 
 # load up annotation data from the db
 loadAnnotationData();
-
-# load up cluster information
-if ($clusterlist ne ""){
-  loadUpDNAClusters();
-}
 
 # define the raw output annotation to be written
 open RAW, ">$prefix.raw.antn" or die "Can't open $prefix.raw.antn for writing!\n";
@@ -439,7 +441,6 @@ sub catalog
 }
 
 
-
 sub loadMappingData
 {
   open IN, "$mapfile" or die "Can't open mapping file: $mapfile\n";
@@ -453,6 +454,10 @@ sub loadMappingData
         $map_levels{$i} = $A[$i];
       }
     }else{
+      if ($QIIMEOTUs == 1 or $opt_c eq "none" or !defined($opt_c)){ # then this is for clovr_its with no clusters, so just keep the prefixes
+        my @B = split /\./, $A[0];
+        $A[0] = join(".", @B[0 .. ($#B-1)]);  
+      }
       $samples{$A[0]} = 0;
       for my $i (1 .. $#A){
         $mapdata{$A[0]}{$i} = $A[$i];
@@ -461,6 +466,7 @@ sub loadMappingData
     }
   }
   close IN;
+
 }
 
 
@@ -513,20 +519,36 @@ sub loadUpDNAClusters
   my $catclustlist = `cat $clusterlist`;
   my @catclustlist = split "\n", $catclustlist;
   for my $i (0 .. $#catclustlist){
+
+    my $toplineck = `head -n 1 $catclustlist[$i]`;
+    if ($toplineck =~ /^0\t/){
+      $QIIMEOTUs = 1;
+    } 
+
     open IN, "$catclustlist[$i]" or die "Can't open $catclustlist[$i] for processing!\n";
     my $seed = "";
     while(<IN>){
       chomp($_);
       next if ($_ eq "");
-      next if ($_ =~ /^>Cluster/);
-      my @A = split ">", $_;
-      my @B = split /\.\.\./, $A[1];
-      if ($_ =~ /^0/){
-        $seed = $B[0];
-      }else{
-        push @{$clusters{$seed}}, $B[0];
-      }
+
+      if ($QIIMEOTUs == 0){
+
+        next if ($_ =~ /^>Cluster/);
+        my @A = split ">", $_;
+        my @B = split /\.\.\./, $A[1];
+        if ($_ =~ /^0/){
+          $seed = $B[0];
+        }else{
+          push @{$clusters{$seed}}, $B[0];
+        }
+      }else{ # It's a QIIME based OTU file from CloVRITS
+        my @A = split "\t", $_;
+        for my $j (1 .. $#A){
+          push @{$clusters{$A[0]}}, $A[$j];
+        }
+      }  
     }
   }
+
 }
 

@@ -2,6 +2,9 @@
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 
@@ -48,15 +51,31 @@ while (my $file = <FLIST>) {
 close (FLIST);
 
 # create a hash of all clusters
+my $qiimeck = 0;
 foreach my $file (@uniqueclusterfiles){
   open IN, $file or die "Could not open file $file!!\n";
   while(<IN>){
     chomp($_);
     my @A = split "\t", $_;
-    my @B = split ",", $A[1];
-    for my $i (0 .. $#B){
-      push @{$clusters{$B[0]}}, $B[$i];
-    }# this cluster includes the representative in the hash value
+    if ($qiimeck == 0){
+      if ($A[0] == 0){  # then we've got qiime formatted OTUs
+        $qiimeck = 1;   
+      }else{
+        $qiimeck = -1;
+      }
+    }
+
+    if ($qiimeck == -1){
+      my @B = split ",", $A[1];
+      for my $i (0 .. $#B){
+        push @{$clusters{$B[0]}}, $B[$i];
+      } # this cluster includes the representative in the hash value
+    }else{
+      for my $i (1 .. $#A){
+        push @{$clusters{$A[0]}}, $A[$i];
+      }
+    }
+
   }
 }
 
@@ -72,16 +91,22 @@ close (FLIST);
 
 
 open OUT, ">$outfile" or die;
-
 foreach my $file (@chifiles){ # for each chimera report file
   open IN, $file or die "Could not open file $file!!\n";
   while(<IN>){
     chomp($_);
     my @A = split "\t", $_;
     next if ($A[$#A] eq "N"); # b/c it's not detected as a chimera
+
+    if ($qiimeck == 1){
+      my @B = split /\//, $A[1];
+      $A[1] = $B[0];
+    }
+
     if (!defined($clusters{$A[1]})){
       die "Cannot locate representative sequence: $A[1]!!\n"; 
     }else{ #print that cluster out b/c theyre all chimeras
+      print OUT "$A[1]\n";
       foreach my $v (@{$clusters{$A[1]}}){
         print OUT "$v\n"; 
       }

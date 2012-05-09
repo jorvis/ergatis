@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 use Data::Dumper;
@@ -14,7 +17,7 @@ open OUT2, ">$ARGV[2].list" or die; # list file
 print OUT2 "$ARGV[2]"; 
 close OUT2;
 
-print OUT "$ARGV[1]\t$n"; # 0.03 numberOTUs 
+print OUT "$ARGV[1]\t$n"; # OTU distance, numberOTUs 
 
 my %goodseqs = ();
 for my $i (0 .. $#lines){ 
