@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bowtie_build</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>bowtie_build</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bowtie_build</executable>            
+            <param>
+                <key>--reffile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--prefix</key>
+                <value>$;BOWTIE_INDEX_PREFIX$;</value>
+            </param>
+            <param>
+                <key>--bowtie_bin_dir</key>
+                <value>$;BOWTIE_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>--args</key>
+                <value>'$;OTHER_PARAMETERS$;'</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/bowtie_build.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/bowtie_build.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
