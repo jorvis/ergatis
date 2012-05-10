@@ -1,0 +1,199 @@
+#!/usr/bin/perl
+
+=head1 NAME
+
+pipearch - Archive and compress an Ergatis pipeline and its output.
+
+=head1 SYNOPSIS
+
+USAGE: template.pl 
+            --project_directory=/usr/local/projects/foo
+            --pipeline_id=3035
+          [ --log=/path/to/somefile.log 
+          ]
+
+=head1 OPTIONS
+
+B<--project_directory,-p>
+    Path to the base directory of a project.  Under this we should find 'workflow' and
+    'output_repository' directories.
+
+B<--pipeline_id,-i>
+    Numerical ID for an Ergatis pipeline.
+
+B<--log,-l> 
+    Log file
+
+B<--help,-h>
+    This help message
+
+=head1  DESCRIPTION
+
+This script is used to archive an Ergatis pipeline in place within the project's area, but creates
+individual tarballs for each component's output and runtime directories rather than compressing
+individual files.
+
+=head1  INPUT
+
+For some defined project area (--project_area) and pipeline ID (--pipeline_id) this script
+assumes the following directories for a given pipeline with components 1 .. N
+
+    $project/output_repository/$component1/${pipeline_id}_*
+    $project/output_repository/$component2/${pipeline_id}_*
+    ...
+    $project/output_repository/$componentN/${pipeline_id}_*
+    
+    
+    $project/workflow/runtime/$component1/${pipeline_id}_*
+    $project/workflow/runtime/$component2/${pipeline_id}_*
+    ...
+    $project/workflow/runtime/$componentN/${pipeline_id}_*
+
+Where each of the lowest-level directories above are named like 'PIPELINEID_TOKEN' where 'token' 
+can be any user-defined label.  It is at this level that tarball's are created.
+
+=head1  OUTPUT
+
+Each of the PIPELINEID_TOKEN directories mentioned in the INPUT section above is removed and
+replaced by a tarball of itself with the same name but including the '.tar.gz' extension.
+
+=head1  CONTACT
+
+    Joshua Orvis
+    jorvis@users.sf.net
+
+=cut
+
+use strict;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+use Pod::Usage;
+use File::Path;
+
+my %options = ();
+my $results = GetOptions (\%options, 
+                          'project_directory|p=s',
+                          'pipeline_id|i=s',
+                          'log|l=s',
+                          'help|h') || pod2usage();
+
+## display documentation
+if( $options{'help'} ){
+    pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
+}
+
+## make sure everything passed was peachy
+&check_parameters(\%options);
+
+## open the log if requested
+my $logfh;
+if (defined $options{log}) {
+    open($logfh, ">$options{log}") || die "can't create log file: $!";
+}
+
+## check the expected directory structure
+check_file_layout( $options{project_directory}, $options{pipeline_id} );
+
+tarball_matching_subdirectories( "$options{project_directory}/workflow/runtime", $options{pipeline_id} );
+tarball_matching_subdirectories( "$options{project_directory}/output_repository", $options{pipeline_id} );
+
+
+
+exit(0);
+
+sub check_file_layout {
+    my ($proj_dir, $id) = @_;
+    
+    unless ( -d "$proj_dir/workflow/runtime" ) {
+        die "ERROR: expected to find $proj_dir/workflow/runtime";
+    }
+    
+    unless ( -d "$proj_dir/output_repository" ) {
+        die "ERROR: expected to find $proj_dir/output_repository";
+    }
+    
+    ## conventional location for this pipeline
+    unless ( -d "$proj_dir/workflow/runtime/pipeline/$id" ) {
+        die "ERROR: pipeline XML directory for pipeline $id not found.  Quitting.";
+    }
+}
+
+
+sub tarball_matching_subdirectories {
+    my ($base, $id) = @_;
+    
+    opendir(my $basedh, $base) || die "can't read base directory $base: $!";
+    
+    while (my $component_dir = readdir $basedh) {
+    
+        ## skip the 'pipeline' directory
+        next if $component_dir eq 'pipeline';
+        next unless -d "$base/$component_dir";
+    
+        opendir( my $component_dh, "$base/$component_dir" ) || die "can't read directory $base/$component_dir: $!";
+    
+        while (my $instance_dir = readdir $component_dh ) {
+            next unless -d "$base/$component_dir/$instance_dir";
+        
+            if ( $instance_dir =~ /^${id}_/ ) {
+                _log("\tfound $base/$component_dir/$instance_dir");
+                
+                    my $cmd = "tar -cz -C $base/$component_dir -f $base/$component_dir/$instance_dir.tar.gz $instance_dir";
+                    my $success = 1;
+
+                    _log("DEBUG: running: $cmd");
+
+                    system( $cmd );
+
+                    if ($? == -1) {
+                       print "failed to execute: $!\n";
+                       $success = 0;
+                    }
+                    elsif ($? & 127) {
+                       printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
+                        $success = 0;
+                    }     
+
+                    if ( $success ) {
+                        
+                        rmtree( "$base/$component_dir/$instance_dir" );
+                        
+                        #if ( scalar @$errors ) {
+                        #    _log("WARNING: there were " . scalar(@$errors) . " errors when removing $base/$component_dir/$instance_dir");
+                        #}
+                        
+                    } else {
+                        print STDERR "ERROR ($success): the following command failed: $cmd\n";
+                        exit(1);
+                    }
+
+            }
+        }
+    
+    }
+}
+
+
+sub _log {
+    my $msg = shift;
+
+    print $logfh "$msg\n" if $logfh;
+}
+
+sub check_parameters {
+    my $options = shift;
+    
+    ## make sure required arguments were passed
+    my @required = qw( project_directory pipeline_id );
+    for my $option ( @required ) {
+        unless  ( defined $$options{$option} ) {
+            die "--$option is a required option";
+        }
+    }
+    
+    ##
+    ## you can do other things here, such as checking that files exist, etc.
+    ##
+    
+    ## handle some defaults
+    #$options{optional_argument2}   = 'foo'  unless ($options{optional_argument2});
+}
