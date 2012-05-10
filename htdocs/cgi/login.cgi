@@ -164,6 +164,8 @@ if ( $valid_user ) {
     ## Redirect to the page we just came from. Cookies might be a terrible idea here 
     ## as they could be spoofed.
     my $redirect_url = $referer || "./index.cgi";
+    $redirect_url = "./index.cgi" if $redirect_url =~ "login_form";
+   
     print redirect(-uri => $redirect_url);
 
 ## if don't pass
