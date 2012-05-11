@@ -84,19 +84,28 @@ if( $options{'help'} ){
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
+
+my $start = localtime;
 ## open the log if requested
 my $logfh;
 if (defined $options{log}) {
     open($logfh, ">$options{log}") || die "can't create log file: $!";
 }
+my ($pipeline, $repository);
+my $runtime = $repository . "/workflow/runtime/";
+my $output_r = $repository . "/output_repository/";
 
 ## check the expected directory structure
-check_file_layout( $options{project_directory}, $options{pipeline_id} );
+check_file_layout( $repository, $pipeline );
 
-tarball_matching_subdirectories( "$options{project_directory}/workflow/runtime", $options{pipeline_id} );
-tarball_matching_subdirectories( "$options{project_directory}/output_repository", $options{pipeline_id} );
+archive_pipeline();
+
+my $end = localtime;
+print "Start:\t" . $start . "\n";
+print "End:\t" . $end, "\n";
 
 
+print $hours . ":" . $minutes . ":" . $seconds . "\n";
 
 exit(0);
 
@@ -118,60 +127,65 @@ sub check_file_layout {
 }
 
 
-sub tarball_matching_subdirectories {
-    my ($base, $id) = @_;
-    
-    opendir(my $basedh, $base) || die "can't read base directory $base: $!";
-    
-    while (my $component_dir = readdir $basedh) {
-    
-        ## skip the 'pipeline' directory
-        next if $component_dir eq 'pipeline';
-        next unless -d "$base/$component_dir";
-    
-        opendir( my $component_dh, "$base/$component_dir" ) || die "can't read directory $base/$component_dir: $!";
-    
-        while (my $instance_dir = readdir $component_dh ) {
-            next unless -d "$base/$component_dir/$instance_dir";
-        
-            if ( $instance_dir =~ /^${id}_/ ) {
-                _log("\tfound $base/$component_dir/$instance_dir");
-                
-                    my $cmd = "tar -cz -C $base/$component_dir -f $base/$component_dir/$instance_dir.tar.gz $instance_dir";
-                    my $success = 1;
 
-                    _log("DEBUG: running: $cmd");
+sub archive_pipeline {
+    open RUN, "find $runtime -maxdepth 2 -name '$pipeline*' -type d |" or die "Cannot open 'find' results: $!\n";
+    while (<RUN>) {
+	chomp;
+        next if ($_ =~ '/pipeline/');	# skip the pipeline directory
+	_log("\t" . $_ . "\n");
+	print $_, "\n";
 
-                    system( $cmd );
+	my $cmd = "tar -czf $_" . ".tar.gz $_";	#tars the current directory
+	my $success = 1;	# if unsucessful, this will change to 0
+        _log("DEBUG: running: $cmd");
+	system ($cmd);
 
-                    if ($? == -1) {
-                       print "failed to execute: $!\n";
-                       $success = 0;
-                    }
-                    elsif ($? & 127) {
-                       printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
-                        $success = 0;
-                    }     
+        if ($? == -1) {
+            print "failed to execute: $!\n";
+            $success = 0;
+        } elsif ($? & 127) {
+            printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
+            $success = 0;
+        } 
 
-                    if ( $success ) {
-                        
-                        rmtree( "$base/$component_dir/$instance_dir" );
-                        
-                        #if ( scalar @$errors ) {
-                        #    _log("WARNING: there were " . scalar(@$errors) . " errors when removing $base/$component_dir/$instance_dir");
-                        #}
-                        
-                    } else {
-                        print STDERR "ERROR ($success): the following command failed: $cmd\n";
-                        exit(1);
-                    }
-
-            }
-        }
-    
+	if ( $success ) {
+	    rmtree( "$_" );
+	} else {
+            print STDERR "ERROR ($success): the following command failed: $cmd\n";
+	    exit(1);
+	}
     }
-}
+    close RUN;
 
+    open OUT, "find $output_r -maxdepth 2 -name '$pipeline*' -type d |" or die "Cannot open 'find' results: $!\n";
+    while (<OUT>) {
+	chomp;	# no Pipeline directory in the output_repository folder
+	_log("\t" . $_ . "\n");
+	print $_, "\n";
+
+	my $cmd = "tar -czf $_" . ".tar.gz $_";	#tars the current directory
+	my $success = 1;	# if unsucessful, this will change to 0
+        _log("DEBUG: running: $cmd");
+	system ($cmd);
+
+        if ($? == -1) {
+            print "failed to execute: $!\n";
+            $success = 0;
+        } elsif ($? & 127) {
+            printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
+            $success = 0;
+        } 
+
+	if ( $success ) {
+	    rmtree( "$_" );
+	} else {
+            print STDERR "ERROR ($success): the following command failed: $cmd\n";
+	    exit(1);
+	}
+    }
+    close OUT;
+}
 
 sub _log {
     my $msg = shift;
@@ -190,6 +204,8 @@ sub check_parameters {
         }
     }
     
+    $repository = $options{'project_directory'};
+    $pipeline = $options{'pipeline_id'};
     ##
     ## you can do other things here, such as checking that files exist, etc.
     ##
