@@ -77,9 +77,6 @@
                <key>stdout</key>
                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
             </param>
-			<dceSpec type="sge">
-			    <memory>24G</memory>
-			</dceSpec>
 		</command>
 	</commandSet>
 </commandSetRoot>
