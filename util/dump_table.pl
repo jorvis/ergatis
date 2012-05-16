@@ -298,7 +298,8 @@ sub add_feature {
     my($snum) = ($s =~ /(\d+)/);
     my($enum) = ($e =~ /(\d+)/);
     die "illegal coordinates s=$s, e=$e" if (($snum <= 0) || ($enum <= 0));
-
+    
+    #print output of .tbl file
     if( $g->{'gpn'} =~ /(unverified frameshift|unverified point mutation|degenerate)/ ) {
         
         print $ofh $s."\t".$e."\tgene\n";
@@ -307,10 +308,6 @@ sub add_feature {
         my $locus = $r->[0]->[0];
         die("Can't find locus for $g->{'feature_id'}") unless( $locus );
         print $ofh "\t\t\tlocus_tag\t$locus\n";
-        print $ofh "\t\t\tpseudogene\tunitary\n";
-
-        $feature_type = 'CDS' if( $feature_type eq 'transcript' );
-        print $ofh $s."\t".$e."\t$feature_type\n";
         print $ofh "\t\t\tnote\t$g->{'gpn'}\n";
         
     } else {
