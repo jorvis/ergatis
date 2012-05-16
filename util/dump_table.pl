@@ -299,16 +299,20 @@ sub add_feature {
     my($enum) = ($e =~ /(\d+)/);
     die "illegal coordinates s=$s, e=$e" if (($snum <= 0) || ($enum <= 0));
     
-    #print output of .tbl file
+    # print output of .tbl file
     if( $g->{'gpn'} =~ /(unverified frameshift|unverified point mutation|degenerate)/ ) {
-        
+
+	# make note that gene has problems so that it does not produce the expected translation 
+	my $note;	
+        ($note = $g->{'gpn'}) =~ s/(unverified frameshift|unverified point mutation|degenerate)/non-functional due to frameshift/;
+
         print $ofh $s."\t".$e."\tgene\n";
         $QUERIES{'get_locus'}->execute( $g->{'feature_id'} );
         my $r = $QUERIES{'get_locus'}->fetchall_arrayref();
         my $locus = $r->[0]->[0];
         die("Can't find locus for $g->{'feature_id'}") unless( $locus );
         print $ofh "\t\t\tlocus_tag\t$locus\n";
-        print $ofh "\t\t\tnote\t$g->{'gpn'}\n";
+        print $ofh "\t\t\tnote\t$note\n";
         
     } else {
 
