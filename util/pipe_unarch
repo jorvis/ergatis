@@ -1,0 +1,219 @@
+#!/usr/bin/perl
+
+=head1 NAME
+
+pipe_unarch - Unarchives an Ergatis pipeline and its output.
+
+=head1 SYNOPSIS
+
+USAGE: template.pl 
+            --project_directory=/usr/local/projects/foo
+            --pipeline_id=3035
+          [ --log=/path/to/somefile.log 
+          ]
+
+=head1 OPTIONS
+
+B<--project_directory,-p>
+    Path to the base directory of a project.  Under this we should find 'workflow' and
+    'output_repository' directories.
+
+B<--pipeline_id,-i>
+    Numerical ID for an Ergatis pipeline.
+
+B<--log,-l> 
+    Log file
+
+B<--help,-h>
+    This help message
+
+=head1  DESCRIPTION
+
+This script is used to archive an Ergatis pipeline in place within the project's area, but creates
+individual tarballs for each component's output and runtime directories rather than compressing
+individual files.
+
+=head1  INPUT
+
+For some defined project area (--project_area) and pipeline ID (--pipeline_id) this script
+assumes the following directories for a given pipeline with components 1 .. N
+
+    $project/output_repository/$component1/${pipeline_id}_*
+    $project/output_repository/$component2/${pipeline_id}_*
+    ...
+    $project/output_repository/$componentN/${pipeline_id}_*
+    
+    
+    $project/workflow/runtime/$component1/${pipeline_id}_*
+    $project/workflow/runtime/$component2/${pipeline_id}_*
+    ...
+    $project/workflow/runtime/$componentN/${pipeline_id}_*
+
+Where each of the lowest-level directories above are named like 'PIPELINEID_TOKEN' where 'token' 
+can be any user-defined label.  It is at this level that tarball's are created.
+
+=head1  OUTPUT
+
+Each of the PIPELINEID_TOKEN directories mentioned in the INPUT section above is removed and
+replaced by a tarball of itself with the same name but including the '.tar.gz' extension.
+
+=head1  CONTACT
+
+    Joshua Orvis
+    jorvis@users.sf.net
+
+=cut
+
+use strict;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+use Pod::Usage;
+use File::Path;
+
+my %options = ();
+my $results = GetOptions (\%options, 
+                          'project_directory|p=s',
+                          'pipeline_id|i=s',
+                          'log|l=s',
+                          'help|h') || pod2usage();
+
+## display documentation
+if( $options{'help'} ){
+    pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
+}
+
+## make sure everything passed was peachy
+&check_parameters(\%options);
+
+
+my $start = localtime;
+## open the log if requested
+my $logfh;
+if (defined $options{log}) {
+    open($logfh, ">$options{log}") || die "can't create log file: $!";
+}
+my ($pipeline, $repository);
+my $runtime = $repository . "/workflow/runtime/";
+my $output_r = $repository . "/output_repository/";
+
+## check the expected directory structure
+check_file_layout( $repository, $pipeline );
+
+unarchive_pipeline();
+
+my $end = localtime;
+print "Start:\t" . $start . "\n";
+print "End:\t" . $end, "\n";
+
+
+exit(0);
+
+sub check_file_layout {
+    my ($proj_dir, $id) = @_;
+    
+    unless ( -d "$proj_dir/workflow/runtime" ) {
+        die "ERROR: expected to find $proj_dir/workflow/runtime";
+    }
+    
+    unless ( -d "$proj_dir/output_repository" ) {
+        die "ERROR: expected to find $proj_dir/output_repository";
+    }
+    
+    ## conventional location for this pipeline
+    unless ( -d "$proj_dir/workflow/runtime/pipeline/$id" ) {
+        die "ERROR: pipeline XML directory for pipeline $id not found.  Quitting.";
+    }
+}
+
+
+
+sub unarchive_pipeline {
+    open RUN, "find $runtime -maxdepth 2 -name '$pipeline*' -type f |" or die "Cannot open 'find' results: $!\n";
+    while (<RUN>) {
+	chomp;
+        next if ($_ =~ '/pipeline/');	# skip the pipeline directory
+	_log("\t" . $_ . "\n");
+	print $_, "\n";
+        
+	my $dest;
+	($dest = $_) =~ s/($pipeline)_.*//;	#get directory name minus .tar.gz
+
+	my $cmd = "tar -zxf $_ -C $dest";	#untars the current directory
+	my $success = 1;	# if unsucessful, this will change to 0
+        _log("DEBUG: running: $cmd");
+	system ($cmd);
+
+        if ($? == -1) {
+            print "failed to execute: $!\n";
+            $success = 0;
+        } elsif ($? & 127) {
+            printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
+            $success = 0;
+        } 
+
+	if ( $success ) {
+	    rmtree( "$_" );
+	} else {
+            print STDERR "ERROR ($success): the following command failed: $cmd\n";
+	    exit(1);
+	}
+    }
+    close RUN;
+
+    open OUT, "find $output_r -maxdepth 2 -name '$pipeline*' -type f |" or die "Cannot open 'find' results: $!\n";
+    while (<OUT>) {
+	chomp;	# no Pipeline directory in the output_repository folder
+	_log("\t" . $_ . "\n");
+	print $_, "\n";
+
+	my $dest;
+	($dest = $_) =~ s/($pipeline)_.*//;	#get directory name minus .tar.gz
+
+	my $cmd = "tar -zxf $_ -C $dest";	#untars the current directory
+	my $success = 1;	# if unsucessful, this will change to 0
+        _log("DEBUG: running: $cmd");
+	system ($cmd);
+
+        if ($? == -1) {
+            print "failed to execute: $!\n";
+            $success = 0;
+        } elsif ($? & 127) {
+            printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
+            $success = 0;
+        } 
+
+	if ( $success ) {
+	    rmtree( "$_" );
+	} else {
+            print STDERR "ERROR ($success): the following command failed: $cmd\n";
+	    exit(1);
+	}
+    }
+    close OUT;
+}
+
+sub _log {
+    my $msg = shift;
+
+    print $logfh "$msg\n" if $logfh;
+}
+
+sub check_parameters {
+    my $options = shift;
+    
+    ## make sure required arguments were passed
+    my @required = qw( project_directory pipeline_id );
+    for my $option ( @required ) {
+        unless  ( defined $$options{$option} ) {
+            die "--$option is a required option";
+        }
+    }
+    
+    $repository = $options{'project_directory'};
+    $pipeline = $options{'pipeline_id'};
+    ##
+    ## you can do other things here, such as checking that files exist, etc.
+    ##
+    
+    ## handle some defaults
+    #$options{optional_argument2}   = 'foo'  unless ($options{optional_argument2});
+}
