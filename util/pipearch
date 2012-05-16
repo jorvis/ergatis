@@ -104,9 +104,6 @@ my $end = localtime;
 print "Start:\t" . $start . "\n";
 print "End:\t" . $end, "\n";
 
-
-print $hours . ":" . $minutes . ":" . $seconds . "\n";
-
 exit(0);
 
 sub check_file_layout {
