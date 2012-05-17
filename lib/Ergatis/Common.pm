@@ -271,6 +271,32 @@ sub get_session {
     return $session;
 }
 
+=head2 is_admin_user($ergatis_cfg)
+
+=over 4
+
+If an admin user has been defined in the ergatis configuration this subroutine 
+will check whether or not the current logged in user is the admin user 
+
+=back
+
+=cut
+sub is_admin_user {
+    my $ergatis_cfg = shift;
+    my %admin_users = ();
+    my $is_admin = 0;
+
+    if ( $ergatis_cfg->val('authentication', 'admin_users') ) {
+        my $username = user_logged_in($ergatis_cfg);
+        my $admin_users_str = $ergatis_cfg->val('authentication', 'admin_users');
+        %admin_users = map { $_ => 1 } split(',', $admin_users_str);
+    
+        $is_admin = 1 if ( exists($admin_users{$username}) );
+    }
+
+    return $is_admin;    
+}
+
 =head2 validate_user_authorization($ergatis_cfg, $project, $pipeline_id)
 
 =over 4
@@ -289,9 +315,10 @@ they do not have proper authorization.
 sub validate_user_authorization {                                                                                                                                                                                                       
     my ($ergatis_cfg, $pipeline_id, $defer_exit) = @_;                                                                                                                                                        
     my $authorized_user = 1;                                                                                                                                                                                                             
+
     ## Authorization should only proceed if we have per-account security                                                                                                                                                                
     ## enabled                                                                                                                                                                                                                           
-    if ( $ergatis_cfg->val('authentication' ,'per_account_pipeline_security') ) {                                                                                                                                                        
+    if ( $ergatis_cfg->val('authentication','per_account_pipeline_security') && ! is_admin_user($ergatis_cfg) ) {
         my $pipelines = get_account_pipelines($ergatis_cfg);                                                                                                                                                               
                                                                                                                                                                                                                                          
         unless( exists($pipelines->{$pipeline_id}) ) {                                                                                                                                                                                   
@@ -301,7 +328,6 @@ sub validate_user_authorization {
             ## view a resource.                                                                                                                                                                                                          
             unless ($defer_exit) {                                                                                                                                                                                                       
                 my $username = user_logged_in($ergatis_cfg);
-
                 print_error_page( ergatis_cfg => $ergatis_cfg,                                                                                                                                                                          
                                   message => "User $username does not have authorization to view this resource.",
                                   links => [ { label => "previous page", is_last => 1, url => $ENV{'HTTP_REFERER'} } ]
@@ -386,8 +412,7 @@ sub add_pipeline_to_user_pipeline_list {
     }
 
     ## TODO: Figure out whether we need to use file-locking here.
-    if ( $session && $session->param('username') &&
-        $ergatis_cfg->val('authentication', 'per_account_pipeline_security') ) {
+    if ( $session && $session->param('username') ) {
         my $session_db_dir = $ergatis_cfg->val('authentication', 'session_db_dir');
         my $pipelines_file = $session_db_dir . "/" . $session->param('username') .
                              ".pipelines";

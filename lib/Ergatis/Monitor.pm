@@ -2,6 +2,7 @@ use Date::Manip;
 use File::stat;
 use POSIX;
 use Ergatis::ConfigFile;
+use Ergatis::Common;
 
 use strict;
 
@@ -263,7 +264,7 @@ sub get_pipeline_quickstats {
 
     foreach my $pipeline_id ( readdir $rdh ) {
         next unless ( $pipeline_id =~ /^[A-Z0-9]+$/ );
-        next if ($per_account_pipelines && ! exists($account_pipelines->{$pipeline_id}));
+        next if ($per_account_pipelines && ! is_admin_user($ergatis_cfg) && ! exists($account_pipelines->{$pipeline_id}));
 
         my $pipeline_file = "$pipeline_root/$pipeline_id/pipeline.xml";  ## may be modified below
         
