@@ -10,7 +10,8 @@ create_project.pl - Creates the project directory structure and places all
 USAGE: create_project.pl
         --repository_root=/usr/local/annotation/AA1
         --default_project_conf=/path/to/default/conf
-       [--log=/path/to/some.log
+       [--restrict_permissions=<true or false>
+        --log=/path/to/some.log
        ]
 
 =head1 OPTIONS
@@ -21,11 +22,13 @@ B<--repository_root,-r>
 B<--default_project_conf, -d>
     The default project configuration defined in the ergatis.ini file
 
-B<--group_id, -g>
-    OPTIONAL. Set a specific group on this newely created project
+B<--restrict_permissions, -p>
+    0 or 1; by default all folders are created with fully open permissions
+    but setting this flag to true will restrict permissions to the folder to only
+    allow the creator to write and access the project directories.
 
 B<--log,-l> 
-    OPTIONAL.  will create a log file with summaries of all actions performed.
+    optional.  will create a log file with summaries of all actions performed.
 
 B<--help,-h> 
     This help message/documentation.
@@ -70,21 +73,16 @@ my %options = ();
 my $results = GetOptions (\%options, 
               'repository_root|r=s',
               'default_project_conf|d=s',
-              'group_id|g=s',
+              'restrict_permissions|p=i',
               'log|l=s',
-			  'help|h') || pod2usage();
-
-## This really should only be used when we are operating in the DIAG 
-## environment                    
-my $GROUP_ID = $options{'group_id'};
+              'help|h') || pod2usage();
 
 # display documentation
 if( $options{'help'} ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
 }
 
-## play nicely
-umask(0000);
+$options{'restrict_permissions'} ? umask(027) : umask(000);
 
 my $repository_root = $options{'repository_root'};
 
@@ -145,7 +143,7 @@ create_dir_and_record("$repository_root/workflow/lock_files", 6);
 create_dir_and_record("$repository_root/workflow/project_id_repository", 7);
 
 ## the project id repository needs a file created within it to verify that it's valid.
-## see IdGenerator module for details.
+##  see IdGenerator module for details.
 my $validation_file = "$repository_root/workflow/project_id_repository/valid_id_repository";
 if ( -f $validation_file ) {
      $$steps[8]{complete} = 1;
@@ -176,8 +174,8 @@ create_dir_and_record("$repository_root/workflow/project_saved_templates", 11);
 ## if we get this far all steps were successful.  
 print_json_and_exit();
 
-#############################################################
-#                     SUBROUTINES                           #
+#############################################################                                                                                                                                                                             
+#                     SUBROUTINES                           #                                                                                                                                                                             
 ############################################################# 
 
 ###
@@ -190,19 +188,10 @@ sub create_dir_and_record {
     if (! -d $dir ) {
         if (! mkdir("$dir") ) {
             print_json_and_exit($step_num, "$|");
-        } 
-    
-        if ($GROUP_ID) {        
-           if (! chown(-1, $GROUP_ID, $dir)) {
-                print_json_and_exit($step_num, "$|");
-            }
         }
     }
 }
 
-###
-# Prints out JSON to indicate the status of the create directory action
-###
 sub print_json_and_exit {
     my ($step_num, $msg) = @_;
     $msg = "All steps completed successfully" if (! $msg);
