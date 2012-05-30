@@ -1,0 +1,41 @@
+<!-- component documentation -->
+
+<p>
+    kSNP is a SNP discovery program that aligns k-mers, or all sub-sequences in a genome of size k, to find SNP candidates.
+
+    kSNP searchers for matching k-mers among 2 or more genomes with a nucleotide polymorphism at the center position.  For example, an input k 
+    of 41 would look for 20 matching nucleotides on either side of a SNP at position 21.  kSNP uses a program called JellyFish
+    to obtain kmers if k is less than or equal to 31 and suffix arrays if k is greater than 31.  kSNP removes intra-genome 
+    repeats of k-mers with varying SNP positions.  These instances can be reduced by increasing the size of k. Mummer is used to
+    determine the SNP position in a reference genome.
+</p>
+<h3>references</h3>
+<p>
+    <a href='http://www.omicsonline.org/2157-7145/2157-7145-1-107.pdf'>http://www.omicsonline.org/2157-7145/2157-7145-1-107.pdf</a>
+</p>
+<h3>input</h3>
+<p>
+    This program accepts FASTA files as input.  It can be a collection of FASTA files, a single FASTA file 
+    containing multiple sequences, or any combination.  Single Fasta files containing multiple sequences will
+    be merged under one fasta header with a linker sequence of 'NN'.
+
+    The reference input can also be a collection of FASTA files, a single FASTA file containing multiple sequences,
+    or any combination.  A single fasta file containing multiple sequences will be merged under one fasta header
+    with a linker sequence of 'NN'.
+
+    The kSNP program accepts a multifasta file as input where each fasta header correspondes to a single genome.
+    The reference genome is determined by list file containing the fasta headers of the finished genomes in the 
+    multi FASTA file.
+</p>
+<h3>implemented options</h3>
+<ul class='options'>
+    <li>$;Kmer$; - length of k-mer used to find SNPs.  The SNP is at the center postion of the k-mer </li>
+    <li>$;REFERENCE_GENOME_LIST$; - The genome to be aligned agaisnt the input sequences. A list of reference
+        genomes can be supplied.  Each genome will be aligned agaisnt each reference. Single fasta files containing
+        multiple sequences will be merged under one fasta header with a linker sequence of 'NN' </li>
+</ul>
+<h3>output</h3>
+<p>
+    The raw output is tab delimited file containing the columns: kmer ID, kmer sequence, nucleotide at the SNP position,
+    position in reference genome and 'R' or 'F' (forward and reverse strands), and genome fasta header. 
+</p>
