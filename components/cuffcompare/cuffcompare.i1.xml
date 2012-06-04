@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>cuffcompare</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>cuffcompare</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/cuffcompare</executable>            
+            <param>
+                <key>--gtffile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--annotation</key>
+                <value>'$;ANNOTATION_FILE$;'</value>
+            </param>
+            <param>
+                <key>--prefix</key>
+                <value>$;PREFIX$;</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--cufflinks_bin_dir</key>
+                <value>$;CUFFLINKS_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>--args</key>
+                <value>'$;OTHER_PARAMS$;'</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/cuffcompare.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/cuffcompare.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
