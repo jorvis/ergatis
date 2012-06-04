@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>bam2coverage workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+
+        <command>
+            <type>RunDistributedCommand</type>
+            <name>bam2coverage</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bam2coverage</executable>            
+
+            <param>
+                <key>--bam_file</key>
+                <value>$;BAM_FILE$;</value>
+            </param>
+            <param>
+                <key>--stranded</key>
+                <value>$;STRANDED$;</value>
+            </param>
+            <param>
+                <key>--gff3_file</key>
+                <value>$;GFF3_FILE$;</value>
+            </param>
+            <param>
+                <key>--feature_type</key>
+                <value>$;FEATURE_TYPE$;</value>
+            </param>
+            <param>
+                <key>--output_stub</key>
+                <value>$;OUTPUT_STUB$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--genome_only</key>
+                <value>$;GENOME_ONLY$;</value>
+            </param>
+            <param>
+                <key>--features_only</key>
+                <value>$;FEATURES_ONLY$;</value>
+            </param>
+            <param>
+                <key>--total_mapped_reads</key>
+                <value>$;TOTAL_MAPPED_READS$;</value>
+            </param>
+
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/bam2coverage.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/bam2coverage.stderr</value>
+            </param>
+
+            <arg>$;OTHER_ARGS$;</arg>
+
+        </command>
+
+    </commandSet>
+</commandSetRoot>
