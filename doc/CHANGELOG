@@ -37,6 +37,21 @@ next
 -prok pipeline: added split_multifasta to split interevidence nucelotides for searching.
 -prok pipeline: added parse-evidence.eggNOG and ncbi-blastp.eggNOG components
 -fixed bug when deleting a pipeline that would cause a redirect loop
+-Adding new component for RNA-Seq pipelines: deseq
+-Adding new component for RNA-Seq pipelines: htseq
+-Adding new component for RNA-Seq pipelines: bowtie
+-Adding new component for RNA-Seq pipelines: create_paired_list_file
+-Adding new component for RNA-Seq pipelines: samtools_alignment_stats
+-Adding new component for RNA-Seq pipelines: samtools_reference_index
+-Adding new component for RNA-Seq pipelines: samtools_file_convert
+-Adding new component for RNA-Seq pipelines: bam2sam
+-Adding new component for RNA-Seq pipelines: paired_iterator
+-Adding new component for RNA-Seq pipelines: tophat
+-Adding new component for RNA-Seq pipelines: bowtie_build
+-Adding new component for RNA-Seq pipelines: fastx_toolkit
+-Adding new component for RNA-Seq pipelines: genbank2gff3
+-Adding new component for RNA-Seq pipelines: sam2bam
+-Adding new component for RNA-Seq pipelines: bam2coverage
 
 ergatis-v2r17 (2011-12-11)
 --------------------------
