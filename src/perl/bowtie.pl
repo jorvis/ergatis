@@ -203,8 +203,13 @@ $sCmd .= " -f" if ($hCmdLineOption{'file-type'} =~ m/^fasta$/);
 $sCmd .= " ".$hCmdLineOption{'args'} if (defined $hCmdLineOption{'args'});
 $sCmd .= " ".$hCmdLineOption{'bowtie_index_dir'}."/".$hCmdLineOption{'prefix'};
 
-$sReadFile = " -1 ".$sSeq1File;
-$sReadFile .= " -2 ".$sSeq2File if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/));
+if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/)) {
+	$sReadFile = "-1 ".$sSeq1File.
+				 " -2 ".$sSeq2File;
+}
+else {
+	$sReadFile = $sSeq1File;
+}
 
 $sFile = (split(/,/, $hCmdLineOption{'seq1file'}))[0];
 ($_, $_, $sPrefix) = File::Spec->splitpath($sFile);
