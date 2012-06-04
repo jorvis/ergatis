@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>htseq</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>htseq</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/htseq</executable>            
+            <param>
+                <key>--infile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--annotation</key>
+                <value>$;ANNOTATION_FILE$;</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--mode</key>
+                <value>$;MODE$;</value>
+            </param>
+            <param>
+                <key>--type</key>
+                <value>$;TYPE$;</value>
+            </param>
+            <param>
+                <key>--minqual</key>
+                <value>$;MIN_QUAL$;</value>
+            </param>
+            <param>
+                <key>--stranded</key>
+                <value>$;STRANDED$;</value>
+            </param>
+            <param>
+                <key>--idattr</key>
+                <value>$;ATTRIBUTE_ID$;</value>
+            </param>
+            <param>
+                <key>--params</key>
+                <value>'$;OTHER_PARAMS$;'</value>
+            </param>
+            <param>
+                <key>--python_bin_dir</key>
+                <value>$;PYTHON_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>--python_lib_dir</key>
+                <value>$;PYTHON_LIB_DIR$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/htseq.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/htseq.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
