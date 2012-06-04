@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>samtools_alignment_stats</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>samtools_alignment_stats</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/samtools_alignment_stats</executable>            
+            <param>
+                <key>--infile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--samtools_bin_dir</key>
+                <value>$;SAMTOOLS_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/samtools_alignment_stats.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/samtools_alignment_stats.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

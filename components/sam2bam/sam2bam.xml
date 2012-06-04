@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>sam2bam workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <command>
+            <type>RunDistributedCommand</type>
+            <name>sam2bam</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/sam2bam</executable>
+		    <param>
+                <key>--samtools-exec</key>
+                <value>$;SAMTOOLS_PATH$;</value>
+	        </param>
+		    <param>
+                <key>--view_options</key>
+                <value>$;VIEW_OPTIONS$;</value>
+	        </param>
+		    <param>
+                <key>--sort_options</key>
+                <value>$;SORT_OPTIONS$;</value>
+	        </param>
+		    <param>
+                <key>--input_file</key>
+                <value>$;INPUT_SAM_FILE$;</value>
+	        </param>
+		    <param>
+                <key>--output_directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+	        </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/sam2bam.stderr</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/sam2bam.stdout</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
