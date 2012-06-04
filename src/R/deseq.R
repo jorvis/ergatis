@@ -114,4 +114,4 @@ for (k in 1:(length(pheno)-1)){
 data.tab<-NULL
 d<-NULL
 gc()
-print("DE analysis succeed!")
+print("DE analysis complete!")
