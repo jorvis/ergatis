@@ -52,6 +52,10 @@ next
 -Adding new component for RNA-Seq pipelines: genbank2gff3
 -Adding new component for RNA-Seq pipelines: sam2bam
 -Adding new component for RNA-Seq pipelines: bam2coverage
+-Adding new component for RNA-Seq pipelines: cufflinks
+-Adding new component for RNA-Seq pipelines: cuffcompare
+-Adding new component for RNA-Seq pipelines: cuffdiff
+-Adding new component for RNA-Seq pipelines: create_cuffsuite_files
 
 ergatis-v2r17 (2011-12-11)
 --------------------------
