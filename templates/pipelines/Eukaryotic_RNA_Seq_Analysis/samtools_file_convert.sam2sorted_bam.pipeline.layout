@@ -1,0 +1,10 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>samtools_file_convert</name>
+		<commandSet type="serial">
+        	<state>incomplete</state>
+            <name>samtools_file_convert.sam2sorted_bam</name>
+        </commandSet>
+	</commandSet>
+</commandSetRoot>
