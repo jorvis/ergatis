@@ -17,8 +17,12 @@
             <type>RunUnixCommand</type>
             <name>merge contigs</name>
             <state>incomplete</state>
-            <executable>$;KSNP_DIR$;/merge_fasta_contigs.pl</executable>
-            <arg>$;I_FILE_PATH$; >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_merged.fsa</arg>
+            <executable>$;BIN_DIR$;/ksnp_merge_reference</executable>
+	    <param>
+	    <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>
+	    </param>
+            <arg> >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_merged.fsa </arg>
         </command>
 
 	<command>

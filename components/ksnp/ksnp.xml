@@ -24,7 +24,7 @@
             <type>RunUnixCommand</type>
             <name>merge and concatenate reference</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/ksnp_merge_reference.pl</executable>
+            <executable>$;BIN_DIR$;/ksnp_merge_reference</executable>
             <param>  
                 <key>--input</key>
                 <value>$;REFERENCE_GENOME_LIST$;</value>
