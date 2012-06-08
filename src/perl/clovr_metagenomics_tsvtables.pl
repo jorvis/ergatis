@@ -1,8 +1,4 @@
 #!/usr/bin/perl
-
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 use strict;
 use warnings;
 
@@ -25,15 +21,16 @@ use Getopt::Std;
 use Data::Dumper;
 use File::Copy;
 
-use vars qw/$opt_b $opt_c $opt_m $opt_a $opt_y $opt_z $opt_p/;
+use vars qw/$opt_b $opt_c $opt_m $opt_a $opt_f $opt_y $opt_z $opt_p/;
 
-getopts("b:c:m:a:y:z:p:");
+getopts("b:c:m:a:f:y:z:p:");
 
 my $usage = "Usage:  $0 \
                 -b list of blast output files\
                 -c list of clusters from uclust (optional for clovr-metagenomics)\ 
                 -m input mapping file\
 		-a annotation file\
+                -f fasta file of blasted sequences (optional - for clovr-its)\
                 -y bsml list from metagene runs (optional)\
                 -z list of polypeptide clusters from uclust (optional)
                 -p output prefix for the processed files\
@@ -63,6 +60,11 @@ if (defined($opt_z) and $opt_z ne ""){
   $polypep_clusterlist  = $opt_z;
 }
 
+my $fasta_file = ""; # of blasted sequences
+if (defined($opt_f) and $opt_f ne ""){
+  $fasta_file  = $opt_f;
+}
+
 #
 my %samples         = ();
 my %mapdata         = ();
@@ -80,7 +82,8 @@ my %polyclusters    = ();
 my @orderedsamples  = (); 
 my %clusters        = ();
 my %COUNTS          = ();
-my $QIIMEOTUs       = 0;
+my $QIIMEOTUs       = 0;  # flag for additional processing for CloVR_ITS
+my %lengths         = (); # if fasta file is provided, this will store the lengths of the sequences
 #
 if ($bsml_list eq "" and $polypep_clusterlist ne ""){
   die "**ERROR** a polypeptide clustering is provided but no bsml list of initial polypeptides!!\n";
@@ -101,6 +104,30 @@ if ($bsml_list ne ""){
 if ($polypep_clusterlist ne ""){
   print "loading polypeptide clusters\n";
   loadPolyPepClusters($polypep_clusterlist);    
+}
+
+# load sequence lengths
+if ($fasta_file ne ""){
+  print "loading up sequence lengths\n";
+  open IN, "$fasta_file" or die "Can't open $fasta_file\n";
+  my $cseq  = "";
+  my $cname = "";
+  while(<IN>){
+    chomp($_);
+    if ($_ =~ />/){
+      if ($cseq ne ""){
+        $lengths{$cname} = length($cseq);
+      }
+      my @A = split " ", $_;
+      $cname = substr($A[0], 1);
+      $cseq  = "";
+    }else{
+      $cseq .= $_;   
+    }
+  }
+  close IN;
+  # last sequence in the file!
+  $lengths{$cname} = length($cseq);
 }
 
 # load up cluster information
@@ -167,13 +194,13 @@ for my $i (0 .. ($listlength[0]-1)){
 
     # scenario 1:
     if ($bsml_list eq "" and $polypep_clusterlist eq ""){ # then there are no clusters to think about
-      catalog($blastline[0], $blastline[1]);
+      catalog($blastline[0], $blastline[1], $blastline[2], $blastline[3]);
     }
 
     # scenario 2:
     # if just a bsml file list is provided then convert the hit name to a rep DNA sequence:
     if ($bsml_list ne "" and $polypep_clusterlist eq ""){
-      catalog($polyrepmap{$blastline[0]}, $blastline[1]); 
+      catalog($polyrepmap{$blastline[0]}, $blastline[1], $blastline[2], $blastline[3]); 
     }
   
     # scenario 3:
@@ -181,9 +208,9 @@ for my $i (0 .. ($listlength[0]-1)){
     # for all propagated hits: a peptide spreads to the whole cluster and each
     # peptide in the cluster goes to a rep sequence...
     if ($bsml_list ne "" and $polypep_clusterlist ne ""){
-      catalog($polyrepmap{$blastline[0]}, $blastline[1]);  
+      catalog($polyrepmap{$blastline[0]}, $blastline[1], $blastline[2], $blastline[3]);  
       foreach my $pclustmember (@{$polyclusters{$blastline[0]}}){
-        catalog($polyrepmap{$pclustmember}, $blastline[1]);  
+        catalog($polyrepmap{$pclustmember}, $blastline[1], $blastline[2], $blastline[3]);  
       }
     }
   }
@@ -191,8 +218,20 @@ for my $i (0 .. ($listlength[0]-1)){
 
   # end of this file
   # move on to the next file
-} 
+}
+
+# finally if this is CloVR-ITS, we also want to report any sequences that had no BLAST hits at all as unclassified
+if ($QIIMEOTUs == 1){
+  foreach my $s (sort keys %lengths){
+    if (!defined($query_hit{$s})){
+      print "$s had no blast hit...\n";
+      catalog($s, 212374277, 0, 0);
+    }
+  }
+}
+ 
 close RAW;
+
 #***************************************************************
 #***************************** End of all blast files *********#
 #***************************************************************
@@ -363,45 +402,60 @@ sub loadPolyPepClusters
 
 sub catalog
 {
-  my ($repseqhit, $hit) = @_;
+  my ($repseqhit, $hit, $alignid, $alignlength) = @_;
 
   my @qname = split /\_/, $repseqhit;
   my $qname = join("_", @qname[0..($#qname-1)]);
 
-  if (!defined($antndata{$hit})){ # if we don't have a record for it, so don't count it
+  my %clovr_its_thresholds = ("Class"   => 60,   
+                              "Order"   => 70,   
+                              "Family"  => 75,  
+                              "Genus"   => 85,   
+                              "Species" => 90);
+
+  if (!defined($antndata{$hit})){ # if we don't have a record for it, then the annotation doesn't cover it, so don't count it
     next;
   }
 
-  my %mini_antn_hash = ();
+  my %mini_antn_hash = (); # This will hold the annotations of each sequence to be printed out later
   my $a = 0;
 
   # catalog the hit in the COUNTS datatype
-  foreach my $levelname (@ordered_antn_levels){
+  # for each level in the annotation hierarchy (e.g. Phylum, Class, etc)
+  foreach my $levelname (@ordered_antn_levels){ 
     $a++;
-    if (defined($mini_antn_hash{$repseqhit})){
-      $mini_antn_hash{$repseqhit} .= "\t"; # tab-delimit between levels
+    if (defined($mini_antn_hash{$repseqhit})){ # then it's time to add a tab to the string
+      $mini_antn_hash{$repseqhit} .= "\t";     # tab-delimit between levels
   
-      if (defined($clusters{$repseqhit})){
+      if (defined($clusters{$repseqhit})){ # then the representative seq represents a cluster of sequences
         foreach my $qclust (@{$clusters{$repseqhit}}){
           $mini_antn_hash{$qclust} .= "\t";   
         }
       }
     } 
 
-  foreach my $b (@{$antndata{$hit}{$a}}){ # this ref sequence may have multiple annotations at this level
+  # this ref sequence may have multiple annotations at this level, so all will be added
+  foreach my $b (@{$antndata{$hit}{$a}}){ 
+    my $annotationToAdd = $b;
+ 
+    if ($QIIMEOTUs == 1){ # then this is a clovr-its run, and we need to decide if it meets the threshold criteria
+      my $repseqcoverage = 100*$alignlength/$lengths{$repseqhit}; 
+      if ($repseqcoverage < 90 or $alignid < $clovr_its_thresholds{$levelname}){
+        $annotationToAdd = "Unclassified";
+      } 
+    }
 
-    $COUNTS{$qname}{$a}{$b}++;
-    $antn_types{$a}{$b} = 1;
+    $COUNTS{$qname}{$a}{$annotationToAdd}++;
+    $antn_types{$a}{$annotationToAdd} = 1;
 
-   
     if (!defined($mini_antn_hash{$repseqhit})){ # then start the string
-      $mini_antn_hash{$repseqhit}  = $b;
+      $mini_antn_hash{$repseqhit}  = $annotationToAdd;
     }else{ # the string has been started
       my $lastchar = substr($mini_antn_hash{$repseqhit},-1);
       if ($lastchar eq "\t"){ # then this is a new level of annotation
-        $mini_antn_hash{$repseqhit} .= $b;
+        $mini_antn_hash{$repseqhit} .= $annotationToAdd;
       }else{ # then it's not a new level of annotation
-        $mini_antn_hash{$repseqhit} .= ",$b";
+        $mini_antn_hash{$repseqhit} .= ",$annotationToAdd";
       }
     }
 
@@ -411,22 +465,22 @@ sub catalog
       foreach my $qclust (@{$clusters{$repseqhit}}){
 
         if (!defined($mini_antn_hash{$qclust})){
-          $mini_antn_hash{$qclust}  = $b;
+          $mini_antn_hash{$qclust}  = $annotationToAdd;
         }else{
           my $lastchar = substr($mini_antn_hash{$qclust},-1);
           if ($lastchar eq "\t"){ # then this is a new level of annotation
-            $mini_antn_hash{$qclust} .= $b;
+            $mini_antn_hash{$qclust} .= $annotationToAdd;
           }else{ # then it's not a new level of annotation
-            $mini_antn_hash{$qclust} .= ",$b";
+            $mini_antn_hash{$qclust} .= ",$annotationToAdd";
           }
         }
 
         my @sampstr  = split /\_/, $qclust;
         my $sampstr  = join("", @sampstr[0..($#sampstr-1)]);
-        if (!defined($COUNTS{$sampstr}{$a}{$b})){
-          $COUNTS{$sampstr}{$a}{$b} = 1;
+        if (!defined($COUNTS{$sampstr}{$a}{$annotationToAdd})){
+          $COUNTS{$sampstr}{$a}{$annotationToAdd} = 1;
         }else{
-          $COUNTS{$sampstr}{$a}{$b}++;
+          $COUNTS{$sampstr}{$a}{$annotationToAdd}++;
         }
       }
     }
