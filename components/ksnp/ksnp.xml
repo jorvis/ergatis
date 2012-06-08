@@ -29,7 +29,7 @@
                 <key>--input</key>
                 <value>$;REFERENCE_GENOME_LIST$;</value>
             </param>
-	    <arg> >$;ALL_EXTRACTED_FILE$; </arg>
+	    <arg> >$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.$;OUTPUT_TOKEN$;.fna </arg>
         </command>
 
         <!--Processing-->

@@ -30,7 +30,7 @@
             <name>parse reference fasta header</name>
             <state>incomplete</state>
             <executable>$;KSNP_DIR$;/genome_names.pl</executable>
-            <arg>$;ALL_EXTRACTED_FILE$; >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/ksnp.reference</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.$;OUTPUT_TOKEN$;.fna >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/ksnp.reference</arg>
         </command>
 
 	<command>
@@ -38,7 +38,7 @@
             <name>merge input and reference</name>
             <state>incomplete</state>
             <executable>cat</executable>
-            <arg>$;ALL_EXTRACTED_FILE$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_merged.fsa >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/inputandref.fsa</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.$;OUTPUT_TOKEN$;.fna $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_merged.fsa >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/inputandref.fsa</arg>
         </command>
 
 	
