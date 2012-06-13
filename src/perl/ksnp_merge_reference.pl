@@ -39,7 +39,7 @@ my $results = GetOptions(\%options,
 			"input|in|i=s" => \$input
 						 );
 
-die "Must enter input file" if $input eq undef;
+die "Must enter input file" unless defined $input;
 
 open (my $fh, "<$input") || die "Cannot open input file";
 
