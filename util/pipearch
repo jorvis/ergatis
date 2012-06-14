@@ -190,7 +190,7 @@ print $cmd, "\n";
 
 	system ("mkdir -p $temp");
 
-	my $cmd = "tar -czf $_" . ".tar.gz $_";	#tars the current directory
+	my $cmd = "tar -czf $temp" . ".tar.gz $_";	#tars the current directory
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 	system ($cmd);
