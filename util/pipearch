@@ -81,9 +81,20 @@ if( $options{'help'} ){
     pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
 }
 
+my ($pipeline, $repository);
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
+my $lock = "/usr/local/scratch/" . $pipeline . ".arch.log";
+
+if (-e $lock) {
+    print "Another job is archiving pipeline $pipeline\n";
+    exit(0); 	#exit if another process is already running 
+}
+
+#open LOCK, ">$lock" or die "Cannot create lock file $lock: $!\n";
+#print LOCK "$pipeline\t$repository\n";
+#close LOCK;
 
 my $start = localtime;
 ## open the log if requested
@@ -91,7 +102,7 @@ my $logfh;
 if (defined $options{log}) {
     open($logfh, ">$options{log}") || die "can't create log file: $!";
 }
-my ($pipeline, $repository);
+
 my $runtime = $repository . "/workflow/runtime/";
 my $output_r = $repository . "/output_repository/";
 
@@ -104,6 +115,7 @@ my $end = localtime;
 print "Start:\t" . $start . "\n";
 print "End:\t" . $end, "\n";
 
+unlink($lock);
 exit(0);
 
 sub check_file_layout {
@@ -133,10 +145,19 @@ sub archive_pipeline {
 	_log("\t" . $_ . "\n");
 	print $_, "\n";
 
-	my $cmd = "tar -czf $_" . ".tar.gz $_";	#tars the current directory
+	my $temp;
+	if ($_ =~ /$repository(.+)/) {
+	    $temp = "/local/scratch/" . $1;
+	}
+
+	system ("mkdir -p $temp");	# Make temp directory in scratch to archive to
+
+	my $cmd = "tar -czf $temp" . ".tar.gz $_";	#tars the current directory
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
+print $cmd, "\n";
 	system ($cmd);
+	system ("mv $temp.tar.gz $_.tar.gz");	# Move archived contents back to original area
 
         if ($? == -1) {
             print "failed to execute: $!\n";
@@ -150,6 +171,7 @@ sub archive_pipeline {
 	    rmtree( "$_" );
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
+	    unlink($lock);
 	    exit(1);
 	}
     }
@@ -161,10 +183,18 @@ sub archive_pipeline {
 	_log("\t" . $_ . "\n");
 	print $_, "\n";
 
+	my $temp;
+	if ($_ =~ /$repository(.+)/) {
+	    $temp = "/local/scratch/" . $1;
+	}
+
+	system ("mkdir -p $temp");
+
 	my $cmd = "tar -czf $_" . ".tar.gz $_";	#tars the current directory
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 	system ($cmd);
+	system ("mv $temp.tar.gz $_.tar.gz");
 
         if ($? == -1) {
             print "failed to execute: $!\n";
@@ -178,6 +208,7 @@ sub archive_pipeline {
 	    rmtree( "$_" );
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
+	    unlink($lock);
 	    exit(1);
 	}
     }
@@ -196,7 +227,7 @@ sub check_parameters {
     ## make sure required arguments were passed
     my @required = qw( project_directory pipeline_id );
     for my $option ( @required ) {
-        unless  ( defined $$options{$option} ) {
+        unless(defined $$options{$option}) {
             die "--$option is a required option";
         }
     }
