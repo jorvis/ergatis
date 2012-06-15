@@ -1,5 +1,6 @@
 next
 ----
+-Added and updated RNA-Seq Analysis components and pipelines
 -Update to kSNP component
 -Adding new component kSNP
 -Updated signalP config file to take a truncation length of 70 instead of 1000

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>bam2bigwig</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>bam2bigwig</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/bam2bigwig</executable>
+            <param>
+                <key>--infile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--reffile</key>
+                <value>$;REFERENCE_FASTA$;</value>
+            </param>
+            <param>
+                <key>--stranded</key>
+                <value>$;STRANDED$;</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--ucsc_util_dir</key>
+                <value>$;UCSC_UTIL_DIR$;</value>
+            </param>
+            <param>
+                <key>--bedtools_bin_dir</key>
+                <value>$;BEDTOOLS_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>--samtools_bin_dir</key>
+                <value>$;SAMTOOLS_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/bam2bigwig.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/bam2bigwig.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
