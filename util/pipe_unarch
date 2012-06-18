@@ -130,14 +130,25 @@ sub unarchive_pipeline {
     open RUN, "find $runtime -maxdepth 2 -name '$pipeline*' -type f |" or die "Cannot open 'find' results: $!\n";
     while (<RUN>) {
 	chomp;
+
         next if ($_ =~ '/pipeline/');	# skip the pipeline directory
 	_log("\t" . $_ . "\n");
 	print $_, "\n";
         
-	my $dest;
-	($dest = $_) =~ s/($pipeline)_.*//;	#get directory name minus .tar.gz
+	my $dir;
+	if ($_ =~ /\/[\w-]+\/($pipeline[\w-]+)/) {
+	    $dir = $1;
+	    print "DIR: ", $dir, "\n";
+	}
 
-	my $cmd = "tar -zxf $_ -C $dest";	#untars the current directory
+	my $path;	#get the component and token name
+	if ($_ =~ /(.+\/)$dir/) {
+	    $path = $1;
+	}
+	
+	chdir($path);
+	my $cmd = "tar -zxf $dir.tar.gz";	#untars the current directory
+print $cmd, "\n";
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 	system ($cmd);
@@ -165,10 +176,20 @@ sub unarchive_pipeline {
 	_log("\t" . $_ . "\n");
 	print $_, "\n";
 
-	my $dest;
-	($dest = $_) =~ s/($pipeline)_.*//;	#get directory name minus .tar.gz
+	my $dir;
+	if ($_ =~ /\/[\w-]+\/($pipeline[\w-]+)/) {
+	    $dir = $1;
+	    print "DIR: ", $dir, "\n";
+	}
 
-	my $cmd = "tar -zxf $_ -C $dest";	#untars the current directory
+	my $path;	#get the component and token name
+	if ($_ =~ /(.+\/)$dir/) {
+	    $path = $1;
+	}
+
+	chdir($path);
+	my $cmd = "tar -zxf $dir.tar.gz";	#untars the current directory
+print $cmd, "\n";
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 	system ($cmd);
