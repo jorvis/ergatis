@@ -139,7 +139,7 @@ sub check_parameters {
 	## make sure output_dir, database, query and format were passed
 	my @missing;
 	foreach my $req( qw(database output_dir format query) ) {
-	    push(@missing, $req) unless( exists( $options->{$req) ) );
+	    push(@missing, $req) unless( exists( $options->{$req} ) );
 	}
 	$logger->logdie("Missing mandatory parameters: ".join(", ", @missing)) unless( @missing == 0 );
 
