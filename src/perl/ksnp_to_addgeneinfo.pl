@@ -136,11 +136,14 @@ die "Unexpected value in reference row\n".
     "Only use one reference genome for nucmer output" if ($table{1}->{'pos'} eq 'x') || ($table{1}->{'pos'} !~ /(\d+)\s(R|F)/);
 
 $qfasta = $table{0}->{'fashead'};
-$qbase = $table{0}->{'base'};
 
 my $len = keys %table;
 
 for (my $i = 1; $i < $len; $i++){
+
+     #reset query base if reverse complimented
+ 
+     $qbase = $table{0}->{'base'}; 
 
      $rfasta = $table{$i}->{'fashead'};
      $refbase = $table{$i}->{'base'};
@@ -157,7 +160,7 @@ for (my $i = 1; $i < $len; $i++){
 
      # print p1, ref_base, query_base, p2, buff, dist, len_r, len_q, frm1, frm2, ref_contig, query_contig
 
-     print STDOUT "$refpos\t$refbase\t$qbase\t*\t*\t*\t*\t*\t1\t*\t$rfasta\t$qfasta\n";
+     print STDOUT "$refpos\t$refbase\t$qbase\t0\t0\t0\t0\t0\t1\t0\t$rfasta\t$qfasta\n";
 
 
 }
@@ -185,12 +188,15 @@ die "Unexpected value in reference row\n".
 
 $qfasta = $table{$lastkey}->{'fashead'};
 $qbase = $table{$lastkey}->{'base'};
+my $cubase= $qbase;
 
 delete $table{$lastkey};
 
 $len = keys %table;
 
 for (my $i = 0; $i < $len; $i++){
+
+     $qbase = $cubase;
 
      $rfasta = $table{$i}->{'fashead'};
      $refbase = $table{$i}->{'base'};
@@ -207,7 +213,7 @@ for (my $i = 0; $i < $len; $i++){
 
      # print p1, ref_base, query_base, p2, buff, dist, len_r, len_q, frm1, frm2, ref_contig, query_contig
 
-     print STDOUT "$refpos\t$refbase\t$qbase\t*\t*\t*\t*\t*\t1\t*\t$rfasta\t$qfasta\n";
+     print STDOUT "$refpos\t$refbase\t$qbase\t0\t0\t0\t0\t0\t1\t0\t$rfasta\t$qfasta\n";
 
 
 }

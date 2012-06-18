@@ -22,7 +22,7 @@
 	    <key>--input</key>
                 <value>$;I_FILE_PATH$;</value>
 	    </param>
-            <arg> >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_merged.fsa </arg>
+            <arg> >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.merged.fsa </arg>
         </command>
 
 	<command>
@@ -38,7 +38,7 @@
             <name>merge input and reference</name>
             <state>incomplete</state>
             <executable>cat</executable>
-            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.$;OUTPUT_TOKEN$;.fna $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_merged.fsa >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/inputandref.fsa</arg>
+            <arg>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.$;OUTPUT_TOKEN$;.fna $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.merged.fsa >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/inputandref.fsa</arg>
         </command>
 
 	
@@ -85,7 +85,36 @@
 	    <arg> >$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.ksnp2nucmer.snps</arg>
         </command>
 
-
+	<command>
+            <type>RunUnixCommand</type>
+            <name>convert nucmer output to snp add gene info</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/ksnp-add-gene-info</executable>
+	    <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.ksnp-show-genes.stdout</value>
+            </param>
+	    <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.ksnp-show-genes.stderr</value>
+            </param>
+            <param>  
+                <key>--reference_genbank</key>
+                <value>$;REFERENCE_GENBANK$;</value>
+	    </param>
+	    <param>
+		<key>--show_snps_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.ksnp2nucmer.snps</value>
+            </param>
+            <param>
+		<key>--query_fasta</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.merged.fsa</value>
+            </param>
+            <param>
+		<key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.ksnp-show-genes.tab</value>
+            </param>
+        </command>
 
     </commandSet>
 </commandSetRoot>

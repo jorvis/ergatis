@@ -57,7 +57,7 @@
 
 	<command>
             <type>RunUnixCommand</type>
-            <name>create raw list</name>
+            <name>create ksnp2nucmer list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>  
@@ -66,12 +66,40 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.ksnp2nucmer\.snps"</value>
+                <value>".*\.ksnp\-show\-genes\.tab"</value>
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;KSNP2NUCMER_LIST$;</value>
+                <value>$;OUTPUT_DIRECTORY$;ksnp2snps-show-genes.list</value>
             </param>
         </command>
+
+	<command>
+            <type>RunUnixCommand</type>
+            <name>concatenate_files</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/concatenate_files</executable>
+            <param>  
+                <key>--input_lists</key>
+                <value>$;OUTPUT_DIRECTORY$;ksnp2snps-show-genes.list</value>
+            </param>
+            <param>
+		<key>--output</key>
+		<value>$;ALL_RESULTS_FILE$;</value>
+            </param>
+	
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>create no indels file</name>
+            <state>incomplete</state>
+            <executable>/usr/bin/awk</executable>
+			<arg>&apos;{ if( $2 != "." &amp;&amp; $3 != "." ) print}&apos; $;ALL_RESULTS_FILE$;</arg>
+            <param>  
+                <key>stdout</key>
+                <value>$;NO_INDELS_FILE$;</value>
+            </param>
+        </command>
+
     </commandSet>
 </commandSetRoot>
