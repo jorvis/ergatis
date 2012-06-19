@@ -296,7 +296,10 @@ sub process_overlap {
 
 	# my $querycodon = &get_sequence_from_parent( $query, $qstart, $qstop, $reference_genes{$gene_id}->{'strand'} );
 	my @char = split(//,$refcodon);
-	my $querycodon = $char[0].$querybase.$char[2];
+	
+	my $querycodon = $char[0].$querybase.$char[2] if $pos_in_codon == 1;
+	$querycodon = $querybase.$char[1].$char[2] if $pos_in_codon == 0;
+	$querycodon = $char[0].$char[1].$querybase if $pos_in_codon == 2;
 
 	if( $refcodon =~ /\./ || $querycodon =~ /\./ ) {
 		print "Either reference or query codons contain a '.'. This is not expected.\n";
