@@ -123,6 +123,13 @@ $sCmd  = $hCmdLineOption{'samtools_bin_dir'}."/samtools flagstat ".$sInFile." > 
 
 exec_command($sCmd);
 
+$sCmd = $hCmdLineOption{'samtools_bin_dir'}."/samtools view".
+		" -c -F 260".
+		" ".$hCmdLineOption{'infile'}.
+		" > $sOutDir/$sPrefix.mapped_reads.count";
+
+exec_command($sCmd);
+
 ($bDebug || $bVerbose) ? 
 	print STDERR "\nProcessing $hCmdLineOption{'infile'} ... done\n" : ();
 
