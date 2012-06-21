@@ -22,13 +22,13 @@ class ParseListFile(argparse.Action):
             for line in FILE:
                 line.rstrip('\n')
                 retlist.append(line)
-                if(self.dest == 'ref_list1'):
-                    RefFile1List.extend(retlist)
-                if(self.dest == 'ref_list2'):
-                    RefFile2UMUMCreated.append(0)
-                    RefFile2UMMCreated.append(0)
-                    RefFile2List.extend(retlist)
-                    setattr(namespace, self.dest,retlist);
+            if(self.dest == 'ref_list1'):
+                RefFile1List.extend(retlist)
+            if(self.dest == 'ref_list2'):
+                RefFile2UMUMCreated.append(0)
+                RefFile2UMMCreated.append(0)
+                RefFile2List.extend(retlist)
+                setattr(namespace, self.dest,retlist);
 
 class ParseList(argparse.Action):
     def __call__(self,parser,namespace,values,option_string=None):
