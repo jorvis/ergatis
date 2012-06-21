@@ -785,7 +785,7 @@ if (defined $hCmdLineOption{'alignment'}) {
 	complete_component($oPL);
 }
 
-if ( (defined $hCmdLineOption{'diff_gene_expr'}) || defined $hCmdLineOption{'visualization'}
+if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) ||
 	 ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'diff_isoform_analysis'})) ) {
 	init_component($oPL, "parallel");
 }
@@ -1049,7 +1049,7 @@ if ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'d
 	complete_component($oPL);
 }
 
-if ( (defined $hCmdLineOption{'diff_gene_expr'}) || defined $hCmdLineOption{'visualization'}
+if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) ||
 	 ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'diff_isoform_analysis'})) ) {
 	complete_component($oPL);
 }
