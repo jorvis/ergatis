@@ -1,5 +1,6 @@
 next
 ----
+-Added new component: split_fasta_fastq
 -Added and updated RNA-Seq Analysis components and pipelines
 -Update to kSNP component
 -Adding new component kSNP
