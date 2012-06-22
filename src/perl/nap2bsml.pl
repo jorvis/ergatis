@@ -131,7 +131,7 @@ while (<$ifh>) {
     ## ignore whitespace lines
     next if ( /^\s*$/ );
     chomp;
-    
+
     ## there should be 19 elements in cols, unless we have an unrecognized format.
     my @cols = split("\t");
     unless (scalar @cols == 19) {
@@ -161,6 +161,10 @@ while (<$ifh>) {
         $seq->addBsmlAttr('defline', $qfDefline) if($qfDefline);
         $seqs_found{$qry_id} = 1;
     }
+    
+    ## BioPerl is introducing CTRL-A characters as separators now, which kills the XML.
+     # replace with three spaces
+    $cols[15] =~ s/\cA/   /g;
     
     ## has this subject sequence been added to the doc yet?
     if (! exists $seqs_found{$sbj_id}) {
