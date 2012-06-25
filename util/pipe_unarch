@@ -133,22 +133,23 @@ sub unarchive_pipeline {
 
         next if ($_ =~ '/pipeline/');	# skip the pipeline directory
 	_log("\t" . $_ . "\n");
-	print $_, "\n";
+	#print $_, "\n";
         
 	my $dir;
 	if ($_ =~ /\/[\w-]+\/($pipeline[\w-]+)/) {
 	    $dir = $1;
-	    print "DIR: ", $dir, "\n";
+#print "DIR: $dir\n";
 	}
 
 	my $path;	#get the component and token name
 	if ($_ =~ /(.+\/)$dir/) {
 	    $path = $1;
+#print "PATH: $path\n";
 	}
 	
-	chdir($path);
-	my $cmd = "tar -zxf $dir.tar.gz";	#untars the current directory
-print $cmd, "\n";
+#	chdir($path);
+	my $cmd = "tar -zvxf $_ -C /";	#untars the current directory
+print "CMD: ", $cmd, "\n";
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 	system ($cmd);
@@ -174,22 +175,24 @@ print $cmd, "\n";
     while (<OUT>) {
 	chomp;	# no Pipeline directory in the output_repository folder
 	_log("\t" . $_ . "\n");
-	print $_, "\n";
+	#print $_, "\n";
 
 	my $dir;
 	if ($_ =~ /\/[\w-]+\/($pipeline[\w-]+)/) {
 	    $dir = $1;
-	    print "DIR: ", $dir, "\n";
+#print "DIR: $dir\n";
+
 	}
 
 	my $path;	#get the component and token name
 	if ($_ =~ /(.+\/)$dir/) {
 	    $path = $1;
+#print "PATH: $path\n";
 	}
 
-	chdir($path);
-	my $cmd = "tar -zxf $dir.tar.gz";	#untars the current directory
-print $cmd, "\n";
+#	chdir($path);
+	my $cmd = "tar -zvxf $_ -C / ";	#untars the current directory
+print "CMD: ", $cmd, "\n";
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 	system ($cmd);
