@@ -687,7 +687,7 @@ if (defined $hCmdLineOption{'alignment'}) {
 	complete_component($oPL);
 }
 
-if ( (defined $hCmdLineOption{'diff_gene_expr'}) || defined $hCmdLineOption{'visualization'} ) {
+if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) ) {
 	init_component($oPL, "parallel");
 }
 
@@ -731,6 +731,7 @@ if (defined $hCmdLineOption{'visualization'}) {
 	$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment BAM files"];
 	$hParams{'REFERENCE_FASTA'} = ["$sSamRefFile", "path to reference FastA file"];
 	
+	config2params(\%hParams, \%hConfig, 'bam2bigwig');
 	add_config_section($fpPC, "bam2bigwig", "visualization");
 	add_config_parameters($fpPC, \%hParams);
 	
@@ -801,7 +802,7 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	complete_component($oPL);
 }
 
-if ( (defined $hCmdLineOption{'diff_gene_expr'}) || defined $hCmdLineOption{'visualization'} ) {
+if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) ) {
 	complete_component($oPL, "parallel");
 }
 
