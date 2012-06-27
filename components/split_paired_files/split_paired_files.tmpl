@@ -1,0 +1,19 @@
+<p>
+     This component converts two list files containing (ordered) paths to paired read files. 
+     The files are split to output new files, each containing the path to a complete pair of read files.
+</p>
+<h3>input</h3>
+<p>
+     Two input files are required. Each file contains full paths to the paired reads files.
+ 	input1: /path/to/mate1.list
+	input2: /path/to/mate2.list
+    The content of both list files must be in the same order i.e. the first path in input1 must correspond to the first path in input2.	
+</p>
+<h3>ouput</h3>
+<p>
+    The output is a list of files with each file containing paths to each set of pair. The paths are
+    separated by a tab as shown below:
+</p>
+<div class='code_container'>
+    /path/to/pair1.fq	/path/to/pair2.fq
+</div>
