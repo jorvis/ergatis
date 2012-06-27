@@ -134,6 +134,8 @@ while (<$fpSMPL>) {
 	$_ =~ s/\s+$//;
 	
 	next if ($_ =~ /^#/);
+		
+	next if ($_ =~ /^$/);
 	
 	($sSampleName, $sGroupName, $sCountsFile) = (split(/\t/, $_))[0, 1, 2];
 	
@@ -153,6 +155,8 @@ if ((defined $hCmdLineOption{'listfile'}) && ($hCmdLineOption{'listfile'} !~ m/^
 		$_ =~ s/\s+$//;
 		
 		next if ($_ =~ /^#/);
+		
+		next if ($_ =~ /^$/);
 		
 		$sCountsFile = $_;
 		

@@ -136,6 +136,8 @@ while (<$fpSMPL>) {
 	
 	next if ($_ =~ /^#/);
 	
+	next if ($_ =~ /^$/);
+	
 	($sSampleName, $sGroupName, $sFile) = (split(/\t/, $_))[0, 1, 2];
 	
 	$hSamples{$sSampleName} = [$sGroupName, undef];
@@ -151,8 +153,19 @@ while (<$fpSMPL>) {
 
 close($fpSMPL);
 
+if ($bDebug) {
+	foreach $sSampleName (sort keys %hSamples) {
+		print STDERR "\t$sSampleName".
+					 "\t$hSamples{$sSampleName}[0]".
+					 "\t$hSamples{$sSampleName}[1]\n";
+	}
+}
+
 if ($hCmdLineOption{'cuff_prog'} =~ m/^cuffcompare$/i) {
 	if ((defined $hCmdLineOption{'gtflist'}) && ($hCmdLineOption{'gtflist'} !~ m/^$/)) {
+		($bDebug || $bVerbose) ? 
+			print STDERR "\nExtracting input GTF files for Cuffcompare Analysis ...\n" : ();
+		
 		open ($fpLST, "$hCmdLineOption{'gtflist'}") or die "Error! Cannot open $hCmdLineOption{'gtflist'} for reading !!!\n";
 		
 		while (<$fpLST>) {
@@ -160,19 +173,31 @@ if ($hCmdLineOption{'cuff_prog'} =~ m/^cuffcompare$/i) {
 			
 			next if ($_ =~ /^#/);
 			
+			next if ($_ =~ /^$/);
+			
 			$sInFile = $_;
 			
 			($_, $_, $sFile) = File::Spec->splitpath($sInFile);
-			
+						
 			foreach $sSampleName (sort keys %hSamples) {
+				($bDebug) ? print STDERR "\t##### $sSampleName\n" : ();
 				if ($sFile =~ m/^$sSampleName/) {
 					$hSamples{$sSampleName}[1] = $sInFile;
+					($bDebug) ? print STDERR "\t##### $sSampleName\t$sInFile\n" : ();
 					last;
 				}
 			}
 		}
 		
 		close($fpLST);
+	}
+	
+	if ($bDebug) {
+		foreach $sSampleName (sort keys %hSamples) {
+			print STDERR "\t$sSampleName".
+						 "\t$hSamples{$sSampleName}[0]".
+						 "\t$hSamples{$sSampleName}[1]\n";
+		}
 	}
 	
 	@aComparisons = split(/,/, $hCmdLineOption{'comp_grps'});

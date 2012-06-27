@@ -143,6 +143,8 @@ if ((defined $hCmdLineOption{'samplefile'}) && ($hCmdLineOption{'samplefile'} =~
 		
 		next if ($_ =~ /^#/);
 		
+		next if ($_ =~ /^$/);
+		
 		$sReadsFile = $_;
 		
 		($_, $_, $sFile) = File::Spec->splitpath($sReadsFile);
@@ -166,6 +168,8 @@ if ((defined $hCmdLineOption{'samplefile'}) && ($hCmdLineOption{'samplefile'} =~
 		$_ =~ s/\s+$//;
 		
 		next if ($_ =~ /^#/);
+		
+		next if ($_ =~ /^$/);
 		
 		$sReadsFile = $_;
 		

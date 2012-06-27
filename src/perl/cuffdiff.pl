@@ -137,6 +137,8 @@ while (<$fpLST>) {
 	$_ =~ s/\s+$//;
 	
 	next if ($_ =~ /^#/);
+		
+	next if ($_ =~ /^$/);
 	
 	@aFiles = split(/,/, $_);
 	

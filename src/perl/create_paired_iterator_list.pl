@@ -125,6 +125,8 @@ if (defined $hCmdLineOption{'input_file_list'}) {
 		
 		next if ($_ =~ m/^#/);
 		
+		next if ($_ =~ /^$/);
+		
 		($sInFile1, $sInFile2) = split(/\t/, $_);
 		
 		if ((defined $sInFile1) && ($sInFile1 !~ m/^$/)) {

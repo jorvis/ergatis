@@ -140,6 +140,8 @@ else {
 		
 		next if ($_ =~ /^#/);
 		
+		next if ($_ =~ /^$/);
+		
 		$sGtfFile = $_;
 		
 		($_, $_, $sFile) = File::Spec->splitpath($sGtfFile);
