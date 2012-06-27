@@ -1,5 +1,7 @@
 next
 ----
+-Added new component: order_paired_list
+-Added new component: split_paied_files
 -Added new component: split_fasta_fastq
 -Added and updated RNA-Seq Analysis components and pipelines
 -Update to kSNP component
