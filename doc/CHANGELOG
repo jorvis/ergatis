@@ -1,5 +1,6 @@
 next
 ----
+-Updated bmtagger to include option for input class(single/paired)
 -Added new component: order_paired_list
 -Added new component: split_paied_files
 -Added new component: split_fasta_fastq

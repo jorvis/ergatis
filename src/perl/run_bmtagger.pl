@@ -10,6 +10,7 @@ USAGE: run_bmtagger.pl
             --bmtagger_path=/path/to/bmtagger.sh 
             --input_file1=/path/to/some.fastq
             --input_file2=/path/to/another.fastq
+            --input_files_path=/path/to/file.txt
             --reference_bitmask=/path/to/reference.bitmask
             --reference_srprism=/path/to/reference.srprism
             --input_format=fasta|fastq
@@ -29,10 +30,15 @@ B<--input_file1,-i>
     A single input file in FASTA or FASTQ format, specified below.  If you have single
     reads (rather than paired) put the file path here.
 
-B<--input_file2, -j>
+B<--input_file2,-j>
     A single input file in FASTA or FASTQ format, this specified an input file for read
     mates, required to be in the same format as the file specified with -i option, and 
     should have all same read IDs and in the same order.
+
+B<--input_files_path,-p>
+    A single file containing the paths to two paired files. Each path is separated by a tab.
+    Input file 1 and file 2 represented by both paths mush have all same read IDs and in the 
+    same order.
 
 B<--reference_bitmask,-r>
     The path to the bitmask file created by bmtool (or the bmtagger_index component
@@ -69,13 +75,12 @@ put a longer overview of your script here.
 
 =head1  INPUT
 
-the input expectations of your script should be here.  pasting in examples of file format
-expected is encouraged.
+     The input files can be either FASTA or FASTQ format. The format must be specified in --input_format.
+     The input_class must also be specified. If "paired" is specified, two input files will the required.
 
 =head1  OUTPUT
 
-the output format of your script should be here.  if your script manipulates a database,
-you should document which tables and columns are affected.
+     The output file will contain list of IDs to be tagged as  matching the reference genome.
 
 =head1  CONTACT
 
@@ -94,6 +99,7 @@ GetOptions(\%options,
            'bmtagger_path|b=s',
            'input_file1|i=s',
            'input_file2|j=s',
+           'input_files_path|p=s',
            'reference_bitmask|r=s',
            'reference_srprism|s=s',
            'input_format|f=s',
@@ -121,7 +127,7 @@ $logger = $logger->get_logger();
 ## add the path to bmtagger to PATH
 my $bmtagger_base = '';
 if ( $options{bmtagger_path} =~ /(.+)bmtagger.sh$/ ) {
-    $ENV{PATH} = "$1:/usr/local/packages/ncbi-blast-2.2.21+/bin:$ENV{PATH}";
+    $ENV{PATH} = "$1:$1ncbi-blast-2.2.25+/bin:$ENV{PATH}";
     print STDERR "INFO: PATH is now: $ENV{PATH}\n";
 } else {
     die "ERROR: Unable to glean path from bmtagger_path argument value\n";
@@ -137,10 +143,29 @@ if ( $options{input_format} eq 'fasta' ) {
     $cmd .= " -q1";
 }
 
-$cmd .= " -1 $options{input_file1}";
+my $input_1;
+my $input_2;
+
+## open the list file if one was passed
+my $listfh;
+if (defined $options{input_files_path} ){
+  open($listfh, "<$options{input_files_path}") || $logger->logdie("couldn't open $options{input_files_path} list file");
+  my $paths = <$listfh>;
+  chomp $paths;
+  ($input_1,$input_2) = split("\t", $paths);
+  close $listfh or die $!;
+}else{
+   $input_1 = $options{input_file1};
+   
+   if (defined $options{input_file2} ){
+       $input_2 = $options{input_file2};
+  }
+}
+
+$cmd .= " -1 $input_1";
 
 if ( $options{input_class} eq 'paired' ){
-    $cmd .= " -2 $options{input_file2}";
+    $cmd .= " -2 $input_2";
 }
 
 $cmd .= " -o $options{output_file}";
@@ -179,9 +204,14 @@ sub check_parameters {
         die "ERROR: --input_class must be either 'paired' or 'single'";
     }
 
-    ## if paired input the --input_file2 must have been specified
-    if ( $$options{input_class} eq 'paired' && ! $$options{input_file2} ) {
-        die "ERROR: --input_file2 must be specified when using paired read types.";
+    ## if paired input the --input_file2 or --input_files_path must have been specified
+    if ( $$options{input_class} eq 'paired' && ! $$options{input_file2} && ! $$options{input_files_path}) {
+        die "ERROR: --input_file2 or --input_files_path must be specified when using paired read types.";
+    }
+
+    ## --input_file1 or input_file2 should not be defined if --input_files_path is defined
+    if ( $$options{input_files_path} && ($$options{input_file1} || $$options{input_file2})){
+	die "ERROR: --input_files_path should not be specified with --input_file. Only one set of input is required.";
     }
 
     ## handle some defaults
