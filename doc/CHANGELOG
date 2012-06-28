@@ -1,5 +1,6 @@
 next
 ----
+-Added ordered file iterator (file_iterator_template_ordered.xml) to components/shared
 -Updated filter_sequences_by_id: wasn't working for paired dataset
 -Updated bmtagger to include option for input class(single/paired)
 -Added new component: order_paired_list
