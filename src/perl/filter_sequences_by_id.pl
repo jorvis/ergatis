@@ -6,7 +6,7 @@ filter_sequences_by_id.pl - Filter a sequence file to include/exclude entries by
 
 =head1 SYNOPSIS
 
-USAGE: split_multifasta.pl 
+USAGE: filter_sequences_by_id.pl 
             --input_file=/path/to/some_file.fsa 
             --output_dir=/path/to/somedir
             --id_file=/path/to/somefile.tab
@@ -186,13 +186,18 @@ sub load_id_file {
     
     while (my $line = <$ifh>) {
         chomp $line;
-        
+
         if ( $col_num ) {
             my @cols = split("\t", $line);
-            $$dmap{ $cols[$col_num - 1] } = 1;
+		my $line_tmp=$cols[$col_num - 1];
+		 $line_tmp=~ s/\/1$//;
+	         $line_tmp=~ s/\/2$//; 
+		$$dmap{ $line_tmp } = 1;
         } else {
-            $$dmap{$line} = 1;
-        }
+		$line=~ s/\/1$//;
+                $line=~ s/\/2$//;
+		$$dmap{$line} = 1;
+	}
     }
 }
 
@@ -203,9 +208,12 @@ sub process_fasta {
     my $seq_count = 0;
     
     while (my $line = <$in>) {
+	 my $line_tmp = $line;
+         $line_tmp=~ s/\/1$//;
+         $line_tmp=~ s/\/2$//;        
 
-        ## if we find a header line ...
-        if ($line =~ /^\>(\S+)/) {
+	## if we find a header line ...
+        if ($line_tmp =~ /^\>(\S+)/) {
             $seq_count++;
             
             if ( $options{mode} eq 'include' ) {
@@ -239,9 +247,12 @@ sub process_fastq {
         ## sanity check.  there should be 4 lines per entry.
         #   the first of each should start with @, and the 3rd the + symbol
         if ( $line_num % 4 == 1 ) {
-            if ( $line =~ /^\@(\S+)/ ) {
-                
-                if ( $options{mode} eq 'include' ) {
+ 	 my $line_tmp = $line;
+         $line_tmp =~ s/\/1$//; 
+	 $line_tmp =~ s/\/2$//; 
+	 if ( $line_tmp =~ /^\@(\S+)/ ) {  
+	     
+		 if ( $options{mode} eq 'include' ) {
                     if ( exists $$ids{$1} ) {
                         $keep_this_seq = 1;
                     } else {
