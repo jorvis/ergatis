@@ -9,7 +9,7 @@
             <type>RunUnixCommand</type>
             <name>run mugsy</name>
             <state>incomplete</state>
-            <executable>$;MUGSY_EXEC$;/mugsy</executable>
+            <executable>$;MUGSY_EXEC$;</executable>
             <arg>$;OTHER_OPTS$;</arg>
             <param>
                 <key>--directory</key>
@@ -25,11 +25,11 @@
             </param>
             <param>
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/prepfasta4mugsy.stdout</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/prepfasta4mugsy.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
             </param>
 	</command>
 
