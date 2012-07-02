@@ -118,6 +118,14 @@ $in =~ s/\n//g;
      }
 }
 
+#Run the subroutine one last time to get the last kmer group
+
+if ($bool eq 'true'){
+	  	&run_process_query_first(\%htable);
+		}
+		
+		else {&run_process_ref_first(\%htable);}
+
 ##### Subroutines ##########
 
 sub run_process_query_first{
