@@ -54,6 +54,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
+use File::OpenFile qw(open_file);
 use File::Basename;
 
 use Data::Dumper;
@@ -75,11 +76,13 @@ my $results = GetOptions (\%options,
 						  "help|h"
 						 );
 
+my $read_name_regex = qr(^\@?([^\#\s]+)(\#)?.*?$);
+
 &check_options(\%options);
 
 my @filtered_fastqs = ();
 foreach my $fq ( @fastqs ) {
-  my $basename = basename( $fq, qw(.fq .fastq .txt) );
+  my $basename = basename( $fq, qw(.fq .fastq .txt .fastq.gz) );
   my $outfile = "$options{'output_dir'}/$basename.fastq";
   &filter_fq_file( $fq, $outfile, $options{'read_names'} );
   push(@filtered_fastqs, $outfile);
@@ -97,21 +100,21 @@ sub filter_fq_file {
 	my ($old, $new, $seqs_file) = @_;
 
 	my %seqs;
-	open(my $sfh, "< $seqs_file") or die("Can't open $seqs_file: $!");
+	my $sfh = open_file( $seqs_file, "in" );
 	while( my $line = <$sfh> ) {
 	  chomp( $line );
 
 	  # Take everything up to the first / or space. I match some more based on 
 	  # assumptions I have about the format of the read IDs which I'm not 100%
-	  # sure are true. They aren't really used though.
-	  my $read_name = $1 if( $line =~ /^\@?(\S+?)((\/|\s)(1|2)).*?$/ );
+	  # sure are true. 
+	  my $read_name = $1 if( $line =~ $read_name_regex );
 	  die("Could not parse readname from $line") unless( $read_name );
 	  $seqs{$read_name} = 1;
 	}
 	close($sfh);
 
 	open(OUT, "> $new") or die("Can't open $new for writing: $!");
-	open(IN, "< $old") or die("Can't open $old: $!");
+	my $infh = open_file( $old, "in" );
 
 	my $count;
 
@@ -123,7 +126,7 @@ sub filter_fq_file {
 		my ($fastq_entry) = @_;
 
 		## parse the id
-		my $read_name = $1 if( $fastq_entry->[0] =~ /^\@(\S+?)((\/|\s)(1|2)).*?$/ );
+		my $read_name = $1 if( $fastq_entry->[0] =~ $read_name_regex );
 		die("Could not parse read_name from $fastq_entry->[0]") unless( $read_name );
 		
 		if( exists( $seqs{$read_name} )  ) {
@@ -133,7 +136,7 @@ sub filter_fq_file {
 		
 	};
 
-	while( my $line = <IN> ) {
+	while( my $line = <$infh> ) {
 		chomp( $line );
 		
 		# Grab instrument name from first line
@@ -153,7 +156,7 @@ sub filter_fq_file {
 
 	$print_read_info->( $read_info );
 
-	close(IN);
+	close($infh);
 	close(OUT);
 
 	return $new;
