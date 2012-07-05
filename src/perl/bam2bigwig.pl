@@ -48,7 +48,7 @@ my ($bDebug, $bVerbose);
 GetOptions( \%hCmdLineOption,
             'reffile|r=s', 'infile|i=s', 'stranded|s=s', 'outdir|o=s',
             'ucsc_util_dir|uu=s', 'bedtools_bin_dir|bb=s', 'samtools_bin_dir|sb=s', 
-            'include_wig|w', 'verbose|v',
+            'single_end|e', 'include_wig|w', 'verbose|v',
             'debug',
             'help',
             'man') or pod2usage(2);
@@ -428,33 +428,48 @@ sub Generate_Stranded_BAM {
 	($bDebug || $bVerbose) ? 
 		print STDERR "\nGenerating alignment BAM file for sense reads .....\n" : ();
 	
-	$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.1.bam");
-	if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 128 -F 16");
+	if (defined $phCmdLineOption->{'single_end'}) {
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.bam");
+		if ($phCmdLineOption->{'librarytype'} =~ m/^firststrand$/i) {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 16");
+		}
+		else {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -F 16");
+		}
+		
+		samtools_sort($phCmdLineOption, $sOutFile, "$sOutDir/$sSampleId.sense.sorted");
+		
+		$sSenseFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.sorted.bam");
 	}
 	else {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 64 -F 16");
-	}
-	
-	$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.2.bam");
-	if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 80");
-	}
-	else {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 144");
-	}
-	
-	$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.bam");
-	samtools_cat($phCmdLineOption,
-				 "$sOutDir/$sSampleId.sense.1.bam,$sOutDir/$sSampleId.sense.2.bam",
-				 $sOutFile);
-	samtools_sort($phCmdLineOption, $sOutFile, "$sOutDir/$sSampleId.sense.sorted");
-	
-	$sSenseFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.sorted.bam");
-	
-	if ( -e $sSenseFile ) {
-		unlink("$sOutDir/$sSampleId.sense.1.bam");
-		unlink("$sOutDir/$sSampleId.sense.2.bam");
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.1.bam");
+		if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 128 -F 16");
+		}
+		else {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 64 -F 16");
+		}
+		
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.2.bam");
+		if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 80");
+		}
+		else {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 144");
+		}
+		
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.bam");
+		samtools_cat($phCmdLineOption,
+					 "$sOutDir/$sSampleId.sense.1.bam,$sOutDir/$sSampleId.sense.2.bam",
+					 $sOutFile);
+		samtools_sort($phCmdLineOption, $sOutFile, "$sOutDir/$sSampleId.sense.sorted");
+		
+		$sSenseFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.sorted.bam");
+		
+		if ( -e $sSenseFile ) {
+			unlink("$sOutDir/$sSampleId.sense.1.bam");
+			unlink("$sOutDir/$sSampleId.sense.2.bam");
+		}
 	}
 	
 	($bDebug || $bVerbose) ? 
@@ -465,33 +480,48 @@ sub Generate_Stranded_BAM {
 	($bDebug || $bVerbose) ? 
 		print STDERR "\nGenerating alignment BAM file for antisense reads .....\n" : ();
 	
-	$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.1.bam");
-	if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 144");
+	if (defined $phCmdLineOption->{'single_end'}) {
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.bam");
+		if ($phCmdLineOption->{'librarytype'} =~ m/^firststrand$/i) {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -F 16");
+		}
+		else {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 16");
+		}
+		
+		samtools_sort(\%hCmdLineOption, $sOutFile, "$sOutDir/$sSampleId.antisense.sorted");
+		
+		$sAntiSenseFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.sorted.bam");
 	}
 	else {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 80");
-	}
-	
-	$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.2.bam");
-	if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 64 -F 16");
-	}
-	else {
-		samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 128 -F 16");
-	}
-	
-	$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.bam");
-	samtools_cat($phCmdLineOption,
-				 "$sOutDir/$sSampleId.antisense.1.bam,$sOutDir/$sSampleId.antisense.2.bam",
-				 $sOutFile);
-	samtools_sort($phCmdLineOption, $sOutFile, "$sOutDir/$sSampleId.antisense.sorted");
-	
-	$sAntiSenseFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.sorted.bam");
-	
-	if ( -e $sAntiSenseFile ) {
-		unlink("$sOutDir/$sSampleId.antisense.1.bam");
-		unlink("$sOutDir/$sSampleId.antisense.2.bam");
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.1.bam");
+		if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 144");
+		}
+		else {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 80");
+		}
+		
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.2.bam");
+		if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 64 -F 16");
+		}
+		else {
+			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 128 -F 16");
+		}
+		
+		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.bam");
+		samtools_cat($phCmdLineOption,
+					 "$sOutDir/$sSampleId.antisense.1.bam,$sOutDir/$sSampleId.antisense.2.bam",
+					 $sOutFile);
+		samtools_sort($phCmdLineOption, $sOutFile, "$sOutDir/$sSampleId.antisense.sorted");
+		
+		$sAntiSenseFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.sorted.bam");
+		
+		if ( -e $sAntiSenseFile ) {
+			unlink("$sOutDir/$sSampleId.antisense.1.bam");
+			unlink("$sOutDir/$sSampleId.antisense.2.bam");
+		}
 	}
 	
 	($bDebug || $bVerbose) ? 
