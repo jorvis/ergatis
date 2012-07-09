@@ -95,7 +95,7 @@ for (k in 1:(length(pheno)-1)){
 		print(paste("Running ", pheno[k], " vs ", pheno[m], sep=""))
 		res<-nbinomTest(cds, pheno[m], pheno[k])
 
-		tiff(file=paste(pheno[k], "_vs_", pheno[m], ".tiff", sep=""), compression=c("none"), width=720, height=720)
+		tiff(file=paste(pheno[k], "_vs_", pheno[m], ".ma_plot.tiff", sep=""), compression=c("none"), width=720, height=720)
 		plot(res$baseMean, res$log2FoldChange, log="x", pch=20, cex=.1, main=paste(pheno[k], " vs ", pheno[m], sep=""), ylab=paste("log2(", pheno[k], "/", pheno[m], ")", sep=""), xlab="Average counts across 2 conditions", cex.axis=1.2, cex.lab=1.5, cex.main=1.5)		
 		dev.off()
 		
@@ -107,7 +107,7 @@ for (k in 1:(length(pheno)-1)){
 			colnames(res)<-c("ID", "Avg.normalized.read.count.all", paste("Avg.normalized.read.count.", pheno[m], sep=""), paste("Avg.normalized.read.count.", pheno[k], sep=""), "Fold.change", paste("log2(", pheno[k], "/", pheno[m], ")", sep=""), "Raw.p.value", "FDR", paste("resVar.", pheno[m], sep=""), paste("resVar.", pheno[k], sep=""))
 		}
 		res<-res[order(res$FDR),]
-		write.table(res, file.path(paste(pheno[k], "_vs_", pheno[m], sep="")), na="", quote=F, row.names=F, sep="\t")
+		write.table(res, file.path(paste(pheno[k], "_vs_", pheno[m], ".de_genes.txt", sep="")), na="", quote=F, row.names=F, sep="\t")
 	}
 }
 
