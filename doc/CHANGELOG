@@ -1,5 +1,6 @@
 next
 ----
+-Added new component bsml2mugsymap
 -Added new component mugsy_concat_fasta
 -Added ordered file iterator (file_iterator_template_ordered.xml) to components/shared
 -Updated filter_sequences_by_id: wasn't working for paired dataset
