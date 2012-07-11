@@ -236,7 +236,7 @@ if (defined $hCmdLineOption{'outdir'}) {
 $sOutDir = File::Spec->canonpath($sOutDir);
 $sOutDir = File::Spec->rel2abs($sOutDir);
 
-$sTemplateDir = $RealBin."/Eukaryotic_RNA_Seq_Analysis";
+$sTemplateDir = $RealBin."/../global_pipeline_templates/Eukaryotic_RNA_Seq_Analysis";
 if (defined $hCmdLineOption{'template_dir'}) {
     $sTemplateDir = $hCmdLineOption{'template_dir'};
 }
