@@ -185,8 +185,8 @@ c_apps	:
 	@install $(C_BUILD_DIR)/SnpClusterer/SnpClusterer $(PREFIX)/bin
 
 r_scripts:
-	@echo "Installing R scripts to $(PREFIX)/docs"
-	@tar cf - R |  (cd $(WORKFLOW_DOCS_DIR); tar xf -)
+	@echo "Installing R scripts to $(PREFIX)/bin"
+	find $(BUILD_DIR)/R -type f -exec install {} $(PREFIX)/bin \;
 
 END
 

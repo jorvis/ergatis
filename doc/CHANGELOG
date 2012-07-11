@@ -1,5 +1,6 @@
 next
 ----
+-Installer now places R scripts in bin directory rather than docs
 -Added new component bsml2mugsymap
 -Added new component mugsy_concat_fasta
 -Added ordered file iterator (file_iterator_template_ordered.xml) to components/shared
