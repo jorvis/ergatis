@@ -39,6 +39,9 @@ for ( $q->param ) {
     }
 }
 
+use Data::Dumper;
+print STDERR Dumper(%component_vars) . "\n";
+
 ## disable grid submissions if they are disabled in ergatis.ini
 if ( $ergatis_cfg->val('grid', 'grid_enabled') == 0 ) {
     ## reset NODISTRIB if it exists
@@ -61,7 +64,7 @@ if (-e "$docs_dir/shared_parameters.config") {
 ## open the output component file
 open(my $user_fh, ">$build_directory/$component_name.$output_token.config") || die "can't create temporary component file; $!";
 
-#while (my $line = <$template_fh>) {
+my $seen_params = {};
 for my $line (@config_template_lines) {
     chomp $line;
     
@@ -69,18 +72,19 @@ for my $line (@config_template_lines) {
     if ( $line !~ /^\;/ && $line =~ /^\s*(.+?)\s*\=\s*(.*?)\s*$/ ) {
         my ($key, $val) = ($1, $2);
         
-        if ( exists $component_vars{$key} ) {
-            print $user_fh "$key=$component_vars{$key}\n";
-            
-        } else {
-            print $user_fh "$line\n";
+        if (! exists($seen_params->{$key}) ) {
+            if ( exists $component_vars{$key} ) {
+                print $user_fh "$key=$component_vars{$key}\n";
+            } else {
+                print $user_fh "$line\n";
+            }
+
+            $seen_params->{$key} = 1;
         }
-        
     } else {
         print $user_fh "$line\n";
     }
 }
-
 
 ## if we get this far, make sure we exit correctly so the right response code is sent.
 exit(0);
