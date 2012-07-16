@@ -33,7 +33,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 my $input;
 my %options;
 my $bool;
-my $bool2;
+my $bool2 = 'false';
 
 my $results = GetOptions(\%options,
 			"input|in|i=s" => \$input
@@ -93,7 +93,7 @@ if ($input =~ /.*\.list/)
 		open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 		
 		$i =~ s/\w+\///g;
-		$i =~ s/\///;
+		$i =~ s/\///g;
 		$i =~ s/\..+//g;
 		$i =~ s/.{60}/$1 /g; #kSNP will not work if a header contains 60 straight characters after the >
 			
@@ -108,7 +108,7 @@ if ($input =~ /.*\.list/)
 	}
 
 }
-elsif ($input =~ /.*\.[fnsa]{2,3}/) #Single fasta file
+elsif ($input =~ /.*\.[fnsat]{2,5}/) #Single fasta file
 {
 
 	my @list = <$fh>;
@@ -149,13 +149,15 @@ elsif ($input =~ /.*\.[fnsa]{2,3}/) #Single fasta file
 		open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 
 		$input =~ s/\w+\///g;
-		$input =~ s/\///;
+		$input =~ s/\///g;
 		$input =~ s/\..+//g;
 		$input =~ s/.{60}/$1 /g;   #kSNP will not work if a header contains 60 straight characters after the >
+		
 
 		while (<$fh4>)
 		{
 			$_ =~ s/^>.*/>$input merged/ if ($bool2 eq 'true');
+			$_ =~ s/^>.*/>$input/ if ($bool2 eq 'false');
 			$_ =~ s/(\w{60})/$&\n/g;
 			$_ =~ s/^\s+$//g;
 			print $_;
