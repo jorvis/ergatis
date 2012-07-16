@@ -129,7 +129,6 @@ sub parse_bsml {
     my ($genus, $species, $strain);
     my @sequence_ids;
     my $strain_flag = 0; # Should let us know when we are in a strain element. 
-    my $asmbl_flag = 0; # Should let us know when we are in a Sequence[@class="assembly"] element
     my $start_subs = {
 	'Organism' => sub {
 	    my ($expat,$elt,%params) = @_;
@@ -145,22 +144,11 @@ sub parse_bsml {
 	'Sequence' => sub {
 	    my ($expat,$elt,%params) = @_;
 	    return unless( $params{'class'} eq 'assembly' );
-	    $asmbl_flag = 1;
-	},
-	'Seq-data-import' => sub {
-	    my ($expat,$elt,%params) = @_;
-	    return unless( $asmbl_flag );
-	    ## Just for some debugging. I'm assuming that there shouldn't be spaces
-	    ## in the identifier. So I'm going to die if there is. I'll fix it later
-	    ## if I have to.
-	    die("Found spaces in Seq-data-import[\@identifer]: $params{'identifier'}. Expected this not to happen.") 
-		if( $params{'identifier'} =~ /\s/ );
-	    push(@sequence_ids, $params{'identifier'});
+	    push(@sequence_ids, $params{'id'});
 	}
     };
     my $end_subs = {
-	'Strain' => sub { $strain_flag = 0 },
-	'Sequence' => sub { $asmbl_flag = 0 }
+	'Strain' => sub { $strain_flag = 0 }
     };
 
     my $parser = new XML::Parser('Handlers' => {
