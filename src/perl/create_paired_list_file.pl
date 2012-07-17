@@ -152,12 +152,15 @@ if ((defined $hCmdLineOption{'samplefile'}) && ($hCmdLineOption{'samplefile'} =~
 		foreach $sSampleName (sort keys %hSamples) {
 			if ($sFile =~ m/^$sSampleName\_0/) {
 				push @{$hSamples{$sSampleName}[0]}, $sReadsFile;
+				last;
 			}
 			elsif ($sFile =~ m/^$sSampleName\_1/) {
 				push @{$hSamples{$sSampleName}[0]}, $sReadsFile;
+				last;
 			}
 			elsif ($sFile =~ m/^$sSampleName\_2/) {
 				push @{$hSamples{$sSampleName}[1]}, $sReadsFile;
+				last;
 			}
 		}
 	}
@@ -178,12 +181,15 @@ if ((defined $hCmdLineOption{'samplefile'}) && ($hCmdLineOption{'samplefile'} =~
 		foreach $sSampleName (sort keys %hSamples) {
 			if ($sFile =~ m/^$sSampleName\_0/) {
 				push @{$hSamples{$sSampleName}[0]}, $sReadsFile;
+				last;
 			}
 			elsif ($sFile =~ m/^$sSampleName\_1/) {
 				push @{$hSamples{$sSampleName}[0]}, $sReadsFile;
+				last;
 			}
 			elsif ($sFile =~ m/^$sSampleName\_2/) {
 				push @{$hSamples{$sSampleName}[1]}, $sReadsFile;
+				last;
 			}
 		}
 	}

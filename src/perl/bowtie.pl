@@ -203,7 +203,7 @@ $sCmd .= " -f" if ($hCmdLineOption{'file-type'} =~ m/^fasta$/);
 $sCmd .= " ".$hCmdLineOption{'args'} if (defined $hCmdLineOption{'args'});
 $sCmd .= " ".$hCmdLineOption{'bowtie_index_dir'}."/".$hCmdLineOption{'prefix'};
 
-if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/)) {
+if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/) && ($hCmdLineOption{'seq2file'} !~ m/^""$/)) {
 	$sReadFile = "-1 ".$sSeq1File.
 				 " -2 ".$sSeq2File;
 }
