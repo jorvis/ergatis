@@ -171,7 +171,6 @@ sub archive_pipeline {
         _log("DEBUG: running: $cmd");
 
 	system ($cmd);
-	system ("mv $temp.tar.gz $_.tar.gz");	# Move archived contents back to original area
 
         if ($? == -1) {
             print "failed to execute: $!\n";
@@ -182,6 +181,7 @@ sub archive_pipeline {
         } 
 
 	if ( $success ) {
+	    system ("mv $temp.tar.gz $_.tar.gz");	# Move archived contents back to original area
 	    system ("rm -rf $_");
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
@@ -208,7 +208,6 @@ sub archive_pipeline {
         _log("DEBUG: running: $cmd");
 
 	system ($cmd);
-	system ("mv $temp.tar.gz $_.tar.gz");
 
         if ($? == -1) {
             print "failed to execute: $!\n";
@@ -219,6 +218,7 @@ sub archive_pipeline {
         } 
 
 	if ( $success ) {
+	    system ("mv $temp.tar.gz $_.tar.gz");
 	    system ("rm -rf $_");
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
