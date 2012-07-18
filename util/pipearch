@@ -57,17 +57,27 @@ can be any user-defined label.  It is at this level that tarball's are created.
 Each of the PIPELINEID_TOKEN directories mentioned in the INPUT section above is removed and
 replaced by a tarball of itself with the same name but including the '.tar.gz' extension.
 
+=head1 EXIT STATUS CODES
+
+Exit(0) - Exited just fine and the script ran to completion
+
+Exit(1) - Archival was not successful due to an issue with the 'tar' command or due to a core dump
+
+Exit(2) - Process was interrupted with an interruption signal (such as Ctrl-C in the Terminal)
+
+Exit(3) - Lock file for the pipeline was already present which means pipeline is currently in the process of being archived by another job.  
+
 =head1  CONTACT
 
-    Joshua Orvis
-    jorvis@users.sf.net
+    Shaun Adkins
+    sadkins@som.umaryland.edu
 
 =cut
 
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use File::Path;
+
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -78,7 +88,7 @@ my $results = GetOptions (\%options,
 
 ## display documentation
 if( $options{'help'} ){
-    pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} );
+    pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDOUT} );
 }
 
 my ($pipeline, $repository);
@@ -89,12 +99,14 @@ my $lock = "/usr/local/scratch/" . $pipeline . ".arch.log";
 
 if (-e $lock) {
     print "Another job is archiving pipeline $pipeline\n";
-    exit(0); 	#exit if another process is already running 
+    exit(3); 	#exit if another process is already running 
 }
 
-#open LOCK, ">$lock" or die "Cannot create lock file $lock: $!\n";
-#print LOCK "$pipeline\t$repository\n";
-#close LOCK;
+open LOCK, ">$lock" or die "Cannot create lock file $lock: $!\n";
+print LOCK "$pipeline\t$repository\n";
+close LOCK;
+
+$SIG{INT} = \&capture_ctrl_c;
 
 my $start = localtime;
 ## open the log if requested
@@ -112,8 +124,8 @@ check_file_layout( $repository, $pipeline );
 archive_pipeline();
 
 my $end = localtime;
-print "Start:\t" . $start . "\n";
-print "End:\t" . $end, "\n";
+_log("Start:\t" . $start . "\n");
+_log("End:\t" . $end . "\n");
 
 unlink($lock);
 exit(0);
@@ -122,15 +134,18 @@ sub check_file_layout {
     my ($proj_dir, $id) = @_;
     
     unless ( -d "$proj_dir/workflow/runtime" ) {
+	unlink($lock);
         die "ERROR: expected to find $proj_dir/workflow/runtime";
     }
     
     unless ( -d "$proj_dir/output_repository" ) {
+	unlink($lock);
         die "ERROR: expected to find $proj_dir/output_repository";
     }
     
     ## conventional location for this pipeline
     unless ( -d "$proj_dir/workflow/runtime/pipeline/$id" ) {
+	unlink($lock);
         die "ERROR: pipeline XML directory for pipeline $id not found.  Quitting.";
     }
 }
@@ -143,7 +158,6 @@ sub archive_pipeline {
 	chomp;
         next if ($_ =~ '/pipeline/');	# skip the pipeline directory
 	_log("\t" . $_ . "\n");
-	print $_, "\n";
 
 	my $temp;
 	if ($_ =~ /$repository(.+)/) {
@@ -155,7 +169,7 @@ sub archive_pipeline {
 	my $cmd = "tar -czf $temp" . ".tar.gz $_";	#tars the current directory
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
-print $cmd, "\n";
+
 	system ($cmd);
 	system ("mv $temp.tar.gz $_.tar.gz");	# Move archived contents back to original area
 
@@ -168,7 +182,7 @@ print $cmd, "\n";
         } 
 
 	if ( $success ) {
-	    rmtree( "$_" );
+	    system ("rm -rf $_");
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
 	    unlink($lock);
@@ -181,7 +195,6 @@ print $cmd, "\n";
     while (<OUT>) {
 	chomp;	# no Pipeline directory in the output_repository folder
 	_log("\t" . $_ . "\n");
-	print $_, "\n";
 
 	my $temp;
 	if ($_ =~ /$repository(.+)/) {
@@ -193,6 +206,7 @@ print $cmd, "\n";
 	my $cmd = "tar -czf $temp" . ".tar.gz $_";	#tars the current directory
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
+
 	system ($cmd);
 	system ("mv $temp.tar.gz $_.tar.gz");
 
@@ -205,7 +219,7 @@ print $cmd, "\n";
         } 
 
 	if ( $success ) {
-	    rmtree( "$_" );
+	    system ("rm -rf $_");
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
 	    unlink($lock);
@@ -215,11 +229,18 @@ print $cmd, "\n";
     close OUT;
 }
 
+sub capture_ctrl_c {
+    unlink($lock);
+    exit(2);
+}
+
 sub _log {
     my $msg = shift;
-
+    
+    print "$msg\n";
     print $logfh "$msg\n" if $logfh;
 }
+
 
 sub check_parameters {
     my $options = shift;
