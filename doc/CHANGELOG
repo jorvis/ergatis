@@ -13,7 +13,7 @@ next
 -Update to kSNP component
 -Adding new component kSNP
 -Updated signalP config file to take a truncation length of 70 instead of 1000
--Updated dump_table.pl to make output reflect changes dealing wit non-functonal genes according to NCBI guidelines
+-Updated dump_table.pl to make output reflect changes dealing with non-functonal genes according to NCBI guidelines
 -Updated pipearch archival script and added pipe_unarch unarchival script
 -New component: mpileup (runs samtools mpileup)
 -New component: filter_merged_table for SNP verification pipeline
