@@ -99,8 +99,8 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
-my $fasta_exe = $velvet_path."/shuffleSequences_fasta.pl";
-my $fastq_exe = $velvet_path."/shuffleSequences_fastq.pl";
+my $fasta_exe = $velvet_path."/contrib/shuffleSequences_fasta/shuffleSequences_fasta.pl";
+my $fastq_exe = $velvet_path."/contrib/shuffleSequences_fasta/shuffleSequences_fastq.pl";
 
 #create the output lists
 my $long_output_list = $options{'long_output_list'} || $out_dir."/long_reads.list";
@@ -162,7 +162,7 @@ sub shuffle_sequences {
         my $file_string = join(" ", @{$l->{'files'}} );
         $exe .= " $file_string $out_file";
 
-        system($exe);
+        system($exe) or die("Can't execute $exe (the path may be incorrect): $!");
 
         print $fh "$out_file\n";
 
