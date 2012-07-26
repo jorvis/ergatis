@@ -162,7 +162,7 @@ sub shuffle_sequences {
         my $file_string = join(" ", @{$l->{'files'}} );
         $exe .= " $file_string $out_file";
 
-        system($exe) or die("Can't execute $exe (the path may be incorrect): $!");
+        system($exe);
 
         print $fh "$out_file\n";
 
