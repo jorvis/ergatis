@@ -47,6 +47,7 @@
 				<key>stderr</key>
 				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
 			</param>
+			<arg>--v</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -73,6 +74,7 @@
 				<key>stderr</key>
 				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
 			</param>
+			<arg>--skip_error --v</arg>
         </command>
     </commandSet>
 </commandSetRoot>
