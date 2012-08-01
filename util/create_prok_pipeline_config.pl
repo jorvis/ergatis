@@ -8,6 +8,7 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
 =head1 SYNOPSIS
 
  USAGE: create_prok_pipeline_config.pl
+       --assembly|-A
        --pseudomolecule|-p
        --rna_predictions|-r
        --gene_prediction|-g
@@ -21,6 +22,9 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
      ]
 
 =head1 OPTIONS
+
+B<--assembly,-A>
+    Default = none. Possible choices: [454, illumina, none]
 
 B<--pseudomolecule,-p>
     Default = 0. For annotation on a pseudomolecule
@@ -69,6 +73,7 @@ B<--help,-h>
     a new pipeline. The following pipelines will be looked for by this script and a directory for
     each is expected in the templates_directory:
     
+    Prokaryotic_Annotation_Pipeline_Celera_Assembly
     Prokaryotic_Annotation_Pipeline_Pseudomolecule_Generation
     Prokaryotic_Annotation_Pipeline_Input_Processing
     Prokaryotic_Annotation_Pipeline_RNA_Predictions
@@ -120,35 +125,42 @@ my $valid_gene_prediction_algorithms = {
     'glimmer' => 1,
     'prodigal'  => 1
 };
+my $valid_assembly_methods = { '454' => 1, 'illumina' => 1 };
+my $assembly = 'none';							  
 my $gene_prediction = "glimmer";
-my $template_directory = "/local/projects/ergatis/package-v1r30/global_pipeline_templates";
+my $template_directory = "/local/projects/ergatis/package-latest/global_pipeline_templates";
 my %included_subpipelines = ();
 ####################################################
 
 ## Maps sub-pipeline names
 my $pipelines = {
-    'pseudomolecule' => 'Prokaryotic_Annotation_Pipeline_Pseudomolecule_Generation',
-    'input_processing' => 'Prokaryotic_Annotation_Pipeline_Input_Processing',
-    'rna_prediction'  => 'Prokaryotic_Annotation_Pipeline_RNA_Predictions',
-    'glimmer' => 'Prokaryotic_Annotation_Pipeline_Glimmer_Predictions',
-    'prodigal'  => 'Prokaryotic_Annotation_Pipeline_Prodigal_Predictions',
-    'annotation'  => 'Prokaryotic_Annotation_Pipeline_Gene_Annotations',
-    'load' => 'Prokaryotic_Annotation_Pipeline_Chado_Loading'
-};
+				 '454' => 'Prokaryotic_Annotation_Pipeline_Celera_Assembly',
+				 'illumina' => 'Prokaryotic_Annotation_Pipeline_Velvet_Assembly',
+				 'pseudomolecule' => 'Prokaryotic_Annotation_Pipeline_Pseudomolecule_Generation',
+				 'input_processing' => 'Prokaryotic_Annotation_Pipeline_Input_Processing',
+				 'rna_prediction'  => 'Prokaryotic_Annotation_Pipeline_RNA_Predictions',
+				 'glimmer' => 'Prokaryotic_Annotation_Pipeline_Glimmer_Predictions',
+				 'prodigal'  => 'Prokaryotic_Annotation_Pipeline_Prodigal_Predictions',
+   				 'operon' => 'Prokaryotic_Annotation_Pipeline_Operon_Predictions',
+				 'annotation'  => 'Prokaryotic_Annotation_Pipeline_Gene_Annotations',
+				 'load' => 'Prokaryotic_Annotation_Pipeline_Chado_Loading'
+				};
 
 my %options;
 my $results = GetOptions (\%options,
-                            "pseudomolecule|p=s",
-                            "rna_prediction|r=s",
-                            "gene_prediction|g=s",
-                            "annotation|a=s",
-                            "load|l=s",
-                            "template_directory|t=s",
-                            "output_directory|o=s",
-                            "log|L=s",
-                            "debug|d=s",
-                            "help|h"
-                        );
+						  "assembly|A=s",
+						  "pseudomolecule|p=s",
+						  "rna_prediction|r=s",
+						  "gene_prediction|g=s",
+						  "annotation|a=s",
+						  "load|l=s",
+						  "operon|O=s",
+						  "template_directory|t=s",
+						  "output_directory|o=s",
+						  "log|L=s",
+						  "debug|d=s",
+						  "help|h"
+						 );
 
 &check_options(\%options);
 
@@ -165,12 +177,15 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
 # Write the pipeline.layout file
 &write_pipeline_layout( $layout_writer, sub {
    my ($writer) = @_;
+   &write_include($writer, $pipelines->{$included_subpipelines{'assembly'}}) 
+	 unless( $included_subpipelines{'assembly'} eq 'none' );
    &write_include($writer, $pipelines->{'pseudomolecule'}) if( $included_subpipelines{'pseudomolecule'} );
    &write_include($writer, $pipelines->{'input_processing'}) if( $included_subpipelines{'input_processing'} );
    
-   if( $included_subpipelines{'rna_prediction'} || $included_subpipelines{'gene_prediction'} ne 'none' ) {
+   if( $included_subpipelines{'operon'} || $included_subpipelines{'rna_prediction'} || $included_subpipelines{'gene_prediction'} ne 'none' ) {
        &write_parallel_commandSet( $writer, sub {
            my ($writer) = @_;
+           &write_include($writer, $pipelines->{'operon'}) if( $included_subpipelines{'operon'} );
            &write_include($writer, $pipelines->{'rna_prediction'}) if( $included_subpipelines{'rna_prediction'} );
            &write_include($writer, $pipelines->{$included_subpipelines{'gene_prediction'}}) 
                unless( $included_subpipelines{'gene_prediction'} eq 'none' );
@@ -194,16 +209,51 @@ my %config;
 
 # Write the pipeline config file
 foreach my $sp ( keys %included_subpipelines ) {
-    if( $sp eq 'gene_prediction' && $included_subpipelines{$sp} ne 'none' ) {
-        print "Adding config for $sp\n";
-        &add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
-    } elsif( $sp eq 'load' && $included_subpipelines{$sp} && $included_subpipelines{'pseudomolecule'} ) {
-        print "Adding config for $sp\n";
-        &add_config( \%config, $pipelines->{ $sp }, "pipeline_pmarks.config" );
-    } elsif( $sp ne 'gene_prediction' && $included_subpipelines{$sp} ) {
-        print "Adding config for $sp\n";
-        &add_config( \%config, $pipelines->{ $sp } );
-    }
+  if ( $sp eq 'gene_prediction' && $included_subpipelines{$sp} ne 'none' ) {
+	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
+  } elsif ( $sp eq 'assembly' && $included_subpipelines{$sp} ne 'none' ) {
+	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
+  } elsif ( $sp eq 'load' && $included_subpipelines{$sp} && $included_subpipelines{'pseudomolecule'} ) {
+	&add_config( \%config, $pipelines->{ $sp }, "pipeline_pmarks.config" );
+  } elsif ( $sp ne 'gene_prediction' && $sp ne 'assembly' && $included_subpipelines{$sp} ) {
+	&add_config( \%config, $pipelines->{ $sp } );
+  }
+}
+
+if ( $included_subpipelines{'assembly'} ne 'none' ) {
+  delete( $config{'global'}->{'$;INPUT_FASTA$;'} );
+  
+  if ( $included_subpipelines{'pseudomolecule'} ) {
+	delete( $config{'clean_fasta default'}->{'$;INPUT_FILE$;'} );
+	
+	if ( $included_subpipelines{'assembly'} eq '454' ) {
+	  $config{'clean_fasta default'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/celera-assembler'.
+		'/$;PIPELINEID$;_assembly/celera-assembler.scf.fasta.list';
+	} elsif ( $included_subpipelines{'assembly'} eq 'illumina' ) {
+	  $config{'clean_fasta default'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/velvet_optimiser'.
+		'/$;PIPELINEID$;_assembly/velvet_optimiser.fa.list';
+	}
+
+  } else {
+
+	foreach my $section ( keys %config ) {
+	  foreach my $key ( keys %{$config{$section}} ) {
+		if ( $config{$section}->{$key} eq '$;INPUT_FSA_LIST$;' ) {
+		  if( $included_subpipelines{'assembly'} eq '454' ) {
+			$config{$section}->{$key} = '$;REPOSITORY_ROOT$;/output_repository/celera-assembler'.
+			  '/$;PIPELINEID$;_assembly/celera-assembler.scf.fasta.list';
+		  } elsif( $included_subpipelines{'assembly'} eq 'illumina' ) {
+			$config{$section}->{$key} = '$;REPOSITORY_ROOT$;/output_repository/velvet_optimiser'.
+			  '/$;PIPELINEID$;_assembly/velvet_optimiser.fa.list';
+		  }
+		}
+		if ( $config{$section}->{$key} eq '$;INPUT_FSA_FILE$;' ) {
+		  $config{$section}->{$key} = '';
+		}
+	  }
+	}   
+	
+  }
 }
 
 # we can be a little bit smarter here and configure some of the connections for the user.
@@ -229,12 +279,10 @@ if( $included_subpipelines{'pseudomolecule'} ) {
     }   
 }
 
-
 if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipelines{'annotation'} ) {
     # remove INPUT_BSML_LIST from global section
     delete( $config{'global'}->{'$;INPUT_BSML_LIST$;'} );
     
-
     # anywhere else you find the $;INPUT_BSML_LIST$; variable, replace it with the output of 
     # promote_gene_prediction.promote_prediction output list
     foreach my $section ( keys %config ) {
@@ -275,9 +323,10 @@ sub write_config {
 sub write_section {
     my ($section, $config, $fh) = @_;
     print $fh "[$section]\n";
-    while( my ($k,$v) = each( %{$config} ) ) {
-        print $fh "$k=$v\n";
-    }
+	
+	foreach my $k ( sort keys %{$config} ) {
+	  print $fh "$k=$config->{$k}\n";
+	}
     print $fh "\n";
 }
 
@@ -349,23 +398,32 @@ sub check_options {
    # Make sure the value for the gene_prediction option is valid
    if( $opts->{'gene_prediction'} ) {
        &_log($ERROR, 
-             "Value for gene_prediction option must of one of [none|".(keys %{$valid_gene_prediction_algorithms}).join("|")."]")
+             "Value for gene_prediction option must of one of [none|".join("|",(keys %{$valid_gene_prediction_algorithms}))."]")
            unless( exists( $valid_gene_prediction_algorithms->{$opts->{'gene_prediction'}} ) 
                    || lc($opts->{'gene_prediction'}) eq 'none' );
        $gene_prediction = lc($opts->{'gene_prediction'});
    } elsif( exists( $opts->{'gene_prediction'} ) && $opts->{'gene_prediction'} == 0 ) {
        $gene_prediction = 'none';
    }
+
+   # make sure the user specified a valid assembly method
+   if( $opts->{'assembly'} ) {
+	 &_log($ERROR, "Value for assembly option must be one of [none|".join("|", (keys %{$valid_assembly_methods}))."]")
+	   unless( exists( $valid_assembly_methods->{lc( $opts->{'assembly'} )} ) || lc( $opts->{'assembly'} ) eq 'none' );
+	 $assembly = $opts->{'assembly'};
+   }
    
    $outdir = $opts->{'output_directory'} if( $opts->{'output_directory'} );
    $template_directory = $opts->{'template_directory'} if( $opts->{'template_directory'} );
 
    # This is where some logic goes about what parts actually get included into the pipeline.
+   $included_subpipelines{'assembly'} = $assembly;
    $included_subpipelines{'pseudomolecule'} = 1 if( $opts->{'pseudomolecule'} && $gene_prediction ne 'none' );
    $included_subpipelines{'rna_prediction'} = 1 unless( exists( $opts->{'rna_prediction'} ) && $opts->{'rna_prediction'} == 0 );
    $included_subpipelines{'gene_prediction'} = $gene_prediction;
    $included_subpipelines{'annotation'} = 1; # Annotation is required 
    $included_subpipelines{'load'} = 1 if( $opts->{'load'} );
+   $included_subpipelines{'operon'} = 1 if( $opts->{'operon'} );
       
    $included_subpipelines{'input_processing'} = 1 if( $included_subpipelines{'rna_prediction'} || 
                                                       $included_subpipelines{'gene_prediction'} ne 'none' );

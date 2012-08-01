@@ -41,5 +41,59 @@
                 <value>$;BSML_OUTPUT_LIST$;</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create xml list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.xml"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;XML_OUTPUT_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create gff list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.gff"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;GFF_OUTPUT_LIST$;</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create hmmreport list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.hmmreport"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;HMMREPORT_OUTPUT_LIST$;</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>
