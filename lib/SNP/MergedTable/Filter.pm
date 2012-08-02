@@ -3,10 +3,12 @@ package SNP::MergedTable::Filter;
 use strict;
 use warnings;
 use IntervalTree;
+use Data::Dumper;
 
 my %valid_filters = (
-    'excluded_regions' => sub { filter_excluded_regions(@_) }
-);
+		     'excluded_regions' => sub { filter_excluded_regions(@_) },
+		     'qc_filter' => sub { filter_on_qc_data(@_) }
+		     );
 
 sub filter_is_valid {
     my ($filter_name) = @_;
@@ -24,7 +26,9 @@ sub filter {
     $valid_filters{$filter}->($table, @args);
 }
 
-
+###########################################################################
+#           Filter subs below                                             #
+###########################################################################
 sub filter_excluded_regions {
     my ($table, @regions) = @_;
     die("filter_excluded_regions requires a set of regions and a MergedTable as arguments")
@@ -57,5 +61,35 @@ sub filter_excluded_regions {
        }
     }
     
+    return $removed;
+}
+
+sub filter_on_qc_data {
+    my ($table, $qc_file) = @_;
+    
+    #Parse the qc file
+    my %refpositions;
+    open(IN, "< $qc_file") or die("Unable to open $qc_file");
+    while( my $line = <IN> ) {
+	chomp($line);
+	next if( $line =~ /^\s*$/ );
+	my (undef,$refpos) = split(/\t/, $line);
+	$refpositions{$refpos} = 1;
+    }
+    close(IN);
+
+    my $removed = 0;
+    foreach my $row ( $table->get_rows ) {
+	my $refpos = $row->refpos();
+	if( exists( $refpositions{$refpos} ) ) {
+	    my $c = $table->remove_row($row);
+	    delete( $refpositions{$refpos} );
+	    $removed += $c;
+	}
+    }
+    
+    print "LEFTOVERS:\n";
+    print Dumper( \%refpositions );
+
     return $removed;
 }

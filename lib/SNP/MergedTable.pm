@@ -27,7 +27,7 @@ This module is used for writing/parsing a format used with SNP descriptions, Mer
  query_codon:     The query codon (if multiple, separated by /, example ACT/AGT)
  query_aa:        The query amino acid (if multiple, separatedy by /, example T/S)
  <num_hits>:      A column for each query, listing the number of hits from blast results [used in snp-verify]. Optional.
- properties:      Column of key-value pairs in the format of <key>=<value> (ex. verfified=false) separated by
+ properties:      Column of key-value pairs in the format of <key>=<value> (ex. verified=false) separated by
                   semi-colons. Optional.
 
 =head1 Synopsis
@@ -125,9 +125,16 @@ sub parse {
   }
 
   # Now we can start parsing the rows
+  my $num_hits_flag = 0;
   while( my $row_string = <IN> ) {
 	chomp $row_string;
 	my $row = SNP::MergedTable::Row::to_obj( $row_string, $self->queries() );
+	unless( $num_hits_flag ) {
+	    $self->include_num_hits(0);
+	    my %h = $row->get_all_num_hits();
+	    $self->include_num_hits(1) if( keys %h );
+	    $num_hits_flag = 1;
+	}
 	$self->add_row( $row );
   }
   
@@ -561,7 +568,7 @@ sub print_to_fh {
 				};
 				
   foreach my $row ( $self->get_rows ) {
-	print $fh $row->to_string( $options )."\n";
+      print $fh $row->to_string( $options )."\n";
   }
   return 1;
 }
