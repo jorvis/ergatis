@@ -1,5 +1,6 @@
 next
 ----
+-added component: wga_maf2tree
 -changed directory path of shuffle_Sequences_fasta.pl (and fastq) in prepare_paired_ends_for_velvet.pl to reflect current velvet directory
 -placed some component's unnecessary workflow commands in the SKIP_WF_COMMAND parameter in the config files to hopefully reduce the number of files outputted from a ProkPipe run
 -Installer now places R scripts in bin directory rather than docs
