@@ -24,7 +24,7 @@
             <type>RunUnixCommand</type>
             <name>create tree</name>
             <state>incomplete</state>
-            <executable>cd $;OUTPUT_DIRECTORY;source $;PHYLOMARK_DIR$;/phylomark_env.sh;$;PHYLOMARK_DIR$;/Phylomark_prep.py</executable>
+            <executable>cd $;OUTPUT_DIRECTORY$;;source $;PHYLOMARK_DIR$;/phylomark_env.sh;$;PHYLOMARK_DIR$;/Phylomark_prep.py</executable>
             <param>
                 <key>--input-maf</key>
                 <value>$;MAF_FILE$;</value>              
