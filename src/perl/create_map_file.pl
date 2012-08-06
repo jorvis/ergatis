@@ -29,7 +29,10 @@ if( $file ) {
     push(@files, @tmp);
 }
 
-die("Either --input_file_list or --input_file is required") unless( @files );
+unless( @files ) {
+    system("touch $outputFile") && die("Could not run command: touch $outputFile: $@");
+    exit(0);
+}
 
 open(my $OFH,">$outputFile") or die "Error in writing to the output file, $outputFile, $!\n";
 foreach my $f ( @files ) {
