@@ -164,7 +164,7 @@ sub _handle_seq_pair_alignment {
 
     ## Grab the cluster id and see if the match is characterized
     my $db = $self->{'_uniref_clusters_annot'};
-    my $comp_trusted = 1;#$db->is_trusted( $comp_id );
+    my $comp_trusted = $db->is_trusted( $comp_id );
     
     ## assign confidence level
     my ($query_coverage, $subject_coverage) = $self->_calculate_spr_coverage( $ref_id, $comp_id, $spa );
