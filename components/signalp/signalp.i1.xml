@@ -127,7 +127,7 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>compress_raw_output</name>
+            <name>compress raw output</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/compress_file</executable>
             <param>
@@ -145,7 +145,7 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>compress_gnuplot_output</name>
+            <name>compress gnuplot output</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/compress_file</executable>
             <param>
