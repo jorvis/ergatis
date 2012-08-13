@@ -12,7 +12,7 @@
             <executable>$;BIN_DIR$;/mugsy_callsnps</executable>
             <param>
                 <key>--input_indexed_maf</key>
-                <value>$;MAF_FILE$;</value>              
+                <value>$;OUTPUT_DIRECTORY$;/input_maf.idx</value>              
             </param>
             <param>
                 <key>--fasta</key>
