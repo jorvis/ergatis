@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>mugsy_callsnps workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>                
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;</arg>
+        </command>
+        <!--Processing-->
+	<!-- index the maf file -->        
+	<command>
+            <type>RunUnixCommand</type>
+            <name>index maf file</name>
+            <state>incomplete</state>
+            <executable>$;MUGSY_MAPPING_INSTALL_DIR$;/mafindex.pl</executable>
+	    <arg>$;OUTPUT_DIRECTORY$;/input_maf.idx</arg>
+	    <param>
+                <key>stdin</key>
+                <value>$;MAF_FILE$;</value>
+            </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/mafindex.stdout</value>
+	    </param>
+        </command>  
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>replace template keys</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/replace_template_keys</executable>
+	    <param>
+		<key>--template_xml</key>
+		<value>$;DOCS_DIR$;/mugsy_callsnps_distributed.xml</value>
+	    </param>
+	    <param>
+		<key>--component_conf</key>
+		<value>$;COMPONENT_CONFIG$;</value>
+	    </param>
+	    <param>
+		<key>--output_xml</key>
+		<value>$;WORKFLOW_REPOSITORY$;/mugsy_callsnps_distributed.xml.gz</value>
+	    </param>
+	    <param>
+		<key>--distribopts</key>
+		<value>nodistrib=$;NODISTRIB$;</value>
+	    </param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/replace_template_keys.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;OUTPUT_DIRECTORY$;/replace_template_keys.stderr</value>
+	    </param>
+	</command> 
+	<commandSet type="remote-serial">
+	    <state>incomplete</state>
+	    <name>mugsy_callsnps distributed work</name>
+	    <fileName>$;WORKFLOW_REPOSITORY$;/mugsy_callsnps_distributed.xml.gz</fileName>
+	    <dceSpec type="sge">
+		<OS>linux</OS>
+	    </dceSpec>
+	</commandSet>                              
+    </commandSet>    
+</commandSetRoot>                

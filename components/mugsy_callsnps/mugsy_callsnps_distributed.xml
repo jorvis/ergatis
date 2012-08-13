@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot type="instance">
+    <commandSet type="serial">
+	<state>incomplete</state>
+        <name>grouped sub flow</name>
+                   
+        <command>
+            <type>RunUnixCommand</type>
+            <name>call snps</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/mugsy_callsnps</executable>
+            <param>
+                <key>--input_indexed_maf</key>
+                <value>$;MAF_FILE$;</value>              
+            </param>
+            <param>
+                <key>--fasta</key>
+                <value>$;FASTA$;</value>                
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_SNPS_FILE$;</value>
+            </param>
+            <param>
+                <key>--mugsy_mapping_dir</key>
+                <value>$;MUGSY_MAPPING_INSTALL_DIR$;</value>
+            </param>
+        </command>   
+
+    </commandSet>
+</commandSetRoot>
+
