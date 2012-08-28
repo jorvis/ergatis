@@ -40,7 +40,7 @@ postscript(file="###output_path###core_genes_power_law_medians_log.ps", width=11
 layout(matrix(c(1,2),byrow=TRUE), heights=c(7.5,1))
 
 # Draw the axis
-plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### core genes power law log axis", col=p_color, cex=0.5, log="xy")
+plot(V1,V2, xlab="number of genomes", ylab="core genes", main="###TITLE### core genes power law log axis", col=p_color, cex=0.5, log="xy")
 
 # plot the medians
 points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
@@ -56,11 +56,11 @@ expr_pot <- substitute(
                 expression(y == th1 %+-% th1err + th2 %+-% th2err * x^(th3 %+-% th3err)), 
                 list(
                     th1=round(nlmodel_pot$m$getPars()[1], digit=4),
-                    th1err = round(summary(nlmodel_pot)[10][[1]][3], digit=4),
+                    th1err = round(summary(nlmodel_pot)[10][[1]][4], digit=4),
                     th2=round(nlmodel_pot$m$getPars()[2], digit=4),
-                    th2err = round(summary(nlmodel_pot)[10][[1]][4], digit=4),
+                    th2err = round(summary(nlmodel_pot)[10][[1]][5], digit=4),
                     th3=round(nlmodel_pot$m$getPars()[3], digit=4),
-                    th3err = round(summary(nlmodel_pot)[10][[1]][5], digit=4)
+                    th3err = round(summary(nlmodel_pot)[10][[1]][6], digit=4)
                     )
                 )
 

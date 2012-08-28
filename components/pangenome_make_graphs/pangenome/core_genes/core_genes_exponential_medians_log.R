@@ -37,7 +37,7 @@ postscript(file="###output_path###core_genes_exponential_medians_log.ps", width=
 layout(matrix(c(1,2),byrow=TRUE), heights=c(7.5,1))
 
 # Draw the axis
-plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### core genes exponential log axis", cex=0.5, log="xy", col=p_color)
+plot(V1,V2, xlab="number of genomes", ylab="core genes", main="###TITLE### core genes exponential log axis", cex=0.5, log="xy", col=p_color)
 
 # plot the medians
 points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')

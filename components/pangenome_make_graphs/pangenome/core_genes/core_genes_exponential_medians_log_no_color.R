@@ -24,7 +24,7 @@ postscript(file="###output_path###core_genes_exponential_medians_log_no_color.ps
 layout(matrix(c(1,2),byrow=TRUE), heights=c(7.5,1))
 
 # Draw the axis
-plot(V1,V2, xlab="number of genomes", ylab="new genes", main="###TITLE### core genes exponential log axis", cex=0.5, log="xy")#, col=p_color)
+plot(V1,V2, xlab="number of genomes", ylab="core genes", main="###TITLE### core genes exponential log axis", cex=0.5, log="xy")#, col=p_color)
 
 # plot the medians
 points(tapply(pangenome$V2,pangenome$V1,FUN=median)~tapply(pangenome$V1,pangenome$V1,FUN=median),pch=5,col='black')
@@ -41,11 +41,11 @@ expr_exp <- substitute(
                 expression(y == th1 %+-% th1err + th2 %+-% th2err * italic(e)^(-x / (th3 %+-% th3err))), 
                 list(
                     th1 = round(nlmodel_exp$m$getPars()[1], digit=4),
-                    th1err = round(summary(nlmodel_exp)[10][[1]][3], digit=4),
+                    th1err = round(summary(nlmodel_exp)[10][[1]][4], digit=4),
                     th2 = round(nlmodel_exp$m$getPars()[2], digit=4),
-                    th2err = round(summary(nlmodel_exp)[10][[1]][4], digit=4),
+                    th2err = round(summary(nlmodel_exp)[10][[1]][5], digit=4),
                     th3 = round(nlmodel_exp$m$getPars()[3], digit=4),
-                    th3err = round(summary(nlmodel_exp)[10][[1]][5], digit=4)
+                    th3err = round(summary(nlmodel_exp)[10][[1]][6], digit=4)
                     )
                 )
 
