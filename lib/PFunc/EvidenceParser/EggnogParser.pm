@@ -53,9 +53,9 @@ sub _init_eggnog_parser {
 	die ("Must provide path to eggNOG protein alias file");
     }
 
-    $members = "/local/db/eggnog/latest/".$nog.".members.txt";
-    $description = "/local/db/eggnog/latest/".$nog.".description.txt";
-    $funccat = "/local/db/eggnog/latest/".$nog.".funccat.txt";
+    $members = "/local/db/eggnog/latest/all.members/".$nog.".members.txt";
+    $description = "/local/db/eggnog/latest/all.description/".$nog.".description.txt";
+    $funccat = "/local/db/eggnog/latest/all.funcat/".$nog.".funccat.txt";
 
     $self->_set_up_alias_hash($alias);
 }
