@@ -117,7 +117,7 @@ sub write_seq {
 
 sub org_to_filename {
     my ($org) = @_;
-    $org =~ s/\s+/_/g;
+    $org =~ s/[\s\/]+/_/g;
     $org;
 }
 
@@ -132,6 +132,7 @@ sub parse_bsml {
     my $start_subs = {
 	'Organism' => sub {
 	    my ($expat,$elt,%params) = @_;
+	    undef $strain;
 	    $genus = $params{'genus'} or die("There was no genus attribute for organism element");
 	    $species = $params{'species'} or die("There was no species attribute for organism element");
 	},
@@ -168,7 +169,7 @@ sub parse_bsml {
 	my $org = "$genus $species";
 	$org .= " $strain" if( $strain );
 	foreach my $seq_id ( @sequence_ids ) {
-	    die("Already found sequence with id of $seq_id")
+	    die("Already found sequence with id of $seq_id ($file)")
 		if( exists( $retval->{$seq_id} ) );
 	    $retval->{$seq_id} = $org;
 	}
