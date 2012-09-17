@@ -143,7 +143,8 @@ my $pipelines = {
 				 'prodigal'  => 'Prokaryotic_Annotation_Pipeline_Prodigal_Predictions',
    				 'operon' => 'Prokaryotic_Annotation_Pipeline_Operon_Predictions',
 				 'annotation'  => 'Prokaryotic_Annotation_Pipeline_Gene_Annotations',
-				 'load' => 'Prokaryotic_Annotation_Pipeline_Chado_Loading'
+				 'load' => 'Prokaryotic_Annotation_Pipeline_Chado_Loading',
+				'ipd' => 'Prokaryotic_Annotation_Pipeline_IPD'
 				};
 
 my %options;
@@ -154,6 +155,7 @@ my $results = GetOptions (\%options,
 						  "gene_prediction|g=s",
 						  "annotation|a=s",
 						  "load|l=s",
+						  "ipd|i=s",
 						  "operon|O=s",
 						  "template_directory|t=s",
 						  "output_directory|o=s",
@@ -200,6 +202,7 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
            &write_include($writer, $pipelines->{'load'});
        }
    }
+    &write_include($writer, $pipelines->{'ipd'}) if ($included_subpipelines{'ipd'} );
 });
 
 # end the writer
@@ -212,6 +215,10 @@ foreach my $sp ( keys %included_subpipelines ) {
   if ( $sp eq 'gene_prediction' && $included_subpipelines{$sp} ne 'none' ) {
 	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
   } elsif ( $sp eq 'assembly' && $included_subpipelines{$sp} ne 'none' ) {
+	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
+  } elsif ( $sp eq 'operon' && $included_subpipelines{$sp}) {
+	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
+  } elsif ( $sp eq 'ipd' && $included_subpipelines{$sp}) {
 	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
   } elsif ( $sp eq 'load' && $included_subpipelines{$sp} && $included_subpipelines{'pseudomolecule'} ) {
 	&add_config( \%config, $pipelines->{ $sp }, "pipeline_pmarks.config" );
@@ -423,6 +430,7 @@ sub check_options {
    $included_subpipelines{'gene_prediction'} = $gene_prediction;
    $included_subpipelines{'annotation'} = 1; # Annotation is required 
    $included_subpipelines{'load'} = 1 if( $opts->{'load'} );
+   $included_subpipelines{'ipd'} = 1 if ( $opts->{'ipd'} );
    $included_subpipelines{'operon'} = 1 if( $opts->{'operon'} );
       
    $included_subpipelines{'input_processing'} = 1 if( $included_subpipelines{'rna_prediction'} || 

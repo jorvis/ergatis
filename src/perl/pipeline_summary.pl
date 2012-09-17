@@ -119,8 +119,6 @@ my $organism;
 my $trans_table = 11;
 my $logger;
 
-my %locus_id;
-
 #cog related info
 my $include_cog = 0;
 my %cogId2desc;
@@ -325,9 +323,6 @@ sub assign_loci {
                 'identifier-type' => 'locus',
             };
             push( @{$gene->{'cross-references'}}, $tmp );
-
-	    $locus_id{$tmp->{'identifier'}}{'start'} = $gene->{'interval_loc'}->{'startpos'};	#pushing coords into locus identifier hash
-	    $locus_id{$tmp->{'identifier'}}{'end'} = $gene->{'interval_loc'}->{'endpos'};
 
         }
     }
@@ -567,17 +562,6 @@ sub add_bsml_feature {
     }
     &_log("Could not parse class out for feature $id [$title]", $ERROR) 
         unless( defined( $class ) );
-    
-
-    if( exists( $feat->{'interval_loc'} ) ) {
-        my $il = $feat->{'interval_loc'};
-   	foreach my $iden (keys %locus_id) {
-	   if (${$locus_id{$iden}}{'start'} == $il->{'startpos'} && ${$locus_id{$iden}}{'end'} == $il->{'endpos'}) {
-		$id = $iden;
-		next;
-	    }
-	}
-    }
 
     my $bsml_feat = $doc->createAndAddFeature( $ft, $id, $title, $class );
 

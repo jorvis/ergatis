@@ -1,6 +1,5 @@
 next
 ----
--pipeline_summary.pl now uses gene locus identifier as the new ID for feature classes
 -added component: mugsy_callsnps
 -added component: wga_maf2tree
 -changed directory path of shuffle_Sequences_fasta.pl (and fastq) in prepare_paired_ends_for_velvet.pl to reflect current velvet directory
