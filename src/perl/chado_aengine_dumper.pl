@@ -104,7 +104,7 @@ http://www.ncbi.nlm.nih.gov/entrez/viewer.fcgi?db=nuccore&id=157844830
 commands used for testing:
 
 ./chado_aengine_dumper.pl --database=b_theta --database_type=postgresql --user=driley --password=whatever --organism_id=1 --server=driley-lx.igs.umaryland.edu --output_directory=/tmp/gbktest --locus_db='Btheta_' --source=IGS
-./chado_aengine_dumper.pl --database=hik|cgsp --database_type=mysql --user=jorvis --password=whatever --organism_id=1 --server=localhost --output_directory=/tmp/gbktest --locus_db='TIGR_moore' --source=IGS --format=gff
+./chado_aengine_dumper.pl --database=grl --database_type=mysql --user=jorvis --password=whatever --organism_id=1 --server=localhost --output_directory=/tmp/dump --locus_db='TIGR_moore' --source=IGS --format=tbl
 
 db_id 1 feature counts:
 
@@ -147,7 +147,6 @@ use Bio::Species;
 use DBI;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-$|++;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -155,6 +154,7 @@ my $results = GetOptions (\%options,
                           'user=s',
                           'password=s',
                           'output_directory=s',
+			  'output_filename=s',
                           'format=s',
                           'locus_db=s',
                           'translation_table=i',
@@ -178,7 +178,12 @@ if( $options{'help'} ){
 ## open the log if requested
 my $logfh;
 if (defined $options{log}) {
-    open($logfh, ">$options{log}") || die "can't create log file: $!";
+    ## Had to do this to full disable buffering.  Article here:
+    #   http://perl.plover.com/FAQs/Buffering.html
+    open(LOGFH, ">$options{log}") || die "can't create log file: $!";
+    $logfh = select LOGFH;
+    $| = 1;
+    select $logfh;
 }
 
 my $dsn = '';
@@ -191,6 +196,8 @@ if ( $options{database_type} eq 'mysql' ) {
 }
 
 _log("attempting to create database connection");
+#print STDERR "hit enter to continue";
+#<STDIN>;
 my $dbh = DBI->connect($dsn, $options{user}, $options{password}, {PrintError=>1, RaiseError=>1} );
 
 ## cvterm lookup
@@ -240,6 +247,7 @@ while ( my $row = $assembly_selector->fetchrow_hashref ) {
     $$assemblies{ $$row{feature_id} }{seq_obj} = Bio::Seq::RichSeq->new (
                                                         -seq => $$row{residues},
                                                         -display_id => $$row{uniquename},
+							-accession_number => $$row{uniquename},
                                                         -division => 'BCT',
                                                  );
 
@@ -385,12 +393,15 @@ my %transcript_parents;
 
 for my $feature_id ( keys %$assemblies ) {
 
+    _log( "INFO: processing assembly feature id: $feature_id" );
+
     ## until I can find a feature sorting method within the bioperl objects I'm using
     #   this to store the feature references so they can be added to the SeqIO in order
     my @assembly_feats;
 
     ## get the transcript features.  these correspond to the CDS entries for proks in the gbk file
     ##  using 'CDS' would include the tRNAs, which are queried separately
+    _log( "INFO: executing query to find transcripts on assembly $feature_id" );
     $feature_on_assembly_selector->execute( 0, 0, $feature_id, $cvterm{transcript} );
     
     while (my $row = $feature_on_assembly_selector->fetchrow_hashref ) {
@@ -408,6 +419,7 @@ for my $feature_id ( keys %$assemblies ) {
         
         ## add any CDS related to this gene (fails if more than one is found)
         my $cds;
+        _log( "INFO: looking for CDS related to transcript $transcript_uniquename" );
         $cds_on_transcript_selector->execute( $$row{feature_id} );
         while ( my $cds_row = $cds_on_transcript_selector->fetchrow_hashref ) {
             if ( defined $cds ) {
@@ -432,6 +444,7 @@ for my $feature_id ( keys %$assemblies ) {
         ## examine any dbxrefs this has
         my $gene_feature_id;
         $gene_on_transcript_selector->execute( $$row{feature_id} );
+        _log( "INFO: getting parent gene feature for transcript $transcript_uniquename" );
         while( my $gene_row = $gene_on_transcript_selector->fetchrow_hashref ) {
             if( defined( $gene_feature_id ) ) {
                 die("found more than on gene on transcript feature ID $$row{feature_id}\n");
@@ -439,8 +452,10 @@ for my $feature_id ( keys %$assemblies ) {
             $gene_feature_id = $$gene_row{feature_id};
             $transcript_parents{$transcript_uniquename} = $$gene_row{uniquename};
         }
+
+        ## examine any dbxrefs this has
+        _log( "INFO: looking for any dbxrefs for transcript $transcript_uniquename" );
         $dbxref_selector->execute( $gene_feature_id );
-        
         while ( my $dbxref_row = $dbxref_selector->fetchrow_hashref ) {
             ## don't do anything if the accession value is empty
             next unless $$dbxref_row{accession};
@@ -638,33 +653,13 @@ for my $feature_id ( keys %$assemblies ) {
     }
 }
 
-## if this is a CGI, we need to print a header:
-if ( $options{cgi_mode} == 1 ) {
-
-    ## quicker way than this to get YYYYMMDD?
-    my ($year, $mon, $day) = (localtime time)[5,4,3];
-    my $datestamp = sprintf("%d%02d%02d", $year + 1900, ++$mon, $day);
-
-    my $download_file_name;
-    
-    if ( $options{format} eq 'gbk' ) {
-        $download_file_name = "$options{database}.annotation.$datestamp.gbk";
-    } elsif ( $options{format} eq 'gff' ) {
-        $download_file_name = "$options{database}.annotation.$datestamp.gff3";
-    } elsif ( $options{format} eq 'tbl' ) {
-        $download_file_name = "$options{database}.annotation.$datestamp.tbl";
-    }
-
-    print "Content-Type:application/x-download\n";
-    print "Content-Disposition:attachment;filename=$download_file_name\n\n"; 
-}
-
 ## if writing tbl format, all output goes into a single file
 my $tbl_fh;
 if ( $options{format} eq 'tbl' ) {
     
     if ( $options{cgi_mode} == 1 ) {
-            $tbl_fh = \*STDOUT;
+        #    $tbl_fh = \*STDOUT;
+        open($tbl_fh, ">$options{output_directory}/$options{output_filename}") || die "can't create TBL output file: $!";
     } else {
         _log("INFO: writing $options{output_directory}/$options{database}.tbl");
         open($tbl_fh, ">$options{output_directory}/$options{database}.tbl") || die "can't create TBL output file: $!";
@@ -679,14 +674,13 @@ for my $feature_id ( keys %$assemblies ) {
         
         if ( $options{cgi_mode} == 1 ) {
             $gbk = Bio::SeqIO->new( -format => 'genbank', 
-                                    -fh => \*STDOUT );        
+                                    -file => ">>$options{output_directory}/$options{output_filename}", -verbose=>-1 );        
         } else {
             _log("INFO: writing $options{output_directory}/$$assemblies{$feature_id}{uniquename}.gbk");
             $gbk = Bio::SeqIO->new( -format => 'genbank', 
                                     -file => ">$options{output_directory}/$$assemblies{$feature_id}{uniquename}.gbk" );
 
         }
-        
         $gbk->write_seq( $$assemblies{$feature_id}{seq_obj} );
     
     } elsif ( $options{format} eq 'tbl' ) {
@@ -732,7 +726,8 @@ for my $feature_id ( keys %$assemblies ) {
         my $gff_fh;
         
         if ( $options{cgi_mode} == 1 ) {
-            $gff_fh = \*STDOUT;
+            #$gff_fh = \*STDOUT;
+            open($gff_fh, ">>$options{output_directory}/$options{output_filename}") || die "can't create GFF output file: $!";
         } else {
             _log("INFO: writing $options{output_directory}/$$assemblies{$feature_id}{uniquename}.gff3");
             open($gff_fh, ">$options{output_directory}/$$assemblies{$feature_id}{uniquename}.gff3") || die "can't create GFF output file: $!";
@@ -922,8 +917,13 @@ sub print_gff_col9_attribute {
 
 sub _log {
     my $msg = shift;
-
-    print $logfh "$msg\n" if $logfh;
+    
+    if ($logfh) {
+        #print STDERR "logging: $msg\n";
+        print LOGFH "$msg\n" if $logfh;
+    } else {
+        #print STDERR "ignoring: $msg\n";
+    }
 }
 
 sub check_parameters {
@@ -959,14 +959,3 @@ sub check_parameters {
         die "value for option --database_type must be either 'mysql' or 'postgresql'";
     }
 }
-
-
-
-
-
-
-
-
-
-
-
