@@ -115,9 +115,17 @@ sub write_seq {
     
 }
 
+# Remove all spaces and replace them with underscores.
+# Organism name should not have a period. This will create
+# issues when trying to parse the Mugsy MAF file because
+# it will use the organism name (parsed from the fasta file
+# name) concatenated with the molecule name by a period. For 
+# example: PY_76.PY_76.assembly.1. Later we parse out everything
+# to the left of the first period as the organism name.
 sub org_to_filename {
     my ($org) = @_;
     $org =~ s/[\s\/]+/_/g;
+    $org =~ s/\.//g;
     $org;
 }
 
