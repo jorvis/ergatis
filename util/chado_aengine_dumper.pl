@@ -154,7 +154,7 @@ my $results = GetOptions (\%options,
                           'user=s',
                           'password=s',
                           'output_directory=s',
-			  			  'output_filename=s',
+			  'output_filename=s',
                           'format=s',
                           'locus_db=s',
                           'translation_table=i',
@@ -247,6 +247,7 @@ while ( my $row = $assembly_selector->fetchrow_hashref ) {
     $$assemblies{ $$row{feature_id} }{seq_obj} = Bio::Seq::RichSeq->new (
                                                         -seq => $$row{residues},
                                                         -display_id => $$row{uniquename},
+							-accession_number => $$row{uniquename},
                                                         -division => 'BCT',
                                                  );
 
