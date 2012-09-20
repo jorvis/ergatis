@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>replace_defline_with_locusID workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>replace_defline_with_locusID</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/replace_defline_with_locusID</executable>
+            <param>  
+                <key>--fasta</key>
+                <value>$;INPUT_FILE$;</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_FILE$;</value>
+            </param>
+            <param>  
+                <key>--bsml</key>
+                <value>$;INPUT_BSML$;</value>
+            </param>     
+        </command>
+    </commandSet>
+</commandSetRoot>

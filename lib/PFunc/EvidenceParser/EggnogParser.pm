@@ -21,8 +21,7 @@ my $eggnog_annot_levels = {
 my $flag = 0;
 my $sprFlag = 0;
 my ($alias, %prot_alias);
-my ($members, $description, $funccat);
-my $fun = "/local/db/eggnog/latest/fun.txt";
+my ($members, $description, $fun);
 my $nog = "NOG";
 my $cog = "COG";
 
@@ -45,17 +44,15 @@ sub _init_eggnog_parser {
     $self->{'_seq_ids'} = {};
     $self->{'_sequence_titles'} = {};
 
-    if ($args{'alias'}) {
-	$alias = $args {'alias'};
-	#$description = $args {'description'};
-	#$members = $args {'members'};
-    } else {
-	die ("Must provide path to eggNOG protein alias file");
-    }
+    if ($args{'alias'} && $args{'fun'} && $args{'description'} && $args{'members'}) {
+	$alias = $args{'alias'};
+	$fun = $args{'fun'};
+	$description = $args{'description'};
+	$members = $args{'members'};
 
-    $members = "/local/db/eggnog/latest/all.members/".$nog.".members.txt";
-    $description = "/local/db/eggnog/latest/all.description/".$nog.".description.txt";
-    $funccat = "/local/db/eggnog/latest/all.funcat/".$nog.".funccat.txt";
+    } else {
+	die ("Must provide path to eggNOG protein alias file, NOG members file, and NOG description file");
+    }
 
     $self->_set_up_alias_hash($alias);
 }
@@ -103,6 +100,7 @@ sub _set_up_alias_hash {
 #print "COG members/descriptions\n";
     $members =~ s/$nog/$cog/;	#switching to COG members now
     $description =~ s/$nog/$cog/;
+
     my $cm = open_file($members, 'in');
     my $cd = open_file($description, 'in');
     while (<$cd>) {

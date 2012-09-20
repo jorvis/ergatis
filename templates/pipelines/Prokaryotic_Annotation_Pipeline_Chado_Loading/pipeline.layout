@@ -67,7 +67,11 @@
 	        <commandSet type="serial"> 
 		    <state>incomplete</state>
 		    <name>concatenate_files.prot</name>
-		</commandSet>	
+		</commandSet>
+	    	<commandSet type="serial"> 
+		    <state>incomplete</state>
+		    <name>replace_defline_with_locusID.prot</name> 
+	    	</commandSet>	
 	    	<commandSet type="serial"> 
 		    <state>incomplete</state>
 		    <name>formatdb.prot</name> 
@@ -82,7 +86,11 @@
 	        <commandSet type="serial"> 
 		    <state>incomplete</state>
 		    <name>concatenate_files.nuc</name>
-		</commandSet>					
+		</commandSet>		
+	    	<commandSet type="serial"> 
+		    <state>incomplete</state>
+		    <name>replace_defline_with_locusID.nuc</name> 
+	    	</commandSet>			
 		<commandSet type="serial">
 		    <state>incomplete</state>
 	            <name>formatdb.nuc</name>
