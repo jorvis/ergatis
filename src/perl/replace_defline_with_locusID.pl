@@ -158,7 +158,7 @@ sub replace_fasta_defline() {
     while (<FA>) {
 	my $line = $_;
 	chomp $line;
-	if ($line =~ />(\w+\.\w+\.\d+\.\d)/) {	#the unique name within the header
+	if ($line =~ />(\w+\.\w+\.\d+\.\d+)/) {	#the unique name within the header
 	    my $id = $1;
 #compare the start and end coords of the ID with those mapped in the locus_id hash
 	    foreach my $l_id (keys %locus_id) {
