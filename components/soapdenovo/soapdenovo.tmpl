@@ -1,0 +1,40 @@
+<!-- component documentation -->
+
+<p>
+    From the BGI site for soapdenovo
+</p>
+<blockquote>
+    SOAPdenovo is a novel short-read assembly method that can build a de novo draft assembly for 
+    the human-sized genomes. The program is specially designed to assemble Illumina GA short reads. 
+    It creates new opportunities for building reference sequences and carrying out accurate analyses 
+    of unexplored genomes in a cost effective way.
+</blockquote>
+<h3>references</h3>
+<p>
+    Ruiqiang Li, et al.<br>
+    De novo assembly of human genomes with massively parallel short read sequencing<br>
+    <a href='http://genome.cshlp.org/content/20/2/265.abstract'>Genome Research, 2010, Vol. 20, 265-272</a>
+</p>
+<h3>input</h3>
+<p>
+    SOAPdenovo requires the creation of a configuration file that contains, among other
+    information, the location of the input files, and library information. For example:
+<div class='code_container'> 
+    max_rd_len=75 #maximum read length
+    Then, for each library (for each set of input files if more than one is used in the project)
+    you need to create a block with the following structure:
+    [LIB] 
+    avg_ins = <LIBSZ> # average insert size 
+    reverse_seq = 0 # forward/reverse library 
+    asm_flags = 3 # reads used for contigging and scaffolding 
+    pair_num_cutoff = 2 # num of mates needed to scaffold across a gap 
+    map_len = 60 # minimum length of read mapping to a contig 
+    q1 = <prefix>.1.fastq # read1 in fastq 
+    q2 = <prefix>.2.fastq # read2 in fastq 
+    q=<prefix>.singleton.fastq
+</div>
+</p>
+<h3>output</h3>
+<p>
+    Output includes the raw output files (*.contig and *.scafSeq) and other files for advanced users.
+</p>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>extract_assembly_stats compute</name>
+	
+	 <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;</arg>
+        </command>
+	<!-- end of pre processing -->
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>extract_assembly_stats</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/extract_assembly_stats</executable>
+            <param>
+                <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param> 
+ 	    <param>
+                <key>--n50base</key>
+                <value>$;N50_BASE$;</value>
+            </param>
+	    <param>
+                <key>--limit</key>
+                <value>$;LIMIT$;</value>
+	    </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stats</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

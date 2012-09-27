@@ -1,5 +1,7 @@
 next
 ----
+-Added new component soapdenovo
+-Added new component extract_assembly_stats
 -added Prokaryotic_Annotation_Pipeline_Operon_Prediction pipeline template and a predict_operons script
 -added component replace_defline_with_locusID that replaces the unique ID from a fasta header with the locus Identifier obtained through pipeline_summary
 -added component: mugsy_callsnps

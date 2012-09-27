@@ -1,0 +1,23 @@
+<p>
+     This component extracts assembly statistics from sequence files.
+</p>
+<h3>input</h3>
+<p>
+    Input is fasta format.
+</p>
+<h3>ouput</h3>
+<p>
+    Output is a tab-delimited file with the following information:
+    
+    File - name of input file
+    Number - total number of contigs
+    Total Size - total size of contigs
+    Min Size - minimum contig size
+    Max Size - maximum contig size
+    Average Size - average contig size
+    Median Size - median contig size
+    N50 - size of contig c, such that 50% of the total assembly size is contained in contigs larger than c.
+    Size @ 1Mbp - same as N50 but assuming that genome size is 2Mbp
+    Number @ 1Mbp - smallest number of contigs that add up to 1Mbp
+    Size and Number @ 2Mbp, 4Mbp, 10Mbp - same as above but for more values.
+</p>

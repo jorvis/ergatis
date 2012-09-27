@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>soapdenovo_ compute</name>
+	
+	 <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;</arg>
+        </command>
+	<!-- end of pre processing -->
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>soapdenovo</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/soapdenovo</executable>
+               <param>
+                <key>--soapdenovo_exec</key>
+                <value>$;SOAPDENOVO_BIN_DIR$;</value>
+            </param>
+	    <param>
+                <key>--config_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+	    <param>  
+                <key>--process</key>
+                <value>$;PROCESS$;</value>
+            </param>
+            <param>  
+                <key>--args</key>
+                <value>"-o $;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;/$;OUTPUT_PREFIX$; -K $;KMER_SIZE$; $;OTHER_ARGS$;"</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
