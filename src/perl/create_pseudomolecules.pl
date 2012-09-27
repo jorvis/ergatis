@@ -172,7 +172,7 @@ for my $group (sort {$a<=>$b} keys %accHash) {
 			if ($id =~ /\/|\\/g) {
 				$filename = $id;
 			} else {
-				$filename = $options{output_dir}."/reference_".$id.".".$options{format};
+				$filename = $options{output_dir}."/".$id.".".$options{format};
 			}
 			if (-e $filename) {
 				system("cat $filename >> $ref_file");
