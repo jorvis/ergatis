@@ -13,6 +13,7 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
        --rna_predictions|-r
        --gene_prediction|-g
        --annotation|-a
+       --operon|-O
        --load|-l
      [ --templates_directory|-t=/path/to/ergatis/global_pipeline_templates
        --output_directory=/path/to/directory
@@ -45,6 +46,14 @@ B<--annotation,-a>
 B<--load,-l>
     Default = 0
     To load the database into a chado instance
+
+B<--ipd,-i>
+    Default = 0
+    To use a sample from the IGS Projects Database (IPD) and have the pipeline change the study_stage status to 'complete' when finished
+
+B<--operon,-O>
+    Default = 0
+    To predict operons 
     
 B<--templates_directory,-t>
     The directory get the templates from
@@ -187,7 +196,6 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
    if( $included_subpipelines{'operon'} || $included_subpipelines{'rna_prediction'} || $included_subpipelines{'gene_prediction'} ne 'none' ) {
        &write_parallel_commandSet( $writer, sub {
            my ($writer) = @_;
-           &write_include($writer, $pipelines->{'operon'}) if( $included_subpipelines{'operon'} );
            &write_include($writer, $pipelines->{'rna_prediction'}) if( $included_subpipelines{'rna_prediction'} );
            &write_include($writer, $pipelines->{$included_subpipelines{'gene_prediction'}}) 
                unless( $included_subpipelines{'gene_prediction'} eq 'none' );
@@ -195,6 +203,7 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
    }
    
    &write_include($writer, $pipelines->{'annotation'}) if( $included_subpipelines{'annotation'} );
+   &write_include($writer, $pipelines->{'operon'}) if( $included_subpipelines{'operon'} );
    if( $included_subpipelines{'load'} ) {
        if( $included_subpipelines{'pseudomolecule'} ) {
            &write_include($writer, $pipelines->{'load'}, 'pipeline_pmarks.layout');

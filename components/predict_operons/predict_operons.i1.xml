@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>predict_operons.predict</name>
+        <command>
+              <type>RunUnixCommand</type>
+              <name>predict_operons</name>
+              <state>incomplete</state>
+              <executable>$;BIN_DIR$;/predict_operons</executable>
+              <param>
+              	<key>--bin_dir</key>
+             	<value>$;BIN_DIR$;</value>
+              </param>
+              <param>
+              	<key>--output_dir</key>
+              	<value>$;OUTPUT_DIRECTORY$;</value>
+              </param>
+              <param>
+              	<key>--wig_dir</key>
+             	<value>$;WIG_DIRECTORY$;</value>
+             </param>
+             <param>
+             	<key>--gff</key>
+            	<value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+            	<key>--reference</key>
+            	<value>$;INPUT_FILE$;</value>
+            </param>
+            <param>
+                <key>--sample</key>
+            	<value>$;ABBR$;</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,5 +1,5 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
-   <commandSet type="parallel">
+   <commandSet type="serial">
       <state>incomplete</state>
       <name>start pipeline:</name>
       <commandSet type="serial">
@@ -19,6 +19,14 @@
 	<commandSet type="serial">
 		<state>incomplete</state>
 		<name>bam2bigwig.visualization</name>
+	</commandSet>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>bsml2gff3.reference</name>
+	</commandSet>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>predict_operons.predict</name>
 	</commandSet>
       </commandSet>
    </commandSet>
