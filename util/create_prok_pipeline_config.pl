@@ -193,7 +193,7 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
    &write_include($writer, $pipelines->{'pseudomolecule'}) if( $included_subpipelines{'pseudomolecule'} );
    &write_include($writer, $pipelines->{'input_processing'}) if( $included_subpipelines{'input_processing'} );
    
-   if( $included_subpipelines{'operon'} || $included_subpipelines{'rna_prediction'} || $included_subpipelines{'gene_prediction'} ne 'none' ) {
+   if( $included_subpipelines{'rna_prediction'} || $included_subpipelines{'gene_prediction'} ne 'none' ) {
        &write_parallel_commandSet( $writer, sub {
            my ($writer) = @_;
            &write_include($writer, $pipelines->{'rna_prediction'}) if( $included_subpipelines{'rna_prediction'} );
@@ -225,11 +225,7 @@ foreach my $sp ( keys %included_subpipelines ) {
 	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
   } elsif ( $sp eq 'assembly' && $included_subpipelines{$sp} ne 'none' ) {
 	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
-  } elsif ( $sp eq 'operon' && $included_subpipelines{$sp}) {
-	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
-  } elsif ( $sp eq 'ipd' && $included_subpipelines{$sp}) {
-	&add_config( \%config, $pipelines->{$included_subpipelines{$sp}} );
-  } elsif ( $sp eq 'load' && $included_subpipelines{$sp} && $included_subpipelines{'pseudomolecule'} ) {
+  }  elsif ( $sp eq 'load' && $included_subpipelines{$sp} && $included_subpipelines{'pseudomolecule'} ) {
 	&add_config( \%config, $pipelines->{ $sp }, "pipeline_pmarks.config" );
   } elsif ( $sp ne 'gene_prediction' && $sp ne 'assembly' && $included_subpipelines{$sp} ) {
 	&add_config( \%config, $pipelines->{ $sp } );
@@ -348,6 +344,7 @@ sub write_section {
 
 sub add_config {
     my ($config, $subpipeline, $config_name) = @_;
+print $template_directory, "\t", $subpipeline, "\n";
     my $pc = "$template_directory/$subpipeline/pipeline.config";
     $pc = "$template_directory/$subpipeline/$config_name" if( $config_name );
     open(IN, "< $pc") or &_log($ERROR, "Could not open $pc for reading: $!");
