@@ -21,7 +21,7 @@
             <executable>$;BIN_DIR$;/soapdenovo</executable>
                <param>
                 <key>--soapdenovo_exec</key>
-                <value>$;SOAPDENOVO_BIN_DIR$;</value>
+                <value>$;SOAPDENOVO_BIN$;</value>
             </param>
 	    <param>
                 <key>--config_file</key>
