@@ -123,13 +123,18 @@ sub process_organism
 {
     my ($twig, $elt) = @_;
     my $id = $elt->att('id');
+    my $genus = $elt->att('genus');
     my $spec = $elt->att('species');
     my $strain = $elt->first_child('Strain');
     if($strain) {
         $spec .= " ".($strain->first_child('Attribute')->att('content'));
     }
-    $spec =~ s/[\s\-\\\\.]//g;
-    $organism = $spec;
+
+    my $org = $genus." ".$spec;
+    $org =~ s/[\s\/]+/_/g;
+    $org =~ s/\.//g;
+    $organism = $org;
+
     $twig->purge();
 }
 
