@@ -109,7 +109,7 @@
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;OUTPUT_REPOSITORY$;/$;COMPONENT_NAME$;.stderr</value>
+		<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
 	    </param>
 	</command>
 
