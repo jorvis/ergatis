@@ -50,7 +50,12 @@ B<--frames>
     Optional. Translation frames for which to output ORFs. Values can be:
     'F' (forward frames, 1-3), 'R' (reverse frames, 4-6), a comma-delimited string 
     composed of integer values 1-6 such as '1,4,5,6', or '0' for all six frames (default).
-    
+
+B<--id_prefix>
+    Optional.  A string to prepend to the beginning of all generated identifiers.  Attached
+    to this will be either '.pep.$n' or '.orf.$n', where $n is a sequential integer.
+    (default = '')   
+
 B<--beginning_as_start>
     Optional. Treat the beginning of the sequence as a start codon and mark ORFs as partial.
     (default = 1)
@@ -112,13 +117,11 @@ Output will be na and aa sequence of predicted ORFs. Two output files will be cr
 
 =cut
 
-use lib '/usr/local/annotation/CAMERA/lib';
 use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use File::Basename qw(basename fileparse);
-use GUID;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -138,6 +141,7 @@ my $results = GetOptions (\%options,
                           'min_unmasked_size=i',
                           'header_additions=s',
                           'unknown_aa=s',
+                          'id_prefix=s',
                           'log|l=s',
                           'debug=i',
                           'help|h') || pod2usage();
@@ -157,7 +161,7 @@ if (defined $options{log}) {
 }
 
 ## id generator for globally unique orf and peptide ids
-my $idgen = new GUID( 100 );
+my $identifier_seed = 1;
 
 ## initialize the hash that stores the codon table
 ## $codon_table_ref->{start|stop|aa}->{$codon}
@@ -436,8 +440,8 @@ sub create_fasta_headers {
     my ($orf_header, $pep_header);
     
     ## create new orf / pep ids
-    my $orf_id = "JCVI_ORF_".get_new_id();
-    my $pep_id = "JCVI_PEP_".get_new_id();
+    my $orf_id = "$options{id_prefix}.orf." . get_new_id();
+    my $pep_id = "$options{id_prefix}.pep." . get_new_id();
    
     $orf_header = "$orf_id /pep_id=$pep_id";
     $pep_header = "$pep_id /orf_id=$orf_id";
@@ -480,32 +484,10 @@ sub create_fasta_headers {
 }
 
 ## grabs a new id.  Some ids were being given blanks.
+## why is this a subroutine?  In case other people want to use a UID service
+#   or some other mechanism.
 sub get_new_id {
-    my $tries = shift;
-
-    #default number of tries is 5
-    unless( $tries ) {
-        $tries = 5;
-    }
-
-    my $count = 0;  #Counts how many times we've tried pulling an id
-    my $id = undef; #Holds the id
-
-    while( !defined( $id ) ) {
-        last if( $count >= $tries );
-        
-        #If this is not our first try, wait for 1 second
-        sleep(1) if( $count > 0 );
-
-        $id = $idgen->getGUID();
-        $count++;
-    }
-
-    if( !defined( $id ) ) {
-        die("Can't pull new id");
-    }
-
-    return $id;
+    return $identifier_seed++;
 }
 
 ## parses the input sequence header and returns a hash of attributes
@@ -857,7 +839,8 @@ sub check_parameters {
     $options->{'end_as_stop'}           = 1         unless (defined($options->{'end_as_stop'}));
     $options->{'output_dir'}            = '.'       unless (defined($options->{'output_dir'}));
     $options->{'gzip_output'}           = 1         unless (defined($options->{'gzip_output'}));
-    $options->{'unknown_aa'}            = 'X'         unless (defined($options->{'unknown_aa'}));
+    $options->{'unknown_aa'}            = 'X'       unless (defined($options->{'unknown_aa'}));
+    $options->{'id_prefix'}             = ''        unless (defined($options->{'id_prefix'}));
 
     if (length($options->{'unknown_aa'}) < 1 || length($options->{'unknown_aa'}) > 1) {
         print STDERR "value provided to flag --unknown_aa should be one character in length, setting to default 'X'\n";
