@@ -14,6 +14,7 @@ my $results = GetOptions (\%options,
                           "config|c=s",
                           "ergatis_config|e=s",
                           "repository_root|r=s",
+                          "email_id|m=s"
                           );
 
 &check_options(\%options);
@@ -23,6 +24,8 @@ my $id_repo = $repo_root."/workflow/project_id_repository";
 
 my $layout = $options{'layout'};
 my $config = $options{'config'};
+my $user_email = "";
+$user_email = $options{'email_id'} if( $options{'email_id'} );
 my $ecfg; 
 $ecfg = $options{'ergatis_config'} if( $options{'ergatis_config'} );
 
@@ -48,7 +51,12 @@ sub make_pipeline {
         my $xml = $repository_root."/workflow/runtime/pipeline/$pipeline_id/pipeline.xml";
         my $pipeline = new Ergatis::Pipeline( id => $pipeline_id,
                                               path => $xml );
-        $pipeline->run( 'ergatis_cfg' => $ergatis_config );
+        if(length($user_email) > 0) {
+        	$pipeline->run( 'ergatis_cfg' => $ergatis_config, 'email_user' => $user_email );
+        }
+        else {
+        	$pipeline->run( 'ergatis_cfg' => $ergatis_config );
+        }
     }
     return $pipeline_id;
 }

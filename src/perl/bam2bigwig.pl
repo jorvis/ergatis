@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
+
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 ##############################################################################
 ### This program generates BedGraph and a BigWig file from a BAM file
 ##############################################################################

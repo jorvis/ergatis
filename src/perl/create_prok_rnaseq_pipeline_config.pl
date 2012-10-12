@@ -218,7 +218,9 @@ read_config(\%hCmdLineOption, \%hConfig);
 ($bDebug || $bVerbose) ? print STDERR "\nProcessing $hCmdLineOption{'config_file'} ..... done\n" : undef;
 
 ($bDebug || $bVerbose) ? print STDERR "\nProcessing $hCmdLineOption{'sample_file'} .....\n" : undef;
-if ((defined $hCmdLineOption{'alignment'})) {
+if ((defined $hCmdLineOption{'quality_stats'}) || 
+	(defined $hCmdLineOption{'quality_trimming'}) || 
+	(defined $hCmdLineOption{'alignment'})) {
 	
 	if (! -e "$sOutDir/raw_reads") {
 		mkdir("$sOutDir/raw_reads") ||
