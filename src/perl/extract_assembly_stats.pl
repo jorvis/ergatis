@@ -81,7 +81,7 @@ Size & Number @ 2Mbp, 4Mbp, 10Mbp - same as above but for more values
 
 
 use Bio::SeqIO;
-use Getopt::Long;
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Statistics::Descriptive;
 use strict;
 use Ergatis::Logger;
@@ -92,7 +92,7 @@ my $results = GetOptions (\%options,
 			  'input|i=s',
 			  'output|o=s',
  			  'limit|m:i',
-			  'n50base|n:i',
+			  'n50base|n=i',
 			  'log|l=s',
 			  'debug=s',
 			  'help|h') || pod2usage();

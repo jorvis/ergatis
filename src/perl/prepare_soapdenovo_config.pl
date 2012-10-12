@@ -104,7 +104,12 @@ print OUT "pair_num_cutoff=$options{'pair_num_cutoff'}\n";
 print OUT "map_len=$options{'map_len'}\n";
 print OUT "q1=$options{'q1'}\n";
 print OUT "q2=$options{'q2'}\n";
-print OUT "q=$options{'q'}\n";
+if ($options{'q'}){
+	my $single = `head -n 1 $options{'q'}`;
+	print OUT "q=$single\n";
+} else{
+	print OUT "q=\n";
+}
 close (OUT);
     
 exit(0);
