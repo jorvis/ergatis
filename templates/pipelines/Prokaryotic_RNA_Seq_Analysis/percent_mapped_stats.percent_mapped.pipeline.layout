@@ -1,0 +1,10 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>percent_mapped_stats</name>
+        <commandSet type="serial">
+        	<state>incomplete</state>
+            <name>percent_mapped_stats.percent_mapped</name>
+        </commandSet>
+	</commandSet>
+</commandSetRoot>

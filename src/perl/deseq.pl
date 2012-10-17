@@ -221,7 +221,7 @@ sub check_parameters {
     ## handle some defaults
     $phOptions->{'r_bin_dir'} = R_BIN_DIR if (! (defined $phOptions->{'r_bin_dir'}) );
     $phOptions->{'r_params'} = '--slave --vanilla' if (! (defined $phOptions->{'r_params'}) );
-    $phOptions->{'r_script'} = $RealBin."/deseq_1.2.1.R" if (! (defined $phOptions->{'r_script'}) );
+    $phOptions->{'r_script'} = $RealBin."/deseq.v1.2.1.R" if (! (defined $phOptions->{'r_script'}) );
     
     # set environment variables
 	set_environment($phOptions);

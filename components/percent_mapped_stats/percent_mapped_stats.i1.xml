@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>percent_mapped_stats</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>percent_mapped_stats</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/percent_mapped_stats</executable>            
+            <param>
+                <key>--reffile</key>
+                <value>$;REFERENCE_FASTA$;</value>
+            </param>
+            <param>
+                <key>--infile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--annotation</key>
+                <value>$;ANNOTATION_FILE$;</value>
+            </param>
+            <param>
+                <key>--annotationfiletype</key>
+                <value>$;ANNO_FORMAT$;</value>
+            </param>
+            <param>
+                <key>--feature</key>
+                <value>$;FEATURE_TYPE$;</value>
+            </param>
+            <param>
+                <key>--attribute</key>
+                <value>$;ATTRIBUTE_ID$;</value>
+            </param>
+            <param>
+                <key>--groupby</key>
+                <value>$;GROUPBY_ID$;</value>
+            </param>
+            <param>
+                <key>--org-type</key>
+                <value>$;ORG_TYPE$;</value>
+            </param>
+            <param>
+                <key>--args</key>
+                <value>$;OTHER_PARAMETERS$;</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/percent_mapped_stats.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/percent_mapped_stats.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
