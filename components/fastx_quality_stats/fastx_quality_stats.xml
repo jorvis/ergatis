@@ -41,11 +41,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.stats.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.stats.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>
@@ -68,11 +68,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.boxplot.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.boxplot.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>

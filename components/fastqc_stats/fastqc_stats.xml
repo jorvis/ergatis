@@ -40,11 +40,11 @@
             </param>
             <param>
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/generate_list_file.stdout</value>
+                <value>$;TMP_DIR$;/generate_list_file.read1.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/generate_list_file.stderr</value>
+                <value>$;TMP_DIR$;/generate_list_file.read1.stderr</value>
             </param>
             <arg>--v</arg>
         </command>
@@ -67,11 +67,11 @@
             </param>
             <param>
                 <key>stdout</key>
-                <value>$;TMP_DIR$;/generate_list_file.stdout</value>
+                <value>$;TMP_DIR$;/generate_list_file.read2.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/generate_list_file.stderr</value>
+                <value>$;TMP_DIR$;/generate_list_file.read2.stderr</value>
             </param>
             <arg>--v</arg>
         </command>

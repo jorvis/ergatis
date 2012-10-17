@@ -41,11 +41,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.cds.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.cds.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>
@@ -68,11 +68,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.gene.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.gene.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>
@@ -95,11 +95,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.isoform.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.isoform.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>
@@ -122,11 +122,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.promoter.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.promoter.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>
@@ -149,11 +149,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.splicing.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.splicing.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>
@@ -176,11 +176,11 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.tss.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.tss.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>
