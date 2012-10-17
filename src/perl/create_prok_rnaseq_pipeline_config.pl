@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 ################################################################################
 ### POD Documentation
 ################################################################################
@@ -36,6 +39,8 @@ create_prok_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline
     --gtf <annotation_file>          = /path/to/annotation file in GFF or GTF format.
                                        Required with '--diff_gene_expr'.
 
+    --annotation_format               = annotation file format (gtf/gff3)
+
     --bowtie_build                   = execute bowtie_build component. Requires '--r'.
 
     --quality_stats                  = execute fastx_quality_stats component.
@@ -49,15 +54,25 @@ create_prok_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline
         --bwtidxfile <bowtie_index>  = /path/to/bowtie index file for alignment of all samples.
                                        Required for '--alignment' if not specifying '--bowtie_build'.
 
-    --visualization                   = execute bam2bigwig component.
-                                        Requires additional information in sample file if not specifying '--alignment'.
-                                        Sample file should be in the following format
-                                        #Sample_ID<tab>Group_ID<tab>Alignment_BAM_File
+    --visualization                  = execute bam2bigwig component.
+                                       Requires additional information in sample file if not specifying '--alignment'.
+                                       Sample file should be in the following format
+                                       #Sample_ID<tab>Group_ID<tab>Alignment_BAM_File
 
-        --file_type <SAM|BAM>         = alignment file format (BAM or SAM). [BAM]
-                                        Required if not specifying '--alignment' and providing alignment file information in sample file.
+        --file_type <SAM|BAM>        = alignment file format (BAM or SAM). [BAM]
+                                       Required if not specifying '--alignment' and providing alignment file information in sample file.
 
-        --sorted <position>           = if alignment BAM/SAM file is already sorted by position. [undef]
+        --sorted <position>          = if alignment BAM/SAM file is already sorted by position. [undef]
+
+    --rpkm_analysis                  = execute rpkm coverage analysis component.
+                                       Requires additional information in sample file if not specifying '--alignment'.
+                                       Sample file should be in the following format
+                                       #Sample_ID<tab>Group_ID<tab>Alignment_BAM_File
+
+        --file_type <SAM|BAM>        = alignment file format (BAM or SAM). [BAM]
+                                       Required if not specifying '--alignment' and providing alignment file information in sample file.
+
+        --sorted <position>          = if alignment BAM/SAM file is already sorted by position. [undef]
 
     --diff_gene_expr                 = execute differential gene expression analysis component.
                                        Requires additional information in sample file if not specifying '--alignment'.
@@ -99,6 +114,7 @@ create_prok_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline
     samtools_file_convert    : converts file formats for downstream analysis.
     samtools_alignment_stats : generates the alignment stats from the alignment BAM file(s).
     bam2bigwig               : converts the alignment BAM file(s) to BedGraph and BigWig file(s).
+    rpkm_analysis            : generates rpkm coverage analysis utilizing the alignment BAM file(s).
     htseq                    : generates the count files from the alignment SAM file(s) sorted by name.
     deseq                    : generates the differential gen expression analysis results utilizing DESeq software.
  
@@ -134,7 +150,7 @@ use constant TRUE  => 1;
 use constant BOWTIE_BIN_DIR => '/usr/local/bin';
 use constant SAMTOOLS_BIN_DIR => '/usr/local/bin';
 
-use constant VERSION => '1.0.0';
+use constant VERSION => '2.0.0';
 use constant PROGRAM => eval { ($0 =~ m/(\w+\.pl)$/) ? $1 : $0 };
 
 ##############################################################################
@@ -142,14 +158,14 @@ use constant PROGRAM => eval { ($0 =~ m/(\w+\.pl)$/) ? $1 : $0 };
 ##############################################################################
 
 my @aComponents = ("bowtie_build", "quality_stats", "quality_trimming", "alignment", "visualization",
-				   "diff_gene_expr");
+				   "rpkm_analysis", "diff_gene_expr");
 my %hCmdLineOption = ();
 my $sHelpHeader = "\nThis is ".PROGRAM." version ".VERSION."\n";
 
 GetOptions( \%hCmdLineOption,
 			'sample_file|s=s', 'config_file|c=s', 'reffile|r=s', 'quality|qual=i', 'gtffile|gtf=s',
 			'bowtie_build', 'quality_stats', 'quality_trimming', 'alignment', 'bwtidxfile=s', 
-			'visualization', 
+			'visualization', 'rpkm_analysis', 'annotation_format=s', 
 			'diff_gene_expr', 'comparison_groups=s', 'count', 'file_type=s', 'sorted=s', 
 			'repository_root|rr=s', 'ergatis_ini|ei=s', 
 			'outdir|o=s', 'template_dir|td=s',
@@ -171,7 +187,7 @@ my ($sPLayout, $sPConfig);
 my ($sBwtIndexDir, $sBwtIndexPrefix);
 my ($fpPL, $fpPC, $fpLST1, $fpLST2, $fpLST, $fpSMPL);
 my ($sSampleName, $sGroupName, $sRead1File, $sRead2File, @aReadFiles, $sList);
-my ($sSamRefFile, $sBamFileList, $sSamFileList, $sMapStatsList, $sCountsFileList);
+my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList);
 my ($sFeature, $sAttrID);
 my (@aComparisons, $sCGrp, $sGrpX, $sGrpY);
 my ($sList1File, $sList2File, $sListFile, $sFile, $sInFile);
@@ -185,6 +201,7 @@ my $bVerbose = (defined $hCmdLineOption{'verbose'}) ? TRUE : FALSE;
 ################################################################################
 
 ($bDebug || $bVerbose) ? print STDERR "\nInitiating Prokaryotic RNA-Seq Analysis Pipeline .....\n" : undef;
+
 $sOutDir = File::Spec->curdir();
 if (defined $hCmdLineOption{'outdir'}) {
     $sOutDir = $hCmdLineOption{'outdir'};
@@ -386,7 +403,7 @@ elsif (defined $hCmdLineOption{'diff_gene_expr'}) {
 	close($fpLST);
 	close($fpSMPL);
 }
-elsif (defined $hCmdLineOption{'visualization'}) {
+elsif ((defined $hCmdLineOption{'rpkm_analysis'}) || (defined $hCmdLineOption{'visualization'})) {
 	if (! -e "$sOutDir/alignment") {
 		mkdir("$sOutDir/alignment") ||
 			die "ERROR! Cannot create output directory !!!\n";
@@ -490,6 +507,7 @@ if (defined $hCmdLineOption{'bowtie_build'}) {
 		$hConfig{'bowtie_build'}{'BOWTIE_INDEX_PREFIX'}[1] = "bowtie index prefix";
 	}
 	
+	###	Add Bowtie Build Component & Parameters ###
 	init_component($oPL, "serial");
 		include_component_layout($oPL, $sTemplateDir, "bowtie_build", "reference");
 	complete_component($oPL);
@@ -504,6 +522,7 @@ if (defined $hCmdLineOption{'bowtie_build'}) {
 }
 
 if (defined $hCmdLineOption{'quality_stats'}) {
+	###	Add FastX Quality Stats Component ###
 	init_component($oPL, "serial");
 		init_component($oPL, "parallel");
 			include_component_layout($oPL, $sTemplateDir, "fastx_quality_stats", "read1");
@@ -511,6 +530,7 @@ if (defined $hCmdLineOption{'quality_stats'}) {
 		complete_component($oPL);
 	complete_component($oPL);
 	
+	###	Add FastX Quality Stats Parameters for First Mates ###
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sList1File", "path to list of input FastQ/A sequence files"];
 	$hParams{'QUALITY_STRING'} = ["$hCmdLineOption{'quality'}", "quality string type for FastQ files (33 or 64)"];
@@ -525,6 +545,7 @@ if (defined $hCmdLineOption{'quality_stats'}) {
 	add_config_parameters($fpPC, \%hParams);
 	
 	if ($bPE) {
+		###	Add FastX Quality Stats Parameters for Second Mates ###
 		%hParams = ();
 		$hParams{'INPUT_FILE_LIST'} = ["$sList2File", "path to list of input FastQ/A sequence files"];
 		$hParams{'QUALITY_STRING'} = ["$hCmdLineOption{'quality'}", "quality string type for FastQ files (33 or 64)"];
@@ -541,6 +562,7 @@ if (defined $hCmdLineOption{'quality_stats'}) {
 }
 
 if (defined $hCmdLineOption{'quality_trimming'}) {
+	###	Add FastX Quality Trimming Component ###
 	init_component($oPL, "serial");
 		init_component($oPL, "parallel");
 			include_component_layout($oPL, $sTemplateDir, "fastx_trimming", "read1");
@@ -548,6 +570,7 @@ if (defined $hCmdLineOption{'quality_trimming'}) {
 		complete_component($oPL);
 	complete_component($oPL);
 	
+	###	Add FastX Quality Stats Parameters for First Mates ###
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sList1File", "path to list of input FastQ/A sequence files"];
 	$hParams{'QUALITY_STRING'} = ["$hCmdLineOption{'quality'}", "quality string type for FastQ files (33 or 64)"];
@@ -565,6 +588,7 @@ if (defined $hCmdLineOption{'quality_trimming'}) {
 	$sList1File = '$;REPOSITORY_ROOT$;/output_repository/fastx_trimming/$;PIPELINEID$;_read1/fastx_trimming.trimmed.sequence.list';
 	
 	if ($bPE) {
+		###	Add FastX Quality Stats Parameters for Second Mates ###
 		%hParams = ();
 		$hParams{'INPUT_FILE_LIST'} = ["$sList2File", "path to list of input FastQ/A sequence files"];
 		$hParams{'QUALITY_STRING'} = ["$hCmdLineOption{'quality'}", "quality string type for FastQ files (33 or 64)"];
@@ -584,6 +608,7 @@ if (defined $hCmdLineOption{'quality_trimming'}) {
 }
 
 if (defined $hCmdLineOption{'reffile'}) {
+	###	Add Samtools Reference Index Component & Parameters ###
 	init_component($oPL, "serial");
 		include_component_layout($oPL, $sTemplateDir, "samtools_reference_index", "reference");
 	complete_component($oPL);
@@ -601,6 +626,7 @@ if (defined $hCmdLineOption{'alignment'}) {
 	init_component($oPL, "serial");
 	
 	if ($bPE) {
+		###	Add Create Pairwise List Component & Parameters ###
 		include_component_layout($oPL, $sTemplateDir, "create_paired_list_file", "list");
 		
 		%hParams = ();
@@ -622,8 +648,19 @@ if (defined $hCmdLineOption{'alignment'}) {
 		($_, $sBwtIndexDir, $sBwtIndexPrefix) = File::Spec->splitpath($hCmdLineOption{'bwtidxfile'});
 	}
 	
-	include_component_layout($oPL, $sTemplateDir, "bowtie", "alignment");
+	###	Add FastQC Stats and Bowtie Components ###
+	init_component($oPL, "parallel");
+		include_component_layout($oPL, $sTemplateDir, "fastqc_stats", "fastqc");
+		include_component_layout($oPL, $sTemplateDir, "bowtie", "alignment");
+	complete_component($oPL);
 	
+	###	Add FastQC Stats Parameters ###
+ 	%hParams = ();
+ 	$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
+ 	add_config_section($fpPC, "fastqc_stats", "fastqc");
+ 	add_config_parameters($fpPC, \%hParams);
+	
+	###	Add Bowtie Parameters ###
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
 	$hParams{'BOWTIE_INDEX_DIR'} = ["$sBwtIndexDir", "path to bowtie package binary directory"];
@@ -651,6 +688,7 @@ if (defined $hCmdLineOption{'alignment'}) {
 	
 	init_component($oPL, "serial");
 		
+	###	Add Samtools File Conversion Component & Parameters ###
 	init_component($oPL, "parallel");
 		include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
 		include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_name");
@@ -676,6 +714,7 @@ if (defined $hCmdLineOption{'alignment'}) {
 	add_config_parameters($fpPC, \%hParams);
 	
 	$sSamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_name/samtools_file_convert.sorted_by_name_sam.list';
+	$sBamNameSortList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_name/samtools_file_convert.sorted_by_name_bam.list';
 	
 	include_component_layout($oPL, $sTemplateDir, "samtools_alignment_stats", "alignment_stats");
 	
@@ -686,18 +725,43 @@ if (defined $hCmdLineOption{'alignment'}) {
 	
 	$sMapStatsList = '$;REPOSITORY_ROOT$;/output_repository/samtools_alignment_stats/$;PIPELINEID$;_alignment_stats/samtools_alignment_stats.mapstats.list';
 	
+	###	Add Bowtie Stats Component & Parameters below ###
+	include_component_layout($oPL, $sTemplateDir, "align_bowtie_stats", "bowtie_stats");
+	
+	%hParams = ();
+	$hParams{'INPUT_FILE'} = ["$sMapStatsList", "path to list of samtools mapstat files"];
+	add_config_section($fpPC, "align_bowtie_stats", "bowtie_stats");
+	add_config_parameters($fpPC, \%hParams);
+	
+	if ((defined $hCmdLineOption{'gtffile'}) && (defined $hCmdLineOption{'annotation_format'}) ) {
+		###	Add Percent Mapped Component & Parameters below ###
+		include_component_layout($oPL, $sTemplateDir, "percent_mapped_stats", "percent_mapped");
+		
+		%hParams = ();
+		$hParams{'INPUT_FILE_LIST'} = ["$sBamNameSortList", "path to list of alignment BAM files"];
+		$hParams{'REFERENCE_FASTA'} = ["$sSamRefFile", "path to reference FastA file"];
+		$hParams{'ANNOTATION_FILE'} = ["$hCmdLineOption{'gtffile'}", "path to annotation file (BED or GTF or GFF3 format file)"];
+		$hParams{'ANNO_FORMAT'} = ["$hCmdLineOption{'annotation_format'}", "annotation file format (bed/gtf/gff3)"];
+		$hParams{'ORG_TYPE'} = ["prok", "Organism type (prok/euk)"];
+		
+		config2params(\%hParams, \%hConfig, 'percent_mapped_stats');
+		add_config_section($fpPC, "percent_mapped_stats", "percent_mapped");
+		add_config_parameters($fpPC, \%hParams);
+	}
+	
 	complete_component($oPL);
 }
 
-if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) ) {
+if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) || (defined $hCmdLineOption{'rpkm_analysis'}) ) {
 	init_component($oPL, "parallel");
 }
 
 if (defined $hCmdLineOption{'visualization'}) {
 	init_component($oPL, "serial");
 	
-	die "Error! Annotation file undefined !!!\n" if (!(defined $hCmdLineOption{'reffile'}));
+	die "Error! Reference file undefined !!!\n" if (!(defined $hCmdLineOption{'reffile'}));
 	
+	###	Add Visualization Component & Parameters below ###
 	init_component($oPL, "serial");
 		if (! defined $hCmdLineOption{'alignment'}) {
 			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
@@ -740,6 +804,76 @@ if (defined $hCmdLineOption{'visualization'}) {
 	complete_component($oPL);
 }
 
+if (defined $hCmdLineOption{'rpkm_analysis'}) {
+	init_component($oPL, "serial");
+	
+	die "Error! Reference file undefined !!!\n" if (!(defined $hCmdLineOption{'reffile'}));
+	die "Error! Annotation file undefined !!!\n" if (!(defined $hCmdLineOption{'gtffile'}));
+	
+	###	Add RPKM Analysis Component & Parameters below ###
+	init_component($oPL, "serial");
+		if (! defined $hCmdLineOption{'alignment'}) {
+			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
+				include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
+			}
+		}
+		include_component_layout($oPL, $sTemplateDir, "rpkm_coverage_stats", "rpkm_cvg");
+		include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
+	complete_component($oPL);
+	
+	if (! defined $hCmdLineOption{'alignment'}) {
+		if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
+			%hParams = ();
+			if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
+				$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
+				$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
+				$nOpt = "412";
+				$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
+			}
+			else {
+				$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
+				$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
+				$nOpt = "12";
+				$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
+			}
+			add_config_section($fpPC, "samtools_file_convert", "sorted_position");
+			add_config_parameters($fpPC, \%hParams);
+			
+			$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
+		}
+	}
+	
+	%hParams = ();
+	$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment BAM files"];
+	$hParams{'REFERENCE_FASTA'} = ["$sSamRefFile", "path to reference FastA file"];
+	$hParams{'ANNOTATION_FILE'} = ["$hCmdLineOption{'gtffile'}", "path to annotation file (BED or GTF or GFF3 format file)"];
+	$hParams{'ANNOTATION_FILE_TYPE'} = ["$hCmdLineOption{'annotation_format'}", "annotation file format (bed/gtf/gff3)"];
+	$hParams{'REGION_TYPE'} = ["genic", "region to determine coverage for (genomic:genic:exonic) separated by ':' or ',' or ';'"];
+	
+	config2params(\%hParams, \%hConfig, 'rpkm_coverage_stats');
+	add_config_section($fpPC, "rpkm_coverage_stats", "rpkm_cvg");
+	add_config_parameters($fpPC, \%hParams);
+	
+	%hParams = ();
+	$hParams{'PIPELINE_ID'} = ["\$;PIPELINEID\$;", "ergatis pipeline id"];
+	$hParams{'OUTPUT_REPOSITORY'} = ["\$;REPOSITORY_ROOT\$;/output_repository", "pipeline output repository"];
+	add_config_section($fpPC, "wrapper_align", "wrap");
+	add_config_parameters($fpPC, \%hParams);
+	
+	complete_component($oPL);
+}
+elsif (defined $hCmdLineOption{'alignment'}) {
+	init_component($oPL, "serial");
+		include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
+	complete_component($oPL);
+	
+	%hParams = ();
+	$hParams{'PIPELINE_ID'} = ["\$;PIPELINEID\$;", "ergatis pipeline id"];
+	$hParams{'OUTPUT_REPOSITORY'} = ["\$;REPOSITORY_ROOT\$;/output_repository", "pipeline output repository"];
+	add_config_section($fpPC, "wrapper_align", "wrap");
+	add_config_parameters($fpPC, \%hParams);
+}
+
 if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	die "Error! Comparison groups undefined !!!\n" if (!(defined $hCmdLineOption{'comparison_groups'}));
 	
@@ -748,6 +882,7 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	if ((defined $hCmdLineOption{'count'}) || (defined $hCmdLineOption{'alignment'})) {
 		die "Error! Annotation file undefined !!!\n" if (!(defined $hCmdLineOption{'gtffile'}));
 		
+		###	Add HTSeq Component & Parameters below ###
 		init_component($oPL, "serial");
 			if (! defined $hCmdLineOption{'alignment'}) {
 				if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/name/))) {
@@ -790,6 +925,7 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 		$sCountsFileList = '$;REPOSITORY_ROOT$;/output_repository/htseq/$;PIPELINEID$;_exon_counts/htseq.counts.list';
 	}
 	
+	###	Add DESeq Component & Parameters below ###
 	init_component($oPL, "serial");
 		include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
 	complete_component($oPL);
@@ -804,7 +940,7 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	complete_component($oPL);
 }
 
-if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) ) {
+if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) || (defined $hCmdLineOption{'rpkm_analysis'}) ) {
 	complete_component($oPL, "parallel");
 }
 
@@ -920,7 +1056,7 @@ sub exec_command {
 	
 	my $nExitCode;
 	
-	print STDERR "$sCmd\n";
+	#print STDERR "$sCmd\n";
 	$nExitCode = system("$sCmd");
 	if ($nExitCode != 0) {
 		die "\tERROR! Command Failed!\n\t$!\n";
