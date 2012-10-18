@@ -1,5 +1,6 @@
 next
 ----
+-add component summarize_mugsy_comparative_pipeline
 -Added new component soapdenovo
 -Added new component extract_assembly_stats
 -added Prokaryotic_Annotation_Pipeline_Operon_Prediction pipeline template and a predict_operons script

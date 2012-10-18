@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot type="instance">
+    <commandSet type="serial">
+	<state>incomplete</state>
+        <name>grouped sub flow</name>
+                   
+        <command>
+            <type>RunUnixCommand</type>
+            <name>summarize_mugsy_comparative_pipeline</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/summarize_mugsy_comparative_pipeline</executable>
+            <param>
+                <key>--mugsy_map_file</key>
+                <value>$;MUGSYMAP$;</value>              
+            </param>
+            <param>
+                <key>--mugsycog_raw_file</key>
+                <value>$;MUGSYCOG_RAW$;</value>                
+            </param>
+            <param>
+                <key>--mugsy_snps_file</key>
+                <value>$;SNPS$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+        </command>   
+
+    </commandSet>
+</commandSetRoot>
+
