@@ -1,5 +1,6 @@
 next
 ----
+-Added new component complete_study_stage (to mark automatic annotation study stages as complete in IPD)
 -add component summarize_mugsy_comparative_pipeline
 -Added new component soapdenovo
 -Added new component extract_assembly_stats
