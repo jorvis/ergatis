@@ -605,7 +605,7 @@ sub Process_GFF {
     	foreach $sAttr (@aAttr) {
     		$sAttr =~ s/^\s+//;
     		$sAttr =~ s/\s+$//;
-    		($sKey, $sValue) = split(/[\s\=]/);
+    		($sKey, $sValue) = split(/[\s\=]/, $sAttr);
     		
     		if ($sKey eq $sAttributeID) {
     			$sID = $sValue;
