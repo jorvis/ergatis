@@ -12,6 +12,13 @@
                         <executable>mkdir</executable>
                         <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
                 </command>
+        	<command>
+            		<type>RunUnixCommand</type>
+            		<name>create temp directory</name>
+            		<state>incomplete</state>
+            		<executable>mkdir</executable>
+            		<arg>-p -m 777 $;TMP_DIR$;</arg>
+        	</command>
         	<!--Processing-->
         	<!--Iterator-->
         	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
