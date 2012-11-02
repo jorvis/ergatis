@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+        <commandSet type="serial">
+                <state>incomplete</state>
+                <name>complete study stage workflow</name>
+                <!--Preprocessing--> 
+                <command>
+                        <type>RunUnixCommand</type>
+                        <name>create output directory</name>
+                        <state>incomplete</state>
+                        <executable>mkdir</executable>
+                        <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+                </command>
+                <command>
+                        <type>RunUnixCommand</type>
+                        <name>create temp directory</name>
+                        <state>incomplete</state>
+                        <executable>mkdir</executable>
+                        <arg>-p -m 777 $;TMP_DIR$;</arg>
+                </command>
+                <command>
+                        <type>RunUnixCommand</type>
+                        <name>complete study stage</name>
+                        <state>incomplete</state>
+                        <executable>$;BIN_DIR$;/complete_study_stage</executable>
+                        <param>
+                                <key>--study_stage_id</key>
+                                <value>$;STUDY_STAGE_ID$;</value>
+                        </param>
+                        <param>
+                                <key>--log</key>
+                                <value>$;TMP_DIR$;/complete_study_stage.log</value>
+                        </param>
+                        <param>
+                                <key>--debug</key>
+                                <value>4</value>
+                        </param>
+                </command>
+        </commandSet>
+</commandSetRoot>
+                               
