@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>bwa Iterator workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>gkpstore2fastq</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/gkpstore2fastq</executable>            
+            <param>
+		<key>--input_gkpstore</key>
+		<value>$;I_FILE_PATH$;</value>
+            </param>
+	    <param>
+		<key>--output_prefix</key>
+		<value>$;I_FILE_BASE$;</value>
+	    </param>
+            <param>
+		<key>--output_directory</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+		<key>--gatekeeper_exec_6-1</key>
+		<value>$;GATEKEEPER_61$;</value>
+            </param>  
+            <param>
+		<key>--gatekeeper_exec_7-0</key>
+		<value>$;GATEKEEPER_70$;</value>
+            </param>    
+            <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align_exec.ref1.stdout</value>
+            </param>
+            <param>
+		<key>stderr</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align_exec.ref1.stderr</value>
+            </param>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>cat files</name>
+            <state>incomplete</state>
+            <executable>/bin/cat</executable>            
+	    <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.unmated.fastq $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.paired.fastq</arg>
+            <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.all.fastq</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
