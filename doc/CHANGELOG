@@ -1,5 +1,6 @@
 next
 ----
+-New component map_snp_query_pos
 -Adding gkpstore2fastq component
 -Genbank2bsml: sequence id will be the GI if other methods of parsing a seq id fail.
 -Checking in changes to bwa component to make fasta bam map by default

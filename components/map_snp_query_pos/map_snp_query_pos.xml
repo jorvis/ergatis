@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>map snp query pos workflow</name>
+        <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+        </command>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>map query pos</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/map_query_pos</executable>
+            <param>  
+                <key>--query_acc_map</key>
+                <value>$;QUERY_ACC_MAP$;</value>
+            </param>
+            <param>  
+                <key>--merged_table</key>
+                <value>$;MERGED_TABLE$;</value>
+            </param>
+            <param>  
+                <key>--raw_blast_list</key>
+                <value>$;RAW_BLAST_LIST$;</value>
+            </param>
+            <param>  
+                <key>--output_file</key>
+                <value>$;OUTPUT_FILE$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
