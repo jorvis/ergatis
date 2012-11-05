@@ -91,7 +91,12 @@ sub to_obj {
   # based on the queries passed in. 
   my @all_columns = &get_columns();
   my $num = (@all_columns-2) + $num_queries;
-  die("Row did not have enough columns. Expected at least $num but found: ".scalar(@c))
+  
+  # properties and other columns can be missing.
+  $num -= 2;
+
+  die("Row [$c[0], $c[1], $c[2]] did not have enough columns. Expected at least $num but found: ".scalar(@c).
+      ". Number of queries: $num_queries")
       if( $num > @c );
       
   # Create the object we will eventually return
