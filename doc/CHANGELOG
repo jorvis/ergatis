@@ -1,5 +1,6 @@
 next
 ----
+-create_map_file: will now correctly parse IGS based Identifiers
 -SNP::MergedTable: now will accept a row even if last column is missing
 -mpileup: will use the -B option by default
 -Filter fastq component: will now read a map file and not use paired iterator. Will also create an output map by default.

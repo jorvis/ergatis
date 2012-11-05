@@ -13,7 +13,6 @@ GetOptions('input_file_list=s' => \$files,
 
 die("Must provide an output file") unless($outputFile);
 
-
 my @files;
 if( $files ) {
     foreach my $list ( split(/[,\s]+/, $files) ) {
@@ -54,8 +53,13 @@ sub printMapInfo {
     while(my $line = <FH>) {
 	if(trim($line) =~ /^LOCUS\s+(\S+)\s+/) {
 	    $locus = $1;
-	}
-	elsif(trim($line) =~ /^ORGANISM\s+(.+)\s*$/) {
+
+	    # if the locus is an IGS internal identifier, parse it.
+	    if( $locus =~ /([^\.]+)\.\w+\.\w+/ ) {
+		$locus = $1;
+	    }
+
+	} elsif(trim($line) =~ /^ORGANISM\s+(.+)\s*$/) {
 	    unless($locus) {
 		die "No locus found in the genbank file, $genbankFile, $!\n";
 	    }
