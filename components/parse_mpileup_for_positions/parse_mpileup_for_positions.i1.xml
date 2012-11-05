@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>parse mpileup for positions compute</name>
+	
+	 <!--Preprocessing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+	<!-- end of pre processing -->
+
+        <command>
+            <type>RunUnixCommand</type>
+            <name>parse_mpileup</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/parse_mpileup</executable>
+	    <param>
+		<key>--mpileup</key>
+		<value>$;I_MPILEUP_FILE$;</value>
+	    </param>
+	    <param>
+		<key>--mapped_positions</key>
+		<value>$;MAPPED_POSITIONS$;</value>
+	    </param>
+	    <param>
+		<key>--query</key>
+		<value>$;I_QUERY$;</value>
+	    </param>
+	    <param>
+		<key>--version</key>
+		<value>$;I_VERSION$;</value>
+	    </param>
+	    <param>
+		<key>--output</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_QUERY$;.qc.txt</value>
+	    </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_QUERY$;.$;COMPONENT_NAME$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_QUERY$;.$;COMPONENT_NAME$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
