@@ -1,5 +1,6 @@
 next
 ----
+-Checking in changes to bwa component to make fasta bam map by default
 -Fixed bug in extract_snp_regions in edge case (pulled wrong snp)
 -Added new component complete_study_stage (to mark automatic annotation study stages as complete in IPD)
 -add component summarize_mugsy_comparative_pipeline

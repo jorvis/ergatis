@@ -23,7 +23,7 @@
 	<!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/paired_file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
 	<!--Iterator Done-->
-	    <command>
+	<command>
             <type>RunUnixCommand</type>
             <name>create bam list</name>
             <state>incomplete</state>
@@ -40,6 +40,36 @@
                 <key>--output_list</key>
                 <value>$;BAM_OUTPUT_LIST$;</value>
             </param>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>create query bam map</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_fasta_bam_map</executable>
+            <param>  
+                <key>--query_list</key>
+                <value>&quot;$;QUERY_INPUT_LIST$;&quot;</value>
+            </param>
+            <param>  
+                <key>--bam_list</key>
+                <value>$;BAM_OUTPUT_LIST$;</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;OUTPUT_QUERY_BAM_MAP$;</value>
+            </param>
+	    <param>
+	        <key>--strict</key>
+                <value>1</value>
+	    </param>
+	    <param>
+	        <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/create_fasta_bam_map.stdout</value>
+	    </param>
+	    <param>
+	        <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/create_fasta_bam_map.stderr</value>
+	    </param>
         </command>
     </commandSet>
 </commandSetRoot>
