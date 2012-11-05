@@ -54,6 +54,8 @@ pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($cmdLineArg
 &checkCmdLineArgs();
 
 $snp_pos = &parse_snp_positions($cmdLineArgs{'snp_positions'});
+use Data::Dumper;
+print Dumper( $snp_pos );
 
 &extract_seq($cmdLineArgs{'ref_genbank'}, $snp_pos, $flanking_bases, $cmdLineArgs{'output_dir'});
 
@@ -69,33 +71,34 @@ $snp_pos = &parse_snp_positions($cmdLineArgs{'snp_positions'});
 #		  Accepts path to a list of SNP panels and creates a merged hash of all the SNPs in all the panels in the list
 
 sub parse_snp_positions {
-	my ($snp_file) = @_;
-	my $snp_data;
-	open(SL,"< $snp_file") or printLogMsg($ERROR, "ERROR! : Could not open $snp_file file for reading.Reason : $!");
-	# Loop through SNP panel files list
-	while(my $file = <SL>) {
-		chomp($file);
-		next if($file =~ /^\s*$/);
-		next if($file =~ /^#/);
-		# Foreach SNP panel file extract the SNP position and molecule name
-		if(-e $file) {
-			open(FR,"< $file") or printLogMsg($ERROR, "ERROR! : Could not open $file file for reading.Reason : $!");
-			readline(FR);
-			while(<FR>) {
-				my $line = $_;
-				chomp($line);
-				next if ($line =~ /^\s*$/);
-				next if ($line =~ /^#/);
-				my ($mol, $refpos, $rest) = split(/\s+/, $line, 3);
-				$snp_data->{$mol}{$refpos} = $rest;
-			}	
-			close(FR); 
-		}
+    my ($snp_file) = @_;
+    my $snp_data;
+    open(SL,"< $snp_file") or printLogMsg($ERROR, "ERROR! : Could not open $snp_file file for reading.Reason : $!");
+    # Loop through SNP panel files list
+    while(my $file = <SL>) {
+	chomp($file);
+	next if($file =~ /^\s*$/);
+	next if($file =~ /^\#/);
+	# Foreach SNP panel file extract the SNP position and molecule name
+	print "$file\n";
+	if(-e $file) {
+	    open(FR,"< $file") or printLogMsg($ERROR, "ERROR! : Could not open $file file for reading.Reason : $!");
+	    readline(FR);
+	    while(my $line = <FR>) {
+		chomp($line);
+		next if ($line =~ /^\s*$/);
+		next if ($line =~ /^\#/);
+		my ($mol, $refpos, $rest) = split(/\s+/, $line, 3);
+		#print "mol: $mol\nrefpos: $refpos\nrest: $rest\n";
+		$snp_data->{$mol}{$refpos} = $rest;
+	    }	
+	    close(FR); 
 	}
-	close(SL);
-	return $snp_data;
+    }
+    close(SL);
+    return $snp_data;
 }
-
+	
 ####################################################################################################################################################
 
 # Description   : Extracts sub-sequence from the reference genome FASTA sequence SNP position along with flanking bases upstream and downstream of it
@@ -108,46 +111,39 @@ sub parse_snp_positions {
 #		  SNP panel file ie. LOCUS id of the SNP position
 
 sub extract_seq {
-	my ($genbank, $snp_data, $flank_num, $result_dir) = @_;
-#	open(RL, "< $genbank") or printLogMsg(1,"ERROR! : Could not open $genbank file for reading.Reason : $!");
-	my $seq_file = "$result_dir/extracted_snps.fna";
-	open(FW, "> $seq_file") or printLogMsg(1,"ERROR! : Could not open $seq_file for writing.\nReason : $!");
-#	while(my $file = <RL>) {
-#		chomp($file);
-#		next if($file =~ /^\s*$/);
-#		next if($file =~ /^#/);
-#		if(-e $file) {
-			my $seqio_obj = Bio::SeqIO->new(-file => "$genbank", -format => "GenBank" );
-			my $seq_obj = $seqio_obj->next_seq;
-			my $locus = $seq_obj->display_id();
-			if(exists($snp_data->{$locus})) {
-				my $ref_seq = $seq_obj->seq();
-				my $ref_length = length($ref_seq);
-				if($ref_length <= 0) {
-					printLogMsg($ERROR,"ERROR! : GenBank file $genbank does not conatin the reference FASTA sequence. Unable to extract sequences from $genbank");
-				} else {
-					foreach my $pos (sort { $a <=> $b } keys %{$snp_data->{$locus}}) {
-						print FW ">".$locus."_SNP_".$pos."\n";
-						my $left_limit = $pos - $flank_num;
-						if ($left_limit < 1) {
-							$left_limit = 1;
-						}
-						my $right_limit = $pos + $flank_num;
-						if ($right_limit > $ref_length) {
-							$right_limit = $ref_length;
-						}
-						my $snp_region = substr($ref_seq, ($left_limit - 1), ($right_limit - $left_limit + 1));
-						print FW "$snp_region\n";
-					}
-				}
-			} else {
-				printLogMsg($ERROR, "ERROR! : SNPs for $locus is not found in the SNP panel. Unable to extract sequences for $locus from GenBank file $genbank");
-			}
-#		} else {
-#			printLogMsg(2, "WARNING! : Reference GenBank file $file does not exist. Unable to extract sequences from $file");
-#		}
-#	}
-	close(FW);
+    my ($genbank, $snp_data, $flank_num, $result_dir) = @_;
+
+    my $seq_file = "$result_dir/extracted_snps.fna";
+    open(FW, "> $seq_file") or printLogMsg(1,"ERROR! : Could not open $seq_file for writing.\nReason : $!");
+
+    my $seqio_obj = Bio::SeqIO->new(-file => "$genbank", -format => "GenBank" );
+    my $seq_obj = $seqio_obj->next_seq;
+    my $locus = $seq_obj->display_id();
+
+    if(exists($snp_data->{$locus})) {
+	my $ref_seq = $seq_obj->seq();
+	my $ref_length = length($ref_seq);
+	if($ref_length <= 0) {
+	    printLogMsg($ERROR,"ERROR! : GenBank file $genbank does not conatin the reference FASTA sequence. Unable to extract sequences from $genbank");
+	} else {
+	    foreach my $pos (sort { $a <=> $b } keys %{$snp_data->{$locus}}) {
+		print FW ">".$locus."_SNP_".$pos."\n";
+		my $left_limit = $pos - $flank_num;
+		if ($left_limit < 1) {
+		    $left_limit = 1;
+		}
+		my $right_limit = $pos + $flank_num;
+		if ($right_limit > $ref_length) {
+		    $right_limit = $ref_length;
+		}
+		my $snp_region = substr($ref_seq, ($left_limit - 1), ($right_limit - $left_limit + 1));
+		print FW "$snp_region\n";
+	    }
+	}
+    } else {
+	printLogMsg($ERROR, "ERROR! : SNPs for $locus is not found in the SNP panel. Unable to extract sequences for $locus from GenBank file $genbank");
+    }
+    close(FW);
 }
 
 ####################################################################################################################################################
