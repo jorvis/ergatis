@@ -19,18 +19,18 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
         </command>
-		<command>
+	<command>
             <type>RunUnixCommand</type>
             <name>filter fastq</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/filter_fastq</executable>            
             <param>
               <key>--fastq_input</key>
-              <value>$;I_FILE_PATH_1$;</value>
+              <value>$;READS$;</value>
             </param>
             <param>
               <key>--read_names</key>
-              <value>$;I_FILE_PATH_2$;</value>
+              <value>$;READ_LIST$;</value>
             </param>
             <param>
               <key>--output_dir</key>
@@ -38,11 +38,11 @@
             </param>  
             <param>
               <key>stdout</key>
-              <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE_1$;_v_$;I_FILE_BASE_2$;.bwa_align_exec.ref1.stdout</value>
+              <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;BASENAME$;.bwa_align_exec.ref1.stdout</value>
             </param>
             <param>
               <key>stderr</key>
-              <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE_1$;_v_$;I_FILE_BASE_2$;.bwa_align_exec.ref1.stderr</value>
+              <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;BASENAME$;.bwa_align_exec.ref1.stderr</value>
             </param>
         </command>
     </commandSet>

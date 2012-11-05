@@ -21,9 +21,23 @@
         </command>
         <!-- Processing -->
 	<!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/paired_file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML,$;ALL_VS_ALL$;=0">
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>filter_fastq_file_iterator_list</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_filter_fastq_file_iterator_list</executable>
+	    <param>
+		<key>--input_map</key>
+		<value>$;FASTA_READ_MAP$;</value>
+	    </param>
+	    <param>
+		<key>--output_iter_list</key>
+		<value>$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list</value>
+	    </param>
+	</command>
+        <INCLUDE file="$;DOCS_DIR$;/iterator_template.xml" keys="$;ITERATOR_NAME$;=$;ITERATOR1$;,$;ITERATOR_XML$;=$;ITERATOR1_XML$;,$;ITERATOR_LIST$;=$;WORKFLOW_REPOSITORY$;/$;ITERATOR1$;.list,$;ITERATOR_RANDOM$;=1" />
 	<!--Iterator Done-->
-	    <command>
+	<command>
             <type>RunUnixCommand</type>
             <name>create fastq list</name>
             <state>incomplete</state>
@@ -41,5 +55,31 @@
                 <value>$;FASTQ_OUTPUT_LIST$;</value>
             </param>
         </command>
+	<command>
+	    <type>RunUnixCommand</type>
+            <name>create filtered fastq contigs mapping</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_fastq_contigs_map</executable>
+            <param>  
+                <key>--input_map</key>
+                <value>$;FASTA_READ_MAP$;</value>
+            </param>
+            <param>  
+                <key>--fastq_list</key>
+                <value>$;FASTQ_OUTPUT_LIST$;</value>
+            </param>
+            <param>  
+                <key>--output_map</key>
+                <value>$;FILTERED_FASTQ_CONTIG_MAP$;</value>
+            </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/create_fastq_contigs_map.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/create_fastq_contigs_map.stderr</value>
+            </param>
+	</command>
     </commandSet>
 </commandSetRoot>

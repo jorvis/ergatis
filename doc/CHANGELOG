@@ -1,5 +1,6 @@
 next
 ----
+-Filter fastq component: will now read a map file and not use paired iterator. Will also create an output map by default.
 -New component map_snp_query_pos
 -Adding gkpstore2fastq component
 -Genbank2bsml: sequence id will be the GI if other methods of parsing a seq id fail.
