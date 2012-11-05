@@ -664,6 +664,8 @@ sub to_bsml {
     # otherwise it dies
 
     my $seqid = $gbr{'accession'};
+    $seqid = $gbr{'gi'} if( !$seqid || $seqid =~ /unknown/i );
+    
     my $fastafile = "$odir/$gbr{'gi'}.assembly.fsa";
     my $fastaname = "gi|".$gbr{'gi'}."|ref|".$gbr{'accession'}."|".$gbr{'organism'};
     # in order for this to get parsed correctly by bsml2chado's BSML::Indexer::Fasta component, 
