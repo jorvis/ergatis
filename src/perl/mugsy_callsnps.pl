@@ -116,13 +116,10 @@ foreach my $alnname ( sort {$a cmp $b} keys %{$atree->{_alignments}} ) {
     # Grab the alignment information
     my ($alnobj,$aln_bv,$align_width) = @{$atree->{_alignments}->{$alnname}}; 
     my ($mmatrix,$seqmatrix,$names) = $atree->getAlignmentMatrix($alnname,1,$align_width,$db);
-    
+
     # Make sure we've stored all the names
     for( @{$names} ) {
-        my ($org, $mol) = ($1, $2) if( /^(.*)\.(.*?)$/ );
-	($org, $mol) = ($_, $_) unless( $org && $mol );
-
-        $molecules{$org} = {} unless( exists( $molecules{$org} ) );
+	my ($org, $mol) = &get_org_and_mol( $_ );
         $molecules{$org}->{$mol} = 1 unless( exists( $molecules{$org}->{$mol} ) );
     }
     
@@ -181,16 +178,23 @@ sub find_snps {
         my $tmp = {};
         for( my $i = 0; $i < @{$names}; $i++ ) {
 		    
-		    # columntocoords takes 1 based coords, $d is zero based so add 1.
-		    # returns zero based coordinates
+	    # columntocoords takes 1 based coords, $d is zero based so add 1.
+	    # returns zero based coordinates
             my ($start, $end) = AlignmentTree::columntocoords( $alnis{$names->[$i]}, $d+1, $d+1 );
             
             # Should store first by organism, then by molecule
-            my ($org, $mol) = ($1, $2) if( $names->[$i] =~ /^(.*)\.(.*?)$/ );
+	    my ($org, $mol) = &get_org_and_mol( $names->[$i] );
             $tmp->{$org} = [$mol, $start, substr( $seqmatrix->[$i], $d, 1 )];
         }
         push(@{$data}, $tmp);
     }
+}
+
+sub get_org_and_mol {
+    my ($string) = @_;
+    my ($o,$m) = ($1, $2) if( $string =~ /^([^\.]+)\.(.*)$/ );
+    die("Could not parse organism or name from $string") unless( $o && $m );
+    ($o, $m);
 }
 
 
