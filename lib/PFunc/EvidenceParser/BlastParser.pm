@@ -77,24 +77,25 @@ sub _pre_parse {
 }
 
 sub _parse_sequence_lengths {
-  my ($self, $bsmls) = @_;
-  my $twig = new XML::Twig('twig_roots' => {'Sequence' => sub {
-											  my ($t,$e) = @_;
-											  my $id = $e->att('id');
-											  my $len = $e->att('length');
-											  $self->_seq_length( $id, $len )
-												if ( defined( $len ) && defined( $id ) && !$self->_seq_length( $id ) );
-											  $t->purge;
-											},
-											'Feature[@class="CDS"]' => sub { $self->_store_feature_length( @_ ); $_[0]->purge; },
-											} );
+    my ($self, $bsmls) = @_;
+    my $twig = new XML::Twig('twig_roots' => {
+	'Sequence' => sub {
+	    my ($t,$e) = @_;
+	    my $id = $e->att('id');
+	    my $len = $e->att('length');
+	    $self->_seq_length( $id, $len )
+		if ( defined( $len ) && defined( $id ) && !$self->_seq_length( $id ) );
+	    $t->purge;
+	},
+	'Feature[@class="CDS"]' => sub { $self->_store_feature_length( @_ ); $_[0]->purge; },
+    } );
 
-  foreach my $bsml ( @{$bsmls} ) {
-	  print "parsing $bsml\n";
-	  my $in = open_file( $bsml, 'in' );
-	  $twig->parse( $in );
-	  close($in);
-  }
+    foreach my $bsml ( @{$bsmls} ) {
+	print "parsing $bsml\n";
+	my $in = open_file( $bsml, 'in' );
+	$twig->parse( $in );
+	close($in);
+    }
 }
 
 sub _store_feature_length {
@@ -112,21 +113,21 @@ sub _store_feature_length {
 sub _parse {
     my ($self, $fh) = @_;
 
-	#print "\n".scalar(keys %{$self->{"_seq_lengths"}} )." keys in length hash\n";
+    #print "\n".scalar(keys %{$self->{"_seq_lengths"}} )." keys in length hash\n";
 
-	my $parser = new XML::LibXML;
-	my $doc = $parser->parse_fh( $fh );
+    my $parser = new XML::LibXML;
+    my $doc = $parser->parse_fh( $fh );
 
-	foreach my $seq ( $doc->findnodes("//Sequence") ) {
-	  $self->_handle_sequence( $seq );
-	}
+    foreach my $seq ( $doc->findnodes("//Sequence") ) {
+	$self->_handle_sequence( $seq );
+    }
 
-	foreach my $spa ( $doc->findnodes("//Seq-pair-alignment") ) {
-	  $self->_handle_seq_pair_alignment( $spa );
-	}
+    foreach my $spa ( $doc->findnodes("//Seq-pair-alignment") ) {
+	$self->_handle_seq_pair_alignment( $spa );
+    }
 
-	$self->{'_specific_seq_length'} = {};
-						   
+    $self->{'_specific_seq_length'} = {};
+    
 }
 
 sub _handle_sequence {
@@ -149,7 +150,7 @@ sub _handle_sequence {
 
 sub _handle_seq_pair_alignment {
     my ($self, $spa) = @_;
- 
+    
     my $ref_id = $spa->getAttribute('refseq');
     my $comp_id = $spa->getAttribute('compseq');
 
@@ -157,8 +158,8 @@ sub _handle_seq_pair_alignment {
     ## we need db1.transcript.123456.1 instead of the CDS id
     my $annotation_feature_id = $self->lookup_feature_id( $ref_id, $self->annotate_on );
     unless( $annotation_feature_id ) {
-		return;
-	}
+	return;
+    }
 
     ## get the annotation object. If nothing is returned, we shouldn't be annoting
     ## this feature.
@@ -167,8 +168,8 @@ sub _handle_seq_pair_alignment {
 
     ## make sure the match passes cutoff
     unless( &_match_passes_cutoff( $spa ) ) {
-		return;
-	}
+	return;
+    }
 
     ## Grab the cluster id and see if the match is characterized
     my $db = $self->{'_uniref_clusters_annot'};
@@ -181,9 +182,9 @@ sub _handle_seq_pair_alignment {
 
     ## we don't use annotation from partial::partial matches.
     if( $confidence_level eq 'BER::uncharacterized::partial::partial' ||
-		$confidence_level eq 'BER::characterized::partial::partial' ) {
-		return;
-	}
+	$confidence_level eq 'BER::characterized::partial::partial' ) {
+	return;
+    }
 
     ## get the annotation related to the compseq
     my $comp_annot = $self->_get_compseq_annotation( $comp_id, $confidence_level );
@@ -227,9 +228,9 @@ sub _handle_seq_pair_alignment {
 	## We add the string 'possible' to the beginning of uncharacterized 
 	## matches but not to those which were just annotated as a conserved hypothetical
     } elsif( $confidence_level =~ /BER::uncharacterized/ ) {
-		$gp_name =~ s/(putative|possible|probable)\s//gi;
-		$gp_name = "Putative ".lc(substr($gp_name,0,1)).substr($gp_name,1);
-		$comp_annot->_set_value( 'gene_product_name', $gp_name );
+	$gp_name =~ s/(putative|possible|probable)\s//gi;
+	$gp_name = "Putative ".lc(substr($gp_name,0,1)).substr($gp_name,1);
+	$comp_annot->_set_value( 'gene_product_name', $gp_name );
     }
 
     ##If the match doesn't have any annotation, assign this
@@ -247,7 +248,7 @@ sub _handle_seq_pair_alignment {
             $ber_annot_levels->{ $anno_conf_level } ) {
             $self->_assign_annotation( $annotation, $comp_annot );
 
-        ## if they are the same confidence levels
+	## if they are the same confidence levels
         } elsif( $ber_annot_levels->{ $comp_conf_level } ==
                  $ber_annot_levels->{ $anno_conf_level } ) {
             
