@@ -1,7 +1,4 @@
-#!/usr/bin/perl
-
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
+#!/usr/bin/env perl
 
 =head1  NAME 
 
@@ -98,6 +95,7 @@ appropriate titles in the BSML Analysis element.  If not passed, the default 'hm
 =cut
 
 use strict;
+use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
 use Ergatis::Logger;
@@ -106,31 +104,33 @@ use BSML::BsmlRepository;
 use BSML::BsmlBuilder;
 use BSML::BsmlParserTwig;
 
+use Data::Dumper;
+
 my $fasta_input;
 my $data;
 my %options = ();
 my $results = GetOptions (\%options, 
-		'input|i=s',
-		'output|o=s',
-		'search_method|m=s',
-		'query_mol_type|qt=s',
-		'query_mol_class|qc=s',
-		'model_mol_type|mt=s',
-		'model_mol_class|mc=s',
-		'fasta_input|f=s',
-		'gzip_output|g=s',
-		'log|l=s',
-		'debug=s',
-		'help|h') || pod2usage();
+			  'input|i=s',
+			  'output|o=s',
+			  'search_method|m=s',
+			  'query_mol_type|qt=s',
+			  'query_mol_class|qc=s',
+			  'model_mol_type|mt=s',
+			  'model_mol_class|mc=s',
+			  'fasta_input|f=s',
+			  'gzip_output|g=s',
+			  'log|l=s',
+			  'debug=s',
+			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
-		'LOG_LEVEL'=>$options{'debug'});
+				 'LOG_LEVEL'=>$options{'debug'});
 $logger = $logger->get_logger();
 
 # display documentation
 if( $options{'help'} ){
-	pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
+    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
 }
 
 ## make sure all passed options are peachy
@@ -143,151 +143,140 @@ my $doc = new BSML::BsmlBuilder();
 open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for reading");
 
 if ($options{'search_method'} eq 'hmmpfam') {
-	$data = &read_hmmer2_output($options{'input'});
+    $data = &read_hmmer2_output($options{'input'});
 } elsif ($options{'search_method'} eq 'hmmpfam3') {
-	$data = &read_hmmer3_output($options{'input'});
+    $data = &read_hmmer3_output2($options{'input'});
 }
 
 ## check that these were successfully parsed
-unless ($data->{'hmm_file'})      { $logger->logdie("HMM file definition not found in input file.") }
-unless ($data-{'sequence_file'}) { $logger->logdie("Sequence file definition not found in input file.") }
+unless($data->{'info'}->{'hmm_file'})      { $logger->logdie("HMM file definition not found in input file.") }
+unless($data->{'info'}->{'sequence_file'}) { $logger->logdie("Sequence file definition not found in input file.") }
 
 ## fetch deflines
-my $deflines = get_deflines($data->{'sequence_file'});
+my $deflines = get_deflines($data->{'info'}->{'sequence_file'});
 
-my $qry_id;
-if ($data->{'query'}) {
-	$qry_id = $data->{'query'};
-## the query sequence only counts up the first whitespace
-	if ($qry_id =~ /(.+?)\s+/) {
-		$qry_id = $1;
+## This will hold all the alignments we've added to the document so far
+my %alignments;
+
+foreach my $qry_id ( keys %{$data->{'queries'}} ) {
+    my ($model, $description, $score, $eval, $domain_cnt, $alignment_data);
+
+    ## add the query sequence file to the doc
+    my $seq = $doc->createAndAddSequence($qry_id, $qry_id, undef, $options{'query_mol_type'}, $options{'query_mol_class'});
+    $seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
+    $doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $qry_id) if($options{'fasta_input'});
+    $doc->createAndAddBsmlAttribute($seq, 'defline', $deflines->{$qry_id}) if($deflines->{$qry_id});
+
+    ## for each model matched, create a Seq-pair-alignment and record the overall score and
+    ## overall E-value
+    foreach my $hit_id (keys %{$data->{'queries'}->{$qry_id}->{'hits'}} ) {
+	my $hit = $data->{'queries'}->{$qry_id}->{'hits'}->{$hit_id};
+
+	## add this model sequence if we haven't already
+	unless( $doc->returnBsmlSequenceByIDR($hit_id) ) {
+	    $doc->createAndAddSequence($hit_id, $hit->{'hit_description'}, undef, 
+				       $options{'model_mol_type'}, $options{'model_mol_class'});
 	}
-	unless ($qry_id) { $logger->logdie("Query sequence definition not found in input file.") }
-	my %alignments;
-	my ($model, $description, $score, $eval, $domain_cnt, $alignment_data);
-## add the query sequence file to the doc
-##  the use of 'aa' is not guaranteed here, but we're not using it anyway in loading
-	my $seq = $doc->createAndAddSequence($qry_id, $qry_id, undef, $options{'query_mol_type'}, $options{'query_mol_class'});
-	$seq->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'input_of');
-	my $identifier = $qry_id;
-	$doc->createAndAddSeqDataImport($seq, 'fasta', $fasta_input, '', $identifier) if($options{'fasta_input'});
-	$doc->createAndAddBsmlAttribute($seq, 'defline', $deflines->{$qry_id}) if($deflines->{$qry_id});
-## for each model matched, create a Seq-pair-alignment and record the overall score and
-## overall E-value
-	foreach my $hit (keys %{ $data->{ 'hit' } }) {
-## add this model sequence if we haven't already
-		if( !( $doc->returnBsmlSequenceByIDR($hit)) ){
-			my $seq = $doc->createAndAddSequence($hit, $data->{'hit'}->{$hit}->{'hit_description'}, undef, $options{'model_mol_type'}, $options{'model_mol_class'});
-		}
-	}		
-## we should now be in the region where the domain hits are described.  We'll add Seq-pair-runs
-##  to each of our Seq-pair-alignments here
-	foreach  my $hit (keys %{ $data->{ 'hit' } }) {
-		my $h = $data->{ 'hit' }->{ $hit };
-		foreach my $domain ( keys %{ $h->{ 'domain' } } ) {
-			my $dh = $h->{ 'domain' }->{ $domain };
 
-# If we have a seq-pair run we'll make sure we have an alignment to add the run to. If not we'll create it here.
-			if(!$alignments{$hit}) {
-				$alignments{$hit} = $doc->createAndAddSequencePairAlignment(
-						refseq => $qry_id,
-						refstart => 0,
-						compseq => $hit,
-						class => 'match');
-## add a link element inside this seq-pair-alignment
-				$alignments{$hit}->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
+	# Store all the hits as Seq-pair-alignments and all the domains as Seq-pair-runs
+	if( exists( $hit->{'domains'} ) ) {	
+	    my $aln_obj = $doc->createAndAddSequencePairAlignment(refseq => $qry_id, refstart => 0, 
+								  compseq => $hit_id, class => 'match');
+	    $aln_obj->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
+	    $doc->createAndAddBsmlAttribute($aln_obj, 'total_score', $hit->{'total_score'});
+	    $doc->createAndAddBsmlAttribute($aln_obj, 'total_e_value',  $hit->{'total_eval'});
+	    
 
-## add the total_score and total_eval for this pair
-				$doc->createAndAddBsmlAttribute($alignments{$hit}, 'total_score', $h->{'total_score'});
-				$doc->createAndAddBsmlAttribute($alignments{$hit}, 'total_e_value',  $h->{'total_eval'});
-			} 
-			my $run = $doc->createAndAddSequencePairRun(   
-					alignment_pair => $alignments{$hit},
-					runscore => $dh->{'domain_score'},
-					runlength => abs($dh->{'seq_t'} - $dh->{'seq_f'}) + 1,
-					comprunlength => abs($dh->{'hmm_t'} - $dh->{'hmm_f'}) + 1,
-					refpos => min($dh->{'seq_f'}, $dh->{'seq_t'}) - 1,
-					refcomplement => 0,
-					comppos => min($dh->{'hmm_f'}, $dh->{'hmm_t'}) - 1,
-					compcomplement => 0,
-					);
-## add other attributes of the run
-			$doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
-			$doc->createAndAddBsmlAttributes(
-					$run, 
-					e_value    => $dh->{'domain_evalue'},
-					domain_num => $domain,
-					domain_of  => $h->{'domain_count'}
-					);
+	    foreach my $domain ( sort { $a <=> $b } keys %{$hit->{'domains'}} ) {
+		my $dh = $hit->{'domains'}->{$domain};
+		my %options = ( 'alignment_pair' => $aln_obj,
+				'runscore'       => $dh->{'domain_score'},
+				'runlength'      => abs($dh->{'seq_t'} - $dh->{'seq_f'}) + 1,
+				'comprunlength'  => abs($dh->{'hmm_t'} - $dh->{'hmm_f'}) + 1,
+				'refpos'         => min($dh->{'seq_f'}, $dh->{'seq_t'}) - 1,
+				'refcomplement'  => 0,
+				'comppos'        => min($dh->{'hmm_f'}, $dh->{'hmm_t'}) - 1,
+				'compcomplement' => 0,
+				);
 
-		}
+		my $run = $doc->createAndAddSequencePairRun( %options );
+		$doc->createAndAddBsmlAttribute( $run, 'class', 'match_part');
+		$doc->createAndAddBsmlAttributes($run, 
+						 'e_value'    => $dh->{'domain_evalue'},
+						 'domain_num' => $domain,
+						 'domain_of'  => $hit->{'domain_count'}
+						 );
+
+	    }
+
 	}
+    }		
 }
+
 ## add the analysis element
-$doc->createAndAddAnalysis(
-		id => "$options{search_method}_analysis",
-		sourcename => $options{'output'},
-		program => $data->{'program'},
-		algorithm => $data->{'program'},
-		);
+$doc->createAndAddAnalysis('id'         => "$options{search_method}_analysis",
+			   'sourcename' => $options{'output'},
+			   'program'    => $data->{'info'}->{'program'},
+			   'algorithm'  => $data->{'info'}->{'program'}
+			   );
 ## now write the doc
 $doc->write($options{'output'}, '', $options{gzip_output});
-exit;
-
 
 sub check_parameters {
 ## make sure input file exists
-	if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
+    if (! -e $options{'input'}) { $logger->logdie("input file $options{'input'} does not exist") }
 ## make user an output file was passed
-	if (! $options{'output'}) { $logger->logdie("output option required!") }
+    if (! $options{'output'}) { $logger->logdie("output option required!") }
 ## handle defaults
-	$options{'search_method'} = 'hmmpfam3' unless ( $options{'search_method'} );
-	if($options{'fasta_input'}) {
-		$fasta_input = $options{'fasta_input'};
-	}
-	return 1;
+    $options{'search_method'} = 'hmmpfam3' unless ( $options{'search_method'} );
+    if($options{'fasta_input'}) {
+	$fasta_input = $options{'fasta_input'};
+    }
+    return 1;
 }
 
 sub min {
-	my ($num1, $num2) = @_;
-	if ($num1 < $num2) {
-		return $num1;
-	} else {
-		return $num2;
-	}
+    my ($num1, $num2) = @_;
+    if ($num1 < $num2) {
+	return $num1;
+    } else {
+	return $num2;
+    }
 }
 
 ## retrieve deflines from a fasta file
 sub get_deflines {
-	my ($fasta_file) = @_;
-	my $deflines = {};
-	my $ifh;
-	if (! -e $fasta_file) {
-		if (-e $fasta_file.".gz") {
-			$fasta_file .= ".gz";
-		} elsif (-e $fasta_file.".gzip") {
-			$fasta_file .= ".gzip";
-		}
+    my ($fasta_file) = @_;
+    die("Pass in fasta_file") unless( defined( $fasta_file ) );
+
+    my $deflines = {};
+    my $ifh;
+    if (! -e $fasta_file) {
+	if (-e $fasta_file.".gz") {
+	    $fasta_file .= ".gz";
+	} elsif (-e $fasta_file.".gzip") {
+	    $fasta_file .= ".gzip";
 	}
-	if ($fasta_file =~ /\.(gz|gzip)$/) {
-		open ($ifh, "<:gzip", $fasta_file)
-			|| $logger->logdie("can't open input file '$fasta_file': $!");
-	} else {
-		open ($ifh, $fasta_file)
-			|| $logger->logdie("Failed opening '$fasta_file' for reading: $!");
+    }
+    if ($fasta_file =~ /\.(gz|gzip)$/) {
+	open ($ifh, "<:gzip", $fasta_file)
+	    || $logger->logdie("can't open input file '$fasta_file': $!");
+    } else {
+	open ($ifh, $fasta_file)
+	    || $logger->logdie("Failed opening '$fasta_file' for reading: $!");
+    }
+    while (<$ifh>) {
+	unless (/^>/) {
+	    next;
 	}
-	while (<$ifh>) {
-		unless (/^>/) {
-			next;
-		}
-		chomp;
-		if (/^>((\S+).*)$/) {
-			$deflines->{$2} = $1;
-		}
+	chomp;
+	if (/^>((\S+).*)$/) {
+	    $deflines->{$2} = $1;
 	}
-	close $ifh;
-	if (scalar(keys(%{$deflines})) < 1) {
-		$logger->warn("Defline lookup failed for '$fasta_file'");
-	}
-	return $deflines;
+    }
+    close $ifh;
+    if (scalar(keys(%{$deflines})) < 1) {
+	$logger->warn("Defline lookup failed for '$fasta_file'");
+    }
+    return $deflines;
 }
