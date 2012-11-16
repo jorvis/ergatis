@@ -145,7 +145,7 @@ open (my $ifh, $options{'input'}) || $logger->logdie("can't open input file for 
 if ($options{'search_method'} eq 'hmmpfam') {
     $data = &read_hmmer2_output($options{'input'});
 } elsif ($options{'search_method'} eq 'hmmpfam3') {
-    $data = &read_hmmer3_output2($options{'input'});
+    $data = &read_hmmer3_output($options{'input'});
 }
 
 ## check that these were successfully parsed
