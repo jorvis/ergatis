@@ -55,7 +55,7 @@
                 <value>$;BAM_OUTPUT_LIST$;</value>
             </param>
             <param>  
-                <key>--output_list</key>
+                <key>--output_map</key>
                 <value>$;OUTPUT_QUERY_BAM_MAP$;</value>
             </param>
 	    <param>

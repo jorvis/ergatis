@@ -5,6 +5,8 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use File::Basename;
 use SNP::MergedTable;
 
+use Data::Dumper;
+
 my %options = &check_options();
 
 ## Holds a map of query accessions to fasta files
@@ -77,7 +79,8 @@ sub write_to_outfile {
 		  push(@c, (join("/",map{ $_->[0] } @best_mappings), join("/",map{ $_->[1] } @best_mappings)) );
 		  
 	      } else {
-		  die("Could not find mapping for $query [$refmol, $refpos]");
+		  print "No mapping for $refmol:$refpos on query $query\n";
+		  #die("Could not find mapping for $query [$refmol, $refpos]");
 	      }
 	  }
 	  print $ofh join("\t", @c)."\n";
@@ -123,9 +126,10 @@ sub parse_blast_list {
 
   my $snps = 0;
   foreach my $blast ( @files ) {
+      print "$blast [ $count / $total ]\n";
       $snps += &parse_blast_file( $blast );
       $count++;
-      print "$count / $total\r";
+      #print "$count / $total\r";
   }
   
   print "\nDone. Found $snps SNPS\n";
@@ -147,7 +151,7 @@ sub parse_blast_file {
 	  
 	  # does the id exist? can we map it?
 	  unless( exists( $query_map{ $id } ) ) {
-		  die("Couldn't map blast subject: $id");
+	      die("Couldn't map blast subject: $id");
 	  }
 
 	  my ($subject_pos,$eval) = &parse_hit( $in, $id );

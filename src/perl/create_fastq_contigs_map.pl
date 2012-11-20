@@ -107,20 +107,30 @@ sub parse_fastq_list {
     open(IN, "< $list") or die("Can't open $list: $!");
     while( my $l = <IN> ) {
 	chomp($l);
-	open(LIST, "< $l") or die("Can't open $l: $!");
-	chomp( my @fastqs = <LIST> );
-	close(LIST);
-	
-	my @bnames;
-	map { push(@bnames,basename($_)) } @fastqs;
 
-	my $lcp = &lcp( @bnames );
-	if( exists( $map->{$lcp} ) ) {
-	    push(@pairs, [$map->{$lcp},$l]);
+	my $list_basename = basename( $l, qw(.fastq.list) );
+	if( exists( $map{ $list_basename } ) ) {
+	    push(@pairs, [$map->{$list_basename},$l]);
 	} else {
-	    die("Couldn't find mapping for fastq list $l");
+	    print Dumper( $map );
+	    die("Couldn't find mapping for fastq list $l [$list_basename]");
 	}
+
     }
+# 	open(LIST, "< $l") or die("Can't open $l: $!");
+# 	chomp( my @fastqs = <LIST> );
+# 	close(LIST);
+	
+# 	my @bnames;
+# 	map { push(@bnames,basename($_)) } @fastqs;
+
+# 	my $lcp = &lcp( @bnames );
+# 	if( exists( $map->{$lcp} ) ) {
+# 	    push(@pairs, [$map->{$lcp},$l]);
+# 	} else {
+# 	    die("Couldn't find mapping for fastq list $l");
+# 	}
+#     }
     close(IN);
     return @pairs;
 }
@@ -133,9 +143,10 @@ sub parse_map {
 		'store_velvet' => sub {
 		    my ($map, $contigs, $fastqs, $read_names) = @_;
 		    my @f = split(/,/, $fastqs);
-		    map { $_ = basename( $_ ) } @f;
-		    my $lcp = &lcp( @f );
-		    $map->{$lcp} = $contigs;
+		    map { $_ = basename( $_, qw(.txt .fastq.gz .fastq .fq.gz .fq) ) } @f;
+		    #my $lcp = &lcp( @f );
+		    #$map->{$lcp} = $contigs;
+		    $map->{$f[0]} = $contigs;
 		},
 		'store_celera' => sub { 
 		    my ($map, $contigs, $gkpstore) = @_;

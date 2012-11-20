@@ -90,12 +90,14 @@ foreach my $fq ( @fastqs ) {
 
 #Create a list file for the output filtered fastq files.
 my @basenames;
-map { push(@basenames, basename( $_ )) } @fastqs;
-my $basename = &lcp( @basenames );
-unless( $basename ) {
-    print Dumper( \@fastqs );
-    die("Could not find shared prefix between fastq files");
-}
+map { push(@basenames, basename( $_, qw(.txt .fastq.gz .fq.gz .fq .fastq) ) ) } @fastqs;
+
+##my $basename = &lcp( @basenames );
+# I used to use the least common prefix here, but in some cases
+# this can be very small and not unique within the set. So instead,
+# just name the output file based on on of the fastq files.
+my $basename = $basenames[0];
+
 $basename =~ s/(\.fastq|\.fq)(\.gz)?$//;
 my $outlist = $options{'output_dir'}."/$basename.fastq.list";
 open(OUT, "> $outlist");

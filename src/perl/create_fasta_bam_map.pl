@@ -86,11 +86,11 @@ my $results = GetOptions (\%options,
 &check_options(\%options);
 
 my %queries = &parse_query_list( $options{'query_list'} );
-my %map = &map_bam_files( $options{'bam_list'}, \%queries, $strict );
+my @pairs = &map_bam_files( $options{'bam_list'}, \%queries, $strict );
 
 my $ofh = open_file( $options{'output_map'}, 'out' );
-foreach my $fasta ( keys %map ) {
-    print $ofh "$fasta\t".$map{$fasta}."\n";
+foreach my $p ( @pairs ) {
+    print $ofh join("\t", @{$p})."\n";
 }
 close($ofh);
 
@@ -100,30 +100,37 @@ sub map_bam_files {
     my $bfh = open_file( $bam_list, 'in' );
     chomp( my @bam_files = <$bfh> );
     close($bfh);
+    
+    my %leftover_queries = %{$queries};
 
-    my %map;
+    my @pairs;
     for( @bam_files ) {
 	my $basename = basename( $_, qw(.bam) );
+
+	my $flag = 0;
+	$flag = 1 if( $basename =~ /VC_18/ );
+
 	my $query_match;
 	foreach my $qname ( keys %{$queries} ) {
-	    next unless( $basename =~ /$qname/ );
+	    next unless( $basename =~ /$qname[\._]/ );
 	    $query_match = $queries->{$qname};
-	    delete( $queries->{$qname} );
+	    delete( $leftover_queries{$qname} ) if( exists( $leftover_queries{$qname} ) );
 	    last;
 	}
 	if( defined( $query_match ) ) {
-	    $map{$query_match} = $_;
+	    push(@pairs, [$query_match,$_]);
 	} else {
-	    &_log($ERROR, "Couldn't find matching query for bam file $_");
+	    &_log($WARN, "Couldn't find matching query for bam file $_");
 	}
+
     }
 
-    if( keys %{$queries} ) {
-	print Dumper( $queries );
-	&_log($ERROR, "Couldn't find matching bam files for the previous queries");
+    if( keys %leftover_queries ) {
+	&_log($WARN, Dumper( \%leftover_queries ) );
+	&_log($WARN, "Couldn't find matching bam files for the previous queries");
     }
 
-    return %map;
+    return @pairs;
 	
 }
 
@@ -135,6 +142,7 @@ sub parse_query_list {
 
     my %retval;
     for( @qfiles ) {
+	next if( /^\s*$/ );
 	my $basename = basename( $_, @possible_query_extensions );
 	$retval{$basename} = $_;
     }
