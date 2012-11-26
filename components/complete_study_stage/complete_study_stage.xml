@@ -29,6 +29,10 @@
                                 <value>$;STUDY_STAGE_ID$;</value>
                         </param>
                         <param>
+                                <key>--config</key>
+                                <value>$;CONFIG$;</value>
+                        </param>
+                        <param>
                                 <key>--log</key>
                                 <value>$;TMP_DIR$;/complete_study_stage.log</value>
                         </param>

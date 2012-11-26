@@ -42,6 +42,7 @@ wishes to sync their pipeline progress with a sample and study from the IGS Proj
 use strict;
 use warnings;
 use IPD::Client;
+use IPD::IPDObject::StudyStage;
 # Extended processing of command line options
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 # Prints usage message from embedded pod documentation
@@ -68,6 +69,7 @@ my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
 ################
 GetOptions(\%options,
 	   'study_stage_id|s=s',
+	   'config|c=s',
 	   'log|l=s', 
 	   'help|h'
 	  ) or pod2usage();
@@ -76,12 +78,13 @@ pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($options{'h
 
 &check_parameters();
 
-exit(0) (if $ss_id == -1);	#since no automatic annotation study stage was specified... just exit
+exit(0) if $ss_id == -1;	#since no automatic annotation study stage was specified... just exit
 
 IPD::Client->set_client($config);
 my $ss = IPD::IPDObject::StudyStage->get_study_stage($ss_id) or die("Cannot create new IPD::IPDObject::StudyStage object... perhaps your study stage ID does not exist $!\n");
 $ss->set_status('complete');
 $ss->save_study_stage($ss);
+print "Study Stage " . $ss->get_id() . " has been marked as \'complete\' in IPD\n";
 exit(0);
 
 ###############
@@ -102,6 +105,10 @@ sub check_parameters{
 	 	 $ss_id = $options{'study_stage_id'};
 	} else { 
 		printLogMsg(1,"No Study Stage ID options present\n") if (exists($options{'log'}));
+	}
+
+	if (exists($options{'config'})){
+		$config = $options{'config'};
 	}
 }
 
