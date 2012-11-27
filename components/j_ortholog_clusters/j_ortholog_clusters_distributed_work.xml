@@ -36,6 +36,15 @@
                 <value>$;PCOVERAGE_CUTOFF$;</value>
             </param>
             <param>
+                <key>--identityCutoff</key>
+                <value>$;PIDENTITY_CUTOFF$;</value>
+            </param>
+            <param>
+                <key>--similarityCutoff</key>
+                <value>$;PSIMILARITY_CUTOFF$;</value>
+            </param>
+
+            <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/bsml2cogbtab.stdout</value>
             </param>

@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -73,6 +74,8 @@ my $results = GetOptions( \%options,
               'outfile|o=s', 
               'pvalcut|p=s', 
               'coverageCutoff|c=s',
+              'identityCutoff|i=s',
+              'similarityCutoff|s=s',
               'log|l=s',
               'debug=s',
               'help|h') || pod2usage();
@@ -369,6 +372,16 @@ my $alnhandlers = {'Seq-pair-alignment'=>
                if($expat->{'Context'}->[$index] eq 'Seq-pair-alignment'){
                    if($params{'name'} eq 'percent_coverage_refseq'){
                        if($params{'content'} < $options{'coverageCutoff'}) {
+                           %alnparams = ();
+                       }
+                   }
+                   if($params{'name'} eq 'percent_identity'){
+                       if($params{'content'} < $options{'identityCutoff'}) {
+                           %alnparams = ();
+                       }
+                   }
+                   if($params{'name'} eq 'percent_similarity'){
+                       if($params{'content'} < $options{'similarityCutoff'}) {
                            %alnparams = ();
                        }
                    }

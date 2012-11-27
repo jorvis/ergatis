@@ -53,6 +53,10 @@
                 <key>--percent_identity</key>
                 <value>$;PIDENTITY_CUTOFF$;</value>
             </param>
+            <param>
+                <key>--percent_similarity</key>
+                <value>$;PSIMILARITY_CUTOFF$;</value>
+            </param>
             <param>  
                 <key>--percent_coverage</key>
                 <value>$;PCOVERAGE_CUTOFF$;</value>
