@@ -154,40 +154,62 @@ sub _handle_seq_pair_alignment {
     my $ref_id = $spa->getAttribute('refseq');
     my $comp_id = $spa->getAttribute('compseq');
 
+#    print "Comparing $ref_id with $comp_id\n";
+
     ## get the correct annotation id (i.e. if we are annotating on transcript)
     ## we need db1.transcript.123456.1 instead of the CDS id
     my $annotation_feature_id = $self->lookup_feature_id( $ref_id, $self->annotate_on );
     unless( $annotation_feature_id ) {
+	print "\tDidn't find annotation feature id, so skipping\n";
 	return;
     }
+  #  print "\tFound annotation feature id: $annotation_feature_id\n";
 
     ## get the annotation object. If nothing is returned, we shouldn't be annoting
     ## this feature.
     my $annotation = $self->get_feature_annotation( $annotation_feature_id );
-    return if( !defined( $annotation ) );
+    if( !defined( $annotation ) ) {
+	print "\tCouldn't find annotation object, so not annotating this feature\n";
+	return;
+    }
+ #   print "\tFound the annotation object, so continuing to annotate\n";
 
     ## make sure the match passes cutoff
     unless( &_match_passes_cutoff( $spa ) ) {
+#	print "\tMatch did not pass cutoff, skipping\n";
 	return;
     }
 
     ## Grab the cluster id and see if the match is characterized
     my $db = $self->{'_uniref_clusters_annot'};
     my $comp_trusted = $db->is_trusted( $comp_id );
+#     print "\tComp_trusted? ";
+#     if( $comp_trusted ) {
+# 	print "$comp_trusted";
+#     } else {
+# 	print "undefind";
+#     } 
+#     print "\n";
     
     ## assign confidence level
     my ($query_coverage, $subject_coverage) = $self->_calculate_spr_coverage( $ref_id, $comp_id, $spa );
     my $confidence_level = $self->_assign_confidence_level( $query_coverage, $subject_coverage, 
                                                             $comp_trusted );
 
+    #print "\tConfidence level: $confidence_level\n";
+
     ## we don't use annotation from partial::partial matches.
     if( $confidence_level eq 'BER::uncharacterized::partial::partial' ||
 	$confidence_level eq 'BER::characterized::partial::partial' ) {
+	#print "\tSkipping because partial::partial\n";
 	return;
     }
 
     ## get the annotation related to the compseq
     my $comp_annot = $self->_get_compseq_annotation( $comp_id, $confidence_level );
+    
+    #print "\tFound annotation related to comp_seq\n";
+    #print Dumper( $comp_annot );
 
     ## -> Skip matches that contain the words 'hypothetical' in the common name
     ## -> Skip matches that don't have a common name
@@ -204,8 +226,14 @@ sub _handle_seq_pair_alignment {
     ## Skipping matches that don't have a common name 
     ## or it contains the word hypothetical
     my $gp_name = ($comp_annot->get('gene_product_name'))[0]->[0];
-    return unless( defined( $gp_name ) && $gp_name ne "" );
-    return if( $gp_name =~ /hypothetical/i );
+    unless( defined( $gp_name ) && $gp_name ne "" ) {
+	#print "\tReturning because gp name is blank [$gp_name]\n";
+	return;
+    }
+    if( $gp_name =~ /hypothetical/i ) {
+	#print "\tReturning because gp name of comp seq has the word hypothetical in it\n";
+	return;
+    }
     
     ## Add the words 'domain protein' to full::partial matches.
     ## Make sure there isn't the word protein already in the common name to 
@@ -218,11 +246,13 @@ sub _handle_seq_pair_alignment {
         $gp_name =~ s/\s*protein$//;
         $gp_name .= " domain protein";
         $comp_annot->_set_value( 'gene_product_name', $gp_name );
+	#print "\tSetting value of gp name to $gp_name\n";
     }
 
     ## If the match is not characterized and contains vague words ('putative', 'probable', etc.)
     ## then annotation is changed to conserved hypothetical
     if( $self->_is_name_ambiguous( $gp_name ) && !$comp_trusted ) {
+	#print "\tThe name is abmiguous and it's not characterized, assigning as conserved hypo\n";
         $self->_assign_as_conserved_hypothetical( $comp_annot );
 
 	## We add the string 'possible' to the beginning of uncharacterized 
@@ -231,10 +261,12 @@ sub _handle_seq_pair_alignment {
 	$gp_name =~ s/(putative|possible|probable)\s//gi;
 	$gp_name = "Putative ".lc(substr($gp_name,0,1)).substr($gp_name,1);
 	$comp_annot->_set_value( 'gene_product_name', $gp_name );
+	#print "\tAdding possible because uncharacterized match [$gp_name]\n";
     }
 
     ##If the match doesn't have any annotation, assign this
     if( !($annotation->has_annotation()) ) {
+	#print "\tAssigning annotation because there was none\n";
         $self->_assign_annotation( $annotation, $comp_annot );
     } else {
 
@@ -246,6 +278,7 @@ sub _handle_seq_pair_alignment {
         ## is better than the current annotation
         if( $ber_annot_levels->{ $comp_conf_level } <
             $ber_annot_levels->{ $anno_conf_level } ) {
+	    #print "\tThe comp annot level was better than current annotation, so replacing\n";
             $self->_assign_annotation( $annotation, $comp_annot );
 
 	## if they are the same confidence levels
@@ -262,10 +295,14 @@ sub _handle_seq_pair_alignment {
             ## if the match has more annotation than current annotation
             ## transfer the annotation
             if( $comp_count > $cur_count ) {
+		#print "\tThe comp annotation has same level, but was better anyway, so replacing\n";
                 $self->_assign_annotation( $annotation, $comp_annot );
             }
         }
     }
+
+    my $annot = $self->get_feature_annotation( $annotation_feature_id );
+    
 }
 
 ## Checks to see if the name contains one of the following words
@@ -350,45 +387,27 @@ sub _match_passes_cutoff {
     my ($spa) = @_;
     my $retval = 0;
 
-    
-	my @sprs = $spa->findnodes("Seq-pair-run");
-    #die("SPA had more than one SPR.  Is this supposed to happen with BER results?")
-    #    unless( @sprs == 1 );
-    my $spr = shift @sprs;
-	my ($attribute) = $spr->findnodes('Attribute[@name="percent_identity"]');
-	if( $attribute ) {
-		my $per_id = $attribute->getAttribute('content');
-		if( $per_id >= $percent_id_cutoff ) {
-			$retval = 1;
-			last;
-		}
-	} else {
-		die("Could not find percent identity from spr");
-	}
-	return $retval;
-    
+    my ($att) = $spa->findnodes('Attribute[@name="percent_identity"]');
+    if( $att ) {
+	my $per_id = $att->getAttribute('content');
+	$retval = 1 if( $per_id >= $percent_id_cutoff );
+    } else {
+	die("Could not parse percent_identity attribute from spa");
+    }
+
+    return $retval;
 }
 
 sub _calculate_spr_coverage {
     my ($self, $query_id, $subject_id, $spa) = @_;
-    
-    my @sprs = $spa->findnodes( 'Seq-pair-run' );
 
-    
-    my $spr = $sprs[0];
-	my $query_length = $self->_seq_length( $query_id );
-	my $subject_length = $self->_specific_seq_length( $subject_id );
-	
-	die("Could not get length for $query_id") unless( $query_length );	
-	die("Could not get length for $subject_id") unless( $subject_length );
-	
-	my $query_hit_length = $spr->getAttribute('runlength');
-	my $subject_hit_length = $spr->getAttribute('comprunlength');
-	
-	my $query_per_cov = int(( ($query_hit_length/$query_length)*10000 )+.5)/100;
-	my $subject_per_cov = int(( ($subject_hit_length/$subject_length)*10000 )+.5)/100;
-	
-    return ($query_per_cov, $subject_per_cov);
+    my ($pc_query_att)   = $spa->findnodes('Attribute[@name="percent_coverage_refseq"]');
+    my ($pc_subject_att) = $spa->findnodes('Attribute[@name="percent_coverage_compseq"]');
+
+    my $pc_query   = $pc_query_att->getAttribute('content');
+    my $pc_subject = $pc_subject_att->getAttribute('content');
+
+    return ($pc_query, $pc_subject);
 }
 
 sub _assign_confidence_level {
