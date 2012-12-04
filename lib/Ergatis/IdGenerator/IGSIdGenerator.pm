@@ -165,7 +165,7 @@ umask(0000);
 
     my %_attributes = (
                         id_repository           => undef,
-                        logging                 => 1,
+                        logging                 => 0,
                         log_dir                 => undef,
                         _id_pending             => undef,
                         _id_repository_checked  => 0,
