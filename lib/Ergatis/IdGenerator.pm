@@ -147,9 +147,12 @@ $|++;
 ## class data and methods
 {
     sub new {
-        my ($class, @args) = @_;
+        my ($class, %args) = @_;
+        if(! defined($args{logging})) {
+            $args{logging} = 0;
+        }
         ## create the object
-        my $self = new $Ergatis::IdGenerator::Config::class(@args);
+        my $self = new $Ergatis::IdGenerator::Config::class(%args);
         
         return $self;
     }
