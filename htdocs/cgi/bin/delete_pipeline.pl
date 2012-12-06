@@ -88,6 +88,11 @@ umask(0000);
 ## make sure all passed options are peachy
 &check_parameters(\%options);
 
+## small sanity check
+if ( $pipeline_id =~ /[^A-Z0-9]/i ) {
+    die "ERROR: encountered a pipeline ID with non-alphanumeric characters.  Cowardly refusing to proceed with requested delete.";
+}
+
 ## create the lock file if requested
 my $lockfh;
 if ( $options{lock_file} ) {
