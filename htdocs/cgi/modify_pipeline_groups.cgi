@@ -15,6 +15,18 @@ my $repository_root = $q->param('repository_root');
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
+my $username = user_logged_in($ergatis_cfg);
+unless ($username) {
+    print $q->header( -type => 'text/html' );
+    print_error_page( ergatis_cfg => $ergatis_cfg,
+                      message => "You must be logged in to modify pipeline groups",
+                      links => [
+                                 { label => "pipeline list", is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root&view=group" },
+                               ]
+                    );
+    exit(0);
+}
+
 unless ( $ids_passed && $action && $repository_root ) {
     print $q->header( -type => 'text/html' );
     

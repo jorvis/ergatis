@@ -27,6 +27,17 @@ my $group_id = $q->param('group_id') || '';
 ## read the ergatis config file
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
+my $username = user_logged_in($ergatis_cfg);
+unless ($username) {
+    print_error_page( ergatis_cfg => $ergatis_cfg,
+                      message => "You must be logged in to create projects",
+                      links => [
+                                 { label => "pipeline list", is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" },
+                               ]
+                    );
+    exit(0);
+}
+
 ## message to prompt the user to enter a project root
 my $enter_msg = 'enter project root directory';
 

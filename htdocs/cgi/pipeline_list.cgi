@@ -205,6 +205,7 @@ sub print_template {
     $tmpl->param( SHOW_PRE_CONTINUATION => $show_pre_continuation );
     $tmpl->param( SHOW_POST_CONTINUATION => $show_post_continuation );
     $tmpl->param( IS_PER_ACCOUNT_PIPELINES => $per_account_pipelines );
+    $tmpl->param( LOGGED_IN => defined($username) ? 1 : 0);
     $tmpl->param( USER => $username );
 
     ## print the template

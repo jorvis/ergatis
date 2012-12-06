@@ -11,6 +11,9 @@ use File::Basename;
 
 my $q = new CGI;
 
+my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+my $username = user_logged_in($ergatis_cfg);
+
 my $instance = $q->param('instance');
 my $repository_root = $q->param('repository_root');
 my $template_name = "temp$$";
@@ -19,6 +22,16 @@ my ($pipeline_id) = ($instance =~ /.*\/pipeline\/([A-Z0-9]+)\//);
 my $pipeline_layout = $pipeline_dir."pipeline.layout";
 my @pipeline_configs = glob($pipeline_dir."*.config");
 
+unless ($username) {
+    print $q->header( -type => 'text/html' );
+    print_error_page( ergatis_cfg => $ergatis_cfg,
+                      message => "You must be logged in to clone pipelines",
+                      links => [ 
+                                 { label => "pipeline list", is_last => 1, url => "./pipeline_list.cgi?repository_root=$repository_root" },
+                               ],
+                    );
+    exit(0);
+}
 
 ## if we get to here all needed options were passed
 mkdir('/tmp/pipelines_building');

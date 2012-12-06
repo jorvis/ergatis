@@ -16,6 +16,16 @@ my $q = new CGI;
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => 'ergatis.ini' );
 my $global_id_repository = $ergatis_cfg->val('paths', 'global_id_repository') || die "global_id_repository not found in ergatis.ini";
 
+my $username = user_logged_in($ergatis_cfg);
+unless ($username) {
+    print $q->header( -type => 'text/html' );
+    print_error_page( ergatis_cfg => $ergatis_cfg,
+                      message => "You must be logged in to run pipelines",
+                      links => []
+                    );
+    exit(0);
+}
+
 ## fetch a hashref of all the parameters, since we'll potentially be
 ##  querying a lot of them
 my $qvars = $q->Vars;
