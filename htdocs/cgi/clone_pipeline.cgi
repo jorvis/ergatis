@@ -12,6 +12,7 @@ use File::Basename;
 my $q = new CGI;
 
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
+my $auth_method = $ergatis_cfg->val('authentication', 'authentication_method');
 my $username = user_logged_in($ergatis_cfg);
 
 my $instance = $q->param('instance');
@@ -22,7 +23,7 @@ my ($pipeline_id) = ($instance =~ /.*\/pipeline\/([A-Z0-9]+)\//);
 my $pipeline_layout = $pipeline_dir."pipeline.layout";
 my @pipeline_configs = glob($pipeline_dir."*.config");
 
-unless ($username) {
+unless ($auth_method eq 'open' || defined($username)) {
     print $q->header( -type => 'text/html' );
     print_error_page( ergatis_cfg => $ergatis_cfg,
                       message => "You must be logged in to clone pipelines",

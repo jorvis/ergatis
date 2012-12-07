@@ -37,7 +37,8 @@ my $tmpl = HTML::Template->new( filename => 'templates/edit_config.tmpl',
 my $ergatis_cfg = new Ergatis::ConfigFile( -file => "ergatis.ini" );
 
 my $username = user_logged_in($ergatis_cfg);
-unless ($username) {
+my $auth_method = $ergatis_cfg->val('authentication', 'authentication_method');
+unless ($auth_method eq 'open' || defined($username)) {
     print_error_page( ergatis_cfg => $ergatis_cfg,
                       message => "You must be logged in to edit project configs",
                       links => [],
