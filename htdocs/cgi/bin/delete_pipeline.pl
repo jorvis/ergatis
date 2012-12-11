@@ -89,7 +89,7 @@ umask(0000);
 &check_parameters(\%options);
 
 ## small sanity check
-if ( $pipeline_id =~ /[^A-Z0-9]/i ) {
+if ( $options{'pipeline_id'} =~ /[^A-Z0-9]/i ) {
     die "ERROR: encountered a pipeline ID with non-alphanumeric characters.  Cowardly refusing to proceed with requested delete.";
 }
 
