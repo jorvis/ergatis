@@ -29,6 +29,7 @@ kgalens@tigr.org
 
 
 use strict;
+use MLDBM 'DB_File';
 use Data::Dumper;
 
 sub new {
@@ -86,6 +87,23 @@ sub buildTree {
 
     return 1;
 
+}
+
+sub treeFromFile {
+    my ($self,$file) = @_;
+    die("Fild should exist") unless( -e $file );
+    my %tied_hash;
+    tie(%tied_hash, 'MLDBM', $file);
+    %{$self->{'root'}} = %tied_hash;
+    untie(%tied_hash);
+}
+
+sub treeToFile {
+    my ($self,$file) = @_;
+    my %tied_hash;
+    tie(%tied_hash, 'MLDBM', $file);
+    %tied_hash = %{$self->{'root'}};
+    untie(%tied_hash);
 }
 
 
