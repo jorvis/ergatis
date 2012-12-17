@@ -273,7 +273,8 @@ sub _searchNode {
 
 
 sub searchPoint {
-
+    my ($self, $point) = @_;
+    $self->searchInterval( $point, $point );
 }
 
 1;
