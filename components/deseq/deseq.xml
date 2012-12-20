@@ -24,7 +24,7 @@
 		<!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create TIFF image list</name>
+            <name>create PDF figures list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/generate_list_file</executable>
             <param>  
@@ -33,19 +33,19 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.ma_plot.tiff"</value>
+                <value>".*\.pdf"</value>
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;OUTPUT_TIFF_IMAGES$;</value>
+                <value>$;OUTPUT_PDF_FIGURES$;</value>
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.tiff.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.pdf.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.tiff.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.pdf.stderr</value>
 			</param>
 			<arg>--v</arg>
         </command>

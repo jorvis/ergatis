@@ -66,6 +66,8 @@ if (($hCmdLineOption{'annotationfiletype'} !~ m/^bed$/i) &&
     die "\tERROR: Annotation file format needs to be a BED, GTF or GFF3 format file\n";
 }
 
+if ($hCmdLineOption{'groupby'} eq 'NONE' ){undef $hCmdLineOption{'groupby'};}
+
 if (($hCmdLineOption{'annotationfiletype'} =~ m/^(gtf|gff3)$/i) && 
 	((! defined $hCmdLineOption{'feature'}) || (! defined $hCmdLineOption{'attribute'}))) {
     die "\tERROR: 'feature' and 'attribute' required for GTF and GFF3 annotation file formats\n";
@@ -974,11 +976,11 @@ __END__
 
 =head1 NAME
 
-alignment_coverage_stats.pl - program to generate read counts and coverage statistics across features.
+rpkm_coverage_stats.pl - program to generate read counts and coverage statistics across features.
 
 =head1 SYNOPSIS
 
-    alignment_coverage_stats.pl --r <reference_file> --i <bam_file> --a <annotation_file> --rt <region_type> 
+    rpkm_coverage_stats.pl      --r [reference_file] --i <bam_file> --a <annotation_file> --rt <region_type> 
                                 --t <annotation file format (bed|gtf|gff3)> --f <feature> --id <attribute> 
                                 --g <group_by> [--o <output_dir>] [--b <bedtools_bin_dir>] [--s <samtools_bin_dir>] 
                                 [--v]

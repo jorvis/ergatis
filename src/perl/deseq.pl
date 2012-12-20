@@ -71,7 +71,7 @@ use FindBin qw($RealBin);
 use constant FALSE => 0;
 use constant TRUE  => 1;
 
-use constant R_BIN_DIR => '/usr/local/packages/R-2.12.0/bin';
+use constant R_BIN_DIR => '/usr/local/packages/R-2.15.2/bin';
 
 use constant VERSION => '1.0.0';
 use constant PROGRAM => eval { ($0 =~ m/(\w+\.pl)$/) ? $1 : $0 };
@@ -191,14 +191,22 @@ close($fpOUT);
 ($bDebug || $bVerbose) ? 
 	print STDERR "\nInitiating DESeq Analysis ...\n" : ();
 
-$sCmd  = $hCmdLineOption{'r_bin_dir'}."/R".
-		 " ".$hCmdLineOption{'r_params'}.
+# commented out since we are using a new version of DESeq (see command below) - tcreasy [12/10/12]
+# this should be deleted soon
+#$sCmd  = $hCmdLineOption{'r_bin_dir'}."/R".
+#		 " ".$hCmdLineOption{'r_params'}.
+#		 " --args ".$sOutDir."/deseq.sample.info.txt".
+#		 " ".$sOutDir;
+#$sCmd .= " ".$hCmdLineOption{'annotation'} if ((defined $hCmdLineOption{'annotation'}) && ($hCmdLineOption{'annotation'} !~ m/^$/));
+#$sCmd .= " < ".$sRScript;
+
+# command for deseq-1.10.1 - tcreasy [12/10/12]
+$sCmd  = $sRScript . 
+	     " ".$hCmdLineOption{'r_params'}.
 		 " --args ".$sOutDir."/deseq.sample.info.txt".
 		 " ".$sOutDir;
 
-$sCmd .= " ".$hCmdLineOption{'annotation'} if ((defined $hCmdLineOption{'annotation'}) && ($hCmdLineOption{'annotation'} !~ m/^$/));
-
-$sCmd .= " < ".$sRScript;
+print "\n\nCMD:\n\n$sCmd\n\n";
 
 exec_command($sCmd);
 
@@ -221,7 +229,12 @@ sub check_parameters {
     ## handle some defaults
     $phOptions->{'r_bin_dir'} = R_BIN_DIR if (! (defined $phOptions->{'r_bin_dir'}) );
     $phOptions->{'r_params'} = '--slave --vanilla' if (! (defined $phOptions->{'r_params'}) );
-    $phOptions->{'r_script'} = $RealBin."/deseq.v1.2.1.R" if (! (defined $phOptions->{'r_script'}) );
+
+    # commented out since we are using a new version of DESeq (see command below) - tcreasy [12/10/12]
+    # this should be deleted soon
+    #$phOptions->{'r_script'} = $RealBin."/deseq.v1.2.1.R" if (! (defined $phOptions->{'r_script'}) );
+
+    $phOptions->{'r_script'} = $RealBin."/deseq.R" if (! (defined $phOptions->{'r_script'}) );
     
     # set environment variables
 	set_environment($phOptions);

@@ -433,7 +433,7 @@ sub Generate_Stranded_BAM {
 	
 	if (defined $phCmdLineOption->{'single_end'}) {
 		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.sense.bam");
-		if ($phCmdLineOption->{'librarytype'} =~ m/^firststrand$/i) {
+		if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
 			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -f 16");
 		}
 		else {
@@ -485,7 +485,7 @@ sub Generate_Stranded_BAM {
 	
 	if (defined $phCmdLineOption->{'single_end'}) {
 		$sOutFile = File::Spec->rel2abs("$sOutDir/$sSampleId.antisense.bam");
-		if ($phCmdLineOption->{'librarytype'} =~ m/^firststrand$/i) {
+		if ($phCmdLineOption->{'stranded'} =~ m/^firststrand$/i) {
 			samtools_view($phCmdLineOption, $sBamFile, $sOutFile, "-bh -F 16");
 		}
 		else {

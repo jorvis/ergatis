@@ -180,6 +180,11 @@ sub out_format {
 			$pref =$1.".".$2;
 		}
 	}
+	elsif ($s_file =~m/(.+)(\.fastq|\.txt)$/) {
+	    $pref = $1 ;
+	    
+	}
+	    
 	
 	@arr=split (/\//,$pref);
 	$pref=$arr[scalar @arr -1];

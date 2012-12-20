@@ -19,10 +19,9 @@ wrapper.pl          -script to combines various statistics output and creates a 
 
 =head1 OPTIONS
 
-
     --r <out rep>         = Path to the output repository.
 
-    --c <pipeline id>     = ID of the pipeline whose summary is required 
+    --p <pipeline id>     = ID of the pipeline whose summary is required 
 
     --o <output dir>      = /path/to/output directory. Optional. [present working directory]
 
@@ -55,7 +54,6 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use File::Spec;
-use lib "/local/projects-dr/ifx_core/package-tcreasy/lib/perl5";
 use PDF::Create;
 
 ##############################################################################
@@ -77,13 +75,14 @@ my ($sOutDir,$prefix,$path, $f1,$read,$a,$val);
 my ($filehandle,$key,$fout,$file,$flag,$ffile);
 my (%sample,%final);
 my @arr;
+my $rpkm_flag = 0;
 
 ################################################################################
 ### Main
 ################################################################################
 
 GetOptions( \%hCmdLineOption,'outrep|r=s','pipeline|p=s',
-            'outdir|o=s',
+            'outdir|o=s','samplefile|s=s',
 	    'verbose|v','help','man') or pod2usage(2);
 
 ## display documentation
@@ -182,9 +181,9 @@ if( -e $path ) {
     while (<$filehandle>) {
 	chomp($_);
 	($f1, $path, $prefix) = File::Spec->splitpath($_);
-	if (exists $sample{$hCmdLineOption{'pipeline'}}) {
+	#if (exists $sample{$hCmdLineOption{'pipeline'}}) {
 	    $sample{$hCmdLineOption{'pipeline'}}{'tophat'} = $_;
-	}
+	#}
     }
     close $filehandle;
 }
@@ -196,9 +195,9 @@ if( -e $path ) {
     while (<$filehandle>) {
 	chomp($_);
 	($f1, $path, $prefix) = File::Spec->splitpath($_);
-	if (exists $sample{$hCmdLineOption{'pipeline'}}) {
+	#if (exists $sample{$hCmdLineOption{'pipeline'}}) {
 	    $sample{$hCmdLineOption{'pipeline'}}{'bowtie'} = $_;
-	}
+	#}
     }
     close $filehandle;
 }	
@@ -206,6 +205,7 @@ if( -e $path ) {
 $path =  $hCmdLineOption{'outrep'}."/rpkm_coverage_stats/".$hCmdLineOption{'pipeline'}."_rpkm_cvg/rpkm_coverage_stats.rpkm.stats.list";
 if (-e $path) {
     open($filehandle,"<$path") or die "Cannot open Rpkm file list.";
+    $rpkm_flag = 1;
     while (<$filehandle>){
 	chomp($_);
 	($f1, $path, $prefix) = File::Spec->splitpath($_);
@@ -227,7 +227,7 @@ foreach $key (keys %sample) {
 	    ($f1, $path, $prefix) = File::Spec->splitpath($a);
 	    @arr = split(/\./,$prefix);
 	    $prefix = $arr[0];
-	    $prefix =~ s/_1//;
+	    $prefix =~ s/\_1$//;
 	    while (<$file>) {
 		chomp($_);
 		if (! exists $final{$key}{$prefix}{'percent'}){
@@ -247,7 +247,7 @@ foreach $key (keys %sample) {
 	    ($f1, $path, $prefix) = File::Spec->splitpath($a);
 	    @arr = split(/\./,$prefix);
 	    $prefix = $arr[0];
-	    $prefix =~ s/_1//;
+	    $prefix =~ s/\_1$//;
 	    while (<$file>) {
 		chomp($_);
 		if ($_ =~ /^\#/) {
@@ -271,12 +271,12 @@ foreach $key (keys %sample) {
 	    if($_=~/^\#Sample/){
 		@arr = split(/\t/,$_);
 		$prefix = $arr[1];
-		$prefix =~ s/_1//;
+		$prefix =~ s/\_1$//;
 		<$file>;
 		$val = <$file>;
 		chomp ($prefix);
 		chomp ($val);
-		if (exists $final{$key}{$prefix}) {
+		if (exists $final{$key}{$prefix}) { 
 		    $final{$key}{$prefix}{'bowtie'} = $val;
 		}
 	    }
@@ -290,7 +290,7 @@ foreach $key (keys %sample) {
 	    if($_=~/^\#Sample/){
 		@arr = split(/\t/,$_);
 		$prefix = $arr[1];
-		$prefix =~ s/_1//;
+		$prefix =~ s/\_1$//;
 		<$file>;
 		$val = <$file>;
 		chomp($prefix);
@@ -304,13 +304,20 @@ foreach $key (keys %sample) {
     }    
 }
 
-open ($fout,">$sOutDir/$hCmdLineOption{pipeline}.txt") or die "Error Cannot open output file.";
-open ($ffile,">$sOutDir/$hCmdLineOption{pipeline}.pngs.list") or die "Error Cannot open output file.";
+open ($fout,">$sOutDir/Summary.txt") or die "Error Cannot open output file.";
+open ($ffile,">$sOutDir/Quality.pngs.list") or die "Error Cannot open output file.";
 
 foreach (keys %final) {
-    print $fout "\#Pipeline id\t$_\n";
-    if ($flag eq 'b') {print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired\tUniquely.Mapped.Reads\tPercent.Genic\tPercent.Intergenic\tTotal.Features\tFeatures.With.Coverage\tAvg.RPKM\n";}
-    if ($flag eq 't') {print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired\tUniquely.Mapped.Reads\tPercent.Exonic\tPercent.Intronic\tPercent.Intergenic\tTotal.Features\tFeatures.With.Coverage\tAvg.RPKM\n";}
+    if ($flag eq 'b') {
+	print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired\tUniquely.Mapped.Reads\tPercent.Genic\tPercent.Intergenic";
+	if ($rpkm_flag == 1) {print $fout "\tTotal.Features\tFeatures.With.Coverage\tAvg.RPKM\n";} 
+	else {print $fout "\n";}
+    }
+    if ($flag eq 't') {
+	print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired\tUniquely.Mapped.Reads\tPercent.Exonic\tPercent.Intronic\tPercent.Intergenic";
+	if ($rpkm_flag == 1) {print $fout "\tTotal.Features\tFeatures.With.Coverage\tAvg.RPKM\n";} 
+	else {print $fout "\n";}
+    }
     foreach $f1 (keys %{$final{$_}}) {
 	if (exists $final{$_}{$f1}{'bowtie'}){	    
 	    print $fout "$f1\t$final{$_}{$f1}{'bowtie'}\t";
@@ -336,7 +343,7 @@ foreach (keys %final) {
 	    print $fout "$val\t";
 	    $val = (split(/[\:\(]/,$final{$_}{$f1}{'rpkm'}[4]))[1];
 	    $val =~ s/\s//g;
-	    print $fout "$val\t";
+	    print $fout "$val";
 	    
 	}
 	print $fout "\n";

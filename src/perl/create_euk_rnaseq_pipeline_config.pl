@@ -14,7 +14,7 @@ create_euk_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline.
 
 =head1 SYNOPSIS
 
-    create_euk_rnaseq_pipeline_config.pl --s <samples_file> --c <config_file> [--r <reference_fasta>] 
+    create_euk_rnaseq_pipeline_config.pl --s <samples_file> --c <config_file> --r <reference_fasta> 
                                          [--qual <quality_score_format>] [--gtf <annotation_file>] 
                                          [--bowtie_build] [--quality_stats] [--quality_trimming] 
                                          [--alignment] [--bwtidxfile <bowtie_index>] [--visualization] 
@@ -34,14 +34,14 @@ create_euk_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline.
 
     --c <config_file>                 = /path/to/config file with parameter information for multiple components.
 
-    --r <reference_fasta>             = /path/to/reference FastA file for all samples. Optional.
+    --r <reference_fasta>             = /path/to/reference FastA file for all samples. 
     
     --qual <quality_score_format>     = FastQ quality score format (33 or 64). Optional. [33]
 
     --gtf <annotation_file>           = /path/to/annotation file in GFF or GTF format.
-                                        Required with '--diff_gene_expr'.
+                                        Required with '--diff_gene_expr, --alignment'.
 
-    --annotation_format               = annotation file format (gtf/gff3)
+    --annotation_format               = annotation file format (gtf/gff3).Required.
 
     --bowtie_build                    = execute bowtie_build component. Requires '--r'.
 
@@ -1217,7 +1217,7 @@ if (defined $hCmdLineOption{'repository_root'}) {
 			" --repository_root ".$hCmdLineOption{'repository_root'};
 	
 	$sCmd .= " --ergatis_config ".$hCmdLineOption{'ergatis_ini'};
-	
+
 	exec_command($sCmd);
 	
 	($bDebug || $bVerbose) ? print STDERR "\nInitiation of pipeline on ergatis ..... done\n" : undef;
