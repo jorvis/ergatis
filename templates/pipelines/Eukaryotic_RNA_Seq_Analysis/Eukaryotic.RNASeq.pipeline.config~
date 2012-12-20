@@ -178,7 +178,7 @@ $;OTHER_ARGS$; = --v
 ;; Filters 
 $;FILTERS_VAL$; = 
 ;; Project name
-$;PROJECT_NAME$; = test
+$;PROJECT_NAME$; = 
 
 
 [cufflinks]
@@ -263,4 +263,4 @@ $;OTHER_ARGS$; = --v
 ;; Filters 
 $;FILTERS_VAL$; = 
 ;; Project name
-$;PROJECT_NAME$; = test 
+$;PROJECT_NAME$; = 
