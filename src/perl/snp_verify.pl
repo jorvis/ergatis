@@ -531,7 +531,8 @@ sub parseRawBlast {
 	my %data = ();
 #	my ($temp_k1, $temp_k2, $temp_k3);
 	my @match = ();
-	my ($file, $query, $in, $result, $snp_pos, $hit, $temp, $hsp, $qstart, $offset, $sseq, $base);
+	my @indels = ();
+	my ($file, $query, $in, $result, $snp_pos, $hit, $temp, $hsp, $qstart, $offset, $sseq, $base, $qseq, $i);
 	my $qideal_len = (2 * $flanking_base) + 1;
 	open(BL, "< $blast_list") or printLogMsg($ERROR, "ERROR! : Could not open $blast_list file for reading.Reason : $!");
 	# Loop through BLAST list file
@@ -566,6 +567,27 @@ sub parseRawBlast {
 						$qstart = $hsp->start('query');
 						$offset = $flanking_base - ($qstart - 1);
 						$sseq = $hsp->hit_string;
+						# Code to get the correct base from hsp if there is an indel in query
+						$qseq = $hsp->query_string;
+						@indels = ();
+						while($qseq =~ /\-/g) {
+							push(@indels, $+[0]);
+						}
+						if((@indels > 0) && ($indels[0] <= ($flanking_base + 1))) {
+							for($i=0; $i<@indels;$i++) {
+								if($indels[$i] < ($flanking_base + 1)) {
+									next;
+								} else {
+									$offset += $i + 1;
+									while(($i < @indels) && ($offset == $indels[$i])) {
+										$offset++;
+										$i++;
+									}
+									last;
+								}
+							}
+							$offset -= 1;
+						}
 						$base = "";
 						$base = uc(substr( $sseq, $offset, 1 )) if(length($sseq) > $offset);
 						if($base eq "") {
