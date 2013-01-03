@@ -1,5 +1,6 @@
 next
 ----
+-Fixed the indel bug in snp_verify.pl so that the correct base is extracted from BLAST hit
 -Adding script list_to_tab mostly relevant for clovr pipelines to reformat input tags
 -create_map_file: will now correctly parse IGS based Identifiers
 -SNP::MergedTable: now will accept a row even if last column is missing
