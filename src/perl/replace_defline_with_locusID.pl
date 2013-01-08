@@ -12,7 +12,7 @@
 
 =head1 OPTIONS
 
-	--bsml (-b)	-	BSML file with locus IDs (typically output from the pipeline_summary Ergatis component)
+	--bsml_list (-b)	-	BSML list file for BSML files with locus IDs (typically output from the pipeline_summary Ergatis component)
 
 	--fasta (-f)	-	The fasta file whose headers need to be replaced
 
@@ -31,7 +31,7 @@
 =head1 INPUT
 
 	A multi-fasta file
-	A BSML that includes a Feature element with class "gene".  Withiin this class must be a "Cross-reference" element with "identifier" attribute
+	A BSML list for BSML files that includes a Feature element with class "gene".  Withiin this class must be a "Cross-reference" element with "identifier" attribute
 
 =head1 OUTPUT
 
@@ -65,9 +65,10 @@ sub replace_fasta_defline();
 my %locus_id;
 my %feature_index;
 
-my $bsml;
+my $list;
 my $output;
 my $fasta_in;
+my @input_files;
 
 ###########
 # GLOBALS #
@@ -81,7 +82,7 @@ my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
 # MAIN PROGRAM #
 ################
 GetOptions(\%options,
-	   'bsml|b=s',
+	   'bsml_list|b=s',
 	   'fasta|f=s',
 	   'output|o=s',
 	   'log|l=s', 
@@ -91,6 +92,11 @@ GetOptions(\%options,
 pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($options{'help'});
 
 &check_parameters();
+
+my $in = open_file( $list, 'in' );	#parse the bsml list and store each bsml into an array
+chomp( my @tmp = <$in> );
+close($in);
+push( @input_files, @tmp );
 
 map_locus_to_uniquename();
 replace_fasta_defline();
@@ -105,9 +111,11 @@ sub map_locus_to_uniquename() {
     my $twig = new XML::Twig( 'twig_roots' => {
         'Feature-table' => \&get_sequence_features
     });
+    foreach my $bsml (@input_files) {	#iterate through the bsml files and parse
+        my $fh= open_file( $bsml, "in" );
+        $twig->parse( $fh );
+    }
 
-    my $fh= open_file( $bsml, "in" );
-    $twig->parse( $fh );
 }
 
 sub get_sequence_features {
@@ -140,7 +148,7 @@ sub get_cross_references {
     my @retval;
 # map Cross-reference element attributes to the retval array and return
     map { my $atts = $_->atts; delete( $atts->{'id'} ); push(@retval, $atts); }  $elem->children('Cross-reference');	 
-    return @retval;
+    return @retval;	# This contains the locus_id as Cross-reference->[0]->{'identifier'}
 }
 
 sub get_interval_loc {
@@ -191,12 +199,12 @@ sub check_parameters{
 		open($logfh, "> $options{'log'}") or die "Could not open $options{'log'} file for writing: $!\n"
 	}
 		
-	if ( exists($options{'bsml'}) && exists($options{'fasta'}) && exists($options{'output'}) ) {
-		$bsml = $options{'bsml'};
+	if ( exists($options{'bsml_list'}) && exists($options{'fasta'}) && exists($options{'output'}) ) {
+		$list = $options{'bsml_list'};
 		$output =  $options{'output'};
 		$fasta_in = $options{'fasta'};
 	} else {
-		printLogMsg(1, "Options --bsml, --fasta, and --output are required\n");
+		printLogMsg(1, "Options --bsml_list, --fasta, and --output are required\n");
 	}
 }
 

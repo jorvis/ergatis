@@ -26,8 +26,8 @@
                 <value>$;OUTPUT_FILE$;</value>
             </param>
             <param>  
-                <key>--bsml</key>
-                <value>$;INPUT_BSML$;</value>
+                <key>--bsml_list</key>
+                <value>$;INPUT_BSML_LIST$;</value>
             </param>     
         </command>
     </commandSet>
