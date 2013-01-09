@@ -735,7 +735,7 @@ sub Add_RPKMs {
     			 "# Total number of mapped reads : ".$nTotalMappedReads." (".$nUniqueMappedReads." unique mapped reads)\n".
     			 "# Number of reads mapped to features : ".$nC."\n".
     			 "# % reads mapped to features : ".sprintf("%.3f", eval(($nC / $nTotalMappedReads) * 100))."\n".
-    			 "# Average RPKM across all features : ".sprintf("%.3f", eval($nS / $nI))."(".sprintf("%.3f", eval($nS / $nT))."\n";
+    			 "# Average RPKM across all features : ".sprintf("%.3f", eval($nS / $nI))."(".sprintf("%.3f", eval($nS / ($nI - $nT)))."\n";
     
     close($fpBED);
     close($fpTMP);
