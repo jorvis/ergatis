@@ -1,5 +1,6 @@
 next
 ----
+-Fixed bug in deseq.R
 -Fixed bug in rpkm_coverage_stats.pl
 -Made replace_defline_with_locusID component accept BSML list file as input 
 -Fixed the indel bug in snp_verify.pl so that the correct base is extracted from BLAST hit

@@ -85,23 +85,25 @@ cds <- estimateSizeFactors(cds)
 #
 cat("\n* Estimating dispersions...\n")
 
-# WITH NO replicates
-#
-# Options: 
-#  - method = "blind"
-#  - sharingMode = "fit-only"
-#  - fitType = "local"
-#
-#cds <- estimateDispersions(cds, method="blind", sharingMode="fit-only", fitType="local")
-
-# WITH FEW replicates (2 or less replicates)
-#
-# Options: 
-#  - method = "pooled"
-#  - sharingMode = "fit-only"
-#  - fitType = "local"
-#
-cds <- estimateDispersions(cds, method="pooled", sharingMode="fit-only", fitType="local")
+if (sum(ifelse((data.frame(table(as.character(sample.info[,2])))$Freq < 2), 1, 0)) > 0) {
+	# WITH NO replicates
+	#
+	# Options: 
+	#  - method = "blind"
+	#  - sharingMode = "fit-only"
+	#  - fitType = "local"
+	#
+	cds <- estimateDispersions(cds, method="blind", sharingMode="fit-only", fitType="local")
+} else {
+	# WITH FEW replicates (2 or less replicates)
+	#
+	# Options: 
+	#  - method = "pooled"
+	#  - sharingMode = "fit-only"
+	#  - fitType = "local"
+	#
+	cds <- estimateDispersions(cds, method="pooled", sharingMode="fit-only", fitType="local")
+}
 
 # WITH replicates (as least 3 each)
 #
