@@ -575,21 +575,14 @@ sub parseRawBlast {
 						}
 						if((@indels > 0) && ($indels[0] <= ($flanking_base + 1))) {
 							for($i=0; $i<@indels;$i++) {
-								if($indels[$i] < ($flanking_base + 1)) {
-									next;
-								} else {
-									$offset += $i + 1;
-									while(($i < @indels) && ($offset == $indels[$i])) {
-										$offset++;
-										$i++;
-									}
+								if($indels[$i] >= ($offset + 1 + $i + 1)) {
 									last;
 								}
 							}
-							$offset -= 1;
+							$offset += $i;
 						}
 						$base = "";
-						$base = uc(substr( $sseq, $offset, 1 )) if(length($sseq) > $offset);
+						$base = uc(substr( $sseq, $offset, 1 )) if((length($sseq) > $offset) && ($offset > 0));
 						if($base eq "") {
 							$base = "No Hit";
 						} elsif ($base eq "-") {
