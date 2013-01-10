@@ -338,7 +338,8 @@ foreach (keys %final) {
 	    $val = (split(/[\:\(]/,$final{$_}{$f1}{'rpkm'}[0]))[1];
 	    $val =~ s/\s//g;
 	    print $fout "$val\t";
-	    $val = (split(/[\:]/,$final{$_}{$f1}{'rpkm'}[2]))[1];
+	    $val = (split(/[\:\(]/,$final{$_}{$f1}{'rpkm'}[0]))[2];
+	    $val =~ s/[a-zA-Z\)]//g;
 	    $val =~ s/\s//g;
 	    print $fout "$val\t";
 	    $val = (split(/[\:\(]/,$final{$_}{$f1}{'rpkm'}[4]))[1];

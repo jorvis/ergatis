@@ -199,7 +199,9 @@ foreach $sRegion (@aRegions) {
 		
 		# genomic coverage statistics
 		
-		mkdir "$sOutDir/genomic_coverage" or die "\tError : Unable to create directory '$sOutDir/genomic_coverage' .....\n";
+		if (! -e "$sOutDir/genomic_coverage") {
+			mkdir "$sOutDir/genomic_coverage" or die "\tError : Unable to create directory '$sOutDir/genomic_coverage' .....\n";
+		}
 		
 		($bDebug || $bVerbose) ? 
 			print STDERR "\nGenerating genome coverage statistics for $sBamFile .....\n" : ();
@@ -222,7 +224,9 @@ foreach $sRegion (@aRegions) {
 			$sGenicBedFile = Process_Annotation(\%hCmdLineOption, $hCmdLineOption{'annotation'}, $hCmdLineOption{'annotationfiletype'}, "genic", $sOutDir);
 		}
 		
-		mkdir "$sOutDir/genic_coverage" or die "\tError : Unable to create directory '$sOutDir/genic_coverage' .....\n";
+		if (! -e "$sOutDir/genic_coverage") {
+			mkdir "$sOutDir/genic_coverage" or die "\tError : Unable to create directory '$sOutDir/genic_coverage' .....\n";
+		}
 		
 		($bDebug || $bVerbose) ? 
 			print STDERR "\nGenerating gene coverage statistics for $sBamFile .....\n" : ();
@@ -247,7 +251,9 @@ foreach $sRegion (@aRegions) {
 		
 		exec_command($sCmd);
 		
-		mkdir "$sOutDir/exonic_coverage" or die "\tError : Unable to create directory '$sOutDir/exonic_coverage' .....\n";
+		if (! -e "$sOutDir/exonic_coverage") {
+			mkdir "$sOutDir/exonic_coverage" or die "\tError : Unable to create directory '$sOutDir/exonic_coverage' .....\n";
+		}
 		
 		($bDebug || $bVerbose) ? 
 			print STDERR "\nGenerating exon coverage statistics for $sBamFile .....\n" : ();
@@ -735,7 +741,7 @@ sub Add_RPKMs {
     			 "# Total number of mapped reads : ".$nTotalMappedReads." (".$nUniqueMappedReads." unique mapped reads)\n".
     			 "# Number of reads mapped to features : ".$nC."\n".
     			 "# % reads mapped to features : ".sprintf("%.3f", eval(($nC / $nTotalMappedReads) * 100))."\n".
-    			 "# Average RPKM across all features : ".sprintf("%.3f", eval($nS / $nI))."(".sprintf("%.3f", eval($nS / ($nI - $nT)))."\n";
+    			 "# Average RPKM across all features : ".sprintf("%.3f", eval($nS / $nI))." (".sprintf("%.3f", eval($nS / ($nI - $nT)))." across covered features)\n";
     
     close($fpBED);
     close($fpTMP);
