@@ -156,9 +156,8 @@ $hCmdLineOption{'infile'} = File::Spec->rel2abs($hCmdLineOption{'infile'});
 ($_, $_, $sBamFile) = File::Spec->splitpath($hCmdLineOption{'infile'});
 
 $sSampleId = $sBamFile;
-$sSampleId =~ s/\.accepted_hits.sorted_by_name.bam$//;
-
-
+$sSampleId =~ s/\.accepted_hits.sorted_by_name//;
+$sSampleId =~ s/\.bam$//;
 
 if ($hCmdLineOption{'org-type'} eq 'euk') {
 
@@ -176,9 +175,13 @@ if ($hCmdLineOption{'org-type'} eq 'euk') {
 			    " -b ".$sSortedFile.
 			    " > ".$sIntronicBedFile;
     exec_command($sCmd);
-
+    
+    if ( -z $sIntronicBedFile) {
+    	($bDebug || $bVerbose) ? 
+			print STDERR "WARNING! No introns detected in $hCmdLineOption{'annotation'}\n" : ();
+        $hCmdLineOption{'org-type'} = "prok";
+    }
 }
-
 else {    
     $sGenicFile = Process_Annotation(\%hCmdLineOption, $hCmdLineOption{'annotation'}, $hCmdLineOption{'annotationfiletype'}, "genic", $sOutDir);
 }
