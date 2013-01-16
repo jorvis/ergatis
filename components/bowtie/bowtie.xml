@@ -41,11 +41,37 @@
             </param>
             <param>
 				<key>stdout</key>
-				<value>$;TMP_DIR$;/generate_list_file.stdout</value>
+				<value>$;TMP_DIR$;/generate_list_file.sam.stdout</value>
 			</param>
 			<param>
 				<key>stderr</key>
-				<value>$;TMP_DIR$;/generate_list_file.stderr</value>
+				<value>$;TMP_DIR$;/generate_list_file.sam.stderr</value>
+			</param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create alignment BAM list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/generate_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*bowtie\.bam"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;OUTPUT_ALIGNMENT_BAM_FILE$;</value>
+            </param>
+            <param>
+				<key>stdout</key>
+				<value>$;TMP_DIR$;/generate_list_file.bam.stdout</value>
+			</param>
+			<param>
+				<key>stderr</key>
+				<value>$;TMP_DIR$;/generate_list_file.bam.stderr</value>
 			</param>
         </command>
     </commandSet>

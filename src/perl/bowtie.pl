@@ -38,6 +38,8 @@ bowtie.pl - script to execute reference based alignment for input sequence file(
 
     --bb <bowtie_bin_dir>          = /path/to/bowtie binary. Optional. [/usr/local/bin]
 
+    --sb <samtools_bin_dir>        = /path/to/samtools binary. Optional. [/usr/local/bin]
+
     Bowtie parameters              = refer to Bowtie User Manual accessible at 
                                      http://bowtie-bio.sourceforge.net/manual.shtml for specific details and 
                                      defaults of the above mentioned tophat parameters. Optional.
@@ -78,6 +80,7 @@ use constant FALSE => 0;
 use constant TRUE  => 1;
 
 use constant BOWTIE_BIN_DIR => '/usr/local/bin';
+use constant SAMTOOLS_BIN_DIR => '/usr/local/bin';
 
 use constant VERSION => '1.0.0';
 use constant PROGRAM => eval { ($0 =~ m/(\w+\.pl)$/) ? $1 : $0 };
@@ -91,7 +94,7 @@ my $sHelpHeader = "\nThis is ".PROGRAM." version ".VERSION."\n";
 
 GetOptions( \%hCmdLineOption,
             'seq1file|r1=s', 'seq2file|r2=s', 'bowtie_index_dir|bi=s', 'prefix|p=s',
-            'outdir|o=s', 'bowtie_bin_dir|bb=s', 'mode=s', 'num_mismatches=i',
+            'outdir|o=s', 'bowtie_bin_dir|bb=s', 'samtools_bin_dir|sb=s', 'mode=s', 'num_mismatches=i',
             'file-type|ft=s', 'seedlen|l=i', 'minins|I=i', 'maxins|X=i', 'library-type|lt=s',
             'k=i', 'm=i', 'M=i', 'un=s', 'threads=i', 
             'args|a=s', 'gzip|gz', 'verbose|v',
@@ -187,7 +190,7 @@ $sCmd .= " -".$hCmdLineOption{'mode'}." ".$hCmdLineOption{'num_mismatches'};
 
 foreach $sKey ( keys %hCmdLineOption) {
 	next if (($sKey eq "seq1file") || ($sKey eq "seq2file") || ($sKey eq "bowtie_index_dir") || ($sKey eq "prefix") ||
-			 ($sKey eq "outdir") || ($sKey eq "bowtie_bin_dir") || ($sKey eq "mode") || ($sKey eq "num_mismatches") ||
+			 ($sKey eq "outdir") || ($sKey eq "bowtie_bin_dir") || ($sKey eq "samtools_bin_dir") || ($sKey eq "mode") || ($sKey eq "num_mismatches") ||
 			 ($sKey eq "library-type") || ($sKey eq "file-type") || ($sKey eq "un") || ($sKey eq "args") || 
 			 ($sKey eq "gzip") || ($sKey eq "verbose") || ($sKey eq "debug") || ($sKey eq "help") || ($sKey eq "man") );
 	
@@ -233,6 +236,14 @@ if ($bDebug || $bVerbose) {
 	print STDERR "... done\n";
 }
 
+($bDebug || $bVerbose) ? 
+	print STDERR "\nConverting $sPrefix.bowtie.sam to $sPrefix.bowtie.bam ...\n" : ();
+
+die "Error! $sOutDir/$sPrefix.bowtie.sam doesn't exist.\n" if (! -e "$sOutDir/$sPrefix.bowtie.sam");
+sam2bam(\%hCmdLineOption, "$sOutDir/$sPrefix.bowtie.sam", $sOutDir);
+
+($bDebug || $bVerbose) ? 
+	print STDERR "\nConverting $sPrefix.bowtie.sam to $sPrefix.bowtie.bam ... done\n" : ();
 
 ################################################################################
 ### Subroutines
@@ -250,6 +261,7 @@ sub check_parameters {
 	
     ## handle some defaults
     $phOptions->{'bowtie_bin_dir'} = BOWTIE_BIN_DIR if (! (defined $phOptions->{'bowtie_bin_dir'}) );
+    $phOptions->{'samtools_bin_dir'} = SAMTOOLS_BIN_DIR if (! (defined $phOptions->{'samtools_bin_dir'}) );
     $phOptions->{'mode'} = 'v' if (! (defined $phOptions->{'mode'}) );
     $phOptions->{'num_mismatches'} = 2 if (! (defined $phOptions->{'num_mismatches'}) );
 }
@@ -269,6 +281,43 @@ sub exec_command {
 		die "\tERROR! Command Failed!\n\t$!\n";
 	}
 	print STDERR "\n";
+}
+
+sub sam2bam {
+    my $phOptions	= shift;
+    my $sFile		= shift;
+    my $sOutDir		= shift;
+    
+    ## make sure input file is provided
+    if ((! (defined $sFile) ) ||
+    	(! (defined $sOutDir) )) {
+		die "Error! Undefined parameters in BAM --> SAM.\n";
+	}
+	
+	my ($sPrefix, $sOutFile, $sFormat);
+	my $bDebug   = (defined $phOptions->{'debug'}) ? TRUE : FALSE;
+	my $bVerbose = (defined $phOptions->{'verbose'}) ? TRUE : FALSE;
+	
+	($_, $_, $sPrefix) = File::Spec->splitpath($sFile);
+	$sPrefix =~ s/.sam$//;
+	
+	$sOutFile = $sOutDir."/".$sPrefix.".bam";
+	
+    ## samtools execution
+    ($bDebug || $bVerbose) ? 
+		print STDERR "\nConverting $sFile to $sOutFile ...\n" : ();
+	
+    $sCmd  = $phOptions->{'samtools_bin_dir'}."/samtools view -bhS";
+    $sCmd .= " -o ".$sOutFile." ".$sFile;
+	
+	exec_command($sCmd);
+	
+	($bDebug || $bVerbose) ? 
+		print STDERR "\nConverting $sFile to $sOutFile ... done\n" : ();
+	
+	$sFormat = "BAM";
+	
+	return;
 }
 
 ################################################################################

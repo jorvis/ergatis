@@ -682,7 +682,7 @@ if (defined $hCmdLineOption{'alignment'}) {
 	add_config_section($fpPC, "bowtie", "alignment");
 	add_config_parameters($fpPC, \%hParams);
 	
-	$sListFile = '$;REPOSITORY_ROOT$;/output_repository/bowtie/$;PIPELINEID$;_alignment/bowtie.sam.list';
+	$sListFile = '$;REPOSITORY_ROOT$;/output_repository/bowtie/$;PIPELINEID$;_alignment/bowtie.bam.list';
 	
 	complete_component($oPL);
 	
@@ -696,8 +696,8 @@ if (defined $hCmdLineOption{'alignment'}) {
 	
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list of alignment files"];
-	$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
-	$nOpt = "412";
+	$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
+	$nOpt = "12";
 	$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
 	add_config_section($fpPC, "samtools_file_convert", "sorted_position");
 	add_config_parameters($fpPC, \%hParams);
@@ -706,9 +706,9 @@ if (defined $hCmdLineOption{'alignment'}) {
 	
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list of alignment files"];
-	$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
+	$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
 	$hParams{'SAMTOOLS_SORT_PARAMETERS'} = ["-n", "samtools sort parameters"];
-	$nOpt = "413";
+	$nOpt = "13";
 	$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
 	add_config_section($fpPC, "samtools_file_convert", "sorted_name");
 	add_config_parameters($fpPC, \%hParams);

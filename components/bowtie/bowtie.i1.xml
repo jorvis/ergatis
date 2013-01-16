@@ -33,6 +33,10 @@
                 <value>$;BOWTIE_BIN_DIR$;</value>
             </param>
             <param>
+                <key>--samtools_bin_dir</key>
+                <value>$;SAMTOOLS_BIN_DIR$;</value>
+            </param>
+            <param>
                 <key>--mode</key>
                 <value>$;MODE$;</value>
             </param>

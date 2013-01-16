@@ -1,5 +1,6 @@
 next
 ----
+-Modified bowtie component and Prokaryotic Analysis Pipeline
 -Fixed bug in deseq.R
 -Fixed bug in rpkm_coverage_stats.pl
 -Made replace_defline_with_locusID component accept BSML list file as input 
