@@ -1,7 +1,9 @@
 #!/usr/bin/perl
+
 use strict;
 use warnings;
 use Getopt::Long;
+use File::Basename;
 
 my $files = "";
 my $file = "";
@@ -33,10 +35,19 @@ unless( @files ) {
     exit(0);
 }
 
+my ($file_base,$file_dir,$file_ext) = fileparse($outputFile,qr/\.[^.]*/);
+my $listFile = $file_dir."/genbank.list";
+open(my $OFL,">$listFile") or die "Error in writing to the output list file, $listFile, $!\n";
 open(my $OFH,">$outputFile") or die "Error in writing to the output file, $outputFile, $!\n";
 foreach my $f ( @files ) {
+    if(-e $f) {
+        print $OFL "$f\n";
+    } else {
+        die "$f does not exist, $!\n";
+    }
     printMapInfo(trim($f), $OFH);
 }
+close $OFL;
 close $OFH;
 
 sub trim {
@@ -69,4 +80,3 @@ sub printMapInfo {
     }
     close FH;
 }
-
