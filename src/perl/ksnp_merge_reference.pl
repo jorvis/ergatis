@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 ksnp_merge_reference.pl 
@@ -92,7 +95,7 @@ if ($input =~ /.*\.list/)
 
 		open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 		
-		$i =~ s/\w+\///g;
+		$i =~ s/[\w\-]+\///g;
 		$i =~ s/\///g;
 		$i =~ s/\..+//g;
 		$i =~ s/.{60}/$1 /g; #kSNP will not work if a header contains 60 straight characters after the >
@@ -148,7 +151,7 @@ elsif ($input =~ /.*\.[fnsat]{2,5}/) #Single fasta file
 
 		open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 
-		$input =~ s/\w+\///g;
+		$input =~ s/[\w\-]+\///g;
 		$input =~ s/\///g;
 		$input =~ s/\..+//g;
 		$input =~ s/.{60}/$1 /g;   #kSNP will not work if a header contains 60 straight characters after the >
