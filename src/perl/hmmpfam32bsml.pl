@@ -171,7 +171,7 @@ foreach my $qry_id ( keys %{$data->{'queries'}} ) {
     ## overall E-value
     foreach my $hit_id (keys %{$data->{'queries'}->{$qry_id}->{'hits'}} ) {
 	my $hit = $data->{'queries'}->{$qry_id}->{'hits'}->{$hit_id};
-
+	next if (scalar keys %{$hit->{'domains'}} == 0);	#skip model hits that have no domain hits
 	## add this model sequence if we haven't already
 	unless( $doc->returnBsmlSequenceByIDR($hit_id) ) {
 	    $doc->createAndAddSequence($hit_id, $hit->{'hit_description'}, undef, 
@@ -206,9 +206,7 @@ foreach my $qry_id ( keys %{$data->{'queries'}} ) {
 						 'domain_num' => $domain,
 						 'domain_of'  => $hit->{'domain_count'}
 						 );
-
-	    }
-
+	    } 
 	}
     }		
 }
