@@ -17,6 +17,18 @@ sub read_hmmer3_output {
     my $in_hit_scores = 0;
     my $in_domain_scores = 0;
 
+    if ( $path ne '' ) { 
+	chomp $path;
+	my @statd = stat $path;
+	$retval->{'info'}->{ 'search_date' } = ( ( localtime( $statd[ 9 ] ) )[ 3 ] ) . "-" 
+	    . ( ( localtime( $statd[ 9 ] ) )[ 4 ] + 1 ) . "-" 
+	    . ( ( localtime( $statd[ 9 ] ) )[ 5 ] + 1900 );
+    } else {
+	$retval->{'info'}->{ 'search_date' } = ( ( localtime )[ 3 ] ) . "-" 
+	    . ( ( localtime )[ 4 ] + 1 ) . "-" 
+	    . ( ( localtime )[ 5 ] + 1900 );
+    }   
+
     open(my $fh, "< $path") or die("Unable to open $path: $!");
     while( my $line = <$fh> ) {
 	next if( $line =~ /^\s*$/ || $line =~ /inclusion threshold/ );
@@ -510,83 +522,86 @@ sub hmm_database_info {
 }
 
 sub print_htab {
+#NOTE:  This will produce results if the data hash was created through the 'read_hmmer3_output' subroutine
+#		This is because of a change in the naming of some of the property keys (ex 'hit' to 'hits')
     my $data   = shift;
     my $HMM    = shift;
     my $output = shift;
-    foreach my $hit (
-        sort {
-            $data->{ 'hit' }->{ $b }->{ 'total_score' } <=> $data->{ 'hit' }
-              ->{ $a }->{ 'total_score' }
-        } keys %{ $data->{ 'hit' } }
-      )
-    {
-        my $h = $data->{ 'hit' }->{ $hit };
-        foreach my $domain ( sort { $a <=> $b } keys %{ $h->{ 'domain' } } )
-        {
-
-            # for convenience
-            my $dh = $h->{ 'domain' }->{ $domain };
-            if ( $data->{ 'program' } =~ /hmmsearch/ ) {
-                my $hmm_com_name =
-                    $HMM->{ $data->{ 'query' } }->{ 'hmm_com_name' }
-                  ? $HMM->{ $data->{ 'query' } }->{ 'hmm_com_name' }
-                  : $data->{ 'query_description' };
-                print $output "$data->{query}"
-                  . "\t$data->{search_date}"
-                  . "\t$HMM->{$data->{query}}->{hmm_len}"
-                  . "\t$data->{program}"
-                  . "\t$data->{sequence_file}"
-                  . "\t$h->{accession}"
-                  . "\t$dh->{hmm_f}"
-                  . "\t$dh->{hmm_t}"
-                  . "\t$dh->{seq_f}"
-                  . "\t$dh->{seq_t}"
-                  . "\t$h->{frame}"
-                  . "\t$dh->{domain_score}"
-                  . "\t$h->{total_score}"
-                  . "\t$domain"
-                  . "\t$h->{domain_count}"
-                  . "\t$hmm_com_name"
-                  . "\t$h->{hit_description}"
-                  . "\t$HMM->{$data->{query}}->{trusted_cutoff}"
-                  . "\t$HMM->{$data->{query}}->{noise_cutoff}"
-                  . "\t$h->{total_evalue}"
-                  . "\t$dh->{domain_evalue}"
-                  . "\t$HMM->{$data->{query}}->{trusted_cutoff2}"
-                  . "\t$HMM->{$data->{query}}->{noise_cutoff2}"
-                  . "\t$HMM->{$data->{query}}->{gathering_cutoff}"
-                  . "\t$HMM->{$data->{query}}->{gathering_cutoff2}" . "\n";
-            }
-            elsif ( $data->{ 'program' } =~ /hmmscan|hmmpfam/ ) {
-                my $hmm_com_name =
-                    $HMM->{ $hit }->{ 'hmm_com_name' }
-                  ? $HMM->{ $hit }->{ 'hmm_com_name' }
-                  : $h->{ 'hit_description' };
-                print $output "$h->{accession}"
-                  . "\t$data->{search_date}"
-                  . "\t$HMM->{$hit}->{hmm_len}"
-                  . "\t$data->{program}"
-                  . "\t$data->{hmm_file}"
-                  . "\t$data->{query}"
-                  . "\t$dh->{hmm_f}"
-                  . "\t$dh->{hmm_t}"
-                  . "\t$dh->{seq_f}"
-                  . "\t$dh->{seq_t}"
-                  . "\t$h->{frame}"
-                  . "\t$dh->{domain_score}"
-                  . "\t$h->{total_score}"
-                  . "\t$domain"
-                  . "\t$h->{domain_count}"
-                  . "\t$hmm_com_name"
-                  . "\t$data->{query_description}"
-                  . "\t$HMM->{$h->{accession}}->{trusted_cutoff}"
-                  . "\t$HMM->{$h->{accession}}->{noise_cutoff}"
-                  . "\t$h->{total_evalue}"
-                  . "\t$dh->{domain_evalue}"
-                  . "\t$HMM->{$h->{accession}}->{trusted_cutoff2}"
-                  . "\t$HMM->{$h->{accession}}->{noise_cutoff2}"
-                  . "\t$HMM->{$h->{accession}}->{gathering_cutoff}"
-                  . "\t$HMM->{$h->{accession}}->{gathering_cutoff2}" . "\n";
+    foreach my $qry_id ( keys %{$data->{'queries'}} ) {
+    	foreach my $hit (
+        	sort {
+                    $data->{'queries'}->{$qry_id}->{'hits'}->{ $b }->{ 'total_score' } <=> $data->{'queries'}->{$qry_id}->
+                    	{'hits'}->{ $a }->{ 'total_score' }
+        	} keys %{ $data->{'queries'}->{$qry_id}->{'hits'} } )
+	{
+            my $h = $data->{'queries'}->{$qry_id}->{'hits'}->{ $hit };
+            next if (scalar keys %{$h->{'domains'}} == 0);	#skip model hits that have no domain hits
+            foreach my $domain ( sort { $a <=> $b } keys %{ $h->{ 'domains' } } )
+            {
+            	# for convenience
+            	my $dh = $h->{ 'domains' }->{ $domain };
+            	if ( $data->{'info'}->{ 'program' } =~ /hmmsearch/ ) {	#hmmer2 is currently deprecated so this will probably error
+                	my $hmm_com_name =
+                	    $HMM->{ $data->{ 'query' } }->{ 'hmm_com_name' }
+               	   		? $HMM->{ $data->{ 'query' } }->{ 'hmm_com_name' }
+                  		: $data->{ 'query_description' };
+                	print $output "$data->{query}"
+                  	    . "\t$data->{search_date}"
+              		    . "\t$HMM->{$data->{query}}->{hmm_len}"
+                	    . "\t$data->{program}"
+                 	    . "\t$data->{sequence_file}"
+             		    . "\t$h->{accession}"
+             		    . "\t$dh->{hmm_f}"
+             		    . "\t$dh->{hmm_t}"
+              		    . "\t$dh->{seq_f}"
+             		    . "\t$dh->{seq_t}"
+                	    . "\t$h->{frame}"
+               		    . "\t$dh->{domain_score}"
+               		    . "\t$h->{total_score}"
+                	    . "\t$domain"
+                	    . "\t$h->{domain_count}"
+               		    . "\t$hmm_com_name"
+               		    . "\t$h->{hit_description}"
+                	    . "\t$HMM->{$data->{query}}->{trusted_cutoff}"
+                	    . "\t$HMM->{$data->{query}}->{noise_cutoff}"
+                	    . "\t$h->{total_evalue}"
+                	    . "\t$dh->{domain_evalue}"
+                	    . "\t$HMM->{$data->{query}}->{trusted_cutoff2}"
+                	    . "\t$HMM->{$data->{query}}->{noise_cutoff2}"
+                	    . "\t$HMM->{$data->{query}}->{gathering_cutoff}"
+                	    . "\t$HMM->{$data->{query}}->{gathering_cutoff2}" . "\n";
+            	}
+            	elsif ( $data->{'info'}->{ 'program' } =~ /hmmscan|hmmpfam/ ) {
+                    my $hmm_com_name =
+                	    $HMM->{ $hit }->{ 'hmm_com_name' }
+                	  ? $HMM->{ $hit }->{ 'hmm_com_name' }
+                	  : $h->{ 'hit_description' };
+                    print $output "$h->{accession}"
+                	  . "\t$data->{'info'}->{search_date}"
+                	  . "\t$HMM->{$hit}->{hmm_len}"
+                	  . "\t$data->{'info'}->{program}"
+                	  . "\t$data->{'info'}->{hmm_file}"
+                 	  . "\t$qry_id"
+                	  . "\t$dh->{hmm_f}"
+                 	  . "\t$dh->{hmm_t}"
+                  	  . "\t$dh->{seq_f}"
+                  	  . "\t$dh->{seq_t}"
+               		  . "\t$h->{frame}"
+                	  . "\t$dh->{domain_score}"
+                	  . "\t$h->{total_score}"
+                	  . "\t$domain"
+                	  . "\t$h->{domain_count}"
+                	  . "\t$hmm_com_name"
+                	  . "\t$h->{hit_description}"
+                	  . "\t$HMM->{$h->{accession}}->{trusted_cutoff}"
+                	  . "\t$HMM->{$h->{accession}}->{noise_cutoff}"
+                	  . "\t$h->{total_evalue}"
+                	  . "\t$dh->{domain_evalue}"
+                	  . "\t$HMM->{$h->{accession}}->{trusted_cutoff2}"
+                	  . "\t$HMM->{$h->{accession}}->{noise_cutoff2}"
+                	  . "\t$HMM->{$h->{accession}}->{gathering_cutoff}"
+                	  . "\t$HMM->{$h->{accession}}->{gathering_cutoff2}" . "\n";
+            	}
             }
         }
     }
