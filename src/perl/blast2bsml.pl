@@ -223,7 +223,10 @@ RESULT: while( my $result = $in->next_result ) {
             $x[11] = sprintf("%.1f", $similarity);
             $x[12] = $hsp->score();
             $x[13] = $hsp->bits();
-            $x[15] = $hit->description();
+            
+            my $desc = $hit->description();
+            $desc =~ s/\\t/ /g;	#encountered rare case where a '\t' was inserted in description
+            $x[15] = $desc;
 	    # replace ctrl-a's inserted by recent versions of bioperl
 	    $x[15] =~ s/\cA/ /g;
 

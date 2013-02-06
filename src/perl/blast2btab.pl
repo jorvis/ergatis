@@ -175,7 +175,10 @@ while( my $result = $in->next_result ) {
             $x[11] = sprintf("%.1f", $similarity);
             $x[12] = $hsp->score();
             $x[13] = $hsp->bits();
-            $x[15] = $hit->description();
+            
+            my $desc = $hit->description();
+            $desc =~ s/\\t/ /g;	#encountered rare case where a '\t' was inserted in description
+            $x[15] = $desc;
             $x[16] = ( ($hsp->query->frame + 1) * $hsp->query->strand); #blast frame (1, 2, 3, -1, -2, -3).
 
             my $strandDescript = "null";
