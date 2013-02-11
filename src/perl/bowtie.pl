@@ -124,7 +124,7 @@ my $bVerbose = (defined $hCmdLineOption{'verbose'}) ? TRUE : FALSE;
 
 if ($bDebug || $bVerbose) { 
 	print STDERR "\nProcessing $hCmdLineOption{'seq1file'} ";
-	print STDERR "& Processing $hCmdLineOption{'seq2file'} " if (defined $hCmdLineOption{'seq2file'});
+	print STDERR "& Processing $hCmdLineOption{'seq2file'} " if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/));
 	print STDERR "...\n";
 }
 
@@ -182,7 +182,7 @@ if (defined $hCmdLineOption{'gzip'}) {
 }
 else {
 	$sSeq1File = $hCmdLineOption{'seq1file'};
-	$sSeq2File = $hCmdLineOption{'seq2file'};
+	$sSeq2File = $hCmdLineOption{'seq2file'} if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/));
 }
 
 $sCmd  = $hCmdLineOption{'bowtie_bin_dir'}."/bowtie";
@@ -219,12 +219,10 @@ else {
 
 $sFile = (split(/,/, $hCmdLineOption{'seq1file'}))[0];
 ($_, $_, $sPrefix) = File::Spec->splitpath($sFile);
-if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/)) {
-	$sPrefix =~ s/.1_sequence.*//;
-}
-else {
-	$sPrefix =~ s/.sequence.*//;
-}
+$sPrefix =~ s/.1_1_sequence.*//;
+$sPrefix =~ s/.sequence.*//;
+$sPrefix =~ s/.fastq*//;
+$sPrefix =~ s/.fq*//;
 
 $sCmd .= " ".$sReadFile." $sOutDir/$sPrefix.bowtie.sam";
 
@@ -232,8 +230,21 @@ exec_command($sCmd);
 
 if ($bDebug || $bVerbose) { 
 	print STDERR "\nProcessing $hCmdLineOption{'seq1file'} ";
-	print STDERR "& Processing $hCmdLineOption{'seq2file'} " if (defined $hCmdLineOption{'seq2file'});
+	print STDERR "& Processing $hCmdLineOption{'seq2file'} " if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/));
 	print STDERR "... done\n";
+}
+
+if (defined $hCmdLineOption{'gzip'}) {
+	@aSeqFiles = split(/,/, $sSeq1File);
+	foreach $sFile (@aSeqFiles) {
+		unlink $sFile or warn "Could not unlink $sFile: $!";
+	}
+	if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/) && ($hCmdLineOption{'seq2file'} !~ m/^""$/)) {
+		@aSeqFiles = split(/,/, $sSeq2File);
+		foreach $sFile (@aSeqFiles) {
+			unlink $sFile or warn "Could not unlink $sFile: $!";
+		}
+	}
 }
 
 ($bDebug || $bVerbose) ? 

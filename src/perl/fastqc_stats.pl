@@ -91,6 +91,7 @@ check_parameters(\%hCmdLineOption);
 
 my ($sOutDir);
 my ($sCmd, $sPrefix);
+my (@file1, @file2);
 my $bDebug   = (defined $hCmdLineOption{'debug'}) ? TRUE : FALSE;
 my $bVerbose = (defined $hCmdLineOption{'verbose'}) ? TRUE : FALSE;
 
@@ -118,19 +119,31 @@ $sOutDir = File::Spec->canonpath($sOutDir);
 
 #($_, $_, $sPrefix) = File::Spec->splitpath($hCmdLineOption{'seq1file'});
 
-if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/)) {
-    $sCmd = $hCmdLineOption{'fastqc_bin_dir'}."/fastqc"." ".$hCmdLineOption{'seq1file'}." ".$hCmdLineOption{'seq2file'}." -o ".$sOutDir;
-}
-else{
-    $sCmd = $hCmdLineOption{'fastqc_bin_dir'}."/fastqc"." ".$hCmdLineOption{'seq1file'}." -o ".$sOutDir;
-} 	
+@file1 = split (/,/,$hCmdLineOption{'seq1file'});
+@file2 = split (/,/,$hCmdLineOption{'seq2file'});
 
+$sCmd = $hCmdLineOption{'fastqc_bin_dir'}."/fastqc " ;
+
+foreach (@file1) {
+    $sCmd .= $_." ";
+}
+
+foreach (@file2) {
+    $sCmd .= $_." ";
+}
+
+$sCmd .= " -o ".$sOutDir;
 
 exec_command($sCmd);
-out_format($sOutDir,$hCmdLineOption{'seq1file'});
-if (defined $hCmdLineOption{'seq2file'}){
-    out_format($sOutDir,$hCmdLineOption{'seq2file'});
+
+foreach (@file1) {
+    out_format($sOutDir,$_);
 }
+
+foreach (@file2) {
+    out_format($sOutDir,$_);
+}
+
 
 ################################################################################
 ### Subroutines

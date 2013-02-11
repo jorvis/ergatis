@@ -617,6 +617,7 @@ sub Process_GFF {
     		
     		if ($sKey eq $sAttributeID) {
     			$sID = $sValue;
+    			$sID =~ s/\"//g;
     			$bFlag = 1;
     			last;
     		}
@@ -705,7 +706,7 @@ sub Add_RPKMs {
     open($fpBED, "$sStatFile") or die "\tERROR! Cannot open $sStatFile for reading !!!\n";
     open($fpTMP, ">$sTmpFile") or die "\tERROR! Cannot open $sTmpFile for writing !!!\n";
     
-    $nC = $nI = $nS = 0;
+    $nC = $nI = $nS = $nT = 0;
     while (<$fpBED>) {
     	$_ =~ s/\s+$//;
     	
@@ -745,6 +746,8 @@ sub Add_RPKMs {
     
     close($fpBED);
     close($fpTMP);
+    
+    unlink $sStatFile if ( -e "$sTmpFile" );
     
     ($bDebug || $bVerbose) ? print STDERR "\n" : ();
 

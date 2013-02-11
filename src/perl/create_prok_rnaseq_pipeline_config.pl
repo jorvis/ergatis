@@ -187,7 +187,7 @@ my ($sPLayout, $sPConfig);
 my ($sBwtIndexDir, $sBwtIndexPrefix);
 my ($fpPL, $fpPC, $fpLST1, $fpLST2, $fpLST, $fpSMPL);
 my ($sSampleName, $sGroupName, $sRead1File, $sRead2File, @aReadFiles, $sList);
-my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList);
+my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList, $Deseq_List);
 my ($sFeature, $sAttrID);
 my (@aComparisons, $sCGrp, $sGrpX, $sGrpY);
 my ($sList1File, $sList2File, $sListFile, $sFile, $sInFile);
@@ -927,18 +927,40 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	
 	###	Add DESeq Component & Parameters below ###
 	init_component($oPL, "serial");
-		include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
-	complete_component($oPL);
+	        init_component($oPL,"parallel");
+		      include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
+	              include_component_layout($oPL, $sTemplateDir, "edgeR", "edgeR_diff_expression");
 	
-	%hParams = ();
-	$hParams{'INPUT_FILE_LIST'} = ["$sOutDir/deseq_sample_info.list", "path to list of tab-delimited sample information files"];
-	$hParams{'LIST_FILE'} = ["$sCountsFileList", "path to list file of HTSeq alignment count files"];
-	config2params(\%hParams, \%hConfig, 'deseq');
-	add_config_section($fpPC, "deseq", "differential_expression");
-	add_config_parameters($fpPC, \%hParams);
-	
-	complete_component($oPL);
-}
+                      ##Add Deseq parameters
+	              %hParams = ();
+                      $hParams{'INPUT_FILE_LIST'} = ["$sOutDir/deseq_sample_info.list", "path to list of tab-delimited sample information files"];
+	              $hParams{'LIST_FILE'} = ["$sCountsFileList", "path to list file of HTSeq alignment count files"];
+	              config2params(\%hParams, \%hConfig, 'deseq');
+	              add_config_section($fpPC, "deseq", "differential_expression");
+	              add_config_parameters($fpPC, \%hParams);
+                      ##Add EdgeR parameters
+                      %hParams = ();
+	              $hParams{'INPUT_FILE_LIST'} = ["$sOutDir/deseq_sample_info.list", "path to list of tab-delimited sample information files"];
+	              $hParams{'LIST_FILE'} = ["$sCountsFileList", "path to list file of HTSeq alignment count files"];
+	              config2params(\%hParams, \%hConfig, 'edgeR');
+	              add_config_section($fpPC, "edgeR", "edgeR_diff_expression");
+	              add_config_parameters($fpPC, \%hParams);
+	        complete_component($oPL);
+                include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
+                ##Add Deseq Filter component.
+	        $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
+	        %hParams = ();
+	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
+	        config2params(\%hParams, \%hConfig, 'filter_deseq');
+	        add_config_section($fpPC, "filter_deseq", "filter_de");
+	        add_config_parameters($fpPC, \%hParams);
+        complete_component($oPL);
+
+	complete_component($oPL);    
+
+}	
+
+
 
 if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) || (defined $hCmdLineOption{'rpkm_analysis'}) ) {
 	complete_component($oPL, "parallel");

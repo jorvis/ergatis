@@ -101,7 +101,7 @@ pod2usage( -msg => $sHelpHeader, -exitval => 1) if $hCmdLineOption{'help'};
 ## make sure everything passed was peachy
 check_parameters(\%hCmdLineOption);
 
-my ($sOutDir, $sInFile, $sFormat);
+my ($sOutDir, $sInFile, $sFile, $sFormat);
 my (@aOptions, $nOption);
 my ($sCmd, $nI);
 my $bDebug   = (defined $hCmdLineOption{'debug'}) ? TRUE : FALSE;
@@ -143,7 +143,11 @@ for ($nI = 0; $nI < @aOptions; $nI++) {
 	
 	if ($nOption == 1) {
 		die "Error! Input file format is not BAM.\n" if ($sFormat !~ m/^BAM$/i);
+		$sFile = $sInFile;
 		($sInFile, $sFormat) = bam2sorted_bam(\%hCmdLineOption, $sInFile, $sOutDir);
+		if (! -l $sFile) {
+			unlink $sFile;
+		}
 	}
 	elsif ($nOption == 2) {
 		die "Error! Input file format is not BAM.\n" if ($sFormat !~ m/^BAM$/i);
@@ -155,7 +159,11 @@ for ($nI = 0; $nI < @aOptions; $nI++) {
 	}
 	elsif ($nOption == 4) {
 		die "Error! Input file format is not SAM.\n" if ($sFormat !~ m/^SAM$/i);
+		$sFile = $sInFile;
 		($sInFile, $sFormat) = sam2bam(\%hCmdLineOption, $sInFile, $sOutDir);
+		if (! -l $sFile) {
+			unlink $sFile;
+		}
 	}
 	else {
 		die "Error! Invalid option $nOption. Value has to been 1, 2, 3 or 4.\n";

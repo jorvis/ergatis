@@ -20,7 +20,7 @@ create_euk_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline.
                                          [--alignment] [--bwtidxfile <bowtie_index>] [--visualization] 
                                          [--diff_gene_expr] [--comparison_groups <str>] [--count]  
                                          [--file_type <SAM|BAM>] [--sorted <position|name>] 
-                                         [--isoform_analysis] [--include_novel]
+                                         [--isoform_analysis] [--include_novel] 
                                          [--diff_isoform_analysis] [--use_ref_gtf]
                                          [--td <template_directory>] [--o <outdir>] [--v] 
                                          [--man] [--help]
@@ -34,14 +34,14 @@ create_euk_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline.
 
     --c <config_file>                 = /path/to/config file with parameter information for multiple components.
 
-    --r <reference_fasta>             = /path/to/reference FastA file for all samples. 
+    --r <reference_fasta>             = /path/to/reference FastA file for all samples. Optional.
     
     --qual <quality_score_format>     = FastQ quality score format (33 or 64). Optional. [33]
 
     --gtf <annotation_file>           = /path/to/annotation file in GFF or GTF format.
                                         Required with '--diff_gene_expr, --alignment'.
 
-    --annotation_format               = annotation file format (gtf/gff3).Required.
+    --annotation_format               = annotation file format (gtf/gff3). Required
 
     --bowtie_build                    = execute bowtie_build component. Requires '--r'.
 
@@ -221,7 +221,7 @@ my ($sPLayout, $sPConfig);
 my ($sBwtIndexDir, $sBwtIndexPrefix);
 my ($fpPL, $fpPC, $fpLST1, $fpLST2, $fpLST, $fpSMPL, $fpGTF);
 my ($sSampleName, $sGroupName, $sRead1File, $sRead2File, @aReadFiles, $sList);
-my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList);
+my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList,$Deseq_List, $Cuff_List);
 my ($sGtfFileList, $sGtfFile, $sCuffdiff_SamFileList, $sCuffFileList);
 my ($sFeature, $sAttrID);
 my (@aComparisons, $sCGrp, $sGrpX, $sGrpY);
@@ -1025,18 +1025,41 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	
 	###	Add DESeq Component & Parameters below ###
 	init_component($oPL, "serial");
-		include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
-	complete_component($oPL);
+	        init_component($oPL,"parallel");
+		      include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
+	              include_component_layout($oPL, $sTemplateDir, "edgeR", "edgeR_diff_expression");
 	
-	%hParams = ();
-	$hParams{'INPUT_FILE_LIST'} = ["$sOutDir/deseq_sample_info.list", "path to list of tab-delimited sample information files"];
-	$hParams{'LIST_FILE'} = ["$sCountsFileList", "path to list file of HTSeq alignment count files"];
-	config2params(\%hParams, \%hConfig, 'deseq');
-	add_config_section($fpPC, "deseq", "differential_expression");
-	add_config_parameters($fpPC, \%hParams);
-	
-	complete_component($oPL);
+                      ##Add Deseq parameters
+	              %hParams = ();
+                      $hParams{'INPUT_FILE_LIST'} = ["$sOutDir/deseq_sample_info.list", "path to list of tab-delimited sample information files"];
+	              $hParams{'LIST_FILE'} = ["$sCountsFileList", "path to list file of HTSeq alignment count files"];
+	              config2params(\%hParams, \%hConfig, 'deseq');
+	              add_config_section($fpPC, "deseq", "differential_expression");
+	              add_config_parameters($fpPC, \%hParams);
+                      ##Add EdgeR parameters
+                      %hParams = ();
+	              $hParams{'INPUT_FILE_LIST'} = ["$sOutDir/deseq_sample_info.list", "path to list of tab-delimited sample information files"];
+	              $hParams{'LIST_FILE'} = ["$sCountsFileList", "path to list file of HTSeq alignment count files"];
+	              config2params(\%hParams, \%hConfig, 'edgeR');
+	              add_config_section($fpPC, "edgeR", "edgeR_diff_expression");
+	              add_config_parameters($fpPC, \%hParams);
+	        complete_component($oPL);
+                include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
+                ##Add Deseq Filter component.
+	        $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
+	        %hParams = ();
+	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
+	        config2params(\%hParams, \%hConfig, 'filter_deseq');
+	        add_config_section($fpPC, "filter_deseq", "filter_de");
+	        add_config_parameters($fpPC, \%hParams);
+        complete_component($oPL);
+
+	complete_component($oPL);    
+
 }
+
+
+    
 
 if ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'diff_isoform_analysis'})) {
 	init_component($oPL, "serial");
@@ -1160,7 +1183,8 @@ if ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'d
 		###	Add CuffDiff Component & Parameters below ###
 		include_component_layout($oPL, $sTemplateDir, "create_cuffsuite_files", "cuffdiff");
 		include_component_layout($oPL, $sTemplateDir, "cuffdiff", "differential_expression");
-		
+		include_component_layout($oPL, $sTemplateDir, "cuffdiff_filter", "filter_cuff");
+
 		%hParams = ();
 		$hParams{'SAMPLE_INFO'} = ["$hCmdLineOption{'sample_file'}", "path to sample info file with information on all samples to be analyzed"];
 		$hParams{'CUFF_PROG'} = ["Cuffdiff", "Cuffsuite program (Cuffcompare or Cuffdiff) to create files for"];
@@ -1183,6 +1207,15 @@ if ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'d
 		config2params(\%hParams, \%hConfig, 'cuffdiff');
 		add_config_section($fpPC, "cuffdiff", "differential_expression");
 		add_config_parameters($fpPC, \%hParams);
+
+		$Cuff_List = '$;REPOSITORY_ROOT$;/output_repository/cuffdiff/$;PIPELINEID$;_differential_expression/cuffdiff.isoform.diff.list';
+		%hParams = ();
+		$hParams{'INPUT_FILE'} = [$Cuff_List,"path to output list file of cuffdiff"];
+		config2params(\%hParams, \%hConfig, 'cuffdiff_filter');
+		add_config_section($fpPC, "cuffdiff_filter", "filter_cuff");
+		add_config_parameters($fpPC, \%hParams);
+		
+
 		
 		complete_component($oPL);
 	}
@@ -1217,7 +1250,7 @@ if (defined $hCmdLineOption{'repository_root'}) {
 			" --repository_root ".$hCmdLineOption{'repository_root'};
 	
 	$sCmd .= " --ergatis_config ".$hCmdLineOption{'ergatis_ini'};
-
+	
 	exec_command($sCmd);
 	
 	($bDebug || $bVerbose) ? print STDERR "\nInitiation of pipeline on ergatis ..... done\n" : undef;

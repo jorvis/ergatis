@@ -164,8 +164,14 @@ foreach $key (keys (%bam)) {
 
     ###Reading read count file:
 
-    $readcount=<$cfile>;
-    chomp($readcount);
+    while(<$cfile>) {
+	chomp($_);
+	if ($_ eq 'mapped count') {
+	    $readcount=<$cfile>;
+	    chomp($readcount);
+	    last;
+	}
+    }
 
     ###Reading mapstat file to obtain properly paired:
     while (<$mfile>) {

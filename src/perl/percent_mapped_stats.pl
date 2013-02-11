@@ -41,6 +41,7 @@ my ($e_file, $in_file, $it_file, $fout, $finalfile, $uniqfile);
 my ($sPrefix, $sSampleId, $sRegion, $nTotalMappedReads, $nUniqueMappedReads);
 my ($sCmd, $sOpt);
 my ($bDebug, $bVerbose);
+my $out_flag = 0;
 
 ##############################################################################
 ### Main
@@ -159,6 +160,7 @@ $sSampleId = $sBamFile;
 $sSampleId =~ s/\.accepted_hits.sorted_by_name//;
 $sSampleId =~ s/\.bam$//;
 
+
 if ($hCmdLineOption{'org-type'} eq 'euk') {
 
     ####Exonic Bed File
@@ -175,11 +177,13 @@ if ($hCmdLineOption{'org-type'} eq 'euk') {
 			    " -b ".$sSortedFile.
 			    " > ".$sIntronicBedFile;
     exec_command($sCmd);
+
     
     if ( -z $sIntronicBedFile) {
     	($bDebug || $bVerbose) ? 
 			print STDERR "WARNING! No introns detected in $hCmdLineOption{'annotation'}\n" : ();
         $hCmdLineOption{'org-type'} = "prok";
+	$out_flag = 1; 
     }
 }
 else {    
@@ -250,9 +254,14 @@ else {
     open ($e_file, "<$genic_inter") or die "Error! Cannot open the file.";
     open ($it_file,"<$intergenic_inter") or die "Error! Cannot open the file.";
     open ($fout,">$finalfile") or die "Error! Cannot open the file.";
-    mapped_prok ($e_file,$it_file,$fout);
+    mapped_prok ($e_file,$it_file,$fout, $out_flag);
 
 }
+
+print "Removing BED files........\n";
+$sCmd = "rm ".$sOutDir."/*.bed";
+exec_command($sCmd);
+
 exit;
 
 
@@ -266,6 +275,7 @@ sub mapped_prok {
 my  $genic_file = shift;
 my  $inter_file = shift;
 my  $fout = shift;
+my $out_flag = shift;
 my  ($g_count,$it_count,$p_genic,$p_inter,$it_line);
 my  ($k,$k1,$tag,$read1,$read_g,$read_it);
 my  $t_genic = 0;
@@ -280,6 +290,7 @@ while (<$genic_file>) {
     $read_g = (split (/\t/,$_))[3];
     $read1 = (split (/\//,$read_g))[0];
     $tag = (split (/\//,$read_g))[1];
+    if (! (defined $tag)){ $tag = 0;}
     $it_line = <$inter_file>;
     chomp($it_line);
     $read_it = (split (/\t/,$it_line))[3];
@@ -337,9 +348,14 @@ $p_genic = sprintf("%.2f",eval(($t_genic/$total_reads)*100));
 $p_inter = sprintf("%.2f",eval(($t_inter/$total_reads)*100));
 print $fout "\#Total reads mapped:\t$total_reads\n";
 print $fout "\#Uniquely mapped reads:\t$uniq_reads\n";
-print $fout "\#Genic\tIntergenic\n";
-print $fout "$p_genic\t$p_inter\n";
-
+if ($out_flag == 1) {
+    print $fout "\#Exon\tIntron\tIntergenic\n";
+    print $fout "$p_genic\t0\t$p_inter\n";
+} 
+else {
+    print $fout "\#Genic\tIntergenic\n";
+    print $fout "$p_genic\t$p_inter\n";
+}
 close $fout;
 
 }
@@ -366,6 +382,7 @@ while (<$exon_file>) {
     $read_e = (split (/\t/,$_))[3];
     $read1 = (split (/\//,$read_e))[0];
     $tag = (split (/\//,$read_e))[1];
+    if (! (defined $tag)){ $tag = 0;}
     $in_line = <$intron_file>;
     chomp($in_line);
     $read_in = (split (/\t/,$in_line))[3];

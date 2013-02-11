@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>filter_deseq</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>filter_deseq</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/filter_deseq</executable>            
+            <param>
+                <key>--deseq_list</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--filters</key>
+                <value>$;FILTERS_VAL$;</value>
+            </param>
+            <param>
+                <key>--project_name</key>
+                <value>$;PROJECT_NAME$;</value>
+            </param>
+            <param>
+                <key>--map_file</key>
+                <value>$;MAPFILE_PATH$;</value>
+            </param>
+
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+	    <param>
+                <key>--args</key>
+                <value>$;OTHER_PARAMETERS$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/filter_deseq.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/filter_deseq.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

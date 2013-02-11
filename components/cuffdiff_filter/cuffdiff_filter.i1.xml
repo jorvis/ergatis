@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>cuffdiff_filter</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>cuffdiff_filter</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/cuffdiff_filter</executable>            
+            <param>
+                <key>--cuff_list</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--filters</key>
+                <value>$;FILTERS_VAL$;</value>
+            </param>
+            <param>
+                <key>--project_name</key>
+                <value>$;PROJECT_NAME$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+	    <param>
+                <key>--args</key>
+                <value>$;OTHER_PARAMETERS$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/cuffdiff_filter.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/cuffdiff_filter.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

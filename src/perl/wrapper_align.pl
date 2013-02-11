@@ -71,11 +71,12 @@ use constant PROGRAM => eval { ($0 =~ m/(\w+\.pl)$/) ? $1 : $0 };
 
 my %hCmdLineOption =();
 my $sHelpHeader = "\nThis is ".PROGRAM."\n";
-my ($sOutDir,$prefix,$path, $f1,$read,$a,$val);
-my ($filehandle,$key,$fout,$file,$flag,$ffile);
-my (%sample,%final);
+my ($sOutDir, $prefix, $path, $f1, $read, $a, $val, $base_png, $length_png);
+my ($filehandle, $key, $fout, $file, $flag, $ffile);
+my (%sample, %final, %fastqc_png);
 my @arr;
 my $rpkm_flag = 0;
+my $flag_per = 0;
 
 ################################################################################
 ### Main
@@ -116,6 +117,26 @@ $hCmdLineOption{'outrep'} = File::Spec->canonpath($hCmdLineOption{'outrep'});
 
 mkdir ("$sOutDir/Quality");
 
+#$path =  $hCmdLineOption{'outrep'}."/bowtie/".$hCmdLineOption{'pipeline'}."_alignment/bowtie.bam.list";
+#if (! -e $path ) {
+#    $path = $hCmdLineOption{'outrep'}."/tophat/".$hCmdLineOption{'pipeline'}."_alignment/tophat.bam.list";
+#}
+
+#if( -e $path) {
+#    open($filehandle,"<$path") or die "Cannot open bam list";
+#    while(<$filehandle>){
+#	chomp($_);
+#	($f1, $path, $prefix) = File::Spec->splitpath($_);
+#	@arr = split(/\./,$prefix);
+#	$prefix = $arr[0];
+#	$fastqc_png{$prefix}{'base'} = [];
+#	$fastqc_png{$prefix}{'length'} = [];
+	
+#    }
+#    close $filehandle;
+#}
+
+
 $path =  $hCmdLineOption{'outrep'}."/fastqc_stats/".$hCmdLineOption{'pipeline'}."_fastqc/fastqc_stats.base.png.list";
 if( -e $path ) {
     open($filehandle,"<$path") or die "Cannot open png file list";
@@ -124,18 +145,12 @@ if( -e $path ) {
 	($f1, $path, $prefix) = File::Spec->splitpath($_);
 	@arr = split(/\./,$prefix);
 	$prefix = $arr[0];
-	$prefix =~ s/_1_sequence//;
-        @arr = split(/_/,$prefix);
-	$prefix = '';
-	for ($a = 0;$a < (scalar @arr-1);$a++){
-	    if ($a!=0){$prefix.='_';}
-	    $prefix.=$arr[$a];
-	}
-	$f1 = scalar @arr-1;
-	$read = $arr[$f1];
-	$final{$hCmdLineOption{'pipeline'}}{$prefix}{'base_png'}{$read} = $_;
+	$prefix =~ s/.\d(_\d)_sequence$//;
+	push (@{$fastqc_png{$prefix}{'base'}}, $_);		
     }
+    close $filehandle;
 }
+
 $path =  $hCmdLineOption{'outrep'}."/fastqc_stats/".$hCmdLineOption{'pipeline'}."_fastqc/fastqc_stats.length.png.list";
 if( -e $path ) {
     open($filehandle,"<$path") or die "Cannot open seq length png file list";
@@ -144,18 +159,14 @@ if( -e $path ) {
 	($f1, $path, $prefix) = File::Spec->splitpath($_);
 	@arr = split(/\./,$prefix);
 	$prefix = $arr[0];
-	$prefix =~ s/_1_sequence//;
-        @arr = split(/_/,$prefix);
-	$prefix = '';
-	for ($a = 0;$a < (scalar @arr-1);$a++){
-	    if ($a!=0){$prefix.='_';}
-	    $prefix.=$arr[$a];
-	}
-	$f1 = scalar @arr-1;
-	$read = $arr[$f1];
-	$final{$hCmdLineOption{'pipeline'}}{$prefix}{'length_png'}{$read} = $_;
+	$prefix =~ s/.\d(_\d)_sequence$//;
+	push (@{$fastqc_png{$prefix}{'length'}}, $_);		
     }
+    close $filehandle;
 }
+
+
+
 
 $path =  $hCmdLineOption{'outrep'}."/percent_mapped_stats/".$hCmdLineOption{'pipeline'}."_percent_mapped/percent_mapped_stats.txt.list";
 if( -e $path ) {
@@ -181,9 +192,7 @@ if( -e $path ) {
     while (<$filehandle>) {
 	chomp($_);
 	($f1, $path, $prefix) = File::Spec->splitpath($_);
-	#if (exists $sample{$hCmdLineOption{'pipeline'}}) {
-	    $sample{$hCmdLineOption{'pipeline'}}{'tophat'} = $_;
-	#}
+	 $sample{$hCmdLineOption{'pipeline'}}{'tophat'} = $_;
     }
     close $filehandle;
 }
@@ -195,9 +204,7 @@ if( -e $path ) {
     while (<$filehandle>) {
 	chomp($_);
 	($f1, $path, $prefix) = File::Spec->splitpath($_);
-	#if (exists $sample{$hCmdLineOption{'pipeline'}}) {
-	    $sample{$hCmdLineOption{'pipeline'}}{'bowtie'} = $_;
-	#}
+	$sample{$hCmdLineOption{'pipeline'}}{'bowtie'} = $_;
     }
     close $filehandle;
 }	
@@ -222,12 +229,12 @@ if (-e $path) {
 
 foreach $key (keys %sample) {
     if (exists $sample{$key}{'percent'}) {
+	$flag_per = 1 ;
 	foreach $a (@{$sample{$key}{'percent'}}) {
 	    open($file,"<$a");
 	    ($f1, $path, $prefix) = File::Spec->splitpath($a);
 	    @arr = split(/\./,$prefix);
 	    $prefix = $arr[0];
-	    $prefix =~ s/\_1$//;
 	    while (<$file>) {
 		chomp($_);
 		if (! exists $final{$key}{$prefix}{'percent'}){
@@ -238,16 +245,15 @@ foreach $key (keys %sample) {
 		}
 	    }
 	    close $file;
-	}
-	
+	}	
     }
+
  if (exists $sample{$key}{'rpkm'}) {
 	foreach $a (@{$sample{$key}{'rpkm'}}) {
 	    open($file,"<$a");
 	    ($f1, $path, $prefix) = File::Spec->splitpath($a);
 	    @arr = split(/\./,$prefix);
-	    $prefix = $arr[0];
-	    $prefix =~ s/\_1$//;
+	    $prefix = $arr[0];	    
 	    while (<$file>) {
 		chomp($_);
 		if ($_ =~ /^\#/) {
@@ -261,24 +267,21 @@ foreach $key (keys %sample) {
 	    }
 	    close $file;
 	}
-	
     }
 
 
     if (exists $sample{$key}{'bowtie'}) {
-	open($file,"<$sample{$key}{'bowtie'}");
+    open($file,"<$sample{$key}{'bowtie'}");
 	while (<$file>) {
 	    if($_=~/^\#Sample/){
 		@arr = split(/\t/,$_);
 		$prefix = $arr[1];
-		$prefix =~ s/\_1$//;
 		<$file>;
 		$val = <$file>;
 		chomp ($prefix);
 		chomp ($val);
-		if (exists $final{$key}{$prefix}) { 
-		    $final{$key}{$prefix}{'bowtie'} = $val;
-		}
+		$final{$key}{$prefix}{'bowtie'} = $val;
+		
 	    }
 	}
 	close $file;
@@ -290,14 +293,12 @@ foreach $key (keys %sample) {
 	    if($_=~/^\#Sample/){
 		@arr = split(/\t/,$_);
 		$prefix = $arr[1];
-		$prefix =~ s/\_1$//;
 		<$file>;
 		$val = <$file>;
 		chomp($prefix);
 		chomp($val);
-		if (exists $final{$key}{$prefix}) {
-		    $final{$key}{$prefix}{'tophat'} = $val;
-		}
+		$final{$key}{$prefix}{'tophat'} = $val;
+		
 	    }
 	}
 	close $file;
@@ -308,17 +309,21 @@ open ($fout,">$sOutDir/Summary.txt") or die "Error Cannot open output file.";
 open ($ffile,">$sOutDir/Quality.pngs.list") or die "Error Cannot open output file.";
 
 foreach (keys %final) {
+    
     if ($flag eq 'b') {
-	print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired\tUniquely.Mapped.Reads\tPercent.Genic\tPercent.Intergenic";
+	print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired";
+	if ($flag_per == 1) {print $fout "\tUniquely.Mapped.Reads\tPercent.Genic\tPercent.Intergenic";}
 	if ($rpkm_flag == 1) {print $fout "\tTotal.Features\tFeatures.With.Coverage\tAvg.RPKM\n";} 
 	else {print $fout "\n";}
     }
     if ($flag eq 't') {
-	print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired\tUniquely.Mapped.Reads\tPercent.Exonic\tPercent.Intronic\tPercent.Intergenic";
+	print $fout "\#Sample_ID\tTotal.Reads\tTotal.Mapped.Reads\tPercent.Mapped.Reads\tPercent.Properly.Paired";
+	if ($flag_per == 1) {print $fout "\tUniquely.Mapped.Reads\tPercent.Exonic\tPercent.Intronic\tPercent.Intergeni";}
 	if ($rpkm_flag == 1) {print $fout "\tTotal.Features\tFeatures.With.Coverage\tAvg.RPKM\n";} 
 	else {print $fout "\n";}
     }
     foreach $f1 (keys %{$final{$_}}) {
+
 	if (exists $final{$_}{$f1}{'bowtie'}){	    
 	    print $fout "$f1\t$final{$_}{$f1}{'bowtie'}\t";
 	}
@@ -348,29 +353,26 @@ foreach (keys %final) {
 	    
 	}
 	print $fout "\n";
-        if (exists $final{$_}{$f1}{'base_png'}){
-	    if (-e $final{$_}{$f1}{'base_png'}{1}){
-		print $ffile "$f1\tRead1\tBase_Qualtiy\t$sOutDir/Quality/$f1.R1.base_png\n";
-		symlink  "$final{$_}{$f1}{'base_png'}{1}","$sOutDir/Quality/$f1.R1.base_png";
-	    }
-	    if (-e $final{$_}{$f1}{'base_png'}{2}){
-		print $ffile "$f1\tRead2\tBase_Quality\t$sOutDir/Quality/$f1.R2.base_png\n";
-		symlink  "$final{$_}{$f1}{'base_png'}{2}","$sOutDir/Quality/$f1.R2.base_png";
-	    }
-	    
-	}
-	if (exists $final{$_}{$f1}{'length_png'}){
-	    if (-e $final{$_}{$f1}{'length_png'}{1}){
-		print $ffile "$f1\tRead1\tRead_Length\t$sOutDir/Quality/$f1.R1.length_png\n";
-		symlink  "$final{$_}{$f1}{'length_png'}{1}","$sOutDir/Quality/$f1.R1.length_png";
-	    }
-	    if (-e $final{$_}{$f1}{'base_png'}{2}){
-		print $ffile "$f1\tRead2\tRead_Length\t$sOutDir/Quality/$f1.R2.length_png\n";
-		symlink  "$final{$_}{$f1}{'length_png'}{2}","$sOutDir/Quality/$f1.R2.length_png";
-	    }	
-    	}
     }
-} 
+}
+
+foreach (keys %fastqc_png) {
+    foreach $a (@{$fastqc_png{$_}{'base'}}) {
+	($f1, $path, $prefix) = File::Spec->splitpath($a);
+	symlink "$a" , "$sOutDir/Quality/$prefix";
+    }
+    $base_png = join(',', @{$fastqc_png{$_}{'base'}});
+    print $ffile "$_\tBase_Quality\t$base_png\n";
+
+    foreach $a (@{$fastqc_png{$_}{'length'}}) {
+	($f1, $path, $prefix) = File::Spec->splitpath($a);
+	symlink "$a" , "$sOutDir/Quality/$prefix";
+    }
+
+    $length_png = join(',', @{$fastqc_png{$_}{'length'}});
+    print $ffile "$_\tLength_Distribution\t$length_png\n";
+
+}
     
 
 close $fout;

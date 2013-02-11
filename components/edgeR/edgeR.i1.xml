@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>edgeR</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>edgeR</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/edgeR</executable>            
+            <param>
+                <key>--infile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--listfile</key>
+                <value>'$;LIST_FILE$;'</value>
+            </param>
+            <param>
+                <key>--annotation</key>
+                <value>'$;ANNOTATION_FILE$;'</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+             <param>
+                <key>--r_bin_dir</key>
+                <value>$;R_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>--r_params</key>
+                <value>'$;R_PARAMS$;'</value>
+            </param>   
+            <param>
+                <key>--r_script</key>
+                <value>$;R_SCRIPT$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/edgeR.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/edgeR.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>

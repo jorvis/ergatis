@@ -184,12 +184,10 @@ exec_command($sCmd);
 
 $sFile = (split(/,/, $hCmdLineOption{'seq1file'}))[0];
 ($_, $_, $sPrefix) = File::Spec->splitpath($sFile);
-if ((defined $hCmdLineOption{'seq2file'}) && ($hCmdLineOption{'seq2file'} !~ m/^$/)) {
-	$sPrefix =~ s/.1_sequence.*//;
-}
-else {
-	$sPrefix =~ s/.sequence.*//;
-}
+$sPrefix =~ s/.1_1_sequence.*//;
+$sPrefix =~ s/.sequence.*//;
+$sPrefix =~ s/.fastq*//;
+$sPrefix =~ s/.fq*//;
 
 if ( -e "$sOutDir/accepted_hits.bam" ) {
 	$sCmd = "mv $sOutDir/accepted_hits.bam $sOutDir/$sPrefix.accepted_hits.bam";

@@ -126,12 +126,28 @@ $sCmd  = $hCmdLineOption{'samtools_bin_dir'}."/samtools flagstat ".$sInFile." > 
 
 exec_command($sCmd);
 
+$sCmd = "echo mapped count > $sOutDir/$sPrefix.mapped_reads.count";
+
+exec_command($sCmd);
+
 $sCmd = $hCmdLineOption{'samtools_bin_dir'}."/samtools view".
 		" -c -F 260".
 		" ".$hCmdLineOption{'infile'}.
-		" > $sOutDir/$sPrefix.mapped_reads.count";
+		" >> $sOutDir/$sPrefix.mapped_reads.count";
 
 exec_command($sCmd);
+
+$sCmd = "echo properly paired count >> $sOutDir/$sPrefix.mapped_reads.count";
+
+exec_command($sCmd);
+
+$sCmd = $hCmdLineOption{'samtools_bin_dir'}."/samtools view".
+		" -c -f 2 -F 256".
+		" ".$hCmdLineOption{'infile'}.
+		" >> $sOutDir/$sPrefix.mapped_reads.count";
+
+exec_command($sCmd);
+
 
 ($bDebug || $bVerbose) ? 
 	print STDERR "\nProcessing $hCmdLineOption{'infile'} ... done\n" : ();

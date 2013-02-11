@@ -179,6 +179,12 @@ foreach $sKey ( keys %hCmdLineOption) {
 
 $sCmd .= " --library-type ".$hCmdLineOption{'library-type'} if ((defined $hCmdLineOption{'library-type'}) && ($hCmdLineOption{'library-type'} !~ m/^$/i));
 $sCmd .= " --FDR ".$hCmdLineOption{'fdr'} if (defined $hCmdLineOption{'fdr'});
+if ((! defined $hCmdLineOption{'labels'}) || ($hCmdLineOption{'labels'} =~ m/^$/i)) {
+	($_, $_, $sFile) = File::Spec->splitpath($hCmdLineOption{'listfile'});
+	if ($sFile =~ m/(.+)vs(.+)\.sample.list/) {
+		$sCmd .= " --labels ".$2.",".$1;
+	}
+}
 $sCmd .= " ".$hCmdLineOption{'args'} if (defined $hCmdLineOption{'args'});
 $sCmd .= " ".$hCmdLineOption{'gtffile'};
 $sCmd .= " ".$sSamFileList;
@@ -195,6 +201,10 @@ $sPrefix =~ s/.list$//;
 rename_files($sOutDir, ".diff", $sPrefix);
 
 rename_files($sOutDir, ".fpkm_tracking", $sPrefix);
+
+rename_files($sOutDir, ".count_tracking", $sPrefix);
+
+rename_files($sOutDir, ".read_group_tracking", $sPrefix);
 
 ($bDebug || $bVerbose) ? 
 	print STDERR "\nProcessing $hCmdLineOption{'listfile'} ... done\n" : ();

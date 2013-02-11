@@ -137,8 +137,14 @@ foreach $key (keys (%bam)) {
     open($mfile,"<$bam{$key}{'mapstats'}") or die "Error! Cannot open the mapstat file.";
 
     ###Reading read count file::
-    $readcount=<$cfile>;
-    chomp($readcount);
+    while(<$cfile>) {
+	chomp($_);
+	if ($_ eq 'mapped count') {
+	    $readcount=<$cfile>;
+	    chomp($readcount);
+	    last;
+	}
+    }
 
     ###Reading mapstat file to obtain properly paired an total reads:
     while (<$mfile>) {
