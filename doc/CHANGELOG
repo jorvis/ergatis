@@ -1,5 +1,6 @@
 next
 ----
+-bsml2tbl: Added pipeline summary report production script to the component 
 -Fixed bug in blast2bsml and blast2btab where tab metacharacters (\t) from blast resuls would cause parsing issues later on
 -Fixed bug in hmmpfam32bsml and hmmpfam32htab where polypeptide model hits that had no domain hits were incorrectly being included in bsml and htab results
 -Fixed HmmTools.pm because last update broke htab creation functionality for hmmpfam3 results
