@@ -2,7 +2,7 @@
 
 #################################################################################
 #										#
-# Name	      : summary_report.pl						#
+# Name	      : create_summary_report.pl					#
 # Version     : 1.0								#
 # Project     : CloVR Microbe Pipeline						#
 # Description : Script to generate a summary report for the Microbe pipeline	#
@@ -214,11 +214,11 @@ __END__
 
 =head1 NAME
 
-summary_report.pl - Script to generate a summary report for the Microbe pipeline
+create_summary_report.pl - Script to generate a summary report for the Microbe pipeline
 
 =head1 SYNOPSIS
 
-USAGE : perl summary_report -bsml_file <input bsml file> -output_file <output file> [ -bsml_list <input bsml list> -bsml_dir <input bsml dir> -bsml_ext <bsml extension> -log <log file> -help ]
+USAGE : perl create_summary_report -bsml_file <input bsml file> -output_file <output file> [ -bsml_list <input bsml list> -bsml_dir <input bsml dir> -bsml_ext <bsml extension> -log <log file> -help ]
 
 	parameters in [] are optional
 
@@ -250,10 +250,11 @@ Summary report file conating following information:
 1. Contig Ids	Size(Kbp)	Number of CDS in the contig - This list only includes contigs greater than 5Kbp
 2. Total number of contigs/scaffolds in the genome.
 3. Mean contig size in Kbp
-4. Total genome size in Mbp
-5. Total numbmer of CDS predicted in the genome
-6. Total number of tRNAs predicted in the genome
-7. Total number of rRNAs predicted in the genome 
+4. Median contig size in Kbp
+5. Total genome size in Mbp
+6. Total numbmer of CDS predicted in the genome
+7. Total number of tRNAs predicted in the genome
+8. Total number of rRNAs predicted in the genome 
 
 =head1 AUTHOR
 
