@@ -72,6 +72,7 @@ use strict;
 use Pod::Usage;        
 use Ergatis::Logger;
 use File::OpenFile qw(open_file);
+use File::Basename;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 ## Need to setup the PYTHONPATH env variable here...
@@ -89,17 +90,24 @@ my $input = $options{'map_file'};
 my $repo_root = $options{'repository_root'};
 my $pipeline_id = $options{'pipeline_id'};
 my $pipeline_name = $options{'pipeline_name'};
+my $flatten = $options{'flatten'};
 
 my ($files_to_tag,$meta_data) = parse_mapping_file($input);
 
 ## Now that we have our files to tag we can go ahead with the tagging
 foreach my $tag_name (keys %$files_to_tag) {
     my @files = @{ $files_to_tag->{$tag_name} };
+    my $tag_base_dir = "$repo_root/output_repository/";
+    if($flatten) {
+        my $flat_files = &flatten_files($tag_name,\@files);
+        @files = @$flat_files;
+        $tag_base_dir = "/mnt/flat_tags/";
+    }
     open FILE,"+>/tmp/tag$$.filelist";
     print FILE join("\n", @files);
     close FILE;
     my $cmd = $TAG_DATA_EXEC;
-    $cmd .= " --stdin --tag-base-dir $repo_root/output_repository/ -o --recursive --tag-name " . $tag_name;
+    $cmd .= " --stdin --tag-base-dir $tag_base_dir -o --recursive --tag-name " . $tag_name;
     if($$meta_data{$tag_name}{'key_vals_exist'}) {
 	$cmd .= " -m " . join(" -m ", @{$$meta_data{$tag_name}{'key_vals'}});
     }
@@ -157,6 +165,27 @@ sub parse_mapping_file {
     return ($tag_files, $meta_data);
 }
 
+sub flatten_files {
+    my ($tag_name,$files) = @_;
+
+    &run_system_cmd("mkdir -p /mnt/flat_tags/$tag_name");
+    my $file_counter = {};
+    my $new_files = [];
+    map { 
+
+        # Make sure there are no duplicate files.
+        my($file) = fileparse($_);
+        if(-e "/mnt/flat_tags/$tag_name/$file") {
+            $file_counter->{$file}++;
+            $file = "$file_counter->{$file}_$file";
+        }
+
+	&run_system_cmd("ln -f -s $_ /mnt/flat_tags/$tag_name/$file");
+        print STDERR "Adding /mnt/flat_tags/$tag_name/$file to tag $tag_name\n";
+        push(@$new_files,"/mnt/flat_tags/$tag_name/$file");
+   }@$files;
+   return $new_files;
+}
 #----------------------------------------------------------
 # verify whether a file exists, is readable and if it is a 
 # directory; if the file is a list then the list of files 
@@ -252,6 +281,7 @@ sub parse_options {
                 'pipeline_name|n=s',
                 'log|l:s',
                 'debug|d:s',
+                'flatten|f:s',
                 'help') || pod2usage();
                  
     &pod2usage( {-exitval => 1, -verbose => 1, -output => \*STDOUT}) if ($opts{'help'} );        
