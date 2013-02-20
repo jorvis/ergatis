@@ -30,19 +30,19 @@
             <executable>$;BIN_DIR$;/create_summary_report</executable>
             <param>
                 <key>--bsml_file</key>
-                <value>'$;INPUT_FILE$;'</value>
+                <value>$;INPUT_FILE$;</value>
             </param>
             <param>
                 <key>--bsml_list</key>
-                <value>'$;INPUT_FILE_LIST$;'</value>
+                <value>$;INPUT_FILE_LIST$;</value>
             </param>
             <param>
                 <key>--bsml_dir</key>
-                <value>'$;INPUT_DIRECTORY$;'</value>
+                <value>$;INPUT_DIRECTORY$;</value>
             </param>
             <param>
                 <key>--bsml_ext</key>
-                <value>'$;INPUT_EXTENSION$;'</value>
+                <value>$;INPUT_EXTENSION$;</value>
             </param>
             <param>
                 <key>--output_file</key>
