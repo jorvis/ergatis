@@ -49,6 +49,10 @@
                 <value>$;MAP_FILE$;</value>
             </param>
             <param>
+                <key>--flatten</key>
+                <value>$;FLATTEN$;</value>
+            </param>
+            <param>
                 <key>--repository_root</key>
                 <value>$;REPOSITORY_ROOT$;</value>
             </param>
