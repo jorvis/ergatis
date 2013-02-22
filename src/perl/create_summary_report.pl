@@ -95,7 +95,7 @@ print SR "\nTotal number of contigs/scaffolds : ".@files."\n";
 print SR "Mean contig size : ".nearest(0.01,(($tlength/@files)/1000))." Kbp\n";
 print SR "Median contig size : ".nearest(0.01,($median/1000))." Kbp\n";
 print SR "Total genome size : ".nearest(0.01,$tlength/1000000)." Mbp\n";
-print SR "Total numbmer of CDS : $tcds\n";
+print SR "Total number of CDS : $tcds\n";
 print SR "Total number of tRNAs : $ttrna\n";
 print SR "Total number of rRNAs : $trrna\n";
 
