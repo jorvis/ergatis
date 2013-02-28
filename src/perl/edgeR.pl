@@ -71,7 +71,7 @@ use FindBin qw($RealBin);
 use constant FALSE => 0;
 use constant TRUE  => 1;
 
-use constant R_BIN_DIR => '/usr/local/packages/R-2.14.1/bin/Rscript';
+use constant R_BIN_DIR => '/usr/local/packages/R-2.14.1/bin';
 
 use constant VERSION => '1.0.0';
 use constant PROGRAM => eval { ($0 =~ m/(\w+\.pl)$/) ? $1 : $0 };
@@ -191,19 +191,20 @@ close($fpOUT);
 ($bDebug || $bVerbose) ? 
 	print STDERR "\nInitiating edgeR Analysis ...\n" : ();
 
-#$sCmd  = $hCmdLineOption{'r_bin_dir'}."/R".
-#		 " ".$hCmdLineOption{'r_params'}.
-#		 " --args ".$sOutDir."/edgeR.sample.info.txt".
-#		 " ".$sOutDir;
-#$sCmd .= " ".$hCmdLineOption{'annotation'} if ((defined $hCmdLineOption{'annotation'}) && ($hCmdLineOption{'annotation'} !~ m/^$/));
-#$sCmd .= " < ".$sRScript;
-
-
-
-$sCmd  = $sRScript . 
+$sCmd  = $hCmdLineOption{'r_bin_dir'}."/R".
 		 " ".$hCmdLineOption{'r_params'}.
-		 " ".$sOutDir."/edgeR.sample.info.txt".
+		 " --args ".$sOutDir."/edgeR.sample.info.txt".
 		 " ".$sOutDir;
+$sCmd .= " ".$hCmdLineOption{'annotation'} if ((defined $hCmdLineOption{'annotation'}) && ($hCmdLineOption{'annotation'} !~ m/^$/));
+
+$sCmd .= " < ".$sRScript;
+
+
+
+#$sCmd  = $sRScript . 
+#		 " ".$hCmdLineOption{'r_params'}.
+#		 " ".$sOutDir."/edgeR.sample.info.txt".
+#		 " ".$sOutDir;
 #print "command::\n\n$sCmd\n\n";
 exec_command($sCmd);
 
@@ -225,7 +226,7 @@ sub check_parameters {
 	
     ## handle some defaults
     $phOptions->{'r_bin_dir'} = R_BIN_DIR if (! (defined $phOptions->{'r_bin_dir'}) );
-    #$phOptions->{'r_params'} = '--slave --vanilla' if (! (defined $phOptions->{'r_params'}) );
+    $phOptions->{'r_params'} = '--vanilla' if (! (defined $phOptions->{'r_params'}) );
     $phOptions->{'r_script'} = $RealBin."/edgeR.R" if (! (defined $phOptions->{'r_script'}) );    
     
     # set environment variables

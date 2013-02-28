@@ -267,6 +267,11 @@ foreach $sRegion (@aRegions) {
 }
 
 ($bDebug || $bVerbose) ? 
+	print "Removing BED files........\n" : ();
+
+unlink glob "$sOutDir/*bed";
+
+($bDebug || $bVerbose) ? 
 	print STDERR "\nGenerating coverage statistics for the specified regions ..... done\n" : ();
 
 exit;

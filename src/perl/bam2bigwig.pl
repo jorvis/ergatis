@@ -941,6 +941,10 @@ bam2bigwig.pl - program to generate BedGraph and BigWig files from alignment BAM
 
     --o <output_dir>                               = output directory. Optional.
 
+    --e                                            = if input BAM file is of single-end sequencing reads. Optional.
+
+    --w                                            = if 'WIG' files required. Optional.
+
     --uu <ucsc_util_dir>                           = /path/to/ucsc_utility_directory. Optional.
 
     --bb <bedtools_bin_dir>                        = /path/to/bedtools_bin_directory. Optional.

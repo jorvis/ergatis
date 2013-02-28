@@ -2,24 +2,37 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>deseq</name>
+        <name>expression_plots</name>
 		<command>
             <type>RunUnixCommand</type>
-            <name>deseq</name>
+            <name>expression_plots</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/deseq</executable>            
+            <executable>$;BIN_DIR$;/expression_plots</executable>            
             <param>
                 <key>--infile</key>
-                <value>$;I_FILE_PATH$;</value>
+                <value>$;INPUT_FILE$;</value>
             </param>
+           <param>
+                <key>--analysis</key>
+                <value>$;ANALYSIS$;</value>
+            </param>  
             <param>
-                <key>--listfile</key>
-                <value>$;LIST_FILE$;</value>
+                <key>--lfc</key>
+                <value>$;LFC$;</value>
             </param>
+           <param>
+                <key>--fdr</key>
+                <value>$;FDR$;</value>
+            </param>  
             <param>
-                <key>--annotation</key>
-                <value>$;ANNOTATION_FILE$;</value>
+                <key>--gene_col</key>
+                <value>$;GENE_COL$;</value>
             </param>
+           <param>
+                <key>--rpkm_col</key>
+                <value>$;RPKM_COL$;</value>
+            </param>  
+
             <param>
                 <key>--outdir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
@@ -38,11 +51,11 @@
             </param>
             <param>
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/deseq.stdout</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/expression_plots.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/deseq.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/expression_plots.stderr</value>
             </param>
             <arg>$;OTHER_ARGS$;</arg>
         </command>

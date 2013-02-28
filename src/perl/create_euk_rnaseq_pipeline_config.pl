@@ -221,7 +221,7 @@ my ($sPLayout, $sPConfig);
 my ($sBwtIndexDir, $sBwtIndexPrefix);
 my ($fpPL, $fpPC, $fpLST1, $fpLST2, $fpLST, $fpSMPL, $fpGTF);
 my ($sSampleName, $sGroupName, $sRead1File, $sRead2File, @aReadFiles, $sList);
-my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList,$Deseq_List, $Cuff_List);
+my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList,$Deseq_List, $Cuff_List, $sRpkmFileList);
 my ($sGtfFileList, $sGtfFile, $sCuffdiff_SamFileList, $sCuffFileList);
 my ($sFeature, $sAttrID);
 my (@aComparisons, $sCGrp, $sGrpX, $sGrpY);
@@ -916,7 +916,8 @@ if (defined $hCmdLineOption{'rpkm_analysis'}) {
 			}
 		}
 		include_component_layout($oPL, $sTemplateDir, "rpkm_coverage_stats", "rpkm_cvg");
-		include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
+	        include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
+  	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "rpkm"); 
 	complete_component($oPL);
 	
 	if (! defined $hCmdLineOption{'alignment'}) {
@@ -952,12 +953,19 @@ if (defined $hCmdLineOption{'rpkm_analysis'}) {
 	add_config_section($fpPC, "rpkm_coverage_stats", "rpkm_cvg");
 	add_config_parameters($fpPC, \%hParams);
 	
+	$sRpkmFileList = '$;REPOSITORY_ROOT$;/output_repository/rpkm_coverage_stats/$;PIPELINEID$;_rpkm_cvg/rpkm_coverage_stats.rpkm.stats.list';
 	%hParams = ();
 	$hParams{'PIPELINE_ID'} = ["\$;PIPELINEID\$;", "ergatis pipeline id"];
 	$hParams{'OUTPUT_REPOSITORY'} = ["\$;REPOSITORY_ROOT\$;/output_repository", "pipeline output repository"];
 	add_config_section($fpPC, "wrapper_align", "wrap");
 	add_config_parameters($fpPC, \%hParams);
 	
+	%hParams = ();
+	
+	$hParams{'INPUT_FILE'} = ["$sRpkmFileList", "path to list of rpkm coverage file"];
+	add_config_section($fpPC, "expression_plots", "rpkm");
+	add_config_parameters($fpPC, \%hParams);
+
 	complete_component($oPL);
 }
 elsif (defined $hCmdLineOption{'alignment'}) {
@@ -1044,7 +1052,9 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	              add_config_section($fpPC, "edgeR", "edgeR_diff_expression");
 	              add_config_parameters($fpPC, \%hParams);
 	        complete_component($oPL);
+
                 include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
+	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "deseq");
                 ##Add Deseq Filter component.
 	        $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
 	        %hParams = ();
@@ -1052,6 +1062,14 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	        config2params(\%hParams, \%hConfig, 'filter_deseq');
 	        add_config_section($fpPC, "filter_deseq", "filter_de");
 	        add_config_parameters($fpPC, \%hParams);
+	
+	        %hParams = ();
+
+	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
+	        config2params(\%hParams, \%hConfig, 'expression_plots');
+	        add_config_section($fpPC, "expression_plots", "deseq");
+	        add_config_parameters($fpPC, \%hParams);
+
         complete_component($oPL);
 
 	complete_component($oPL);    
@@ -1215,9 +1233,28 @@ if ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'d
 		add_config_section($fpPC, "cuffdiff_filter", "filter_cuff");
 		add_config_parameters($fpPC, \%hParams);
 		
+		complete_component($oPL);
+
+		init_component($oPL, "parallel");
+		include_component_layout($oPL, $sTemplateDir, "expression_plots", "cuffdiff");
+		include_component_layout($oPL, $sTemplateDir, "cummerbund", "cummer_cuff");
+		%hParams = ();
+                
+	        $hParams{'INPUT_FILE'} = [$Cuff_List,"path to output list file of cuffdiff"];
+	        config2params(\%hParams, \%hConfig, 'expression_plots');
+	        add_config_section($fpPC, "expression_plots", "cuffdiff");
+	        add_config_parameters($fpPC, \%hParams);
+
+		%hParams = ();
+                
+	        $hParams{'INPUT_FILE'} = [$Cuff_List,"path to output list file of cuffdiff"];
+	        config2params(\%hParams, \%hConfig, 'cummerbund');
+	        add_config_section($fpPC, "cummerbund", "cummer_cuff");
+	        add_config_parameters($fpPC, \%hParams);
 
 		
 		complete_component($oPL);
+
 	}
 	
 	complete_component($oPL);

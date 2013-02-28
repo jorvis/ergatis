@@ -1,7 +1,7 @@
-#! /usr/local/packages/R-2.15.2/bin/Rscript --vanilla
+#! /usr/local/packages/R-2.15.2/bin/Rscript --slave --vanilla
 
 #
-# Usage: deseq-1.10.1 [arg1] [arg2] [cmd line arg3] $sample_info $out_dir $annotation_file
+# Usage: deseq.R $sample_info $out_dir 
 #
 # tcreasy@som.umaryland.edu 
 #
@@ -19,13 +19,14 @@ cat("\n***** Starting DESeq (v1.10.1) analysis ******\n\n")
 
 # input arguments
 args <- commandArgs(TRUE)
-stopifnot(length(args) == 5)
+print(length(args))
+stopifnot(length(args) > 1 )
 
 # sample comparison input file
-sample.info <- read.delim(args[4], header=FALSE, sep="\t")
+sample.info <- read.delim(args[1], header=FALSE, sep="\t")
 
 # output directory
-output.dir <- args[5]
+output.dir <- args[2]
 
 # set the working directory
 setwd(output.dir)

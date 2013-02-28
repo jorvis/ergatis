@@ -6,7 +6,7 @@ classification = RNA-Seq
 ;; First column of annotation file must be same as ID used for read counting.
 $;ANNOTATION_FILE$; = 
 ;; path to R statistical package binary directory [/usr/local/packages/R-2.15.2/bin]
-$;R_BIN_DIR$; = $;R_BIN$;
+$;R_BIN_DIR$; = 
 ;; additonal R parameters
 $;R_PARAMS$; = --slave --vanilla
 ;; path to R Script for DESeq Analysis. Optional [deseq.v1.2.R]
