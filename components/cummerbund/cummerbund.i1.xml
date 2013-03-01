@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>cummerbund</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>cummerbund</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/cummerbund</executable>            
+            <param>
+                <key>--infile</key>
+                <value>$;INPUT_FILE$;</value>
+            </param>
+           <param>
+                <key>--listfile</key>
+                <value>'$;INPUT_FILE_LIST$;'</value>
+            </param>  
+          <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>--r_bin_dir</key>
+                <value>'$;R_BIN_DIR$;'</value>
+            </param>
+            <param>
+                <key>--r_params</key>
+                <value>'$;R_PARAMS$;'</value>
+            </param>
+            <param>
+                <key>--r_script</key>
+                <value>$;R_SCRIPT$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/cummerbund.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/cummerbund.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
