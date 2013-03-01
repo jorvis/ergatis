@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+   <commandSet type="serial">
+	<name>usearch_compute</name>
+	<!--Preprocessing-->
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create output directory</name>
+	    <state>incomplete</state>
+	    <executable>mkdir</executable>
+	    <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;</arg>
+	 </command>
+	 <!-- end of pre processing -->
+
+	 <command>
+            <type>RunUnixCommand</type>
+            <name>usearch</name>
+            <state>incomplete</state>
+            <executable>$;USEARCH_EXEC$;</executable>
+            <arg>--$;ALGORITHM$; $;I_FILE_PATH$; --output $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_out.fasta --centroids $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_nr.fasta --uc $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.uc --blast6out $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.m8 $;OTHER_ARGS$;</arg>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>  
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>extract stats</name>
+            <state>incomplete</state>
+            <executable>tail -10 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr >> $;OUTPUT_DIRECTORY$;/stats.txt;</executable>
+	    <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/extract_stats_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/extract_stats_$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
