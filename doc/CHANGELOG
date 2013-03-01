@@ -1,5 +1,6 @@
 next
 ----
+-Updated RNA-Seq Analysis Components and Pipeline fixes to ensure compatibility with DIAG
 -Added new component make_circleator_figure to be used in clovr microbe pipeline
 -bsml2tbl: Added pipeline summary report production script to the component 
 -Fixed bug in blast2bsml and blast2btab where tab metacharacters (\t) from blast resuls would cause parsing issues later on
