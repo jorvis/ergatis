@@ -16,7 +16,7 @@ rm(list=ls(all=T))
 
 # input arguments
 args <- commandArgs(TRUE)
-
+print(length(args))
 stopifnot(length(args) > 1)
 
 #Reading input data directory

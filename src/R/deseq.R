@@ -144,7 +144,7 @@ write.table(out, file.path("all_counts_noZero_normalized"), na="", sep="\t", quo
 dists = dist( t( exprs(vsd) ) )
 mat = as.matrix( dists )
 rownames(mat) = colnames(mat)
-dist.title <- paste("Sample Clustering: ", pheno[1], " vs ", pheno[2], sep="")
+dist.title <- paste("Sample Clustering", sep="")
 heatmap.2(mat, col=rev(hmcol), trace="none", main=dist.title, margin=c(13,13), cexRow=0.8, cexCol=0.8, keysize=1.0)
 
 
@@ -166,11 +166,11 @@ for (k in 1:(length(pheno)-1)) {
 		# order output by FDR
 		res <- res[order(res$padj),]
 		
-		cat("\n* Results Snippet:\n")
+		cat("\n* Results Snippet: res\n")
 		print(head(res))
 		
 		# plot the results using FDR=0.05 as the cutoff
-		ma.title <- paste("DEG MA Plot: ", pheno[k], " vs ", pheno[m], " (FDR < 0.05)", sep="")
+		ma.title <- paste("DEG MA Plot", " (FDR < 0.05)", sep="")
 		plotMA(res, main=ma.title, cex=0.3, col=ifelse(res$padj>=0.05, "black", "red"), linecol="#ff000080", xlab="Mean of Normalized Counts", ylab=paste("LFC: ", pheno[k], " VS ", pheno[m], sep=""))
 
 		# plot the results using abs(LFC)>=1.0 as the cutoff
@@ -180,22 +180,26 @@ for (k in 1:(length(pheno)-1)) {
 		# get read counts for each group for the top 30 most significant DEGs
 		# order output by absolute LFC
 		res <- res[order(-abs(res$log2FoldChange)),]
-		sig.genes <- res[res$padj>=0.05,]
-		sig.genes <- sig.genes[1:30,]
+		sig.genes <- res[res$padj<=0.05,]
+		print(dim(sig.genes))
+		if(nrow(sig.genes) > 30) {
+			sig.genes <- sig.genes[1:30,]
+		}
+		print(dim(sig.genes))
 		
-		# cat("\n* Results Snippet:\n")
-		# print(head(sig.genes))
+		cat("\n* Results Snippet: sig.genes\n")
+		print(head(sig.genes))
 		
 		read.counts <- cbind(as.numeric(sig.genes[,3]), as.numeric(sig.genes[,4]))
 
 		colnames(read.counts) <- c(pheno[m], pheno[k])
 		rownames(read.counts) <- c(sig.genes[,1])
 		
-		# cat("\n* Results Snippet:\n")
-		# print(head(read.counts))
+		cat("\n* Results Snippet: read.counts.1\n")
+		print(head(read.counts))
 
 		# draw heatmap of normalized read counts for the significant genes of each sample
-		sig.title <- paste("Top Significant DEGs: ", pheno[k], " vs ", pheno[m], sep="")		
+		sig.title <- paste("Top Significant DEGs", " (per condition)", sep="")		
 		heatmap.2(read.counts, col=hmcol, trace="none", main=sig.title, margin=c(13,13), cexRow=0.8, cexCol=0.8, keysize=1.0)
 		
 		read.counts <- sig.genes[,c(1,6)]
@@ -203,26 +207,26 @@ for (k in 1:(length(pheno)-1)) {
 		read.counts <- merge(read.counts, out, by="ID", x.all=TRUE)
 		read.counts <- read.counts[order(-abs(read.counts$LFC)),]
 		
-		# cat("\n* Results Snippet:\n")
-		# print(head(read.counts))
+		cat("\n* Results Snippet: read.counts.2\n")
+		print(head(read.counts))
 		
 		write.table(read.counts, file.path(paste(pheno[k], "_vs_", pheno[m], ".top30.counts.txt", sep="")), na="", quote=F, row.names=F, sep="\t")
 		
 		hmap <- read.delim(file.path(paste(pheno[k], "_vs_", pheno[m], ".top30.counts.txt", sep="")), header=T, sep="\t" )
 		
-		# cat("\n* Results Snippet:\n")
-		# print(head(hmap))
+		cat("\n* Results Snippet: hmap.1\n")
+		print(head(hmap))
 		
 		hmap <- hmap[,c(3:ncol(hmap))]
 		colnames(hmap) <- c(colnames(read.counts)[3:ncol(read.counts)])
 		rownames(hmap) <- c(read.counts[,1])
 		hmap <- data.matrix(hmap)
 		
-		# cat("\n* Results Snippet:\n")
-		# print(head(hmap))
+		cat("\n* Results Snippet: hmap.2\n")
+		print(head(hmap))
 		
 		# draw heatmap of normalized read counts for the significant genes of each sample
-		sig.title <- paste("Top Significant DEGs: ", pheno[k], " vs ", pheno[m], sep="")		
+		sig.title <- paste("Top Significant DEGs",  " (per sample)", sep="\n")		
 		heatmap.2(hmap, col=hmcol, trace="none", main=sig.title, margin=c(13,13), cexRow=0.8, cexCol=0.8, keysize=1.0)
 		
 		# Change column names for clarity and brevity

@@ -1,5 +1,7 @@
 next
 ----
+-Updated software.config for RNA-Seq Pipeline components
+-Updated RNA-Seq Analysis Component fixes to deseq, edgeR, expression_plot, cummerbund 
 -Added new component: usearch
 -Updated RNA-Seq Analysis Components and Pipeline fixes to ensure compatibility with DIAG
 -Added new component make_circleator_figure to be used in clovr microbe pipeline

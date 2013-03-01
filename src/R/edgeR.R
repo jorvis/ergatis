@@ -129,7 +129,7 @@ edgeRfit <- function(dge, compgroups=NULL) {
   pdf.file <- paste(args[2], "/", ugroups[2], "_vs_", ugroups[1], ".FDR-", FDR.cutoff, "._MAplot.pdf", sep="")
   pdf(pdf.file)
 
-  plot.title <- paste("DEG MA Plot ", cutoffs.str, ": ", gr, "\n", sep="")
+  plot.title <- paste("DEG MA Plot ", cutoffs.str, "\n", sep="")
 
   plotSmear(dge, de.tags=sig.DGEs, main=plot.title, pair=compgroups, pch=16, cex=0.3, xlab="Log Read-Counts", ylab="Log Fold-Change")
   abline( h=c(-2,2) , col="dodgerblue" )
@@ -158,7 +158,7 @@ if( is.na(FDR.cutoff) ) {
 
 logFC.cutoff = as.numeric(args[4])
 if( is.na(logFC.cutoff) ) {
-	logFC.cutoff = 2.0
+	logFC.cutoff = 1.0
 }
 
 cat("DEG Filtering Cutoffs:\n---------------------------------------------------\n")

@@ -191,20 +191,22 @@ close($fpOUT);
 ($bDebug || $bVerbose) ? 
 	print STDERR "\nInitiating DESeq Analysis ...\n" : ();
 
-# commented out since we are using a new version of DESeq (see command below) - tcreasy [12/10/12]
-# this should be deleted soon
-#$sCmd  = $hCmdLineOption{'r_bin_dir'}."/R".
-#		 " ".$hCmdLineOption{'r_params'}.
-#		 " --args ".$sOutDir."/deseq.sample.info.txt".
-#		 " ".$sOutDir;
+$sCmd  = $hCmdLineOption{'r_bin_dir'}."/R".
+		 " ".$hCmdLineOption{'r_params'}.
+		 " --args ".$sOutDir."/deseq.sample.info.txt".
+		 " ".$sOutDir;
 #$sCmd .= " ".$hCmdLineOption{'annotation'} if ((defined $hCmdLineOption{'annotation'}) && ($hCmdLineOption{'annotation'} !~ m/^$/));
+
+$sCmd .=" < ".$hCmdLineOption{'r_script'};
+
 #$sCmd .= " < ".$sRScript;
 
 # command for deseq-1.10.1 - tcreasy [12/10/12]
-$sCmd  = $sRScript . 
-	     " ".$hCmdLineOption{'r_params'}.
-		 " --args ".$sOutDir."/deseq.sample.info.txt".
-		 " ".$sOutDir;
+#commented out (2-21-2012 Weizhong Chang)
+#$sCmd  = $sRScript . 
+#	     " ".$hCmdLineOption{'r_params'}.
+#		 " --args ".$sOutDir."/deseq.sample.info.txt".
+#		 " ".$sOutDir;
 
 print "\n\nCMD:\n\n$sCmd\n\n";
 
