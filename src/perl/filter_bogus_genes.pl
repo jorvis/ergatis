@@ -102,7 +102,7 @@ for (my $i = $#fasta_arr; $i >= 0; $i--) {
     if ( ($bad_chars / $seq_len) >= $cutoff) {
     	(my $discard = $input_file) =~ s/\.f(a?st?)?a/\.discard\.fsa/;
     	open DISCARD, ">>$discard" or die "Cannot write to discard file $discard $!\n";
-    	print DISCARD $fasta_arr[$i]->[0], "\n";
+    	print DISCARD ">", $fasta_arr[$i]->[0], "\n";
     	print DISCARD "$1\n" while ( $fasta_arr[$i]->[1] =~ /(\w{1,60})/g );
     	close DISCARD;
     	&_log($DEBUG, "$input_file header $fasta_arr[$i]->[0] did not meet cutoff for good sequence... writing to discard file");
@@ -116,7 +116,7 @@ if (scalar(@fasta_arr) == 0) {	# we do not want to write an empty filtered.fsa f
     #write the remaining sequences to a temp file, which will replace the original fasta file;
     open OUT, ">$output_file" or die "Cannot write to output fasta file $output_file $!\n";
     foreach my $f (@fasta_arr) {
-    	print OUT $f->[0], "\n";
+    	print OUT ">", $f->[0], "\n";
     	print OUT "$1\n" while ( $f->[1] =~ /(\w{1,60})/g );	#60 chars of sequence per line
     }
     close OUT;
