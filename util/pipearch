@@ -95,25 +95,29 @@ my ($pipeline, $repository);
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
-my $lock = "/usr/local/scratch/" . $pipeline . ".arch.log";
+## open the log if requested
+my $logfh;
+if (defined $options{log}) {
+    open($logfh, ">$options{log}") || die "can't create log file: $!";
+}
+
+my $lock = "/usr/local/scratch/sadkins_devel/arch_jobs/" . $pipeline . ".arch.lock";
+_log("Creating lock file $lock...");
 
 if (-e $lock) {
-    print "Another job is archiving pipeline $pipeline\n";
+    _log("Another job is archiving pipeline $pipeline");
+    mail_to();
     exit(3); 	#exit if another process is already running 
 }
 
 open LOCK, ">$lock" or die "Cannot create lock file $lock: $!\n";
 print LOCK "$pipeline\t$repository\n";
 close LOCK;
+chmod 0777, $lock;	# in case 3rd-party user needs to remove
 
 $SIG{INT} = \&capture_ctrl_c;
 
 my $start = localtime;
-## open the log if requested
-my $logfh;
-if (defined $options{log}) {
-    open($logfh, ">$options{log}") || die "can't create log file: $!";
-}
 
 my $runtime = $repository . "/workflow/runtime/";
 my $output_r = $repository . "/output_repository/";
@@ -124,9 +128,11 @@ check_file_layout( $repository, $pipeline );
 archive_pipeline();
 
 my $end = localtime;
-_log("Start:\t" . $start . "\n");
-_log("End:\t" . $end . "\n");
+_log("Start:\t" . $start);
+_log("End:\t" . $end);
 
+_log("removing lock $lock...");
+_log("SUCCESS!!!");
 unlink($lock);
 exit(0);
 
@@ -134,18 +140,27 @@ sub check_file_layout {
     my ($proj_dir, $id) = @_;
     
     unless ( -d "$proj_dir/workflow/runtime" ) {
+	_log("ERROR: expected to find $proj_dir/workflow/runtime");
+        _log("removing lock $lock...");
 	unlink($lock);
+	mail_to();
         die "ERROR: expected to find $proj_dir/workflow/runtime";
     }
     
     unless ( -d "$proj_dir/output_repository" ) {
+	_log("ERROR: expected to find $proj_dir/output_repository");
+        _log("removing lock $lock...");
 	unlink($lock);
+	mail_to();
         die "ERROR: expected to find $proj_dir/output_repository";
     }
     
     ## conventional location for this pipeline
     unless ( -d "$proj_dir/workflow/runtime/pipeline/$id" ) {
+	_log("ERROR: pipeline XML directory for pipeline $id not found.  Quitting.");
+        _log("removing lock $lock...");
 	unlink($lock);
+	mail_to();
         die "ERROR: pipeline XML directory for pipeline $id not found.  Quitting.";
     }
 }
@@ -153,91 +168,94 @@ sub check_file_layout {
 
 
 sub archive_pipeline {
-    open RUN, "find $runtime -maxdepth 2 -name '$pipeline*' -type d |" or die "Cannot open 'find' results: $!\n";
-    while (<RUN>) {
+    my $run_cmd = "find $runtime -maxdepth 2 -name '$pipeline*' -type d |";
+    my $out_cmd = "find $output_r -maxdepth 2 -name '$pipeline*' -type d |";   
+     _log("\nArchiving runtime files....");
+    arch($run_cmd);
+    _log("\nArchiving output files...");
+    arch($out_cmd);
+
+}
+
+sub arch {
+    my $cmd = shift;
+    open FIND, $cmd or die "Cannot open 'find' results: $!\n";
+    while (<FIND>) {
 	chomp;
-        next if ($_ =~ '/pipeline/');	# skip the pipeline directory
-	_log("\t" . $_ . "\n");
+	my $path = $_;
+        next if ($path =~ "\/pipeline\/");	# skip the pipeline directory
+	#_log("\t" . $path . "\n");
 
 	my $temp;
-	if ($_ =~ /$repository(.+)/) {
-	    $temp = "/local/scratch/" . $1;
+	if ($path =~ /$repository(.+)/) {	#gather all of the directory path after repo root
+	    $temp = '/local/scratch/pipearch/' . $pipeline . '/' . $1;
 	}
 
-	system ("mkdir -p $temp");	# Make temp directory in scratch to archive to
+	system ("mkdir -m 777 -p $temp");	# Make temp directory in scratch to archive to
+	if ( $? != 0) {	
+		_log("Cannot make directory $temp to archive into.  $!");
+		_log("removing lock $lock...\n");
+		unlink($lock);
+		mail_to();
+		die;
+	}	
 
-	my $cmd = "tar -czf $temp" . ".tar.gz $_";	#tars the current directory
+	my $cmd = "tar -czf $temp" . ".tar.gz $path";	#tars the current directory into the scratch path 
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 
 	system ($cmd);
 
         if ($? == -1) {
-            print "failed to execute: $!\n";
+            _log ("failed to execute: $!");
             $success = 0;
         } elsif ($? & 127) {
-            printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
+	    _log("child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without');
             $success = 0;
-        } 
+        } elsif ($? != 0) {
+	    _log("child exited with value %d\n", $?>>8);
+	    $success = 0;
+	}
 
 	if ( $success ) {
-	    system ("mv $temp.tar.gz $_.tar.gz");	# Move archived contents back to original area
-	    system ("rm -rf $_");
+	    system ("mv $temp.tar.gz $path.tar.gz");	# Move archived contents from scratch back to original area
+	    system ("rm -rf /local/scratch/pipearch/$pipeline ");	# remove temp directory
+	    system ("rm -rf $path");	# remove original (unarchived contents)
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
+	    _log("Command $cmd not successful...removing lock $lock...\n");
 	    unlink($lock);
+	    mail_to();
 	    exit(1);
 	}
     }
-    close RUN;
-
-    open OUT, "find $output_r -maxdepth 2 -name '$pipeline*' -type d |" or die "Cannot open 'find' results: $!\n";
-    while (<OUT>) {
-	chomp;	# no Pipeline directory in the output_repository folder
-	_log("\t" . $_ . "\n");
-
-	my $temp;
-	if ($_ =~ /$repository(.+)/) {
-	    $temp = "/local/scratch/" . $1;
-	}
-
-	system ("mkdir -p $temp");
-
-	my $cmd = "tar -czf $temp" . ".tar.gz $_";	#tars the current directory
-	my $success = 1;	# if unsucessful, this will change to 0
-        _log("DEBUG: running: $cmd");
-
-	system ($cmd);
-
-        if ($? == -1) {
-            print "failed to execute: $!\n";
-            $success = 0;
-        } elsif ($? & 127) {
-            printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
-            $success = 0;
-        } 
-
-	if ( $success ) {
-	    system ("mv $temp.tar.gz $_.tar.gz");
-	    system ("rm -rf $_");
-	} else {
-            print STDERR "ERROR ($success): the following command failed: $cmd\n";
-	    unlink($lock);
-	    exit(1);
-	}
-    }
-    close OUT;
+    close FIND;
 }
 
 sub capture_ctrl_c {
+    _log("Ctrl-C was hit.  Archiving will stop");
+    _log("removing lock $lock...");
     unlink($lock);
+    mail_to();
     exit(2);
+}
+
+sub mail_to {
+    my (undef, $mon, $day, undef, $year) = split(/\s+/, localtime);
+    my $subject = "Pipeline " . $pipeline . "--" . $mon.'_'.$day.'_'.$year . " Archivng Error Report";
+    my $email = 'sadkins@som.umaryland.edu';
+
+    if (defined $logfh) {
+   	 my $mail_cmd = "mail -s \"$subject\" $email < $options{'log'}";
+   	 system($mail_cmd);
+    }
+
 }
 
 sub _log {
     my $msg = shift;
     
-    print "$msg\n";
+    printf "$msg\n";
     print $logfh "$msg\n" if $logfh;
 }
 

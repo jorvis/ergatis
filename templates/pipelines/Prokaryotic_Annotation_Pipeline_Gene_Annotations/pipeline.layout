@@ -8,6 +8,10 @@
 		</commandSet>
 		<commandSet type="serial">
 			<state>incomplete</state>
+			<name>filter_bogus_genes.filtered</name>
+		</commandSet>
+		<commandSet type="serial">
+			<state>incomplete</state>
 			<name>bsml2fasta.create_blastx_pre_input</name>
 		</commandSet>
 		<commandSet type="parallel">

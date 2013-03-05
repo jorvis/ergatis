@@ -15,6 +15,7 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
        --annotation|-a
        --operon|-O
        --load|-l
+       --ipd|-i
      [ --templates_directory|-t=/path/to/ergatis/global_pipeline_templates
        --output_directory=/path/to/directory
        --log|-L=/path/to/file.log
