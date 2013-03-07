@@ -76,6 +76,9 @@ my $results = GetOptions (\%options,
 &check_options(\%options);
 
 $unknown = ($base eq 'nuc') ? 'N' : 'X';
+(my $discard = $input_file) =~ s/\.f(a?st?)?a/\.discard\.fsa/;
+`rm $output_file` if (-e $output_file);	#Want a blank output file for a new run if we use the same name as a previous run
+`rm $discard` if (-e $discard);	# want a blank discard file for each run
 
 # parse headers and sequences out of the fasta file and push into array
 open FILE, $input_file or die "Cannot open fasta file $input_file for reading $!\n";
@@ -84,7 +87,7 @@ while (<FILE>) {
     chomp $line;
     if ($line =~ /^>/) {
         my $next_header = substr($line, 1);
-        push @fasta_arr, [$header, $seq] unless (! defined($header));
+        filter_seq($header, $seq) unless (! defined($header));
         $header = $next_header;
         $seq = '';
     } else {
@@ -92,35 +95,32 @@ while (<FILE>) {
         $seq .= uc($line);
     }
 }
-push @fasta_arr, [$header, $seq];	#push final header-seq combo into our array
+filter_seq($header, $seq);	#push final header-seq combo into our array
 close FILE;
     
-#test the N and X cutoff for each sequence and remove the "bogus" sequences
-for (my $i = $#fasta_arr; $i >= 0; $i--) {
-    my $seq_len = length($fasta_arr[$i]->[1]);
-    my $bad_chars = ($base eq 'nuc') ? ($fasta_arr[$i]->[1] =~ tr/nN//) : ($fasta_arr[$i]->[1] =~ tr/xX//); 
+sub filter_seq {
+    my ($header, $seq) = @_;
+    my $seq_len = length($seq);
+    my $bad_chars = ($base eq 'nuc') ? ($seq =~ tr/nN//) : ($seq=~ tr/xX//); 
+    
     if ( ($bad_chars / $seq_len) >= $cutoff) {
-    	(my $discard = $input_file) =~ s/\.f(a?st?)?a/\.discard\.fsa/;
+    	#In the case of a multi-fasta file, append data to discard file
     	open DISCARD, ">>$discard" or die "Cannot write to discard file $discard $!\n";
-    	print DISCARD ">", $fasta_arr[$i]->[0], "\n";
-    	print DISCARD "$1\n" while ( $fasta_arr[$i]->[1] =~ /(\w{1,60})/g );
+    	print DISCARD ">", $header, "\n";
+    	print DISCARD "$1\n" while ( $seq =~ /(\w{1,60})/g );
     	close DISCARD;
-    	&_log($DEBUG, "$input_file header $fasta_arr[$i]->[0] did not meet cutoff for good sequence... writing to discard file");
-    	splice(@fasta_arr, $i, 1);
+    	&_log($DEBUG, "$input_file header $header did not meet cutoff for good sequence... writing to discard file");
+    } else {
+        #write the remaining sequences to a temp file, which will replace the original fasta file;
+        #In the case of a multi-fasta file, we want our data to be appended to he output file
+    	open OUT, ">>$output_file" or die "Cannot write to output fasta file $output_file $!\n";
+    	print OUT ">", $header, "\n";
+    	print OUT "$1\n" while ( $seq =~ /(\w{1,60})/g );	#60 chars of sequence per line
+    	close OUT;
     }
-}
-        
-if (scalar(@fasta_arr) == 0) {	# we do not want to write an empty filtered.fsa file
-    exit(0);
-} else {
-    #write the remaining sequences to a temp file, which will replace the original fasta file;
-    open OUT, ">$output_file" or die "Cannot write to output fasta file $output_file $!\n";
-    foreach my $f (@fasta_arr) {
-    	print OUT ">", $f->[0], "\n";
-    	print OUT "$1\n" while ( $f->[1] =~ /(\w{1,60})/g );	#60 chars of sequence per line
-    }
-    close OUT;
-}
+     
+    return;
+}    
 
 
 sub check_options {
