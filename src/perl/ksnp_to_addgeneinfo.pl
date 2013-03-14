@@ -36,7 +36,7 @@ use Data::Dumper;
 
 my $input;
 my %options;
-my $i = 1;
+my $i = 0;
 my $pkey = 0;
 my %htable;
 my @infile;
