@@ -1,5 +1,6 @@
 next
 ----
+-Updated kSNP component to reflect latest (as of 3/14/13) version of kSNP
 -Added new component filter_bogus_genes for filtering out sequences with abnormal ratios of X's or N's
 -Updated software.config for RNA-Seq Pipeline components
 -Updated RNA-Seq Analysis Component fixes to deseq, edgeR, expression_plot, cummerbund 
