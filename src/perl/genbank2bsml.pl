@@ -21,6 +21,7 @@ my %options = &parse_options();
 my $ifile = $options{input_file};
 my $odir = $options{output_dir};
 my $ofile = $options{output_bsml};
+my $translate_empty_cds = $options{translate_empty_cds};
 my %fsa_files; # file names and handlers and for each fasta output file
 my $idcreator;  # Ergatis::IdGenerator object
 my $feature_id_lookup = {};
@@ -43,33 +44,7 @@ else{
 }
 my %gbr = %{parse_genbank_file($ifile,\@unique_feature_tags)};
 
-my $translate_empty_cds = $options{translate_empty_cds};
 
-my $doc = new BSML::BsmlBuilder();
-print "Converting $ifile to bsml \n";
-&to_bsml(\%gbr, $doc);
-
-#output the BSML
-#my $bsmlfile = "$odir/".$gbr{'gi'}.".bsml";
-print "Outputting bsml to $ofile\n";
-$doc->createAndAddAnalysis(
-                            id => $options{'analysis_id'},
-                            sourcename => $options{'output_bsml'},
-                            algorithm => 'genbank2bsml',
-                            program => 'genbank2bsml',
-                            version => 'current',
-                          );
-# gzip output
-$doc->write($ofile, '', 1);
-# $doc->write($ofile);
-chmod (0777, $ofile);
-
-# close file handlers
-foreach my $class (keys %fsa_files) {
-  close($fsa_files{$class}{fh});  
-}
-
-%gbr = ();
 
 #tag count info
 print "\nTag Counts:\n";
@@ -95,7 +70,7 @@ sub parse_options {
     GetOptions( \%options,
         'input_file|i=s',
         'output_dir|o=s',
-        'output_bsml|b=s',  #output bsml file
+        'output_bsml|b:s',  #output bsml file
         'id_repository=s',
         'project=s',
         'organism_to_prefix_mapping=s',  #tab-delimited file that maps organism name to id prefix
@@ -122,7 +97,7 @@ sub parse_options {
     (-w $options{output_dir} && -d $options{output_dir}) 
     || die "output_dir directory ($options{output_dir}) not writeable: $!";
 
-    (defined($options{output_bsml})) || die "output_bsml is a required option";
+#    (defined($options{output_bsml})) || die "output_bsml is a required option";
 
     if (defined($options{organism_to_prefix_mapping})) {
 	(-r $options{organism_to_prefix_mapping}) 
@@ -165,7 +140,7 @@ sub parse_options {
 sub parse_genbank_file {
     my $gb_file = shift;
     my $unique_feature_tags = shift;
-    my %gbr;
+#    my %gbr;
 
     # support for compressed input
     # example taken from http://bioperl.org/wiki/HOWTO:SeqIO
@@ -182,9 +157,11 @@ sub parse_genbank_file {
     # force die on multi-sequence genbank file
     # see http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3316
     my $n_seqs = 0;
-    while (my $seq = $seq_obj->next_seq) {
+
+    my $seq = $seq_obj->next_seq;
+    while ($seq) {
     ++$n_seqs;
-    die "Unsupported: multiple records ($n_seqs) in $gb_file." if ($n_seqs > 1);
+#    die "Unsupported: multiple records ($n_seqs) in $gb_file." if ($n_seqs > 1);
     $gbr{'component'} = 'chromosome'; #default;
     $gbr{'strain'} = '';
 
@@ -195,8 +172,12 @@ sub parse_genbank_file {
     # workaround: if the primary_id is not useful try to fall back to the accession number
     if ($gbr{'gi'} =~ /\=HASH\(0x/) {
         $gbr{'gi'} = $seq->accession_number();
-        if (!defined($gbr{'gi'} || ($gbr{'gi'} eq 'unknown'))) {
-            die "No gi or accession number in $gb_file";
+
+        if (!defined($gbr{'gi'}) || ($gbr{'gi'} eq 'unknown')) {
+            $gbr{'gi'} = $seq->display_id();
+            if (!defined($gbr{'gi'}) || ($gbr{'gi'} eq 'unknown')) {
+                die "No gi or accession number in $gb_file";
+            }
         }
     }
 
@@ -554,6 +535,56 @@ sub parse_genbank_file {
     $gbr{'species'} = $2;
 
     ( ($gbr{'genus'}) && ($gbr{'species'}) ) || die "Unable to parse genus/species from organism ($gbr{organism})";
+
+
+
+    # Moved this code into here.
+    
+    my $doc = new BSML::BsmlBuilder();
+    print "Converting $ifile to bsml \n";
+    &to_bsml(\%gbr, $doc);
+
+    # Now determine the output filename. 
+    
+    # Let's pull the display_id from the file.
+    my $seqid = $seq->display_id();
+    $seqid = $gbr{'gi'} if( !$seqid || $seqid =~ /unknown/i );
+
+    # If we don't have output_bsml specified then we'll use the display id.
+    my $ofile = $options{output_bsml} ? $options{output_bsml} : "$odir/$seqid.bsml";
+    $seq = $seq_obj->next_seq;
+
+    # Also, even if we have output_bsml specified we'll use the display id if we have multiple sequences
+    # in this genbank file.
+    if($seq || $n_seqs > 1) {
+        $ofile = "$odir/$seqid.bsml";
+        if($options{output_bsml}) {
+            print STDERR "WARNING: Not using the specified output_bsml because multiple sequences were found!\n";
+        }
+    }
+
+    #output the BSML
+    #my $bsmlfile = "$odir/".$gbr{'gi'}.".bsml";
+    print "Outputting bsml to $ofile\n";
+    $doc->createAndAddAnalysis(
+        id => $options{'analysis_id'},
+        sourcename => $options{'output_bsml'},
+        algorithm => 'genbank2bsml',
+        program => 'genbank2bsml',
+        version => 'current',
+        );
+    # gzip output
+    $doc->write($ofile, '', 1);
+    # $doc->write($ofile);
+    chmod (0777, $ofile);
+
+    # close file handlers
+    foreach my $class (keys %fsa_files) {
+        close($fsa_files{$class}{fh});  
+    }
+    
+    %fsa_files= ();
+    %gbr = ();
 
     } #    while (my $seq = $seq_obj->next_seq) {
 
