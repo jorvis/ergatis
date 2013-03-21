@@ -41,5 +41,6 @@
                 <value>$;BSML_OUTPUT_LIST$;</value>
             </param>
         </command>
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=i2,$;ITERATOR_XML$;=$;DOCS_DIR$;/$;COMPONENT_NAME$;.i2.xml,$;INPUT_FILE_LIST$;=$;BSML_OUTPUT_LIST$;">
     </commandSet>
 </commandSetRoot>
