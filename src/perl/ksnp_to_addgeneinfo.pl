@@ -42,7 +42,6 @@ my %htable;
 my @infile;
 my $bool = 'true';
 
-
 my $results = GetOptions(\%options,
 			"input|in|i=s" => \$input
 						 );
@@ -71,7 +70,6 @@ $in =~ s/\n//g;
      my ($kmerID, $kseq, $base, $pos, $fashead) = split(/\t/, $in);
 
      die "unexpected null value" if (($kmerID eq '') || ($kseq eq '') || ($base eq '') || ($pos eq '') || ($fashead eq ''));
-
 
 
           if ($kmerID != $i){

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>solsnp compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>solsnp</name>
+            <state>incomplete</state>
+            <executable>java -jar $;SOLSNP_EXEC$;</executable>
+	    <arg>INPUT=$;I_FILE_PATH$; OUTPUT=$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.vcf STRAND_MODE=None REFERENCE_SEQUENCE=$;REF_SEQUENCE$; FILTER=$;FILTER$; MINIMUM_BASE_QUALITY=$;MIN_BASE_QUALITY$; MINIMUM_MAPQ=20 OUTPUT_FORMAT=VCF PLOIDY=Haploid MINIMUM_COVERAGE=$;MIN_COVERAGE$; VALIDATION_STRINGENCY=SILENT SUMMARY=false CALCULATE_ALLELIC_BALANCE=false CALL_BIAS=0.0 MAXIMUM_COVERAGE=0 OUTPUT_MODE=Variants MAX_MATE_DISTANCE=2147483647 MIN_MATE_DISTANCE=0 GENERATE_GENOTYPES=true MIN_ALIGNMENT_SCORE=0 TMP_DIR=/tmp/ VERBOSITY=INFO QUIET=false COMPRESSION_LEVEL=5 MAX_RECORDS_IN_RAM=500000 CREATE_INDEX=false CREATE_MD5_FILE=false</arg>
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
