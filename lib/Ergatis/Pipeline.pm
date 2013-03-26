@@ -302,7 +302,8 @@ umask(0000);
         $ENV{WF_TEMPLATE} = "$ENV{WF_ROOT}/templates";
 
         #$ENV{SYBASE} = '/usr/local/packages/sybase';
-        $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{PATH}";
+        my $sge_bin = $args{ergatis_cfg}->val('grid', 'sge_root') . '/bin/' .  
+        $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{SGE_ROOT}/bin/$ENV{SGE_ARCH}:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
         $ENV{TERMCAP} = ''; #can contain bad characters which crash wrapper shell script
         ## some application-specific env vars
