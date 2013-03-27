@@ -20,6 +20,10 @@
                 <key>--args</key>
                 <value>$;OTHER_PARAMETERS$;</value>
             </param>
+	        <param>
+                <key>--fastqc_bin_dir</key>
+                <value>$;FASTQC_BIN_DIR$;</value>
+            </param>
             <param>
                 <key>--outdir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>

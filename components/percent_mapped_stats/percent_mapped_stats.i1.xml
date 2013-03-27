@@ -45,6 +45,14 @@
                 <value>$;OTHER_PARAMETERS$;</value>
             </param>
             <param>
+                <key>--bedtools_bin_dir</key>
+                <value>$;BEDTOOLS_BIN_DIR$;</value>
+            </param>
+            <param>
+                <key>--samtools_bin_dir</key>
+                <value>$;SAMTOOLS_BIN_DIR$;</value>
+            </param>
+            <param>
                 <key>--outdir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
