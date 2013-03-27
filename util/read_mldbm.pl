@@ -7,21 +7,29 @@ use MLDBM 'DB_File';
 my %info;
 
 my $db = shift || die "pass me a database\n";
+my $accession = shift || '';
 
 ## create the tied hash
 tie(%info, 'MLDBM', $db ) || die "failed to tie: $!";
 
-for my $acc ( keys %info ) {
-    print "$acc\n";
-    
-    for my $key ( keys %{$info{$acc}} ) {
-        print "\t$key\t=>\t$info{$acc}{$key}\n";
+if ($accession) {
+    my $entry = $info{$accession} || die "failed to find accession: $accession";
+    print "$accession\n";
+    for my $key ( keys %$entry ) {
+        print "\t$key\t=>\t$$entry{$key}\n";
     }
     
-    #print "\n\nenter to see another ... ";
-    #<STDIN>;
-    print "\n\n";
+} else {
+    for my $acc ( keys %info ) {
+        print "$acc\n";
+
+        for my $key ( keys %{$info{$acc}} ) {
+            print "\t$key\t=>\t$info{$acc}{$key}\n";
+        }
+    }
 }
+print "\n\n";
+
 
 untie(%info);
 
