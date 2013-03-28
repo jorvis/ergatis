@@ -116,5 +116,20 @@
             </param>
         </command>
 
+	<command>
+            <type>RunUnixCommand</type>
+            <name>remove temp dir</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>-rf $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/TemporaryFilesToDelete</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>remove fsplit dir</name>
+            <state>incomplete</state>
+            <executable>rm</executable>
+            <arg>-rf $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/Dir.fsplit*</arg>
+        </command>
+        
     </commandSet>
 </commandSetRoot>
