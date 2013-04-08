@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 ################################################################################
 ### POD Documentation
 ################################################################################
@@ -135,7 +138,7 @@ $sOutFile .= ".".$hCmdLineOption{'type'}.".counts";
 ($bDebug || $bVerbose) ? 
 	print STDERR "\nGenerating $hCmdLineOption{'type'} counts for $hCmdLineOption{'infile'} ...\n" : ();
 
-$sCmd  = PYTHON_BIN_DIR."/python -m HTSeq.scripts.count".
+$sCmd  = $hCmdLineOption{'python_bin_dir'}."/python -m HTSeq.scripts.count".
 		 " -m ".$hCmdLineOption{'mode'}.
 		 " -t ".$hCmdLineOption{'type'}.
 		 " -i ".$hCmdLineOption{'idattr'}.

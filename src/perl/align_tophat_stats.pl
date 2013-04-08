@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 ################################################################################
 ### POD Documentation
 ################################################################################
@@ -85,7 +88,7 @@ check_parameters(\%hCmdLineOption);
 my ($sOutDir,$prefix);
 my ($tophat_file, $mapstat_list, $mapstat_file, $f1, $path,$key,$pipeline1,$pipeline2);
 my %bam; 
-my ($cfile,$mfile,$lfile,$rfile,$readcount,@arr,@arr1,$p_paired,$left_count,$tot_reads,$p_mapped,$fout,$out_all);
+my ($cfile,$mfile,$lfile,$rfile,$pfile,$readcount,@arr,@arr1,$p_paired,$left_count,$tot_reads,$p_mapped,$fout,$out_all);
 my $right_count=0;
 my $bDebug   = (defined $hCmdLineOption{'debug'}) ? TRUE : FALSE;
 my $bVerbose = (defined $hCmdLineOption{'verbose'}) ? TRUE : FALSE;
@@ -131,7 +134,12 @@ while (<$tophat_file>) {
     @arr = split(/\./,$prefix);
     $prefix = $arr[0];
     if (!(exists $bam{$prefix})) {
-	$bam{$prefix}{"left"} = $path."left_kept_reads.info";
+	if ( -e $path."prep_reads.info" ) {
+	    $bam{$prefix}{"prep"} = $path."prep_reads.info";
+	}
+	if ( -e $path."left_kept_reads.info" ) {
+	    $bam{$prefix}{"left"} = $path."left_kept_reads.info";
+	}
 	if ( -e $path."right_kept_reads.info" ) {
 	    $bam{$prefix}{"right"} = $path."right_kept_reads.info";
         }
@@ -157,7 +165,13 @@ open ($out_all, ">$sOutDir/All_Samples.txt") or die "Error Cannot open output fi
 foreach $key (keys (%bam)) {
     open ($cfile, "<$bam{$key}{'count'}") or die "Error! Cannot open read count file";
     open ($mfile, "<$bam{$key}{'mapstats'}") or die "Error! Cannot open mapstats file";
-    open ($lfile, "<$bam{$key}{'left'}") or die "Error! Cannot open left info file";
+
+    if (exists ($bam{$key}{"prep"})) {
+	open ($pfile, "<$bam{$key}{'prep'}") or die "Error! Cannot open prep info file";
+    }
+    if (exists ($bam{$key}{"left"})) {
+	open ($lfile, "<$bam{$key}{'left'}") or die "Error! Cannot open left info file";
+    }
     if (exists ($bam{$key}{"right"})) {
 	open ($rfile, "<$bam{$key}{'right'}") or die "Error! Cannot open right info file";
     }
@@ -184,16 +198,36 @@ foreach $key (keys (%bam)) {
 		   
     }
     
-     ###Reading left_kept_reads.info file..
-    while(<$lfile>) {
-        chomp ($_);
-        if ($_ =~m/reads_in/) {
-            @arr= split (/\=/,$_);
-            $left_count = $arr[1];
-            last;
-        }
-    } 
+    if (exists ($bam{$key}{"prep"})) {	
+	while(<$pfile>) {
+	    chomp ($_);
+	    if ($_ =~m/left_reads_in/) {
+		@arr= split (/\=/,$_);
+		$left_count = $arr[1];
+		
+	    }
+	    if ($_ =~m/right_reads_in/) {
+		@arr= split (/\=/,$_);
+		$right_count = $arr[1];
+		
+	    }
+	}
+	close $pfile;
  
+    }
+     ###Reading left_kept_reads.info file..
+    if (exists ($bam{$key}{"left"})) {	
+	while(<$lfile>) {
+	    chomp ($_);
+	    if ($_ =~m/reads_in/) {
+		@arr= split (/\=/,$_);
+		$left_count = $arr[1];
+		last;
+	    }
+	} 
+	close $lfile;
+    }
+
     ###Reading right_kept_reads.info file..
     if (exists ($bam{$key}{"right"})) {
         while(<$rfile>) { 
@@ -226,7 +260,6 @@ foreach $key (keys (%bam)) {
     
     close $fout;
     close $mfile;
-    close $lfile;
     close $cfile;
 
 }   

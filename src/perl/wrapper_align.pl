@@ -54,7 +54,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use File::Spec;
-use PDF::Create;
+#use PDF::Create;
 
 ##############################################################################
 ###Constants
