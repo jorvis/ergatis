@@ -1,6 +1,6 @@
 next
 ----
--Adding concatenate.genome, formatdb.genome, and scp_files.copy_genome component templates to the prokaryotic pipeline to create a db of the genomic sequence used and allow it to be used in Manatee
+-Adding formatdb.genome, and scp_files.copy_genome component templates to the prokaryotic pipeline to create a db of the genomic sequence used and allow it to be used in Manatee
 -Updated kSNP component to reflect latest (as of 3/14/13) version of kSNP
 -Added new component filter_bogus_genes for filtering out sequences with abnormal ratios of X's or N's
 -Updated software.config for RNA-Seq Pipeline components

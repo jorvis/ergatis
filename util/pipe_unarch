@@ -67,7 +67,6 @@ replaced by a tarball of itself with the same name but including the '.tar.gz' e
 use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use File::Path;
 
 my %options = ();
 my $results = GetOptions (\%options, 
@@ -124,10 +123,23 @@ sub check_file_layout {
     }
 }
 
-
-
 sub unarchive_pipeline {
-    open RUN, "find $runtime -maxdepth 2 -name '$pipeline*' -type f |" or die "Cannot open 'find' results: $!\n";
+    my $run_cmd = "find $runtime -maxdepth 2 -name '$pipeline*' -type f |";
+    my $out_cmd = "find $output_r -maxdepth 2 -name '$pipeline*' -type f |";   
+     _log("\nUnarchiving runtime files....");
+    unarch($run_cmd);
+    _log("\nUnrchiving output files...");
+    unarch($out_cmd);
+
+}
+
+
+
+sub unarch {
+
+    my $command = shift;
+    
+    open RUN, $command or die "Cannot open 'find' results: $!\n";
     while (<RUN>) {
 	chomp;
 
@@ -149,7 +161,6 @@ sub unarchive_pipeline {
 	
 #	chdir($path);
 	my $cmd = "tar -zvxf $_ -C /";	#untars the current directory
-print "CMD: ", $cmd, "\n";
 	my $success = 1;	# if unsucessful, this will change to 0
         _log("DEBUG: running: $cmd");
 	system ($cmd);
@@ -160,59 +171,19 @@ print "CMD: ", $cmd, "\n";
         } elsif ($? & 127) {
             printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
             $success = 0;
-        } 
-
+        } elsif ($? != 0) {
+	    printf "child exited with value %d\n", $?>>8;
+	    $success = 0;
+	}
+	
 	if ( $success ) {
-	    rmtree( "$_" );
+	    system ("rm  $path.tar.gz");	# remove original (unarchived contents)
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
 	    exit(1);
 	}
     }
     close RUN;
-
-    open OUT, "find $output_r -maxdepth 2 -name '$pipeline*' -type f |" or die "Cannot open 'find' results: $!\n";
-    while (<OUT>) {
-	chomp;	# no Pipeline directory in the output_repository folder
-	_log("\t" . $_ . "\n");
-	#print $_, "\n";
-
-	my $dir;
-	if ($_ =~ /\/[\w-]+\/($pipeline[\w-]+)/) {
-	    $dir = $1;
-#print "DIR: $dir\n";
-
-	}
-
-	my $path;	#get the component and token name
-	if ($_ =~ /(.+\/)$dir/) {
-	    $path = $1;
-#print "PATH: $path\n";
-	}
-
-#	chdir($path);
-	my $cmd = "tar -zvxf $_ -C / ";	#untars the current directory
-print "CMD: ", $cmd, "\n";
-	my $success = 1;	# if unsucessful, this will change to 0
-        _log("DEBUG: running: $cmd");
-	system ($cmd);
-
-        if ($? == -1) {
-            print "failed to execute: $!\n";
-            $success = 0;
-        } elsif ($? & 127) {
-            printf "child died with signal %d, %s coredump\n", ($? & 127),  ($? & 128) ? 'with' : 'without';
-            $success = 0;
-        } 
-
-	if ( $success ) {
-	    rmtree( "$_" );
-	} else {
-            print STDERR "ERROR ($success): the following command failed: $cmd\n";
-	    exit(1);
-	}
-    }
-    close OUT;
 }
 
 sub _log {

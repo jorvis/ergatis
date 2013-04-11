@@ -178,8 +178,8 @@ sub archive_pipeline {
 }
 
 sub arch {
-    my $cmd = shift;
-    open FIND, $cmd or die "Cannot open 'find' results: $!\n";
+    my $command = shift;
+    open FIND, $command or die "Cannot open 'find' results: $!\n";
     while (<FIND>) {
 	chomp;
 	my $path = $_;
