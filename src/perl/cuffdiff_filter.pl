@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 cuffdiff_filter.pl -  filter cuffdiff output on 
@@ -57,10 +60,9 @@ if( !-d $options{output_dir} ) {
 $options{output_dir} = File::Spec->canonpath($options{output_dir});
 
 my %worksheets;
-my ($file,$IN, $fh, $out, $summary_file, $i, $p, $stub, $sample_name, $sample1, $sample2, $total_output, $line, $workbook, $cmd);
+my ($file,$IN, $fh, $SA, $out, $summary_all, $i, $p, $stub, $sample_name, $sample1, $sample2, $total_output, $line, $workbook, $cmd);
 my (@vals, @arr,  @parameters, @filters, @results_files, @files, @samples, @up, @down);
 my %param;
-my @su =();
 my %outfiles = ();
 my $f = 0;
 
@@ -72,13 +74,11 @@ close $IN;
 
 @filters = split (/\:/,$options{'filters'});
 
-for ($i = 1 ;$i <=scalar @filters ;$i++){
-    $summary_file = $options{output_dir}."/".$options{project_name}."_summary_$i.txt";
-    my $SU;
-    open($SU, ">", $summary_file) or die "Error Cannot open the summary output file";
-    print $SU "Sample\tUP\tDOWN\tTotal\n";
-    push (@su, $SU);
-}
+$summary_all = $options{output_dir}."/".$options{project_name}."_summary.txt";
+open($SA, ">", $summary_all) or die "Error Cannot open the summary output file";
+print $SA "Filters\tSample\tUP\tDOWN\tTotal\n";
+
+
 
 foreach $file (@results_files) {
 	chomp $file;
@@ -151,14 +151,16 @@ foreach $file (@results_files) {
 	for( $i = 0; $i < scalar @filters ;$i++) {
 	    close $files[$i];
 	    $p = $up[$i] + $down[$i];
-	    $f = $su[$i];
 	    next if ($p == 0);
-	    print "$samples[$i]\tUpregulated: $up[$i]\tDownregulated: $down[$i]\tTotal: $p\n";
-	    print $f "$samples[$i]\t$up[$i]\t$down[$i]\t$p\n";
+	    print "$samples[$i]\tUpregulated: $up[$i]\tDownregulated: $down[$i]\tTotal: $p\n";	
+	    print $SA "$filters[$i]\t$samples[$i]\t$up[$i]\t$down[$i]\t$p\n";
+	    
 	}
 	close $fh;
 
 }
+
+close $SA;
 
 foreach (keys %outfiles) {
    foreach $i (@{$outfiles{$_}}) {
@@ -184,7 +186,6 @@ foreach (keys %outfiles) {
 }
 
 for ($i = 1; $i <= scalar @filters; $i++) {
-     close $su[($i-1)];
     $workbook = Spreadsheet::WriteExcel->new($options{output_dir} . "/$options{project_name}.cuffdiff_$i.xls");
     &write_to_excel($workbook,\@{$outfiles{$i}});
 }

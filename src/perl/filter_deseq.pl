@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1 NAME
 
 filter_deseq.pl -   filter DESeq output on [FDR, log fold change, Read Count, P value]
@@ -61,7 +64,7 @@ $options{output_dir} = File::Spec->canonpath($options{output_dir});
 
 my %worksheets;
 my $map_info = {};
-my ($file,$IN, $fh, $out, $summary_file, $i, $p, $stub, $sample_name, $sample1, $sample2, $total_output, $line, $workbook, $cmd);
+my ($file,$IN, $fh, $SA, $out, $summary_file, $summary_all, $i, $p, $stub, $sample_name, $sample1, $sample2, $total_output, $line, $workbook, $cmd, $t);
 my (@vals, @arr,  @parameters, @filters, @results_files, @files, @samples, @up, @down);
 my %param;
 my @su =();
@@ -84,12 +87,11 @@ if( defined $options{ 'map_file' } ) {
 
 @filters = split (/\:/,$options{'filters'});
 
-for ($i = 1 ;$i <=scalar @filters ;$i++){
-    $summary_file = $options{output_dir}."/".$options{project_name}."_summary_$i.txt";
-    my $SU;
-    open($SU, ">", $summary_file) or die "Error Cannot open the summary output file";
-    push (@su, $SU);
-}
+
+
+$summary_all = $options{output_dir}."/".$options{project_name}."_summary.txt";
+open($SA, ">", $summary_all) or die "Error Cannot open the summary output file";
+print $SA "Filters\tSample\tUP\tDOWN\tTotal\n";
 
 foreach $file (@results_files) {
 	chomp $file;
@@ -117,12 +119,15 @@ foreach $file (@results_files) {
 
 	$line = <$fh>;
 	chomp($line);
+	$t = 0 ;
 	if ($line =~ /^ID/) {
+	    $t = 1;
 	    @arr = split (/\t/,$line);
-	}
-	foreach (@arr) {
-	    foreach $i (@files) {     
-		print $i "$_\t";
+	
+	    foreach (@arr) {
+		foreach $i (@files) {     
+		    print $i "$_\t";
+		}
 	    }
 	}
 
@@ -131,8 +136,10 @@ foreach $file (@results_files) {
 		print $i "gene_symbol\tgene_name";
 	    }
 	}
-	foreach $i (@files) {
-	    print $i "\n";
+	if ($t == 1) {
+	    foreach $i (@files) {
+		print $i "\n";
+	    }
 	}
 
 	while (<$fh>) {
@@ -162,16 +169,6 @@ foreach $file (@results_files) {
 		    @arr = split(/=/,$p);
 		    $param{$arr[0]} = $arr[1];
 		}
-		##Defaults..
-		if (! exists $param{'RC'}) {
-		    $param{'RC'} = 0;
-		}
-		if (! exists $param{'UFC'}) {
-		    $param{'UFC'} = 0;
-		}
-		if (! exists $param{'DFC'}) {
-		    $param{'DFC'} = 0;
-		}
 
 		$f = run_filter_checks(\@vals,\%param);
 		if ($f == 0) {
@@ -187,14 +184,15 @@ foreach $file (@results_files) {
 	for( $i = 0; $i < scalar @filters ;$i++) {
 	    close $files[$i];
 	    $p = $up[$i] + $down[$i];
-	    $f = $su[$i];
 	    next if ($p == 0);
-	    print "$samples[$i]\tUpregulated: $up[$i]\tDownregulated: $down[$i]\tTotal: $p\n";
-	    print $f "$samples[$i]\t$up[$i]\t$down[$i]\t$p\n";
+	    print "$samples[$i]\tUpregulated: $up[$i]\tDownregulated: $down[$i]\tTotal: $p\n";	
+	    print $SA "$filters[$i]\t$samples[$i]\t$up[$i]\t$down[$i]\t$p\n";
 	}
 	close $fh;
 
 }
+
+close $SA ;
 
 foreach (keys %outfiles) {
    foreach $i (@{$outfiles{$_}}) {
@@ -220,7 +218,6 @@ foreach (keys %outfiles) {
 }
 
 for ($i = 1; $i <= scalar @filters; $i++) {
-    close $su[($i-1)];
     $workbook = Spreadsheet::WriteExcel->new($options{output_dir} . "/$options{project_name}.RNA_Seq_$i.xls");
     &write_to_excel($workbook,\@{$outfiles{$i}});
 }
