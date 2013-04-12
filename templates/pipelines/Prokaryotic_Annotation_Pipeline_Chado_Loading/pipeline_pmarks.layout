@@ -105,7 +105,7 @@
 	    	</commandSet>
 	    </commandSet> 
 	    <commandSet type="serial">
-	    	<state><incomplete</state>		
+	    	<state>incomplete</state>		
 		<commandSet type="serial">
 		    <state>incomplete</state>
 	            <name>formatdb.genome</name>
