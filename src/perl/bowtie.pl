@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 ################################################################################
 ### POD Documentation
 ################################################################################
@@ -221,8 +224,8 @@ $sFile = (split(/,/, $hCmdLineOption{'seq1file'}))[0];
 ($_, $_, $sPrefix) = File::Spec->splitpath($sFile);
 $sPrefix =~ s/.1_1_sequence.*//;
 $sPrefix =~ s/.sequence.*//;
-$sPrefix =~ s/.fastq*//;
-$sPrefix =~ s/.fq*//;
+$sPrefix =~ s/.fastq.*$//;
+$sPrefix =~ s/.fq.*$//;
 
 $sCmd .= " ".$sReadFile." $sOutDir/$sPrefix.bowtie.sam";
 

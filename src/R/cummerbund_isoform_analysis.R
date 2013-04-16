@@ -16,7 +16,7 @@ rm(list=ls(all=T))
 
 # input arguments
 args <- commandArgs(TRUE)
-print(length(args))
+
 stopifnot(length(args) > 1)
 
 #Reading input data directory
@@ -36,8 +36,8 @@ suppressMessages(library(cummeRbund))
 #
 readsPerTranscripts <- function(cuff, samples, sOutDir) {
 
-	png.file <- paste(sOutDir,"/" ,samples[1],".",samples[2],"." ,"png", sep="")
-	png(png.file, width=800, height=800)
+	pdf.file <- paste(sOutDir,"/" ,samples[1],".",samples[2],".reads_per_transcript." ,"pdf", sep="")
+	pdf(pdf.file)
 
 	sigIsoformIds <- getSig(cuff, alpha=1.0, level="isoforms")
 
