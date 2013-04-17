@@ -74,7 +74,7 @@
 				<key>stderr</key>
 				<value>$;TMP_DIR$;/generate_list_file.png.stderr</value>
 			</param>
-			<arg>--v</arg>
+			<arg>--skip_error --v</arg>
         </command>
     </commandSet>
 </commandSetRoot>
