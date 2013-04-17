@@ -141,6 +141,8 @@
 				<state>incomplete</state>
 				<name>ncbi-blastp.COGS</name>
 			</commandSet>
+		</commandSet>
+		</commandSet type="parallel">
 			<commandSet type="serial">
 				<state>incomplete</state>
 				<name>ncbi-blastp.eggNOG</name>
