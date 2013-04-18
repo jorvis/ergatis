@@ -137,16 +137,20 @@
 				<state>incomplete</state>
 				<name>ps_scan.default</name>
 			</commandSet>
+		</commandSet>
+		<commandSet type="parallel">
+			<state>incomplete</state>	
 			<commandSet type="serial">
-				<state>incomplete</state>
+				<state>incomplete</state
 				<name>ncbi-blastp.COGS</name>
 			</commandSet>
-		</commandSet>
-		</commandSet type="parallel">
 			<commandSet type="serial">
 				<state>incomplete</state>
 				<name>ncbi-blastp.eggNOG</name>
-			</commandSet>			
+			</commandSet>	
+		</commandSet>
+		<commandSet type="parallel">
+			<state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
 				<name>lipop.default</name>
