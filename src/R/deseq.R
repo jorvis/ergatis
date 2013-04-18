@@ -182,10 +182,16 @@ for (k in 1:(length(pheno)-1)) {
 		res <- res[order(-abs(res$log2FoldChange)),]
 		sig.genes <- res[res$padj<=0.05,]
 		print(dim(sig.genes))
+		
+		if(nrow(sig.genes) < 2) {
+			sig.genes <- res[res$pval<=0.05,]
+			print(dim(sig.genes))
+		}
+		
 		if(nrow(sig.genes) > 30) {
 			sig.genes <- sig.genes[1:30,]
+			print(dim(sig.genes))
 		}
-		print(dim(sig.genes))
 		
 		cat("\n* Results Snippet: sig.genes\n")
 		print(head(sig.genes))
