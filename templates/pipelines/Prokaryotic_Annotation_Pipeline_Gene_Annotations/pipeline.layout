@@ -141,7 +141,7 @@
 		<commandSet type="parallel">
 			<state>incomplete</state>	
 			<commandSet type="serial">
-				<state>incomplete</state
+				<state>incomplete</state>
 				<name>ncbi-blastp.COGS</name>
 			</commandSet>
 			<commandSet type="serial">
