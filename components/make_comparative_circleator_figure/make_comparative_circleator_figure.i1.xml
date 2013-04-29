@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>create comparative circleator figure</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>make_comparative_circleator_figure</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/make_comparative_circleator_figure</executable>
+	    <param>
+	    	<key>--circleator_path</key>
+	    	<value>$;CIRCLEATOR_PATH$;</value>
+	    </param>
+	    <param>
+	    	<key>--rasterizer_path</key>
+	    	<value>$;RASTERIZER_PATH$;</value>
+	    </param>
+	    <param>
+	    	<key>--gb_list_file</key>
+	    	<value>$;GENBANK_LIST$;</value>
+	    </param>
+	    <param>
+	    	<key>--gene_summary_file</key>
+	    	<value>$;I_FILE_PATH$;</value>
+	    </param>
+	    <param>
+	    	<key>--snp_file</key>
+	    	<value>$;SNP_FILE$;</value>
+	    </param>
+	    <param>
+	    	<key>--svg_file</key>
+	    	<value>$;SVG_BASENAME$;</value>
+	    </param>
+	    <param>
+	    	<key>--output_dir</key>
+	    	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+	    </param>
+	    <param>
+	    	<key>--output_formats</key>
+	    	<value>$;OUTPUT_FORMAT$;</value>
+	    </param>
+	    <param>
+	    	<key>--output_width</key>
+	    	<value>$;OUTPUT_WIDTH$;</value>
+	    </param>
+	    <param>
+	    	<key>--output_height</key>
+	    	<value>$;OUTPUT_HEIGHT$;</value>
+	    </param>
+            <param>  
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
