@@ -51,6 +51,36 @@
 		<OS>linux</OS>
 	    </dceSpec>
 	</commandSet>
+	<command>
+         <type>RunUnixCommand</type>
+            <name>create summary report</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_comparative_summary_report</executable>
+            <param>
+                <key>--input_gbk_list</key>
+                <value>$;GENBANK_LIST$;</value>
+            </param>
+            <param>
+                <key>--phylomark_fasta</key>
+                <value>$;PHYLOMARK_FASTA$;</value>
+            </param>
+            <param>
+                <key>--mugsycog_raw</key>
+                <value>$;MUGSYCOG_RAW$;</value>
+            </param>
+            <param>
+                <key>--summary_report</key>
+                <value>$;SUMMARY_REPORT$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
+            </param>
+        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>create summary list</name>

@@ -1,5 +1,6 @@
 next
 ----
+-summarize_mugsy_comparative_pipeline: Added clovr comparative pipeline summary report production script to the component
 -Added new component make_comparative_circleator_figure to be used in clovr comparative pipeline
 -Adding formatdb.genome, and scp_files.copy_genome component templates to the prokaryotic pipeline to create a db of the genomic sequence used and allow it to be used in Manatee
 -Updated kSNP component to reflect latest (as of 3/14/13) version of kSNP
