@@ -46,7 +46,7 @@ closedir DOT;
 
 foreach my $file ( @files ) {
    my $file_base = basename($file);   
-   my $command = "PYTHONPATH=$packages_dir/khmer/python $packages_dir/Python-2.7/bin/python2.7 $exec/strip-partition.py $file > $out_dir/$file_base.strip";
+   my $command = "python2.7 $exec/strip-partition.py $file > $out_dir/$file_base.strip";
 
    system($command);
 
