@@ -54,6 +54,42 @@
 		<OS>linux</OS>
 	    </dceSpec>
 	</commandSet>
+
+	<command>
+            <type>RunUnixCommand</type>
+            <name>Replace organism ids in maf</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/replace_maf_ids</executable>
+            <param>
+                <key>--id_file</key>
+                <value>$;ID_MAP_FILE$;</value>
+            </param>
+            <param>
+                <key>--maf</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.maf</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.maf.tmp</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;WORKFLOW_REPOSITORY$;/replace_maf_ids.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;WORKFLOW_REPOSITORY$;/replace_maf_ids.stderr</value>
+            </param>
+   	</command>
+
+	<!-- Replace the output MAF -->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Move file</name>
+            <state>incomplete</state>
+            <executable>/bin/mv</executable>
+            <arg>$;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.maf.tmp $;OUTPUT_DIRECTORY$;/$;OUTPUT_PREFIX$;.maf</arg>
+        </command>
     </commandSet>
 </commandSetRoot>
 

@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 use strict;
 use warnings;
@@ -69,10 +72,12 @@ sub process_seq
 {
     my ($twig, $elt) = @_;
     return if $elt->att('class') ne "assembly";
-    print $out ">Features ", $elt->att('id'), "\n";
+#    print $out ">Features ", $elt->att('id'), "\n";
     
     ## get the sequence length
     if ( $elt->has_child('Seq-data-import') ) {
+        my $id = $elt->first_child('Seq-data-import')->att('identifier');
+        print $out ">Features ", $id, "\n";
         open(my $ifh, "<" . $elt->first_child('Seq-data-import')->att('source')) || die "can't open seq-data-import: $!";
         while (<$ifh>) {
             if (! /^\>/ ) {
@@ -117,6 +122,10 @@ sub process_feature_group
         }
         elsif ($feat_type eq "tRNA") {
             $class = "tRNA";
+            $transcript = $feat;
+        }
+        elsif ($feat_type eq "rRNA") {
+            $class = "rRNA";
             $transcript = $feat;
         }
         elsif ($feat_type eq "ncRNA") {
@@ -200,6 +209,15 @@ sub process_feature_group
         }
         
         print_feat(\@exons, "tRNA", \%attrs);
+    }
+    elsif ($class eq "rRNA") {
+        my %attrs = ();
+        
+        if ( $transcript->has_child('Attribute[@name="gene_product_name"]') ) {
+            my $product = $transcript->first_child('Attribute[@name="gene_product_name"]');
+            %attrs = ( product => $product->att('content') );
+        }
+        print_feat(\@exons, "rRNA", \%attrs);   
     }
     elsif ($class eq "ncRNA") {
         print_feat(\@exons, "ncRNA");
