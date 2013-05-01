@@ -31,6 +31,7 @@ A multi-fasta file that will be used as a reference genome in kSNP
 
 use strict;
 use File::Temp;
+use File::Basename;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 
 my $input;
@@ -76,18 +77,16 @@ if ($input =~ /.*\.list/) {
 
 		open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 		
-		$i = `basename $i`;
-		chomp $i;
-		$i =~ s/\..+//g;
+		my $base = fileparse($i, ".list");
 		
 		while (<$fh4>) {
-			$_ =~ s/^>.*/>$i merged/ if ($bool2 eq 'true');
+			$_ =~ s/^>.*/>$base merged/ if ($bool2 eq 'true');
 			$_ =~ s/(\w{60})/$&\n/g;
 			$_ =~ s/^\s+$//g;
 			print $_;
 		}
 	}
-} elsif ($input =~ /.*\.[fnsat]{2,5}/) { #Single fasta file
+} elsif ($input =~ /.*\.f((a?st?)|n)?a/) { #Single fasta file
 	my @list = <$fh>;
 	my $tmp = File::Temp->new(TEMPLATE => "tempXXXX",
 			          DIR => "./",
@@ -112,16 +111,14 @@ if ($input =~ /.*\.list/) {
 	#Now print with 60 bases per line
 	open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 
-	$input = `basename $input`;
-	chomp $input;
-	$input =~ s/\..+//g;
+	my $base = fileparse($input, qr/\.f((a?st?)|n)?a/);
 	
 	while (<$fh4>) {
-		$_ =~ s/^>.*/>$input merged/ if ($bool2 eq 'true');
-		$_ =~ s/^>.*/>$input/ if ($bool2 eq 'false');
+		$_ =~ s/^>.*/>$base merged/ if ($bool2 eq 'true');
+		$_ =~ s/^>.*/>$base/ if ($bool2 eq 'false');
 		$_ =~ s/(\w{60})/$&\n/g;
 		$_ =~ s/^\s+$//g;
-		print $_;
+		print $_;		
 	}
 } else { die "incorrect file format"; }
 
