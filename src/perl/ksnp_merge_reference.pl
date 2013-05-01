@@ -46,45 +46,26 @@ die "Must enter input file" unless defined $input;
 
 open (my $fh, "<$input") || die "Cannot open input file";
 
-if ($input =~ /.*\.list/)
-{
-
+if ($input =~ /.*\.list/) {
 	my @list = <$fh>;
-
-	foreach my $i (@list)
-        {
-
+	foreach my $i (@list) {
 		my $tmp = File::Temp->new(TEMPLATE => "tempXXXX",
 			          DIR => "./",
 			          SUFFIX => ".fsa"
 			          );
-
 		open (my $fh3, ">$tmp") || die "Cannot open temp file";		
-	
 		$i =~ s/\n//;
-
 		open (my $fh2, "<$i") || die "Cannot open input in list file";
-
 		my @fasta = <$fh2>;
-
 		$bool = "true";
-		foreach my $a (@fasta) #Iterate and join contigs if needed
-		{
-
-
-			if (($a =~ /^>/)&&($bool eq 'true'))
-			{
+		foreach my $a (@fasta) {#Iterate and join contigs if needed
+			if (($a =~ /^>/)&&($bool eq 'true')) {
 				print $fh3 "$a";
 				$bool = 'false';
-			}
-		
-			elsif (($a =~ /^>/)&&($bool eq 'false'))
-			{
+			} elsif (($a =~ /^>/)&&($bool eq 'false')) {
 				print $fh3 "NN";
 				$bool2 = 'true';
-			}
-			else
-			{
+			} else {
 				$a =~ s/\n//;
 				print $fh3 $a;
 			}
@@ -95,80 +76,54 @@ if ($input =~ /.*\.list/)
 
 		open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 		
-		$i =~ s/[\w\-]+\///g;
-		$i =~ s/\///g;
+		$i = `basename $i`;
+		chomp $i;
 		$i =~ s/\..+//g;
-		$i =~ s/.{60}/$1 /g; #kSNP will not work if a header contains 60 straight characters after the >
-			
-		while (<$fh4>)
-		{
+		
+		while (<$fh4>) {
 			$_ =~ s/^>.*/>$i merged/ if ($bool2 eq 'true');
 			$_ =~ s/(\w{60})/$&\n/g;
 			$_ =~ s/^\s+$//g;
 			print $_;
 		}
-
 	}
-
-}
-elsif ($input =~ /.*\.[fnsat]{2,5}/) #Single fasta file
-{
-
+} elsif ($input =~ /.*\.[fnsat]{2,5}/) { #Single fasta file
 	my @list = <$fh>;
-
 	my $tmp = File::Temp->new(TEMPLATE => "tempXXXX",
 			          DIR => "./",
 			          SUFFIX => ".fsa"
 			          );
-
 	open (my $fh3, ">$tmp") || die "Cannot open temp file";	
-
 	$bool = "true";
-	foreach my $a (@list) #Iterate and join contigs if needed
-		{
-
-
-			if (($a =~ /^>/)&&($bool eq 'true'))
-			{
-				print $fh3 "$a";
-				$bool = 'false';
-			}
-		
-			elsif (($a =~ /^>/)&&($bool eq 'false'))
-			{
-				print $fh3 "NN";
-				$bool2 = 'true';
-			}
-			else
-			{
-				$a =~ s/\n//;
-				print $fh3 $a;
-			}
+	foreach my $a (@list) { #Iterate and join contigs if needed
+		if (($a =~ /^>/)&&($bool eq 'true')) {
+			print $fh3 "$a";
+			$bool = 'false';
+		} elsif (($a =~ /^>/)&&($bool eq 'false')) {
+			print $fh3 "NN";
+			$bool2 = 'true';
+		} else {
+			$a =~ s/\n//;
+			print $fh3 $a;
 		}
-		print $fh3 "\n";
-		close $fh3;
-		#Now print with 60 bases per line
+	}
+	print $fh3 "\n";
+	close $fh3;
+	#Now print with 60 bases per line
+	open (my $fh4, "<$tmp") || die "Cannot open temp file";	
 
-		open (my $fh4, "<$tmp") || die "Cannot open temp file";	
-
-		$input =~ s/[\w\-]+\///g;
-		$input =~ s/\///g;
-		$input =~ s/\..+//g;
-		$input =~ s/.{60}/$1 /g;   #kSNP will not work if a header contains 60 straight characters after the >
-		
-
-		while (<$fh4>)
-		{
-			$_ =~ s/^>.*/>$input merged/ if ($bool2 eq 'true');
-			$_ =~ s/^>.*/>$input/ if ($bool2 eq 'false');
-			$_ =~ s/(\w{60})/$&\n/g;
-			$_ =~ s/^\s+$//g;
-			print $_;
-		}
-
-}
-
-else {die "incorrect file format";}
+	$input = `basename $input`;
+	chomp $input;
+	$input =~ s/\..+//g;
+	
+	while (<$fh4>) {
+		$_ =~ s/^>.*/>$input merged/ if ($bool2 eq 'true');
+		$_ =~ s/^>.*/>$input/ if ($bool2 eq 'false');
+		$_ =~ s/(\w{60})/$&\n/g;
+		$_ =~ s/^\s+$//g;
+		print $_;
+	}
+} else { die "incorrect file format"; }
 
 
 
