@@ -8,7 +8,7 @@
             <name>preserve_reads_in_fastq</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/preserve_reads_in_fastq</executable>
-	    <arg>$;I_FILE_PATH$; $;SEQ_FILE$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/`basename $;SEQ_FILE$;`_$;I_FILE_BASE$;.final.fastq</arg>
+	    <arg>$;I_FILE_PATH$; $;SEQ_FILE$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$(basename $;SEQ_FILE$;)_$;I_FILE_BASE$;.final.fastq</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.stdout</value>
