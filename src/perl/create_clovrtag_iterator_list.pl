@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 =head1 NAME
 
@@ -82,7 +85,7 @@ sub check_options {
 
    $outlist = $opts->{'output_iter_list'};
    @tags = split(/[,\s]+/, $opts->{'input_tags'} );
-   die("Could not parse any tags from input") unless( @tags > 0 );
+   print STDERR ("Could not parse any tags from input") unless( @tags > 0 );
 }
 
 sub _log {
