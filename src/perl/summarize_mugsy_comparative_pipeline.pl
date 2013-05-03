@@ -207,8 +207,9 @@ sub parse_map_file {
 	# Mugsy changes the organism identifier. So store the genome name as 
 	# the same as mugsy. Totally black-boxing how the identifiers are modified
 	# so this is by no means exhaustive.
-	$genome =~ s/-/_/g;
-
+#        print STDERR "$genome is a genome\n";
+	#$genome =~ s/[\+\-\:\s]//g;
+     #   print STDERR "$genome is a genome with molecule $mol\n";
 	$molecules->{$mol} = $genome;
 	$genomes->{$genome}->{$mol}->{$gid} = [$le,$ri,$str,$name];
 	$i_trees{$genome}->{$mol} = new IntervalTree() unless( exists($i_trees{$genome}->{$mol}) );

@@ -83,7 +83,9 @@ foreach my $org_id (keys %$org_id_to_seq_ids) {
         }
         push(@files,$seq_id_to_file->{$_})
     } keys %{$org_id_to_seq_ids->{$org_id}};
-    $org_id =~ s/[\/\.\+\:\;,-]//g;
+    if(!$options{checksum_orgs}) {
+        $org_id =~ s/[\/\.\+\:\;,-]//g;
+    }
 
     my $prev_org_id = $org_id;
     if($options{checksum_orgs}) {
