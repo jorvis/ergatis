@@ -61,7 +61,7 @@ my %options = ();
 my $results = GetOptions (\%options,
 		'output_dir|o=s',
 		'database|d=s',
-		'query|q=s',
+		'query|q:s',
 		'format|f=s',
 		'log|l=s',
 		'debug|b=s',
