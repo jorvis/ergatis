@@ -27,7 +27,7 @@ use Math::Round;
 my %cmdLineArgs = ();
 # Log file handle;
 my $logfh;
-my ($file,$org, $core_len, $total_cogs);
+my ($file,$org, $core_len, $total_cogs, $l, $loc, $cds, $ucds, $len);
 my %species = ();
 my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
 
@@ -66,9 +66,29 @@ open(SR, "> $cmdLineArgs{'summary_report'}") or printLogMsg($ERROR, "ERROR! : Co
 print SR "************************* SUMMARY REPORT FOR COMPARATIVE GENOMICS PIPELINE FOR ".keys(%species)." INPUT GENOMES *************************\n\n";
 print SR "Locus Id\tSpecies\tStrain\tGenome Length(in Mbp)\tNumber of scaffolds/contigs\tNumber of CDS\tNumber of unique CDS\n";
 print SR "----------------------------------------------------------------------------------------------------------------------------\n";
+
 foreach $org (keys %species) {
-	print SR "$species{$org}{'locus'}\t$org\t$species{$org}{'strain'}\t".nearest(0.01, ($species{$org}{'length'}/1000000))."\t$species{$org}{'contig'}\t$species{$org}{'cds'}\t$species{$org}{'uniq_cds'}\n";
+	$cds = 0;
+	$ucds = 0;
+	$len = 0;
+	$l = (keys %{$species{$org}})[-1];
+	if(keys(%{$species{$org}}) > 1) {
+		print SR "Contigs\t";
+	} else {
+		print SR "$l\t";
+	}
+	print SR "$org\t$species{$org}{$l}{'strain'}\t";
+	foreach $loc (keys %{$species{$org}}) {
+		$len += $species{$org}{$loc}{'length'};
+		$cds += $species{$org}{$loc}{'cds'};	
+		$ucds += $species{$org}{$loc}{'uniq_cds'};
+	}
+	print SR nearest(0.01, ($len/1000000))."\t".keys(%{$species{$org}})."\t$cds\t$ucds\n";
 }
+
+#foreach $org (keys %species) {
+#	print SR "$species{$org}{'locus'}\t$org\t$species{$org}{'strain'}\t".nearest(0.01, ($species{$org}{'length'}/1000000))."\t$species{$org}{'contig'}\t$species{$org}{'cds'}\t$species{$org}{'uniq_cds'}\n";
+#}
 print SR "\n\n";
 print SR "Core genome length (in Kbp) : ".nearest(0.01, ($core_len/1000))."\n\n";
 print SR "Number of core cluster of genes : $total_cogs\n";
@@ -85,41 +105,39 @@ close(SR);
 
 sub parseGenbankFile {
 	my ($filename, $spec) = @_;
-	my ($feat, $organism);
+	my ($feat, $organism, $cds);
 	my @strain = ();
-	my $contig = 0;
+#	my $contig = 0;
 	my $len;
-	my @locus;
-	my $cds = 0;
+	my $locus;
+	my $flag = 0;
 	printLogMsg($DEBUG, "INFO :: Parsing GenBank file $filename");
 	# Object of GenBank file sequence
 	my $seqio_object = Bio::SeqIO->new(-file => $filename);
 	while(my $seq_object = $seqio_object->next_seq()) {
-		$contig++;
-		push @locus, $seq_object->display_id;
+#		$contig++;
+		$cds = 0;
+		$locus = $seq_object->display_id;
 		$len = length($seq_object->seq());
 		$organism = $seq_object->species->node_name;
 		foreach $feat ($seq_object->get_SeqFeatures) {
 			if($feat->primary_tag eq 'source') {
 				if($feat->has_tag("strain")) {
 					push @strain, $feat->get_tag_values("strain");
+					$flag = 1;
 				} else {
-					$strain[0] = "-";
+					$strain[0] = "-" if($flag == 0);
 				}
 			}
 			if($feat->primary_tag eq 'CDS') {
 				$cds++;
 			}
 		}
-	}
-	$spec->{$organism}{'strain'} = $strain[0];		
-	$spec->{$organism}{'contig'} += $contig;
-	$spec->{$organism}{'length'} += $len;
-	$spec->{$organism}{'cds'} += $cds;
-	if(exists($spec->{$organism}{'locus'}) || @locus > 2) {
-		$spec->{$organism}{'locus'} = "Contigs";
-	} else {
-		$spec->{$organism}{'locus'} = $locus[0];
+#		$spec->{$organism}{$locus}{'contig'} = $contig;
+		$spec->{$organism}{$locus}{'length'} = $len;
+		$spec->{$organism}{$locus}{'cds'} = $cds;
+		$spec->{$organism}{$locus}{'strain'} = $strain[0];	
+		$spec->{$organism}{$locus}{'uniq_cds'} = 0;
 	}
 }
 
@@ -178,29 +196,40 @@ sub parseMugsyCog {
 	my @temp = ();
 	open(FR, "< $filename") or printLogMsg($ERROR, "Could not open file $filename for reading. Reason: $!");
 	$num_genomes = keys(%$spec);
-	foreach $s (keys %$spec) {
-		$str = $spec->{$s}{'strain'};
-		if($str =~ /([\w\.]+)\/|\:|\,/) {
-			$str = $1;
-		}
-		push(@temp, $str);	
-	}
+#	foreach $s (keys %$spec) {
+#		$str = $spec->{$s}{'strain'};
+#		if($str =~ /([\w\.\-]+)|\/|\:|\,/) {
+#			$str = $1;
+#		}
+#		push(@temp, $str);	
+#	}
 	while($line = <FR>) {
 		chomp($line);
 		if($line =~ /^>/) {
 			if($line =~ /num_seqs=(\d+)/) {
 				$core_cogs++ if($1 == $num_genomes);
 			}
-		} elsif($line =~ /^#SINGLETON/) {
-			if($line =~ /product=(\S+)/) {
-				$org = $1;
-				my @match = grep { $org =~ /$_/;} @temp;
-				my @keys = grep { $spec->{$_}{'strain'} =~ $match[0] } keys %$spec if($#match > -1);	
-				if(exists($spec->{$keys[0]}{'uniq_cds'})) {
-					$spec->{$keys[0]}{'uniq_cds'}++;	
-				} else {
-					$spec->{$keys[0]}{'uniq_cds'} = 1;
-				}	
+		} elsif($line =~ /^#SINGLETON\s(\S+)/) {
+#			if($line =~ /product=(\S+)/) {
+#				$org = $1;
+#				my @match = grep { $org =~ /$_/;} @temp;
+#				my @keys = grep { $spec->{$_}{'strain'} =~ $match[0] } keys %$spec if($#match > -1);	
+#				print "product : $org\tMatch : $match[0]\tKey : $keys[0]\n";
+#				if(exists($spec->{$keys[0]}{'uniq_cds'})) {
+#					$spec->{$keys[0]}{'uniq_cds'}++;	
+#				} else {
+#					$spec->{$keys[0]}{'uniq_cds'} = 1;
+#				}	
+#			}
+			($org, $str) = split(/\|\|\|/, $1, 2);
+			foreach $s (keys %$spec) {
+				if(exists($spec->{$s}{$org})) {
+					if(exists($spec->{$s}{$org}{'uniq_cds'})) {
+						$spec->{$s}{$org}{'uniq_cds'}++;
+					} else {
+						$spec->{$s}{$org}{'uniq_cds'} = 1;
+					}
+				}  
 			}
 		}
 	}
