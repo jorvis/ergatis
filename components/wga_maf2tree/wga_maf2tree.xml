@@ -87,6 +87,20 @@
             <executable>/bin/mv</executable>
 	    <arg>$;OUTPUT_DIRECTORY$;/wga.tree $;OUTPUT_TREE_FILE$;</arg>
         </command>     
-	
+	<!--Create svg and pdf files for the tree -->
+	<command>
+            <type>RunUnixCommand</type>
+            <name>Convert newick tree to svg</name>
+            <state>incomplete</state>
+            <executable>$;NEWICK_UTILITIES$;/nw_display </executable>
+	    <arg>-s -w 950 -b 'opacity:0' -l 'font-size:large' $;OUTPUT_TREE_FILE$; > $;OUTPUT_TREE_FILE$;.svg</arg>
+        </command>     
+	<command>
+            <type>RunUnixCommand</type>
+            <name>Convert newick tree to pdf</name>
+            <state>incomplete</state>
+            <executable>$;RASTERIZER_PATH$; </executable>
+	    <arg>$;OUTPUT_TREE_FILE$;.svg pdf 1000 1000</arg>
+        </command>     
     </commandSet>    
 </commandSetRoot>                
