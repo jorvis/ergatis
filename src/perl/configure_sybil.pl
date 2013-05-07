@@ -13,10 +13,12 @@ my $results = GetOptions (\%options,
               'db_url=s',
               'pg_data_dir=s',
               'install_postgres',
+              'start_postgres',
               'install_sybil',
               'create_site_config',
               'create_db',
               'cache_data',
+              'install_mongo',
               'start_mongo',
               'config_url=s',
               'root_dir=s',
@@ -55,14 +57,23 @@ if(! -e "$PG_DATA_DIR/PG_VERSION" && $options{install_postgres}) {
     &run_cmd("dpkg --configure -a"); # Need this in case something goes wrong above?
     &install_postgres();
     # Create user/database
-    my $cmd = "sudo -u postgres psql -c \"CREATE USER sybilcreate WITH PASSWORD 'createsybils' SUPERUSER\";sudo -u postgres createdb --owner=sybilcreate sybilcreate";
-    &run_cmd($cmd);
+#    my $cmd = "sudo -u postgres psql -c \"CREATE USER sybilcreate WITH PASSWORD 'createsybils' SUPERUSER\";sudo -u postgres createdb --owner=sybilcreate sybilcreate";
+#    &run_cmd($cmd);
 }
 else {
     print "Skipped postgres install\n";
 }
 
-# Install/Start Mongo
+# Start postgres
+if($options{start_postgres}) {
+&start_postgres();
+}
+
+# Install Mongo
+if($options{install_mongo}) {
+    &install_mongo();
+}
+# Start Mongo
 if($options{start_mongo}) {
     &start_mongo();
 }
@@ -193,7 +204,12 @@ sub install_postgres {
     my $cmd = "apt-get -y install postgresql-$PG_VERSION";
     &run_cmd($cmd);
 
-    $cmd = "mkdir $PG_DATA_DIR;chown postgres $PG_DATA_DIR;chmod 700 $PG_DATA_DIR";
+}
+
+sub start_postgres {
+
+    if(! -d $PG_DATA_DIR || ! -e "$PG_DATA_DIR/PG_VERSION") {
+    my $cmd = "mkdir $PG_DATA_DIR;chown postgres $PG_DATA_DIR;chmod 700 $PG_DATA_DIR";
     &run_cmd($cmd);
 
     $cmd = "/etc/init.d/postgresql-$PG_VERSION stop";
@@ -204,22 +220,24 @@ sub install_postgres {
 
     $cmd = "pg_createcluster -d $PG_DATA_DIR --start $PG_VERSION main";
     &run_cmd($cmd);
-
+    `sleep 10`;
+    my $cmd = "sudo -u postgres psql -c \"CREATE USER sybilcreate WITH PASSWORD 'createsybils' SUPERUSER\";sudo -u postgres createdb --owner=sybilcreate sybilcreate";
+    &run_cmd($cmd);
+    }
+    else {
+        &run_cmd("/etc/init.d/postgresql-$PG_VERSION start");
+    }
 }
 
-# This should really be called install_mongo
-sub start_mongo {
+sub install_mongo {
 
     &run_cmd("xstow /usr/local/stow/mongodb-linux-x86_64-1.8.1");
     &run_cmd("mkdir -p $ROOT/sybilmongo");
-    &run_cmd("rm $ROOT/sybilmongo/mongod.lock");
 
-    &run_cmd("echo \"#!/bin/bash\nrm $ROOT/sybilmongo/mongod.lock\nmongod --port=10000 --logpath=$ROOT/sybilmongo/log --dbpath=$ROOT/sybilmongo/ --fork\" > /etc/init.d/sybilmongo");
-    &run_cmd("chmod +x /etc/init.d/sybilmongo");
-    &run_cmd("update-rc.d sybilmongo defaults");
 }
+
 # Start a mongo server on a non-default port
-sub start_mongo_foo {
+sub start_mongo {
 
     # Start a mongo database
     &run_cmd("mkdir -p $ROOT/sybilmongo");
@@ -266,6 +284,7 @@ sub install_sybil {
 
     # Open permissions on the htdocs directory for purposes of caching
     &run_cmd("chmod 777 /var/www/sybil/current/htdocs");
+    &run_cmd("chmod 777 /var/www/sybil");
 
     # Create a tmp area that is on the data volume but that is web accessible
     &run_cmd("mkdir -p $ROOT/sybiltmp/web;chmod 777 $ROOT/sybiltmp;chmod 777 $ROOT/sybiltmp/web/");
