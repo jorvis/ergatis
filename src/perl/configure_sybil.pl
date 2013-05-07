@@ -288,6 +288,9 @@ sub install_sybil {
     &run_cmd("chmod 777 /var/www/sybil/current/htdocs");
     &run_cmd("chmod 777 /var/www/sybil");
 
+    # Open permissions on conf file so we can write new confs.
+    &run_cmd("chmod 777 /var/www/sybil/current/cgi/conf");
+
     # Create a tmp area that is on the data volume but that is web accessible
     &run_cmd("mkdir -p $ROOT/sybiltmp/web;chmod 777 $ROOT/sybiltmp;chmod 777 $ROOT/sybiltmp/web/");
     &run_cmd("ln -s $ROOT/sybiltmp/web $PATH_TO_SYBIL/htdocs/tmp");
