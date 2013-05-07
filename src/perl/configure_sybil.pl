@@ -204,6 +204,8 @@ sub install_postgres {
     my $cmd = "apt-get -y install postgresql-$PG_VERSION";
     &run_cmd($cmd);
 
+    # Need to prevent postgres from start at boot.
+    &run_cmd("find /etc/rc* -name '*postgresql*' -exec rm {} \;");
 }
 
 sub start_postgres {
