@@ -1,16 +1,16 @@
 #!/usr/local/bin/perl -w
 
-#################################################################################
-#										#
-# Name	      : create_comparative_summary_report.pl				#
-# Version     :	1.0								#
-# Project     : CloVR Comparative Genomics Pipeline				#
-# Description : Create summary report of the genomes analysed in the comparative#
-#		genomics pipeline						#
-# Author      : Sonia Agrawal							#
-# Date        : April 25, 2013							#
-#										#
-#################################################################################
+#########################################################################################
+#											#
+# Name	      	: create_comparative_summary_report.pl					#
+# Version     	: 2.0									#
+# Project     	: CloVR Comparative Genomics Pipeline					#
+# Description 	: Create summary report of the genomes analysed in the comparative	#
+#		  genomics pipeline							#
+# Author      	: Sonia Agrawal								#
+# Date        	: April 25, 2013							#
+# Lasted updated: May 7, 2013								#
+#########################################################################################
 
 use strict;
 # Extended processing of command line options
@@ -86,12 +86,18 @@ foreach $org (keys %species) {
 	print SR nearest(0.01, ($len/1000000))."\t".keys(%{$species{$org}})."\t$cds\t$ucds\n";
 }
 
-#foreach $org (keys %species) {
-#	print SR "$species{$org}{'locus'}\t$org\t$species{$org}{'strain'}\t".nearest(0.01, ($species{$org}{'length'}/1000000))."\t$species{$org}{'contig'}\t$species{$org}{'cds'}\t$species{$org}{'uniq_cds'}\n";
-#}
 print SR "\n\n";
 print SR "Core genome length (in Kbp) : ".nearest(0.01, ($core_len/1000))."\n\n";
-print SR "Number of core cluster of genes : $total_cogs\n";
+print SR "Number of core clusters : $total_cogs\n\n\n\n";
+
+print SR "References:\n";
+print SR "---------\n\n";
+print SR "1. CloVR\t\tAngiuoli S.V., Matalka M., Gussman A., Galens K., Vangala M., Riley D., Arze C., White J.R., White O., and Fricke W.F. (2011). CloVR: A virtual machine for automated and portable sequence analysis from the desktop using cloud computing. BMC Bioinformatics, 12(1):356. PMID: 21878105\n\n";
+print SR "2. Mugsy\t\tAngiuoli S.V., Salzberg S.L. (2011). Mugsy: fast multiple alignment of closely related whole genomes. Bioinformatics, 27(3):334-42. doi: 10.1093/bioinformatics/btq665. PMID: 21148543\n\n";
+print SR "3. Pan-genome annotation\t\tAngiuoli S.V., Dunning Hotopp J.C., Salzberg S.L., Tettelin H. (2011). Improving pan-genome annotation using whole genome multiple alignment. BMC Bioinformatics, 12:272. doi: 10.1186/1471-2105-12-272. PMID: 21718539\n\n";
+
+print SR "4. Phylomark, phylogenetic tree generation\t\tSahl J.W., Matalka M.N., Rasko D.A. (2012). Phylomark, a tool to identify conserved phylogenetic markers from whole-genome alignments. Appl Environ Microbiol, 78(14):4884-92. doi: 10.1128/AEM.00929-12. PMID: 22582056\n\n";
+
 close(SR);
 
 ###############
@@ -115,7 +121,6 @@ sub parseGenbankFile {
 	# Object of GenBank file sequence
 	my $seqio_object = Bio::SeqIO->new(-file => $filename);
 	while(my $seq_object = $seqio_object->next_seq()) {
-#		$contig++;
 		$cds = 0;
 		$locus = $seq_object->display_id;
 		$len = length($seq_object->seq());
@@ -133,7 +138,6 @@ sub parseGenbankFile {
 				$cds++;
 			}
 		}
-#		$spec->{$organism}{$locus}{'contig'} = $contig;
 		$spec->{$organism}{$locus}{'length'} = $len;
 		$spec->{$organism}{$locus}{'cds'} = $cds;
 		$spec->{$organism}{$locus}{'strain'} = $strain[0];	
@@ -196,13 +200,6 @@ sub parseMugsyCog {
 	my @temp = ();
 	open(FR, "< $filename") or printLogMsg($ERROR, "Could not open file $filename for reading. Reason: $!");
 	$num_genomes = keys(%$spec);
-#	foreach $s (keys %$spec) {
-#		$str = $spec->{$s}{'strain'};
-#		if($str =~ /([\w\.\-]+)|\/|\:|\,/) {
-#			$str = $1;
-#		}
-#		push(@temp, $str);	
-#	}
 	while($line = <FR>) {
 		chomp($line);
 		if($line =~ /^>/) {
@@ -210,17 +207,6 @@ sub parseMugsyCog {
 				$core_cogs++ if($1 == $num_genomes);
 			}
 		} elsif($line =~ /^#SINGLETON\s(\S+)/) {
-#			if($line =~ /product=(\S+)/) {
-#				$org = $1;
-#				my @match = grep { $org =~ /$_/;} @temp;
-#				my @keys = grep { $spec->{$_}{'strain'} =~ $match[0] } keys %$spec if($#match > -1);	
-#				print "product : $org\tMatch : $match[0]\tKey : $keys[0]\n";
-#				if(exists($spec->{$keys[0]}{'uniq_cds'})) {
-#					$spec->{$keys[0]}{'uniq_cds'}++;	
-#				} else {
-#					$spec->{$keys[0]}{'uniq_cds'} = 1;
-#				}	
-#			}
 			($org, $str) = split(/\|\|\|/, $1, 2);
 			foreach $s (keys %$spec) {
 				if(exists($spec->{$s}{$org})) {

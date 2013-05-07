@@ -97,7 +97,13 @@ print SR "Median contig size : ".nearest(0.01,($median/1000))." Kbp\n";
 print SR "Total genome size : ".nearest(0.01,$tlength/1000000)." Mbp\n";
 print SR "Total number of CDS : $tcds\n";
 print SR "Total number of tRNAs : $ttrna\n";
-print SR "Total number of rRNAs : $trrna\n";
+print SR "Total number of rRNAs : $trrna\n\n\n\n";
+
+print SR "References:\n";
+print SR "------------\n\n";
+print SR "1. CloVR\t\tAngiuoli S.V., Matalka M., Gussman A., Galens K., Vangala M., Riley D., Arze C., White J.R., White O., and Fricke W.F. (2011). CloVR: A virtual machine for automated and portable sequence analysis from the desktop using cloud computing. BMC Bioinformatics, 12(1):356. PMID: 21878105\n\n";
+print SR "2. IGS Annotation Engine\t\tGalens K., Orvis J., Daugherty S., Creasy H.H., Angiuoli S., White O., Wortman J., Mahurkar A., Giglio M.G. (2011). The IGS Standard Operating Procedure for Automated Prokaryotic Annotation. Stand Genomic Sci, 4(2):244-51. doi: 10.4056/sigs.1223234. PMID: 21677861\n\n";
+print SR "3. CloVR Microbe\t\tGalens K., White J.R., Arze C., Matalka M., Giglio M.G., Angiuoli S.V., Fricke W.F. (2011). CloVR-Microbe: Assembly, gene finding and functional annotation of raw sequence data from single microbial genome projects – standard operating procedure, version 1.0. Nat Prec. doi:10.1038/npre.2011.5887.3\n";
 
 close(SR);
 ###############
