@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -98,7 +101,7 @@ sub convert
 
     # Print them out 
     foreach my $feat (@srted_feats) {
-        print $out join("\t", ($feat->{'gene'},$feat->{'seq_id'},$feat->{'start'},$feat->{'stop'},$feat->{'strand'},$feat->{'polypeptide_id'},$feat->{'gene_id'},$organism,$feat->{'gene_product'}))."\n";
+        print $out join("\t", ("$feat->{'seq_id'}|||$feat->{'gene'}",$feat->{'seq_id'},$feat->{'start'},$feat->{'stop'},$feat->{'strand'},$feat->{'polypeptide_id'},$feat->{'gene_id'},$organism,$feat->{'gene_product'}))."\n";
     }
 }
 
@@ -132,7 +135,7 @@ sub process_organism
 
     my $org = $genus." ".$spec;
     $org =~ s/[\s\/]+/_/g;
-    $org =~ s/\.//g;
+    $org =~ s/[\.;]//g;
     $organism = $org;
 
     $twig->purge();
@@ -233,7 +236,7 @@ sub process_feature_group
     }
 
     my $gene_val = '-';
-    foreach my $type (('gene','transcript')) {
+    foreach my $type (('gene','transcript','CDS')) {
         my $gene_feat = $group_by_class->{$type}->[0];
         if($gene_feat) {
             my @xrefs = $gene_feat->children('Cross-reference');
@@ -245,6 +248,9 @@ sub process_feature_group
                     $gene_val = $_->att('identifier');
                 }
                 elsif(($_->att('database')) && ($_->att('database') eq 'NCBI_locus_tag')) {
+                    $gene_val = $_->att('identifier');
+                }
+                elsif(($_->att('database')) && ($_->att('database') eq 'NCBI_locus_tag_public_locus')) {
                     $gene_val = $_->att('identifier');
                 }
             }@xrefs;
