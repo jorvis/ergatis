@@ -57,6 +57,8 @@
 	    <fileName>$;WORKFLOW_REPOSITORY$;/mugsycog_distributed_work.xml.gz</fileName>
 	    <dceSpec type="sge">
 		<OS>linux</OS>
+        <group>$;PROJECT_CODE$;</group>
+        <group></group>
 	    </dceSpec>
         </commandSet>
     </commandSet>

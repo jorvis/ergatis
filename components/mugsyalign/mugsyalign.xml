@@ -52,6 +52,7 @@
 	    <fileName>$;WORKFLOW_REPOSITORY$;/mugsyalign_distributed_work.xml.gz</fileName>
 	    <dceSpec type="sge">
 		<OS>linux</OS>
+        <group>$;PROJECT_CODE$;</group>
 	    </dceSpec>
 	</commandSet>
 
