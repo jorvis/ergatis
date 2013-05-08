@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>genbank2gtf</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>genbank2gtf</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/genbank2gtf</executable>            
+            <param>
+                <key>--genbank</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+             <param>
+                <key>--source</key>
+                <value>$;SOURCE$;</value>
+            </param>
+          <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/genbank2gtf.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/genbank2gtf.stderr</value>
+            </param>
+            <arg>$;OTHER_ARGS$;</arg>
+        </command>
+    </commandSet>
+</commandSetRoot>
