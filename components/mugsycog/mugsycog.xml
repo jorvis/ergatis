@@ -58,7 +58,6 @@
 	    <dceSpec type="sge">
 		<OS>linux</OS>
         <group>$;PROJECT_CODE$;</group>
-        <group></group>
 	    </dceSpec>
         </commandSet>
     </commandSet>
