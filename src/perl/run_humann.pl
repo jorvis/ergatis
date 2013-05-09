@@ -8,6 +8,7 @@ run_humann.pl - will create directory structure for the hummann pipeline and run
 
 USEAGE: run_humann.pl
        --meta_file=/path/to/metadata.dat
+       --input_file=/path/to/input/file.txt
        --input_list=/path/to/input/file.list
        --input_format=txt.gz
        --max_id=1.0
@@ -23,8 +24,11 @@ USEAGE: run_humann.pl
 B<--meta_file, -m>    
     Optional. Filename from which metadata annotations are read.
     
+B<--input_file, -i>
+    Input file. Format should be tab-delimited output file, from blastx (outfmt 6), mapx or mblastx. input_file or input_list_file is required.
+
 B<--input_list, -i>
-    Required. Input list file. Format should be tab-delimited output file, from blastx (outfmt 6), mapx or mblastx.  
+    Input list file. Format should be tab-delimited output file, from blastx (outfmt 6), mapx or mblastx. input_file or input_list_file is required.  
 
 B<--input_format, -f>
     Required. Examples: txt, txt.gz, mapx.bz2, mapx.gz, mblastx.gz.
@@ -78,7 +82,8 @@ my @files =();
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'meta_file|m:s',
-			  'input_list|i=s',
+			  'input_file|i=s',
+			  'input_list|l=s',
                           'input_format|f=s',
                           'max_id|x:f',
                           'hits|t:i',
@@ -99,13 +104,10 @@ if (defined $options{log}) {
     #load files
     system ("cp -r $humann_dir/* $output_dir/");
     
-    open (INPUT_LIST,"<$input_list") or die $!;
-    while (<INPUT_LIST>){
-	   chomp;
-	   system ("cp -p $_ $output_dir/input/") ; 
-    }   
-    close INPUT_LIST;    
-
+    foreach my $file(@files) {
+	system ("cp -p $file $output_dir/input/") ;
+    }	
+	
     my $meta_file_name;
     if (defined($meta_file)){
 	my @fname = split(/\//, $meta_file);
@@ -169,7 +171,21 @@ sub check_options {
         exit(0);
     }
 
-    my @reqs = qw( input_list input_format humann_dir output_dir);
+    if($opts->{'input_list'} && $opts->{'input_list'} ne "") {
+        &_die("input_list [$opts->{'input_list'}] does not exist") unless( -e $opts->{'input_list'});
+        open(IN, "< $opts->{'input_list'}") or &_die("Unable to open $opts->{'input_list'}");
+        while(<IN>) {
+            push(@files, $_);
+        }
+        close(IN);
+    } elsif($opts->{'input_file'} && $opts->{'input_file'} ne "") {
+        &_die("input_file [$opts->{'input_file'}] does not exist") unless( -e $opts->{'input_file'});
+        push(@files,$opts->{'input_file'});
+    } else {
+        &_die("Either input_list or input_file must be provided");
+    }
+
+    my @reqs = qw( input_format humann_dir output_dir);
     foreach my $req ( @reqs ) {
         die("Option $req is required") unless( exists( $opts->{$req} ) );
     }
@@ -180,7 +196,6 @@ sub check_options {
     }
 
     $meta_file = $opts-> {'meta_file'};
-    $input_list = $opts->{'input_list'};
     $format = $opts->{'input_format'};
     $id = $opts->{'max_id'};
     $hits = $opts->{'hits'};
