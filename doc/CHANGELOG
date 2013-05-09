@@ -1,5 +1,6 @@
 next
 ----
+-adding organism name to tbl2asn
 -adding commands to convert newick tree to svg and pdf in wga_maf2tree
 -adding changes to clovr comparative pipeline
 -summarize_mugsy_comparative_pipeline: Added clovr comparative pipeline summary report production script to the component

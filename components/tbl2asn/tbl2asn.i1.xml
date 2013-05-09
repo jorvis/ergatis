@@ -49,7 +49,7 @@
 	    <state>incomplete</state>
 	    <name>Run tbl2asn</name>
 	    <executable>$;TBL2ASN_EXEC$;</executable>
-	    <arg>-p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; -V bv -j "[gcode=$;CODON_TABLE$;]" </arg>
+	    <arg>-p $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; -V bv -j "[gcode=$;CODON_TABLE$;]" -n "$;ORGANISM$;"</arg>
             <param>  
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.tbl2asn.stderr</value>
