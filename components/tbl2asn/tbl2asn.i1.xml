@@ -59,5 +59,20 @@
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.tbl2asn.stdout</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <state>incomplete</state>
+            <name>Fix locus name</name>
+            <executable>perl</executable>
+            <arg>-pi -e 's/(LOCUS\s+$;I_FILE_BASE$;)\s*(\S+.*)/$1  $2/;' $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.gbf</arg>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixgbf.stderr</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixgbf.stdout</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>
