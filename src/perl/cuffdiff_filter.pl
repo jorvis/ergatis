@@ -122,9 +122,10 @@ foreach $file (@results_files) {
 	    $f = 0;
 	    chomp ($_);
 	    @vals = split(/\t/,$_);
-
+	    
 	    for ($i = 0; $i< scalar @filters ;$i++) {
 		@parameters = split (/,/,$filters[($i)]);
+		%param = ();
 		foreach $p (@parameters) {
 		    @arr = split(/=/,$p);
 		    $param{$arr[0]} = $arr[1];

@@ -161,7 +161,7 @@ for (k in 1:(length(pheno)-1)) {
 
 		# run the negative binomial DEG test
 		res <- nbinomTest(cds, pheno[m], pheno[k])
-		res <- cbind(res, NA, NA)
+		#res <- cbind(res, NA, NA)
 
 		# order output by FDR
 		res <- res[order(res$padj),]
@@ -236,8 +236,8 @@ for (k in 1:(length(pheno)-1)) {
 		heatmap.2(hmap, col=hmcol, trace="none", main=sig.title, margin=c(13,13), cexRow=0.8, cexCol=0.8, keysize=1.0)
 		
 		# Change column names for clarity and brevity
-		colnames(res) <- c("Feature.ID", "Read.Count.All", paste("Read.Count.", pheno[m], sep=""), paste("Read.Count.", pheno[k], sep=""), "FC", paste("LFC(", pheno[k], "/", pheno[m], ")", sep=""), "p.Value", "FDR", "NA", "NA")
-
+		#colnames(res) <- c("Feature.ID", "Read.Count.All", paste("Read.Count.", pheno[m], sep=""), paste("Read.Count.", pheno[k], sep=""), "FC", paste("LFC(", pheno[k], "/", pheno[m], ")", sep=""), "p.Value", "FDR", "NA", "NA")
+		colnames(res) <- c("Feature.ID", "Read.Count.All", paste("Read.Count.", pheno[m], sep=""), paste("Read.Count.", pheno[k], sep=""), "FC", paste("LFC(", pheno[k], "/", pheno[m], ")", sep=""), "p.Value", "FDR")	
 		# write data to tsv file
 		write.table(res, file.path(paste(pheno[k], "_vs_", pheno[m], ".de_genes.txt", sep="")), na="", quote=F, row.names=F, sep="\t")
 	}

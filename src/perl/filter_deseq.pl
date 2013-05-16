@@ -1,3 +1,4 @@
+
 #!/usr/bin/perl
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
@@ -104,7 +105,7 @@ foreach $file (@results_files) {
 	(@files, @samples, @up, @down) = ();
 	
 	for ($i = 1 ;$i <= scalar @filters; $i++) {
-	    $total_output = $options{output_dir} . "/" . $sample1 . "_vs_" . $sample2 . "_".$i.".txt";
+	    $total_output = $options{output_dir} . "/" . $sample1 . "_vs_" . $sample2 . "_".$i.".filtered.txt";
 	    if (! exists $outfiles{$i}) {$outfiles{$i} = [$total_output];}
 	    else {push (@{$outfiles{$i}}, $total_output);}
 	    my $FH ;
@@ -120,7 +121,7 @@ foreach $file (@results_files) {
 	$line = <$fh>;
 	chomp($line);
 	$t = 0 ;
-	if ($line =~ /^ID/) {
+	if ($line =~ /ID/) {
 	    $t = 1;
 	    @arr = split (/\t/,$line);
 	
@@ -146,9 +147,11 @@ foreach $file (@results_files) {
 	    $f = 0;
 	    chomp ($_);
 	    @vals = split(/\t/,$_);
+	    
 	    push (@vals,0);
 	    push (@vals,0);
-		
+	    
+	    
 		# if user mentioned map_file, we want to print name in output - Mahesh Vangala
 	    if( $options{ 'map_file' } ) {
 		if( !defined $$map_info{ $vals[ 0 ] }{ 'gene_symbol' } ) {
@@ -164,10 +167,19 @@ foreach $file (@results_files) {
 	    }
 	    
 	    for ($i = 0; $i< scalar @filters ;$i++) {
+		
 		@parameters = split (/,/,$filters[($i)]);
+		%param = ();
 		foreach $p (@parameters) {
 		    @arr = split(/=/,$p);
 		    $param{$arr[0]} = $arr[1];
+		}
+		if (! defined $param{'UFC'}) {
+		    $param{'UFC'} = 1;
+		}
+		
+		if (! defined $param{'DFC'}) {
+		    $param{'DFC'} = -1;
 		}
 
 		$f = run_filter_checks(\@vals,\%param);
@@ -239,32 +251,37 @@ sub find_up_or_down_regulated {
 	my $i;
 	my $l = 2;
 	my $data_out = "";
+	
 	if (exists $options{'map_file'}) {
 	    $l = 4;
 	}
+	
 	foreach ($i = 0; $i< (scalar @{$vals}) - $l ;$i++) {
-		$data_out.= $$vals[$i]."\t";
+	    $data_out.= $$vals[$i]."\t";
 	}
+	
+	
 	if (exists $options{'map_file'}) {
 	    $data_out.= $$map_info{$$vals[0]}{'gene_symbol'}."\t";
 	    $data_out.= $$map_info{$$vals[0]}{'gene_name'};
 	}
 	$data_out.= "\n";
-
-	if( $$vals[10] ) {
+	
+	if( $$vals[8] ) {
 	    print $total_out $data_out;
 	    $$up_reg ++;
 	} 
+
 	elsif( $$vals[5] > $param->{'UFC'} ) {
 	    print $total_out $data_out;
 	    $$up_reg ++;
 	}
-	if( $$vals[11] ) {
-	    print $total_out $data_out;
+	if( $$vals[9] ) {
+	    print $total_out $data_out;	
 	    $$down_reg ++;
 	} 
 	elsif( $$vals[5] < $param->{'DFC'} ) {
-	    print $total_out $data_out;
+	    print  $total_out $data_out;
 	    $$down_reg ++;
 	}
 
@@ -280,8 +297,7 @@ sub run_filter_checks {
 	my $filtered = 0;
 	my $nMax = 0;
 
-	
-	
+		
         # FDR cutoff not satisfied
 	if (exists $param->{'FDR'}) {
 	    if( $param->{'FDR'} != 0 && $$vals[7] > $param{'FDR'} ) {
@@ -296,20 +312,19 @@ sub run_filter_checks {
        
 	# log_fc = Inf; read count for sample2 is 0 and read count for sample1 is greater than the read_count_cutoff
 	if( $$vals[2] == 0 && $$vals[3] > $param->{'RC'} ) {
-		$$vals[10] = 1;
+		$$vals[8] = 1;
 	}
 	
 	# log_fc = -Inf; read count for sample1 is 0 and read count for sample2 is greater than the read_count_cutoff
 	if( $$vals[3] == 0 && $$vals[2] > $param->{'RC'} ) {                
-		$$vals[11] = 1;
+		$$vals[9] = 1;
 	}
 	
 	$nMax = (($$vals[3] > $$vals[2]) ? $$vals[3] : $$vals[2]);
 	if( $nMax < $param->{'RC'} ) {
 		$filtered = 1;
 	}
-       
-	
+		
 	return $filtered;
 }
 
@@ -349,7 +364,7 @@ sub write_to_excel {
 	    for ($j = 0; $j< scalar @arr ; $j++) {
 		next if ($j == 1 || $j == 4 || $j == 8 || $j == 9);
 		if ($t == 4 ) {
-		    if ($_ =~ /^ID/) {
+		    if ($_ =~ /ID/) {
 			$worksheet->write($c,$t,"Abs_log_fold",$format);
 		    }
 		    else {
