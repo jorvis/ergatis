@@ -23,7 +23,7 @@ tophat.pl - script to execute reference based alignment for input sequence file(
               [--min-intron-length] [--max-intron-length] [--max-insertion-length] [--max-deletion-length]
               [--num-threads] [--max-multihits] [--library-type]
               [--bowtie_mode] [--initial-read-mismatches] [--segment-mismatches] [--segment-length] 
-              [--min-closure-exon] [--min-closure-intron] [--max-closure-intron] 
+              [--read-gap-length] [--read-edit-dist]
               [--min-coverage-intron] [--max-coverage-intron] [--min-segment-intron] [--max-segment-intron]
               [--raw-juncs] [--GTF] [--transcriptome-index] [--insertions] [--deletions]
               [--a other_parameters] [--v]
@@ -107,7 +107,7 @@ GetOptions( \%hCmdLineOption,
             'min-intron-length=i', 'max-intron-length=i', 'max-insertion-length=i', 'max-deletion-length=i', 
             'num-threads=i', 'max-multihits=i', 'library-type=s', 
             'bowtie_mode=s', 'initial-read-mismatches=i', 'segment-mismatches=i', 'segment-length=i', 
-            'min-closure-exon=i', 'min-closure-intron=i', 'max-closure-intron=i', 
+            'read-gap-length=i', 'read-edit-dist=i',  
             'min-coverage-intron=i', 'max-coverage-intron=i', 'min-segment-intron=i', 'max-segment-intron=i', 
             'raw-juncs=s', 'GTF=s', 'transcriptome-index=s', 'insertions=s', 'deletions=s', 
             'args|a=s', 'verbose|v',

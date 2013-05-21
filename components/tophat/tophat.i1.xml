@@ -101,16 +101,12 @@
                 <value>$;SEGMENT_LENGTH$;</value>
 	        </param>
 	        <param>
-                <key>--min-closure-exon</key>
-                <value>$;MIN_CLOSURE_EXON$;</value>
+                <key>--read-gap-length</key>
+                <value>$;READ_GAP_LENGTH$;</value>
 	        </param>
 	        <param>
-                <key>--min-closure-intron</key>
-                <value>$;MIN_CLOSURE_INTRON$;</value>
-	        </param>
-	        <param>
-                <key>--max-closure-intron</key>
-                <value>$;MAX_CLOSURE_INTRON$;</value>
+                <key>--read-edit-dist</key>
+                <value>$;READ_EDIT_DIST$;</value>
 	        </param>
 	        <param>
                 <key>--min-coverage-intron</key>
