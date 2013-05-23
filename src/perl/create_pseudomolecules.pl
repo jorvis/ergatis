@@ -282,8 +282,8 @@ sub check_parameters {
 ## Assign default linker sequence if not supplied	
 		$options{'linker_sequence'} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless ( defined $options{linker_sequence});
 ## make sure the input file exists and is readable
-		if ($options{'input_file'} && (-s $options{'input_file'})) {
-			if(-e "$options{input_file}") {
+		if ($options{'input_file'}) {
+			if(-s $options{"input_file"} && -e $options{'input_file'}) {
 				my @fetch_opts = qw(database format);
 				foreach my $fetch_opt( @fetch_opts ) {
 					if( !$options->{$fetch_opt} ) {

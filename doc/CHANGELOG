@@ -1,5 +1,6 @@
 next
 ----
+-fixed bug in create_pseudomolecules where incorrect accession_file pathnames were being ignored by the script instead of causing it to die
 -adding organism name to tbl2asn
 -adding commands to convert newick tree to svg and pdf in wga_maf2tree
 -adding changes to clovr comparative pipeline
