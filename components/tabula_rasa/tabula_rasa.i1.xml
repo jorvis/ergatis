@@ -42,7 +42,7 @@
             </param>
             <param>  
                 <key>--output_directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
         </command>
     </commandSet>
