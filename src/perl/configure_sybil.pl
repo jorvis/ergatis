@@ -419,6 +419,11 @@ sub load_archive {
     # Unpack the archive
     my $archive = $options{load_archive};
 
+
+    # Create a tmp area that is on the data volume but that is web accessible
+    &run_cmd("mkdir -p $ROOT/sybiltmp/web;chmod 777 $ROOT/sybiltmp;chmod 777 $ROOT/sybiltmp/web/");
+    &run_cmd("ln -s $ROOT/sybiltmp/web $PATH_TO_SYBIL/htdocs/tmp");
+
     if($options{archive_is_tag}) {
         my @lines = `vp-describe-dataset --tag-name=$options{load_archive}`;
         foreach my $line (@lines) {
