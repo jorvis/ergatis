@@ -30,6 +30,10 @@
 		<key>--password</key>
 		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
+	    <param>
+	    	<key>--password_file</key>
+	    	<value>$;PASSWORD_FILE$;</value>
+	    </param>
               <param>
 		<key>--database</key>
 		<value>$;DATABASE$;</value>
@@ -156,11 +160,15 @@
 		<key>--password</key>
 		<value>'$;ADMIN_PASS$;'</value>
 	    </param>
-              <param>
+	    <param>
+	    	<key>--password_file</key>
+	    	<value>$;PASSWORD_FILE$;</value>
+	    </param>	    
+             <param>
 		<key>--database</key>
 		<value>$;DATABASE$;</value>
 	    </param>
-              <param>
+             <param>
 		<key>--database_type</key>
 		<value>$;RDBMS$;</value>
 	    </param>
@@ -444,6 +452,10 @@
 	    <param>
 		<key>--password</key>
 		<value>'$;ADMIN_PASS$;'</value>
+	    </param>
+	    <param>
+	    	<key>--password_file</key>
+	    	<value>$;PASSWORD_FILE$;</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>

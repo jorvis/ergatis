@@ -1,4 +1,7 @@
 #!/usr/bin/perl
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib ".";
@@ -22,6 +25,10 @@ The chado version will be derived from the BIN_DIR path
 =item B<--database> 
 
 Chado database
+
+=item B<--password_file, -f>
+
+Optional - Read password from a file rather than use the --password option.  Useful if using --password results in the password being publicly visible.  If both --password_file and --password are provided, the entry from --password_file will take priority
  
 =item B<--log4perl,-l> Log file
 
@@ -62,7 +69,7 @@ umask(0000);
 my %options = ();
 
 my ($bindir, $database, $log4perl, $help, $debug, $workflow, $username, $password,
-$database_type);
+$pass_file, $database_type);
 
 my $results = GetOptions (\%options, 
                           'bin_dir=s'     => \$bindir, 
@@ -72,6 +79,7 @@ my $results = GetOptions (\%options,
 			  'workflow=s'    => \$workflow,
 			  'username=s'    => \$username,
 			  'password=s'    => \$password,
+			  'password_file|f=s'	=> \$pass_file,
 			  'database_type=s' => \$database_type,
                           'help|h'        => \$help ) || pod2usage();
 
@@ -96,11 +104,20 @@ if (!defined($database)){
 if (!defined($username)){
     die "username was not defined";
 }
-if (!defined($password)){
-    die "password was not defined";
+if (!defined($password) && !defined($pass_file)){
+    die "Neither password or a password file were defined.  Please use one or the other";
 }
 if (!defined($workflow)){
     $workflow = "/tmp";
+}
+
+#Assign password to be read from the file if it exists.
+if (defined ($pass_file) ) {
+	open PASS, $pass_file or die ("Cannot open password file $pass_file : $!\n");
+	print STDERR ("Password from file will take priority over --password option\n") if (defined $password);
+	$password= <PASS>;
+	chomp $password;
+	close PASS;
 }
 
 ## Extract the version e.g. chado-v1r7b1

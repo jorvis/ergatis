@@ -37,6 +37,10 @@
 		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
+	    </param>
+	    <param>
 		<key>--debug_level</key>
 		<value>$;DEBUG$;</value>
 	    </param>
@@ -80,6 +84,10 @@
 	    <param>
 		<key>--password</key>
 		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
@@ -127,6 +135,10 @@
 		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
+	    </param>
+	    <param>
 		<key>--debug_level</key>
 		<value>$;DEBUG$;</value>
 	    </param>
@@ -170,6 +182,10 @@
 	    <param>
 		<key>--password</key>
 		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
@@ -217,6 +233,10 @@
 		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
+	    </param>
+	    <param>
 		<key>--debug_level</key>
 		<value>$;DEBUG$;</value>
 	    </param>
@@ -260,6 +280,10 @@
 	    <param>
 		<key>--password</key>
 		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>
@@ -307,6 +331,10 @@
 		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
+	    </param>
+	    <param>
 		<key>--debug_level</key>
 		<value>$;DEBUG$;</value>
 	    </param>
@@ -350,6 +378,10 @@
 	    <param>
 		<key>--password</key>
 		<value>$;PASSWORD$;</value>
+	    </param>
+	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
 	    </param>
 	    <param>
 		<key>--debug_level</key>

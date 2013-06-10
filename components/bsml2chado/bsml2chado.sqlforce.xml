@@ -15,6 +15,10 @@
 		<value>$;PASSWORD$;</value>
 	    </param>
 	    <param>
+	  	<key>--password_file</key>
+	  	<value>$;PASSWORD_FILE$;</value>
+	    </param>
+	    <param>
 		<key>--database</key>
 		<value>$;DATABASE$;</value>
 	    </param>
