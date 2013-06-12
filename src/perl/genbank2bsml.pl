@@ -1411,10 +1411,17 @@ sub addFeature {
         # print "\tdb_xref\t$_\n";
         # new usage convention is everything up to the first : is db, everything after (including :) is id
         # see bug #3278 comment #3 http://jorvis-lx:8080/bugzilla/show_bug.cgi?id=3278#c3
-        ($dbx =~ /([^:]*):(.*)/) || die "Unable to parse database and identifier from db_xref ($dbx)";
-        my $database = $1;
-        my $identifier = $2;
-	my $identifier_type = undef;
+        my $database;
+        my $identifier;
+	my $identifier_type;
+        if ($dbx =~ /([^:]*):(.*)/)  {
+		$database = $1;
+        	$identifier = $2;
+		$identifier_type = undef;
+	} else {
+		warn  "Unable to parse database and identifier from db_xref ($dbx)";
+		next;
+	}
 
         # die if it's some new kind of database I never saw before
         my %known_dbxrefs = ( GO => 1, GI => 1, GeneID => 1, CDD => 1, ATCC => 1, Interpro => 1, UniProtKB => 1, GOA => 1,
