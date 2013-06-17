@@ -112,7 +112,7 @@ if (!defined($workflow)){
 }
 
 #Assign password to be read from the file if it exists.
-if (defined ($pass_file) ) {
+if (defined ($pass_file)  && -s $pass_file ) {
 	open PASS, $pass_file or die ("Cannot open password file $pass_file : $!\n");
 	print STDERR ("Password from file will take priority over --password option\n") if (defined $password);
 	$password= <PASS>;
