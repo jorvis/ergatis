@@ -137,8 +137,34 @@ sub post_process {
         $annotation->set_TIGR_Role( $tigr_roles_annot->assign_tigr_roles_by_keyword( $gene_product_name->[0], $tigr_roles ),
                                     'by_keyword', 'by_keyword' );
     }
-
+    
+    ## Clean up TIGR_roles so that lower-tier roles (hypotheticals) are not in the list if higher-priority ones are
+    ($tigr_roles, $tr_source, $tr_source_type) = $annotation->get_TIGR_Role;
+    my $updated_roles = &clean_up_tigr_roles($tigr_roles);
+    $annotation->set_TIGR_Role($updated_roles, $tr_source, $tr_source_type);
+    
     print $out $annotation->to_string."\n";
+}
+
+sub clean_up_tigr_roles {
+	my $cur_roles = shift;
+	my $updated_roles = ();
+	my @lower_tier_roles = qw(703 157 856 156 704 270 185);
+	
+	# Defining lower tiers into a hash, to be checked against in a grep function
+	my %lower_tier_h = map{$_ => 1} @lower_tier_roles;
+	
+	# Use grep to only get the roles that do not show up in @lower_tier_roles
+	my @higher_tier = grep ( ! defined $lower_tier_h{$_}, @$cur_roles);
+	
+	# If no higher_tier roles were filtered out, then we only had lower_tier roles in the original list
+	# Otherwise we use only the higher_tier roles.
+	if (scalar (@higher_tier) == 0) {
+		$updated_roles = $cur_roles;
+	} else {
+		$updated_roles = \@higher_tier;
+	}
+	return $updated_roles;
 }
 
 sub format_ec_numbers {
