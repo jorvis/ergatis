@@ -1,5 +1,6 @@
 next
 ----
+-Added fix to replace non-ACGT characters with Ns in basml2fasta
 -Added parameter to bsml2chado and initdb components to optionally take password from a file instead of directly as a parameter itself
 -fixed bug in create_pseudomolecules where incorrect accession_file pathnames were being ignored by the script instead of causing it to die
 -adding organism name to tbl2asn

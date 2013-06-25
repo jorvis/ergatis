@@ -81,5 +81,11 @@
                 <value>'$;OUTPUT_SUFFIX$;'</value>
             </param>
         </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>Fix fasta</name>
+            <state>incomplete</state>
+            <executable>for F in `cat $;OUTPUT_LIST$;`;do perl -i -p -ne 'if($_ !~ /^>/) {$_ =~ s/[MRWSYKVHDB]/N/g;}' ${F};done;</executable>
+        </command>
     </commandSet>
 </commandSetRoot>
