@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>split_fastq</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>split_fastq</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/split_fastq</executable>
+            <param>  
+                <key>--input</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/i1/g$;GROUP_NUMBER$;</value>
+            </param>
+            <param>  
+                <key>--numseq</key>
+                <value>$;SEQ_NUMBER$;</value>
+            </param>
+           <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/split_fastq_file.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/split_fastq_file.stderr</value>
+            </param>
+ 
+
+        </command>
+    </commandSet>
+</commandSetRoot>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>align_tophat_split_stats</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>align_tophat_split_stats</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/align_tophat_split_stats</executable>            
+            <param>
+                <key>--infile</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--splitbam</key>
+                <value>$;SPLITBAM_LIST$;</value>
+            </param>
+            <param>
+                <key>--outdir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+            </param>
+	    <param>
+                <key>--args</key>
+                <value>$;OTHER_PARAMETERS$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/align_tophat_split_stats.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/align_tophat_split_stats.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
