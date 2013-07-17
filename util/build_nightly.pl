@@ -16,15 +16,15 @@ umask(0022);
 #exit(1);
 
 ##########################################
-my $install_base='/usr/local/projects/ergatis/package-nightly';
-my $ergatis_svn_co_path='https://ergatis.svn.sourceforge.net/svnroot/ergatis/release/trunk';
-my $bsml_svn_co_path='https://bsml.svn.sourceforge.net/svnroot/bsml/release';
-my $coati_svn_co_path='https://coati-api.svn.sourceforge.net/svnroot/coati-api/release/coati_install';
-my $shared_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/shared_prism';
-my $chado_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/chado_prism';
-my $prok_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/prok_prism';
-my $euk_prism_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/euk_prism';
-my $chado_schema_svn_co_path='https://prism-api.svn.sourceforge.net/svnroot/prism-api/release/chado';
+my $install_base='/usr/local/projects/ergatis/package-nightly/';
+my $ergatis_svn_export_path='http://svn.code.sf.net/p/ergatis/code/release/trunk';
+my $bsml_svn_export_path='http://svn.code.sf.net/p/bsml/code/release';
+my $coati_svn_export_path='http://svn.code.sf.net/p/coati-api/code/release/coati_install';
+my $shared_prism_svn_export_path='http://svn.code.sf.net/p/prism-api/code/release/shared_prism';
+my $chado_prism_svn_export_path='http://svn.code.sf.net/p/prism-api/code/release/chado_prism';
+my $prok_prism_svn_export_path='http://svn.code.sf.net/p/prism-api/code/release/prok_prism';
+my $euk_prism_svn_export_path='http://svn.code.sf.net/p/prism-api/code/release/euk_prism';
+my $chado_schema_svn_export_path='http://svn.code.sf.net/p/prism-api/code/release/chado';
 
 ## this directory will be created.  If it exists already, it and everything under it
 #   will be removed
@@ -34,6 +34,7 @@ my $tmp_area = '/tmp/build_nightly';
 #   the defaults from the SVN one.
 my $software_config_kept = '/usr/local/projects/ergatis/software.config';
 
+
 ##########################################
 
 my $software_config;
@@ -42,7 +43,7 @@ if ( $software_config_kept ) {
                         die "failed to open old software config: $!";
 }
 
-clear_co_area($tmp_area);
+clear_export_area($tmp_area);
 clear_install_area($install_base);
 
 install_ergatis($install_base);
@@ -61,7 +62,7 @@ set_idgen_configuration($install_base);
 ## for now, also recursively copy the IGS lib dir into the area
 #`cp -r /usr/local/projects/ergatis/package-latest/lib/perl5/IGS $install_base/lib/perl5`;
 
-sub clear_co_area {
+sub clear_export_area {
     my $base = shift;
     
     rmtree($tmp_area);
@@ -88,10 +89,10 @@ sub install_bsml {
     
     my $tmp_build_area = "$tmp_area/bsml";
 
-    print STDERR "checking out BSML\n";    
+    print STDERR "exporting out BSML\n";    
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $bsml_svn_co_path );
-    my $cmd = "echo p | svn checkout $bsml_svn_co_path $tmp_build_area";
+    #$svn->checkout( $bsml_svn_export_path );
+    my $cmd = "echo p | svn export $bsml_svn_export_path $tmp_build_area";
     system($cmd);
     print STDERR "installing BSML\n";
     chdir("$tmp_build_area/bsml-vNrNbN/") || die "couldn't cd into $tmp_build_area/bsml-vNrNbN";
@@ -106,11 +107,11 @@ sub install_chado_schema {
  
     my $tmp_build_area = "$tmp_area/chado_schema";
 
-    print STDERR "checking out Chado schema\n";    
+    print STDERR "exporting out Chado schema\n";    
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $chado_schema_svn_co_path );
+    #$svn->checkout( $chado_schema_svn_export_path );
     
-    my $cmd = "echo p | svn checkout $chado_schema_svn_co_path $tmp_build_area";
+    my $cmd = "echo p | svn export $chado_schema_svn_export_path $tmp_build_area";
     system($cmd);
     
     print STDERR "installing Chado schema\n";
@@ -123,11 +124,11 @@ sub install_chado_prism {
  
     my $tmp_build_area = "$tmp_area/chado_prism";
 
-    print STDERR "checking out Prism (chado)\n";    
+    print STDERR "exporting out Prism (chado)\n";    
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $chado_prism_svn_co_path );
+    #$svn->checkout( $chado_prism_svn_export_path );
     
-    my $cmd = "echo p | svn checkout $chado_prism_svn_co_path $tmp_build_area";
+    my $cmd = "echo p | svn export $chado_prism_svn_export_path $tmp_build_area";
     system($cmd);
 
     print STDERR "installing Prism (chado)\n";
@@ -142,11 +143,11 @@ sub install_coati {
     
     my $tmp_build_area = "$tmp_area/coati";
 
-    print STDERR "checking out Coati\n"; print "$coati_svn_co_path\n"; 
+    print STDERR "exporting out Coati\n"; print "$coati_svn_export_path\n"; 
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $coati_svn_co_path );
+    #$svn->checkout( $coati_svn_export_path );
     
-    my $cmd = "echo p | svn checkout $coati_svn_co_path $tmp_build_area";
+    my $cmd = "echo p | svn export $coati_svn_export_path $tmp_build_area";
     system($cmd);
 
     print STDERR "installing Coati\n";
@@ -162,11 +163,11 @@ sub install_ergatis {
     
     my $tmp_build_area = "$tmp_area/ergatis";
 
-    print STDERR "checking out Ergatis\n";    
+    print STDERR "exporting out Ergatis\n";    
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $ergatis_svn_co_path );
+    #$svn->checkout( $ergatis_svn_export_path );
     
-    my $cmd = "echo p | svn checkout $ergatis_svn_co_path $tmp_build_area";
+    my $cmd = "echo p | svn export $ergatis_svn_export_path $tmp_build_area";
     system($cmd);
 
     print STDERR "installing Ergatis\n";
@@ -181,11 +182,11 @@ sub install_euk_prism {
  
     my $tmp_build_area = "$tmp_area/euk_prism";
 
-    print STDERR "checking out Prism (euk)\n";    
+    print STDERR "exporting out Prism (euk)\n";    
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $euk_prism_svn_co_path );
+    #$svn->checkout( $euk_prism_svn_export_path );
     
-    my $cmd = "echo p | svn checkout $euk_prism_svn_co_path $tmp_build_area";
+    my $cmd = "echo p | svn export $euk_prism_svn_export_path $tmp_build_area";
     system($cmd);
 
     print STDERR "installing Prism (euk)\n";
@@ -200,11 +201,11 @@ sub install_prok_prism {
  
     my $tmp_build_area = "$tmp_area/prok_prism";
 
-    print STDERR "checking out Prism (prok)\n";    
+    print STDERR "exporting out Prism (prok)\n";    
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $prok_prism_svn_co_path );
+    #$svn->checkout( $prok_prism_svn_export_path );
     
-    my $cmd = "echo p | svn checkout $prok_prism_svn_co_path $tmp_build_area";
+    my $cmd = "echo p | svn export $prok_prism_svn_export_path $tmp_build_area";
     system($cmd);
 
     print STDERR "installing Prism (prok)\n";
@@ -219,11 +220,11 @@ sub install_shared_prism {
  
     my $tmp_build_area = "$tmp_area/shared_prism";
 
-    print STDERR "checking out Prism (shared)\n"; print "$shared_prism_svn_co_path\n";    
+    print STDERR "exporting out Prism (shared)\n"; print "$shared_prism_svn_export_path\n";    
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
-    #$svn->checkout( $shared_prism_svn_co_path );
+    #$svn->checkout( $shared_prism_svn_export_path );
     
-    my $cmd = "echo p | svn checkout $shared_prism_svn_co_path $tmp_build_area";
+    my $cmd = "echo p | svn export $shared_prism_svn_export_path $tmp_build_area";
     system($cmd);
 
     print STDERR "installing Prism (shared)\n";
