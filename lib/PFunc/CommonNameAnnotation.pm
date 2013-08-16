@@ -131,6 +131,7 @@ sub clean_common_name {
  	$new_product_name =~ /\bunnamed\b/i ||
 	$new_product_name =~ /^\s*protein\s*$/i ||
         $new_product_name =~ /^residues\b/i ||
+        $new_product_name =~ /^[A-Za-z]{3,}\d{4,}\s+/ ||
         $new_product_name =~ /^\w{1,2}\d{1,3}$/ ||
         $new_product_name =~ /^ttg start/i ||
 	$new_product_name =~ /gene \d+ protein/ ||
@@ -261,9 +262,19 @@ sub clean_common_name {
         $new_product_name = lc($1) . $2;
     }
     
+    
+    ## if we have proteins...protein then remove 'proteins'
+    #	ex. bacterial regulatory proteins, luxR family protein -- bacterial regulatory, luxR family protein
+    if ($new_product_name =~ /proteins(.*protein)/ig) {
+	$new_product_name =~ s/proteins(.*protein)/$1/ig;
+	#some instances of 'proteins' are followed with a comma, so we need to remove the space before the comma
+	$new_product_name =~ s/\s+(,\s+)/$1/;	
+    }
+    
     ## make sure we don't have some words more than once.
     ## something like abc domain domain protein
     while( $new_product_name =~ /(protein|domain|family|possible).*\1/ ) {
+    	last if ($new_product_name =~/protein-\w+.*protein/);
         $new_product_name =~ s/$1\s*//;
     }
 
