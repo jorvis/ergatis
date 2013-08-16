@@ -37,6 +37,10 @@
                 <value>$;PASSWORD$;</value>
             </param>
             <param>  
+                <key>--password_file</key>
+                <value>$;PASSWORD_FILE$;</value>
+            </param>
+            <param>  
                 <key>--output_directory</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
