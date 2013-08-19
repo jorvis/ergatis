@@ -24,9 +24,28 @@ from Bio.Alphabet import IUPAC
 #      FUNCTIONS      #
 #############
 
-def validate_genbank(genbank):
+# Some files need to have changes made so they won't fail during Biopython parsing. 
+# This is where we fix that
+def prevalidation(genbank, prepare):
     base_gbk = basename(genbank)
-    out_f = options.output_path + "/" + base_gbk
+    out_file = prepare + "/" + base_gbk
+    genbank_h = open_file(genbank)
+    out_h = open(out_file, "w")
+    for line in genbank_h:
+    	if line.startswith("LOCUS"):
+    	    line = re.sub("dna", "DNA", line)
+    	    line = re.sub("rna", "RNA", line)	# not working on RNA but still need capitalized for parsing later
+    	    line = re.sub("\.pseudomolecule", "", line)
+    	out_h.write(line)
+    #add other rules that would fail during Biopython parsing if needed
+    genbank_h.close()
+    out_h.close()
+    return out_file
+
+# Using Biopython to validate genbank files
+def validate_genbank(genbank, outdir):
+    base_gbk = basename(genbank)
+    out_f = outdir + "/" + base_gbk
     genbank_h = open_file(genbank)
     record_list = parse_file(genbank_h)
     for gb_record in record_list:
@@ -53,18 +72,17 @@ def parse_file(gb_h):
     record_list = []
     for record in SeqIO.parse(gb_h, "genbank"):	# parse genbank into a SeqRecord object
 	record_list.append(record)
-	# Things to do
-		# Fix/Ignore issue with locus having lowercase "dna" in line
-		# Fix/Ignore issue with locus ID being longer than 16-characters long
         #print record
     gb_h.close()
     return record_list
 
 # Checks to make sure the sequence alphabet is DNA
 def is_sequence_nucleotide(record):
-    m = re.search("DNA", record.seq.alphabet)
-    if not m:
-        sys.stderr.write("Sequence for " + record.id + " is not detected as a DNA alphabet.  Must supply only nucleotide Genbank files.\n")
+    print str(record.seq.alphabet)
+    m = re.search("RNA", str(record.seq.alphabet))
+    n = re.search("Protein", str(record.seq.alphabet))
+    if m or n:
+        sys.stderr.write("RNA or Protein alphabet detected for Genbank file.  Must supply only nucleotide Genbank files.\n")
         sys.exit(1)
 
 # Accession IDs should be present in every Genbank file and meet proper format
@@ -183,24 +201,29 @@ def main():
 
     f = open(options.genbank_list, "r")	#open the genbank_list file for reading
     lines = f.readlines()
-    if len(lines) == 0:
-        sys.stderr.write("Inputted Genbank list file contains no contents...exiting\n")
-        sys.exit(1)
+    assert (len(lines) > 0, "Genbank list contains no contents!")
 
-    # Create output directory if it doesn't exist
-    if not os.path.exists(options.output_path):
-        os.mkdir(options.output_path, 0777)
+    # Create output directory if it doesn't exist.
+    outdir = options.output_path
+    if not os.path.exists(outdir):
+        os.mkdir(outdir, 0777)
+    pre = outdir + "/prevalidate"
+    if not os.path.exists(pre):	# Directory to store modified gbk files cleaned up before file validation
+        os.mkdir(pre, 0777)
 
     for gbk in lines:
         gbk = gbk.rstrip()
         if not gbk.endswith("gbk") and not gbk.endswith("gb"):	#Change into a regex later
             sys.stderr.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
             continue
+        sys.stdout.write("Now preparing " + gbk + " for validation\n")	
+        sys.stderr.write("Now preparing " + gbk + " for validation\n")
+        new_gbk = prevalidation(gbk, pre)
         sys.stdout.write("Now validating " + gbk + " ...\n")
         sys.stderr.write("Now validating " + gbk + "...\n")
-        validate_genbank(gbk)
-        sys.stdout.write("\n")
-        sys.stderr.write("\n")
+        validate_genbank(new_gbk, outdir)
+        sys.stdout.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
+        sys.stderr.write("\n") 	#Perhaps I'll utilize the 'logging' module if I do an update.
 	
     sys.stdout.write("Finished validating!\n")
     f.close()
