@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/local/packages/Python-2.7/bin/python
 
 """
 validate_genbank.py - Validate a list of genbank files (must be nucleotide files)
@@ -78,7 +78,7 @@ def parse_file(gb_h):
 
 # Checks to make sure the sequence alphabet is DNA
 def is_sequence_nucleotide(record):
-    print str(record.seq.alphabet)
+    #print str(record.seq.alphabet)
     m = re.search("RNA", str(record.seq.alphabet))
     n = re.search("Protein", str(record.seq.alphabet))
     if m or n:
