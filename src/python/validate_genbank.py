@@ -1,4 +1,4 @@
-#! /usr/local/packages/Python-2.7/bin/python
+#! /usr/bin/python
 
 """
 validate_genbank.py - Validate a list of genbank files (must be nucleotide files)
