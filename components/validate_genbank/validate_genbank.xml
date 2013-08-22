@@ -25,6 +25,15 @@
                                 <key>--output_path</key>
                                 <value>$;OUTPUT_DIRECTORY$;</value>
                         </param>
+                        <param>
+                                <key>stdout</key>
+                                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
+                        </param>
+                        <param>
+                                <key>stderr</key>
+                                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
+                        </param>
+
                 </command>
                 <command>
                         <type>RunUnixCommand</type>
@@ -37,12 +46,12 @@
                         </param>
                         <param>
                                 <key>--regex</key>
-                                <value>".*\gb(k)?"</value>
+                                <value>".*\/validate\/.*\.gbk"</value>
                         </param>           
-                         <param>
+                        <param>
                                 <key>--output_list</key>
                                 <value>$;OUTPUT_LIST$;</value>
-                        </param>                      
+                        </param>
                 </command>
         </commandSet>
 </commandSetRoot>

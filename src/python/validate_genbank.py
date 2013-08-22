@@ -28,6 +28,8 @@ from Bio.Alphabet import IUPAC
 # This is where we fix that
 def prevalidation(genbank, prepare):
     base_gbk = basename(genbank)
+    if base_gbk.endswith("gb"):
+        base_gbk = base_gbk + "k"	# try to keep extensions uniform
     out_file = prepare + "/" + base_gbk
     genbank_h = open_file(genbank)
     out_h = open(out_file, "w")
@@ -43,9 +45,9 @@ def prevalidation(genbank, prepare):
     return out_file
 
 # Using Biopython to validate genbank files
-def validate_genbank(genbank, outdir):
+def validate_genbank(genbank, valid):
     base_gbk = basename(genbank)
-    out_f = outdir + "/" + base_gbk
+    out_f = valid + "/" + base_gbk
     genbank_h = open_file(genbank)
     record_list = parse_file(genbank_h)
     for gb_record in record_list:
@@ -132,7 +134,7 @@ def replace_invalid_header_chars(record):
     #FEATURES.source.organism
     for feature in record.features:
         if feature.type == 'source':
-            assert (len(feature.qualifiers['organism']) == 0, "This record has more than one organism listed in the FEATURES.source entry")
+            assert len(feature.qualifiers['organism']) == 1, "This record has more than one organism listed in the FEATURES.source entry"
             m4 = dash.search(feature.qualifiers['organism'][0])	# Qualifiers return as lists, but organism should only have 1 element
             n4 = colon.search(feature.qualifiers['organism'][0])
             if m4 or n4:
@@ -145,7 +147,7 @@ def replace_invalid_header_chars(record):
 # Non- "AGCT" characters should be replaced with "N"
 def replace_invalid_sequence_chars(record):
     seq = str(record.seq)
-    assert (len(seq) == 0, "No sequence present in Genbank file")
+    assert len(seq) > 0, "No sequence present in Genbank file"
     m = re.search("[^AGCT]", seq.upper())	# Keep sequences uniform by making upper-case
     if m:
         sys.stderr.write("Sequence has non-AGCT characters present... replacing those characters with 'N'.\n")
@@ -176,8 +178,7 @@ def fix_db_xref(record):
 # Using our up-to-date Genbank record information to write a new Genbank file
 def write_output(record_list, outfile):
     out_h = open(outfile, "w")
-    for record in record_list:
-        SeqIO.write(record, out_h, "genbank")
+    SeqIO.write(record_list, out_h, "genbank")
     out_h.close()
     return
 
@@ -201,15 +202,18 @@ def main():
 
     f = open(options.genbank_list, "r")	#open the genbank_list file for reading
     lines = f.readlines()
-    assert (len(lines) > 0, "Genbank list contains no contents!")
+    assert len(lines) > 0, "Genbank list contains no contents!"
 
     # Create output directory if it doesn't exist.
     outdir = options.output_path
     if not os.path.exists(outdir):
         os.mkdir(outdir, 0777)
     pre = outdir + "/prevalidate"
+    val = outdir + "/validate"
     if not os.path.exists(pre):	# Directory to store modified gbk files cleaned up before file validation
         os.mkdir(pre, 0777)
+    if not os.path.exists(val):
+        os.mkdir(val, 0777)
 
     for gbk in lines:
         gbk = gbk.rstrip()
@@ -221,7 +225,7 @@ def main():
         new_gbk = prevalidation(gbk, pre)
         sys.stdout.write("Now validating " + gbk + " ...\n")
         sys.stderr.write("Now validating " + gbk + "...\n")
-        validate_genbank(new_gbk, outdir)
+        validate_genbank(new_gbk, val)
         sys.stdout.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
         sys.stderr.write("\n") 	#Perhaps I'll utilize the 'logging' module if I do an update.
 	
