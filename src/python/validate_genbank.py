@@ -217,7 +217,7 @@ def main():
 
     for gbk in lines:
         gbk = gbk.rstrip()
-        if not gbk.endswith("gbk") and not gbk.endswith("gb"):	#Change into a regex later
+        if not gbk.endswith("gbk") and not gbk.endswith("gb") and not gbk.endswith("gbwithparts"):	#Change into a regex later
             sys.stderr.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
             continue
         sys.stdout.write("Now preparing " + gbk + " for validation\n")	
