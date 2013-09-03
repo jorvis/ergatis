@@ -30,6 +30,8 @@ def prevalidation(genbank, prepare):
     base_gbk = basename(genbank)
     if base_gbk.endswith("gb"):
         base_gbk = base_gbk + "k"	# try to keep extensions uniform
+    elif base_gbk.endswith("gbwithparts"):
+        base_gbk = re.sub("withparts", "k", base_gbk)
     out_file = prepare + "/" + base_gbk
     genbank_h = open_file(genbank)
     out_h = open(out_file, "w")
