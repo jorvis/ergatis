@@ -34,7 +34,7 @@
 		</param>
 		<param>
 			<key>--regex</key>
-			<value>".*\.fsa|.*\.fasta"</value>
+			<value>".*\/final_clean\/(.*\.fsa|.*\.fasta)"</value>
 		</param>					
 		<param>
 			<key>--output_list</key>
