@@ -171,14 +171,14 @@ def remove_genes_from_circular_starting_at_end(record):
     	        if i+1 < len(feature.location):	# Do not let last index run out of bounds
     	            if feature.location.strand == 0:
     	                if list(feature.location)[i] > list(feature.location)[i+1]:	# if prev coordinate is larger than next coord
-    	                    print feature
+    	                    #print feature
     	                    flag = 1
     	                    sys.stderr.write("Gene feature with locus_tag " + feature.qualifiers['locus_tag'][0] + 
     	                    " has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
     	                    break
     	            else:	# Handle complementary strands
     	                if list(feature.location)[i] < list(feature.location)[i+1]:	# if prev coordinate is smaller than next coord
-    	                    print feature
+    	                    #print feature
     	                    flag = 1
     	                    sys.stderr.write("Gene feature with locus_tag " + feature.qualifiers['locus_tag'][0] + 
     	                    " has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
