@@ -57,6 +57,7 @@ def validate_genbank(genbank, valid):
         is_accession_present(gb_record)
         replace_invalid_header_chars(gb_record)
         replace_invalid_sequence_chars(gb_record)
+        remove_genes_from_circular_starting_at_end(gb_record)
         fix_db_xref(gb_record)
     #add other rules as we expand this script
     write_output(record_list, out_f)
@@ -157,6 +158,36 @@ def replace_invalid_sequence_chars(record):
         record.seq = Seq(seq.lower(), IUPAC.ambiguous_dna)	# Believe these are parsed by SeqIO as IUPACAmbiguousDNA alphabets
     #print record.seq
     #print record.seq.alphabet
+    return
+    
+# If the genbank file has joined DNA coordinates that start at the end of a sequence
+# and continue at the beginning (in circular DNA) then remove that SeqFeature
+def remove_genes_from_circular_starting_at_end(record):
+    f_list = []
+    for feature in record.features:
+    	if feature.location_operator == 'join':	# Skip non-joined sequences
+    	    flag = 0
+    	    for i in range(len(feature.location)):	# Iterate through all coordinates of the list
+    	        if i+1 < len(feature.location):	# Do not let last index run out of bounds
+    	            if feature.location.strand == 0:
+    	                if list(feature.location)[i] > list(feature.location)[i+1]:	# if prev coordinate is larger than next coord
+    	                    print feature
+    	                    flag = 1
+    	                    sys.stderr.write("Gene feature with locus_tag " + feature.qualifiers['locus_tag'][0] + 
+    	                    " has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
+    	                    break
+    	            else:	# Handle complementary strands
+    	                if list(feature.location)[i] < list(feature.location)[i+1]:	# if prev coordinate is smaller than next coord
+    	                    print feature
+    	                    flag = 1
+    	                    sys.stderr.write("Gene feature with locus_tag " + feature.qualifiers['locus_tag'][0] + 
+    	                    " has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
+    	                    break
+    	    if flag == 0:
+    	        f_list.append(feature)
+    	else:
+    	    f_list.append(feature)
+    record.features = f_list	# assign updated feature list to the record
     return
     
 # If db_xref is not in the form of 'database:identifier', change it to be that.    
