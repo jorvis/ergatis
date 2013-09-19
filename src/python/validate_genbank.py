@@ -26,7 +26,7 @@ from Bio.Alphabet import IUPAC
 
 # Some files need to have changes made so they won't fail during Biopython parsing. 
 # This is where we fix that
-def prevalidation(genbank, prepare):
+def prevalidation(genbank, prepare, log_h):
     base_gbk = basename(genbank)
     if base_gbk.endswith("gb"):
         base_gbk = base_gbk + "k"	# try to keep extensions uniform
@@ -39,7 +39,7 @@ def prevalidation(genbank, prepare):
     	if line.startswith("LOCUS"):
             if re.search("dna", line):
                 log_h.write("Found 'dna' in LOCUS line and replacing with 'DNA'.\n")
-               line = re.sub("dna", "DNA", line)
+                line = re.sub("dna", "DNA", line)
             elif re.search("rna", line):
                 log_h.write("Found 'rna' in LOCUS line and replacing with 'RNA'.\n")
                 line = re.sub("rna", "RNA", line)	# not working on RNA but still need capitalized for parsing later
@@ -53,18 +53,19 @@ def prevalidation(genbank, prepare):
     return out_file
 
 # Using Biopython to validate genbank files
-def validate_genbank(genbank, valid):
+def validate_genbank(genbank, valid, log_h):
     base_gbk = basename(genbank)
+    print base_gbk
     out_f = valid + "/" + base_gbk
     genbank_h = open_file(genbank)
     record_list = parse_file(genbank_h)
     for gb_record in record_list:
-        is_sequence_nucleotide(gb_record)
-        is_accession_present(gb_record)
-        replace_invalid_header_chars(gb_record)
-        replace_invalid_sequence_chars(gb_record)
-        remove_genes_from_circular_starting_at_end(gb_record)
-        fix_db_xref(gb_record)
+        is_sequence_nucleotide(gb_record, log_h)
+        is_accession_present(gb_record, log_h)
+        replace_invalid_header_chars(gb_record, log_h)
+        replace_invalid_sequence_chars(gb_record, log_h)
+        remove_genes_from_circular_starting_at_end(gb_record, log_h)
+        fix_db_xref(gb_record, log_h)
         log_h.write("\n")	# newline after contigs
     #add other rules as we expand this script
     write_output(record_list, out_f)
@@ -89,7 +90,7 @@ def parse_file(gb_h):
     return record_list
 
 # Checks to make sure the sequence alphabet is DNA
-def is_sequence_nucleotide(record):
+def is_sequence_nucleotide(record, log_h):
     #print str(record.seq.alphabet)
     m = re.search("RNA", str(record.seq.alphabet))
     n = re.search("Protein", str(record.seq.alphabet))
@@ -98,7 +99,7 @@ def is_sequence_nucleotide(record):
         sys.exit(1)
 
 # Accession IDs should be present in every Genbank file and meet proper format
-def is_accession_present(record):
+def is_accession_present(record, log_h):
     try:
         log_h.write("Accession ID: " + record.id + "\n")
     except NameError:
@@ -116,11 +117,11 @@ def is_accession_present(record):
     return
 
 # Organism name and Features, Source, and Organism attributes need "-" or ":" replaced with "_"
-def replace_invalid_header_chars(record):
+def replace_invalid_header_chars(record, log_h):
     dash = re.compile("-")	#compiling patterns for both the dash and the colon
     colon = re.compile(":")
     comma = re.compile(",")
-    piper = re.compile("|")	#naming piper in case 'pipe' is a key word
+    piper = re.compile("\|")	#naming piper in case 'pipe' is a key word
     
     #DEFINITION    
     m1 = dash.search(record.description)	#searching for matches
@@ -173,7 +174,7 @@ def replace_invalid_header_chars(record):
     return    
 
 # Non- "AGCT" characters should be replaced with "N"
-def replace_invalid_sequence_chars(record):
+def replace_invalid_sequence_chars(record, log_h):
     seq = str(record.seq)
     assert len(seq) > 0, "No sequence present in Genbank file"
     m = re.search("[^AGCT]", seq.upper())	# Keep sequences uniform by making upper-case
@@ -187,11 +188,13 @@ def replace_invalid_sequence_chars(record):
     
 # If the genbank file has joined DNA coordinates that start at the end of a sequence
 # and continue at the beginning (in circular DNA) then remove that SeqFeature
-def remove_genes_from_circular_starting_at_end(record):
+def remove_genes_from_circular_starting_at_end(record, log_h):
     f_list = []
     for feature in record.features:
         if feature.location_operator == 'join':	# Skip non-joined sequences
             flag = 0
+            print feature.location
+            print len(feature.location)
             for i in range(len(feature.location)):	# Iterate through all coordinates of the list
                 if i+1 < len(feature.location):	# Do not let last index run out of bounds
                     if feature.location.strand == 0:
@@ -216,7 +219,7 @@ def remove_genes_from_circular_starting_at_end(record):
     return
     
 # If db_xref is not in the form of 'database:identifier', change it to be that.    
-def fix_db_xref(record):	
+def fix_db_xref(record, log_h):	
     for feature in record.features: # a list of SeqFeature objects
     	if 'db_xref' not in feature.qualifiers:
     	    continue
@@ -281,9 +284,9 @@ def main():
             log_h.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
             continue
         log_h.write("Now preparing " + gbk + " for validation\n")	
-        new_gbk = prevalidation(gbk, pre)
+        new_gbk = prevalidation(gbk, pre, log_h)
         log_h.write("Now validating " + gbk + " ...\n")
-        validate_genbank(new_gbk, val)
+        validate_genbank(new_gbk, val, log_h)
         log_h.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
 	
     sys.stdout.write("Finished validating!\n")
