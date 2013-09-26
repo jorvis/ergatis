@@ -85,6 +85,7 @@ foreach $file (@results_files) {
 	print STDERR "Processing $file...\n";
 	# set sample names
 	($i, $p, $stub) = File::Spec->splitpath($file);
+	print "Stub $stub\n";
 	($sample1, $i) = split(/vs/, $stub);
 	$sample2 = (split(/\./,$i))[0];
 	# output for up and down fc
@@ -122,7 +123,7 @@ foreach $file (@results_files) {
 	    $f = 0;
 	    chomp ($_);
 	    @vals = split(/\t/,$_);
-	    
+
 	    for ($i = 0; $i< scalar @filters ;$i++) {
 		@parameters = split (/,/,$filters[($i)]);
 		%param = ();
@@ -130,7 +131,6 @@ foreach $file (@results_files) {
 		    @arr = split(/=/,$p);
 		    $param{$arr[0]} = $arr[1];
 		}
-		##Defaults..
 		if (! exists $param{'UFC'}) {
 		    $param{'UFC'} = 0;
 		}
@@ -236,6 +236,14 @@ sub run_filter_checks {
         # FDR cutoff not satisfied
 	if (exists $param->{'FDR'}) {
 	    if( $$vals[12] < $param{'FDR'} ) {
+		$significance_test= 0;
+	    }
+	    else {
+		$significance_test = 1;
+	    }
+	}
+	elsif (exists $param->{'P'}) {
+	    if( $$vals[11] < $param{'P'} ) {
 		$significance_test= 0;
 	    }
 	    else {
