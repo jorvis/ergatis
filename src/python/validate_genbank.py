@@ -193,7 +193,7 @@ def remove_genes_from_circular_starting_at_end(record, log_h):
     for feature in record.features:
         if feature.location_operator == 'join':	# Skip non-joined sequences
             flag = 0
-            print feature.location
+           # print feature.location
             #print len(feature.location)
             for i in range(len(feature.location)):	# Iterate through all coordinates of the list
                 if i+1 < len(feature.location):	# Do not let last index run out of bounds
