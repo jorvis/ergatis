@@ -194,22 +194,30 @@ def remove_genes_from_circular_starting_at_end(record, log_h):
         if feature.location_operator == 'join':	# Skip non-joined sequences
             flag = 0
             print feature.location
-            print len(feature.location)
+            #print len(feature.location)
             for i in range(len(feature.location)):	# Iterate through all coordinates of the list
                 if i+1 < len(feature.location):	# Do not let last index run out of bounds
                     if feature.location.strand == 0:
                         if list(feature.location)[i] > list(feature.location)[i+1]:	# if prev coordinate is larger than next coord
                             #print feature
                             flag = 1
-                            log_h.write("Gene feature with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
-    	                    "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
+                            if 'locus_tag' in feature.qualifiers:
+                                log_h.write("Gene feature with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
+    	                        "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
+    	                    else:	# could not find locus_tag (i.e. misc features section)
+    	                        log_h.write("Gene feature with coordinates " + str(feature.location) +
+    	                        " runs from end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
                             break
                     else:	# Handle complementary strands
                         if list(feature.location)[i] < list(feature.location)[i+1]:	# if prev coordinate is smaller than next coord
                             #print feature
                             flag = 1
-                            log_h.write("Gene feature with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
-                            "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
+                            if 'locus_tag' in feature.qualifiers:
+                                log_h.write("Gene feature with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
+                                "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
+                            else:
+    	                        log_h.write("Gene feature with coordinates " + str(feature.location) +
+    	                        " runs from end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")                                
                             break
             if flag == 0:
                 f_list.append(feature)
