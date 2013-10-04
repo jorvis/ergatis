@@ -184,7 +184,8 @@ sub find_snps {
             
             # Should store first by organism, then by molecule
 	    my ($org, $mol) = &get_org_and_mol( $names->[$i] );
-            $tmp->{$org} = [$mol, $start, substr( $seqmatrix->[$i], $d, 1 )];
+	    # SNP position returned should be 1 based in the final output so added 1 to $start
+            $tmp->{$org} = [$mol, ($start+1), substr( $seqmatrix->[$i], $d, 1 )];
         }
         push(@{$data}, $tmp);
     }

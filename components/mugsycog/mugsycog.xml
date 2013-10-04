@@ -51,6 +51,23 @@
 		<value>$;TMP_DIR$;/replace_template_keys.stderr</value>
 	    </param>
 	</command>
+	<command>
+		<type>RunUnixCommand</type>
+		<name>Fix mugsy_map file</name>
+		<state>incomplete</state>
+		<executable>awk '$3!="-" && $4!="-" && $5!="-" && $6!="-" && $7!="-"' $;MUGSY_MAP_FILE$;</executable>
+		<param>
+                	<key>stdout</key>
+                	<value>$;MUGSY_MAP_FILE$;.tmp</value>
+        	</param>
+	</command>
+	<command>
+		<type>RunUnixCommand</type>
+		<name>Move mugsy_map file</name>
+		<state>incomplete</state>
+		<executable>/bin/mv</executable> 
+		<arg>$;MUGSY_MAP_FILE$;.tmp $;MUGSY_MAP_FILE$;</arg>
+	</command>
 	<commandSet type="remote-serial">
 	    <state>incomplete</state>
 	    <name>mugsycog distributed work</name>

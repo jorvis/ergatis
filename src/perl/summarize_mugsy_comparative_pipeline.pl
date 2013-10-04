@@ -160,7 +160,10 @@ sub parse_snps {
 
 	    if( $mol ) {
 		my $itree = $i_trees{$org}->{$mol};
-		die("Couldn't find tree for $org, $mol") unless( $itree );
+		unless( $itree ) {
+			print STDERR "Couldn't find tree for $org, $mol\n";
+			next;
+		}
 		
 		# do we overlap with any genes?
 		my @overlaps = $itree->searchInterval( $pos, $pos );

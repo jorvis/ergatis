@@ -6,6 +6,9 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -21,6 +24,7 @@ my $extract_all_ec      = 0;
 my $percent_n_cutoff    = 10;
 my $feat_id_to_seq_id;
 my $organism;
+my $seq_id;
 my %opts = ();
 ## genes with equal or more than this % of Ns will be skiped (warning printed)
 
@@ -77,6 +81,7 @@ sub convert
     $twig->setTwigRoots({
 #        'Sequence[@class="assembly"]' => \&process_sequence,
         'Organism' => \&process_organism,
+	'Sequence[@class="assembly"]' => \&process_sequence, 
         'Feature' => sub { process_feature(\%feats, @_); }});
 
     my $ifh = $in;
@@ -86,7 +91,6 @@ sub convert
     $twig->parse($ifh);
     $twig = new XML::Twig();
     close $ifh;
-
     # Next pull out all of the featuregroups
     $twig->setTwigRoots({'Feature-group' =>
             sub { process_feature_group(\%feats, $output_features, @_); } });
@@ -98,6 +102,9 @@ sub convert
 
     # Sort the features based on location
     my @srted_feats = sort {$a->{'start'} <=> $b->{'start'}} @$output_features;
+	if(@srted_feats == 0) {
+			print $out "$seq_id|||-\t$seq_id\t-\t-\t-\t-\t-\t$organism\t-\n";
+	}
 
     # Print them out 
     foreach my $feat (@srted_feats) {
@@ -117,8 +124,8 @@ sub process_feature
 sub process_sequence
 {
     my ($twig, $elt) = @_;
-    my $id = $elt->att('id');
-    print STDERR "Have sequence $id from $organism\n";
+    $seq_id = $elt->att('id');
+    print STDERR  "Have sequence $seq_id from $organism\n";
     $twig->purge();
 }
 
