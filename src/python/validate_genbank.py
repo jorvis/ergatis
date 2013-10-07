@@ -6,8 +6,16 @@ By:  Shaun Adkins (sadkins@som.umaryland.edu)
 
 python validate_genbank.py -g /path/to/gbk.list -o /path/to/out/dir
 
+Requires Biopython-1.62 to run
+
+This script can be divided into 2 parts essentially:
+1) Prevalidation - Things that have to be corrected so the Biopython parser will not die
+2) Validation - Things that have to be corrected after parsing a Genbank file into a Biopython SeqRecord object
+
+One can view the changes made in genbank_changelog.txt located in the specified output path.
+
 --genbank_list, -g => A line-delimited list of Genbank file paths.  Genbank files must correspond to nucleotide sequences
---output_path, -o => Directory path to write output
+--output_path, -o => Directory path to write output.  
 """
 
 import sys
@@ -27,6 +35,8 @@ from Bio.Alphabet import IUPAC
 # Some files need to have changes made so they won't fail during Biopython parsing. 
 # This is where we fix that
 def prevalidation(genbank, prepare, log_h):
+    line_count = 0;	# Keeps track of char count at end of LOCUS line
+    id_flag = 0;	# Flag to keep track of if ID was added to front of Accession ID
     base_gbk = basename(genbank)
     if base_gbk.endswith("gb"):
         base_gbk = base_gbk + "k"	# try to keep extensions uniform
@@ -34,21 +44,56 @@ def prevalidation(genbank, prepare, log_h):
         base_gbk = re.sub("withparts", "k", base_gbk)
     out_file = prepare + "/" + base_gbk
     genbank_h = open_file(genbank)
+    genbank_h2 = open_file(genbank)	# Will keep track of the current ACCESSION line
     out_h = open(out_file, "w")
-    for line in genbank_h:
+    for line in iter(genbank_h.readline,''):	# Iterate until EOF
     	if line.startswith("LOCUS"):
+    	    line_count = genbank_h.tell()
             if re.search("dna", line):
                 log_h.write("Found 'dna' in LOCUS line and replacing with 'DNA'.\n")
                 line = re.sub("dna", "DNA", line)
             elif re.search("rna", line):
                 log_h.write("Found 'rna' in LOCUS line and replacing with 'RNA'.\n")
                 line = re.sub("rna", "RNA", line)	# not working on RNA but still need capitalized for parsing later
+                
             if re.search("\.pseudomolecule", line):
                 log_h.write("Removing 'pseudomolecule from locus name in LOCUS line as locus must be less than 16 characters. \n")
                 line = re.sub("\.pseudomolecule", "", line)
+                
+            m = re.match("LOCUS\s+(\S+)\s+", line)
+            id = m.group(1)
+            if len(id) > 16:	# Biopython fails if locus name is longer than 16 characters
+                log_h.write("Locus name " + id + " is longer than 16 characters... attempting to substitute with accession ID. \n")
+                genbank_h2.seek(line_count)	# Start at current LOCUS line to make sure we get right corresponding ACCESSION line
+                line2 = genbank_h2.readline()
+                while not line2.startswith("ACCESSION"):
+                    line2 = genbank_h2.readline()
+                m1 = re.match("ACCESSION\s+(\S+)", line2)
+                if not m1:
+                    sys.stderr.write("ACCESSION is not present in Genbank file for locus line (" +
+                        line + ")\n")
+                    sys.exit(1)
+                accession = m1.group(1)
+                m2 = re.match("^(\d+\S+)", accession)
+                if m2 :	# If ACCESSION starts with a digit, then place 'ID' in front of the digit
+                    accession = "ID" + m2.group(1)	
+                    id_flag = 1
+                if len(accession) > 16:	# pointless to substitute if accession causes Biopython to fail too
+                    sys.stderr.write("Cannot use Accession ID for substitution as the ID is longer than 16 chracters.  Please consult NCBI Genbank formatting standards. Locus line (" + line + ")\n")
+                    sys.exit(1)
+                if accession.lower() == "unknown":
+                    sys.stderr.write("Cannot substitute locus name with accession ID.  Please verify your Genbank file to make sure it meets NCBI standards. Locus line (" + line + ")\n")
+                    sys.exit(1)
+                else:
+                    log_h.write("Replacing locus name " + id + " with accession ID " + accession + ". \n")
+                    line = re.sub(id, accession, line)
+        if line.startswith("ACCESSION") and id_flag:	# Change Accession ID in Genbank file
+            line = re.sub("ACCESSION   ", "ACCESSION   ID", line)
+            id_flag = 0
         out_h.write(line)
     #add other rules that would fail during Biopython parsing if needed
     genbank_h.close()
+    genbank_h2.close()
     out_h.close()
     return out_file
 
@@ -95,7 +140,7 @@ def is_sequence_nucleotide(record, log_h):
     m = re.search("RNA", str(record.seq.alphabet))
     n = re.search("Protein", str(record.seq.alphabet))
     if m or n:
-        log_h.write("RNA or Protein alphabet detected for Genbank file.  Must supply only nucleotide Genbank files.\n")
+        sys.stdere.write("RNA or Protein alphabet detected for Genbank file.  Must supply only nucleotide Genbank files.\n")
         sys.exit(1)
 
 # Accession IDs should be present in every Genbank file and meet proper format
@@ -193,7 +238,7 @@ def remove_genes_from_circular_starting_at_end(record, log_h):
     for feature in record.features:
         if feature.location_operator == 'join':	# Skip non-joined sequences
             flag = 0
-           # print feature.location
+            #print feature.location
             #print len(feature.location)
             for i in range(len(feature.location)):	# Iterate through all coordinates of the list
                 if i+1 < len(feature.location):	# Do not let last index run out of bounds
@@ -258,7 +303,7 @@ def write_output(record_list, outfile):
 def main():
     # Set up options parser and help usage statement
     usage = "usage: %prog -g /path/to/gbk.list -o /path/to/out/dir"
-    description = "Validate a list of Genbank input files"
+    description = "Validate a list of Genbank input files. Requires Biopython-1.62 to run"
     parser = OptionParser(usage=usage, description=description)
     parser.add_option("-g", "--genbank_list", help="a line-delimited list of Genbank file paths");
     parser.add_option("-o", "--output_path", help="directory path to write output")
@@ -283,7 +328,7 @@ def main():
         os.mkdir(pre, 0777)
     if not os.path.exists(val):
         os.mkdir(val, 0777)
-    log = outdir + "/changelog.txt"
+    log = outdir + "/genbank_changelog.txt"
     log_h = open(log, "w")
 
     for gbk in lines:

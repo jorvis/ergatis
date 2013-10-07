@@ -1,5 +1,6 @@
 next
 ----
+-Added extra workflow step to bsml2chado to refresh indexes of db after last bsml2chado component is run.
 -Modified clean_fasta component to replace Windows carriage returns with line feeds before processing file, and to replace gaps (-) with N's
 -Added fix to replace non-ACGT characters with Ns in basml2fasta
 -Added parameter to bsml2chado and initdb components to optionally take password from a file instead of directly as a parameter itself
