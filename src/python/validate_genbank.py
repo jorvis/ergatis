@@ -47,6 +47,7 @@ def prevalidation(genbank, prepare, log_h):
     genbank_h2 = open_file(genbank)	# Will keep track of the current ACCESSION line
     out_h = open(out_file, "w")
     for line in iter(genbank_h.readline,''):	# Iterate until EOF
+        # Deal with things if LOCUS line is encountered
     	if line.startswith("LOCUS"):
     	    line_count = genbank_h.tell()
             if re.search("dna", line):
@@ -62,22 +63,30 @@ def prevalidation(genbank, prepare, log_h):
                 
             m = re.match("LOCUS\s+(\S+)\s+", line)
             id = m.group(1)
-            if len(id) > 16:	# Biopython fails if locus name is longer than 16 characters
-                log_h.write("Locus name " + id + " is longer than 16 characters... attempting to substitute with accession ID. \n")
-                genbank_h2.seek(line_count)	# Start at current LOCUS line to make sure we get right corresponding ACCESSION line
+            id_tmp = id
+            id = begins_with_digit(id, log_h)
+            line = re.sub(id_tmp, id, line)
+            
+            # When we encounter a LOCUS, we need to get accession ID and modify name if starts with digit
+            genbank_h2.seek(line_count)	# Start at current LOCUS line to make sure we get right corresponding ACCESSION line
+            line2 = genbank_h2.readline()
+            while not line2.startswith("ACCESSION"):
                 line2 = genbank_h2.readline()
-                while not line2.startswith("ACCESSION"):
-                    line2 = genbank_h2.readline()
-                m1 = re.match("ACCESSION\s+(\S+)", line2)
-                if not m1:
-                    sys.stderr.write("ACCESSION is not present in Genbank file for locus line (" +
-                        line + ")\n")
-                    sys.exit(1)
-                accession = m1.group(1)
-                m2 = re.match("^(\d+\S+)", accession)
-                if m2 :	# If ACCESSION starts with a digit, then place 'ID' in front of the digit
-                    accession = "ID" + m2.group(1)	
-                    id_flag = 1
+            m1 = re.match("ACCESSION\s+(\S+)", line2)
+            if not m1:
+                sys.stderr.write("ACCESSION ID is not present in Genbank file for locus line (" +
+                    line + ")\n")
+                sys.exit(1)
+            accession = m1.group(1)
+            acc_tmp = accession
+            accession = begins_with_digit(accession, log_h)
+            # Did accession get "ID" written in front?
+            if accession != acc_tmp:
+                id_flag = 1	# Remember to change this in the line in the genbank file later
+                
+            # Biopython fails if locus name is longer than 16 characters    
+            if len(id) > 16:	
+                log_h.write("Locus name " + id + " is longer than 16 characters... attempting to substitute with accession ID. \n")
                 if len(accession) > 16:	# pointless to substitute if accession causes Biopython to fail too
                     sys.stderr.write("Cannot use Accession ID for substitution as the ID is longer than 16 chracters.  Please consult NCBI Genbank formatting standards. Locus line (" + line + ")\n")
                     sys.exit(1)
@@ -87,15 +96,30 @@ def prevalidation(genbank, prepare, log_h):
                 else:
                     log_h.write("Replacing locus name " + id + " with accession ID " + accession + ". \n")
                     line = re.sub(id, accession, line)
+            # end if
+    	# end if
+    	
+    	# Deal with things if ACCESSION line is encountered
         if line.startswith("ACCESSION") and id_flag:	# Change Accession ID in Genbank file
             line = re.sub("ACCESSION   ", "ACCESSION   ID", line)
             id_flag = 0
+        # end if
         out_h.write(line)
+    # end for-loop    
+    
     #add other rules that would fail during Biopython parsing if needed
     genbank_h.close()
     genbank_h2.close()
     out_h.close()
     return out_file
+
+# If string begins with a digit, add "ID" to front.  Return string regardless of change
+def begins_with_digit(string, log_h):
+    m = re.match("^(\d+\S+)", string)
+    if m:
+        string = "ID" + m.group(1)
+        log_h.write("Because it starts with a digit, " + m.group(1) + " has been replaced with " + string + ".\n")
+    return string
 
 # Using Biopython to validate genbank files
 def validate_genbank(genbank, valid, log_h):
