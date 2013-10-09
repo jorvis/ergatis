@@ -1,7 +1,7 @@
 #! /usr/bin/python
 
 """
-validate_genbank.py - Validate a list of genbank files (must be nucleotide files)
+validate_genbank.py - Validate a genbank file
 By:  Shaun Adkins (sadkins@som.umaryland.edu)
 
 python validate_genbank.py -g /path/to/gbk.list -o /path/to/out/dir
@@ -14,7 +14,7 @@ This script can be divided into 2 parts essentially:
 
 One can view the changes made in genbank_changelog.txt located in the specified output path.
 
---genbank_list, -g => A line-delimited list of Genbank file paths.  Genbank files must correspond to nucleotide sequences
+--genbank_file, -g => Path to a Genbank-formatted file.  Genbank file must correspond to DNA sequences
 --output_path, -o => Directory path to write output.  
 """
 
@@ -326,22 +326,20 @@ def write_output(record_list, outfile):
 
 def main():
     # Set up options parser and help usage statement
-    usage = "usage: %prog -g /path/to/gbk.list -o /path/to/out/dir"
-    description = "Validate a list of Genbank input files. Requires Biopython-1.62 to run"
+    usage = "usage: %prog -g /path/to/file.gbk -o /path/to/out/dir"
+    description = "Validate a Genbank file. Requires Biopython-1.62 to run"
     parser = OptionParser(usage=usage, description=description)
-    parser.add_option("-g", "--genbank_list", help="a line-delimited list of Genbank file paths");
+    parser.add_option("-g", "--genbank_file", help="path to a Genbank-formatted file");
     parser.add_option("-o", "--output_path", help="directory path to write output")
     (options, args) = parser.parse_args()
 
-    if not options.genbank_list:
-        parser.error( "Genbank list path (-g) must be provided")
+    if not options.genbank_file:
+        parser.error( "Genbank file path (-g) must be provided")
     if not options.output_path:
         parser.error("Output directory path (-o) must be provided")
 
-    f = open(options.genbank_list, "r")	#open the genbank_list file for reading
-    lines = f.readlines()
-    assert len(lines) > 0, "Genbank list contains no contents!"
-
+    gbk = options.genbank_file
+    
     # Create output directory if it doesn't exist.
     outdir = options.output_path
     if not os.path.exists(outdir):
@@ -352,22 +350,20 @@ def main():
         os.mkdir(pre, 0777)
     if not os.path.exists(val):
         os.mkdir(val, 0777)
-    log = outdir + "/genbank_changelog.txt"
+    log = outdir + "/gbk_changelog.txt"
     log_h = open(log, "w")
 
-    for gbk in lines:
-        gbk = gbk.rstrip()
-        if not gbk.endswith("gbk") and not gbk.endswith("gb") and not gbk.endswith("gbwithparts"):	#Change into a regex later
-            log_h.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
-            continue
-        log_h.write("Now preparing " + gbk + " for validation\n")	
-        new_gbk = prevalidation(gbk, pre, log_h)
-        log_h.write("Now validating " + gbk + " ...\n")
-        validate_genbank(new_gbk, val, log_h)
-        log_h.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
+    gbk = gbk.rstrip()
+    if not gbk.endswith("gbk") and not gbk.endswith("gb") and not gbk.endswith("gbwithparts"):	#Change into a regex later
+        sys.stderr.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
+        sys.exit(1)
+    log_h.write("Now preparing " + gbk + " for validation\n")	
+    new_gbk = prevalidation(gbk, pre, log_h)
+    log_h.write("Now validating " + gbk + " ...\n")
+    validate_genbank(new_gbk, val, log_h)
+    log_h.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
 	
-    sys.stdout.write("Finished validating!\n")
-    f.close()
+    sys.stdout.write("Finished validating " + gbk + "\n")
     log_h.close()
 
 if __name__ == '__main__':

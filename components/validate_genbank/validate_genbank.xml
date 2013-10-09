@@ -12,29 +12,17 @@
                         <executable>mkdir</executable>
                         <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
                 </command>
-                <command>
-                        <type>RunUnixCommand</type>
-                        <name>validate genbank</name>
-                        <state>incomplete</state>
-                        <executable>$;BIN_DIR$;/validate_genbank</executable>
-                        <param>
-                                <key>--genbank_list</key>
-                                <value>$;INPUT_FILE_LIST$;</value>
-                        </param>
-                        <param>
-                                <key>--output_path</key>
-                                <value>$;OUTPUT_DIRECTORY$;</value>
-                        </param>
-                        <param>
-                                <key>stdout</key>
-                                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
-                        </param>
-                        <param>
-                                <key>stderr</key>
-                                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
-                        </param>
-
-                </command>
+         	<command>
+            		<type>RunUnixCommand</type>
+            		<name>create temp directory</name>
+            		<state>incomplete</state>
+            		<executable>mkdir</executable>
+            		<arg>-p -m 777 $;TMP_DIR$;</arg>
+        	</command>               
+         	<!--Processing-->
+        	<!--Iterator-->
+        	<INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+        	<!--Postprocessing-->
                 <command>
                         <type>RunUnixCommand</type>
                         <name>create genbank list</name>
@@ -53,6 +41,17 @@
                                 <value>$;OUTPUT_LIST$;</value>
                         </param>
                 </command>
+        	<command>
+                	<type>RunUnixCommand</type>
+                	<name>concatenate changelogs</name>
+                	<state>incomplete</state>
+                	<executable>find</executable>
+                	<arg>$;OUTPUT_DIRECTORY$;/ -name *gbk_changelog.txt | xargs cat</arg>
+                	<param>
+                		<key>stdout</key>
+                		<value>$;OUTPUT_DIRECTORY$;/genbank_changelog.txt</value>
+                	</param>
+        	</command>                
         </commandSet>
 </commandSetRoot>
                                
