@@ -80,7 +80,7 @@ This is a wrapper script for Circleator that performs the following tasks:
 
 =head1 INPUT
 
-The following input and output files from an isntance of the CloVR-Comparative ergatis pipeline:
+The following input and output files from an instance of the CloVR-Comparative ergatis pipeline:
  o the INPUT_FILE_LIST of the genbank2bsml.default component
    i.e., a list of GenBank files
  o one of the gene summary files produced by the pipeline
@@ -112,6 +112,11 @@ my $DEFAULT_OUTPUT_HEIGHT = 3000;
 my $DEFAULT_SVG_FILE = 'figure.svg';
 my $DEFAULT_OUTPUT_DIR = '.';
 
+# If the SNP file contains more than this number of SNPs then the SNPs will not
+# be included in the resulting figure. This is a workaround that is unlikely
+# to be triggered now that the SNP files are being pre-filtered for unique SNPs.
+my $MAX_SNP_FILE_SIZE = 150000;
+
 ## input
 my $options = {};
 
@@ -140,6 +145,7 @@ if ( $options->{'help'} || $options->{'man'} ) {
 my($gb_list_file, $gene_summary_file, $snp_file) = map {$options->{$_}} ('gb_list_file', 'gene_summary_file', 'snp_file');
 
 # read gb_list_file, parse contig ids from genbank files
+my %contig2gbacc = (); # adding hash of genbank accession id to gbk files because sometimes accession id is used in gene summary files instead of locus
 my $contig2gb = &read_gb_list_file($gb_list_file);
 
 my $fh = FileHandle->new();
@@ -230,7 +236,13 @@ while (my $line = <$fh>) {
     # lookup GenBank file for reference gene/contig
     my $ref_contig = $f[0];
     my $ref_gb = $contig2gb->{$ref_contig};
-    print STDERR "ERROR - reference contig $ref_contig not found in any GenBank file listed in $gb_list_file\n" if (!defined($ref_gb));
+    if (!defined($ref_gb)) {
+	if(defined($contig2gbacc{$ref_contig})) {
+		$ref_gb = $contig2gbacc{$ref_contig};
+	} else {
+    		print STDERR "ERROR - reference contig $ref_contig not found in any GenBank file listed in $gb_list_file\n";
+	}
+    }
     ++$ref_gb_files->{$ref_gb};
 
     # parse cluster info
@@ -403,6 +415,18 @@ sub check_parameters {
   ## additional parameter checking
 }
 
+sub get_file_line_count {
+  my($file) = @_;
+  my $count = 0;
+  my $fh = FileHandle->new();
+  $fh->open($file) || die "unable to read from $file";
+  while (my $line = <$fh>) {
+    ++$count;
+  }
+  $fh->close();
+  return $count;
+}
+
 # Get length and name of the first sequence in a GenBank flat file.
 sub get_genbank_seqlen_plus_accession {
   my($file) = @_;
@@ -512,6 +536,7 @@ sub read_gb_list_file {
   my $contig2gb = {};
   foreach my $gbf (@$gb_files) {
     my $contig_ids_str = `egrep '^LOCUS' $gbf`;
+    my $contig_alt_id = `egrep '^ACCESSION' $gbf`;
     foreach my $locus_line (split(/\n/, $contig_ids_str)) {
       if ($locus_line =~ /^LOCUS\s+(\S+)\s+\d+ bp/) {
         $contig2gb->{$1} = $gbf;
@@ -523,6 +548,11 @@ sub read_gb_list_file {
       else {
         print STDERR "ERROR - unable to parse LOCUS line in $file: $locus_line\n";
       }
+    }
+    foreach my $acc_line (split(/\n/, $contig_alt_id)) {
+    	if($acc_line =~ /^ACCESSION\s+(\S+)/) {
+		$contig2gbacc{$1} = $gbf;
+    	}
     }
   }
   return $contig2gb;
@@ -566,6 +596,20 @@ sub write_config_file {
   # num strains minus 1
   my $nsm1 = scalar(@$strain_names) - 1;
 
+  # only display SNPs if SNP line count is < $MAX_SNP_FILE_SIZE
+  my $num_snps = &get_file_line_count($snp_file) - 1;
+  my $snp_block = "";
+  if ($num_snps <= $MAX_SNP_FILE_SIZE ) {
+    $snp_block = <<SNP_BLOCK;
+# load SNPs
+new ls1 load feat-file=${snp_file},feat-file-type=snp-table,snp-ref=$ref_strain
+# display SNPs unique to the reference
+# only display SNPs where all the other genomes differ from the reference:
+new us1 rectangle heightf=0.06,feat-type=SNP,color1=#ff00ff,feat-tag=SNP_num_diffs,feat-tag-value=$nsm1
+small-label label-text=unique&nbsp;SNPs
+SNP_BLOCK
+  }
+
   my $fh = FileHandle->new();
   $fh->open(">$config_file_path") || die "unable to write to configuration file at $config_file_path";
   print $fh <<CONFIG;
@@ -600,12 +644,7 @@ new ug1 rectangle 0.06 feat-type=gene,gene-cluster-genomes=$strain_str,gene-clus
 small-label label-text=unique&nbsp;genes
 small-cgap
 
-# load SNPs
-new ls1 load feat-file=${snp_file},feat-file-type=snp-table,snp-ref=$ref_strain
-# display SNPs unique to the reference
-# only display SNPs where all the other genomes differ from the reference:
-new us1 rectangle heightf=0.06,feat-type=SNP,color1=#ff00ff,feat-tag=SNP_num_diffs,feat-tag-value=$nsm1
-small-label label-text=unique&nbsp;SNPs
+$snp_block
 
 medium-cgap
 

@@ -3,6 +3,28 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <name>create comparative circleator figure</name>
+	<command>
+		<type>RunUnixCommand</type>
+		<name>remove_non_unique_snps</name>
+		<state>incomplete</state>
+		<executable>$;BIN_DIR$;/remove_nonunique_snps</executable>
+		<param>
+			<key>--snp_file</key>
+			<value>$;SNP_FILE$;</value>
+		</param>
+		<param>
+			<key>--reference</key>
+			<value>$;I_FILE_BASE$;</value>
+		</param>
+            	<param>  
+                	<key>stdout</key>
+                	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_filtered_snps.txt</value>
+            	</param>
+            	<param>
+                	<key>stderr</key>
+                	<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;_rm_nonuniq_snps.stderr</value>
+            	</param>
+	</command>
         <command>
             <type>RunUnixCommand</type>
             <name>make_comparative_circleator_figure</name>
@@ -26,7 +48,7 @@
 	    </param>
 	    <param>
 	    	<key>--snp_file</key>
-	    	<value>$;SNP_FILE$;</value>
+	    	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;_filtered_snps.txt</value>
 	    </param>
 	    <param>
 	    	<key>--svg_file</key>
