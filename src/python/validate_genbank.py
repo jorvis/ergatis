@@ -58,7 +58,7 @@ def prevalidation(genbank, prepare, log_h):
                 line = re.sub("rna", "RNA", line)	# not working on RNA but still need capitalized for parsing later
                 
             if re.search("\.pseudomolecule", line):
-                log_h.write("Removing 'pseudomolecule from locus name in LOCUS line as locus must be less than 16 characters. \n")
+                log_h.write("Removing 'pseudomolecule' from locus name in LOCUS line as locus must be less than 16 characters. \n")
                 line = re.sub("\.pseudomolecule", "", line)
                 
             m = re.match("LOCUS\s+(\S+)\s+", line)
@@ -225,7 +225,7 @@ def replace_invalid_header_chars(record, log_h):
         record.annotations['organism'] = colon.sub("_", record.annotations['organism'])
         record.annotations['organism'] = comma.sub("_", record.annotations['organism'])
         record.annotations['organism'] = piper.sub("_", record.annotations['organism'])    
-    #FEATURES.source.organism
+    #FEATURES.source.organism and FEATURES.source.strain
     for feature in record.features:
         if feature.type == 'source':
             assert len(feature.qualifiers['organism']) == 1, "This record has more than one organism listed in the FEATURES.source entry"
@@ -239,6 +239,17 @@ def replace_invalid_header_chars(record, log_h):
                 feature.qualifiers['organism'][0] = colon.sub("_", feature.qualifiers['organism'][0])
                 feature.qualifiers['organism'][0] = comma.sub("_", feature.qualifiers['organism'][0])
                 feature.qualifiers['organism'][0] = piper.sub("_", feature.qualifiers['organism'][0])
+            
+            m5 = dash.search(feature.qualifiers['strain'][0])	# Qualifiers return as lists, but strain should only have 1 element
+            n5 = colon.search(feature.qualifiers['strain'][0])
+            o5 = comma.search(feature.qualifiers['strain'][0])
+            p5 = piper.search(feature.qualifiers['strain'][0])
+            if m5 or n5 or o5 or p5:
+                log_h.write("A dash (-), colon (:), pipe (|), or comma (,) is present in the FEATURES.source.strain section and will be converted into an underscore (_).\n")
+                feature.qualifiers['strain'][0] = dash.sub("_", feature.qualifiers['strain'][0])
+                feature.qualifiers['strain'][0] = colon.sub("_", feature.qualifiers['strain'][0])
+                feature.qualifiers['strain'][0] = comma.sub("_", feature.qualifiers['strain'][0])
+                feature.qualifiers['strain'][0] = piper.sub("_", feature.qualifiers['strain'][0])                     
             break
     return    
 
