@@ -16,6 +16,7 @@ One can view the changes made in genbank_changelog.txt located in the specified 
 
 --genbank_file, -g => Path to a Genbank-formatted file.  Genbank file must correspond to DNA sequences
 --output_path, -o => Directory path to write output.  
+--log_file, -l => Name of the changelog file (only the name).
 """
 
 import sys
@@ -46,19 +47,22 @@ def prevalidation(genbank, prepare, log_h):
     genbank_h = open_file(genbank)
     genbank_h2 = open_file(genbank)	# Will keep track of the current ACCESSION line
     out_h = open(out_file, "w")
+    
+    # Probably could put this for loop in a function for a cleaner appearance
     for line in iter(genbank_h.readline,''):	# Iterate until EOF
         # Deal with things if LOCUS line is encountered
     	if line.startswith("LOCUS"):
+    	    old_line = line
     	    line_count = genbank_h.tell()
             if re.search("dna", line):
-                log_h.write("Found 'dna' in LOCUS line and replacing with 'DNA'.\n")
+                #log_h.write("Found 'dna' in LOCUS line and replacing with 'DNA'.\n")
                 line = re.sub("dna", "DNA", line)
             elif re.search("rna", line):
-                log_h.write("Found 'rna' in LOCUS line and replacing with 'RNA'.\n")
+                #log_h.write("Found 'rna' in LOCUS line and replacing with 'RNA'.\n")
                 line = re.sub("rna", "RNA", line)	# not working on RNA but still need capitalized for parsing later
                 
             if re.search("\.pseudomolecule", line):
-                log_h.write("Removing 'pseudomolecule' from locus name in LOCUS line as locus must be less than 16 characters. \n")
+                #log_h.write("Removing 'pseudomolecule' from locus name in LOCUS line as locus must be less than 16 characters. \n")
                 line = re.sub("\.pseudomolecule", "", line)
                 
             m = re.match("LOCUS\s+(\S+)\s+", line)
@@ -74,8 +78,7 @@ def prevalidation(genbank, prepare, log_h):
                 line2 = genbank_h2.readline()
             m1 = re.match("ACCESSION\s+(\S+)", line2)
             if not m1:
-                sys.stderr.write("ACCESSION ID is not present in Genbank file for locus line (" +
-                    line + ")\n")
+                sys.stderr.write("ACCESSION ID is not present in Genbank file for locus line (" + line + ")\n")
                 sys.exit(1)
             accession = m1.group(1)
             acc_tmp = accession
@@ -86,7 +89,7 @@ def prevalidation(genbank, prepare, log_h):
                 
             # Biopython fails if locus name is longer than 16 characters    
             if len(id) > 16:	
-                log_h.write("Locus name " + id + " is longer than 16 characters... attempting to substitute with accession ID. \n")
+                #log_h.write("Locus name " + id + " is longer than 16 characters... attempting to substitute with accession ID. \n")
                 if len(accession) > 16:	# pointless to substitute if accession causes Biopython to fail too
                     sys.stderr.write("Cannot use Accession ID for substitution as the ID is longer than 16 chracters.  Please consult NCBI Genbank formatting standards. Locus line (" + line + ")\n")
                     sys.exit(1)
@@ -94,15 +97,20 @@ def prevalidation(genbank, prepare, log_h):
                     sys.stderr.write("Cannot substitute locus name with accession ID.  Please verify your Genbank file to make sure it meets NCBI standards. Locus line (" + line + ")\n")
                     sys.exit(1)
                 else:
-                    log_h.write("Replacing locus name " + id + " with accession ID " + accession + ". \n")
+                    #log_h.write("Replacing locus name " + id + " with accession ID " + accession + ". \n")
                     line = re.sub(id, accession, line)
             # end if
+            if line != old_line:
+                log_h.write("OLD LOCUS LINE: " + old_line.rstrip() + "\n")
+                log_h.write("NEW LOCUS LINE: " + line.rstrip() + "\n")
     	# end if
     	
     	# Deal with things if ACCESSION line is encountered
         if line.startswith("ACCESSION") and id_flag:	# Change Accession ID in Genbank file
+            log_h.write("OLD ACCESSION: " + line.rstrip() + "\n")
             line = re.sub("ACCESSION   ", "ACCESSION   ID", line)
             id_flag = 0
+            log_h.write("NEW ACCESSION: " + line.rstrip() + "\n")
         # end if
         out_h.write(line)
     # end for-loop    
@@ -118,7 +126,7 @@ def begins_with_digit(string, log_h):
     m = re.match("^(\d+\S+)", string)
     if m:
         string = "ID" + m.group(1)
-        log_h.write("Because it starts with a digit, " + m.group(1) + " has been replaced with " + string + ".\n")
+        #log_h.write("Because it starts with a digit, " + m.group(1) + " has been replaced with " + string + ".\n")
     return string
 
 # Using Biopython to validate genbank files
@@ -133,8 +141,11 @@ def validate_genbank(genbank, valid, log_h):
         is_accession_present(gb_record, log_h)
         replace_invalid_header_chars(gb_record, log_h)
         replace_invalid_sequence_chars(gb_record, log_h)
-        remove_genes_from_circular_starting_at_end(gb_record, log_h)
-        fix_db_xref(gb_record, log_h)
+        if len(gb_record.features) > 0:
+            remove_genes_from_circular_starting_at_end(gb_record, log_h)
+            fix_db_xref(gb_record, log_h)
+        else:
+            log_h.write("No annotation features present!!!  Skipping feature checks!!!")
         log_h.write("\n")	# newline after contigs
     #add other rules as we expand this script
     write_output(record_list, out_f)
@@ -198,33 +209,36 @@ def replace_invalid_header_chars(record, log_h):
     o1 = comma.search(record.description)
     p1 = piper.search(record.description)
     if m1 or n1 or o1 or p1:	#if match was found for either dash or colon...
-        log_h.write("A dash (-), colon (:), pipe (|), or comma (,) is present in the DEFINITION section and will be converted into an underscore (_).\n")
+    	log_h.write("Changing DEFINITION...\nOLD VALUE: " + record.description + "\n")
         record.description = dash.sub("_", record.description)	#...substitute for an underscore
         record.description = colon.sub("_", record.description)
         record.description = comma.sub("_", record.description)
         record.description = piper.sub("_", record.description)
+        log_h.write("NEW VALUE: " + record.description + "\n")
     #SOURCE        
     m2 = dash.search(record.annotations['source'])
     n2 = colon.search(record.annotations['source'])
     o2 = comma.search(record.annotations['source'])
     p2 = piper.search(record.annotations['source'])
     if m2 or n2 or o2 or p2:
-        log_h.write("A dash (-), colon (:), pipe (|), or comma (,) is present in the SOURCE section and will be converted into an underscore (_).\n")
+    	log_h.write("Changing SOURCE...\nOLD VALUE: " + record.annotations['source'] + "\n")    
         record.annotations['source'] = dash.sub("_", record.annotations['source'])
         record.annotations['source'] = colon.sub("_", record.annotations['source'])
         record.annotations['source'] = comma.sub("_", record.annotations['source'])
         record.annotations['source'] = piper.sub("_", record.annotations['source'])        
+        log_h.write("NEW VALUE: " + record.annotations['source'] + "\n")
     #ORGANISM
     m3 = dash.search(record.annotations['organism'])
     n3 = colon.search(record.annotations['organism'])
     o3 = comma.search(record.annotations['organism'])
     p3 = piper.search(record.annotations['organism'])
     if m3 or n3 or o3 or p3:
-        log_h.write("A dash (-), colon (:), pipe (|), or comma (,) is present  in the ORGANISM section and will be converted into an underscore (_).\n")
+    	log_h.write("Changing ORGANISM...\nOLD VALUE: " + record.annotations['organism'] + "\n")    
         record.annotations['organism'] = dash.sub("_", record.annotations['organism'])
         record.annotations['organism'] = colon.sub("_", record.annotations['organism'])
         record.annotations['organism'] = comma.sub("_", record.annotations['organism'])
         record.annotations['organism'] = piper.sub("_", record.annotations['organism'])    
+        log_h.write("NEW VALUE: " + record.annotations['organism'] + "\n")
     #FEATURES.source.organism and FEATURES.source.strain
     for feature in record.features:
         if feature.type == 'source':
@@ -234,22 +248,24 @@ def replace_invalid_header_chars(record, log_h):
             o4 = comma.search(feature.qualifiers['organism'][0])
             p4 = piper.search(feature.qualifiers['organism'][0])
             if m4 or n4 or o4 or p4:
-                log_h.write("A dash (-), colon (:), pipe (|), or comma (,) is present in the FEATURES.source.organism section and will be converted into an underscore (_).\n")
+                log_h.write("Changing FEATURES.source.organism...\nOLD VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
                 feature.qualifiers['organism'][0] = dash.sub("_", feature.qualifiers['organism'][0])
                 feature.qualifiers['organism'][0] = colon.sub("_", feature.qualifiers['organism'][0])
                 feature.qualifiers['organism'][0] = comma.sub("_", feature.qualifiers['organism'][0])
                 feature.qualifiers['organism'][0] = piper.sub("_", feature.qualifiers['organism'][0])
+                log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
             
             m5 = dash.search(feature.qualifiers['strain'][0])	# Qualifiers return as lists, but strain should only have 1 element
             n5 = colon.search(feature.qualifiers['strain'][0])
             o5 = comma.search(feature.qualifiers['strain'][0])
             p5 = piper.search(feature.qualifiers['strain'][0])
             if m5 or n5 or o5 or p5:
-                log_h.write("A dash (-), colon (:), pipe (|), or comma (,) is present in the FEATURES.source.strain section and will be converted into an underscore (_).\n")
+                log_h.write("Changing FEATURES.source.strain...\nOLD VALUE: " + feature.qualifiers['strain'][0] + "\n")                 
                 feature.qualifiers['strain'][0] = dash.sub("_", feature.qualifiers['strain'][0])
                 feature.qualifiers['strain'][0] = colon.sub("_", feature.qualifiers['strain'][0])
                 feature.qualifiers['strain'][0] = comma.sub("_", feature.qualifiers['strain'][0])
-                feature.qualifiers['strain'][0] = piper.sub("_", feature.qualifiers['strain'][0])                     
+                feature.qualifiers['strain'][0] = piper.sub("_", feature.qualifiers['strain'][0])     
+                log_h.write("NEW VALUE: " + feature.qualifiers['strain'][0] + "\n")                                                
             break
     return    
 
@@ -260,7 +276,7 @@ def replace_invalid_sequence_chars(record, log_h):
     m = re.search("[^AGCT]", seq.upper())	# Keep sequences uniform by making upper-case
     if m:
         log_h.write("Sequence has non-AGCT characters present... replacing those characters with 'N'.\n")
-        seq = re.sub("[^AGCT]", "N", seq.upper())
+        seq = re.sub("[^AGCT]", "N", seq.upper())	# Possibly revise later to provide statistics of positional changes
         record.seq = Seq(seq.lower(), IUPAC.ambiguous_dna)	# Believe these are parsed by SeqIO as IUPACAmbiguousDNA alphabets
     #print record.seq
     #print record.seq.alphabet
@@ -342,6 +358,7 @@ def main():
     parser = OptionParser(usage=usage, description=description)
     parser.add_option("-g", "--genbank_file", help="path to a Genbank-formatted file");
     parser.add_option("-o", "--output_path", help="directory path to write output")
+    parser.add_option("-l", "--log_file", help="name of the changelog file (only the name)");
     (options, args) = parser.parse_args()
 
     if not options.genbank_file:
@@ -361,7 +378,10 @@ def main():
         os.mkdir(pre, 0777)
     if not os.path.exists(val):
         os.mkdir(val, 0777)
-    log = outdir + "/gbk_changelog.txt"
+    if options.log_file:
+        log = outdir + "/" + options.log_file
+    else:
+        log = outdir + "/gbk_changelog.txt"
     log_h = open(log, "w")
 
     gbk = gbk.rstrip()
