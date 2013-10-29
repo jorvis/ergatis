@@ -138,7 +138,7 @@ exit(0);
 ## Subroutine to change the assembly sequence based on the supplied coordinate
 sub build_and_load_new_molecule {
 # Get the assembly sequence from database
-	my ($seq, $feat_id) = $dbh->selectrow_array("SELECT residues,feature_id FROM feature WHERE name='$options{'asmbl'}'");
+	my ($seq, $feat_id) = $dbh->selectrow_array("SELECT residues,feature_id FROM feature WHERE uniquename='$options{'asmbl'}'");
 	my $seqlen = length($seq); 
 # Rotate sequence
 	my $coord = $options{'coord'};
