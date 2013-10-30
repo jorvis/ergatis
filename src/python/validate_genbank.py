@@ -255,17 +255,18 @@ def replace_invalid_header_chars(record, log_h):
                 feature.qualifiers['organism'][0] = piper.sub("_", feature.qualifiers['organism'][0])
                 log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
             
-            m5 = dash.search(feature.qualifiers['strain'][0])	# Qualifiers return as lists, but strain should only have 1 element
-            n5 = colon.search(feature.qualifiers['strain'][0])
-            o5 = comma.search(feature.qualifiers['strain'][0])
-            p5 = piper.search(feature.qualifiers['strain'][0])
-            if m5 or n5 or o5 or p5:
-                log_h.write("Changing FEATURES.source.strain...\nOLD VALUE: " + feature.qualifiers['strain'][0] + "\n")                 
-                feature.qualifiers['strain'][0] = dash.sub("_", feature.qualifiers['strain'][0])
-                feature.qualifiers['strain'][0] = colon.sub("_", feature.qualifiers['strain'][0])
-                feature.qualifiers['strain'][0] = comma.sub("_", feature.qualifiers['strain'][0])
-                feature.qualifiers['strain'][0] = piper.sub("_", feature.qualifiers['strain'][0])     
-                log_h.write("NEW VALUE: " + feature.qualifiers['strain'][0] + "\n")                                                
+            if 'strain' in feature.qualifiers:
+                m5 = dash.search(feature.qualifiers['strain'][0])	# Qualifiers return as lists, but strain should only have 1 element
+                n5 = colon.search(feature.qualifiers['strain'][0])
+                o5 = comma.search(feature.qualifiers['strain'][0])
+                p5 = piper.search(feature.qualifiers['strain'][0])
+                if m5 or n5 or o5 or p5:
+                    log_h.write("Changing FEATURES.source.strain...\nOLD VALUE: " + feature.qualifiers['strain'][0] + "\n")                 
+                    feature.qualifiers['strain'][0] = dash.sub("_", feature.qualifiers['strain'][0])
+                    feature.qualifiers['strain'][0] = colon.sub("_", feature.qualifiers['strain'][0])
+                    feature.qualifiers['strain'][0] = comma.sub("_", feature.qualifiers['strain'][0])
+                    feature.qualifiers['strain'][0] = piper.sub("_", feature.qualifiers['strain'][0])     
+                    log_h.write("NEW VALUE: " + feature.qualifiers['strain'][0] + "\n")                                                
             break
     return    
 
