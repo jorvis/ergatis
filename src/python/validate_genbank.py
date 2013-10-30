@@ -243,17 +243,18 @@ def replace_invalid_header_chars(record, log_h):
     for feature in record.features:
         if feature.type == 'source':
             assert len(feature.qualifiers['organism']) == 1, "This record has more than one organism listed in the FEATURES.source entry"
-            m4 = dash.search(feature.qualifiers['organism'][0])	# Qualifiers return as lists, but organism should only have 1 element
-            n4 = colon.search(feature.qualifiers['organism'][0])
-            o4 = comma.search(feature.qualifiers['organism'][0])
-            p4 = piper.search(feature.qualifiers['organism'][0])
-            if m4 or n4 or o4 or p4:
-                log_h.write("Changing FEATURES.source.organism...\nOLD VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
-                feature.qualifiers['organism'][0] = dash.sub("_", feature.qualifiers['organism'][0])
-                feature.qualifiers['organism'][0] = colon.sub("_", feature.qualifiers['organism'][0])
-                feature.qualifiers['organism'][0] = comma.sub("_", feature.qualifiers['organism'][0])
-                feature.qualifiers['organism'][0] = piper.sub("_", feature.qualifiers['organism'][0])
-                log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
+            if 'organism' in feature.qualifiers:
+                m4 = dash.search(feature.qualifiers['organism'][0])	# Qualifiers return as lists, but organism should only have 1 element
+                n4 = colon.search(feature.qualifiers['organism'][0])
+                o4 = comma.search(feature.qualifiers['organism'][0])
+                p4 = piper.search(feature.qualifiers['organism'][0])
+                if m4 or n4 or o4 or p4:
+                    log_h.write("Changing FEATURES.source.organism...\nOLD VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
+                    feature.qualifiers['organism'][0] = dash.sub("_", feature.qualifiers['organism'][0])
+                    feature.qualifiers['organism'][0] = colon.sub("_", feature.qualifiers['organism'][0])
+                    feature.qualifiers['organism'][0] = comma.sub("_", feature.qualifiers['organism'][0])
+                    feature.qualifiers['organism'][0] = piper.sub("_", feature.qualifiers['organism'][0])
+                    log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
             
             if 'strain' in feature.qualifiers:
                 m5 = dash.search(feature.qualifiers['strain'][0])	# Qualifiers return as lists, but strain should only have 1 element
