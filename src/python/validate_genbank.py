@@ -78,7 +78,7 @@ def prevalidation(genbank, prepare, log_h):
                 line2 = genbank_h2.readline()
             m1 = re.match("ACCESSION\s+(\S+)", line2)
             if not m1:
-                sys.stderr.write("ACCESSION ID is not present in Genbank file for locus line (" + line + ")\n")
+                sys.stderr.write("ACCESSION ID is not present in Genbank file for locus line (" + line + ")\nFile: " + genbank + "\n")
                 sys.exit(1)
             accession = m1.group(1)
             acc_tmp = accession
@@ -91,10 +91,10 @@ def prevalidation(genbank, prepare, log_h):
             if len(id) > 16:	
                 #log_h.write("Locus name " + id + " is longer than 16 characters... attempting to substitute with accession ID. \n")
                 if len(accession) > 16:	# pointless to substitute if accession causes Biopython to fail too
-                    sys.stderr.write("Cannot use Accession ID for substitution as the ID is longer than 16 chracters.  Please consult NCBI Genbank formatting standards. Locus line (" + line + ")\n")
+                    sys.stderr.write("Cannot use Accession ID for substitution as the ID is longer than 16 chracters.  Please consult NCBI Genbank formatting standards. Locus line (" + line + ")\nFile: " + genbank + "\n")
                     sys.exit(1)
                 if accession.lower() == "unknown":
-                    sys.stderr.write("Cannot substitute locus name with accession ID.  Please verify your Genbank file to make sure it meets NCBI standards. Locus line (" + line + ")\n")
+                    sys.stderr.write("Cannot substitute locus name with accession ID.  Please verify your Genbank file to make sure it meets NCBI standards. Locus line (" + line + ")\nFile: " + genbank + "\n")
                     sys.exit(1)
                 else:
                     #log_h.write("Replacing locus name " + id + " with accession ID " + accession + ". \n")
@@ -165,7 +165,7 @@ def parse_file(gb_h):
     record_list = []
     for record in SeqIO.parse(gb_h, "genbank"):	# parse genbank into a SeqRecord object
         record_list.append(record)
-        #print record
+#       print record
     gb_h.close()
     return record_list
 
@@ -274,12 +274,21 @@ def replace_invalid_header_chars(record, log_h):
 # Non- "AGCT" characters should be replaced with "N"
 def replace_invalid_sequence_chars(record, log_h):
     seq = str(record.seq)
-    assert len(seq) > 0, "No sequence present in Genbank file"
-    m = re.search("[^AGCT]", seq.upper())	# Keep sequences uniform by making upper-case
-    if m:
-        log_h.write("Sequence has non-AGCT characters present... replacing those characters with 'N'.\n")
-        seq = re.sub("[^AGCT]", "N", seq.upper())	# Possibly revise later to provide statistics of positional changes
+	
+	# If no sequence is present, the BioPython parser will create a sequence of N's to take its place
+    m1 = re.search("[AGCT]", seq.upper())
+    if not m1:
+    	sys.stderr.write("No ORIGIN sequence present for " + record.name + "\n")
+    	sys.exit(1)
+    	
+    # Replace all non-AGCT chars with N if any exist.	
+    p = re.compile("[^AGCT]")
+    count = p.findall(seq.upper())
+    if len(count) > 0:
+        log_h.write("Found " + str(len(count)) + " instance(s) of non-ACGT characters present in the sequence...replaceing those characters with 'N'.\n")
+        seq = p.sub("N", seq.upper())
         record.seq = Seq(seq.lower(), IUPAC.ambiguous_dna)	# Believe these are parsed by SeqIO as IUPACAmbiguousDNA alphabets
+        
     #print record.seq
     #print record.seq.alphabet
     return
