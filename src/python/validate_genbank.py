@@ -197,78 +197,49 @@ def is_accession_present(record, log_h):
     return
 
 # Organism name and Features, Source, and Organism attributes need "-" or ":" replaced with "_"
-def replace_invalid_header_chars(record, log_h):
-    dash = re.compile("-")	#compiling patterns for both the dash and the colon
-    colon = re.compile(":")
-    comma = re.compile(",")
-    piper = re.compile("\|")	#naming piper in case 'pipe' is a key word
-    
-    #DEFINITION    
-    m1 = dash.search(record.description)	#searching for matches
-    n1 = colon.search(record.description)
-    o1 = comma.search(record.description)
-    p1 = piper.search(record.description)
-    if m1 or n1 or o1 or p1:	#if match was found for either dash or colon...
-    	log_h.write("Changing DEFINITION...\nOLD VALUE: " + record.description + "\n")
-        record.description = dash.sub("_", record.description)	#...substitute for an underscore
-        record.description = colon.sub("_", record.description)
-        record.description = comma.sub("_", record.description)
-        record.description = piper.sub("_", record.description)
+def replace_invalid_header_chars(record, log_h):   
+    pattern = re.compile("[^A-Za-z0-9_\s\.]")
+    m1 = pattern.search(record.description)	#searching for pattern matches
+    m2 = pattern.search(record.annotations['source'])
+    m3 = pattern.search(record.annotations['organism'])
+    m4 = pattern.search(record.name)
+
+    if m1:	# If match was found...substitute pattern with an underscore
+        log_h.write("Changing DEFINITION...\nOLD VALUE: " + record.description + "\n")
+        record.description = pattern.sub("_", record.description)
         log_h.write("NEW VALUE: " + record.description + "\n")
-    #SOURCE        
-    m2 = dash.search(record.annotations['source'])
-    n2 = colon.search(record.annotations['source'])
-    o2 = comma.search(record.annotations['source'])
-    p2 = piper.search(record.annotations['source'])
-    if m2 or n2 or o2 or p2:
-    	log_h.write("Changing SOURCE...\nOLD VALUE: " + record.annotations['source'] + "\n")    
-        record.annotations['source'] = dash.sub("_", record.annotations['source'])
-        record.annotations['source'] = colon.sub("_", record.annotations['source'])
-        record.annotations['source'] = comma.sub("_", record.annotations['source'])
-        record.annotations['source'] = piper.sub("_", record.annotations['source'])        
-        log_h.write("NEW VALUE: " + record.annotations['source'] + "\n")
-    #ORGANISM
-    m3 = dash.search(record.annotations['organism'])
-    n3 = colon.search(record.annotations['organism'])
-    o3 = comma.search(record.annotations['organism'])
-    p3 = piper.search(record.annotations['organism'])
-    if m3 or n3 or o3 or p3:
-    	log_h.write("Changing ORGANISM...\nOLD VALUE: " + record.annotations['organism'] + "\n")    
-        record.annotations['organism'] = dash.sub("_", record.annotations['organism'])
-        record.annotations['organism'] = colon.sub("_", record.annotations['organism'])
-        record.annotations['organism'] = comma.sub("_", record.annotations['organism'])
-        record.annotations['organism'] = piper.sub("_", record.annotations['organism'])    
+    if m2:
+        log_h.write("Changing SOURCE...\nOLD VALUE: " + record.annotations['source'] + "\n")
+        record.annotations['source'] = pattern.sub("_", record.annotations['source'])   	
+        log_h.write("NEW VALUE: " + record.annotations['source'] + "\n")    
+    if m3:
+        log_h.write("Changing ORGANISM...\nOLD VALUE: " + record.annotations['organism'] + "\n")
+        record.annotations['organism'] = pattern.sub("_", record.annotations['organism'])    	    
         log_h.write("NEW VALUE: " + record.annotations['organism'] + "\n")
-    #FEATURES.source.organism and FEATURES.source.strain
+    if m4:
+        log_h.write("Changing LOCUS name...\nOLD VALUE: " + record.name + "\n")
+        record.name = pattern.sub("_", record.name)
+        log_h.write("NEW VALUE: " + record.name + "\n")    
+ 	    
+    # Deal with pattern changes in SeqRecord features
     for feature in record.features:
         if feature.type == 'source':
             assert len(feature.qualifiers['organism']) == 1, "This record has more than one organism listed in the FEATURES.source entry"
             if 'organism' in feature.qualifiers:
-                m4 = dash.search(feature.qualifiers['organism'][0])	# Qualifiers return as lists, but organism should only have 1 element
-                n4 = colon.search(feature.qualifiers['organism'][0])
-                o4 = comma.search(feature.qualifiers['organism'][0])
-                p4 = piper.search(feature.qualifiers['organism'][0])
-                if m4 or n4 or o4 or p4:
-                    log_h.write("Changing FEATURES.source.organism...\nOLD VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
-                    feature.qualifiers['organism'][0] = dash.sub("_", feature.qualifiers['organism'][0])
-                    feature.qualifiers['organism'][0] = colon.sub("_", feature.qualifiers['organism'][0])
-                    feature.qualifiers['organism'][0] = comma.sub("_", feature.qualifiers['organism'][0])
-                    feature.qualifiers['organism'][0] = piper.sub("_", feature.qualifiers['organism'][0])
-                    log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")                 
-            
+                # Qualifiers return as lists, but organism/strain should only have 1 element
+                m6 = pattern.search(feature.qualifiers['organism'][0])	
+                if m6:
+                    log_h.write("Changing FEATURES.source.organism...\nOLD VALUE: " + feature.qualifiers['organism'][0] + "\n")
+                    feature.qualifiers['organism'][0] = pattern.sub("_", feature.qualifiers['organism'][0])    	    
+                    log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")                     
             if 'strain' in feature.qualifiers:
-                m5 = dash.search(feature.qualifiers['strain'][0])	# Qualifiers return as lists, but strain should only have 1 element
-                n5 = colon.search(feature.qualifiers['strain'][0])
-                o5 = comma.search(feature.qualifiers['strain'][0])
-                p5 = piper.search(feature.qualifiers['strain'][0])
-                if m5 or n5 or o5 or p5:
-                    log_h.write("Changing FEATURES.source.strain...\nOLD VALUE: " + feature.qualifiers['strain'][0] + "\n")                 
-                    feature.qualifiers['strain'][0] = dash.sub("_", feature.qualifiers['strain'][0])
-                    feature.qualifiers['strain'][0] = colon.sub("_", feature.qualifiers['strain'][0])
-                    feature.qualifiers['strain'][0] = comma.sub("_", feature.qualifiers['strain'][0])
-                    feature.qualifiers['strain'][0] = piper.sub("_", feature.qualifiers['strain'][0])     
-                    log_h.write("NEW VALUE: " + feature.qualifiers['strain'][0] + "\n")                                                
-            break
+                m7 = pattern.search(feature.qualifiers['strain'][0])
+     	        if m7:
+                    log_h.write("Changing FEATURES.source.strain...\nOLD VALUE: " + feature.qualifiers['strain'][0] + "\n")
+                    feature.qualifiers['strain'][0] = pattern.sub("_", feature.qualifiers['strain'][0])
+                    log_h.write("NEW VALUE: " + feature.qualifiers['strain'][0] + "\n")
+        break	# Break 'for' loop after source-type features are read
+    	                                                      	    
     return    
 
 # Non- "AGCT" characters should be replaced with "N"
