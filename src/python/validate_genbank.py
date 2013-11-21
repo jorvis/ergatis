@@ -4,7 +4,7 @@
 validate_genbank.py - Validate a genbank file
 By:  Shaun Adkins (sadkins@som.umaryland.edu)
 
-python validate_genbank.py -g /path/to/gbk.list -o /path/to/out/dir
+python validate_genbank.py -g /path/to/file.gbk -o /path/to/out/dir
 
 Requires Biopython-1.62 to run
 
@@ -104,14 +104,20 @@ def prevalidation(genbank, prepare, log_h):
                 log_h.write("OLD LOCUS LINE: " + old_line.rstrip() + "\n")
                 log_h.write("NEW LOCUS LINE: " + line.rstrip() + "\n")
     	# end if
-    	
+
     	# Deal with things if ACCESSION line is encountered
         if line.startswith("ACCESSION") and id_flag:	# Change Accession ID in Genbank file
             log_h.write("OLD ACCESSION: " + line.rstrip() + "\n")
             line = re.sub("ACCESSION   ", "ACCESSION   ID", line)
-            id_flag = 0
             log_h.write("NEW ACCESSION: " + line.rstrip() + "\n")
         # end if
+
+        if line.startswith("VERSION") and id_flag:	# Must change Version ID to match Accession 
+            log_h.write("OLD VERSION: " + line.rstrip() + "\n")
+            line = re.sub("VERSION     ", "VERSION     ID", line)
+            id_flag = 0
+            log_h.write("NEW VERSION: " + line.rstrip() + "\n")
+            
         out_h.write(line)
     # end for-loop    
     
