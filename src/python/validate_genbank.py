@@ -148,6 +148,7 @@ def validate_genbank(genbank, valid, log_h):
         replace_invalid_header_chars(gb_record, log_h)
         replace_invalid_sequence_chars(gb_record, log_h)
         if len(gb_record.features) > 0:
+            are_gene_features_present(gb_record, log_h)
             remove_genes_from_circular_starting_at_end(gb_record, log_h)
             fix_db_xref(gb_record, log_h)
         else:
@@ -171,7 +172,7 @@ def parse_file(gb_h):
     record_list = []
     for record in SeqIO.parse(gb_h, "genbank"):	# parse genbank into a SeqRecord object
         record_list.append(record)
-#       print record
+        #print record
     gb_h.close()
     return record_list
 
@@ -201,6 +202,7 @@ def is_accession_present(record, log_h):
             log_h.write("Accession ID: " + record.id + " is not valid.  A nucleotide-based accession ID from Genbank must have 2 letters and 6 digits (LL######) or 1 letter and 5 digits (L#####).  RefSeq accession IDs have an underscore in the 3rd position\n")
     """
     return
+
 
 # Organism name and Features, Source, and Organism attributes need "-" or ":" replaced with "_"
 def replace_invalid_header_chars(record, log_h):   
@@ -268,6 +270,14 @@ def replace_invalid_sequence_chars(record, log_h):
         
     #print record.seq
     #print record.seq.alphabet
+    return
+
+# Checks for presence of at least one gene feature annotation.  Will simply write to log file if it isn't present
+def are_gene_features_present(record, log_h):
+    for feature in record.features:
+        if feature.type == 'gene':
+            return
+    log_h.write("No gene annotation features present!!!\n")
     return
     
 # If the genbank file has joined DNA coordinates that start at the end of a sequence
