@@ -33,17 +33,17 @@
             <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
         </command>
         <command>
-            <type>RunDistributedCommand</type>
+            <type>RunUnixCommand</type>
             <name>Get BAM Coverage</name>
             <state>incomplete</state>
             <executable>$;BAM_COVERAGE_DX_EXEC$;</executable>            
             <param>
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/bwa_exec.stdout</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/get_bam_coverage_dx.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/bwa_exec.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/get_bam_coverage_dx.stderr</value>
             </param>
             <param>
                 <key>--input_bam</key>
@@ -63,7 +63,7 @@
             </param>
             <param>
                 <key>--suffix</key>
-                <value>$;OUTPUT_SUFIX$;</value>
+                <value>$;I_DATABASE_BASE$;</value>
             </param>
         </command>
     </commandSet>

@@ -24,7 +24,7 @@
             <name>create BAM coverage iterator list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_bam_coverage_iterator_list</executable>
-               <arg>--sam-file-list=$;INPUT_FILE_LIST$; --reference-file-list=$;REFERENCE_DB_LIST$; --output-file=$;TMP_DIR$;/bam_coverage_iterator.list</arg>
+               <arg>--sam-file-list=$;INPUT_FILE_LIST$; --reference-db-path=$;DATABASE_PATH$; --output-file=$;TMP_DIR$;/bam_coverage_iterator.list</arg>
         </command>
         <!--Processing-->
         <!--Iterator-->
