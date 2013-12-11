@@ -82,7 +82,7 @@
             <type>RunUnixCommand</type>
             <name>map features to alignment</name>
             <state>incomplete</state>
-            <executable>$;MUGSY_MAPPING_INSTALL_DIR$;/mapfeatures.pl $;MUGSY_INDEX$; $;GENOMIC_FASTA_COPY$;</executable>
+            <executable>$;MUGSY_MAPPING_INSTALL_DIR$;/mapfeatures.pl $;MUGSY_INDEX$; $;GENOMIC_FASTA_COPY$; --skipframeshifts</executable>
 	    <param>
 		<key>--map_file</key>
 		<value>$;MUGSY_MAP_FILE$;</value>
@@ -98,6 +98,10 @@
 	    <param>
 		<key>--query_coverage</key>
 		<value>$;QUERY_COVERAGE$;</value>
+	    </param>
+	    <param>
+		<key>--reportedits</key>
+		<value>0</value>
 	    </param>
 	    <param>
 		<key>--cogformat</key>

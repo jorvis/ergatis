@@ -396,7 +396,7 @@ exit(0);
 
 sub check_parameters {
   my $options = shift;
-    
+  my ($file_base,$file_dir,$file_ext);
   ## make sure required parameters were passed
   my @required = qw(gb_list_file gene_summary_file snp_file circleator_path rasterizer_path);
   for my $option ( @required ) {
@@ -409,7 +409,13 @@ sub check_parameters {
   $options->{'output_formats'}= $DEFAULT_OUTPUT_FORMATS if (!defined($options->{'output_formats'}));
   $options->{'output_width'}= $DEFAULT_OUTPUT_WIDTH if (!defined($options->{'output_width'}));
   $options->{'output_height'}= $DEFAULT_OUTPUT_HEIGHT if (!defined($options->{'output_height'}));
-  $options->{'svg_file'}= $DEFAULT_SVG_FILE if (!defined($options->{'svg_file'}));
+  ## Added code to assign organism name as filename instead of prefix from clovr comparative pipeline
+  if (!defined($options->{'svg_file'})) {
+  	$options->{'svg_file'}= $DEFAULT_SVG_FILE;
+  } else {
+  	($file_base,$file_dir,$file_ext) = fileparse($options->{'svg_file'},qr/\.[^.]*/);
+	$options->{'svg_file'} = $file_base.".svg";	
+  }
   $options->{'output_dir'}= $DEFAULT_OUTPUT_DIR if (!defined($options->{'output_dir'}));
 
   ## additional parameter checking
