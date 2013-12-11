@@ -149,6 +149,7 @@ def validate_genbank(genbank, valid, log_h):
         replace_invalid_sequence_chars(gb_record, log_h)
         if len(gb_record.features) > 0:
             are_gene_features_present(gb_record, log_h)
+            remove_trna_and_rrna_features(gb_record, log_h)            
             remove_genes_from_circular_starting_at_end(gb_record, log_h)
             fix_db_xref(gb_record, log_h)
         else:
@@ -279,6 +280,38 @@ def are_gene_features_present(record, log_h):
             return
     log_h.write("No gene annotation features present!!!\n")
     return
+
+# Remove any features classified as tRNA or rRNA from the feature dictionary    
+def remove_trna_and_rrna_features(record, log_h):
+    trna_count = 0
+    rrna_count = 0
+    remove_flag = 0
+    start_pos = []	# List to store first position of tRNA and rRNA features.  There should be no worry in duplicated entries since these are gene sites
+    new_features = []	# List where record.features will be updated in
+    for feature in record.features:
+        if feature.type == 'tRNA':
+            trna_count +=1
+            start_pos.append(list(feature.location)[0])	# Push first coordinate of location to start_pos list
+        if feature.type == 'rRNA':
+            rrna_count +=1
+            start_pos.append(list(feature.location)[0])
+
+    # For each feature, iterate through and only add gene and CDS features (leaving out gene/tRNA and gene rRNA)
+    for feature in record.features:
+        if feature.type == 'source':
+            continue	# in case rRNA or tRNA started at the first position, we don't want to remove 'source' by accident
+        remove_flag = 0
+        for i in start_pos:
+            #print str(list(feature.location)[0]) + "\t" + str(i) + "\n";
+            if list(feature.location)[0] == i:
+                remove_flag = 1
+                break
+        if remove_flag == 0:
+            new_features.append(feature)
+        
+    log_h.write("There were " + str(trna_count) + " instances of tRNA features removed and " + str(rrna_count) + " instances of rRNA features removed.\n") 
+    record.features = new_features
+    return
     
 # If the genbank file has joined DNA coordinates that start at the end of a sequence
 # and continue at the beginning (in circular DNA) then remove that SeqFeature
@@ -291,26 +324,26 @@ def remove_genes_from_circular_starting_at_end(record, log_h):
             #print len(feature.location)
             for i in range(len(feature.location)):	# Iterate through all coordinates of the list
                 if i+1 < len(feature.location):	# Do not let last index run out of bounds
-                    if feature.location.strand == 0:
+                    if feature.location.strand == 1:
                         if list(feature.location)[i] > list(feature.location)[i+1]:	# if prev coordinate is larger than next coord
                             #print feature
                             flag = 1
                             if 'locus_tag' in feature.qualifiers:
-                                log_h.write("Gene feature with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
+                                log_h.write("Feature type " + feature.type + " with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
     	                        "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
     	                    else:	# could not find locus_tag (i.e. misc features section)
-    	                        log_h.write("Gene feature with coordinates " + str(feature.location) +
+    	                        log_h.write("Feature type " + feature.type + " with coordinates " + str(feature.location) +
     	                        " runs from end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
                             break
-                    else:	# Handle complementary strands
+                    elif feature.location.strand == -1:	# Handle complementary strands
                         if list(feature.location)[i] < list(feature.location)[i+1]:	# if prev coordinate is smaller than next coord
                             #print feature
                             flag = 1
                             if 'locus_tag' in feature.qualifiers:
-                                log_h.write("Gene feature with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
+                                log_h.write("Feature type " + feature.type + " with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
                                 "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
                             else:
-    	                        log_h.write("Gene feature with coordinates " + str(feature.location) +
+    	                        log_h.write("Feature type " + feature.type + " with coordinates " + str(feature.location) +
     	                        " runs from end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")                                
                             break
             if flag == 0:
