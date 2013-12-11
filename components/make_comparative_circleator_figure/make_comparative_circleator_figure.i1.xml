@@ -52,7 +52,7 @@
 	    </param>
 	    <param>
 	    	<key>--svg_file</key>
-	    	<value>$;SVG_BASENAME$;</value>
+	    	<value>$;I_FILE_BASE$;</value>
 	    </param>
 	    <param>
 	    	<key>--output_dir</key>

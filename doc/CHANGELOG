@@ -1,5 +1,6 @@
 next
 ---
+-Renamed circleator output files in Clovr comparative pipeline
 -Fixed bug in rotate_molecule script to use the correct column name for molecule name
 -Added validate_genbank component to ensure correctness of Genbank files
 -Added fix to clovr comparative circleator memory issues

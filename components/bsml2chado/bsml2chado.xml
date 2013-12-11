@@ -336,7 +336,7 @@
             <name>split</name>
             <state>incomplete</state>
             <executable>split</executable>
-            <arg> -d -l 10000000 $;TMP_DIR$;/checksums.out.sorted.pks $;TMP_DIR$;/splitoffsets/checksums.out.splitoffsets.</arg>
+            <arg> -d -l 1000000000 $;TMP_DIR$;/checksums.out.sorted.pks $;TMP_DIR$;/splitoffsets/checksums.out.splitoffsets.</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
