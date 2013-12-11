@@ -58,6 +58,10 @@
                 <value>$;MIN_COVERAGE$;</value>
             </param>
             <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            </param>
+            <param>
                 <key>--name</key>
                 <value>$;OUTPUT_PREFIX$;</value>
             </param>
