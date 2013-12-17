@@ -34,10 +34,13 @@ foreach my $genome ( keys %{$genomes} ) {
     print "Printing summary file for $genome\n";
     unless( exists( $options{'gene_summary'} ) && $options{'gene_summary'} == 0 ) {
 	my $outfile = $options{'output_dir'}."/$genome.gene_summary.txt";
+	my $partial_outfile = $options{'output_dir'}."/$genome.partial_gene_summary.txt";
 	open( my $ofh, "> $outfile") or die("Could not open $outfile for writing: $!");
-	&print_gene_summary_info( $genomes->{$genome}, $clusters, $snps, $molecules, $genome, $ofh );
-	print "\t$outfile\n";
+	open( my $pofh, "> $partial_outfile") or die("Could not open $partial_outfile for writing: $!");
+	&print_gene_summary_info( $genomes->{$genome}, $clusters, $snps, $molecules, $genome, $ofh, $pofh);
+	print "\t$outfile\n$partial_outfile\n";
 	close($ofh);
+	close($pofh);
     }
     #unless( exists( $options{'gene_summary'} ) && $options{'gene_summary'} == 0 ) {
 #	my $outfile = $options{'output_dir'}."/$genome.genome_summary.txt";
@@ -279,8 +282,8 @@ sub parse_cogs {
 }
 
 sub print_gene_summary_info {
-    my ($gene_lookup, $clusters, $snps, $molecules, $org, $ofh) = @_;
-
+    my ($gene_lookup, $clusters, $snps, $molecules, $org, $ofh, $pofh) = @_;
+    my $partial = 0;
     my @ordered_genomes = &get_ordered_genomes( $molecules );
 
     # print the header
@@ -293,13 +296,15 @@ sub print_gene_summary_info {
     push(@header, @other_genomes);
     print $ofh $preheader."\n";
     print $ofh join("\t", @header )."\n";
+    print $pofh $preheader."\n";
+    print $pofh join("\t", @header )."\n";
 
     foreach my $molecule ( sort keys %{$gene_lookup} ) {
 
 	my $genes = $gene_lookup->{$molecule};
 	foreach my $gene ( sort { $genes->{$a}->[0] <=> $genes->{$b}->[0] } keys %{$genes} ) {
 	    my @row = ($molecule, $gene, @{$genes->{$gene}});
-	    
+	    $partial = 0;
 	    if( !exists( $clusters->{$gene} ) ) {
 		# if it's not in a cluster, push onto the row the correct number
 		# of dashes (total genomes minus one)
@@ -314,10 +319,12 @@ sub print_gene_summary_info {
 		    
 		    # we should filter out the key gene here.
 		    my @other_genes = grep { !($_ eq $gene) } @{$clusters->{$gene}->{$qmol}};
+		    if(@{$clusters->{$gene}->{$qmol}} > 1) {
+			$partial = 1;
+		    }
 
 		    $tmp{$qgenome}->{$qmol} = \@other_genes unless( @other_genes == 0 );
 		}
-
 		## For each of the genomes, add genes in cluster
 		foreach my $g ( @ordered_genomes ) {
 		    if( exists( $tmp{$g} ) ) {
@@ -355,7 +362,12 @@ sub print_gene_summary_info {
 		    map { push(@row, join(",", @{$curr_bases{$_}}) ) } ($org, @other_genomes);
 		}
 	    }
-	    print $ofh join("\t", @row)."\n";
+# Separating printing of partial genes in a new file
+	    if($partial == 0) {
+	    	print $ofh join("\t", @row)."\n";
+	    } else {
+	    	print $pofh join("\t", @row)."\n"; 
+	    }
 	}
     }
 
