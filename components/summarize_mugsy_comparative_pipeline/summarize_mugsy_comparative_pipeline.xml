@@ -83,7 +83,7 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>create summary list</name>
+            <name>create all summary list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>  
@@ -92,11 +92,29 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*\.gene_summary.txt"</value>
+                <value>".*gene_summary.txt"</value>
             </param>
             <param>  
                 <key>--output_list</key>
                 <value>$;OUTPUT_SUMMARY_LIST$;</value>
+            </param>
+        </command>
+	<command>
+            <type>RunUnixCommand</type>
+            <name>create summary list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*\.gene_summary.txt"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;SUMMARY_LIST$;</value>
             </param>
         </command>
     </commandSet>    

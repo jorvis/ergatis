@@ -1,5 +1,6 @@
 next
 ---
+-Split output from summarize_mugsy_comparative_pipeline into separate file for partial genes
 -Renamed circleator output files in Clovr comparative pipeline
 -Fixed bug in rotate_molecule script to use the correct column name for molecule name
 -Added validate_genbank component to ensure correctness of Genbank files
