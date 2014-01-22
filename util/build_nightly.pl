@@ -17,7 +17,7 @@ umask(0022);
 
 ##########################################
 my $install_base='/usr/local/projects/ergatis/package-nightly/';
-my $ergatis_svn_export_path='http://svn.code.sf.net/p/ergatis/code/release/trunk';
+my $ergatis_git_export_path='https://github.com/jorvis/ergatis.git';	# This uses Git currently.  Others use SVN.
 my $bsml_svn_export_path='http://svn.code.sf.net/p/bsml/code/release';
 my $coati_svn_export_path='http://svn.code.sf.net/p/coati-api/code/release/coati_install';
 my $shared_prism_svn_export_path='http://svn.code.sf.net/p/prism-api/code/release/shared_prism';
@@ -167,11 +167,17 @@ sub install_ergatis {
     #my $svn = SVN::Agent->new( {path => "$tmp_build_area"} );
     #$svn->checkout( $ergatis_svn_export_path );
     
-    my $cmd = "echo p | svn export $ergatis_svn_export_path $tmp_build_area";
+    my $cmd = "echo p | git clone $ergatis_git_export_path $tmp_build_area/ergatis-trunk";
     system($cmd);
 
     print STDERR "installing Ergatis\n";
-    chdir("$tmp_build_area/ergatis-trunk/") || die "couldn't cd into $tmp_build_area/ergatis-trunk";
+    chdir("$tmp_build_area/ergatis-trunk") || die "couldn't cd into $tmp_build_area/ergatis-trunk";
+    
+    # If we are pulling Ergatis from github we are going to need to move some directories around in order
+    # to replace what svn:externals did for us
+    # TODO: Figure out a better way to achieve this without the special case just for Ergatis 
+    run_command("mv install/* .; mv src/R .; mv src/python .; mv templates/pipelines global_pipeline_templates; mv src/perl bin; mv src/shell .; mv src/c .; rm -rf src; mv c src; cp -R lib/Ergatis htdocs/cgi/");
+    
     run_command( "perl -I /home/jorvis/lib/perl5/5.8.8/ Makefile.PL INSTALL_BASE=$base" );
     run_command( "make" );
     run_command( "make install" );

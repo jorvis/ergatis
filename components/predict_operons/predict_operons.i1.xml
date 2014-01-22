@@ -25,7 +25,7 @@
             </param>
             <param>
             	<key>--reference</key>
-            	<value>$;INPUT_FILE$;</value>
+            	<value>$;REFERENCE_FASTA$;</value>
             </param>
             <param>
                 <key>--sample</key>

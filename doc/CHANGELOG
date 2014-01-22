@@ -1,5 +1,7 @@
 next
 ---
+-Fixed bug in predict_operons component concerning iteration
+-updated build_nightly.pl to install ergatis from git instead of svn.  Other svn paths remain the same
 -Split output from summarize_mugsy_comparative_pipeline into separate file for partial genes
 -Renamed circleator output files in Clovr comparative pipeline
 -Fixed bug in rotate_molecule script to use the correct column name for molecule name
