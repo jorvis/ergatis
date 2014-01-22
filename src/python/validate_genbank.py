@@ -59,7 +59,7 @@ def prevalidation(genbank, prepare, log_h):
                 line = re.sub("dna", "DNA", line)
             elif re.search("rna", line):
                 #log_h.write("Found 'rna' in LOCUS line and replacing with 'RNA'.\n")
-                line = re.sub("rna", "RNA", line)	# not working on RNA but still need capitalized for parsing later
+                line = re.sub("rna", "RNA", line)	# scope of program is not RNA but still need capitalized for parsing later
                 
             if re.search("\.pseudomolecule", line):
                 #log_h.write("Removing 'pseudomolecule' from locus name in LOCUS line as locus must be less than 16 characters. \n")
