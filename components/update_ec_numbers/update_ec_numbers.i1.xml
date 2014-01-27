@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>update ec numbers iterator</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>update ec numbers</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/update_ec_numbers</executable>
+            <param>  
+                <key>--username</key>
+                <value>$;USERNAME$;</value>
+            </param>
+            <param>  
+                <key>--password</key>
+                <value>$;PASSWORD$;</value>
+            </param>
+            <param>  
+                <key>--password_file</key>
+                <value>$;PASSWORD_FILE$;</value>
+            </param>     
+            <param>  
+                <key>--server</key>
+                <value>$;HOST$;</value>
+            </param>   
+            <param>  
+                <key>--database_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--input_ec_dat</key>
+                <value>$;EC_DAT_FILE$;</value>
+            </param>
+            <param>  
+                <key>--no_change</key>
+                <value>$;NO_CHANGE$;</value>
+            </param>
+            <param>
+                 <key>stdout</key>
+                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+            </param>            
+            <param>  
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+            </param>
+        </command>    
+    </commandSet>
+</commandSetRoot>
