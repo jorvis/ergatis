@@ -13,15 +13,15 @@
               </param>
               <param>
               	<key>--output_dir</key>
-              	<value>$;OUTPUT_DIRECTORY$;</value>
+              	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
               </param>
               <param>
-              	<key>--wig_dir</key>
-             	<value>$;WIG_DIRECTORY$;</value>
+              	<key>--wig_file</key>
+             	<value>$;I_FILE_PATH$;</value>
              </param>
              <param>
              	<key>--gff</key>
-            	<value>$;I_FILE_PATH$;</value>
+            	<value>$;GFF_FILE$;</value>
             </param>
             <param>
             	<key>--reference</key>

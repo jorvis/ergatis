@@ -28,6 +28,10 @@ parser.add_option('-n', '--min_interbutt', type='int', default=50,
     help='minimum distance from nearest flanking feature (default 50)')
 parser.add_option('-x', '--max_interbutt', type='int', default=1000,
     help='maximum distance from nearest flanking feature (default 1000)')
+parser.add_option('-g', '--gff3_file', help='Path to a GFF3 file')
+parser.add_option('-c', '--contig_length_file', help='Path to a contig lengths file')
+parser.add_option('-w', '--wig_file', help='Path to a WIG file')
+parser.add_option('-W', '--second_wig', help='Path to a second WIG file that is a pair to the file specified in --wig_file')
 
 (options, args) = parser.parse_args()
 
@@ -35,13 +39,15 @@ quantile = options.quantile
 min_interbutt = options.min_interbutt
 max_interbutt = options.max_interbutt
 
-if len(args) < 3:
-  parser.print_help()
-  exit(1)
+contig_length_file = open(options.contig_length_file)
+gff3_file = open(options.gff3_file)
 
-contig_length_file = open(args[0])
-gff3_file = open(args[1])
-wig_files = map(open, args[2:])
+wig_files = []
+wig1 = open(options.wig_file)
+wig_files.append(wig1)
+if options.second_wig:
+    wig2 = open(options.second_wig)
+    wig_files.append(wig2)
 
 ###############################################################################
 # read contig length file
@@ -115,13 +121,16 @@ for contig, direction_position_genic in contig_direction_position_genic.iteritem
 ###############################################################################
 # read WIG files
 
+#One of two possible header types
 variableStep_header_line_pat = re.compile('^variableStep chrom=(.*)$')
 fixedStep_header_line_pat = re.compile(r'^fixedStep chrom=(\S+) start=(\d+) step=(\d+)')
+
 def read_wig(file):
   contig_position_count = defaultdict(lambda: defaultdict(lambda: 0))
   contig = None
   in_fixed = in_variable = False
   for line in file:
+    #Either match the fixed step header or the variable step header
     match = fixedStep_header_line_pat.match(line)
     if match:
       contig, start, step = match.groups()
@@ -143,7 +152,7 @@ def read_wig(file):
       else:
         assert in_variable
         assert contig is not None
-        position, count = map(int, line[:-1].split('\t'))
+        position, count = map(float, line[:-1].split('\t'))
         contig_position_count[contig][position] = count
 
   return contig_position_count
