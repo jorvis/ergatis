@@ -9,7 +9,9 @@ find_transcripts.pl - finds transcripts from an alignment based on coverage isla
  USAGE: find_transcripts.pl
 	--file_type either BAM, WIG, or BigWig
 	--file the BAM, WIG, or BigWig file.  
-	       If stranded and using WIG or BigWig, a comma-separated pair, like <forward coverage>, <reverse coverage>
+	--second_file is a second BAM, WIG, BigWig file
+		   Useful if files are pairs, such as forward coverage and reverse coverage
+		   Must use --stranded option if providing WIG or BigWig pairs
 	--sizes_file needed for a WIG filetype, to indicate chromosome sizes
 	--stranded= 1 or 0, indicating if the RNA-seq library was strand-specific [default 0].  
 	            if stranded and using WIG or BigWig files, one must be provided for each strand
@@ -51,6 +53,7 @@ my %options = ();
 my $results = GetOptions (\%options, 
 						  'file_type=s',
 						  'file=s',
+						  'second_file=s',
 						  'sizes_file=s',
 						  'stranded=s',
 						  'reverse_strand=s',
@@ -499,18 +502,13 @@ sub check_parameters {
 
     $options{base_feature_type} = "transcript" if(!defined $options{base_feature_type});   
     $options{ntar_prefix} = "" if(!defined $options{ntar_prefix});
-
-	# if the files are separated by commas, change the separator to 2 underscores (__)
-	if( $options{file} =~ /.+\,.+/ ) {
-		$options{file} =~ s/\,/__/;
-	}
 	
-	if( $options{stranded} && ( (uc($options{file_type}) eq "WIG") || (uc($options{file_type}) eq "BIGWIG")) && !($options{file} =~ /(.+)__(.+)/) ) {
-		die "Provide stranded coverage as a comma-separated pair to --file!\nStranded libraries require two WIG or BigWig files, one for each strand's coverage!";
+	if( $options{stranded} && ( (uc($options{file_type}) eq "WIG") || (uc($options{file_type}) eq "BIGWIG")) ) {
+		die ("Must provide 2 WIG or BigWig files (use --file and --second_file)") if (!defined $options{'second_file'});
     }
 	
-    $options{forward_coverage} = $1;
-    $options{reverse_coverage} = $2;
+    $options{forward_coverage} = $options{file};
+    $options{reverse_coverage} = $options{second_file};
 
     if( (uc($options{file_type}) eq "WIG") && !(defined $options{sizes_file}) ) {
 		die "WIG files require a sizes file to indicate the size of each chromosome!";

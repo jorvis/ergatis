@@ -1,5 +1,28 @@
 #! /bin/bash
 
+### FUNCTIONS ###
+function fastaLen() {
+# Usage:  fastaLen
+#   Print the lengths of the sequences in the multifasta file
+
+    local REF=$1
+
+    awk ' {
+	if  (substr ($1, 1, 1) == ">") {
+            if  (len > 0) printf "%s\t%d\n", tag, len;
+            tag = substr ($1, 2);
+            len = 0;
+        } else { 
+        	len += length ($1); 
+        } 
+    }
+
+    END {
+    	if  (len > 0) printf "%s\t%d\n", tag, len; 
+    } ' $REF	# /awk
+}
+
+
 
 # These are the parameters for find_intergenic_background_cutoff.py.  I've
 # explicitly specified the default values of the three optional parameters
@@ -13,7 +36,7 @@ min_transcript=100
 base_feature_type=CDS
 max_intron=0
 min_intergenic=1
-stranded=1
+stranded=0
 
 ###############################################################################
 # command line parameter
@@ -22,13 +45,15 @@ bin_d=$1
 shift
 output_d=$1
 shift
-wig_d=$1
+wig_file=$1
 shift
 reference_fasta_f=$1
 shift
 gff_f=$1
 shift
 sample=$1
+shift
+second_wig=$1
 shift
 QUAN=${1:-$quantile}
 shift
@@ -50,23 +75,29 @@ shift
 ###############################################################################
 
 contig_sizes_f=$output_d/contig_sizes.tsv
-< $reference_fasta_f /home/edrabek/bin/fastalen.awk \
-  > $contig_sizes_f
 
+# create the contig_length_file using awk
+echo "Now creating contig_length_file..."
+(fastaLen $reference_fasta_f) > $contig_sizes_f
+
+echo "Now determining intergenic background cutoff value..."
 $bin_d/find_intergenic_background_cutoff.py \
     --quantile=$QUAN \
     --min_interbutt=$MIN_IB \
     --max_interbutt=$MAX_IB \
-    $contig_sizes_f \
-    $gff_f \
-    $wig_d/$sample.{forward,reverse}_coverage.wig \
+    --contig_length_file=$contig_sizes_f \
+    --gff3_file=$gff_f \
+    --wig_file=$wig_file \
+    --second_wig=$second_wig \
     > $output_d/$sample.cutoff
 
 cutoff=`cat $output_d/$sample.cutoff`
 
+echo "Now finding transcript overlaps..."
 perl $bin_d/find_transcripts.pl \
     --file_type=WIG \
-    --file=$wig_d/$sample.forward_coverage.wig,$wig_d/$sample.reverse_coverage.wig \
+    --file=$wig_file \
+    --second_file=$second_wig \
     --sizes_file=$contig_sizes_f \
     --stranded=$STRAND \
     --min_cov=$cutoff \
@@ -76,3 +107,5 @@ perl $bin_d/find_transcripts.pl \
     --base_gff3=$gff_f \
     --base_feature_type=$FEATURE \
     --output_stub=$output_d/$sample.transcripts
+
+echo "Finished!!!"

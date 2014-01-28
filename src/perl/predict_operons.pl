@@ -12,7 +12,8 @@
 
 	--bin_dir|b	-	The path of the bin directory where the predict_transcripts.sh, find_transcripts.pl, and find_intergenic_background_cutoff.py are stored
 	--output_dir|o	-	The output directory to store files
-	--wig_dir|w	-	The directory where WIG files are stored (typically will be the output directory of the bam2bigwig.visualization Ergatis component
+	--wig_file|w	-	A WIG file path 
+	--second_wig|W	-	A second WIG file path.  Used if the two WIG files are forward and reverse coverage WIG file pairs
 	--gff|g		-	The path to the GFF3 file
 	--reference|r	-	A reference fasta file path
 	--sample|s	-	The name of the sample (typically will be the abbreviation used in Ergatis ProkPipe)
@@ -45,7 +46,8 @@ my %options;
 GetOptions(\%options,
 	   'bin_dir|b=s',
 	   'output_dir|o=s',
-	   'wig_dir|w=s',
+	   'wig_file|w=s',
+	   'second_wig|W=s',
 	   'gff|g=s',
 	   'reference|r=s',
 	   'sample|s=s', 
@@ -57,13 +59,20 @@ pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($options{'h
 &check_parameters(%options);
 
 my $shell_script = $options{'bin_dir'} . '/predict_transcripts.sh';
+$shell_script .= " $options{'bin_dir'} $options{'output_dir'} $options{'wig_file'} $options{'reference'} $options{'gff'} $options{'sample'}";
+# Add the other WIG file if it exists
+if (defined $options{'second_wig'}) {
+	$shell_script .= " $options{'second_wig'}";
+}
 
-`sh $shell_script $options{'bin_dir'} $options{'output_dir'} $options{'wig_dir'} $options{'reference'} $options{'gff'} $options{'sample'}`;
+print STDOUT "Executing 'sh $shell_script'\n";
+
+`sh $shell_script`;
 
 sub check_parameters {
     my $options = shift;
     # make sure required arguments were passed
-    my @required = qw( bin_dir output_dir wig_dir gff reference sample );
+    my @required = qw( bin_dir output_dir wig_file gff reference sample );
     for my $option ( @required ) {
         unless  ( defined $options{$option} ) {
             die "--$option is a required option";

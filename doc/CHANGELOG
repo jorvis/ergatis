@@ -1,5 +1,6 @@
 next
 ---
+-Added genbank submission components assign_dbxref_ids, curate_common_names, deleteOverlappingRNAs, remove_db_gene_syms_with_hypos, and update_ec_numbers
 -Fixed bug in predict_operons component concerning iteration
 -updated build_nightly.pl to install ergatis from git instead of svn.  Other svn paths remain the same
 -Split output from summarize_mugsy_comparative_pipeline into separate file for partial genes
