@@ -642,7 +642,7 @@ sub check_parameters {
     open MAP, $options{'input_map_file'} or die ("Cannot open input mapping file for reading: $!\n");
     my $line = <MAP>;
     chomp $line;
-    my $rest
+    my $rest;
     ($database, $id_prefix, $rest) = split(/,|\t/ , $line, 3);
     $$prefix_lookup{default} = $id_prefix;
     close MAP;
