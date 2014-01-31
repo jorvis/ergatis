@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
-        <name>update_ec_numbers workflow</name>
+        <name>create db list file workflow</name>
         <!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
@@ -16,9 +16,9 @@
         <!--Iterator-->
         <command>
             <type>RunUnixCommand</type>
-            <name>update ec numbers</name>
+            <name>create db list file</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/update_ec_numbers</executable>
+            <executable>$;BIN_DIR$;/create_db_list_file</executable>
             <param>  
                 <key>--input_file</key>
                 <value>$;INPUT_FILE$;</value>
