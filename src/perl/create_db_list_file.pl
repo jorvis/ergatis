@@ -116,7 +116,7 @@ sub parse_delimited_file {
 # Create a list file from each of the individual files
 sub write_list_file {
 	my $outputs = shift;
-	my $list_file = $output_dir . "db.list";
+	my $list_file = $output_dir . "/db.list";
 	open LIST, ">$list_file" or die "Cannot open list file $list_file for writing: $!\n";
 	print LIST $_ . "\n" foreach @$outputs;
 	close LIST;
