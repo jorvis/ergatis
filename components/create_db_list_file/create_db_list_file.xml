@@ -29,11 +29,11 @@
             </param>            
             <param>
                  <key>stdout</key>
-                 <value>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+                 <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
             </param>            
             <param>  
                 <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
             </param>
         </command>   
         <!--Postprocessing-->         
