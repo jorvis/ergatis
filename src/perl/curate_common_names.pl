@@ -21,11 +21,11 @@ curate_common_names.pl -
 =head1 OPTIONS
 
 B<--input_map_file,-i>
-REQUIRED. File that contains two comma-seperated columns:  The database name and the path to the corresponding ruels file
-
-Rules File: A tab-delimited file with 2 columns. 
-1st column - Desired correct gene_product_name
-2nd column - Undesired gene_product_name to be corrected
+REQUIRED. Either a comma-separated or tab-separated file containing the following columns:
+    1) Name of Database
+    2) Locus_tag ID prefix
+    3) Path to a curate_common_names rules file
+    4+) Any other DB related information (to come later)
 
 B<--username,-u>
 REQUIRED. Database username
@@ -862,7 +862,8 @@ sub check_options {
     open MAP, $options{'input_map_file'} or die ("Cannot open input mapping file for reading: $!\n");
     my $line = <MAP>;
     chomp $line;
-    ($database, $rules_file) = split(/,/ , $line, 2);
+    my ($unused, $rest);
+    ($database, $unused, $rules_file, $rest) = split(/,|\t/ , $line, 4);
     close MAP;
 
 
