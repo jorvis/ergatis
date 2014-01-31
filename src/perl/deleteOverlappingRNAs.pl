@@ -38,9 +38,6 @@ B<--server,-s>
 
 B<--delete_url,-u>
     URL of the Manatee delete_gene.cgi script that can be used to delete the offending gene(s)
-
-B<--complete_overlap.-o>
-    Optional.  Enabling will match complete overlapping RNAs whereas not enabling will match partial overlapping RNAs
     
 B<--log,-l>
     Optional. Path to a log file into which to write detailed (DEBUG-level) logging info.
@@ -152,7 +149,7 @@ my($dfile, $server, $user, $no_deletes, $delete_url) = map {$options->{$_}} ('di
 open MAP, $dfile or die "Cannot open mapping file $dfile for reading: $!\n";
 my $line = <MAP>;
 chomp $line;
-my ($db, $discrep) = split(/,/, $line, 2);
+my ($db, $discrep) = split(/,|\t/, $line, 2);
 close MAP;
 
 my $genes = &read_genes_to_delete($discrep);
@@ -226,10 +223,6 @@ sub check_parameters {
 	die("Neither a password or a password file were supplied.  Please supply one or the other");
     }
     
-    # are we working with partial or complete overlapped RNAs?
-    if (defined($options->{'complete_overlap'})){
-        $overlap_flag = 1 if ($options->{'complete_overlap'} == 1);	
-    }
   ## defaults
 
   ## additional parameter checking?
@@ -249,59 +242,63 @@ sub read_genes_to_delete {
   while (my $line = <$fh>) {
     chomp($line);
     ++$lnum;
-    my $pattern = "";	# Change pattern to only count FATAL lines depending on if either partial or complete overlap is set.
-    $pattern = $overlap_flag ? "FATAL\:\sDiscRep_SUB:RNA_CDS_OVERLAP" : "DiscRep_SUB:RNA_CDS_OVERLAP";
     
-    if ($line =~ /^$pattern/) {
-      $reading_list = 1;
-      if ($line =~ /RNA_CDS_OVERLAP\:\:(\d+) coding regions/) {
-        $num_expected = $1;
-        $num_skipped = 0;
-        $start_index = scalar(@$genes);
-      }
-    } elsif ($reading_list) {
-
-      # end of current block of problem genes
-      if ($line =~ /^\s*$/) {
-        $reading_list = 0;
-        # check count
-        my $num_found = scalar(@$genes) - $start_index;
-        die "read $num_found instead of the expected $num_expected problem genes at line $lnum of $dfile" if (($num_found + $num_skipped) != $num_expected);
-        $start_index = $num_expected = undef;
-      }
-      # still in a block, so the features should be listed in pairs
-      else {
-        my $next_line = <$fh>;
-        chomp($next_line);
-        ++$lnum;
-        my $cds = undef;
-        my $rna = undef;
-
-        # gecDEC10A:CDS	ybl206 protein	lcl|gecDEC10A.contig.0:c350798-350679	ECDEC10A_0352
-        # gecDEC10A:rRNA	23S ribosomal RNA	lcl|gecDEC10A.contig.0:350459-353357	ECDEC10A_0351
-
-        if ($line =~ /^[^\:]+\:CDS.*/) {
-          my($type, $name, $coords, $locus) = split(/\t/, $line);
-          die "failed to parse CDS id from $line" unless defined($locus);
-          $cds = $locus;
-        } else {
-          $logger->logdie("failed to parse CDS id from first line of CDS/rRNA pair at line " . ($lnum-1) . ": $line");
+    # $pattern[0] = completely overlapping, $pattern[1] = partially overlapping
+    my @pattern = ["FATAL\:\sDiscRep_SUB:RNA_CDS_OVERLAP"], ["DiscRep_SUB:RNA_CDS_OVERLAP"];
+    foreach my $p (@pattern) {
+      if ($line =~ /^$p/) {
+        $reading_list = 1;
+        if ($line =~ /RNA_CDS_OVERLAP\:\:(\d+) coding regions/) {
+          $num_expected = $1;
+          $num_skipped = 0;
+          $start_index = scalar(@$genes);
         }
-        if ($next_line =~ /^[^\:]+\:\SRNA.*/) {
-          my($type, $name, $coords, $locus) = split(/\t/, $next_line);
-          die "failed to parse CDS id from $line" unless defined($locus);
-          $rna = $locus;
-        } else {
-          $logger->logdie("failed to parse RNA id from second line of CDS/rRNA pair at line $lnum: $next_line");
+      } elsif ($reading_list) {
+
+        # end of current block of problem genes
+        if ($line =~ /^\s*$/) {
+          $reading_list = 0;
+          # check count
+          my $num_found = scalar(@$genes) - $start_index;
+          die "read $num_found instead of the expected $num_expected problem genes at line $lnum of $dfile" if (($num_found + $num_skipped) != $num_expected);
+          $start_index = $num_expected = undef;
         }
-        $logger->logdie("discrepancy file reports CDS $cds overlapping with RNA $rna with the same id") if ($cds eq $rna);
-        if (defined($cds_ids->{$cds})) {
-          $logger->warn("ignoring duplicate gene $cds");
-          ++$num_skipped;
-        } else {
-          push(@$genes, {'cds' => $cds, 'rna' => $rna, 'lines' => [$line, $next_line]});
-          $cds_ids->{$cds} = 1;
-        }
+        # still in a block, so the features should be listed in pairs
+        else {
+          my $next_line = <$fh>;
+          chomp($next_line);
+          ++$lnum;
+          my $cds = undef;
+          my $rna = undef;
+
+          # gecDEC10A:CDS	ybl206 protein	lcl|gecDEC10A.contig.0:c350798-350679	ECDEC10A_0352
+          # gecDEC10A:rRNA	23S ribosomal RNA	lcl|gecDEC10A.contig.0:350459-353357	ECDEC10A_0351
+
+          if ($line =~ /^[^\:]+\:CDS.*/) {
+            my($type, $name, $coords, $locus) = split(/\t/, $line);
+            # Do not add genes to array unless they are conserved hypothetical proteins or hypothetical proteins
+            next if ($name ne 'conserved hypothetical protein' && $name ne 'hypothetical protein');
+            die "failed to parse CDS id from $line" unless defined($locus);
+            $cds = $locus;
+          } else {
+            $logger->logdie("failed to parse CDS id from first line of CDS/rRNA pair at line " . ($lnum-1) . ": $line");
+          }
+          if ($next_line =~ /^[^\:]+\:\SRNA.*/) {
+            my($type, $name, $coords, $locus) = split(/\t/, $next_line);
+            die "failed to parse CDS id from $line" unless defined($locus);
+            $rna = $locus;
+          } else {
+            $logger->logdie("failed to parse RNA id from second line of CDS/rRNA pair at line $lnum: $next_line");
+          }
+          $logger->logdie("discrepancy file reports CDS $cds overlapping with RNA $rna with the same id") if ($cds eq $rna);
+          if (defined($cds_ids->{$cds})) {
+            $logger->warn("ignoring duplicate gene $cds");
+            ++$num_skipped;
+          } else {
+          	push(@$genes, {'cds' => $cds, 'rna' => $rna, 'lines' => [$line, $next_line]});
+          	$cds_ids->{$cds} = 1;
+          }
+      	}
       }
     }
   }

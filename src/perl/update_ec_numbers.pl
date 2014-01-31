@@ -36,8 +36,12 @@ B<--password_file,-P>
     Password stored in a text file.  Useful for keeping password non-visible.
 
 B<--database_file,-d>
-    File that contains a database name
-
+    Either a comma-separated or tab-separated file containing the following columns:
+    1) Name of Database
+    2) Locus_tag ID prefix
+    3) Path to a curate_common_names rules file
+    4+) Any other DB related information (to come later)
+    
 B<--server,-s>
     Database hostname
 
@@ -413,8 +417,9 @@ sub check_options {
    }
 
    open DB, $options{'database_file'} or die "Cannot open database_file for reading: $!\n";
-   my $database = <DB>;
-   chomp $database;
+   my $line = <DB>;
+   chomp $line;
+   my ($database, $rest) = split(/,|\t/, $line, 2);
    close DB;
 
     #Assign password to be read from the file if it exists.

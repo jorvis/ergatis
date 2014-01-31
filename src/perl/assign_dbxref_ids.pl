@@ -25,8 +25,11 @@ USAGE: assign_dbxref_ids.pl
 =head1 OPTIONS
 
 B<--input_map_file, -i>
-    File containing a database name and an id_prefix, separated by a comma
-    ID Prefix is what IDs in the database will be generated off of, each ID followed by an incrementing number 
+    Either a comma-separated or tab-separated file containing the following columns:
+    1) Name of Database
+    2) Locus_tag ID prefix
+    3) Path to a curate_common_names rules file
+    4+) Any other DB related information (to come later)
 
 B<--user,-u>
     User account with select, insert, and update privileges on the specified database.
@@ -639,7 +642,8 @@ sub check_parameters {
     open MAP, $options{'input_map_file'} or die ("Cannot open input mapping file for reading: $!\n");
     my $line = <MAP>;
     chomp $line;
-    ($database, $id_prefix) = split(/,/ , $line, 2);
+    my $rest
+    ($database, $id_prefix, $rest) = split(/,|\t/ , $line, 3);
     $$prefix_lookup{default} = $id_prefix;
     close MAP;
     
