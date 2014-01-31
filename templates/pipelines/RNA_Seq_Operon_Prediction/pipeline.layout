@@ -1,0 +1,29 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+   <commandSet type="serial">
+      <state>incomplete</state>
+      <name>start pipeline:</name>
+      <commandSet type="serial">
+         <state>incomplete</state>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>bowtie_build.reference</name>
+	</commandSet>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>bowtie.alignment</name>
+	</commandSet>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>samtools_file_convert.sorted_position</name>
+	</commandSet>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>bam2bigwig.visualization</name>
+	</commandSet>
+	<commandSet type="serial">
+		<state>incomplete</state>
+		<name>predict_operons.predict</name>
+	</commandSet>
+      </commandSet>
+   </commandSet>
+</commandSetRoot>
