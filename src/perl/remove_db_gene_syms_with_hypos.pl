@@ -167,7 +167,7 @@ sub check_options {
     open DB, $options{'database_file'} or die ("Cannot open database file " . $options{'database_file'} . "$!\n");
    	my $line = <DB>;
    	chomp $line;
-   	my $rest
+   	my $rest;
    	($database, $rest) = split(/,|\t/, $line, 2);
     close DB;
    
