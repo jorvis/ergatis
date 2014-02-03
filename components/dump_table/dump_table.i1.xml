@@ -21,8 +21,8 @@
                 <value>$;SERVER$;</value>
             </param>   
             <param>  
-                <key>--database</key>
-                <value>$;DATABASE$;</value>
+                <key>--database_list</key>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
                 <key>--db_name</key>
