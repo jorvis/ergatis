@@ -129,7 +129,7 @@ if(-e $rules_file) {
 		next if($line =~ /^#/);
 		next if ($line =~ /^\s*$/);
 		my ($correct,$incorrect) = split(/\t/,$line,2);
-		print $correct . "-----".$incorrect."\n";
+		#print $correct . "-----".$incorrect."\n";
 		if(!exists($rules{$incorrect})) {
 			$rules{$incorrect} = $correct;
 		}
