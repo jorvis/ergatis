@@ -9,7 +9,7 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/dump_table</executable>
             <param>  
-                <key>--user</key>
+                <key>--username</key>
                 <value>$;USERNAME$;</value>
             </param>
             <param>  
