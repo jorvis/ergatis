@@ -99,7 +99,6 @@ if (!$update) {	# Select instead of delete if we do not plan to update db
 	print STDOUT "There were ". scalar($QUERIES{'select_gene_syms_with hypos'}->rows) . " entries found in " . $database, "\n";
 } else {
 	$QUERIES{'remove_gene_syms_with hypos'}->execute();
-	$dbh->commit();
 	print STDOUT "There were ". scalar($QUERIES{'remove_gene_syms_with hypos'}->rows) . " entries removed from " . $database, "\n";
 }
 exit(0);
@@ -181,7 +180,7 @@ sub _connect {
   $DBH = DBI->connect("DBI:mysql:$db:$server", "$user", "$password",
                        {
                                 'RaiseError' => 1,
-                                'AutoCommit' => 0,
+                                'AutoCommit' => 1,
                           } );
     };
     if( $@ ) {
