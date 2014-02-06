@@ -39,12 +39,13 @@ B<--help,-h>
     1) Name of Database
     2) Locus_tag ID prefix
     3) Path to a curate_common_names rules file
-    4+) Any other DB related information (to come later)
+    4) Path to a file of bad gene symbols
+    5+) Any other DB related information (to come later)
 
 =head1 OUTPUT
-	A list file containing paths to individual comma-separated files.
+	A list file containing paths to individual comma-separated or tab-delimited files.
 	Each file will be in the form of:
-	dbname,id_prefix,/path/to/rules.txt,Other_db_info
+	dbname,id_prefix,/path/to/rules.txt,/path/to/gene_syms.txt,Other_db_info
 	
 	
 =head1  CONTACT
