@@ -112,7 +112,8 @@ if(!$options{stranded}){
 									  $options{min_ntar_intergenic},
 									  $coverage);
 		foreach (sort keys %{$novels}){
-			$ntars{$_."_".$options{ntar_prefix}} = {seq_id => $seq_id, start => $novels->{$_}{start}, end => $novels->{$_}{end}, strand => "."};
+			my $ntar_id = $_ . "_" . $options{ntar_prefix};		
+			$ntars{$seq_id}->{'ntar_id'}->{$ntar_id} = {start => $novels->{$_}->{start}, end => $novels->{$_}->{end}, strand => "."};			
 		}
     }
 	print "Done.\n\n";
@@ -142,7 +143,6 @@ if(!$options{stranded}){
 										  $options{min_transcript}, 
 										  $options{min_ntar_intergenic},
 										  $coverage);
-
 			foreach (sort keys %{$novels}) {
 				my $ntar_id = $_ . "_" . $options{ntar_prefix};
 				$ntars{$seq_id}->{'ntar_id'}->{$ntar_id} = {start => $novels->{$_}->{start}, end => $novels->{$_}->{end}, strand => "+"};
@@ -160,7 +160,6 @@ if(!$options{stranded}){
 										  $options{min_transcript}, 
 										  $options{min_ntar_intergenic},
 										  $coverage);
-
 			foreach (sort keys %{$novels}) {
 				my $ntar_id = $_ . "_" . $options{ntar_prefix};
 				$ntars{$seq_id}->{'ntar_id'}->{$ntar_id} = {start => $novels->{$_}->{start}, end => $novels->{$_}->{end}, strand => "-"};
@@ -253,7 +252,6 @@ open GFF3, ">" . $options{output_stub} . ".ntars.gff3";
 print GFF3 "##gff-version   3\n";
 
 foreach my $seq_id (sort {$a cmp $b} keys %ntars) {
-	
 	my $ntar_ids = $ntars{$seq_id}->{'ntar_id'};
 	foreach my $ntar_id (sort {$ntar_ids->{$a}->{start} <=> $ntar_ids->{$b}->{start}} keys %$ntar_ids) {
 		
@@ -288,10 +286,9 @@ my $filtered_ntars = 0;
 # create filtered tars GFF3 file
 open KEPT, ">" . $options{output_stub} . ".kept_ntars.gff3";
 print KEPT "##gff-version   3\n";
-
 foreach my $seq_id (sort {$a cmp $b} keys %ntars) {
-	
 	my $ntar_ids = $ntars{$seq_id}->{'ntar_id'};
+	
 	foreach my $ntar_id (sort {$ntar_ids->{$a}->{start} <=> $ntar_ids->{$b}->{start}} keys %$ntar_ids) {
 
 		$filtered_ntars++;
@@ -311,7 +308,7 @@ foreach my $seq_id (sort {$a cmp $b} keys %ntars) {
 close KEPT;
 
 print STDERR "\nReported TARs after filtering based on overlaps: $filtered_ntars\n\n";
-
+exit(0);
 
 ##############################################
 

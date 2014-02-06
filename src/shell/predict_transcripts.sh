@@ -1,5 +1,8 @@
 #! /bin/bash
 
+export PERL5LIB=/usr/local/projects/ergatis/package-nightly//lib/perl5/
+
+
 ### FUNCTIONS ###
 function fastaLen() {
 # Usage:  fastaLen
@@ -89,12 +92,12 @@ $bin_d/find_intergenic_background_cutoff.py \
     --gff3_file=$gff_f \
     --wig_file=$wig_file \
     --second_wig=$second_wig \
-    > $output_d/$sample.cutoff
+    > $output_d/$sample.cutoff > /$output_d/find_cutoff.log
 
 cutoff=`cat $output_d/$sample.cutoff`
 
 echo "Now finding transcript overlaps..."
-perl $bin_d/find_transcripts.pl \
+perl /export/git/ergatis/src/perl/find_transcripts.pl \
     --file_type=WIG \
     --file=$wig_file \
     --second_file=$second_wig \
@@ -106,6 +109,6 @@ perl $bin_d/find_transcripts.pl \
     --min_intergenic=$MIN_IG \
     --base_gff3=$gff_f \
     --base_feature_type=$FEATURE \
-    --output_stub=$output_d/$sample.transcripts
+    --output_stub=$output_d/$sample.transcripts > /$output_d/find_transcripts.log
 
 echo "Finished!!!"
