@@ -1,5 +1,6 @@
 next
 ---
+-Added perl script for genbank submission component fix_gene_symbols
 -Added genbank submission components dump_table, fix_gene_symbols, create_db_list_file
 -Added genbank submission components assign_dbxref_ids, curate_common_names, deleteOverlappingRNAs, remove_db_gene_syms_with_hypos, and update_ec_numbers
 -Fixed bugs in predict_operons component
