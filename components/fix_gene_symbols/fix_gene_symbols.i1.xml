@@ -5,16 +5,32 @@
         <name>fix gene symbols iterator</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>fix gene symbols in tbl</name>
+            <name>fix gene symbols</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/fix_gene_symbols</executable>
-            <param>  
+            <param>
                 <key>--input_file</key>
-                <value>$;I_FILE_BASE$;</value>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
-                <key>--output_file</key>
-                <value>$;OUTPUT_FILE$;</value>
+                <key>--username</key>
+                <value>$;USERNAME$;</value>
+            </param>
+            <param>  
+                <key>--password</key>
+                <value>$;PASSWORD$;</value>
+            </param>
+            <param>  
+                <key>--host</key>
+                <value>$;SERVER$;</value>
+            </param>   
+            <param>  
+                <key>--tbl_file</key>
+                <value>$;TBL_FILE$;</value>
+            </param>
+            <param>  
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
              <param>
                  <key>stdout</key>
@@ -23,7 +39,7 @@
             <param>  
                 <key>stderr</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
-            </param>
-        </command>    
+            </param>   
+        </command>     
     </commandSet>
 </commandSetRoot>
