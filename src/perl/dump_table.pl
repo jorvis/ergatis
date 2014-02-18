@@ -419,11 +419,11 @@ sub make_contigs {
       my $cseq = $contig->{'sequence'} = substr($sequence, $contig->{'start'}, $clen);
       # skip contigs that are empty or all Ns
       if ($cseq !~ /^N*$/i) {
-        if (defined $db{$database}) {
-            $contig->{'id'} = $db{$database} . "." . $CONTIG_STRING . ".".$CONTIG_NUMBER++;
-        } else {
+#        if (defined $db{$database}) {
+#            $contig->{'id'} = $db{$database} . "." . $CONTIG_STRING . ".".$CONTIG_NUMBER++;
+#        } else {
             $contig->{'id'} = $database . "." . $CONTIG_STRING . "." . $CONTIG_NUMBER++;
-        }
+#        }
         push(@$contigs, $contig);
       }
       # reset for next contig
