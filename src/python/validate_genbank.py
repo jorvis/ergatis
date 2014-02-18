@@ -398,6 +398,7 @@ def main():
         parser.error("Output directory path (-o) must be provided")
 
     gbk = options.genbank_file
+    gbk = gbk.rstrip()
     
     # Create output directory if it doesn't exist.
     outdir = options.output_path
@@ -412,10 +413,10 @@ def main():
     if options.log_file:
         log = outdir + "/" + options.log_file
     else:
-        log = outdir + "/gbk_changelog.txt"
+        base_gbk = re.sub("\..+", "", basename(gbk))
+        log = outdir + "/" + base_gbk + ".gbk_changelog.txt"
     log_h = open(log, "w")
 
-    gbk = gbk.rstrip()
     if not gbk.endswith("gbk") and not gbk.endswith("gb") and not gbk.endswith("gbwithparts"):	#Change into a regex later
         sys.stderr.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
         sys.exit(1)
@@ -425,7 +426,7 @@ def main():
     validate_genbank(new_gbk, val, log_h)
     log_h.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
 	
-    sys.stdout.write("Finished validating " + gbk + "\n")
+    sys.stdout.write("Finished validating " + gbk + "\n\n---------------\n\n")
     log_h.close()
 
 if __name__ == '__main__':
