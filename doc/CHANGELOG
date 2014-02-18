@@ -1,5 +1,6 @@
 next
 ---
+-Fixed wrap_tbl2asn to recognise .cmt file correctly and added putative check in deleteOverlappingGenes.pl
 -Add shell script to download latest version of tbl2asn
 -Added new perl scripts to dump_table for GenBank submission pipeline
 -Added perl script for genbank submission component fix_gene_symbols
