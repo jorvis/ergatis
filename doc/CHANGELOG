@@ -1,5 +1,6 @@
 next
 ---
+-Add shell script to download latest version of tbl2asn
 -Added new perl scripts to dump_table for GenBank submission pipeline
 -Added perl script for genbank submission component fix_gene_symbols
 -Added genbank submission components dump_table, fix_gene_symbols, create_db_list_file
