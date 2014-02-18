@@ -22,6 +22,13 @@
         <!--Processing-->
         <!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
-        <!--Postprocessing-->         
+        <!--Postprocessing-->   
+	<command>
+		<type>RunUnixCommand</type>
+                <name>create dump database directory list</name>
+                <state>incomplete</state>
+                <executable>/bin/ls</executable>
+		<arg>-d $;OUTPUT_DIRECTORY$;/*/*/*/ > $;DB_OUTPUT_DIR_LIST$;</arg>
+	</command>      
     </commandSet>
 </commandSetRoot>

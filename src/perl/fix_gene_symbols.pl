@@ -193,7 +193,7 @@ sub fixGeneSymbolsInTbl {
 	($sFBase,$sFDir,$sFExt) = fileparse($sTblFile,qr/\.[^.]*/);
 
 	if((-d $sOutDir) && (-e $sOutDir)) {
-		$sCorrectedTbl = $sOutDir."/".$sFBase."_corrected".$sFExt;
+		$sCorrectedTbl = $sOutDir."/".$sFBase."_gs_corrected".$sFExt;
 		open($fhWrite, "> $sCorrectedTbl") or printLogMsg($ERROR, "$sSubName :: Could not open file $sCorrectedTbl for reading. Reason : $!");
 	} else {
 		printLogMsg($ERROR, "ERROR : $sSubName :: Invalid output directory $sOutDir specified. Directory should exist");
@@ -327,7 +327,7 @@ sub readInput {
 			printLogMsg($WARN, "WARNING : $sSubName :: Database name missing for $sLine. Seems like you mean to fix the .tbl file only");
 		} 
 		if(length($paMeta->[3]) == 0 || !(-e $paMeta->[3]) || !(-s $paMeta->[3])) {
-			printLogMsg($WARN, "WARNING : $sSubName :: Missing gene symbols rules file in input file $sFile in column 4. Thus only duplicate and upper case gene symbols will be removed from either provided .tbl file or database or both");
+			printLogMsg($WARN, "WARNING : $sSubName :: Missing gene symbols rules file in input file $sFile in column 4. Thus only duplicate and upper case gene symbols will be removed from either provided .tbl file or database.");
 		}	
 		
 	}
