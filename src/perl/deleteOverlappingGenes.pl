@@ -321,8 +321,8 @@ sub read_genes_to_delete {
           		# gecDEC10A:rRNA	23S ribosomal RNA	lcl|gecDEC10A.contig.0:350459-353357	ECDEC10A_0351
           		if ($line =~ /^[^\:]+\:CDS.*/) {
             		my($type, $name, $coords, $locus) = split(/\t/, $line);
-            		# Do not add genes to array unless they are conserved hypothetical proteins or hypothetical proteins
-            		if ($name eq 'conserved hypothetical protein' || $name eq 'hypothetical protein') {
+            		# Mark genes if they are hypothetical proteins or start with putative
+            		if ($name eq 'conserved hypothetical protein' || $name eq 'hypothetical protein' || $name =~ /^putative /) {
             		    $hypo = 1;
           			}
             		die "failed to parse CDS id from $line" unless defined($locus);
