@@ -322,7 +322,7 @@ sub read_genes_to_delete {
           		if ($line =~ /^[^\:]+\:CDS.*/) {
             		my($type, $name, $coords, $locus) = split(/\t/, $line);
             		# Do not add genes to array unless they are conserved hypothetical proteins or hypothetical proteins
-            		if ($name eq 'conserved hypothetical protein' || $name eq 'hypothetical protein') {
+            		if (($name eq 'conserved hypothetical protein') || ($name eq 'hypothetical protein') || ($name =~ /^putative/)) {
             		    $hypo = 1;
           			}
             		die "failed to parse CDS id from $line" unless defined($locus);
