@@ -54,6 +54,7 @@ B<--help,-h>
  16. Contact person's email address [for .sbt file creation]
  17. Comma-separated author list for Genbank submission. Format : Each name should be Last name\sFirst name\sMiddle Initial [for .sbt file creation]
  18. Title of the publication [for .sbt file creation]
+ 19. Absolute path to list of deprecated or bad EC numbers, one per row (used in update_ec_numbers)
  
  A comma-separated file can be used but it is not recommended unless you plan on entering only the first 4 columsn or less of data
 
