@@ -94,6 +94,8 @@ my $no_change = 0;
 my %saved_queries;
 my %report = ("removed"=>0, "changed"=>0, "genes"=>{});
 my $password;
+my $ec_rules;
+my @undesired_ec = ();
 ####################################################
 
 my %options;
@@ -112,6 +114,13 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
+if (defined $ec_rules) {
+   &_log($DEBUG, "Parsing EC rules file $ec_rules");
+   open RULES, $ec_rules or die ("Cannot run ec_rules file $ec_rules for reading: $!\n");
+   @undesired_ec = <RULES>;
+   close RULES;
+}
+
 &_log($DEBUG, "Parsing $options{'input_ec_dat'}" );
 my $enzymes = &parse_dat_file( $options{'input_ec_dat'} );
 
@@ -125,6 +134,19 @@ GENE:
 
       EC_NUMBER:
         foreach my $e ( @{$ecs} ) {
+            # sadkins code to remove  particular obsolete ec nums from database
+            my $found = 0;
+            foreach my $obs (@undesired_ec) {
+                chomp $obs;	# Did not chomp when parsing rules file
+                if ($e->[0] eq $obs) {	# if our database ec matches a bad ec
+                  $found = 1;
+                  &_log($WARN, "Remove from $name: $e->[0] as the EC number is in rules file");
+                  &remove_ec_number( $e->[1], $e->[0], $name );	# remove entry from db
+                  last;
+                }
+            }
+            next if ($found);	# Do not want to have any more operations on this EC number so go to next
+            # end sadkins code
 
             ## skip if it isn't a whole ec number
             next EC_NUMBER if( $e->[0] =~ /-/ );
@@ -419,7 +441,9 @@ sub check_options {
    open DB, $options{'database_file'} or die "Cannot open database_file for reading: $!\n";
    my $line = <DB>;
    chomp $line;
-   my ($database, $rest) = split(/,|\t/, $line, 2);
+   my @metadata = split(/,|\t/, $line);
+   my $database = $metadata[0];
+   $ec_rules = $metadata[18] if (defined $metadata[18]);
    close DB;
 
     #Assign password to be read from the file if it exists.
