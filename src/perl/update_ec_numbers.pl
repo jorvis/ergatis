@@ -441,7 +441,7 @@ sub check_options {
    open DB, $options{'database_file'} or die "Cannot open database_file for reading: $!\n";
    my $line = <DB>;
    chomp $line;
-   my @metadata = split(/,|\t/, $line);
+   my @metadata = split(/,|\t/, $line);   
    my $database = $metadata[0];
    $ec_rules = $metadata[18] if (defined $metadata[18]);
    close DB;
