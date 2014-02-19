@@ -35,17 +35,32 @@ B<--help,-h>
  DESCRIPTION
  
 =head1  INPUT
-    Either a comma-separated or tab-separated file containing the following columns:
-    1) Name of Database
-    2) Locus_tag ID prefix
-    3) Path to a curate_common_names rules file
-    4) Path to a file of bad gene symbols
-    5+) Any other DB related information (to come later)
+    A tab-separated file containing the following columns:
+ 1. Name of the manatee database used while running the prokaryotic annotation pipeline
+ 2. NCBI_locus_tag prefixto be assigned to the genes.
+ 3. Absolute path to the tab-delimited rules file for fixing gene product names in the database.
+ 4. Absolute path to the tab-delimited gene symbol rules file for fixing gene symbols in the database.
+ 5. Bioproject Id beginning with PRJ [for .sbt file creation]
+ 6. Organism name [for tbl2asn]
+ 7. Strain name [for tbl2asn]
+ 8. Organism serotype [for tbl2asn]
+ 9. Name of the host from which the bacterial sample was isolated [for tbl2asn]
+ 10. Date on which bacterial sample was collected (mostly year only) [for tbl2asn]
+ 11. Country from which the bacterial sample was isolated [for tbl2asn]
+ 12. Assembly method used to assemble the genome sequence [for .cmt file creation]
+ 13. Genome Coverage [for .cmt file creation]
+ 14. Sequencing platform [for .cmt file creation]
+ 15. Contact person's name for Genbank submission. Format : Last name\sFirst name [for .sbt file creation]
+ 16. Contact person's email address [for .sbt file creation]
+ 17. Comma-separated author list for Genbank submission. Format : Each name should be Last name\sFirst name\sMiddle Initial [for .sbt file creation]
+ 18. Title of the publication [for .sbt file creation]
+ 
+ A comma-separated file can be used but it is not recommended unless you plan on entering only the first 4 columsn or less of data
 
 =head1 OUTPUT
 	A list file containing paths to individual comma-separated or tab-delimited files.
 	Each file will be in the form of:
-	dbname,id_prefix,/path/to/rules.txt,/path/to/gene_syms.txt,Other_db_info
+	dbname	id_prefix	/path/to/rules.txt	/path/to/gene_syms.txt	Other_db_info	...
 	
 	
 =head1  CONTACT
