@@ -9,6 +9,9 @@ eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 use strict;
 use warnings;
 use Data::Dumper;
@@ -258,6 +261,9 @@ sub process_feature_group
                     $gene_val = $_->att('identifier');
                 }
                 elsif(($_->att('database')) && ($_->att('database') eq 'NCBI_locus_tag_public_locus')) {
+                    $gene_val = $_->att('identifier');
+                }
+                elsif(($_->att('database')) && ($_->att('database') eq 'NCBI_gi')) {
                     $gene_val = $_->att('identifier');
                 }
             }@xrefs;
