@@ -145,7 +145,7 @@ sub readInput {
 	my $sLine;
 	my $fhRead;
     	my $sSubName = (caller(0))[3];
-	my @aMandatory = (0, 5, 6, 7, 8, 9, 10);
+	my @aMandatory = (0, 5, 6);
 
 	open($fhRead, "< $sFile") or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open $sFile file for reading. Reason : $!");
 	while($sLine=<$fhRead>) {

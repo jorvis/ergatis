@@ -138,7 +138,6 @@ if(-e $rules_file) {
 	die "$rules_file file does not exist";
 }
 
-exit(0);
 %checks = &register_common_name_checks();
 %gene_sym_checks = &register_gene_symbol_checks();
 
@@ -389,7 +388,7 @@ sub change_com_name {
         do {
             $prev = $com_name;
             $com_name = &run_curate_subs( $com_name, $filter );
-	    $com_name = &additional_rules($com_name) if ($options{'rules_file'});
+	    $com_name = &additional_rules($com_name) if (-e $rules_file);
         } while( $prev ne $com_name );
 
         unless( ($com_name eq $orig) && ($orig ne "hypothetical protein") && ($orig ne $chp) ) {

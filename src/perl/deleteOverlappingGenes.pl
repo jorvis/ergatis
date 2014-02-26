@@ -282,7 +282,7 @@ sub read_genes_to_delete {
   	my $num_skipped = undef;
   
   	# $pattern[0] = completely overlapping, $pattern[1] = partially overlapping
-  	my $pattern = ["FATAL\:\sDiscRep_SUB:RNA_CDS_OVERLAP", "DiscRep_SUB:RNA_CDS_OVERLAP"];
+  	my $pattern = ['FATAL\:\sDiscRep_SUB:RNA_CDS_OVERLAP', 'DiscRep_SUB:RNA_CDS_OVERLAP'];
 
   	my $fh = FileHandle->new();
   	my $lnum = 0;
@@ -291,7 +291,7 @@ sub read_genes_to_delete {
   	while (my $line = <$fh>) {
 		chomp($line);
     	++$lnum;
-    	if ($line =~ /^$pattern->[0]/ || $line =~ /^$pattern->[1]/) {
+    	if (($line =~ /^$pattern->[0]/) || ($line =~ /^$pattern->[1]/)) {
         	$reading_list = 1;
         	if ($line =~ /RNA_CDS_OVERLAP\:\:(\d+) coding regions/) {
          		$num_expected = $1;
