@@ -46,7 +46,7 @@ B<--server,-s>
     Database hostname
 
 B<--no_change,-n>
-    Flag. Will print out report but not actually change anything 
+    Toggles between 0 (will change) and 1 (will not change). Will print out report but not actually change anything 
     in the database
 
 B<--log,-l>
@@ -106,7 +106,7 @@ my $results = GetOptions (\%options,
                           "database_file|d=s",
                           "server|s=s",
                           "input_ec_dat|i=s",
-                          "no_change|n",
+                          "no_change|n=i",
                           "log|l=s",
                           "debug|D=s",
                           "help|h"
@@ -162,7 +162,7 @@ GENE:
         }
     }
 
-print "No changes were actually made to database\n" if( $options{'no_change'} );
+print "No changes were actually made to database\n" if( $no_change );
 print "Removed: ".$report{'removed'}."\n";
 print "Updated: ".$report{'changed'}."\n";
 print "Genes Affected: ".scalar(keys %{$report{'genes'}} )."\n";
@@ -464,7 +464,10 @@ sub check_options {
    $dbh = &_connect( $opts->{'username'}, $password, $database,
                      $opts->{'server'} );
 
-   $no_change = 1 if( $opts->{'no_change'} );
+    if ( defined($opts->{'no_change'}) && ($opts->{'no_change'} != 0 && $opts->{'no_change'} != 1) ) {
+   		die("The --no_change option must either be a 0 (will change) or a 1 (will not change).");
+    }
+   $no_change = 1 if( $opts->{'no_change'} == 1 );
 }
 
 sub _log {
