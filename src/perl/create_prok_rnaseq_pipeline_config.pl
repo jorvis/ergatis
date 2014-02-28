@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 ################################################################################
 ### POD Documentation
 ################################################################################
@@ -187,7 +190,7 @@ my ($sPLayout, $sPConfig);
 my ($sBwtIndexDir, $sBwtIndexPrefix);
 my ($fpPL, $fpPC, $fpLST1, $fpLST2, $fpLST, $fpSMPL);
 my ($sSampleName, $sGroupName, $sRead1File, $sRead2File, @aReadFiles, $sList);
-my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList, $Deseq_List, $sRpkmFileList);
+my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList, $Deseq_List,  $edgeR_List, $sRpkmFileList);
 my ($sFeature, $sAttrID);
 my (@aComparisons, $sCGrp, $sGrpX, $sGrpY);
 my ($sList1File, $sList2File, $sListFile, $sFile, $sInFile);
@@ -953,13 +956,15 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	              config2params(\%hParams, \%hConfig, 'edgeR');
 	              add_config_section($fpPC, "edgeR", "edgeR_diff_expression");
 	              add_config_parameters($fpPC, \%hParams);
-	        complete_component($oPL);
+	              complete_component($oPL);
 
          ##Add Deseq Filter component and expression plots.
-                include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
-	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "deseq");
-             
-	       
+	init_component($oPL,"parallel");
+            include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
+	        include_component_layout($oPL, $sTemplateDir, "filter_edgeR", "filter_eR");
+	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "deseq");            
+
+	        ##Add Deseq Filter component.
 	        $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
 	        %hParams = ();
 	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
@@ -967,13 +972,22 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	        add_config_section($fpPC, "filter_deseq", "filter_de");
 	        add_config_parameters($fpPC, \%hParams);
 
-                %hParams = ();
+            ##Add EdgeR Filter component.
+	        $edgeR_List = '$;REPOSITORY_ROOT$;/output_repository/edgeR/$;PIPELINEID$;_edgeR_diff_expression/edgeR.table.list';
+	        %hParams = ();
+	        $hParams{'INPUT_FILE'} = [$edgeR_List,"path to output list file of deseq"];
+	        config2params(\%hParams, \%hConfig, 'filter_edgeR');
+	        add_config_section($fpPC, "filter_edgeR", "filter_eR");
+	        add_config_parameters($fpPC, \%hParams);
 
+          ##Add expression plot
+            %hParams = ();
 	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
 	        config2params(\%hParams, \%hConfig, 'expression_plots');
 	        add_config_section($fpPC, "expression_plots", "deseq");
 	        add_config_parameters($fpPC, \%hParams);
 
+          complete_component($oPL);
 
         complete_component($oPL);
 
