@@ -34,7 +34,7 @@
                         </param>
                         <param>
                                 <key>--regex</key>
-                                <value>".*\/validate\/.*\.gbk"</value>
+                                <value>".*\.gbk"</value>
                         </param>           
                         <param>
                                 <key>--output_list</key>
@@ -46,7 +46,7 @@
                 	<name>concatenate changelogs</name>
                 	<state>incomplete</state>
                 	<executable>find</executable>
-                	<arg>$;OUTPUT_DIRECTORY$;/ -name *gbk_changelog.txt | xargs cat</arg>
+                	<arg>$;OUTPUT_DIRECTORY$;/ -name *gb_changelog.txt | xargs cat</arg>
                 	<param>
                 		<key>stdout</key>
                 		<value>$;OUTPUT_DIRECTORY$;/genbank_changelog.txt</value>
