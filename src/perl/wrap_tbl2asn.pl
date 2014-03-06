@@ -179,6 +179,9 @@ sub readInput {
 				printLogMsg($ERROR, "ERROR : $sSubName :: $nI column value missing in $sLine.");
 			} 
 		}
+		if($paMeta->[19] eq "NA") {
+			$paMeta->[19] = "";
+		}
 	}
 	close($fhRead);	
 }
