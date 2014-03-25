@@ -9,7 +9,7 @@ translate_sequence.pl  - translates nt fasta or gene describing BSML into polype
 
 =head1 SYNOPSIS
 
-USAGE:  translate_sequence.pl --transeq_bin /path/to/emboss/bin/transeq -i [single_sequence.fsa|gene_document.bsml] -o /output/directory [-l /path/to/logfile.log] [--regions s1-e1,s2-e2,...] [--frame 1,2,3,F,-1,-2,-3,R,6] [--table 0] --project project_name --id_repository /path/to/id_repository
+USAGE:  translate_sequence.pl --transeq_bin /path/to/emboss/bin/transeq -i [single_sequence.fsa|gene_document.bsml] -o /output/directory [-l /path/to/logfile.log] [--regions s1-e1,s2-e2,...] [--frame 1,2,3,F,-1,-2,-3,R,6] [--table 0] [--multifasta_output 0] --project project_name --id_repository /path/to/id_repository
 
 =head1 OPTIONS
 
@@ -33,6 +33,13 @@ B<--frame,-f>
 
 B<--table,-t>
     Optional translation table to use
+    
+B<--multifasta_output, -m>
+    Optional.  If value is set to 1, multiple sequences will be written to a fasta file, as opposed to a single seq per fasta.  Default is 0;
+    Currently only works for BSML input sequences
+
+B<--cleanup
+    Optional.  If set to 1, will delete any cdb files created from the transeq executable run.  Default is 0
 
 B<--debug>
     Debug level.  Use a large number to turn on verbose debugging.
@@ -87,6 +94,8 @@ my $cds_regions;
 my $exon_frame;
 my $cds_frame;
 my $polypeptide_ids;
+my $multifasta_flag = 0;
+my $SEQS_PER_FASTA = 100;	#constant
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -98,7 +107,8 @@ my $results = GetOptions (\%options,
                           'output|o=s',
                           'id_repository=s',
                           'project=s',
-                          'cleanup=s',
+                          'cleanup:0',
+                          'multifasta_output|m:0',
                           'log|l=s',
                           'debug=s',
                           'help|h') || pod2usage();
@@ -151,6 +161,14 @@ unless (-d $options{'output'}) {
     pod2usage("specified output path '$options{output}' is not a directory");
 }
 
+if ($options{'multifasta_output'}) {
+	if ($options{'multifasta_output'} == 0 || $options{'multifasta_output'} ==1) {
+		$multifasta_flag = $options{'multifasta_output'};
+	} else{
+		die("The --multifasta_output option must either be a 0 (single fasta output) or a 1 (multifasta output).");
+	}
+}
+
 
 if ($options{'table'}) {
     ## translation table
@@ -196,34 +214,34 @@ if (!$fasta_flag) {
 
     my $temp_in_fsa = $options{'output'}."/temp.in.fsa";
     my $temp_out_fsa = $options{'output'}."/temp.out.fsa";
+    my $temp_multifasta = $options{'output'}."/temp.out.multi.fsa";
    
     foreach my $seq_id(keys(%{$sequence_children})) {
-
         my $doc = new BSML::BsmlBuilder();
-        
         my $seq = '';
+        my $seq_count = 0;	# Number of processed sequences so far
+        my $multifasta_count = 1;	# ID of the current multifasta file we are writing out to
         
         ## retrieve the parent sequence
         $seq = get_sequence_by_id($bsml_sequences->{$seq_id}, $bsml_fasta_ids->{$seq_id});
     
         if (length($seq) eq 0) {
-            $logger->logdie("failed to fetch the sequence for '$seq_id'");
+           	$logger->logdie("failed to fetch the sequence for '$seq_id'");
         }
         
         ## translate all children
         foreach my $transcript_id(@{$sequence_children->{$seq_id}}) {
-            my $flags = $transeq_flags;
+           	my $flags = $transeq_flags;
         
             ## get fasta substring sequence
             my $subseq = get_substring_by_exons($seq, $exon_locs->{$transcript_id});
             
             if (length($subseq) eq 0) {
-                $logger->logdie("failed to fetch the subsequence for '$transcript_id'");
+               	$logger->logdie("failed to fetch the subsequence for '$transcript_id'");
             }
-        
-            ## write the sequence to a temp file
+            	
             write_seq_to_fasta($temp_in_fsa, "$transcript_id", $subseq);
-            
+            	
             ## transeq flags
             $flags .= " -sequence $temp_in_fsa";
             $flags .= " -outseq $temp_out_fsa";
@@ -234,16 +252,9 @@ if (!$fasta_flag) {
             eval { system($transeq_exec . $flags) };
 
             if ( $@ ) {
-                $logger->logdie("failed running transeq: $@");
+               	$logger->logdie("failed running transeq: $@");
             }
-            
-            ## replace sequence ids in output file
-#           my $out_fsa = $options{'output'}."/"."$polypeptide_ids->{$transcript_id}.fsa";
-            $id_hash = replace_sequence_ids($transcript_id, $temp_out_fsa, $options{'output'});
 
-            ## remove temp out file
-            unlink($temp_out_fsa);
-    
             my $seq = $doc->createAndAddExtendedSequenceN(  'id' => $transcript_id,
                                                             'molecule' => 'na',
                                                             'class' => '',
@@ -257,6 +268,20 @@ if (!$fasta_flag) {
             $seq->addBsmlLink('analysis', '#translate_sequence', 'input_of');
             my $ft = $doc->createAndAddFeatureTable($seq);
 
+			if ($multifasta_flag) {
+			    $seq_count++;
+			    #Replace sequence IDs and write to multifasta files
+            	$id_hash = replace_sequence_ids($transcript_id, $temp_out_fsa, $options{'output'}, $multifasta_count, $input_prefix);
+        		$multifasta_count++ if ($seq_count % $SEQS_PER_FASTA == 0);   	 	      	
+			} else {
+            	## replace sequence ids in a single fasta output file
+#         	 my $out_fsa = $options{'output'}."/"."$polypeptide_ids->{$transcript_id}.fsa";
+            	$id_hash = replace_sequence_ids($transcript_id, $temp_out_fsa, $options{'output'});
+			}
+			
+            ## remove temp out file
+            unlink($temp_out_fsa);
+    			
             foreach my $key(keys(%{$id_hash})) {
                 my $feat = $doc->createAndAddFeature($ft, $key, $key, 'polypeptide');
                 $doc->createAndAddBsmlAttribute($feat, 'reading_frame', $id_hash->{$key}->{'frame'});
@@ -273,13 +298,17 @@ if (!$fasta_flag) {
                                                     'identifier'    => $key,
                                                 );
             }
-        }
-        $doc->write($options{'output'}."/$input_prefix.translate_sequence.bsml");
-    }
+        }	   	
+        
+    	$doc->write($options{'output'}."/$input_prefix.translate_sequence.bsml");
+    } 	
+   
     ## remove temp in file
     if (-e $temp_in_fsa) {unlink($temp_in_fsa);}
+    if (-e $temp_multifasta) {unlink ($temp_multifasta);}
     
-    if ($options{'cleanup'}) {
+    if ($options{'cleanup'} == 1) {
+    	print STDERR "Removing .cdb files\n";
         &cleanup_files(@sequence_files);
     }
     
@@ -361,14 +390,15 @@ if (!$fasta_flag) {
 exit();
 
 ## replace the sequence ids in the output fasta file
+##Output multifasta file name will be ./$prefix_$fastacount.fsa
 sub replace_sequence_ids {
-    my ($transcript_id, $old_fsa_file, $out_dir) = @_;
+    my ($transcript_id, $old_fsa_file, $out_dir, $fastacount, $prefix) = @_;
     
     my $ids = {};
     
     my $count = count_fasta_records($old_fsa_file);
 
-    if ($count > 1 && $transcript_id ne '') {
+    if ($count > 1 && $transcript_id ne '' && ! defined ($fastacount) ) {
         $logger->logdie("Can't assign polypeptide id '$polypeptide_ids->{$transcript_id}' to more than one sequence in '$old_fsa_file'");
     }
 
@@ -392,8 +422,18 @@ sub replace_sequence_ids {
                                          );
                 $ids->{$seq_id}->{'frame'} = $1;
             }
-            $ids->{$seq_id}->{'fsa'} = "$out_dir/$seq_id.fsa"; 
-            open ($out_fh, ">$out_dir/$seq_id.fsa") || $logger->logdie("couldn't open '$out_dir/$seq_id.fsa' for writing");
+
+            if (defined $fastacount) {
+            	# Multifasta output
+             	my $out_fsa =  "$out_dir/$prefix" . "_" . "$fastacount.fsa";  
+             	$ids->{$seq_id}->{'fsa'} = "$out_fsa";               	        
+                open ($out_fh, ">>$out_fsa") || $logger->logdie("couldn't open '$out_fsa' for writing");
+            } else {  
+            	# Single fasta output
+            	my $out_fsa = "$out_dir/$seq_id.fsa"; 
+            	$ids->{$seq_id}->{'fsa'} = "$out_fsa";                    
+            	open ($out_fh, ">$out_fsa") || $logger->logdie("couldn't open '$out_fsa' for writing");
+            }
             print $out_fh ">$seq_id\n";
         } else {
             print $out_fh $_;
@@ -523,9 +563,9 @@ sub process_sequence {
         } elsif ($seq_count > 1) {
             my $nt_seq = get_sequence_by_id($source, $identifier);
             
-	    unless (length($nt_seq) > 0) {
+	    	unless (length($nt_seq) > 0) {
                 $logger->logdie("couldn't extract sequence for '$seq_id' from Seq-data-import source '$source'");
-	    }
+	    	}
 
         } else {
             $logger->logdie("no fasta records found for BSML Seq-data-import '$source' for sequence '$seq_id'");
@@ -747,8 +787,9 @@ sub constrain_exons_by_cds {
 sub cleanup_files {
     my @files = @_;
 
+	&run_system_cmd("find $options{output} -name \"*.cdb\" -exec rm -f {} \\;");
+	
     foreach my $file (@files) {
-	&run_system_cmd("find $options{output} -name \"*.cdb\" -exec rm {} \;");
         unlink($file) or $logger->warn("Could not remove file $file.");
     }
 }
