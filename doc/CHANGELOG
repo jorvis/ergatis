@@ -1,5 +1,7 @@
 next
 ---
+-Changed bsml2fasta components to use multifasta output instead of single fasta output
+-Added option to translate_sequence output choice of multifasta or single fasta.  Also fixed defective cleanup option.
 -Fixed create_map_file script to process multi-record gbf files correctly
 -Added isolation-source field in wrap_tbl2asn
 -Fixed small bugs in various Genbank submission pipeline scripts
