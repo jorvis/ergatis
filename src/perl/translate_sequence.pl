@@ -272,7 +272,7 @@ if (!$fasta_flag) {
 			    $seq_count++;
 			    #Replace sequence IDs and write to multifasta files
             	$id_hash = replace_sequence_ids($transcript_id, $temp_out_fsa, $options{'output'}, $multifasta_count, $input_prefix);
-        		$multifasta_count++ if ($seq_count % $SEQS_PER_FASTA == 0);   	 	      	
+        		if ($seq_count % $SEQS_PER_FASTA == 0) {$multifasta_count++;}   	 	      	
 			} else {
             	## replace sequence ids in a single fasta output file
 #         	 my $out_fsa = $options{'output'}."/"."$polypeptide_ids->{$transcript_id}.fsa";
