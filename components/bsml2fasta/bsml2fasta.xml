@@ -36,6 +36,10 @@
                 <key>--format</key>
                 <value>'$;FORMAT$;'</value>
             </param>
+            <param>
+            	<key>--split_multifasta</key>
+            	<value>'$;SPLIT_MULTIFASTA$;'</value>
+            </param>
             <param>  
                 <key>--output</key>
                 <value>'$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE$;'</value>

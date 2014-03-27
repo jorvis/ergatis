@@ -16,6 +16,7 @@ USAGE:  bsml2fasta.pl
           --class_filter=someclass 
           --bp_extension=#bpadjacentgenomicseq
           --coords=0|1
+          --split_multifasta=0|1
           --suffix=fsa
           --debug=debug_level 
           --log=log_file
@@ -45,6 +46,9 @@ B<--debug,-d>
 
 B<--format,-f> 
     Format.  'multi' (default) writes all sequences to a multi-fasta file, and 'single' writes each sequence in a separate file named like $id.fsa
+
+B<--split_multifasta>
+    Optional.  If 'multi' is chosen for --format option, the split the number of sequences that go into the multifasta file.  100 seqs per fasta.
 
 B<--suffix> 
     suffix of the output files. Defaults to fsa
@@ -274,6 +278,7 @@ my $results = GetOptions (\%options,
 			  'use_feature_ids_in_fasta=i',
 			  'use_sequence_ids_in_fasta=i',
 			  'output|o=s',
+			  'split_multifasta:0',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -287,6 +292,7 @@ if( $options{'help'} ){
 }
 
 my $iscircular = 0;
+my $SEQS_PER_FASTA = 100;	#constant
 
 &check_parameters(\%options);
 
@@ -398,7 +404,7 @@ my $excludeflags = {};
 
 if ($options{format} eq "multi") { 
     if ($options{output_list}) {
-	print $olist_fh "$options{output}\n";
+	print $olist_fh "$options{output}\n" unless ($options{'split_multifasta'});
     }
 }
 
@@ -413,8 +419,7 @@ for my $file ( @files ) {
     
     if ($options{format} eq "multi") { 
         open ($multioutputfh, ">$options{output}") || $logger->logdie("Unable to write to file $options{output} due to $!");
-        $logger->debug("Writing output to multi-fasta file $options{output}") if ($logger->is_debug);
-        
+        $logger->debug("Writing output to multi-fasta file $options{output}") if ($logger->is_debug); 
     }
     elsif($options{format} eq "byfile") {
         my $ifile = basename $file;
@@ -620,12 +625,19 @@ for my $file ( @files ) {
 }
 
 if($options{format} ne 'byfile') {
-if($options{parse_element} eq 'sequence'){
-    &process_sequences($sequencelookup,$includeflags,$excludeflags);
+	if($options{parse_element} eq 'sequence'){
+    	&process_sequences($sequencelookup,$includeflags,$excludeflags);
+	}
+	elsif($options{parse_element} eq 'feature'){
+    	&process_features($sequencelookup,$featurelookup,$includeflags,$excludeflags);
+	}
 }
-elsif($options{parse_element} eq 'feature'){
-    &process_features($sequencelookup,$featurelookup,$includeflags,$excludeflags);
-}
+
+#Write smaller multifasta files and remove original if 'split_multifasta' option is enabled
+if ($options{'format'} eq 'multi' && $options{'split_multifasta'}){
+    $logger->debug("Now splitting $options{output} into smaller multifasta files") if ($logger->is_debug);
+	&split_multifasta_output($options{'output'}, $SEQS_PER_FASTA);
+	unlink ($options{'output'});
 }
 #######
 ## fin   
@@ -886,6 +898,46 @@ sub fasta_out {
     for(my $i=0; $i < length($$seqref); $i+=60){
         print $fh substr($$seqref, $i, 60), "\n";
     }
+}
+
+# Takes multifasta output and splits file into a certain number of sequences per file
+sub split_multifasta_output {
+    my ($file, $seqs_per_fsa) = @_;
+    my $dir = dirname($file);
+    my $base = basename($file);
+    my $prefix;
+    my $suffix = $options{'suffix'} ? $options{'suffix'} : 'fsa';
+    if ($base =~ /(\w+)\.$suffix$/) {$prefix = $1;}
+    
+    my $seq_count = 0;
+    my $file_count = 0;
+    
+    my $outfh;
+    my $basename;
+    
+    open IN, $file or $logger->logdie("Cannot open $file for reading: $!");
+    while (<IN>) {
+    	my $line = $_;
+    	if ($line =~ /^>/){
+    		if ($seq_count % $seqs_per_fsa == 0) {$file_count++;}    	#Change file ID when enough seqs have been written
+    		$seq_count++;
+    		($basename = $base) =~ s/($prefix)/$1_$file_count/;
+    		my $new_out = $dir . '/' . $basename;
+			open $outfh, ">>$new_out" or $logger->logdie("Cannot open $new_out for writing: $!");
+			print $outfh $line;
+    	} else {
+    	 	print $outfh $line
+    	}
+    }
+    close IN;
+    
+    if ($options{output_list}) {
+    	for (my $i = 1; $i <= $file_count; $i++){
+            print $olist_fh "$dir/$base" . "_$i." ."$suffix\n";
+        }
+    }
+    
+    return;
 }
 
 sub write_sequence {
