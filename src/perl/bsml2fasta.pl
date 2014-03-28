@@ -933,7 +933,7 @@ sub split_multifasta_output {
     
     if ($options{output_list}) {
     	for (my $i = 1; $i <= $file_count; $i++){
-            print $olist_fh "$dir/$base" . "_$i." ."$suffix\n";
+            print $olist_fh "$dir/$prefix" . "_$i." ."$suffix\n";
         }
     }
     
