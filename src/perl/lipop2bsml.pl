@@ -99,62 +99,61 @@ chomp( my @lines = <$in> );
 close($in);
 
 #there should only be one line
-if( @lines != 1 ) {
-    die("There should only be one line in the LipoP raw output when the -short option is used");
-}
-
-my (undef, $id, $type, $score, $margin, $cleavage, $pos) = split( /\s+/, shift @lines );
+#if( @lines != 1 ) {
+#    die("There should only be one line in the LipoP raw output when the -short option is used");
+#}
 
 my $doc = new BSML::BsmlBuilder;
 
-my $seq = $doc->createAndAddSequence( $id, $id, '', 'aa', 'polypeptide' );
+while (scalar(@lines) >0) {
+	my (undef, $id, $type, $score, $margin, $cleavage, $pos) = split( /\s+/, shift @lines );
+	my $seq = $doc->createAndAddSequence( $id, $id, '', 'aa', 'polypeptide' );
 
-#validate the input fasta file to make sure it contains the sequence we are looking for
-&validate_input_fasta( $options->{'input_fasta'}, $id );
+	#validate the input fasta file to make sure it contains the sequence we are looking for
+	&validate_input_fasta( $options->{'input_fasta'}, $id );
 
-#create the seq data import and analysis link
-my $sdi = $doc->createAndAddSeqDataImport( $seq, 'fasta', $options->{'input_fasta'}, '', $id );
-my $s_link = $doc->createAndAddLink( $seq, 'analysis', '#'.$analysis_id, 'input_of' );
+	#create the seq data import and analysis link
+	my $sdi = $doc->createAndAddSeqDataImport( $seq, 'fasta', $options->{'input_fasta'}, '', $id );
+	my $s_link = $doc->createAndAddLink( $seq, 'analysis', '#'.$analysis_id, 'input_of' );
 
-#we are only encoding the cleavage site predictions (type either SpI or SpII)
-if( $type eq 'SpI' || $type eq 'SpII' ) {
+	#we are only encoding the cleavage site predictions (type either SpI or SpII)
+	if( $type eq 'SpI' || $type eq 'SpII' ) {
     
-    #add a feature table
-    my $ft = $doc->createAndAddFeatureTable( $seq );
+    	#add a feature table
+    	my $ft = $doc->createAndAddFeatureTable( $seq );
 
-    ## SpI is a signal peptide 
-    my $signal_peptide_type;
-    if( $type eq 'SpI' ) {
-        $signal_peptide_type = 'signal_peptide';
-    ## SpII is a lipoprotein signal peptide
-    } elsif( $type eq 'SpII' ) {
-        $signal_peptide_type = 'lipoprotein_signal_peptide';
-    }
+    	## SpI is a signal peptide 
+    	my $signal_peptide_type;
+    	if( $type eq 'SpI' ) {
+    	    $signal_peptide_type = 'signal_peptide';
+    	## SpII is a lipoprotein signal peptide
+    	} elsif( $type eq 'SpII' ) {
+    	    $signal_peptide_type = 'lipoprotein_signal_peptide';
+    	}
 
-    #create the signal peptide feature, interval loc and analysis link
-    my $sp_id = $idgen->next_id( 'type' => $signal_peptide_type, 'project' => $options->{'project'} );
-    my $sp_feat = $doc->createAndAddFeature( $ft, $sp_id, $sp_id, $signal_peptide_type );
-    my $endpos = $1 if( $cleavage =~ /(\d+)-(\d+)/ );
-    my $sp_il = $doc->createAndAddIntervalLoc( $sp_feat, 0, $endpos, 0 );
-    my $sp_link = $doc->createAndAddLink( $sp_feat, 'analysis', "#".$analysis_id, 'computed_by' );
-    
+    	#create the signal peptide feature, interval loc and analysis link
+    	my $sp_id = $idgen->next_id( 'type' => $signal_peptide_type, 'project' => $options->{'project'} );
+    	my $sp_feat = $doc->createAndAddFeature( $ft, $sp_id, $sp_id, $signal_peptide_type );
+    	my $endpos = $1 if( $cleavage =~ /(\d+)-(\d+)/ );
+    	my $sp_il = $doc->createAndAddIntervalLoc( $sp_feat, 0, $endpos, 0 );
+    	my $sp_link = $doc->createAndAddLink( $sp_feat, 'analysis', "#".$analysis_id, 'computed_by' );
 
-    #create the cleavage site feature, site loc, and analysis link
-    my $cs_id = $idgen->next_id( 'type' => 'cleavage_site', 'project' => $options->{'project'} );
-    my $cs_feat = $doc->createAndAddFeature( $ft, $cs_id, $cs_id, 'cleavage_site' );
-    my $cs_sl = $doc->createAndAddSiteLoc( $cs_feat, $endpos, 0 );
-    my $cs_link = $doc->createAndAddLink( $cs_feat, 'analysis', '#'.$analysis_id, 'computed_by' );
+    	#create the cleavage site feature, site loc, and analysis link
+    	my $cs_id = $idgen->next_id( 'type' => 'cleavage_site', 'project' => $options->{'project'} );
+    	my $cs_feat = $doc->createAndAddFeature( $ft, $cs_id, $cs_id, 'cleavage_site' );
+    	my $cs_sl = $doc->createAndAddSiteLoc( $cs_feat, $endpos, 0 );
+    	my $cs_link = $doc->createAndAddLink( $cs_feat, 'analysis', '#'.$analysis_id, 'computed_by' );
 
-}
+	}
 
-
-#add the analysis
-my $an = $doc->createAndAddAnalysis( 'id' => $analysis_id,
+	#add the analysis
+	my $an = $doc->createAndAddAnalysis( 'id' => $analysis_id,
                                      'algorithm' => 'lipoP',
                                      'sourcename' => $sourcename, 
                                      'program' => 'lipoP',
                                      'programversion' => 'current');
 
+}
 #write the bsml file
 $doc->write( $options->{'output'} );
 print "Finished writing $options->{'output'}\n";

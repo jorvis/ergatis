@@ -1,6 +1,7 @@
 next
 ---
--Changed bsml2fasta components to use multifasta output instead of single fasta output
+-Changed lipop2bsml script within LipoP component to handle multifasta output as well as multiple LipoP sequences per file
+-Changed bsml2fasta components to use multifasta output instead of single fasta output and to have option to split multifasta output by a certain number of sequences per file
 -Added option to translate_sequence output choice of multifasta or single fasta.  Also fixed defective cleanup option.
 -Fixed create_map_file script to process multi-record gbf files correctly
 -Added isolation-source field in wrap_tbl2asn
