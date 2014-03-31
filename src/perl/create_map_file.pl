@@ -75,7 +75,8 @@ sub printMapInfo {
 		die "No locus found in the genbank file, $genbankFile, $!\n";
 	    }
 	    print $ofh $1." ".$locus."\n";
-	    last;
+# For multi-records gbf files, map all the contigs
+#	    last;
 	}
     }
     close FH;

@@ -1,5 +1,7 @@
 next
 ---
+-Fixed create_map_file script to process multi-record gbf files correctly
+-Added isolation-source field in wrap_tbl2asn
 -Fixed small bugs in various Genbank submission pipeline scripts
 -Fixed wrap_tbl2asn to recognise .cmt file correctly and added putative check in deleteOverlappingGenes.pl
 -Add shell script to download latest version of tbl2asn

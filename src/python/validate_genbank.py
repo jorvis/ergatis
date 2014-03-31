@@ -17,6 +17,7 @@ One can view the changes made in genbank_changelog.txt located in the specified 
 --genbank_file, -g => Path to a Genbank-formatted file.  Genbank file must correspond to DNA sequences
 --output_path, -o => Directory path to write output.  
 --log_file, -l => Name of the changelog file (only the name).
+--debug, -d => Run in debug mode
 """
 
 import sys
@@ -41,6 +42,9 @@ def prevalidation(genbank, prepare, log_h):
     base_gbk = basename(genbank)
     base_gbk = re.sub("\.gb\w*",".gbk", base_gbk)	# Keeping various extensions uniform
 
+    if os.stat(genbank).st_size == 0:	# Die if genbank file is empty
+        sys.stderr.write("Genbank file " + genbank + " is of 0 size\n")
+        sys.exit(1)
     out_file = prepare + "/" + base_gbk
     genbank_h = open_file(genbank)
     genbank_h2 = open_file(genbank)	# Will keep track of the current ACCESSION line
@@ -451,6 +455,23 @@ def overwrite_organism(outfile, organism):
     in_h.close
     out_h.close
     
+# This will move the final Genbank file to the output directory and remove the dirs and files that
+# ultimately will not be used downstream
+def delete_extra_content(outdir, base_gbk, log_h):
+    preval = outdir + "/prevalidate/"
+    preval_gbk = preval + base_gbk + ".gbk"        
+    val = outdir + "/validate/"
+    val_tmp = val + base_gbk + ".tmp"
+    val_gbk = val + base_gbk + ".gbk"	# Keeping this, moving up a directory
+    final_gbk = outdir + base_gbk + ".gbk"
+    os.remove(preval_gbk)
+    os.remove(val_tmp)
+    os.rename(val_gbk, final_gbk)
+    sys.stdout.write("Moved " + val_gbk + " to " + final_gbk + "\n")
+    os.rmdir(preval)
+    os.rmdir(val)
+    sys.stdout.write("Removed unnecessary files and directories\n")        
+    return
 
 #######
 #   MAIN   #
@@ -461,9 +482,10 @@ def main():
     usage = "usage: %prog -g /path/to/file.gbk -o /path/to/out/dir"
     description = "Validate a Genbank file. Requires Biopython-1.62 to run"
     parser = OptionParser(usage=usage, description=description)
-    parser.add_option("-g", "--genbank_file", help="path to a Genbank-formatted file");
+    parser.add_option("-g", "--genbank_file", help="path to a Genbank-formatted file")
     parser.add_option("-o", "--output_path", help="directory path to write output")
-    parser.add_option("-l", "--log_file", help="name of the changelog file (only the name)");
+    parser.add_option("-l", "--log_file", help="name of the changelog file (only the name)")
+    parser.add_option("-d", "--debug", help="run in debug mode", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
     if not options.genbank_file:
@@ -473,6 +495,7 @@ def main():
 
     gbk = options.genbank_file
     gbk = gbk.rstrip()
+    base_gbk = re.sub("\..+", "", basename(gbk))
     
     # Create output directory if it doesn't exist.
     outdir = options.output_path
@@ -484,13 +507,16 @@ def main():
         os.mkdir(pre, 0777)
     if not os.path.exists(val):
         os.mkdir(val, 0777)
+    
+    # Initialize logging
     if options.log_file:
         log = outdir + "/" + options.log_file
     else:
-        base_gbk = re.sub("\..+", "", basename(gbk))
-        log = outdir + "/" + base_gbk + ".gbk_changelog.txt"
+        log = outdir + "/" + base_gbk + ".gb_changelog.txt"
     log_h = open(log, "w")
-
+    if options.debug == True:
+        sys.stdout.write("DEBUG mode enabled\n")
+        
     pattern = re.compile("\.gb\w*")
     match = pattern.search(gbk)
     if not match:
@@ -500,9 +526,14 @@ def main():
     new_gbk = prevalidation(gbk, pre, log_h)
     log_h.write("Now validating " + gbk + " ...\n")
     validate_genbank(new_gbk, val, log_h)
-    log_h.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
 	
-    sys.stdout.write("Finished validating " + gbk + "\n\n---------------\n\n")
+    sys.stdout.write("Finished validating " + gbk + "\n")
+    
+    # Leave extra files intact if debug mode is enabled
+    if options.debug == False:
+        delete_extra_content(outdir, base_gbk, log_h)
+    
+    log_h.write("\n---------------\n\n")
     log_h.close()
 
 if __name__ == '__main__':
