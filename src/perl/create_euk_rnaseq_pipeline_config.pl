@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 ################################################################################
 ### POD Documentation
 ################################################################################
@@ -16,8 +19,8 @@ create_euk_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline.
 
     create_euk_rnaseq_pipeline_config.pl --s <samples_file> --c <config_file> --r <reference_fasta> 
                                          [--qual <quality_score_format>] [--gtf <annotation_file>] 
-                                         [--bowtie_build] [--quality_stats] [--quality_trimming] 
-                                         [--alignment] [--bwtidxfile <bowtie_index>] [--visualization] 
+                                         [--bowtie_build] [--quality_stats] [--quality_trimming]
+	                                 [--split][--alignment] [--bwtidxfile <bowtie_index>] [--visualization] 
                                          [--diff_gene_expr] [--comparison_groups <str>] [--count]  
                                          [--file_type <SAM|BAM>] [--sorted <position|name>] 
                                          [--isoform_analysis] [--include_novel] 
@@ -49,7 +52,12 @@ create_euk_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline.
 
     --quality_trimming                = execute fastx_trimming component. Also generates quality statistics.
 
-    --alignment                       = execute tophat alignment component.
+    --split                           = excute fastq split component for shorter alignement time
+
+      --bwtidxfile <bowtie_index>   = /path/to/bowtie index file for alignment of all samples.
+                                        Required for '--alignment' if not specifying '--bowtie_build'.
+
+   --alignment                       = execute tophat alignment component.
                                         Sample file should be in the following format
                                         #Sample_ID<tab>Group_ID<tab>Mate_Pair_1<tab>Mate_Pair_2
 
@@ -190,23 +198,23 @@ use constant PROGRAM => eval { ($0 =~ m/(\w+\.pl)$/) ? $1 : $0 };
 ### Globals
 ##############################################################################
 
-my @aComponents = ("bowtie_build", "quality_stats", "quality_trimming", "alignment", "visualization", 
+my @aComponents = ("bowtie_build", "quality_stats", "quality_trimming", "alignment", "split", "visualization", 
 				   "rpkm_analysis", "diff_gene_expr", "isoform_analysis", "diff_isoform_analysis");
 my %hCmdLineOption = ();
 my $sHelpHeader = "\nThis is ".PROGRAM." version ".VERSION."\n";
 
 GetOptions( \%hCmdLineOption,
 			'sample_file|s=s', 'config_file|c=s', 'reffile|r=s', 'quality|qual=i', 'gtffile|gtf=s',
-			'bowtie_build', 'quality_stats', 'quality_trimming', 'alignment', 'bwtidxfile=s', 
-			'visualization', 'rpkm_analysis', 'annotation_format=s', 
+			'bowtie_build', 'quality_stats', 'quality_trimming', 'split',  
+                        'alignment', 'bwtidxfile=s', 'visualization', 'rpkm_analysis', 'annotation_format=s', 
 			'diff_gene_expr', 'comparison_groups=s', 'count', 'file_type=s', 'sorted=s', 
 			'isoform_analysis', 'include_novel', 'diff_isoform_analysis', 'use_ref_gtf', 
 			'repository_root|rr=s', 'ergatis_ini|ei=s', 
 			'outdir|o=s', 'template_dir|td=s',
-            'verbose|v',
-            'debug',
-            'help',
-            'man') or pod2usage(2);
+                        'verbose|v',
+                        'debug',
+                        'help',
+                        'man') or pod2usage(2);
 
 ## display documentation
 pod2usage( -exitval => 0, -verbose => 2) if $hCmdLineOption{'man'};
@@ -221,11 +229,11 @@ my ($sPLayout, $sPConfig);
 my ($sBwtIndexDir, $sBwtIndexPrefix);
 my ($fpPL, $fpPC, $fpLST1, $fpLST2, $fpLST, $fpSMPL, $fpGTF);
 my ($sSampleName, $sGroupName, $sRead1File, $sRead2File, @aReadFiles, $sList);
-my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList,$Deseq_List, $Cuff_List, $sRpkmFileList);
+my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList,$Deseq_List, $edgeR_List, $Cuff_List, $sRpkmFileList);
 my ($sGtfFileList, $sGtfFile, $sCuffdiff_SamFileList, $sCuffFileList);
 my ($sFeature, $sAttrID);
 my (@aComparisons, $sCGrp, $sGrpX, $sGrpY);
-my ($sList1File, $sList2File, $sListFile, $sFile, $sInFile);
+my ($sList1File, $sList2File, $sListFile, $sListBamFile, $sListFile1, $sListFile2, $sInfoListFile, $sFile, $sInFile);
 my ($sTimeStamp, $sCmd, $sArgs, $nOpt, $nI, $bPE, $bGZ);
 my ($nSec, $nMin, $nHour, $nMDay, $nMon, $nYear, $nWDay, $nYDay, $bDST);
 my $bDebug   = (defined $hCmdLineOption{'debug'}) ? TRUE : FALSE;
@@ -270,6 +278,12 @@ read_config(\%hCmdLineOption, \%hConfig);
 ($bDebug || $bVerbose) ? print STDERR "\nProcessing $hCmdLineOption{'config_file'} ..... done\n" : undef;
 
 ($bDebug || $bVerbose) ? print STDERR "\nProcessing $hCmdLineOption{'sample_file'} .....\n" : undef;
+
+if (defined $hCmdLineOption{'split'}) {
+	$hCmdLineOption{'alignment'} = 1;
+}
+
+
 if ((defined $hCmdLineOption{'quality_stats'}) || 
 	(defined $hCmdLineOption{'quality_trimming'}) || 
 	(defined $hCmdLineOption{'alignment'})) {
@@ -294,9 +308,14 @@ if ((defined $hCmdLineOption{'quality_stats'}) ||
 		next if ($_ =~ /^$/);
 		
 		($sSampleName, $sGroupName, $sRead1File, $sRead2File) = split(/\t/, $_);
-		
+			 if($bDebug) {
+			     print STDERR "$sSampleName\t$sGroupName\t$sRead1File\t$sRead2File\n";
+			 }
 		die "Error! Missing Reads 1 File !!!\n" if (! (defined $sRead1File));
 		
+			 $sSampleName =~ s/\s+//g;
+			 $sGroupName =~ s/\s+//g;
+
 		@aReadFiles = split(/,/, $sRead1File);
 		
 		$sList = "";
@@ -726,69 +745,203 @@ if (defined $hCmdLineOption{'reffile'}) {
 	$sSamRefFile = '$;REPOSITORY_ROOT$;/output_repository/samtools_reference_index/$;PIPELINEID$;_reference/i1/g1/'.$sSamRefFile;
 }
 
-if (defined $hCmdLineOption{'alignment'}) {
-	init_component($oPL, "serial");
-	
-	if ($bPE) {
-		###	Add Create Pairwise List Component & Parameters ###
-		include_component_layout($oPL, $sTemplateDir, "create_paired_list_file", "list");
+if (defined $hCmdLineOption{'alignment'} || defined $hCmdLineOption{'split'}) {
+
+
+	if (defined $hCmdLineOption{'split'}) {
+		init_component($oPL, "parallel");
+
+		init_component($oPL, "serial");
+		if ($bPE) {
+			###	Add Create Pairwise List Component & Parameters ###
+			include_component_layout($oPL, $sTemplateDir, "create_paired_list_file", "list");
+			
+			%hParams = ();
+			$hParams{'LIST_FILE_1'} = ["$sList1File", "path to list file of input file 1s"];
+			$hParams{'LIST_FILE_2'} = ["$sList2File", "path to list file of input file 2s"];
+			$hParams{'SAMPLE_INFO'} = ["$hCmdLineOption{'sample_file'}", "path to sample info file with information on all samples to be analyzed"] if (defined $hCmdLineOption{'quality_trimming'});
+			add_config_section($fpPC, "create_paired_list_file", "list");
+			add_config_parameters($fpPC, \%hParams);
+			
+			$sListFile = '$;REPOSITORY_ROOT$;/output_repository/create_paired_list_file/$;PIPELINEID$;_list/paired_input_file.list';
+		}
+		else {
+			$sListFile = $sList1File;
+		}
 		
+		###	Add FastQC Stats  Components ###
+		include_component_layout($oPL, $sTemplateDir, "fastqc_stats", "fastqc");
+		complete_component($oPL);
+		
+		###	Add FastQC Stats Parameters ###
 		%hParams = ();
-		$hParams{'LIST_FILE_1'} = ["$sList1File", "path to list file of input file 1s"];
-		$hParams{'LIST_FILE_2'} = ["$sList2File", "path to list file of input file 2s"];
-		$hParams{'SAMPLE_INFO'} = ["$hCmdLineOption{'sample_file'}", "path to sample info file with information on all samples to be analyzed"] if (defined $hCmdLineOption{'quality_trimming'});
-		add_config_section($fpPC, "create_paired_list_file", "list");
+		$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
+		add_config_section($fpPC, "fastqc_stats", "fastqc");
 		add_config_parameters($fpPC, \%hParams);
 		
-		$sListFile = '$;REPOSITORY_ROOT$;/output_repository/create_paired_list_file/$;PIPELINEID$;_list/paired_input_file.list';
+  
+		init_component($oPL, "serial");
+		if ($bPE) {
+
+			init_component($oPL, "parallel");
+			include_component_layout($oPL, $sTemplateDir, "split_fastq", "first_mate");
+			include_component_layout($oPL, $sTemplateDir, "split_fastq", "second_mate");
+			complete_component($oPL);
+
+			#Add parameters to split_fastq_first_mate
+			%hParams = ();
+			$hParams{'INPUT_FILE_LIST'} = ["$sList1File", "path to list file of input file 1s"];
+                        config2params(\%hParams, \%hConfig, 'split_fastq');
+			add_config_section($fpPC, "split_fastq", "first_mate");
+			add_config_parameters($fpPC, \%hParams);
+			$sListFile1 = '$;REPOSITORY_ROOT$;/output_repository/split_fastq/$;PIPELINEID$;_first_mate/split_fastq.fastq.list';
+			$sInfoListFile = '$;REPOSITORY_ROOT$;/output_repository/split_fastq/$;PIPELINEID$;_first_mate/split_fastq.fastq.info.list';			
+
+                       #Add parameters to split_fastq_second_mate
+			%hParams = ();
+			$hParams{'INPUT_FILE_LIST'} = ["$sList2File", "path to list file of input file 2s"];
+                        config2params(\%hParams, \%hConfig, 'split_fastq');
+			add_config_section($fpPC, "split_fastq", "second_mate");
+			add_config_parameters($fpPC, \%hParams);
+			$sListFile2 = '$;REPOSITORY_ROOT$;/output_repository/split_fastq/$;PIPELINEID$;_second_mate/split_fastq.fastq.list';
+
+			###	Add Create Pairwise List Component & Parameters ###
+			include_component_layout($oPL, $sTemplateDir, "create_paired_list_file", "split");
+			
+			%hParams = ();
+			$hParams{'LIST_FILE_1'} = ["$sListFile1", "path to split_list file of 1s"];
+			$hParams{'LIST_FILE_2'} = ["$sListFile2", "path to split_list file of 2s"];
+			add_config_section($fpPC, "create_paired_list_file", "split");
+			add_config_parameters($fpPC, \%hParams);
+			$sListFile = '$;REPOSITORY_ROOT$;/output_repository/create_paired_list_file/$;PIPELINEID$;_split/paired_input_file.list';
+		}
+		else {
+
+			include_component_layout($oPL, $sTemplateDir, "split_fastq", "first_mate");
+
+			#Add parameters to split_fastq_first_mate
+			%hParams = ();
+			$hParams{'INPUT_FILE_LIST'} = ["$sList1File", "path to list file of input file 1s"];
+			$hParams{'SEQ_NUMBER'} = ["20000000", "path to list file of input file 1s"];
+			add_config_section($fpPC, "split_fastq", "first_mate");
+			add_config_parameters($fpPC, \%hParams);
+			$sListFile1 = '$;REPOSITORY_ROOT$;/output_repository/split_fastq/$;PIPELINEID$;_first_mate/split_fastq.fastq.list';
+			$sInfoListFile = '$;REPOSITORY_ROOT$;/output_repository/split_fastq/$;PIPELINEID$;_first_mate/split_fastq.fastq.info.list';			
+
+			$sListFile = $sListFile1;
+		}
+		
+
+		if ((!(defined $sBwtIndexDir)) || (!(defined $sBwtIndexPrefix))) {
+			die "Error! Bowtie Index undefined !!!\n" if (!(defined $hCmdLineOption{'bwtidxfile'}));
+			
+			($_, $sBwtIndexDir, $sBwtIndexPrefix) = File::Spec->splitpath($hCmdLineOption{'bwtidxfile'});
+		}
+	
+	
+		###	Tophat Components ###
+		include_component_layout($oPL, $sTemplateDir, "tophat", "alignment");
+		
+		###	Add TopHat Parameters ###
+		%hParams = ();
+		$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
+		$hParams{'BOWTIE_INDEX_DIR'} = ["$sBwtIndexDir", "path to bowtie package binary directory"];
+		$hParams{'BOWTIE_INDEX_PREFIX'} = ["$sBwtIndexPrefix", "bowtie index prefix"];
+	
+		$sArgs = "";
+		$sArgs = $hConfig{'tophat'}{'OTHER_ARGS'}[0] if (defined $hConfig{'tophat'}{'OTHER_ARGS'});
+		$sArgs .= " --solexa1.3-quals" if (($hCmdLineOption{'quality'} == 64) && ($sArgs !~ m/--solexa1.3-quals/));
+		$hConfig{'tophat'}{'OTHER_ARGS'}[0] = $sArgs;
+		$hConfig{'tophat'}{'OTHER_ARGS'}[1] = "Additional Arguments" if (! defined $hConfig{'tophat'}{'OTHER_ARGS'});
+		config2params(\%hParams, \%hConfig, 'tophat');
+		add_config_section($fpPC, "tophat", "alignment");
+		add_config_parameters($fpPC, \%hParams);
+		
+		$sListBamFile = '$;REPOSITORY_ROOT$;/output_repository/tophat/$;PIPELINEID$;_alignment/tophat.bam.list';
+
+
+		###	BAM merge Components ###
+		include_component_layout($oPL, $sTemplateDir, "bam_merge", "list");
+		
+		###	Add BAM Merge Parameters ###
+		%hParams = ();
+		$hParams{'INPUT_FILE_LIST'} = ["$sInfoListFile", "path to list of filea of fastq split information"];
+		$hParams{'INPUT_BAM_LIST'} = ["$sListBamFile", "path to list of bam file"];
+
+		add_config_section($fpPC, "bam_merge", "list");
+		add_config_parameters($fpPC, \%hParams);
+		
+		$sListFile = '$;REPOSITORY_ROOT$;/output_repository/bam_merge/$;PIPELINEID$;_list/bam_merge.file.list';
+
+		complete_component($oPL);
+		
+		complete_component($oPL);
+
 	}
 	else {
-		$sListFile = $sList1File;
-	}
-	
-	if ((!(defined $sBwtIndexDir)) || (!(defined $sBwtIndexPrefix))) {
-		die "Error! Bowtie Index undefined !!!\n" if (!(defined $hCmdLineOption{'bwtidxfile'}));
+		init_component($oPL, "serial");
+		if ($bPE) {
+			###	Add Create Pairwise List Component & Parameters ###
+			include_component_layout($oPL, $sTemplateDir, "create_paired_list_file", "list");
+			
+			%hParams = ();
+			$hParams{'LIST_FILE_1'} = ["$sList1File", "path to list file of input file 1s"];
+			$hParams{'LIST_FILE_2'} = ["$sList2File", "path to list file of input file 2s"];
+			$hParams{'SAMPLE_INFO'} = ["$hCmdLineOption{'sample_file'}", "path to sample info file with information on all samples to be analyzed"] if (defined $hCmdLineOption{'quality_trimming'});
+			add_config_section($fpPC, "create_paired_list_file", "list");
+			add_config_parameters($fpPC, \%hParams);
+			
+			$sListFile = '$;REPOSITORY_ROOT$;/output_repository/create_paired_list_file/$;PIPELINEID$;_list/paired_input_file.list';
+		}
+		else {
+			$sListFile = $sList1File;
+		}
 		
-		($_, $sBwtIndexDir, $sBwtIndexPrefix) = File::Spec->splitpath($hCmdLineOption{'bwtidxfile'});
-	}
-	
-	###	Add FastQC Stats and Tophat Components ###
-	init_component($oPL, "parallel");
+		if ((!(defined $sBwtIndexDir)) || (!(defined $sBwtIndexPrefix))) {
+			die "Error! Bowtie Index undefined !!!\n" if (!(defined $hCmdLineOption{'bwtidxfile'}));
+			
+			($_, $sBwtIndexDir, $sBwtIndexPrefix) = File::Spec->splitpath($hCmdLineOption{'bwtidxfile'});
+		}
+		
+		###	Add FastQC Stats and Tophat Components ###
+		init_component($oPL, "parallel");
 		include_component_layout($oPL, $sTemplateDir, "fastqc_stats", "fastqc");
 		include_component_layout($oPL, $sTemplateDir, "tophat", "alignment");
-	complete_component($oPL);
+		complete_component($oPL);
+		
+		###	Add FastQC Stats Parameters ###
+		%hParams = ();
+		$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
+		add_config_section($fpPC, "fastqc_stats", "fastqc");
+		add_config_parameters($fpPC, \%hParams);
+		
+		###	Add TopHat Parameters ###
+		%hParams = ();
+		$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
+		$hParams{'BOWTIE_INDEX_DIR'} = ["$sBwtIndexDir", "path to bowtie package binary directory"];
+		$hParams{'BOWTIE_INDEX_PREFIX'} = ["$sBwtIndexPrefix", "bowtie index prefix"];
 	
-	###	Add FastQC Stats Parameters ###
- 	%hParams = ();
- 	$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
- 	add_config_section($fpPC, "fastqc_stats", "fastqc");
- 	add_config_parameters($fpPC, \%hParams);
-	
-	###	Add TopHat Parameters ###
-	%hParams = ();
-	$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list file consisting of tab separated first mate and second mate sequence files"];
-	$hParams{'BOWTIE_INDEX_DIR'} = ["$sBwtIndexDir", "path to bowtie package binary directory"];
-	$hParams{'BOWTIE_INDEX_PREFIX'} = ["$sBwtIndexPrefix", "bowtie index prefix"];
-	
-	$sArgs = "";
-	$sArgs = $hConfig{'tophat'}{'OTHER_ARGS'}[0] if (defined $hConfig{'tophat'}{'OTHER_ARGS'});
-	$sArgs .= " --solexa1.3-quals" if (($hCmdLineOption{'quality'} == 64) && ($sArgs !~ m/--solexa1.3-quals/));
-	$hConfig{'tophat'}{'OTHER_ARGS'}[0] = $sArgs;
-	$hConfig{'tophat'}{'OTHER_ARGS'}[1] = "Additional Arguments" if (! defined $hConfig{'tophat'}{'OTHER_ARGS'});
-	config2params(\%hParams, \%hConfig, 'tophat');
-	add_config_section($fpPC, "tophat", "alignment");
-	add_config_parameters($fpPC, \%hParams);
-	
-	$sListFile = '$;REPOSITORY_ROOT$;/output_repository/tophat/$;PIPELINEID$;_alignment/tophat.bam.list';
-	
-	complete_component($oPL);
+		$sArgs = "";
+		$sArgs = $hConfig{'tophat'}{'OTHER_ARGS'}[0] if (defined $hConfig{'tophat'}{'OTHER_ARGS'});
+		$sArgs .= " --solexa1.3-quals" if (($hCmdLineOption{'quality'} == 64) && ($sArgs !~ m/--solexa1.3-quals/));
+		$hConfig{'tophat'}{'OTHER_ARGS'}[0] = $sArgs;
+		$hConfig{'tophat'}{'OTHER_ARGS'}[1] = "Additional Arguments" if (! defined $hConfig{'tophat'}{'OTHER_ARGS'});
+		config2params(\%hParams, \%hConfig, 'tophat');
+		add_config_section($fpPC, "tophat", "alignment");
+		add_config_parameters($fpPC, \%hParams);
+		
+		$sListFile = '$;REPOSITORY_ROOT$;/output_repository/tophat/$;PIPELINEID$;_alignment/tophat.bam.list';
+		
+		complete_component($oPL);
+		
+	}
 	
 	init_component($oPL, "serial");
 	
 	###	Add Samtools File Conversion Component & Parameters ###
 	init_component($oPL, "parallel");
-		include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
-		include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_name");
+	include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
+	include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_name");
 	complete_component($oPL);
 	
 	%hParams = ();
@@ -823,12 +976,25 @@ if (defined $hCmdLineOption{'alignment'}) {
 	$sMapStatsList = '$;REPOSITORY_ROOT$;/output_repository/samtools_alignment_stats/$;PIPELINEID$;_alignment_stats/samtools_alignment_stats.mapstats.list';
 	
 	###	Add TopHat Stats Component & Parameters below ###
-	include_component_layout($oPL, $sTemplateDir, "align_tophat_stats", "tophat_stats");
+
+	if  (!(defined $hCmdLineOption{'split'})){
+		include_component_layout($oPL, $sTemplateDir, "align_tophat_stats", "tophat_stats");
 	
-	%hParams = ();
-	$hParams{'INPUT_FILE'} = ["$sListFile", "path to list of alignment BAM files"];
-	add_config_section($fpPC, "align_tophat_stats", "tophat_stats");
-	add_config_parameters($fpPC, \%hParams);
+		%hParams = ();
+		$hParams{'INPUT_FILE'} = ["$sListFile", "path to list of alignment BAM files"];
+		add_config_section($fpPC, "align_tophat_stats", "tophat_stats");
+		add_config_parameters($fpPC, \%hParams);
+	}
+	else{
+		include_component_layout($oPL, $sTemplateDir, "align_tophat_split_stats", "tophat_stats");
+	
+		%hParams = ();
+		$hParams{'INPUT_FILE'} = ["$sListFile", "path to list of merged BAM files"];
+		$hParams{'SPLITBAM_LIST'} = ["$sListBamFile", "path to list of BAM files from alignment of split fastq file"];
+		add_config_section($fpPC, "align_tophat_split_stats", "tophat_stats");
+		add_config_parameters($fpPC, \%hParams);
+
+	}
 	
 	if ((defined $hCmdLineOption{'gtffile'}) && (defined $hCmdLineOption{'annotation_format'}) ) {
 		###	Add Percent Mapped Component & Parameters below ###
@@ -968,6 +1134,7 @@ if (defined $hCmdLineOption{'rpkm_analysis'}) {
 
 	complete_component($oPL);
 }
+
 elsif (defined $hCmdLineOption{'alignment'}) {
 	init_component($oPL, "serial");
 		include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
@@ -1034,7 +1201,7 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	###	Add DESeq Component & Parameters below ###
 	init_component($oPL, "serial");
 	        init_component($oPL,"parallel");
-		      include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
+		          include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
 	              include_component_layout($oPL, $sTemplateDir, "edgeR", "edgeR_diff_expression");
 	
                       ##Add Deseq parameters
@@ -1053,18 +1220,31 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	              add_config_parameters($fpPC, \%hParams);
 	        complete_component($oPL);
 
-                include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
-	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "deseq");
+	        
+	        init_component($oPL,"parallel");
+	            include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
+	            include_component_layout($oPL, $sTemplateDir, "filter_edgeR", "filter_eR");
                 ##Add Deseq Filter component.
-	        $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
-	        %hParams = ();
-	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
-	        config2params(\%hParams, \%hConfig, 'filter_deseq');
-	        add_config_section($fpPC, "filter_deseq", "filter_de");
-	        add_config_parameters($fpPC, \%hParams);
-	
-	        %hParams = ();
+	            $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
+	            %hParams = ();
+	            $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
+	            config2params(\%hParams, \%hConfig, 'filter_deseq');
+	            add_config_section($fpPC, "filter_deseq", "filter_de");
+	            add_config_parameters($fpPC, \%hParams);
 
+               ##Add EdgeR Filter component.
+	            $edgeR_List = '$;REPOSITORY_ROOT$;/output_repository/edgeR/$;PIPELINEID$;_edgeR_diff_expression/edgeR.table.list';
+	            %hParams = ();
+	            $hParams{'INPUT_FILE'} = [$edgeR_List,"path to output list file of deseq"];
+	            config2params(\%hParams, \%hConfig, 'filter_edgeR');
+	            add_config_section($fpPC, "filter_edgeR", "filter_eR");
+	            add_config_parameters($fpPC, \%hParams);
+
+            complete_component($oPL);
+
+
+	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "deseq");	
+	        %hParams = ();
 	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
 	        config2params(\%hParams, \%hConfig, 'expression_plots');
 	        add_config_section($fpPC, "expression_plots", "deseq");
