@@ -25,6 +25,7 @@ import os
 import re
 from optparse import OptionParser	#may switch to argparse in the future
 from os.path import basename
+from os.path import splitext
 from Bio import SeqIO
 from Bio import SeqFeature
 from Bio.Seq import Seq
@@ -495,8 +496,8 @@ def main():
 
     gbk = options.genbank_file
     gbk = gbk.rstrip()
-    base_gbk = re.sub("\..+", "", basename(gbk))
-    
+#    base_gbk = re.sub("\..+", "", basename(gbk))
+    base_gbk = splitext(basename(gbk))[0]    
     # Create output directory if it doesn't exist.
     outdir = options.output_path
     if not os.path.exists(outdir):
