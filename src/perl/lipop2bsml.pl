@@ -146,14 +146,15 @@ while (scalar(@lines) >0) {
 
 	}
 
-	#add the analysis
-	my $an = $doc->createAndAddAnalysis( 'id' => $analysis_id,
+}
+
+#add the analysis
+my $an = $doc->createAndAddAnalysis( 'id' => $analysis_id,
                                      'algorithm' => 'lipoP',
                                      'sourcename' => $sourcename, 
                                      'program' => 'lipoP',
                                      'programversion' => 'current');
 
-}
 #write the bsml file
 $doc->write( $options->{'output'} );
 print "Finished writing $options->{'output'}\n";
