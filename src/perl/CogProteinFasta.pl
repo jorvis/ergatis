@@ -1,22 +1,21 @@
 #!/usr/bin/perl
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
 
 use strict;
 use BSML::BsmlParserSerialSearch;
 use Ergatis::Logger;
+use File::Basename;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
-my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'outputToken=s', 'maxCogSeqCount|s=s', 'extension|e=s', 'use_feature_ids_in_fasta=i', 'log|l=s', 'debug=s');
+my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'outputToken=s', 'maxCogSeqCount|s=s', 'extension|e=s', 'use_feature_ids_in_fasta=i', 'map_file|p=s', 'log|l=s', 'debug=s');
 
 my $cogFile = $options{'cogFile'};
 my $bsmlModelList = $options{'bsmlModelList'};
 my $outDir = $options{'outputDir'};
+my $transformed;
 my $maxCogSeqCount = $options{'maxCogSeqCount'};
 my $outputToken = $options{'outputToken'};
+my $mapFile= $options{'map_file'};
 $options{'outputToken'} .= "_$$";
 if($options{'extension'} eq ''){
     $options{'extension'} = 'fsa';
@@ -66,6 +65,12 @@ if( !$cogFile )
     $logger->logdie("cog file not specified");
 }
 
+
+if( !$mapFile )
+{
+    $logger->logdie("Map file not specified");
+}
+
 if( !$outDir )
 {
     $logger->logdie("output directory not specified");
@@ -76,6 +81,9 @@ else
     {
         mkdir( $outDir );
     }
+	$transformed = dirname($outDir);
+	$transformed .= "/transform";
+	mkdir($transformed);
 }
 
 open FILE, $bsmlModelList or $logger->logdie("Can't open file $bsmlModelList");
@@ -119,54 +127,94 @@ while( my $line = <INPUTCOGS> )
         # A new cog has been encountered, flush the previous to disk if present
         my $newcog = $1;
         $logger->debug("read cog $line $newcog");
-        &outputCog($cog, $list) if (defined($cog));
+        &outputCog($cog, $list, $mapFile) if (defined($cog));
         $cog = $newcog;
         $list = [];
     }
 }
-outputCog($cog,$list) if (defined($cog));
+
+outputCog($cog,$list, $mapFile) if (defined($cog));
 exit(0);
 
 ## subroutines
 
+sub readMapFile {
+        my ($sFile, $phMap) = @_;
+        my ($sLine, $sMol, $sGene);
+        my @aCols = ();
+
+        open(FR, "< $sFile") or $logger->logdie("ERROR! : Could not open $sFile file for reading. Reason : $!");
+
+        while($sLine=<FR>) {
+                chomp($sLine);
+                next if($sLine =~ /^\s*$/);
+                @aCols = split(/\t/,$sLine);
+                ($sMol, $sGene) = split(/\|\|\|/, $aCols[0], 2);
+                $phMap->{$aCols[5]} = $sMol.".".$sGene;
+        }
+
+        close(FR);
+}
+
+
 sub outputCog {
-    my($cog, $list) = @_;
-    $logger->debug("outputting cog $cog");
-    if(scalar(@{$list})>1){
+	my($cog, $list, $map) = @_;
+	my %hMap = ();
+	$logger->debug("outputting cog $cog");
+	if(scalar(@{$list})>1){
+		readMapFile($map, \%hMap);
 		if(@{$list} <= $maxCogSeqCount){
-		    open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
-		    foreach my $seq ( @{$list} )
-		    {
-                print OUTFILE ">$seq\n";
-                my $residues = undef;
-                if ($use_feature_ids_in_fasta) {
-                    my $seq_id = $Feat->{$seq};
-                    # Not sure why we would need to die here if we aren't dying below.
-                    #$logger->logdie("no sequence id found for feature with id=$seq") if (!defined($seq_id));
-                    if($seq_id) {
-                        $residues = $Prot->{$seq_id};
-                    }
-                } else {
-                    $residues = $Prot->{$seq};
-                }
-                if (!defined($residues)) {
-                    print STDERR "no sequence data found for seq=$seq";
-                    $residues = 'X';
-                }
-                print OUTFILE $residues."\n";
-		    }
-		    close( OUTFILE );
+			open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
+			open(FW, ">$transformed/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
+			foreach my $seq ( @{$list} )
+			{
+				print OUTFILE ">$seq\n";
+				if(exists($hMap{$seq})) {
+					print FW ">$hMap{$seq}\n";
+				} else {
+					print FW ">$seq\n";
+					print STDOUT "Could not find mapping for $seq in $map file\n";
+				}
+				my $residues = undef;
+				if ($use_feature_ids_in_fasta) {
+					my $seq_id = $Feat->{$seq};
+# Not sure why we would need to die here if we aren't dying below.
+#$logger->logdie("no sequence id found for feature with id=$seq") if (!defined($seq_id));
+					if($seq_id) {
+						$residues = $Prot->{$seq_id};
+					}
+				} else {
+					$residues = $Prot->{$seq};
+				}
+				if (!defined($residues)) {
+					print STDERR "no sequence data found for seq=$seq";
+					$residues = 'X';
+				}
+				print OUTFILE $residues."\n";
+				print FW $residues."\n";
+			}
+			close( OUTFILE );
+			close(FW);
 		}
 		else{
-		    open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
-		    foreach my $seq ( @{$list} )
-		    {
-                print OUTFILE ">$seq\n";
-                print OUTFILE "X\n";
-		    }
-		    close( OUTFILE );
+			open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
+			open(FW, ">$outDir/transform/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
+			foreach my $seq ( @{$list} )
+			{
+				print OUTFILE ">$seq\n";
+				if(exists($hMap{$seq})) {
+					print FW ">$hMap{$seq}\n";
+				} else {
+					print FW ">$seq\n";
+					print STDOUT "Could not find mapping for $seq in $map file\n";
+				}
+				print OUTFILE "X\n";
+				print FW "X\n";
+			}
+			close( OUTFILE );
+			close(FW);
 		}
-    }
+	}
 }
 
 sub createPolypeptideLookup

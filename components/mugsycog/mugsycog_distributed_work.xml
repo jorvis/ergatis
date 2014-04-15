@@ -117,6 +117,43 @@
 	    </param>
 	</command>
 
+	<!-- Fix the mugsycog file to replace protein ids from GenBank file -->
+	<command>
+		<type>RunUnixCommand</type>
+		<name>fix mugsycog output file</name>
+		<state>incomplete</state>
+		<executable>$;BIN_DIR$;/transform_mugsycog</executable>
+		<param>
+			<key>--map_file</key>
+			<value>$;MUGSY_MAP_FILE$;</value>
+		</param>
+		<param>
+			<key>--mugsycog</key>
+			<value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
+		</param>
+		<param>
+			<key>--output_file</key>
+			<value>$;OUTPUT_DIRECTORY$;/mugsyoutput_transformed.cog</value>
+		</param>
+	    <param>
+		<key>stdout</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;_transform.stdout</value>
+	    </param>
+	    <param>
+		<key>stderr</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;_transform.stderr</value>
+	    </param>
+	</command>
+
+	<!-- Move fixed mugsy cog file to replace original file-->
+	<command>
+		<type>RunUnixCommand</type>
+		<name>Move mugsy_cog file</name>
+		<state>incomplete</state>
+		<executable>/bin/mv</executable>
+		<arg>$;OUTPUT_DIRECTORY$;/mugsyoutput_transformed.cog $;OUTPUT_DIRECTORY$;/mugsyoutput.cog</arg>
+	</command>
+
 	<!-- next step is to cog2fasta -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -127,6 +164,10 @@
 		<key>--cogFile</key>
 		<value>$;OUTPUT_DIRECTORY$;/mugsyoutput.cog</value>
 	    </param>
+		<param>
+			<key>--map_file</key>
+			<value>$;MUGSY_MAP_FILE$;</value>
+		</param>
 	    <param>
 		<key>--bsmlModelList</key>
 		<value>$;BSML_FILE_LIST$;</value>
@@ -170,6 +211,24 @@
 	    <param>
 		<key>--output_list</key>
 		<value>$;FASTA_OUTPUT_LIST$;</value>
+	    </param>
+	</command>
+	<command>
+	    <type>RunUnixCommand</type>
+	    <name>create fasta list</name>
+	    <state>incomplete</state>
+	    <executable>$;BIN_DIR$;/create_list_file</executable>
+	    <param>
+		<key>--directory</key>
+		<value>$;OUTPUT_DIRECTORY$;/transform</value>
+	    </param>
+	    <param>
+		<key>--regex</key>
+		<value>".*\.fsa"</value>
+	    </param>
+	    <param>
+		<key>--output_list</key>
+		<value>$;TRANSFORM_FASTA_OUTPUT_LIST$;</value>
 	    </param>
 	</command>
     </commandSet>

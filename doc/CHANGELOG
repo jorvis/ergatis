@@ -1,5 +1,6 @@
 next
 ---
+-Replaced protein locus ids in mugsycog results
 -Fixed create_map_file script to process multi-record gbf files correctly
 -Added isolation-source field in wrap_tbl2asn
 -Fixed small bugs in various Genbank submission pipeline scripts
