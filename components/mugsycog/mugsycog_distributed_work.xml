@@ -145,15 +145,6 @@
 	    </param>
 	</command>
 
-	<!-- Move fixed mugsy cog file to replace original file-->
-	<command>
-		<type>RunUnixCommand</type>
-		<name>Move mugsy_cog file</name>
-		<state>incomplete</state>
-		<executable>/bin/mv</executable>
-		<arg>$;OUTPUT_DIRECTORY$;/mugsyoutput_transformed.cog $;OUTPUT_DIRECTORY$;/mugsyoutput.cog</arg>
-	</command>
-
 	<!-- next step is to cog2fasta -->
 	<command>
 	    <type>RunUnixCommand</type>
@@ -192,6 +183,15 @@
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/CogProteinFasta.stderr</value>
 	    </param>
+	</command>
+
+	<!-- Move fixed mugsy cog file to replace original file-->
+	<command>
+		<type>RunUnixCommand</type>
+		<name>Move mugsy_cog file</name>
+		<state>incomplete</state>
+		<executable>/bin/mv</executable>
+		<arg>$;OUTPUT_DIRECTORY$;/mugsyoutput_transformed.cog $;OUTPUT_DIRECTORY$;/mugsyoutput.cog</arg>
 	</command>
 
 	<!--Postprocessing-->
