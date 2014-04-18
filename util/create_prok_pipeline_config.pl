@@ -306,6 +306,7 @@ if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipeline
     }
 }
 
+# If we are enabling multiseq output from certain components, change parameters to some bottlenecks 
 if ($multifasta_flag) {
 	$config{'translate_sequence translate_prediction'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
 	$config{'translate_sequence translate'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
