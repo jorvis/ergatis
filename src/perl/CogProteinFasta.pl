@@ -7,11 +7,12 @@ use File::Basename;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 
 my %options = ();
-my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'outputToken=s', 'maxCogSeqCount|s=s', 'extension|e=s', 'use_feature_ids_in_fasta=i', 'map_file|p=s', 'log|l=s', 'debug=s');
+my $results = GetOptions( \%options, 'cogFile|c=s', 'bsmlModelList|m=s', 'outputDir|o=s', 'outputToken=s', 'maxCogSeqCount|s=s', 'extension|e=s', 'use_feature_ids_in_fasta=i', 'map_file|p=s', 'transformDir|t=s', 'log|l=s', 'debug=s');
 
 my $cogFile = $options{'cogFile'};
 my $bsmlModelList = $options{'bsmlModelList'};
 my $outDir = $options{'outputDir'};
+my $transformDir = $options{'transformDir'};
 my $transformed;
 my $maxCogSeqCount = $options{'maxCogSeqCount'};
 my $outputToken = $options{'outputToken'};
@@ -81,9 +82,10 @@ else
     {
         mkdir( $outDir );
     }
-	$transformed = dirname($outDir);
-	$transformed .= "/transform";
+	if(! -d $transformDir) {
+	$transformed = $transformDir;
 	mkdir($transformed);
+	}
 }
 
 open FILE, $bsmlModelList or $logger->logdie("Can't open file $bsmlModelList");

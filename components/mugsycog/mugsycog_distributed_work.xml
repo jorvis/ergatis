@@ -20,6 +20,13 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create transform directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TRANSFORM_DIR$;</arg>
+        </command>
 
 	<!-- Add the mugsymap features to the mugsy index -->
         <command>
@@ -133,15 +140,15 @@
 		</param>
 		<param>
 			<key>--output_file</key>
-			<value>$;OUTPUT_DIRECTORY$;/mugsyoutput_transformed.cog</value>
+			<value>$;TRANSFORM_DIR$;/mugsyoutput_transformed.cog</value>
 		</param>
 	    <param>
 		<key>stdout</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;_transform.stdout</value>
+		<value>$;TRANSFORM_DIR$;/$;COMPONENT_NAME$;_transform.stdout</value>
 	    </param>
 	    <param>
 		<key>stderr</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;_transform.stderr</value>
+		<value>$;TRANSFORM_DIR$;/$;COMPONENT_NAME$;_transform.stderr</value>
 	    </param>
 	</command>
 
@@ -159,6 +166,10 @@
 			<key>--map_file</key>
 			<value>$;MUGSY_MAP_FILE$;</value>
 		</param>
+	    <param>
+		<key>--transformDir</key>
+		<value>$;TRANSFORM_DIR$;/fasta/</value>
+	    </param>
 	    <param>
 		<key>--bsmlModelList</key>
 		<value>$;BSML_FILE_LIST$;</value>
@@ -183,15 +194,6 @@
 		<key>stderr</key>
 		<value>$;TMP_DIR$;/CogProteinFasta.stderr</value>
 	    </param>
-	</command>
-
-	<!-- Move fixed mugsy cog file to replace original file-->
-	<command>
-		<type>RunUnixCommand</type>
-		<name>Move mugsy_cog file</name>
-		<state>incomplete</state>
-		<executable>/bin/mv</executable>
-		<arg>$;OUTPUT_DIRECTORY$;/mugsyoutput_transformed.cog $;OUTPUT_DIRECTORY$;/mugsyoutput.cog</arg>
 	</command>
 
 	<!--Postprocessing-->
@@ -220,7 +222,7 @@
 	    <executable>$;BIN_DIR$;/create_list_file</executable>
 	    <param>
 		<key>--directory</key>
-		<value>$;OUTPUT_DIRECTORY$;/transform</value>
+		<value>$;TRANSFORM_DIR$;/fasta</value>
 	    </param>
 	    <param>
 		<key>--regex</key>
@@ -228,7 +230,7 @@
 	    </param>
 	    <param>
 		<key>--output_list</key>
-		<value>$;TRANSFORM_FASTA_OUTPUT_LIST$;</value>
+		<value>$;TRANSFORM_DIR$;/mugsycog_transform.fsa.list</value>
 	    </param>
 	</command>
     </commandSet>
