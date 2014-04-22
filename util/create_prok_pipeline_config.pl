@@ -308,6 +308,8 @@ if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipeline
 
 # If we are enabling multiseq output from certain components, change parameters to some bottlenecks 
 if ($multifasta_flag) {
+	print "Multisequence component output enabled\n";
+
 	$config{'translate_sequence translate_prediction'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
 	$config{'translate_sequence translate'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
 	$config{'translate_sequence translate_new_models'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
@@ -315,10 +317,13 @@ if ($multifasta_flag) {
 	
 	$config{'bsml2fasta create_blastx_pre_input'}->{'$;FORMAT$;'} = "multi";
 	$config{'bsml2fasta create_blastx_pre_input'}->{'$;SPLIT_MULTIFASTA$;'} = 1;
+	$config{'bsml2fasta create_blastx_pre_input'}->{'$;OUTPUT_FILE$;'} = "sequence.fsa";	
 	$config{'bsml2fasta create_blastx_post_input'}->{'$;FORMAT$;'} = "multi";	
 	$config{'bsml2fasta create_blastx_post_input'}->{'$;SPLIT_MULTIFASTA$;'} = 1;	
+	$config{'bsml2fasta create_blastx_post_input'}->{'$;OUTPUT_FILE$;'} = "sequence.fsa";		
 	$config{'bsml2fasta final_cds'}->{'$;FORMAT$;'} = "multi";	
 	$config{'bsml2fasta final_cds'}->{'$;SPLIT_MULTIFASTA$;'} = 1;	
+	$config{'bsml2fasta final_cds'}->{'$;OUTPUT_FILE$;'} = "sequence.fsa";		
 }
 
 # open config file for writing
