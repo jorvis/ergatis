@@ -98,7 +98,7 @@ my $max_num_hits_per_region	= 0;
 my $min_num_experimental	= 0;
 my $in				= *STDIN;
 my $out				= *STDOUT;
-my @hits			= ();
+my %polypeptide = ();
 
 &get_options;
 &filter_hits;
@@ -151,26 +151,33 @@ sub filter_hits
 		    $hit->GetPercentSimilarity >= $min_pct_sim &&
 		    $hit->GetEValue <= $max_eval &&
 		    $hit->GetPValue <= $max_pval) {
-			push @hits, $hit;
+		    my $qname = $hit->GetQueryName;
+			push @{$polypeptide{$qname}}, $hit;
 		}
 	}
-	my @sorted_hits = sort score_comparator @hits;
-	@hits = @sorted_hits;
+	# Sort the hits for each polypeptide
+	foreach my $poly (keys %polypeptide) {
+		my @sorted_hits = sort score_comparator @{$polypeptide{$poly}};
+		@{$polypeptide{$poly}}= @sorted_hits;
+	}
 }
 
 sub print_hits
 {
-	if (!$max_num_hits_per_region) {
-		print_filtered_hits(\@hits, $max_num_hits);
-	}
-	else {
-		my @all_hits_by_region = ();
-		foreach my $hit (@hits) {
-			add_hits_by_region(\@all_hits_by_region, $hit);
+    foreach my $poly (keys %polypeptide) {
+        my @hits = @{$polypeptide{$poly}};
+		if (!$max_num_hits_per_region) {
+			print_filtered_hits(\@hits, $max_num_hits);
 		}
-		foreach my $hits_by_region (@all_hits_by_region) {
-			print_filtered_hits($hits_by_region,
-					    $max_num_hits_per_region);
+		else {
+			my @all_hits_by_region = ();
+			foreach my $hit (@hits) {
+				add_hits_by_region(\@all_hits_by_region, $hit);
+			}
+			foreach my $hits_by_region (@all_hits_by_region) {
+				print_filtered_hits($hits_by_region,
+						    $max_num_hits_per_region);
+			}
 		}
 	}
 }
