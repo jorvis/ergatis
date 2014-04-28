@@ -42,6 +42,9 @@ then
 	exit 0
 fi
 
+temp_file_ext='.id_list'
+id_temp_file=$out$temp_file_ext
+
 id_to_fetch=""
 # Collect IDs, separate by space, and store to id_to_fetch variable
 if [ $protein == 'F' ]
@@ -57,10 +60,13 @@ else
 	id_to_fetch=`cut -f6 $hits | sort -u | perl -pe 's/\n/ /g'`
 fi
 
-# Collect fasta sequence, given an ID, and store to $out
-if [ "$id_to_fetch" ]
+# Pass IDs to a file
+echo $id_to_fetch 1>$id_temp_file
+
+# Call fetch_fasta_from_db, using a list file of IDs
+if [ "$id_temp_file" ]
 then
-	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o "$out" --cdbfasta_path "$cdbfasta_path" --formatdb_path "$formatdb_path" --xdformat_path "$xdformat_path"
+	$bin_dir/fetch_fasta_from_db -I "$id_temp_file" -d $db -p $protein -f $db_format -o "$out" --cdbfasta_path "$cdbfasta_path" --formatdb_path "$formatdb_path" --xdformat_path "$xdformat_path"
 	ec=$?
 	if [ $ec -ne 0 ]
 	then
