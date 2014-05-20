@@ -184,7 +184,7 @@ foreach my $qry_id ( keys %{$data->{'queries'}} ) {
 								  compseq => $hit_id, class => 'match');
 	    $aln_obj->addBsmlLink('analysis', "\#$options{search_method}_analysis", 'computed_by');
 	    $doc->createAndAddBsmlAttribute($aln_obj, 'total_score', $hit->{'total_score'});
-	    $doc->createAndAddBsmlAttribute($aln_obj, 'total_e_value',  $hit->{'total_eval'});
+	    $doc->createAndAddBsmlAttribute($aln_obj, 'total_e_value',  $hit->{'total_evalue'});
 	    
 
 	    foreach my $domain ( sort { $a <=> $b } keys %{$hit->{'domains'}} ) {
