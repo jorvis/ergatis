@@ -1,6 +1,7 @@
 next
 ---
 --Multiseq branch--
+-Changed bsml2fasta and translate_sequence to have 'seqs_per_fasta' config options
 -Changed BER component ber_blast_hit_selector script to filter N btab hits by polypeptide rather than by file
 -Changed BER component create_ber_db.sh script to fetch multiple polypeptide IDs instead of just one.  Also will pass IDs to fetch_fasta_from_db.pl via a file instead of a string
 -Changed lipop2bsml script within LipoP component to handle multifasta output as well as multiple LipoP sequences per file

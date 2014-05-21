@@ -9,7 +9,7 @@ translate_sequence.pl  - translates nt fasta or gene describing BSML into polype
 
 =head1 SYNOPSIS
 
-USAGE:  translate_sequence.pl --transeq_bin /path/to/emboss/bin/transeq -i [single_sequence.fsa|gene_document.bsml] -o /output/directory [-l /path/to/logfile.log] [--regions s1-e1,s2-e2,...] [--frame 1,2,3,F,-1,-2,-3,R,6] [--table 0] [--multifasta_output 0] --project project_name --id_repository /path/to/id_repository
+USAGE:  translate_sequence.pl --transeq_bin /path/to/emboss/bin/transeq -i [single_sequence.fsa|gene_document.bsml] -o /output/directory [-l /path/to/logfile.log] [--regions s1-e1,s2-e2,...] [--frame 1,2,3,F,-1,-2,-3,R,6] [--table 0] [--multifasta_output 0] [--seqs_per_fasta 100] --project project_name --id_repository /path/to/id_repository
 
 =head1 OPTIONS
 
@@ -37,6 +37,10 @@ B<--table,-t>
 B<--multifasta_output, -m>
     Optional.  If value is set to 1, multiple sequences will be written to a fasta file, as opposed to a single seq per fasta.  Default is 0;
     Currently only works for BSML input sequences
+    
+B<--seqs_per_fasta -s>
+	Optional.  Determines number of sequences written to a fasta file.  Only works if --multifasta_output option is enabled.
+	Default is 100 seqs per file
 
 B<--cleanup
     Optional.  If set to 1, will delete any cdb files created from the transeq executable run.  Default is 0
@@ -95,7 +99,7 @@ my $exon_frame;
 my $cds_frame;
 my $polypeptide_ids;
 my $multifasta_flag = 0;
-my $SEQS_PER_FASTA = 100;	#constant
+my $SEQS_PER_FASTA = 100;
 
 my %options = ();
 my $results = GetOptions (\%options,
@@ -109,6 +113,7 @@ my $results = GetOptions (\%options,
                           'project=s',
                           'cleanup:0',
                           'multifasta_output|m:0',
+                          'seqs_per_fasta|s:100',
                           'log|l=s',
                           'debug=s',
                           'help|h') || pod2usage();
@@ -167,6 +172,7 @@ if ($options{'multifasta_output'}) {
 	} else{
 		die("The --multifasta_output option must either be a 0 (single fasta output) or a 1 (multifasta output).");
 	}
+	$SEQS_PER_FASTA = $options{'seqs_per_fasta'};
 }
 
 

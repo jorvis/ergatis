@@ -17,6 +17,7 @@ USAGE:  bsml2fasta.pl
           --bp_extension=#bpadjacentgenomicseq
           --coords=0|1
           --split_multifasta=0|1
+          --seqs_per_fasta=100
           --suffix=fsa
           --debug=debug_level 
           --log=log_file
@@ -48,8 +49,12 @@ B<--format,-f>
     Format.  'multi' (default) writes all sequences to a multi-fasta file, and 'single' writes each sequence in a separate file named like $id.fsa
 
 B<--split_multifasta>
-    Optional.  If 'multi' is chosen for --format option, the split the number of sequences that go into the multifasta file.  100 seqs per fasta.
+    Optional.  If 'multi' is chosen for --format option, then split the number of sequences that go into the multifasta file.  100 seqs per fasta.
 
+B<--seqs_per_fasta>
+	Optional.  Determines number of sequences written to a fasta file.  Only works if --split_multifasta option is enabled.
+	Default is 100 seqs per file
+	
 B<--suffix> 
     suffix of the output files. Defaults to fsa
 
@@ -279,6 +284,7 @@ my $results = GetOptions (\%options,
 			  'use_sequence_ids_in_fasta=i',
 			  'output|o=s',
 			  'split_multifasta:0',
+			  'seqs_per_fasta:100',
 			  'help|h') || pod2usage();
 
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
@@ -292,7 +298,7 @@ if( $options{'help'} ){
 }
 
 my $iscircular = 0;
-my $SEQS_PER_FASTA = 100;	#constant
+my $SEQS_PER_FASTA = $options{'seqs_per_fasta'};
 
 &check_parameters(\%options);
 

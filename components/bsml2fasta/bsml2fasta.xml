@@ -40,6 +40,10 @@
             	<key>--split_multifasta</key>
             	<value>'$;SPLIT_MULTIFASTA$;'</value>
             </param>
+            <param>
+            	<key>--seqs_per_fasta</key>
+            	<value>'$;SEQS_PER_FASTA$;'</value>
+            </param>
             <param>  
                 <key>--output</key>
                 <value>'$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE$;'</value>
