@@ -6,7 +6,6 @@ use MLDBM 'DB_File';
 use Fcntl qw( O_RDONLY );
 use Data::Dumper;
 
-my $default_tigrfam2role_dbfile = "/tigrfam2role.db";
 my $default_tigrfam2role_tab = "/TIGRFAMS_ROLE_LINK";
 
 sub new {
@@ -32,18 +31,8 @@ sub DESTROY {
 sub _init {
     my ($self, %args) = @_;
 
-    if( $args{'roles_db_dir'} ) {
-        $self->roles_db_dir($args{'roles_db_dir'});
-    } 
-
     if( $args{'tigrfams_dir'} ) {
         $self->tigrfams_dir( $args{'tigrfams_dir'} );
-    }
-
-    if( $args{'tigr2role_dbfile'} ) {
-        $self->tigrfam2role_dbfile( $args{'tigrfam2role_dbfile'} );
-    } else {
-        $self->tigrfam2role_dbfile( $self->roles_db_dir().$default_tigrfam2role_dbfile );
     }
 
     if( $args{'tigrfam2role_tab'} ) {
@@ -52,14 +41,9 @@ sub _init {
         $self->tigrfam2role_tab( $self->tigrfams_dir().$default_tigrfam2role_tab );
     }
 
-    #Tie a hash
-    my %tigrfam2role_lookup;
-    tie( %tigrfam2role_lookup, 'MLDBM', $self->tigrfam2role_dbfile, O_RDONLY );
-    $self->tied_lookup_hash( \%tigrfam2role_lookup );
+	# Create lookup hash
+    $self->_create_lookup();
 
-    if( ! -e $self->tigrfam2role_dbfile || $args{'force'} ) {
-        $self->_create_lookup();
-    }
 
 }
 
@@ -74,10 +58,9 @@ sub _create_lookup {
 
     my $tigrfam_txt = $self->tigrfam2role_tab();
     open( IN, "< $tigrfam_txt") or die("Could not open $tigrfam_txt ($!)");
-
-    my $lookup = $self->tied_lookup_hash();
     
     #Reset the hash
+    my $lookup;    
     %{$lookup} = ();
 
     my $tmp;
@@ -88,22 +71,15 @@ sub _create_lookup {
 
     %{$lookup} = %{$tmp};
 
+	#set the lookup hash 
+	$self->tied_lookup_hash($lookup);
+	
     close(IN);
-}
-
-sub roles_db_dir {
-    my ($self, $value) = @_;
-    return $self->_param('roles_db_dir', $value);
 }
 
 sub tigrfams_dir {
     my ($self, $value) = @_;
     return $self->_param('tigrfams_dir', $value);
-}
-
-sub tigrfam2role_dbfile {
-    my ($self, $value) = @_;
-    return $self->_param('tigrfam2role_dbfile', $value);
 }
 
 sub tigrfam2role_tab {

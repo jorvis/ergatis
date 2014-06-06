@@ -42,7 +42,7 @@ sub _init_hmm_parser {
     }
     $self->{'_hmm_info'} = \%tmp;
 
-    ## tigr_roles dir
+    ## tigr_roles and pfam dir
     my $tigr_roles_db_dir;
     if( $args{'tigr_roles_db_dir'} ) {
         $tigr_roles_db_dir = $args{'tigr_roles_db_dir'}
@@ -101,8 +101,7 @@ sub _init_name_suffixes {
 sub _init_tigr_roles_lookup {
     my ($self, $tr_db_dir, $tigrfams_dir) = @_;
     my $pfam_lookup = new TIGR::Roles::HMM::PfamToRoleLookup('roles_db_dir' => $tr_db_dir );
-    my $tigr_lookup = new TIGR::Roles::HMM::TIGRFamToRoleLookup( 'roles_db_dir' => $tr_db_dir, 
-                                                                 'tigrfams_dir' => $tigrfams_dir );
+    my $tigr_lookup = new TIGR::Roles::HMM::TIGRFamToRoleLookup( 'tigrfams_dir' => $tigrfams_dir );
     $self->_tigr_role_lookup( 'PFAM', $pfam_lookup );
     $self->_tigr_role_lookup( 'TIGRFam', $tigr_lookup );
 }

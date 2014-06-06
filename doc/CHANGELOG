@@ -1,5 +1,6 @@
 next
 ---
+-updated which TIGRfam2role lookup file is accessed for parse_evidence HMM components
 -Added clean_fasta component to CloVR microbe pipeline
 -Replaced protein locus ids in mugsycog results
 -Fixed create_map_file script to process multi-record gbf files correctly
