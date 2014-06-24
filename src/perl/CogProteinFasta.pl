@@ -200,7 +200,7 @@ sub outputCog {
 		}
 		else{
 			open( OUTFILE, ">$outDir/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
-			open(FW, ">$outDir/transform/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
+			open(FW, ">$transformed/$cog.$options{'outputToken'}.$options{'extension'}" ) or $logger->logdie("could not open $cog.$options{'extension'}");
 			foreach my $seq ( @{$list} )
 			{
 				print OUTFILE ">$seq\n";
