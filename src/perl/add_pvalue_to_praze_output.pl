@@ -29,8 +29,9 @@ sub parse_options {
 		   "output|o=s", "help|h");
 	print_usage if $opts{help};
 	
-	if ($opts{mapping_list}) {
-		map_polypeptide_to_CDS($opts{mapping_list});
+	if ($opts{mapping_file}) {
+		print "Mapping polypeptide features to corresponding CDS features...\n";
+		map_polypeptide_to_CDS($opts{mapping_file});
 	}
 	initialize_pvalues($opts{blast_btab}, \%map_hash) if ($opts{blast_btab});
     
