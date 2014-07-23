@@ -1,5 +1,6 @@
 next
 ---
+-Added script to fix GenBank file in clovr microbe pipeline
 -updated which TIGRfam2role lookup file is accessed for parse_evidence HMM components
 -Added clean_fasta component to CloVR microbe pipeline
 -Replaced protein locus ids in mugsycog results
