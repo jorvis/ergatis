@@ -265,7 +265,7 @@ sub check_parameters {
         } elsif(-d $options{hmm_cm_table}) {
             $cmDir = $options{hmm_cm_table};
         } else {
-            &_die("$options{hmm_cm_dir} does not exist");
+            &_die("Option --hmm_cm_table file or directory path $options{hmm_cm_table} does not exist");
         }
     } else {
         &_die("Option --hmm_cm_table is required");
