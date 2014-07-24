@@ -179,6 +179,7 @@ umask(0000);
                     
                     if ( $pipe_submission_queue ) {
                         $runprefix .= " -q $pipe_submission_queue";
+                        $runprefix .= " -l mem_free=1024M";
                     }
                     
                     my $pipe_submission_project = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_project' );
