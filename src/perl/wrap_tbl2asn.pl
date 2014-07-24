@@ -60,7 +60,7 @@ if(-e $hCmdLineArgs{'input_dir'} && -d $hCmdLineArgs{'input_dir'}) {
 	$sFasta = $hCmdLineArgs{'input_dir'}."/".$aMeta[0].".fsa";
 	$sSbt = $hCmdLineArgs{'input_dir'}."/".$aMeta[0].".sbt";
 	if(-e $sTbl && -e $sFasta && -e $sSbt) {
-		$sSource = "[gcode=11][host=$aMeta[8]][country=$aMeta[10]][collection-date=$aMeta[9]][organism=$aMeta[5] $aMeta[6]][strain=$aMeta[6]][serotype=$aMeta[7]][tech=wgs]";
+		$sSource = "[gcode=11][host=$aMeta[8]][country=$aMeta[10]][collection-date=$aMeta[9]][organism=$aMeta[5] $aMeta[6]][strain=$aMeta[6]][serotype=$aMeta[7]][isolation-source=$aMeta[19]][tech=wgs]";
 		if((-e $hCmdLineArgs{'utility_path'}) && (-x $hCmdLineArgs{'utility_path'})) {
 			$sCmd = "$hCmdLineArgs{'utility_path'} -p $hCmdLineArgs{'input_dir'} -t $sSbt -r $hCmdLineArgs{'output_dir'} -a s -V vb -c bf -X C -M n -Z $sDiscrep -j \"$sSource\"";
 			if(defined($hCmdLineArgs{'opts'})) {
@@ -145,7 +145,7 @@ sub readInput {
 	my $sLine;
 	my $fhRead;
     	my $sSubName = (caller(0))[3];
-	my @aMandatory = (0, 5, 6, 7, 8, 9, 10);
+	my @aMandatory = (0, 5, 6);
 
 	open($fhRead, "< $sFile") or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open $sFile file for reading. Reason : $!");
 	while($sLine=<$fhRead>) {
@@ -172,11 +172,15 @@ sub readInput {
 #		[15]= Contact person's email address
 #		[16]= Comma-separated author list. Each name should be Last name\sFirst name\sMiddle Initial
 #		[17]= Title of the publication
-
+#		[18]= Path to EC number rules file for EC numbers to be deleted
+#		[19]= Source of isolation of the sample
 		foreach $nI (@aMandatory) {
 			if(length($paMeta->[$nI]) == 0 ) {
 				printLogMsg($ERROR, "ERROR : $sSubName :: $nI column value missing in $sLine.");
 			} 
+		}
+		if($paMeta->[19] eq "NA") {
+			$paMeta->[19] = "";
 		}
 	}
 	close($fhRead);	

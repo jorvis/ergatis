@@ -5,6 +5,13 @@
         <name>clean fasta compute</name>
          <command>
             <type>RunUnixCommand</type>
+            <name>dos to unix</name>
+            <state>incomplete</state>
+            <executable>/usr/bin/dos2unix</executable>
+            <arg>$;I_FILE_PATH$;</arg>
+        </command>   
+         <command>
+            <type>RunUnixCommand</type>
             <name>change_carriage_to_newline</name>
             <state>incomplete</state>
             <executable>/usr/bin/perl</executable>
@@ -16,7 +23,7 @@
             <state>incomplete</state>
             <executable>mkdir</executable>
             <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/clean_fasta</arg>
-        </command>            
+        </command>   
         <command>
             <type>RunUnixCommand</type>
             <name>clean_fasta</name>

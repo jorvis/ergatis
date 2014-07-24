@@ -3,10 +3,10 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
 if 0; # not running under some shell
 
-BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
-use lib (@INC,$ENV{"PERL_MOD_DIR"});
-no lib "$ENV{PERL_MOD_DIR}/i686-linux";
-no lib ".";
+#BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
+#use lib (@INC,$ENV{"PERL_MOD_DIR"});
+#no lib "$ENV{PERL_MOD_DIR}/i686-linux";
+#no lib ".";
 
 #########################################
 # POD DOCUMENTATION			#
@@ -112,6 +112,10 @@ open(LOGFILE, "> $logfile") or $logger->logdie("Could not open $logfile file for
 ## Make sure everything passed was correct
 &check_parameters();
 
+if($options{'reverse'}) {
+	print "Reversing ..\n";
+}
+
 ## Database connection
 $dbh = DBI->connect("dbi:$dbtype:host=$options{'host'};database=$options{'database'}", $options{'username'}, $options{'password'});
 $logger->logdie("Database connection could not be established") if (! defined $dbh);
@@ -138,7 +142,7 @@ exit(0);
 ## Subroutine to change the assembly sequence based on the supplied coordinate
 sub build_and_load_new_molecule {
 # Get the assembly sequence from database
-	my ($seq, $feat_id) = $dbh->selectrow_array("SELECT residues,feature_id FROM feature WHERE uniquename='$options{'asmbl'}'");
+	my ($seq, $feat_id) = $dbh->selectrow_array("SELECT residues,feature_id FROM feature WHERE name='$options{'asmbl'}'");
 	my $seqlen = length($seq); 
 # Rotate sequence
 	my $coord = $options{'coord'};
@@ -164,12 +168,25 @@ sub build_and_load_new_molecule {
 
 ## Subroutine to update the feature coordinates on the assembly molecule  
 sub update_feature_coords {
-	my $featloc_hash = $dbh->selectall_hashref("SELECT featureloc_id, fmin, fmax FROM featureloc WHERE srcfeature_id = $asmbl_id", 'featureloc_id');
+	my ($new_strand, $temp);
+	my $featloc_hash = $dbh->selectall_hashref("SELECT featureloc_id, fmin, fmax, strand FROM featureloc WHERE srcfeature_id = $asmbl_id", 'featureloc_id');
 	while (my ($flid, $ref) = each %$featloc_hash) {
 		my $new_fmin = &transform($ref->{'fmin'});
 		my $new_fmax = &transform($ref->{'fmax'});
 		my $sth;
-		$sth = $dbh->prepare("UPDATE featureloc SET fmin = $new_fmin, fmax = $new_fmax WHERE featureloc_id = $flid") or $logger->logdie($sth->errstr);
+		if($options{'reverse'}) {
+			if($new_fmax < $new_fmin) {
+				$temp = $new_fmin;
+				$new_fmin = $new_fmax;
+				$new_fmax = $temp;
+			}
+			if($ref->{'strand'} == -1) {
+				$new_strand = 1
+			} elsif($ref->{'strand'} == 1) {
+				$new_strand = -1;
+			}
+		}
+		$sth = $dbh->prepare("UPDATE featureloc SET fmin = $new_fmin, fmax = $new_fmax, strand = $new_strand WHERE featureloc_id = $flid") or $logger->logdie($sth->errstr);
 		my $rv = $sth->execute or $logger->logdie($sth->errstr);
 	}
 }
@@ -181,9 +198,11 @@ sub transform {
 	my $x = shift;
 	my $r;
 	if ($options{'reverse'}) {
-		$r = ($options{'coord'} - $x);
-		$r = $r < 0 ? $r : ($r + $asmbl_len);
+		$r = ($x - $options{'coord'});
+		$r = $r <= 0 ? ($r + $asmbl_len) : $r;
+		$r = $asmbl_len - $r;
 	} else {
+		$options{'coord'} -= 1;
 		$r = $x - $options{'coord'};
 		$r = $r < 0 ? ($r + $asmbl_len) : $r; 
 	}

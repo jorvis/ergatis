@@ -3,6 +3,7 @@
 ### This program generates coverage statistics from the sorted by name alignment 
 ### BAM file across the genic, exonic, intronic, and/or intergenic regions.
 ################################################################################
+###percent_mapped_stats.pl
 
 use strict;
 use warnings;

@@ -1,5 +1,12 @@
 next
 ---
+-Added script to fix GenBank file in clovr microbe pipeline
+-updated which TIGRfam2role lookup file is accessed for parse_evidence HMM components
+-Added clean_fasta component to CloVR microbe pipeline
+-Replaced protein locus ids in mugsycog results
+-Fixed create_map_file script to process multi-record gbf files correctly
+-Added isolation-source field in wrap_tbl2asn
+-Fixed small bugs in various Genbank submission pipeline scripts
 -Fixed wrap_tbl2asn to recognise .cmt file correctly and added putative check in deleteOverlappingGenes.pl
 -Add shell script to download latest version of tbl2asn
 -Added new perl scripts to dump_table for GenBank submission pipeline

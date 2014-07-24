@@ -13,7 +13,6 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
        --rna_predictions|-r
        --gene_prediction|-g
        --annotation|-a
-       --operon|-O
        --load|-l
        --ipd|-i
      [ --templates_directory|-t=/path/to/ergatis/global_pipeline_templates
@@ -51,10 +50,6 @@ B<--load,-l>
 B<--ipd,-i>
     Default = 0
     To use a sample from the IGS Projects Database (IPD) and have the pipeline change the study_stage status to 'complete' when finished
-
-B<--operon,-O>
-    Default = 0
-    To predict operons 
     
 B<--templates_directory,-t>
     The directory get the templates from
@@ -151,7 +146,6 @@ my $pipelines = {
 				 'rna_prediction'  => 'Prokaryotic_Annotation_Pipeline_RNA_Predictions',
 				 'glimmer' => 'Prokaryotic_Annotation_Pipeline_Glimmer_Predictions',
 				 'prodigal'  => 'Prokaryotic_Annotation_Pipeline_Prodigal_Predictions',
-   				 'operon' => 'Prokaryotic_Annotation_Pipeline_Operon_Predictions',
 				 'annotation'  => 'Prokaryotic_Annotation_Pipeline_Gene_Annotations',
 				 'load' => 'Prokaryotic_Annotation_Pipeline_Chado_Loading',
 				'ipd' => 'Prokaryotic_Annotation_Pipeline_IPD'
@@ -166,7 +160,6 @@ my $results = GetOptions (\%options,
 						  "annotation|a=s",
 						  "load|l=s",
 						  "ipd|i=s",
-						  "operon|O=s",
 						  "template_directory|t=s",
 						  "output_directory|o=s",
 						  "log|L=s",
@@ -204,7 +197,6 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
    }
    
    &write_include($writer, $pipelines->{'annotation'}) if( $included_subpipelines{'annotation'} );
-   &write_include($writer, $pipelines->{'operon'}) if( $included_subpipelines{'operon'} );
    if( $included_subpipelines{'load'} ) {
        if( $included_subpipelines{'pseudomolecule'} ) {
            &write_include($writer, $pipelines->{'load'}, 'pipeline_pmarks.layout');
@@ -437,9 +429,7 @@ sub check_options {
    $included_subpipelines{'gene_prediction'} = $gene_prediction;
    $included_subpipelines{'annotation'} = 1; # Annotation is required 
    $included_subpipelines{'load'} = 1 if( $opts->{'load'} );
-   $included_subpipelines{'ipd'} = 1 if ( $opts->{'ipd'} );
-   $included_subpipelines{'operon'} = 1 if( $opts->{'operon'} );
-      
+   $included_subpipelines{'ipd'} = 1 if ( $opts->{'ipd'} );      
    $included_subpipelines{'input_processing'} = 1 if( $included_subpipelines{'rna_prediction'} || 
                                                       $included_subpipelines{'gene_prediction'} ne 'none' );
 

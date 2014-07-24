@@ -84,7 +84,7 @@ create_euk_rnaseq_pipeline_config.pl - Creates the pipeline.layout and pipeline.
 
         --sorted <position>           = if alignment BAM/SAM file is already sorted by position. [undef]
 
-    --diff_gene_expr                  = execute differential gene expression analysis component.
+     --diff_gene_expr                  = execute differential gene expression analysis component.
                                         Requires additional information in sample file if not specifying '--alignment'.
                                         Sample file should be in the following format
                                         #Sample_ID<tab>Group_ID<tab>Alignment_File
@@ -229,13 +229,15 @@ my ($sPLayout, $sPConfig);
 my ($sBwtIndexDir, $sBwtIndexPrefix);
 my ($fpPL, $fpPC, $fpLST1, $fpLST2, $fpLST, $fpSMPL, $fpGTF);
 my ($sSampleName, $sGroupName, $sRead1File, $sRead2File, @aReadFiles, $sList);
-my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList,$Deseq_List, $Cuff_List, $sRpkmFileList);
+my ($sSamRefFile, $sBamFileList, $sSamFileList, $sBamNameSortList, $sMapStatsList, $sCountsFileList,$Deseq_List, $edgeR_List, $Cuff_List, $sRpkmFileList);
 my ($sGtfFileList, $sGtfFile, $sCuffdiff_SamFileList, $sCuffFileList);
 my ($sFeature, $sAttrID);
+my ($samtools_covert_position,$samtools_covert_name);
 my (@aComparisons, $sCGrp, $sGrpX, $sGrpY);
 my ($sList1File, $sList2File, $sListFile, $sListBamFile, $sListFile1, $sListFile2, $sInfoListFile, $sFile, $sInFile);
 my ($sTimeStamp, $sCmd, $sArgs, $nOpt, $nI, $bPE, $bGZ);
 my ($nSec, $nMin, $nHour, $nMDay, $nMon, $nYear, $nWDay, $nYDay, $bDST);
+my ($samtools_position, $samtoos_name, 	$sBamFileList_orig);
 my $bDebug   = (defined $hCmdLineOption{'debug'}) ? TRUE : FALSE;
 my $bVerbose = (defined $hCmdLineOption{'verbose'}) ? TRUE : FALSE;
 
@@ -953,7 +955,8 @@ if (defined $hCmdLineOption{'alignment'} || defined $hCmdLineOption{'split'}) {
 	add_config_parameters($fpPC, \%hParams);
 	
 	$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
-	
+
+
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sListFile", "path to list of alignment files"];
 	$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
@@ -965,7 +968,7 @@ if (defined $hCmdLineOption{'alignment'} || defined $hCmdLineOption{'split'}) {
 	
 	$sSamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_name/samtools_file_convert.sorted_by_name_sam.list';
 	$sBamNameSortList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_name/samtools_file_convert.sorted_by_name_bam.list';
-	
+
 	include_component_layout($oPL, $sTemplateDir, "samtools_alignment_stats", "alignment_stats");
 	
 	%hParams = ();
@@ -1015,47 +1018,115 @@ if (defined $hCmdLineOption{'alignment'} || defined $hCmdLineOption{'split'}) {
 	complete_component($oPL);
 }
 
+if ( (! defined $hCmdLineOption{'alignment'}) && (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/) && 
+        (defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/BAM/i))) && 
+      ((defined $hCmdLineOption{'visualization'}) || (defined $hCmdLineOption{'rpkm_analysis'}) ||
+	  ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'diff_isoform_analysis'}))) ) {
+	$samtools_covert_position = 1;
+}
+
+
+if ( (! defined $hCmdLineOption{'alignment'}) && ( ! defined $hCmdLineOption{'file_type'} ) &&  (defined $hCmdLineOption{'diff_gene_expr'}) ) {
+	$samtools_covert_name = 0;
+}
+elsif ( (! defined $hCmdLineOption{'alignment'}) && (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/name/) && 
+   (defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i))) &&  (defined $hCmdLineOption{'diff_gene_expr'}) ) {
+	$samtools_covert_name = 1;
+}
+
+if ( $samtools_covert_position == 1 && $samtools_covert_name == 1){
+	init_component($oPL, "parallel");
+	include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
+	include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_name");
+}
+elsif ( $samtools_covert_position == 1){
+	init_component($oPL, "serial");
+	include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
+}
+elsif ( $samtools_covert_name == 1){
+	init_component($oPL, "serial");
+	include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_name");
+}
+
+if ( $samtools_covert_position == 1 || $samtools_covert_name == 1){
+	complete_component($oPL);
+}
+
+if ( $samtools_covert_name == 1){
+
+
+	%hParams = ();
+	if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/BAM/i)) {
+		$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
+		$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
+		if ((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/name/i)){
+			$nOpt = "3";
+		}
+		else{
+			$nOpt = "13";
+		}
+		$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
+	}
+	else {
+		$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
+		$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
+		$nOpt = "413";
+		$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
+	}
+	$hParams{'SAMTOOLS_SORT_PARAMETERS'} = ["-n", "samtools sort parameters"];
+	add_config_section($fpPC, "samtools_file_convert", "sorted_name");
+	add_config_parameters($fpPC, \%hParams);
+
+	if (( ! defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} !~ m/name/i)){
+	
+		$sSamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_name/samtools_file_convert.sorted_by_name_sam.list';
+	}
+	else {
+		$sSamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_name/samtools_file_convert.sam.list';
+	}
+}
+
+if ( $samtools_covert_position == 1){
+	%hParams = ();
+	if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
+
+		$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
+		$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
+		if ((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/i)){
+			$nOpt = "42";
+		}
+		else{
+			$nOpt = "412";
+		}
+		$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
+	}
+	else {
+
+		$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
+		$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
+		$nOpt = "12";
+		$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
+	}
+	add_config_section($fpPC, "samtools_file_convert", "sorted_position");
+	add_config_parameters($fpPC, \%hParams);
+
+
+	$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
+
+}
+
 if ( (defined $hCmdLineOption{'diff_gene_expr'}) || (defined $hCmdLineOption{'visualization'}) || (defined $hCmdLineOption{'rpkm_analysis'}) ||
 	 ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'diff_isoform_analysis'})) ) {
 	init_component($oPL, "parallel");
 }
 
 if (defined $hCmdLineOption{'visualization'}) {
-	init_component($oPL, "serial");
-	
 	die "Error! Reference file undefined !!!\n" if (!(defined $hCmdLineOption{'reffile'}));
 	
 	###	Add Visualization Component & Parameters below ###
 	init_component($oPL, "serial");
-		if (! defined $hCmdLineOption{'alignment'}) {
-			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-				include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
-			}
-		}
-		include_component_layout($oPL, $sTemplateDir, "bam2bigwig", "visualization");
+	include_component_layout($oPL, $sTemplateDir, "bam2bigwig", "visualization");
 	complete_component($oPL);
-	
-	if (! defined $hCmdLineOption{'alignment'}) {
-		if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-			%hParams = ();
-			if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
-				$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
-				$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
-				$nOpt = "412";
-				$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-			}
-			else {
-				$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
-				$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
-				$nOpt = "12";
-				$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-			}
-			add_config_section($fpPC, "samtools_file_convert", "sorted_position");
-			add_config_parameters($fpPC, \%hParams);
-			
-			$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
-		}
-	}
 	
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment BAM files"];
@@ -1064,49 +1135,18 @@ if (defined $hCmdLineOption{'visualization'}) {
 	config2params(\%hParams, \%hConfig, 'bam2bigwig');
 	add_config_section($fpPC, "bam2bigwig", "visualization");
 	add_config_parameters($fpPC, \%hParams);
-	
-	complete_component($oPL);
 }
 
 if (defined $hCmdLineOption{'rpkm_analysis'}) {
-	init_component($oPL, "serial");
-	
 	die "Error! Reference file undefined !!!\n" if (!(defined $hCmdLineOption{'reffile'}));
 	die "Error! Annotation file undefined !!!\n" if (!(defined $hCmdLineOption{'gtffile'}));
 	
 	###	Add RPKM Analysis Component & Parameters below ###
 	init_component($oPL, "serial");
-		if (! defined $hCmdLineOption{'alignment'}) {
-			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-				include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
-			}
-		}
-		include_component_layout($oPL, $sTemplateDir, "rpkm_coverage_stats", "rpkm_cvg");
-	        include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
-  	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "rpkm"); 
+	include_component_layout($oPL, $sTemplateDir, "rpkm_coverage_stats", "rpkm_cvg");
+	include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
+	include_component_layout($oPL, $sTemplateDir, "expression_plots", "rpkm"); 
 	complete_component($oPL);
-	
-	if (! defined $hCmdLineOption{'alignment'}) {
-		if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-			%hParams = ();
-			if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
-				$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
-				$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
-				$nOpt = "412";
-				$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-			}
-			else {
-				$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
-				$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
-				$nOpt = "12";
-				$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-			}
-			add_config_section($fpPC, "samtools_file_convert", "sorted_position");
-			add_config_parameters($fpPC, \%hParams);
-			
-			$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
-		}
-	}
 	
 	%hParams = ();
 	$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment BAM files"];
@@ -1120,6 +1160,7 @@ if (defined $hCmdLineOption{'rpkm_analysis'}) {
 	add_config_parameters($fpPC, \%hParams);
 	
 	$sRpkmFileList = '$;REPOSITORY_ROOT$;/output_repository/rpkm_coverage_stats/$;PIPELINEID$;_rpkm_cvg/rpkm_coverage_stats.rpkm.stats.list';
+	
 	%hParams = ();
 	$hParams{'PIPELINE_ID'} = ["\$;PIPELINEID\$;", "ergatis pipeline id"];
 	$hParams{'OUTPUT_REPOSITORY'} = ["\$;REPOSITORY_ROOT\$;/output_repository", "pipeline output repository"];
@@ -1131,9 +1172,8 @@ if (defined $hCmdLineOption{'rpkm_analysis'}) {
 	$hParams{'INPUT_FILE'} = ["$sRpkmFileList", "path to list of rpkm coverage file"];
 	add_config_section($fpPC, "expression_plots", "rpkm");
 	add_config_parameters($fpPC, \%hParams);
-
-	complete_component($oPL);
 }
+
 elsif (defined $hCmdLineOption{'alignment'}) {
 	init_component($oPL, "serial");
 		include_component_layout($oPL, $sTemplateDir, "wrapper_align", "wrap");
@@ -1153,39 +1193,12 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	
 	if ((defined $hCmdLineOption{'count'}) || (defined $hCmdLineOption{'alignment'})) {
 		die "Error! Annotation file undefined !!!\n" if (!(defined $hCmdLineOption{'gtffile'}));
-		
+
+
 		###	Add HTSeq Component & Parameters below ###
 		init_component($oPL, "serial");
-			if (! defined $hCmdLineOption{'alignment'}) {
-				if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/name/))) {
-					include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_name") ;
-				}
-			}
-			include_component_layout($oPL, $sTemplateDir, "htseq", "exon_counts");
+		include_component_layout($oPL, $sTemplateDir, "htseq", "exon_counts");
 		complete_component($oPL);
-		
-		if (! defined $hCmdLineOption{'alignment'}) {
-			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/name/))) {
-				%hParams = ();
-				if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/BAM/i)) {
-					$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
-					$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
-					$nOpt = "13";
-					$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-				}
-				else {
-					$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
-					$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
-					$nOpt = "413";
-					$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-				}
-				$hParams{'SAMTOOLS_SORT_PARAMETERS'} = ["-n", "samtools sort parameters"];
-				add_config_section($fpPC, "samtools_file_convert", "sorted_name");
-				add_config_parameters($fpPC, \%hParams);
-				
-				$sSamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_name/samtools_file_convert.sorted_by_name_sam.list';
-			}
-		}
 		
 		%hParams = ();
 		$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of sorted-by-name alignment SAM files"];
@@ -1200,7 +1213,7 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	###	Add DESeq Component & Parameters below ###
 	init_component($oPL, "serial");
 	        init_component($oPL,"parallel");
-		      include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
+		          include_component_layout($oPL, $sTemplateDir, "deseq", "differential_expression");
 	              include_component_layout($oPL, $sTemplateDir, "edgeR", "edgeR_diff_expression");
 	
                       ##Add Deseq parameters
@@ -1219,22 +1232,37 @@ if (defined $hCmdLineOption{'diff_gene_expr'}) {
 	              add_config_parameters($fpPC, \%hParams);
 	        complete_component($oPL);
 
-                include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
-	        include_component_layout($oPL, $sTemplateDir, "expression_plots", "deseq");
+	        
+	        init_component($oPL,"parallel");
+	            include_component_layout($oPL, $sTemplateDir, "filter_deseq", "filter_de");
+	            include_component_layout($oPL, $sTemplateDir, "filter_edgeR", "filter_eR");
                 ##Add Deseq Filter component.
-	        $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
-	        %hParams = ();
-	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
-	        config2params(\%hParams, \%hConfig, 'filter_deseq');
-	        add_config_section($fpPC, "filter_deseq", "filter_de");
-	        add_config_parameters($fpPC, \%hParams);
-	
-	        %hParams = ();
+	            $Deseq_List = '$;REPOSITORY_ROOT$;/output_repository/deseq/$;PIPELINEID$;_differential_expression/deseq.table.list';
+	            %hParams = ();
+	            $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
+	            config2params(\%hParams, \%hConfig, 'filter_deseq');
+	            add_config_section($fpPC, "filter_deseq", "filter_de");
+	            add_config_parameters($fpPC, \%hParams);
 
-	        $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
-	        config2params(\%hParams, \%hConfig, 'expression_plots');
-	        add_config_section($fpPC, "expression_plots", "deseq");
-	        add_config_parameters($fpPC, \%hParams);
+               ##Add EdgeR Filter component.
+	            $edgeR_List = '$;REPOSITORY_ROOT$;/output_repository/edgeR/$;PIPELINEID$;_edgeR_diff_expression/edgeR.table.list';
+	            %hParams = ();
+	            $hParams{'INPUT_FILE'} = [$edgeR_List,"path to output list file of deseq"];
+	            config2params(\%hParams, \%hConfig, 'filter_edgeR');
+	            add_config_section($fpPC, "filter_edgeR", "filter_eR");
+	            add_config_parameters($fpPC, \%hParams);
+
+            complete_component($oPL);
+
+	        init_component($oPL, "serial");
+	            include_component_layout($oPL, $sTemplateDir, "expression_plots", "deseq");	
+	            %hParams = ();
+	            $hParams{'INPUT_FILE'} = [$Deseq_List,"path to output list file of deseq"];
+	            config2params(\%hParams, \%hConfig, 'expression_plots');
+	            add_config_section($fpPC, "expression_plots", "deseq");
+	            add_config_parameters($fpPC, \%hParams);
+            complete_component($oPL);
+
 
         complete_component($oPL);
 
@@ -1251,35 +1279,8 @@ if ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'d
 	if (defined $hCmdLineOption{'isoform_analysis'}) {
 		###	Add Cufflinks Component & Parameters below ###
 		init_component($oPL, "serial");
-			if (! defined $hCmdLineOption{'alignment'}) {
-				if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-					include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
-				}
-			}
-			include_component_layout($oPL, $sTemplateDir, "cufflinks", "isoform");
+		include_component_layout($oPL, $sTemplateDir, "cufflinks", "isoform");
 		complete_component($oPL);
-		
-		if (! defined $hCmdLineOption{'alignment'}) {
-			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-				%hParams = ();
-				if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
-					$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
-					$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
-					$nOpt = "412";
-					$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-				}
-				else {
-					$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
-					$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
-					$nOpt = "12";
-					$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-				}
-				add_config_section($fpPC, "samtools_file_convert", "sorted_position");
-				add_config_parameters($fpPC, \%hParams);
-				
-				$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
-			}
-		}
 		
 		%hParams = ();
 		$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of sorted-by-position alignment SAM or BAM files"];
@@ -1297,53 +1298,8 @@ if ((defined $hCmdLineOption{'isoform_analysis'}) || (defined $hCmdLineOption{'d
 		init_component($oPL, "serial");
 		
 		###	Add CuffCompare Component & Parameters below ###
-		if ((! defined $hCmdLineOption{'alignment'}) && (! defined $hCmdLineOption{'isoform_analysis'})) {
-			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-				include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
-			}
-			else {
-				if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
-					include_component_layout($oPL, $sTemplateDir, "samtools_file_convert", "sorted_position");
-				}
-			}
-		}
 		include_component_layout($oPL, $sTemplateDir, "create_cuffsuite_files", "cuffcompare");
 		include_component_layout($oPL, $sTemplateDir, "cuffcompare", "comparison");
-		
-		if ((! defined $hCmdLineOption{'alignment'}) && (! defined $hCmdLineOption{'isoform_analysis'})) {
-			if (!((defined $hCmdLineOption{'sorted'}) && ($hCmdLineOption{'sorted'} =~ m/position/))) {
-				%hParams = ();
-				if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
-					$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
-					$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
-					$nOpt = "412";
-					$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-				}
-				else {
-					$hParams{'INPUT_FILE_LIST'} = ["$sBamFileList", "path to list of alignment files"];
-					$hParams{'INPUT_FILE_FORMAT'} = ["BAM", "input alignment file format (BAM or SAM)"];
-					$nOpt = "12";
-					$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-				}
-				add_config_section($fpPC, "samtools_file_convert", "sorted_position");
-				add_config_parameters($fpPC, \%hParams);
-				
-				$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
-			}
-			else {
-				if ((defined $hCmdLineOption{'file_type'}) && ($hCmdLineOption{'file_type'} =~ m/SAM/i)) {
-					%hParams = ();
-					$hParams{'INPUT_FILE_LIST'} = ["$sSamFileList", "path to list of alignment files"];
-					$hParams{'INPUT_FILE_FORMAT'} = ["SAM", "input alignment file format (BAM or SAM)"];
-					$nOpt = "4";
-					$hParams{'OPTIONS'} = ["$nOpt", "string of options for file conversion (eg : 123). 1 - BAM to sorted BAM, 2 - sorted BAM to indexed BAM, 3 - BAM to SAM, and 4 - SAM to BAM"];
-					add_config_section($fpPC, "samtools_file_convert", "sorted_position");
-					add_config_parameters($fpPC, \%hParams);
-					
-					$sBamFileList = '$;REPOSITORY_ROOT$;/output_repository/samtools_file_convert/$;PIPELINEID$;_sorted_position/samtools_file_convert.sorted_by_position_bam.list';
-				}
-			}
-		}
 		
 		%hParams = ();
 		$hParams{'SAMPLE_INFO'} = ["$hCmdLineOption{'sample_file'}", "path to sample info file with information on all samples to be analyzed"];

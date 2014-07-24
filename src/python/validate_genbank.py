@@ -17,6 +17,7 @@ One can view the changes made in genbank_changelog.txt located in the specified 
 --genbank_file, -g => Path to a Genbank-formatted file.  Genbank file must correspond to DNA sequences
 --output_path, -o => Directory path to write output.  
 --log_file, -l => Name of the changelog file (only the name).
+--debug, -d => Run in debug mode
 """
 
 import sys
@@ -24,6 +25,7 @@ import os
 import re
 from optparse import OptionParser	#may switch to argparse in the future
 from os.path import basename
+from os.path import splitext
 from Bio import SeqIO
 from Bio import SeqFeature
 from Bio.Seq import Seq
@@ -39,10 +41,11 @@ def prevalidation(genbank, prepare, log_h):
     line_count = 0;	# Keeps track of char count at end of LOCUS line
     id_flag = 0;	# Flag to keep track of if ID was added to front of Accession ID
     base_gbk = basename(genbank)
-    if base_gbk.endswith("gb"):
-        base_gbk = base_gbk + "k"	# try to keep extensions uniform
-    elif base_gbk.endswith("gbwithparts"):
-        base_gbk = re.sub("withparts", "k", base_gbk)
+    base_gbk = re.sub("\.gb\w*",".gbk", base_gbk)	# Keeping various extensions uniform
+
+    if os.stat(genbank).st_size == 0:	# Die if genbank file is empty
+        sys.stderr.write("Genbank file " + genbank + " is of 0 size\n")
+        sys.exit(1)
     out_file = prepare + "/" + base_gbk
     genbank_h = open_file(genbank)
     genbank_h2 = open_file(genbank)	# Will keep track of the current ACCESSION line
@@ -137,6 +140,7 @@ def begins_with_digit(string, log_h):
 
 # Using Biopython to validate genbank files
 def validate_genbank(genbank, valid, log_h):
+    organism = {}	# Initialize empty dictionary of organisms
     base_gbk = basename(genbank)
     print base_gbk
     out_f = valid + "/" + base_gbk
@@ -155,8 +159,13 @@ def validate_genbank(genbank, valid, log_h):
         else:
             log_h.write("No annotation features present!!!  Skipping feature checks!!!")
         log_h.write("\n")	# newline after contigs
+        new_org, trunc_org = format_organism_name(gb_record.annotations['organism'], log_h)
+        # Add edited organism information to dictionary as [new_org, trunc_org]
+        organism.setdefault(gb_record.annotations['organism'], []).append(new_org)
+        organism.setdefault(gb_record.annotations['organism'], []).append(trunc_org)
     #add other rules as we expand this script
     write_output(record_list, out_f)
+    overwrite_organism(out_f, organism)
 
 # Opens genbank file
 def open_file(gb):
@@ -296,9 +305,10 @@ def remove_trna_and_rrna_features(record, log_h):
             rrna_count +=1
             start_pos.append(list(feature.location)[0])
 
-    # For each feature, iterate through and only add gene and CDS features (leaving out gene/tRNA and gene rRNA)
+    # For each feature, iterate through and only add gene and CDS features (leaving out gene/tRNA and gene/rRNA)
     for feature in record.features:
         if feature.type == 'source':
+            new_features.append(feature)
             continue	# in case rRNA or tRNA started at the first position, we don't want to remove 'source' by accident
         remove_flag = 0
         for i in start_pos:
@@ -371,11 +381,97 @@ def fix_db_xref(record, log_h):
         #print feature.qualifiers['db_xref']
     return    
     
+# Make formats to organism name, such as truncating and word-wrap for overwriting the name later    
+def format_organism_name(organism, log_h):
+    org = organism
+    MAX_WIDTH = 80	# Maximum width of a line in Genbank
+    HEADER_WIDTH = 12	# Width of the header field in Genbank
+    TAG = "  ORGANISM"	# Field name with appropriate spacing in front
+    max_len = MAX_WIDTH - HEADER_WIDTH
+    
+    #print "ORG_NAME_LEN\t" + str(len(org))
+    
+	# Getting much of this code from http://biopython.org/DIST/docs/api/Bio.SeqIO.InsdcIO-pysrc.html    
+    if len(org) > max_len:
+        t_org = org[:(max_len - 4)] + "..." 
+        #print "T_ORG\t" + t_org
+        org_lines = split_name_over_lines(org, max_len)
+        n_org = ("\n" + " " * HEADER_WIDTH).join(org_lines)
+    	#print "N_ORG\t" + n_org
+    	log_h.write("Organism field is too long to write to one line.  Will wrap over to next line")
+    else:
+    	t_org = org
+    	n_org = org
+    	
+    new = TAG.ljust(HEADER_WIDTH) + n_org + "\n" # Left justify TAG, and add word-wrapped organism line(s) after	
+    truncated = TAG.ljust(HEADER_WIDTH) + t_org + "\n"	# Left justify TAG, and add truncated organism line after
+    #print "NEW\n" + new
+    #print "TRUNC\n" + truncated
+    return new, truncated
+    
+# Takes a given field and splits it into word-wrapped multiple lines given a certain field max width
+def split_name_over_lines(field, max_len):
+    words = field.split()	# Split field into words to prevent splliting a word across 2 lines
+    text = "" 
+    while words and len(text) + 1 + len(words[0]) <= max_len:	# Use words to build line as close to max_len as possible
+        text += " " + words.pop(0)	# Build the line while popping off word list
+        text = text.strip()
+    answer = [text]	# Assign each formatted line to a list
+    while words:	# Are there enough words to fill another line?
+        text = words.pop(0) 
+        while words and len(text) + 1 + len(words[0]) <= max_len: 
+            text += " " + words.pop(0) 
+            text = text.strip() 
+        answer.append(text) 
+    assert not words	# Sanity check to ensure no words were left behind
+    return answer
+
+    
 # Using our up-to-date Genbank record information to write a new Genbank file
 def write_output(record_list, outfile):
     out_h = open(outfile, "w")
     SeqIO.write(record_list, out_h, "genbank")
     out_h.close()
+    return
+
+# Overwrite fixed organism information to the newly written Genbank file
+def overwrite_organism(outfile, organism):
+
+	#  There is 1 pratfall with this method.  If we are looking at a multi-contig Genbank file that
+    #  just so happens to have different organsim names for each contig (which shouldn't happen),
+    #  and the organism truncation from the output file is the exact same across multiple organism
+	#  names, then there is a great chance an incorrect new organism name will be applied
+
+    HEADER_WIDTH = 12
+    temp = re.sub("\.gbk", ".tmp", outfile)
+    os.rename(outfile, temp)	#move our output file to a temp path
+    in_h = open (temp, "r") 
+    out_h = open(outfile, "w")
+    for line in in_h:
+        for org in organism:
+            org_edits = organism[org]
+            if org_edits[1] == line:	# compare truncated line to currently read line
+			    line = org_edits[0]	# replace with word_wrapped multiline version of Organism field
+	    out_h.write(line)
+    in_h.close
+    out_h.close
+    
+# This will move the final Genbank file to the output directory and remove the dirs and files that
+# ultimately will not be used downstream
+def delete_extra_content(outdir, base_gbk, log_h):
+    preval = outdir + "/prevalidate/"
+    preval_gbk = preval + base_gbk + ".gbk"        
+    val = outdir + "/validate/"
+    val_tmp = val + base_gbk + ".tmp"
+    val_gbk = val + base_gbk + ".gbk"	# Keeping this, moving up a directory
+    final_gbk = outdir + base_gbk + ".gbk"
+    os.remove(preval_gbk)
+    os.remove(val_tmp)
+    os.rename(val_gbk, final_gbk)
+    sys.stdout.write("Moved " + val_gbk + " to " + final_gbk + "\n")
+    os.rmdir(preval)
+    os.rmdir(val)
+    sys.stdout.write("Removed unnecessary files and directories\n")        
     return
 
 #######
@@ -387,9 +483,10 @@ def main():
     usage = "usage: %prog -g /path/to/file.gbk -o /path/to/out/dir"
     description = "Validate a Genbank file. Requires Biopython-1.62 to run"
     parser = OptionParser(usage=usage, description=description)
-    parser.add_option("-g", "--genbank_file", help="path to a Genbank-formatted file");
+    parser.add_option("-g", "--genbank_file", help="path to a Genbank-formatted file")
     parser.add_option("-o", "--output_path", help="directory path to write output")
-    parser.add_option("-l", "--log_file", help="name of the changelog file (only the name)");
+    parser.add_option("-l", "--log_file", help="name of the changelog file (only the name)")
+    parser.add_option("-d", "--debug", help="run in debug mode", action="store_true", default=False)
     (options, args) = parser.parse_args()
 
     if not options.genbank_file:
@@ -399,7 +496,8 @@ def main():
 
     gbk = options.genbank_file
     gbk = gbk.rstrip()
-    
+#    base_gbk = re.sub("\..+", "", basename(gbk))
+    base_gbk = splitext(basename(gbk))[0]    
     # Create output directory if it doesn't exist.
     outdir = options.output_path
     if not os.path.exists(outdir):
@@ -410,23 +508,33 @@ def main():
         os.mkdir(pre, 0777)
     if not os.path.exists(val):
         os.mkdir(val, 0777)
+    
+    # Initialize logging
     if options.log_file:
         log = outdir + "/" + options.log_file
     else:
-        base_gbk = re.sub("\..+", "", basename(gbk))
-        log = outdir + "/" + base_gbk + ".gbk_changelog.txt"
+        log = outdir + "/" + base_gbk + ".gb_changelog.txt"
     log_h = open(log, "w")
-
-    if not gbk.endswith("gbk") and not gbk.endswith("gb") and not gbk.endswith("gbwithparts"):	#Change into a regex later
+    if options.debug == True:
+        sys.stdout.write("DEBUG mode enabled\n")
+        
+    pattern = re.compile("\.gb\w*")
+    match = pattern.search(gbk)
+    if not match:
         sys.stderr.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
         sys.exit(1)
     log_h.write("Now preparing " + gbk + " for validation\n")	
     new_gbk = prevalidation(gbk, pre, log_h)
     log_h.write("Now validating " + gbk + " ...\n")
     validate_genbank(new_gbk, val, log_h)
-    log_h.write("\n")	#Really wish I could send to stdout and stderr w/o writing 2 statements. 
 	
-    sys.stdout.write("Finished validating " + gbk + "\n\n---------------\n\n")
+    sys.stdout.write("Finished validating " + gbk + "\n")
+    
+    # Leave extra files intact if debug mode is enabled
+    if options.debug == False:
+        delete_extra_content(outdir, base_gbk, log_h)
+    
+    log_h.write("\n---------------\n\n")
     log_h.close()
 
 if __name__ == '__main__':
