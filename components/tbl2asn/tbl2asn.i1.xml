@@ -74,5 +74,38 @@
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixgbf.stdout</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <state>incomplete</state>
+            <name>Fix GenBank</name>
+            <executable>$;BIN_DIR$;/fix_gbk</executable>
+	    <param>
+		<key>--input_file</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.gbf</value>
+	    </param>
+	    <param>
+		<key>--output_file</key>
+		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.gbf.tmp</value>
+	    </param>
+	    <param>
+		<key>--id_repository</key>
+		<value>$;PROJECT_ID_REPOSITORY$;</value>
+	    </param>
+            <param>
+                <key>stderr</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixgbf.stderr</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fixgbf.stdout</value>
+            </param>
+        </command>
+	<command>
+		<type>RunUnixCommand</type>
+		<state>incomplete</state>
+		<name>Move GenBank</name>
+		<executable>/bin/mv </executable>
+		<arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.gbf.tmp $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.gbf</arg>
+	</command>
     </commandSet>
 </commandSetRoot>
