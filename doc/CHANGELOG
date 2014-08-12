@@ -1,5 +1,6 @@
 next
 ---
+-Fixed bug in HMMParser module where wrong annotations were being assigned due to incorrect numbers of annotation evidence
 -Added script to fix GenBank file in clovr microbe pipeline
 -updated which TIGRfam2role lookup file is accessed for parse_evidence HMM components
 -Added clean_fasta component to CloVR microbe pipeline
