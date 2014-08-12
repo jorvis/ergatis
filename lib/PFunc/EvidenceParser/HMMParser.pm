@@ -213,15 +213,19 @@ sub _process_hmm_coding_alignment {
                     my $cur_count = 0;
                     foreach my $field ( PFunc::Annotation::get_valid_fields ) {
                         $cur_count++ if( $annotation->has_annotation($field) );
+                        my $annot = $annotation->has_annotation($field);
                     }
 
                     #count how many
                     my $possible_count = 0;
                     $possible_count++ if( $hmm_info->{'hmm_com_name'} );
-                    foreach my $field ( qw(gene_symbol ec_num go) ) {
+                    foreach my $field ( qw(gene_symbol ec_num) ) {
                         $possible_count++ if( exists( $hmm_info->{ $field } ) &&
-                                              defined( $hmm_info->{ $field } ) );
+                                              				($hmm_info->{ $field } ne '') );
                     }
+                    #GO terms are stored as array hashes
+                    $possible_count++ if( exists( $hmm_info->{'go'} ) &&
+                    									(@{$hmm_info->{'go'}} > 0));
 
                     if( $possible_count > $cur_count ) {
                         #set the current annotation
@@ -258,19 +262,23 @@ sub _assign_annotation {
     #product name
     my $com_name = $self->_append_to_com_name( $hmm_info->{'hmm_com_name'}, $hmm_annot_iso );
     $annotation->set_gene_product_name( $com_name,
-                                        $hmm_acc, $hmm_annot_iso );
+                                        $hmm_acc, $hmm_annot_iso )
+                                        if ($com_name ne '');
 
     #gene symbol
     $annotation->set_gene_symbol( $hmm_info->{'gene_symbol'},
-                                  $hmm_acc, $hmm_annot_iso );
+                                  $hmm_acc, $hmm_annot_iso )
+                                  if ( $hmm_info->{'gene_symbol'} ne '' );
 
     #ec number
     $annotation->set_EC( $hmm_info->{'ec_num'},
-                         $hmm_acc, $hmm_annot_iso );
+                         $hmm_acc, $hmm_annot_iso )
+                         if ($hmm_info->{'ec_num'} ne '');
 
     # go
     $annotation->set_GO( $hmm_info->{'go'},
-                         $hmm_acc, $hmm_annot_iso );
+                         $hmm_acc, $hmm_annot_iso )
+                         if ( @{$hmm_info->{'go'}} > 0);
 
     #TIGR roles
     #These are keyed with the .\d\d version numbers. So make a tmp acc and
