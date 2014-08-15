@@ -148,7 +148,7 @@ umask(0000);
                 setsid() or die "Can't start a new session: $!";
 
                 print $debugfh "got past the POSIX section\n" if $self->{debug};
-                $self->_setup_environment( ergatis_cfg => $args{ergatis_cfg} );
+                $self->_setup_environment($debugfh, ergatis_cfg => $args{ergatis_cfg} );
                 print $debugfh "got past ENV setup section\n" if $self->{debug};
                 
                 my $marshal_interval_opt = '';
@@ -278,7 +278,7 @@ umask(0000);
     sub set_path { $_[0]->{path} = $_[1] }
     
     sub _setup_environment {
-        my ($self, %args) = @_;
+        my ($self, $debugfh, %args) = @_;
 
         ## remove the apache SERVER variables from the environment
         for my $k (keys %ENV) {
@@ -303,8 +303,8 @@ umask(0000);
         $ENV{WF_TEMPLATE} = "$ENV{WF_ROOT}/templates";
 
         #$ENV{SYBASE} = '/usr/local/packages/sybase';
-        my $sge_bin = $args{ergatis_cfg}->val('grid', 'sge_root') . '/bin/' .  
-        $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$ENV{SGE_ROOT}/bin/$ENV{SGE_ARCH}:$ENV{PATH}";
+        my $sge_bin = $args{ergatis_cfg}->val('grid', 'sge_root') . '/bin/';
+        $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$sge_bin/$ENV{SGE_ARCH}:$ENV{PATH}";
         $ENV{LD_LIBRARY_PATH} = '';
         $ENV{TERMCAP} = ''; #can contain bad characters which crash wrapper shell script
         ## some application-specific env vars
@@ -325,6 +325,7 @@ umask(0000);
 
         ## for overwriting SGEs default
         $ENV{TMPDIR} = "/tmp";
+        
     }
     
 }
