@@ -1,0 +1,37 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start</name>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>create_db_list_file.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>assign_dbxref_ids.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>curate_common_names.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>remove_db_gene_syms_with_hypos.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>update_ec_numbers.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>fix_gene_symbols.db</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>dump_table.default</name>
+            </commandSet>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>
