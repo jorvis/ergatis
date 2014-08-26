@@ -1,0 +1,3 @@
+A pipeline for performing WGS GenBank submissions of annotated prokaryotic genomes.It consists of 7 components.
+A user need to specify database username and password in each of the component configuration.
+
