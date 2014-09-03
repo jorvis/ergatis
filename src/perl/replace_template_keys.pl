@@ -27,6 +27,8 @@ my $SKIPTAG='$;SKIP_WF_COMMAND$;';
 ## TODO: Figure out a better way to do this mapping
 my $dce_param_map = { 'OS' => "OS", 'EXECUTION_HOST' => "executionHost", 
                       'WORKINGDIR' => "workingDir", 'reqStartTime' => "reqStartTime" };
+my $default_memory='100M';                      
+                      
 my $results = GetOptions (\%options, 
 			  'keys=s',
 			  #opts for replacing keys in a single template file
@@ -78,8 +80,13 @@ if (exists $options{'iterator_list'}) {
             $ireplacevals{$key} = $iteratorconf->{$key}->[$i];
         }
         
+        # If iterator_list is provided, create all group XML using XML template, and replace values,
         my $outputfile = $options{'output_dir'}.$iteratorconf->{$iterator_list_key}->[$i].".xml.gz";
         push @iterator_output_list,$outputfile;
+        
+        if(! -e $options{'template_xml'}){
+	    	$logger->logdie("Can't find template xml file ($options{'template_xml'})");     
+		}
         &replacekeys(\%ireplacevals,$options{'template_xml'},$outputfile);
     }
     
@@ -106,6 +113,7 @@ if (exists $options{'iterator_list'}) {
         open FILE, ">$options{'output_xml'}" or $logger->logdie("Can't open file $options{'output_xml'}");
     }
     
+    # Modify iterator XML to include each group XML and other information
     print FILE "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
                 <commandSetRoot type=\"instance\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation='commandSet.xsd'>
                 <commandSet type=\"$distrib\">
@@ -129,6 +137,7 @@ if (exists $options{'iterator_list'}) {
     close FILE; 
 }
 else{
+	# Used to grab component XML from the pipeline
     if($options{'template_xml_conf_key'}){
 	my $templatexml = $cfg->val('component',$delimeter.$options{'template_xml_conf_key'}.$delimeter);
 	
@@ -142,6 +151,7 @@ else{
 	&replacekeys($replacevals,$templatexml,$options{'output_xml'});
     }
     else{
+    # Used for grabbing nested XML or other non-iterative XML
 	if(! -e $options{'template_xml'}){
 	    $logger->debug("Can't find template xml file ($options{'template_xml'})") if($logger->is_debug());     
 	}
@@ -180,6 +190,9 @@ sub get_dce_spec_parameters {
         $dce_block .= "<group>" . $cfg->val('project', '$;PROJECT_CODE$;') . 
                       "</group>\n";
     }
+
+	# Required to specify mem_free requirements when submitting to the grid.  This is to ensure jobs without that req have a default value.
+    $dce_block .= "<passthrough>-l mem_free=$default_memory</passthrough>\n" if ($dce_block !~ /<passthrough>[\w=\s-_]+<\/passthrough>/);
 
     $dce_block .= "</dceSpec>\n";
     return $dce_block;
@@ -252,11 +265,13 @@ sub replacekeys{
         open( OUTPUTFILE, "+>$outputfile") or $logger->logdie("Could not open output template file $outputfile: $!");
     }
     my $run_dist_cmd_flag = 0;
+    my $remote_serial_flag = 0;
 
     my @inputxml;
     #keeping old code that parses XML in a simplistic way... but works
     #TODO refactor to use LibXML
     while( my $line = <INPUTFILE> ){
+    print $line;
         ## don't replace vals on comment lines
 	if( $line !~ /^\;/ && $line !~ /^\#/ ) {        
 	    if($line =~ /\<INCLUDE/){
@@ -280,6 +295,38 @@ sub replacekeys{
         my $new_line = get_dce_spec_parameters($cfg) . $line;
 	    $line = $new_line;
 	    $run_dist_cmd_flag = 0;
+	}
+	
+	# To prevent excess dceSpec blocks from being created, just run on remote-serial commandSet types
+	if ($line =~/\<commandSet type=\"remote-serial\"\>/ ) {
+		$remote_serial_flag = 1;
+	}
+	
+	# If we encounter a commandSeq tag
+	if ($remote_serial_flag && $line =~ /\<\/commandSet\>/) {
+		
+		# "Peek" next line, and if commandSet is just before end of file commandSetRoot, just ignore
+		# commandSetRoot is always the end of file, and a commandSet is always nested in it
+		#my $pos = tell(INPUTFILE);
+		#my $tmp_line = <INPUTFILE>;
+		#chomp $tmp_line;
+		#seek(INPUTFILE, $pos, 0);
+		#if ($tmp_line eq "</commandSetRoot>") {
+		#	push @inputxml, $line;
+		#	next();
+		#}
+		
+        my $new_line = get_dce_spec_parameters($cfg) . $line;
+	    $line = $new_line;		
+	    
+	    # If dceSpec block preceded commandSet closing tag, then remove the block
+	    if ($inputxml[-1] =~ /\<\/dceSpec\>/ ) {
+	    	my $pop_value;
+	    	do {
+	    		$pop_value = pop @inputxml;
+	    	} until ($pop_value =~ /\<dceSpec/ );
+	    }
+	    $remote_serial_flag = 0;
 	}
 	
 	if($line =~ /\<INCLUDE/){
@@ -387,6 +434,7 @@ sub import_xml{
     my $fh;
     open $fh, "$file" or $logger->logdie("Can't open file $file");
     my $run_dist_cmd_flag = 0;
+    my $remote_serial_flag = 0;
     my @inputxml;
     while(my $line=<$fh>){
 	#keeping old code that parses XML in a simplistic way... but works
@@ -414,6 +462,37 @@ sub import_xml{
 	    $line = $new_line;
 	    $run_dist_cmd_flag = 0;
 	}
+	
+	if ($line =~/\<commandSet type=\"remote-serial\"\>/ ) {
+		$remote_serial_flag = 1;
+	}
+	
+	# If we encounter a commandSeq tag
+	if ($remote_serial_flag && $line =~ /\<\/commandSet\>/) {
+		
+		# "Peek" next line, and if commandSet is just before end of file commandSetRoot, just ignore
+		#my $pos = tell($fh);
+		#my $tmp_line = $fh;
+		#chomp $tmp_line;		
+		#seek($fh, $pos, 0);
+		#if ($tmp_line eq "</commandSetRoot>") {
+		#	push @inputxml, $line;
+		#	next();
+		#}
+	
+        my $new_line = get_dce_spec_parameters($cfg) . $line;
+	    $line = $new_line;		
+	    
+	    # If dceSpec block preceded commandSet closing tag, then remove the block
+	    if ($inputxml[-1] =~ /\<\/dceSpec\>/ ) {
+	    	my $pop_value;
+	    	do {
+	    		$pop_value = pop @inputxml;
+	    	} until ($pop_value =~ /\<dceSpec/ );
+	    }
+	    $remote_serial_flag = 0;
+	}
+		
 	if($line =~ /\<INCLUDE/){
 	    if($line !~ />/){
 		$logger->logdie("<INCLUDE> directive must be contained on a single line");
