@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+   <commandSet type="serial">
+      <state>incomplete</state>
+      <name>mumi-reduce workflow</name>
+      <!-- Begin preprocessing-->
+      <command>
+	 <type>RunUnixCommand</type>
+	 <name>Create the toplevel output directory.</name>
+	 <state>incomplete</state>
+	 <executable>mkdir</executable>
+	 <arg>-p -m 777 $;OUTPUT_DIRECTORY$;</arg>
+      </command>
+      <command>
+	 <type>RunUnixCommand</type>
+	 <name>Create a temporary working directory on the scratch partition.</name>
+	 <state>incomplete</state>
+	 <executable>mkdir</executable>
+	 <arg>-p -m 777 $;TMP_DIR$;</arg>
+      </command>
+      <!-- End preprocessing -->
+      <!-- Iterator 1:
+	 
+	 Accumulate lists of pairs of genomes to test, along with preliminary metadata.
+	 
+      -->
+      <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+      <!-- End iterator 1 -->
+      <!-- Iterator 2:
+	 
+	 Run MUMi on each pair in each list and save output.
+	 
+      -->
+      <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR2,$;ITERATOR_XML$;=ITERATOR2_XML">
+      <!-- End iterator 2 -->
+      <command>
+	 <type>RunUnixCommand</type>
+	 <name>Create a directory in which to store all final MUMi scores.</name>
+	 <state>incomplete</state>
+	 <executable>mkdir</executable>
+	 <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters</arg>
+      </command>
+      <!--
+	 
+	 Collect all pairwise MUMi scores into a single file.
+
+      -->
+      <command>
+	 <type>RunUnixCommand</type>
+	 <name>Collect all pairwise MUMi scores into a single file.</name>
+	 <state>incomplete</state>
+	 <executable>$;MUMI_SCORE_AGGREGATOR_EXEC$;</executable>
+	 <arg>$;OUTPUT_DIRECTORY$;/02_run_MUMi $;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/00_pair_scores.txt</arg>
+	 <param>
+	    <key>stdout</key>
+	    <value>$;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/01_pair_scores__STDOUT.txt</value>
+	 </param>
+	 <param>
+	    <key>stderr</key>
+	    <value>$;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/02_pair_scores__STDERR.txt</value>
+	 </param>
+      </command>
+      <!--
+	 
+	 Transitively cluster all sequence pairs S, T where MUMi_score(S,T) <= $;CLUSTER_THRESHOLD$;.
+
+      -->
+      <command>
+	 <type>RunUnixCommand</type>
+	 <name>Transitively cluster all sequence pairs S, T where MUMi_score(S,T) &lt;= $;CLUSTER_THRESHOLD$;.</name>
+	 <state>incomplete</state>
+	 <executable>$;MUMI_CLUSTERING_EXEC$;</executable>
+	 <arg>$;CLUSTER_THRESHOLD$; $;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/00_pair_scores.txt $;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/03_clusters.txt</arg>
+	 <param>
+	    <key>stdout</key>
+	    <value>$;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/04_clusters__STDOUT.txt</value>
+	 </param>
+	 <param>
+	    <key>stderr</key>
+	    <value>$;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/05_clusters__STDERR.txt</value>
+	 </param>
+      </command>
+      <!--
+	 
+	 Pick a representative genome for each cluster, then concatenate all representatives into a single output file.
+
+      -->
+      <command>
+	 <type>RunUnixCommand</type>
+	 <name>Pick a representative genome for each cluster, then concatenate all representatives into a single output file.</name>
+	 <state>incomplete</state>
+	 <executable>$;GENERATE_REDUCED_DB_EXEC$;</executable>
+	 <arg>$;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/03_clusters.txt $;INPUT_DIRECTORY$; $;INPUT_EXTENSION$;</arg>
+	 <param>
+	    <key>stdout</key>
+	    <value>$;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/06_buildFinalFile__STDOUT.txt</value>
+	 </param>
+	 <param>
+	    <key>stderr</key>
+	    <value>$;OUTPUT_DIRECTORY$;/03_MUMi_scores_and_clusters/07_buildFinalFile__STDERR.txt</value>
+	 </param>
+      </command>
+</commandSet>
+</commandSetRoot>

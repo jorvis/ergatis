@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+   <commandSet type="serial">
+      <name>mumi-reduce pre-scan</name>
+      <!--Preprocessing-->
+      <command>
+	 <type>RunUnixCommand</type>
+	 <name>Iterator 1: Create the output directory for the current group (if needed).</name>
+         <state>incomplete</state>
+         <executable>mkdir</executable>
+         <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+      </command>
+      <!-- End preprocessing -->
+      <!-- Begin single iteration operation -->
+      <command>
+         <type>RunUnixCommand</type>
+         <name>Iterator 1: Scan the input directory and generate lists of genome pairs to process.</name>
+         <state>incomplete</state>
+         <executable>$;GENPAIRS_EXEC$;</executable>
+         <arg>$;I_FILE_PATH$;</arg>
+	 <arg>$;INPUT_EXTENSION$;</arg>
+	 <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+         <param>  
+            <key>stdout</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.STDOUT.txt</value>
+         </param>
+         <param>  
+            <key>stderr</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.STDERR.txt</value>
+         </param>
+      </command>
+      <!-- End single iteration operation -->
+   </commandSet>
+</commandSetRoot>
