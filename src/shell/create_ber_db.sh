@@ -10,6 +10,7 @@ END
 	exit 1
 }
 
+# Default to nucleotide seqs
 protein=F
 
 while getopts "i:o:d:f:m:b:c:a:x:p" opt
@@ -41,20 +42,31 @@ then
 	exit 0
 fi
 
+temp_file_ext='.id_list'
+id_temp_file=$out$temp_file_ext
+
+id_to_fetch=""
+# Collect IDs, separate by space, and store to id_to_fetch variable
 if [ $protein == 'F' ]
 then
-	prot_id=`cut -f1 $hits | head -1`
-	if [ $prot_id ]
-	then
-		id_to_fetch=`grep "${prot_id//\./\\\.}	" $id_map | cut -f2 | sort -u`
-	fi
+	for prot_id in `cut -f1 $hits | sort -u`; do
+		if [ $prot_id ]
+		then
+			hit_id=`grep "${prot_id//\./\\\.}	" $id_map | cut -f2 | sort -u`
+			id_to_fetch="$hit_id $id_to_fetch"
+		fi
+	done
 else
 	id_to_fetch=`cut -f6 $hits | sort -u | perl -pe 's/\n/ /g'`
 fi
 
-if [ "$id_to_fetch" ]
+# Pass IDs to a file
+echo $id_to_fetch 1>$id_temp_file
+
+# Call fetch_fasta_from_db, using a list file of IDs
+if [ "$id_temp_file" ]
 then
-	$bin_dir/fetch_fasta_from_db -i "$id_to_fetch" -d $db -p $protein -f $db_format -o $out --cdbfasta_path "$cdbfasta_path" --formatdb_path "$formatdb_path" --xdformat_path "$xdformat_path"
+	$bin_dir/fetch_fasta_from_db -I "$id_temp_file" -d $db -p $protein -f $db_format -o "$out" --cdbfasta_path "$cdbfasta_path" --formatdb_path "$formatdb_path" --xdformat_path "$xdformat_path"
 	ec=$?
 	if [ $ec -ne 0 ]
 	then

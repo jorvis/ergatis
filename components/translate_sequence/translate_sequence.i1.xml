@@ -25,6 +25,14 @@
 		<value>$;TABLE$;</value>
 	    </param> 
 	    <param>
+	    	<key>--multifasta_output</key>
+			<value>$;MULTIFASTA_OUTPUT$;</value>
+	    </param> 	    
+	    <param>
+	    	<key>--seqs_per_fasta</key>
+	    	<value>$;SEQS_PER_FASTA$;</value>
+	    </param>
+	    <param>
 	    	<key>--output</key>
 		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
 	    </param>

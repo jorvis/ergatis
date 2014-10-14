@@ -8,6 +8,7 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
 =head1 SYNOPSIS
 
  USAGE: create_prok_pipeline_config.pl
+ 	   --multifasta|-m
        --assembly|-A
        --pseudomolecule|-p
        --rna_predictions|-r
@@ -23,6 +24,9 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
      ]
 
 =head1 OPTIONS
+
+B<--multifasta, -m>
+	Default = 0.  In parts of the pipeline that normally output 1 fasta sequence per file (which is default), change to output 100 seqs per file
 
 B<--assembly,-A>
     Default = none. Possible choices: [454, illumina, none]
@@ -130,6 +134,7 @@ my $valid_gene_prediction_algorithms = {
     'glimmer' => 1,
     'prodigal'  => 1
 };
+my $multifasta_flag = 0;
 my $valid_assembly_methods = { '454' => 1, 'illumina' => 1 };
 my $assembly = 'none';							  
 my $gene_prediction = "glimmer";
@@ -153,6 +158,7 @@ my $pipelines = {
 
 my %options;
 my $results = GetOptions (\%options,
+						  "multifasta|m=s",
 						  "assembly|A=s",
 						  "pseudomolecule|p=s",
 						  "rna_prediction|r=s",
@@ -300,6 +306,26 @@ if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipeline
     }
 }
 
+# If we are enabling multiseq output from certain components, change parameters to some bottlenecks 
+if ($multifasta_flag) {
+	print "Multisequence component output enabled\n";
+
+	$config{'translate_sequence translate_prediction'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
+	$config{'translate_sequence translate'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
+	$config{'translate_sequence translate_new_models'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;
+	$config{'translate_sequence final_polypeptides'}->{'$;MULTIFASTA_OUTPUT$;'} = 1;	
+	
+	$config{'bsml2fasta create_blastx_pre_input'}->{'$;FORMAT$;'} = "multi";
+	$config{'bsml2fasta create_blastx_pre_input'}->{'$;SPLIT_MULTIFASTA$;'} = 1;
+	$config{'bsml2fasta create_blastx_pre_input'}->{'$;OUTPUT_FILE$;'} = "sequence.fsa";	
+	$config{'bsml2fasta create_blastx_post_input'}->{'$;FORMAT$;'} = "multi";	
+	$config{'bsml2fasta create_blastx_post_input'}->{'$;SPLIT_MULTIFASTA$;'} = 1;	
+	$config{'bsml2fasta create_blastx_post_input'}->{'$;OUTPUT_FILE$;'} = "sequence.fsa";		
+	$config{'bsml2fasta final_cds'}->{'$;FORMAT$;'} = "multi";	
+	$config{'bsml2fasta final_cds'}->{'$;SPLIT_MULTIFASTA$;'} = 1;	
+	$config{'bsml2fasta final_cds'}->{'$;OUTPUT_FILE$;'} = "sequence.fsa";		
+}
+
 # open config file for writing
 open( my $pcfh, "> $pipeline_config") or &_log($ERROR, "Could not open $pipeline_config for writing: $!");
 
@@ -423,6 +449,7 @@ sub check_options {
    $template_directory = $opts->{'template_directory'} if( $opts->{'template_directory'} );
 
    # This is where some logic goes about what parts actually get included into the pipeline.
+   $multifasta_flag = 1 if ($opts->{'multifasta'} );
    $included_subpipelines{'assembly'} = $assembly;
    $included_subpipelines{'pseudomolecule'} = 1 if( $opts->{'pseudomolecule'} && $gene_prediction ne 'none' );
    $included_subpipelines{'rna_prediction'} = 1 unless( exists( $opts->{'rna_prediction'} ) && $opts->{'rna_prediction'} == 0 );
