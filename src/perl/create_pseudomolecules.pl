@@ -279,8 +279,9 @@ sub check_parameters {
 				$logger->logdie("The $options{contig_input} file is neither a fasta file nor a list file of paths. Incorrect input");
 			}
 		}
-## Assign default linker sequence if not supplied	
-		$options{'linker_sequence'} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless ( defined $options{linker_sequence});
+## Assign default linker sequence if not supplied.  If 'none' is supplied, use a null-string 
+		$options{'linker_sequence'} = 'NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN' unless (defined $options{linker_sequence});
+		$options{'linker_sequence'} = '' if ($options{'linker_sequence'} eq lc('none'));
 ## make sure the input file exists and is readable
 		if ($options{'input_file'}) {
 			if(-s $options{"input_file"} && -e $options{'input_file'}) {
