@@ -145,21 +145,21 @@ my $group_count = 0;
 
 if($options{group_count} =~ /(\d+)\+/){
     $options{group_count} = $1;
-    my $sgestatus = `qstat -q default.q -f | grep lx26`;
+    my $sgestatus = `qstat -q workflow.q -f | grep lx24`;
     my @lines = split(/\n/,$sgestatus);
     my $totalslots;
     my $totalrunning;
     foreach my $line (@lines){
 	  my @x = split(/\s+/,$line);
-	  my($used,$tot) = ($x[2] =~ /(\d+)\/(\d+)/);
+	  my($used,$tot) = ($x[2] =~ /\d+\/(\d+)\/(\d+)/);
 	  $totalslots+=$tot;
 	  $totalrunning+=$used;
       }
     my $free = $totalslots-$totalrunning;
     print STDERR "Free $free\n";
-    if($free > $options{group_count}){
-	$options{group_count} = $free;
-    }
+#     if($free > $options{group_count}){
+# 	$options{group_count} = $free;
+#     }
     print STDERR "Using $options{group_count}\n";
 }
 

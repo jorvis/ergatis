@@ -9,8 +9,11 @@ next
 -Changed bsml2fasta components to use multifasta output instead of single fasta output and to have option to split multifasta output by a certain number of sequences per file
 -Added option to translate_sequence output choice of multifasta or single fasta.  Also fixed defective cleanup option.
 --Master branch--
--Fixed issue where HMMParser was assigning incorrect annotations based on falsfied amounts of evidence
--Removed usage of outdated tigrfam2role db lookup file and made current TIGRFAMS_ROLE_LINK file the main lookup file for HMMParser module
+-Fixed bug in HMMParser module where wrong annotations were being assigned due to incorrect numbers of annotation evidence
+-Added script to fix GenBank file in clovr microbe pipeline
+-updated which TIGRfam2role lookup file is accessed for parse_evidence HMM components
+-Added clean_fasta component to CloVR microbe pipeline
+-Replaced protein locus ids in mugsycog results
 -Fixed bug in hmmpfan32bsml.pl to show total e-value of a hit
 -Fixed create_map_file script to process multi-record gbf files correctly
 -Added isolation-source field in wrap_tbl2asn
