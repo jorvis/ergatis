@@ -68,7 +68,7 @@ if (exists $options{'iterator_list'}) {
     }
     
     if (! -d $options{'output_dir'}) {
-        logger->logdie("$options{'output_dir'} is not a valid output directory");
+        $logger->logdie("$options{'output_dir'} is not a valid output directory");
     }
     
     $options{'output_dir'} .= "/" if ($options{'output_dir'} !~ /\/$/);
