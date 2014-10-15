@@ -2,7 +2,7 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>glimmer32bsml step</name>
+        <name>pseudomolecule2glimmer3 component</name>
         <command>
             <type>RunUnixCommand</type>
             <name>glimmer32bsml</name>
