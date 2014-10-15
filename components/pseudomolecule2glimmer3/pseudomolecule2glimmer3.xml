@@ -24,7 +24,15 @@
             <name>pseudomolecule2glimmer3</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/pseudomolecule2glimmer3</executable>
-            <param>
+ 	    <param> 
+		<key>stdout</key> 
+		<value>$;TMP_DIR$;/pseudomolecule2glimmer3.stdout</value> 
+	    </param> 
+	    <param> 
+		<key>stderr</key> 
+		<value>$;TMP_DIR$;/pseudomolecule2glimmer3.stderr</value> 
+	    </param>            
+	    <param>
                <key>--pmarks_bsml_file</key>
                <value>"$;PMARKS_INPUT$;"</value>
             </param>
