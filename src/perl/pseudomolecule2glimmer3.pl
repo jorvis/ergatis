@@ -158,7 +158,7 @@ sub read_file {
 	return(@lines);
 } 
 
-sub concat_bsml {
+sub get_bsml {
 	my @bsml_files = &read_file($options{'pmarks_bsml_file'});
 	&_log($ERROR, "Currently only supporting a list file of only 1 BSML file path...check back later\n") if (scalar @bsml_files > 1);
 	$options{'pmarks_bsml_file'} = shift(@bsml_files);
