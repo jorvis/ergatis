@@ -299,9 +299,9 @@ if( $included_subpipelines{'pseudomolecule'} ) {
     }   
 }
 
-if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipelines{'annotation'} ) {
-    # remove INPUT_BSML_LIST from global section unless we are using the genecalls template
-    delete( $config{'global'}->{'$;INPUT_BSML_LIST$;'} ) unless $included_subpipelines{'genecalls'};
+if( ($included_subpipelines{'gene_prediction'} ne 'none' || $included_subpipelines{'genecalls'}) && $included_subpipelines{'annotation'} ) {
+    # remove INPUT_BSML_LIST from global section
+    delete( $config{'global'}->{'$;INPUT_BSML_LIST$;'} );
     
     # anywhere else you find the $;INPUT_BSML_LIST$; variable, replace it with the output of 
     # promote_gene_prediction.promote_prediction output list
