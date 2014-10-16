@@ -317,13 +317,6 @@ if( ($included_subpipelines{'gene_prediction'} ne 'none' || $included_subpipelin
 
 if ($included_subpipelines{'genecalls'}){
 	delete ($config{'global'}->{'$;ACCESSION_FILE$;'});
-	
-	my $sections = ['translate_sequence translate_prediction', 'bsml2fasta prediction_CDS', 'promote_gene_prediction promote_prediction'];
-
-	foreach my $section ( @$sections ) {
-		$config{$section}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository' .
-		'/pseudomolecule2glimmer3/$;PIPELINEID$;_genecalls/pseudomolecule2glimmer3.bsml.list';
-	}
 
 	$config{'create_pseudomolecules genecalls'}->{'$;GENECALLS$;'} = '';
 	$config{'overlap_analysis default'}->{'$;RNA_BSML$;'} = '';
