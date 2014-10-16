@@ -318,7 +318,7 @@ if( ($included_subpipelines{'gene_prediction'} ne 'none' || $included_subpipelin
 if ($included_subpipelines{'genecalls'}){
 	delete ($config{'global'}->{'$;ACCESSION_FILE$;'});
 
-	$config{'create_pseudomolecules genecalls'}->{'$;GENECALLS$;'} = '';
+	$config{'create_pseudomolecules genecalls'}->{'$;ACSN_FILE$;'} = '';
 	$config{'overlap_analysis default'}->{'$;RNA_BSML$;'} = '';
 	$config{'pipeline_summary default'}->{'$;OTHER_BSML_LISTS$;'} = '';
 }
