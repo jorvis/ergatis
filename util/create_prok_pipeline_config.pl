@@ -325,6 +325,7 @@ if ($included_subpipelines{'genecalls'}){
 		'/pseudomolecule2glimmer3/$;PIPELINEID$;_genecalls/pseudomolecule2glimmer3.bsml.list';
 	}
 
+	$config{'create_pseudomolecules genecalls'}->{'$;GENECALLS$;'} = '';
 	$config{'overlap_analysis default'}->{'$;RNA_BSML$;'} = '';
 	$config{'pipeline_summary default'}->{'$;OTHER_BSML_LISTS$;'} = '';
 }
