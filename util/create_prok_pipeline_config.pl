@@ -10,6 +10,7 @@ create_prok_pipeline_config.pl - Will create a pipeline.layout and pipeline.conf
  USAGE: create_prok_pipeline_config.pl
  	   --multifasta|-m
        --assembly|-A
+       --genecalls|-G
        --pseudomolecule|-p
        --rna_predictions|-r
        --gene_prediction|-g
@@ -30,6 +31,10 @@ B<--multifasta, -m>
 
 B<--assembly,-A>
     Default = none. Possible choices: [454, illumina, none]
+
+B<--genecalls, -G>
+	Default = 0.  Skip gene prediction since gene calls are already known.
+	If enabled, --pseudomolecule, --gene_prediction, --rna_prediction, and --assembly options will be ignored
 
 B<--pseudomolecule,-p>
     Default = 0. For annotation on a pseudomolecule
@@ -84,6 +89,7 @@ B<--help,-h>
     
     Prokaryotic_Annotation_Pipeline_Celera_Assembly
     Prokaryotic_Annotation_Pipeline_Pseudomolecule_Generation
+    Prokaryotic_Annotation_Pipeline_Genecalls_Input
     Prokaryotic_Annotation_Pipeline_Input_Processing
     Prokaryotic_Annotation_Pipeline_RNA_Predictions
     Prokaryotic_Annotation_Pipeline_Glimmer_Predictions
@@ -146,6 +152,7 @@ my %included_subpipelines = ();
 my $pipelines = {
 				 '454' => 'Prokaryotic_Annotation_Pipeline_Celera_Assembly',
 				 'illumina' => 'Prokaryotic_Annotation_Pipeline_Velvet_Assembly',
+				 'genecalls' => 'Prokaryotic_Annotation_Pipeline_Genecalls_Input',
 				 'pseudomolecule' => 'Prokaryotic_Annotation_Pipeline_Pseudomolecule_Generation',
 				 'input_processing' => 'Prokaryotic_Annotation_Pipeline_Input_Processing',
 				 'rna_prediction'  => 'Prokaryotic_Annotation_Pipeline_RNA_Predictions',
@@ -153,13 +160,14 @@ my $pipelines = {
 				 'prodigal'  => 'Prokaryotic_Annotation_Pipeline_Prodigal_Predictions',
 				 'annotation'  => 'Prokaryotic_Annotation_Pipeline_Gene_Annotations',
 				 'load' => 'Prokaryotic_Annotation_Pipeline_Chado_Loading',
-				'ipd' => 'Prokaryotic_Annotation_Pipeline_IPD'
+				 'ipd' => 'Prokaryotic_Annotation_Pipeline_IPD'
 				};
 
 my %options;
 my $results = GetOptions (\%options,
 						  "multifasta|m=s",
 						  "assembly|A=s",
+						  "genecalls|G=s",
 						  "pseudomolecule|p=s",
 						  "rna_prediction|r=s",
 						  "gene_prediction|g=s",
@@ -190,6 +198,7 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
    my ($writer) = @_;
    &write_include($writer, $pipelines->{$included_subpipelines{'assembly'}}) 
 	 unless( $included_subpipelines{'assembly'} eq 'none' );
+   &write_include($writer, $pipelines->{'genecalls'}) if ($included_subpipelines{'genecalls'} );
    &write_include($writer, $pipelines->{'pseudomolecule'}) if( $included_subpipelines{'pseudomolecule'} );
    &write_include($writer, $pipelines->{'input_processing'}) if( $included_subpipelines{'input_processing'} );
    
@@ -204,7 +213,7 @@ my $layout_writer = new XML::Writer( 'OUTPUT' => $plfh, 'DATA_MODE' => 1, 'DATA_
    
    &write_include($writer, $pipelines->{'annotation'}) if( $included_subpipelines{'annotation'} );
    if( $included_subpipelines{'load'} ) {
-       if( $included_subpipelines{'pseudomolecule'} ) {
+       if( $included_subpipelines{'pseudomolecule'} or $included_subpipelines{'genecalls'}) {
            &write_include($writer, $pipelines->{'load'}, 'pipeline_pmarks.layout');
        } else {
            &write_include($writer, $pipelines->{'load'});
@@ -304,6 +313,18 @@ if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipeline
             }
         }
     }
+}
+
+if ($included_subpipelines{'genecalls'}){
+	my $sections = ['translate_sequence translate_prediction', 'bsml2fasta prediction_CDS', 'promote_gene_prediction promote_prediction'];
+
+	foreach my $section ( @$sections ) {
+		$config{$section}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository' .
+		'/pseudomolecule2glimmer3/$;PIPELINEID$;_genecalls/pseudomolecule2glimmer3.bsml.list';
+	}
+
+	$config{'overlap_analysis default'}->{'$;RNA_BSML$;'} = '';
+	$config{'pipeline_summary default'}->{'$;OTHER_BSML_LISTS$;'} = '';
 }
 
 # If we are enabling multiseq output from certain components, change parameters to some bottlenecks 
@@ -459,6 +480,17 @@ sub check_options {
    $included_subpipelines{'ipd'} = 1 if ( $opts->{'ipd'} );      
    $included_subpipelines{'input_processing'} = 1 if( $included_subpipelines{'rna_prediction'} || 
                                                       $included_subpipelines{'gene_prediction'} ne 'none' );
+      
+    # If genecalls pipeline is enabled we want to disable other pipelines                                                  
+    if ($opts->{'genecalls'}) {
+    	$included_subpipelines{'genecalls'} = 1;
+    	
+    	$included_subpipelines{'assembly'} = 'none';
+    	$included_subpipelines{'gene_prediction'} = 'none';
+    	$included_subpipelines{'pseudomolecule'} = 0;
+    	$included_subpipelines{'rna_prediction'} = 0;
+    	$included_subpipelines{'input_processing'} = 0;
+    }
 
 
 }
