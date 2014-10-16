@@ -300,8 +300,8 @@ if( $included_subpipelines{'pseudomolecule'} ) {
 }
 
 if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipelines{'annotation'} ) {
-    # remove INPUT_BSML_LIST from global section
-    delete( $config{'global'}->{'$;INPUT_BSML_LIST$;'} );
+    # remove INPUT_BSML_LIST from global section unless we are using the genecalls template
+    delete( $config{'global'}->{'$;INPUT_BSML_LIST$;'} ) unless $included_subpipelines{'genecalls'};
     
     # anywhere else you find the $;INPUT_BSML_LIST$; variable, replace it with the output of 
     # promote_gene_prediction.promote_prediction output list
@@ -316,6 +316,8 @@ if( $included_subpipelines{'gene_prediction'} ne 'none' && $included_subpipeline
 }
 
 if ($included_subpipelines{'genecalls'}){
+	delete ($config{'global'}->{'$;ACCESSION_FILE$;'});
+	
 	my $sections = ['translate_sequence translate_prediction', 'bsml2fasta prediction_CDS', 'promote_gene_prediction promote_prediction'];
 
 	foreach my $section ( @$sections ) {
