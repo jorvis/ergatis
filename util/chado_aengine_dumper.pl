@@ -900,6 +900,19 @@ for my $feature_id ( keys %$assemblies ) {
             open($gff_fh, "> $file") || die "can't create GFF output file [$file]: $!";
         }
 
+		my %gene_locus;
+		
+		# First let's map transcript to locus tags
+        foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
+        	if ( $feat->primary_tag eq 'gene' ) {
+                if ( $feat->has_tag('locus_tag') ) {
+                    $gene_locus{$feat->seq_id} = ($feat->get_tag_values('locus_tag'))[0];
+                } else {
+                	print $feat->seq_id . " does not have a locus tag\n" if (defined $options{locus_db});
+                }
+            }
+        }
+
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
             
             ## writing my own GFF output.  A Bio::SeqIO layer would be cool eventually.
@@ -921,8 +934,13 @@ for my $feature_id ( keys %$assemblies ) {
                 print $gff_fh join("\t", @columns);
                 print $gff_fh "\t";
 
-                print_gff_col9_attribute($gff_fh, 'ID', $transcript_parents{$feat->seq_id} );
-
+                if (defined $options{locus_db}){
+                    die ("No locus tag found for gene " . $transcript_parents{$feat->seq_id}) if (! defined $gene_locus{$feat->seq_id});             
+                    print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$feat->seq_id} );
+                } else {
+                	print_gff_col9_attribute($gff_fh, 'ID', $transcript_parents{$feat->seq_id} );
+		}
+		
                 ## now handle any column 9 attributes
                 if ( $feat->has_tag('product') ) {
                     print_gff_col9_attribute($gff_fh, 'description', ($feat->get_tag_values('product'))[0] );
@@ -941,16 +959,24 @@ for my $feature_id ( keys %$assemblies ) {
 		## GFF requires exons too.  write an mRNA feature, then the CDS ones
             } elsif ( $feat->primary_tag eq 'CDS' ) {
                 
+                my $gene_id = $transcript_parents{$cds_parents{ $feat->seq_id}};
+                my $transcript_id = $cds_parents{ $feat->seq_id}; 
+                
                 ## the mRNA feature matches the gene one
                 $columns[2] = 'mRNA';
                 $columns[7] = '.';
                 print $gff_fh join("\t", @columns);
                 print $gff_fh "\t";
-                print_gff_col9_attribute($gff_fh, 'ID', $cds_parents{$feat->seq_id} );
-                print_gff_col9_attribute($gff_fh, 'Parent', $transcript_parents{$cds_parents{ $feat->seq_id }} );
+                if (defined $options{locus_db}){
+                    die ("No locus tag found for mRNA" . $transcript_id) if (! defined $gene_locus{$transcript_id});             
+                    print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$transcript_id} );
+                } else {                
+                	print_gff_col9_attribute($gff_fh, 'ID', $transcript_id );
+                }
+                print_gff_col9_attribute($gff_fh, 'Parent', $gene_id );
                 print $gff_fh "\n";
 		
-                $exon_on_transcript_selector->execute( $feature_id, $cds_parents{ $feat->seq_id } );
+                $exon_on_transcript_selector->execute( $feature_id, $transcript_id );
                 
                 ## we'll write one CDS per exon, as described in the GFF3 specs
                 while ( my $row = $exon_on_transcript_selector->fetchrow_hashref ) {
@@ -960,18 +986,31 @@ for my $feature_id ( keys %$assemblies ) {
                     
                     print $gff_fh ($$row{strand} == 1) ? '+' : '-';
                     print $gff_fh "\t0\t";
-                    print_gff_col9_attribute($gff_fh, 'ID', $feat->seq_id );
-                    print_gff_col9_attribute($gff_fh, 'Parent', $cds_parents{ $feat->seq_id } );
+                    
+                    # Changed to print locus tag in place of CDS_ID 10/22/14 -- Shaun Adkins  (JIRA AE-621)
+                    if (defined $options{locus_db}){
+                	die ("No locus tag found for CDS parent " . $transcript_id) if (! defined $gene_locus{$transcript_id});             
+                    	print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$transcript_id} );
+                    } else {
+                    	print_gff_col9_attribute($gff_fh, 'ID', $feat->seq_id);
+                    }
+                    print_gff_col9_attribute($gff_fh, 'Parent', $transcript_id );
                     print $gff_fh "\n";
                     
+                    # Write out exon feature now
                     print $gff_fh "$$assemblies{$feature_id}{uniquename}\t" . 
 			"$options{source}\texon\t" .
 			($$row{fmin} + 1) . "\t$$row{fmax}\t.\t";
                     
                     print $gff_fh ($$row{strand} == 1) ? '+' : '-';
                     print $gff_fh "\t.\t";
-                    print_gff_col9_attribute($gff_fh, 'ID', $$row{uniquename} );
-                    print_gff_col9_attribute($gff_fh, 'Parent', $cds_parents{ $feat->seq_id } );
+                    if (defined $options{locus_db}){
+                	die ("No locus tag found for exon parent " . $transcript_id) if (! defined $gene_locus{$transcript_id});             
+                    	print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$transcript_id} );
+                    } else {                    
+                    	print_gff_col9_attribute($gff_fh, 'ID', $$row{uniquename} );
+                    }
+                    print_gff_col9_attribute($gff_fh, 'Parent', $transcript_id );
                     print $gff_fh "\n";
                     
                 }
@@ -1156,7 +1195,7 @@ sub check_parameters {
     if ( $$options{format} ne 'gbk' && 
          $$options{format} ne 'gff' && 
          $$options{format} ne 'tbl' ) {
-        die "value for --format option must be either 'gbk' or 'gff'";
+        die "value for --format option must be either 'gbk' or 'gff' or 'tbl' ";
     }
     
     ## reset in case the user actually passes 'all'
