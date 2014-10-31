@@ -99,7 +99,7 @@
             </param>
             <param>
                 <key>--feature_relationship_file</key>
-                <value>$;FEATURE_RELATIONSIHP_FILE$;</value>
+                <value>$;FEATURE_RELATIONSHIP_FILE$;</value>
             </param>
             <param>
                 <key>--tabfile</key>
