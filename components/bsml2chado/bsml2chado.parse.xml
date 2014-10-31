@@ -7,10 +7,6 @@
 	    <name>check status</name>
 	    <executable>$;BIN_DIR$;/statusChecker</executable>
 	    <param>
-		<key>--directory</key>
-		<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-	    </param>
-	    <param>
 		<key>--noexec</key>
 		<value>$;NO_EXEC_QUOTA_CHECK$;</value>
 	    </param>

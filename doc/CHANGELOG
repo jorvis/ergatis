@@ -1,10 +1,20 @@
 next
 ---
+
+-Created a multiseq version of the pipeline for multiple sequences per output (specifc changes have 3 dashes)
+---Fixed bug in BER component for multiseq pipeline where incorrect praze results were being added to CDS-Uniref hit pairs from praze
+---Changed bsml2fasta and translate_sequence to have 'seqs_per_fasta' config options
+---Changed BER component ber_blast_hit_selector script to filter N btab hits by polypeptide rather than by file
+---Changed BER component create_ber_db.sh script to fetch multiple polypeptide IDs instead of just one.  Also will pass IDs to fetch_fasta_from_db.pl via a file instead of a string
+---Changed lipop2bsml script within LipoP component to handle multifasta output as well as multiple LipoP sequences per file
+---Changed bsml2fasta components to use multifasta output instead of single fasta output and to have option to split multifasta output by a certain number of sequences per file
+---Added option to translate_sequence output choice of multifasta or single fasta.  Also fixed defective cleanup option.
 -Fixed bug in HMMParser module where wrong annotations were being assigned due to incorrect numbers of annotation evidence
 -Added script to fix GenBank file in clovr microbe pipeline
 -updated which TIGRfam2role lookup file is accessed for parse_evidence HMM components
 -Added clean_fasta component to CloVR microbe pipeline
 -Replaced protein locus ids in mugsycog results
+-Fixed bug in hmmpfan32bsml.pl to show total e-value of a hit
 -Fixed create_map_file script to process multi-record gbf files correctly
 -Added isolation-source field in wrap_tbl2asn
 -Fixed small bugs in various Genbank submission pipeline scripts

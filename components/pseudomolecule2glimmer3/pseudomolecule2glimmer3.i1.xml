@@ -2,60 +2,32 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>wu-blastp compute</name>
+        <name>pseudomolecule2glimmer3 component</name>
         <command>
             <type>RunUnixCommand</type>
-            <name>translate_sequence</name>
+            <name>glimmer32bsml</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/translate_sequence</executable>
-	    <param>
-	    	<key>--input</key>
-		<value>$;I_FILE_PATH$;</value>
-	    </param>    
-	    <param>
-	    	<key>--regions</key>
-		<value>'$;REGIONS$;'</value>
-	    </param>  
-	    <param>
-	    	<key>--frame</key>
-		<value>$;FRAME$;</value>
-	    </param>
-	    <param>
-	    	<key>--table</key>
-		<value>$;TABLE$;</value>
-	    </param> 
-	    <param>
-	    	<key>--multifasta_output</key>
-			<value>$;MULTIFASTA_OUTPUT$;</value>
-	    </param> 	    
-	    <param>
-	    	<key>--seqs_per_fasta</key>
-	    	<value>$;SEQS_PER_FASTA$;</value>
-	    </param>
-	    <param>
-	    	<key>--output</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
-	    </param>
-	    <param>
-	    	<key>--id_repository</key>
-		<value>$;PROJECT_ID_REPOSITORY$;</value>
-	    </param> 
-        <param>
-            <key>--cleanup</key>
-            <value>$;CLEANUP$;</value>
-        </param>            
-	    <param>
-	    	<key>--project</key>
-		<value>$;PROJECT_NAME$;</value>
-	    </param>
-	    <param>
-	    	<key>--transeq_bin</key>
-		<value>$;TRANSEQ_EXEC$;</value>
-	    </param> 
-	    <param>
-	    	<key>stderr</key>
-		<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
-	    </param>
+            <executable>$;BIN_DIR$;/glimmer32bsml</executable>
+            <param>  
+                <key>--fasta_input</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>  
+                <key>--input_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/glimmer3.predict</value>
+            </param>
+            <param>  
+                <key>--output</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
+            </param>
+            <param>  
+                <key>--project</key>
+                <value>$;PROJECT_ABBREVIATION$;</value>
+            </param>
+            <param>  
+                <key>--id_repository</key>
+                <value>$;PROJECT_ID_REPOSITORY$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>

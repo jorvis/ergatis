@@ -86,6 +86,28 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
+            <name>map headers to tab</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/map_header_to_transcript_in_tab</executable>
+            <param>
+                <key>--fasta_file</key>
+                <value>$;MULTIFASTA_FILE$;</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;.final.tab</value>
+            </param>
+            <param>
+                <key>--feature_relationship_file</key>
+                <value>$;FEATURE_RELATIONSHIP_FILE$;</value>
+            </param>
+            <param>
+                <key>--tabfile</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;.processed.tab</value>
+            </param>
+        </command>          
+        <command>
+            <type>RunUnixCommand</type>
             <name>annotation to bsml</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/annotation_collection_to_bsml</executable>
