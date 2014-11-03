@@ -1,6 +1,8 @@
 next
 ---
-
+-Added a genecalls template for annotating already known gene sequences
+---Added pseudomolecule2glimmer3 component
+---Modified p_func to be compatible with the genecalls template
 -Created a multiseq version of the pipeline for multiple sequences per output (specifc changes have 3 dashes)
 ---Fixed bug in BER component for multiseq pipeline where incorrect praze results were being added to CDS-Uniref hit pairs from praze
 ---Changed bsml2fasta and translate_sequence to have 'seqs_per_fasta' config options
