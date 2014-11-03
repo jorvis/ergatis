@@ -90,7 +90,7 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/map_header_to_transcript_in_tab</executable>
             <param>
-                <key>--fasta_file</key>
+                <key>--fasta_list</key>
                 <value>$;MULTIFASTA_FILE$;</value>
             </param>
             <param>

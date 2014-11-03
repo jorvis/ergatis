@@ -10,7 +10,7 @@ map_header_to_transcript_in_tab.pl - Description
  USAGE: map_header_to_transcript_in_tab.pl
  	   --tabfile=/path/to/annotated.tab
        --feature_relationship_file=/path/to/some/bsml2featurerelaionship.mapping.txt
-       --fasta_file=/path/to/multifasta.fa
+       --fasta_list=/path/to/multifasta.list
        --output_file=/path/to/transterm.file
      [ --log=/path/to/file.log
        --debug=3
@@ -23,7 +23,7 @@ B<--tabfile,-t> Annotation tabfile.
 
 B<--feature_relations_file, -r> A bsml2featurerelationship mapping file
 
-B<--fasta_file, -f>	Multifasta file used as initial input for the pipeline
+B<--fasta_list, -f>	Multifasta list file used as initial input for the pipeline.  Needs to only be 1 file in list
 
 B<--output_file,-o> Will be new tabfile with headers instead of transcript IDs at the start
 
@@ -80,7 +80,7 @@ sub main {
 	my $results = GetOptions (\%options,
                          "tabfile|t=s",
                          "feature_relationship_file|r=s",
-                         "fasta_file|f=s",
+                         "fasta_list|f=s",
                          "output_file|o=s",
                          "log|l=s",
                          "debug|d=s",
@@ -91,7 +91,10 @@ sub main {
     
     $tabfile = $options{'tabfile'};
     $frfile = $options{'feature_relationship_file'};
-    $fastafile = $options{'fasta_file'};
+    
+    my @fasta_files= &read_file($options{'fasta_list'});
+	&_log($ERROR, "Currently only supporting a list file of only 1 multifasta file path...check back later\n") if (scalar @fasta_files > 1);
+	$fastafile = shift(@fasta_files);    
     $outfile = $options{'output_file'};
     
     $headers = get_ordered_headers($fastafile);
@@ -165,6 +168,17 @@ sub find_header {
 	my ($index) = grep {$$transcripts[$_] =~ /$t/} 0..(scalar @$transcripts - 1);
 	return $$headers[$index];
 }
+
+## Subroutine to read files
+sub read_file {
+	my $filename = shift;
+	my @lines;
+	open(FH , "< $filename")  || &_log($ERROR, "Could not open $filename file for reading.$!");
+	@lines = <FH>;
+	close(FH);
+	return(@lines);
+} 
+
 
 sub check_options {
    my $opts = shift;

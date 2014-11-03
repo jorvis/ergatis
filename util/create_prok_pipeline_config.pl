@@ -324,9 +324,9 @@ if ($included_subpipelines{'genecalls'}){
 	
 	$config{'p_func default'}->{'$;SKIP_WF_COMMAND$;'} = '';
 	$config{'p_func default'}->{'$;FEATURE_RELATIONSHIP_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/'.
-		'bsml2feature_relationships/$;PIPELINEID$;_pre_overlap_analysis/bsml2featurerelationships.mapping.list';
+		'bsml2featurerelationships/$;PIPELINEID$;_pre_overlap_analysis/bsml2featurerelationships.mapping.list';
 	$config{'p_func default'}->{'$;MULTIFASTA_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/'.
-		'clean_fasta/$;PIPELINEID$;_genecalls/i1/g1/final_clean/genecalls.fasta';
+		'clean_fasta/$;PIPELINEID$;_genecalls/clean_fasta.list';
 }
 
 # If we are enabling multiseq output from certain components, change parameters to some bottlenecks 
