@@ -192,7 +192,7 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(tabfile feature_relationship_file fasta_file output_file) ) {
+   foreach my $req ( qw(tabfile feature_relationship_file fasta_list output_file) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 }
