@@ -91,10 +91,18 @@ foreach my $org_id (keys %$org_id_to_seq_ids) {
     if($options{checksum_orgs}) {
         $org_id = md5_hex($org_id);
     }
-    print FW $prev_org_id."\t".$org_id."\n";;
-    my $cat = "cat ".join(" ",@files)." > $options{output_dir}/$org_id.fsa";
-    print STDERR "$cat\n";
-    `$cat`;
+    print FW $prev_org_id."\t".$org_id."\n";
+# Fix to concatenate FASTA files. The statement below joining the file paths and then running one cat command fails in case the number of arguments to cat exceed ~1500
+    my $fsa = "$options{output_dir}/$org_id.fsa";
+    if(-e $fsa) {
+	`rm $fsa`;
+    }
+    foreach my $f (@files) {
+	my $cat = "cat $f >> $options{output_dir}/$org_id.fsa";
+    	print STDERR "$cat\n";
+    	`$cat`;
+    }
+#    my $cat = "cat ".join(" ",@files)." > $options{output_dir}/$org_id.fsa";
 }
 
 close(FW);
