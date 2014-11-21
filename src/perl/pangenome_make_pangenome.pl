@@ -52,6 +52,8 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Data::Random qw(:all);
 use List::Util qw(min max);
+use Benchmark;
+
 my %options = ();
 my $results = GetOptions( \%options,
                           'profile|p=s',
@@ -120,6 +122,9 @@ for (my $n=1;$n<=$num_genomes;$n++){
 
     my $max1;
 	my $fac;
+	
+	#start the benchmark time
+	my $start = new Benchmark;
 
     # If we are respecting order (i.e. reordering a set counts as a new set) then
     # we'll use a different formula to calculate our max.
@@ -165,7 +170,13 @@ for (my $n=1;$n<=$num_genomes;$n++){
 #           print STDERR "Found a duplicate $string\n";
         }
 	}
-	print STDERR "\n";	# To add newline to the \r print statement above when finished.
+    # end timer
+    my $end = new Benchmark;
+
+    # calculate difference
+    my $diff = timediff($end, $start);
+
+    print STDERR "... runtime: ".timestr($diff, 'noc')."\n";
 #	print STDERR "\nperformed $iter permutations for N=$n genomes\n";
 }
 close OUT;
