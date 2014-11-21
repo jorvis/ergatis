@@ -140,9 +140,9 @@ $dups = $dups_ref;
 
 print STDERR "done.\n";
 
-my %dbs;
-my @genomes;
-my $genes={};
+my %dbs;	#Keeps track of organism name entries
+my @genomes;	#Also keeps track of org entries
+my $genes={};	# keeps track of query_db -> query_prot -> subject_db
 #my $genes = DBM::Deep->new( ".pangenome.temp.db" );
 
 
@@ -191,6 +191,7 @@ if($options{'comparisons'} || $options{'multiplicity'}) {
     &do_analysis_with_sampling();
 }
 else {
+	# Will take a lot longer to finish due to doing all possible combinations
     &do_analysis_no_sampling();
 }
 
@@ -323,6 +324,7 @@ my %seen;
 
 my @i_genomes = (0 .. ($max - 1));
 
+# Iterate using $i numbers of genomes in the analysis
 for (my $i = 1; $i < $max; $i++) {
 
     # start timer
@@ -334,14 +336,18 @@ for (my $i = 1; $i < $max; $i++) {
     my $true_max = int(factorial($max - 1) / (factorial(($i + 1) - 1) * factorial($max - ($i + 1))));
     print STDERR "Maximum number of computations for $i on $max genomes: $true_max\n";
     
+    # Iterate through each available genome
     for (my $j = 0; $j < $max; $j++) {
         
+        #Get current genome name and index number
         my $comp_genome = $genomes[$j];
         
         my @ref_genomes = @i_genomes;
         splice @ref_genomes, $j, 1;
          
-        for (my $point_count=0; ($point_count < $true_max && $point_count < $options{'multiplicity'});){
+        # Iterate until either the number of multiplicity rounds is reached, or all possible combinations of ref genomes is seen
+        for (my $point_count=0; ($point_count < $true_max && $point_count < $options{'multiplicity'});){ 
+        	# Choose a random set of N reference genomes
             my @reference_set = rand_set( set => \@ref_genomes, size => $i, shuffle => 0 );
 
             my @seen_vec = undef;
@@ -353,12 +359,15 @@ for (my $i = 1; $i < $max; $i++) {
             unless ($seen{$j}{"@seen_vec"}){
             
                 my $dup_counts = {};
+                # Counter for current genome as it relates to the current set of N reference genomes
                 $comp_counter->{$comp_genome}->{$i}++;
                 my $genes_by_category = {};
+                # Iterate through our query prot value
                 GENE: foreach my $gene(keys(%{$genes->{$comp_genome}})) {
                     my $count = 0;
-
+					# Iterate through our N reference genome indexes
                     foreach my $i_ref_genome(@reference_set) {
+                    	# grabbing the subject db name
                         my $ref_genome = $genomes[$i_ref_genome];
                         ## if the hash value == 1
                         if ($genes->{$comp_genome}->{$gene}->{$ref_genome}) {
