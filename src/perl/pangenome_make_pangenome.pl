@@ -58,7 +58,7 @@ my $results = GetOptions( \%options,
                           'comparisons|c:s',
                           'multiplicity|m:s',
                           'output_path|o=s',
-                          'respect_order|r',
+                          'respect_order|r:i',
                           'help|h') || pod2usage();
 
 
@@ -109,13 +109,9 @@ if($multiplicity) {
 #
 # GENERATE randomly permutations to be used as sequences of genomes for the pan-genome calculation
 #
-my %seen1;
 my %seen2;
 
-# HACK - basically generating a list of indices of the matrix.
-# Could probably just use the actual names.
-my $all_genomes = [2..($num_genomes+2)];
-
+# Default value for respect order is 1.  Must enter a different integer to disable.
 $options{'respect_order'} = defined($options{'respect_order'}) ? $options{'respect_order'} : 1;
 print STDERR "Respecting order\n" if $options{'respect_order'};
 
@@ -123,22 +119,22 @@ open OUT, ">$options{'output_path'}/pangenome.output" or die "Unable to open out
 for (my $n=1;$n<=$num_genomes;$n++){
 
     my $max1;
+	my $fac;
 
     # If we are respecting order (i.e. reordering a set counts as a new set) then
     # we'll use a different formula to calculate our max.
     if($options{'respect_order'}) {
-        $max1 = int(factorial($num_genomes)/factorial($num_genomes-$n));
-
+    	$fac = factorial($num_genomes)/factorial($num_genomes-$n);
+        $max1 = int($fac + 0.5);	#machine representation of $fac can give incorrect values when using int, so add 0.5 to enable rounding
     }
     else {
         # Used to be calculating the max using the following but this assumes that order matters:
-        $max1 = int(factorial($num_genomes) / (factorial($n) * factorial($num_genomes - ($n)))); 
+        $fac = factorial($num_genomes) / (factorial($n) * factorial($num_genomes - ($n))); 
+        $max1 = int($fac + 0.5);	#machine representation of $fac can give incorrect values when using int, so add 0.5 to enable rounding        
     }
 
-#	if ($n>2){$max1*=0.8}; # Not sure why we would do this
-
     # HACK - doing this so that we estimate the number of comparisons per n
-	my $max2 = $comparisons/($num_genomes);
+	my $max2 = int($comparisons/($num_genomes) + 0.5);
 
 	my $iter=0;
 #    print STDERR "$iter $max1 $max2\n";
@@ -146,9 +142,7 @@ for (my $n=1;$n<=$num_genomes;$n++){
     # Loop until we have the actual max (max1) or the sample max (max2)
 	while($iter<$max1 && $iter<$max2){
  		my @genomes;
-		my $string ;
-		my %seen1;
-		my $i=0;
+		my $string;
 
         # Using the rand_set function from Math::Random
         # If we are respecting order than we want to allow for shuffle.
@@ -163,44 +157,43 @@ for (my $n=1;$n<=$num_genomes;$n++){
         $string = join("-", @genomes);
 		unless ($seen2{$string}){
 			$seen2{$string}=1;
-#            my @genomes_names;
-#            map {push(@genomes_names,($genome_name->{$_}))}@genomes;
 			print OUT $n,"\t",calcpang(@genomes),"\t",join("-",@genomes),"\n";
 			$iter++;
-            print STDERR "\r".sprintf("%.0f",100*($iter/(min(($max1,$max2)))))."% done with $n";;
+            print STDERR "\r".sprintf("%.0f",100*($iter/(min(($max1,$max2)))))."% done with pangenomes of size $n";
 		}
         else {
-#            print STDERR "Found a duplicate $string\n";
+#           print STDERR "Found a duplicate $string\n";
         }
 	}
-	print STDERR "\nperformed $iter permutations for N=$n genomes\n";
+	print STDERR "\n";	# To add newline to the \r print statement above when finished.
+#	print STDERR "\nperformed $iter permutations for N=$n genomes\n";
 }
 close OUT;
 print STDERR "Done.\n";
 
 sub calcpang{
-#    my $matref = shift;
-#    my $matrix = %$matref;
 	my @ref_genomes = @_;
 	my @done_genomes;
 	my $pangenome_size = 0;
-	my $pippo=0;
 	my $genome1;
 	my $genome2;
 	my $gene;
 	my $count;
     
-
+	# Check for matching genes for each genome with previously looked at genomes
+	# If gene hasn't been previously found, it is a new gene, so add to total pangenome size
 	foreach $genome1 (@ref_genomes){
 		foreach $gene (keys %{ $matrix->{$genome1} }){
 			$count = 0;
 			foreach $genome2 (@done_genomes){
                 $count += $matrix->{$genome1}->{$gene}->{$genome2};
+    			last if ($count == 1);	# Once gene is identified as shared, get out of loop
 			}
 			if ($count==0){$pangenome_size++}
 		}
 		push @done_genomes, $genome1;
 	}
+	
 	return $pangenome_size;
 }
 
@@ -211,7 +204,7 @@ sub factorial{
                 my $facn = 1;
                 my $i = 0;
                 for ($i=$n;$i>1;$i--){
-                        $facn*=$i;
+                        $facn *= $i;
                 }
                 return $facn;
         }
