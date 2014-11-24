@@ -123,9 +123,9 @@ for (my $n=1;$n<=$num_genomes;$n++){
     my $max1;
 	my $fac;
 	
-	#start the benchmark time
-	my $start = new Benchmark;
-
+	#start a new Benchmark timer
+    my $start = new Benchmark;
+    
     # If we are respecting order (i.e. reordering a set counts as a new set) then
     # we'll use a different formula to calculate our max.
     if($options{'respect_order'}) {
@@ -170,7 +170,8 @@ for (my $n=1;$n<=$num_genomes;$n++){
 #           print STDERR "Found a duplicate $string\n";
         }
 	}
-    # end timer
+	
+	# end timer
     my $end = new Benchmark;
 
     # calculate difference
@@ -190,20 +191,21 @@ sub calcpang{
 	my $genome2;
 	my $gene;
 	my $count;
-    
-	# Check for matching genes for each genome with previously looked at genomes
-	# If gene hasn't been previously found, it is a new gene, so add to total pangenome size
+	
+    # Check for matching genes for each genome with previously looked at genomes
+    # If gene hasn't been previously found, it is a new gene, so add to total pangenome size
 	foreach $genome1 (@ref_genomes){
 		foreach $gene (keys %{ $matrix->{$genome1} }){
-			$count = 0;
 			foreach $genome2 (@done_genomes){
-                $count += $matrix->{$genome1}->{$gene}->{$genome2};
-    			last if ($count == 1);	# Once gene is identified as shared, get out of loop
+                if ( $matrix->{$genome1}->{$gene}->{$genome2} ) {
+                	$count++;
+    			    last;	# Once gene is identified as shared, get out of loop
+                }
 			}
 			if ($count==0){$pangenome_size++}
 		}
-		push @done_genomes, $genome1;
-	}
+		push @done_genomes, $genome1;		
+	}	
 	
 	return $pangenome_size;
 }
