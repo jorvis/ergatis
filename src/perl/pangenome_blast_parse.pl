@@ -154,8 +154,17 @@ sub processSeqPairAlignment {
     my ($twig, $feat) = @_;
     my ($p_sim, $p_ident, $p_cov_ref, $p_cov_comp, $this_chain);
     
-    my $query_id   = $feat->{'att'}->{'refseq'};
-    my $subject_id = $feat->{'att'}->{'compseq'};
+    #This is used if we want to split via underscore
+    #my $query_id   = $feat->{'att'}->{'refseq'};
+    #my $subject_id = $feat->{'att'}->{'compseq'};
+    #chop $query_id;	#Query ID has a final "_" a the end.  Want to make uniform with Query ID for regex later
+    
+    #Finding it difficult to break up the sequence on underscores since some of the DB names and hit names have them
+    my $query_id_line = $feat->{'att'}->{'refxref'};
+    my $subject_id_line = $feat->{'att'}->{'compxref'};
+    my ($nope, $query_id) = split(':', $query_id_line, 2);
+    my ($nada, $subject_id) = split(':', $subject_id_line, 2);
+    
     my $len_total = 0;
     my $pident_sum = 0;
     my $psim_sum = 0;
@@ -202,24 +211,39 @@ sub processSeqPairAlignment {
 
     # $qprot may be an assembly for TBLASTN, not a protein
     my($qdb, $qprot) = ($2, $1);
-    if ($query_id =~ /^(([^\.]+)\..*)$/) {
-	($qdb, $qprot) = ($2, $1);
+    
+    # For general database identifiers (gnl|qdb|qprot)
+    if ($query_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/) {        	
+    #if ($query_id =~/^gnl_([^_]+)_([^\.]+)\..*$/) {
+    	($qdb, $qprot) = ($1, $2);
+    	print "QDB:\t$qdb\tQPROT:\t$qprot\n";
+    }
+    elsif ($query_id =~ /^(([^\.]+)\..*)$/) {
+		($qdb, $qprot) = ($2, $1);
     }
     # handle BSML sequences (for NC GenBank entries) created via genbank2bsml
-    elsif ($query_id =~ /^ref_(NC_\d+)_(\S+)$/) {
-	($qdb, $qprot) = ($2, $1);
+    elsif ($query_id =~ /^ref\|(NC_\d+)\|(\S+)$/) {
+    #elsif ($query_id =~ /^ref_(NC_\d+)_(\S+)$/) {
+		($qdb, $qprot) = ($2, $1);
     } else {
 	die "couldn't parse out db and sequence id from query\n$query_id\n";
     }
 
     # $sprot may be an assembly for TBLASTN, not a protein
     my($sdb, $sprot);
-    if ($subject_id =~ /^(([^\.]+)\..*)$/) {
+    # For general database identifiers (gnl|qdb|qprot)  
+    if ($subject_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/){    
+    #if ($subject_id =~/^gnl_([^_]+)_([^\.]+)\..*$/) {
+    	($sdb, $sprot) = ($1, $2);
+    	print "SDB:\t$sdb\tSPROT:\t$sprot\n";
+    }    
+    elsif ($subject_id =~ /^(([^\.]+)\..*)$/) {
         ($sdb, $sprot) = ($2, $1);
     } 
     # handle BSML sequences (for NC GenBank entries) created via genbank2bsml
-    elsif ($subject_id =~ /^ref_(NC_\d+)_(\S+)$/) {
-	($sdb, $sprot) = ($2, $1);
+    elsif ($subject_id =~ /^ref\|(NC_\d+)\|(\S+)$/) {    
+    #elsif ($subject_id =~ /^ref_(NC_\d+)_(\S+)$/) {
+		($sdb, $sprot) = ($2, $1);
     } else {
 	die "couldn't parse out db and sequence id from subject\n$subject_id\n";
     }
