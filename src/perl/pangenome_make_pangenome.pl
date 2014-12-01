@@ -162,9 +162,10 @@ for (my $n=1;$n<=$num_genomes;$n++){
         $string = join("-", @genomes);
 		unless ($seen2{$string}){
 			$seen2{$string}=1;
+			print "N = $n\tITER = $iter\n";
 			print OUT $n,"\t",calcpang(@genomes),"\t",join("-",@genomes),"\n";
 			$iter++;
-            print STDERR "\r".sprintf("%.0f",100*($iter/(min(($max1,$max2)))))."% done with pangenomes of size $n";
+            #print STDERR "\r".sprintf("%.0f",100*($iter/(min(($max1,$max2)))))."% done with pangenomes of size $n";
 		}
         else {
 #           print STDERR "Found a duplicate $string\n";
@@ -177,7 +178,7 @@ for (my $n=1;$n<=$num_genomes;$n++){
     # calculate difference
     my $diff = timediff($end, $start);
 
-    print STDERR "... runtime: ".timestr($diff, 'noc')."\n";
+    #print STDERR "... runtime: ".timestr($diff, 'noc')."\n";
 #	print STDERR "\nperformed $iter permutations for N=$n genomes\n";
 }
 close OUT;
@@ -192,18 +193,27 @@ sub calcpang{
 	my $gene;
 	my $count;
 	
+#	my $new_gene_count = 0;
+	
     # Check for matching genes for each genome with previously looked at genomes
     # If gene hasn't been previously found, it is a new gene, so add to total pangenome size
 	foreach $genome1 (@ref_genomes){
+#		$new_gene_count = 0;
 		foreach $gene (keys %{ $matrix->{$genome1} }){
+			$count = 0;		
 			foreach $genome2 (@done_genomes){
                 if ( $matrix->{$genome1}->{$gene}->{$genome2} ) {
                 	$count++;
     			    last;	# Once gene is identified as shared, get out of loop
                 }
 			}
-			if ($count==0){$pangenome_size++}
+			if ($count==0){
+				$pangenome_size++;
+		#		$new_gene_count++;
+			}
 		}
+		
+		#print "$new_gene_count genes added from genome $genome1\n";
 		push @done_genomes, $genome1;		
 	}	
 	
