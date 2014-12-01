@@ -3,40 +3,40 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <name>clean fasta compute</name>
-         <command>
-            <type>RunUnixCommand</type>
-            <name>dos to unix</name>
-            <state>incomplete</state>
-            <executable>/usr/bin/dos2unix</executable>
-            <arg>$;I_FILE_PATH$;</arg>
-        </command>   
-         <command>
-            <type>RunUnixCommand</type>
-            <name>change_carriage_to_newline</name>
-            <state>incomplete</state>
-            <executable>/usr/bin/perl</executable>
-            <arg>-pi -w -e 's/\r/\n/g;' $;I_FILE_PATH$;</arg>
-        </command>   
         <command>
             <type>RunUnixCommand</type>
             <name>create clean_fasta directory</name>
             <state>incomplete</state>
             <executable>mkdir</executable>
             <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/clean_fasta</arg>
+        </command> 
+         <command>
+            <type>RunUnixCommand</type>
+            <name>dos to unix</name>
+            <state>incomplete</state>
+            <executable>/usr/bin/dos2unix</executable>
+            <arg>-n $;I_FILE_PATH$; $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;_tmp.fasta</arg>
         </command>   
+         <command>
+            <type>RunUnixCommand</type>
+            <name>change_carriage_to_newline</name>
+            <state>incomplete</state>
+            <executable>/usr/bin/perl</executable>
+            <arg>-pi -w -e 's/\r/\n/g;' $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;_tmp.fasta</arg>
+        </command>             
         <command>
             <type>RunUnixCommand</type>
             <name>clean_fasta</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/clean_fasta</executable>
-	    <arg>$;CONFIG_OPTIONS$; $;I_FILE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/clean_fasta/$;I_FILE_BASE$;.fasta</arg>
+	        <arg>$;CONFIG_OPTIONS$; $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;_tmp.fasta -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/clean_fasta/$;I_FILE_BASE$;.fasta</arg>
             <param>  
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.clean_fasta.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.clean_fasta..stderr</value>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;.clean_fasta.stderr</value>
             </param>
         </command>
         <command>
