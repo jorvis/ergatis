@@ -1,5 +1,6 @@
 next
 ---
+-Fixed clean_fasta workflow command order to deal with permissions issues in dos2unix command"
 -Fixed bug in prepfasta4mugsy where cat command would fail in case of large number of arguments
 -Added a genecalls template for annotating already known gene sequences
 -Added pseudomolecule2glimmer3 component
