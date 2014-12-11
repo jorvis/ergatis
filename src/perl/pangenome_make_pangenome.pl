@@ -95,8 +95,14 @@ my $matrix;
 while($l=<IN>){
 	chop $l;
 	@a = split /\t+/,$l;
+	my $genome = $a[0];
+	my $gene = $a[1];	
 	for (my $i=2;$i<scalar(@a);$i++){
-		$matrix->{$a[0]}->{$a[1]}->{$genome_name->{$i-1}}=$a[$i];
+		# Index only the hits
+		if ($a[$i]) {
+			#push @{$matrix->{$genome}->{$gene}}, $genome_name->{$i-1};
+			$matrix->{$genome}->{$gene}->{$genome_name->{$i-1}} = 1;
+		}
 	}
 }
 close IN;
@@ -199,10 +205,10 @@ sub calcpang{
     # If gene hasn't been previously found, it is a new gene, so add to total pangenome size
 	foreach $genome1 (@ref_genomes){
 #		$new_gene_count = 0;
-		foreach $gene (keys %{ $matrix->{$genome1} }){
+		foreach $gene (keys %{ $matrix->{$genome1} }){		
 		    $count = 0;
 		    foreach $genome2 (@done_genomes){
-                if ( $matrix->{$genome1}->{$gene}->{$genome2} ) {
+                if ( exists $matrix->{$genome1}->{$gene}->{$genome2} ) {
                 	$count++;
     			    last;	# Once gene is identified as shared, get out of loop
                 }
