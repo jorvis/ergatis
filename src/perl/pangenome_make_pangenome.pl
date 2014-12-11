@@ -68,7 +68,7 @@ my $results = GetOptions( \%options,
 pod2usage if $options{'help'};
 
 # Reads a "profile" file from the pangenome pipeline, and determines distributions of values for
-# the total number of genes pertaining to the pan-genome. The total number of permutations 
+# the total number of genes pertaining to the pan-genome. The total number of permutations
 # evaluated for each number of genomes is maxed at 1000, permutations are randomly selected.
 
 #
@@ -122,10 +122,10 @@ for (my $n=1;$n<=$num_genomes;$n++){
 
     my $max1;
 	my $fac;
-	
+
 	#start a new Benchmark timer
     my $start = new Benchmark;
-    
+
     # If we are respecting order (i.e. reordering a set counts as a new set) then
     # we'll use a different formula to calculate our max.
     if($options{'respect_order'}) {
@@ -134,8 +134,8 @@ for (my $n=1;$n<=$num_genomes;$n++){
     }
     else {
         # Used to be calculating the max using the following but this assumes that order matters:
-        $fac = factorial($num_genomes) / (factorial($n) * factorial($num_genomes - ($n))); 
-        $max1 = int($fac + 0.5);	#machine representation of $fac can give incorrect values when using int, so add 0.5 to enable rounding        
+        $fac = factorial($num_genomes) / (factorial($n) * factorial($num_genomes - ($n)));
+        $max1 = int($fac + 0.5);	#machine representation of $fac can give incorrect values when using int, so add 0.5 to enable rounding
     }
 
     # HACK - doing this so that we estimate the number of comparisons per n
@@ -162,7 +162,7 @@ for (my $n=1;$n<=$num_genomes;$n++){
         $string = join("-", @genomes);
 		unless ($seen2{$string}){
 			$seen2{$string}=1;
-			print "N = $n\tITER = $iter\n";
+			#print "N = $n\tITER = $iter\n";
 			print OUT $n,"\t",calcpang(@genomes),"\t",join("-",@genomes),"\n";
 			$iter++;
             #print STDERR "\r".sprintf("%.0f",100*($iter/(min(($max1,$max2)))))."% done with pangenomes of size $n";
@@ -171,14 +171,14 @@ for (my $n=1;$n<=$num_genomes;$n++){
 #           print STDERR "Found a duplicate $string\n";
         }
 	}
-	
+
 	# end timer
     my $end = new Benchmark;
 
     # calculate difference
     my $diff = timediff($end, $start);
 
-    #print STDERR "... runtime: ".timestr($diff, 'noc')."\n";
+    print STDERR "$n... runtime: ".timestr($diff, 'noc')."\n";
 #	print STDERR "\nperformed $iter permutations for N=$n genomes\n";
 }
 close OUT;
@@ -192,16 +192,16 @@ sub calcpang{
 	my $genome2;
 	my $gene;
 	my $count;
-	
+
 #	my $new_gene_count = 0;
-	
+
     # Check for matching genes for each genome with previously looked at genomes
     # If gene hasn't been previously found, it is a new gene, so add to total pangenome size
 	foreach $genome1 (@ref_genomes){
 #		$new_gene_count = 0;
 		foreach $gene (keys %{ $matrix->{$genome1} }){
-			$count = 0;		
-			foreach $genome2 (@done_genomes){
+		    $count = 0;
+		    foreach $genome2 (@done_genomes){
                 if ( $matrix->{$genome1}->{$gene}->{$genome2} ) {
                 	$count++;
     			    last;	# Once gene is identified as shared, get out of loop
@@ -212,11 +212,10 @@ sub calcpang{
 		#		$new_gene_count++;
 			}
 		}
-		
 		#print "$new_gene_count genes added from genome $genome1\n";
-		push @done_genomes, $genome1;		
-	}	
-	
+		push @done_genomes, $genome1;
+	}
+
 	return $pangenome_size;
 }
 
@@ -247,7 +246,7 @@ sub estimate_multiplicity {
     my $ldiff = 0;
     my $udiff = 0;
 LOOP:   for ($i=5; $i<=5000; $i++){
-        my ($a, $b) = estimate_comparisons($ngenomes, $i); 
+        my ($a, $b) = estimate_comparisons($ngenomes, $i);
         if ($a < $req_comparisons){
             $lower_mult = $i;
             $lower_comp = $a;
@@ -274,12 +273,12 @@ LOOP:   for ($i=5; $i<=5000; $i++){
         } else {
             return ($upper_mult, $upper_comp, $upper_theor);
         }
-    }   
+    }
 }
 
 sub estimate_comparisons{
     my ($ngenomes, $multiplex) = @_;
-    
+
     my $i = 0;
     my $tot_comparisons = 0;
     my $theor_comparisons = 0;
@@ -295,6 +294,6 @@ sub estimate_comparisons{
             $tot_comparisons += $real;
         }
     }
-    
+
     return ($tot_comparisons, $theor_comparisons);
 }

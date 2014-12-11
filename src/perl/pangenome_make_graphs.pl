@@ -13,7 +13,8 @@ pangenome_do_R.pl - Runs a specified R file on the specified input file.
     --r_script=/path/to/some_R_script.R
     --output_path=/path/to/output/
     --title='Genus species'
-    [ --log=/path/to/some/log ]
+    [ --create_eps=1 
+      --log=/path/to/some/log ]
 
 =head1 OPTIONS
 
@@ -26,6 +27,9 @@ B<--r_script,-r>
 
 B<--output_path,-o>
     Path to which output files will be written.
+    
+B<--create_eps, -e>
+    If set, will convert .ps files to .eps files.
 
 B<--title,-g>
     Path to which output files will be written.
@@ -56,8 +60,9 @@ my %options = ();
 my $results = GetOptions( \%options,
                           'input_table|i=s',
                           'r_script|r=s',
-			  'r_exec_path|p=s',
+			              'r_exec_path|p=s',
                           'output_path|o=s',
+                          'create_eps|e:i',
                           'title|g=s',
                           'help|h') || pod2usage();
 
@@ -71,12 +76,13 @@ my $pangenome_table = $options{'input_table'};
 my $r_script = $options{'r_script'};
 my $output_path = $options{'output_path'};
 my $R_EXEC_PATH = $options{'r_exec_path'};
+my $create_eps = $options{'create_eps'};
 
 my $r_filename = $r_script;
 $r_filename =~  s/^.*\/([^\/]*)/$1/;
 
 open (IN, "$r_script") || die "Couldn't open R script '$r_script': $!";
-
+# Teak each 
 my $input_r = "$output_path/$r_filename"."in";
 
 my $ps_file = $r_filename;
@@ -84,6 +90,7 @@ $ps_file =~ s/\.R/\.ps/;
 my $eps_file= $ps_file;
 $eps_file =~ s/\.ps/\.eps/;
 
+# In the R-script template, customize for current job by subbing certain fields
 open (OUT, ">$input_r");
 while (<IN>) {
     s/###TITLE###/$title/;
@@ -94,14 +101,19 @@ while (<IN>) {
 close OUT;
 close IN;
 
-if(system("$R_EXEC_PATH CMD BATCH $input_r $output_path/".$r_filename."out")==0 ) {
-    my @r_files = `ls $output_path/*.ps`;
-    foreach my $file(@r_files) {
-        chomp $file;
-        my $eps_file = $file;
-        $eps_file =~ s/\.ps/\.eps/;
-        print STDERR "converting $file to eps\n";
-        system("ps2epsi $file $eps_file" )==0 or warn "Unable to run ps2epsi command $!\n";
+# Using 'CMD BATCH' in arguments allows for R to be executed in a wrapper script
+# Adding --quiet just silences the R startup prompt, but not output.
+if(system("$R_EXEC_PATH CMD BATCH --quiet $input_r $output_path/".$r_filename."out")==0 ) {
+	# Output EPS files if option to output is enabled
+	if ($create_eps) {
+    	my @r_files = `ls $output_path/*.ps`;
+    	foreach my $file(@r_files) {
+        	chomp $file;
+        	my $eps_file = $file;
+        	$eps_file =~ s/\.ps/\.eps/;
+        	print STDERR "converting $file to eps\n";
+        	system("ps2epsi $file $eps_file" )==0 or warn "Unable to run ps2epsi command $!\n";
+    	}
     }
 }
 else {

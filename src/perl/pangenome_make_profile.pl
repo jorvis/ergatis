@@ -76,9 +76,6 @@ my $results = GetOptions (  \%options,
                             'blast_stored_file|b=s',
                             'output_path|o=s',
                             'output_file|f=s',
-                            'write_lists:i',
-                            'multiplicity|m:i',
-                            'comparisons|c:i',
                             'debug|d=s',
                             'command_id=s',       ## passed by workflow
                             'logconf=s',          ## passed by workflow (not used)
@@ -145,7 +142,7 @@ foreach (@results) {
         }
         $genes->{$_->[0]}->{$_->[1]}->{$_->[2]} = 1;
         $dbs{$_->[0]} = 1;
-    }   
+    }
 }
 @genomes = keys(%dbs);
 
@@ -166,8 +163,8 @@ foreach my $genome (@genomes) {
         print RESULT "$genome\t$gene";
         for (my $i=0; $i < scalar(@genomes); $i++) {
             my $bit;
-            if ($genomes[$i] eq $genome) { 
-                $bit = '1'; 
+            if ($genomes[$i] eq $genome) {
+                $bit = '1';
             } else {
                 $bit = ($genes->{$genome}->{$gene}->{$genomes[$i]} == 1) ? '1' : '0';
             }
@@ -184,5 +181,5 @@ sub read_db_list {
         chomp;
         $db_filter->{$_} = 1;
     }close IN;
-    
+
 }

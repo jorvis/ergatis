@@ -106,8 +106,10 @@ while (<IN>) {
 
     ## pull the dups hash out of the stored array
     my $dups_ref = shift(@{$temp_ref});
-    foreach my $key(keys(%{$dups_ref})) {
-        $dups->{$db}->{$key}=1;
+    foreach my $org (keys(%{$dups_ref})) {
+    	foreach my $dup_set (keys %{$dups_ref->{$org}}) {
+        	$dups->{$db}->{$dup_set}=1;
+        }
     }
 
     $temp_ref = undef;

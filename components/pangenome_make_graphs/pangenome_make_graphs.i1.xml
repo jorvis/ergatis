@@ -31,14 +31,18 @@
                 <key>--title</key>
                 <value>'$;TITLE$;'</value>
             </param>
+            <param>
+                <key>--create_eps</key>
+                <value>'$;USE_EPS$;'</value>
+            </param>
             <param>  
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
             </param>
-	    <param>
-		<key>--r_exec_path</key>
-		<value>$;R_EXEC$;</value>
-	    </param>
+	        <param>
+		        <key>--r_exec_path</key>
+		        <value>$;R_EXEC$;</value>
+	        </param>
             <dceSpec type="sge">
                 <OS>linux</OS>
             </dceSpec>

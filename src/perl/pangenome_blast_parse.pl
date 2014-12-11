@@ -19,7 +19,7 @@ USAGE: pangenome_query_list.pl
 =head1 OPTIONS
 
 B<--input,-i>
-    BSML file containing BLAST results to parse. 
+    BSML file containing BLAST results to parse.
 
 B<--output_path,-o>
     Directory to write stored file
@@ -36,7 +36,7 @@ B<--organism_to_db_mapping>
     Streptococcus pneumoniae TIGR4 sptigr4
 
 B<--db_list>
-    List of uniquename prefixes that should be included in the analysis. 
+    List of uniquename prefixes that should be included in the analysis.
     It is not necessary to include this list if you are filtering with the
     organism_to_db_mapping file.
 
@@ -102,7 +102,7 @@ my $similarity_cutoff = $options{'similarity_cutoff'} ne '' ? $options{'similari
 
 
 my $twig = XML::Twig->new(
-                            twig_roots  => { 
+                            twig_roots  => {
                                                 'Seq-pair-alignment' => \&processSeqPairAlignment
                                            }
                          );
@@ -139,32 +139,36 @@ $twig->parse($ifh);
 
 close $ifh;
 
-
-foreach my $key (keys %$dups_temp) {
-    if (scalar(@{$dups_temp->{$key}}) > 1) {
-        $dups{$key} = join(" ", @{$dups_temp->{$key}});
+# Foreach gene that has genuine duplicates besides itself, add to dups hash.
+foreach my $org (keys %$dups_temp) {
+	foreach my $prot ( keys %{$dups_temp->{$org}}) {
+    	if (scalar(@{$dups_temp->{$org}->{$prot}}) > 1) {
+    		my $dup_set = join(" ", @{$dups_temp->{$org}->{$prot}});
+    		# Seems like bsml hits are stored in order of stored sequence from formatdb, so two sets of dups with the same genes will have the same dup set string order, so we will get just one copy of the string instead of N number
+    		#print $prot, " -- ", $dup_set, "\n";
+    	    $dups{$org}{$dup_set} = 1;
+    	}
     }
 }
-
 nstore([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
 exit(0);
 
-sub processSeqPairAlignment { 
+sub processSeqPairAlignment {
     my ($twig, $feat) = @_;
     my ($p_sim, $p_ident, $p_cov_ref, $p_cov_comp, $this_chain);
-    
+
     #This is used if we want to split via underscore
     #my $query_id   = $feat->{'att'}->{'refseq'};
     #my $subject_id = $feat->{'att'}->{'compseq'};
     #chop $query_id;	#Query ID has a final "_" a the end.  Want to make uniform with Query ID for regex later
-    
+
     #Finding it difficult to break up the sequence on underscores since some of the DB names and hit names have them
     my $query_id_line = $feat->{'att'}->{'refxref'};
     my $subject_id_line = $feat->{'att'}->{'compxref'};
     my ($nope, $query_id) = split(':', $query_id_line, 2);
     my ($nada, $subject_id) = split(':', $subject_id_line, 2);
-    
+
     my $len_total = 0;
     my $pident_sum = 0;
     my $psim_sum = 0;
@@ -172,7 +176,7 @@ sub processSeqPairAlignment {
     my $all_seg_p_sim = 0;
 
     my $parent_chain = 0;
-    
+
     for my $att ($feat->children('Attribute')) {
         if($att->{att}->{'name'} eq 'percent_coverage_compseq') {
             $p_cov_comp = $att->{att}->{'content'};
@@ -185,38 +189,17 @@ sub processSeqPairAlignment {
         }
         elsif($att->{att}->{'name'} eq 'percent_identity') {
             $all_seg_p_ident = $att->{att}->{'content'};
-        }        
+        }
     }
 #print STDERR "$p_cov_comp $p_cov_ref $all_seg_p_sim $all_seg_p_ident\n";
 
-#    for my $seqpairrun ( $feat->children('Seq-pair-run') ) {
-#        my $run_length = $seqpairrun->{att}->{runlength};
-#        $len_total += $run_length;
-#        for my $attribute ( $seqpairrun->children('Attribute') ) {
-#            if ($attribute->{att}->{'name'} eq 'percent_identity') {
-#                $p_ident = $attribute->{att}->{'content'};
-#            } elsif ($attribute->{att}->{'name'} eq 'percent_similarity') {
-#                $p_sim = $attribute->{att}->{'content'};
-#            } elsif ($attribute->{att}->{'name'} eq 'percent_coverage_refseq') {
-#                #$p_cov_ref = $attribute->{att}->{'content'};
-#            } elsif ($attribute->{att}->{'name'} eq 'percent_coverage_compseq') {
-#                #$p_cov_comp = $attribute->{att}->{'content'};
-#            }
-#        }
-#        $pident_sum += (($p_ident/100.0) * $run_length); 
-#        $psim_sum += (($p_sim/100.0) * $run_length); 
-#    }
-#    my $all_seg_p_ident = sprintf("%.1f", $pident_sum / $len_total * 100);
-#    my $all_seg_p_sim = sprintf("%.1f", $psim_sum / $len_total * 100);
-
     # $qprot may be an assembly for TBLASTN, not a protein
     my($qdb, $qprot) = ($2, $1);
-    
+
     # For general database identifiers (gnl|qdb|qprot)
-    if ($query_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/) {        	
-    #if ($query_id =~/^gnl_([^_]+)_([^\.]+)\..*$/) {
+    if ($query_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/) {
     	($qdb, $qprot) = ($1, $2);
-    	print "QDB:\t$qdb\tQPROT:\t$qprot\n";
+    	#print "QDB:\t$qdb\tQPROT:\t$qprot\n";
     }
     elsif ($query_id =~ /^(([^\.]+)\..*)$/) {
 		($qdb, $qprot) = ($2, $1);
@@ -231,56 +214,53 @@ sub processSeqPairAlignment {
 
     # $sprot may be an assembly for TBLASTN, not a protein
     my($sdb, $sprot);
-    # For general database identifiers (gnl|qdb|qprot)  
-    if ($subject_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/){    
-    #if ($subject_id =~/^gnl_([^_]+)_([^\.]+)\..*$/) {
+    # For general database identifiers (gnl|qdb|qprot)
+    if ($subject_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/){
     	($sdb, $sprot) = ($1, $2);
-    	print "SDB:\t$sdb\tSPROT:\t$sprot\n";
-    }    
+    	#print "SDB:\t$sdb\tSPROT:\t$sprot\n";
+    }
     elsif ($subject_id =~ /^(([^\.]+)\..*)$/) {
         ($sdb, $sprot) = ($2, $1);
-    } 
+    }
     # handle BSML sequences (for NC GenBank entries) created via genbank2bsml
-    elsif ($subject_id =~ /^ref\|(NC_\d+)\|(\S+)$/) {    
+    elsif ($subject_id =~ /^ref\|(NC_\d+)\|(\S+)$/) {
     #elsif ($subject_id =~ /^ref_(NC_\d+)_(\S+)$/) {
 		($sdb, $sprot) = ($2, $1);
     } else {
 	die "couldn't parse out db and sequence id from subject\n$subject_id\n";
     }
-    
+
     if(!$options{'db_list'} && !$options{'organism_to_db_mapping'}) {
         $db_to_org->{$qdb} = $qdb;
         $db_to_org->{$sdb} = $sdb;
     }
-    
+
     # If we are doing any filtering then we will check that both the dabase names are good.
     if (!$db_filter || ($db_filter->{$qdb} && $db_filter->{$sdb})) {
-        
-        #   if ($all_seg_p_ident >= 50.0 && ($p_cov_ref >= 50.0 || $p_cov_comp >= 50.0)) {  ## switched from p_ident to p_sim
-        
-        # Check the cutoffs are reached
-        if ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
-            
+
+	#  If we have a self-hit then add subject hit to dups
+        #  This could have been done without using the org as a key, but I guess this was originally written as such on the off-chance to database names map to the same organism -- sadkins
+        if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
+            push(@{$dups_temp->{$db_to_org->{$sdb}}->{$qprot}}, $sprot);
+            print $qprot, "\t", $sprot."\n" if ($qprot ne $sprot);
+            #print $p_cov_ref." ".$p_cov_comp."\n";
+        } elsif ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
+            # Check the cutoffs are reached for non-self hits
             # Add this hit to the results array
             push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
+             print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+        } else {
+            print STDERR "filtering out $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
         }
-        else {
-            print STDERR "filtering 1 $qprot $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
-        }
-        #   if ($qdb eq $sdb && $qprot ne $sprot && $all_seg_p_indent == 100 && $p_cov_ref == 100 && $p_cov_comp == 100.0) {
-        
-        #   I won't exclude the self hit here because we do want the query id in the group of dups
-        if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
-            push(@{$dups_temp->{$db_to_org->{$sdb}}}, $sprot);
-            print $sprot."\n";
-            print $p_cov_ref." ".$p_cov_comp."\n";
-        }
+
+        # Eventually add criteria for paralog duplicates
+
     }
     elsif($options{'organism_to_db_mapping'}) {
-        print STDERR "Filtered from organism_to_prefix ".$db_filter->{$qdb}." or ".$db_filter->{$sdb}."\n";
+        print STDERR "Filtering out from organism_to_prefix -- query ".$db_filter->{$qdb}." or subject".$db_filter->{$sdb}."\n";
     }
     elsif($options{'db_list'}) {
-        print STDERR "Filtered from db_list ".$db_filter->{$qdb}." or ".$db_filter->{$sdb}."\n";
+        print STDERR "Filtering out from db_list -- query ".$db_filter->{$qdb}." or subject".$db_filter->{$sdb}."\n";
     }
 }
 
@@ -291,7 +271,7 @@ sub read_db_list {
         $db_filter->{$_} = 1;
         $db_to_org->{$_} = $_;
     }close IN;
-    
+
 }
 
 sub read_organism_to_db_mapping {
@@ -305,5 +285,5 @@ sub read_organism_to_db_mapping {
         if(!$options{db_list}) {$db_filter->{$db} = 1};
         $db_to_org->{$db} = $org;
     }close IN;
-  
+
 }

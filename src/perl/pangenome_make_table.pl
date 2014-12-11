@@ -178,6 +178,7 @@ foreach (@genomes) {
     my $genome_dup_count = 0;
     my $gene_count = scalar keys(%{$genes->{$_}});
     foreach my $dup_set(keys(%{$dups->{$_}})) {
+    		#print $_ , " -- ", $dup_set, "\n";
             my @dup_genes = split(" ", $dup_set);
             $genome_dup_count += (scalar(@dup_genes) - 1);
     }
@@ -186,7 +187,6 @@ foreach (@genomes) {
     print RESULT "1\t0\t0\t$gene_count\t0\t0\t$genome_dup_count\t".$genome_index{$_}."\t$_\n";
 }
 print STDERR "done.\n";
-
 if($options{'comparisons'} || $options{'multiplicity'}) {
     &do_analysis_with_sampling();
 }
@@ -200,23 +200,28 @@ exit(0);
 sub do_analysis_no_sampling {
 my $comp_counter = {};
 my $max = scalar @genomes;
-for (my $i = 1; $i <= $max; $i++) {
+# Get combinations of reference genomes of size $i
+for (my $i = 1; $i < $max; $i++) {
     my $combinat = Math::Combinatorics->new(
                                             count => $i,
                                             data  => [@genomes],
                                            );
 
     my $cnt = 1;
+    # For each combination of reference genomes...
     while(my @reference = $combinat->next_combination){
         my $ref_string = "(".join(",",@reference).")\n";
+        # Grab the genomes not in our reference set.
         my @comparison_set = @{array_diff(\@genomes, \@reference)};
+        # Each comparison genome will be compared to the reference genomes
         foreach my $comp_genome(@comparison_set) {
             my $dup_counts = {};
             $comp_counter->{$comp_genome}->{$i}++;
             my $genes_by_category = {};
+            # Process each gene from the comparison genome
             GENE: foreach my $gene(keys(%{$genes->{$comp_genome}})) {
                 my $count = 0;
-
+                # Keep track of how many ref genomes had a hit for this particular gene
                 foreach my $ref_genome(@reference) {
                     ## if the hash value == 1
                     if ($genes->{$comp_genome}->{$gene}->{$ref_genome}) {
@@ -236,6 +241,7 @@ for (my $i = 1; $i <= $max; $i++) {
                     $genes_by_category->{$comp_genome}->{'new'}->{$gene}=1;
                 }
             }
+            # This equals the number of references plus our one comparison genome            
             my $rgcount = (scalar @reference) + 1;
             
             ## process lists to see how many duplicated genes are in each category
@@ -324,7 +330,7 @@ my %seen;
 
 my @i_genomes = (0 .. ($max - 1));
 
-# Iterate using $i numbers of genomes in the analysis
+# Iterate using combinations of reference genomes of size $i
 for (my $i = 1; $i < $max; $i++) {
 
     # start timer
@@ -339,7 +345,7 @@ for (my $i = 1; $i < $max; $i++) {
     # Iterate through each available genome
     for (my $j = 0; $j < $max; $j++) {
         
-        #Get current genome name and index number
+        #Get comparison genome name and index number
         my $comp_genome = $genomes[$j];
         
         my @ref_genomes = @i_genomes;
@@ -359,7 +365,7 @@ for (my $i = 1; $i < $max; $i++) {
             unless ($seen{$j}{"@seen_vec"}){
             
                 my $dup_counts = {};
-                # Counter for current genome as it relates to the current set of N reference genomes
+                # Counter to track number of iterations of comparison genome in use per size-$i ref genomes
                 $comp_counter->{$comp_genome}->{$i}++;
                 my $genes_by_category = {};
                 # Iterate through our query prot value
@@ -387,6 +393,7 @@ for (my $i = 1; $i < $max; $i++) {
                          $genes_by_category->{$comp_genome}->{'new'}->{$gene}=1;
                      }
                 }
+                # This equals the number of references plus our one comparison genome
                 my $rgcount = (scalar @reference_set) + 1;
             
                 ## process lists to see how many duplicated genes are in each category
