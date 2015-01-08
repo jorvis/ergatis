@@ -90,8 +90,8 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/map_header_to_transcript_in_tab</executable>
             <param>
-                <key>--fasta_list</key>
-                <value>$;MULTIFASTA_FILE$;</value>
+                <key>--pseudomolecule_list</key>
+                <value>$;PSEUDOMOLECULE_FILE$;</value>
             </param>
             <param>
                 <key>--output_file</key>
@@ -104,6 +104,10 @@
             <param>
                 <key>--tabfile</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;.processed.tab</value>
+            </param>
+            <param>
+            	<key>--print_mapping</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;OUTPUT_FILE_BASE_NAME$;_relationship.map</value>
             </param>
         </command>          
         <command>

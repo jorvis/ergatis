@@ -204,7 +204,7 @@ for my $group (sort {$a<=>$b} keys %accHash) {
 			system("$Bin/reference_genome_match_tiler --mummer_coords_file $coords_file --min_match_length 100 --mummer_delta_file $delta_file --method nucmer --strain $options{strain} --pseudonum $group --output_dir $options{output_dir}");
 			my $map_file = $options{output_dir}."/".$options{strain}."_".$group.".map";
 			my $pseudo_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.".$group.".fasta";
-			my $unmapped_contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
+            my $unmapped_contig_file = $options{output_dir}."/unmapped_".$group.".fsa";
 			system("$Bin/create_fasta_pseudomolecules --input_fasta_file=$contig_file --map_file=$map_file --output_file=$pseudo_file  --unmapped_output=$unmapped_contig_file --linker_sequence=$options{'linker_sequence'}");
 			system("$Bin/clean_fasta $pseudo_file");
 			system("$Bin/clean_fasta $unmapped_contig_file");
@@ -299,7 +299,8 @@ sub check_parameters {
 			$pmarks_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.1.fasta.pmarks";
 ## If input file containing reference ids is not passed then sort the contigs file based on contigs length - longest to shortest 
 			my $contig_out = $options{output_dir}."/".$options{strain}.".pseudomolecule.1.fasta";
-			&sort_contigs($orig_contig_file,$contig_out, $options{'linker_sequence'}, $pmarks_file);
+			my $order_file = $options{output_dir}."/".$options{strain}.".pseudomolecule.1.fasta.order";			
+			&sort_contigs($orig_contig_file,$contig_out, $options{'linker_sequence'}, $pmarks_file, $order_file);
 			system("$Bin/clean_fasta $contig_out");
 			exit;
 		}
@@ -323,7 +324,7 @@ sub concat_contigs {
 
 ## Subroutine to arrange the contigs from longest to shortest in a pseudomolecule
 sub sort_contigs {
-	my ($in_file,$out_file,$linker,$pmarks_file) = @_;
+	my ($in_file,$out_file,$linker,$pmarks_file, $order_file) = @_;
 	my $seq = "";
 	my $header;
 	my $flag = 1;
@@ -363,10 +364,14 @@ sub sort_contigs {
 	print POUT ">$out_base\n";
 ## Adding linker sequence between each contig and at the beginning and end of the pseudomolecule
 	print OUTFH "$linker";
-	foreach my $seqlen (sort {$b<=>$a} keys %contig_hash) {
+## Open file for storing sequence order
+    open ORDERFH, ">".$order_file or die "Cannot open $order_file for writing: $!\n";
+	my $order = 0;
+    foreach my $seqlen (sort {$b<=>$a} keys %contig_hash) {
 		foreach my $head (keys %{$contig_hash{$seqlen}}) {
 			print POUT "$linker_start\t$linker_end\n" if (defined $pmarks_file);
 			print OUTFH "$contig_hash{$seqlen}{$head}$linker";
+            print ORDERFH "$head\t" . ++$order . "\n";
 			$linker_start = $linker_point + $seqlen; 
         		$linker_end = $linker_start + $linker_len;
 			$linker_point = $linker_end;
@@ -374,6 +379,7 @@ sub sort_contigs {
 	}
 	print POUT "$linker_start\t$linker_end\n" if (defined $pmarks_file);
 	close(OUTFH);
+    close(ORDERFH);
 	close(POUT) if (defined $pmarks_file);
 }
 
