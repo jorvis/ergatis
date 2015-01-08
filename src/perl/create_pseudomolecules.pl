@@ -371,7 +371,7 @@ sub sort_contigs {
 		foreach my $head (keys %{$contig_hash{$seqlen}}) {
 			print POUT "$linker_start\t$linker_end\n" if (defined $pmarks_file);
 			print OUTFH "$contig_hash{$seqlen}{$head}$linker";
-            print ORDERFH "$head\t" . ++$order . "\n";
+            print ORDERFH "$head\t" . ++$order . "\t" . $seqlen . "\n";
 			$linker_start = $linker_point + $seqlen; 
         		$linker_end = $linker_start + $linker_len;
 			$linker_point = $linker_end;
