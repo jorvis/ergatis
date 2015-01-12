@@ -176,6 +176,7 @@ else{
     $currdoc->makeCurrentDocument();
 }
 
+# HSP = Highest-scoring segment pairs
 my $hsplookup = {};
 my @hsp_ref_array;
 
@@ -576,10 +577,14 @@ sub createAndAddBlastResultLine {
             'comppos',
             $args{'start_hit'} -1
                          ) if (defined ($args{'start_hit'}));
-        $seq_run->setattr(
-            'comprunlength',
-            $args{'stop_hit'} - $args{'start_hit'} + 1
-                         ) if ((defined ($args{'start_hit'})) and (defined ($args{'stop_hit'})));
+
+        if ((defined $args{'start_hit'}) and (defined $args{'stop_hit'})) {
+        	if ($args{'start_hit'} < $args{'stop_hit'}) {
+        		$seq_run->setattr('comprunlength', $args{'stop_hit'} - $args{'start_hit'} + 1 );
+            } else {
+        		$seq_run->setattr('comprunlength', $args{'stop_hit'} - $args{'start_hit'} - 1 );
+            }
+        }
         $seq_run->setattr(
             'compcomplement',
             0
@@ -605,13 +610,21 @@ sub createAndAddBlastResultLine {
         $seq_run->addBsmlAttr(
             'percent_coverage_refseq',
             sprintf("%.1f", $seq_run->{'attr'}->{'runlength'} / $args{'query_length'} * 100)
-                             ) if (defined ($seq_run->{'attr'}->{'runlength'}) && defined($args{'query_length'}));
+                            ) if (defined ($seq_run->{'attr'}->{'runlength'}) && defined($args{'query_length'}));
 
-        $seq_run->addBsmlAttr(
-            'percent_coverage_compseq',
-            sprintf("%.1f", $seq_run->{'attr'}->{'comprunlength'} / $args{'hit_length'} * 100)
-                             ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'hit_length'}));
-        ## ^^
+        if ($blast_program eq 'tblastn'){
+            $seq_run->addBsmlAttr(
+                'percent_coverage_compseq',
+                sprintf("%.1f", abs($seq_run->{'attr'}->{'comprunlength'} /3) / $args{'query_length'} * 100)
+                            ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'query_length'}));
+
+        } else {
+            $seq_run->addBsmlAttr(
+                'percent_coverage_compseq',
+                sprintf("%.1f", abs($seq_run->{'attr'}->{'comprunlength'}) / $args{'query_length'} * 100)
+                             ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'query_length'}));
+            ## ^^
+        }
 
         $seq_run->addBsmlAttr(
             'p_value',
@@ -787,10 +800,14 @@ sub createAndAddBlastResultLine {
                     'comppos',
                     $args{'start_hit'} -1
                      ) if (defined  ($args{'start_hit'}));
-    $seq_run->setattr(
-                    'comprunlength',
-                    ($args{'stop_hit'} - $args{'start_hit'} + 1)
-                     ) if ((defined ($args{'start_hit'})) and (defined ($args{'stop_hit'})));
+
+    if ((defined $args{'start_hit'}) and (defined $args{'stop_hit'})) {
+        if ($args{'start_hit'} < $args{'stop_hit'}) {
+        	$seq_run->setattr('comprunlength', $args{'stop_hit'} - $args{'start_hit'} + 1 );
+        } else {
+        	$seq_run->setattr('comprunlength', $args{'stop_hit'} - $args{'start_hit'} - 1 );
+        }
+    }
     $seq_run->setattr(
                     'compcomplement',
                     0
@@ -818,11 +835,19 @@ sub createAndAddBlastResultLine {
         sprintf("%.1f", $seq_run->{'attr'}->{'runlength'} / $args{'query_length'} * 100)
                          ) if (defined ($seq_run->{'attr'}->{'runlength'}) && defined($args{'query_length'}));
 
-    $seq_run->addBsmlAttr(
-        'percent_coverage_compseq',
-        sprintf("%.1f", $seq_run->{'attr'}->{'comprunlength'} / $args{'hit_length'} * 100)
-                         ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'hit_length'}));
-    ## ^^
+    if ($blast_program eq 'tblastn'){
+        $seq_run->addBsmlAttr(
+            'percent_coverage_compseq',
+            sprintf("%.1f", abs($seq_run->{'attr'}->{'comprunlength'} /3) / $args{'query_length'} * 100)
+                        ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'query_length'}));
+
+    } else {
+        $seq_run->addBsmlAttr(
+            'percent_coverage_compseq',
+            sprintf("%.1f", abs($seq_run->{'attr'}->{'comprunlength'}) / $args{'query_length'} * 100)
+                         ) if (defined ($seq_run->{'attr'}->{'comprunlength'}) && defined($args{'query_length'}));
+        ## ^^
+    }
 
     $seq_run->addBsmlAttr(
                     'chain_number',
@@ -889,6 +914,7 @@ sub getAvgBlastPPctCoverage {
     # Group by query and target id
     my $hspsByQuery = &groupByMulti($hsps, ['query_protein_id', 'target_protein_id']);
 
+	# Loop per query ID and subject ID
     foreach my $queryId (keys %$hspsByQuery) {
         my $hspsByTarget = $hspsByQuery->{$queryId};
 
@@ -898,25 +924,32 @@ sub getAvgBlastPPctCoverage {
             my $querySeqLen = $shsps->[0]->{'query_seqlen'};
             my $targetSeqLen = $shsps->[0]->{'target_seqlen'};
 
+			# Map the interval locations for each run in this hit.
             my @queryIntervals = map { {'fmin' => $_->{'query_fmin'}, 'fmax' => $_->{'query_fmax'}, 'strand' => $_->{'query_strand'}} } @$shsps;
             my @targetIntervals = map { {'fmin' => $_->{'target_fmin'}, 'fmax' => $_->{'target_fmax'}, 'strand' => $_->{'target_strand'}} } @$shsps;
 
+			# For any overlapping intervals, combine them
             my $mergedQueryIntervals = &mergeOverlappingIntervals(\@queryIntervals);
             my $mergedTargetIntervals = &mergeOverlappingIntervals(\@targetIntervals);
 
             my $queryHitLen = 0;
             my $targetHitLen = 0;
 
+			# Combine all merged interval lengths to get the query and subject hit lengths
             map { $queryHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedQueryIntervals;
             map { $targetHitLen += ($_->{'fmax'} - $_->{'fmin'}); } @$mergedTargetIntervals;
 
-            $qsum += $queryHitLen / $querySeqLen;
+			my $num_query_intervals = scalar @$mergedQueryIntervals;
+			my $num_target_intervals = scalar @$mergedTargetIntervals;
 
-	    if ($blast_program eq 'tblastn') {
-	    	$tsum += ($targetHitLen / 3) / $querySeqLen;
-	    } else {
-	    	$tsum += $targetHitLen / $querySeqLen;
-	    }
+			# Calculate query and subject sequence coverage
+            $qsum += ($queryHitLen / $querySeqLen) / $num_query_intervals;
+
+	    	if ($blast_program eq 'tblastn') {
+	    		$tsum += (($targetHitLen / 3) / $querySeqLen) / $num_target_intervals;
+	    	} else {
+	    		$tsum += ($targetHitLen / $querySeqLen) / $num_target_intervals;
+	    	}
         }
     }
 
