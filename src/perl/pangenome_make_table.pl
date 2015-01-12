@@ -180,7 +180,7 @@ foreach (@genomes) {
     foreach my $dup_set(keys(%{$dups->{$_}})) {
     		#print $_ , " -- ", $dup_set, "\n";
             my @dup_genes = split(" ", $dup_set);
-            $genome_dup_count += (scalar(@dup_genes) - 1);
+            $genome_dup_count += scalar(@dup_genes);
     }
     ## our output table will take the form: 
     ## genomecount\tcore\tshared\tnew\tcore dup count\tshared dup\tnew dup
@@ -264,7 +264,7 @@ for (my $i = 1; $i < $max; $i++) {
                         print STDERR "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem\n";
                     ## and if they are, then add the dup overcount to the total
                     } elsif ($dup_counter == $dup_count) {
-                        $dup_counts->{$comp_genome}->{$cat} += ($dup_count - 1);
+                        $dup_counts->{$comp_genome}->{$cat} += $dup_count;
                     }
                 }
             }
@@ -276,7 +276,8 @@ for (my $i = 1; $i < $max; $i++) {
             my $shared_dup_count = $dup_counts->{$comp_genome}->{'shared'};
             my $new_dup_count    = $dup_counts->{$comp_genome}->{'new'};
             
-            print RESULT "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t$cnt\t$comp_genome\n";
+            #print RESULT "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t$cnt\t$comp_genome\n";
+            print RESULT "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t".$genome_index{$comp_genome}."\t$comp_genome\n";            
 
             if ($options{'write_lists'}) { 
             
@@ -416,7 +417,7 @@ for (my $i = 1; $i < $max; $i++) {
                             print STDERR "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem\n";
                             ## and if they are, then add the dup overcount to the total
                         } elsif ($dup_counter == $dup_count) {
-                            $dup_counts->{$comp_genome}->{$cat} += ($dup_count - 1);
+                            $dup_counts->{$comp_genome}->{$cat} += $dup_count;
                         }
                     }
                 }
