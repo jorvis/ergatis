@@ -118,10 +118,6 @@ my $temp_ref = retrieve($options{'blast_stored_file'});
 my $results_ref = shift(@{$temp_ref});
 @results = @{$results_ref};
 
-## pull the dups hash out of the stored array
-my $dups_ref = shift(@{$temp_ref});
-$dups = $dups_ref;
-
 print STDERR "done.\n";
 
 my %dbs;
@@ -147,14 +143,6 @@ foreach (@results) {
 @genomes = keys(%dbs);
 
 open(RESULT, ">".$output_path."/".$output_file) || die "couldn't open $output_file for writing";
-
-my %genome_index = ();
-my $i_counter = 0;
-foreach (@genomes) {
-    $genome_index{$_} = $i_counter;
-    #print RESULT "## $i_counter\t$_\n";
-    $i_counter++;
-}
 
 print RESULT "# GENOME\tGENE\t".join("\t",@genomes)."\n";
 
