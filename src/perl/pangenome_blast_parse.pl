@@ -142,7 +142,7 @@ close $ifh;
 # Foreach gene that has genuine duplicates besides itself, add to dups hash.
 foreach my $org (keys %$dups_temp) {
 	foreach my $prot ( keys %{$dups_temp->{$org}}) {
-    	if (scalar(@{$dups_temp->{$org}->{$prot}}) > 1) {
+    	if (scalar(@{$dups_temp->{$org}->{$prot}}) > 0) {
     		my $dup_set = join(" ", @{$dups_temp->{$org}->{$prot}});
     		# Seems like bsml hits are stored in order of stored sequence from formatdb, so two sets of dups with the same genes will have the same dup set string order, so we will get just one copy of the string instead of N number
     		#print $prot, " -- ", $dup_set, "\n";
@@ -235,20 +235,23 @@ sub processSeqPairAlignment {
         $db_to_org->{$sdb} = $sdb;
     }
 
-    # If we are doing any filtering then we will check that both the dabase names are good.
+    # If we are doing any filtering then we will check that both the database names are good.
     if (!$db_filter || ($db_filter->{$qdb} && $db_filter->{$sdb})) {
-
-	#  If we have a self-hit then add subject hit to dups
-        #  This could have been done without using the org as a key, but I guess this was originally written as such on the off-chance to database names map to the same organism -- sadkins
-        if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
-            push(@{$dups_temp->{$db_to_org->{$sdb}}->{$qprot}}, $sprot);
-            print $qprot, "\t", $sprot."\n" if ($qprot ne $sprot);
+		# Filter out the self-hits so they aren't run through cutoff filtering
+		next if ($db_to_org)->{$qdb} eq $db_to_org->{$sdb} && ($qprot eq $sprot);
+		# Does the sequence hit meet the cutoff for being good?
+		if ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
+			#  If we have a non-self hit on the same genome that exceeds the cutoffs, send to duplicates hash
+        	if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
+            	push(@{$dups_temp->{$db_to_org->{$sdb}}->{$qprot}}, $sprot);
+            	print $qprot, "\t", $sprot."\n" if ($qprot ne $sprot);
             #print $p_cov_ref." ".$p_cov_comp."\n";
-        } elsif ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
-            # Check the cutoffs are reached for non-self hits
-            # Add this hit to the results array
-            push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
-             print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+        	} else{		
+            	# Check the cutoffs are reached for non-self hits
+            	# Add this hit to the results array
+            	push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
+            	print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+        	}
         } else {
             print STDERR "filtering out $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
         }
