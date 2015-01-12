@@ -81,14 +81,12 @@ my $create_eps = $options{'create_eps'};
 my $r_filename = $r_script;
 $r_filename =~  s/^.*\/([^\/]*)/$1/;
 
-open (IN, "$r_script") || die "Couldn't open R script '$r_script': $!";
-# Teak each 
-my $input_r = "$output_path/$r_filename"."in";
+open (IN, "$r_script") || die "Couldn't open R script '$r_script': $!"; 
 
+# Get the R script name for the output as well as the PostScript file name 
+my $input_r = "$output_path/$r_filename"."in";
 my $ps_file = $r_filename;
 $ps_file =~ s/\.R/\.ps/;
-my $eps_file= $ps_file;
-$eps_file =~ s/\.ps/\.eps/;
 
 # In the R-script template, customize for current job by subbing certain fields
 open (OUT, ">$input_r");
