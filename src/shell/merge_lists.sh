@@ -1,5 +1,6 @@
 #!/bin/sh
-# Merge_lists.sh- This will merge comma-separated list files together using `cat`
+# merge_lists.sh- This will merge comma-separated list files together using `cat`
+# This is not to be confused with merge_lists.pl, which takes a directory of lists as input
 # Author: Shaun Adkins
 
 if [ $# -lt 1 ]
