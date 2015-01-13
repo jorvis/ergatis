@@ -23,7 +23,7 @@
             <type>RunUnixCommand</type>
             <name>concatenate lists</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/merge_lists.sh</executable>
+            <executable>$;BIN_DIR$;/simple_merge_lists.sh</executable>
             <arg>-i $;BSML_LISTS$; -o $;INPUT_FILE_LIST$;</arg>
         </command>
         <!--Iterator-->
