@@ -21,9 +21,10 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>concatenate listss</name>
+            <name>concatenate lists</name>
             <state>incomplete</state>
-            <executable>cat $;INPUT_LIST_FILES$; > $;TMP_DIR$;/concat.bsml.list</executable>
+            <executable>$BIN_DIR$;/merge_lists.sh</executable>
+            <arg>-i $;BSML_LISTS$; -o $;INPUT_FILE_LIST$;</arg>
         </command>
         <!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
