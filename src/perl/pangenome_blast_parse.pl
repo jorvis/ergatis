@@ -143,8 +143,11 @@ close $ifh;
 foreach my $org (keys %$dups_temp) {
 	foreach my $prot ( keys %{$dups_temp->{$org}}) {
     	if (scalar(@{$dups_temp->{$org}->{$prot}}) > 0) {
-    		my $dup_set = join(" ", @{$dups_temp->{$org}->{$prot}});
-    		# Seems like bsml hits are stored in order of stored sequence from formatdb, so two sets of dups with the same genes will have the same dup set string order, so we will get just one copy of the string instead of N number
+    		# Add the query gene in the dup string to complete the set
+    		push (@{$dups_temp->{$org}->{$prot}}, $prot);
+    		# Sort array to make all identical arrays have the same order
+    		my @dup_array = sort {$a cmp $b} @{$dups_temp->{$org}->{$prot}};
+    		my $dup_set = join(" ", @dup_array;
     		#print $prot, " -- ", $dup_set, "\n";
     	    $dups{$org}{$dup_set} = 1;
     	}
@@ -244,20 +247,18 @@ sub processSeqPairAlignment {
 			#  If we have a non-self hit on the same genome that exceeds the cutoffs, send to duplicates hash
         	if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
             	push(@{$dups_temp->{$db_to_org->{$sdb}}->{$qprot}}, $sprot);
-            	print $qprot, "\t", $sprot."\n" if ($qprot ne $sprot);
-            #print $p_cov_ref." ".$p_cov_comp."\n";
+            	print STDERR "DUPS $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
         	} else{		
             	# Check the cutoffs are reached for non-self hits
             	# Add this hit to the results array
             	push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
+            	if ($qdb eq $sdb) {
             	print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+            	}
         	}
         } else {
-            print STDERR "filtering out $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+            #print STDERR "filtering out $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
         }
-
-        # Eventually add criteria for paralog duplicates
-
     }
     elsif($options{'organism_to_db_mapping'}) {
         print STDERR "Filtering out from organism_to_prefix -- query ".$db_filter->{$qdb}." or subject".$db_filter->{$sdb}."\n";
