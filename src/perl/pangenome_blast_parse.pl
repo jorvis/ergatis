@@ -139,7 +139,7 @@ $twig->parse($ifh);
 
 close $ifh;
 
-open TEST, ">/home/sadkins/dups.txt" or die;
+#open TEST, ">/home/sadkins/dups.txt" or die;
 
 # Foreach gene that has genuine duplicates besides itself, add to dups hash.
 foreach my $org (keys %$dups_temp) {
@@ -154,12 +154,12 @@ foreach my $org (keys %$dups_temp) {
     	}
     }
     foreach my $set (keys %{$dups{$org}}) {
-    	print TEST $set, "\n";
+#    	print TEST $set, "\n";
     }
 }
 
-close TEST;
-die;
+#close TEST;
+
 nstore([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
 exit(0);
