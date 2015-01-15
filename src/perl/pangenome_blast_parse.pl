@@ -147,7 +147,7 @@ foreach my $org (keys %$dups_temp) {
     		push (@{$dups_temp->{$org}->{$prot}}, $prot);
     		# Sort array to make all identical arrays have the same order
     		my @dup_array = sort {$a cmp $b} @{$dups_temp->{$org}->{$prot}};
-    		my $dup_set = join(" ", @dup_array;
+    		my $dup_set = join(" ", @dup_array);
     		#print $prot, " -- ", $dup_set, "\n";
     	    $dups{$org}{$dup_set} = 1;
     	}
