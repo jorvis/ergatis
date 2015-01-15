@@ -178,7 +178,6 @@ foreach (@genomes) {
     my $genome_dup_count = 0;
     my $gene_count = scalar keys(%{$genes->{$_}});
     foreach my $dup_set(keys(%{$dups->{$_}})) {
-    		#print $_ , " -- ", $dup_set, "\n";
             my @dup_genes = split(" ", $dup_set);
             $genome_dup_count += scalar(@dup_genes);
     }
@@ -261,7 +260,7 @@ for (my $i = 1; $i < $max; $i++) {
                     }
                     ## check if all of the dups of a set weren't found in the same category
                     if ($dup_counter > 0 && $dup_count != $dup_counter) {
-                        print STDERR "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem\n";
+                        print STDERR "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem: Comp_genome $comp_genome\n";
                     ## and if they are, then add the dup overcount to the total
                     } elsif ($dup_counter == $dup_count) {
                         $dup_counts->{$comp_genome}->{$cat} += $dup_count;
@@ -414,7 +413,7 @@ for (my $i = 1; $i < $max; $i++) {
                         }
                         ## check if all of the dups of a set weren't found in the same category
                         if ($dup_counter > 0 && $dup_count != $dup_counter) {
-                            print STDERR "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem\n";
+                            print STDERR "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem: Comp_genome $comp_genome\n";
                             ## and if they are, then add the dup overcount to the total
                         } elsif ($dup_counter == $dup_count) {
                             $dup_counts->{$comp_genome}->{$cat} += $dup_count;
