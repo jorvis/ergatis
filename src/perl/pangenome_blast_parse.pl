@@ -139,6 +139,8 @@ $twig->parse($ifh);
 
 close $ifh;
 
+open TEST, ">/home/sadkins/dups.txt" or die;
+
 # Foreach gene that has genuine duplicates besides itself, add to dups hash.
 foreach my $org (keys %$dups_temp) {
 	foreach my $prot ( keys %{$dups_temp->{$org}}) {
@@ -148,11 +150,16 @@ foreach my $org (keys %$dups_temp) {
     		# Sort array to make all identical arrays have the same order
     		my @dup_array = sort {$a cmp $b} @{$dups_temp->{$org}->{$prot}};
     		my $dup_set = join(" ", @dup_array);
-    		#print $prot, " -- ", $dup_set, "\n";
     	    $dups{$org}{$dup_set} = 1;
     	}
     }
+    foreach my $set (keys %{$dups{$org}}) {
+    	print TEST $set, "\n";
+    }
 }
+
+close TEST;
+die;
 nstore([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
 exit(0);
@@ -240,8 +247,10 @@ sub processSeqPairAlignment {
 
     # If we are doing any filtering then we will check that both the database names are good.
     if (!$db_filter || ($db_filter->{$qdb} && $db_filter->{$sdb})) {
-		# Filter out the self-hits so they aren't run through cutoff filtering
-		next if ($db_to_org)->{$qdb} eq $db_to_org->{$sdb} && ($qprot eq $sprot);
+		# Filter out the self-hits so they aren't run through cutoff filtering (blastp results)
+		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && ($qprot eq $sprot));
+		# Filter protein queries that are self-hits with the nucleotide genome/contig (tblastn results)
+		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && ($sprot =~ /^(AC|NC|NG|NT|NW|NS|NZ)/) && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100);
 		# Does the sequence hit meet the cutoff for being good?
 		if ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
 			#  If we have a non-self hit on the same genome that exceeds the cutoffs, send to duplicates hash
