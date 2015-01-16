@@ -252,7 +252,7 @@ sub processSeqPairAlignment {
 		# Filter out the self-hits so they aren't run through cutoff filtering (blastp results)
 		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && ($qprot eq $sprot));
 		# Filter protein queries that are self-hits with the nucleotide genome/contig (tblastn results)
-		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $method = "TBLASTN" && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100);
+		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $method == "TBLASTN" && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100);
 		# Does the sequence hit meet the cutoff for being good?
 		if ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
 			#  If we have a non-self hit on the same genome that exceeds the cutoffs, send to duplicates hash
