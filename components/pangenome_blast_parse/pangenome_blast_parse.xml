@@ -19,13 +19,6 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>concatenate lists</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/simple_merge_lists.sh</executable>
-            <arg>-i $;BSML_LISTS$; -o $;INPUT_FILE_LIST$;</arg>
-        </command>
         <!--Iterator-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
 	
