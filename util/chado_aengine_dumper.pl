@@ -15,7 +15,7 @@ use Pod::Usage;
 use Data::Dumper;
 
 my %options = ();
-my $results = GetOptions (\%options, 
+my $results = GetOptions (\%options,
                           'database=s',
                           'user=s',
                           'password=s',
@@ -25,15 +25,16 @@ my $results = GetOptions (\%options,
                           'locus_db=s',
                           'locus_db_version=s',
                           'translation_table=i',
+                          'intergenic_regions=i',
                           'server=s',
                           'database_type=s',
                           'comment=s',
                           'source=s',
                           'organism_id=i',
                           'use_assembly_names',
-			  'add_definition',
-			  'unique_gene_symbols',
-			  'include_pmarks',
+			              'add_definition',
+			              'unique_gene_symbols',
+			              'include_pmarks',
                           'cgi_mode=i',
                           'log=s',
                           'help') || pod2usage();
@@ -44,7 +45,7 @@ if( $options{'help'} ){
 }
 
 ## Will either be acquired directly as an option or from the password file
-my $password; 
+my $password;
 
 
 ## make sure everything passed was peachy
@@ -112,12 +113,12 @@ $bio_species->classification( $com_name, $genus." ".$species, $species );
 while ( my $row = $assembly_selector->fetchrow_hashref ) {
     _log("INFO: found assembly: $$row{uniquename}");
     $$assemblies{$$row{feature_id}} = { uniquename => $$row{uniquename}, name => $$row{name} };
-    
+
     my $asmbl_id = ($options{'use_assembly_names'}) ? $$row{'name'} : $$row{'uniquename'};
 
     my %seq_obj_opts = ( -seq => $$row{residues},
 			 -molecule => 'DNA',
-			 -display_id => $asmbl_id, 
+			 -display_id => $asmbl_id,
 			 -division => 'BCT',
 			 -dates => &today()
 			 );
@@ -134,7 +135,7 @@ while ( my $row = $assembly_selector->fetchrow_hashref ) {
 	my $collection = $$assemblies{ $$row{feature_id} }{seq_obj}->annotation();
         my $comment = Bio::Annotation::Comment->new( -text => $options{comment} );
         $collection->add_Annotation( 'comment', $comment );
-    }	
+    }
 
     my $location = Bio::Location::Simple->new( -start => 1,
 					       -end => length( $$row{residues} ),
@@ -148,7 +149,7 @@ while ( my $row = $assembly_selector->fetchrow_hashref ) {
     $source->add_tag_value('molecule', $asmbl_id );
     $source->add_tag_value('strain', $bio_species->sub_species() ) if( $bio_species->sub_species() );
     $source->add_tag_value('mol_type', 'genomic DNA');
-    
+
 
     $$assemblies{ $$row{feature_id} }{seq_obj}->add_SeqFeature( $source );
 
@@ -166,12 +167,12 @@ $cvterm{frameshift} = get_cvterm_id('frameshift');
 
 ## query to fetch all dbxrefs for a given feature id
 $qry = qq{
-    SELECT db.name, dbx.accession, dbx.version 
+    SELECT db.name, dbx.accession, dbx.version
 	FROM db, dbxref dbx, feature f, feature_dbxref fdbx
 	WHERE f.feature_id=fdbx.feature_id
 	AND dbx.dbxref_id=fdbx.dbxref_id
 	AND dbx.db_id=db.db_id
-	AND f.feature_id = ?; 
+	AND f.feature_id = ?;
 };
 my $dbxref_selector = $dbh->prepare($qry);
 
@@ -200,11 +201,11 @@ $qry = qq{
     SELECT t.uniquename, d.accession
 	FROM feature t
         JOIN feature_cvterm fc ON t.feature_id = fc.feature_id
-        JOIN cvterm c ON fc.cvterm_id = c.cvterm_id 
-        JOIN cv ON c.cv_id = cv.cv_id 
-        JOIN cvterm_dbxref cd ON fc.cvterm_id = cd.cvterm_id 
-        JOIN dbxref d ON cd.dbxref_id = d.dbxref_id 
-	WHERE t.feature_id = ? 
+        JOIN cvterm c ON fc.cvterm_id = c.cvterm_id
+        JOIN cv ON c.cv_id = cv.cv_id
+        JOIN cvterm_dbxref cd ON fc.cvterm_id = cd.cvterm_id
+        JOIN dbxref d ON cd.dbxref_id = d.dbxref_id
+	WHERE t.feature_id = ?
 	AND t.type_id =  $cvterm{transcript}
     AND cv.name = 'EC';
 };
@@ -325,7 +326,7 @@ my $point_mutations = {};
 
 
 for my $feature_id ( keys %$assemblies ) {
-    
+
     ## This will hold all gene symbols to detect repeats per assembly.
     my %gene_symbols;
 
@@ -349,7 +350,7 @@ for my $feature_id ( keys %$assemblies ) {
     $feature_on_assembly_selector->execute( 0, 0, $feature_id, $cvterm{transcript} );
 
     while (my $row = $feature_on_assembly_selector->fetchrow_hashref ) {
-    
+
         ## make a gene entry for this too
 	my $location = Bio::Location::Simple->new( -start => $$row{fmin} + 1,
 						   -end => $$row{fmax},
@@ -358,10 +359,10 @@ for my $feature_id ( keys %$assemblies ) {
         my $gene = Bio::SeqFeature::Generic->new(
 						 -seq_id => $$row{uniquename},
 						 -primary => 'gene',
-						 -location => $location												 
+						 -location => $location
 						 );
         my $transcript_uniquename = $$row{uniquename};
-        
+
 	## add any CDS related to this gene (fails if more than one is found)
 	my $cds;
 	$cds_on_transcript_selector->execute( $$row{feature_id} );
@@ -369,7 +370,7 @@ for my $feature_id ( keys %$assemblies ) {
 	    if ( defined $cds ) {
 		die "found more than one CDS on transcript feature ID $$row{feature_id}\n";
 	    }
-	    
+
 	    $cds_parents{$$cds_row{uniquename}} = $$row{uniquename};
 
 	    my $location = Bio::Location::Simple->new( -start => $$row{fmin} + 1,
@@ -397,14 +398,14 @@ for my $feature_id ( keys %$assemblies ) {
             $transcript_parents{$transcript_uniquename} = $$gene_row{uniquename};
         }
         $dbxref_selector->execute( $gene_feature_id );
-        
+
         while ( my $dbxref_row = $dbxref_selector->fetchrow_hashref ) {
             ## don't do anything if the accession value is empty
             next unless $$dbxref_row{accession};
-	    
+
             ## if this row source matches the locus_db and version specified by the user, add
             ##  it as a locus, else just a dbxref.
-            if ( defined $options{locus_db} && 
+            if ( defined $options{locus_db} &&
                  defined $options{locus_db_version} &&
                  $options{locus_db} eq $$dbxref_row{name} &&
                  $options{locus_db_version} eq $$dbxref_row{version} ) {
@@ -420,11 +421,11 @@ for my $feature_id ( keys %$assemblies ) {
         while ( my $product_row = $product_selector->fetchrow_hashref ) {
             $cds->add_tag_value( 'product', $$product_row{value} );
             #$gene->add_tag_value( 'product', $$product_row{value} );	# Gene tags should not have products
-            
+
             if ( $$product_row{value} =~ /point mutation/i ) {
                 $$point_mutations{ $gene->seq_id }++;
             }
-            
+
             last;
         }
 
@@ -441,7 +442,7 @@ for my $feature_id ( keys %$assemblies ) {
             $gene->add_tag_value( 'gene', $gs );
             last;
         }
-        
+
         ## EC number
         $ec_num_selector->execute( $$row{feature_id} );
         while ( my $ec_num_row = $ec_num_selector->fetchrow_hashref ) {
@@ -453,7 +454,7 @@ for my $feature_id ( keys %$assemblies ) {
         $go_term_selector->execute( $$row{feature_id} );
         my @go_terms;
         while ( my $go_term_row = $go_term_selector->fetchrow_hashref ) {
-            #we don't want to include the most generic of go terms 
+            #we don't want to include the most generic of go terms
             #(biological_process, molecular_function, cellular_component)
             next if( $$go_term_row{name} eq 'biological_process' ||
                      $$go_term_row{name} eq 'molecular_function' ||
@@ -478,9 +479,9 @@ for my $feature_id ( keys %$assemblies ) {
     ## now get tRNAs
     _log("INFO: getting tRNAs by executing: feature_on_assembly_selector->execute( 0, 0, $feature_id, $cvterm{tRNA} )");
     $feature_on_assembly_selector->execute( 0, 0, $feature_id, $cvterm{tRNA} );
-    
+
     while (my $row = $feature_on_assembly_selector->fetchrow_hashref ) {
-    
+
 	my $location = Bio::Location::Simple->new( -start => $$row{fmin} + 1,
 						   -end => $$row{fmax},
 						   -strand => $$row{strand} );
@@ -501,7 +502,7 @@ for my $feature_id ( keys %$assemblies ) {
 						 -primary => 'gene',
 						 -location => $location
 						 );
-						 
+
         ## look for locus ids (dbxref)
         my $gene_feature_id;
         $gene_on_transcript_selector->execute( $$row{feature_id} );
@@ -512,14 +513,14 @@ for my $feature_id ( keys %$assemblies ) {
             $gene_feature_id = $$gene_row{feature_id};
         }
         $dbxref_selector->execute( $gene_feature_id );
-        
+
         while ( my $dbxref_row = $dbxref_selector->fetchrow_hashref ) {
             ## don't do anything if the accession value is empty
             next unless $$dbxref_row{accession};
-	    
+
             ## if this row source matches the locus_db and version specified by the user, add
             ##  it as a locus, else just a dbxref.
-            if ( defined $options{locus_db} && 
+            if ( defined $options{locus_db} &&
                  defined $options{locus_db_version} &&
                  $options{locus_db} eq $$dbxref_row{name} &&
                  $options{locus_db_version} eq $$dbxref_row{version} ) {
@@ -528,7 +529,7 @@ for my $feature_id ( keys %$assemblies ) {
             } else {
                 $cds->add_tag_value( 'db_xref', $$dbxref_row{name}."_".$$dbxref_row{version}.":".$$dbxref_row{accession} );
             }
-            
+
         }
 
         ## look for a gene product name
@@ -536,22 +537,22 @@ for my $feature_id ( keys %$assemblies ) {
         while ( my $product_row = $product_selector->fetchrow_hashref ) {
             $cds->add_tag_value( 'product', $$product_row{value} );
             $gene->add_tag_value( 'product', $$product_row{value} );
-            
+
             if ( $$product_row{value} =~ /point mutation/i ) {
                 $$point_mutations{ $gene->seq_id }++;
             }
-            
+
             last;
         }
 
         push @assembly_feats, $cds;
         push @assembly_feats, $gene;
-    }    
-    
+    }
+
     ## now get all rRNAs
     _log("INFO: getting rRNAs by executing: feature_on_assembly_selector_nonfiltered->execute( 0, $feature_id, $cvterm{rRNA} )");
     $feature_on_assembly_selector_nonfiltered->execute( 0, $feature_id, $cvterm{rRNA} );
-    
+
     while( my $row = $feature_on_assembly_selector_nonfiltered->fetchrow_hashref ) {
         my $cds = Bio::SeqFeature::Generic->new(
 						-seq_id => $$row{uniquename} || 'UNKN0WN',
@@ -560,7 +561,7 @@ for my $feature_id ( keys %$assemblies ) {
 						-end => $$row{fmax},
 						-strand => $$row{strand},
 						);
-        
+
         my $gene = Bio::SeqFeature::Generic->new(
 						 -seq_id => $$row{uniquename} || 'UNKN0WN',
 						 -primary => 'gene',
@@ -568,7 +569,7 @@ for my $feature_id ( keys %$assemblies ) {
 						 -end => $$row{fmax},
 						 -strand => $$row{strand},
 						 );
-        
+
         ## look for locus ids (dbxref)
         my $gene_feature_id;
         $gene_on_transcript_selector->execute( $$row{feature_id} );
@@ -579,11 +580,11 @@ for my $feature_id ( keys %$assemblies ) {
             $gene_feature_id = $$gene_row{feature_id};
         }
         $dbxref_selector->execute( $gene_feature_id );
-        
+
         while ( my $dbxref_row = $dbxref_selector->fetchrow_hashref ) {
             ## don't do anything if the accession value is empty
             next unless $$dbxref_row{accession};
-	    
+
             ## if this row source matches the locus_db specified by the user, add
             ##  it as a locus, else just a dbxref.
             if ( defined $options{locus_db} && $options{locus_db} eq $$dbxref_row{name} ) {
@@ -600,10 +601,10 @@ for my $feature_id ( keys %$assemblies ) {
             $cds->add_tag_value( 'product', $$product_row{value} );
             last;
         }
-        
+
         push @assembly_feats, $gene;
         push @assembly_feats, $cds;
-        
+
     }
 
     ## if they asked for pmarks
@@ -618,23 +619,25 @@ for my $feature_id ( keys %$assemblies ) {
 						     );
 	    $misc->add_tag_value('note', 'pmark_spacer');
 	    push( @assembly_feats, $misc );
-        
+
 	}
     }
-    
+
+	add_intergenic_regions(\@assembly_feats, $feature_id) if ($options{'intergenic_regions'});
+
     ## now add all the features
     for my $feat ( sort { $a->start <=> $b->start } @assembly_feats ) {
-	$$assemblies{$feature_id}{seq_obj}->add_SeqFeature( $feat );
-	my $whole_seq = $$assemblies{$feature_id}{seq_obj};
+	    $$assemblies{$feature_id}{seq_obj}->add_SeqFeature( $feat );
+	    my $whole_seq = $$assemblies{$feature_id}{seq_obj};
         my $seq_len = length($whole_seq->seq );
-	if ( $feat->primary_tag eq 'CDS' ) {
+	    if ( $feat->primary_tag eq 'CDS' ) {
 	    # Assign start and end coordinates, but adjust if partial gene is present.  Add translation tag to the sequence
             eval {
                 my $temp_start = ($feat->start < 1) ? 1 : $feat->start;	#for partial genes extending beyond coord 1
                 my $temp_end = ($feat->end > $seq_len) ? $seq_len : $feat->end;	# for partial genes extending beyond the end
                 my $subseq = $whole_seq->trunc($temp_start, $temp_end);	#get specific sequence from this region
                 $subseq = $subseq->revcom if ($feat->strand eq "-1");	#get compliments of sequences that need them
-            
+
                 #print STDERR "\nINFO: seq " . $feat->seq_id . "  has a length of: " . length($subseq->seq) . "\n";
                 #print $temp_start, " - " , $temp_end, "\n";
                 if ( length $subseq->seq  ) {# should always have a length
@@ -646,11 +649,11 @@ for my $feature_id ( keys %$assemblies ) {
                     }
                 }
             };
-            
+
             if ($@) {
                 print STDERR "WARN: failure to export sequence " . $feat->seq_id . " for feature at coordinates (" . $feat->start . '/' . $feat->end . ")\n";
             }
-	}
+	    }
     }
 }
 
@@ -679,7 +682,7 @@ if ( $options{cgi_mode} == 1 ) {
     my $datestamp = sprintf("%d%02d%02d", $year + 1900, ++$mon, $day);
 
     my $download_file_name;
-    
+
     if ( $options{format} eq 'gbk' ) {
         $download_file_name = "$options{database}.annotation.$datestamp.gbk";
     } elsif ( $options{format} eq 'gff' ) {
@@ -689,13 +692,13 @@ if ( $options{cgi_mode} == 1 ) {
     }
 
     print "Content-Type:application/x-download\n";
-    print "Content-Disposition:attachment;filename=$download_file_name\n\n"; 
+    print "Content-Disposition:attachment;filename=$download_file_name\n\n";
 }
 
 ## if writing tbl format, all output goes into a single file
 my $tbl_fh;
 if ( $options{format} eq 'tbl' ) {
-    
+
     if ( $options{cgi_mode} == 1 ) {
 	$tbl_fh = \*STDOUT;
     } else {
@@ -711,10 +714,10 @@ for my $feature_id ( keys %$assemblies ) {
     if ( $options{format} eq 'gbk' ) {
 
         my $gbk;
-        
+
         if ( $options{cgi_mode} == 1 ) {
-            $gbk = Bio::SeqIO->new( -format => 'genbank', 
-                                    -fh => \*STDOUT );        
+            $gbk = Bio::SeqIO->new( -format => 'genbank',
+                                    -fh => \*STDOUT );
         } else {
             _log("INFO: writing $options{output_directory}/$$assemblies{$feature_id}{uniquename}.gbk");
             my $file;
@@ -725,28 +728,28 @@ for my $feature_id ( keys %$assemblies ) {
             }
             $gbk = Bio::SeqIO->new( -format => 'genbank', -file => $file );
         }
-        
+
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
-            # is this a partial?    
+            # is this a partial?
             $feat->location->start("<1") if ($feat->start <= 0);
             $feat->location->end("$assembly_length>") if ($feat->end > $assembly_length);
         }
-            
+
         $gbk->write_seq( $$assemblies{$feature_id}{seq_obj} );
-	
+
     } elsif ( $options{format} eq 'tbl' ) {
-	
+
         if( $options{'use_assembly_names'} ) {
             print $tbl_fh ">Feature $$assemblies{$feature_id}{name}\n";
         } else {
             print $tbl_fh ">Feature $$assemblies{$feature_id}{uniquename}\n";
         }
-	
-        
+
+
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
-            
+
             my ($is_5_partial, $is_3_partial) = (0,0);
-            
+
             ## strand: 1 = plus, strand 2 = minus
             if ($feat->strand == 1 ) {
                 ## is this a partial?
@@ -756,18 +759,18 @@ for my $feature_id ( keys %$assemblies ) {
                 } else {
                     print $tbl_fh $feat->start;
                 }
-                
+
                 print $tbl_fh "\t";
-                
+
                 if ( $feat->end > $assembly_length ) {
                     print $tbl_fh ">$assembly_length";
                     $is_3_partial = 1;
                 } else {
                     print $tbl_fh $feat->end;
                 }
-                
+
                 print $tbl_fh "\t", $feat->primary_tag, "\n";
-                
+
             } else {
 
                 if ( $feat->end > $assembly_length ) {
@@ -775,8 +778,8 @@ for my $feature_id ( keys %$assemblies ) {
                     $is_5_partial = 1;
                 } else  {
                     print $tbl_fh $feat->end;
-                }          
-                
+                }
+
                 print $tbl_fh "\t";
 
                 if ( $feat->start <= 0 ) {
@@ -785,12 +788,12 @@ for my $feature_id ( keys %$assemblies ) {
                 } else {
                     print $tbl_fh $feat->start;
                 }
-                
+
                 print $tbl_fh "\t", $feat->primary_tag, "\n";
-            }          
-            
+            }
+
             my $locus_tag = '';
-            
+
             if ( $feat->primary_tag eq 'gene' ) {
 
                 if ( $feat->has_tag('gene') ) {
@@ -802,24 +805,24 @@ for my $feature_id ( keys %$assemblies ) {
                     print $tbl_fh "\t\t\tlocus_tag\t$locus_tag\n";
                 }
 
-                if ( has_frameshift($feature_id, $feat) || 
+                if ( has_frameshift($feature_id, $feat) ||
                      exists $$point_mutations{ $feat->seq_id } ) {
-		    
+
                     print $tbl_fh "\t\t\tpseudo\n";
                 }
 
             } elsif ( $feat->primary_tag eq 'CDS' ) {
-                
+
                 my $min_coord = $feat->start < $feat->end ? $feat->start : $feat->end;
-                
+
                 if ( $feat->has_tag('locus_tag') ) {
                     $locus_tag = ($feat->get_tag_values('locus_tag'))[0];
                 }
-                
+
                 if ( $locus_tag eq '' ) {
-                    
+
                 }
-                
+
                 ## we need to specify a codon_start if it's a partial gene
                 if ( $is_5_partial ) {
                     if ( $feat->strand != 1 ) {
@@ -836,9 +839,9 @@ for my $feature_id ( keys %$assemblies ) {
                         }
 
                     } else {
-                        
+
                         print STDERR "INFO: exporting a different codon_start for forward locus ($locus_tag) ($min_coord)\n";
-                        
+
                         if ( $min_coord == 0 ) {
                             print $tbl_fh "\t\t\tcodon_start\t3\n";
                         } elsif ( $min_coord == -1 ) {
@@ -848,32 +851,32 @@ for my $feature_id ( keys %$assemblies ) {
                         }
                     }
                 }
-                
+
                 if ( $feat->has_tag('product') ) {
                     my $product_name = ($feat->get_tag_values('product'))[0];
-		    
+
                     if ( has_frameshift($feature_id, $feat) && $product_name !~ /frameshift/ ) {
                         print $tbl_fh "\t\t\tproduct\t$product_name, frameshift\n";
                     } else {
                         print $tbl_fh "\t\t\tproduct\t$product_name\n";
                     }
                 }
-                
+
                 if ( $feat->has_tag('EC_number') ) {
                     for my $ec_num ( $feat->get_tag_values('EC_number') ) {
                         print $tbl_fh "\t\t\tEC_number\t$ec_num\n";
                     }
                 }
-                
+
                 if ( $feat->has_tag('locus_tag') ) {
                     print $tbl_fh "\t\t\tprotein_id\tgnl|IGS|", ($feat->get_tag_values('locus_tag'))[0], "\n";
                 }
-		
+
             } elsif ( $feat->primary_tag eq 'rRNA' || $feat->primary_tag eq 'tRNA' ) {
-                
+
                 if ( $feat->has_tag('product') ) {
                     my $product_name = ($feat->get_tag_values('product'))[0];
-		    
+
                     if ( has_frameshift($feature_id, $feat) && $product_name !~ /frameshift/ ) {
                         print $tbl_fh "\t\t\tproduct\t$product_name, frameshift\n";
                     } else {
@@ -882,11 +885,11 @@ for my $feature_id ( keys %$assemblies ) {
                 }
             }
         }
-	
+
     } elsif ( $options{format} eq 'gff' ) {
-        
+
         my $gff_fh;
-        
+
         if ( $options{cgi_mode} == 1 ) {
             $gff_fh = \*STDOUT;
         } else {
@@ -901,7 +904,7 @@ for my $feature_id ( keys %$assemblies ) {
         }
 
 		my %gene_locus;
-		
+
 		# First let's map transcript to locus tags
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
         	if ( $feat->primary_tag eq 'gene' ) {
@@ -914,33 +917,33 @@ for my $feature_id ( keys %$assemblies ) {
         }
 
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
-            
+
             ## writing my own GFF output.  A Bio::SeqIO layer would be cool eventually.
             my $asmbl_id = ($options{'use_assembly_names'}) ? $$assemblies{$feature_id}{name} : $$assemblies{$feature_id}{uniquename};
-            my @columns = ( $asmbl_id, 
-                            $options{source}, 
+            my @columns = ( $asmbl_id,
+                            $options{source},
                             $feat->primary_tag,
                             $feat->start,
                             $feat->end,
                             '.'
 			    );
-            
+
             push @columns, ($feat->strand == 1) ? '+' : '-';
             push @columns, ($feat->primary_tag eq 'CDS') ? 0 : '.';
-            
+
             if ( $feat->primary_tag eq 'gene' ) {
-		
+
                 ## print the first 8 columns
                 print $gff_fh join("\t", @columns);
                 print $gff_fh "\t";
 
                 if (defined $options{locus_db}){
-                    die ("No locus tag found for gene " . $transcript_parents{$feat->seq_id}) if (! defined $gene_locus{$feat->seq_id});             
+                    die ("No locus tag found for gene " . $transcript_parents{$feat->seq_id}) if (! defined $gene_locus{$feat->seq_id});
                     print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$feat->seq_id} );
                 } else {
                 	print_gff_col9_attribute($gff_fh, 'ID', $transcript_parents{$feat->seq_id} );
 		}
-		
+
                 ## now handle any column 9 attributes
                 if ( $feat->has_tag('product') ) {
                     print_gff_col9_attribute($gff_fh, 'description', ($feat->get_tag_values('product'))[0] );
@@ -949,72 +952,72 @@ for my $feature_id ( keys %$assemblies ) {
                 if ( $feat->has_tag('gene') ) {
                     print_gff_col9_attribute($gff_fh, 'gene_symbol', ($feat->get_tag_values('gene'))[0] );
                 }
-                
+
                 if ( $feat->has_tag('locus_tag') ) {
                     print_gff_col9_attribute($gff_fh, 'locus_tag', ($feat->get_tag_values('locus_tag'))[0] );
                 }
 
                 print $gff_fh "\n";
-		
+
 		## GFF requires exons too.  write an mRNA feature, then the CDS ones
             } elsif ( $feat->primary_tag eq 'CDS' ) {
-                
+
                 my $gene_id = $transcript_parents{$cds_parents{ $feat->seq_id}};
-                my $transcript_id = $cds_parents{ $feat->seq_id}; 
-                
+                my $transcript_id = $cds_parents{ $feat->seq_id};
+
                 ## the mRNA feature matches the gene one
                 $columns[2] = 'mRNA';
                 $columns[7] = '.';
                 print $gff_fh join("\t", @columns);
                 print $gff_fh "\t";
                 if (defined $options{locus_db}){
-                    die ("No locus tag found for mRNA" . $transcript_id) if (! defined $gene_locus{$transcript_id});             
+                    die ("No locus tag found for mRNA" . $transcript_id) if (! defined $gene_locus{$transcript_id});
                     print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$transcript_id} );
-                } else {                
+                } else {
                 	print_gff_col9_attribute($gff_fh, 'ID', $transcript_id );
                 }
                 print_gff_col9_attribute($gff_fh, 'Parent', $gene_id );
                 print $gff_fh "\n";
-		
+
                 $exon_on_transcript_selector->execute( $feature_id, $transcript_id );
-                
+
                 ## we'll write one CDS per exon, as described in the GFF3 specs
                 while ( my $row = $exon_on_transcript_selector->fetchrow_hashref ) {
-                    print $gff_fh "$$assemblies{$feature_id}{uniquename}\t" . 
+                    print $gff_fh "$$assemblies{$feature_id}{uniquename}\t" .
 			"$options{source}\tCDS\t" .
 			($$row{fmin} + 1) . "\t$$row{fmax}\t.\t";
-                    
+
                     print $gff_fh ($$row{strand} == 1) ? '+' : '-';
                     print $gff_fh "\t0\t";
-                    
+
                     # Changed to print locus tag in place of CDS_ID 10/22/14 -- Shaun Adkins  (JIRA AE-621)
                     if (defined $options{locus_db}){
-                	die ("No locus tag found for CDS parent " . $transcript_id) if (! defined $gene_locus{$transcript_id});             
+                	die ("No locus tag found for CDS parent " . $transcript_id) if (! defined $gene_locus{$transcript_id});
                     	print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$transcript_id} );
                     } else {
                     	print_gff_col9_attribute($gff_fh, 'ID', $feat->seq_id);
                     }
                     print_gff_col9_attribute($gff_fh, 'Parent', $transcript_id );
                     print $gff_fh "\n";
-                    
+
                     # Write out exon feature now
-                    print $gff_fh "$$assemblies{$feature_id}{uniquename}\t" . 
+                    print $gff_fh "$$assemblies{$feature_id}{uniquename}\t" .
 			"$options{source}\texon\t" .
 			($$row{fmin} + 1) . "\t$$row{fmax}\t.\t";
-                    
+
                     print $gff_fh ($$row{strand} == 1) ? '+' : '-';
                     print $gff_fh "\t.\t";
                     if (defined $options{locus_db}){
-                	die ("No locus tag found for exon parent " . $transcript_id) if (! defined $gene_locus{$transcript_id});             
+                	die ("No locus tag found for exon parent " . $transcript_id) if (! defined $gene_locus{$transcript_id});
                     	print_gff_col9_attribute($gff_fh, 'ID', $gene_locus{$transcript_id} );
-                    } else {                    
+                    } else {
                     	print_gff_col9_attribute($gff_fh, 'ID', $$row{uniquename} );
                     }
                     print_gff_col9_attribute($gff_fh, 'Parent', $transcript_id );
                     print $gff_fh "\n";
-                    
+
                 }
-		
+
             }
         }
     }
@@ -1025,22 +1028,89 @@ exit(0);
 
 sub has_frameshift {
     my ($assembly_id, $feat) = @_;
-    
+
     ## check the coordinates of this feature against known frameshift coordinates
     if ( exists $$frameshifts{$assembly_id} ) {
-        
+
         for my $frameshift_id ( keys %{ $$frameshifts{$assembly_id} } ) {
             my $frameshift = $$frameshifts{$assembly_id}{$frameshift_id};
-	    
-            if ( $$frameshift{fmin} >= $feat->start() && 
+
+            if ( $$frameshift{fmin} >= $feat->start() &&
                  $$frameshift{fmin} <= $feat->end() ) {
-		
+
                 return 1;
             }
         }
     }
-    
+
     return 0;
+}
+
+sub add_intergenic_regions {
+	my $a_feats = shift;
+	my $feature_id = shift;
+	
+	# Create array to store intergenic region features and initialize the source area
+	my @igr_feats;
+	my $igr_coord_start = 1;
+	my $igr_coord_end;
+	my $igr_locus_start = "Source0";
+	my $igr_locus_end;
+    ## Sort and iterate through all 'gene' features
+    for my $feat ( sort { $a->start <=> $b->start } @{$a_feats} ) {
+        if ($feat->primary_tag eq 'gene'){
+            # Creating the intergenic region before the current gene feature
+        	$igr_coord_end = $feat->start - 1;
+            if ($feat->has_tag('locus_tag')){
+        	    $igr_locus_end = ($feat->get_tag_values('locus_tag'))[0];
+	        } else {
+                $igr_locus_end = "coord-" . $igr_coord_end;
+            }
+
+            my $igr = Bio::SeqFeature::Generic->new(
+						     -primary => 'intergenic',
+						     -start => $igr_coord_start,
+						     -end => $igr_coord_end,
+						     -strand => 1,
+						     );        			     
+	    	$igr->add_tag_value( 'locus_tag', "ig-$igr_locus_start-$igr_locus_end" );					     
+
+            # If we have genes that overlap then do not write an intergenic region
+            if ($feat->start <= $igr_coord_start){
+                $igr_coord_start = $feat->end + 1;  # Want to update start coord AFTER comparison check
+                $igr_locus_start = $igr_locus_end;
+                next;
+            }
+
+        	$igr_coord_start = $feat->end + 1;
+        	$igr_locus_start = $igr_locus_end;
+
+            push @igr_feats, $igr;
+        }
+
+            if ($@) {
+                print STDERR "WARN: failure to export sequence " . $feat->seq_id . " for feature at coordinates (" . $feat->start . '/' . $feat->end . ")\n";
+            }
+	}
+	
+	# Add final intergenic region at the end
+	my $whole_seq = $$assemblies{$feature_id}{seq_obj};
+    my $seq_len = length($whole_seq->seq );
+	$igr_coord_end = $seq_len;
+	$igr_locus_end = "end";
+	my $igr = Bio::SeqFeature::Generic->new(
+						     -primary => 'intergenic',
+						     -start => $igr_coord_start,
+						     -end => $igr_coord_end,
+						     -strand => 1,
+						     );        			     
+	$igr->add_tag_value( 'locus_tag', "ig-$igr_locus_start-$igr_locus_end" );					     
+        
+    push @igr_feats, $igr;
+	
+	
+	push @{$a_feats}, $_ foreach (@igr_feats);
+	return;
 }
 
 sub get_organism_information {
@@ -1048,10 +1118,10 @@ sub get_organism_information {
     if( $options{'organism_id'} ) {
         $query .= " WHERE organism_id = ".$options{'organism_id'};
     }
-    
+
     my $sth = $dbh->prepare($query);
     $sth->execute();
-    
+
     my ($genus, $species, $common_name);
     while( my $row = $sth->fetchrow_arrayref ) {
         next if( $row->[0] =~ /not known/ );
@@ -1079,10 +1149,10 @@ sub get_cvterm_id {
 	    FROM cvterm
 	    WHERE name = ?
 	};
-    
+
     my $cvterm_selector = $dbh->prepare($qry);
     $cvterm_selector->execute($name);
-    
+
     my $cvterm_id = ( $cvterm_selector->fetchrow_array )[0];
     $cvterm_selector->finish();
 
@@ -1104,26 +1174,26 @@ sub get_db_id {
 
     ## name is a unique key, so we don't have worry about multiples
     my $qry = qq{
-        SELECT db_id 
+        SELECT db_id
 	    FROM db
 	    WHERE name = ?
 	};
     my $db_selector = $dbh->prepare($qry);
     $db_selector->execute( $db_name );
-    
+
     while ( my $db = $db_selector->fetchrow_hashref ) {
         $db_id = $db->{db_id};
         last;
     }
-    
+
     $db_selector->finish();
-    
+
     return $db_id;
 }
 
 sub print_gff_col9_attribute {
     my ($fh, $key, $val) = @_;
-    
+
     ## we could use general encoding methods here, such as:
     #   $val =~ s/([^A-Za-z0-9])/sprintf("%%%02X", ord($1))/seg;
     #  but the GFF3 spec only calls for encoding of:
@@ -1131,11 +1201,11 @@ sub print_gff_col9_attribute {
     #   , -> %2C
     #   = -> %3D
     #   ; -> %3B
-    
+
     $val =~ s/\,/\%2C/g;
     $val =~ s/\=/\%3D/g;
     $val =~ s/\;/\%3B/g;
-    
+
     print $fh "$key=\"$val\"\;";
 }
 
@@ -1157,7 +1227,7 @@ sub _log {
 
 sub check_parameters {
     my $options = shift;
-    
+
     ## make sure required arguments were passed
     my @required = qw( database user output_directory format );
     for my $option ( @required ) {
@@ -1165,15 +1235,15 @@ sub check_parameters {
             die "--$option is a required option";
         }
     }
-    
+
     if (!defined($$options{password}) && !defined ($$options{password_file}) ){
     	print STDERR ("Neither a password nor a path to a password file were defined.  Please provide one or the other\n");
     }
-    
+
     if (defined $$options{password}) {
     	$password = $$options{password};
     }
-    
+
     #Assign password to be read from the file if it exists.
     if (defined ($$options{password_file}) && -s $$options{password_file} ) {
     	my $pass_file = $$options{password_file};
@@ -1183,24 +1253,25 @@ sub check_parameters {
 	chomp $password;
 	close PASS;
     }
-    
+
     ## handle some defaults
     $$options{server} = 'localhost' unless defined $$options{server};
     $$options{database_type} = 'mysql' unless defined $$options{database_type};
     $$options{translation_table} = 11 unless defined $$options{translation_table};
     $$options{source} = '.' unless defined $$options{source};
     $$options{cgi_mode} = 0 unless defined $$options{cgi_mode};
-    
+    $$options{intergenic_regions} = 0 unless defined $$options{intergenic_regions};
+
     ## format should be either gff or gbk
-    if ( $$options{format} ne 'gbk' && 
-         $$options{format} ne 'gff' && 
+    if ( $$options{format} ne 'gbk' &&
+         $$options{format} ne 'gff' &&
          $$options{format} ne 'tbl' ) {
         die "value for --format option must be either 'gbk' or 'gff' or 'tbl' ";
     }
-    
+
     ## reset in case the user actually passes 'all'
     $$options{organism_id} = undef if $$options{organism_id} eq 'all';
-    
+
     ## database type must be either mysql or postgresql
     if ( $$options{database_type} ne 'mysql' && $$options{database_type} ne 'postgresql' ) {
         die "value for option --database_type must be either 'mysql' or 'postgresql'";
@@ -1209,7 +1280,7 @@ sub check_parameters {
 
 =head1 NAME
 
-    chado_aengine_dumper.pl - creates a genbank or GFF file from a prokaryotic annotation stored 
+    chado_aengine_dumper.pl - creates a genbank or GFF file from a prokaryotic annotation stored
     in chado.
 
 =head1 SYNOPSIS
@@ -1243,7 +1314,7 @@ B<--user>
 
 B<--password>
     Password for user account specified.
-    
+
 B<--password_file>
     File which contains the password you want to provide.  Useful if you do not want to publicly reveal your password
 
@@ -1258,11 +1329,14 @@ B<--locus_db>
     for locus identifiers.  All other dbxref entries will be encoded as db_xref GBK attributes
 
 B<--locus_db_version>
-    Optional. Must specify if using locus_db option. This will specify the version of the 
+    Optional. Must specify if using locus_db option. This will specify the version of the
     dbxrefs used for locus_tag.
 
 B<--translation_table>
     Optional.  Numeric value for translations table (default = 11)
+
+B<--intergenic_regions>
+	Optional.  Add intergenic region features to the output when enabled.
 
 B<--server>
     Optional.  Server to connect to (default = localhost).
@@ -1283,10 +1357,10 @@ B<--use_assembly_names>
     Optional flag. If included, will use the feature.name field for ids for assemblies rather than uniquenames.
 
 B<--cgi_mode>
-    Optional.  Transforms output mode of script to be suitable for CGI execution.  All output is written as a 
+    Optional.  Transforms output mode of script to be suitable for CGI execution.  All output is written as a
     single stream to STDOUT, with a header that forces the user to download as a file.
 
-B<--log> 
+B<--log>
     Optional.  Full path to a log file to create.
 
 B<--help>
@@ -1295,7 +1369,7 @@ B<--help>
 =head1  DESCRIPTION
 
     description needed
-    
+
 =head1  INPUT
 
     Schema assumptions: Generally, this expects that an Annotation Engine genome has been run and
@@ -1361,7 +1435,7 @@ http://www.bioperl.org/wiki/HOWTO:Feature-Annotation#Building_Your_Own_Sequences
 
     db_id 1 feature counts:
 
-    name     | count 
+    name     | count
     -------------+-------
     gene        |  6028
     exon        |  6028
@@ -1376,7 +1450,7 @@ http://www.bioperl.org/wiki/HOWTO:Feature-Annotation#Building_Your_Own_Sequences
     - need to respect is_obsolete for all feature queries.  mysql and postgres treat these differently
 
     - BRC column 9 convention example:
-    
+
     ID=bhbCDS.3517814;Name=FTF0002;gene_symbol=dnaN;Ontology_term=GO:0003677,GO:0003887,GO:0005737,GO:0006260,GO:0006261,GO:0008408,GO:0009360;Dbxref=NCBI_NP:YP_666216.1,Swiss-Prot:Q14K60,EC:2.7.7.7;Parent=bhb|gene.3517811;description=DNA polymerase III beta chain
 
     should test with gff3_to_annotab (at aaron's request)
