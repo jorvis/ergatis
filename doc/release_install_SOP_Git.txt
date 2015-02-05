@@ -134,24 +134,27 @@ suite will be available in the future.
 
 After successful execution of the test pipelines the trunk is compared with the previous release
 (via git diff) to ensure that the CHANGELOG reflects all the changes made to the package.  Once 
-this is done, the updated CHANGELOG is committed (if necessary) and the trunk is tagged with
-the next version number like:
+this is done, the updated CHANGELOG is committed (if necessary) a new release can be created in the following manner:
 
-    svn copy path/to/ergatis/trunk path/to/ergatis/tags/ergatis-vNrNbN
+    1.  Navigate to https://github.com/jorvis/ergatis/releases/new
+    2.  In the UI, give the new release a tag number and release title adhering to the version naming procedure.  Make sure the tag branch is set to 'master'
+    3.  Optionally, a description of the release can be added to highlight major changes from the CHANGELOG, for example.
+    4.  Also optionally, the "pre-release" button can be clicked if the stability of the release is a concern.
+    5.  If the release is ready, then click "Publish Release".  Otherwise, clicking "Save Draft" will create an untagged draft.
+
+Additional help can be found here: https://help.github.com/articles/creating-releases/
+
+Doing a release in this manner will also tag the project codebase at a specific point, which can then be downloaded or checked out.
 
 At the same time, the developer doing the release can checkout a form of the code appropriate for
 release by doing:
 
-    svn export https://ergatis.svn.sourceforge.net/svnroot/ergatis/release
+    git clone --branch=<tag-ID> --depth=1 https://github.com/jorvis/ergatis.git <working_directory>
 
-This will create a 'release' directory which contains another named 'ergatis-vNrNbN'.  This should
-be renamed to the current version, tarred and compressed (via tar -czf) and uploaded to SF.net.
-This final step can only be done by a developer with the 'Release Technician' role in the
-Ergatis SF.net page.
+This will create a 'release' directory on the local machine.  Adding the --depth=1 option truncates the revision history to only the branched tag.
 
 Finally, an announcement e-mail with the new software version and notes is sent to the mailing
 lists.
-
 
 Ergatis bugfix release procedure
 --------------------------------
