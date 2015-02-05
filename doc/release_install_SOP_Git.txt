@@ -1,7 +1,7 @@
 [to be continued]
 
 Code release and management SOP For Git and GitHub 
-===============================
+==================================================
 
 Overview
 --------
@@ -66,8 +66,8 @@ are limited to the developer list for each, but anyone wishing to contribute upd
 encouraged to contact any of the project admins to be added as a developer.
 
 
-SVN code layout
----------------
+SVN code layout (for non-Ergatis projects)
+------------------------------------------
 
 Within the svnroot for any project we have the following common, high-level layout:
 
@@ -133,7 +133,7 @@ include a large proportion of the most commonly used ones.  A more rigorous and 
 suite will be available in the future.
 
 After successful execution of the test pipelines the trunk is compared with the previous release
-(via svn diff) to ensure that the CHANGELOG reflects all the changes made to the package.  Once 
+(via git diff) to ensure that the CHANGELOG reflects all the changes made to the package.  Once 
 this is done, the updated CHANGELOG is committed (if necessary) and the trunk is tagged with
 the next version number like:
 
