@@ -46,7 +46,7 @@ if( $options{'help'} ){
 
 ## Will either be acquired directly as an option or from the password file
 my $password;
-
+my $download_file_name;
 
 ## make sure everything passed was peachy
 &check_parameters(\%options);
@@ -681,8 +681,6 @@ if ( $options{cgi_mode} == 1 ) {
     my ($year, $mon, $day) = (localtime time)[5,4,3];
     my $datestamp = sprintf("%d%02d%02d", $year + 1900, ++$mon, $day);
 
-    my $download_file_name;
-
     if ( $options{format} eq 'gbk' ) {
         $download_file_name = "$options{database}.annotation.$datestamp.gbk";
     } elsif ( $options{format} eq 'gff' ) {
@@ -700,7 +698,7 @@ my $tbl_fh;
 if ( $options{format} eq 'tbl' ) {
 
     if ( $options{cgi_mode} == 1 ) {
-	$tbl_fh = \*STDOUT;
+	    (open $tbl_fh, ">". $options{output_directory}."/".$download_file_name) || die "can't create TBL output file: $!";
     } else {
         _log("INFO: writing $options{output_directory}/$options{database}.tbl");
         open($tbl_fh, ">$options{output_directory}/$options{database}.tbl") || die "can't create TBL output file: $!";
@@ -717,7 +715,7 @@ for my $feature_id ( keys %$assemblies ) {
 
         if ( $options{cgi_mode} == 1 ) {
             $gbk = Bio::SeqIO->new( -format => 'genbank',
-                                    -fh => \*STDOUT );
+                                    -file => ">" . $options{output_directory}."/".$download_file_name );
         } else {
             _log("INFO: writing $options{output_directory}/$$assemblies{$feature_id}{uniquename}.gbk");
             my $file;
@@ -891,7 +889,7 @@ for my $feature_id ( keys %$assemblies ) {
         my $gff_fh;
 
         if ( $options{cgi_mode} == 1 ) {
-            $gff_fh = \*STDOUT;
+            open($gff_fh, ">".$options{output_directory}."/".$download_file_name) || die "can't create GFF output file: $!";
         } else {
             _log("INFO: writing $options{output_directory}/$$assemblies{$feature_id}{uniquename}.gff3");
             my $file;

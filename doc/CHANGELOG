@@ -1,5 +1,8 @@
 next
 ---
+-Updated chado_aengine_dumper.pl to a) optionally add intergenic_regions and b) be compatible with relevant updates in Manatee
+-Adjusted MakeFile.Pl to install new pangenome R scripts and keep directory structure
+-Moved pangenome_make_graphs R scripts to the src/R directory so they would be installed.
 -Fixed issue in genecalls pipeline where headers from input fasta file were mapping to wrong transcript IDs
 -Created a pangenome pipeline template
 -Fixed clean_fasta workflow command order to deal with permissions issues in dos2unix command"
