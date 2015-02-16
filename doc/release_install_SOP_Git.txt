@@ -1,0 +1,213 @@
+[to be continued]
+
+Code release and management SOP For Git and GitHub 
+==================================================
+
+Overview
+--------
+
+This document describes the standard operating procedures regarding the release and installation
+procedures of Ergatis and its dependent packages with an emphasis on code versioning practices.
+
+Ergatis makes use of several other open-source packages including:
+
+BSML - http://sf.net/projects/bsml
+Coati - http://sf.net/projects/coati-api
+Prism - http://sf.net/projects/prism-api
+Workflow Engine - http://sf.net/projects/tigr-workflow
+
+Many of the Ergatis developers also contribute to these other projects and we make every attempt
+to ensure our codebases work together, testing and often co-releasing when appropriate.  Here we
+describe this process and give practical examples of how this code is managed for end-users.
+
+A notable exception to the list above is Workflow Engine, which has a smaller and more isolated
+developer list when compared to the other projects.  It is generally more static and has less
+releases.  Though we have frequent communication with the Workflow developers, the procedures
+described in this document do not necessarily apply to that project.
+
+For most of this document I'll be focusing on Ergatis conventions and note where the others
+have specific differences.
+
+NOTE:  This document focuses on release procedures for Git and GitHub.  The (outdated) document for procedure when using Subversion is located at https://github.com/jorvis/ergatis/blob/master/doc/release_install_SOP.txt
+
+
+Quick summary for the impatient
+-------------------------------
+
+Can't be bothered to read this whole thing?  Here's the quick version:
+
+- Code available on GitHub, contributors welcome
+- Developers should test individual changes before committing
+- The general steps of a project code release are:
+    - A standard suite of tests is performed
+    - Code is tagged in SVN
+    - Tarball placed on Sourceforge
+    - Release announcement sent to appropriate e-mail lists
+- Fixing bugs involves:
+    - creation of a bugfix branch from the release tag point
+    - commit fix to both branch and trunk
+    - release new build tarball
+
+
+Code availability
+-----------------
+
+The Ergatis project is hosted at GitHub (github.com) with code maintained in a Git repository hosted there.  To checkout the Ergatis project the following command can be used:
+
+    git clone https://github.com/jorvis/ergatis.git
+
+Each of the other projects is hosted at SourceForge (sf.net) with code maintained in Subversion
+repositories hosted there.  For any project you can check out the latest sources like:
+
+    svn checkout https://$project.svn.sourceforge.net/svnroot/$project/trunk
+
+Where $project is replaced with either 'bsml', 'coati-api or 'prism-api'.  Contributions
+are limited to the developer list for each, but anyone wishing to contribute updates or changes are
+encouraged to contact any of the project admins to be added as a developer.
+
+
+SVN code layout (for non-Ergatis projects)
+------------------------------------------
+
+Within the svnroot for any project we have the following common, high-level layout:
+
+    svnroot/$project/trunk
+    svnroot/$project/branches
+    svnroot/$project/tags
+    svnroot/$project/release
+
+The 'trunk' contains the most up-to-date version of the project, which is not guaranteed to be
+stable/functional though developers are strongly encouraged to test their individual changes before
+committing.  The layout of the code under the trunk is variable across projects.
+
+The 'branches' directory contains areas of code that have forked from the trunk at some point.
+Usage of branches are project-specific - some may open and eventually merge them back to the trunk
+while others leave them open indefinitely.
+
+'Tags' are immutable, labeled snapshots of the trunk taken at a specific time.  For each released
+version of a software package there will be a corresponding tag.
+
+Finally, the 'release' directory contains useful placeholders for generating release tarballs.  They
+are usually defined by svn:externals properties which selects and reorganizes code from the project
+into installable form.
+
+
+Versions
+--------
+
+Our releases are versioned using the following convention example:
+
+    ergatis-v2r24b3
+
+This reads as version 2, revision 24, build 3.  The conventional difference between these levels 
+reflects the level of change or updates with the code from the previous release.  Generally:
+
+    version -   Reflects a major release, usually not compatible with previous versions.  Used
+                sparingly, these are reserved for major rewrites or architecture changes.
+    revision -  The most common release type, revision updates include new functionality and
+                non-critical bug fixes.
+    build -     This last number reflects minor releases.  These are limited to bug fixes, 
+                documentation updates or other minor corrections.
+
+There is currently no strict timeline for releases, though an interval on the order of once per
+month is the target.  Version, revision and build numbers each increment by one with no upper bound.
+
+
+Ergatis standard release procedure
+----------------------------------
+
+When it becomes necessary or useful to generate a new revision of the Ergatis code (and any
+dependent projects) an announcement is sent to the ergatis-devel users list with as much notice
+as possible to allow developers to commit any outstanding and completed code updates.  A test area 
+is then created where all dependent software is installed along with code from the Ergatis trunk.
+
+Currently, a standard set of our most common pipelines is executed from this install to ensure
+that the code is functional.  These include:
+
+    - Prokaryotic annotation pipeline template
+    - Jaccard comparative pipeline template
+    - initdb -> bsml2chado -> initdb
+
+While not a completely exhaustive test of all components within Ergatis, these two templates do
+include a large proportion of the most commonly used ones.  A more rigorous and complete test
+suite will be available in the future.
+
+After successful execution of the test pipelines the trunk is compared with the previous release
+(via git diff) to ensure that the CHANGELOG reflects all the changes made to the package.  Once 
+this is done, the updated CHANGELOG is committed (if necessary) a new release can be created in the following manner:
+
+    1.  Navigate to https://github.com/jorvis/ergatis/releases/new
+    2.  In the UI, give the new release a tag number and release title adhering to the version naming procedure.  Make sure the tag branch is set to 'master'
+    3.  Optionally, a description of the release can be added to highlight major changes from the CHANGELOG, for example.
+    4.  Also optionally, the "pre-release" button can be clicked if the stability of the release is a concern.
+    5.  If the release is ready, then click "Publish Release".  Otherwise, clicking "Save Draft" will create an untagged draft.
+
+Additional help can be found here: https://help.github.com/articles/creating-releases/
+
+Doing a release in this manner will also tag the project codebase at a specific point, which can then be downloaded or checked out.
+
+At the same time, the developer doing the release can checkout a form of the code appropriate for
+release by doing:
+
+    git clone --branch=<tag-ID> --depth=1 https://github.com/jorvis/ergatis.git <working_directory>
+
+This will create a 'release' directory on the local machine.  Adding the --depth=1 option truncates the revision history to only the branched tag.
+
+Finally, an announcement e-mail with the new software version and notes is sent to the mailing
+lists.
+
+Ergatis bugfix release procedure
+--------------------------------
+
+Bugs happen.  I'll take a narrative approach of how bugfix releases are performed here.
+
+Todd is on the Ergatis development team and, using a newly released version of the software 
+(v2r24b1), uncovers a bug in the hmmpfam2bsml.pl script called within the hmmpfam component.  He 
+submits a desciption of the bug to the SF.net tracker and assigns it to Anu.  
+
+Anu sees the problem, modifies the code with a potential fix and tests it in a local development
+repository before committing it to the Ergatis trunk.  The fixed code will be released with the
+next revision (v2r25b1) at some point in the future along with all other code updates.
+
+This is correct, but doesn't address the problem that v2r24b1 has a broken component in use by
+others, so a 'bugfix release' needs to be made.  Our procedure for bugfixes on previous releases
+is as follows:
+
+    - commit fix to the trunk
+    - create a branch from the previous release point named like ergatis-v2r24-bugfix
+    - commit fix to this branch
+    - tag branch as new build (ergatis-v2r24b2)
+    - release source tarball on SF.net
+
+Of course, the CHANGELOG should also be updated both in the branch and on the trunk.  In the end
+the revision history will look something like this:
+
+
+                                         ----| 
+                               branch   /   tag
+                         v2r24-bugfix  /  v2r24b2
+                                       |
+                                       |
+trunk >---------|----------------------|------------------------|----------------> trunk
+                
+                |                      |                        |
+               tag                    tag                      tag
+             v2r23b1                v2r24b1                   (next)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
