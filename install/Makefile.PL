@@ -186,9 +186,7 @@ c_apps	:
 
 r_scripts:
 	@echo "Installing R scripts to $(PREFIX)/bin"
-    find $(BUILD_DIR/R -type d -exec mkdir -p $(PREFIX)/bin/{} \;
-    find $(BUILD_DIR/R -exec install {} $(PREFIX)/bin/{} \;
-    #find $(BUILD_DIR)/R -type f -exec install {} $(PREFIX)/bin \;
+    find $(BUILD_DIR)/R -type f -exec install {} $(PREFIX)/bin \;
 
 
 END
