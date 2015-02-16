@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot type="instance">
+  <commandSet type="serial">
+        <state>incomplete</state>
+        <name>grouped sub flow</name>
+
+	<!--Postprocessing-->
+	<command>
+            <type>RunUnixCommand</type>
+            <name>merge pangenome data</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/pangenome_merge_results</executable>
+            <param>
+                <key>--input_list</key>
+                <value>$;OUTPUT_DIRECTORY$;/pangenome.stored.list</value>
+            </param>
+            <param>
+                <key>--output_path</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
+
