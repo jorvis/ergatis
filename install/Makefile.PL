@@ -171,7 +171,7 @@ pipeline_templates:
 	@echo "Installing global pipeline templates in $(PREFIX)/global_pipeline_templates"
 	find $(T_BUILD_DIR) -type d -exec mkdir -p $(PREFIX)/{} \;
 	find $(T_BUILD_DIR) -path '*svn*' -prune -o -print -exec install {} $(PREFIX)/{} \;
-    #find $(T_BUILD_DIR) -path '*svn*' -prune -o -print -type d -exec install {} ${PREFIX} \;
+	#find $(T_BUILD_DIR) -path '*svn*' -prune -o -print -type d -exec install {} ${PREFIX} \;
 
 c_apps	:
 	@echo "Compiling C applications and installing in $(PREFIX)/bin"
@@ -186,7 +186,7 @@ c_apps	:
 
 r_scripts:
 	@echo "Installing R scripts to $(PREFIX)/bin"
-    afind $(BUILD_DIR)/R -type f -exec install {} $(PREFIX)/bin \;
+	find $(BUILD_DIR)/R -type f -exec install {} $(PREFIX)/bin \;
 
 
 END
