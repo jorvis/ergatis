@@ -28,22 +28,24 @@ if 0; # not running under some shell
 
     -p <password>      database password (Required)
     
-    -h <host>	       database host (Required)
+    -t <host>	       database host (Required)
 
     -a <asmbl>         assembly to rotate (Required)
 
-    -s <coordinate>    coordinate on current molecule that will be coordinate 1
+    -c <coordinate>    coordinate on current molecule that will be coordinate 1
                        on new molecule. Origin of replication  (Required)
 
     -reverse 		reverse complement the sequence (Optional)
 
-    -d                 debug level. Use a large number to turn on verbose debugging (Optional)
+    -b                 debug level. Use a large number to turn on verbose debugging (Optional)
  
 =head1  DESCRIPTION
  
 The program rotates an assembly given a coordinate as the origin of replication. It will then map the features on the current molecule (everything in featureloc) 
 to the new molecule, and adjust the genome coords stored in the table. It fetches the feature coordinates from the current assembly and updates/overwrites the featureloc
 table with the newly transformed coordinates. It also changes the assembly sequence accordingly in feature table.
+
+NOTE:  When choosing a coordinate for the --coordinate option, do note that the 5' coordinates in Manatee are 1 position greater than the fmin coordinate position in the Chado database.  The 3' and fmax positions are both the same in Manatee and Chado.  So when choosing your value, choose the Manatee coordinate.
 
 =head1  INPUT
     
@@ -123,6 +125,9 @@ $logger->logdie("Database connection could not be established") if (! defined $d
 ## Handle molecule and change the sequence to rotate it
 ($asmbl_len, $asmbl_id) = &build_and_load_new_molecule();
 
+# Decrement the coordinate by 1 so we can do calculations correct in the 'transform' subroutine
+my $offset_coord = $options{'coord'} - 1;
+
 ## Update all feature coordinates according to rotated molecule
 &update_feature_coords();
 
@@ -173,6 +178,7 @@ sub update_feature_coords {
 	while (my ($flid, $ref) = each %$featloc_hash) {
 		my $new_fmin = &transform($ref->{'fmin'});
 		my $new_fmax = &transform($ref->{'fmax'});
+		my $new_strand = $ref->{'strand'};
 		my $sth;
 		if($options{'reverse'}) {
 			if($new_fmax < $new_fmin) {
@@ -186,6 +192,7 @@ sub update_feature_coords {
 				$new_strand = -1;
 			}
 		}
+
 		$sth = $dbh->prepare("UPDATE featureloc SET fmin = $new_fmin, fmax = $new_fmax, strand = $new_strand WHERE featureloc_id = $flid") or $logger->logdie($sth->errstr);
 		my $rv = $sth->execute or $logger->logdie($sth->errstr);
 	}
@@ -202,8 +209,7 @@ sub transform {
 		$r = $r <= 0 ? ($r + $asmbl_len) : $r;
 		$r = $asmbl_len - $r;
 	} else {
-		$options{'coord'} -= 1;
-		$r = $x - $options{'coord'};
+		$r = $x - $offset_coord;
 		$r = $r < 0 ? ($r + $asmbl_len) : $r; 
 	}
 	return($r);
