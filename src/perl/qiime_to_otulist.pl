@@ -2,6 +2,9 @@
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
+
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 use strict;
 use warnings;
 use Data::Dumper;
@@ -10,7 +13,9 @@ open FILE, "$ARGV[0]"; # uclust picked otus seqs.screened_otus.txt
 my @lines = <FILE>; 
 close FILE;
 my @A = split "\t", $lines[$#lines]; 
-my $n = $A[0]+1;
+my $l = $A[0];
+$l =~ s/denovo//;
+my $n = $l+1;
 
 open OUT, ">$ARGV[2]" or die; # qiime_to_otus.txt 
 open OUT2, ">$ARGV[2].list" or die; # list file

@@ -30,7 +30,7 @@
             <type>RunUnixCommand</type>
             <name>split libraries for Qiime workflows</name>
             <state>incomplete</state>
-            <executable>split_libraries.py</executable>
+            <executable>$;BIN_DIR$;/split_libraries</executable>
             <arg>-m $;OUTPUT_DIRECTORY$;/Data.processed.map -f $;OUTPUT_DIRECTORY$;/Data.processed.fasta -q $;OUTPUT_DIRECTORY$;/Data.processed.qual -o $;OUTPUT_DIRECTORY$;/splitlibs/ -b $;BARCODES$; -l $;MIN_LENGTH$; -L $;MAX_LENGTH$; -H $;MAXIMUM_HOMOPOLYMER_LENGTH$; -a $;MAXAMBIGUOUS$; $;OTHEROPTS$;</arg>
         </command>
         <command>

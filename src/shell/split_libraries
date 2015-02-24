@@ -1,0 +1,84 @@
+#!/bin/sh
+if [ -z "$SCHEMA_DOCS_DIR" ]
+then
+    SCHEMA_DOCS_DIR=
+export SCHEMA_DOCS_DIR
+fi
+if [ -z "$WORKFLOW_WRAPPERS_DIR" ]
+then
+    WORKFLOW_WRAPPERS_DIR=/opt/ergatis/bin
+export WORKFLOW_WRAPPERS_DIR
+fi
+if [ -z "$WORKFLOW_DOCS_DIR" ]
+then
+    WORKFLOW_DOCS_DIR=
+export WORKFLOW_DOCS_DIR
+fi
+
+
+umask 0000
+
+unset PERL5LIB
+unset LD_LIBRARY_PATH
+
+LANG=C
+export LANG
+LC_ALL=C
+export LC_ALL
+
+PERL_MOD_DIR=/opt/ergatis/lib/5.8.8
+export PERL_MOD_DIR
+
+export PERL5LIB=/opt/ergatis/lib/perl5/
+source /opt/opt-packages/qiime-1.8/activate.sh
+
+while [[ $# > 1 ]]
+do
+i="$1"
+case $i in
+    -q)
+    qual="$2"
+    shift
+    ;;
+    -m)
+    mapf="$2"
+    shift
+    ;;
+    -f)
+    fasta="$2"
+    shift
+    ;;
+    -o)
+    out="$2"
+    shift
+    ;;
+    -b)
+    barcode="$2"
+    shift
+    ;;
+    -l)
+    min="$2"
+    shift
+    ;;
+    -L)
+    max="$2"
+    shift
+    ;;
+    -H)
+    homo="$2"
+    shift
+    ;;
+    -a)
+    ambig="$2"
+    shift
+    ;;
+esac
+shift 
+done
+if [ -s $qual ]
+then
+     split_libraries.py "$@"
+else
+     split_libraries.py -m $mapf -f $fasta -o $out -b $barcode -l $min -L $max -H $homo -a $ambig
+fi  
+

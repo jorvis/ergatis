@@ -21,9 +21,9 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>pick_otus_through_otu_table</name>
+            <name>pick_de_novo_otus</name>
             <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/pick_otus_through_otu_table.py</executable>
+            <executable>$;BIN_DIR$;/pick_de_novo_otus</executable>
             <arg> -i $;INPUT_FILE$; -p $;CUSTOM_PARAMETERS_FILE$; -f -o $;OUTPUT_DIRECTORY$;/results</arg>
             <param>
                 <key>stderr</key>
@@ -45,7 +45,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*_otu_table\.txt"</value>
+                <value>".*otu_table\.biom"</value>
             </param>
             <param>
                 <key>--output_list</key>
@@ -63,7 +63,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*_rep_set\.tre"</value>
+                <value>".*rep_set\.tre"</value>
             </param>
             <param>
                 <key>--output_list</key>
@@ -74,7 +74,7 @@
             <type>RunUnixCommand</type>
             <name>make_otu_heatmap_html_file</name>
             <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/make_otu_heatmap_html.py</executable>
+	    <executable>$;BIN_DIR$;/make_otu_heatmap_html</executable>
             <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_heatmap/</arg>
         </command>
         <command>
@@ -88,71 +88,50 @@
             <type>RunUnixCommand</type>
             <name>summarizing taxa analysis (phyla)</name>
             <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
-            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level3.txt -L 3 -r 0</arg>
+            <executable>$;BIN_DIR$;/summarize_taxa</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables -a</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting phyla assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level3.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/phylum</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>summarizing taxa analysis (class)</name>
-            <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
-            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level4.txt -L 4 -r 0</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L3.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/phylum</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting classes assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level4.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/class</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L4.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/class</arg>
         </command>        
-        <command>
-            <type>RunUnixCommand</type>
-            <name>summarizing taxa analysis (order)</name>
-            <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
-            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level5.txt -L 5 -r 0</arg>
-        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting orders assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level5.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/order</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>summarizing taxa analysis (family)</name>
-            <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
-            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level6.txt -L 6 -r 0</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L5.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/order</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting families assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level6.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/family</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L6.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/family</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>summarizing taxa analysis (genus)</name>
             <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/summarize_taxa.py</executable>
-            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level7.txt -L 7 -r 0</arg>
+            <executable>$;BIN_DIR$;/summarize_taxa</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -o $;OUTPUT_DIRECTORY$;/results/otu_summary_tables -L 7 -a</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting genera assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_Level7.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/genus</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L7.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/genus</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -194,8 +173,8 @@
             <type>RunUnixCommand</type>
             <name>create beta diversity and PCoA plots</name>
             <state>incomplete</state>
-            <executable>$;QIIME_PATH$;/bin/beta_diversity_through_3d_plots.py</executable>
-            <arg> -i `cat $;OTU_TABLE_LIST$;` -m $;MAPPING_FILE$; -o $;OUTPUT_DIRECTORY$;/results/beta_diversity/ -p $;CUSTOM_PARAMETERS_FILE$; -t `cat $;FASTTREE_FILE_LIST$;`</arg>
+	    <executable>$;BIN_DIR$;/beta_diversity_through_plots</executable>
+            <arg> -i `cat $;OTU_TABLE_LIST$;` -m $;MAPPING_FILE$; -o $;OUTPUT_DIRECTORY$;/results/beta_diversity/ -p $;CUSTOM_PARAMETERS_FILE$; -t `cat $;FASTTREE_FILE_LIST$;` -f</arg>
         </command>
     </commandSet>
 </commandSetRoot>
