@@ -31,6 +31,14 @@ B<--delete_output,-o>
     optional.  If passed, the output in the standard output directory structure
     for this pipeline will also be removed.
 
+B<--exclusion_file, -e>
+    optional. If passed, the components listed within this file will not be deleted
+    along with any parent directories containing this component.  Each line should 
+	be in the format of component_name.token, like ncbi-blastx.pre_overlap_analysis
+
+B<--dry_run, -d>
+	optional.  When enabled, will show what contents will be removed but will not actually remove them.
+
 B<--log,-l> 
     optional.  will create a log file with summaries of all actions performed.
 
@@ -71,16 +79,22 @@ use Pod::Usage;
 my %options = ();
 my $results = GetOptions (\%options, 
 			  'pipeline_id|i=s',
-              'repository_root|r=s',
-              'lock_file|k=s',
-              'delete_output|o=i',
-              'log|l=s',
+			  'repository_root|r=s',
+			  'exclusion_file|e=s',
+			  'lock_file|k=s',
+			  'delete_output|o=i',
+			  'dry_run|d',
+			  'log|l=s',
 			  'help|h') || pod2usage();
 
 # display documentation
 if( $options{'help'} ){
     pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
 }
+
+my $kept_dir_paths;
+my $out_flag = 0;
+my $wf_flag = 0;
 
 ## play nicely
 umask(0000);
@@ -110,6 +124,12 @@ if (defined $options{log}) {
     autoflush $logfh 1;
 }
 
+&_log("INFO: Dry run mode enabled") if ($options{'dry_run'});
+
+if ($options{'exclusion_file'}) {
+    $kept_dir_paths = parse_exclusions($options{'exclusion_file'}, $options{'pipeline_id'});
+}
+
 my $wf_dir = "$options{repository_root}/workflow/runtime";
 opendir( my $wfdh, $wf_dir );
 
@@ -119,9 +139,16 @@ for my $component ( readdir $wfdh ) {
     _log("INFO: scanning $wf_dir/$component");
     
     for my $rundir ( glob "$wf_dir/$component/$options{pipeline_id}_*" ) {
-        _log("INFO: recursively removing $rundir");
-        
-        &find_remove($rundir);
+		$wf_flag = 0;
+		# See if this directory matches an excluded component
+        foreach my $dir (@$kept_dir_paths){
+			$wf_flag++ if ($rundir eq "$wf_dir/$dir");
+			last;
+		}
+        _log("INFO: recursively removing $rundir") if (!$wf_flag);
+		next if ($options{'dry_run'});
+        &find_remove($rundir) if (!$wf_flag);
+
     }
 }
 
@@ -132,16 +159,22 @@ if ( $options{delete_output} ) {
 
     for my $component ( readdir $odh ) {
         for my $rundir ( glob "$o_dir/$component/$options{pipeline_id}_*" ) {
-            _log("INFO: recursively removing $rundir");
-
-            &find_remove($rundir);
+            $out_flag = 0;
+			# See if this directory matches an excluded component
+        	foreach my $dir (@$kept_dir_paths){
+				$out_flag++ if ($rundir eq "$o_dir/$dir");
+				last;
+			}
+			_log("INFO: recursively removing $rundir") if (!$out_flag);
+			next if ($options{'dry_run'});
+            &find_remove($rundir) if (!$out_flag);
         }
     }
 }
 
 ## delete the pipeline xml explicitly
 _log("INFO: recursively removing $wf_dir/pipeline/$options{pipeline_id}");
-&find_remove("$wf_dir/pipeline/$options{pipeline_id}");
+&find_remove("$wf_dir/pipeline/$options{pipeline_id}") if (! $options{'dry_run'});
 
 ## remove the lock file
 if ( $options{lock_file} ) {
@@ -153,11 +186,30 @@ _log("INFO: delete operations complete");
 
 exit(0);
 
+#  Parse exclusions file to get the directories that will be spared from deletion
+sub parse_exclusions {
+    my ($exclusions, $pipe_id) = @_;
+    my @kept_dirs;
+
+	open EFH, $exclusions or die "Can't open exclusion file $exclusions for reading: $!\n";
+	while (<EFH>) {
+		my $line = $_;
+		chomp $line;
+		my ($component, $token) = split(/\./, $line);
+		print $line , "\n";
+		my $dir = $component . "/" . $pipe_id . "_" . $token;
+		&_log("INFO:  keeping directory $dir from deletion");
+		push @kept_dirs, $dir;
+	}
+	close EFH;
+    return \@kept_dirs;
+}
+
 
 sub _log {
     my $msg = shift;
-    
-    print $logfh "$msg\n" if $logfh;
+    print "$msg\n";
+   # print $logfh "$msg\n" if $logfh;
 }
 
 sub check_parameters {
