@@ -26,7 +26,7 @@
 			<executable>$;BIN_DIR$;/replace_template_keys</executable>
 			<param>
 				<key>--template_xml</key>
-				<value>$;DOCS_DIR$;/pangenome_blast_parse_distributed_work.xml</value>
+				<value>$;DOCS_DIR$;/pangenome_merge_results_distributed_work.xml</value>
 			</param>
 			<param>
 				<key>--component_conf</key>
@@ -34,7 +34,7 @@
 			</param>
 			<param>
 				<key>--output_xml</key>
-				<value>$;WORKFLOW_REPOSITORY$;/pangenome_blast_parse_distributed_work.xml.gz</value>
+				<value>$;WORKFLOW_REPOSITORY$;/pangenome_merge_results_distributed_work.xml.gz</value>
 			</param>
 			<param>
 				<key>--distribopts</key>
