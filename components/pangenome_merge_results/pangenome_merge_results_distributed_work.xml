@@ -13,7 +13,7 @@
             <executable>$;BIN_DIR$;/pangenome_merge_results</executable>
             <param>
                 <key>--input_list</key>
-                <value>$;OUTPUT_DIRECTORY$;/pangenome.stored.list</value>
+				<value>$;INPUT_FILE$;</value>
             </param>
             <param>
                 <key>--output_path</key>
