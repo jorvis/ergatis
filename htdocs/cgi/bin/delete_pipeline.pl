@@ -1,12 +1,12 @@
 #!/usr/bin/perl -w
 
-=head1  NAME 
+=head1  NAME
 
 delete_pipeline.pl - delete a workflow pipeline and, optionally, its output data
 
 =head1 SYNOPSIS
 
-USAGE: delete_pipeline.pl 
+USAGE: delete_pipeline.pl
         --pipeline_id=1234
         --repository_root=/usr/local/annotation/AA1
       [ --lock_file=/path/to/somefile.lock
@@ -16,33 +16,33 @@ USAGE: delete_pipeline.pl
 
 =head1 OPTIONS
 
-B<--pipeline_id,-i> 
+B<--pipeline_id,-i>
     The ID of the pipeline to delete
 
-B<--repository_root,-r> 
+B<--repository_root,-r>
     The project directory, just under which we should find the asmbls directory.
 
-B<--lock_file,-k> 
+B<--lock_file,-k>
     optional.  This file will be created at the start of the run and will contain
     only the word "deleting".  Any existing file will get stomped.  It will be
     deleted once process is finished.
 
-B<--delete_output,-o> 
+B<--delete_output,-o>
     optional.  If passed, the output in the standard output directory structure
     for this pipeline will also be removed.
 
 B<--exclusion_file, -e>
     optional. If passed, the components listed within this file will not be deleted
-    along with any parent directories containing this component.  Each line should 
+    along with any parent directories containing this component.  Each line should
 	be in the format of component_name.token, like ncbi-blastx.pre_overlap_analysis
 
 B<--dry_run, -d>
 	optional.  When enabled, will show what contents will be removed but will not actually remove them.
 
-B<--log,-l> 
+B<--log,-l>
     optional.  will create a log file with summaries of all actions performed.
 
-B<--help,-h> 
+B<--help,-h>
     This help message/documentation.
 
 =head1   DESCRIPTION
@@ -77,7 +77,7 @@ use IO::Handle;
 use Pod::Usage;
 
 my %options = ();
-my $results = GetOptions (\%options, 
+my $results = GetOptions (\%options,
 			  'pipeline_id|i=s',
 			  'repository_root|r=s',
 			  'exclusion_file|e=s',
@@ -109,16 +109,27 @@ if ( $options{'pipeline_id'} =~ /[^A-Z0-9]/i ) {
 
 ## create the lock file if requested
 my $lockfh;
+my $lock;
 if ( $options{lock_file} ) {
-    open($lockfh, ">$options{lock_file}") || die "failed to create lock file $options{lock_file}: $!";
+	$lock = $options{lock_file}
+	if (-e $lock) {
+	    _log("Another job is deleting pipeline $pipeline_id");
+	    mail_to();
+	    exit(3); 	#exit if another process is already running
+	}
+    open($lockfh, ">$lock") || die "failed to create lock file $lock: $!";
     print $lockfh "deleting";
+	chmod 0777, $lock;	# in case 3rd-party user needs to remove
+	close $lockfh;
 }
+
+$SIG{INT} = \&capture_ctrl_c;
 
 ## open the log if requested
 my $logfh;
 if (defined $options{log}) {
     open($logfh, ">$options{log}") || die "can't create log file: $!";
-    
+
     ## i'm setting autoflush here so that logs are written immediately
     ##  i was getting terrible lag otherwise.
     autoflush $logfh 1;
@@ -137,7 +148,7 @@ opendir( my $wfdh, $wf_dir );
 _log("INFO: scanning $wf_dir");
 for my $component ( readdir $wfdh ) {
     _log("INFO: scanning $wf_dir/$component");
-    
+
     for my $rundir ( glob "$wf_dir/$component/$options{pipeline_id}_*" ) {
 		$wf_flag = 0;
 		# See if this directory matches an excluded component
@@ -177,10 +188,7 @@ _log("INFO: recursively removing $wf_dir/pipeline/$options{pipeline_id}");
 &find_remove("$wf_dir/pipeline/$options{pipeline_id}") if (! $options{'dry_run'});
 
 ## remove the lock file
-if ( $options{lock_file} ) {
-    close $lockfh;
-    unlink $options{lock_file};
-}
+unlink $lock if ($lock)
 
 _log("INFO: delete operations complete");
 
@@ -205,27 +213,47 @@ sub parse_exclusions {
     return \@kept_dirs;
 }
 
+# Handle cases where the deletion process was interrupted
+sub capture_ctrl_c {
+    _log("Ctrl-C was hit.  Archiving will stop");
+    _log("removing lock $lock...");
+    unlink($lock) if ($lock);
+    mail_to();
+    exit(2);
+}
+
+sub mail_to {
+    my (undef, $mon, $day, undef, $year) = split(/\s+/, localtime);
+    my $subject = "Pipeline " . $pipeline . "--" . $mon.'_'.$day.'_'.$year . " Deletion Error Report";
+    my $email = 'sadkins@som.umaryland.edu';
+
+    if (defined $logfh) {
+   	 my $mail_cmd = "mail -s \"$subject\" $email < $options{'log'}";
+   	 system($mail_cmd);
+    }
+
+}
 
 sub _log {
     my $msg = shift;
     print "$msg\n";
-   # print $logfh "$msg\n" if $logfh;
+    print $logfh "$msg\n" if $logfh;
 }
 
 sub check_parameters {
-    
+
     ## pipeline_id and repository_root are required
     unless ( defined $options{pipeline_id} && $options{repository_root} ) {
         print STDERR "pipeline_id and repository_root options are required\n\n";
         pod2usage( {-exitval=>1, -verbose => 2, -output => \*STDOUT} );
     }
-    
+
     ## make sure the repository root has a Workflow directory
     unless ( -d "$options{repository_root}/workflow/runtime" ) {
         print STDERR "\n\nthe repository root passed doesn't contain a workflow/runtime directory.\n\n";
         exit(1);
     }
-    
+
     ## make sure the repository root has an output_repository directory
     unless ( -d "$options{repository_root}/output_repository" ) {
         print STDERR "\n\nthe repository root passed doesn't contain an output_repository directory.\n\n";
@@ -235,9 +263,9 @@ sub check_parameters {
 
 sub find_remove {
     my $dir = shift;
-    
+
     finddepth(
-        { 
+        {
             follow => 0,
             no_chdir => 1,
             wanted => \&remove_recursively
@@ -247,7 +275,7 @@ sub find_remove {
 
 sub remove_recursively {
     my $thing = $File::Find::name;
-    
+
     ## is it a file?
     if (-f $thing) {
         unless ( unlink($thing) ) {
@@ -260,10 +288,7 @@ sub remove_recursively {
         }
     } else {
         _log("ERROR: failed to delete $thing because I don't know what it is.");
+		unlink($lock) if ($lock)
     }
-    
+
 }
-
-
-
-

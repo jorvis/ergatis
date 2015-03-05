@@ -1,5 +1,6 @@
 next
 ---
+-Split pangenome_blast_parse into two components to use memory more efficiently
 -Updated CloVR-16S pipeline to support updated qiime with Illumina data
 -Updated chado_aengine_dumper.pl to a) optionally add intergenic_regions and b) be compatible with relevant updates in Manatee
 -Adjusted MakeFile.Pl to install new pangenome R scripts and keep directory structure
