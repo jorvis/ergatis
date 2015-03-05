@@ -111,9 +111,9 @@ if ( $options{'pipeline_id'} =~ /[^A-Z0-9]/i ) {
 my $lockfh;
 my $lock;
 if ( $options{lock_file} ) {
-	$lock = $options{lock_file}
+	$lock = $options{lock_file};
 	if (-e $lock) {
-	    _log("Another job is deleting pipeline $pipeline_id");
+	    _log("Another job is deleting pipeline $options{'pipeline_id'}");
 	    mail_to();
 	    exit(3); 	#exit if another process is already running
 	}
@@ -188,7 +188,7 @@ _log("INFO: recursively removing $wf_dir/pipeline/$options{pipeline_id}");
 &find_remove("$wf_dir/pipeline/$options{pipeline_id}") if (! $options{'dry_run'});
 
 ## remove the lock file
-unlink $lock if ($lock)
+unlink $lock if ($lock);
 
 _log("INFO: delete operations complete");
 
@@ -224,7 +224,7 @@ sub capture_ctrl_c {
 
 sub mail_to {
     my (undef, $mon, $day, undef, $year) = split(/\s+/, localtime);
-    my $subject = "Pipeline " . $pipeline . "--" . $mon.'_'.$day.'_'.$year . " Deletion Error Report";
+    my $subject = "Pipeline " . $options{'pipeline_id'} . "--" . $mon.'_'.$day.'_'.$year . " Deletion Error Report";
     my $email = 'sadkins@som.umaryland.edu';
 
     if (defined $logfh) {
