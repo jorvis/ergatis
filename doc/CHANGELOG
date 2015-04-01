@@ -1,5 +1,9 @@
 next
 ---
+ergatis-v2r19 (03-05-2015)
+------------------------------
+-Changed temp_dir option from signalp component from -d to -T to coincide with signalp executable update
+-Added functionality to delete_pipeline.pl including a dry-run and the ability to exclude components from deletion
 -Split pangenome_blast_parse into two components to use memory more efficiently
 -Updated CloVR-16S pipeline to support updated qiime with Illumina data
 -Updated chado_aengine_dumper.pl to a) optionally add intergenic_regions and b) be compatible with relevant updates in Manatee
