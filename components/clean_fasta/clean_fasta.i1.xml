@@ -15,7 +15,7 @@
             <name>remove CR line breaks</name>
             <state>incomplete</state>
             <executable>/usr/bin/perl</executable>
-			<arg>-pi -w -e 's/\r//g;' $;I_FILE_PATH$;</arg>
+			<arg>-p -w -e "s/\r//g" $;I_FILE_PATH$;</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;COMPONENT_NAME$;_$;I_FILE_BASE$;_tmp.fasta</value>
