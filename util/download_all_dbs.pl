@@ -35,8 +35,14 @@ B<--input_file,-i>
 B<--output_dir, -o>
 	Output dir location
 
-B<--locus_db>
+B<--perl_scripts_dir, -d>
+	Optional. The path of the chado2flatfile, chado2aengine_dumper, and other Perl scripts called.  All called scripts must be located in the same directory. (Default = .)
+
+B<--locus_db, -l>
     Optional. The name of the db of the locus identifiers to be used in the output (default = Tigr_moore)
+
+B<--locus_db_version, -L>
+	Optional.  The version type of locus db tag the locus_db identifier is (default = public_locus)
 
 B<--translation_table>
     Optional.  Numeric value for translations table (default = 11)
@@ -166,8 +172,10 @@ my $results = GetOptions (\%options,
                           'username|u=s',
                           'password|p=s',
                           'input_file|i=s',
-			  'output_dir|o=s',
+                          'output_dir|o=s',
                           'locus_db|l=s',
+						  'perl_scripts_dir|d=s',
+						  'locus_db_version|L=s',
                           'translation_table|r=i',
                           'feature_type|f=s',
                           'help'
@@ -204,7 +212,7 @@ while (<FHD>){
 
 	print "\tProcessing and writing pep, seq and coords files.\n";
 	#create pep, seq and coord file
-	$cmd = "./chado2flatfile.pl --database=$db --host=$options{host}".
+	$cmd = "$options{perl_scripts_dir}/chado2flatfile.pl --database=$db --host=$options{host}".
 		   " --username=$options{username} --password=$options{password} --database_type=mysql".
 		   " --locus_ids=$options{locus_db} --organism='$organism'".
 		   " -e $file_name.nucleotide.fsa -f $file_name.polypeptide.fsa -c $file_name.coord.txt";
@@ -217,11 +225,11 @@ while (<FHD>){
 
 	print "\tProcessing and writing tbl, gbk and gff files.\n";
 	#create annotation tbl file
-	$cmd = "./chado_aengine_dumper.pl --database=$db --server=$options{host}".
+	$cmd = "$options{perl_scripts_dir}/chado_aengine_dumper.pl --database=$db --server=$options{host}".
 		   " --user=$options{username} --password=$options{password} --database_type=mysql".
 		   " --output_directory=$out_dir --format='tbl' --locus_db=$options{locus_db}".
 		   " --organism='$organism' --translation_table=$options{translation_table}".
-		   " --cgi_mode=1 --output_filename=$abbr.annotation.tbl";
+		   " --output_filename=$abbr.annotation.tbl --locus_db_version=$options{locus_db_version}";
 
 	print "\t\t".$cmd."\n";
 	system($cmd);
@@ -230,11 +238,11 @@ while (<FHD>){
 	print "\tCompleted in $diff seconds\n";
 
 	#create annotation gbk file
-	$cmd = "./chado_aengine_dumper.pl --database=$db --server=$options{host}".
+	$cmd = "$options{perl_scripts_dir}/chado_aengine_dumper.pl --database=$db --server=$options{host}".
 		   " --user=$options{username} --password=$options{password} --database_type=mysql".
 		   " --output_directory=$out_dir --format='gbk' --locus_db=$options{locus_db}".
 		   " --organism='$organism' --translation_table=$options{translation_table}".
-		   " --cgi_mode=1 --output_filename=$abbr.annotation.gbk";
+		   " --output_filename=$abbr.annotation.gbk --locus_db_version=$options{locus_db_version}";
 
 	print "\t\t".$cmd."\n";
 	system($cmd);
@@ -243,11 +251,11 @@ while (<FHD>){
 	print "\tCompleted in $diff seconds\n";
 
 	#create annotation gff file
-	$cmd = "./chado_aengine_dumper.pl --database=$db --server=$options{host}".
+	$cmd = "$options{perl_scripts_dir}/chado_aengine_dumper.pl --database=$db --server=$options{host}".
 		   " --user=$options{username} --password=$options{password} --database_type=mysql".
 		   " --output_directory=$out_dir --format='gff' --locus_db=$options{locus_db}".
 		   " --organism='$organism' --translation_table=$options{translation_table}".
-		   " --cgi_mode=1 --output_filename=$abbr.annotation.gff";
+		   " --output_filename=$abbr.annotation.gff --locus_db_version=$options{locus_db_version}";
 
 	print "\t\t".$cmd."\n";
 	system($cmd);
@@ -257,7 +265,7 @@ while (<FHD>){
 	
 	print "\tProcessing and writing whole genome file.\n";
 	#extract sequence file
-	$cmd = "./extract_sequences_by_type.pl --database=$db --host=$options{host}".
+	$cmd = "$options{perl_scripts_dir}/extract_sequences_by_type.pl --database=$db --host=$options{host}".
 		   " --username=$options{username} --password=$options{password} --database_type=mysql".
 		   " --feature_type=$options{feature_type}".
 		   " --output_file=$file_name.whole_genome.txt --organism='$organism'";
@@ -270,7 +278,7 @@ while (<FHD>){
 
 	print "\tProcessing and writing annotation tab file.\n";
 	#create tab delimieted annotation file
-	$cmd = "./annotation_tab_file.pl --database=$db --host=$options{host}".
+	$cmd = "$options{perl_scripts_dir}/annotation_tab_file.pl --database=$db --host=$options{host}".
 		   " --username=$options{username} --password=$options{password} --database_type=mysql".
 		   " --output_file=$file_name.annotation.txt --organism='$organism'";
 
@@ -295,7 +303,9 @@ sub check_options {
         }
     }
 
-    $$options{locus_db} = 'TIGR_moore' unless defined $$options{database_type};
-    $$options{feature_type} = 'assembly' unless defined $$options{feature_type};
+	$$options{perl_scripts_dir} = '.' unless defined $$options{perl_scripts_dir};
+    $$options{locus_db} = 'TIGR_moore' unless defined $$options{locus_db};
+    $$options{locus_db_version} = 'public_locus' unless defined $$options{locus_db_version};
+	$$options{feature_type} = 'assembly' unless defined $$options{feature_type};
     $$options{translation_table} = 11 unless defined $$options{translation_table};
 }
