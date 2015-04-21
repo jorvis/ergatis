@@ -216,7 +216,7 @@ def is_accession_present(record, log_h):
 
 # Organism name and Features, Source, and Organism attributes need "-" or ":" replaced with "_"
 def replace_invalid_header_chars(record, log_h):   
-    pattern = re.compile("[^A-Za-z0-9_\s\.]")
+    pattern = re.compile("[^A-Za-z0-9_\s]")
     m1 = pattern.search(record.description)	#searching for pattern matches
     m2 = pattern.search(record.annotations['source'])
     m3 = pattern.search(record.annotations['organism'])

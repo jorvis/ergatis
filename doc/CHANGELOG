@@ -1,5 +1,6 @@
 next
 ---
+-Modified validate_genbank to remove periods from LOCUS
 -Fixed command line parameter bug in bsml2interevidence_fasta.pl
 
 ergatis-v2r19 (03-05-2015)
