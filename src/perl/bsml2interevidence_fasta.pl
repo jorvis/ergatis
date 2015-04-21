@@ -273,6 +273,9 @@ sub check_options {
    } else {
        die("Either input_list or input_bsml option is required");
    }
+   if(defined($opts->{'length_cutoff'})) {
+	$length_cutoff = $opts->{'length_cutoff'};	
+   }
 
 }
 
