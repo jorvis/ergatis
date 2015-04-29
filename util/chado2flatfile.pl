@@ -286,8 +286,8 @@ sub print_coords_file {
 	     $data->{$uniquename}->{'fmin'} = "1>";
 	}
         my ($start, $end, $str) = ( $data->{$uniquename}->{'strand'} == -1 ) ? 
-            ( $data->{$uniquename}->{'fmax'}, $data->{$uniquename}->{'fmin'}, "-" ) :
-            ( $data->{$uniquename}->{'fmin'}, $data->{$uniquename}->{'fmax'}, "+" );
+            ( $data->{$uniquename}->{'fmax'}, $data->{$uniquename}->{'fmin'} + 1, "-" ) :
+            ( $data->{$uniquename}->{'fmin'} + 1, $data->{$uniquename}->{'fmax'}, "+" );
         print $crd "$start\t$end\t$str\n";
     }
 
