@@ -19,6 +19,7 @@ chado2flatfile.pl - Description
        --nongene_file=/path/to/file.seq
        --intergenic_file=/path/to/file.ign
      [ --locus_ids=TIGR_moore
+       --pmarks_present
        --log=/path/to/file.log
        --debug=4
        --help
@@ -59,7 +60,7 @@ B<--upstream_bases,-U>
 B<--downstream_bases,-D>
 	The number of bases downstream to show in the nongene file.  Will default to 0 if not supplied
 
-B<--contigs,-c>
+B<--pmarks_present,-P>
     If enabled, will modify upstream/downstream bases to stop early when pmarks are encountered.
 
 B<--nongene_file, -n>
@@ -162,7 +163,7 @@ my $results = GetOptions (\%options,
                           'coords_file|c=s',
 						  'upstream_bases|U=i',
 						  'downstream_bases|D=i',
-                          'contigs|c',
+                          'pmarks_present|P',
 						  'nongene_file|n=s',
 						  'intergenic_file|i=s',
                           'locus_ids|l=s',
@@ -585,7 +586,7 @@ sub check_options {
 	$nongene = $opts->{'nongene_file'} if ( $opts->{'nongene_file'} );
 	$upstream = (defined $opts->{'upstream_bases'}) ? $opts->{'upstream_bases'} : 0;
 	$downstream = (defined $opts->{'downstream_bases'}) ? $opts->{'downstream_bases'} : 0;
-    $pmarks = 1 if (defined $opts->{'contigs'});
+    $pmarks = 1 if (defined $opts->{'pmarks_present'});
 
     if ($upstream < 0 || $downstream < 0) {
         die ("Upstream and downstream base values must be positive integers");
