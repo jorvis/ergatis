@@ -14,7 +14,12 @@ chado2flatfile.pl - Description
        --pep_file=/path/to/file.pep
        --seq_file=/path/to/file.seq
        --coords_file=/path/to/file.coords
+       --upstream_bases=100
+       --downstream_bases=100
+       --nongene_file=/path/to/file.seq
+       --intergenic_file=/path/to/file.ign
      [ --locus_ids=TIGR_moore
+       --pmarks_present
        --log=/path/to/file.log
        --debug=4
        --help
@@ -46,6 +51,21 @@ B<--coords_file,-c>
 B<--locus_ids>
     The name of the db of the locus identifiers to be used in the output
 
+B<--intergenic_file,-i>
+	The output intergenic region file name.
+
+B<--upstream_bases,-U>
+	The number of bases upstream to show in the nongene file.  Will default to 0 if not supplied
+
+B<--downstream_bases,-D>
+	The number of bases downstream to show in the nongene file.  Will default to 0 if not supplied
+
+B<--pmarks_present,-P>
+    If enabled, will modify upstream/downstream bases to stop early when pmarks are encountered.
+
+B<--nongene_file, -n>
+	The output upstream or downstream file name.
+
 B<--help,-h>
     Print this message
 
@@ -53,15 +73,15 @@ B<--help,-h>
 
     Reads information from a chado database and creates a pep file, seq file and/or coords file
     for the features described in the database.
- 
+
 =head1  INPUT
-    
+
     The only input is the name of database, host, username and password.
 
 =head1 OUTPUT
 
     All output files are sorted first by molecule located on and then by featureloc.fmax
-    
+
     pep file:
     Multi fasta file of peptides. Headers have identifiers (feature.uniquename, unless --locus_ids option is used)
     followed by the common name (featureprop.value for 'gene_product_name' cvterm) then followed by the
@@ -100,9 +120,9 @@ B<--help,-h>
     ex:
     hik_1522	hik.assembly.1   1	1021
     hik_1013	hik.assembly.1   1029	1143
-    
+
     ...
-    
+
 
 =head1  CONTACT
 
@@ -126,9 +146,12 @@ my $host;
 my $username;
 my $password;
 my ($pep, $seq, $coords);
+my $intergenic;
+my ($upstream, $downstream, $nongene);
 my %options;
 my $peptide_info;
 my $locus = 0;
+my $pmarks = 0;
 
 my $results = GetOptions (\%options,
                           'database|d=s',
@@ -138,6 +161,11 @@ my $results = GetOptions (\%options,
                           'seq_file|e=s',
                           'pep_file|f=s',
                           'coords_file|c=s',
+						  'upstream_bases|U=i',
+						  'downstream_bases|D=i',
+                          'pmarks_present|P',
+						  'nongene_file|n=s',
+						  'intergenic_file|i=s',
                           'locus_ids|l=s',
                           'help'
                           );
@@ -167,6 +195,21 @@ if( $coords ) {
     &print_coords_file( $peptide_info, $coords );
 }
 
+if ($intergenic) {
+#	print "creating .ign file\n";
+	my $cds_info = get_cds_info();
+    my $mol_info = get_mol_info();
+	print_intergenic_file( $peptide_info, $cds_info, $mol_info, $intergenic );
+}
+
+if ($nongene) {
+#	print "creating .updown file\n";
+	my $cds_info = get_cds_info();
+    my $mol_info = get_mol_info();
+    my $pmark_info = get_pmark_info();
+	print_upstream_downstream_file( $upstream, $downstream, $peptide_info, $cds_info, $mol_info, $pmark_info, $nongene );
+}
+
 sub get_polypeptide_to_locus_lookup {
 
     #check to see if the db is there
@@ -180,7 +223,7 @@ sub get_polypeptide_to_locus_lookup {
     my $tmp_aref = $dth->fetchall_arrayref();
     $dth->finish();
     die("Could not find db $locus in database. Please check the database name for the locus identifiers desired ".
-        "and change the value of the --locus_ids option") 
+        "and change the value of the --locus_ids option")
         if( @{$tmp_aref} == 0 );
 
     #make gene -> polypeptide lookup
@@ -200,7 +243,7 @@ sub get_polypeptide_to_locus_lookup {
 
     my $tth = $dbh->prepare( $t_query );
     $tth->execute();
-    
+
     my $lookup = {};
     while( my $row = $tth->fetchrow_arrayref() ) {
         $lookup->{$row->[0]} = $row->[1];
@@ -220,7 +263,7 @@ sub get_polypeptide_to_locus_lookup {
 
     my $lth = $dbh->prepare( $l_query );
     $lth->execute();
-    
+
     my $retval = {};
     while( my $row = $lth->fetchrow_arrayref() ) {
         my $pid = $lookup->{$row->[0]};
@@ -231,7 +274,7 @@ sub get_polypeptide_to_locus_lookup {
     $lth->finish();
 
     return $retval;
-    
+
 }
 
 sub print_pep_file {
@@ -245,7 +288,7 @@ sub print_pep_file {
         $print_id = $locus_lookup->{$uniquename} if( $locus );
 
         my $seq = $polypeptide->{'residues'};
-        
+
         #skip if we don't have any sequence information
         unless( defined( $seq ) && length($seq) > 0 ) {
             warn("Could not find sequence information for polypeptide $uniquename");
@@ -255,9 +298,9 @@ sub print_pep_file {
         print $pep ">$print_id\t".$polypeptide->{'value'}."\t".$polypeptide->{'molname'}."\n";
         print $pep $1."\n" while( $seq =~ /(\w{1,60})/g );
     }
-    
+
     close($pep);
-    
+
 }
 
 sub by_molecule_then_fmax {
@@ -270,7 +313,7 @@ sub by_molecule_then_fmax {
 
 sub print_coords_file {
     my ($data, $file) = @_;
-    
+
     my $crd = open_file( $file, 'out' );
 
     foreach my $polypeptide ( sort by_molecule_then_fmax values %{$data} ) {
@@ -279,20 +322,20 @@ sub print_coords_file {
         $print_id = $locus_lookup->{$uniquename} if( $locus );
         print $crd "$print_id\t".$polypeptide->{'molname'}."\t";
 	if(($data->{$uniquename}->{'strand'} == 1) && ($data->{$uniquename}->{'fmin'} < 0)) {
-##	If the "<" symbol precedes a base span, the sequence is partial on the 5' end (e.g., CDS  <1..206).  
+##	If the "<" symbol precedes a base span, the sequence is partial on the 5' end (e.g., CDS  <1..206).
 	     $data->{$uniquename}->{'fmin'} = "<1";
 	} elsif(($data->{$uniquename}->{'strand'} == -1) && ($data->{$uniquename}->{'fmin'} < 0)) {
 ##	If the ">" symbol follows a base span, the sequence is partial on the 3' end (e.g., CDS   435..915>).
 	     $data->{$uniquename}->{'fmin'} = "1>";
 	}
-        my ($start, $end, $str) = ( $data->{$uniquename}->{'strand'} == -1 ) ? 
-            ( $data->{$uniquename}->{'fmax'}, $data->{$uniquename}->{'fmin'}, "-" ) :
-            ( $data->{$uniquename}->{'fmin'}, $data->{$uniquename}->{'fmax'}, "+" );
+        my ($start, $end, $str) = ( $data->{$uniquename}->{'strand'} == -1 ) ?
+            ( $data->{$uniquename}->{'fmax'}, $data->{$uniquename}->{'fmin'} + 1, "-" ) :
+            ( $data->{$uniquename}->{'fmin'} + 1, $data->{$uniquename}->{'fmax'}, "+" );
         print $crd "$start\t$end\t$str\n";
     }
 
     close($crd);
-    
+
 }
 
 sub print_seq_file {
@@ -316,9 +359,79 @@ sub print_seq_file {
         print $seq ">$print_id\t".$pep_data->{$uniquename}->{'value'}."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
         print $seq $1."\n" while( $cds_seq =~ /(\w{1,60})/g );
     }
-    
+
     close($seq);
-    
+
+}
+
+sub print_upstream_downstream_file {
+	my ($up, $down, $pep_data, $cds_data, $mol_data, $pmark_data, $file) = @_;
+	my $out = open_file ( $file, 'out' );
+
+	foreach my $polypeptide ( sort by_molecule_then_fmax values %{$pep_data} ) {
+        my $uniquename = $polypeptide->{'uniquename'};
+        my $cds_unq = $cds_data->{$uniquename}->{'CDS'} || die "CDS not defined for uniquename $uniquename";
+        my $mol = $cds_data->{$uniquename}->{'molecule'};
+        my $mol_seq = $mol_data->{$mol}->{'residues'};
+        my $fmin = $pep_data->{$uniquename}->{'fmin'};
+        my $fmax = $pep_data->{$uniquename}->{'fmax'};
+
+        # Print either locus_id or CDS ID
+        my $print_id = $cds_unq."\t".$uniquename;
+        $print_id = $locus_lookup->{$uniquename} if( $locus );
+        die("Could not find locus id for $uniquename") if( !defined( $print_id ) );
+
+        my ($upstream, $print_up, $downstream, $print_down);
+
+        # TODO:  If circular genome, wrap around to other end
+
+        # Print upstream FASTA seq followed by downstream FASTA
+        if ($up > 0){
+            my $offset_up = $up;
+            if ($pmarks) {
+                my $up_coord = $fmin - $up;
+                # Sort for highest to lowest fmax values
+                foreach my $row (sort {$b->[1] <=> $a->[1]} @$pmark_data){
+                    # Pmark fmax is between CDS fmin and the upstream coord
+                    if ($row->[1] < $fmin && $row->[1] > $up_coord){
+                        # Only grab upstream bases up to the end of the previous pmark
+                        $offset_up = $fmin - $row->[1];
+                        last;
+                    }
+                }
+            }
+            $upstream = substr($mol_seq, 0, $fmin);    # get all before fmin
+            $upstream = substr($upstream, -($offset_up));  # get the upstream part
+            $print_up = "UP_".$print_id;
+            print $out ">$print_up"."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+            print $out $1."\n" while( $upstream =~ /(\w{1,60})/g );
+        }
+        if ($down > 0){
+            my $offset_down = $down;
+            if ($pmarks) {
+                my $down_coord = $fmax + $down;
+                # Sort for lowest to highest fmin values
+                foreach my $row (sort {$a->[0] <=> $b->[0]} @$pmark_data){
+                    # Pmark fmin is between CDS fmax and the upstream coord
+                    if ($row->[0] > $fmax && $row->[0] < $down_coord) {
+                        # Only grab downstream bases up to the beginning of the next pmark
+                        $offset_down = $row->[0] - $fmax;
+                        last;
+                    }
+                }
+            }
+            $downstream = substr($mol_seq, $fmax, $offset_down);
+            $print_down = "DOWN_".$print_id;
+            print $out ">$print_down"."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+            print $out $1."\n" while( $downstream =~ /(\w{1,60})/g );
+        }
+
+	}
+	close($out);
+}
+
+sub print_intergenic_file {
+	#TODO;
 }
 
 sub print_data_files {
@@ -336,7 +449,7 @@ sub print_data_files {
         print PEP $1."\n" while( $seq =~ /(\w{1,60})/g );
 
         print CRD "$uniquename\t";
-        my ($start, $end) = ( $data->{$uniquename}->{'strand'} == -1 ) ? 
+        my ($start, $end) = ( $data->{$uniquename}->{'strand'} == -1 ) ?
             ( $data->{$uniquename}->{'fmax'}, $data->{$uniquename}->{'fmin'} ) :
             ( $data->{$uniquename}->{'fmin'}, $data->{$uniquename}->{'fmax'} );
         print CRD "$start\t$end\n";
@@ -359,7 +472,7 @@ sub connect_to_db {
 }
 
 sub get_cds_info {
-    
+
     my $query = "SELECT p.uniquename, c.uniquename, c.residues, m.uniquename ".
         "FROM feature c, feature p, feature t, cvterm ct, cvterm cc, cvterm cp, feature_relationship frpt, feature_relationship frct, feature m, featureloc fl ".
         "WHERE frpt.subject_id = p.feature_id ".
@@ -416,7 +529,41 @@ sub get_polypeptide_info {
     my $retval = $sth->fetchall_hashref('uniquename');
 #    print "Fetched the rows\n";
     return $retval;
-    
+
+}
+
+# Retrieve information for all assemblies
+sub get_mol_info {
+
+    my $query = "SELECT m.uniquename, m.residues ".
+        "FROM feature m, cvterm cm ".
+        "WHERE m.type_id = cm.cvterm_id " .
+        "AND cm.name = 'assembly'";
+
+    my $sth = $dbh->prepare($query);
+    $sth->execute();
+
+    my $retval = {};
+    while( my $row = $sth->fetchrow_arrayref ) {
+        $retval->{$row->[0]}->{'residues'} = $row->[1];
+    }
+
+    return $retval;
+}
+
+sub get_pmark_info {
+
+    my $query = "SELECT fl.fmin, fl.fmax ".
+        "FROM feature f, featureloc fl, cvterm cv ".
+        "WHERE f.type_id = cv.cvterm_id ".
+        "AND cv.name = 'pmark_spacer' ".
+        "AND f.feature_id = fl.feature_id";
+
+    my $sth = $dbh->prepare($query);
+    $sth->execute();
+
+    my $retval = $sth->fetchall_arrayref;
+    return $retval;
 }
 
 sub check_options {
@@ -435,4 +582,13 @@ sub check_options {
     $seq = $opts->{'seq_file'} if( $opts->{'seq_file'} );
     $coords = $opts->{'coords_file'} if( $opts->{'coords_file'} );
     $locus = $opts->{'locus_ids'} if( $opts->{'locus_ids'} );
+	$intergenic = $opts->{'intergenic_file'} if ( $opts->{'intergenic_file'} );
+	$nongene = $opts->{'nongene_file'} if ( $opts->{'nongene_file'} );
+	$upstream = (defined $opts->{'upstream_bases'}) ? $opts->{'upstream_bases'} : 0;
+	$downstream = (defined $opts->{'downstream_bases'}) ? $opts->{'downstream_bases'} : 0;
+    $pmarks = 1 if (defined $opts->{'pmarks_present'});
+
+    if ($upstream < 0 || $downstream < 0) {
+        die ("Upstream and downstream base values must be positive integers");
+    }
 }
