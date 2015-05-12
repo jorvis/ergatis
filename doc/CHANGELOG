@@ -1,5 +1,6 @@
 next
 ---
+-Added script to create database in CloVR-microbe
 -Modified validate_genbank to remove periods from LOCUS
 -Fixed command line parameter bug in bsml2interevidence_fasta.pl
 
