@@ -15,7 +15,7 @@ This script can be divided into 2 parts essentially:
 One can view the changes made in genbank_changelog.txt located in the specified output path.
 
 --genbank_file, -g => Path to a Genbank-formatted file.  Genbank file must correspond to DNA sequences
---output_path, -o => Directory path to write output.  
+--output_path, -o => Directory path to write output.
 --log_file, -l => Name of the changelog file (only the name).
 --debug, -d => Run in debug mode
 """
@@ -35,7 +35,7 @@ from Bio.Alphabet import IUPAC
 #      FUNCTIONS      #
 #############
 
-# Some files need to have changes made so they won't fail during Biopython parsing. 
+# Some files need to have changes made so they won't fail during Biopython parsing.
 # This is where we fix that
 def prevalidation(genbank, prepare, log_h):
     line_count = 0;	# Keeps track of char count at end of LOCUS line
@@ -50,7 +50,7 @@ def prevalidation(genbank, prepare, log_h):
     genbank_h = open_file(genbank)
     genbank_h2 = open_file(genbank)	# Will keep track of the current ACCESSION line
     out_h = open(out_file, "w")
-    
+
     # Probably could put this for loop in a function for a cleaner appearance
     for line in iter(genbank_h.readline,''):	# Iterate until EOF
         # Deal with things if LOCUS line is encountered
@@ -63,17 +63,17 @@ def prevalidation(genbank, prepare, log_h):
             elif re.search("rna", line):
                 #log_h.write("Found 'rna' in LOCUS line and replacing with 'RNA'.\n")
                 line = re.sub("rna", "RNA", line)	# scope of program is not RNA but still need capitalized for parsing later
-                
+
             if re.search("\.pseudomolecule", line):
                 #log_h.write("Removing 'pseudomolecule' from locus name in LOCUS line as locus must be less than 16 characters. \n")
                 line = re.sub("\.pseudomolecule", "", line)
-                
+
             m = re.match("LOCUS\s+(\S+)\s+", line)
             id = m.group(1)
             id_tmp = id
             id = begins_with_digit(id, log_h)
             line = re.sub(id_tmp, id, line)
-            
+
             # When we encounter a LOCUS, we need to get accession ID and modify name if starts with digit
             genbank_h2.seek(line_count)	# Start at current LOCUS line to make sure we get right corresponding ACCESSION line
             line2 = genbank_h2.readline()
@@ -89,9 +89,9 @@ def prevalidation(genbank, prepare, log_h):
             # Did accession get "ID" written in front?
             if accession != acc_tmp:
                 id_flag = 1	# Remember to change this in the line in the genbank file later
-                
-            # Biopython fails if locus name is longer than 16 characters    
-            if len(id) > 16:	
+
+            # Biopython fails if locus name is longer than 16 characters
+            if len(id) > 16:
                 #log_h.write("Locus name " + id + " is longer than 16 characters... attempting to substitute with accession ID. \n")
                 if len(accession) > 16:	# pointless to substitute if accession causes Biopython to fail too
                     sys.stderr.write("Cannot use Accession ID for substitution as the ID is longer than 16 chracters.  Please consult NCBI Genbank formatting standards. Locus line (" + line + ")\nFile: " + genbank + "\n")
@@ -115,15 +115,15 @@ def prevalidation(genbank, prepare, log_h):
             log_h.write("NEW ACCESSION: " + line.rstrip() + "\n")
         # end if
 
-        if line.startswith("VERSION") and id_flag:	# Must change Version ID to match Accession 
+        if line.startswith("VERSION") and id_flag:	# Must change Version ID to match Accession
             log_h.write("OLD VERSION: " + line.rstrip() + "\n")
             line = re.sub("VERSION     ", "VERSION     ID", line)
             id_flag = 0
             log_h.write("NEW VERSION: " + line.rstrip() + "\n")
-            
+
         out_h.write(line)
-    # end for-loop    
-    
+    # end for-loop
+
     #add other rules that would fail during Biopython parsing if needed
     genbank_h.close()
     genbank_h2.close()
@@ -153,7 +153,7 @@ def validate_genbank(genbank, valid, log_h):
         replace_invalid_sequence_chars(gb_record, log_h)
         if len(gb_record.features) > 0:
             are_gene_features_present(gb_record, log_h)
-            remove_trna_and_rrna_features(gb_record, log_h)            
+#            remove_trna_and_rrna_features(gb_record, log_h)
             remove_genes_from_circular_starting_at_end(gb_record, log_h)
             fix_db_xref(gb_record, log_h)
         else:
@@ -215,7 +215,7 @@ def is_accession_present(record, log_h):
 
 
 # Organism name and Features, Source, and Organism attributes need "-" or ":" replaced with "_"
-def replace_invalid_header_chars(record, log_h):   
+def replace_invalid_header_chars(record, log_h):
     pattern = re.compile("[^A-Za-z0-9_\s]")
     m1 = pattern.search(record.description)	#searching for pattern matches
     m2 = pattern.search(record.annotations['source'])
@@ -228,28 +228,28 @@ def replace_invalid_header_chars(record, log_h):
         log_h.write("NEW VALUE: " + record.description + "\n")
     if m2:
         log_h.write("Changing SOURCE...\nOLD VALUE: " + record.annotations['source'] + "\n")
-        record.annotations['source'] = pattern.sub("_", record.annotations['source'])   	
-        log_h.write("NEW VALUE: " + record.annotations['source'] + "\n")    
+        record.annotations['source'] = pattern.sub("_", record.annotations['source'])
+        log_h.write("NEW VALUE: " + record.annotations['source'] + "\n")
     if m3:
         log_h.write("Changing ORGANISM...\nOLD VALUE: " + record.annotations['organism'] + "\n")
-        record.annotations['organism'] = pattern.sub("_", record.annotations['organism'])    	    
+        record.annotations['organism'] = pattern.sub("_", record.annotations['organism'])
         log_h.write("NEW VALUE: " + record.annotations['organism'] + "\n")
     if m4:
         log_h.write("Changing LOCUS name...\nOLD VALUE: " + record.name + "\n")
         record.name = pattern.sub("_", record.name)
-        log_h.write("NEW VALUE: " + record.name + "\n")    
- 	    
+        log_h.write("NEW VALUE: " + record.name + "\n")
+
     # Deal with pattern changes in SeqRecord features
     for feature in record.features:
         if feature.type == 'source':
             assert len(feature.qualifiers['organism']) == 1, "This record has more than one organism listed in the FEATURES.source entry"
             if 'organism' in feature.qualifiers:
                 # Qualifiers return as lists, but organism/strain should only have 1 element
-                m6 = pattern.search(feature.qualifiers['organism'][0])	
+                m6 = pattern.search(feature.qualifiers['organism'][0])
                 if m6:
                     log_h.write("Changing FEATURES.source.organism...\nOLD VALUE: " + feature.qualifiers['organism'][0] + "\n")
-                    feature.qualifiers['organism'][0] = pattern.sub("_", feature.qualifiers['organism'][0])    	    
-                    log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")                     
+                    feature.qualifiers['organism'][0] = pattern.sub("_", feature.qualifiers['organism'][0])
+                    log_h.write("NEW VALUE: " + feature.qualifiers['organism'][0] + "\n")
             if 'strain' in feature.qualifiers:
                 m7 = pattern.search(feature.qualifiers['strain'][0])
      	        if m7:
@@ -257,27 +257,27 @@ def replace_invalid_header_chars(record, log_h):
                     feature.qualifiers['strain'][0] = pattern.sub("_", feature.qualifiers['strain'][0])
                     log_h.write("NEW VALUE: " + feature.qualifiers['strain'][0] + "\n")
         break	# Break 'for' loop after source-type features are read
-    	                                                      	    
-    return    
+
+    return
 
 # Non- "AGCT" characters should be replaced with "N"
 def replace_invalid_sequence_chars(record, log_h):
     seq = str(record.seq)
-	
+
 	# If no sequence is present, the BioPython parser will create a sequence of N's to take its place
     m1 = re.search("[AGCT]", seq.upper())
     if not m1:
     	sys.stderr.write("No ORIGIN sequence present for " + record.name + "\n")
     	sys.exit(1)
-    	
-    # Replace all non-AGCT chars with N if any exist.	
+
+    # Replace all non-AGCT chars with N if any exist.
     p = re.compile("[^AGCT]")
     count = p.findall(seq.upper())
     if len(count) > 0:
         log_h.write("Found " + str(len(count)) + " instance(s) of non-ACGT characters present in the sequence...replaceing those characters with 'N'.\n")
         seq = p.sub("N", seq.upper())
         record.seq = Seq(seq.lower(), IUPAC.ambiguous_dna)	# Believe these are parsed by SeqIO as IUPACAmbiguousDNA alphabets
-        
+
     #print record.seq
     #print record.seq.alphabet
     return
@@ -290,7 +290,7 @@ def are_gene_features_present(record, log_h):
     log_h.write("No gene annotation features present!!!\n")
     return
 
-# Remove any features classified as tRNA or rRNA from the feature dictionary    
+# Remove any features classified as tRNA or rRNA from the feature dictionary
 def remove_trna_and_rrna_features(record, log_h):
     trna_count = 0
     rrna_count = 0
@@ -318,11 +318,11 @@ def remove_trna_and_rrna_features(record, log_h):
                 break
         if remove_flag == 0:
             new_features.append(feature)
-        
-    log_h.write("There were " + str(trna_count) + " instances of tRNA features removed and " + str(rrna_count) + " instances of rRNA features removed.\n") 
+
+    log_h.write("There were " + str(trna_count) + " instances of tRNA features removed and " + str(rrna_count) + " instances of rRNA features removed.\n")
     record.features = new_features
     return
-    
+
 # If the genbank file has joined DNA coordinates that start at the end of a sequence
 # and continue at the beginning (in circular DNA) then remove that SeqFeature
 def remove_genes_from_circular_starting_at_end(record, log_h):
@@ -339,7 +339,7 @@ def remove_genes_from_circular_starting_at_end(record, log_h):
                             #print feature
                             flag = 1
                             if 'locus_tag' in feature.qualifiers:
-                                log_h.write("Feature type " + feature.type + " with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
+                                log_h.write("Feature type " + feature.type + " with locus_tag '" + feature.qualifiers['locus_tag'][0] +
     	                        "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
     	                    else:	# could not find locus_tag (i.e. misc features section)
     	                        log_h.write("Feature type " + feature.type + " with coordinates " + str(feature.location) +
@@ -350,11 +350,11 @@ def remove_genes_from_circular_starting_at_end(record, log_h):
                             #print feature
                             flag = 1
                             if 'locus_tag' in feature.qualifiers:
-                                log_h.write("Feature type " + feature.type + " with locus_tag '" + feature.qualifiers['locus_tag'][0] + 
+                                log_h.write("Feature type " + feature.type + " with locus_tag '" + feature.qualifiers['locus_tag'][0] +
                                 "' has coordinates that run from the end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
                             else:
     	                        log_h.write("Feature type " + feature.type + " with coordinates " + str(feature.location) +
-    	                        " runs from end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")                                
+    	                        " runs from end of the circular DNA back to the beginning.  Deleting feature since this may cause issues later on.\n")
                             break
             if flag == 0:
                 f_list.append(feature)
@@ -362,9 +362,9 @@ def remove_genes_from_circular_starting_at_end(record, log_h):
             f_list.append(feature)
     record.features = f_list	# assign updated feature list to the record
     return
-    
-# If db_xref is not in the form of 'database:identifier', change it to be that.    
-def fix_db_xref(record, log_h):	
+
+# If db_xref is not in the form of 'database:identifier', change it to be that.
+def fix_db_xref(record, log_h):
     for feature in record.features: # a list of SeqFeature objects
     	if 'db_xref' not in feature.qualifiers:
     	    continue
@@ -379,21 +379,21 @@ def fix_db_xref(record, log_h):
             db.append(dbxref)
         feature.qualifiers['db_xref'] = db
         #print feature.qualifiers['db_xref']
-    return    
-    
-# Make formats to organism name, such as truncating and word-wrap for overwriting the name later    
+    return
+
+# Make formats to organism name, such as truncating and word-wrap for overwriting the name later
 def format_organism_name(organism, log_h):
     org = organism
     MAX_WIDTH = 80	# Maximum width of a line in Genbank
     HEADER_WIDTH = 12	# Width of the header field in Genbank
     TAG = "  ORGANISM"	# Field name with appropriate spacing in front
     max_len = MAX_WIDTH - HEADER_WIDTH
-    
+
     #print "ORG_NAME_LEN\t" + str(len(org))
-    
-	# Getting much of this code from http://biopython.org/DIST/docs/api/Bio.SeqIO.InsdcIO-pysrc.html    
+
+	# Getting much of this code from http://biopython.org/DIST/docs/api/Bio.SeqIO.InsdcIO-pysrc.html
     if len(org) > max_len:
-        t_org = org[:(max_len - 4)] + "..." 
+        t_org = org[:(max_len - 4)] + "..."
         #print "T_ORG\t" + t_org
         org_lines = split_name_over_lines(org, max_len)
         n_org = ("\n" + " " * HEADER_WIDTH).join(org_lines)
@@ -402,31 +402,31 @@ def format_organism_name(organism, log_h):
     else:
     	t_org = org
     	n_org = org
-    	
-    new = TAG.ljust(HEADER_WIDTH) + n_org + "\n" # Left justify TAG, and add word-wrapped organism line(s) after	
+
+    new = TAG.ljust(HEADER_WIDTH) + n_org + "\n" # Left justify TAG, and add word-wrapped organism line(s) after
     truncated = TAG.ljust(HEADER_WIDTH) + t_org + "\n"	# Left justify TAG, and add truncated organism line after
     #print "NEW\n" + new
     #print "TRUNC\n" + truncated
     return new, truncated
-    
+
 # Takes a given field and splits it into word-wrapped multiple lines given a certain field max width
 def split_name_over_lines(field, max_len):
     words = field.split()	# Split field into words to prevent splliting a word across 2 lines
-    text = "" 
+    text = ""
     while words and len(text) + 1 + len(words[0]) <= max_len:	# Use words to build line as close to max_len as possible
         text += " " + words.pop(0)	# Build the line while popping off word list
         text = text.strip()
     answer = [text]	# Assign each formatted line to a list
     while words:	# Are there enough words to fill another line?
-        text = words.pop(0) 
-        while words and len(text) + 1 + len(words[0]) <= max_len: 
-            text += " " + words.pop(0) 
-            text = text.strip() 
-        answer.append(text) 
+        text = words.pop(0)
+        while words and len(text) + 1 + len(words[0]) <= max_len:
+            text += " " + words.pop(0)
+            text = text.strip()
+        answer.append(text)
     assert not words	# Sanity check to ensure no words were left behind
     return answer
 
-    
+
 # Using our up-to-date Genbank record information to write a new Genbank file
 def write_output(record_list, outfile):
     out_h = open(outfile, "w")
@@ -445,7 +445,7 @@ def overwrite_organism(outfile, organism):
     HEADER_WIDTH = 12
     temp = re.sub("\.gbk", ".tmp", outfile)
     os.rename(outfile, temp)	#move our output file to a temp path
-    in_h = open (temp, "r") 
+    in_h = open (temp, "r")
     out_h = open(outfile, "w")
     for line in in_h:
         for org in organism:
@@ -455,12 +455,12 @@ def overwrite_organism(outfile, organism):
 	    out_h.write(line)
     in_h.close
     out_h.close
-    
+
 # This will move the final Genbank file to the output directory and remove the dirs and files that
 # ultimately will not be used downstream
 def delete_extra_content(outdir, base_gbk, log_h):
     preval = outdir + "/prevalidate/"
-    preval_gbk = preval + base_gbk + ".gbk"        
+    preval_gbk = preval + base_gbk + ".gbk"
     val = outdir + "/validate/"
     val_tmp = val + base_gbk + ".tmp"
     val_gbk = val + base_gbk + ".gbk"	# Keeping this, moving up a directory
@@ -471,7 +471,7 @@ def delete_extra_content(outdir, base_gbk, log_h):
     sys.stdout.write("Moved " + val_gbk + " to " + final_gbk + "\n")
     os.rmdir(preval)
     os.rmdir(val)
-    sys.stdout.write("Removed unnecessary files and directories\n")        
+    sys.stdout.write("Removed unnecessary files and directories\n")
     return
 
 #######
@@ -497,7 +497,7 @@ def main():
     gbk = options.genbank_file
     gbk = gbk.rstrip()
 #    base_gbk = re.sub("\..+", "", basename(gbk))
-    base_gbk = splitext(basename(gbk))[0]    
+    base_gbk = splitext(basename(gbk))[0]
     # Create output directory if it doesn't exist.
     outdir = options.output_path
     if not os.path.exists(outdir):
@@ -508,7 +508,7 @@ def main():
         os.mkdir(pre, 0777)
     if not os.path.exists(val):
         os.mkdir(val, 0777)
-    
+
     # Initialize logging
     if options.log_file:
         log = outdir + "/" + options.log_file
@@ -517,23 +517,23 @@ def main():
     log_h = open(log, "w")
     if options.debug == True:
         sys.stdout.write("DEBUG mode enabled\n")
-        
+
     pattern = re.compile("\.gb\w*")
     match = pattern.search(gbk)
     if not match:
         sys.stderr.write("File " + gbk + " does not have a proper Genbank file extension (.gbk or .gb)... skipping\n")
         sys.exit(1)
-    log_h.write("Now preparing " + gbk + " for validation\n")	
+    log_h.write("Now preparing " + gbk + " for validation\n")
     new_gbk = prevalidation(gbk, pre, log_h)
     log_h.write("Now validating " + gbk + " ...\n")
     validate_genbank(new_gbk, val, log_h)
-	
+
     sys.stdout.write("Finished validating " + gbk + "\n")
-    
+
     # Leave extra files intact if debug mode is enabled
     if options.debug == False:
         delete_extra_content(outdir, base_gbk, log_h)
-    
+
     log_h.write("\n---------------\n\n")
     log_h.close()
 
