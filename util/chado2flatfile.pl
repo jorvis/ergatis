@@ -52,7 +52,7 @@ B<--locus_ids>
     The name of the db of the locus identifiers to be used in the output
 
 B<--intergenic_file,-i>
-	The output intergenic region file name.
+	The output intergenic region file name.  Output will be 5'->3'.
 
 B<--upstream_bases,-U>
 	The number of bases upstream to show in the nongene file.  Will default to 0 if not supplied
@@ -64,7 +64,7 @@ B<--pmarks_present,-P>
     If enabled, will modify upstream/downstream bases to stop early when pmarks are encountered.
 
 B<--nongene_file, -n>
-	The output upstream or downstream file name.
+	The output upstream/downstream file name.  Output will be 5'->3'.
 
 B<--help,-h>
     Print this message
@@ -199,7 +199,8 @@ if ($intergenic) {
 #	print "creating .ign file\n";
 	my $cds_info = get_cds_info();
     my $mol_info = get_mol_info();
-	print_intergenic_file( $peptide_info, $cds_info, $mol_info, $intergenic );
+    my $pmark_info = get_pmark_info();
+	print_intergenic_file( $peptide_info, $cds_info, $mol_info, $pmark_info, $intergenic );
 }
 
 if ($nongene) {
@@ -392,7 +393,12 @@ sub print_upstream_downstream_file {
                 my $up_coord = $fmin - $up;
                 # Sort for highest to lowest fmax values
                 foreach my $row (sort {$b->[1] <=> $a->[1]} @$pmark_data){
-                    # Pmark fmax is between CDS fmin and the upstream coord
+                    # Pmark is located partially inside the CDS
+                    if ($row->[1] >= $fmin && $row->[0] <= $fmin){
+                        $offset_up = 0;
+                        last;
+                    }
+                    # Pmark is between CDS fmin and the upstream coord
                     if ($row->[1] < $fmin && $row->[1] > $up_coord){
                         # Only grab upstream bases up to the end of the previous pmark
                         $offset_up = $fmin - $row->[1];
@@ -400,11 +406,19 @@ sub print_upstream_downstream_file {
                     }
                 }
             }
+
             $upstream = substr($mol_seq, 0, $fmin);    # get all before fmin
-            $upstream = substr($upstream, -($offset_up));  # get the upstream part
+            if ($offset_up <= 0) {
+                $upstream = "";
+            } else {
+                $upstream = substr($upstream, -($offset_up));  # get the upstream part
+            }
+
             $print_up = "UP_".$print_id;
-            print $out ">$print_up"."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
-            print $out $1."\n" while( $upstream =~ /(\w{1,60})/g );
+            if (length $upstream) {
+                print $out ">$print_up"."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+                print $out $1."\n" while( $upstream =~ /(\w{1,60})/g );
+            }
         }
         if ($down > 0){
             my $offset_down = $down;
@@ -412,7 +426,12 @@ sub print_upstream_downstream_file {
                 my $down_coord = $fmax + $down;
                 # Sort for lowest to highest fmin values
                 foreach my $row (sort {$a->[0] <=> $b->[0]} @$pmark_data){
-                    # Pmark fmin is between CDS fmax and the upstream coord
+                    # Pmark is located partially inside the CDS
+                    if ($row->[0] <= $fmax && $row->[1] >= $fmax) {
+                        $offset_down = 0;
+                        last;
+                    }
+                    # Pmark is between CDS fmax and the downstream coord
                     if ($row->[0] > $fmax && $row->[0] < $down_coord) {
                         # Only grab downstream bases up to the beginning of the next pmark
                         $offset_down = $row->[0] - $fmax;
@@ -420,10 +439,18 @@ sub print_upstream_downstream_file {
                     }
                 }
             }
-            $downstream = substr($mol_seq, $fmax, $offset_down);
+
+            # If at the end of the molecule, just print to end
+            if ($fmax + $offset_down >= length($mol_seq)) {
+                $downstream = substr($mol_seq, $fmax);
+            } else {
+                $downstream = substr($mol_seq, $fmax, $offset_down);
+            }
             $print_down = "DOWN_".$print_id;
-            print $out ">$print_down"."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
-            print $out $1."\n" while( $downstream =~ /(\w{1,60})/g );
+            if (length $downstream) {
+                print $out ">$print_down"."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+                print $out $1."\n" while( $downstream =~ /(\w{1,60})/g );
+            }
         }
 
 	}
@@ -431,7 +458,108 @@ sub print_upstream_downstream_file {
 }
 
 sub print_intergenic_file {
-	#TODO;
+	my ($pep_data, $cds_data, $mol_data, $pmark_data, $file) = @_;
+    my $ign = open_file ( $file, 'out' );
+
+    my $pmarks_flag = 0;    # Keep track if we encountered pmarks
+    my $partial_flag = 0;   # Keep track if pmarks are partially in a CDS
+    my ($old_uniquename, $old_cds_unq);
+    # Give "old" variables an initial coords to process intergenic seqs before first CDS
+    my $old_fmin = 0;
+    my $old_fmax = 0;
+
+    my ($uniquename, $mol_seq);
+    my ($print_old_id, $print_id);
+
+    foreach my $polypeptide ( sort by_molecule_then_fmax values %{$pep_data} ) {
+        $uniquename = $polypeptide->{'uniquename'};
+        my $cds_unq = $cds_data->{$uniquename}->{'CDS'} || die "CDS not defined for uniquename $uniquename";
+        my $mol = $cds_data->{$uniquename}->{'molecule'};
+        $mol_seq = $mol_data->{$mol}->{'residues'};
+        my $fmin = $pep_data->{$uniquename}->{'fmin'};
+        my $fmax = $pep_data->{$uniquename}->{'fmax'};
+
+        # Get previous CDS name (or source)
+        if (! defined $old_cds_unq || ! defined $old_uniquename){
+            $print_old_id = "Source0";
+        } else {
+            $print_old_id = $old_cds_unq."\t".$old_uniquename;
+            $print_old_id = $locus_lookup->{$old_uniquename} if ($locus);
+        }
+
+        # Print either locus_id or CDS ID
+        $print_id = $cds_unq."\t".$uniquename;
+        $print_id = $locus_lookup->{$uniquename} if( $locus );
+        die("Could not find locus id for $uniquename") if( !defined( $print_id ));
+
+        if ($pmarks) {
+            # Sort for lowest to highest fmax values
+            foreach my $row (sort {$a->[1] <=> $b->[1]} @$pmark_data){
+                my $pmark_fmin = $row->[0];
+                my $pmark_fmax = $row->[1];
+
+                # Is pmark_max located after prev CDS?
+                if ($old_fmax < $pmark_fmax){
+                    # Is pmark_min located before current CDS?
+                    if ($pmark_fmin < $fmin) {
+                        # Does pmark not partially overlap prev CDS?
+                        if ($old_fmax < $pmark_fmin) {
+                            my $offset_min_pmark = $pmark_fmin - $old_fmax;
+                            my $cds_to_pmark = substr($mol_seq, $old_fmax, $offset_min_pmark);
+
+                            # Print from prev CDS to pmark
+                            print $ign ">".$print_old_id."-"."end"."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+                            print $ign $1."\n" while( $cds_to_pmark =~ /(\w{1,60})/g );
+                        }
+
+                        # Does pmark not partially overlap current CDS?
+                        if ($pmark_fmax < $fmin) {
+                            my $offset_max_pmark = $fmin - $pmark_fmax;
+                            my $pmark_to_cds = substr($mol_seq, $pmark_fmax, $offset_max_pmark);
+
+                            # Print from pmark to current CDS
+                            print $ign ">"."Source0"."-".$print_id."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+                            print $ign $1."\n" while( $pmark_to_cds =~ /(\w{1,60})/g );
+                        }
+                        $pmarks_flag = 1;
+                        last;
+                    }
+                }
+            }
+        }
+
+        if (! $pmarks_flag) {
+            # Print intergenic b/t prev and current CDS
+            my $offset = $fmin - $old_fmax;
+            # If CDS features overlap (curr-fmin < prev-fmax) then skip
+            next if ($offset < 0);
+            my $intergenic_region = substr($mol_seq, $old_fmax, $offset);
+
+            print $ign ">".$print_old_id."-".$print_id."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+            print $ign $1."\n" while( $intergenic_region =~ /(\w{1,60})/g );
+        }
+
+        # Keep track of previous CDS
+        $old_uniquename = $uniquename;
+        $old_cds_unq = $cds_unq;
+        $old_fmin = $fmin;
+        $old_fmax = $fmax;
+
+        $pmarks_flag = 0;
+    }
+
+    # If final CDS doesn't precede pmark, then write to end
+    if (! $pmarks_flag){
+        $print_old_id = $old_cds_unq."\t".$old_uniquename;
+        $print_old_id = $locus_lookup->{$old_uniquename} if ($locus);
+        $print_id = "end";
+        my $cds_to_end = substr($mol_seq, $old_fmax);
+
+        print $ign ">".$print_old_id."-".$print_id."\t".$cds_data->{$uniquename}->{'molecule'}."\n";
+        print $ign $1."\n" while( $cds_to_end =~ /(\w{1,60})/g );
+
+    }
+    close($ign);
 }
 
 sub print_data_files {
