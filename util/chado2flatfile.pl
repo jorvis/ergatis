@@ -66,6 +66,15 @@ B<--pmarks_present,-P>
 B<--nongene_file, -n>
 	The output upstream/downstream file name.  Output will be 5'->3'.
 
+B<--start_coord, -s>
+    Starting coordinate for retrieving subsequence.
+
+B<--stop_coord, -S>
+    Ending coordinate for retrieving subsequence.
+
+B--range_file, -r>
+    The file name for the subsequence within a given coordinate range.
+
 B<--help,-h>
     Print this message
 
@@ -166,6 +175,9 @@ my $results = GetOptions (\%options,
                           'pmarks_present|P',
 						  'nongene_file|n=s',
 						  'intergenic_file|i=s',
+                          'start_coord|s=i',
+                          'stop_coord|S=i',
+                          'range_file|r=s',
                           'locus_ids|l=s',
                           'help'
                           );
