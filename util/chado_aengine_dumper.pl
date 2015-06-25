@@ -705,18 +705,18 @@ if ( $options{format} eq 'tbl' ) {
     }
 }
 
+my $gbk;
+if ( $options{cgi_mode} == 1 ) {
+    $gbk = Bio::SeqIO->new( -format => 'genbank',
+                            -file => ">" . $options{output_directory}."/".$download_file_name );
+}
+
 ## write out the annotations in either GBK, GFF or tbl format
 for my $feature_id ( keys %$assemblies ) {
     my $assembly_length = length( $$assemblies{$feature_id}{seq_obj}->seq );
 
     if ( $options{format} eq 'gbk' ) {
-
-        my $gbk;
-
-        if ( $options{cgi_mode} == 1 ) {
-            $gbk = Bio::SeqIO->new( -format => 'genbank',
-                                    -file => ">" . $options{output_directory}."/".$download_file_name );
-        } else {
+        if (! $options{cgi_mode}) {
             _log("INFO: writing $options{output_directory}/$$assemblies{$feature_id}{uniquename}.gbk");
             my $file;
             if( $options{'use_assembly_names'} ) {
@@ -1047,7 +1047,7 @@ sub has_frameshift {
 sub add_intergenic_regions {
 	my $a_feats = shift;
 	my $feature_id = shift;
-	
+
 	# Create array to store intergenic region features and initialize the source area
 	my @igr_feats;
 	my $igr_coord_start = 1;
@@ -1070,8 +1070,8 @@ sub add_intergenic_regions {
 						     -start => $igr_coord_start,
 						     -end => $igr_coord_end,
 						     -strand => 1,
-						     );        			     
-	    	$igr->add_tag_value( 'locus_tag', "ig-$igr_locus_start-$igr_locus_end" );					     
+						     );
+	    	$igr->add_tag_value( 'locus_tag', "ig-$igr_locus_start-$igr_locus_end" );
 
             # If we have genes that overlap then do not write an intergenic region
             if ($feat->start <= $igr_coord_start){
@@ -1090,7 +1090,7 @@ sub add_intergenic_regions {
                 print STDERR "WARN: failure to export sequence " . $feat->seq_id . " for feature at coordinates (" . $feat->start . '/' . $feat->end . ")\n";
             }
 	}
-	
+
 	# Add final intergenic region at the end
 	my $whole_seq = $$assemblies{$feature_id}{seq_obj};
     my $seq_len = length($whole_seq->seq );
@@ -1101,12 +1101,12 @@ sub add_intergenic_regions {
 						     -start => $igr_coord_start,
 						     -end => $igr_coord_end,
 						     -strand => 1,
-						     );        			     
-	$igr->add_tag_value( 'locus_tag', "ig-$igr_locus_start-$igr_locus_end" );					     
-        
+						     );
+	$igr->add_tag_value( 'locus_tag', "ig-$igr_locus_start-$igr_locus_end" );
+
     push @igr_feats, $igr;
-	
-	
+
+
 	push @{$a_feats}, $_ foreach (@igr_feats);
 	return;
 }
