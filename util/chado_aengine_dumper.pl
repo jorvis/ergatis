@@ -641,12 +641,15 @@ for my $feature_id ( keys %$assemblies ) {
                 #print STDERR "\nINFO: seq " . $feat->seq_id . "  has a length of: " . length($subseq->seq) . "\n";
                 #print $temp_start, " - " , $temp_end, "\n";
                 if ( length $subseq->seq  ) {# should always have a length
-                   # print STDERR "INFO: exporting sequence " . $feat->seq_id . "\n";
+                    my $trans_table = 11;
+                    # print STDERR "INFO: exporting sequence " . $feat->seq_id . "\n";
                     if ( $options{format} eq 'gbk' ) {
-                	$feat->add_tag_value( 'translation', $subseq->translate(-complete => 1)->seq );
-                    } else {
-                    	$feat->add_tag_value( 'translation', $subseq->translate()->seq );
+                        # Change translation table if a different one was supplied)
+                        if ($feat->has_tag('transl_table')){
+                            $trans_table = ($feat->get_tag_values('transl_table'))[0];
+                        }
                     }
+                    $feat->add_tag_value( 'translation', $subseq->translate(-complete => 1, -codontable_id => $trans_table)->seq );
                 }
             };
 
