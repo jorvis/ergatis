@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 BEGIN{foreach (@INC) {s/\/usr\/local\/packages/\/local\/platform/}};
 use lib (@INC,$ENV{"PERL_MOD_DIR"});
 no lib "$ENV{PERL_MOD_DIR}/i686-linux";
@@ -35,8 +38,10 @@ file contains exactly two paths, and that they are in the correct order.
 =head1  INPUT
 
 The input is defined with --input_list and should be a single list file. The file should contain paths 
-to exactly two fasta or fasq files, each representing a member of the paired end reads. The header for 
-on of the fasta/fastq files must end with "/1", while the second "/2".
+to exactly two fasta or fasq files, each representing a member of the paired end reads. The header for
+the fasta/fastq files must indicate the member of the pair in one of two ways:
+- end with "/1" or "/2" e.g. @HWUSI-EAS100R:6:73:941:1973#0/1
+- contain " 1:" or " 2:" e.g. @EAS139:136:FC706VJ:2:2104:15343:197393 1:Y:18:ATCACG
  
 
 =head1  CONTACT
@@ -99,12 +104,14 @@ print "$header1\n$header2\n";
 
 open(my $outfh, ">$output_list") || $logger->logdie("couldn't create $output_list list file");
 
-my $sub1 = substr $header1, -2;
-my $sub2 = substr $header2, -2;
 
-if (($sub1 eq "/1") && ($sub2 eq "/2")) {
+if (($header1 =~ /\/1$/) && ($header2 =~ /\/2$/)) {
     print $outfh "$file1\n$file2";
-}elsif (($sub1 eq "/2") && ($sub2 eq "/1")) {
+}elsif (($header1 =~ /\/2$/) && ($header2 =~ /\/1$/)){
+    print $outfh "$file2\n$file1";
+}elsif (($header1 =~ / 1:/) && ($header2 =~ / 2:/)){
+    print $outfh "$file1\n$file2";
+}elsif (($header1 =~ / 2:/) && ($header2 =~ / 1:/)){
     print $outfh "$file2\n$file1";
 }else{
     $logger->logdie("The format for the fasta or fastq files are incorrect");
