@@ -322,7 +322,6 @@ if ($included_subpipelines{'genecalls'}){
 	$config{'overlap_analysis default'}->{'$;RNA_BSML$;'} = '';
 	$config{'pipeline_summary default'}->{'$;OTHER_BSML_LISTS$;'} = '';
 	
-	$config{'p_func default'}->{'$;SKIP_WF_COMMAND$;'} = '';
 	$config{'p_func default'}->{'$;FEATURE_RELATIONSHIP_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/'.
 		'bsml2featurerelationships/$;PIPELINEID$;_pre_overlap_analysis/bsml2featurerelationships.mapping.list';
 	$config{'p_func default'}->{'$;PSEUDOMOLECULE_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/create_pseudomolecules/$;PIPELINEID$;_genecalls/create_pseudomolecules.list';
