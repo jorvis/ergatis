@@ -472,25 +472,14 @@ foreach my $s(@sequence_ids) {
     }
 }
 
-## add the analysis element
-if ($signalp_version eq "3.0") {
-    foreach my $a(('nn', 'hmm')) {
-        my $analysis = $doc->createAndAddAnalysis(
-                                id => 'signalp_'.$a.'_analysis',
-                                sourcename => $options{'output'},
-                                program => "signalp_$a",
-                                algorithm => "signalp_$a",
-                              );
-    }
-} else {
-    foreach my $a(('best','notm')) {
-        my $analysis = $doc->createAndAddAnalysis(
-                                id => 'signalp_'.$a.'_analysis',
-                                sourcename => $options{'output'},
-                                program => "signalp_$a",
-                                algorithm => "signalp_$a",
-                              );
-    }
+## add the analysis element (stores both v3.0 and v4.0)
+foreach my $a(('best','notm', 'nn', 'hmm')) {
+    my $analysis = $doc->createAndAddAnalysis(
+                            id => 'signalp_'.$a.'_analysis',
+                            sourcename => $options{'output'},
+                            program => "signalp_$a",
+                            algorithm => "signalp_$a",
+                        );
 }
 
 ## now write the doc
