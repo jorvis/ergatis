@@ -147,8 +147,8 @@ sub read_input {
 		$btab_arr->[2] = get_query_len($btab_arr->[0], $bio_db);
 		$btab_arr->[3] = "RAPSearch2";
 		$btab_arr->[4] = $subject_file;
-		$btab_arr->[11] = $btab_arr->[10];	# setting %sim = %id for now
-		$btab_arr->[12] = $btab_arr->[13];	# setting raw = bit for now
+		$btab_arr->[11] = 0;	# setting %sim = 0 for now
+		$btab_arr->[12] = 0;	# setting raw = 0 for now
 		$btab_arr->[14] = '';	# NULL field
 		$btab_arr->[16] = 1;	# Strand and frame are only present in XML output
 		$btab_arr->[17] = 1;
