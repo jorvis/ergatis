@@ -1,5 +1,7 @@
 next
 ---
+-Updating Infernal component to use HMMER3 and be compatible with multi-seq pipeline
+-Added RAPSearch2 script and using it in place of Blast-x in ProkPipe
 -Added script to create database in CloVR-microbe
 -Modified validate_genbank to remove periods from LOCUS
 -Fixed command line parameter bug in bsml2interevidence_fasta.pl
