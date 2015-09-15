@@ -124,6 +124,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Ergatis::Logger;
+use HmmTools;
 use Data::Dumper;
 use IPC::Open3;
 use POSIX ":sys_wait_h";
@@ -183,6 +184,7 @@ foreach my $file(@files) {
 
     #Make sure that we make an output file even if there aren't any results to read in.
     if( (scalar(keys %{$stats})) == 0 ) {
+		$logger->debug("No sequences parsed from query seq file.");
         system("touch $outputFile");
     }
     
@@ -191,8 +193,11 @@ foreach my $file(@files) {
     #Therefore one cmsearch run should be identified not only by the hmm/cm and query sequence, 
     #but also where the hit has occured on the query sequence.
     foreach my $querySeq(keys %{$stats}) {
+			$logger->debug("Query = $querySeq");
         foreach my $hmm(keys %{$stats->{$querySeq}}) {
+			$logger->debug("HMM = $hmm");
             foreach my $boundaries(keys %{$stats->{$querySeq}->{$hmm}}) {
+					$logger->debug("Boundaries = $boundaries");
                 my $fileName = $stats->{$querySeq}->{$hmm}->{$boundaries};
                 unless($fileName) {
                     print Dumper($stats->{$querySeq}->{$hmm});
@@ -333,7 +338,9 @@ sub findFile {
     if($fileFlag > 1) {
         &_die("Found $fileFlag possible files");
     } elsif($fileFlag == 0) {
-        &_die("Didn't find a match for $seqID in the sequence_list");
+		my $grepFile = grepFile($seqID);
+        &_die("Didn't find a match for $seqID in the sequence_list") if (! defined $grepFile);
+		$fileFound = $grepFile;
     }
 
     open(IN, "< $fileFound") or &_die("Unable to open $fileFound to get sequence information");
@@ -360,6 +367,13 @@ sub findFile {
     }
     
     return $sequence{$header};
+}
+
+sub grepFile {
+	my $seqID = shift;
+	my $fileFound = undef;
+	# TODO: Grep through all @seqList and find sequence
+	return $fileFound;
 }
 
 #Name: getInputFiles
@@ -391,11 +405,9 @@ sub getInputFiles {
 #Rets: Hash Ref: The same hash ref, just with sequences included.
 sub getSequencesAndPrint {
     my $seqHash = shift;
-    
 
     #Loop through sequences
     foreach my $querySeq (keys %{$seqHash}) {
-
         my $tmpSeq = "";
         $tmpSeq = &findFile($querySeq);
         &_die("Couldn't find file matching $querySeq") unless($tmpSeq ne "");
@@ -419,16 +431,9 @@ sub getSequencesAndPrint {
                 #Store file name information and print sequence
                 $seqHash->{$querySeq}->{$hmm}->{"${start}::$end"} = &printSeqToFile($querySeq, $hmm, $start, 
                                                                                   $end, $tmpSection);
-
-            
-              
-
             }
-
         }
-
     }
-
     #Return the result
     return $seqHash;
 }
@@ -539,30 +544,32 @@ sub processHmmpfamFile {
     my ($inH,$hmmFile,$querySeq);
     my $alignmentFlag = 0;
 
-    open($inH, "<$fileName") or &_die("Unable to open $fileName ($!)");
-    print "Parsing $fileName\n" if($debug > 2);
-    
-    while(<$inH>) {
-        if(/^HMM file:\s+(.*)/) {
-            $hmmFile = $1;
-            chomp $hmmFile;
-            print "$hmmFile was used\n" if($debug > 2);
-        } elsif(/^Query sequence:\s(.*)/) {
-            $querySeq = $1;
-            chomp $querySeq;
-            print "Query Seq :: $querySeq\n" if($debug > 2);
-        } elsif(/^Alignments/) {
-            $alignmentFlag = 1;
-            print "Found the alignments section\n" if($debug > 2);
-        } elsif($alignmentFlag && /^(\S+):.*from\s(\d+)\sto\s(\d+)/) { 
-            print "Found start: $2\n" if($debug > 3);
-            print "Found end: $3\n" if($debug > 3);
-            $hmmpfamStats->{$querySeq}->{"${hmmFile}::$1"}->{"$2::$3"} = "";
-        } 
-    }
-    close($inH);
-    return $hmmpfamStats;
+	#my $in = Bio::SearchIO->new(-format => 'hmmer',
+	#							-version => 3,
+	#							-file => $fileName); 
 
+	#open($inH, "<$fileName") or &_die("Unable to open $fileName ($!)");
+	print "Parsing $fileName\n" if($debug > 2);
+	
+	# Parse HMM data using HMMTools module
+	my $data = &read_hmmer3_output($fileName);
+	
+	my $hmmFile 	= $data->{'info'}->{'hmm_file'};
+	foreach my $querySeq (keys %{$data->{'queries'}}) {
+		foreach my $hit (keys %{$data->{'queries'}->{$querySeq}->{'hits'}}){
+			my $h = $data->{'queries'}->{$querySeq}->{'hits'}->{$hit};
+			my $hit_name = $h->{'accession'};
+			foreach my $domain (keys %{$h->{'domains'}}){
+				my $dh = $h->{'domains'}->{$domain};
+				my $start = $dh->{'hmm_f'};
+				my $end = $dh->{'hmm_t'};
+				print $querySeq, "\t", $hmmFile, "\t", $hit_name, "\t", $start, "\t", $end, "\n" if ($debug > 2);
+				$hmmpfamStats->{$querySeq}->{"${hmmFile}::$hit_name"}->{"$start::$end"} = "";
+			}
+		}
+	}
+	
+    return $hmmpfamStats;
 }
 
 #Name: runProg
