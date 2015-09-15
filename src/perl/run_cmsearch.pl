@@ -325,6 +325,7 @@ sub findFile {
     my $seqID = shift;
     my ($retval,$fileFound);
     my $fileFlag = 0; 
+	my $multiFlag = 0;	# If sequence is grepped, had to come from multifasta input
     $seqID =~ s/\|/\_/g;
     print "Searching with $seqID\n";
     foreach my $file (@seqList) {
@@ -339,8 +340,9 @@ sub findFile {
         &_die("Found $fileFlag possible files");
     } elsif($fileFlag == 0) {
 		my $grepFile = grepFile($seqID);
-        &_die("Didn't find a match for $seqID in the sequence_list") if (! defined $grepFile);
+        &_die("Didn't find a match for $seqID in the sequence_list") if (!$grepFile);
 		$fileFound = $grepFile;
+		$multiFlag = 1;
     }
 
     open(IN, "< $fileFound") or &_die("Unable to open $fileFound to get sequence information");
@@ -350,8 +352,11 @@ sub findFile {
     while(<IN>) {
         my $line = $_;
         chomp($line);
-
-        if($line =~ />(.*)\n*$/) {
+		
+		if ($multiFlag && $line =~ />($seqID.*)\n*$/) {
+			$header = $1;
+			$sequence{$header} = "";
+		} elsif($line =~ />(.*)\n*$/) {
             $header = $1;
             $sequence{$header} = "";
         } else {
@@ -371,9 +376,21 @@ sub findFile {
 
 sub grepFile {
 	my $seqID = shift;
-	my $fileFound = undef;
-	# TODO: Grep through all @seqList and find sequence
-	return $fileFound;
+	my $noFile = 0;	# Flag in case sequence cannot be grepped from files
+	foreach my $file (@seqList) {
+	  open my $fh, $file || $logger->logdie("Cannot open $file for reading (for grep check): $!");
+	  while (my $line = <$fh>){
+		if ($line =~ /^>/){
+			my $i = index $line, $seqID;
+			if ($i > -1) {	# -1 means index position was not found for sequence
+				close $fh;
+				return $file;
+			}
+		}
+	  }
+	  close $fh
+	}
+	return $noFile;
 }
 
 #Name: getInputFiles
