@@ -28,10 +28,14 @@
 	    	<key>--flanking_sequence</key>
 		<value>50</value>
 	    </param>
-            <param>  
-                <key>--hmm_cm_table</key>
-                <value>$;HMM_CM_TABLE$;</value>
-            </param>
+        <param>  
+            <key>--hmm_cm_table</key>
+            <value>$;HMM_CM_TABLE$;</value>
+		</param>
+		<param>
+			<key>--cm_file</key>
+			<value>$;CM_FILE$;</value>
+		</param>
 	    <param>
            <key>--other_opts</key>
            <value>$;OTHER_OPTS$;</value>

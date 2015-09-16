@@ -15,7 +15,6 @@ USAGE: run_cmsearch.pl
               --flanking_seq=50
               --hmm_cm_table=/path/to/some/file.table
               --cmsearch_bin=/path/to/cmsearch
-              --cm_dir=/dir/with/covariance/models/
           [   --other_opts=cmsearch options
               --log=/path/to/some/file.log
               --debug= > 2 for verbose
@@ -46,11 +45,10 @@ B<--hmm_cm_table,-c>
 B<--cmsearch_bin,-b>
     Path to the cmsearch binary. If not it will be assumed that the binary is in the PATH.
 
-B<--cm_dir,-m>
-    If you don't feel like making a hmm_cm_table, you can always just put the directory where all
-    the covariance models are.  The program will try and guess which covariance model is related to
-    each hmm.  Needless to say, hmm_cm_table is a better option.  Turns out, computers are bad
-    guessers.
+B<--cm_file, -C>
+	Instead of mapping the HMMs or passing in a directory of CMs, just pass in a single CM file.
+	Best use case is if you are unsure what to compare against and just want to compare against
+	all available RFams.
 
 B<--sequence_list,-s>
     A list of absolute paths to files which contain the input fasta sequence from the HMMER search.
@@ -138,6 +136,7 @@ my $results = GetOptions (\%options,
                           'sequence_list|s=s',
                           'flanking_seq|f=i',
                           'hmm_cm_table|c=s',
+						  'cm_file|C=s',
                           'cmsearch_bin|b=s',
                           'other_opts|e=s',
                           'log|l=s',
@@ -161,6 +160,7 @@ my $input;
 my $hmmCmTable;
 my %hmmCmLookup;
 my $cmDir;
+my $cmFile;
 my $outputDir;
 my $outputFile;
 my $debug;
@@ -203,7 +203,7 @@ foreach my $file(@files) {
                     print Dumper($stats->{$querySeq}->{$hmm});
                     &_die("Could not find file name");
                 }
-                my $exitVal = &runProg($fileName, $hmm, $other_opts, $outputFile);
+                my $exitVal = &runProg($fileName, $hmm, $cmFile, $other_opts, $outputFile);
                 &handleExitVal($exitVal);
             }
         }
@@ -264,16 +264,18 @@ sub check_parameters {
     @seqList = <IN>;
     close(IN);
 
-    if($options{hmm_cm_table} && $options{hmm_cm_table} ne "") {
+    if($options{hmm_cm_table} && $options{hmm_cm_table}  ne "") {
         if(-f $options{hmm_cm_table}) {
             $hmmCmTable = $options{hmm_cm_table};
-        } elsif(-d $options{hmm_cm_table}) {
+        } elsif (-d $options{hmm_cm_table}) {
             $cmDir = $options{hmm_cm_table};
-        } else {
+		} else {
             &_die("Option --hmm_cm_table file or directory path $options{hmm_cm_table} does not exist");
         }
-    } else {
-        &_die("Option --hmm_cm_table is required");
+    } elsif (-f $options{cm_file}) {
+		$cmFile = $options{cm_file};
+	} else {
+        &_die("Options --hmm_cm_table or --cm_file are required");
     }
 
     $other_opts = $options{other_opts} if($options{other_opts});
@@ -291,8 +293,9 @@ sub check_parameters {
 #Rets: Nothing
 sub cleanUp {
     foreach my $dir(@dirsMade) {
-        print STDERR "DEBUG: removing $dir\n";
-        system("rm -rf $dir");
+        print STDERR "DEBUG: removing $dir and contents\n";
+		unlink glob "$dir/*.fsa";
+		rmdir($dir);
     }
 }
 
@@ -349,14 +352,14 @@ sub findFile {
     
     my $header = "";
     my %sequence;
-    while(<IN>) {
+    while (<IN>) {
         my $line = $_;
         chomp($line);
 		
 		if ($multiFlag && $line =~ />($seqID.*)\n*$/) {
 			$header = $1;
 			$sequence{$header} = "";
-		} elsif($line =~ />(.*)\n*$/) {
+		} elsif ($line =~ />(.*)\n*$/) {
             $header = $1;
             $sequence{$header} = "";
         } else {
@@ -364,10 +367,17 @@ sub findFile {
         }
     }
 
-    if(scalar(keys %sequence) > 1) {
+	# If file was grepped, return sequence directly
+	if ($multiFlag && defined $sequence{$seqID}) {
+		return $sequence{$seqID};
+	} else {
+		&_die("Sequence $seqID was not found within the grepped file.  That's odd.");
+	}
+	# If sequence ID was in file name (single-seq input), return only sequence
+    if (scalar(keys %sequence) > 1)  {
         &_die("More than one sequence found in file $fileFound.  ".
-              "Sorry, but only single sequence fasta format files are accepted (for now at least).");
-    } elsif($header eq "") {
+              "Assuming this was a single-seq input.");
+    } elsif ($header eq "") {
         &_die("Couldn't find sequence in file $fileFound.  Perhaps it's not fasta format?");
     }
     
@@ -378,7 +388,7 @@ sub grepFile {
 	my $seqID = shift;
 	my $noFile = 0;	# Flag in case sequence cannot be grepped from files
 	foreach my $file (@seqList) {
-	  open my $fh, $file || $logger->logdie("Cannot open $file for reading (for grep check): $!");
+	  open my $fh, $file || &_die("Cannot open $file for reading (for grep check): $!");
 	  while (my $line = <$fh>){
 		if ($line =~ /^>/){
 			my $i = index $line, $seqID;
@@ -388,7 +398,7 @@ sub grepFile {
 			}
 		}
 	  }
-	  close $fh
+	  close $fh;
 	}
 	return $noFile;
 }
@@ -439,9 +449,8 @@ sub getSequencesAndPrint {
                 #Since the start and end coordinates are going to change, remove the old entry.
                 delete($seqHash->{$querySeq}->{$hmm}->{$startEnd});
                 
-                #Get the start and end of the hit
+				#Get the start and end of the hit
                 my ($start, $end) = split(/::/, $startEnd);
-                
                 #Parse sequence information
                 my ($tmpSection, $start, $end) = &parseSeqAndExtra($tmpSeq, $start, $end);
                 
@@ -519,7 +528,6 @@ sub parseSeqAndExtra {
     $end += $extraSeqLen;
 
     my $retval = substr($seq, $start, $end-$start);
-
     return ($retval, $start, $end);
 }
 
@@ -542,13 +550,10 @@ sub printSeqToFile {
     $outFileName = "$outputDir/$querySeq/$tmpHmm.$start.$end.fsa";
     open(OUT, "> $outFileName") 
         or &_die("Unable to open output file $outFileName ($!)");
-    
     print OUT ">${querySeq}::$start-$end\n$tmpSeq";
-    close(OUT);
+	close(OUT);
 
     return $outFileName;
-    
-
 }
 
 #Name: processHmmpfamFile
@@ -578,14 +583,13 @@ sub processHmmpfamFile {
 			my $hit_name = $h->{'accession'};
 			foreach my $domain (keys %{$h->{'domains'}}){
 				my $dh = $h->{'domains'}->{$domain};
-				my $start = $dh->{'hmm_f'};
-				my $end = $dh->{'hmm_t'};
+				my $start = $dh->{'seq_f'};
+				my $end = $dh->{'seq_t'};
 				print $querySeq, "\t", $hmmFile, "\t", $hit_name, "\t", $start, "\t", $end, "\n" if ($debug > 2);
-				$hmmpfamStats->{$querySeq}->{"${hmmFile}::$hit_name"}->{"$start::$end"} = "";
+				$hmmpfamStats->{$querySeq}->{"${hmmFile}::$hit_name"}->{"${start}::$end"} = "";
 			}
 		}
 	}
-	
     return $hmmpfamStats;
 }
 
@@ -593,17 +597,19 @@ sub processHmmpfamFile {
 #Desc: Runs the cmsearch program
 #Args: Scalar :: Fasta file path
 #      Scalar :: Covariance model path
+#      Scalar :: CM file (if exists)
 #      Scalar :: Other options
 #Rets: Hash Ref :: std - stdout of program
 #                  err - stderr of program
 #                  exitVal - the exitVal
 #                  cmd - the command that was run
 sub runProg {
-    my ($fsaFile, $hmm, $oOpts, $outputFile) = @_;
+    my ($fsaFile, $hmm, $cmFile, $oOpts, $outputFile) = @_;
     my $retval;
 
-    my $cm = &lookupCM($1) if($hmm =~ /.*::(.*)/);
-    &_die("Could not parse HMM name from line $hmm") unless($cm);
+	my $cm = &lookupCM($1) if($hmm =~ /.*::(.*)/);
+	$cm = $cmFile if (defined $cmFile);
+	&_die("Could not parse HMM name from line $hmm") unless($cm);
     #Make sure the -W option isn't used in the other opts.  
     $oOpts =~ s/--window\s\S+//;
 
