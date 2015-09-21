@@ -128,6 +128,8 @@ sub read_input {
 	chomp $line;
 	if ($line =~ /^#\sQuery\s:\s+(.+)/){
 		$query_file = $1;
+		# Need to do this since Bio::DB fails if blank line is present
+		remove_blank_lines($query_file);
 		# Index seqs for utility reasons
 		$bio_db = Bio::DB::Fasta->new($query_file);
 	}
@@ -184,6 +186,14 @@ sub parse_line {
 	$btab_arr[19] = $e_val;
 
 	return \@btab_arr;
+}
+
+# Remove blank lines in fasta file.  Typically at the end of file.
+sub remove_blank_lines {
+	my $fasta = shift;
+	my $cmd = "perl -lne 'print if length' $fasta";
+	system($cmd);
+	return;
 }
 
 # Get query length of given query from query file
