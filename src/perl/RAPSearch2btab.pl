@@ -191,7 +191,7 @@ sub parse_line {
 # Remove blank lines in fasta file.  Typically at the end of file.
 sub remove_blank_lines {
 	my $fasta = shift;
-	my $cmd = "perl -lne 'print if length' $fasta";
+	my $cmd = "perl -i.orig -lne 'print if length' $fasta";
 	system($cmd);
 	return;
 }
