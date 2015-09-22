@@ -236,7 +236,7 @@ umask(0000);
 		print $debugfh "Wrote runstring to $pipeline_script: $runstring\n";
                 
                 ## the script needs to be executable
-                chmod 0775, $pipeline_script;
+                chmod 0777, $pipeline_script;
                 
                 ## create a marker file showing that the pipeline has been started (or attempted to start)
                 #   we can't rely completely on XML here, since a pipeline submitted as a job won't have any
