@@ -9,6 +9,7 @@ RAPSearch2btab.pl - Convert RAPSearch .m8 to BLAST .btab format
  USAGE: RAPSearch2btab.pl
        --input_file=/path/to/some/results.m8
        --output=/path/to/results.btab
+	   --uniprot_db=/path/to/uniprot.sqlite
      [ --log=/path/to/file.log
        --debug=3
        --help
@@ -19,6 +20,10 @@ RAPSearch2btab.pl - Convert RAPSearch .m8 to BLAST .btab format
 B<--input_file,-i>
 
 B<--output_file,-o>
+
+B<--uniprot_db,-u>
+	This is the path to the UniProt SQLite database.
+	Note this is not the pre-RAPSearch Uniref database
 
 B<--log,-l>
     Logfile.
@@ -76,6 +81,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use bigint;
+use DBI;
 use Bio::DB::Fasta;
 
 ############# GLOBALS AND CONSTANTS ################
@@ -91,12 +97,15 @@ my $currofh;
 my $results = GetOptions (\%options,
                          "input_file|i=s",
                          "output_file|o=s",
+						 "uniprot_db|u=s",
                          "log|l=s",
                          "debug|d=s",
                          "help|h"
                           );
 
 &check_options(\%options);
+# Connect to the SQLite db
+my $dbh = &_connect($options{'uniprot_db'});
 
 ## get a filehandle on the input
 if ($options{'input_file'} =~ /\.(gz|gzip)$/) {
@@ -154,7 +163,7 @@ sub read_input {
 		$btab_arr->[14] = '';	# NULL field
 		$btab_arr->[16] = 1;	# Strand and frame are only present in XML output
 		$btab_arr->[17] = 1;
-		$btab_arr->[18] = 1;	# Eventually get length from Uniref fasta or SQLite3 db
+		$btab_arr->[18] = get_hit_len($btab_arr->[5]);	
 		$btab_arr->[20] = calculate_pvalue($btab_arr->[19]);
 		#&_log($DEBUG, join("\t", @$btab_arr));
 		print $ofh join("\t", @$btab_arr), "\n";
@@ -187,7 +196,6 @@ sub parse_line {
 
 	return \@btab_arr;
 }
-
 # Remove blank lines in fasta file.  Typically at the end of file.
 sub remove_blank_lines {
 	my $fasta = shift;
@@ -200,6 +208,33 @@ sub remove_blank_lines {
 sub get_query_len {
 	my ($q, $db) = @_;
 	return $db->length($q);
+}
+
+# Get Uniref hit length from SQLite database
+sub get_hit_len {
+	my $hit = shift;
+	my $acc;
+	if ($hit =~/UniRef100_(\w+)/){
+		$acc = $1;
+	}	
+	
+	my $sth = $dbh->prepare("SELECT res_length FROM uniref_acc WHERE accession = ?");
+	$sth->execute($acc);
+	
+	# Should only have 1 row and 1 value;
+	my @row = $sth->fetchrow_array();
+	my $hit_len = $row[0];
+	
+	&_log($WARN, "Uniref Accession $acc did not have a residue length in the SQLite3 table.  Ensure the accession is correct or that the entry has a defined 'res_length' field") unless (defined $hit_len);
+
+	# Joshua Orvis created the SQLite table and said some fields may be null,
+	# so adding this dummy value in case he needs to rebuild the database
+	# Just comment out the log message above if this occurs or switch between WARN and ERROR.
+	if (! defined ($hit_len) ){
+		$hit_len = 1;
+	}
+
+	return $hit_len;
 }
 
 #See http://www.ncbi.nlm.nih.gov/BLAST/tutorial/Altschul-1.html
@@ -226,10 +261,27 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(input_file output_file) ) {
+   foreach my $req ( qw(input_file output_file uniprot_db) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 }
+
+sub _connect {
+    my ($db) = @_; 
+
+    my $dbh;
+    eval {
+        $dbh = DBI->connect("DBI:SQLite:$db", "", "",
+                {
+                    'RaiseError' => 1,
+                }   );  
+    };  
+    if ($@) {
+        &_log($ERROR, "Could not connect to database " . $@);
+    }   
+    return $dbh;
+}
+
 
 sub _log {
    my ($level, $msg) = @_;
