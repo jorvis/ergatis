@@ -96,9 +96,51 @@ sub prepareSbt {
 # Contact information section
 	my ($sCLast, $sCFirst);
 	($sCLast, $sCFirst) = split(/\s+/, $paMeta->[14], 2);
+	
+	if (!$sCLast || !$sCFirst || !$paMeta->[15]) {
+		printLogMsg($ERROR, "Author name (last, first) and author e-mail are required in metadata file: $!");
+	}
+
+	# Initializing hash of contact infomation with default values if user-provided information is not present
+	my %contact_info;
+	if (! $paMeta->[20] || ! -e $paMeta->[20]) {
+		%contact_info = (
+		'city' => 'Baltimore',
+		'country' => 'USA',
+		'department' => 'Institute for Genome Sciences',
+		'fax' => 'none',
+		'institution' => 'University of Maryland School of Medicine',
+		'phone' => '410-706-1401',
+		'state' => 'MD',
+		'street' => 'BioPark II, 801 W. Baltimore St., Suite 619',
+		'zip' => '21201'
+		);
+	} else {
+		# Open the file of contacts, parse the entry for the author we need and write to hash
+		open(CONTACT, $paMeta->[20]) || printLogMsg($ERROR, "Could not open file $paMeta->[20] for reading: $!");
+		while (<CONTACT>) {
+			chomp;
+			next unless (/^$paMeta->[14]/);
+			my @fields = split(/\t/);
+			for (my $f=0; $f <=$#fields; $f++){
+				# give any undefined fields a 'none' value
+				$fields[$f] = 'none' if (! $fields[$f]);
+			}
+			# Populate the contact hash by iterating through the fields array
+			my $field_index = 1;
+			foreach my $field qw(institution department city state country street fax phone zip) {
+				$contact_info{$field} = $fields[$field_index++];
+			}
+			foreach my $required qw(institution street city country phone) {
+				printLogMsg($ERROR, "Field [$required] is required to have information in the contacts file: $!") if $contact_info{$required} eq 'none'; 
+			}
+			last;
+		}
+		close CONTACT;
+	}
 
 # Running NCBI template.cgi using cUrl
-	$sCmd = "curl -F 'first_name=$sCFirst' -F 'last_name=$sCLast' -F 'department=Institute for Genome Sciences' -F 'institution=University of Maryland School of Medicine' -F 'street=BioPark II, 801 W. Baltimore St., Suite 619' -F 'city=Baltimore' -F 'state=MD' -F 'zip=21201' -F 'country=USA' -F 'phone=410-706-1481' -F 'fax=none' -F 'email=$paMeta->[15]' $sAuthorForm -F 'cit_status_radio=unpublished' -F 'citation_title=$paMeta->[17]' -F 'cit_auth_radio=same' -F 'bioproject=$paMeta->[4]' -F 'submit=Create Template' http://www.ncbi.nlm.nih.gov/WebSub/template.cgi > $sSbtFile";
+	$sCmd = "curl -F 'first_name=$sCFirst' -F 'last_name=$sCLast' -F 'department=$contact_info{department}' -F 'institution=$contact_info{institution}' -F 'street=$contact_info{street}' -F 'city=$contact_info{city}' -F 'state=$contact_info{state}' -F 'zip=$contact_info{zip}' -F 'country=$contact_info{country}' -F 'phone=$contact_info{phone}' -F 'fax=$contact_info{fax}' -F 'email=$paMeta->[15]' $sAuthorForm -F 'cit_status_radio=unpublished' -F 'citation_title=$paMeta->[17]' -F 'cit_auth_radio=same' -F 'bioproject=$paMeta->[4]' -F 'biosample=$paMeta->[21]' -F 'submit=Create Template' http://www.ncbi.nlm.nih.gov/WebSub/template.cgi > $sSbtFile";
 	$sCmd =~ s/\r|\n//ig;
 	system($sCmd);
 
@@ -201,7 +243,7 @@ sub readInput {
 		next if($sLine =~ /^#/);
 		next if($sLine =~ /^\s+$/);
 		@{$paMeta} = split(/\t/, $sLine);
-		# @meta : This script needs columns 0 and 4 - 17
+		# @meta : This script needs columns 0, 5-20, and either one (or both) of 4 and 21
 #		[0] = Db name
 #		[1] = NCBI locus tag
 #		[2] = Path to rules file
@@ -220,14 +262,26 @@ sub readInput {
 #		[15]= Contact person's email address
 #		[16]= Comma-separated author list. Each name should be Last name\sFirst name\sMiddle Initial
 #		[17]= Title of the publication
+#		[18]= List of deprecated/bad EC-numbers
+#		[19]= Isolation source of bacterial sample
+#		[20]= Path to contact person address info
+#		[21]= Biosample ID
 
-		if(length($paMeta->[0]) == 0 ) {
+		if(!length($paMeta->[0])) {
 			printLogMsg($ERROR, "ERROR : Database name missing for $sLine.");
-		} 
-		for($nI = 4; $nI < @{$paMeta}; $nI++) {
-			if(length($paMeta->[$nI]) == 0) {
+		}
+
+		for($nI = 5; $nI <= 19; $nI++) {
+			if(!length($paMeta->[$nI])) {
 				printLogMsg($WARN, "WARNING : Missing meta data value for column ".($nI + 1)." field. Thus resulting files .sbt and .cmt would have missing information");
 			}	
+		}
+		if (!length($paMeta->[21]) && !length($paMeta->[4])) {
+			printLogMsg($WARN, "WARNING : Neither Biosample ID nor Bioproject ID detected.  Highly recommended to have at least one for the .cmt and .sbt files");
+		}
+
+		if (!length($paMeta->[20]) ) {
+			printLogMsg($WARN, "WARNING : Path for author contact info not supplied.  Will use default parameters");
 		}
 		
 	}

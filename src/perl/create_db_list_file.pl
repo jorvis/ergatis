@@ -37,7 +37,7 @@ B<--help,-h>
 =head1  INPUT
     A tab-separated file containing the following columns:
  1. Name of the manatee database used while running the prokaryotic annotation pipeline
- 2. NCBI_locus_tag prefixto be assigned to the genes.
+ 2. NCBI_locus_tag prefix to be assigned to the genes.
  3. Absolute path to the tab-delimited rules file for fixing gene product names in the database.
  4. Absolute path to the tab-delimited gene symbol rules file for fixing gene symbols in the database.
  5. Bioproject Id beginning with PRJ [for .sbt file creation]
@@ -56,6 +56,8 @@ B<--help,-h>
  18. Title of the publication [for .sbt file creation]
  19. Absolute path to list of deprecated or bad EC numbers, one per row (used in update_ec_numbers)
  20. Isolation source of the bacterial sample.
+ 21. Absolute path to file consisting of a tab-delimited address containing the contact person in 15)
+ 22. BioSample ID [for .sbt file creation]
  
  A comma-separated file can be used but it is not recommended unless you plan on entering only the first 4 columsn or less of data
 
