@@ -80,11 +80,7 @@
             <name>create agp</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/format_velvet_assembled_AGP</executable>
-            <param>  
-                <key>--tbl_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;_gs_corrected.tbl</value>
-            </param>
-	    <param>  
+	    	<param>  
                 <key>--fsa_file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.fsa</value>
             </param>
@@ -100,20 +96,6 @@
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
             </param>
-	</command>
-	<command>
-            <type>RunUnixCommand</type>
-            <name>move fsa file</name>
-            <state>incomplete</state>
-            <executable>/bin/mv</executable> 
-	    <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;_corrected.fsa $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.fsa</arg>
-	</command>
-	<command>
-            <type>RunUnixCommand</type>
-            <name>move agp file</name>
-            <state>incomplete</state>
-            <executable>/bin/mv</executable> 
-	    <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;_gs_corrected.agp $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;/$;I_FILE_BASE$;.agp</arg>
 	</command>
 	<command>
             <type>RunUnixCommand</type>
@@ -142,11 +124,11 @@
             </param>
             <param>
                  <key>stdout</key>
-                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.wrap_tbl2asn.rerun.stdout</value>
+                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.wrap_tbl2asn.stdout</value>
             </param>            
             <param>  
                 <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.wrap_tbl2asn.rerun.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.wrap_tbl2asn.stderr</value>
             </param>
 	</command>
     </commandSet>
