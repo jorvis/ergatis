@@ -4,11 +4,13 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use File::Basename;
+use File::Spec;
 use FileHandle;
 use Bio::SeqIO;
 use Bio::Tools::CodonTable; # for creating CDSs from mRNAs, bug #3300
 use BSML::BsmlBuilder;
 use Ergatis::IdGenerator;
+use Ergatis::Logger;
 use Data::Dumper;
 umask(0000);
 
@@ -25,6 +27,11 @@ my $translate_empty_cds = $options{translate_empty_cds};
 my %fsa_files; # file names and handlers and for each fasta output file
 my $idcreator;  # Ergatis::IdGenerator object
 my $feature_id_lookup = {};
+
+my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
+my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
+                                 'LOG_LEVEL'=>$options{'debug'});
+$logger = Ergatis::Logger::get_logger();
 
 # features we care about
 # unprocessed features:
@@ -80,6 +87,8 @@ sub parse_options {
 	'unique_feature_tags=s',
 	'skip_incomplete_feature_groups=s',
     'translate_empty_cds=s',
+        'log|l=s',
+        'debug=s',
         ) || &print_usage("Unprocessable option");
 
     # check for required parameters
@@ -1567,8 +1576,14 @@ sub addSeqToFeature {
                          );
     # write sequence object to file
     unless (defined($fsa_files{$class})) {
-	$fsa_files{$class}{name} = "$odir/$gbr{gi}.$class.fsa";
-	open($fsa_files{$class}{fh}, ">".$fsa_files{$class}{name});
+      my $new_file = File::Spec->catfile($odir, "$gbr{gi}.$class.fsa");
+      $fsa_files{$class}{name} = $new_file;
+      # append to existing file
+      if (-e $new_file) {
+        $logger->logdie("$new_file already exists, halting due to possible conflict with another genbank2bsml run");
+      } else {
+        open($fsa_files{$class}{fh}, ">".$new_file);
+      }
     }
 
     my $fastaname = $id;
