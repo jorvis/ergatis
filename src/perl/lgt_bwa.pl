@@ -1,22 +1,289 @@
-#!/usr/bin/perl
+#!/usr/local/bin/perl -w
 
-=head1  NAME 
+#########################################################################################
+#											#
+# Name	      : lgt_bwa.pl								#
+# Version     : 1.0									#
+# Project     : LGT Seek Pipeline							#
+# Description : Script to align reads to a reference using BWA				#
+# Author      : Sonia Agrawal								#
+# Date        : September 1, 2015							#
+#											#
+#########################################################################################	
 
-lgt_bwa.pl
+use strict;
+# Extended processing of command line options
+use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+# Prints usage message from embedded pod documentation
+use Pod::Usage;
+# Include packages here 
+use File::Basename;
+
+#############
+# CONSTANTS #
+#############
+
+
+###########
+# GLOBALS #
+###########
+my %hCmdLineArgs = ();
+# Log file handle;
+my $fhLog;
+my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
+my %hType = ();
+my ($nFileCnt, $nExitCode);
+my ($sIn, $sOut, $sOut1, $sOut2, $sFbase, $sFdir, $sFext, $sCmd);
+
+################
+# MAIN PROGRAM #
+################
+GetOptions(\%hCmdLineArgs,
+	   'reference|r=s',
+	   'paired|p=i',
+	   'input_dir|i=s',
+	   'output_dir|d=s',
+	   'bwa_path|b=s',
+	   'samtools_path|s=s',
+	   'misMsc|M=i',
+	   'maxGapO|o=i',
+	   'maxGapE|e=i',
+	   'gapOsc|O=i',
+	   'gapEsc|E=i',
+	   'nThrds|t=i',
+	   'maxOcc|n=i',
+	   'bwa_params|B=s',
+	   'samtools_params|S=s',
+	   'keep_sam|k=i',
+	   'log|l=s', 
+	   'help|h'
+	  ) or pod2usage();
+
+pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($hCmdLineArgs{'help'});
+
+checkCmdLineArgs(\%hCmdLineArgs);
+
+DetermineFormat(\%hCmdLineArgs, \%hType);
+
+$nFileCnt = keys %hType;
+if($hCmdLineArgs{'paired'} == 1) {
+	if($nFileCnt == 1 && exists($hType{'bam'})) {
+		($sFbase,$sFdir,$sFext) = fileparse($hType{'bam'}, qr/\.[^.]*/);
+		$sOut1 = $sFbase.".aln1.sai";
+		AlignBwa(\%hCmdLineArgs, "aln", $hType{'bam'}, "-b1", $sOut1);	
+	
+		$sOut2 = $sFbase.".aln2.sai";		
+		AlignBwa(\%hCmdLineArgs, "aln", $hType{'bam'}, "-b2", $sOut2);
+	
+		$sIn = $hCmdLineArgs{'output_dir'}."/".$sOut1." ".$hCmdLineArgs{'output_dir'}."/".$sOut2." ".$hType{'bam'}." ".$hType{'bam'};	
+		$sOut = $sFbase.".bwa.sam";		
+#		AlignBwa(\%hCmdLineArgs, "sampe", $sIn , "", $sOut);		
+		
+	
+	} elsif ($nFileCnt == 2 && exists($hType{'fastq_1'}) && exists($hType{'fastq_2'})) {
+		($sFbase,$sFdir,$sFext) = fileparse($hType{'fastq_1'}, qr/\.[^.]*/);
+		$sFbase =~ s/\.fastq$//;
+		$sOut1 = $sFbase.".aln1.sai";
+		AlignBwa(\%hCmdLineArgs, "aln", $hType{'fastq_1'}, "", $sOut1);
+
+		($sFbase,$sFdir,$sFext) = fileparse($hType{'fastq_2'}, qr/\.[^.]*/);
+		$sFbase =~ s/\.fastq$//;
+		$sOut2 = $sFbase.".aln2.sai";
+		AlignBwa(\%hCmdLineArgs, "aln", $hType{'fastq_2'}, "", $sOut2);
+
+		$sIn = $hCmdLineArgs{'output_dir'}."/".$sOut1." ".$hCmdLineArgs{'output_dir'}."/".$sOut2." ".$hType{'fastq_1'}." ".$hType{'fastq_2'};
+		$sOut = $sFbase.".bwa.sam";
+#		AlignBwa(\%hCmdLineArgs, "sampe", $sIn , "", $sOut);
+
+	} else {
+		printLogMsg($ERROR, "ERROR : Main :: Irregular number of files $nFileCnt for alignment found in the input directory $hCmdLineArgs{'input_dir'}");
+	}
+	AlignBwa(\%hCmdLineArgs, "sampe", $sIn , "", $sOut);
+} else {
+	if($nFileCnt == 1 && exists($hType{'fastq'})) {
+		($sFbase,$sFdir,$sFext) = fileparse($hType{'fastq'}, qr/\.[^.]*/);
+		$sFbase =~ s/\.fastq$//;
+		$sOut = $sFbase.".aln.sai";
+		AlignBwa(\%hCmdLineArgs, "aln", $hType{'fastq'}, "", $sOut);
+
+		$sIn = $hCmdLineArgs{'output_dir'}."/".$sOut." ".$hType{'fastq'};
+		$sOut = $sFbase.".bwa.sam";
+#		AlignBwa(\%hCmdLineArgs, "samse", $sIn , "", $sOut);
+
+	} elsif ($nFileCnt == 1 && exists($hType{'bam'})) {
+		($sFbase,$sFdir,$sFext) = fileparse($hType{'bam'}, qr/\.[^.]*/);
+		$sOut = $sFbase.".aln.sai";
+		AlignBwa(\%hCmdLineArgs, "aln", $hType{'bam'}, "-b0", $sOut);
+
+		$sIn = $hCmdLineArgs{'output_dir'}."/".$sOut." ".$hType{'bam'};
+		$sOut = $sFbase.".bwa.sam";
+#		AlignBwa(\%hCmdLineArgs, "samse", $sIn , "", $sOut);
+	}
+	AlignBwa(\%hCmdLineArgs, "samse", $sIn , "", $sOut);
+}
+
+SamtoBam(\%hCmdLineArgs, $sOut);
+if($hCmdLineArgs{'keep_sam'} == 0) {
+	$sCmd = "rm ".$hCmdLineArgs{'output_dir'}."/*.sam ".$hCmdLineArgs{'output_dir'}."/*.sai";
+	$nExitCode = system($sCmd);
+	if($nExitCode != 0) {
+		printLogMsg($ERROR, "ERROR : Main :: Cleanup of SAM and alignment files failed from $hCmdLineArgs{'output_dir'} with error. Check the stderr");
+	} else {
+		printLogMsg($DEBUG, "INFO : Main :: Cleanup of SAM and alignment files succesfully completed in $hCmdLineArgs{'output_dir'}");
+	}	
+}		
+
+###############
+# SUBROUTINES #
+###############
+
+sub SamtoBam {
+	my ($phCmdLineArgs, $sFile) = @_;
+	my ($sCmd, $sOptions, $sFbase, $sFdir, $sFext, $sOut);
+	my $nExitCode;
+
+	my $sSubName = (caller(0))[3];
+	if(exists($phCmdLineArgs->{'samtools_params'})) {
+		$sOptions = $phCmdLineArgs->{'samtools_params'};
+	}
+	($sFbase,$sFdir,$sFext) = fileparse($sFile, qr/\.[^.]*/);
+	$sOut = $phCmdLineArgs->{'output_dir'}."/".$sFbase.".bam";
+	
+	$sCmd = $phCmdLineArgs->{'samtools_path'}." view ".$sOptions." -bhS -o ".$sOut." ".$phCmdLineArgs->{'output_dir'}."/".$sFile;
+	printLogMsg($DEBUG, "INFO : $sSubName :: Start converting SAM file $phCmdLineArgs->{'output_dir'}/$sFile to BAM format $sOut.\nINFO : $sSubName :: Command : $sCmd");
+	$nExitCode = system($sCmd);
+	if($nExitCode != 0) {
+		printLogMsg($ERROR, "ERROR : $sSubName :: SAM to BAM conversion failed for $phCmdLineArgs->{'output_dir'}/$sFile with error. Check the stderr");
+	} else {
+		printLogMsg($DEBUG, "INFO : $sSubName :: SAM to BAM conversion succesfully completed in $phCmdLineArgs->{'output_dir'}");
+	}
+}
+
+sub AlignBwa {
+	my ($phCmdLineArgs, $sAlgo, $sFiles, $sOptions, $sOutFile) = @_;
+	my ($sCmd, $sParam);
+	my $nExitCode;
+	my %hParams = (
+			'misMsc' => 'M', 
+			'maxGapO' => 'o', 
+			'maxGapE' => 'e', 
+			'gapOsc' => 'O', 
+			'gapEsc' => 'E', 
+			'nThrds' => 't'
+			);
+
+	my $sSubName = (caller(0))[3];
+
+	if($sAlgo eq "aln") {
+		foreach $sParam (keys %hParams) {
+			if(exists($phCmdLineArgs->{$sParam})) {
+				$sOptions .= "-".$hParams{$sParam}." ".$phCmdLineArgs->{$sParam};
+			}
+		}
+	} elsif($sAlgo eq "sampe" || $sAlgo eq "samse") {
+		if(exists($phCmdLineArgs->{'maxOcc'})) {
+			$sOptions .= "-n ".$phCmdLineArgs->{'maxOcc'};
+		}
+	} else {
+		printLogMsg($ERROR, "ERROR : $sSubName :: $sAlgo is not supported by this version of BWA component");
+	}
+
+	if(exists($phCmdLineArgs->{'bwa_params'})) {
+		$sOptions .= " ".$phCmdLineArgs->{'bwa_params'};
+	}
+
+	$sCmd = $phCmdLineArgs->{'bwa_path'}." ".$sAlgo." ".$sOptions." ".$phCmdLineArgs->{'reference'}." ".$sFiles." > ".$phCmdLineArgs->{'output_dir'}."/".$sOutFile;
+	printLogMsg($DEBUG, "INFO : $sSubName :: Start aligning $sFiles to $phCmdLineArgs->{'reference'}.\nINFO : $sSubName :: Command : $sCmd");
+	$nExitCode = system($sCmd);
+        if($nExitCode != 0) {
+                printLogMsg($ERROR, "ERROR : $sSubName :: $sFiles alignment failed with error. Check the stderr");
+        } else {
+                printLogMsg($DEBUG, "INFO : $sSubName :: $sFiles alignment to $phCmdLineArgs->{'reference'} succesfully completed in $phCmdLineArgs->{'output_dir'}");
+        } 
+}
+
+sub DetermineFormat {
+	my ($phCmdLineArgs, $phType) = @_;
+	my $sFile;
+	my $sSubName = (caller(0))[3];
+	opendir(dhR, $phCmdLineArgs->{'input_dir'}) or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open directory $phCmdLineArgs->{'input_dir'} for reading.\nReason : $!");
+	while($sFile = readdir(dhR)) {
+		if($sFile =~ /fastq/) {
+			if($sFile =~ /_1/) {
+				$phType->{'fastq_1'} = $sFile;
+			} elsif($sFile =~ /_2/) {
+				$phType->{'fastq_2'} = $sFile;
+			} else {
+				$phType->{'fastq'} = $sFile;
+			}
+		} elsif($sFile =~ /bam$/) {
+			$phType->{'bam'} = $sFile;
+		}
+	}
+}
+
+# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing. 
+# Parameters    : NA
+# Returns       : NA
+# Modifications :
+
+sub checkCmdLineArgs {
+	my ($phCmdLineArgs) = @_;
+	my $sSubName = (caller(0))[3];
+	if(exists($phCmdLineArgs->{'log'})) {
+		open($fhLog, "> $phCmdLineArgs->{'log'}") or die "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n"
+	}
+	my @aRequired = qw(reference input_dir output_dir bwa_path paired);
+        foreach my $sOption(@aRequired) {
+                if(!defined($phCmdLineArgs->{$sOption})) {
+                        printLogMsg($ERROR, "ERROR : $sSubName :: Required option $sOption not passed");
+                }
+        }
+	# Delete SAM files once they are converted to BAM by default
+	if(!defined($phCmdLineArgs->{'keep_sam'})) {
+		$phCmdLineArgs->{'keep_sam'} = 0;
+	}
+}
+
+####################################################################################################################################################
+
+# Description   : Used to handle logging of messages(errors and warnings) during the execution of the script
+# Parameters    : level = can be ERROR, WARNING or INFO
+#		  msg   = msg to be printed in the log file or to STDERR
+# Returns       : NA
+# Modifications : 
+
+sub printLogMsg {
+	my ($nLevel, $sMsg) = @_;
+	if( $nLevel <= $DEBUG ) {
+		print STDERR "$sMsg\n";
+		print $fhLog "$sMsg\n" if(defined($fhLog));
+		die "" if($nLevel == $ERROR);
+	}	
+}
+
+__END__
+
+#####################
+# POD DOCUMENTATION #
+#####################
+
+=head1 NAME
+
+# Name of the script and a 1 line desc
 
 =head1 SYNOPSIS
 
+# USAGE : 
 
-      
+	parameters in [] are optional
+
 =head1 OPTIONS
 
-=over 8
 
-This help message
 
-=back
+=head1 DESCRIPTION
 
-=head1   DESCRIPTION
 
 
 =head1 INPUT
@@ -26,169 +293,15 @@ This help message
 =head1 OUTPUT
 
 
-=head1 CONTACT
 
-    David Riley
-    driley@som.umaryland.edu
+=head1 AUTHOR
 
-=cut
-use strict;
-use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
-use Pod::Usage;
+	Sonia Agrawal
+	Bioinformatics Software Engineer II
+	Institute for Genome Sciences
+	School of Medicine
+	University of Maryland
+	Baltimore, MD - 21201
+	sagrawal@som.umaryland.edu
 
-my %options = ();
-my $results = GetOptions (\%options, 
-              'input_dir|i=s',
-              'input_base|ib=s',
-              'ref_file|r=s',
-              'ref_file_list|rl=s',
-              'output_dir|o=s',
-              'mismatch|mm=s',
-              'max_gaps|mg=s',
-              'max_gap_extentions|mge=s',
-              'open_gap_penalty|og=s',
-              'extend_gap_penalty|eg=s',
-              'threads|t=s',
-              'use_bwasw',
-              'num_aligns|na=s',
-              'bwa_path|b=s',
-              'cleanup_sai:s',
-              'help|h');
-
-# display documentation
-if( $options{'help'} ){
-    pod2usage( {-exitval=>0, -verbose => 2, -output => \*STDOUT} );
-}
-
-my $ref_files = [];
-my $options_string = '';
-## make sure all passed options are peachy
-&check_parameters(\%options);
-
-# Check if the data are paired or not
-# HUGE HACK - need to remove .lite if it exists
-$options{input_base} =~ s/\.lite//;
-my $PAIRED = 0;
-$PAIRED=1 if(-e "$options{input_dir}/$options{input_base}_1.fastq");
-
-if($options{use_bwasw}) {
-    die "bwasw is not implemented yet\n";
-}
-else {
-    &run_bwa();
-}
-
-
-sub run_bwa {
-
-    foreach my $ref (@$ref_files) {
-        chomp $ref;
-        my $refname = '';
-        if( $ref =~ /.*\/([^\/]+)\.[^\.]+$/) {
-            $refname = $1;
-        }
-        else {
-            $ref =~ /.*\/([^\/]+)\.?[^\.]*$/;
-            $refname = $1;
-        }
-
-        if(! -e "$ref.bwt") {
-            print "Did not find reference file $ref.bwt\n";
-
-            print "Indexing $ref\n";
-            my $cmd = "$options{bwa_path} index $ref";
-            system($cmd) == 0 or die "Unable to index $ref\n";
-        }
-        # In here if we're paired
-        if($PAIRED) {
-
-            my $in1 = "$options{input_dir}/$options{input_base}_1.fastq";
-            my $out1 = "$options{output_dir}/$refname\_$options{input_base}_aln_sa1.sai";
-            my $in2 = "$options{input_dir}/$options{input_base}_2.fastq";
-            my $out2 = "$options{output_dir}/$refname\_$options{input_base}_aln_sa2.sai";
-            
-            # Run the first one through aln
-            my $cmd = "$options{bwa_path} aln $options_string $ref $in1 > $out1";
-            print "Running: $cmd\n";
-            system($cmd) == 0 or die "Unable to run $cmd\n";
-            
-            # Run the second one through aln
-            $cmd = "$options{bwa_path} aln $options_string $ref $in2 > $out2";
-            print "Running: $cmd\n";
-            system($cmd) == 0 or die "Unable to run $cmd\n";
-
-            # Run sampe
-            $cmd = "$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" > $options{output_dir}/$refname\_$options{input_base}.sam";
-            print "Running: $cmd\n";
-            system($cmd) == 0 or die "Unable to run $cmd\n";
-
-
-            if($options{cleanup_sai}) {
-                $cmd = "rm -f $out1 $out2";
-                print "Running: $cmd\n";
-                system($cmd) == 0 or die "Unable to run $cmd\n";
-            }
-        }
-        
-        # In here if we aren't paired
-        else {
-            my $single_read_file = "$options{output_dir}/$options{input_base}_single_read.txt";
-            my $cmd = "touch $single_read_file";
-            system($cmd) ==0 or die "Unable to run $cmd\n";
-
-            my $in = "$options{input_dir}/$options{input_base}.fastq";
-            my $out = "$options{output_dir}/$refname\_$options{input_base}_aln_sa.sai";
-            $cmd = "$options{bwa_path} aln $options_string $ref $in > $out";
-
-            print "Running: $cmd\n";
-            system($cmd) == 0 or die "Unable to run $cmd\n";
-
-            $cmd = "$options{bwa_path} samse -n $options{num_aligns} $ref \"$out\" \"$in\" > $options{output_dir}/$refname\_$options{input_base}.sam";
-            print "Running: $cmd\n";
-            system($cmd) == 0 or die "Unable to run $cmd\n";
-
-            if($options{cleanup_sai}) {
-                $cmd = "rm -f $out";
-                print "Running: $cmd\n";
-                system($cmd) == 0 or die "Unable to run $cmd\n";
-            }
-        }
-    }
-
-}
-sub check_parameters {
-    
-    ## make sure input file exists
-    if (! -e $options{'input_dir'}) { print STDERR "Input invalid\n"; pod2usage( {-exitval=>0, -verbose => 0, -output => \*STDOUT})};
-
-    if($options{ref_file}) {
-        my @files = split(/,/,$options{ref_file});
-        $ref_files = \@files;
-    }
-    elsif($options{ref_file_list}) {
-        my @lines = `cat $options{ref_file_list}`;
-        $ref_files = \@lines;
-    }
-    else {
-        die "No reference file specified in ref_file or ref_file_list"
-    }
-
-    my $options_to_param_keys = {
-        'mismatch' => '-M',
-        'max_gaps' => '-o',
-        'max_gap_extensions' => '-e',
-        'open_gap_penalty' => '-O',
-        'extend_gap_penalty' => '-E',
-        'threads' => '-t'
-    };
-
-    my $opts = [];
-    foreach my $key (keys %$options_to_param_keys) {
-        if($options{$key}) {
-            push(@$opts, "$options_to_param_keys->{$key} $options{$key}");
-        }
-    }
-    $options_string = join(" ",@$opts);
-    
-    return 1;
-}
+==cut
