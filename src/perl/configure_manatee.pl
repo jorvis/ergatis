@@ -62,11 +62,12 @@ if($cmdLineArgs{'action'} eq "create") {
 	printLogMsg($DEBUG,"Creation of $cmdLineArgs{'db_name'} successful");
 
 # Create DB username 
-	$dbh->do("CREATE USER '$cmdLineArgs{db_username}'\@'localhost' IDENTIFIED BY '$cmdLineArgs{db_password}'") or printLogMsg($ERROR,"Could not create MySQL user $cmdLineArgs{'db_username'}");
-	printLogMsg($DEBUG,"Creation of $cmdLineArgs{'db_username'} successful");
+#	$dbh->do("CREATE USER '$cmdLineArgs{db_username}'\@'localhost' IDENTIFIED BY '$cmdLineArgs{db_password}'") or printLogMsg($ERROR,"Could not create MySQL user $cmdLineArgs{'db_username'}");
+#	printLogMsg($DEBUG,"Creation of $cmdLineArgs{'db_username'} successful");
 
 
 # Grant permissions on the database to the user
+# User will be automatically created if they do not currently exist
 	$dbh->do("GRANT ALL PRIVILEGES ON ".$cmdLineArgs{'db_name'}.".* TO '$cmdLineArgs{db_username}'\@'localhost' IDENTIFIED BY '$cmdLineArgs{db_password}'") or printLogMsg($ERROR,"Could not grant permissions to $cmdLineArgs{'db_username'} on $cmdLineArgs{'db_name'}");
 	printLogMsg($DEBUG,"Grant permissions to $cmdLineArgs{'db_username'} on $cmdLineArgs{'db_name'} successful");
 

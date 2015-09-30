@@ -229,6 +229,13 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
+   # If feature_relationhip file is not present, then we assume mapping does not need to take place
+   if (! $opts->{'feature_relationship_file'}){
+		print STDERR "No feature_relationship file found so skipping rest of mapping program.\n";
+		exit(0);
+	}
+
+
    foreach my $req ( qw(tabfile feature_relationship_file pseudomolecule_list output_file) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }

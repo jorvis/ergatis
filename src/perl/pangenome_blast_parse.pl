@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME
 
 pangenome_blast_parse.pl - Parses BLAST BSML output files and extracts data needed for pangenome analysis.
@@ -209,7 +212,7 @@ sub processSeqPairAlignment {
     my($qdb, $qprot) = ($2, $1);
 
     # For general database identifiers (gnl|qdb|qprot)
-    if ($query_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/) {
+    if ($query_id =~/^gnl\|([^\|]+)\|([^\.\|]+)[\.\|].*$/) {
     	($qdb, $qprot) = ($1, $2);
     	#print "QDB:\t$qdb\tQPROT:\t$qprot\n";
     }
@@ -227,7 +230,7 @@ sub processSeqPairAlignment {
     # $sprot may be an assembly for TBLASTN, not a protein
     my($sdb, $sprot);
     # For general database identifiers (gnl|qdb|qprot)
-    if ($subject_id =~/^gnl\|([^\|]+)\|([^\.]+)\..*$/){
+    if ($subject_id =~/^gnl\|([^\|]+)\|([^\.\|]+)[\.\|]?.*$/){
     	($sdb, $sprot) = ($1, $2);
     	#print "SDB:\t$sdb\tSPROT:\t$sprot\n";
     }

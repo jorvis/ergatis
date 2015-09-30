@@ -15,7 +15,6 @@ USAGE: run_cmsearch.pl
               --flanking_seq=50
               --hmm_cm_table=/path/to/some/file.table
               --cmsearch_bin=/path/to/cmsearch
-              --cm_dir=/dir/with/covariance/models/
           [   --other_opts=cmsearch options
               --log=/path/to/some/file.log
               --debug= > 2 for verbose
@@ -27,35 +26,42 @@ B<--input_list,-l>
     A list of hmmpfam raw output files to be formatted and run with cmsearch
 
 B<--input_file,-i>
+	With --hmm_processing enabled:
     An input file (hmmpfam) raw output
+	With --hmm_processing_disbled:
+	A polypeptide fasta file
 
 B<--tmp_dir,-t>
-    Directory to write temporary files.  Will be cleaned up (not yet).
+    Directory to write temporary files.  Will be cleaned up if --clean_up is enabled.
+	Is required if --hmm_preprocessing is enabled
 
 B<--output_file,-o>
     The output file for cmsearch results to go into.  Will concate all results to this file.
 
 B<--flanking_seq,-f>
     The number of nucleotides on either side of the hmmpfam hit to parse out of database for 
-    cmsearch run. Default: 50.
+    cmsearch run. Default: 50.  Only works with the --hmm_preprocessing flag set
 
 B<--hmm_cm_table,-c>
     File containing a lookup for covariance models given an hmm model.  See input section of perldoc
-    more specific details on this file.
+    more specific details on this file.  Can only be used with HMM preprocessing
+
+B<--hmm_preprocessing, -h>
+	If flag is enabled, will accept HMM raw results as input, process the results in order to 
+	obtain subsequences from --sequence_list to run cm_search on
 
 B<--cmsearch_bin,-b>
     Path to the cmsearch binary. If not it will be assumed that the binary is in the PATH.
 
-B<--cm_dir,-m>
-    If you don't feel like making a hmm_cm_table, you can always just put the directory where all
-    the covariance models are.  The program will try and guess which covariance model is related to
-    each hmm.  Needless to say, hmm_cm_table is a better option.  Turns out, computers are bad
-    guessers.
+B<--cm_file, -C>
+	Instead of mapping the HMMs or passing in a directory of CMs, just pass in a single CM file.
+	Best use case is if you are unsure what to compare against and just want to compare against
+	all available RFams.  Can be used with or without HMM_preprocessing
 
 B<--sequence_list,-s>
     A list of absolute paths to files which contain the input fasta sequence from the HMMER search.
     In most cases will be the chromosome/assembly sequence used as input. Used to grab extra flanking
-    sequence.
+    sequence. If not running with HMM preprocessing, just pass a single file as --input_file
 
 B<--other_opts,-e>
     Other options to be passed into the cmsearch program.  
@@ -63,13 +69,16 @@ B<--other_opts,-e>
     string prior to running cmsearch.  This program uses the length of the sequence found by the
     hmmpfam run (plus extraSeq) as the window size.
 
+B<--clean_up>
+	Remove temp files and the temp directory
+
 B<--debug> 
     Debug level.  Use a large number to turn on verbose debugging. 
 
-B<--log,-l> 
+B<--log> 
     Log file
 
-B<--help,-h>
+B<--help,>
     This help message
 
 =head1  DESCRIPTION
@@ -79,12 +88,17 @@ The program infernal is used to search covariance models against biological sequ
 profiles of RNA secondary structure for sequence analysis.  The program is computationally
 intensive when used with large genomic sequences.  
 
-Run_cmsearch.pl will take in a set of hmmpfam results as an initial screening to infernal.  
+At its most basic form, run_cmsearch.pl will simply take a polypeptide fasta sequence and a CM file and 
+run Infernal's 'cmsearch' script.
+
+Optionally, run_cmsearch.pl will take in a set of hmmpfam results as an initial screening to infernal.  
 RNA HMMs can quickly identify regions where RNA is located, and these sections can then be further
 refined by running this section through cmsearch (infernal).  With a set of HMMs and CMs created from
 the same alignments, infernal can be used in a high-throughput manner.
 
 =head1  INPUT
+
+=head2 HMM_preprocessing flag on
 
 The main input for run_cmsearch is either a list of hmmpfam raw results or one hmmpfam raw result.
 The sequences are then parsed from these hmmpfam results and the database queryed.  The sequence
@@ -107,6 +121,11 @@ The other option is to provide the program with the directory where all the cova
 stored.  The program will then look in that directory for a covariance model that contains the first
 word of the HMM name (not file name, but actual id name found in hmmpfam results).  
 
+=head2 HMM_preprocessing flag off
+
+The --input_file instead will be replaced by a fasta sequence file.  All that is required is this
+fasta file and the covariance matrix (CM) file path marked by --cm_file.  
+
 =head1  OUTPUT
 
 The program will create individual fasta files for each hmmpfam hit provided in the input and is 
@@ -121,9 +140,11 @@ output_file.  See infernal userguide: oryx.ulb.ac.be/infernal.pdf for more infor
 =cut
 
 use strict;
+use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use Ergatis::Logger;
+use HmmTools;
 use Data::Dumper;
 use IPC::Open3;
 use POSIX ":sys_wait_h";
@@ -137,11 +158,14 @@ my $results = GetOptions (\%options,
                           'sequence_list|s=s',
                           'flanking_seq|f=i',
                           'hmm_cm_table|c=s',
+						  'hmm_preprocessing|h=i',
+						  'cm_file|C=s',
                           'cmsearch_bin|b=s',
                           'other_opts|e=s',
-                          'log|l=s',
+						  'clean_up=i',
+                          'log=s',
                           'debug=s',
-                          'help|h') || &_pod();
+                          'help') || &_pod();
 
 ## display documentation
 &_pod if( $options{'help'} );
@@ -156,57 +180,68 @@ $logger = $logger->get_logger();
 my $PROG_NAME = 'cmsearch';
 
 my @files;
-my $input;
+my $fasta_in;
 my $hmmCmTable;
 my %hmmCmLookup;
 my $cmDir;
+my $cmFile;
 my $outputDir;
 my $outputFile;
-my $debug;
 my @seqList;
 my $extraSeqLen = 50;
 my $other_opts = "";
 my @dirsMade;
+my $debug = 0;
 ################################################
 
 ## make sure everything passed was peachy
 &check_parameters(\%options);
 
-
 ################## MAIN #########################
-&createHmmCmLookup($hmmCmTable) if(defined($hmmCmTable));
+if ($options{'hmm_preprocessing'} ){
+	print "HMM preprocessing has been enabled\n" if ($debug > 2);
+	&createHmmCmLookup($hmmCmTable) if(defined($hmmCmTable));
 
-#All the input files if it's a list.
-foreach my $file(@files) {
-    my $stats = &processHmmpfamFile($file);
-    $stats = &getSequencesAndPrint($stats);
+	#All the input files if it's a list.
+	foreach my $file(@files) {
+    	my $stats = &processHmmpfamFile($file);
+    	$stats = &getSequencesAndPrint($stats);
 
-    #Make sure that we make an output file even if there aren't any results to read in.
-    if( (scalar(keys %{$stats})) == 0 ) {
-        system("touch $outputFile");
-    }
+    	#Make sure that we make an output file even if there aren't any results to read in.
+    	if( (scalar(keys %{$stats})) == 0 ) {
+			$logger->debug("No sequences parsed from query seq file.");
+    	    system("touch $outputFile");
+    	}
     
-    #Okay this may seem to be overkill, but I'm almost sure it has to be this way (almost).
-    #It allows for the case where one HMM can have a hit against the same sequence twice.  
-    #Therefore one cmsearch run should be identified not only by the hmm/cm and query sequence, 
-    #but also where the hit has occured on the query sequence.
-    foreach my $querySeq(keys %{$stats}) {
-        foreach my $hmm(keys %{$stats->{$querySeq}}) {
-            foreach my $boundaries(keys %{$stats->{$querySeq}->{$hmm}}) {
-                my $fileName = $stats->{$querySeq}->{$hmm}->{$boundaries};
-                unless($fileName) {
-                    print Dumper($stats->{$querySeq}->{$hmm});
-                    &_die("Could not find file name");
-                }
-                my $exitVal = &runProg($fileName, $hmm, $other_opts, $outputFile);
-                &handleExitVal($exitVal);
-            }
-        }
-    }
-    
+    	#Okay this may seem to be overkill, but I'm almost sure it has to be this way (almost).
+    	#It allows for the case where one HMM can have a hit against the same sequence twice.  
+    	#Therefore one cmsearch run should be identified not only by the hmm/cm and query sequence, 
+    	#but also where the hit has occured on the query sequence.
+    	foreach my $querySeq(keys %{$stats}) {
+				$logger->debug("Query = $querySeq");
+        	foreach my $hmm(keys %{$stats->{$querySeq}}) {
+				$logger->debug("HMM = $hmm");
+            	foreach my $boundaries(keys %{$stats->{$querySeq}->{$hmm}}) {
+						$logger->debug("Boundaries = $boundaries");
+                	my $fileName = $stats->{$querySeq}->{$hmm}->{$boundaries};
+                	unless($fileName) {
+                	    print Dumper($stats->{$querySeq}->{$hmm});
+                	    &_die("Could not find file name");
+                	}
+					my $cm = selectCM($hmm, $cmFile);
+					validateFasta($fileName);
+                	my $exitVal = &runProg($fileName, $cm, $other_opts, $outputFile);
+                	handleExitVal($exitVal);
+            	}
+        	}
+    	}
+	}
+	&cleanUp if ($options{'clean_up'});
+} else {
+	# Strictly fasta file and pass in CM file
+	my $exitVal = runProg($fasta_in, $cmFile, $other_opts, $outputFile);
+	handleExitVal($exitVal);
 }
-
-&cleanUp;
 
 exit(0);
 ################## END MAIN #####################
@@ -222,61 +257,69 @@ sub check_parameters {
     my $options = shift;
 
     #I wish this function could be uglier.  So I'm not commenting it.
-    if($options{input_list} && $options{input_list} ne "") {
-        &_die("input_list [$options{input_list}] does not exist") unless( -e $options{input_list});
-        open(IN, "< $options{input_list}") or &_die("Unable to open $options{input_list}");
+    if($options->{input_list} && $options->{input_list} ne "") {
+        &_die("input_list [$options->{input_list}] does not exist") unless( -e $options->{input_list});
+        open(IN, "< $options->{input_list}") or &_die("Unable to open $options->{input_list}");
         while(<IN>) {
             push(@files, $_);
         }
         close(IN);
-    } elsif($options{input_file} && $options{input_file} ne "") {
-        &_die("input_file [$options{input_file}] does not exist") unless( -e $options{input_file});
-        push(@files,$options{input_file});
+    } elsif($options->{input_file} && $options->{input_file} ne "") {
+        &_die("input_file [$options->{input_file}] does not exist") unless( -e $options->{input_file});
+        if ($options->{hmm_preprocessing}){
+			push(@files,$options->{input_file});
+		} else {
+			$fasta_in = $options->{input_file};
+		}
     } else {
         &_die("Either input_list or input_file must be provided");
     }
 
-    if($options{tmp_dir}) {
-        &_die("$options{tmp_dir} (tmp_dir) does not exist") unless( -d $options{tmp_dir});
-    } else {
-        &_die("Option tmp_dir must be provided");
-    }
-    $outputDir = $options{tmp_dir};
-    $outputDir =~ s|/$||;
+	if ($options->{hmm_preprocessing}){
+    	if($options->{tmp_dir}) {
+    	    &_die("$options->{tmp_dir} (tmp_dir) does not exist") unless( -d $options{tmp_dir});
+    	} else {
+    	    &_die("Option tmp_dir must be provided if HMM preprocessing is enabled");
+    	}
+    	$outputDir = $options->{tmp_dir};
+    	$outputDir =~ s|/$||;
+   
+		if($options->{sequence_list}) {
+        	&_die("sequence_list $options->{sequence_list} does not exist") unless(-e $options->{sequence_list});
+    	} else {
+        	&_die("Option sequence_list must be provided if HMM preprocessing is enabled.  If not running with HMM results, just pass single fasta file as --input_file");
+    	}   
+    	open(IN, "<$options->{sequence_list}") or &_die("Unable to open $options->{sequence_list}");
+    	@seqList = <IN>;
+    	close(IN);
+	}
 
-    &_die("output_file option is required") unless($options{output_file});
-    $outputFile = $options{output_file};
-    system("rm -f $outputFile") if(-e $options{output_file});
+    &_die("output_file option is required") unless($options->{output_file});
+    $outputFile = $options->{output_file};
+    system("rm -f $outputFile") if(-e $options->{output_file});
 
-    $debug = $options{debug} if($options{debug});
+    $debug = $options->{debug} if($options->{debug});
 
-    if($options{sequence_list}) {
-        &_die("sequence_list $options{sequence_list} does not exist") unless(-e $options{sequence_list});
-    } else {
-        &_die("Option sequence_list must be provided");
-    }
-    open(IN, "<$options{sequence_list}") or &_die("Unable to open $options{sequence_list}");
-    @seqList = <IN>;
-    close(IN);
-
-    if($options{hmm_cm_table} && $options{hmm_cm_table} ne "") {
-        if(-f $options{hmm_cm_table}) {
-            $hmmCmTable = $options{hmm_cm_table};
-        } elsif(-d $options{hmm_cm_table}) {
-            $cmDir = $options{hmm_cm_table};
-        } else {
-            &_die("Option --hmm_cm_table file or directory path $options{hmm_cm_table} does not exist");
+    if($options->{hmm_cm_table} && $options->{hmm_cm_table}  ne "" && $options->{hmm_preprocessing}) {
+        if(-f $options->{hmm_cm_table}) {
+            $hmmCmTable = $options->{hmm_cm_table};
+        } elsif (-d $options->{hmm_cm_table}) {
+            $cmDir = $options->{hmm_cm_table};
+		} else {
+            &_die("Option --hmm_cm_table file or directory path $options->{hmm_cm_table} does not exist");
         }
-    } else {
-        &_die("Option --hmm_cm_table is required");
+    } elsif (-f $options->{cm_file}) {
+		$cmFile = $options->{cm_file};
+	} else {
+        &_die("Options --hmm_cm_table or --cm_file are required");
     }
 
-    $other_opts = $options{other_opts} if($options{other_opts});
-    $extraSeqLen = $options{flanking_seq} if($options{flanking_seq});
+    $other_opts = $options->{other_opts} if($options->{other_opts});
+    $extraSeqLen = $options->{flanking_seq} if($options->{flanking_seq});
     
-    if($options{cmsearch_bin} && $options{cmsearch_bin} ne "") {
-        &_die("Could not locate cmsearch binary at $options{cmsearch_bin}") unless(-e $options{cmsearch_bin});
-        $PROG_NAME = $options{cmsearch_bin};
+    if($options->{cmsearch_bin} && $options->{cmsearch_bin} ne "") {
+        &_die("Could not locate cmsearch binary at $options->{cmsearch_bin}") unless(-e $options{cmsearch_bin});
+        $PROG_NAME = $options->{cmsearch_bin};
     }
 }
 
@@ -286,8 +329,9 @@ sub check_parameters {
 #Rets: Nothing
 sub cleanUp {
     foreach my $dir(@dirsMade) {
-        print STDERR "DEBUG: removing $dir\n";
-        system("rm -rf $dir");
+        print STDERR "DEBUG: removing $dir and contents\n";
+		unlink glob "$dir/*.fsa";
+		rmdir($dir);
     }
 }
 
@@ -320,6 +364,7 @@ sub findFile {
     my $seqID = shift;
     my ($retval,$fileFound);
     my $fileFlag = 0; 
+	my $multiFlag = 0;	# If sequence is grepped, had to come from multifasta input
     $seqID =~ s/\|/\_/g;
     print "Searching with $seqID\n";
     foreach my $file (@seqList) {
@@ -333,18 +378,24 @@ sub findFile {
     if($fileFlag > 1) {
         &_die("Found $fileFlag possible files");
     } elsif($fileFlag == 0) {
-        &_die("Didn't find a match for $seqID in the sequence_list");
+		my $grepFile = grepFile($seqID);
+        &_die("Didn't find a match for $seqID in the sequence_list") if (!$grepFile);
+		$fileFound = $grepFile;
+		$multiFlag = 1;
     }
 
     open(IN, "< $fileFound") or &_die("Unable to open $fileFound to get sequence information");
     
     my $header = "";
     my %sequence;
-    while(<IN>) {
+    while (<IN>) {
         my $line = $_;
         chomp($line);
-
-        if($line =~ />(.*)\n*$/) {
+		
+		if ($multiFlag && $line =~ />($seqID.*)\n*$/) {
+			$header = $1;
+			$sequence{$header} = "";
+		} elsif ($line =~ />(.*)\n*$/) {
             $header = $1;
             $sequence{$header} = "";
         } else {
@@ -352,14 +403,40 @@ sub findFile {
         }
     }
 
-    if(scalar(keys %sequence) > 1) {
+	# If file was grepped, return sequence directly
+	if ($multiFlag && defined $sequence{$seqID}) {
+		return $sequence{$seqID};
+	} else {
+		&_die("Sequence $seqID was not found within the grepped file.  That's odd.");
+	}
+	# If sequence ID was in file name (single-seq input), return only sequence
+    if (scalar(keys %sequence) > 1)  {
         &_die("More than one sequence found in file $fileFound.  ".
-              "Sorry, but only single sequence fasta format files are accepted (for now at least).");
-    } elsif($header eq "") {
+              "Assuming this was a single-seq input.");
+    } elsif ($header eq "") {
         &_die("Couldn't find sequence in file $fileFound.  Perhaps it's not fasta format?");
     }
     
     return $sequence{$header};
+}
+
+sub grepFile {
+	my $seqID = shift;
+	my $noFile = 0;	# Flag in case sequence cannot be grepped from files
+	foreach my $file (@seqList) {
+	  open my $fh, $file || &_die("Cannot open $file for reading (for grep check): $!");
+	  while (my $line = <$fh>){
+		if ($line =~ /^>/){
+			my $i = index $line, $seqID;
+			if ($i > -1) {	# -1 means index position was not found for sequence
+				close $fh;
+				return $file;
+			}
+		}
+	  }
+	  close $fh;
+	}
+	return $noFile;
 }
 
 #Name: getInputFiles
@@ -391,11 +468,9 @@ sub getInputFiles {
 #Rets: Hash Ref: The same hash ref, just with sequences included.
 sub getSequencesAndPrint {
     my $seqHash = shift;
-    
 
     #Loop through sequences
     foreach my $querySeq (keys %{$seqHash}) {
-
         my $tmpSeq = "";
         $tmpSeq = &findFile($querySeq);
         &_die("Couldn't find file matching $querySeq") unless($tmpSeq ne "");
@@ -410,25 +485,18 @@ sub getSequencesAndPrint {
                 #Since the start and end coordinates are going to change, remove the old entry.
                 delete($seqHash->{$querySeq}->{$hmm}->{$startEnd});
                 
-                #Get the start and end of the hit
+				#Get the start and end of the hit
                 my ($start, $end) = split(/::/, $startEnd);
-                
                 #Parse sequence information
-                my ($tmpSection, $start, $end) = &parseSeqAndExtra($tmpSeq, $start, $end);
+				my $tmpSection;
+                ($tmpSection, $start, $end) = &parseSeqAndExtra($tmpSeq, $start, $end);
                 
                 #Store file name information and print sequence
                 $seqHash->{$querySeq}->{$hmm}->{"${start}::$end"} = &printSeqToFile($querySeq, $hmm, $start, 
                                                                                   $end, $tmpSection);
-
-            
-              
-
             }
-
         }
-
     }
-
     #Return the result
     return $seqHash;
 }
@@ -497,7 +565,6 @@ sub parseSeqAndExtra {
     $end += $extraSeqLen;
 
     my $retval = substr($seq, $start, $end-$start);
-
     return ($retval, $start, $end);
 }
 
@@ -520,13 +587,10 @@ sub printSeqToFile {
     $outFileName = "$outputDir/$querySeq/$tmpHmm.$start.$end.fsa";
     open(OUT, "> $outFileName") 
         or &_die("Unable to open output file $outFileName ($!)");
-    
     print OUT ">${querySeq}::$start-$end\n$tmpSeq";
-    close(OUT);
+	close(OUT);
 
     return $outFileName;
-    
-
 }
 
 #Name: processHmmpfamFile
@@ -536,62 +600,84 @@ sub printSeqToFile {
 sub processHmmpfamFile {
     my $fileName = shift;
     my $hmmpfamStats;  #Hash Ref
-    my ($inH,$hmmFile,$querySeq);
+    my ($inH,$querySeq);
     my $alignmentFlag = 0;
 
-    open($inH, "<$fileName") or &_die("Unable to open $fileName ($!)");
-    print "Parsing $fileName\n" if($debug > 2);
-    
-    while(<$inH>) {
-        if(/^HMM file:\s+(.*)/) {
-            $hmmFile = $1;
-            chomp $hmmFile;
-            print "$hmmFile was used\n" if($debug > 2);
-        } elsif(/^Query sequence:\s(.*)/) {
-            $querySeq = $1;
-            chomp $querySeq;
-            print "Query Seq :: $querySeq\n" if($debug > 2);
-        } elsif(/^Alignments/) {
-            $alignmentFlag = 1;
-            print "Found the alignments section\n" if($debug > 2);
-        } elsif($alignmentFlag && /^(\S+):.*from\s(\d+)\sto\s(\d+)/) { 
-            print "Found start: $2\n" if($debug > 3);
-            print "Found end: $3\n" if($debug > 3);
-            $hmmpfamStats->{$querySeq}->{"${hmmFile}::$1"}->{"$2::$3"} = "";
-        } 
-    }
-    close($inH);
-    return $hmmpfamStats;
+	#my $in = Bio::SearchIO->new(-format => 'hmmer',
+	#							-version => 3,
+	#							-file => $fileName); 
 
+	#open($inH, "<$fileName") or &_die("Unable to open $fileName ($!)");
+	print "Parsing $fileName\n" if($debug > 2);
+	
+	# Parse HMM data using HMMTools module
+	my $data = &read_hmmer3_output($fileName);
+	
+	my $hmmFile 	= $data->{'info'}->{'hmm_file'};
+	foreach my $querySeq (keys %{$data->{'queries'}}) {
+		foreach my $hit (keys %{$data->{'queries'}->{$querySeq}->{'hits'}}){
+			my $h = $data->{'queries'}->{$querySeq}->{'hits'}->{$hit};
+			my $hit_name = $h->{'accession'};
+			foreach my $domain (keys %{$h->{'domains'}}){
+				my $dh = $h->{'domains'}->{$domain};
+				my $start = $dh->{'seq_f'};
+				my $end = $dh->{'seq_t'};
+				print $querySeq, "\t", $hmmFile, "\t", $hit_name, "\t", $start, "\t", $end, "\n" if ($debug > 2);
+				$hmmpfamStats->{$querySeq}->{"${hmmFile}::$hit_name"}->{"${start}::$end"} = "";
+			}
+		}
+	}
+    return $hmmpfamStats;
 }
 
-#Name: runProg
-#Desc: Runs the cmsearch program
-#Args: Scalar :: Fasta file path
-#      Scalar :: Covariance model path
-#      Scalar :: Other options
-#Rets: Hash Ref :: std - stdout of program
-#                  err - stderr of program
-#                  exitVal - the exitVal
-#                  cmd - the command that was run
-sub runProg {
-    my ($fsaFile, $hmm, $oOpts, $outputFile) = @_;
-    my $retval;
+#Name: selectCM
+#Desc: Selects CM to use in 'cmsearch'
+#Args: Scalar :: HMM Covariance model path
+#	   Scalar :: Single CM file (if exists)
+#Rets: Scalar :: CM file path
 
+sub selectCM {
+	my ($hmm, $cmFile) = @_;
     my $cm = &lookupCM($1) if($hmm =~ /.*::(.*)/);
+    $cm = $cmFile if (defined $cmFile);
     &_die("Could not parse HMM name from line $hmm") unless($cm);
-    #Make sure the -W option isn't used in the other opts.  
-    $oOpts =~ s/--window\s\S+//;
+	return $cm;
+}
 
+#Name validateFasta
+#Desc Ensure Fasta file seqs aren't 0 length
+#Args: Scalar :: Fasta file
+#Rets: void
+
+sub validateFasta {
+	my ($fsaFile) = shift;
     #Get the length of the fasta file
     my $length;
     open(IN, "< $fsaFile") or &_die("Unable to open $fsaFile to determine length ($!)");
     while(<IN>) {
         if(/^[^>]/) {
             $length = length($_);
-        }
-    }
+        }   
+    }   
     &_die("Could not determine length of sequence in file $fsaFile") unless($length);
+}
+
+#Name: runProg
+#Desc: Runs the cmsearch program
+#Args: Scalar :: Fasta file path
+#      Scalar :: CM file
+#      Scalar :: Other options
+#	   Scalar :: Output file
+#Rets: Hash Ref :: std - stdout of program
+#                  err - stderr of program
+#                  exitVal - the exitVal
+#                  cmd - the command that was run
+sub runProg {
+    my ($fsaFile, $cm, $oOpts, $outputFile) = @_;
+    my $retval;
+
+    #Make sure the -W option isn't used in the other opts.  
+    $oOpts =~ s/--window\s\S+//;
 
     #set up the cmsearch command
     my $cmd = $PROG_NAME." $oOpts $cm $fsaFile";

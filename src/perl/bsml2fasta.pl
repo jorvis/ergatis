@@ -868,7 +868,7 @@ sub check_parameters {
     ## else if format is multi, output must NOT be a directory
     } elsif ($options{format} eq 'multi') {
         if (-d $options{output}) {
-            $logger->logdie("if using --format=multi then --output must NOT point to a directory");
+            $logger->logdie("if using --format=multi then --output must point to a file path");
         }
     }
 

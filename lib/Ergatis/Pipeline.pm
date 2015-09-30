@@ -148,7 +148,7 @@ umask(0000);
                 setsid() or die "Can't start a new session: $!";
 
                 print $debugfh "got past the POSIX section\n" if $self->{debug};
-                $self->_setup_environment($debugfh, ergatis_cfg => $args{ergatis_cfg} );
+                $self->_setup_environment( ergatis_cfg => $args{ergatis_cfg} );
                 print $debugfh "got past ENV setup section\n" if $self->{debug};
                 
                 my $marshal_interval_opt = '';
@@ -170,7 +170,9 @@ umask(0000);
                 } else {
                     print $debugfh "INFO: run_as parameter not set\n" if $self->{debug};
                 }
-                
+
+		print $debugfh "so far runsprefix: $runprefix\n";
+	
                 ## are we submitting the workflow as a job?  (CURRENTLY TIED TO SGE)
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
                     $runprefix = $args{ergatis_cfg}->val('grid', 'sge_qsub') . " -V -wd $run_dir -b y";
@@ -206,8 +208,10 @@ umask(0000);
 
                 ## write all this to a file
                 my $pipeline_script = "$pipeline_scripts_dir/pipeline." . $self->id . ".run.sh";
+		print $debugfh "Pipeline script: $pipeline_script\n";
                 open(my $pipeline_fh, ">$pipeline_script") || die "can't write pipeline shell file $pipeline_script: $!";
-                
+		print $debugfh "Wrote to pipeline script\n";                
+
                 print $pipeline_fh '#!/bin/bash', "\n\n";
                 
                 for my $env ( keys %ENV ) {
@@ -229,9 +233,10 @@ umask(0000);
                 print $pipeline_fh "\n$sudo_prefix $runprefix $runstring";
                 
                 close $pipeline_fh;
+		print $debugfh "Wrote runstring to $pipeline_script: $runstring\n";
                 
                 ## the script needs to be executable
-                chmod 0775, $pipeline_script;
+                chmod 0777, $pipeline_script;
                 
                 ## create a marker file showing that the pipeline has been started (or attempted to start)
                 #   we can't rely completely on XML here, since a pipeline submitted as a job won't have any
@@ -251,7 +256,7 @@ umask(0000);
                     croak "Unable to run workflow command $final_run_command failed : $!\n";
                 } elsif (($rc & 0xff) == 0) {
                     $rc >>= 8;
-                    print $debugfh "ran with non-zero exit status $rc\n" if $self->{debug};
+                    print $debugfh "ran with non-zero exit status $rc $runprefix $pipeline_script\n" if $self->{debug};
                     croak "Unable to run workflow command $final_run_command failed : $!\n";
                 } else {
                     print $debugfh "ran with " if $self->{debug};
@@ -278,7 +283,7 @@ umask(0000);
     sub set_path { $_[0]->{path} = $_[1] }
     
     sub _setup_environment {
-        my ($self, $debugfh, %args) = @_;
+        my ($self, %args) = @_;
 
         ## remove the apache SERVER variables from the environment
         for my $k (keys %ENV) {
@@ -305,7 +310,8 @@ umask(0000);
         #$ENV{SYBASE} = '/usr/local/packages/sybase';
         my $sge_bin = $args{ergatis_cfg}->val('grid', 'sge_root') . '/bin/';
         $ENV{PATH} = "$ENV{WF_ROOT}:$ENV{WF_ROOT}/bin:$ENV{WF_ROOT}/add-ons/bin:$sge_bin/$ENV{SGE_ARCH}:$ENV{PATH}";
-        $ENV{LD_LIBRARY_PATH} = '';
+
+		$ENV{LD_LIBRARY_PATH} = '';
         $ENV{TERMCAP} = ''; #can contain bad characters which crash wrapper shell script
         ## some application-specific env vars
         ############
@@ -322,11 +328,12 @@ umask(0000);
         ## for local data placement 
         $ENV{vappio_root} = $args{ergatis_cfg}->val('grid', 'vappio_root');
         $ENV{vappio_data_placement} = $args{ergatis_cfg}->val('grid', 'vappio_data_placement');
-
-        ## for overwriting SGEs default
-        $ENV{TMPDIR} = "/tmp";
+		$ENV{PERL5LIB} = "/usr/local/packages/perllib/x86_64-linux-thread-multi:$ENV{PERL5LIB}";
         
-    }
+		## for overwriting SGEs default
+        $ENV{TMPDIR} = "/tmp";
+
+	}
     
 }
 

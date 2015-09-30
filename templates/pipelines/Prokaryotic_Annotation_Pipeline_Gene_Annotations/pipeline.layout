@@ -26,7 +26,7 @@
 					<state>incomplete</state>
 					<commandSet type="serial">
 						<state>incomplete</state>
-						<name>ncbi-blastx.pre_overlap_analysis</name>
+						<name>RAPSearch2.pre_overlap_analysis</name>
 					</commandSet>
 					<commandSet type="serial">
 						<state>incomplete</state>
@@ -78,7 +78,7 @@
 					<state>incomplete</state>
 					<commandSet type="serial">
 						<state>incomplete</state>
-						<name>ncbi-blastx.post_overlap_analysis</name>
+						<name>RAPSearch2.post_overlap_analysis</name>
 					</commandSet>
 					<commandSet type="serial">
 						<state>incomplete</state>
@@ -115,7 +115,7 @@
 				</commandSet>
 				<commandSet type="serial">
 					<state>incomplete</state>
-					<name>ncbi-blastx.interevidence_search</name>
+					<name>RAPSearch2.interevidence_search</name>
 				</commandSet>
 			</commandSet>
 			<commandSet type="serial">

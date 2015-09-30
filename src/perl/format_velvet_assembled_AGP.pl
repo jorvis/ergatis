@@ -19,7 +19,7 @@ format_velvet_assembled.pl - Program to format velvet assembled, annotated genom
 =head1 OPTIONS
 	
 	--tbl_file <tbl_file>		= /path/to/tbl_file. Path to the original .tbl file generated
-				  	  for submission after annotation.
+				  	  for submission after annotation.  Optional
 
 	--fsa_file <fsa_file>		= /path/to/fsa_file. Path to the original multi FASTA file
 				          containing assembled contig sequences with Ns.
@@ -51,6 +51,7 @@ sagrawal@som.umaryland.edu
 
 my ($ctbl, $corrected_tbl, $cfsa, $agp, $num_of_n, $tbl_base, $agp_file, $corrected_fsa, $min_contig_len);
 my (@old_tbl, @old_fsa);
+my $no_table = 0;
 my (%options, %contig_hash);
 my $results = GetOptions (\%options,
 			  "tbl_file|t=s",
@@ -79,12 +80,14 @@ if ((-e $corrected_fsa) && (-s $corrected_fsa)) {
 	print STDERR "Not able to clean parse newly created fasta file $corrected_fsa\n";
 }
 
-&edit_tbl_file($options{'tbl_file'});
+unless ($no_table) {
+	&edit_tbl_file($options{'tbl_file'});
 
-if ((-e $corrected_tbl) && (-s $corrected_tbl)) {
-	my $ctbl_cleaned = $corrected_tbl.".tmp";
-	system("perl $Bin/format_velvet_assembled_AGP_cleanup.pl -t $corrected_tbl -o $ctbl_cleaned");
-	system("mv $ctbl_cleaned $corrected_tbl");
+	if ((-e $corrected_tbl) && (-s $corrected_tbl)) {
+		my $ctbl_cleaned = $corrected_tbl.".tmp";
+		system("perl $Bin/format_velvet_assembled_AGP_cleanup.pl -t $corrected_tbl -o $ctbl_cleaned");
+		system("mv $ctbl_cleaned $corrected_tbl");
+	}
 }
 print STDERR "\n";
 
@@ -99,7 +102,8 @@ sub check_options {
 		$corrected_tbl = $options{'output_dir'}."/".$tbl_base."_corrected".$tbl_ext;
 		open($ctbl, "> $corrected_tbl") or die "Could not open $corrected_tbl for writing\n";
 	} else {
-		die "ERROR : tbl_file is required\n";
+		print STDERR "No table file provided.  Skipping table adjustment.\n";
+		$no_table = 1;
 	}
 
 	if ($options{'fsa_file'}) {

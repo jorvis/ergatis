@@ -166,7 +166,8 @@ foreach my $database (keys %db){
     $QUERIES{'get_assembly'}->execute();
     # get_assembly returns list of [feature uniquename, sequence, feature id]
     while( my $row = $QUERIES{'get_assembly'}->fetchrow_arrayref() ) { 
-        ## make contigs
+		$CONTIG_NUMBER = 0;
+		## make contigs
         #if ($fuzznuc_flag) {
 	    #print "Using fuzznuc search mapping list...\n";
 	#    next unless( exists( $mapping_files{$row->[0]} ) );
