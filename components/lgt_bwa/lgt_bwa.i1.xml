@@ -23,7 +23,7 @@
             <type>RunUnixCommand</type>
             <name>Convert sra file to fastq</name>
             <state>incomplete</state>
-            <executable>$;SRA_TOOLS_BIN$;/fastq-dump</executable>
+            <executable>$;BIN_DIR$;/sra2fastq</executable>
             <param>
             <key>stdout</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stdout</value>
@@ -32,72 +32,108 @@
             <key>stderr</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stderr</value>
             </param>
-            <arg> -O $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$; $;I_FILE_PATH$;</arg>
+            <param>
+            <key>--sratoolkit</key>
+            <value>$;SRA_TOOLS_BIN$;</value>
+            </param>
+            <param>
+            <key>--input_file</key>
+            <value>$;I_FILE_BASE$;/</value>
+            </param>
+            <param>
+            <key>--output_dir</key>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            </param>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>lgt_build_index</name>
+			<state>incomplete</state>
+			<param>
+				<key>--reference</key>
+				<value>$;I_FILE_PATH$;</value>
+			</param>
+			<param>
+				<key>--algo</key>
+				<value>$;BWTSW$;</value>
+			</param>
+			<param>
+				<key>--output_dir</key>
+				<value>$;OUTPUT_DIRECTORY$;</value>
+			</param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.err1</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>BWA Execution</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lgt_bwa</executable>            
+            <executable>$;BIN_DIR$;/lgt_bwa</executable>
             <param>
             <key>--input_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
             <param>
-            <key>--input_base</key>
+            <key>--reference</key>
             <value>$;I_FILE_BASE$;</value>
-            </param>
-            <param>
-            <key>--ref_file_list</key>
-            <value>$;REF_FILE_LIST1$;</value>
-            </param>
-            <param>
-            <key>--ref_file</key>
-            <value>$;REF_FILE1$;</value>
             </param>
             <param>
             <key>--output_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>  
+            </param>
             <param>
-            <key>--mistmatch</key>
+            <key>--paired</key>
+            <value>$;PAIRED$;</value>
+            </param>
+            <param>
+            <key>--misMsc</key>
             <value>$;MISMATCH_PENALTY$;</value>
-            </param>  
+            </param>
             <param>
-            <key>--max_gaps</key>
+            <key>--maxGapO</key>
             <value>$;MAX_GAP_OPENS$;</value>
             </param>
             <param>
-            <key>--max_gap_extensions</key>
+            <key>--maxGapE</key>
             <value>$;MAX_GAP_EXTNS$;</value>
             </param>
             <param>
-            <key>--open_gap_penalty</key>
+            <key>--gapOsc</key>
             <value>$;GAP_OPEN_PENALTY$;</value>
-            </param> 
-            <param>    
-            <key>--extend_gap_penalty</key>
+            </param>
+            <param>
+            <key>--gapEsc</key>
             <value>$;GAP_EXTN_PENALTY$;</value>
-            </param>     
+            </param>
             <param>
-            <key>--threads</key>
+            <key>--nThrds</key>
             <value>$;MAX_THREADS$;</value>
-            </param>     
-            <param>
-            <key>--use_bwasw</key>
-            <value>$;BWASW$;</value>
-            </param> 
+            </param>
             <param>
             <key>--num_aligns</key>
             <value>$;MAX_ALIGN$;</value>
-            </param> 
+            </param>
             <param>
             <key>--bwa_path</key>
             <value>$;BWA_EXEC$;</value>
             </param>
             <param>
-            <key>--cleanup_sai</key>
-            <value>$;CLEANUP$;</value>
+            <key>--samtools_path</key>
+            <value>$;SAMTOOLS_EXEC$;</value>
+            </param>
+            <param>
+            <key>--bwa_params</key>
+            <value>$;BWA_ARGS$;</value>
+            </param>
+            <param>
+            <key>--samtools_params</key>
+            <value>$;SAM_VIEW_ARGS$;</value>
+            </param>
+            <param>
+            <key>--keep_sam</key>
+            <value>$;KEEP_SAM$;</value>
             </param>
             <param>
             <key>stdout</key>
@@ -112,139 +148,27 @@
             <type>RunUnixCommand</type>
             <name>BWA Execution</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lgt_bwa</executable>            
-            <param>
-            <key>--input_dir</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>
-            <param>
-            <key>--input_base</key>
-            <value>$;I_FILE_BASE$;</value>
-            </param>
-            <param>
-            <key>--ref_file_list</key>
-            <value>$;REF_FILE_LIST2$;</value>
-            </param>
-            <param>
-            <key>--ref_file</key>
-            <value>$;REF_FILE2$;</value>
-            </param>
+            <executable>$;BIN_DIR$;/lgt_filter_reads</executable>
             <param>
             <key>--output_dir</key>
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>         
-            <param>
-            <key>--mistmatch</key>
-            <value>$;MISMATCH_PENALTY$;</value>
-            </param>  
-            <param>
-            <key>--max_gaps</key>
-            <value>$;MAX_GAP_OPENS$;</value>
-            </param>  
-            <param>
-            <key>--max_gap_extensions</key>
-            <value>$;MAX_GAP_EXTNS$;</value>
-            </param>     
-            <param>
-            <key>--open_gap_penalty</key>
-            <value>$;GAP_OPEN_PENALTY$;</value>
-            </param>     
-            <param>
-            <key>--extend_gap_penalty</key>
-            <value>$;GAP_EXTN_PENALTY$;</value>
-            </param>     
-            <param>
-            <key>--threads</key>
-            <value>$;MAX_THREADS$;</value>
-            </param>     
-            <param>
-            <key>--use_bwasw</key>
-            <value>$;BWASW$;</value>
-            </param> 
-            <param>
-            <key>--num_aligns</key>
-            <value>$;MAX_ALIGN$;</value>
-            </param> 
-            <param>
-            <key>--bwa_path</key>
-            <value>$;BWA_EXEC$;</value>
             </param>
             <param>
-            <key>--cleanup_sai</key>
-            <value>$;CLEANUP$;</value>
+            <key>--samtools_path</key>
+            <value>$;SAMTOOLS_EXEC$;</value>
+            </param>
+            <param>
+            <key>--samtools_params</key>
+            <value>$;SAM_SORT_ARGS$;</value>
             </param>
             <param>
             <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align_exec.ref2.stdout</value>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align_exec.ref1.stdout</value>
             </param>
             <param>
             <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align_exec.ref2.stderr</value>
+            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align_exec.ref1.stderr</value>
             </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>POST PROCESSING</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lgt_bwa_post_process</executable>            
-            <param>
-            <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.postprocess_exec.stdout</value>
-            </param>
-            <param>
-            <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.postprocess_exec.stderr</value>
-            </param>
-            <param>
-            <key>--input</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;</value>
-            </param>
-            <param>
-            <key>--ref1</key>
-            <value>$;REF_FILE1$;</value>
-            </param>
-            <param>
-            <key>--ref2</key>
-            <value>$;REF_FILE2$;</value>
-            </param>
-            <param>
-            <key>--ref_list1</key>
-            <value>$;REF_FILE_LIST1$;</value>
-            </param>
-            <param>
-            <key>--ref_list2</key>
-            <value>$;REF_FILE_LIST2$;</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>ZIP FILES</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lgt_bwa_zip.sh</executable>            
-            <param>
-            <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.zip_files_exec.stdout</value>
-            </param>
-            <param>
-            <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.zip_files_exec.stderr</value>
-            </param>
-            <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</arg>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
-            <name>REMOVE FASTQ FILES</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/lgt_bwa_rm.sh</executable>            
-            <param>
-            <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.remove_fastq_exec.stdout</value>
-            </param>
-            <param>
-            <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.remove_fastq_exec.stderr</value>
-            </param>
-	    <arg>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</arg>
         </command>
     </commandSet>
 </commandSetRoot>

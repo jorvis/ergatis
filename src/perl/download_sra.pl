@@ -16,7 +16,7 @@ use strict;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 # Prints usage message from embedded pod documentation
 use Pod::Usage;
-# Include packages here 
+# Include packages here
 
 #############
 # CONSTANTS #
@@ -43,7 +43,7 @@ GetOptions(\%hCmdLineArgs,
 	   'username|u=s',
 	   'password|p=s',
 	   'num_retry|n=i',
-	   'log|l=s', 
+	   'log|l=s',
 	   'help|h'
 	  ) or pod2usage();
 
@@ -60,7 +60,7 @@ DownloadSRA(\%hCmdLineArgs);
 
 ####################################################################################################################################################
 # Description   : Used to download read files from NCBI SRA FTP server using wget
-# Parameters    : phCmdLineArgs 
+# Parameters    : phCmdLineArgs
 #		  phCmdLineArgs - reference to hash of command line arguments passed to the perl script
 # Returns       : NA
 # Modifications :
@@ -69,35 +69,36 @@ sub DownloadSRA {
 	my ($phCmdLineArgs) = @_;
 	my ($sFile, $sCmd);
 	my $nExitCode;
-    	my $sSubName = (caller(0))[3];
-	
-	$sFile = CreateFilePath($phCmdLineArgs->{'run_id'});	
+    my $sSubName = (caller(0))[3];
+    foreach my $run_id ( split(/,/, $phCmdLineArgs->{'run_id'}) ) {
+        $sFile = CreateFilePath($run_id);
 
-# wget options : 
-# ‘-r’ : Turn on recursive retrieving of directories.
-# ‘-nd’: Do not create a hierarchy of directories when retrieving recursively. With this option turned on, all files will get saved to the current directory, without clobbering (if a name shows up more than once, the filenames will get extensions ‘.n’).
-# ‘-c’ : Continue getting a partially-downloaded file.This is useful when you want to finish up a download started by a previous instance of Wget, incase a pipline is resumed.
-# ‘-N’ : Turn on time-stamping.
-# ‘-P prefix’ : Set directory prefix to prefix. The directory prefix is the directory where all other files and subdirectories will be saved to, i.e. the top of the retrieval tree.
-# ‘-t number’ :	Set number of retries to number. Specify 0 or ‘inf’ for infinite retrying. The default is to retry 20 times, with the exception of fatal errors like “connection refused” or “not found” (404), which are not retried.
-	if(defined($phCmdLineArgs->{'num_retry'})) {
-		$sCmd = "wget -r -nd -c -N -t $phCmdLineArgs->{'num_retry'} -P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
-	} else {
-		$sCmd = "wget -r -nd -c -N -P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
-	}
+    # wget options :
+    # ‘-r’ : Turn on recursive retrieving of directories.
+    # ‘-nd’: Do not create a hierarchy of directories when retrieving recursively. With this option turned on, all files will get saved to the current directory, without clobbering (if a name shows up more than once, the filenames will get extensions ‘.n’).
+    # ‘-c’ : Continue getting a partially-downloaded file.This is useful when you want to finish up a download started by a previous instance of Wget, incase a pipline is resumed.
+    # ‘-N’ : Turn on time-stamping.
+    # ‘-P prefix’ : Set directory prefix to prefix. The directory prefix is the directory where all other files and subdirectories will be saved to, i.e. the top of the retrieval tree.
+    # ‘-t number’ :	Set number of retries to number. Specify 0 or ‘inf’ for infinite retrying. The default is to retry 20 times, with the exception of fatal errors like “connection refused” or “not found” (404), which are not retried.
+        if(defined($phCmdLineArgs->{'num_retry'})) {
+            $sCmd = "wget -r -nd -c -N -t $phCmdLineArgs->{'num_retry'} -P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
+        } else {
+            $sCmd = "wget -r -nd -c -N -P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
+        }
 
-	printLogMsg($DEBUG, "INFO : $sSubName :: Start downloading $phCmdLineArgs->{'run_id'} in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
-	$nExitCode = system($sCmd);	
-# wget returns 0 on success
-	if($nExitCode == 0) {
-		printLogMsg($DEBUG, "INFO : $sSubName :: $phCmdLineArgs->{'run_id'} downloaded succesfully in $phCmdLineArgs->{'output_dir'}");
-	} else {
-		printLogMsg($ERROR, "ERROR : $sSubName :: $phCmdLineArgs->{'run_id'} download failed with exit code $nExitCode. For details check STDERR file");
+        printLogMsg($DEBUG, "INFO : $sSubName :: Start downloading $phCmdLineArgs->{'run_id'} in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
+        $nExitCode = system($sCmd);
+    # wget returns 0 on success
+        if($nExitCode == 0) {
+            printLogMsg($DEBUG, "INFO : $sSubName :: $run_id downloaded succesfully in $phCmdLineArgs->{'output_dir'}");
+        } else {
+            printLogMsg($ERROR, "ERROR : $sSubName :: $run_id download failed with exit code $nExitCode. For details check STDERR file");
+        }
 	}
 }
 
 ####################################################################################################################################################
-# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id  
+# Description   : Used to create the file path on NCBI SRA FTP server using the SRX/SRR/SRS/SRP id
 # Parameters    : sRunId
 #		  sRunId - SRA compatible experiment id or run id or sample id or study id for the read files to be downloaded
 # Returns       : sFile
@@ -114,7 +115,7 @@ sub CreateFilePath {
 # Volume is the directory on FTP with first 6 characters from the SRA id
 	$sVol = substr($sRunId, 0, 6);
 	if($sRunId =~ /^SRX/) {
-		$sFile .= "ByExp/sra/SRX/$sVol/$sRunId/*";		
+		$sFile .= "ByExp/sra/SRX/$sVol/$sRunId/*";
 	} elsif($sRunId =~ /^SRR/) {
 		$sFile .= "ByRun/sra/SRR/$sVol/$sRunId/*";
 	} elsif($sRunId =~ /^SRS/) {
@@ -132,7 +133,7 @@ sub CreateFilePath {
 }
 
 ####################################################################################################################################################
-# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing. 
+# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing.
 # Parameters    : phCmdLineArgs
 #		  phCmdLineArgs - reference to hash of command line arguments passed to the perl script
 # Returns       : NA
@@ -166,7 +167,7 @@ sub checkCmdLineArgs {
 # Parameters    : level = can be ERROR, WARNING or INFO
 #		  msg   = msg to be printed in the log file or to STDERR
 # Returns       : NA
-# Modifications : 
+# Modifications :
 
 sub printLogMsg {
 	my ($nLevel, $sMsg) = @_;
@@ -174,7 +175,7 @@ sub printLogMsg {
 		print STDERR "$sMsg\n";
 		print $fhLog "$sMsg\n" if(defined($fhLog));
 		die "" if($nLevel == $ERROR);
-	}	
+	}
 }
 
 __END__
@@ -196,12 +197,13 @@ download_sra.pl - Script to download read files from NCBI SRA FTP site
 =head1 OPTIONS
 
 	-r <run_id>	:	NCBI SRA compatible 9-character id. Could be Study id (SRPXXXXXX), Experiment id (SRXXXXXXX), Run id (SRRXXXXXX) or Sample id (SRSXXXXXX). X stands for digit. Mandatory
-	
+	                Can separate multiple IDs with commas.
+
 	-f <ftp>	:	Name of the NCBI FTP server. Currently it is ftp-trace.ncbi.nih.gov. Mandatory
 
 	-o <output_dir>	:	Path to the output directory where the files will be downloaded. Mandatory
 
-[	
+[
 	-u <username>	:	Username for the FTP server. Default: anonymous. Optional
 
 	-p <password>	:	Password for the FTP server. Default: anonymous. Optional
@@ -210,7 +212,7 @@ download_sra.pl - Script to download read files from NCBI SRA FTP site
 
 	-l <log>	: 	Path to log file. Optional
 
-] 
+]
 
 =head1 DESCRIPTION
 
