@@ -77,7 +77,7 @@ sub ConvertSRS {
 	}
 
 # Convert to fasta format
-    $sCmd = $phCmdLineArgs->{'sratoolkit'}."/bin/fastq-dump --fasta 60 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'} .;
+    $sCmd = $phCmdLineArgs->{'sratoolkit'}."/bin/fastq-dump --fasta 60 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'};
     printLogMsg($DEBUG, "INFO : $sSubName :: Start converting $phCmdLineArgs->{'input_file'} to FASTA files in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
     $nExitCode = system($sCmd);
     #fastq-dump returns 0 on success
@@ -85,7 +85,7 @@ sub ConvertSRS {
         printLogMsg($ERROR, "ERROR : $sSubName :: $phCmdLineArgs->{'input_file'} conversion failed with error");
     } else {
         printLogMsg($DEBUG, "INFO : $sSubName :: $phCmdLineArgs->{'input_file'} SRA to FASTA conversion succesfully completed in $phCmdLineArgs->{'output_dir'}");
-
+	}
 }
 
 ####################################################################################################################################################
