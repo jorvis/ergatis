@@ -65,7 +65,7 @@ sub ConvertSRS {
 	my $nExitCode;
     	my $sSubName = (caller(0))[3];
 	
-	$sCmd = $phCmdLineArgs->{'sratoolkit'}." --split-3 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'};
+	$sCmd = $phCmdLineArgs->{'sratoolkit'}."/bin/fastq-dump --split-3 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'};
 
 	printLogMsg($DEBUG, "INFO : $sSubName :: Start converting $phCmdLineArgs->{'input_file'} to FASTQ files in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
 	$nExitCode = system($sCmd);
