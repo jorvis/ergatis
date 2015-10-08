@@ -38,7 +38,7 @@
             </param>
             <param>
             <key>--input_file</key>
-            <value>$;I_FILE_BASE$;/</value>
+            <value>$;I_FILE_BASE$;</value>
             </param>
             <param>
             <key>--output_dir</key>
