@@ -25,24 +25,24 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/sra2fastq</executable>
             <param>
-            <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stdout</value>
+            	<key>stdout</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stdout</value>
             </param>
             <param>
-            <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stderr</value>
+            	<key>stderr</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stderr</value>
             </param>
             <param>
-            <key>--sratoolkit</key>
-            <value>$;SRA_TOOLS_BIN$;</value>
+            	<key>--sratoolkit</key>
+            	<value>$;SRA_TOOLS_BIN$;</value>
+			</param>
+            <param>
+            	<key>--input_file</key>
+            	<value>$;I_FILE_BASE$;</value>
             </param>
             <param>
-            <key>--input_file</key>
-            <value>$;I_FILE_BASE$;</value>
-            </param>
-            <param>
-            <key>--output_dir</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            	<key>--output_dir</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
         </command>
         <command>

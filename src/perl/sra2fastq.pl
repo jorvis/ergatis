@@ -38,6 +38,7 @@ GetOptions(\%hCmdLineArgs,
 	   'input_file|i=s',
 	   'sratoolkit|s=s',
 	   'output_dir|o=s',
+	   'paired|p=i',
 	   'log|l=s', 
 	   'help|h'
 	  ) or pod2usage();
@@ -64,9 +65,8 @@ sub ConvertSRS {
 	my ($sCmd);
 	my $nExitCode;
     	my $sSubName = (caller(0))[3];
-	
+# Convert to fastq format
 	$sCmd = $phCmdLineArgs->{'sratoolkit'}."/bin/fastq-dump --split-3 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'};
-
 	printLogMsg($DEBUG, "INFO : $sSubName :: Start converting $phCmdLineArgs->{'input_file'} to FASTQ files in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
 	$nExitCode = system($sCmd);
 	#fastq-dump returns 0 on success
@@ -75,6 +75,17 @@ sub ConvertSRS {
 	} else {
 		printLogMsg($DEBUG, "INFO : $sSubName :: $phCmdLineArgs->{'input_file'} SRA to FASTQ conversion succesfully completed in $phCmdLineArgs->{'output_dir'}");
 	}
+
+# Convert to fasta format
+    $sCmd = $phCmdLineArgs->{'sratoolkit'}."/bin/fastq-dump --fasta 60 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'} .;
+    printLogMsg($DEBUG, "INFO : $sSubName :: Start converting $phCmdLineArgs->{'input_file'} to FASTA files in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
+    $nExitCode = system($sCmd);
+    #fastq-dump returns 0 on success
+    if($nExitCode != 0) {
+        printLogMsg($ERROR, "ERROR : $sSubName :: $phCmdLineArgs->{'input_file'} conversion failed with error");
+    } else {
+        printLogMsg($DEBUG, "INFO : $sSubName :: $phCmdLineArgs->{'input_file'} SRA to FASTA conversion succesfully completed in $phCmdLineArgs->{'output_dir'}");
+
 }
 
 ####################################################################################################################################################
@@ -129,7 +140,7 @@ sra2fastq.pl - Script to convert .sra files downloaded from NCBI SRA FTP site to
 
 =head1 SYNOPSIS
 
-# USAGE : perl sra2fastq.pl -i <path to input file> -s <path to SRA took kit fastq-dump binary> -o <path to output dir> [-l <path to log file> ]
+# USAGE : perl sra2fastq.pl -i <path to input file> -s <path to SRA took kit fastq-dump binary> -o <path to output dir> [ -l <path to log file> ]
 
 	parameters in [] are optional
 
@@ -142,6 +153,7 @@ sra2fastq.pl - Script to convert .sra files downloaded from NCBI SRA FTP site to
 	-o <output_dir>	:	Path to the output directory where the files will be downloaded. Mandatory
 
 [	
+
 	-l <log>	: 	Path to log file. Optional
 ] 
 
