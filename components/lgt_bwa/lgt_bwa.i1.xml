@@ -52,7 +52,7 @@
 			<executable>$;BIN_DIR$;/lgt_build_index</executable>
 			<param>
 				<key>--reference</key>
-				<value>$;I_FILE_PATH$;</value>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fasta</value>
 			</param>
 			<param>
 				<key>--algo</key>
@@ -60,11 +60,11 @@
 			</param>
 			<param>
 				<key>--output_dir</key>
-				<value>$;OUTPUT_DIRECTORY$;</value>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
 			</param>
             <param>
                 <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.err1</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.build_index.err</value>
             </param>
         </command>
         <command>

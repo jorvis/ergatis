@@ -51,14 +51,14 @@ checkCmdLineArgs(\%hCmdLineArgs);
 ($sFileBase,$sFileDir,$sFileExt) = fileparse($hCmdLineArgs{'reference'},qr/\.[^.]*/);
 
 if((-e $hCmdLineArgs{'reference'}) && (-r $hCmdLineArgs{'reference'})) {
-	$sCmd = "ln -sf ".$hCmdLineArgs{'reference'}." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
-	printLogMsg($DEBUG, "INFO : Creating symlink to reference file $hCmdLineArgs{'reference'} in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd");
-	$nExitCode = system($sCmd);
-	if($nExitCode == 0) {
-		printLogMsg($DEBUG, "INFO : Symlink to reference file $hCmdLineArgs{'reference'} created in output directory $hCmdLineArgs{'output_dir'}");			
-	} else {
-		printLogMsg($ERROR, "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created");
-	}	
+	#$sCmd = "ln -sf ".$hCmdLineArgs{'reference'}." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
+	#printLogMsg($DEBUG, "INFO : Creating symlink to reference file $hCmdLineArgs{'reference'} in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd");
+	#$nExitCode = system($sCmd);
+	#if($nExitCode == 0) {
+	#	printLogMsg($DEBUG, "INFO : Symlink to reference file $hCmdLineArgs{'reference'} created in output directory $hCmdLineArgs{'output_dir'}");			
+	#} else {
+	#	printLogMsg($ERROR, "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created");
+	#}	
 	if(!exists($hCmdLineArgs{'algo'})) {
 		$sCmd = "bwa index -p ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
 	} else {
