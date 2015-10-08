@@ -49,6 +49,7 @@
             <type>RunUnixCommand</type>
             <name>lgt_build_index</name>
 			<state>incomplete</state>
+			<executable>$;BIN_DIR$;/lgt_build_index</executable>
 			<param>
 				<key>--reference</key>
 				<value>$;I_FILE_PATH$;</value>
