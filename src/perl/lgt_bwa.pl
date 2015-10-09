@@ -208,10 +208,10 @@ sub DetermineFormat {
 	my $sSubName = (caller(0))[3];
 	opendir(dhR, $phCmdLineArgs->{'input_dir'}) or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open directory $phCmdLineArgs->{'input_dir'} for reading.\nReason : $!");
 	while($sFile = readdir(dhR)) {
-		if($sFile =~ /fastq/) {
-			if($sFile =~ /_1/) {
+		if($sFile =~ /fastq$/) {
+			if($sFile =~ /_1\./) {
 				$phType->{'fastq_1'} = $sFile;
-			} elsif($sFile =~ /_2/) {
+			} elsif($sFile =~ /_2\./) {
 				$phType->{'fastq_2'} = $sFile;
 			} else {
 				$phType->{'fastq'} = $sFile;
