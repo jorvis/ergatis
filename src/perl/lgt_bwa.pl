@@ -93,7 +93,8 @@ if($fastq_paired || $hCmdLineArgs{'bam_paired'} == 1) {
 		$sFbase =~ s/\.fastq$//;
 		$sOut2 = $sFbase.".aln2.sai";
 		AlignBwa(\%hCmdLineArgs, "aln", $hType{'fastq_2'}, "", $sOut2);
-
+		
+		$sFbase =~ s/_2//g;
 		$sIn = $hCmdLineArgs{'output_dir'}."/".$sOut1." ".$hCmdLineArgs{'output_dir'}."/".$sOut2." ".$hType{'fastq_1'}." ".$hType{'fastq_2'};
 		$sOut = $sFbase.".bwa.sam";
 #		AlignBwa(\%hCmdLineArgs, "sampe", $sIn , "", $sOut);
