@@ -30,6 +30,10 @@
 				<value>$;REFERENCE_DIR$;/$;REF_BASE$;</value>
 			</param>
 			<param>
+				<key>--bwa_path</key>
+				<value>$;BWA_EXEC$;</value>
+			</param>
+			<param>
 				<key>--algo</key>
 				<value>$;INDEX_ALGO$;</value>
 			</param>

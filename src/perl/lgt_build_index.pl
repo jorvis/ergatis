@@ -39,6 +39,7 @@ my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
 GetOptions(\%hCmdLineArgs,
 	   'reference|r=s',
 	   'algo|a=s',
+	   'bwa_path|b=s',
 	   'output_dir|o=s',
 	   'log|l=s', 
 	   'help|h'
@@ -60,9 +61,9 @@ if((-e $hCmdLineArgs{'reference'}) && (-r $hCmdLineArgs{'reference'})) {
 		printLogMsg($ERROR, "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created");
 	}	
 	if(!exists($hCmdLineArgs{'algo'})) {
-		$sCmd = "bwa index -p ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
+		$sCmd = $hCmdLineArgs{'bwa_path'} . " index -p ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
 	} else {
-		$sCmd = "bwa index -p ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt." -a ".$hCmdLineArgs{'algo'}." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
+		$sCmd = $hCmdLineArgs{'bwa_path'} ." index -p ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt." -a ".$hCmdLineArgs{'algo'}." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
 	}
 } else {
 	printLogMsg($ERROR, "ERROR : Reference file $hCmdLineArgs{'reference'} does not exist or is not readable for creating index.");
@@ -93,7 +94,7 @@ sub checkCmdLineArgs {
 	if(exists($phCmdLineArgs->{'log'})) {
 		open($fhLog, "> $phCmdLineArgs->{'log'}") or die "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n"
 	}
-	@aRequired = qw(reference output_dir);
+	@aRequired = qw(reference output_dir bwa_path);
         foreach my $sOption(@aRequired) {
                 if(!defined($phCmdLineArgs->{$sOption})) {
                         printLogMsg($ERROR,"ERROR! : Required option $sOption not passed");
@@ -136,7 +137,15 @@ __END__
 
 =head1 OPTIONS
 
+	<-r|--reference>	:	Path to reference fasta file to be indexed
 
+	<-b|--bwa_path>		:	Path to BWA executable
+
+	<-a|--algo>			:	Name of Algorithm to be used
+							Use 'is' for genome database sizes projected to be < 2Gb
+							Use 'btwsw' for larger genome databases
+	
+	<-o|--output_dir>	:	Path to output directory
 
 =head1 DESCRIPTION
 
@@ -144,11 +153,11 @@ __END__
 
 =head1 INPUT
 
-
+A fasta file of the reference sequence to be indexed is required
 
 =head1 OUTPUT
 
-
+An indexed fasta sequence (and supporting files) are created in the output directory specified
 
 =head1 AUTHOR
 
