@@ -208,22 +208,24 @@ sub AlignBwa {
 
 sub DetermineFormat {
 	my ($phCmdLineArgs, $phType) = @_;
+	my $dir = $phCmdLineArgs->{'input_dir'};
 	my $sFile;
 	my $sSubName = (caller(0))[3];
-	opendir(dhR, $phCmdLineArgs->{'input_dir'}) or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open directory $phCmdLineArgs->{'input_dir'} for reading.\nReason : $!");
+	opendir(dhR, $dir) or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open directory $phCmdLineArgs->{'input_dir'} for reading.\nReason : $!");
 	while($sFile = readdir(dhR)) {
+		my $sPath = $dir . "/" . $sFile;
 		if($sFile =~ /fastq$/) {
 			if($sFile =~ /_1\./) {
-				$phType->{'fastq_1'} = $sFile;
+				$phType->{'fastq_1'} = $sPath;
 				$fastq_paired = 1;
 			} elsif($sFile =~ /_2\./) {
-				$phType->{'fastq_2'} = $sFile;
+				$phType->{'fastq_2'} = $sPath;
 			} else {
-				$phType->{'fastq'} = $sFile;
+				$phType->{'fastq'} = $sPath;
 				$fastq_paired = 0;
 			}
 		} elsif($sFile =~ /bam$/) {
-			$phType->{'bam'} = $sFile;
+			$phType->{'bam'} = $sPath;
 		}
 	}
 }
