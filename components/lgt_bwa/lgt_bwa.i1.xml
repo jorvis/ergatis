@@ -63,10 +63,6 @@
             <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
             <param>
-            <key>--paired</key>
-            <value>$;PAIRED$;</value>
-            </param>
-            <param>
             <key>--misMsc</key>
             <value>$;MISMATCH_PENALTY$;</value>
             </param>

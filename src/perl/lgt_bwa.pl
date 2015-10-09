@@ -34,13 +34,14 @@ my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
 my %hType = ();
 my ($nFileCnt, $nExitCode);
 my ($sIn, $sOut, $sOut1, $sOut2, $sFbase, $sFdir, $sFext, $sCmd);
+my $fastq_paired = 0;	# Determines if fastq seqs are paired-end or not
 
 ################
 # MAIN PROGRAM #
 ################
 GetOptions(\%hCmdLineArgs,
 	   'reference|r=s',
-	   'paired|p=i',
+	   'bam_paired|p=i',
 	   'input_dir|i=s',
 	   'output_dir|d=s',
 	   'bwa_path|b=s',
@@ -62,11 +63,12 @@ GetOptions(\%hCmdLineArgs,
 pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($hCmdLineArgs{'help'});
 
 checkCmdLineArgs(\%hCmdLineArgs);
-
+#Go though the directory and determine the type of files that are to be aligned
 DetermineFormat(\%hCmdLineArgs, \%hType);
 
 $nFileCnt = keys %hType;
-if($hCmdLineArgs{'paired'} == 1) {
+# If we have either 2 paired fastq seqs or a single paired-end BAM file...
+if($fastq_paired || $hCmdLineArgs{'bam_paired'} == 1) {
 	if($nFileCnt == 1 && exists($hType{'bam'})) {
 		($sFbase,$sFdir,$sFext) = fileparse($hType{'bam'}, qr/\.[^.]*/);
 		$sOut1 = $sFbase.".aln1.sai";
@@ -211,10 +213,12 @@ sub DetermineFormat {
 		if($sFile =~ /fastq$/) {
 			if($sFile =~ /_1\./) {
 				$phType->{'fastq_1'} = $sFile;
+				$fastq_paired = 1;
 			} elsif($sFile =~ /_2\./) {
 				$phType->{'fastq_2'} = $sFile;
 			} else {
 				$phType->{'fastq'} = $sFile;
+				$fastq_paired = 0;
 			}
 		} elsif($sFile =~ /bam$/) {
 			$phType->{'bam'} = $sFile;
@@ -233,7 +237,7 @@ sub checkCmdLineArgs {
 	if(exists($phCmdLineArgs->{'log'})) {
 		open($fhLog, "> $phCmdLineArgs->{'log'}") or die "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n"
 	}
-	my @aRequired = qw(reference input_dir output_dir bwa_path paired);
+	my @aRequired = qw(reference input_dir output_dir bwa_path);
         foreach my $sOption(@aRequired) {
                 if(!defined($phCmdLineArgs->{$sOption})) {
                         printLogMsg($ERROR, "ERROR : $sSubName :: Required option $sOption not passed");
