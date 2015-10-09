@@ -69,6 +69,7 @@ DetermineFormat(\%hCmdLineArgs, \%hType);
 $nFileCnt = keys %hType;
 # If we have either 2 paired fastq seqs or a single paired-end BAM file...
 if($fastq_paired || $hCmdLineArgs{'bam_paired'} == 1) {
+	printLogMsg($DEBUG, "Detected paired-end fastq or BAM sequences");
 	if($nFileCnt == 1 && exists($hType{'bam'})) {
 		($sFbase,$sFdir,$sFext) = fileparse($hType{'bam'}, qr/\.[^.]*/);
 		$sOut1 = $sFbase.".aln1.sai";
@@ -102,6 +103,7 @@ if($fastq_paired || $hCmdLineArgs{'bam_paired'} == 1) {
 	}
 	AlignBwa(\%hCmdLineArgs, "sampe", $sIn , "", $sOut);
 } else {
+	printLogMsg($DEBUG, "Detected a single-end fastq or BAM sequence");
 	if($nFileCnt == 1 && exists($hType{'fastq'})) {
 		($sFbase,$sFdir,$sFext) = fileparse($hType{'fastq'}, qr/\.[^.]*/);
 		$sFbase =~ s/\.fastq$//;
