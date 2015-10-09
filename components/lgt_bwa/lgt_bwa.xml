@@ -27,7 +27,7 @@
 			<executable>$;BIN_DIR$;/lgt_build_index</executable>
 			<param>
 				<key>--reference</key>
-				<value>$;REFERENCE$;</value>
+				<value>$;REFERENCE_DIR$;/$;REF_BASE$;</value>
 			</param>
 			<param>
 				<key>--algo</key>
