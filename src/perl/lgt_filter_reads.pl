@@ -38,6 +38,7 @@ my $iRead = 0;
 my ($sQnameR1, $iFlagR1, $sCigarR1, $sQnameR2, $iFlagR2, $sCigarR2);
 my %hStatR1 = ();
 my %hStatR2 = ();
+my $iSingletons = 0;
 
 ################
 # MAIN PROGRAM #
@@ -56,35 +57,36 @@ pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($hCmdLineAr
 checkCmdLineArgs(\%hCmdLineArgs);
 
 ($sFbase,$sFdir,$sFext) = fileparse($hCmdLineArgs{'input_file'}, qr/\.[^.]*/);
-$sSortedFile = $sFbase."name.sorted.bam";
-
+my $sSortedFile = $sFbase."name.sorted";
 SortBam(\%hCmdLineArgs, $sSortedFile);
+$sSortedFile = $sSortedFile . ".bam";	# Samtools appends .bam to the end of the file
 
+# View the sorted BAM file, and only output the headers
 $sCmd = $hCmdLineArgs{'samtools_path'}." view -H ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile;
-$sHeader = `$sCmd`;
+my $sHeader = `$sCmd`;
 if($? != 0) {
 	printLogMsg($ERROR, "ERROR : main :: Retrieving of the header from the sorted BAM $hCmdLineArgs{'output_dir'}"."/".$sSortedFile." failed. Check the stderr");	
 }
 
 $sOutFile = $hCmdLineArgs{'output_dir'}."/".$sFbase.".prelim.filtered.bam";
-
-open($fhFW, "| $hCmdLineArgs{'samtools_path'} view -S - -bo $sOutFile") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file $sOutFile for writing.\nReason : $!"); 
-
+# print headers into a new BAM file
+open(my $fhFW, "| $hCmdLineArgs{'samtools_path'} view -S - -bo $sOutFile") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file $sOutFile for writing.\nReason : $!"); 
 print $fhFW $sHeader;
 
+# Open the sorted BAM file for reading
 open($fhFR, "$hCmdLineArgs{'samtools_path'} view ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." |") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." for reading.\nReason : $!");
 
-while($sLine = <$fhFR>) {
+while(my $sLine = <$fhFR>) {
 	chomp($sLine);
-	%hRStat1 = ();
-	%hRStat2 = ();
+	my %hRStat1 = ();
+	my %hRStat2 = ();
 	if($iRead == 0) {
-		$sRead1 = $sLine;
+		my $sRead1 = $sLine;
 		$iRead = 1;
 		next;
 	}
 	$iRead = 0;
-	$sRead2 = $sLine;
+	my $sRead2 = $sLine;
 	($sQnameR1, $iFlagR1, $sCigarR1) = (split /\t/, $sRead1)[ 0, 1, 5];
 	($sQnameR2, $iFlagR2, $sCigarR2) = (split /\t/, $sRead2)[ 0, 1, 5];
 	if($sQnameR1 ne $sQnameR2) {
@@ -111,7 +113,7 @@ sub ParseFlag {
 	$iLbin = unpack("B32", pack("N", $iDec));
 	$iLbin =~ s/^0+(?=\d)//;    # otherwise you'll get leading zeros
 	$iBin = sprintf("%012d", $iLbin);
-	$iRbin = reverse($iBin);
+	my $iRbin = reverse($iBin);
         $phStat = {
 			'paired' => substr($iRbin, 0, 1),
         	   	'propermap' => substr($iRbin, 1, 1),
@@ -128,6 +130,7 @@ sub ParseFlag {
 		  };
 }
 
+# Sort BAM file by read names
 sub SortBam {
 	my ($phCmdLineArgs, $sFile) = @_;
 	my ($sCmd, $sOut);
@@ -139,7 +142,9 @@ sub SortBam {
 		$sOptions = $phCmdLineArgs->{'samtools_params'};
 	}
 	$sOut = $phCmdLineArgs->{'output_dir'}."/".$sFile;
-	$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." ".$phCmdLineArgs->{'input_file'};
+	# Shaun Adkins - Commented out other command because it is Samtools-1.2.  We are using Samtools-0.1
+	$sComd = $phCmdLineArgs->{'samtools_path'}." sort ". $sOptions . " -n " $phCmdLineArgs->{'input_file'} . $sOut;
+	#$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." ".$phCmdLineArgs->{'input_file'};
 	printLogMsg($DEBUG, "INFO : $sSubName :: Start sorting file $phCmdLineArgs->{'input_file'} to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd");
 	$nExitCode = system($sCmd);
 	if($nExitCode != 0) {
