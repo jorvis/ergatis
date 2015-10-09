@@ -177,7 +177,7 @@ sub AlignBwa {
 	if($sAlgo eq "aln") {
 		foreach $sParam (keys %hParams) {
 			if(exists($phCmdLineArgs->{$sParam})) {
-				$sOptions .= "-".$hParams{$sParam}." ".$phCmdLineArgs->{$sParam};
+				$sOptions .= " -".$hParams{$sParam}." ".$phCmdLineArgs->{$sParam};
 			}
 		}
 	} elsif($sAlgo eq "sampe" || $sAlgo eq "samse") {
