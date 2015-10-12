@@ -70,7 +70,7 @@ sub DownloadSRA {
 	my ($sFile, $sCmd);
 	my $nExitCode;
     my $sSubName = (caller(0))[3];
-    foreach my $run_id ( split(/,/, $phCmdLineArgs->{'run_id'}) ) {
+    foreach my $run_id ( split(/,\s*/, $phCmdLineArgs->{'run_id'}) ) {
         $sFile = CreateFilePath($run_id);
 
     # wget options :
