@@ -17,6 +17,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 # Prints usage message from embedded pod documentation
 use Pod::Usage;
 # Include packages here 
+use File::Basename;
 
 #############
 # CONSTANTS #
@@ -64,6 +65,7 @@ sub ConvertSRS {
 	my ($sCmd);
 	my $nExitCode;
     my $sSubName = (caller(0))[3];
+
 # Convert to fastq format
 	$sCmd = $phCmdLineArgs->{'sratoolkit'}."/bin/fastq-dump --split-3 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'};
 	printLogMsg($DEBUG, "INFO : $sSubName :: Start converting $phCmdLineArgs->{'input_file'} to FASTQ files in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
@@ -74,17 +76,15 @@ sub ConvertSRS {
 	} else {
 		printLogMsg($DEBUG, "INFO : $sSubName :: $phCmdLineArgs->{'input_file'} SRA to FASTQ conversion succesfully completed in $phCmdLineArgs->{'output_dir'}");
 	}
-
-# Convert to fasta format
-	#$sCmd = $phCmdLineArgs->{'sratoolkit'}."/bin/fastq-dump --fasta 60 -O ".$phCmdLineArgs->{'output_dir'}." ".$phCmdLineArgs->{'input_file'};
-	#printLogMsg($DEBUG, "INFO : $sSubName :: Start converting $phCmdLineArgs->{'input_file'} to FASTA files in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
-	#$nExitCode = system($sCmd);
-    #fastq-dump returns 0 on success
-	#if($nExitCode != 0) {
-	#    printLogMsg($ERROR, "ERROR : $sSubName :: $phCmdLineArgs->{'input_file'} conversion failed with error");
-	#} else {
-	#    printLogMsg($DEBUG, "INFO : $sSubName :: $phCmdLineArgs->{'input_file'} SRA to FASTA conversion succesfully completed in $phCmdLineArgs->{'output_dir'}");
-	#}
+	
+	# Creating a blank file using the SRA ID.  
+	# Reason:  lgt_bwa component accepts an input_directory of fastq files, so iterating over 
+	# 			a fastq list with paired-end fastq files results in two groups iterating over 
+	# 			the same directory.  This ensures the directory is iterated over just once in
+	# 			that component.
+	my ($base, $dir, $ext) = fileparse($phCmdLineArgs->{'input_file'}, qr/\.{^.]*/);
+	my $blank_file = $phCmdLineArgs->{'output_dir'} . "/" . $base . ".blank";
+	`touch $blank_file`;
 }
 
 ####################################################################################################################################################
@@ -120,11 +120,11 @@ sub checkCmdLineArgs {
 
 sub printLogMsg {
 	my ($level, $msg) = @_;
-	if( $level <= $DEBUG ) {
+	if( $level < $DEBUG ) {
 		print STDERR "$msg\n";
-		print $logfh "$msg\n" if(defined($logfh));
 		die "" if($level == $ERROR);
 	}	
+	print $logfh "$msg\n" if(defined($logfh));
 }
 
 __END__

@@ -207,6 +207,7 @@ sub AlignBwa {
         } 
 }
 
+# Iterate through the input directory to grab the necessary files to align
 sub DetermineFormat {
 	my ($phCmdLineArgs, $phType) = @_;
 	my $dir = $phCmdLineArgs->{'input_dir'};
@@ -229,6 +230,10 @@ sub DetermineFormat {
 			$phType->{'bam'} = $sPath;
 		}
 	}
+	# Shauh Adkins - There is a potential hang-up iterating through the input_directory, if multiple BAMs
+	# 				  or different groups of FASTQ files are in the same directory or a combination of BAM
+	# 				  and FASTQ.  A potential solution would be to pass a file as input (perhaps the .blank file
+	# 				  from sra2fastq for FASTQ format for example), and get files with the same basename.
 }
 
 # Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing. 
@@ -264,11 +269,11 @@ sub checkCmdLineArgs {
 
 sub printLogMsg {
 	my ($nLevel, $sMsg) = @_;
-	if( $nLevel <= $DEBUG ) {
+	if( $nLevel < $DEBUG ) {
 		print STDERR "$sMsg\n";
-		print $fhLog "$sMsg\n" if(defined($fhLog));
 		die "" if($nLevel == $ERROR);
 	}	
+	print $fhLog "$sMsg\n" if(defined($fhLog));
 }
 
 __END__
