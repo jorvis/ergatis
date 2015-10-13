@@ -26,7 +26,7 @@
             <executable>$;BIN_DIR$;/lgt_bwa</executable>
             <param>
             <key>--input_dir</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            <value>$;I_DIR$;/</value>
             </param>
             <param>
             <key>--reference</key>

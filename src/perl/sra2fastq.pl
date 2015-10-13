@@ -82,7 +82,7 @@ sub ConvertSRS {
 	# 			a fastq list with paired-end fastq files results in two groups iterating over 
 	# 			the same directory.  This ensures the directory is iterated over just once in
 	# 			that component.
-	my ($base, $dir, $ext) = fileparse($phCmdLineArgs->{'input_file'}, qr/\.{^.]*/);
+	my ($base, $dir, $ext) = fileparse($phCmdLineArgs->{'input_file'}, qr/\.[^.]*/);
 	my $blank_file = $phCmdLineArgs->{'output_dir'} . "/" . $base . ".blank";
 	`touch $blank_file`;
 }

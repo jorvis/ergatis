@@ -68,7 +68,7 @@ DetermineFormat(\%hCmdLineArgs, \%hType);
 
 $nFileCnt = keys %hType;
 # If we have either 2 paired fastq seqs or a single paired-end BAM file...
-if($fastq_paired || $hCmdLineArgs{'bam_paired'} == 1) {
+if($fastq_paired || $hCmdLineArgs{'bam_paired'}) {
 	printLogMsg($DEBUG, "Detected paired-end fastq or BAM sequences");
 	if($nFileCnt == 1 && exists($hType{'bam'})) {
 		($sFbase,$sFdir,$sFext) = fileparse($hType{'bam'}, qr/\.[^.]*/);
