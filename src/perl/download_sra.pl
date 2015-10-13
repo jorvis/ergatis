@@ -171,7 +171,7 @@ sub checkCmdLineArgs {
 
 sub printLogMsg {
 	my ($nLevel, $sMsg) = @_;
-	if( $nLevel < $DEBUG ) {
+	if( $nLevel <= $DEBUG ) {
 		print STDERR "$sMsg\n";
 		die "" if($nLevel == $ERROR);
 	}

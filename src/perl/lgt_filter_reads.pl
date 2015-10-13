@@ -61,7 +61,7 @@ my $sSortedFile = $sFbase."name.sorted";
 SortBam(\%hCmdLineArgs, $sSortedFile);
 $sSortedFile = $sSortedFile . ".bam";	# Samtools appends .bam to the end of the file
 
-# View the sorted BAM file, and only output the headers
+# View the sorted BAM file, and only output the SAM headers
 $sCmd = $hCmdLineArgs{'samtools_path'}." view -H ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile;
 my $sHeader = `$sCmd`;
 if($? != 0) {
@@ -69,7 +69,7 @@ if($? != 0) {
 }
 
 $sOutFile = $hCmdLineArgs{'output_dir'}."/".$sFbase.".prelim.filtered.bam";
-# print headers into a new BAM file
+# print SAM headers into a new BAM file
 open(my $fhFW, "| $hCmdLineArgs{'samtools_path'} view -S - -bo $sOutFile") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file $sOutFile for writing.\nReason : $!"); 
 print $fhFW $sHeader;
 
@@ -101,7 +101,16 @@ while(my $sLine = <$fhFR>) {
 	}
 	ParseFlag($iFlagR1, \%hStatR1);
 	ParseFlag($iFlagR2, \%hStatR2);
+	
+	# Only want alignments where at least one read is mapped
+	next if(%hStatR1{'qunmapped'} && %hStatR2{'qunmapped'});
+	
+	# Print mapped reads to filtered SAM file
+	print $fhFW $sRead1 . "\n";
+	print $fhFW $sRead2 . "\n";
 }
+
+close $fhFW;
 
 ###############
 # SUBROUTINES #
@@ -184,7 +193,7 @@ sub checkCmdLineArgs {
 
 sub printLogMsg {
 	my ($nLevel, $sMsg) = @_;
-	if( $nLevel < $DEBUG ) {
+	if( $nLevel <= $DEBUG ) {
 		print STDERR "$sMsg\n";
 		die "" if($nLevel == $ERROR);
 	}	
