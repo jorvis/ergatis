@@ -90,15 +90,15 @@
             <param>
                 <key>--regex</key>
                 <value>".*\.sam"</value>
-            </param>    
+            </param>
             <param>
                 <key>--output_list</key>
                 <value>$;SAM_OUTPUT_LIST$;</value>
-            </param>    
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>create BAM file list</name>
+            <name>create filtered BAM file list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
@@ -107,12 +107,12 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.bam"</value>
-            </param>    
+                <value>".*\.filtered\.bam"</value>
+            </param>
             <param>
                 <key>--output_list</key>
                 <value>$;BAM_OUTPUT_LIST$;</value>
-            </param>    
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>
