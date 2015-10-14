@@ -39,6 +39,7 @@ my ($sQnameR1, $iFlagR1, $sCigarR1, $sQnameR2, $iFlagR2, $sCigarR2);
 my %hStatR1 = ();
 my %hStatR2 = ();
 my $iSingletons = 0;
+#my $UNMAPPED = '0x4';	# Hex value for bit in flag representing unmapped alignments
 
 ################
 # MAIN PROGRAM #
@@ -57,7 +58,7 @@ pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($hCmdLineAr
 checkCmdLineArgs(\%hCmdLineArgs);
 
 ($sFbase,$sFdir,$sFext) = fileparse($hCmdLineArgs{'input_file'}, qr/\.[^.]*/);
-my $sSortedFile = $sFbase."name.sorted";
+my $sSortedFile = $sFbase.".name.sorted";
 SortBam(\%hCmdLineArgs, $sSortedFile);
 $sSortedFile = $sSortedFile . ".bam";	# Samtools appends .bam to the end of the file
 
@@ -74,13 +75,11 @@ open(my $fhFW, "| $hCmdLineArgs{'samtools_path'} view -S - -bo $sOutFile") or pr
 print $fhFW $sHeader;
 
 # Open the sorted BAM file for reading
-open(my $fhFR, "$hCmdLineArgs{'samtools_path'} view ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." |") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." for reading.\nReason : $!");
+open(my $fhFR, "$hCmdLineArgs{'samtools_path'} view " . $hCmdLineArgs{'output_dir'}."/".$sSortedFile." |") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." for reading.\nReason : $!");
 my $sRead1;
 
 while(my $sLine = <$fhFR>) {
 	chomp($sLine);
-	my %hRStat1 = ();
-	my %hRStat2 = ();
 	if($iRead == 0) {
 		$sRead1 = $sLine;
 		$iRead = 1;
@@ -100,11 +99,11 @@ while(my $sLine = <$fhFR>) {
 	if($sQnameR2 =~ /null/) {
 
 	}
-	ParseFlag($iFlagR1, \%hStatR1);
-	ParseFlag($iFlagR2, \%hStatR2);
+	my $stat_r1 = ParseFlag($iFlagR1);
+	my $stat_r2 = ParseFlag($iFlagR2);
 
 	# Only want alignments where at least one read is mapped
-	next if($hStatR1{'qunmapped'} && $hStatR2{'qunmapped'});
+	next if($stat_r1->{'qunmapped'} && $stat_r2->{'qunmapped'});
 
 	# Print mapped reads to filtered SAM file
 	print $fhFW $sRead1 . "\n";
@@ -118,26 +117,27 @@ close $fhFW;
 ###############
 
 sub ParseFlag {
-	my ($iDec, $phStat) = @_;
+	my ($iDec) = @_;
 	my ($iLbin, $iBin);
 	$iLbin = unpack("B32", pack("N", $iDec));
 	$iLbin =~ s/^0+(?=\d)//;    # otherwise you'll get leading zeros
 	$iBin = sprintf("%012d", $iLbin);
 	my $iRbin = reverse($iBin);
-        $phStat = {
+    my $phStat = {
 			'paired' => substr($iRbin, 0, 1),
-        	   	'propermap' => substr($iRbin, 1, 1),
-        	   	'qunmapped' => substr($iRbin, 2, 1),
-        		'munmapped' => substr($iRbin, 3, 1),
-        		'qrev' => substr($iRbin, 4, 1),
-        		'mrev' => substr($iRbin, 5, 1),
-        		'firstpair' => substr($iRbin, 6, 1),
-        		'secondpair' => substr($iRbin, 7, 1),
-        		'scndryalign' => substr($iRbin, 8, 1),
-        		'failqual' => substr($iRbin, 9, 1),
-        		'pcrdup' => substr($iRbin, 10, 1),
-        		'supplealign' => substr($iRbin, 11, 1)
-		  };
+        	'propermap' => substr($iRbin, 1, 1),
+        	'qunmapped' => substr($iRbin, 2, 1),
+        	'munmapped' => substr($iRbin, 3, 1),
+        	'qrev' => substr($iRbin, 4, 1),
+        	'mrev' => substr($iRbin, 5, 1),
+        	'firstpair' => substr($iRbin, 6, 1),
+        	'secondpair' => substr($iRbin, 7, 1),
+        	'scndryalign' => substr($iRbin, 8, 1),
+        	'failqual' => substr($iRbin, 9, 1),
+        	'pcrdup' => substr($iRbin, 10, 1),
+        	'supplealign' => substr($iRbin, 11, 1)
+	};
+	return $phStat;
 }
 
 # Sort BAM file by read names
@@ -153,7 +153,7 @@ sub SortBam {
 	}
 	$sOut = $phCmdLineArgs->{'output_dir'}."/".$sFile;
 	# Shaun Adkins - Commented out other command because it is Samtools-1.2.  We are using Samtools-0.1
-	$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ". $sOptions . " -n " . $phCmdLineArgs->{'input_file'} . $sOut;
+	$sCmd = $phCmdLineArgs->{'samtools_path'}." sort". $sOptions . " -n " . $phCmdLineArgs->{'input_file'} . " " . $sOut;
 	#$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." ".$phCmdLineArgs->{'input_file'};
 	printLogMsg($DEBUG, "INFO : $sSubName :: Start sorting file $phCmdLineArgs->{'input_file'} to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd");
 	$nExitCode = system($sCmd);
