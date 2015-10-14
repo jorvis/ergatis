@@ -9,14 +9,14 @@
 # Author      : Sonia Agrawal								#
 # Date        : September 25, 2015							#
 #											#
-#########################################################################################	
+#########################################################################################
 
 use strict;
 # Extended processing of command line options
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 # Prints usage message from embedded pod documentation
 use Pod::Usage;
-# Include packages here 
+# Include packages here
 use File::Basename;
 
 #############
@@ -48,7 +48,7 @@ GetOptions(\%hCmdLineArgs,
 	   'output_dir|o=s',
 	   'samtools_path|s=s',
 	   'samtools_params|S=s',
-	   'log|l=s', 
+	   'log|l=s',
 	   'help|h'
 	  ) or pod2usage();
 
@@ -65,23 +65,24 @@ $sSortedFile = $sSortedFile . ".bam";	# Samtools appends .bam to the end of the 
 $sCmd = $hCmdLineArgs{'samtools_path'}." view -H ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile;
 my $sHeader = `$sCmd`;
 if($? != 0) {
-	printLogMsg($ERROR, "ERROR : main :: Retrieving of the header from the sorted BAM $hCmdLineArgs{'output_dir'}"."/".$sSortedFile." failed. Check the stderr");	
+	printLogMsg($ERROR, "ERROR : main :: Retrieving of the header from the sorted BAM $hCmdLineArgs{'output_dir'}"."/".$sSortedFile." failed. Check the stderr");
 }
 
 $sOutFile = $hCmdLineArgs{'output_dir'}."/".$sFbase.".prelim.filtered.bam";
 # print SAM headers into a new BAM file
-open(my $fhFW, "| $hCmdLineArgs{'samtools_path'} view -S - -bo $sOutFile") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file $sOutFile for writing.\nReason : $!"); 
+open(my $fhFW, "| $hCmdLineArgs{'samtools_path'} view -S - -bo $sOutFile") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file $sOutFile for writing.\nReason : $!");
 print $fhFW $sHeader;
 
 # Open the sorted BAM file for reading
-open($fhFR, "$hCmdLineArgs{'samtools_path'} view ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." |") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." for reading.\nReason : $!");
+open(my $fhFR, "$hCmdLineArgs{'samtools_path'} view ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." |") or printLogMsg($ERROR, "ERROR : main :: Could not open BAM file ".$hCmdLineArgs{'output_dir'}."/".$sSortedFile." for reading.\nReason : $!");
+my $sRead1;
 
 while(my $sLine = <$fhFR>) {
 	chomp($sLine);
 	my %hRStat1 = ();
 	my %hRStat2 = ();
 	if($iRead == 0) {
-		my $sRead1 = $sLine;
+		$sRead1 = $sLine;
 		$iRead = 1;
 		next;
 	}
@@ -101,10 +102,10 @@ while(my $sLine = <$fhFR>) {
 	}
 	ParseFlag($iFlagR1, \%hStatR1);
 	ParseFlag($iFlagR2, \%hStatR2);
-	
+
 	# Only want alignments where at least one read is mapped
-	next if(%hStatR1{'qunmapped'} && %hStatR2{'qunmapped'});
-	
+	next if($hStatR1{'qunmapped'} && $hStatR2{'qunmapped'});
+
 	# Print mapped reads to filtered SAM file
 	print $fhFW $sRead1 . "\n";
 	print $fhFW $sRead2 . "\n";
@@ -126,15 +127,15 @@ sub ParseFlag {
         $phStat = {
 			'paired' => substr($iRbin, 0, 1),
         	   	'propermap' => substr($iRbin, 1, 1),
-        	   	'qunmapped' => substr($iRbin, 2, 1), 
-        		'munmapped' => substr($iRbin, 3, 1), 
-        		'qrev' => substr($iRbin, 4, 1), 
-        		'mrev' => substr($iRbin, 5, 1), 
-        		'firstpair' => substr($iRbin, 6, 1), 
-        		'secondpair' => substr($iRbin, 7, 1), 
-        		'scndryalign' => substr($iRbin, 8, 1), 
-        		'failqual' => substr($iRbin, 9, 1), 
-        		'pcrdup' => substr($iRbin, 10, 1), 
+        	   	'qunmapped' => substr($iRbin, 2, 1),
+        		'munmapped' => substr($iRbin, 3, 1),
+        		'qrev' => substr($iRbin, 4, 1),
+        		'mrev' => substr($iRbin, 5, 1),
+        		'firstpair' => substr($iRbin, 6, 1),
+        		'secondpair' => substr($iRbin, 7, 1),
+        		'scndryalign' => substr($iRbin, 8, 1),
+        		'failqual' => substr($iRbin, 9, 1),
+        		'pcrdup' => substr($iRbin, 10, 1),
         		'supplealign' => substr($iRbin, 11, 1)
 		  };
 }
@@ -144,7 +145,7 @@ sub SortBam {
 	my ($phCmdLineArgs, $sFile) = @_;
 	my ($sCmd, $sOut);
 	my $nExitCode;
-	my $sOptions = "";	
+	my $sOptions = "";
 
 	my $sSubName = (caller(0))[3];
 	if(exists($phCmdLineArgs->{'samtools_params'})) {
@@ -152,7 +153,7 @@ sub SortBam {
 	}
 	$sOut = $phCmdLineArgs->{'output_dir'}."/".$sFile;
 	# Shaun Adkins - Commented out other command because it is Samtools-1.2.  We are using Samtools-0.1
-	$sComd = $phCmdLineArgs->{'samtools_path'}." sort ". $sOptions . " -n " $phCmdLineArgs->{'input_file'} . $sOut;
+	$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ". $sOptions . " -n " . $phCmdLineArgs->{'input_file'} . $sOut;
 	#$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." ".$phCmdLineArgs->{'input_file'};
 	printLogMsg($DEBUG, "INFO : $sSubName :: Start sorting file $phCmdLineArgs->{'input_file'} to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd");
 	$nExitCode = system($sCmd);
@@ -164,7 +165,7 @@ sub SortBam {
 }
 
 
-# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing. 
+# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing.
 # Parameters    : NA
 # Returns       : NA
 # Modifications :
@@ -189,14 +190,14 @@ sub checkCmdLineArgs {
 # Parameters    : level = can be ERROR, WARNING or INFO
 #		  msg   = msg to be printed in the log file or to STDERR
 # Returns       : NA
-# Modifications : 
+# Modifications :
 
 sub printLogMsg {
 	my ($nLevel, $sMsg) = @_;
 	if( $nLevel <= $DEBUG ) {
 		print STDERR "$sMsg\n";
 		die "" if($nLevel == $ERROR);
-	}	
+	}
 	print $fhLog "$sMsg\n" if(defined($fhLog));
 }
 
@@ -212,7 +213,7 @@ __END__
 
 =head1 SYNOPSIS
 
-# USAGE : 
+# USAGE :
 
 	parameters in [] are optional
 
