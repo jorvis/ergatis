@@ -154,7 +154,7 @@ foreach my $database (keys %db){
     # get_assembly returns list of [feature uniquename, sequence, feature id]
     while( my $row = $QUERIES{'get_assembly'}->fetchrow_arrayref() ) {
         $CONTIG_NUMBER = 0;
-	    $contigs = &make_contigs( $LINKER, $row->[1], $database);
+	    $contigs = &make_contigs( $LINKER, $row->[1], $database, $row->[0]);
 
         ## now print the genes
         foreach my $c ( @{$contigs} ) {
@@ -179,7 +179,7 @@ foreach my $database (keys %db){
 exit(0);
 
 sub make_contigs {
-    my ($linker, $sequence, $database) = @_;
+    my ($linker, $sequence, $database, $assembly) = @_;
     my $linker_len = length($linker);
     my $contigs = [];
     my $contig = { 'start' => 0, 'end' => undef };
@@ -194,9 +194,9 @@ sub make_contigs {
       # skip contigs that are empty or all Ns
       if ($cseq !~ /^N*$/i) {
         if (defined $db{$database}) {
-            $contig->{'id'} = $db{$database} . "." . $CONTIG_STRING . ".".$CONTIG_NUMBER++;
+            $contig->{'id'} = $db{$database} . "." . $assembly . "." . $CONTIG_STRING . ".".$CONTIG_NUMBER++;
         } else {
-            $contig->{'id'} = $database . "." . $CONTIG_STRING . "." . $CONTIG_NUMBER++;
+            $contig->{'id'} = $database . "." . $assembly . "." . $CONTIG_STRING . "." . $CONTIG_NUMBER++;
         }
         push(@$contigs, $contig);
       }

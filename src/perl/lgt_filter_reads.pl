@@ -39,6 +39,12 @@ my ($sQnameR1, $iFlagR1, $sCigarR1, $sQnameR2, $iFlagR2, $sCigarR2);
 my %hStatR1 = ();
 my %hStatR2 = ();
 my $iSingletons = 0;
+my $num_null = 0;
+my $SC = 0;
+# MM, MU, and UU, keep count of mapped and unmapped mate pairs
+my $MM = 0;
+my $MU = 0;     # Also keeps track of UM
+my $UU = 0;
 #my $UNMAPPED = '0x4';	# Hex value for bit in flag representing unmapped alignments
 
 ################
@@ -49,6 +55,7 @@ GetOptions(\%hCmdLineArgs,
 	   'output_dir|o=s',
 	   'samtools_path|s=s',
 	   'samtools_params|S=s',
+	   'softclip_min|m=i',
 	   'log|l=s',
 	   'help|h'
 	  ) or pod2usage();
@@ -80,34 +87,69 @@ my $sRead1;
 
 while(my $sLine = <$fhFR>) {
 	chomp($sLine);
+	# Keeping track if current line is first or second mate pair
 	if($iRead == 0) {
 		$sRead1 = $sLine;
 		$iRead = 1;
 		next;
 	}
 	$iRead = 0;
+	my $print = 0;
 	my $sRead2 = $sLine;
 	($sQnameR1, $iFlagR1, $sCigarR1) = (split /\t/, $sRead1)[ 0, 1, 5];
 	($sQnameR2, $iFlagR2, $sCigarR2) = (split /\t/, $sRead2)[ 0, 1, 5];
-	if($sQnameR1 ne $sQnameR2) {
-		$iSingletons++;
-		next;
-	}
-	if($sQnameR1 =~ /null/) {
 
+	# Ensure the two reads actually have valid names
+	if($sQnameR1 =~ /null/) {
+        $num_null++;
+		# Treat second read as the new first, and grab a new second.
+		$sRead1 = $sRead2;
+		$iRead = 1;
+        next;
 	}
 	if($sQnameR2 =~ /null/) {
-
+        $num_null++;
+		$iRead = 1;
+        next;
 	}
+
+	# Ensure the two reads are actually mates
+	if($sQnameR1 ne $sQnameR2) {
+		$iSingletons++;
+		# If not mates, then treat second read as the first, and grab a new second.
+		$sRead1 = $sRead2;
+		$iRead = 1;
+		next;
+	}
+
 	my $stat_r1 = ParseFlag($iFlagR1);
 	my $stat_r2 = ParseFlag($iFlagR2);
 
-	# Only want alignments where at least one read is mapped
-	next if($stat_r1->{'qunmapped'} && $stat_r2->{'qunmapped'});
+    # In LGT, we are looking for pairs where one mate maps to the donor reference and the other maps
+    # to the recipient reference.  We want to filter out ones where both mates map to the same ref
+    # since no LGT info can be derived, particularly with the recipient reference
+    if(! $stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { $MM +=2; }
+    if ($stat_r1->{'qunmapped'} || $stat_r2->{'qunmapped'}) {
+	    # Print unmapped reads to filtered SAM file
+	    $print = 1;
 
-	# Print mapped reads to filtered SAM file
-	print $fhFW $sRead1 . "\n";
-	print $fhFW $sRead2 . "\n";
+	    if (! $stat_r1->{'qunmapped'} && $stat_r2->{'qunmapped'}) { $MU +=2; }
+	    if ($stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { $MU +=2; }
+	    if ($stat_r1->{'qunmapped'} && $stat_r2->{'qunmapped'}) { $UU +=2; }
+
+	}
+
+    ## FILTER FOR soft clipped reads
+    if ( $hCmdLineArgs{'softclip_min'} ) {
+        map {
+            if ( $_ =~ /(\d+)S/ && $1 >= $hCmdLineArgs{'softclip_min'} ) { $print = 1; $SC += 2; }           ## 10.21.14 Testing more liberal softclip parsing
+        } ( $sCigarR1, $sCigarR2 );
+    }
+
+    if ($print) {
+        print $fhFW $sRead1 . "\n";
+	    print $fhFW $sRead2 . "\n";
+    }
 }
 
 close $fhFW;
