@@ -99,28 +99,32 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/lgt_filter_reads</executable>
             <param>
-            <key>--input_file</key>
-            <value>$;I_DIR$;/$;I_FILE_BASE$;.bwa.bam</value>
+            	<key>--input_file</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa.bam</value>
             </param>
             <param>
-            <key>--output_dir</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            	<key>--output_dir</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+			</param>
+			<param>
+				<key>--softclip_min</key>
+				<value>$;SOFTCLIP_MIN$;</value>
+			</param>
+            <param>
+            	<key>--samtools_path</key>
+            	<value>$;SAMTOOLS_EXEC$;</value>
             </param>
             <param>
-            <key>--samtools_path</key>
-            <value>$;SAMTOOLS_EXEC$;</value>
+            	<key>--samtools_params</key>
+            	<value>$;SAM_SORT_ARGS$;</value>
             </param>
             <param>
-            <key>--samtools_params</key>
-            <value>$;SAM_SORT_ARGS$;</value>
+            	<key>stdout</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_filter.stdout</value>
             </param>
             <param>
-            <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_filter.stdout</value>
-            </param>
-            <param>
-            <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_filter.stderr</value>
+            	<key>stderr</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_filter.stderr</value>
             </param>
         </command>
     </commandSet>
