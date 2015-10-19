@@ -1,0 +1,34 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start</name>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>download_sra.default</name>
+            </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>sra2fastq.default</name>
+            </commandSet>
+            <commandSet type="parallel">
+                <state>incomplete</state>
+				<commandSet type="serial">
+					<state=incomplete</state>
+					<commandSet type="serial">
+						<state=incomplete</state>
+                		<name>lgt_bwa.donor</name>
+					</commandSet>
+				</commandSet>
+                <commandSet type="serial">
+                    <state=incomplete</state>
+                    <commandSet type="serial">
+                        <state=incomplete</state>
+                        <name>lgt_bwa.recipient</name>
+                    </commandSet>
+                </commandSet>
+            </commandSet>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>
