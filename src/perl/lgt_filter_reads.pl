@@ -152,7 +152,7 @@ while(my $sLine = <$fhFR>) {
     }
 }
 close $fhFW;
-printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results:\n\tBad Singletons : $num_singletons\n\tNull : $num_numm\n\tMapped-Unmapped : $MU\n\tMapped-Mapped : $MM\n\tUnmapped-Unmapped : $UU\n";
+printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results:\n\tBad Singletons : $iSingletons\n\tNull : $num_null\n\tMapped-Unmapped : $MU\n\tMapped-Mapped : $MM\n\tUnmapped-Unmapped : $UU\n");
 
 ###############
 # SUBROUTINES #
