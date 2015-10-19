@@ -151,8 +151,8 @@ while(my $sLine = <$fhFR>) {
 	    print $fhFW $sRead2 . "\n";
     }
 }
-
 close $fhFW;
+printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results:\n\tBad Singletons : $num_singletons\n\tNull : $num_numm\n\tMapped-Unmapped : $MU\n\tMapped-Mapped : $MM\n\tUnmapped-Unmapped : $UU\n";
 
 ###############
 # SUBROUTINES #

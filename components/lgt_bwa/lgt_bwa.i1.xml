@@ -79,7 +79,11 @@
             <param>
             <key>--samtools_params</key>
             <value>$;SAM_VIEW_ARGS$;</value>
-            </param>
+			</param>
+			<param>
+				<key>--bam_paired</key>
+				<value>$;PAIRED$;</value>
+			</param>
             <param>
             <key>--keep_sam</key>
             <value>$;KEEP_SAM$;</value>
