@@ -56,6 +56,7 @@ GetOptions(\%hCmdLineArgs,
 	   'samtools_path|s=s',
 	   'samtools_params|S=s',
 	   'softclip_min|m=i',
+	   'keep_mapped_mapped|m=i',
 	   'log|l=s',
 	   'help|h'
 	  ) or pod2usage();
@@ -128,7 +129,10 @@ while(my $sLine = <$fhFR>) {
     # In LGT, we are looking for pairs where one mate maps to the donor reference and the other maps
     # to the recipient reference.  We want to filter out ones where both mates map to the same ref
     # since no LGT info can be derived, particularly with the recipient reference
-    if(! $stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { $MM +=2; }
+    if(! $stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { 
+		$print = 1 if $hCmdLineArgs{'keep_mapped_mapped'};
+		$MM +=2; 
+	}
     if ($stat_r1->{'qunmapped'} || $stat_r2->{'qunmapped'}) {
 	    # Print unmapped reads to filtered SAM file
 	    $print = 1;

@@ -121,7 +121,11 @@
             <param>
             	<key>--samtools_params</key>
             	<value>$;SAM_SORT_ARGS$;</value>
-            </param>
+			</param>
+			<param>
+				<key>--keep_mapped_mapped</key>
+				<value>$;KEEP_MM$;</value>
+			</param>
             <param>
             	<key>stdout</key>
             	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_filter.stdout</value>
