@@ -126,9 +126,7 @@ while(my $sLine = <$fhFR>) {
 	my $stat_r1 = ParseFlag($iFlagR1);
 	my $stat_r2 = ParseFlag($iFlagR2);
 
-    # In LGT, we are looking for pairs where one mate maps to the donor reference and the other maps
-    # to the recipient reference.  We want to filter out ones where both mates map to the same ref
-    # since no LGT info can be derived, particularly with the recipient reference
+	# Want to keep UU, MU, and UM reads.  Keep MM if specified (reference genome is donor for example)
     if(! $stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { 
 		$print = 1 if $hCmdLineArgs{'keep_mapped_mapped'};
 		$MM +=2; 
@@ -156,7 +154,7 @@ while(my $sLine = <$fhFR>) {
     }
 }
 close $fhFW;
-printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results:\n\tBad Singletons : $iSingletons\n\tNull : $num_null\n\tMapped-Unmapped : $MU\n\tMapped-Mapped : $MM\n\tUnmapped-Unmapped : $UU\n");
+printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results:\n\tBad Singletons : $iSingletons\n\tNull : $num_null\n\tSoft-clipped Reads : $SC\n\tMapped-Unmapped : $MU\n\tMapped-Mapped : $MM\n\tUnmapped-Unmapped : $UU\n");
 
 ###############
 # SUBROUTINES #
