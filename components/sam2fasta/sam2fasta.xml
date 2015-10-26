@@ -58,7 +58,11 @@
             <param>
                 <key>--combine_mates</key>
                 <value>$;COMBINE_MATES$;</value>
-            </param>
+			</param>
+			<param>
+				<key>--samtools_bin</key>
+				<value>$;SAMTOOLS_EXEC$;</value>
+			</param>
             <param>
                 <key>stdout</key>
                 <value>$;TMP_DIR$;/lgt_sam2fasta.stdout</value>

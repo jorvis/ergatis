@@ -25,7 +25,7 @@
 	<!--Iterator Done-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create BAM file list</name>
+            <name>create LGT BAM file list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_bam_list_file</executable>
             <param>
@@ -34,11 +34,29 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.bam"</value>
+                <value>".*\.LGT_(donor|recipient)\.bam"</value>
             </param>    
             <param>
                 <key>--output_list</key>
-                <value>$;BAM_OUTPUT_LIST$;</value>
+                <value>$;LGT_BAM_OUTPUT_LIST$;</value>
+            </param>    
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create microbiome BAM file list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_bam_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*\.microbiome\.bam"</value>
+            </param>    
+            <param>
+                <key>--output_list</key>
+                <value>$;MB_BAM_OUTPUT_LIST$;</value>
             </param>    
         </command>
     </commandSet>
