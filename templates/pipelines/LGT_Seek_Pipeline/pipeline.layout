@@ -1,4 +1,4 @@
-<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+<ommandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
     <commandSet type="serial">
         <state>incomplete</state>
         <name>start</name>
@@ -20,6 +20,10 @@
                 <state=incomplete</state>
                 <name>lgt_bwa.donor</name>
             </commandSet>
+			<commandSet type="serial">
+				<state=incomplete></state>
+				<name>lgt_bwa_post_process.default</name>
+			</commandSet>
         </commandSet>
     </commandSet>
 </commandSetRoot>

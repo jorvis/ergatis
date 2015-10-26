@@ -26,7 +26,7 @@
             <executable>$;BIN_DIR$;/lgt_bwa</executable>
             <param>
             <key>--input_file</key>
-			<value>$;I_FILE_PATH$;/</value>
+			<value>$;I_FILE_PATH$;</value>
             </param>
             <param>
             <key>--reference</key>
