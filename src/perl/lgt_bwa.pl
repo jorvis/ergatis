@@ -42,7 +42,8 @@ my $fastq_paired = 0;	# Determines if fastq seqs are paired-end or not
 GetOptions(\%hCmdLineArgs,
 	   'reference|r=s',
 	   'bam_paired|p=i',
-	   'input_dir|i=s',
+	   'input_dir|I=s',
+	   'input_file|i=s',
 	   'output_dir|d=s',
 	   'bwa_path|b=s',
 	   'samtools_path|s=s',
@@ -207,33 +208,52 @@ sub AlignBwa {
         } 
 }
 
-# Iterate through the input directory to grab the necessary files to align
+# Determine format of input file or files from input directory to be aligned
 sub DetermineFormat {
 	my ($phCmdLineArgs, $phType) = @_;
-	my $dir = $phCmdLineArgs->{'input_dir'};
-	my $sFile;
-	my $sSubName = (caller(0))[3];
-	opendir(dhR, $dir) or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open directory $phCmdLineArgs->{'input_dir'} for reading.\nReason : $!");
-	while($sFile = readdir(dhR)) {
-		my $sPath = $dir . "/" . $sFile;
-		if($sFile =~ /fastq$/) {
-			if($sFile =~ /_1\./) {
-				$phType->{'fastq_1'} = $sPath;
-				$fastq_paired = 1;
-			} elsif($sFile =~ /_2\./) {
-				$phType->{'fastq_2'} = $sPath;
-			} else {
-				$phType->{'fastq'} = $sPath;
-				$fastq_paired = 0;
-			}
-		} elsif($sFile =~ /bam$/) {
-			$phType->{'bam'} = $sPath;
+	my $file = $phCmdLineArgs->{'input_file'};
+	# Going to check and see if we have a inputted file first
+	if ($file) {
+		my ($base,$dir_path,$ext) = fileparse($file, qr/\.[^.]*/);
+		if ($ext =~ /bam/) {
+			$phType->{'bam'} = $file;
+			return;
+		} elsif ($ext =~ /fastq/) {	# Single-end FASTQ file
+			$phType->{'fastq'} = $file;
+			$fastq_paired = 0;
+			return;
+		} elsif ($ext =~ /blank/) {	# My way of grouping paired FASTQ files is to use the basename in a .blank file
+			GrabFilesFromDir($dir_path, $phType);
 		}
+	} else {
+		# If an inputted file wasn't passed, then it has to be an input directory
+		my $dir = $phCmdLineArgs->{'input_dir'};
+		GrabFilesFromDir($dir, $phType);
 	}
-	# Shauh Adkins - There is a potential hang-up iterating through the input_directory, if multiple BAMs
-	# 				  or different groups of FASTQ files are in the same directory or a combination of BAM
-	# 				  and FASTQ.  A potential solution would be to pass a file as input (perhaps the .blank file
-	# 				  from sra2fastq for FASTQ format for example), and get files with the same basename.
+}
+
+# Read through a directory to grab relevant fastq or bam files
+sub GrabFilesFromDir {
+	my ($dir, $file_type) = @_;
+    my $sFile;
+    my $sSubName = (caller(0))[3];
+    opendir(DIR, $dir) or printLogMsg($ERROR, "ERROR : $sSubName :: Could not open directory $dir for reading.\nReason : $!");
+    while($sFile = readdir(DIR)) {
+        my $sPath = $dir . "/" . $sFile;
+        if($sFile =~ /fastq$/) {
+            if($sFile =~ /_1\./) {
+                $file_type->{'fastq_1'} = $sPath;
+                $fastq_paired = 1;
+            } elsif($sFile =~ /_2\./) {
+                $file_type->{'fastq_2'} = $sPath;
+            } else {
+                $file_type->{'fastq'} = $sPath;
+                $fastq_paired = 0;
+            }   
+        } elsif($sFile =~ /bam$/) {
+            $file_type->{'bam'} = $sPath;
+        }   
+    }   
 }
 
 # Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing. 

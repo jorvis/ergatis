@@ -25,8 +25,8 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/lgt_bwa</executable>
             <param>
-            <key>--input_dir</key>
-			<value>$;I_DIR$;/</value>
+            <key>--input_file</key>
+			<value>$;I_FILE_PATH$;/</value>
             </param>
             <param>
             <key>--reference</key>
