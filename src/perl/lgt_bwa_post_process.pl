@@ -29,6 +29,9 @@ B<--recipient_file_list, -R>
 
 B<--output_dir,-o>
 
+B<--prefix,-p>
+	Prefix name to give output files
+
 B<--samtools_path,-s>
     Path to samtools executable
 
@@ -94,6 +97,7 @@ my $results = GetOptions (\%options,
                      "recipient_file_list|R=s",
                      "samtools_path|s=s",
                      "output_dir|o=s",
+					 "prefix|p=s",
                      "log|l=s",
                      "debug|d=s",
                      "help|h"
@@ -113,11 +117,13 @@ foreach my $r (keys %$matching_files) {
     my $d_head = `$options{'samtools_path'} view -H $d`;
     my $r_head = `$options{'samtools_path'} view -H $r`;
     # TODO:  Append additional information to headers if necessary (ID step, PG program VN version
+	
+	$prefix = $options{'prefix'} if (defined $options{'prefix'});
 
     # Open some filehandles to be used, and print headers
-    open (my $lgtd, "| $options{'samtools_path'} view -S -b -o $output_dir/$prefix.lgt.donor.bam -") || &_log($ERROR, "Unable to open outfile");
+    open (my $lgtd, "| $options{'samtools_path'} view -S -b -o $output_dir/$prefix.lgt_donor.bam -") || &_log($ERROR, "Unable to open outfile");
     print $lgtd $d_head . "\n";
-    open (my $lgtr, "| $options{'samtools_path'} view -S -b -o $output_dir/$prefix.lgt.recipient.bam -") || &_log($ERROR, "Unable to open outfile");
+    open (my $lgtr, "| $options{'samtools_path'} view -S -b -o $output_dir/$prefix.lgt_recipient.bam -") || &_log($ERROR, "Unable to open outfile");
     print $lgtr $r_head . "\n";
     open (my $mb_donor, "| $options{'samtools_path'} view -S -b -o $output_dir/$prefix.microbiome.bam -") || &_log($ERROR, "Unable to open outfile");
     print $mb_donor $d_head . "\n";
@@ -207,7 +213,7 @@ sub find_matching_files {
     foreach my $r_file (@$r_arr){
         # TODO: May need to refine this extension pattern
         my ($r_base, $r_dir, $r_ext) = fileparse($r_file, qr/\.\w*\.?bam/);
-        $prefix = $r_base;
+        $prefix = $r_base if (! $options{'prefix'});
         my @grepped = grep {$_ =~ /$r_base/} @$d_arr;
         &_log($ERROR, "Found more than 1 potential donor BAM file match for the recipient BAM file $r_file.  File basenames need to be 1-to-1 matching : $!") if scalar @grepped > 1;
         &_log($ERROR, "Found no match in list of donor BAM files to the recipient BAM file $r_file.  Check the file basenames and ensure match is present : $!") if scalar @grepped < 1;

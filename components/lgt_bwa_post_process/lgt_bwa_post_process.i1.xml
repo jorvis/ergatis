@@ -43,7 +43,7 @@
             <param>
             	<key>--donor_file</key>
             	<value>$;DONOR_FILE$;</value>
-            </param>
+			</param>
             <param>
             	<key>--recipient_file_list</key>
             	<value>$;RECIPIENT_FILE_LIST$;</value>
@@ -51,6 +51,10 @@
 			<param>
             	<key>--recipient_file</key>
             	<value>$;RECIPIENT_FILE$;</value>
+			</param>
+			<param>
+				<key>--prefix</key>
+				<value>$;PREFIX$;</value>
 			</param>
 			<param>
             	<key>--output_dir</key>
