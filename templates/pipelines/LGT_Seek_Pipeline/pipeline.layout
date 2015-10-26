@@ -1,4 +1,4 @@
-<ommandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
     <commandSet type="serial">
         <state>incomplete</state>
         <name>start</name>
@@ -13,15 +13,15 @@
                 <name>sra2fastq.default</name>
             </commandSet>
 			<commandSet type="serial">
-				<state=incomplete</state>
+				<state>incomplete</state>
                 <name>lgt_bwa.recipient</name>
 			</commandSet>
             <commandSet type="serial">
-                <state=incomplete</state>
+                <state>incomplete</state>
                 <name>lgt_bwa.donor</name>
             </commandSet>
 			<commandSet type="serial">
-				<state=incomplete></state>
+				<state>incomplete</state>
 				<name>lgt_bwa_post_process.default</name>
 			</commandSet>
         </commandSet>
