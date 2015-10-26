@@ -104,8 +104,8 @@ my $results = GetOptions (\%options,
 my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
 
 # Group reads from donor/recipient files for each mapping type
-foreach my $d (keys %$matching_files) {
-    my $r = $matching_files->{$d};
+foreach my $r (keys %$matching_files) {
+    my $d = $matching_files->{$r};
     classify($d, "donor");
     classify($r, "recipient");
 
@@ -196,19 +196,22 @@ sub find_matching_files {
     my ($d_arr, $r_arr) = @_;
     my %m_files;
 
+	# The donor BAMs were created from recipient BAMs, so the names are longer.
+	# So we need to grep for the recipient basename in the donor file
+	
     if (scalar @$d_arr == 1 && scalar @$r_arr == 1) {
-        $m_files{$d_arr->[0]} = $r_arr->[0];
+        $m_files{$r_arr->[0]} = $d_arr->[0];
         return \%m_files;
     }
 
-    foreach my $d_file (@$d_arr){
+    foreach my $r_file (@$r_arr){
         # TODO: May need to refine this extension pattern
-        my ($d_base, $d_dir, $d_ext) = fileparse($d_file, qr/\.\w*\.?bam/);
-        $prefix = $d_base;
-        my @grepped = grep {$_ =~ /$d_base/} @$r_arr;
-        &_log($ERROR, "Found more than 1 potential recipient BAM file match for the donor BAM file $d_file.  File basenames need to be 1-to-1 matching : $!") if scalar @grepped > 1;
-        &_log($ERROR, "Found no match in list of recipient BAM files to the donor BAM file $d_file.  Check the file basenames and ensure match is present : $!") if scalar @grepped < 1;
-        $m_files{$d_file} = $grepped[0];
+        my ($r_base, $r_dir, $r_ext) = fileparse($r_file, qr/\.\w*\.?bam/);
+        $prefix = $r_base;
+        my @grepped = grep {$_ =~ /$r_base/} @$d_arr;
+        &_log($ERROR, "Found more than 1 potential donor BAM file match for the recipient BAM file $r_file.  File basenames need to be 1-to-1 matching : $!") if scalar @grepped > 1;
+        &_log($ERROR, "Found no match in list of donor BAM files to the recipient BAM file $r_file.  Check the file basenames and ensure match is present : $!") if scalar @grepped < 1;
+        $m_files{$r_file} = $grepped[0];
 
     }
     return \%m_files;
