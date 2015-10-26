@@ -111,7 +111,7 @@ my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $DEFAULT_LOCUS_DB = "TIGR_moore";
 my $DEFAULT_LINKER_SEQUENCE = "NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN";
 my $DEFAULT_OUTPUT_DIR = ".";
-my $DEFAULT_CONTIG_STRING = "contig";
+my $DEFAULT_CONTIG_STRING = "ctg";
 
 my $LOGFH;
 my %QUERIES = ();
@@ -212,8 +212,17 @@ sub make_contigs {
     }
 
     push(@$positions, [length($sequence), undef]);
-    map { &$add_contig(@$_); } @$positions;
-
+	if (scalar @$positions == 1) {
+		# If no contigs broken by linker seqs, do not add contig ID nums
+        if (defined $db{$database}) {
+            $contig->{'id'} = $db{$database} . "." . $assembly;
+        } else {
+            $contig->{'id'} = $database . "." . $assembly;
+        }
+		push (@$contigs, $contig);
+	} else {
+    	map { &$add_contig(@$_); } @$positions;
+	}
     return $contigs;
 }
 
@@ -267,7 +276,7 @@ sub parse_db_list {
             $abbr =~ s/^\s+//;
             $database{$db} = $abbr;
         } else {
-             $database{$db} = undef;
+             $database{$db} = $db;
         }
     }
     close LIST;

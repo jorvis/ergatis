@@ -60,7 +60,7 @@ if(-e $hCmdLineArgs{'input_dir'} && -d $hCmdLineArgs{'input_dir'}) {
 	$sFasta = $hCmdLineArgs{'input_dir'}."/".$aMeta[0].".fsa";
 	$sSbt = $hCmdLineArgs{'input_dir'}."/".$aMeta[0].".sbt";
 	if(-e $sFasta && -e $sSbt) {
-		$sSource = "[gcode=11][host=$aMeta[8]][country=$aMeta[10]][collection-date=$aMeta[9]][organism=$aMeta[5] $aMeta[6]][strain=$aMeta[6]][serotype=$aMeta[7]][isolation-source=$aMeta[19]][tech=wgs]";
+		$sSource = "[gcode=11][host=$aMeta[8]][country=$aMeta[10]][collection-date=$aMeta[9]][organism=$aMeta[5]][strain=$aMeta[6]][serotype=$aMeta[7]][isolation-source=$aMeta[19]][tech=wgs]";
 		if((-e $hCmdLineArgs{'utility_path'}) && (-x $hCmdLineArgs{'utility_path'})) {
 			$sCmd = "$hCmdLineArgs{'utility_path'} -p $hCmdLineArgs{'input_dir'} -t $sSbt -r $hCmdLineArgs{'output_dir'} -a s -V vb -X C -Z $sDiscrep -j \"$sSource\"";
 			if(defined($hCmdLineArgs{'opts'})) {
