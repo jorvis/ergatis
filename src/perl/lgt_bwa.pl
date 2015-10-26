@@ -267,12 +267,15 @@ sub checkCmdLineArgs {
 	if(exists($phCmdLineArgs->{'log'})) {
 		open($fhLog, "> $phCmdLineArgs->{'log'}") or die "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n"
 	}
-	my @aRequired = qw(reference input_dir output_dir bwa_path);
-        foreach my $sOption(@aRequired) {
-                if(!defined($phCmdLineArgs->{$sOption})) {
-                        printLogMsg($ERROR, "ERROR : $sSubName :: Required option $sOption not passed");
-                }
+	my @aRequired = qw(reference output_dir bwa_path);
+    foreach my $sOption(@aRequired) {
+        if(!defined($phCmdLineArgs->{$sOption})) {
+            printLogMsg($ERROR, "ERROR : $sSubName :: Required option $sOption not passed");
         }
+    }
+	
+	printLogMsg($ERROR, "ERROR : $sSubName :: Either --input_file or --input_dir are required") if (!defined $phCmdLineArgs->{'input_dir'} && !defined $phCmdLineArgs->{'input_file'});
+
 	# Delete SAM files once they are converted to BAM by default
 	if(!defined($phCmdLineArgs->{'keep_sam'})) {
 		$phCmdLineArgs->{'keep_sam'} = 0;
