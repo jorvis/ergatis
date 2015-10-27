@@ -20,8 +20,48 @@
             <arg>-p -m 777 $;TMP_DIR$;</arg>
         </command>
     <!-- Processing -->
-	<!--Iterator-->
-        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Post Process bwa filtered reads</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/lgt_bwa_post_process</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/post_process.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/post_process.stderr</value>
+            </param>
+            <param>
+                <key>--samtools_path</key>
+                <value>$;SAMTOOLS_EXEC$;</value>
+            </param>
+            <param>
+                <key>--donor_file_list</key>
+                <value>$;DONOR_FILE_LIST$;</value>
+            </param>
+            <param>
+                <key>--donor_file</key>
+                <value>$;DONOR_FILE$;</value>
+            </param>
+            <param>
+                <key>--recipient_file_list</key>
+                <value>$;RECIPIENT_FILE_LIST$;</value>
+            </param>
+            <param>
+                <key>--recipient_file</key>
+                <value>$;RECIPIENT_FILE$;</value>
+            </param>
+            <param>
+                <key>--prefix</key>
+                <value>$;PREFIX$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            </param>
+        </command>
 	<!--Iterator Done-->
         <command>
             <type>RunUnixCommand</type>
