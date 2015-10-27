@@ -32,6 +32,10 @@
 						<state>incomplete</state>
 						<name>sam2fasta.fasta</name>
 					</commandSet>
+					<commandSet type="serial">
+						<state>incomplete</state>
+						<name>ncbi-blastn.nt</name>
+					</commandSet>
 				</commandSet>
 				<commandSet type="parallel">
 					<state>incomplete</state>
