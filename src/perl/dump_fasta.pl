@@ -219,6 +219,7 @@ sub make_contigs {
         } else {
             $contig->{'id'} = $database . "." . $assembly;
         }
+		$contig->{'sequence'} = substr($sequence, 0, length($sequence));
 		push (@$contigs, $contig);
 	} else {
     	map { &$add_contig(@$_); } @$positions;
