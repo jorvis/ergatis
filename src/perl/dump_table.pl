@@ -37,7 +37,7 @@ B<--server,-s>
     The MySQL server on which the database specified by the --database option resides.
 
 B<--linker_sequence,-k>
-    Optional.  Sequence on which to split sequences into contigs.  Set to the IGS "pmark" sequence 
+    Optional.  Sequence on which to split sequences into contigs.  Set to the IGS "pmark" sequence
     (NNNNNCACACACTTAATTAATTAAGTGTGTGNNNNN) by default.
 
 B<--contig_string,-n>
@@ -56,7 +56,7 @@ B<--mapping_list -m>
     NOTE:  This feature is commented out and deprecated
 
 B<--locus_db,-c>
-    Optional.  Chado db.name to use when querying for dbxrefs to output in NCBI/GenBank "locus_tag" 
+    Optional.  Chado db.name to use when querying for dbxrefs to output in NCBI/GenBank "locus_tag"
     field.  Set to "TIGR_moore" by default.
 
 B<--output_dir,-o>
@@ -80,7 +80,7 @@ and .tbl files that can be processed by NCBI's tbl2asn utility.  The
 sequences read from the database will be split into contigs using the
 specified linker sequence (--linker_sequence) and any contigs that are
 composed entirely of Ns (or are empty) will be discarded and will not
-be included in the output.  
+be included in the output.
 
 =head1 INPUT
 
@@ -161,12 +161,11 @@ foreach my $database (keys %db){
     print "Now preparing to dump $database...\n";
     &init(\%options, $database);
     &prepare_queries( \%QUERIES);  # prepare SQL commands to issue to the Chado database
-    
+
     ## grab the assemblies
     $QUERIES{'get_assembly'}->execute();
     # get_assembly returns list of [feature uniquename, sequence, feature id]
-    while( my $row = $QUERIES{'get_assembly'}->fetchrow_arrayref() ) { 
-		$CONTIG_NUMBER = 0;
+    while( my $row = $QUERIES{'get_assembly'}->fetchrow_arrayref() ) {
 		## make contigs
         #if ($fuzznuc_flag) {
 	    #print "Using fuzznuc search mapping list...\n";
@@ -272,7 +271,7 @@ exit(0);
 
 sub add_feature {
     my ($ofh, $g, $feature_type, $clength) = @_;
-    my ($s, $e) = ($g->{'strand'} > 0) ? ($g->{'fmin'}+1,$g->{'fmax'}) : ($g->{'fmax'}, $g->{'fmin'}+1);    #determine start and end sites 
+    my ($s, $e) = ($g->{'strand'} > 0) ? ($g->{'fmin'}+1,$g->{'fmax'}) : ($g->{'fmax'}, $g->{'fmin'}+1);    #determine start and end sites
 
     my $codon_start;
     if( $s < 1 ) {
@@ -297,7 +296,7 @@ sub add_feature {
             $codon_start = 1;
         }
     }
-    
+
     if( $e < 1 ) {
         $e = ">1";
     } elsif( $e > $clength ) {
@@ -308,12 +307,12 @@ sub add_feature {
     my($snum) = ($s =~ /(\d+)/);
     my($enum) = ($e =~ /(\d+)/);
     die "illegal coordinates s=$s, e=$e" if (($snum <= 0) || ($enum <= 0));
-    
+
     # print output of .tbl file
     if( $g->{'gpn'} =~ /(unverified frameshift|unverified point mutation|degenerate)/ ) {
 
-	# make note that gene has problems so that it does not produce the expected translation 
-	my $note;	
+	# make note that gene has problems so that it does not produce the expected translation
+	my $note;
         ($note = $g->{'gpn'}) =~ s/(unverified frameshift|unverified point mutation|degenerate)/non-functional due to frameshift/;
 
         print $ofh $s."\t".$e."\tgene\n";
@@ -323,7 +322,7 @@ sub add_feature {
         die("Can't find locus for $g->{'feature_id'}") unless( $locus );
         print $ofh "\t\t\tlocus_tag\t$locus\n";
         print $ofh "\t\t\tnote\t$note\n";
-        
+
     } else {
 
         print $ofh $s."\t".$e."\tgene\n";
@@ -344,7 +343,7 @@ sub add_feature {
         $QUERIES{'get_ec'}->execute( $g->{'feature_id'} );
         $r = $QUERIES{'get_ec'}->fetchall_arrayref();
         my $ec = $r->[0]->[0];
-        
+
         $feature_type = 'CDS' if( $feature_type eq 'transcript' );
         print $ofh $s."\t".$e."\t$feature_type\n";
         print $ofh "\t\t\tproduct\t$g->{'gpn'}\n";
@@ -446,7 +445,7 @@ sub make_contigs {
 
 sub prepare_queries {
     my ($queries) = @_;
-    
+
     my $q = "SELECT f.uniquename, f.residues, f.feature_id ".
         "FROM feature f, cvterm c ".
         "WHERE c.name = 'assembly' AND c.cvterm_id = f.type_id";
@@ -523,7 +522,7 @@ sub check_options {
 #	open (MAP, "< $opts->{'mapping_list'}" ) or die("Could not open mapping file list for reading: $!\n" );
 #	chomp( my @files = <MAP> );
 #	close (MAP);
-#	map { 
+#	map {
 #    	    $mapping_files{$1} = $_ if( m|/([^/]+)\.raw$| );
 #	} @files;
 #   }
@@ -540,7 +539,7 @@ sub parse_db_list {
         $db =~ s/^\s+//;	#Strip off spaces before both (space before abbr would be reflected in contig header)
         #print $parts[0], "\t", $parts[1], "\n";
         next if ($db eq "");	#safety check against a line starting with a comma
-        if (defined $abbr) {	# If there is a database_abbreviation present, then assign it to the database key
+        if (defined $abbr && length $abbr) {	# If there is a database_abbreviation present, then assign it to the database key
             $abbr =~ s/^\s+//;
             $database{$db} = $abbr;
         } else {
@@ -548,11 +547,11 @@ sub parse_db_list {
         }
     }
     close LIST;
-    
+
     return %database;
 }
 
-sub init {  
+sub init {
   my($opts, $db) = @_;
   unless (-d $OUTPUT_DIR . "/$db") { mkdir $OUTPUT_DIR . "/$db";}	#Make output directory if it doesn't exist
   my $dir = $OUTPUT_DIR . "/$db";
@@ -593,7 +592,7 @@ sub _pod {
 
 # do some testing
 sub _test {
-  my $TEST_CONTIGS = 
+  my $TEST_CONTIGS =
     [
      { 'descr' => "actg, 2 pmarks, tttt", 'contigs' => ['ACTG', '', 'TTTT'] },
      { 'descr' => "actg, pmark, nnnnn, pmark, tttt", 'contigs' => ['ACTG', 'NNNNN', 'TTTT'] },
@@ -620,11 +619,11 @@ sub _test {
         ++$num_tests;
 
         my $c2 = &make_contigs($LINKER, $cseq);
-        my $c2s = sub { 
+        my $c2s = sub {
           my $c = shift;
           return "[id:" . $c->{'id'} . " coords:" . $c->{'start'} . "-" . $c->{'end'} . " seq:" .  $c->{'sequence'} . "]";
         };
-      
+
         print "           descr = " . $tc->{'descr'} . "\n";
         print "         contigs = " . join(',', @{$tc->{'contigs'}}) . "\n";
         print "             seq = " . $cseq. " (length=" . length($cseq) . ")\n";
@@ -644,7 +643,7 @@ sub _test {
         print "\n";
       }
     }
-  
+
   # check result and return appropriate exit code
   print "\n";
   print "$num_ok/$num_tests passed ok, $num_failed failed\n";

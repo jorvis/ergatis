@@ -153,7 +153,6 @@ foreach my $database (keys %db){
     $QUERIES{'get_assembly'}->execute();
     # get_assembly returns list of [feature uniquename, sequence, feature id]
     while( my $row = $QUERIES{'get_assembly'}->fetchrow_arrayref() ) {
-        $CONTIG_NUMBER = 0;
 	    $contigs = &make_contigs( $LINKER, $row->[1], $database, $row->[0]);
 
         ## now print the genes
@@ -194,9 +193,9 @@ sub make_contigs {
       # skip contigs that are empty or all Ns
       if ($cseq !~ /^N*$/i) {
         if (defined $db{$database}) {
-            $contig->{'id'} = $db{$database} . "." . $assembly . "." . $CONTIG_STRING . ".".$CONTIG_NUMBER++;
+            $contig->{'id'} = $db{$database} . "." . $CONTIG_STRING . ".".$CONTIG_NUMBER++;
         } else {
-            $contig->{'id'} = $database . "." . $assembly . "." . $CONTIG_STRING . "." . $CONTIG_NUMBER++;
+            $contig->{'id'} = $database . "." . $CONTIG_STRING . "." . $CONTIG_NUMBER++;
         }
         push(@$contigs, $contig);
       }
@@ -212,18 +211,7 @@ sub make_contigs {
     }
 
     push(@$positions, [length($sequence), undef]);
-	if (scalar @$positions == 1) {
-		# If no contigs broken by linker seqs, do not add contig ID nums
-        if (defined $db{$database}) {
-            $contig->{'id'} = $db{$database} . "." . $assembly;
-        } else {
-            $contig->{'id'} = $database . "." . $assembly;
-        }
-		$contig->{'sequence'} = $sequence;
-		push (@$contigs, $contig);
-	} else {
-    	map { &$add_contig(@$_); } @$positions;
-	}
+    map { &$add_contig(@$_); } @$positions;
     return $contigs;
 }
 
@@ -277,7 +265,7 @@ sub parse_db_list {
             $abbr =~ s/^\s+//;
             $database{$db} = $abbr;
         } else {
-             $database{$db} = $db;
+             $database{$db} = undef;
         }
     }
     close LIST;
