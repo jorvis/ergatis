@@ -16,7 +16,7 @@ sam2fasta.pl
        --paired=1 # Defaults to 1
        --assume_uniq=1 # To ignore how many times you see a read. Good for single large files.
        --help]
-     
+
 =cut
 
 use strict;
@@ -98,12 +98,14 @@ elsif($options{input}) {
 close IN1;
 
 if($options{base_list}) {
-    open OUTBASE, ">$options{base_list}" or die;
-    print OUTBASE "$path/$name\n";    
+    open OUTBASE, ">$options{base_list}" or die "Cannot open $options{base_list} for writing: $!\n";
+    foreach my $name (@outbase){
+        print OUTBASE "$path/$name\n";
+    }
     close OUTBASE;
 }
 if($options{out_list}) {
-    open OUTLIST, ">$options{out_list}" or die;
+    open OUTLIST, ">$options{out_list}" or die "Cannot open $options{out_list} for writing: $!\n";
     print OUTLIST join("\n",@outfiles);
     close OUTLIST;
 }
@@ -139,16 +141,16 @@ sub set_output {
             open $out1, ">>$path/$name\_1.fastq" or die "Unable to open $path/$name\_1.fastq\n";
         }
         else {
-            open $out1, ">$path/$name\_1.fastq" or die "Unable to open $path/$name\_1.fastq\n";            
+            open $out1, ">$path/$name\_1.fastq" or die "Unable to open $path/$name\_1.fastq\n";
             push(@outfiles,"$path/$name\_1.fastq");
             push(@outbases, "$name"); # Kind of a hack to do this here
         }
-        if($seen_outputs->{"$path/$name\_2.fastq"}) {        
+        if($seen_outputs->{"$path/$name\_2.fastq"}) {
             open $out2, ">>$path/$name\_2.fastq" or die "Unable to open $path/$name\_2.fastq\n";
         }
         else {
-            open $out2, ">$path/$name\_2.fastq" or die "Unable to open $path/$name\_2.fastq\n";  
-            push(@outfiles,"$path/$name\_2.fastq");          
+            open $out2, ">$path/$name\_2.fastq" or die "Unable to open $path/$name\_2.fastq\n";
+            push(@outfiles,"$path/$name\_2.fastq");
         }
         $seen_outputs->{"$path/$name\_1.fastq"} = 1;
         $seen_outputs->{"$path/$name\_2.fastq"} = 1;
@@ -227,12 +229,12 @@ sub process_file2 {
                 $seq = revcom_as_string($fields[9]);
                 $qual = reverse $fields[10];
             }
-            
+
             if(!$working_reads->{$fields[0]}) {
                 $working_reads->{$fields[0]} = {};
             }
-            
-            # Make a little object with the read info in it. Key this on read id and decimal flag number 
+
+            # Make a little object with the read info in it. Key this on read id and decimal flag number
             $working_reads->{$fields[0]}->{$fields[1]} = {'qual' => $qual,'seq' => $seq,'fields' => \@fields,'flag' => $flag};
 
             # If we have seen both mates go in here (this is a bit of a HACK)
@@ -258,11 +260,9 @@ sub process_file2 {
                             $combined->{qual} = $working_reads->{$fields[0]}->{$f}->{qual};
                             $combined->{fields} = $working_reads->{$fields[0]}->{$f}->{fields};
                         }
-                    }
-                    elsif($options{fastq}) {
+                    } elsif($options{fastq}) {
                         &print_fastq($working_reads->{$fields[0]}->{$f});
-                    }
-                    else {
+                    } else {
                         print $out '>'.$fields[0];
                         if($count) {
                             print $out "/$count";
@@ -275,8 +275,7 @@ sub process_file2 {
                 if($combined) {
                     if($options{fastq}) {
                         &print_fastq($combined);
-                    }
-                    else {
+                    } else {
                         print $out '>'.$fields[0];
                         print $out "\n";
                         print $out $combined->{seq}."\n";
@@ -292,7 +291,7 @@ sub process_file2 {
 }
 sub process_file_hlgt {
     my $file = shift;
-    
+
     my ($fname,$fpath,$fsuffix) = fileparse($file,'.sam*');
 
 
@@ -322,7 +321,7 @@ sub process_file_hlgt {
         # This is a HACK since this file never existed.
         print "Calling $fpath/$run.sam\n";
         &set_output("$fpath/$run.sam");
-    }    
+    }
 #    my $fs = -s "$options{tmp_dir}/$name.sam";
 #    if($fs == 0) {
 #        print "Had an empty file $options{tmp_dir}/$name.sam... skipping....\n\n";
@@ -349,9 +348,9 @@ sub process_file_hlgt {
                 $qual = reverse $fields[10];
             }
             if(!$working_reads->{$fields[0]}->{$seq} && !$flag->{'qunmapped'}) {
-                $working_reads->{$fields[0]}->{$seq} = {'flag' => $flag, 
-                                                        'seq' => $seq, 
-                                                        'subj' => $fields[2], 
+                $working_reads->{$fields[0]}->{$seq} = {'flag' => $flag,
+                                                        'seq' => $seq,
+                                                        'subj' => $fields[2],
                                                         'fields' => \@fields,
                                                         'qual' => $qual};
             }
@@ -399,7 +398,7 @@ sub process_file_hlgt {
     close $infh;
 #    my $cmd = "rm $options{tmp_dir}/$name$suffix";
 #    &run_cmd($cmd);
-    
+
 }
 
 sub print_fastq {
@@ -425,7 +424,7 @@ sub print_fastq {
 sub run_cmd {
 
     my $cmd = shift;
-    
+
     `$cmd`;
     if($?) {
         print STDERR "$cmd\n\n$?";

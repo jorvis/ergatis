@@ -117,7 +117,7 @@ foreach my $r (keys %$matching_files) {
     my $d_head = `$options{'samtools_path'} view -H $d`;
     my $r_head = `$options{'samtools_path'} view -H $r`;
     # TODO:  Append additional information to headers if necessary (ID step, PG program VN version
-	
+
 	$prefix = $options{'prefix'} if (defined $options{'prefix'});
 
     # Open some filehandles to be used, and print headers
@@ -204,7 +204,7 @@ sub find_matching_files {
 
 	# The donor BAMs were created from recipient BAMs, so the names are longer.
 	# So we need to grep for the recipient basename in the donor file
-	
+
     if (scalar @$d_arr == 1 && scalar @$r_arr == 1) {
         $m_files{$r_arr->[0]} = $d_arr->[0];
         return \%m_files;
@@ -230,7 +230,7 @@ sub parse_flag {
 	$left_bin = unpack("B32", pack("N", $flag));
 	$left_bin =~ s/^0+(?=\d)//;    # otherwise you'll get leading zeros
 	$bin = sprintf("%012d", $left_bin);
-	my $right_bin = reverse($left_bin);
+	my $right_bin = reverse($bin);
     my $bit_hash = {
 			'paired' => substr($right_bin, 0, 1),
         	'propermap' => substr($right_bin, 1, 1),
