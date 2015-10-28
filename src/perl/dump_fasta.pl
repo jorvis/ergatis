@@ -273,7 +273,7 @@ sub parse_db_list {
         $db =~ s/^\s+//;	#Strip off spaces before both (space before abbr would be reflected in contig header)
         #print $parts[0], "\t", $parts[1], "\n";
         next if ($db eq "");	#safety check against a line starting with a comma
-        if (defined $abbr) {	# If there is a database_abbreviation present, then assign it to the database key
+        if (defined $abbr && length($abbr)) {	# If there is a database_abbreviation present, then assign it to the database key
             $abbr =~ s/^\s+//;
             $database{$db} = $abbr;
         } else {
