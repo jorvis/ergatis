@@ -230,8 +230,8 @@ sub parse_flag {
 	$left_bin = unpack("B32", pack("N", $flag));
 	$left_bin =~ s/^0+(?=\d)//;    # otherwise you'll get leading zeros
 	$bin = sprintf("%012d", $left_bin);
-	my $right_bin = reverse($left_bin);
-    my $bit_hash = {
+	my $right_bin = reverse($bin);
+	my $bit_hash = {
 			'paired' => substr($right_bin, 0, 1),
         	'propermap' => substr($right_bin, 1, 1),
         	'qunmapped' => substr($right_bin, 2, 1),
