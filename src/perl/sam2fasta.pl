@@ -20,6 +20,7 @@ sam2fasta.pl
 =cut
 
 use strict;
+use warnings;
 use DBI;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Pod::Usage;
@@ -99,7 +100,7 @@ close IN1;
 
 if($options{base_list}) {
     open OUTBASE, ">$options{base_list}" or die "Cannot open $options{base_list} for writing: $!\n";
-    foreach my $name (@outbase){
+    foreach my $name (@outbases){
         print OUTBASE "$path/$name\n";
     }
     close OUTBASE;
