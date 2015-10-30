@@ -111,7 +111,8 @@ my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
 # Group reads from donor/recipient files for each mapping type
 foreach my $r (keys %$matching_files) {
 	my $lgt_obj = LGT::LGTSeek->new( {
-			'samtools_bin' => $options{'samtools_path'}
+			'samtools_bin' => $options{'samtools_path'},
+			'output_dir' => $options{'output_dir'},
 		} );
 	
 	my $d = $matching_files->{$r};
@@ -120,7 +121,7 @@ foreach my $r (keys %$matching_files) {
 	$lgt_obj->bwaPostProcess( {
 			'donor_bam'	=> $d,
 			'host_bam'	=> $r,
-
+			'prefix' => $prefix
 		} );
 };
 
