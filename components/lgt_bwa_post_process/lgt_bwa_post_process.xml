@@ -67,7 +67,7 @@
             <type>RunUnixCommand</type>
             <name>create LGT BAM file list</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_bam_list_file</executable>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
                 <key>--directory</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
@@ -85,7 +85,7 @@
             <type>RunUnixCommand</type>
             <name>create microbiome BAM file list</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_bam_list_file</executable>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
                 <key>--directory</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
