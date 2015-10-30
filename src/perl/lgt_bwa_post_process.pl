@@ -90,6 +90,7 @@ my @recipient_files;
 my %LGT_groups;
 my $output_dir;
 my %options;
+my $count_id = 0;
 
 my $results = GetOptions (\%options,
                      "donor_file|d=s",
@@ -110,6 +111,9 @@ my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
 
 # Group reads from donor/recipient files for each mapping type
 foreach my $r (keys %$matching_files) {
+	$prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_process";
+	$prefix .= "_" . $count_id++ . "_";
+
 	my $lgt_obj = LGT::LGTSeek->new( {
 			'samtools_bin' => $options{'samtools_path'},
 			'output_dir' => $options{'output_dir'},
@@ -117,13 +121,22 @@ foreach my $r (keys %$matching_files) {
 		} );
 	
 	my $d = $matching_files->{$r};
-
 	# Returns a hash of group assignemt counts and the files, but not really necessary to bring out here.
-	$lgt_obj->bwaPostProcess( {
+	my $pp_data = $lgt_obj->bwaPostProcess( {
 			'donor_bam'	=> $d,
 			'host_bam'	=> $r,
-			'prefix' => $prefix
+			'output_prefix' => $prefix
 		} );
+	
+	my $counts_file = $output_dir . "/" . $prefix . "_post_processing.tab";
+	my (@header, @vals);
+    map {
+        push( @header, $_ );
+        my $foo = $pp_data->{counts}->{$_} ? $pp_data->{counts}->{$_} : 0;
+        push( @vals, $foo );
+    } ( 'total', 'host', 'no_map', 'all_map', 'single_map', 'integration_site_human', 'integration_site_bac', 'microbiome', 'lgt' );
+	LGT::LGTSeek->print_tab( $counts_file, \@header, \@vals );
+
 };
 
 exit(0);
@@ -144,7 +157,6 @@ sub find_matching_files {
     foreach my $r_file (@$r_arr){
         # TODO: May need to refine this extension pattern
         my ($r_base, $r_dir, $r_ext) = fileparse($r_file, qr/\.\w*\.?bam/);
-        $prefix = $r_base if (! $options{'prefix'});
         my @grepped = grep {$_ =~ /$r_base/} @$d_arr;
         &_log($ERROR, "Found more than 1 potential donor BAM file match for the recipient BAM file $r_file.  File basenames need to be 1-to-1 matching : $!") if scalar @grepped > 1;
         &_log($ERROR, "Found no match in list of donor BAM files to the recipient BAM file $r_file.  Check the file basenames and ensure match is present : $!") if scalar @grepped < 1;

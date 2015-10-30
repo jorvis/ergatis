@@ -27,7 +27,7 @@ Internal methods are usually preceded with a _
 
  Title   : LGTSeek.pm
  Usage   : Suite of subroutines used to identify LGT
- Routines:
+ Instance Routines:
         new                 : Create lgtseek object
         downloadSRA         : Download SRA file
         dumpFastq           : Convert sra file 2 fastq
@@ -50,6 +50,9 @@ Internal methods are usually preceded with a _
         _parseFlag          : Return easy access sam flag information
         _create_flag        : Create a sam flag
         _run_cmd            : Run a unix command
+
+Class Routines:
+		print_tab			: Print tab-delimited file of filtered counts by category
 =cut
 
 package LGT::LGTSeek;
@@ -944,8 +947,7 @@ sub _bwaPostProcessDonorHostPaired {
         'MU_MU' => 'single_map'
     };
 
-    my $prefix = $config->{output_prefix} ? "$config->{output_prefix}_" : '';
-
+    my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
     my $class_to_file_name = {
         'lgt_donor'                    => "$output_dir/" . $prefix . "lgt_donor.bam",
         'lgt_host'                     => "$output_dir/" . $prefix . "lgt_host.bam",
@@ -2418,6 +2420,25 @@ sub new2 {
 
     bless $self;
     return $self;
+}
+
+=head2	print_tab
+
+Title	:	print_tab
+Usage	:	LGT:LGTSeek->print_tab($filename, $header_array_ref, $counts_array_ref);
+Function	:	Prints out counts based on various means of filtering the BAM reads
+Returns	:	File with tab-delimited counts
+
+=cut
+sub print_tab {
+    my ( $class, $file, $header, $vals ) = @_;
+    open OUT, ">$file" or confess("Couldn't open $file for writing\n");
+    print OUT join( "\t", @$header );
+    print OUT "\n";
+    print OUT join( "\t", @$vals );
+    print OUT "\n";
+	close OUT;
+	return;
 }
 
 1;

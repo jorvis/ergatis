@@ -74,7 +74,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.LGT_(donor|recipient)\.bam"</value>
+                <value>".*lgt_(donor|recipient|host)\.bam"</value>
             </param>    
             <param>
                 <key>--output_list</key>
@@ -92,7 +92,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.microbiome\.bam"</value>
+                <value>".*microbiome\.bam"</value>
             </param>    
             <param>
                 <key>--output_list</key>
