@@ -49,7 +49,6 @@ use GiTaxon;
 use LGTBestBlast;
 use LGTFinder;
 use LGTbwa;
-use LGTSeek;
 
 $| = 1;
 
@@ -193,16 +192,6 @@ sub writeOutput {
                 print $out join("\t",($key, $self->{reads_by_mate_id}->{$key}, $new_conservative_se_lca, $new_conservative_se_lca));
                 print $out "\n";
             }
- #       } else {
- #           if($self->{reads_by_mate_id}->{$key}) {
- #               print STDERR "\ttraditional lca ...";
- #               print $out "$key\t$self->{reads_by_mate_id}->{$key}\n";
-#            } else {
-#                print STDERR "\tFound no hits for $key";
-#                print $out join("\t",($key, ""));
-#                print $out "\n";
-#            }
-        #print STDERR "\n";
     }
     
     return {
@@ -287,16 +276,6 @@ sub process_file {
     my $presplit = 0;
     my $file = $line;
         
-#    my($name,$path,$suff) = fileparse($line,('.sam','.bam'));
-
-
-#    print STDERR "Checking for $path/split/$name\_$step$suff\n"; 
-#    if( -e "$path/split/$name\_$step$suff") { 
-#        print STDERR "Looks like we are pre-split\n";
-#        $file = "$path/split/$name\_$step$suff";
-#        ($name,$path,$suff) = fileparse($line,('.sam','.bam'));
-#        $presplit = 1;
-#    }
     if($config->{handle}) {
         $handle = $config->{handle};
     }
@@ -307,11 +286,6 @@ sub process_file {
         open $handle, "<$file" or die "Unable to open $file\n";
     }
 
-    # Skip to the start
-#    if(!$presplit) {
-#        print STDERR "Jumping to line $step\n";
-#        &jump_to_line($handle,$step);
-#    }
     # Loop till we're done.
     my $end = $CHUNK_SIZE;
     my $count = 0;
@@ -330,21 +304,6 @@ sub process_file {
             $self->process_sam_line($l);
         }
 #    }
-
-    # If we have not presplit the files we'll only process a chumk
-#    else {
-#        while ($count < $end && ($l = <$handle>)) {
-#            chomp $l;
-#            # Don't count @seq lines
-#            if($l =~ /^@/) {
-#                next;
-#            }
-#            $count++;
-#            &process_sam_line($l);
-#        }
-#    }
-#    print STDERR scalar keys (%{$self->{seen_mates}}) . " reads seen in $file\n";
-#    print STDERR scalar keys (%{$self->{reads_by_mate_id}}) . " reads with hits\n";
 }
 
 

@@ -71,7 +71,7 @@ use LGTFinder;
 use LGTbwa;
 use LGTsam2lca;
 use XML::Simple qw(:strict);
-use File::HomeDir;
+#use File::HomeDir;
 use Cwd;
 $| = 1;
 
@@ -250,7 +250,7 @@ sub _prinseqFilterPaired {
         if ( $dedup == 1 ) {
             if ( $self->{verbose} ) { print STDERR "========= Deduplication Filtering =========\n"; }
             if ( $self->_run_cmd("$self->{samtools_bin} view -H $bam_file | head -n 1") !~ /queryname/ ) {
-                $self->_run_cmd("$self->{samtools_bin} sort -n -m $self->{sort_mem} -@ $self->{threads} $bam_file $tmp_dir/$name");
+                $self->_run_cmd("$self->{samtools_bin} sort -n $bam_file $tmp_dir/$name");
                 $bam_file = "$tmp_dir/$name\.bam";
             }
             $self->_run_cmd("$Picard FixMateInformation I=$bam_file TMP_DIR=$tmp_dir SO=coordinate ASSUME_SORTED=1 VALIDATION_STRINGENCY=SILENT");
@@ -851,119 +851,17 @@ sub bwaPostProcess {
     my $retval;
 
     # Do we have both donor and host bams?
-    if ( $config->{donor_bams} && $config->{host_bams} ) {
+    if ( $config->{donor_bam} && $config->{host_bam} ) {
         $retval = $self->_bwaPostProcessDonorHostPaired($config);
     }
     if ( $self->{verbose} ) { print STDERR "======== &bwaPostProcess: Finished ========\n"; }
     return $retval;
 }
 
-=head2 _bwaPostProcessDonorPaired
-
- Title   : _bwaPostProcessDonorPaired
- Function: Classify the results of a short read mapping (UM, UU, MM, etc.)
- Returns : An object with counts of the different classes as well as the path to bam files 
-           containing these reads.
- Args    : An object with donor and optionally host bam files.
-
-=cut
-
-sub _bwaPostProcessDonorPaired {
-    my ( $self, $config ) = @_;
-
-    my @donor_fh;
-    my @donor_head;
-    my $output_dir = $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
-
-    $self->{samtools_bin} = $self->{samtools_bin} ? $self->{samtools_bin} : 'samtools';
-    my $samtools = $self->{samtools_bin};
-    my $prefix = $config->{output_prefix} ? "$config->{output_prefix}_" : '';
-
-    # Open all the donor files
-    map {
-        if ( $self->{verbose} ) { print STDERR "Opening $_\n"; }
-        if ( $_ =~ /.bam$/ ) {
-            push( @donor_head, `$samtools view -H $_` );
-            open( my $fh, "-|", "$samtools view $_" );
-            push( @donor_fh, $fh );
-        }
-        elsif ( $_ =~ /.sam.gz$/ ) {
-            push( @donor_head, `zcat $_ | $samtools view -H -S -` );
-            open( my $fh, "-|", "zcat $_ | $samtools view -S -" );
-            push( @donor_fh, $fh );
-        }
-    } @{ $config->{donor_bams} };
-
-    my $class_to_file_name = {
-        'lgt_donor'        => "$output_dir/" . $prefix . "lgt_donor.bam",
-        'microbiome_donor' => "$output_dir/" . $prefix . "microbiome.bam"
-    };
-
-    # Check if these files exist already. If they do we'll skip regenerating them.
-    my $files_exist = 1;
-
-    map {
-        if ( !-e $class_to_file_name->{$_} ) {
-            $files_exist = 0;
-        }
-    } keys %$class_to_file_name;
-
-    my $class_counts = {
-        'lgt'        => undef,
-        'microbiome' => undef
-    };
-
-    # If the files are already there and we aren't being forced to overwrite, we'll
-    # just get the counts and return
-    if ( $files_exist && !$config->{overwrite} ) {
-
-        map {
-            $_ =~ /^.*(.*)\_\w+$/;    ## KBS Added "." after "^" to stop "matches null string many times in regex"
-            my $class = $1;
-            if ( !$class_counts->{$class} ) {
-                my $count = $self->_run_cmd("$samtools view $class_to_file_name->{$_} | wc -l");
-                chomp $count;
-                $class_counts->{$class} = $count;
-                if ( $self->{verbose} ) { print STDERR "$count for $class\n"; }
-            }
-        } keys %$class_to_file_name;
-        return {
-            counts => $class_counts,
-            files  => $class_to_file_name
-        };
-    }
-
-    # Here are a bunch of file handles we'll use later.
-    open( my $lgtd, "| $samtools view -S -b -o $output_dir/" . $prefix . "lgt_donor.bam -" )
-        or die "Unable to open\n";
-    open( my $microbiome_donor, "| $samtools view -S -b -o $output_dir/" . $prefix . "microbiome.bam -" )
-        or die "Unable to open\n";
-
-    my $class_to_file = {
-
-    };
-
-    my $more_lines = 1;
-
-    while ($more_lines) {
-
-        my @donor_lines;
-
-        my $dr1_line;
-        my $dr2_line;
-
-        my $obj = $self->_getPairedClass( { fhs => \@donor_fh } );
-        my $class = $obj->{class};
-        $more_lines = $obj->{more_lines};
-        $dr1_line   = $obj->{r1_line};
-        $dr2_line   = $obj->{r2_line};
-    }
-}
-
 sub _getPairedClass {
     my ( $self, $config ) = @_;
 
-    my $fhs        = $config->{fhs};
+    my $fh        = $config->{fh};
     my $more_lines = 1;
 
     my $r1_class;
@@ -972,42 +870,35 @@ sub _getPairedClass {
     my $r2_line;
 
     # Next establish the class of the donor read
-    foreach my $fh (@$fhs) {
-        my $r1 = <$fh>;
-        my $r2 = <$fh>;
-        if ( $config->{strip_xa} ) {
-            chomp $r1;
-            $r1 =~ s/\tXA:Z\S+$//;
-            chomp $r2;
-            $r2 =~ s/\tXA:Z\S+$//;
-        }
+    my $r1 = <$fh>;
+    my $r2 = <$fh>;
+    if ( $config->{strip_xa} ) {
+        chomp $r1;
+        $r1 =~ s/\tXA:Z\S+$//;
+        chomp $r2;
+        $r2 =~ s/\tXA:Z\S+$//;
+    }
 
-        #         print STDERR "Processing $hr1$hr2$dr1$dr2";
-        # Should check if these ended at the same time?
-        if ( !$r1 || !$r2 ) {
-            $more_lines = 0;
-            last;
-        }
+    # Should check if these ended at the same time?
+    if ( !$r1 || !$r2 ) {
+        $more_lines = 0;
+        last;
+    }
 
-        my $r1_flag = $self->_parseFlag( ( split( /\t/, $r1 ) )[1] );
+    my $r1_flag = $self->_parseFlag( ( split( /\t/, $r1 ) )[1] );
 
-        #            my $dr2_flag = $self->_parseFlag((split(/\t/,$dr2))[1]);
-        if ( !$r1_flag->{'qunmapped'} ) {
-            $r1_line  = $r1;
-            $r1_class = 'M';
-        }
-        elsif ( !$r1_class ) {
-            $r1_line  = $r1;
-            $r1_class = 'U';
-        }
-        if ( !$r1_flag->{'munmapped'} ) {
-            $r2_line  = $r2;
-            $r2_class = 'M';
-        }
-        elsif ( !$r2_class ) {
-            $r2_line  = $r2;
-            $r2_class = 'U';
-        }
+    if ( !$r1_flag->{'qunmapped'} ) {
+        $r1_line  = $r1;
+        $r1_class = 'M';
+    } elsif ( !$r1_class ) {
+        $r1_line  = $r1;
+        $r1_class = 'U';
+    } if ( !$r1_flag->{'munmapped'} ) {
+        $r2_line  = $r2;
+        $r2_class = 'M';
+    } elsif ( !$r2_class ) {
+        $r2_line  = $r2;
+        $r2_class = 'U';
     }
 
     my $class = "$r1_class$r2_class";
@@ -1063,15 +954,6 @@ sub _bwaPostProcessDonorHostPaired {
         'microbiome_donor'             => "$output_dir/" . $prefix . "microbiome.bam",
     };
 
-    # Check if these files exist already. If they do we'll skip regenerating them.
-    my $files_exist = 1;
-
-    map {
-        if ( !-e $class_to_file_name->{$_} ) {
-            $files_exist = 0;
-        }
-    } keys %$class_to_file_name;
-
     my $class_counts = {
         'lgt'                    => undef,
         'integration_site_host'  => undef,
@@ -1083,41 +965,18 @@ sub _bwaPostProcessDonorHostPaired {
         'single_map'             => undef
     };
 
-    # If the files are already there and we aren't being forced to overwrite, we'll
-    # just get the counts and return
-    if ( $files_exist && !$config->{overwrite} ) {
-
-        map {
-            $_ =~ /^.*(.*)\_\w+$/;    ## KBS added "." after ^ to stop "matches null string many times in regex"
-            my $class = $1;
-            if ( !$class_counts->{$class} ) {
-                my $count = $self->_run_cmd("$samtools view $class_to_file_name->{$_} | cut -f1 | uniq | wc -l");
-                chomp $count;
-                $class_counts->{$class} = $count * 1;
-                if ( $self->{verbose} ) { print STDERR "$count for $class\n"; }
-            }
-        } keys %$class_to_file_name;
-        my $total = $self->_run_cmd( "$samtools view " . $config->{donor_bams}[0] . " | cut -f1 | uniq | wc -l" );
-        chomp $total;
-        $class_counts->{total} = $total * 1;
-        return {
-            counts => $class_counts,
-            files  => $class_to_file_name
-        };
-    }
-
     # Here are a bunch of file handles we'll use later.
     if ( $self->{verbose} ) { print STDERR "$output_dir/" . $prefix . "lgt_donor.bam\n"; }
     open( my $lgtd, "| $samtools view -S -b -o $output_dir/" . $prefix . "lgt_donor.bam -" )
-        or die "Unable to open\n";
+        or die "Unable to open LGT donor file for writing\n";
     open( my $lgth, "| $samtools view -S -b -o $output_dir/" . $prefix . "lgt_host.bam -" )
-        or die "Unable to open\n";
+        or die "Unable to open LGT recipient file for writing\n";
     open( my $int_site_donor_d, "| $samtools view -S -b -o $output_dir/" . $prefix . "integration_site_donor_donor.bam -" )
-        or die "Unable to open\n";
+        or die "Unable to open donor integration site file for writing\n";
     open( my $int_site_donor_h, "| $samtools view -S -b -o $output_dir/" . $prefix . "integration_site_donor_host.bam -" )
-        or die "Unable to open\n";
+        or die "Unable to open recipient integration site file for writing\n";
     open( my $microbiome_donor, "| $samtools view -S -b -o $output_dir/" . $prefix . "microbiome.bam -" )
-        or die "Unable to open\n";
+        or die "Unable to open donor microbiome file for writing\n";
 
     my $class_to_file = {
         'lgt_donor'                    => $lgtd,
@@ -1127,56 +986,50 @@ sub _bwaPostProcessDonorHostPaired {
         'microbiome_donor'             => $microbiome_donor
     };
 
-    my @donor_fh;
-    my @host_fh;
-    my @donor_head;
-    my @host_head;
+	my $donor_bam = $config->{donor_bam};
+	my $host_bam = $config->{host_bam};
+    my $donor_fh;
+    my $host_fh;
+    my $donor_head;
+    my $host_head;
 
     # Open all the donor files
-    map {
-        if ( $self->{verbose} ) { print STDERR "Opening $_\n"; }
-
-        if ( $_ =~ /.bam$/ ) {
-            push( @donor_head, `$samtools view -H $_` );
-            open( my $fh, "-|", "$samtools view $_" );
-            push( @donor_fh, $fh );
-        }
-        elsif ( $_ =~ /.sam.gz$/ ) {
-            push( @donor_head, `zcat $_ | $samtools view -H -S -` );
-            open( my $fh, "-|", "zcat $_ | $samtools view -S -" );
-            push( @donor_fh, $fh );
-        }
-    } @{ $config->{donor_bams} };
+    if ( $self->{verbose} ) { print STDERR "Opening $donor_bam\n"; }
+    if ( $donor_bam =~ /.bam$/ ) {
+        $donor_head = `$samtools view -H $donor_bam`;
+        open( $donor_fh, "-|", "$samtools view $donor_bam" );
+    }
+    elsif ( $donor_bam =~ /.sam.gz$/ ) {
+        $donor_head =  `zcat $donor_bam | $samtools view -H -S -`;
+        open( $donor_fh, "-|", "zcat $donor_bam | $samtools view -S -" );
+    }
 
     # Open all the host files
-    map {
-        if ( $self->{verbose} ) { print STDERR "Opening $_\n"; }
-        if ( $_ =~ /.bam$/ ) {
-            push( @host_head, `$samtools view -H $_` );
-            open( my $fh, "-|", "$samtools view $_" );
-            push( @host_fh, $fh );
-        }
-        elsif ( $_ =~ /.sam.gz$/ ) {
-            push( @host_head, `zcat $_ | $samtools view -H -S -` );
-            open( my $fh, "-|", "zcat $_ | $samtools view -S -" );
-            push( @host_fh, $fh );
-        }
-    } @{ $config->{host_bams} };
+    if ( $self->{verbose} ) { print STDERR "Opening $_\n"; }
+    if ( $host_bam =~ /.bam$/ ) {
+        $host_head = `$samtools view -H $host_bam`;
+        open( $host_fh, "-|", "$samtools view $host_bam" );
+    }
+    elsif ( $host_bam =~ /.sam.gz$/ ) {
+        $host_head = `zcat $host_bam | $samtools view -H -S -`;
+        open( $host_fh, "-|", "zcat $host_bam | $samtools view -S -" );
+    }
 
     # Prime the files with headers.
     map {
         if ( $_ =~ /_donor$/ ) {
+			my @donor_headers = split(/\n/, $donor_head);
             print "Printing header to $_ donor file\n";
-            print { $class_to_file->{$_} } join( '', grep( /^\@SQ/, @donor_head ) );
-            my @pg_headers = grep( /^\@PG|^\@CO/, @donor_head );
+            print { $class_to_file->{$_} } join( '', grep( /^\@SQ/, @donor_headers) );
+            my @pg_headers = grep( /^\@PG|^\@CO/, @donor_headers );
             my %pg_hash;
             foreach my $pgs (@pg_headers) {
                 chomp($pgs);
                 $pg_hash{$pgs}++;
             }
-            my $last_pg_id;
-            if ( $donor_head[-1] =~ /^\@PG|^\@CO/ ) {
-                my $last_pg = $donor_head[-1];
+			my $last_pg_id;
+            if ( $donor_headers[-1] =~ /^\@PG|^\@CO/ ) {
+                my $last_pg = $donor_headers[-1];
                 my $last_pg_id = ( split /\t/, $last_pg )[1];
                 $last_pg_id =~ s/ID\:/PP\:/;
                 $last_pg_id = "\t" . $last_pg_id;
@@ -1189,17 +1042,18 @@ sub _bwaPostProcessDonorHostPaired {
             #            close $class_to_file->{$_};
         }
         elsif ( $_ =~ /_host$/ ) {
+			my @host_headers = split(/\n/, $host_head);
             print "Printing header to $_ host file\n";
-            print { $class_to_file->{$_} } join( '', grep( /^\@SQ/, @host_head ) );
-            my @pg_headers = grep( /^\@PG|^\@CO/, @host_head );
+            print { $class_to_file->{$_} } join( '', grep( /^\@SQ/, @host_headers ) );
+            my @pg_headers = grep( /^\@PG|^\@CO/, @host_headers );
             my %pg_hash;
             foreach my $pgs (@pg_headers) {
                 chomp($pgs);
                 $pg_hash{$pgs}++;
             }
             my $last_pg_id;
-            if ( $host_head[-1] =~ /^\@PG|^\@CO/ ) {
-                my $last_pg = $host_head[-1];
+            if ( $host_headers[-1] =~ /^\@PG|^\@CO/ ) {
+                my $last_pg = $host_headers[-1];
                 my $last_pg_id = ( split /\t/, $last_pg )[1];
                 $last_pg_id =~ s/ID\:/PP\:/;
                 $last_pg_id = "\t" . $last_pg_id;
@@ -1222,14 +1076,14 @@ sub _bwaPostProcessDonorHostPaired {
         my @host_lines;
 
         # Get the class of the host mappings
-        my $obj = $self->_getPairedClass( { fhs => \@host_fh } );
+        my $obj = $self->_getPairedClass( { fh => $host_fh } );
         my $hclass = $obj->{class};
         $more_lines = $obj->{more_lines};
         my $hr1_line = $obj->{r1_line};
         my $hr2_line = $obj->{r2_line};
 
         # Get the class of the donor mappings
-        $obj = $self->_getPairedClass( { fhs => \@donor_fh } );
+        $obj = $self->_getPairedClass( { fh => $donor_fh } );
         my $dclass = $obj->{class};
         $more_lines = $obj->{more_lines};
         my $dr1_line = $obj->{r1_line};
@@ -1902,7 +1756,7 @@ sub prelim_filter {
     ## (1). Sort the bam by name instead of position
     if ( $name_sort_input == 1 ) {
         if ( $self->{verbose} ) { print STDERR "======== &prelim_filter: Sort Start ========\n"; }
-        my $cmd = "samtools sort -n -@ $self->{threads} -m $self->{sort_mem} $input $output_dir$fn\_name-sorted";
+        my $cmd = "samtools sort -n $input $output_dir$fn\_name-sorted";
         if ( $self->{verbose} ) { print STDERR "======== &prelim_filter Sort: $cmd ===\n"; }
         $self->_run_cmd("$cmd");
         if ( $self->{verbose} ) { print STDERR "======== &prelim_filter: Sort Finished ========\n"; }
@@ -2526,39 +2380,39 @@ sub new2 {
 
     ## Now open the config file
     ## First determine the proper file path for the config file
-    if ( defined $options->{conf_file} and $options->{conf_file} =~ /^\~(.*)/ ) {
-        $options->{conf_file} = File::HomeDir->my_home . $1;
-    }    ## This is incase the user passed a config file like ~/config.file
-    my $conf_file
-        = defined $options->{conf_file}
-        ? $options->{conf_file}
-        : File::HomeDir->my_home . "/.lgtseek.conf";    ## Open --conf_file or the default ~/.lgtseek.conf
-    ## Open the config file and build a hash of key=>value for each line delimited on white space
-    if ( -e $conf_file ) {
-        my %config;
-        open( IN, "<", "$conf_file" ) or confess "Can't open conf_file: $conf_file\n";
-        while (<IN>) {
-            chomp;
-            next if ( $_ =~ /^#/ );
-            $_ =~ /(\w+)\s+([A-Za-z0-9-._\/: \@]+)/;
-            my ( $key, $value ) = ( $1, $2 );
-            map { $_ =~ s/\s+$//g; } ( $key, $value );    ## Remove trailing white space.
-            $config{$key} = $value;
-        }
-        close IN or confess "*** Error *** can't close conf_file: $conf_file\n";
+	#if ( defined $options->{conf_file} and $options->{conf_file} =~ /^\~(.*)/ ) {
+	#    $options->{conf_file} = File::HomeDir->my_home . $1;
+	#}    ## This is incase the user passed a config file like ~/config.file
+	#my $conf_file
+	#    = defined $options->{conf_file}
+	#    ? $options->{conf_file}
+	#    : File::HomeDir->my_home . "/.lgtseek.conf";    ## Open --conf_file or the default ~/.lgtseek.conf
+	## Open the config file and build a hash of key=>value for each line delimited on white space
+	#if ( -e $conf_file ) {
+	#    my %config;
+	#    open( IN, "<", "$conf_file" ) or confess "Can't open conf_file: $conf_file\n";
+	#    while (<IN>) {
+	#        chomp;
+	#        next if ( $_ =~ /^#/ );
+	#        $_ =~ /(\w+)\s+([A-Za-z0-9-._\/: \@]+)/;
+	#        my ( $key, $value ) = ( $1, $2 );
+	#        map { $_ =~ s/\s+$//g; } ( $key, $value );    ## Remove trailing white space.
+	#        $config{$key} = $value;
+	#    }
+	#    close IN or confess "*** Error *** can't close conf_file: $conf_file\n";
         ## Make sure all keys from --options and config.file have a value, priority goes to --option
         ## If a key was passed from --options use the --option=>value if avail, or use config.file=>value
-        foreach my $opt_key ( keys %$options ) {
-            $self->{$opt_key} = defined $options->{$opt_key} ? $options->{$opt_key} : $config{$opt_key};
-        }
+		#    foreach my $opt_key ( keys %$options ) {
+		#     $self->{$opt_key} = defined $options->{$opt_key} ? $options->{$opt_key} : $config{$opt_key};
+		#    }
         ## Make sure all the keys from the config file have a value, use --options=>value if avail or use the config.file=>value
-        foreach my $conf_key ( keys %config ) {
-            $self->{$conf_key} = defined $options->{$conf_key} ? $options->{$conf_key} : $config{$conf_key};
-        }
-    }
-    else {
-        $self = $options;
-    }
+		#    foreach my $conf_key ( keys %config ) {
+		#    $self->{$conf_key} = defined $options->{$conf_key} ? $options->{$conf_key} : $config{$conf_key};
+		#    }
+		#}
+		#else {
+	$self = $options;
+		#}
 
     bless $self;
     return $self;

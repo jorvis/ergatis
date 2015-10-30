@@ -43,7 +43,7 @@
 						<state>incomplete</state>
 						<commandSet type="serial">
 							<state>incomplete</state>
-							<name>sam2fasta.fastq_split</name>
+							<name>picard_remove_dups.lgt</name>
 						</commandSet>
 					</commandSet>
 					<commandSet type="serial">
@@ -52,6 +52,14 @@
 							<state>incomplete</state>
 							<name>sam2fasta.fastq_combined</name>
 						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>lgt_prinseq.lgt</name>
+						</commandSet>
+					</commandSet>
+					<commandSet type="serial">
+						<state>incomplete</state>
+						<name>filter_dups_lc_seqs.lgt</name>
 					</commandSet>
 				</commandSet>
 			</commandSet>
