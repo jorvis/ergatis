@@ -18,7 +18,7 @@ lgt_finder.pl
      
 =cut
 
-package SamFastaConverter;
+package LGT::SamFastaConverter;
 use strict;
 use DBI;
 use File::Basename;

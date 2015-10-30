@@ -23,8 +23,7 @@ Internal methods are usually preceded with a _
 
 =cut
 
-package LGTBestBlast;
-require LGTSeek;
+package LGT::LGTBestBlast;
 use strict;
 use File::Basename;
 use Carp;

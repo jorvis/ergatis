@@ -40,15 +40,15 @@ my $results = GetOptions (
 
 =cut
 
-package LGTsam2lca;
+package LGT::LGTsam2lca;
 use strict;
 use version;
 use File::Basename;
 # Dependencies
 use GiTaxon;
-use LGTBestBlast;
-use LGTFinder;
-use LGTbwa;
+use LGT::LGTBestBlast;
+use LGT::LGTFinder;
+use LGT::LGTbwa;
 
 $| = 1;
 

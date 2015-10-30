@@ -22,7 +22,7 @@ Internal methods are usually preceded with a _
 
 =cut
 
-package LGTFinder;
+package LGT::LGTFinder;
 use strict;
 use File::Basename;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);

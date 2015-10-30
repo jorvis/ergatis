@@ -15,7 +15,7 @@ driley@som.umaryland.edu
 
 =cut
 
-package GiTaxon;
+package LGT::GiTaxon;
 use strict;
 use MongoDB;
 use Bio::DB::Taxonomy;

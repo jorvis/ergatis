@@ -52,7 +52,7 @@ Internal methods are usually preceded with a _
         _run_cmd            : Run a unix command
 =cut
 
-package LGTSeek;
+package LGT::LGTSeek;
 our $VERSION = '1.11';
 use warnings;
 no warnings 'misc';
@@ -65,11 +65,11 @@ use Carp;
 $Carp::MaxArgLen = 0;
 use File::Basename;
 use Data::Dumper;
-use GiTaxon;
-use LGTBestBlast;
-use LGTFinder;
-use LGTbwa;
-use LGTsam2lca;
+use LGT::GiTaxon;
+use LGT::LGTBestBlast;
+use LGT::LGTFinder;
+use LGT::LGTbwa;
+use LGT::LGTsam2lca;
 use XML::Simple qw(:strict);
 #use File::HomeDir;
 use Cwd;
@@ -132,7 +132,7 @@ sub getGiTaxon {
         }
 
         # Create the object.
-        $self->{gitaxon} = GiTaxon->new(
+        $self->{gitaxon} = LGT::GiTaxon->new(
             {   'taxon_dir'  => $self->{taxon_dir},
                 'chunk_size' => 10000,
                 'idx_dir'    => $self->{taxon_idx_dir},
@@ -809,7 +809,7 @@ sub runBWA {
     $conf->{lgtseek}     = $self;
     $conf->{cleanup_sai} = $config->{cleanup_sai};
     $conf->{out_file}    = $config->{out_file};
-    LGTbwa::runBWA($conf);
+	LGT::LGTbwa::runBWA($conf);
 
     # Maybe should check if this is valid.
     if ( $config->{run_lca} ) {
@@ -1390,7 +1390,7 @@ sub bestBlast2 {
     }
 
     # Blast fasta @ database and filter for best hits.
-    my $files = LGTBestBlast::filterBlast(
+    my $files = LGT::LGTBestBlast::filterBlast(
         {   blast_bin  => $config->{blast_bin},
             fasta      => $fasta,
             db         => $config->{db},
@@ -1425,7 +1425,7 @@ sub runLgtFinder {
     if ( $config->{output_dir} ) {
         $self->_run_cmd("mkdir -p $config->{output_dir}");
     }
-    my $ret = LGTFinder::findLGT($config);
+    my $ret = LGT::LGTFinder::findLGT($config);
     return $ret;
 }
 

@@ -47,7 +47,7 @@ $results = GetOptions (\%options,
 
 =cut
 
-package LGTbwa;
+package LGT::LGTbwa;
 use strict;
 use Pod::Usage;
 use File::Basename;
@@ -79,7 +79,7 @@ sub runBWA {
         if ( $options{input_bam} ) {
             $lca_conf->{complete_bam} = $options{input_bam};
         }
-        $sam2lca = LGTsam2lca->new($lca_conf);
+        $sam2lca = LGT::LGTsam2lca->new($lca_conf);
     }
 
     $PAIRED = defined $options{paired} ? $options{paired} : 1;
