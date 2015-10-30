@@ -1020,7 +1020,8 @@ sub _bwaPostProcessDonorHostPaired {
         if ( $_ =~ /_donor$/ ) {
 			my @donor_headers = split(/\n/, $donor_head);
             print "Printing header to $_ donor file\n";
-            print { $class_to_file->{$_} } join( '', grep( /^\@SQ/, @donor_headers) );
+            print { $class_to_file->{$_} } join( "\n", grep( /^\@SQ/, @donor_headers) );
+			print { $class_to_file->{$_} } "\n";
             my @pg_headers = grep( /^\@PG|^\@CO/, @donor_headers );
             my %pg_hash;
             foreach my $pgs (@pg_headers) {
@@ -1044,7 +1045,8 @@ sub _bwaPostProcessDonorHostPaired {
         elsif ( $_ =~ /_host$/ ) {
 			my @host_headers = split(/\n/, $host_head);
             print "Printing header to $_ host file\n";
-            print { $class_to_file->{$_} } join( '', grep( /^\@SQ/, @host_headers ) );
+            print { $class_to_file->{$_} } join( "\n", grep( /^\@SQ/, @host_headers ) );
+			print { $class_to_file->{$_} } "\n";
             my @pg_headers = grep( /^\@PG|^\@CO/, @host_headers );
             my %pg_hash;
             foreach my $pgs (@pg_headers) {
