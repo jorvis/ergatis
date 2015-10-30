@@ -113,6 +113,7 @@ foreach my $r (keys %$matching_files) {
 	my $lgt_obj = LGT::LGTSeek->new( {
 			'samtools_bin' => $options{'samtools_path'},
 			'output_dir' => $options{'output_dir'},
+			'verbose' => 1
 		} );
 	
 	my $d = $matching_files->{$r};
