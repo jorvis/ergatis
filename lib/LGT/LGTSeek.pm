@@ -179,8 +179,8 @@ sub prinseqFilterBam {
     $self->{prinseq_bin}  = defined $config->{prinseq_bin}  ? $config->{prinseq_bin}  : $self->{prinseq_bin};
     $self->{Picard_jar}   = defined $config->{Picard_jar}   ? $config->{Picard_jar}   : $self->{Picard_jar};
     $self->{java_opts}    = defined $config->{java_opts}    ? $config->{java_opts}    : $self->{java_opts};
-    $self->{java_bin}     = defined $config->{java_bin}     ? $config->{java_bin}     : "java";
-    $self->{samtools_bin} = defined $self->{samtools_bin}   ? $self->{samtools_bin}   : 'samtools';
+    $self->{java_bin}     = defined $config->{java_bin}     ? $config->{java_bin}     : "/usr/bin/java";
+    $self->{samtools_bin} = defined $self->{samtools_bin}   ? $self->{samtools_bin}   : '/usr/bin/samtools';
     $self->{dedup}        = defined $config->{dedup}        ? $config->{dedup}        : $self->{dedup};
     $self->{rm_low_cmplx} = defined $config->{rm_low_cmplx} ? $config->{rm_low_cmplx} : $self->{rm_low_cmplx};
     $self->{lc_method}    = defined $config->{lc_method}    ? $config->{lc_method}    : "dust";
