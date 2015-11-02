@@ -2050,6 +2050,7 @@ sub _fix_flags {
 
 sub filter_bam_by_ids {
     my ( $self, $config ) = @_;
+	my $samtools = $self->{samtools_bin};
     if ( $self->{verbose} ) { print STDERR "======== &filter_bam_by_ids: Start ========\n"; }
     if ( !$config->{input_bam} ) {
         $self->fail("*** Error *** Must pass &filter_bam_by_ids an input_bam => <BAM_TO_FILTER>\n");
@@ -2075,9 +2076,9 @@ sub filter_bam_by_ids {
     my $suffix  = defined $config->{output_suffix} ? $config->{output_suffix} : "filtered";
     my $out     = defined $config->{output}        ? "$config->{output}"      : "$out_dir/$prefix\_$suffix\.bam";
     my $header  = $self->_run_cmd("samtools view -H $input");
-    open( my $in, "-|", "samtools view $input" )
+    open( my $in, "-|", "$samtools view $input" )
         or $self->fail("*** Error *** &filter_bam_by_ids can't open input bam: $input because: $!\n");
-    open( my $fh, "| samtools view -S - -bo $out" )
+    open( my $fh, "| $samtools view -S - -bo $out" )
         or $self->fail("*** Error *** &filter_bam_by_ids can't open  output bam: $out because: $!\n");
     print $fh "$header";
 

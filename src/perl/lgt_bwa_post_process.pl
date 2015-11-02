@@ -109,10 +109,10 @@ my $results = GetOptions (\%options,
 
 my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
 
+$prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_process";
 # Group reads from donor/recipient files for each mapping type
 foreach my $r (keys %$matching_files) {
-	$prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_process";
-	$prefix .= "_" . $count_id++ . ".";
+	$prefix .= "_" . $count_id++ . "." if (scalar keys %matching_files > 1);
 
 	my $lgt_obj = LGT::LGTSeek->new( {
 			'samtools_bin' => $options{'samtools_path'},
