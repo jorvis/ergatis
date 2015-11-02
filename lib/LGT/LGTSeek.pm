@@ -183,6 +183,8 @@ sub prinseqFilterBam {
     $self->{samtools_bin} = defined $self->{samtools_bin}   ? $self->{samtools_bin}   : 'samtools';
     $self->{dedup}        = defined $config->{dedup}        ? $config->{dedup}        : $self->{dedup};
     $self->{rm_low_cmplx} = defined $config->{rm_low_cmplx} ? $config->{rm_low_cmplx} : $self->{rm_low_cmplx};
+    $self->{lc_method}    = defined $config->{lc_method}    ? $config->{lc_method}    : "dust";
+    $self->{lc_threshold} = defined $config->{lc_threshold} ? $config->{lc_threshold} : "7";
 
     my $overwrite = $config->{overwrite} ? $config->{overwrite} : 0;
     if ( $config->{output_dir} ) {
@@ -232,6 +234,8 @@ sub _prinseqFilterPaired {
     my $Picard       = "$self->{java_bin} \-$self->{java_opts} -jar $self->{Picard_jar}";
     my $dedup        = defined $self->{dedup} ? $self->{dedup} : "1";
     my $rm_low_cmplx = defined $self->{rm_low_cmplx} ? $self->{rm_low_cmplx} : "1";
+    my $lc_method    = $self->{lc_method};
+    my $lc_threshold = $self->{lc_threshold};
     my $cmd;
     my $filtered;
 
@@ -274,7 +278,7 @@ sub _prinseqFilterPaired {
             $self->_run_cmd("$Picard SamToFastq INPUT=$bam_file FASTQ=$tmp_dir/$name\_1.fastq SECOND_END_FASTQ=$tmp_dir/$name\_2.fastq VALIDATION_STRINGENCY=SILENT");
 
             # Run prinseq for low complexity filtering
-            $self->_run_cmd("/usr/bin/perl $prinseq_bin --fastq=$tmp_dir/$name\_1.fastq --out_good null --out_bad=$tmp_dir/$name\_lc_1_bad -lc_method dust -lc_threshold 7");
+            $self->_run_cmd("/usr/bin/perl $prinseq_bin --fastq=$tmp_dir/$name\_1.fastq --out_good null --out_bad=$tmp_dir/$name\_lc_1_bad -lc_method $lc_method -lc_threshold $lc_threshold");
 
             if ( -e "$tmp_dir/$name\_lc_1_bad.fastq" ) {
 
