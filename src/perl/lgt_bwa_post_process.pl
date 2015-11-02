@@ -112,7 +112,7 @@ my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
 # Group reads from donor/recipient files for each mapping type
 foreach my $r (keys %$matching_files) {
 	$prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_process";
-	$prefix .= "_" . $count_id++ . "_";
+	$prefix .= "_" . $count_id++ . ".";
 
 	my $lgt_obj = LGT::LGTSeek->new( {
 			'samtools_bin' => $options{'samtools_path'},
@@ -128,7 +128,7 @@ foreach my $r (keys %$matching_files) {
 			'output_prefix' => $prefix
 		} );
 	
-	my $counts_file = $output_dir . "/" . $prefix . "_post_processing.tab";
+	my $counts_file = $output_dir . "/" . $prefix . "post_processing.tab";
 	my (@header, @vals);
     map {
         push( @header, $_ );

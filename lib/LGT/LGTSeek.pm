@@ -104,7 +104,30 @@ sub new {
     my $self = $args;
 
     bless $self;
+	$self->_init($args);
     return $self;
+}
+
+sub _init {
+	my ($self, $args) = @_;
+    
+	# Useful suffix list for fileparse: @{$lgtseek->{'list'}}
+    my $suffix_hash = {
+        sam_suffix_list => [ '.sam.gz', '.sam' ],
+        bam_suffix_list => [
+            '_resorted.\d+.bam', '_resorted\.bam', '\.gpg\.bam',  '_prelim\.bam', '_name-sort\.bam', '_pos-sort\.bam', '_psort\.bam', '-psort\.bam',
+            '\.psort\.bam',      '\.psrt\.bam',    '_nsort\.bam', '\.nsrt\.bam',  '\.srt\.bam',      '\.sorted\.bam',  '.bam'
+        ],
+        fastq_suffix_list   => [ qr/_[12]{1}\.f\w{0,3}q(.gz)?/, qr/_[12]{1}(\.\w+)?\.f\w*q(.gz)?/, qr/((_[12]{1})?\.\w+)?\.f\w*q(.gz)?/, '\.fastq\.gz', '\.f\w{0,3}q' ],
+        fasta_suffix_list   => [ qr/.f\w{3}a(.gz)?/,            '.fasta',                          '.fa' ],
+        mpileup_suffix_list => [ '.mpileup',                    '_COVERAGE.txt',                   '.txt' ],
+        suffix_regex        => qr/\.[^\.]+/,
+	}
+	# add each key to current object
+	foreach my $key (keys %suffix_hash) {
+		$self->{$key} = $suffix_hash{$key};
+	}
+
 }
 
 =head2 getGiTaxon
@@ -197,7 +220,7 @@ sub prinseqFilterBam {
 
     my $retval;
     if ( $self->{paired_end} ) {
-        $retval = $self->_prinseqFilterPaired( $config->{input_bam}, $config->{output_dir}, $overwrite );
+        $retval = $self->_prinseqFilterPaired( $config->{input_bam}, $config->{output_dir}, $config->{tmp_dir}, $overwrite );
     }
     else {
         $self->fail("*** Error *** Single end is currently not implemented\n");
@@ -217,16 +240,17 @@ sub prinseqFilterBam {
 =cut
 
 sub _prinseqFilterPaired {
-    my ( $self, $original_bam, $output_dir, $overwrite ) = @_;
+    my ( $self, $original_bam, $output_dir, $temp_d, $overwrite ) = @_;
     my $bam_file = $original_bam;
     my ( $name, $path, $suff ) = fileparse( $bam_file, @{ $self->{bam_suffix_list} } );
 
     $output_dir = $output_dir ? $output_dir : $path;
 
-    my $tmp_dir = ( $output_dir =~ /^\.\/$/ ) ? "./tmp" : "$output_dir/tmp";
+    my $tmp_dir = defined $temp_d ? $temp_d : "$output_dir/tmp";
 
-    $self->_run_cmd("mkdir -p $output_dir");
-    $self->_run_cmd("mkdir -p $tmp_dir");
+	# Create directories if they don't exist
+    $self->_run_cmd("mkdir -p $output_dir") unless (-d $output_dir);
+    $self->_run_cmd("mkdir -p $tmp_dir") unless (-d $tmp_dir);
 
     my $bin          = $self->{bin_dir};
     my $prinseq_bin  = $self->{prinseq_bin};
@@ -2359,71 +2383,6 @@ sub downloadEGA {
 
     if ( $self->{verbose} ) { print STDERR "======= &downloadEGA: Finished ========\n"; }
     return \@tmp_return_list;
-}
-
-=head2 new2
-
- Title   : new2
- Usage   : my $lgtseek = LGTSeek->new2(\%options)
- Function: Creates a new LGTSeek object, key=>values take #1= %options, #2=  ~/.lgtseek.config 
- Returns : An instance of LGTSeek
-
-=cut
-
-sub new2 {
-    my ( $class, $options ) = @_;
-
-    # Usefull list for fileparse: @{$lgtseek->{'list'}}
-    my $self = {
-        sam_suffix_list => [ '.sam.gz', '.sam' ],
-        bam_suffix_list => [
-            '_resorted.\d+.bam', '_resorted\.bam', '\.gpg\.bam',  '_prelim\.bam', '_name-sort\.bam', '_pos-sort\.bam', '_psort\.bam', '-psort\.bam',
-            '\.psort\.bam',      '\.psrt\.bam',    '_nsort\.bam', '\.nsrt\.bam',  '\.srt\.bam',      '\.sorted\.bam',  '.bam'
-        ],
-        fastq_suffix_list   => [ qr/_[12]{1}\.f\w{0,3}q(.gz)?/, qr/_[12]{1}(\.\w+)?\.f\w*q(.gz)?/, qr/((_[12]{1})?\.\w+)?\.f\w*q(.gz)?/, '\.fastq\.gz', '\.f\w{0,3}q' ],
-        fasta_suffix_list   => [ qr/.f\w{3}a(.gz)?/,            '.fasta',                          '.fa' ],
-        mpileup_suffix_list => [ '.mpileup',                    '_COVERAGE.txt',                   '.txt' ],
-        suffix_regex        => qr/\.[^\.]+/,
-    };
-
-    ## Now open the config file
-    ## First determine the proper file path for the config file
-	#if ( defined $options->{conf_file} and $options->{conf_file} =~ /^\~(.*)/ ) {
-	#    $options->{conf_file} = File::HomeDir->my_home . $1;
-	#}    ## This is incase the user passed a config file like ~/config.file
-	#my $conf_file
-	#    = defined $options->{conf_file}
-	#    ? $options->{conf_file}
-	#    : File::HomeDir->my_home . "/.lgtseek.conf";    ## Open --conf_file or the default ~/.lgtseek.conf
-	## Open the config file and build a hash of key=>value for each line delimited on white space
-	#if ( -e $conf_file ) {
-	#    my %config;
-	#    open( IN, "<", "$conf_file" ) or confess "Can't open conf_file: $conf_file\n";
-	#    while (<IN>) {
-	#        chomp;
-	#        next if ( $_ =~ /^#/ );
-	#        $_ =~ /(\w+)\s+([A-Za-z0-9-._\/: \@]+)/;
-	#        my ( $key, $value ) = ( $1, $2 );
-	#        map { $_ =~ s/\s+$//g; } ( $key, $value );    ## Remove trailing white space.
-	#        $config{$key} = $value;
-	#    }
-	#    close IN or confess "*** Error *** can't close conf_file: $conf_file\n";
-        ## Make sure all keys from --options and config.file have a value, priority goes to --option
-        ## If a key was passed from --options use the --option=>value if avail, or use config.file=>value
-		#    foreach my $opt_key ( keys %$options ) {
-		#     $self->{$opt_key} = defined $options->{$opt_key} ? $options->{$opt_key} : $config{$opt_key};
-		#    }
-        ## Make sure all the keys from the config file have a value, use --options=>value if avail or use the config.file=>value
-		#    foreach my $conf_key ( keys %config ) {
-		#    $self->{$conf_key} = defined $options->{$conf_key} ? $options->{$conf_key} : $config{$conf_key};
-		#    }
-		#}
-		#else {
-	$self = $options;
-		#}
-
-    bless $self;
-    return $self;
 }
 
 =head2	print_tab
