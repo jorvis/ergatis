@@ -18,6 +18,7 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 # Include packages here
 use File::Basename;
+use LGT::Common;
 
 #############
 # CONSTANTS #
@@ -123,8 +124,8 @@ while(my $sLine = <$fhFR>) {
 		next;
 	}
 
-	my $stat_r1 = ParseFlag($iFlagR1);
-	my $stat_r2 = ParseFlag($iFlagR2);
+	my $stat_r1 = parse_flag($iFlagR1);
+	my $stat_r2 = parse_flag($iFlagR2);
 
 	# Want to keep UU, MU, and UM reads.  Keep MM if specified (reference genome is donor for example)
     if(! $stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { 
@@ -159,30 +160,6 @@ printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results:\n\tBad Singletons : $
 ###############
 # SUBROUTINES #
 ###############
-
-sub ParseFlag {
-	my ($iDec) = @_;
-	my ($iLbin, $iBin);
-	$iLbin = unpack("B32", pack("N", $iDec));
-	$iLbin =~ s/^0+(?=\d)//;    # otherwise you'll get leading zeros
-	$iBin = sprintf("%012d", $iLbin);
-	my $iRbin = reverse($iBin);
-    my $phStat = {
-			'paired' => substr($iRbin, 0, 1),
-        	'propermap' => substr($iRbin, 1, 1),
-        	'qunmapped' => substr($iRbin, 2, 1),
-        	'munmapped' => substr($iRbin, 3, 1),
-        	'qrev' => substr($iRbin, 4, 1),
-        	'mrev' => substr($iRbin, 5, 1),
-        	'firstpair' => substr($iRbin, 6, 1),
-        	'secondpair' => substr($iRbin, 7, 1),
-        	'scndryalign' => substr($iRbin, 8, 1),
-        	'failqual' => substr($iRbin, 9, 1),
-        	'pcrdup' => substr($iRbin, 10, 1),
-        	'supplealign' => substr($iRbin, 11, 1)
-	};
-	return $phStat;
-}
 
 # Sort BAM file by read names
 sub SortBam {

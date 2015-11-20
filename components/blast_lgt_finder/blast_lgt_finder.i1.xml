@@ -9,7 +9,7 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/filter_lgt_best_hit</executable>
             <param>  
-                <key>--input</key>
+                <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
             <param>  
@@ -17,12 +17,12 @@
                 <value>$;MAPPING_FILE$;</value>
             </param>
             <param>  
-                <key>--lineage1</key>
-                <value>$;LINEAGE1$;</value>
+                <key>--host_lineage</key>
+                <value>$;HOST_LINEAGE$;</value>
             </param>
             <param>  
-                <key>--lineage2</key>
-                <value>$;LINEAGE2$;</value>
+                <key>--donor_lineage</key>
+                <value>$;DONOR_LINEAGE$;</value>
             </param>
             <param>  
                 <key>--filter_lineage</key>
@@ -33,33 +33,33 @@
                 <value>$;FILTER_MIN_OVERLAP$;</value>
             </param>
             <param>
-                <key>--ncbitax</key>
-                <value>$;NCBITAX$;</value>
+                <key>--names_file</key>
+				<value>$;NCBITAX$;/names.dmp</value>
             </param>
+            <param>
+                <key>--nodes_file</key>
+				<value>$;NCBITAX$;/nodes.dmp</value>
+			</param>
+			<param>
+				<key>--tax_id_file</key>
+				<value>$;GI2TAX$;</value>
+			</param>
             <param>  
-                <key>--gitax</key>
-                <value>$;GI2TAX$;</value>
-            </param>
-            <param>  
-                <key>--dbhost</key>
+                <key>--host</key>
                 <value>$;HOST$;</value>
             </param>
             <param>  
-                <key>--taxondb</key>
+                <key>--db</key>
                 <value>$;TAXONDB$;</value>
             </param>
             <param>  
-                <key>--taxoncoll</key>
+                <key>--collection</key>
                 <value>$;TAXONCOLL$;</value>
             </param>            
             <param>  
-                <key>--overwrite</key>
-                <value>$;OVERWRITE$;</value>
-            </param> 
-            <param>  
-                <key>--idx_dir</key>
-                <value>$;IDX_DIRECTORY$;</value>
-            </param> 
+                <key>--tmp_dir</key>
+                <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            </param>             
             <param>  
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
@@ -105,9 +105,17 @@
                 <value>$;I_FILE_BASE$;</value>
             </param>
             <param>  
-                <key>--append_links</key>
-                <value>$;APPEND_LINKS$;</value>
-            </param>
+                <key>--min_length</key>
+                <value>$;MIN_LENGTH$;</value>
+			</param>
+			<param>
+				<key>--max_overlap</key>
+				<value>$;MAX_OVERLAP</value>
+			</param>
+			<param>
+				<key>--ref_lineage</key>
+				<value>$;HOST_LINEAGE$;</value>
+			</param>
             <param>  
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>

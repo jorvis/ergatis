@@ -49,6 +49,7 @@ $results = GetOptions (\%options,
 
 package LGT::LGTbwa;
 use strict;
+use warnings;
 use Pod::Usage;
 use File::Basename;
 use File::Find;
@@ -68,7 +69,8 @@ sub runBWA {
     # This is a HACK right now.
     if ( $options{run_lca} ) {
         if ( -e $options{out_file} && $options{overwrite} == 0 ) {
-            print STDERR "Already found the output for BWA-LCA: $options{out_file}\n";
+            print STDERR
+              "Already found the output for BWA-LCA: $options{out_file}\n";
             return $options{out_file};
         }
         my $lca_conf = {
@@ -120,38 +122,49 @@ sub run_bwa {
             my $out1;
             my $out2;
 
-            open( my $bwa_log, ">>$options{output_dir}/\.bwa_stderr.log" ) || die "&run_bwa can't open: $options{output_dir}/\.bwa_stderr.log";
-            my $output_file = "$options{output_dir}/$refname\_$options{input_base}.sam";
+            open( my $bwa_log, ">>$options{output_dir}/\.bwa_stderr.log" )
+              || die
+              "&run_bwa can't open: $options{output_dir}/\.bwa_stderr.log";
+            my $output_file =
+              "$options{output_dir}/$refname\_$options{input_base}.sam";
             if ( $options{output_bam} ) {
-                $output_file = "$options{output_dir}/$refname\_$options{input_base}.bam";
+                $output_file =
+                  "$options{output_dir}/$refname\_$options{input_base}.bam";
             }
 
             if ( ( -e $output_file ) && !$options{overwrite} ) {
-                print STDERR "Already found the output for &runBWA: $output_file.\n";
+                print STDERR
+                  "Already found the output for &runBWA: $output_file.\n";
                 return;
             }
             if ( $options{input_bam} ) {
-                my ( $name, $dir, $suff ) = fileparse( $options{input_bam}, ( "_prelim.bam", ".bam" ) );
+                my ( $name, $dir, $suff ) =
+                  fileparse( $options{input_bam}, ( "_prelim.bam", ".bam" ) );
                 $in1                 = $options{input_bam};
                 $in2                 = $options{input_bam};
                 $options{input_base} = $name;
 
                 # Run the first one through aln
                 $out1 = "$options{output_dir}/$refname\_$name\_aln_sa1.sai";
-                my $cmd = "$options{bwa_path} aln -b -1 $options_string $ref $options{input_bam} > $out1 2>>$options{output_dir}/\.bwa_stderr.log";
+                my $cmd =
+"$options{bwa_path} aln -b -1 $options_string $ref $options{input_bam} > $out1 2>>$options{output_dir}/\.bwa_stderr.log";
                 print $bwa_log "CMD: $cmd\n";
                 system($cmd) == 0 or die "Unable to run $cmd\n";
 
                 # Run the second one through aln
                 $out2 = "$options{output_dir}/$refname\_$name\_aln_sa2.sai";
-                $cmd  = "$options{bwa_path} aln -b -2 $options_string $ref $options{input_bam} > $out2 2>>$options{output_dir}/\.bwa_stderr.log";
+                $cmd =
+"$options{bwa_path} aln -b -2 $options_string $ref $options{input_bam} > $out2 2>>$options{output_dir}/\.bwa_stderr.log";
                 print $bwa_log "CMD: $cmd\n";
                 system($cmd) == 0 or die "Unable to run $cmd\n";
             }
             else {
                 find(
                     sub {
-                        if ( $File::Find::name =~ /$options{input_base}(_[12]{1}){0,1}(\.\w+)?\.f\w{0,3}q(.gz)?/ ) {
+                        if ( $File::Find::name =~
+/$options{input_base}(_[12]{1}){0,1}(\.\w+)?\.f\w{0,3}q(.gz)?/
+                          )
+                        {
                             $in1 = $File::Find::name if ( $1 =~ /_1/ );
                             $in2 = $File::Find::name if ( $1 =~ /_2/ );
                         }
@@ -159,19 +172,23 @@ sub run_bwa {
                     ( $options{input_dir} )
                 );
 
-                $out1 = "$options{output_dir}/$refname\_$options{input_base}_aln_sa1.sai";
-                $out2 = "$options{output_dir}/$refname\_$options{input_base}_aln_sa2.sai";
+                $out1 =
+"$options{output_dir}/$refname\_$options{input_base}_aln_sa1.sai";
+                $out2 =
+"$options{output_dir}/$refname\_$options{input_base}_aln_sa2.sai";
 
                 # Run the first one through aln
                 if ( $options{overwrite} || !-e $out1 ) {
-                    my $cmd = "$options{bwa_path} aln $options_string $ref $in1 > $out1 2>>$options{output_dir}/\.bwa_stderr.log";
+                    my $cmd =
+"$options{bwa_path} aln $options_string $ref $in1 > $out1 2>>$options{output_dir}/\.bwa_stderr.log";
                     print $bwa_log "CMD: $cmd\n";
                     system($cmd) == 0 or die "Unable to run $cmd\n";
                 }
                 if ( $options{overwrite} || !-e $out2 ) {
 
                     # Run the second one through aln
-                    my $cmd = "$options{bwa_path} aln $options_string $ref $in2 > $out2 2>>$options{output_dir}/\.bwa_stderr.log";
+                    my $cmd =
+"$options{bwa_path} aln $options_string $ref $in2 > $out2 2>>$options{output_dir}/\.bwa_stderr.log";
                     print $bwa_log "CMD: $cmd\n";
                     system($cmd) == 0 or die "Unable to run $cmd\n";
                 }
@@ -181,23 +198,31 @@ sub run_bwa {
 
             # Run sampe
             if ( $options{run_lca} ) {
-                my $cmd
-                    = "$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" 2>>$options{output_dir}/\.bwa_stderr.log | $options{samtools_path}samtools view $options{samtools_flag} -S - 2>>$options{output_dir}/\.bwa_stderr.log";
+                my $cmd =
+"$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" 2>>$options{output_dir}/\.bwa_stderr.log | $options{samtools_path}samtools view $options{samtools_flag} -S - 2>>$options{output_dir}/\.bwa_stderr.log";
                 open( my $handle, "-|", $cmd );
                 $sam2lca->process_file( { handle => $handle } );
             }
             elsif ( $options{output_bam} ) {
-                if ( $options{overwrite} || !-e "$options{output_dir}/$refname\_$options{input_base}.bam" ) {
-                    my $cmd
-                        = "$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" 2>>$options{output_dir}/\.bwa_stderr.log | $options{samtools_path}samtools view $options{samtools_flag} -bS - > $options{output_dir}/$refname\_$options{input_base}.bam 2>>$options{output_dir}/\.bwa_stderr.log";
+                if ( $options{overwrite}
+                    || !
+                    -e "$options{output_dir}/$refname\_$options{input_base}.bam"
+                  )
+                {
+                    my $cmd =
+"$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" 2>>$options{output_dir}/\.bwa_stderr.log | $options{samtools_path}samtools view $options{samtools_flag} -bS - > $options{output_dir}/$refname\_$options{input_base}.bam 2>>$options{output_dir}/\.bwa_stderr.log";
                     print $bwa_log "CMD: $cmd\n";
                     system($cmd) == 0 or die "Unable to run $cmd\n";
                 }
             }
             else {
-                if ( $options{overwrite} || !-e "$options{output_dir}/$refname\_$options{input_base}.sam" ) {
-                    my $cmd
-                        = "$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" > $options{output_dir}/$refname\_$options{input_base}.sam 2>>$options{output_dir}/\.bwa_stderr.log";
+                if ( $options{overwrite}
+                    || !
+                    -e "$options{output_dir}/$refname\_$options{input_base}.sam"
+                  )
+                {
+                    my $cmd =
+"$options{bwa_path} sampe -n $options{num_aligns} $ref \"$out1\" \"$out2\" \"$in1\" \"$in2\" > $options{output_dir}/$refname\_$options{input_base}.sam 2>>$options{output_dir}/\.bwa_stderr.log";
                     print $bwa_log "CMD: $cmd\n";
                     system($cmd) == 0 or die "Unable to run $cmd\n";
                 }
@@ -212,24 +237,33 @@ sub run_bwa {
 
         # In here if we aren't paired
         else {
-            my $single_read_file = "$options{output_dir}/$options{input_base}_single_read.txt";
-            my $cmd              = "touch $single_read_file";
+            my $single_read_file =
+              "$options{output_dir}/$options{input_base}_single_read.txt";
+            my $cmd = "touch $single_read_file";
             system($cmd) == 0 or die "Unable to run $cmd\n";
 
             my $in;
             find(
                 sub {
-                    $in = $File::Find::name if ( $File::Find::name =~ /$options{input_base}(_[12]{1})?\.\w+)?\.f\w{0,3}q(.gz)?/ );
+                    $in = $File::Find::name
+                      if ( $File::Find::name =~
+/$options{input_base}(_[12]{1})?\.\w+)?\.f\w{0,3}q(.gz)?/
+                      );
                 },
                 ( $options{input_dir} )
             );
-            my $out = "$options{output_dir}/$refname\_$options{input_base}_aln_sa.sai";
+            my $out =
+              "$options{output_dir}/$refname\_$options{input_base}_aln_sa.sai";
             $cmd = "$options{bwa_path} aln $options_string $ref $in > $out";
             if ( $options{overwrite} || !-e "$out" ) {
                 system($cmd) == 0 or die "Unable to run $cmd\n";
             }
-            if ( $options{overwrite} || !-e "$options{output_dir}/$refname\_$options{input_base}.sam" ) {
-                $cmd = "$options{bwa_path} samse -n $options{num_aligns} $ref \"$out\" \"$in\" > $options{output_dir}/$refname\_$options{input_base}.sam";
+            if ( $options{overwrite}
+                || !
+                -e "$options{output_dir}/$refname\_$options{input_base}.sam" )
+            {
+                $cmd =
+"$options{bwa_path} samse -n $options{num_aligns} $ref \"$out\" \"$in\" > $options{output_dir}/$refname\_$options{input_base}.sam";
                 system($cmd) == 0 or die "Unable to run $cmd\n";
             }
             if ( $options{cleanup_sai} ) {
@@ -247,7 +281,10 @@ sub run_bwa {
 sub check_parameters {
 
     ## make sure input file exists
-    if ( !-e $options{'input_dir'} && !-e $options{'input_bam'} ) { print STDERR "Input invalid\n"; pod2usage( { -exitval => 0, -verbose => 0, -output => \*STDOUT } ) }
+    if ( !-e $options{'input_dir'} && !-e $options{'input_bam'} ) {
+        print STDERR "Input invalid\n";
+        pod2usage( { -exitval => 0, -verbose => 0, -output => \*STDOUT } );
+    }
 
     if ( $options{ref_file} ) {
         my @files = split( /,/, $options{ref_file} );
