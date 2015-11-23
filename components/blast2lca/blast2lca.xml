@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
-        <name>LGT workflow</name>
+        <name>blast2lca workflow</name>
         <!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
@@ -21,47 +21,51 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>Convert sam to fasta</name>
-            <executable>$;BIN_DIR$;/sam2fasta</executable>
+            <name>Get lowest common ancestor from blast hits</name>
+            <executable>$;BIN_DIR$;/blast2lca</executable>
             <param>
-                <key>--file_list</key>
+                <key>--input_file</key>
                 <value>$;INPUT_FILE$;</value>
             </param>
             <param>
-                <key>--fastq</key>
-                <value>$;FASTQ$;</value>
+                <key>--tax_id_file</key>
+                <value>$;GI2TAX$;</value>
             </param>
             <param>
-                <key>--hlgt</key>
-                <value>$;HLGT$;</value>
+                <key>--names_file</key>
+                <value>$;NCBITAX$;/names.dmp$;</value>
+            </param>
+            <param>
+                <key>--nodes_file</key>
+                <value>$;NCBITAX$;/nodes.dmp$;</value>
             </param>
             <param>
                 <key>--output_file</key>
-                <value>$;OUTPUT_FILE$;</value>
+                <value>$;OUTPUT_DIRECTORY$;/blast2lca.out</value>
             </param>
             <param>
                 <key>--tmp_dir</key>
                 <value>$;TMP_DIR$;</value>
             </param>
             <param>
-                <key>--base_list</key>
-                <value>$;OUTPUT_BASES$;</value>
+                <key>--db</key>
+                <value>$;TAXONDB$;</value>
             </param>
             <param>
                 <key>--host</key>
                 <value>$;HOST$;</value>
             </param>
             <param>
-                <key>--out_list</key>
-                <value>$;OUTPUT_LIST$;</value>
+                <key>--collection</key>
+                <value>$;TAXONCOLL$;</value>
             </param>
             <param>
-                <key>--combine_mates</key>
-                <value>$;COMBINE_MATES$;</value>
+                <key>--evalue_cutoff</key>
+                <value>$;EVALUE_CUTOFF$;</value>
 			</param>
 			<param>
-				<key>--samtools_bin</key>
-				<value>$;SAMTOOLS_EXEC$;</value>
+				<key>--best_hits_only</key>
+				<value>$;BEST_HITS_ONLY$;</value>
 			</param>
             <param>
                 <key>stdout</key>
