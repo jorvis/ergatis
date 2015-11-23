@@ -43,7 +43,8 @@ my $out2file;
 my $out3;
 my $trace_mapping_file;
 my $FILTER_MIN_OVERLAP = 50;
-my $BLAST_CMD_ARGS = '/usr/local/bin/blastall -p blastn -e 1 -m8';
+my $BLAST_BIN = '/usr/local/bin/blastall';
+my $BLAST_CMD_ARGS = ' -p blastn -e 1 -m8';
 my $filter_lineage;
 
 =head2 &filterBlast
@@ -51,7 +52,7 @@ my $filter_lineage;
  Title   : filterBlast
  Usage   : my $bestBlast = LGTBestBlast::filterBlast({fasta => $fasta,...})
  Function: Returns the path to filtered blast reports
- Returns :  Hash ref. of filtered blast hits. 
+ Returns :  Hash ref. of filtered blast hits.
 
             list_file     => list of the files below (overall,out1,out2)
             overall_blast => Lin1 & Lin2 hits,
@@ -114,7 +115,7 @@ sub filterBlast {
     &_read_map_file( $args->{trace_mapping} );
     &_init_lineages( $args, $name );
 
-    $args->{blast_bin} = $BLAST_CMD_ARGS if !defined ($args->{blast_bin});
+    $args->{blast_bin} = $BLAST_BIN if !defined ($args->{blast_bin});
     my $fh;
 	# Use blast results if already provided, otherwise run blast to get results
     if ( $args->{blast} ) {
@@ -123,7 +124,7 @@ sub filterBlast {
     }
     elsif ( !$args->{blast} ) {
         open( $fh, "-|",
-"$args->{blast_bin} -d $args->{db} -i $input"
+"$args->{blast_bin} $BLAST_CMD_ARGS -d $args->{db} -i $input"
           )
           or confess
           "Unable to run: $args->{blast_bin} on: $input with db: $args->{db}\n";
@@ -279,7 +280,7 @@ sub _process_file {
     }
 }
 
-# Append finished query ID information into the clone and trace hash 
+# Append finished query ID information into the clone and trace hash
 ### Shaun Adkins - 11/16/15 - I don't see where the clone hash or trace hash are used anywhere
 sub _append_hits {
     my $hits      = shift;
@@ -462,7 +463,7 @@ sub _filter_best_hits {
 
 }
 
-# If argument was provided to filter a specific lineage, then do it  
+# If argument was provided to filter a specific lineage, then do it
 sub _filter_hit {
     my $lineage = shift;
 

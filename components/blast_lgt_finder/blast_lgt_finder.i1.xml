@@ -2,33 +2,33 @@
 
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
-        <name>btab2taxon compute</name>
+        <name>lgt finder compute</name>
         <command>
             <type>RunUnixCommand</type>
             <name>Filter BLAST for best hits</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/filter_lgt_best_hit</executable>
-            <param>  
+            <param>
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--trace_mapping</key>
                 <value>$;MAPPING_FILE$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--host_lineage</key>
                 <value>$;HOST_LINEAGE$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--donor_lineage</key>
                 <value>$;DONOR_LINEAGE$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--filter_lineage</key>
                 <value>$;FILTER_LINEAGE$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--filter_min_overlap</key>
                 <value>$;FILTER_MIN_OVERLAP$;</value>
             </param>
@@ -44,27 +44,27 @@
 				<key>--tax_id_file</key>
 				<value>$;GI2TAX$;</value>
 			</param>
-            <param>  
+            <param>
                 <key>--host</key>
                 <value>$;HOST$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--db</key>
                 <value>$;TAXONDB$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--collection</key>
                 <value>$;TAXONCOLL$;</value>
-            </param>            
-            <param>  
+            </param>
+            <param>
                 <key>--tmp_dir</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>             
-            <param>  
+            </param>
+            <param>
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>             
-            <param>  
+            </param>
+            <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.filter.stdout</value>
             </param>
@@ -78,17 +78,17 @@
             <name>Create list of filtered files</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>  
+            <param>
                 <key>--directory</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--regex</key>
                 <value>".*\.out"</value>
             </param>
-            <param>  
+            <param>
                 <key>--output_list</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/filter_btab.list</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/filtered_m8.list</value>
             </param>
         </command>
         <command>
@@ -96,15 +96,15 @@
             <name>Find LGT</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/lgt_finder</executable>
-            <param>  
+            <param>
                 <key>--input_file_list</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/filter_btab.list</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/filtered_m8.list</value>
             </param>
-            <param>  
+            <param>
                 <key>--output_prefix</key>
                 <value>$;I_FILE_BASE$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--min_length</key>
                 <value>$;MIN_LENGTH$;</value>
 			</param>
@@ -116,18 +116,18 @@
 				<key>--ref_lineage</key>
 				<value>$;HOST_LINEAGE$;</value>
 			</param>
-            <param>  
+            <param>
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
-            </param>       
-            <param>  
+            </param>
+            <param>
                 <key>stdout</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.lgt_finder.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.lgt_finder.stderr</value>
-            </param>     
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>

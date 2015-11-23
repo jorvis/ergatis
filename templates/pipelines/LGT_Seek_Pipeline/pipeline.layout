@@ -12,6 +12,14 @@
                 <state>incomplete</state>
                 <name>sra2fastq.default</name>
             </commandSet>
+            <commandSet type="serial">
+				<state>incomplete</state>
+                <name>lgt_build_bwa_index.recipient</name>
+			</commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>lgt_build_bwa_index.donor</name>
+            </commandSet>
 			<commandSet type="serial">
 				<state>incomplete</state>
                 <name>lgt_bwa.recipient</name>
