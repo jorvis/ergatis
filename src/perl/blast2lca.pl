@@ -8,7 +8,7 @@ blast2lca.pl - Wrapper script to generate Lowest Common Ancestors from a BAM/SAM
  USAGE: blast2lca.pl
        --input_file=/path/to/some/input.bam
        --output_dir=/path/to/transterm
-	   --tmp_dir=/tmp 
+	   --tmp_dir=/tmp
 	   --tax_id_file=/path/to/tax_ids.txt
 	   --nodes_file=/path/to/nodes.txt
 	   --names_file\/path/to/names.txt
@@ -30,16 +30,17 @@ B<--output_directory,-o>
 	Path name to LCA output directory.
 
 B<--evalue_cutoff, -e>
-	Max e-value allowed for a hit
+	Max e-value allowed for a hit. Default is '1' if not specified
 
 B<--best_hits_only, -b>
 	Parse the Blast results for only the best hit per query, as created by lgt_best_blast_hit.pl
+    Default is 1
 
 B<--tmp_dir,-t>
 	Directory to store temporary files
 
 B<--tax_id_file>
-	Dump file mapping GI accessions to NCBI taxonomy IDs	
+	Dump file mapping GI accessions to NCBI taxonomy IDs
 
 B<--nodes_file>
 	Dump file containing information about NCBI Taxonomy ID nodes and their parent/children relationships
@@ -71,7 +72,7 @@ B<--help,-H>
 =head1  DESCRIPTION
 
  DESCRIPTION
- 
+
 =head1  INPUT
 
     Describe the input

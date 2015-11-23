@@ -41,5 +41,23 @@
                 <value>$;LGT_LIST$;</value>
             </param>
         </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Create list of filtered m8 files</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>
+                <key>--regex</key>
+                <value>".*\.out"</value>
+            </param>
+            <param>
+                <key>--output_list</key>
+                <value>$;M8_LIST$;</value>
+            </param>
+        </command>
     </commandSet>
 </commandSetRoot>
