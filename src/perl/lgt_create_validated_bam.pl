@@ -20,8 +20,9 @@ lgt_create_validated_bam.pl - Validated a create a BAM file after finding LGT hi
 B<--input_file,-i>
 	A BAM file that has been filtered by Picard-tools and Prinseq
 
-B<--clone_hits,-c>
-	File that gives the donor/host hits and their LCA lineages.  Obtained from lgt_finder.pl
+B<--hits_list,-c>
+	List file that lists the clone and trace files containing the donor/host hits and their LCA lineages.
+	Should contain just one trace and clone hit file each. Obtained from lgt_finder.pl
 
 B<--output_dir,-o>
 
@@ -57,6 +58,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use File::Basename;
+use File::OpenFile qw(open_file);
 use LGT::LGTSeek;
 
 ############# GLOBALS AND CONSTANTS ################
@@ -70,7 +72,7 @@ my $count_id = 0;
 
 my $results = GetOptions (\%options,
 					 "input_file|i=s",
-					 "clone_hits|c=s",
+					 "hits_list|h=s",
                      "samtools_path|s=s",
                      "output_dir|o=s",
                      "log|l=s",
@@ -80,16 +82,18 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
+my %hits = parse_list($options{hits_list});
+
 my $lgt_obj = LGT::LGTSeek->new( {
 		'samtools_bin' => $options{samtools_path},
 		'verbose' => 1
 } );
-	
+
 # Returns a hash of group assignemt counts and the files, but not really necessary to bring out here.
 my $val_data = $lgt_obj->validated_bam( {
 		'input'		=> $options{input_file},
 		'output_dir'=> $options{output_dir},
-		'by_clone'	=> $options{clone_hits},
+		'by_clone'	=> $hits->{by_clone}
 	} );
 
 ## Add numbers for validated-LGT to post_processing.tab
@@ -99,6 +103,28 @@ push( @vals,   "$val_data->{count}" );
 LGT::LGTSeek->print_tab( "$output_dir/$name\_validations.tab", \@header, \@vals );
 
 exit(0);
+
+# Parse the list file to get the relevant lists.
+sub parse_list {
+	my ($input_list = shift);
+	my %hits;
+	&_log($DEBUG, "Parsing $input_list\n");
+    my $oh = open_file( $input_list, "in" );
+	while (<$oh>) {
+		chomp;
+		if (/by_clone/){
+			&_log($ERROR, "Multiple clone hits file found in input list file") if ($hits{by_clone});
+			$hits{by_clone} = $_;
+		}
+		elsif (/by_trace/){
+			&_log($ERROR, "Multiple trace hits file found in input list file") if ($hits{by_trace});
+			$hits{by_trace} = $_;
+		}
+	}
+
+	return \%hits;
+}
+
 
 # Process read options
 sub check_options {
@@ -113,7 +139,7 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(input_file clone_hits samtools_path output_dir) ) {
+   foreach my $req ( qw(input_file hits_list samtools_path output_dir) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 
