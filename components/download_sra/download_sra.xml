@@ -23,29 +23,37 @@
             <name>Download SRA Reads</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/download_sra</executable>
-            <param>  
+            <param>
                 <key>--run_id</key>
                 <value>$;RUN_ID$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--output_dir</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--ftp</key>
                 <value>$;FTP_PATH$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--username</key>
                 <value>$;USERNAME$;</value>
 			</param>
-            <param>  
+            <param>
                 <key>--password</key>
                 <value>$;PASSWORD$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--num_retry</key>
                 <value>$;NUM_RETRIES$;</value>
+            </param>
+            <param>
+            	<key>stdout</key>
+            	<value>$;OUTPUT_DIRECTORY$;/download_sra.stdout</value>
+            </param>
+            <param>
+            	<key>stderr</key>
+            	<value>$;OUTPUT_DIRECTORY$;/download_sra.stderr</value>
             </param>
         </command>
     </commandSet>
