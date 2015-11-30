@@ -9,97 +9,134 @@
 # Author      : Sonia Agrawal								#
 # Date        : September 2, 2015							#
 #											#
-#########################################################################################	
+#########################################################################################
 
 use strict;
+
 # Extended processing of command line options
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
+
 # Prints usage message from embedded pod documentation
 use Pod::Usage;
-# Include packages here 
+
+# Include packages here
 use File::Basename;
 
 #############
 # CONSTANTS #
 #############
 
-
 ###########
 # GLOBALS #
 ###########
 my %hCmdLineArgs = ();
+
 # Log file handle;
 my $fhLog;
-my ($sFileBase,$sFileDir,$sFileExt, $sCmd, $nExitCode);
-my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
+my ( $sFileBase, $sFileDir, $sFileExt, $sCmd, $nExitCode );
+my ( $ERROR, $WARN, $DEBUG ) = ( 1, 2, 3 );
 
 ################
 # MAIN PROGRAM #
 ################
-GetOptions(\%hCmdLineArgs,
-	   'reference|r=s',
-	   'algo|a=s',
-	   'bwa_path|b=s',
-	   'output_dir|o=s',
-	   'log|l=s', 
-	   'help|h'
-	  ) or pod2usage();
+GetOptions( \%hCmdLineArgs, 'reference|r=s', 'algo|a=s', 'bwa_path|b=s',
+    'output_dir|o=s', 'log|l=s', 'help|h' )
+  or pod2usage();
 
-pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($hCmdLineArgs{'help'});
+pod2usage( { -exitval => 0, -verbose => 2, -output => \*STDERR } )
+  if ( $hCmdLineArgs{'help'} );
 
-checkCmdLineArgs(\%hCmdLineArgs);
+checkCmdLineArgs( \%hCmdLineArgs );
 
-($sFileBase,$sFileDir,$sFileExt) = fileparse($hCmdLineArgs{'reference'},qr/\.[^.]*/);
+( $sFileBase, $sFileDir, $sFileExt ) =
+  fileparse( $hCmdLineArgs{'reference'}, qr/\.[^.]*/ );
 
-if((-e $hCmdLineArgs{'reference'}) && (-r $hCmdLineArgs{'reference'})) {
-	$sCmd = "ln -sf ".$hCmdLineArgs{'reference'}." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
-	printLogMsg($DEBUG, "INFO : Creating symlink to reference file $hCmdLineArgs{'reference'} in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd");
-	$nExitCode = system($sCmd);
-	if($nExitCode == 0) {
-		printLogMsg($DEBUG, "INFO : Symlink to reference file $hCmdLineArgs{'reference'} created in output directory $hCmdLineArgs{'output_dir'}");			
-	} else {
-		printLogMsg($ERROR, "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created");
-	}	
-	if(!exists($hCmdLineArgs{'algo'})) {
-		$sCmd = $hCmdLineArgs{'bwa_path'} . " index -p ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
-	} else {
-		$sCmd = $hCmdLineArgs{'bwa_path'} ." index -p ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt." -a ".$hCmdLineArgs{'algo'}." ".$hCmdLineArgs{'output_dir'}."/".$sFileBase.$sFileExt;
-	}
+if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
+    $sCmd =
+        "ln -sf "
+      . $hCmdLineArgs{'reference'} . " "
+      . $hCmdLineArgs{'output_dir'} . "/"
+      . $sFileBase
+      . $sFileExt;
+    printLogMsg( $DEBUG,
+        "INFO : Creating symlink to reference file $hCmdLineArgs{'reference'} in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd"
+    );
+    $nExitCode = system($sCmd);
+    if ( $nExitCode == 0 ) {
+        printLogMsg( $DEBUG,
+            "INFO : Symlink to reference file $hCmdLineArgs{'reference'} created in output directory $hCmdLineArgs{'output_dir'}"
+        );
+    } else {
+        printLogMsg( $ERROR,
+            "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created"
+        );
+    }
+    if ( !exists( $hCmdLineArgs{'algo'} ) ) {
+        $sCmd =
+            $hCmdLineArgs{'bwa_path'}
+          . " index -p "
+          . $hCmdLineArgs{'output_dir'} . "/"
+          . $sFileBase
+          . $sFileExt . " "
+          . $hCmdLineArgs{'output_dir'} . "/"
+          . $sFileBase
+          . $sFileExt;
+    } else {
+        $sCmd =
+            $hCmdLineArgs{'bwa_path'}
+          . " index -p "
+          . $hCmdLineArgs{'output_dir'} . "/"
+          . $sFileBase
+          . $sFileExt . " -a "
+          . $hCmdLineArgs{'algo'} . " "
+          . $hCmdLineArgs{'output_dir'} . "/"
+          . $sFileBase
+          . $sFileExt;
+    }
 } else {
-	printLogMsg($ERROR, "ERROR : Reference file $hCmdLineArgs{'reference'} does not exist or is not readable for creating index.");
+    printLogMsg( $ERROR,
+        "ERROR : Reference file $hCmdLineArgs{'reference'} does not exist or is not readable for creating index."
+    );
 }
 
-printLogMsg($DEBUG, "INFO : Starting to index passed reference $hCmdLineArgs{'reference'} using BWA.\nINFO : Command : $sCmd");
+printLogMsg( $DEBUG,
+    "INFO : Starting to index passed reference $hCmdLineArgs{'reference'} using BWA.\nINFO : Command : $sCmd"
+);
 $nExitCode = system($sCmd);
-if($nExitCode == 0) {
-	printLogMsg($DEBUG, "INFO : Reference file $hCmdLineArgs{'reference'} indexing completed in directory $hCmdLineArgs{'output_dir'}");
+if ( $nExitCode == 0 ) {
+    printLogMsg( $DEBUG,
+        "INFO : Reference file $hCmdLineArgs{'reference'} indexing completed in directory $hCmdLineArgs{'output_dir'}"
+    );
 } else {
-	printLogMsg($ERROR, "ERROR : Reference file $hCmdLineArgs{'reference'} indexing failed");
+    printLogMsg( $ERROR,
+        "ERROR : Reference file $hCmdLineArgs{'reference'} indexing failed" );
 }
-
 
 ###############
 # SUBROUTINES #
 ###############
 
-# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing. 
+# Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing.
 # Parameters    : NA
 # Returns       : NA
 # Modifications :
 
 sub checkCmdLineArgs {
-	my ($phCmdLineArgs) = @_;
-	my $sOption;
-	my @aRequired = ();
-	if(exists($phCmdLineArgs->{'log'})) {
-		open($fhLog, "> $phCmdLineArgs->{'log'}") or die "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n"
-	}
-	@aRequired = qw(reference output_dir bwa_path);
-        foreach my $sOption(@aRequired) {
-                if(!defined($phCmdLineArgs->{$sOption})) {
-                        printLogMsg($ERROR,"ERROR! : Required option $sOption not passed");
-                }
+    my ($phCmdLineArgs) = @_;
+    my $sOption;
+    my @aRequired = ();
+    if ( exists( $phCmdLineArgs->{'log'} ) ) {
+        open( $fhLog, "> $phCmdLineArgs->{'log'}" )
+          or die
+          "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n";
+    }
+    @aRequired = qw(reference output_dir bwa_path);
+    foreach my $sOption (@aRequired) {
+        if ( !defined( $phCmdLineArgs->{$sOption} ) ) {
+            printLogMsg( $ERROR,
+                "ERROR! : Required option $sOption not passed" );
         }
+    }
 }
 
 ####################################################################################################################################################
@@ -108,15 +145,15 @@ sub checkCmdLineArgs {
 # Parameters    : level = can be ERROR, WARNING or INFO
 #		  msg   = msg to be printed in the log file or to STDERR
 # Returns       : NA
-# Modifications : 
+# Modifications :
 
 sub printLogMsg {
-	my ($nLevel, $sMsg) = @_;
-	if( $nLevel <= $DEBUG ) {
-		print STDERR "$sMsg\n";
-		print $fhLog "$sMsg\n" if(defined($fhLog));
-		die "" if($nLevel == $ERROR);
-	}	
+    my ( $nLevel, $sMsg ) = @_;
+    if ( $nLevel <= $DEBUG ) {
+        print STDERR "$sMsg\n";
+        print $fhLog "$sMsg\n" if ( defined($fhLog) );
+        die "" if ( $nLevel == $ERROR );
+    }
 }
 
 __END__
