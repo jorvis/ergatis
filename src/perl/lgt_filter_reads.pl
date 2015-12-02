@@ -57,7 +57,7 @@ GetOptions(\%hCmdLineArgs,
 	   'samtools_path|s=s',
 	   'samtools_params|S=s',
 	   'softclip_min|m=i',
-	   'keep_mapped_mapped|m=i',
+	   'keep_mm_reads|mm=i',
 	   'log|l=s',
 	   'help|h'
 	  ) or pod2usage();
@@ -129,7 +129,7 @@ while(my $sLine = <$fhFR>) {
 
 	# Want to keep UU, MU, and UM reads.  Keep MM if specified (reference genome is donor for example)
     if(! $stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { 
-		$print = 1 if $hCmdLineArgs{'keep_mapped_mapped'};
+		$print = 1 if $hCmdLineArgs{'keep_mm_reads'};
 		$MM +=2; 
 	}
     if ($stat_r1->{'qunmapped'} || $stat_r2->{'qunmapped'}) {
