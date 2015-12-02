@@ -3,12 +3,16 @@
 		<state>incomplete</state>
 		<name>start pipeline:</name>	
 		<commandSet type="serial">
-        		<state>incomplete</state>
-                	<name>tRNAscan-SE.find_tRNA</name>
+        	<state>incomplete</state>
+            <name>infernal.default</name>
 		</commandSet>
-        	<commandSet type="serial">
-        		<state>incomplete</state>
-                	<name>RNAmmer.default</name>
-        	</commandSet>
+		<commandSet type="serial">
+        	<state>incomplete</state>
+            <name>tRNAscan-SE.find_tRNA</name>
+		</commandSet>
+        <commandSet type="serial">
+        	<state>incomplete</state>
+            <name>RNAmmer.default</name>
+        </commandSet>
 	</commandSet>
 </commandSetRoot>

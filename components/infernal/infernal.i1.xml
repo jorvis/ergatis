@@ -52,7 +52,7 @@
             <executable>$;BIN_DIR$;/infernal2bsml</executable>
             <param>  
                 <key>--query_file_path</key>
-                <value>$;I_FILE_PATH$;</value>
+                <value>$;I_FILE_PATH$;.tbl</value>
             </param>
             <param>  
                 <key>--input</key>
