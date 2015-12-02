@@ -25,76 +25,76 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/lgt_bwa</executable>
             <param>
-            <key>--input_file</key>
-			<value>$;I_FILE_PATH$;</value>
+            	<key>--input_file</key>
+				<value>$;I_FILE_PATH$;</value>
             </param>
             <param>
-            <key>--reference</key>
-            <value>$;REF_FILE$;</value>
+            	<key>--reference</key>
+            	<value>$;REF_FILE$;</value>
             </param>
             <param>
-            <key>--output_dir</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
+            	<key>--output_dir</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
             <param>
-            <key>--misMsc</key>
-            <value>$;MISMATCH_PENALTY$;</value>
+            	<key>--misMsc</key>
+            	<value>$;MISMATCH_PENALTY$;</value>
             </param>
             <param>
-            <key>--maxGapO</key>
-            <value>$;MAX_GAP_OPENS$;</value>
+            	<key>--maxGapO</key>
+            	<value>$;MAX_GAP_OPENS$;</value>
             </param>
             <param>
-            <key>--maxGapE</key>
-            <value>$;MAX_GAP_EXTNS$;</value>
+            	<key>--maxGapE</key>
+            	<value>$;MAX_GAP_EXTNS$;</value>
             </param>
             <param>
-            <key>--gapOsc</key>
-            <value>$;GAP_OPEN_PENALTY$;</value>
+            	<key>--gapOsc</key>
+            	<value>$;GAP_OPEN_PENALTY$;</value>
             </param>
             <param>
-            <key>--gapEsc</key>
-            <value>$;GAP_EXTN_PENALTY$;</value>
+            	<key>--gapEsc</key>
+            	<value>$;GAP_EXTN_PENALTY$;</value>
             </param>
             <param>
-            <key>--nThrds</key>
-            <value>$;MAX_THREADS$;</value>
+            	<key>--nThrds</key>
+            	<value>$;MAX_THREADS$;</value>
             </param>
             <param>
-            <key>--num_aligns</key>
-            <value>$;MAX_ALIGN$;</value>
+            	<key>--num_aligns</key>
+            	<value>$;MAX_ALIGN$;</value>
             </param>
             <param>
-            <key>--bwa_path</key>
-            <value>$;BWA_EXEC$;</value>
+            	<key>--bwa_path</key>
+            	<value>$;BWA_EXEC$;</value>
             </param>
             <param>
-            <key>--samtools_path</key>
-            <value>$;SAMTOOLS_EXEC$;</value>
+            	<key>--samtools_path</key>
+            	<value>$;SAMTOOLS_EXEC$;</value>
             </param>
             <param>
-            <key>--bwa_params</key>
-            <value>$;BWA_ARGS$;</value>
+            	<key>--bwa_params</key>
+            	<value>$;BWA_ARGS$;</value>
             </param>
             <param>
-            <key>--samtools_params</key>
-            <value>$;SAM_VIEW_ARGS$;</value>
+            	<key>--samtools_params</key>
+            	<value>$;SAM_VIEW_ARGS$;</value>
 			</param>
 			<param>
 				<key>--bam_paired</key>
 				<value>$;PAIRED$;</value>
 			</param>
             <param>
-            <key>--keep_sam</key>
-            <value>$;KEEP_SAM$;</value>
+            	<key>--keep_sam</key>
+            	<value>$;KEEP_SAM$;</value>
             </param>
             <param>
-            <key>stdout</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align.stdout</value>
+            	<key>stdout</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align.stdout</value>
             </param>
             <param>
-            <key>stderr</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align.stderr</value>
+            	<key>stderr</key>
+            	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_align.stderr</value>
             </param>
         </command>
         <command>
@@ -123,7 +123,7 @@
             	<value>$;SAM_SORT_ARGS$;</value>
 			</param>
 			<param>
-				<key>--keep_mapped_mapped</key>
+				<key>--keep_mm_reads</key>
 				<value>$;KEEP_MM$;</value>
 			</param>
             <param>
