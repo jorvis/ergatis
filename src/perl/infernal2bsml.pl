@@ -25,7 +25,7 @@ USAGE: template.pl
 =head1 OPTIONS
 
 B<--input_file,-i>
-    The input file (should be prosite scan output)
+    The table output from Infernal's 'cmsearch' run.
 
 B<--output,-o>
     Where the output bsml file should be
@@ -37,7 +37,7 @@ B<--project,-p>
 B<--id_repository,-r>
     Used to make the ids (See Ergatis::IdGenerator for details)
 
-B<--query_file_path,-g>
+B<--query_file_path,-q>
     Path to the query file (input fasta file) for infernal.
 
 B<--gzip_output,-g>
@@ -53,7 +53,7 @@ B<--annot_bsml_list,-v1>
 
 B<--stockholm_path,-sp>
     The path to the stockholm files that contain the alignments for the Rfam CMs. This is required if you want a good type to 
-    be assigned to your hits.
+    be assigned to your hits.  Can be a directory with the CM IDs in the file names, or a file with all CMs. 
 
 B<--default_type,-dt>
     The default SO type to be assigned to either all hits or only those hits that don't have a valid SO mapping in their 
@@ -74,7 +74,7 @@ B<--help,-h>
 
 =head1  INPUT
 
-    The raw output of infernal.  
+    The tbl output of infernal. Can be obtained by appending --tblout <filename> to the 'cmsearch' command 
 
 =head1  OUTPUT
 
@@ -104,6 +104,7 @@ use XML::Twig;
 #use Pod::Usage;
 
 ###############GLOBALS######################
+my $DEBUG = 4;						  # Default DEBUG number
 my %options = ();                     #Options hash
 my $input;
 my $output;
@@ -156,6 +157,8 @@ my $results = GetOptions (\%options,
                           'help|h') || pod2usage();
 
 
+$options{'debug'} = $DEBUG if ! $options{'debug'};
+
 #Make the logger
 my $logfile = $options{'log'} || Ergatis::Logger::get_default_logfilename();
 my $logger = new Ergatis::Logger('LOG_FILE'=>$logfile,
@@ -174,123 +177,30 @@ my $doc = $gene_pred->{'doc'}; #new BSML::BsmlBuilder();    #Bsml Builder object
 my $rawStructure;
 
 #Parse the input file
-#if($options{'infernal_v1'}) {
-    print STDERR "Parsing a V1 infernal output\n";
-    $rawStructure = &parseInfernalRawV1($input);
-#}
-#else {
-#    $rawStructure = &parseInfernalRawPreV1($input);    
-#}
+print STDERR "Parsing a V1 infernal output\n";
+$rawStructure = &parseInfernalRawV1($input);
+
+print STDERR "Building a hash of Rfam types and descriptions\n";
+my $cm_hash = build_cm_type_desc_hash();
 
 #Create a bsml document out of the data
-&createBsml($rawStructure);
-
+&createBsml($rawStructure, $cm_hash);
+print STDERR "Finished creating BSML\n";
 #Write the bsml file.
 $gene_pred->writeBsml($output, '', $gzip);
-
+print STDERR "Finished writing BSML\n";
 # If we have been passed a annotation file list then we'll need to add the genome tag to 
 # the output bsml files.
 
 # Note that this is a total HACK
 if($options{'annot_bsml_list'}) {
     &appendGenomeLink(&getInputFiles($options{'annot_bsml_list'}),[$options{'output'}]);
+	print STDERR "Finished creating annotated BSML list\n";
 }
 
 exit(0);
 
 ###################################### SUBROUTINES ################################
-
-#This is the parsing function.  Kinda gross.
-sub parseInfernalRawPreV1 {
-    my $inputFile = shift;
-    my @prevLines;
-    my $infHit;
-    my $retval;
-
-    open(IN, "< $inputFile") or &_die("Unable to open input $inputFile");
-
-    while(<IN>) {
-        #A crappy (har, har) regex.
-        if(/^\shit\s.*?(\d+).*?:\s+(\d+)\s+(\d+)\s+([.\d]+)/) {
-            my ($hitNo, $start, $stop) = ($1,$2,$3);
-            $infHit->{'bit_score'} = $4;
-
-            $start--; #For interbase numbering
-
-            #Set all the stuff and things
-            if($prevLines[1] =~ /sequence\:\s+(.*)\:\:(\d+)-(\d+)/) {
-                $infHit->{'seqId'} = $1;
-                $project = "";
-                $project = $1 if($infHit->{'seqId'} =~ /^([^\.]+)/);
-                $logger->logdie("Unable to parse project from $infHit->{'seqId'}") unless($project);
-                $start+=($2-1);
-                $stop+=($2-1);
-            } 
-
-            $infHit->{'cmId'} = $1 if($prevLines[0] =~ /cmsearch\s.*\/(.*?\.cm)\s+/);
-            $infHit->{'strand'} = 0;  #0 means forward strand.
-
-            $infHit->{'domain_num'} = $hitNo;
-            
-            if($start > $stop) {
-                my $tmp = $start;
-                $start = $stop;
-                $stop = $tmp;
-                $infHit->{'strand'} = 1;
-            }            
-            $infHit->{'start'} = $start;
-            $infHit->{'stop'} = $stop;
-
-            $infHit->{'runlength'} = $stop-$start;
-
-            my $curLine=$_;
-            my ($cmStart, $cmStop);
-            my $cmLine = 1;
-            
-            HIT: while(<IN>) {
-                if(/^\s+(\d+)/ && !defined($cmStart) && $cmLine) {
-                    $cmStart = $1-1;
-                } 
-                if(/^\s+\d+.*?(\d+)\s*$/ && $cmLine) {
-                    $cmStop = $1;
-                } 
-                if(/\sCPU\stime/) {
-                    last HIT;
-                }
-                $cmLine = (($cmLine-1)**2) if(/^\s+\d/);
-                
-            }
-
-            $_ = $curLine;
-            $infHit->{'comprunlength'} = $cmStop-$cmStart;
-
-            
-            #print Dumper($infHit);
-            my %tmpHash = %{$infHit};
-            push(@{$retval}, \%tmpHash);
-
-        } else {
-            if(@prevLines == 2) {
-                shift @prevLines;
-                push(@prevLines, $_);
-            } elsif(@prevLines < 2) {
-                push(@prevLines, $_);
-            } else {
-                &_die("Collecting too many lines");
-            }
-        }
-
-     }
-    close(IN);
-
-#    $doc->createAndAddAnalysis(
-#                               id => "infernal_analysis",
-#                               sourcename => $options{'input'},
-#                               );
-
-    return $retval;
-
-}
 
 sub parseInfernalRawV1 {
     my $inputFile = shift;
@@ -306,86 +216,77 @@ sub parseInfernalRawV1 {
     my $qstop;
     my $tstart;
     my $tstop;
-    my $strand = 0;
+    my $strand;
     while(<IN>) {
+		#next if (/^#target/) || (/^#---/);
+		next if (/^#/);
+		my @fields = split(/\s+/);
 
-        # HACK-O-RAMA: Assumes we name our cm files the Rfam_ID.cm.
-        if(/\# command:.*\/.*\/(.*)\.cm/) {
-            $infHit->{'cmId'} = $1;
-        }
-        elsif(/^ CM\: (.*)/) {
-            $infHit->{'name'} = $1;
-        }
-        elsif(/ \>(.*)\:\:(\d+)-(\d+)/) {
-            ($infHit->{'seqId'}, $seqstart, $seqstop) = ($1,$2,$3);
-        }
-        elsif(/ Query = (\d+) - (\d+), Target = (\d+) - (\d+)/) {
-            ($qstart, $qstop, $tstart, $tstop) = ($1,$2,$3,$4);
-        }
-        elsif(/Score = (\S+),/) {
-            my($score) = ($1);
-            $infHit->{'bit_score'} = $score;
-            $project = $1 if($infHit->{'seqId'} =~ /^([^\.]+)/);
-            
-            $tstart += $seqstart;
-            $tstop += $seqstop;
-            
-            $infHit->{'strand'} = 0;
-            if($tstart > $tstop) {
-                my $tmp = $tstart;
-                $tstart = $tstop;
-                $tstop = $tmp;
-                $infHit->{'strand'} = 1;
-            }           
-            $infHit->{'start'} = $tstart;
-            $infHit->{'stop'} = $tstop;
-            $infHit->{'runlength'} = $tstop - $tstart;
-            $infHit->{'comprunlength'} = abs($qstop - $qstart);
-            my %tmpHash = %{$infHit};
+		$infHit->{'seqId'} 		= $fields[0];
+		$infHit->{'name'} 		= $fields[2];
+		$infHit->{'cmId'} 		= $fields[3];
+		$qstart 				= $fields[5];
+		$qstop 					= $fields[6];
+		$tstart 				= $fields[7];
+		$tstop 					= $fields[8];
+		$infHit->{'bit_score'}	= $fields[13];
 
-            push(@{$retval}, \%tmpHash);
-        }
+        # Currently assuming the Rfam.cm general file is being used.  Store the path
+		#if(/\# query CM file:\s+(\/.*\.cm)/) {
+		#    $infHit->{'cmPath'} = $1;
+		#}
+        
+		# Hit start should always be less than hit stop
+		$infHit->{'strand'} = 0;
+        if($tstart > $tstop) {
+            my $tmp = $tstart;
+            $tstart = $tstop;
+            $tstop = $tmp;
+            $infHit->{'strand'} = 1;
+        }           
+        $infHit->{'start'} = $tstart;
+        $infHit->{'stop'} = $tstop;
+        $infHit->{'runlength'} = $tstop - $tstart;
+        $infHit->{'comprunlength'} = abs($qstop - $qstart);
+		$project = $1 if($infHit->{'seqId'} =~ /^([^\.]+)/);
+
+        my %tmpHash = %{$infHit};
+
+        push(@{$retval}, \%tmpHash);
+		%$infHit = ();	# Reset hash
+
+
     }
 
     close(IN);
 
-#    $doc->createAndAddAnalysis(
-#                               id => "infernal_analysis",
-#                               sourcename => $options{'input'},
-#                               version => '1.0',
-#                               );
     return $retval;
 }
 
 #######GENERATE BSML (helper functions follow)#############
 sub createBsml {    
     my $infernalRaw = shift;
+	my $cm_hash = shift;
     my %querySeqs;
     my %cmSeqs;
     my %spas;
     my %fts;
     my %countHits;
     
+	my ($type, $desc);
+
     foreach my $match (@{$infernalRaw}) {
 
-        #See if we can parse out a useful type. If not we're moving on.
-        my($type,$desc) = &getTypeAndDesc($match->{'cmId'});
+        #See if we have a type for the given Rfam CM. If not we're moving on.
+        $type = $cm_hash->{$match->{'cmId'}}->{type};
         if(!$type) {
             next;
-        }
+        } else {
+			$desc = $cm_hash->{$match->{'cmId'}}->{desc};
+		}
 
-        #Has the query seq been added?
-#        &addQuerySeq(\%querySeqs, \%fts, $match);
-        
-            
         #Make sure the covariance model has been added as a sequence
         &addCoModel(\%cmSeqs, $match);
-        
-
-        #Add the Sequence Pairs Currently not doing this because it seems redundant.
-#        &addSeqPair(\%spas, $match);
-        
-
 
         # First, create the gene feature
         my $currGene = new Chado::Gene ( $idMaker->next_id( 'type' => 'gene',
@@ -505,43 +406,68 @@ sub addSeqPair {
 
 }
 
-#Given our current default location for RFAM HMMs and CMs
-# were searching for a more informative title.
-sub getTypeAndDesc {
-    my $cmId = shift;
+# Build a hash consisting of the type and decription for each CM
+sub build_cm_type_desc_hash {
+    my $cmId = '';
     my $type = "";
     my $desc = "";
 
-    my $cm = $cmId;
-    $cm = $1 if($cmId =~ /^([^.]+)/);
+	my $cm_hash = {};
+    my $file;
+
+	# Determine if stockholm input is a file or a directory
+	if (-d $options{'stockholm_path'}){
+    	opendir(DIR, $options{'stockholm_path'}) || warn "can't opendir $options{'stockholm_path'}: $!";
+		$cm_hash = parse_file($file, $cm_hash) while ($file = readdir(DIR));
+		closedir(DIR);
+	} elsif (-f $options{'stockholm_path'}) {
+		$file = $options{'stockholm_path'};
+		$cm_hash = parse_file($file, $cm_hash);
+	} else {
+		&_die("Stockholm path specified was neither a directory nor a file");
+	}
+
+	return $cm_hash;
+}
+
+# Parse the Stockholm Rfam file and push relevant parts into a hash-ref
+sub parse_file {
+	my ($file, $cm_hash) = @_;
+	open(IN, $file ) or &_warn("Unable to open file $file for reading");
     
-    opendir(DIR, $options{'stockholm_path'}) || warn "can't opendir $options{'stockholm_path'}: $!";
-    my @files = grep { /$cm/ } readdir(DIR);
-    closedir(DIR);
-    if(@files > 0) {
-        open(IN, "<$options{'stockholm_path'}/$files[0]" ) or &_warn("Unable to open file $files[0]");
-        while(<IN>) {
-            if(/^\#=GF\sTP\s+(.*)/) {
-                my @types = split(/;/, $1);
-                map {
-                    s/\s//g;
-                    if($RFAM_TP_TO_SO_TYPE->{$_}) {
-                        $type = $RFAM_TP_TO_SO_TYPE->{$_};
-                    }
-                }@types;
-                $type = $options{'default_type'} if(!$type && $options{'default_type'});
-                if(!$type) {
-                    print STDERR "WARN: ignoring $cmId hit because it's type could not be determined\n";
+	my $cm = '';
+	my $type = '';
+	my $desc = '';
+	
+	while(<IN>) {
+		if(/^\#=GF\sAC\s+(.+)/) {
+			$cm = $1;
+		}
+		
+        if(/^\#=GF\sTP\s+(.+)/) {
+            my @types = split(/;/, $1);
+            map {
+                s/\s//g;
+                if($RFAM_TP_TO_SO_TYPE->{$_}) {
+                    $type = $RFAM_TP_TO_SO_TYPE->{$_};
                 }
+            }@types;
+            $type = $options{'default_type'} if(!$type && $options{'default_type'});
+            if(!$type) {
+                print STDERR "WARN: ignoring $cm hit because it's type could not be determined\n";
             }
-            elsif(/^\#=GF\sDE\s+(.*)/) {
-                $desc = $1;
-            }
-            
         }
-        close(IN);
+        elsif(/^\#=GF\sDE\s+(.*)/) {
+            $desc = $1;
+        }
+
+		if (m{^//}) {
+			$cm_hash->{$cm}->{type} = $type;
+			$cm_hash->{$cm}->{desc} = $desc;
+		}
     }
-    return ($type,$desc);
+        close(IN);
+    return ($cm_hash);
 }
 #############END OF BSML GENERATION#####################
 

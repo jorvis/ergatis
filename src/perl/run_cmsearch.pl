@@ -678,6 +678,7 @@ sub runProg {
 
     #Make sure the -W option isn't used in the other opts.  
     $oOpts =~ s/--window\s\S+//;
+	$oOpts .= " --tblout $outputFile.'.tbl' ";
 
     #set up the cmsearch command
     my $cmd = $PROG_NAME." $oOpts $cm $fsaFile";
