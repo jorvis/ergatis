@@ -43,7 +43,7 @@
 			</param>
             <param>
                 <key>--picard_path</key>
-                <value>$;PICARD_EXEC$;</value>
+                <value>$;PICARD_TOOLS$;</value>
             </param>
             <param>
                 <key>--input_file</key>

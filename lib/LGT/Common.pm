@@ -25,8 +25,8 @@ Internal methods are usually preceded with a _
 
 # Exporting functions so we don't have to include package name
 use Exporter;
-@ISA = ('Exporter');
-@EXPORT = qw(&find_lca &parse_flag);
+@ISA = qw(Exporter);
+@EXPORT = qw(find_lca parse_flag);
 
 use strict;
 use warnings;
