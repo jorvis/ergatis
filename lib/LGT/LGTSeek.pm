@@ -101,9 +101,9 @@ $| = 1;
 sub new {
     my ( $class, $args ) = @_;
 
-    my $self = $args;
+    my $self = {};
 
-    bless $self;
+    bless $self, $class;
     $self->_init($args);
     return $self;
 }
@@ -141,6 +141,9 @@ sub _init {
         $self->{$key} = $suffix_hash->{$key};
     }
 
+	# Do the same with the passed in args
+	foreach my $key ( keys %{$args} ) {
+		$self->{$key} = $args->{$key};
 }
 
 =head2 getGiTaxon
