@@ -133,12 +133,12 @@ sub _init {
         ],
         fasta_suffix_list   => [ qr/.f\w{3}a(.gz)?/, '.fasta',        '.fa' ],
         mpileup_suffix_list => [ '.mpileup',         '_COVERAGE.txt', '.txt' ],
-        suffix_regex        => qr/\.[^\.]+/,
-      }
+        suffix_regex        => qr/\.[^\.]+/
+      };
 
-      # add each key to current object
-      foreach my $key ( keys %suffix_hash ) {
-        $self->{$key} = $suffix_hash{$key};
+    # add each key to current object
+    foreach my $key ( keys %{$suffix_hash} ) {
+        $self->{$key} = $suffix_hash->{$key};
     }
 
 }
@@ -1897,7 +1897,7 @@ sub mpileup {
     my $max_opt = $config->{max}     ? "-d $config->{max}" : "";
     my $ref_opt = $config->{ref}     ? "-f $config->{ref}" : "";
 
-    my $cmd = "$amtools";
+    my $cmd = "$samtools";
 
     ## If BAM isn't sorted, do that first
     if ( $config->{input} ) {

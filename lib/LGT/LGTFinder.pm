@@ -111,7 +111,7 @@ sub findLGT {
                 $old_prefix         = $prefix;
             }
             print STDERR "======== &LGTFINDER: Processing $file ========\n";
-            &_process_file($file);
+            &_process_file($file, $options);
         }
 
         # Get LGT in clones, and in the final trace
@@ -139,7 +139,7 @@ sub findLGT {
                 $old_prefix         = $prefix;
             }
             print STDERR "======== &LGTFINDER: Processing $_ ========\n";
-            &_process_file($_);
+            &_process_file($_, $options);
         }
 
         # Get LGT in clones (overall) and in the final trace (donor/host)
@@ -164,10 +164,11 @@ sub findLGT {
 
 sub _process_file {
     my $file = shift;
+	my $opts = shift;
     $file =~ /_([^_]+).out$/;
     my $type = $1;
     if ( $type eq 'overall' ) {
-        &_process_overall($file);
+        &_process_overall($file, $opts);
     } else {
         &_process_within_trace( $file, $type );
     }
@@ -176,6 +177,7 @@ sub _process_file {
 # Gather trace information for each template ID
 sub _process_overall {
     my $file = shift;
+	my $options = shift;
     open IN2, "<$file" or die "Unable to open $file\n";
 	# Read in hits, line by line
     while (<IN2>) {
@@ -423,9 +425,10 @@ sub _find_lgt_in_clone {
             keys %{ $traces_by_template->{$clone}->{reverse}->{lineages} } );
 
         if ( $forward && $reverse ) {
-            my $fwd_traces = [];
-            my $rev_traces = [];
 			
+        	my $fwd_traces = [];
+        	my $rev_traces = [];
+
 			# Get forward hit information
             my $fhit = $traces_by_template->{$clone}->{forward}->{hit};
             my $nft = scalar keys %{ $traces_by_template->{$clone}->{forward}->{traces} };
@@ -491,7 +494,7 @@ sub _find_lgt_in_clone {
                 push( @{ $lgt_by_genera->{$forward} }, $clone );
             }
 			# If neither hit belongs to the host
-            } else {
+            else {
                 # print "$fline\n$rline\n";
                 my @outfields = (
                     $clone, $forward, $reverse,

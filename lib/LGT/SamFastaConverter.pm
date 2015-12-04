@@ -28,7 +28,8 @@ use Bio::Perl;
 use LGT::Common;
 $|++;
 
-my $options;
+my $samtools;
+my $paired;
 my $working_reads = {};
 my $reads_seen    = {};
 my $seen_outputs  = {};
@@ -43,18 +44,18 @@ my @outfiles;
 my @outbases;
 
 sub sam2fasta {
-    $options = shift;
-    my $samtools =
+    my $options = shift;
+    $samtools =
         $options->{'samtools_bin'}
       ? $options->{'samtools_bin'}
       : '/usr/local/bin/samtools';
-    my $paired = defined( $options->{paired} ) ? $options->{paired} : 1;
+    $paired = defined( $options->{paired} ) ? $options->{paired} : 1;
 
     if ( $options->{file_list} ) {
         open IN1, "<$options->{file_list}"
           or die "Couldn't open file list: $options->{file_list}\n";
         if ( $options->{output_file} ) {
-            &set_output('');
+            &set_output('', $options);
         }
         while (<IN1>) {
             chomp;
@@ -73,10 +74,10 @@ sub sam2fasta {
     elsif ( $options->{input} ) {
         &set_output( $options->{input} );
         if ( $options->{hlgt} ) {
-            &process_file_hlgt( $options->{input} );
+            &process_file_hlgt( $options );
         }
         else {
-            &process_file2( $options->{input} );
+            &process_file2( $options->{input}, $options );
         }
     }
 
@@ -99,7 +100,8 @@ sub sam2fasta {
 }
 
 sub set_output {
-    my $input = shift;
+	my $input = shift;
+    my $options = shift;
     if ( $options->{output_file} ) {
         $input = $options->{output_file};
     }
@@ -119,7 +121,7 @@ sub set_output {
         }
         $seen_outputs->{"$path/$name.fastq"} = 1;
     }
-    elsif ( $options{fastq} && $paired ) {
+    elsif ( $options->{fastq} && $paired ) {
 
         if ( $seen_outputs->{"$path/$name\_1.fastq"} ) {
             open $out1, ">>$path/$name\_1.fastq"
@@ -144,7 +146,7 @@ sub set_output {
         $seen_outputs->{"$path/$name\_2.fastq"} = 1;
 
     }
-    elsif ( $options{fastq} ) {
+    elsif ( $options->{fastq} ) {
 
         if ( $seen_outputs->{"$path/$name.fastq"} ) {
             open $out, ">>$path/$name.fastq"
@@ -161,11 +163,11 @@ sub set_output {
     else {
         if ( $seen_outputs->{"$path/$name.fasta"} ) {
             open $out, ">$path/$name.fasta"
-              or die "Couldn't output file list: $options{output_file}\n";
+              or die "Couldn't output file list: $options->{output_file}\n";
         }
         else {
             open $out, ">$path/$name.fasta"
-              or die "Couldn't output file list: $options{output_file}\n";
+              or die "Couldn't output file list: $options->{output_file}\n";
             push( @outfiles, "$path/$name.fasta" );
         }
         $seen_outputs->{"$path/$name.fasta"} = 1;
@@ -177,16 +179,17 @@ sub set_output {
 # Basic sam2fasta(q) conversion. Nothing fancy here.
 sub process_file2 {
     my $file = shift;
+	my $options = shift;
 
     my ( $name, $path, $suffix ) = fileparse( $file, '.sam*' );
 
     # Copy the file if it's remote.
-    if ( $options{host} && $options{tmp_dir} ) {
+    if ( $options->{host} && $options->{tmp_dir} ) {
 
         # copy file
-        my $cmd = "scp $options{host}:$file $options{tmp_dir}";
+        my $cmd = "scp $options->{host}:$file $options->{tmp_dir}";
         &run_cmd($cmd);
-        $file = "$options{tmp_dir}/$name$suffix";
+        $file = "$options->{tmp_dir}/$name$suffix";
     }
     my $infh;
 
@@ -239,7 +242,7 @@ sub process_file2 {
 
             # If we have seen both mates go in here (this is a bit of a HACK)
             if ( keys %{ $working_reads->{ $fields[0] } } == 2 || !$paired ) {
-                if ( !$options{assume_uniq} ) {
+                if ( !$options->{assume_uniq} ) {
                     $reads_seen->{ $fields[0] } = 1;
                 }
                 my $count = 0;
@@ -250,7 +253,7 @@ sub process_file2 {
                 my $combined = undef;
                 foreach my $f ( keys %{ $working_reads->{ $fields[0] } } ) {
 
-                    if ( $options{combine_mates} ) {
+                    if ( $options->{combine_mates} ) {
                         if ($combined) {
                             $combined->{seq} .=
                               $working_reads->{ $fields[0] }->{$f}->{seq};
@@ -266,8 +269,8 @@ sub process_file2 {
                               $working_reads->{ $fields[0] }->{$f}->{fields};
                         }
                     }
-                    elsif ( $options{fastq} ) {
-                        &print_fastq( $working_reads->{ $fields[0] }->{$f} );
+                    elsif ( $options->{fastq} ) {
+                        &print_fastq( $working_reads->{ $fields[0] }->{$f}, $options );
                     }
                     else {
                         print $out '>' . $fields[0];
@@ -281,8 +284,8 @@ sub process_file2 {
                     }
                 }
                 if ($combined) {
-                    if ( $options{fastq} ) {
-                        &print_fastq($combined);
+                    if ( $options->{fastq} ) {
+                        &print_fastq($combined, $options);
                     }
                     else {
                         print $out '>' . $fields[0];
@@ -300,15 +303,16 @@ sub process_file2 {
 
 sub process_file_hlgt {
     my $file = shift;
+	my $options = shift;
 
     my ( $fname, $fpath, $fsuffix ) = fileparse( $file, '.sam*' );
 
-    if ( $options{host} && $options{tmp_dir} ) {
+    if ( $options->{host} && $options->{tmp_dir} ) {
 
         # copy file
-        my $cmd = "scp $options{host}:$file $options{tmp_dir}/";
+        my $cmd = "scp $options->{host}:$file $options->{tmp_dir}/";
         &run_cmd($cmd);
-        $file = "$options{tmp_dir}/$fname$fsuffix";
+        $file = "$options->{tmp_dir}/$fname$fsuffix";
         ( $fname, $fpath, $fsuffix ) = fileparse( $file, '.sam*' );
     }
     my $infh;
@@ -327,7 +331,7 @@ sub process_file_hlgt {
         $run = $1;
     }
 
-    if ( !$options{output_file} && $run ) {
+    if ( !$options->{output_file} && $run ) {
 
         # This is a HACK since this file never existed.
         print "Calling $fpath/$run.sam\n";
@@ -373,7 +377,7 @@ sub process_file_hlgt {
             if ( keys %{ $working_reads->{ $fields[0] } } == 2 ) {
                 $reads_seen->{ $fields[0] } = 1;
 
-                if ( $options{combine_mates} ) {
+                if ( $options->{combine_mates} ) {
                     my $combined = {};
                     foreach my $s ( keys %{ $working_reads->{ $fields[0] } } ) {
                         my $obj = $working_reads->{ $fields[0] }->{$s};
@@ -381,15 +385,15 @@ sub process_file_hlgt {
                         $combined->{qual} .= $obj->{qual};
                         $combined->{fields} = $obj->{fields};
                     }
-                    &print_fastq($combined);
+                    &print_fastq($combined, $options);
                 }
                 else {
                     foreach my $s ( keys %{ $working_reads->{ $fields[0] } } ) {
                         my $obj = $working_reads->{ $fields[0] }->{$s};
                         if ( $obj->{subj} =~ /^chr/ ) {
-                            if ( $options{fastq} ) {
+                            if ( $options->{fastq} ) {
                                 print "About to print a line\n";
-                                &print_fastq($obj);
+                                &print_fastq($obj, $options);
                             }
                             else {
                                 print $out '>' . $fields[0] . '_human' . "\n";
@@ -397,8 +401,8 @@ sub process_file_hlgt {
                             }
                         }
                         else {
-                            if ( $options{fastq} ) {
-                                &print_fastq($obj);
+                            if ( $options->{fastq} ) {
+                                &print_fastq($obj, $options);
                             }
                             else {
                                 print $out '>' . $fields[0] . '_bac' . "\n";
@@ -420,11 +424,12 @@ sub process_file_hlgt {
 
 sub print_fastq {
     my $obj = shift;
+	my $options = shift;
     my $fh;
     if ( !$paired ) {
         $fh = $out;
     }
-    elsif ( $options{combine_mates} ) {
+    elsif ( $options->{combine_mates} ) {
         $fh = $combinedout;
     }
     elsif ( $obj->{flag}->{first} ) {

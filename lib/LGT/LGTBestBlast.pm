@@ -229,7 +229,7 @@ sub _init_lineages {
 sub _process_file {
     my $fh = shift;
     use Data::Dumper;
-    while my $line = (<$fh>) {
+    while (my $line = <$fh>) {
         chomp $line;
         my @new_fields = split( /\t/, $line );
         my $tax;
