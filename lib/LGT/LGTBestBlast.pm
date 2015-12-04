@@ -46,6 +46,7 @@ my $FILTER_MIN_OVERLAP = 50;
 my $BLAST_BIN = '/usr/local/bin/blastall';
 my $BLAST_CMD_ARGS = ' -p blastn -e 1 -m8';
 my $filter_lineage;
+my $min_overlap;
 
 =head2 &filterBlast
 
