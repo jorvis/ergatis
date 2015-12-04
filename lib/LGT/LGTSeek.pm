@@ -1237,30 +1237,30 @@ sub _bwaPostProcessDonorHostPaired {
 
     # Here are a bunch of file handles we'll use later.
     if ( $self->{verbose} ) {
-        print STDERR "$output_dir/" . $prefix . "lgt_donor.bam\n";
+        print STDERR "$output_dir/" . $prefix . ".lgt_donor.bam\n";
     }
     open(
         my $lgtd,
-        "| $samtools view -S -b -o $output_dir/" . $prefix . "lgt_donor.bam -"
+        "| $samtools view -S -b -o $output_dir/" . $prefix . ".lgt_donor.bam -"
     ) or die "Unable to open LGT donor file for writing\n";
     open( my $lgth,
-        "| $samtools view -S -b -o $output_dir/" . $prefix . "lgt_host.bam -" )
+        "| $samtools view -S -b -o $output_dir/" . $prefix . ".lgt_host.bam -" )
       or die "Unable to open LGT recipient file for writing\n";
     open(
         my $int_site_donor_d,
         "| $samtools view -S -b -o $output_dir/"
           . $prefix
-          . "integration_site_donor_donor.bam -"
+          . ".integration_site_donor_donor.bam -"
     ) or die "Unable to open donor integration site file for writing\n";
     open(
         my $int_site_donor_h,
         "| $samtools view -S -b -o $output_dir/"
           . $prefix
-          . "integration_site_donor_host.bam -"
+          . ".integration_site_donor_host.bam -"
     ) or die "Unable to open recipient integration site file for writing\n";
     open(
         my $microbiome_donor,
-        "| $samtools view -S -b -o $output_dir/" . $prefix . "microbiome.bam -"
+        "| $samtools view -S -b -o $output_dir/" . $prefix . ".microbiome.bam -"
     ) or die "Unable to open donor microbiome file for writing\n";
 
     my $class_to_file = {
