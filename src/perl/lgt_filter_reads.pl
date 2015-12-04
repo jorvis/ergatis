@@ -124,8 +124,8 @@ while(my $sLine = <$fhFR>) {
 		next;
 	}
 
-	my $stat_r1 = parse_flag($iFlagR1);
-	my $stat_r2 = parse_flag($iFlagR2);
+	my $stat_r1 = LGT::Common::parse_flag($iFlagR1);
+	my $stat_r2 = LGT::Common::parse_flag($iFlagR2);
 
 	# Want to keep UU, MU, and UM reads.  Keep MM if specified (reference genome is donor for example)
     if(! $stat_r1->{'qunmapped'} && ! $stat_r2->{'qunmapped'}) { 
