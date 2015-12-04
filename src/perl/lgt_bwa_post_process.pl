@@ -128,7 +128,7 @@ foreach my $r (keys %$matching_files) {
 			'output_prefix' => $prefix
 		} );
 	
-	my $counts_file = $output_dir . "/" . $prefix . "post_processing.tab";
+	my $counts_file = $output_dir . "/" . $prefix . ".post_processing.tab";
 	my (@header, @vals);
     map {
         push( @header, $_ );

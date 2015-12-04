@@ -87,6 +87,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
+use LGT::LGTSeek;
 
 ############# GLOBALS AND CONSTANTS ################
 my $debug = 1;
@@ -132,7 +133,7 @@ my $lgtseek = LGT::LGTSeek->new( {
 		'verbose'		=> 1
 	} );
 
-my $filtered_bam = LGT::LGTSeek->prinseqFilterBAM( {
+my $filtered_bam = LGT::LGTSeek->prinseqFilterBam( {
 		'input_bam' 	=>	$options{'input_file'},
 		'tmp_dir'		=>	$tmp_dir,
 		'output_dir'	=>	$options{'output_dir'},

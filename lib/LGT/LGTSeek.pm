@@ -213,8 +213,8 @@ sub prinseqFilterBam {
             "*** Error *** Must pass &prinseqFilterBam an input_bam =>\n");
     }
     if ( $self->empty_chk( { input => $config->{input_bam} } ) == 1 ) {
-        print STDERR
-"*** Warning ***: &prinseqFilterBam input: $config->{input} is empty.\n";
+        $self->fail(
+			"*** Error ***: &prinseqFilterBam input: $config->{input} is empty.\n");
     }
     if ( $self->{verbose} ) {
         print STDERR "======== &prinseqFilterBam: Start ========\n";
@@ -1213,15 +1213,15 @@ sub _bwaPostProcessDonorHostPaired {
 
     my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
     my $class_to_file_name = {
-        'lgt_donor' => "$output_dir/" . $prefix . "lgt_donor.bam",
-        'lgt_host'  => "$output_dir/" . $prefix . "lgt_host.bam",
+        'lgt_donor' => "$output_dir/" . $prefix . ".lgt_donor.bam",
+        'lgt_host'  => "$output_dir/" . $prefix . ".lgt_host.bam",
         'integration_site_donor_donor' => "$output_dir/"
           . $prefix
-          . "integration_site_donor_donor.bam",
+          . ".integration_site_donor_donor.bam",
         'integration_site_donor_host' => "$output_dir/"
           . $prefix
-          . "integration_site_donor_host.bam",
-        'microbiome_donor' => "$output_dir/" . $prefix . "microbiome.bam",
+          . ".integration_site_donor_host.bam",
+        'microbiome_donor' => "$output_dir/" . $prefix . ".microbiome.bam",
     };
 
     my $class_counts = {
