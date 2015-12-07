@@ -144,6 +144,7 @@ sub _init {
 	# Do the same with the passed in args
 	foreach my $key ( keys %{$args} ) {
 		$self->{$key} = $args->{$key};
+	}
 }
 
 =head2 getGiTaxon
