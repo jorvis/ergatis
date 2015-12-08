@@ -96,6 +96,7 @@ my $logfh;
 my $DEFAULT_LC_THRESHOLD = 7;
 my $DEFAULT_LC_METHOD = "dust";
 my $JAVA_PATH = "/usr/bin/java";
+#my $JAVA_OPTS = 'Xmx2g';
 ####################################################
 
 my %options;
@@ -126,14 +127,15 @@ my $prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_prinseq";
 
 my $lgtseek = LGT::LGTSeek->new( {
 		'prinseq_bin'	=> $options{'prinseq_path'},
-		'Picard_bin'	=> $options{'picard_path'},
+		'Picard_jar'	=> $options{'picard_path'},
 		'java_bin'		=> $JAVA_PATH,
+		'java_opts'		=> $JAVA_OPTS,
 		'samtools_bin'	=> $options{'samtools_path'},
 		'paired_end'	=> 1,
 		'verbose'		=> 1
 	} );
 
-my $filtered_bam = LGT::LGTSeek->prinseqFilterBam( {
+my $filtered_bam = $lgtseek->prinseqFilterBam( {
 		'input_bam' 	=>	$options{'input_file'},
 		'tmp_dir'		=>	$tmp_dir,
 		'output_dir'	=>	$options{'output_dir'},

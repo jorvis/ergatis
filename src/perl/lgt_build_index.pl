@@ -51,48 +51,63 @@ checkCmdLineArgs( \%hCmdLineArgs );
 ( $sFileBase, $sFileDir, $sFileExt ) =
   fileparse( $hCmdLineArgs{'reference'}, qr/\.[^.]*/ );
 
+my @files;
+
 if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
-    $sCmd =
-        "ln -sf "
-      . $hCmdLineArgs{'reference'} . " "
-      . $hCmdLineArgs{'output_dir'} . "/"
-      . $sFileBase
-      . $sFileExt;
-    printLogMsg( $DEBUG,
-        "INFO : Creating symlink to reference file $hCmdLineArgs{'reference'} in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd"
-    );
-    $nExitCode = system($sCmd);
-    if ( $nExitCode == 0 ) {
-        printLogMsg( $DEBUG,
-            "INFO : Symlink to reference file $hCmdLineArgs{'reference'} created in output directory $hCmdLineArgs{'output_dir'}"
-        );
-    } else {
-        printLogMsg( $ERROR,
-            "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created"
-        );
-    }
-    if ( !exists( $hCmdLineArgs{'algo'} ) ) {
-        $sCmd =
-            $hCmdLineArgs{'bwa_path'}
-          . " index -p "
-          . $hCmdLineArgs{'output_dir'} . "/"
-          . $sFileBase
-          . $sFileExt . " "
-          . $hCmdLineArgs{'output_dir'} . "/"
-          . $sFileBase
-          . $sFileExt;
-    } else {
-        $sCmd =
-            $hCmdLineArgs{'bwa_path'}
-          . " index -p "
-          . $hCmdLineArgs{'output_dir'} . "/"
-          . $sFileBase
-          . $sFileExt . " -a "
-          . $hCmdLineArgs{'algo'} . " "
-          . $hCmdLineArgs{'output_dir'} . "/"
-          . $sFileBase
-          . $sFileExt;
-    }
+	if ($hCmdLineArgs{'reference'} =~ /\.list$/){
+		# If option is a list of refs, copy all refs as well as the list
+		open "FH", $hCmdLineArgs{'reference'} || printLogMsg( $ERROR, "ERROR : Can't open list file for reading: $!");
+		push @files, <FH>;
+		$sCmd = "ln -sf " . $hCmdLineArgs{'reference'} . " " $hCmdLineArgs{'output_dir'} . "/" . $sFileBase . $sFileExt;
+	} else {
+		# Otherwise just copy the ref
+		push @files, $hCmdLineArgs{'reference'};
+	}
+
+	foreach my $ref (@files){
+		chomp $ref;
+		$sCmd =
+	        "ln -sf "
+	      . $ref . " "
+	      . $hCmdLineArgs{'output_dir'} . "/"
+	      . $sFileBase
+	      . $sFileExt;
+	    printLogMsg( $DEBUG,
+	        "INFO : Creating symlink to reference file $hCmdLineArgs{'reference'} in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd"
+	    );
+	    $nExitCode = system($sCmd);
+	    if ( $nExitCode == 0 ) {
+	        printLogMsg( $DEBUG,
+	            "INFO : Symlink to reference file $hCmdLineArgs{'reference'} created in output directory $hCmdLineArgs{'output_dir'}"
+	        );
+	    } else {
+	        printLogMsg( $ERROR,
+	            "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created"
+	        );
+	    }
+	    if ( !exists( $hCmdLineArgs{'algo'} ) ) {
+	        $sCmd =
+	            $hCmdLineArgs{'bwa_path'}
+	          . " index -p "
+	          . $hCmdLineArgs{'output_dir'} . "/"
+	          . $sFileBase
+	          . $sFileExt . " "
+	          . $hCmdLineArgs{'output_dir'} . "/"
+	          . $sFileBase
+	          . $sFileExt;
+	    } else {
+	        $sCmd =
+	            $hCmdLineArgs{'bwa_path'}
+	          . " index -p "
+	          . $hCmdLineArgs{'output_dir'} . "/"
+	          . $sFileBase
+	          . $sFileExt . " -a "
+	          . $hCmdLineArgs{'algo'} . " "
+	          . $hCmdLineArgs{'output_dir'} . "/"
+	          . $sFileBase
+	          . $sFileExt;
+	    }
+	}
 } else {
     printLogMsg( $ERROR,
         "ERROR : Reference file $hCmdLineArgs{'reference'} does not exist or is not readable for creating index."

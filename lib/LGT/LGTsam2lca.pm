@@ -95,7 +95,7 @@ sub new {
         check_mates      => $args->{check_mates},
         complete_bam     => $args->{complete_bam}
     };
-    bless $self;
+    bless $self, $class;
 
     if ( $self->{complete_bam} ) {
         $self->prime_hash( $self->{complete_bam} );

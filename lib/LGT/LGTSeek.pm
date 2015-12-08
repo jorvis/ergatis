@@ -12,9 +12,9 @@ Need to put something useful here
 A module to run computes and process the output of data for purposes
 of finding putative lateral gene transfer.
 
-=head1 AUTHOR - David R. Riley & Karsten B. Sieber 
+=head1 AUTHOR - Shaun Adkins, David R. Riley & Karsten B. Sieber 
 
-e-mail: Karsten.Sieber@gmail.com
+e-mail: sadkins@som.umaryland.edu
 
 =head1 APPENDIX
 
@@ -57,8 +57,6 @@ Class Routines:
 package LGT::LGTSeek;
 our $VERSION = '1.11';
 use warnings;
-no warnings 'misc';
-no warnings 'uninitialized';
 use strict;
 use version;
 
@@ -73,8 +71,6 @@ use LGT::LGTFinder;
 use LGT::LGTbwa;
 use LGT::Common;
 use XML::Simple qw(:strict);
-
-#use File::HomeDir;
 use Cwd;
 $| = 1;
 
@@ -105,7 +101,7 @@ sub new {
 
     bless $self, $class;
     $self->_init($args);
-    return $self;
+	return $self;
 }
 
 sub _init {
@@ -305,8 +301,9 @@ sub _prinseqFilterPaired {
 
     my $prinseq_bin = $self->{prinseq_bin};
     my $samtools    = $self->{samtools_bin};
+	my $java_opts_add = defined $self->{java_opts} ? "-$self->{java_opts}" : "";
     my $Picard =
-      "$self->{java_bin} \-$self->{java_opts} -jar $self->{Picard_jar}";
+      "$self->{java_bin} $java_opts_add -jar $self->{Picard_jar}";
     my $dedup = defined $self->{dedup} ? $self->{dedup} : "1";
     my $rm_low_cmplx =
       defined $self->{rm_low_cmplx} ? $self->{rm_low_cmplx} : "1";

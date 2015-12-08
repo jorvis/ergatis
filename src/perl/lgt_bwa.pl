@@ -241,28 +241,50 @@ sub AlignBwa {
     if ( exists( $phCmdLineArgs->{'bwa_params'} ) ) {
         $sOptions .= " " . $phCmdLineArgs->{'bwa_params'};
     }
+	# Determine if our reference is a list of refs or a single one
+	my @refs;
+	if ($phCmdLineArgs->{'reference'} =~ /\.list$/){
+		open REF, $phCmdLineArgs->{'reference'} || printLogMsg( $ERROR, "ERROR : Can't open reference list for reading:$!");
+		push @refs, <REF>;
+	} else {
+		push @refs, $phCmdLineArgs->{'reference'};
+	}
 
-    $sCmd =
-        $phCmdLineArgs->{'bwa_path'} . " "
-      . $sAlgo . " "
-      . $sOptions . " "
-      . $phCmdLineArgs->{'reference'} . " "
-      . $sFiles . " > "
-      . $phCmdLineArgs->{'output_dir'} . "/"
-      . $sOutFile;
-    printLogMsg( $DEBUG,
-        "INFO : $sSubName :: Start aligning $sFiles to $phCmdLineArgs->{'reference'}.\nINFO : $sSubName :: Command : $sCmd"
-    );
-    $nExitCode = system($sCmd);
-    if ( $nExitCode != 0 ) {
-        printLogMsg( $ERROR,
-            "ERROR : $sSubName :: $sFiles alignment failed with error. Check the stderr"
-        );
-    } else {
-        printLogMsg( $DEBUG,
-            "INFO : $sSubName :: $sFiles alignment to $phCmdLineArgs->{'reference'} succesfully completed in $phCmdLineArgs->{'output_dir'}"
-        );
-    }
+	foreach my $ref (@refs){
+		chomp $ref;
+		my $refname;
+	    # Determine ref base name depending on if an extension is present
+		if ( $ref =~ /.*\/([^\/]+)\.[^\.]+$/ ) { 
+	        $refname = $1; 
+	    }
+	    else {
+	        $ref =~ /.*\/([^\/]+)\.?[^\.]*$/;
+	        $refname = $1; 
+	    }
+		# And now append the refname to the alignment
+		$sOutFile =~ s/\.aln/${refname}_\.aln/;
+		$sCmd =
+	        $phCmdLineArgs->{'bwa_path'} . " "
+	      . $sAlgo . " "
+	      . $sOptions . " "
+	      . $ref . " "
+	      . $sFiles . " > "
+	      . $phCmdLineArgs->{'output_dir'} . "/"
+	      . $sOutFile;
+	    printLogMsg( $DEBUG,
+	        "INFO : $sSubName :: Start aligning $sFiles to $ref.\nINFO : $sSubName :: Command : $sCmd"
+	    );
+	    $nExitCode = system($sCmd);
+	    if ( $nExitCode != 0 ) {
+	        printLogMsg( $ERROR,
+	            "ERROR : $sSubName :: $sFiles alignment failed with error. Check the stderr"
+	        );
+	    } else {
+	        printLogMsg( $DEBUG,
+	            "INFO : $sSubName :: $sFiles alignment to $ref succesfully completed in $phCmdLineArgs->{'output_dir'}"
+	        );
+	    }
+	}
 }
 
 # Determine format of input file or files from input directory to be aligned
