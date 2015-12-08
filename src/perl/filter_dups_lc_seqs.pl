@@ -95,7 +95,7 @@ my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
 my $DEFAULT_LC_THRESHOLD = 7;
 my $DEFAULT_LC_METHOD = "dust";
-my $JAVA_PATH = "/usr/bin/java";
+my $JAVA_PATH = "/usr/local/packages/java-jre-1.8.0/bin/java";	# Picard-2.0.1 needs Java 1.8
 #my $JAVA_OPTS = 'Xmx2g';
 ####################################################
 
