@@ -262,7 +262,7 @@ sub AlignBwa {
 	        $refname = $1; 
 	    }
 		# And now append the refname to the alignment
-		$sOutFile =~ s/\.aln/${refname}_\.aln/;
+		$sOutFile =~ s/\.aln/_${refname}_\.aln/;
 		$sCmd =
 	        $phCmdLineArgs->{'bwa_path'} . " "
 	      . $sAlgo . " "
