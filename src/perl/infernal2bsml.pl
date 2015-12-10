@@ -338,31 +338,27 @@ sub createBsml {
         # Handle Group now:
         my $count = $currGene->addToGroup( $currGene->getId, { 'all' => 1} );
         $gene_pred->addGene($currGene);
-        #print "About to addBsmlLink\n";
-#        $feat->addBsmlLink('analysis', '#infernal_analysis', 'computed_by');
-        #print "Adding intervalLoc\n";
-#        $feat->addBsmlIntervalLoc($match->{'start'}, $match->{'stop'}, $match->{'strand'});
-        #print "Add the $type to the feature group\n";
         
-        #print "Finished and writing.\n";
-        
+		# Add query sequence
+		$gene_pred->addSequence($match->{'seqId'}, $options{'query_file_path'});
     }
 }
 
-sub addQuerySeq {
-    my ($querySeqs, $fts, $match) = @_;
-    
-    unless($querySeqs->{$match->{'seqId'}}) {
-        $querySeqs->{$match->{'seqId'}}  = 
-            $doc->createAndAddSequence($match->{'seqId'},undef, 
-                                       undef, 'dna', 'assembly');
-        $querySeqs->{$match->{'seqId'}}->addBsmlLink('analysis', '#infernal_analysis', 'input_of');
-        $querySeqs->{$match->{'seqId'}}->addBsmlAttr('defline', $defline);
-        $fts->{$match->{'seqId'}} = 
-            $doc->createAndAddFeatureTable($querySeqs->{$match->{'seqId'}});
-    }
-    
-}
+# 12/10/15 - SAdkins - Not actually used in this script
+# sub addQuerySeq {
+#     my ($querySeqs, $fts, $match) = @_;
+#     
+#     unless($querySeqs->{$match->{'seqId'}}) {
+#         $querySeqs->{$match->{'seqId'}}  = 
+#             $doc->createAndAddSequence($match->{'seqId'},undef, 
+#                                        undef, 'dna', 'assembly');
+#         $querySeqs->{$match->{'seqId'}}->addBsmlLink('analysis', '#infernal_analysis', 'input_of');
+#         $querySeqs->{$match->{'seqId'}}->addBsmlAttr('defline', $defline);
+#         $fts->{$match->{'seqId'}} = 
+#             $doc->createAndAddFeatureTable($querySeqs->{$match->{'seqId'}});
+#     }
+#     
+# }
 
 sub addCoModel {
     my ($cmSeqs, $match) = @_;
@@ -376,35 +372,36 @@ sub addCoModel {
 
 }
 
-sub addSeqPair {
-    my($spas, $match) = @_;
-
-    unless($spas->{$match->{'seqId'}.$match->{'cmId'}}) {
-        $spas->{$match->{'seqId'}.$match->{'cmId'}} = 
-            my $aln = $doc->createAndAddSequencePairAlignment( refseq   => $match->{'seqId'},
-                                                     compseq  => $match->{'cmId'},
-                                                     complength => "",
-                                                     class => "match",
-                                                     refstart => 0,);
-            $aln->addBsmlLink('analysis', '#infernal_aalysis', 'computed_by');
-    }
-    
-    my $spr = $doc->createAndAddSequencePairRun(alignment_pair => 
-                                                $spas->{$match->{'seqId'}.$match->{'cmId'}},
-                                                runscore => $match->{'score'},
-                                                runlength => $match->{'runlength'},
-                                                comprunlength => $match->{'comprunlength'},
-                                                refpos => $match->{'start'},
-                                                refcomplement => $match->{'strand'},
-                                                comppos => 0,
-                                                compcomplement => 0,
-                                                );
-
-    $doc->createAndAddBsmlAttribute($spr, 'class', 'match_part');
-    $doc->createAndAddBsmlAttribute($spr, bit_score => $match->{'bit_score'});
-
-
-}
+# 12/10/15 - SAdkins - Not actually used in this script
+# sub addSeqPair {
+#     my($spas, $match) = @_;
+# 
+#     unless($spas->{$match->{'seqId'}.$match->{'cmId'}}) {
+#         $spas->{$match->{'seqId'}.$match->{'cmId'}} = 
+#             my $aln = $doc->createAndAddSequencePairAlignment( refseq   => $match->{'seqId'},
+#                                                      compseq  => $match->{'cmId'},
+#                                                      complength => "",
+#                                                      class => "match",
+#                                                      refstart => 0,);
+#             $aln->addBsmlLink('analysis', '#infernal_aalysis', 'computed_by');
+#     }
+#     
+#     my $spr = $doc->createAndAddSequencePairRun(alignment_pair => 
+#                                                 $spas->{$match->{'seqId'}.$match->{'cmId'}},
+#                                                 runscore => $match->{'score'},
+#                                                 runlength => $match->{'runlength'},
+#                                                 comprunlength => $match->{'comprunlength'},
+#                                                 refpos => $match->{'start'},
+#                                                 refcomplement => $match->{'strand'},
+#                                                 comppos => 0,
+#                                                 compcomplement => 0,
+#                                                 );
+# 
+#     $doc->createAndAddBsmlAttribute($spr, 'class', 'match_part');
+#     $doc->createAndAddBsmlAttribute($spr, bit_score => $match->{'bit_score'});
+# 
+# 
+# }
 
 # Build a hash consisting of the type and decription for each CM
 sub build_cm_type_desc_hash {
