@@ -146,15 +146,12 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
-if ($options{type} ne lc('nucleotide') && $options{'type'} ne lc('protein') ) {
-	&_log($ERROR, "The 'type' option must be either 'nucleotide' or 'protein'");
-}
 
 $options{host} = $HOST if (! $options{host});
 $options{db} = $DB if (! $options{db});
 $options{collection} = $COLL if (! $options{collection});
 
-my $gi_tax_obj = LGT::GiTaxon->new({
+my $gi_tax_obj = GiTaxon->new({
 		'nodes' 		=> $options{nodes_file},
 		'names' 		=> $options{names_file},
 		'gi2tax'		=> $options{tax_id_file},
@@ -189,7 +186,7 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(input_file output_dir type nodes_file names_file tax_id_file ) ) {
+   foreach my $req ( qw(input_file output_dir nodes_file names_file tax_id_file ) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 }

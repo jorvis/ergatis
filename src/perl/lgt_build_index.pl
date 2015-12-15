@@ -48,8 +48,6 @@ pod2usage( { -exitval => 0, -verbose => 2, -output => \*STDERR } )
 
 checkCmdLineArgs( \%hCmdLineArgs );
 
-( $sFileBase, $sFileDir, $sFileExt ) =
-  fileparse( $hCmdLineArgs{'reference'}, qr/\.[^.]*/ );
 
 my @files;
 
@@ -58,7 +56,9 @@ if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
 		# If option is a list of refs, copy all refs as well as the list
 		open "FH", $hCmdLineArgs{'reference'} || printLogMsg( $ERROR, "ERROR : Can't open list file for reading: $!");
 		push @files, <FH>;
-		$sCmd = "ln -sf " . $hCmdLineArgs{'reference'} . " " $hCmdLineArgs{'output_dir'} . "/" . $sFileBase . $sFileExt;
+		( $sFileBase, $sFileDir, $sFileExt ) =
+			  fileparse( $hCmdLineArgs{'reference'}, qr/\.[^.]*/ );
+		$sCmd = "ln -sf " . $hCmdLineArgs{'reference'} . " " . $hCmdLineArgs{'output_dir'} . "/" . $sFileBase . $sFileExt;
 	} else {
 		# Otherwise just copy the ref
 		push @files, $hCmdLineArgs{'reference'};
@@ -66,6 +66,8 @@ if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
 
 	foreach my $ref (@files){
 		chomp $ref;
+		( $sFileBase, $sFileDir, $sFileExt ) =
+  			fileparse( $ref, qr/\.[^.]*/ );
 		$sCmd =
 	        "ln -sf "
 	      . $ref . " "
@@ -73,16 +75,16 @@ if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
 	      . $sFileBase
 	      . $sFileExt;
 	    printLogMsg( $DEBUG,
-	        "INFO : Creating symlink to reference file $hCmdLineArgs{'reference'} in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd"
+	        "INFO : Creating symlink to reference file $ref in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd"
 	    );
 	    $nExitCode = system($sCmd);
 	    if ( $nExitCode == 0 ) {
 	        printLogMsg( $DEBUG,
-	            "INFO : Symlink to reference file $hCmdLineArgs{'reference'} created in output directory $hCmdLineArgs{'output_dir'}"
+	            "INFO : Symlink to reference file $ref created in output directory $hCmdLineArgs{'output_dir'}"
 	        );
 	    } else {
 	        printLogMsg( $ERROR,
-	            "ERROR : Symlink to reference file $hCmdLineArgs{'reference'} could not be created"
+	            "ERROR : Symlink to reference file $ref could not be created"
 	        );
 	    }
 	    if ( !exists( $hCmdLineArgs{'algo'} ) ) {

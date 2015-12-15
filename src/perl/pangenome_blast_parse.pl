@@ -212,7 +212,7 @@ sub processSeqPairAlignment {
     my($qdb, $qprot) = ($2, $1);
 
     # For general database identifiers (gnl|qdb|qprot)
-    if ($query_id =~/^gnl\|([^\|]+)\|([^\.\|]+)[\.\|].*$/) {
+    if ($query_id =~/^gnl|gb\|([^\|]+)\|([^\.\|]+)[\.\|].*$/) {
     	($qdb, $qprot) = ($1, $2);
     	#print "QDB:\t$qdb\tQPROT:\t$qprot\n";
     }
