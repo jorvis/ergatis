@@ -1,0 +1,8 @@
+div.form_row {
+    margin-bottom: 5px;
+}
+label {
+    float: left;
+    width: 130px;
+    font-weight: bold;
+}

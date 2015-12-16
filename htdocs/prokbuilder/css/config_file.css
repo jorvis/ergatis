@@ -1,0 +1,31 @@
+table.config_table {
+    padding-left: 5px;
+}
+table.config_table td {
+    padding-left: 10px;
+}
+table.config_table th {
+    font-weight: bold;
+    text-align: left;
+    color: rgb(73,81,92);
+    padding: 10px 0 5px 0;
+}
+table.config_table input {
+    border: none;
+    border-bottom: 1px solid rgb(150,150,150);
+    background-color: rgb(230,230,230);
+    width: 500px;
+}
+table.config_table select {
+    border-bottom: 1px solid rgb(150,150,150);
+    background-color: rgb(230,230,230);   
+}
+table.config_table tr.comment {
+    color: rgb(125,125,125);
+    font-size: 90%;
+
+}
+tr.config_section {
+    font-weight: bold;
+    padding-top: 20px;
+}

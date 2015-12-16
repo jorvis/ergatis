@@ -1,0 +1,18 @@
+input#repository_root {
+    width: 500px;
+}
+
+li.complete {
+    list-style-image: url('../images/status_complete.png');
+}
+li.failed {
+    list-style-image: url('../images/status_failed.png');
+}
+li.incomplete {
+    list-style-image: url('../images/status_incomplete.png');
+}
+
+span.failed {
+    font-size: 80%;
+    padding-left: 10px;
+}

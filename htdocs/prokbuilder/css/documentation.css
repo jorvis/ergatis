@@ -1,0 +1,121 @@
+div.bsml_container,
+div.code_container {
+    white-space: pre;
+    font-size: 90%;
+    background-color: rgb(230,230,230);
+    padding: 5px;
+    border: 1px solid rgb(73,81,92);
+}
+div.code_sidenote {
+    padding: 0;
+    margin: 10px;
+}
+div.code_caption {
+    background-color: rgb(73,81,92);
+    color: rgb(255,255,255);
+    padding: 5px 10px;
+    font-size: 90%;
+}
+div.doc_section_container {
+    margin: 0 30px 5px 0;
+    overflow: hidden;
+}
+
+div.doc_section_container ul.component_list {
+    list-style-image: url('../images/link.gif');
+}
+
+dl {
+    margin-left: 25px;
+}
+
+span.term {
+    font-weight: bold;
+}
+
+li.disabled,
+span.crossed {
+    text-decoration: line-through;
+}
+
+div.component_group {
+    float: left;
+    width: 250px;
+}
+span.caption_title {
+    font-weight: bold;
+}
+span.term {
+    font-weight: bold;
+}
+table.grid {
+    border-collapse: collapse;
+}
+
+table.grid,
+table.grid td,
+table.grid th {
+    border: 1px solid rgb(0,0,0);
+}
+table.grid th {
+    padding: 0 5px 0 5px;
+}
+
+ul {
+    list-style-image: url('../images/link.gif');
+}
+
+
+/* this section for the component_creation.tmpl */
+
+div#formatdb_xml {
+    float: right;
+    width: 500px;
+}
+div#component_formatdb_xml {
+    float: right;
+    width: 500px;
+}
+div#component_formatdb_config {
+    float: right;
+    width: 600px;
+}
+img#component_structure_types {
+    float: right;
+    margin: 0;
+    padding: 0;
+}
+span.xml_element,
+span.config_param {
+    color: rgb(73,81,92);
+    font-style: italic;
+}
+
+
+/* this section for the pipeline_creation.tmpl */
+
+div.screenshot {
+    margin-bottom: 40px;
+}
+div.screenshot img {
+    border: 2px solid black;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

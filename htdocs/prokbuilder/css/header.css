@@ -1,0 +1,159 @@
+/*****************************
+ * page header section start */
+
+div#page_header {
+    background-color: rgb(73,81,92);
+    width: 100%;
+    float: left;
+    overflow: hidden;
+}
+
+div#quick_links_container {
+    float: right;
+    padding: 5px 3px 0 0;
+}
+div#quick_search_container {
+    float: right;
+    padding: 3px 3px 0 0;
+}
+div#quick_search_container input {
+    background-color: rgb(198,196,197);
+    font-size: 80%;
+}
+div#title_container {
+    padding: 10px 0 20px 30px;
+    float: left;
+}
+
+span#page_title,
+span#page_slogan {
+    color: rgb(255,255,255);
+    letter-spacing: 1px;
+}
+
+span#page_title {
+    font-weight: bold;
+    font-size: 140%;
+}
+
+span#page_slogan {
+    font-size: 90%;
+    padding-left: 5px;
+}
+ul#quick_links {
+    list-style: none;
+    float: left;
+    margin: 0;
+    padding: 0;
+}
+ul#quick_links a {
+    color: rgb(215,215,215);
+}
+ul#quick_links li {
+    float: left;
+    margin: 0 10px 0 0;
+    padding: 0 10px 0 0;
+    font-size: 80%;
+    font-weight: bold;
+    border-right: 1px dotted rgb(215,215,215);
+}
+
+ul#quick_links li.last {
+    border-right: none;
+}
+
+/* page header section end *
+****************************/
+
+
+/****************************
+ * navigation section start */
+
+ul#primary_nav_elements {
+    float: right;
+    margin: 0;
+    list-style: none;
+}
+
+ul#primary_nav_elements li {
+    float: left;
+    background: url("../images/rounded_right_corner.gif") no-repeat right top;
+    margin: 0 10px 0 0;
+    padding: 0;
+    border-bottom: 1px solid rgb(73,81,92);
+}
+
+ul#primary_nav_elements li a,
+ul#sub_nav_elements li a {
+    display: block;
+    font-size: 90%;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+ul#primary_nav_elements li a {
+    float: left;
+    color: rgb(73,81,92);
+    background: url("../images/rounded_left_corner.gif") no-repeat left top;
+    padding: 2px 7px 2px 7px;
+}
+
+div#primary_nav_container,
+ul#primary_nav_elements {
+    background-color: rgb(73,81,92);
+}
+
+div#primary_nav_container,
+div#sub_nav_container {
+    width: 100%;
+    float: left;
+}
+
+div#sub_nav_container {
+    clear: both;
+    color: rgb(73,81,92);
+    border-bottom: 3px solid rgb(73,81,92);
+}
+
+ul#sub_nav_elements {
+    float: left;
+    margin: 0;
+    padding: 0 0 0 20px;
+    list-style: none;
+}
+
+ul#sub_nav_elements li {
+    float: left;
+    border-right: 1px solid rgb(73,81,92);
+    margin: 2px 0 2px 0;
+}
+
+ul#sub_nav_elements li.last {
+    border: none;
+}
+
+ul#sub_nav_elements li a {
+    color: rgb(73,81,92);
+    padding: 0 10px 0 10px;
+    font-size: 85%;
+}
+
+
+/* commented backslash hack for IE5-mac
+   all others will see it.  \*/
+
+#primary_nav_elements li a { float: none; }
+/* end of ie5-mac hack */
+
+body.pipelines li#nav_pipelines,
+body.templates li#nav_templates,
+body.projects li#nav_projects,
+body.documentation li#nav_documentation,
+body.admin li#nav_admin {
+    padding: 0 0 1px 0;
+    border: none;
+}
+
+/* navigation section end *
+***************************/
+

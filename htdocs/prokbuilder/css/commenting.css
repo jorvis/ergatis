@@ -1,0 +1,46 @@
+div#comment_container {
+    margin-bottom: 15px;
+}
+
+div#comment_container label {
+	display: block;
+    font-weight: bold;
+    color: rgb(130,130,130);
+}
+
+div#comment_container label span {
+    font-size: 80%;
+    padding-left: 5px;
+    color: rgb(73,81,92);
+}
+
+div#comment_container label span:hover {
+    cursor: pointer;
+}
+
+div#comment_container textarea {
+    font: small verdana, sans-serif;
+    background-color: rgb(230,230,230);
+    border: 1px solid rgb(160,160,160);
+    border-right: 1px solid rgb(200,200,200);
+    border-bottom: 1px solid rgb(200,200,200);
+    width: 600px;
+    padding: 4px;
+}
+
+div#pipeline_comment_shadow {
+    padding: 4px;
+    width: 600px;
+    border: 1px solid rgb(255,255,255);
+}
+
+/*
+    these styles are changed during page interaction
+*/
+
+div#comment_container textarea#pipeline_comment,
+div#comment_container span#comment_save,
+div#comment_container span#comment_cancel,
+div#comment_container span#comment_add {
+    display: none;
+}

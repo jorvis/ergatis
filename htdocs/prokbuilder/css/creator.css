@@ -1,0 +1,116 @@
+/* 
+    this is a div that covers the entire page and prevents the user 
+    from clicking anywhere.  good for creating 'modal' windows.
+*/
+#blocker {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    height: 100%;
+    width: 100%;
+    background-color: rgb(200,200,200);
+    opacity: .5;
+    filter: alpha(opacity=50);
+    z-index: 50;
+    display: none;
+}
+
+#current_config_container {
+    position: absolute;
+    min-height: 450px;
+    min-width: 450px;
+    background-color: rgb(255,255,255);
+    padding: 5px;
+    opacity: .8;
+    filter: alpha(opacity=80);
+    z-index: 51;
+    display: none;
+}
+
+#build_area {
+    margin: 0px 0px 0px 260px;
+    padding: 5px;
+}
+
+#controls {
+    border-right:  1px solid rgb(131,150,145);
+    border-bottom: 1px solid rgb(131,150,145);
+    margin: 0px 10px 0px 0px;
+    padding: 5px;
+    width: 250px;
+    min-height: 700px;
+    float: left;
+}
+
+#pipeline_build_data {
+    display: none;
+}
+
+.component_container,
+.component_title_bar,
+.component_body {
+    /* manual resizing totally screws the positioning.
+       hopefully this can be cleaned up later. */
+    font-size: 8pt !important;
+}
+
+.component_container {
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    z-index: 1;
+    width: 150px;
+    height: 120px;
+}
+
+.component_connector {
+    position: relative;
+    left: 75px;
+    margin: 0;
+    padding: 0;
+    height: 20px;
+}
+
+.component_title_bar {
+    margin: 0;
+    padding: 3px 5px 0 5px;
+    height: 20px;
+    background-color: #ccc;
+    border: 1px solid rgb(131,150,145);
+}
+
+.component_body {
+    margin: 0;
+    padding: 5px 5px 0 5px;
+    height: 72px;
+    border-bottom: 1px solid rgb(131,150,145);
+    border-left: 1px solid rgb(131,150,145);
+    border-right: 1px solid rgb(131,150,145);
+    background-color: rgb(255,255,255);
+}
+
+hr {
+    border: 0;
+    height: 2px;
+    color: rgb(131,150,145);  /* for IE */
+    background-color: rgb(131,150,145);  /* for mozilla and opera */
+}
+
+input, select {
+    width: 500px;
+}
+
+span.input_type {
+    color: rgb(131,150,145);
+    margin-right: 10px;
+}
+
+ul#input_list {
+    list-style-type: none;
+    padding: 0;
+    margin-left: 1em;
+}
+
+ul#input_list li {
+    padding-bottom: 3px;
+}

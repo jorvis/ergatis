@@ -1,0 +1,148 @@
+/*
+    colors:
+    dark blue:     rgb(73,81,92);       used
+    medium blue:   rgb(107,115,123);
+    light blue:    rgb(133,143,158);
+    lightest blue: rgb(198,196,197);
+    dark green:    rgb(73,138,92);
+    go green:      rgb(119,188,96);
+    error red:     rgb(225,0,0);
+*/
+
+body {
+    font: small verdana, sans-serif;
+    margin: 0;
+    padding: 5px;
+    background-color: rgb(255,255,255);
+}
+
+a {
+    text-decoration: none;
+    color: rgb(0,100,0);
+    cursor: pointer;
+}
+dd {
+    margin-bottom: 10px;
+}
+div {
+    margin: 0;
+    padding: 0;
+}
+
+div#content_container {
+    clear: both;
+    padding: 10px;
+    line-height: 140%;
+}
+div#page_container {
+    min-width: 700px;
+}
+div.pipeline_marker {
+    width: 300px;
+    border: 1px solid rgb(150,150,150);
+    background-color: rgb(220, 220, 220); 
+    background-color: rgb(73,81,92);   
+    color: rgb(255,255,255);
+    font-size: 110%;
+    letter-spacing: 1px;
+    font-weight: bold;
+    padding: 3px 3px 3px 10px;
+    margin-bottom: 15px;
+    clear: both;
+}
+div.warning_container,
+div.error_container {
+    border: 2px solid rgb(200,0,0);
+    margin: 15px;
+    padding: 10px;
+}
+div#user_message_container {
+    display: none;
+    position: fixed;
+    opacity: 0.8;
+    top: 0;
+    left: 300px;
+    border: 1px solid rgb(220,220,220); 
+    background-color: rgb(150,150,150);
+    padding: 2px 20px;
+    color: rgb(255,255,255);
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+dt {
+    font-weight: bold;
+}
+h1, h2, h3, h4 {
+    color: rgb(73,81,92);
+}
+
+h1 {
+    font-size: 120%;
+}
+
+h2 {
+    font-size: 100%;
+    border-bottom: 1px dotted rgb(150,150,150);
+    padding-bottom: 5px;
+    margin-top: 0;
+}
+
+h3 {
+    margin: 5px 0px 7px 0px;
+    font-size: 100%;
+}
+
+h3.warning {
+    margin-top: 30px;
+    color: rgb(200,0,0);
+}
+h4 {
+    font-weight: bold;
+    font-size: 90%;
+}
+
+hr {
+    margin: 1em 0em;
+    height: 1px;
+}
+
+input, select {
+    border: 1px solid rgb(131,150,145);
+    padding-left: 3px;
+    font-family: verdana, sans-serif;
+}
+
+span.button {
+    border: 1px solid rgb(0,0,0);
+    background-color: rgb(200,200,200);
+    padding: 1px 5px 1px 5px;
+    cursor: pointer;
+}
+
+span.state {
+    font-weight: bold;
+}
+
+span.complete    { color: rgb(0,200,0); }
+span.incomplete  { color: rgb(75,75,75); }
+span.failed      { color: rgb(200,0,0); }
+span.pending     { color: rgb(200,200,0); }
+span.error       { color: rgb(200,0,0); }
+span.running     { color: rgb(0,0,200); }
+span.waiting     { color: rgb(200,200,0); }
+span.interrupted { color: rgb(200,0,200); }
+span.unknown     { color: rgb(0,0,0); }
+
+table, td {
+    font-size: 100%;
+}
+ul.pipeline_template_list {
+    list-style-image: url('../images/link.gif');
+}
+ul.pipeline_template_list p {
+    margin-top: 0;
+    padding-top: 0;
+    color: rgb(80,80,80);
+    font-size: 90%;
+}

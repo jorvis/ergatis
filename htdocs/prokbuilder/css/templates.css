@@ -1,0 +1,24 @@
+div#group1 {
+    float: left;
+    width: 400px;
+}
+div#group2 {
+    margin-left: 420px;
+}
+div#content_container div {
+    border: 1px solid rgb(255,255,255);
+}
+div#project_selection_container {
+    margin-bottom: 25px;
+}
+p#no_project {
+    color: rgb(80,80,80);
+    font-size: 90%;
+    padding-left: 20px;
+}
+p#no_project_templates_found {
+    display: none;
+}
+li.has_build_guide {
+    list-style-image: url("../images/icon_build_guide.png");
+}

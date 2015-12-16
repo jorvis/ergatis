@@ -1,0 +1,16 @@
+div#pipeline_comment_shadow {
+    display: none;
+}
+
+/*
+    some style overrides
+*/
+
+div#content_container {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+div#info_container {
+    padding-bottom: 0;
+}

@@ -1,0 +1,45 @@
+div.source_container {
+    white-space: pre;
+}
+div.source_container a {
+    text-decoration: underline;
+}
+li.comment {
+    color: rgb(125,125,125);
+    font-size: 90%;
+}
+li.header {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+li.param {
+    padding-left: 15px;
+    padding-bottom: 5px;
+}
+ul.linked_files {
+    width: 525px;
+    padding-left: 5px;
+    padding-bottom: 5px;
+    margin-left: 20px;
+    border: 1px solid rgb(150,150,150);
+    margin-bottom: 15px;
+    list-style: none;
+    font-size: 90%;
+}
+ul.param_list {
+    list-style: none;
+    margin-left: 5px;
+    padding-left: 10px;
+}
+span.parameter {
+    color: rgb(0,75,0); 
+}
+span.filesize {
+    font-style: italic;
+}
+span.comment {
+    background-color: rgb(200,200,200);
+}
+span.tag {
+    color: rgb(100,100,100);
+}

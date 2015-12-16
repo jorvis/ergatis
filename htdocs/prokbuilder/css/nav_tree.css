@@ -1,0 +1,81 @@
+/*
+    nav_tree code derived from the fantastic tutorial at:
+    http://www.nickrigby.com/article/25/drop-down-menus-horizontal-style-pt-3
+*/
+
+ul#nav_tree,
+ul#nav_tree ul {
+    margin: 0px 0px 20px 0px;
+    padding: 0;
+    width: 230px; /* menu item width */
+    border-bottom: 1px solid rgb(204,204,204);
+    background: rgb(255,255,255); /* IE6 Bug */
+    font-size: 100%;
+}
+
+/* make sure these appear on top of other things */
+ul#nav_tree li {
+    position: relative;
+    list-style: none;
+    z-index: 10;
+}
+
+ul#nav_tree li a {
+    display: block;
+    text-decoration: none;
+    color: rgb(119,119,119);
+    padding: 5px;
+    border: 1px solid rgb(204,204,204);
+    border-bottom: 0;
+}
+
+/* fix IE (as always). hide from IE mac \*/
+* html ul#nav_tree li { float: left; height: 1%; }
+* html ul#nav_tree li a { height: 1%; }
+/* End */
+
+ul#nav_tree ul {
+    position: absolute;
+    display: none;
+    left: 229px; /* Set 1px less than menu width */
+    top: 0;
+}
+
+/*  style of the sub menus */
+ul#nav_tree li ul li a { 
+    padding: 5px 5px; 
+}
+
+/* initially hide all of the submenus */
+ul#nav_tree li:hover ul ul,
+ul#nav_tree li:hover ul ul ul,
+ul#nav_tree li.over ul ul,
+ul#nav_tree li.over ul ul ul { 
+    display: none; 
+}
+
+/* this is where the magic happens */
+ul#nav_tree li:hover ul,
+ul#nav_tree li li:hover ul,
+ul#nav_tree li li li:hover ul,
+ul#nav_tree li.over ul,
+ul#nav_tree li li.over ul,
+ul#nav_tree li li li.over ul { 
+    display: block; 
+}
+
+/* add the arrow */
+ul#nav_tree li.menuparent { 
+    background: transparent url('../images/arrow_right_thin.gif') right center no-repeat; 
+}
+
+/* change the background color on hovered nodes */
+ul#nav_tree li.menuparent:hover,
+ul#nav_tree li.over { 
+    background-color: rgb(249,249,249); 
+}
+
+/* change the text color on a hovered node */
+ul#nav_tree li a:hover { 
+    color: rgb(63,89,116); 
+}
