@@ -286,7 +286,9 @@ sub createBsml {
 		}
 
         #Make sure the covariance model has been added as a sequence
-        &addCoModel(\%cmSeqs, $match);
+		# S Adkins - Currently these are missing Seq-data-import tags, which causes pipeline summary to fail
+		# 				so I am commenting out for now
+		#&addCoModel(\%cmSeqs, $match);
 
         # First, create the gene feature
         my $currGene = new Chado::Gene ( $idMaker->next_id( 'type' => 'gene',

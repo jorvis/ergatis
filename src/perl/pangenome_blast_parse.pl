@@ -230,7 +230,7 @@ sub processSeqPairAlignment {
     # $sprot may be an assembly for TBLASTN, not a protein
     my($sdb, $sprot);
     # For general database identifiers (gnl|qdb|qprot)
-    if ($subject_id =~/^gnl\|([^\|]+)\|([^\.\|]+)[\.\|]?.*$/){
+    if ($subject_id =~/^gnl|gb\|([^\|]+)\|([^\.\|]+)[\.\|]?.*$/){
     	($sdb, $sprot) = ($1, $2);
     	#print "SDB:\t$sdb\tSPROT:\t$sprot\n";
     }
