@@ -134,7 +134,7 @@
 	    <name>list bcp files</name>
 	    <state>incomplete</state>
 	    <executable>/usr/bin/find</executable>
-	    <arg>$;TMP_DIR$;/parse -name "*.out" -type f -xdev</arg>
+	    <arg>$;TMP_DIR$;/parse -name "*.out" -type f -noleaf</arg>
 	    <param>
 		<key>
 		    stdout
