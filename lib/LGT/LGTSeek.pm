@@ -301,7 +301,7 @@ sub _prinseqFilterPaired {
 
     my $prinseq_bin = $self->{prinseq_bin};
     my $samtools    = $self->{samtools_bin};
-	my $java_opts_add = defined $self->{java_opts} ? "-$self->{java_opts}" : "";
+	my $java_opts_add = defined $self->{java_opts} ? "$self->{java_opts}" : "";
     my $Picard =
       "$self->{java_bin} $java_opts_add -jar $self->{Picard_jar}";
     my $dedup = defined $self->{dedup} ? $self->{dedup} : "1";
