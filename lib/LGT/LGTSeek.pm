@@ -55,7 +55,7 @@ Class Routines:
 =cut
 
 package LGT::LGTSeek;
-our $VERSION = '1.11';
+our $VERSION = '1.2';	# SAdkins - Updated Version # since I rewrote a bit of it
 use warnings;
 use strict;
 use version;
@@ -231,12 +231,11 @@ sub prinseqFilterBam {
       : $self->{Picard_jar};
     $self->{java_opts} =
       defined $config->{java_opts} ? $config->{java_opts} : $self->{java_opts};
-    $self->{java_bin} =
-      defined $config->{java_bin} ? $config->{java_bin} : "/usr/bin/java";
-    $self->{samtools_bin} =
-      defined $self->{samtools_bin}
-      ? $self->{samtools_bin}
-      : '/usr/bin/samtools';
+	unless ( defined($self->{java_bin})){
+		$self->{java_bin} =
+    	  defined $config->{java_bin} ? $config->{java_bin} : "/usr/bin/java";
+  	}
+	$self->{samtools_bin} = '/usr/bin/samtools' unless (defined $self->{samtools_bin});
     $self->{dedup} =
       defined $config->{dedup} ? $config->{dedup} : $self->{dedup};
     $self->{rm_low_cmplx} =
