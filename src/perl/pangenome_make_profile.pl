@@ -57,12 +57,12 @@ use XML::Twig;
 use Math::Combinatorics;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Storable qw(nstore retrieve);
-use lib "/usr/local/scratch/bwhitty/lib"; ## temp
-#use lib "/export/lib/5.8.8"; ## temp
 use Data::Random qw(:all);   ## temp
 use Benchmark;
 #use DBM::Deep;
+use bignum;
 
+use warnings;
 use strict;
 
 $|++;

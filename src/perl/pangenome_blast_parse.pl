@@ -3,6 +3,9 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
+eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
+
 =head1  NAME
 
 pangenome_blast_parse.pl - Parses BLAST BSML output files and extracts data needed for pangenome analysis.
@@ -212,9 +215,9 @@ sub processSeqPairAlignment {
     my($qdb, $qprot) = ($2, $1);
 
     # For general database identifiers (gnl|qdb|qprot)
-    if ($query_id =~/^gnl|gb\|([^\|]+)\|([^\.\|]+)[\.\|].*$/) {
-    	($qdb, $qprot) = ($1, $2);
-    	#print "QDB:\t$qdb\tQPROT:\t$qprot\n";
+    if ($query_id =~/^(gnl|gb)\|([^\|]+)\|([^\.\|]+)[\.\|]?.*$/) {
+    	($qdb, $qprot) = ($2, $3);
+#    	print "QDB:\t$qdb\tQPROT:\t$qprot\n";
     }
     elsif ($query_id =~ /^(([^\.]+)\..*)$/) {
 		($qdb, $qprot) = ($2, $1);
@@ -230,9 +233,9 @@ sub processSeqPairAlignment {
     # $sprot may be an assembly for TBLASTN, not a protein
     my($sdb, $sprot);
     # For general database identifiers (gnl|qdb|qprot)
-    if ($subject_id =~/^gnl|gb\|([^\|]+)\|([^\.\|]+)[\.\|]?.*$/){
-    	($sdb, $sprot) = ($1, $2);
-    	#print "SDB:\t$sdb\tSPROT:\t$sprot\n";
+    if ($subject_id =~/^(gnl|gb)\|([^\|]+)\|([^\.\|]+)[\.\|]?.*$/){
+    	($sdb, $sprot) = ($2, $3);
+#    	print "SDB:\t$sdb\tSPROT:\t$sprot\n";
     }
     elsif ($subject_id =~ /^(([^\.]+)\..*)$/) {
         ($sdb, $sprot) = ($2, $1);
@@ -265,6 +268,7 @@ sub processSeqPairAlignment {
         	} else{		
             	# Check the cutoffs are reached for non-self hits
             	# Add this hit to the results array
+				#print join("\t", $db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref) . "\n";
             	push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
             	if ($qdb eq $sdb) {
             	print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
