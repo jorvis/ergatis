@@ -33,11 +33,11 @@
             </param>
             <param>
                 <key>--names_file</key>
-                <value>$;NCBITAX$;/names.dmp$;</value>
+                <value>$;NCBITAX$;/names.dmp</value>
             </param>
             <param>
                 <key>--nodes_file</key>
-                <value>$;NCBITAX$;/nodes.dmp$;</value>
+                <value>$;NCBITAX$;/nodes.dmp</value>
             </param>
             <param>
                 <key>--output_file</key>
