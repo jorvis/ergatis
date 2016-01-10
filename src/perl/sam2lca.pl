@@ -89,7 +89,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use LGT::LGTsam2lca;
-use LGT::GiTaxon;
+use GiTaxon;
 
 ############# GLOBALS AND CONSTANTS ################
 my $debug = 1;
@@ -136,7 +136,7 @@ if ($options{input_file} !~ /.bam$/){
 	&_log($ERROR, $options{input_file} . " must be a BAM file with a .bam extension");
 }
 
-my $gi_tax_obj = LGT::GiTaxon->new({
+my $gi_tax_obj = GiTaxon->new({
 		'nodes' 		=> $options{nodes_file},
 		'names' 		=> $options{names_file},
 		'gi2tax'		=> $options{tax_id_file},

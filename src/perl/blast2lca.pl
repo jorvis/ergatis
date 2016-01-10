@@ -93,7 +93,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use LGT::LGTsam2lca;
-use LGT::GiTaxon;
+use GiTaxon;
 
 ############# GLOBALS AND CONSTANTS ################
 my $debug = 1;
@@ -138,7 +138,7 @@ $options{collection} = $COLL if (! $options{collection});
 $options{evalue_cutoff} = $EVAL_CUTOFF if (! $options{evalue_cutoff};
 $options{best_hits_flag} = $BEST_HITS_FLAG if (! $options{best_hits_flag};
 
-my $gi_tax_obj = LGT::GiTaxon->new({
+my $gi_tax_obj = GiTaxon->new({
 		'nodes' 		=> $options{nodes_file},
 		'names' 		=> $options{names_file},
 		'gi2tax'		=> $options{tax_id_file},
