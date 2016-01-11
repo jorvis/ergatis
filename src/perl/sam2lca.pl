@@ -122,10 +122,6 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
-if ($options{type} ne lc('nucleotide') && $options{'type'} ne lc('protein') ) {
-	&_log($ERROR, "The 'type' option must be either 'nucleotide' or 'protein'");
-}
-
 $options{host} = $HOST if (! $options{host});
 $options{db} = $DB if (! $options{db});
 $options{collection} = $COLL if (! $options{collection});
