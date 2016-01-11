@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+		<name>sam2lca compute</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Get lowest common ancestor from SAM reads</name>
+            <executable>$;BIN_DIR$;/sam2lca</executable>
+            <param>
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--tax_id_file</key>
+                <value>$;GI2TAX$;</value>
+            </param>
+            <param>
+                <key>--names_file</key>
+                <value>$;NCBITAX$;/names.dmp</value>
+            </param>
+            <param>
+                <key>--nodes_file</key>
+                <value>$;NCBITAX$;/nodes.dmp</value>
+            </param>
+            <param>
+                <key>--output_file</key>
+                <value>$;OUTPUT_DIRECTORY$;/sam2lca.out</value>
+            </param>
+            <param>
+                <key>--tmp_dir</key>
+                <value>$;TMP_DIR$;</value>
+            </param>
+            <param>
+                <key>--db</key>
+                <value>$;TAXONDB$;</value>
+            </param>
+            <param>
+                <key>--host</key>
+                <value>$;HOST$;</value>
+            </param>
+            <param>
+                <key>--collection</key>
+                <value>$;TAXONCOLL$;</value>
+            </param>
+            <param>
+                <key>--samtools_path</key>
+                <value>$;SAMTOOLS_EXEC$;</value>
+            </param>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/lgt_sam2fasta.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/lgt_sam2fasta.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
