@@ -174,7 +174,7 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(input_file output_file type nodes_file names_file tax_id_file) ) {
+   foreach my $req ( qw(input_file output_file nodes_file names_file tax_id_file) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 }
