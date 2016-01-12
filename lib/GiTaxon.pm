@@ -50,9 +50,10 @@ sub new {
       : $GI2TAX;
     $self->{'chunk_size'} =
       $args->{'chunk_size'} ? $args->{'chunk_size'} : $CHUNK_SIZE;
-    $self->{'host'} =
+	$self->{'host'} = 'mongodb://';
+    $self->{'host'} .=
       $args->{'host'} ? $args->{'host'} : $HOST;
-    $self->{'gi_db'} = $args->{'gi_db'} ? $args->{'gi_db'} : $DB;
+	$self->{'gi_db'} = $args->{'gi_db'} ? $args->{'gi_db'} : $DB;
     $self->{'gi_coll'} =
       $args->{'gi_coll'} ? $args->{'gi_coll'} : $COLL;
     $self->{'taxonomy_dir'} = $args->{'taxonomy_dir'} ? $args->{'taxonomy_dir'} : $TMP;
