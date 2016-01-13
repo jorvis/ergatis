@@ -109,6 +109,7 @@ use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
 use LGT::LGTsam2lca;
+use LGT::LGTBestBlast;
 use GiTaxon;
 
 ############# GLOBALS AND CONSTANTS ################
@@ -163,7 +164,7 @@ my $gi_tax_obj = GiTaxon->new({
 	});
 
 my $files = LGT::LGTBestBlast->filterBlast({
-		'gi2taxon'				=> $gi_tax_obj,
+		'gitaxon'				=> $gi_tax_obj,
 		'output_dir'			=> $options{output_dir},
 		'blast'					=> $options{input_file},
 		'lineage1'				=> $options{donor_lineage},
