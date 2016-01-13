@@ -148,11 +148,8 @@ my $sam2lca_obj = LGT::LGTsam2lca->new({
 		'samtools_bin'	=> $samtools,
 	});
 
-open ( my $fh, "-|" , "$samtools view $options{input_file}" )
-	|| &_log($ERROR, "Unable to open BAM file " . $options{input_file});
-
 $sam2lca_obj->process_file({
-		'handle'		=> $fh,
+		'file'		=> $options{input_file,
 });
 
 my $files = $sam2lca_obj->writeOutput();
