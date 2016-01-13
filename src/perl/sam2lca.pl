@@ -149,7 +149,7 @@ my $sam2lca_obj = LGT::LGTsam2lca->new({
 	});
 
 $sam2lca_obj->process_file({
-		'file'		=> $options{input_file,
+		'file'		=> $options{input_file},
 });
 
 my $files = $sam2lca_obj->writeOutput();
