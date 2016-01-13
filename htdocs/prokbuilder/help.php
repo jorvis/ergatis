@@ -115,7 +115,7 @@ include_once('header.php');
 						<dt>Genome</dt>
 							<dd>This is where you specify the species you wish to use.  If the 'Connect to IPD' option is selected, then this will be filled in automatically upon choosing a sample from an IPD project.</dd>
 						<dt>Host</dt>
-							<dd>Server where the Chado database is held.  Automatically set to 'jabba'.</dd>
+							<dd>Server where the Chado database is held.  Automatically set to 'manatee-db'.</dd>
 						<dt>Input BSML List</dt>
 							<dd>This is a BSML file typically based on the output from the promote_gene_prediction component in Ergatis.  This field will typically show up if the user selected for no gene prediction to be performed.</dd>
 						<dt>Input FSA File</dt>
@@ -150,7 +150,7 @@ include_once('header.php');
 					<li>Input BSML List</li>
 					<li>Accession File Path</li>
 					<li>Chado DB name</li>
-					<li>Chado Host server (defaults to jabba)</li>
+					<li>Chado Host server (defaults to manatee-db)</li>
 					<li>Chado server username</li>
 					<li>Chado server password</li>
 					<li>IPD Study Stage (put Study Stage ID)</li>

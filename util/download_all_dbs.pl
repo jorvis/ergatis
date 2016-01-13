@@ -7,7 +7,7 @@ download_all.pl - Download all annotation and sequences files related to the dat
 =head1 SYNOPSIS
 
  USAGE: download_all.pl
-       --host=jabba
+       --host=manatee-db
        --username=user
        --password=password
        --input_file=/path/to/input

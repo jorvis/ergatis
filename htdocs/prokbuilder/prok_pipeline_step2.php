@@ -73,7 +73,7 @@ include_once('header.php');
 						if (isset($pipeline_config) && isset($pipeline_layout)) {
 							$params = file(trim($pipeline_config), FILE_IGNORE_NEW_LINES);
 							$line_num = 0;
-							$host = "jabba";
+							$host = "manatee-db";
 							echo "<table class='config_table' cellspacing='10'>";
 							while (!empty($params[$line_num])) { 
 								if (!($params[$line_num] == "[global]")) {

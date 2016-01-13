@@ -46,7 +46,7 @@ B<--help,-h>
  7. Input BSML List
  8. Accession File Path
  9. Chado DB name
- 10. Chado Host server (defaults to jabba)
+ 10. Chado Host server (defaults to manatee-db)
  11. Chado server username
  12. Chado server password
  13. IPD Study Stage (put Study Stage ID)
@@ -78,7 +78,7 @@ my $debug = 1;
 my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
 
-my $host = "jabba";
+my $host = "manatee-db";
 my $trans_table = 11;
 
 my $input_file;
