@@ -140,6 +140,7 @@ my $gi_tax_obj = GiTaxon->new({
 		'gi_db'			=> $options{db},
 		'gi_coll'		=> $options{collection},
 		'taxonomy_dir'	=> $options{tmp_dir},
+		'verbose'		=> 1
 	});
 my $sam2lca_obj = LGT::LGTsam2lca->new({
 		'gi2tax'		=> $gi_tax_obj,
