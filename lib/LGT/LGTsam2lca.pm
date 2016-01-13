@@ -51,7 +51,7 @@ use LGT::Common;
 $| = 1;
 
 my $check_mates;
-my $CHUNK_SIZE;
+my $CHUNK_SIZE = 10000;
 
 #my $reads_by_read_id = {};
 #my $reads_by_mate_id = {};
@@ -172,9 +172,9 @@ sub writeOutput {
     open my $out, $outf or die "Couldn't open output\n";
     foreach my $key ( keys %{ $self->{reads_by_mate_id} } ) {
 
-        #print STDERR "Mate seen:$key processing with ...";
-        #            if($self->{independent_lca}){
-        #   print STDERR "\tindependent_lca ...";
+		#print STDERR "Mate seen:$key processing with ...";
+		#            if($self->{independent_lca}){
+		#   print STDERR "\tindependent_lca ...";}
         print OUT2
           join( "\t", ( "$key\_1", $self->{reads_by_read_id}->{"$key\_1"} ) );
         print OUT2 "\n";
@@ -186,11 +186,11 @@ sub writeOutput {
         #if($self->{se_lca}){
         if ( !defined( $self->{reads_by_mate_id}->{$key} ) ) {
 
-            #  print STDERR "\tFound no hits for $key";
+		#      print STDERR "\tFound no hits for $key";
             $self->{reads_by_mate_id}->{$key} = '';
         }
 
-        #            print STDERR "\tSingleEnd_lca ...";
+		#      print STDERR "\tSingleEnd_lca ...";
         my $new_conservative_se_lca = &find_lca(
             [
                 $self->{reads_by_read_id}->{"$key\_1"},
@@ -343,14 +343,16 @@ sub process_file {
 
     if ( $config->{handle} ) {
         $handle = $config->{handle};
-    }
-    elsif ( $file =~ /.bam$/ ) {
-        open( $handle, "-|", "$samtools view $file" )
-          or die "Unable to open $file\n";
-    }
-    else {
+		print STDERR caller() . "--File handle provided\n";
         open $handle, "<$file" or die "Unable to open $file\n";
     }
+    elsif ( $file =~ /.bam$/ ) {
+		print STDERR caller() . "--BAM file provided\n";
+        open( $handle, "-|", "$samtools view $file" )
+          or die "Unable to open $file\n";
+    } else {
+		die "Need to pass a valid file or a valid filehandle\n";
+	}
 
     # Loop till we're done.
     my $end   = $CHUNK_SIZE;
