@@ -343,12 +343,12 @@ sub process_file {
 
     if ( $config->{handle} ) {
         $handle = $config->{handle};
-		print STDERR caller() . "--File handle provided\n";
+		print STDERR "LGT::LGTsam2lca" . "--File handle provided\n";
         open $handle, "<$file" or die "Unable to open $file\n";
     }
     elsif ( $file =~ /.bam$/ ) {
-		print STDERR caller() . "--BAM file provided\n";
-        open( $handle, "-|", "$samtools view $file" )
+		print STDERR "LGT::LGTsam2lca" . "--BAM file provided\n";
+        open( $handle, "$samtools view $file |" )
           or die "Unable to open $file\n";
     } else {
 		die "Need to pass a valid file or a valid filehandle\n";
