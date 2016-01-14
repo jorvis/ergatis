@@ -116,7 +116,7 @@ my %options;
 my $results = GetOptions (\%options,
                          "input_file|i=s",
 						 "original_bam|b=s",
-						 "original_baml_list|l=s",
+						 "original_bam_list|l=s",
                          "output_file|o=s",
 						 'tmp_dir|T=s',
 						 'tax_id_file=s',
