@@ -254,12 +254,14 @@ sub writeOutput {
 sub prime_hash {
     my $self = shift;
     my $f    = shift;
-    open( my $in, "-|", "samtools view $f" )
+	print STDERR "LGT::LGTsam2lca --- Complete BAM file provided.  Now priming 'reads by mate id' hash...\n";
+    open( my $in, "$samtools view $f |" )
       or die "Unable to open $f for priming the hash\n";
     while (<$in>) {
         my @fields = split(/\t/);
         $self->{reads_by_mate_id}->{ $fields[0] } = undef;
     }
+	print STDERR "LGT::LGTsam2lca --- Finished priming hash\n";
 }
 
 sub jump_to_line {
@@ -325,7 +327,7 @@ sub process_sam_line {
                 $self->{reads_by_mate_id}->{ $fields[0] } = $lca;
             }
             else {
-                # print STDERR "$fields[0]\n";
+                 print STDERR "$fields[0]\n";
                 $self->{reads_by_mate_id}->{ $fields[0] } = $tax->{lineage};
             }
         }
@@ -372,7 +374,6 @@ sub process_file {
         $count++;
         $self->process_sam_line($l);
     }
-
     #    }
 }
 

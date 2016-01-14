@@ -12,6 +12,14 @@
                 <value>$;I_FILE_PATH$;</value>
             </param>
             <param>
+                <key>--original_bam</key>
+                <value>$;PRE_BWA_BAM_FILE$;</value>
+            </param>
+            <param>
+                <key>--original_bam_list</key>
+                <value>$;PRE_BWA_BAM_LIST$;</value>
+            </param>
+            <param>
                 <key>--tax_id_file</key>
                 <value>$;GI2TAX$;</value>
             </param>

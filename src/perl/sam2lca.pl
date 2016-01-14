@@ -7,6 +7,7 @@ sam2lca.pl - Wrapper script to generate Lowest Common Ancestors from a BAM/SAM f
 
  USAGE: sam2lca.pl
        --input_file=/path/to/some/input.bam
+	   --original_bam=?path/to/some/original.bam
        --output_file=/path/to/transterm.txt
 	   --tmp_dir=/tmp 
 	   --tax_id_file=/path/to/tax_ids.txt
@@ -25,7 +26,13 @@ sam2lca.pl - Wrapper script to generate Lowest Common Ancestors from a BAM/SAM f
 =head1 OPTIONS
 
 B<--input_file,-i>
-	A BAM file
+	A BAM file that has gone through BWA alignment
+
+B<--original_bam, -b>
+	A BAM file that was used as input for BWA alignment (resulting in the arg for --input_file.
+
+B<--original_bam_list, -l>
+	A list containing the BAm file as described above.  Should only be one BAM file.  Useful in Ergatis when the component may have both lists for the original BAM and the post-BWA bam 
 
 B<--output_file,-o>
 	Path name to LCA output. This can be any extension, but a simple .txt one will suffice
@@ -100,12 +107,16 @@ my $HOST = 'revan.igs.umaryland.edu:10001';
 my $DB = 'gi2taxon';
 my $COLL = 'gi2taxonnuc';
 my $SAMTOOLS_BIN = '/usr/local/bin/samtools';
+
+my $original_bam;
 ####################################################
 
 my %options;
 
 my $results = GetOptions (\%options,
                          "input_file|i=s",
+						 "original_bam|b=s",
+						 "original_baml_list|l=s",
                          "output_file|o=s",
 						 'tmp_dir|T=s',
 						 'tax_id_file=s',
@@ -146,6 +157,7 @@ my $sam2lca_obj = LGT::LGTsam2lca->new({
 		'gi2tax'		=> $gi_tax_obj,
 		'out_file'		=> $options{output_file},
 		'samtools_bin'	=> $samtools,
+		'complete_bam'	=> $original_bam
 	});
 
 $sam2lca_obj->process_file({
@@ -171,6 +183,21 @@ sub check_options {
    foreach my $req ( qw(input_file output_file nodes_file names_file tax_id_file) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
+
+   unless ($opts->{original_bam} || $opts->{original_bam_list}){
+		&_log($ERROR, "Either --original_bam or --original_bam_list is required");
+	}
+
+	if ($opts->{original_bam}) {
+		$original_bam  = $opts->{original_bam};
+	} else {
+		open LIST, $opts->{original_bam} || &_log($ERROR, "Cannot open $opts->{original_bam_list} for reading");
+		my @files = <LIST>;
+		&_log($ERROR, "List file must contain exactly one BAM file") unless (scalar(@files) == 1);
+		$original_bam = shift @files;
+		chomp $original_bam;
+		close LIST;
+	}
 }
 
 sub _log {

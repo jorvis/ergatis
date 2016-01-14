@@ -120,7 +120,7 @@ sub filterBlast {
     my $fh;
 	# Use blast results if already provided, otherwise run blast to get results
     if ( $args->{blast} ) {
-        print STDERR "Opening blast input.\n";
+		print STDERR "Opening blast input.\n";
         open( $fh, "<$input" ) or confess "Unable to open $input\n";
     }
     elsif ( !$args->{blast} ) {
@@ -342,6 +342,8 @@ sub _process_line {
     my $finished_id = 0;
 
     # If we are still on the current query ID
+	#print $lineage->{id} . " LINEAGE\n";
+	#print $fields->[0] . " FIRST FIELD\n";
     if ( $lineage->{id} eq $fields->[0] ) {
         if ( $lineage->{tophit} ) {
 
