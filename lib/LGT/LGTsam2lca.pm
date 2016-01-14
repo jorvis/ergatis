@@ -97,6 +97,7 @@ sub new {
     };
     bless $self, $class;
 
+	$samtools = $self->{samtools_bin};
     if ( $self->{complete_bam} ) {
         $self->prime_hash( $self->{complete_bam} );
     }
@@ -255,7 +256,7 @@ sub prime_hash {
     my $self = shift;
     my $f    = shift;
 	print STDERR "LGT::LGTsam2lca --- Complete BAM file provided.  Now priming 'reads by mate id' hash...\n";
-    open( my $in, "$samtools view $f |" )
+    open( my $in, "-|", "$samtools view $f" )
       or die "Unable to open $f for priming the hash\n";
     while (<$in>) {
         my @fields = split(/\t/);
@@ -350,7 +351,7 @@ sub process_file {
     }
     elsif ( $file =~ /.bam$/ ) {
 		print STDERR "LGT::LGTsam2lca" . "--BAM file provided\n";
-        open( $handle, "$samtools view $file |" )
+        open( $handle, "-|",  "$samtools view $file" )
           or die "Unable to open $file\n";
     } else {
 		die "Need to pass a valid file or a valid filehandle\n";

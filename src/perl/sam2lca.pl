@@ -191,7 +191,7 @@ sub check_options {
 	if ($opts->{original_bam}) {
 		$original_bam  = $opts->{original_bam};
 	} else {
-		open LIST, $opts->{original_bam} || &_log($ERROR, "Cannot open $opts->{original_bam_list} for reading");
+		open LIST, $opts->{original_bam_list} || &_log($ERROR, "Cannot open $opts->{original_bam_list} for reading");
 		my @files = <LIST>;
 		&_log($ERROR, "List file must contain exactly one BAM file") unless (scalar(@files) == 1);
 		$original_bam = shift @files;
