@@ -53,10 +53,6 @@ $| = 1;
 my $check_mates;
 my $CHUNK_SIZE = 10000;
 
-#my $reads_by_read_id = {};
-#my $reads_by_mate_id = {};
-#my $seen_mates = {};
-#my $seen_reads = {};
 my $chunk   = [];
 my $counter = 0;
 my $step    = 0;
@@ -86,8 +82,6 @@ sub new {
     my $self = {
         reads_by_read_id => {},
         reads_by_mate_id => {},
-        seen_mates       => {},
-        seen_reads       => {},
         out_file         => $args->{out_file},
         samtools_bin     => $args->{samtools_bin},
         gi2tax           => $args->{gi2tax},
@@ -97,7 +91,7 @@ sub new {
     };
     bless $self, $class;
 
-	$samtools = $self->{samtools_bin};
+    $samtools = $self->{samtools_bin};
     if ( $self->{complete_bam} ) {
         $self->prime_hash( $self->{complete_bam} );
     }
@@ -138,8 +132,7 @@ sub runSam2Lca {
           "\nFinished looping through step $step. Now writing output\n";
         return $self->writeOutput();
 
-    }
-    else {
+    } else {
         print STDERR "Called runSaml2Lca with no file list, nothing to do!\n";
     }
 }
@@ -162,8 +155,7 @@ sub writeOutput {
     if ( $self->{out_file} ) {
         $outf =~ /^>(.+?)\.(\w+?)$/;
         $out2 = "$1\_independent_lca.$2";
-    }
-    else {
+    } else {
         $out2 = ">-";
     }
     open( OUT2, ">", "$out2" ) or die "Couldn't open $out2\n";
@@ -172,10 +164,24 @@ sub writeOutput {
 
     open my $out, $outf or die "Couldn't open output\n";
     foreach my $key ( keys %{ $self->{reads_by_mate_id} } ) {
+		
+		# If mate has no LCA it was most likely part of the the pre-BWA BAM file but filtered out after
+        if ( !defined( $self->{reads_by_mate_id}->{$key} ) ) {
+			#print STDERR "Found no LCA for mate $key ... skipping\n";
+			#$self->{reads_by_mate_id}->{$key} = '';
+			next;
+        }
 
-		#print STDERR "Mate seen:$key processing with ...";
-		#            if($self->{independent_lca}){
-		#   print STDERR "\tindependent_lca ...";}
+        #print STDERR "Mate seen:$key processing with ...";
+        #   print STDERR "\tindependent_lca ...";}
+		if (! defined( $self->{reads_by_read_id}->{"key\_1"} ) ) {
+			$self->{reads_by_read_id}->{"key\_1"} = '';
+			print STDERR "Found no LCA for read $key\_1\n";
+		}
+		if (! defined( $self->{reads_by_read_id}->{"key\_2"} ) ) {
+			$self->{reads_by_read_id}->{"key\_2"} = '';
+			print STDERR "Found no LCA for read $key\_2\n";
+		}
         print OUT2
           join( "\t", ( "$key\_1", $self->{reads_by_read_id}->{"$key\_1"} ) );
         print OUT2 "\n";
@@ -183,15 +189,7 @@ sub writeOutput {
           join( "\t", ( "$key\_2", $self->{reads_by_read_id}->{"$key\_2"} ) );
         print OUT2 "\n";
 
-        #            }
-        #if($self->{se_lca}){
-        if ( !defined( $self->{reads_by_mate_id}->{$key} ) ) {
-
-		#      print STDERR "\tFound no hits for $key";
-            $self->{reads_by_mate_id}->{$key} = '';
-        }
-
-		#      print STDERR "\tSingleEnd_lca ...";
+        #      print STDERR "\tSingleEnd_lca ...";
         my $new_conservative_se_lca = &find_lca(
             [
                 $self->{reads_by_read_id}->{"$key\_1"},
@@ -218,8 +216,7 @@ sub writeOutput {
                     )
                 );
                 print $out "\n";
-            }
-            else {
+            } else {
                 print $out join(
                     "\t",
                     (
@@ -231,8 +228,7 @@ sub writeOutput {
                 );
                 print $out "\n";
             }
-        }
-        else {
+        } else {
             print $out join(
                 "\t",
                 (
@@ -255,14 +251,15 @@ sub writeOutput {
 sub prime_hash {
     my $self = shift;
     my $f    = shift;
-	print STDERR "LGT::LGTsam2lca --- Complete BAM file provided.  Now priming 'reads by mate id' hash...\n";
+    print STDERR
+      "LGT::LGTsam2lca --- Complete BAM file provided.  Now priming 'reads by mate id' hash...\n";
     open( my $in, "-|", "$samtools view $f" )
       or die "Unable to open $f for priming the hash\n";
     while (<$in>) {
         my @fields = split(/\t/);
         $self->{reads_by_mate_id}->{ $fields[0] } = undef;
     }
-	print STDERR "LGT::LGTsam2lca --- Finished priming hash\n";
+    print STDERR "LGT::LGTsam2lca --- Finished priming hash\n";
 }
 
 sub jump_to_line {
@@ -291,34 +288,33 @@ sub process_sam_line {
     my @fields    = split( /\t/, $l );
     my $flag      = parse_flag( $fields[1] );
     my $read_name = "$fields[0]\_1";
-    if ( !$flag->{'first'} ) {
+    if ( !$flag->{first} ) {
         $read_name = "$fields[0]\_2";
     }
-    $self->{seen_mates}->{ $fields[0] } = 1;
-    if ( $flag->{query_mapped} ) {
 
+	# Here we determine LCA for each read ID (2 per mate pair) and for each mate ID
+    # If the query is mapped..
+	#if ( !$flag->{qunmapped} ) {
         my $tax = $self->{gi2tax}->getTaxon( $fields[2] );
+		#print STDERR "No lineage found for $fields[2]\n" if (! defined $tax->{lineage});
 
         # Here we'll deal with keeping track of things by read
         if ( $self->{reads_by_read_id}->{$read_name} ) {
             my $lca = &find_lca(
                 [ $self->{reads_by_read_id}->{$read_name}, $tax->{lineage} ] );
             $self->{reads_by_read_id}->{$read_name} = $lca;
-
-            # print "$read_name\t$tax->{lineage}\t$lca\n";
-
-        }
-        else {
+            #print "$read_name\t$tax->{lineage}\t$lca\n";
+        } else {
             $self->{reads_by_read_id}->{$read_name} = $tax->{lineage};
         }
 
+        # If we aren't checking mates, or if the mate is mapped...
         if (  !$self->{check_mates}
-            || $self->{check_mates} && $flag->{mate_mapped} )
+            || ($self->{check_mates} && !$flag->{munmapped}) )
         {
             # Here we'll keep track of things by mate
             if ( $self->{reads_by_mate_id}->{ $fields[0] } ) {
-
-                # print STDERR "$fields[0]\n";
+                #print STDERR "$fields[0] are found\n";
                 my $lca = &find_lca(
                     [
                         $self->{reads_by_mate_id}->{ $fields[0] },
@@ -326,48 +322,42 @@ sub process_sam_line {
                     ]
                 );
                 $self->{reads_by_mate_id}->{ $fields[0] } = $lca;
-            }
-            else {
-                 print STDERR "$fields[0]\n";
+            } else {
+                #print STDERR "$fields[0] are not found\n";
                 $self->{reads_by_mate_id}->{ $fields[0] } = $tax->{lineage};
             }
-        }
-    }
+		}
+	#}
 }
 
 sub process_file {
     my ( $self, $config ) = @_;
     my $line = $config->{file};
-    $self->{seen_mates} = {};
-    $self->{seen_reads} = {};
     my $handle;
     my $presplit = 0;
     my $file     = $line;
 
     if ( $config->{handle} ) {
         $handle = $config->{handle};
-		print STDERR "LGT::LGTsam2lca" . "--File handle provided\n";
+        print STDERR "LGT::LGTsam2lca" . " ---File handle provided\n";
         open $handle, "<$file" or die "Unable to open $file\n";
-    }
-    elsif ( $file =~ /.bam$/ ) {
-		print STDERR "LGT::LGTsam2lca" . "--BAM file provided\n";
-        open( $handle, "-|",  "$samtools view $file" )
+    } elsif ( $file =~ /.bam$/ ) {
+        print STDERR "LGT::LGTsam2lca" . " ---BAM file provided\n";
+        open( $handle, "-|", "$samtools view $file" )
           or die "Unable to open $file\n";
     } else {
-		die "Need to pass a valid file or a valid filehandle\n";
-	}
-
+        die "Need to pass a valid file or a valid filehandle\n";
+    }
+	
+	print STDERR "LGT::LGTsam2lca --- now processing BAM file\n";
     # Loop till we're done.
     my $end   = $CHUNK_SIZE;
     my $count = 0;
     my $l;
     my $hit = 0;
 
-    # If we have presplit the files we'll process the whole thing
-    #    if($presplit) {
     while ( $l = <$handle> ) {
         chomp $l;
-
         # Don't count @seq lines
         if ( $l =~ /^@/ ) {
             next;
@@ -375,7 +365,7 @@ sub process_file {
         $count++;
         $self->process_sam_line($l);
     }
-    #    }
+	print STDERR "LGT::LGTsam2lca --- finished processing BAM file\n";
 }
 
 1;

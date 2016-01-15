@@ -184,13 +184,13 @@ sub check_options {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 
-   unless ($opts->{original_bam} || $opts->{original_bam_list}){
-		&_log($ERROR, "Either --original_bam or --original_bam_list is required");
-	}
+   #unless ($opts->{original_bam} || $opts->{original_bam_list}){
+   #	&_log($ERROR, "Either --original_bam or --original_bam_list is required");
+   #}
 
 	if ($opts->{original_bam}) {
 		$original_bam  = $opts->{original_bam};
-	} else {
+	} elsif ($opts->{original_bam_list}){
 		open LIST, $opts->{original_bam_list} || &_log($ERROR, "Cannot open $opts->{original_bam_list} for reading");
 		my @files = <LIST>;
 		&_log($ERROR, "List file must contain exactly one BAM file") unless (scalar(@files) == 1);
