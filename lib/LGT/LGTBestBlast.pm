@@ -344,7 +344,9 @@ sub _process_line {
     # If we are still on the current query ID
 	#print $lineage->{id} . " LINEAGE\n";
 	#print $fields->[0] . " FIRST FIELD\n";
-    if ( $lineage->{id} eq $fields->[0] ) {
+	
+	# If our best lineage ID has been identified as the current query ID...
+	if ( $lineage->{id} eq $fields->[0] ) {
         if ( $lineage->{tophit} ) {
 
             # Determining how to handle equal or better hits
@@ -377,7 +379,7 @@ sub _process_line {
                 $lineage->{best_rows} = [$fields];
             } else {
                 $lineage->{best_rows} = [];
-                $lineage->{id}        = undef;
+                $lineage->{id}        = '';
                 $lineage->{best_e}    = 100;
             }
         }
@@ -386,7 +388,6 @@ sub _process_line {
     if ( &_filter_hit( $tax->{name} ) ) {
         push( @$filter_hits, $fields );
     }
-
     return $finished_id;
 }
 
