@@ -76,8 +76,7 @@ use strict;
 use warnings;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 use Pod::Usage;
-use LGT::LGTsam2lca;
-use GiTaxon;
+use LGT::LGTFinder;
 
 ############# GLOBALS AND CONSTANTS ################
 my $debug = 1;
@@ -105,15 +104,11 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
-if ($options{type} ne lc('nucleotide') && $options{'type'} ne lc('protein') ) {
-	&_log($ERROR, "The 'type' option must be either 'nucleotide' or 'protein'");
-}
-
 $options{max_overlap} = $MAX_OVERLAP_THRESHOLD if (! $options{max_overlap});
 $options{min_length} = $MIN_LENGTH_THRESHOLD if (! $options{min_legth});
 
 my $files = LGT::LGTFinder->findLGT({
-		'input_list'	=> $options{input_list},
+		'input_file_list'	=> $options{input_list},
 		'output_prefix' => $options{output_prefix},
 		'output_dir'	=> $options{output_dir},
 		'blast'			=> $options{input_file},

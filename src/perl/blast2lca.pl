@@ -111,7 +111,7 @@ my %options;
 
 my $results = GetOptions (\%options,
                          "input_file|i=s",
-                         "output_file|o=s",
+                         "output_dir|o=s",
 						 'tmp_dir|T=s',
 						 'tax_id_file=s',
 						 'nodes_file=s',
@@ -128,15 +128,11 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
-if ($options{type} ne lc('nucleotide') && $options{'type'} ne lc('protein') ) {
-	&_log($ERROR, "The 'type' option must be either 'nucleotide' or 'protein'");
-}
-
 $options{host} = $HOST if (! $options{host});
 $options{db} = $DB if (! $options{db});
 $options{collection} = $COLL if (! $options{collection});
-$options{evalue_cutoff} = $EVAL_CUTOFF if (! $options{evalue_cutoff};
-$options{best_hits_flag} = $BEST_HITS_FLAG if (! $options{best_hits_flag};
+$options{evalue_cutoff} = $EVAL_CUTOFF if (! $options{evalue_cutoff});
+$options{best_hits_flag} = $BEST_HITS_FLAG if (! $options{best_hits_flag});
 
 my $gi_tax_obj = GiTaxon->new({
 		'nodes' 		=> $options{nodes_file},
@@ -146,6 +142,7 @@ my $gi_tax_obj = GiTaxon->new({
 		'gi_db'			=> $options{db},
 		'gi_coll'		=> $options{collection},
 		'taxonomy_dir'	=> $options{tmp_dir},
+		'verbose'		=> 1
 	});
 my $lgtseek_obj = LGT::LGTSeek->new({
 		'verbose'		=> 1,
@@ -175,7 +172,7 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(input_file output_file type nodes_file names_file tax_id_file) ) {
+   foreach my $req ( qw(input_file output_dir nodes_file names_file tax_id_file) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 }

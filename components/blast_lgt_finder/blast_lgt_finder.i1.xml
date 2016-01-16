@@ -97,7 +97,7 @@
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/lgt_finder</executable>
             <param>
-                <key>--input_file_list</key>
+                <key>--input_list</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/filtered_m8.list</value>
             </param>
             <param>
@@ -110,7 +110,7 @@
 			</param>
 			<param>
 				<key>--max_overlap</key>
-				<value>$;MAX_OVERLAP</value>
+				<value>$;MAX_OVERLAP$;</value>
 			</param>
 			<param>
 				<key>--ref_lineage</key>

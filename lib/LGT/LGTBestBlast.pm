@@ -342,7 +342,7 @@ sub _process_line {
     my $finished_id = 0;
 
     # If we are still on the current query ID
-	#print $lineage->{id} . " LINEAGE\n";
+	#print $lineage->{id} . " LINEAGE " . $lineage->{lineage}\n";
 	#print $fields->[0] . " FIRST FIELD\n";
 	
 	# If our best lineage ID has been identified as the current query ID...
