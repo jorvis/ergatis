@@ -26,6 +26,9 @@ B<--hits_list,-c>
 
 B<--output_dir,-o>
 
+B<--prefix, -p>
+	Name you would like to give as a prefix in the output file name
+
 B<--samtools_path,-s>
     Path to samtools executable
 
@@ -65,16 +68,20 @@ use LGT::LGTSeek;
 my $debug = 1;
 my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
+
+my $PREFIX = "validation";
 ####################################################
 my $output_dir;
 my %options;
 my $count_id = 0;
+my $name;
 
 my $results = GetOptions (\%options,
 					 "input_file|i=s",
 					 "hits_list|h=s",
                      "samtools_path|s=s",
                      "output_dir|o=s",
+					 "prefix|p=s",
                      "log|l=s",
                      "debug|d=s",
                      "help|h"
@@ -82,7 +89,7 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
-my %hits = parse_list($options{hits_list});
+my $hits = parse_list($options{hits_list});
 
 my $lgt_obj = LGT::LGTSeek->new( {
 		'samtools_bin' => $options{samtools_path},
@@ -93,6 +100,7 @@ my $lgt_obj = LGT::LGTSeek->new( {
 my $val_data = $lgt_obj->validated_bam( {
 		'input'		=> $options{input_file},
 		'output_dir'=> $options{output_dir},
+		'output_prefix' => $name,
 		'by_clone'	=> $hits->{by_clone}
 	} );
 
@@ -106,7 +114,7 @@ exit(0);
 
 # Parse the list file to get the relevant lists.
 sub parse_list {
-	my ($input_list = shift);
+	my $input_list = shift;
 	my %hits;
 	&_log($DEBUG, "Parsing $input_list\n");
     my $oh = open_file( $input_list, "in" );
@@ -144,6 +152,8 @@ sub check_options {
    }
 
    $output_dir = $opts->{'output_dir'};
+
+   $name = $opts->{prefix} ? $opts->{prefix} : $PREFIX;
 }
 
 sub _log {

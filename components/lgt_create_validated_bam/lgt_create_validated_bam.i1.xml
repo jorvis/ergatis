@@ -37,6 +37,10 @@
             	<value>$;LGT_HITS$;</value>
 			</param>
             <param>
+            	<key>--prefix</key>
+            	<value>$;PREFIX$;</value>
+            </param>
+            <param>
             	<key>--input_file</key>
             	<value>$;I_FILE_PATH$;</value>
             </param>

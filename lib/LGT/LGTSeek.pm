@@ -1450,12 +1450,11 @@ sub _bwaPostProcessDonorHostPaired {
 
 sub blast2lca {
     my ( $self, $config ) = @_;
-
     my $gi2tax = $config->{gi2tax};
     if ( $self->{verbose} ) {
         print STDERR "======== &blast2lca: Start ========\n";
     }
-    open IN, "<$config->{blast}" or confess "Unable to open $config->{blast}\n";
+    open IN, $config->{blast} or confess "Unable to open " . $config->{blast} . "\n";
     my $output_dir =
       $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
     $self->_run_cmd("mkdir -p $output_dir");
@@ -2520,7 +2519,7 @@ sub fail {
         by_trace        =>  Not implemented yet.
         output_dir      =>  /path/for/output/
         output_prefix   =>  {$prefix}_$suffix.bam  [ {$input_fn}.bam ]
-        output_suffix   =>  $prefix_{$suffix}.bam  [ "filterd" ]
+        output_suffix   =>  $prefix_{$suffix}.bam  [ "filtered" ]
         output          =>  /path/and/name/for/output.bam
 =cut
 

@@ -146,10 +146,10 @@ my $gi_tax_obj = GiTaxon->new({
 	});
 my $lgtseek_obj = LGT::LGTSeek->new({
 		'verbose'		=> 1,
-		'out_dir'		=> $options{output_dir},
+		'output_dir'		=> $options{output_dir},
 	});
 
-my $files = $lgtseek_obj->blast2lca->({
+my $files = $lgtseek_obj->blast2lca({
 		'gi2tax'			=> $gi_tax_obj,
 		'blast'				=> $options{input_file},
 		'evalue_cutoff'		=> $options{evalue_cutoff},
