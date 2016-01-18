@@ -4,8 +4,5 @@ Currently in the pipeline, certain components need the following parameters fill
 [lgt_build_bwa_index donor] - $;INPUT_FILE$; - the Donor fasta reference
 [lgt_build_bwa_index recipient] - $;INPUT_FILE$; - the Host/Recipient fasta reference
 [lgt_build_bwa_index refseq] - $;INPUT_FILES$; - The Refseq fasta sequence
-[lgt_bwa_post_process default] - $;PREFIX$; - Prefix to insert into the file name
-[filter_dups_lc_seqs mb] - $;POSTPROCESS_PREFIX; - Prefix to insert into the file name
-[filter_dups_lc_seqs lgt] - $;POSTPROCESS_PREFIX$; - Prefix to insert into the file name
-[lgt_create_validated_bam lgt] - $;PREFIX$; - Prefix to insert into the file name
 [lgt_mpileup lgt] - $;FASTA_REF$; - The Host/Recipient fasta reference
+all lgt_bwa components - $;BASENAME$; - The filename of the indexed reference (example - if /path/to/ref.fa then use "ref.fa")

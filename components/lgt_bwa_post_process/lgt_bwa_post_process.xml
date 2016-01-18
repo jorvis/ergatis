@@ -55,7 +55,7 @@
             </param>
             <param>
                 <key>--prefix</key>
-                <value>$;PREFIX$;</value>
+                <value>post_process</value>
             </param>
             <param>
                 <key>--output_dir</key>

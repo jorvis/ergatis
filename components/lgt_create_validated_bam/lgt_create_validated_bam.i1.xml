@@ -38,7 +38,7 @@
 			</param>
             <param>
             	<key>--prefix</key>
-            	<value>$;PREFIX$;</value>
+            	<value>final</value>
             </param>
             <param>
             	<key>--input_file</key>
