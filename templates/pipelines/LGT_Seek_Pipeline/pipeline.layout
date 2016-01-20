@@ -69,9 +69,17 @@
 								<state>incomplete</state>
 								<name>sam2fasta.fasta</name>
 							</commandSet>
+							<commandSet>
+								<state>incomplete</state>
+								<name>split_multifasta.fasta</name>
+							</commandSet>
 							<commandSet type="serial">
 								<state>incomplete</state>
 								<name>ncbi-blastn.nt</name>
+							</commandSet>
+							<commandSet>
+								<state>incomplete</state>
+								<name>concatenate_files.fasta</name>
 							</commandSet>
 							<commandSet type="serial">
 								<state>incomplete</state>
