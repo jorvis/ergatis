@@ -364,8 +364,8 @@ sub write_config {
     my ($config, $fh) = @_;
     
     # Make sure this section is first
-    &write_section( 'global', $config{'global'}, $fh );
-    delete( $config{'global'} );
+    &write_section( 'global', $config->{'global'}, $fh );
+    delete( $config->{'global'} );
 
     foreach my $section ( keys %{$config} ) {
         &write_section( $section, $config->{$section}, $fh );
