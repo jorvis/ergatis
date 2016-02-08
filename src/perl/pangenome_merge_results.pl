@@ -85,6 +85,8 @@ if (!-e $options{'input_list'}) {
 open (IN, $options{'input_list'}) || die "couldn't open input list";
 
 print STDERR "Reading stored data...\n";
+my $results_count = 0;
+my $file_count = 0;
 while (<IN>) {
     chomp;
     my $db;
@@ -103,6 +105,10 @@ while (<IN>) {
     ## pull the blast results data array out of the stored array
     my $results_ref = shift(@{$temp_ref});
     push(@results, @{$results_ref});
+
+	# print running total of results;
+	$results_count += scalar @{$results_ref};
+	print STDERR "File - " . $file_count++ . "\tResults - " . scalar @{$results_ref} . "\tTotal - " . $results_count . "\n";
 
     ## pull the dups hash out of the stored array
     my $dups_ref = shift(@{$temp_ref});

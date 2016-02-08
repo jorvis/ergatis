@@ -19,6 +19,14 @@
                 <key>--output_path</key>
                 <value>$;OUTPUT_DIRECTORY$;</value>
             </param>
+            <param>
+                <key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/merge.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/merge.stderr</value>
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>

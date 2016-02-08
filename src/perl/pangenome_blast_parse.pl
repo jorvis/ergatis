@@ -83,6 +83,8 @@ use XML::Twig;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use strict;
 
+my $TOP_HIT_CUTOFF = 5;	# Max number of good hits from query gene to subject genome to keep
+
 my %options = ();
 my $results = GetOptions (  \%options,
                             'input|i=s',
@@ -103,6 +105,7 @@ my $dups_temp = {};
 my %dups = ();
 my $db_to_org = {};
 my $db_filter = undef;
+my %good_hit_counts = {};
 my $coverage_cutoff = $options{'coverage_cutoff'} ne '' ? $options{'coverage_cutoff'} : 50;
 my $similarity_cutoff = $options{'similarity_cutoff'} ne '' ? $options{'similarity_cutoff'} : 50;
 
@@ -269,12 +272,18 @@ sub processSeqPairAlignment {
             	# Check the cutoffs are reached for non-self hits
             	# Add this hit to the results array
 				#print join("\t", $db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref) . "\n";
-            	push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
-            	if ($qdb eq $sdb) {
-            	print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
-            	}
+				
+				# SAdkins - 2/4/16 - New rule.  If number of hits from the subject genome to the query gene, exceed the cap (default =5), don't add any more
+				# This is here to limit the array size that is stored in binary, since unpacking large genomes causes out-of-memory errors 
+				$good_hit_counts{$qdb}{$qprot}{$sdb}++;
+				if ($good_hit_counts{$qdb}{$qprot}{$sdb} > $TOP_HIT_CUTOFF) {
+            	    push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
+				}
+				#if ($qdb eq $sdb) {
+				#    print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+				#}
         	}
-        } else {
+		#} else {
             #print STDERR "filtering out $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
         }
     }
