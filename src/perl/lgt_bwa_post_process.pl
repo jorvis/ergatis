@@ -134,7 +134,7 @@ foreach my $r (keys %$matching_files) {
         push( @header, $_ );
         my $foo = $pp_data->{counts}->{$_} ? $pp_data->{counts}->{$_} : 0;
         push( @vals, $foo );
-    } ( 'total', 'host', 'no_map', 'all_map', 'single_map', 'integration_site_human', 'integration_site_bac', 'microbiome', 'lgt' );
+    } ( 'total', 'host', 'no_map', 'all_map', 'single_map', 'integration_site_host', 'integration_site_donor', 'microbiome', 'lgt' );
 	LGT::LGTSeek->print_tab( $counts_file, \@header, \@vals );
 
 };
