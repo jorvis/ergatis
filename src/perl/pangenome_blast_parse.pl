@@ -276,7 +276,7 @@ sub processSeqPairAlignment {
 				# SAdkins - 2/4/16 - New rule.  If number of hits from the subject genome to the query gene, exceed the cap (default =5), don't add any more
 				# This is here to limit the array size that is stored in binary, since unpacking large genomes causes out-of-memory errors 
 				$good_hit_counts{$qdb}{$qprot}{$sdb}++;
-				if ($good_hit_counts{$qdb}{$qprot}{$sdb} > $TOP_HIT_CUTOFF) {
+				if ($good_hit_counts{$qdb}{$qprot}{$sdb} <= $TOP_HIT_CUTOFF) {
             	    push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
 				}
 				#if ($qdb eq $sdb) {
