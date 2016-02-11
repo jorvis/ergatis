@@ -77,7 +77,6 @@ use File::Basename;
 use Pod::Usage;
 use Storable qw(nstore retrieve);
 use XML::Twig;
-use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use strict;
 
@@ -160,7 +159,13 @@ foreach my $org (keys %$dups_temp) {
     }
 }
 
-print STDERR Dumper(%good_hit_counts);
+foreach my $q_genome (keys %good_hit_counts){
+	foreach my $q_gene (keys %{$good_hit_counts{$q_genome}}){
+		foreach my $s_genome (keys %{$good_hit_counts{$q_genome}{$q_gene}}){
+			print STDERR "$q_genome\t$q_gene\t$s_genome\t" . $good_hit_counts{$q_genome}{$q_gene}{$s_genome} . "\n";
+		}
+	}
+}
 
 nstore([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
@@ -255,6 +260,7 @@ sub processSeqPairAlignment {
 		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && ($qprot eq $sprot));
 		# Filter protein queries that are self-hits with the nucleotide genome/contig (tblastn results)
 		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $method == "TBLASTN" && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100);
+		$good_hit_counts{$qdb}{$qprot}{$sdb} = 0 unless ($good_hit_counts{$qdb}{$qprot}{$sdb});
 		# Does the sequence hit meet the cutoff for being good?
 		if ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
         	if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
