@@ -3,9 +3,6 @@
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
 
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
-
 =head1  NAME
 
 pangenome_blast_parse.pl - Parses BLAST BSML output files and extracts data needed for pangenome analysis.
@@ -80,10 +77,11 @@ use File::Basename;
 use Pod::Usage;
 use Storable qw(nstore retrieve);
 use XML::Twig;
+use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use strict;
 
-my $TOP_HIT_CUTOFF = 5;	# Max number of good hits from query gene to subject genome to keep
+my $TOP_HIT_CUTOFF = 1;	# Max number of good hits from query gene to subject genome to keep
 
 my %options = ();
 my $results = GetOptions (  \%options,
@@ -148,8 +146,6 @@ $twig->parse($ifh);
 
 close $ifh;
 
-#open TEST, ">/home/sadkins/dups.txt" or die;
-
 # Foreach gene that has genuine duplicates besides itself, add to dups hash.
 foreach my $org (keys %$dups_temp) {
 	foreach my $prot ( keys %{$dups_temp->{$org}}) {
@@ -162,12 +158,9 @@ foreach my $org (keys %$dups_temp) {
     	    $dups{$org}{$dup_set} = 1;
     	}
     }
-    foreach my $set (keys %{$dups{$org}}) {
-#    	print TEST $set, "\n";
-    }
 }
 
-#close TEST;
+print STDERR Dumper(%good_hit_counts);
 
 nstore([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
@@ -264,27 +257,20 @@ sub processSeqPairAlignment {
 		next if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $method == "TBLASTN" && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100);
 		# Does the sequence hit meet the cutoff for being good?
 		if ($all_seg_p_sim >= $similarity_cutoff && ($p_cov_ref >= $coverage_cutoff || $p_cov_comp >= $coverage_cutoff)) {
-			#  If we have a non-self hit on the same genome that exceeds the cutoffs, send to duplicates hash
         	if ($db_to_org->{$qdb} eq $db_to_org->{$sdb} && $all_seg_p_ident == 100 && $p_cov_ref == 100 && $p_cov_comp == 100) {
+			    # If we have a non-self (different gene) hit on the same genome that exceeds the cutoffs, send to duplicates hash
             	push(@{$dups_temp->{$db_to_org->{$sdb}}->{$qprot}}, $sprot);
-            	print STDERR "DUPS $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
-        	} else{		
-            	# Check the cutoffs are reached for non-self hits
-            	# Add this hit to the results array
+				#print STDERR "DUPS $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
+        	} else{
+				# If we are here, assume the query and subject genomes are different
 				#print join("\t", $db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref) . "\n";
 				
-				# SAdkins - 2/4/16 - New rule.  If number of hits from the subject genome to the query gene, exceed the cap (default =5), don't add any more
-				# This is here to limit the array size that is stored in binary, since unpacking large genomes causes out-of-memory errors 
+				# SAdkins - 2/4/16 - New rule.  If number of hits from the subject genome to the query gene, exceed the cap (default=1), don't add any more.  This is here to limit the array size that is stored in binary, since unpacking large genomes causes out-of-memory errors.  In reality we aren't losing any data, since the pangenome counts are on query gene-subject genome basis, and the additional hits to the subject genome are filtered out by later pipeline steps.
 				$good_hit_counts{$qdb}{$qprot}{$sdb}++;
 				if ($good_hit_counts{$qdb}{$qprot}{$sdb} <= $TOP_HIT_CUTOFF) {
             	    push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
 				}
-				#if ($qdb eq $sdb) {
-				#    print STDOUT "GOOD $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
-				#}
         	}
-		#} else {
-            #print STDERR "filtering out $qdb -- $qprot $sdb -- $sprot $p_cov_ref $p_cov_comp $all_seg_p_sim\n";
         }
     }
     elsif($options{'organism_to_db_mapping'}) {
@@ -301,8 +287,8 @@ sub read_db_list {
         chomp;
         $db_filter->{$_} = 1;
         $db_to_org->{$_} = $_;
-    }close IN;
-
+    }
+	close IN;
 }
 
 sub read_organism_to_db_mapping {
@@ -315,6 +301,6 @@ sub read_organism_to_db_mapping {
         $org =~ s/\s/_/g;
         if(!$options{db_list}) {$db_filter->{$db} = 1};
         $db_to_org->{$db} = $org;
-    }close IN;
-
+    }
+	close IN;
 }
