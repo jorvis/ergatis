@@ -177,6 +177,9 @@ umask(0000);
                 if ( $args{ergatis_cfg}->val('workflow_settings', 'submit_pipelines_as_jobs') ) {
                     $runprefix = $args{ergatis_cfg}->val('grid', 'sge_qsub') . " -V -wd $run_dir -b y";
                     
+					my $job_name = "pipeline_" . $self->id;
+					$runprefix .= " -N $job_name";
+
                     my $pipe_submission_queue = $args{ergatis_cfg}->val('workflow_settings', 'pipeline_submission_queue' );
                     my $pipe_submission_queue_memory = $args{ergatis_cfg}->val('workflow_settings', 'submit_queue_memory' );
                     
