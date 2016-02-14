@@ -111,6 +111,7 @@ while (<IN>) {
 	foreach my $qgenome (keys %$results_ref) {
 		foreach my $qgene (keys %{$results_ref->{$qgenome}}) {
 			if (defined $hit_results->{$qgenome}->{$qgene}) {
+				print scalar @{$hit_results->{$qgenome}->{$qgene}}, "\n";
 				$hits_before_add += scalar @{$hit_results->{$qgenome}->{$qgene}};
 			} else {
 				$hits_before_add = 0;
@@ -119,7 +120,7 @@ while (<IN>) {
 			push @{$hit_results->{$qgenome}->{$qgene}}, @{$results_ref->{$qgenome}->{$qgene}};
 			# Get uniq hits from concatenated gene hits and make that the new gene hits list
 			my @uniq_hits = uniq @{$hit_results->{$qgenome}->{$qgene}};
-			$hit_results->{$qgenome}->{$qgene} = @uniq_hits;
+			@{$hit_results->{$qgenome}->{$qgene}} = @uniq_hits;
 			$hits_after_add += scalar @uniq_hits;
 		}
 	}
