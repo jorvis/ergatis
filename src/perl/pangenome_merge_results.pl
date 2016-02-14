@@ -110,13 +110,17 @@ while (<IN>) {
     my $results_ref = shift(@{$temp_ref});
 	foreach my $qgenome (keys %$results_ref) {
 		foreach my $qgene (keys %{$results_ref->{$qgenome}}) {
-			$hits_before_add += scalar @{$hit_results}->{$qgenome}->{$qgene};
+			if (defined $hit_results->{$qgenome}->{$qgene}) {
+				$hits_before_add += scalar @{$hit_results->{$qgenome}->{$qgene}};
+			} else {
+				$hits_before_add = 0;
+			}
 			# Since there are 2 files per query genome (blastp and tblastn) concatenate hits
-			push @{$hit_results->{$qgenome}->{$qgene}}, $results_ref->{$qgenome}->{$qgene};
+			push @{$hit_results->{$qgenome}->{$qgene}}, @{$results_ref->{$qgenome}->{$qgene}};
 			# Get uniq hits from concatenated gene hits and make that the new gene hits list
-			my @uniq_hits = uniq @{$hit_results}->{$qgenome}->{$qgene};
+			my @uniq_hits = uniq @{$hit_results->{$qgenome}->{$qgene}};
 			$hit_results->{$qgenome}->{$qgene} = @uniq_hits;
-			$hits_after_add += scalar @{$hit_results}->{$qgenome}->{$qgene};
+			$hits_after_add += scalar @uniq_hits;
 		}
 	}
 
