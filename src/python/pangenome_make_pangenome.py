@@ -26,8 +26,8 @@ class Pangenome:
         self.output_file = out + "/pangenome.output"
         self.genes_file = self.output_file + ".genes"
         self.respect_order = ro
-        self.comparisons = comp if comp else hp.num_genomes * 1000
-        if mult:
+        self.comparisons = comp if comp > 0 else hp.num_genomes * 1000
+        if mult > 0:
             est_comp = self.estimate_comparisons(hp.num_genomes, mult)
             self.comparisons = est_comp
         self.logger.info("Estimated number of comparisons is " + str(self.comparisons))
