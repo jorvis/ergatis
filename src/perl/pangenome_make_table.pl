@@ -71,7 +71,6 @@ use bignum;
 use warnings;
 use strict;
 
-my @results = ();
 my $dups    = {};
 my %options = ();
 my $results = GetOptions(
@@ -131,7 +130,6 @@ if ( !-e $options{'blast_stored_file'} ) {
 my $temp_ref = retrieve( $options{'blast_stored_file'} );
 ## pull the blast results data array out of the stored array
 my $results_ref = shift( @{$temp_ref} );
-@results = @{$results_ref};
 
 ## pull the dups hash out of the stored array
 my $dups_ref = shift( @{$temp_ref} );
@@ -146,20 +144,17 @@ my $genes = {}; # keeps track of query_db -> query_prot -> subject_db
 #my $genes = DBM::Deep->new( ".pangenome.temp.db" );
 
 print STDERR "Processing results...";
-
-foreach (@results) {
-
-    #print STDERR "$_->[0] $_->[2]\n";
-    if ( !$db_filter || ( $db_filter->{ $_->[0] } && $db_filter->{ $_->[2] } ) )
-    {
-        if ( !defined( $genes->{ $_->[0] } ) ) {
-            $genes->{ $_->[0] } = {};
+# Create profile hash structure from the binary input structure
+foreach my $qgenome (keys %$results_ref) {
+    next if ($db_filter && !$db_filter->{$qgenome});    # skip genome if not in optional filter list
+    $genes->{$qgenome} = {};
+    $dbs{$qgenome} = 1;
+    foreach my $qgene (keys %{$results_ref->{$qgenome}}) {
+        $genes->{$qgenome}->{$qgene} = {};
+        foreach my $sgenome (@{$results_ref->{$qgenome}->{$qgene}}) {
+            next if ($db_filter && !$db_filter->{$sgenome});
+            $genes->{$qgenome}->{$qgene}->{$sgenome} = 1;
         }
-        if ( !defined( $genes->{ $_->[0] }->{ $_->[1] } ) ) {
-            $genes->{ $_->[0] }->{ $_->[1] } = {};
-        }
-        $genes->{ $_->[0] }->{ $_->[1] }->{ $_->[2] } = 1;
-        $dbs{ $_->[0] } = 1;
     }
 }
 @genomes = keys(%dbs);

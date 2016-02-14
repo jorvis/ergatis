@@ -97,7 +97,7 @@ my $results = GetOptions (  \%options,
                             'help|h',
                          ) || pod2usage();
 
-my @results = ();
+my %hit_results = ();
 my $dups_temp = {};
 my %dups = ();
 my $db_to_org = {};
@@ -167,7 +167,7 @@ foreach my $q_genome (keys %good_hit_counts){
 	}
 }
 
-nstore([\@results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
+nstore([\%hit_results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
 exit(0);
 
@@ -271,11 +271,8 @@ sub processSeqPairAlignment {
 				# If we are here, assume the query and subject genomes are different
 				#print join("\t", $db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref) . "\n";
 				
-				# SAdkins - 2/4/16 - New rule.  If number of hits from the subject genome to the query gene, exceed the cap (default=1), don't add any more.  This is here to limit the array size that is stored in binary, since unpacking large genomes causes out-of-memory errors.  In reality we aren't losing any data, since the pangenome counts are on query gene-subject genome basis, and the additional hits to the subject genome are filtered out by later pipeline steps.
-				$good_hit_counts{$qdb}{$qprot}{$sdb}++;
-				if ($good_hit_counts{$qdb}{$qprot}{$sdb} <= $TOP_HIT_CUTOFF) {
-            	    push (@results, [$db_to_org->{$qdb},$qprot,$db_to_org->{$sdb},$sprot,$all_seg_p_sim,$p_cov_ref]);
-				}
+				# Only add subject genome into list of "good-hit" genomes for a given query gene if the subject genome is not already in the array.  
+            	push (@{$hit_results{$qdb}{$qprot}}, $sdb) unless $good_hit_counts{$qdb}{$qprot}{$sdb}++ ;
         	}
         }
     }

@@ -55,9 +55,10 @@ use Pod::Usage;
 use File::Basename;
 use Getopt::Long qw(:config no_ignore_case no_auto_abbrev);
 use Storable qw(nstore retrieve);
+use List::MoreUtils qw(uniq);
 use strict;
 
-my @results = ();
+my $hit_results = {};
 my $dups = {};
 my %options = ();
 my $results = GetOptions (  \%options,
@@ -102,13 +103,29 @@ while (<IN>) {
     ## unserialize the stored data
     my $temp_ref = retrieve($_) || die "failed unserializing $_";
 
-    ## pull the blast results data array out of the stored array
+    ## Add file's query gene-subject genome matches to big hash
+	my $added_hits = 0;
+	my $hits_before_add = 0;
+	my $hits_after_add = 0;
     my $results_ref = shift(@{$temp_ref});
-    push(@results, @{$results_ref});
+	foreach my $qgenome (keys %$results_ref) {
+		foreach my $qgene (keys %{$results_ref->{$qgenome}}) {
+			$hits_before_add += scalar @{$hit_results}->{$qgenome}->{$qgene};
+			# Since there are 2 files per query genome (blastp and tblastn) concatenate hits
+			push @{$hit_results->{$qgenome}->{$qgene}}, $results_ref->{$qgenome}->{$qgene};
+			# Get uniq hits from concatenated gene hits and make that the new gene hits list
+			my @uniq_hits = uniq @{$hit_results}->{$qgenome}->{$qgene};
+			$hit_results->{$qgenome}->{$qgene} = @uniq_hits;
+			$hits_after_add += scalar @{$hit_results}->{$qgenome}->{$qgene};
+		}
+	}
+
+	# Get updated number of added hits
+	$added_hits = $hits_after_add - $hits_before_add;
 
 	# print running total of results;
-	$results_count += scalar @{$results_ref};
-	print STDERR "File - " . $file_count++ . "\tResults - " . scalar @{$results_ref} . "\tTotal - " . $results_count . "\n";
+	$results_count += $added_hits;
+	print STDERR "File - " . $file_count++ . "\tAddedHits - " . $added_hits . "\tRunningTotal - " . $results_count . "\n";
 
     ## pull the dups hash out of the stored array
     my $dups_ref = shift(@{$temp_ref});
@@ -121,7 +138,7 @@ while (<IN>) {
     $temp_ref = undef;
 }
 
-nstore([\@results, $dups], $options{'output_path'}."/pangenome.blast.stored") || die "couldn't serialize results";
+nstore([$hit_results, $dups], $options{'output_path'}."/pangenome.blast.stored") || die "couldn't serialize results";
 
 exit(0);
 
