@@ -12,6 +12,10 @@ my %map_hash = ();
 my $praze_btab	=	*STDIN;
 my $out		=	*STDOUT;
 
+my $IDENTITY_CUTOFF = 0.5;
+my $SIMILARITY_CUTOFF = 0.5;
+my $MATCH_CUTOFF = 0.1;	// Match % isn't stored in btab... only in BER raw output
+
 &parse_options;
 &add_pvalues;
 
@@ -107,9 +111,12 @@ sub add_pvalues {
 		my @tokens = split /\t/, $line;
 		my $query_name = $tokens[0];
 		my $subject_name = $tokens[5];
+		my $p_ident = $tokens[10];
+		my $p_sim = $tokens[11];
         $subject_name =~ s/^lcl\|//;
         my $p_value;
         if (exists $p_values{$query_name}{$subject_name}){
+			next if $p_ident < $IDENTITY_CUTOFF || $p_sim < $SIMILARITY_CUTOFF;
 			$p_value = $p_values{$query_name}{$subject_name};
 			print $out "$line\t$p_value\n";
 		} #else {
