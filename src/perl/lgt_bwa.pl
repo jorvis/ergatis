@@ -43,16 +43,17 @@ my $fastq_paired = 0;    # Determines if fastq seqs are paired-end or not
 # MAIN PROGRAM #
 ################
 GetOptions(
-    \%hCmdLineArgs,        'reference|r=s',
-    'bam_paired|p=i',      'input_dir|I=s',
-    'input_file|i=s',      'output_dir|d=s',
-    'bwa_path|b=s',        'samtools_path|s=s',
-    'misMsc|M=i',          'maxGapO|o=i',
-    'maxGapE|e=i',         'gapOsc|O=i',
-    'gapEsc|E=i',          'nThrds|t=i',
-    'maxOcc|n=i',          'bwa_params|B=s',
-    'samtools_params|S=s', 'keep_sam|k=i',
-    'log|l=s',             'help|h'
+    \%hCmdLineArgs,      'reference|r=s',
+    'use_mem|m=i',       'bam_paired|p=i',
+    'input_dir|I=s',     'input_file|i=s',
+    'output_dir|d=s',    'bwa_path|b=s',
+    'samtools_path|s=s', 'misMsc|M=i',
+    'maxGapO|o=i',       'maxGapE|e=i',
+    'gapOsc|O=i',        'gapEsc|E=i',
+    'nThrds|t=i',        'maxOcc|n=i',
+    'bwa_params|B=s',    'samtools_params|S=s',
+    'keep_sam|k=i',      'log|l=s',
+    'help|h'
 ) or pod2usage();
 
 pod2usage( { -exitval => 0, -verbose => 2, -output => \*STDERR } )
@@ -65,89 +66,121 @@ DetermineFormat( \%hCmdLineArgs, \%hType );
 
 $nFileCnt = keys %hType;
 
-# If we have either 2 paired fastq seqs or a single paired-end BAM file...
-if ( $fastq_paired || $hCmdLineArgs{'bam_paired'} ) {
-    printLogMsg( $DEBUG, "Detected paired-end fastq or BAM sequences" );
-    if ( $nFileCnt == 1 && exists( $hType{'bam'} ) ) {
-        ( $sFbase, $sFdir, $sFext ) = fileparse( $hType{'bam'}, qr/\.[^.]*/ );
-        $sOut1 = $sFbase . ".aln1.sai";
-        AlignBwa( \%hCmdLineArgs, "aln", $hType{'bam'}, "-b1", $sOut1 );
+# First determine if we are processing bwa_mem or bwa_aln
+if ( $hCmdLineArgs{'use_mem'} ) {
+	printLogMsg( $DEBUG, "Using 'bwa mem'");
+    # If we have 2 paired fastq seqs...
+	# Currently not worried about BAM files for 'bwa mem'
+    if ( $fastq_paired ) {
+        printLogMsg( $DEBUG, "Detected paired-end fastq" );
+        if ( $nFileCnt == 2
+            && exists( $hType{'fastq_1'} )
+            && exists( $hType{'fastq_2'} ) )
+        {
+			# Making the assumption that both FastQ files are in the same directory
+            my ( $sFbase, $sFdir, $sFext ) =
+              fileparse( $hType{'fastq_1'}, qr/\.[^.]*/ );
+            $sFbase =~ s/\.fastq$//;
+            $sOut1 = $sFbase . ".bwa.sam";
+			my $concat_files = $hType{'fastq_1'} . " " . $hType{'fastq_2'};
+            AlignBwa( \%hCmdLineArgs, "mem", $concat_files, "", $sOut1 );
 
-        $sOut2 = $sFbase . ".aln2.sai";
-        AlignBwa( \%hCmdLineArgs, "aln", $hType{'bam'}, "-b2", $sOut2 );
-
-        $sIn =
-            $hCmdLineArgs{'output_dir'} . "/"
-          . $sOut1 . " "
-          . $hCmdLineArgs{'output_dir'} . "/"
-          . $sOut2 . " "
-          . $hType{'bam'} . " "
-          . $hType{'bam'};
-        $sOut = $sFbase . ".bwa.sam";
-
-        #		AlignBwa(\%hCmdLineArgs, "sampe", $sIn , "", $sOut);
-
-    } elsif ( $nFileCnt == 2
-        && exists( $hType{'fastq_1'} )
-        && exists( $hType{'fastq_2'} ) )
-    {
-        ( $sFbase, $sFdir, $sFext ) =
-          fileparse( $hType{'fastq_1'}, qr/\.[^.]*/ );
-        $sFbase =~ s/\.fastq$//;
-        $sOut1 = $sFbase . ".aln1.sai";
-        AlignBwa( \%hCmdLineArgs, "aln", $hType{'fastq_1'}, "", $sOut1 );
-
-        ( $sFbase, $sFdir, $sFext ) =
-          fileparse( $hType{'fastq_2'}, qr/\.[^.]*/ );
-        $sFbase =~ s/\.fastq$//;
-        $sOut2 = $sFbase . ".aln2.sai";
-        AlignBwa( \%hCmdLineArgs, "aln", $hType{'fastq_2'}, "", $sOut2 );
-
-        $sFbase =~ s/_2//g;
-        $sIn =
-            $hCmdLineArgs{'output_dir'} . "/"
-          . $sOut1 . " "
-          . $hCmdLineArgs{'output_dir'} . "/"
-          . $sOut2 . " "
-          . $hType{'fastq_1'} . " "
-          . $hType{'fastq_2'};
-        $sOut = $sFbase . ".bwa.sam";
-
-        #		AlignBwa(\%hCmdLineArgs, "sampe", $sIn , "", $sOut);
-
+        } else {
+            printLogMsg( $ERROR,
+                "ERROR : Main :: Irregular number of files $nFileCnt for alignment found in the input directory $hCmdLineArgs{'input_dir'}"
+            );
+        }
     } else {
-        printLogMsg( $ERROR,
-            "ERROR : Main :: Irregular number of files $nFileCnt for alignment found in the input directory $hCmdLineArgs{'input_dir'}"
-        );
+        printLogMsg( $DEBUG, "Detected a single-end fastq or BAM sequence" );
+        if ( $nFileCnt == 1 && exists( $hType{'fastq'} ) ) {
+            ( $sFbase, $sFdir, $sFext ) =
+              fileparse( $hType{'fastq'}, qr/\.[^.]*/ );
+            $sFbase =~ s/\.fastq$//;
+            $sOut = $sFbase . ".bwa.sam";
+            AlignBwa( \%hCmdLineArgs, "mem", $hType{'fastq'}, "", $sOut );
+        }
     }
-    AlignBwa( \%hCmdLineArgs, "sampe", $sIn, "", $sOut );
 } else {
-    printLogMsg( $DEBUG, "Detected a single-end fastq or BAM sequence" );
-    if ( $nFileCnt == 1 && exists( $hType{'fastq'} ) ) {
-        ( $sFbase, $sFdir, $sFext ) = fileparse( $hType{'fastq'}, qr/\.[^.]*/ );
-        $sFbase =~ s/\.fastq$//;
-        $sOut = $sFbase . ".aln.sai";
-        AlignBwa( \%hCmdLineArgs, "aln", $hType{'fastq'}, "", $sOut );
+	printLogMsg( $DEBUG, "Using 'bwa aln'");
+    # If we have either 2 paired fastq seqs or a single paired-end BAM file...
+    if ( $fastq_paired || $hCmdLineArgs{'bam_paired'} ) {
+        printLogMsg( $DEBUG, "Detected paired-end fastq or BAM sequences" );
+        if ( $nFileCnt == 1 && exists( $hType{'bam'} ) ) {
+            ( $sFbase, $sFdir, $sFext ) =
+              fileparse( $hType{'bam'}, qr/\.[^.]*/ );
+            $sOut1 = $sFbase . ".aln1.sai";
+            AlignBwa( \%hCmdLineArgs, "aln", $hType{'bam'}, "-b1", $sOut1 );
 
-        $sIn =
-          $hCmdLineArgs{'output_dir'} . "/" . $sOut . " " . $hType{'fastq'};
-        $sOut = $sFbase . ".bwa.sam";
+            $sOut2 = $sFbase . ".aln2.sai";
+            AlignBwa( \%hCmdLineArgs, "aln", $hType{'bam'}, "-b2", $sOut2 );
 
-        #		AlignBwa(\%hCmdLineArgs, "samse", $sIn , "", $sOut);
+            $sIn =
+                $hCmdLineArgs{'output_dir'} . "/"
+              . $sOut1 . " "
+              . $hCmdLineArgs{'output_dir'} . "/"
+              . $sOut2 . " "
+              . $hType{'bam'} . " "
+              . $hType{'bam'};
+            $sOut = $sFbase . ".bwa.sam";
 
-    } elsif ( $nFileCnt == 1 && exists( $hType{'bam'} ) ) {
-        ( $sFbase, $sFdir, $sFext ) = fileparse( $hType{'bam'}, qr/\.[^.]*/ );
-        $sOut = $sFbase . ".aln.sai";
-        AlignBwa( \%hCmdLineArgs, "aln", $hType{'bam'}, "-b0", $sOut );
+        } elsif ( $nFileCnt == 2
+            && exists( $hType{'fastq_1'} )
+            && exists( $hType{'fastq_2'} ) )
+        {
+            ( $sFbase, $sFdir, $sFext ) =
+              fileparse( $hType{'fastq_1'}, qr/\.[^.]*/ );
+            $sFbase =~ s/\.fastq$//;
+            $sOut1 = $sFbase . ".aln1.sai";
+            AlignBwa( \%hCmdLineArgs, "aln", $hType{'fastq_1'}, "", $sOut1 );
 
-        $sIn  = $hCmdLineArgs{'output_dir'} . "/" . $sOut . " " . $hType{'bam'};
-        $sOut = $sFbase . ".bwa.sam";
+            ( $sFbase, $sFdir, $sFext ) =
+              fileparse( $hType{'fastq_2'}, qr/\.[^.]*/ );
+            $sFbase =~ s/\.fastq$//;
+            $sOut2 = $sFbase . ".aln2.sai";
+            AlignBwa( \%hCmdLineArgs, "aln", $hType{'fastq_2'}, "", $sOut2 );
 
-        #		AlignBwa(\%hCmdLineArgs, "samse", $sIn , "", $sOut);
+            $sFbase =~ s/_2//g;
+            $sIn =
+                $hCmdLineArgs{'output_dir'} . "/"
+              . $sOut1 . " "
+              . $hCmdLineArgs{'output_dir'} . "/"
+              . $sOut2 . " "
+              . $hType{'fastq_1'} . " "
+              . $hType{'fastq_2'};
+            $sOut = $sFbase . ".bwa.sam";
+
+        } else {
+            printLogMsg( $ERROR,
+                "ERROR : Main :: Irregular number of files $nFileCnt for alignment found in the input directory $hCmdLineArgs{'input_dir'}"
+            );
+        }
+        AlignBwa( \%hCmdLineArgs, "sampe", $sIn, "", $sOut );
+    } else {
+        printLogMsg( $DEBUG, "Detected a single-end fastq or BAM sequence" );
+        if ( $nFileCnt == 1 && exists( $hType{'fastq'} ) ) {
+            ( $sFbase, $sFdir, $sFext ) =
+              fileparse( $hType{'fastq'}, qr/\.[^.]*/ );
+            $sFbase =~ s/\.fastq$//;
+            $sOut = $sFbase . ".aln.sai";
+            AlignBwa( \%hCmdLineArgs, "aln", $hType{'fastq'}, "", $sOut );
+
+            $sIn =
+              $hCmdLineArgs{'output_dir'} . "/" . $sOut . " " . $hType{'fastq'};
+            $sOut = $sFbase . ".bwa.sam";
+
+        } elsif ( $nFileCnt == 1 && exists( $hType{'bam'} ) ) {
+            ( $sFbase, $sFdir, $sFext ) =
+              fileparse( $hType{'bam'}, qr/\.[^.]*/ );
+            $sOut = $sFbase . ".aln.sai";
+            AlignBwa( \%hCmdLineArgs, "aln", $hType{'bam'}, "-b0", $sOut );
+
+            $sIn =
+              $hCmdLineArgs{'output_dir'} . "/" . $sOut . " " . $hType{'bam'};
+            $sOut = $sFbase . ".bwa.sam";
+        }
+        AlignBwa( \%hCmdLineArgs, "samse", $sIn, "", $sOut );
     }
-    AlignBwa( \%hCmdLineArgs, "samse", $sIn, "", $sOut );
 }
-
 SamtoBam( \%hCmdLineArgs, $sOut );
 if ( $hCmdLineArgs{'keep_sam'} == 0 ) {
     $sCmd = "rm "
@@ -228,6 +261,13 @@ sub AlignBwa {
                   " -" . $hParams{$sParam} . " " . $phCmdLineArgs->{$sParam};
             }
         }
+	} elsif ( $sAlgo eq "mem" ) {
+        foreach $sParam ( keys %hParams ) {
+            if ( exists( $phCmdLineArgs->{$sParam} ) ) {
+                $sOptions .=
+                  " -" . $hParams{$sParam} . " " . $phCmdLineArgs->{$sParam};
+            }
+        }
     } elsif ( $sAlgo eq "sampe" || $sAlgo eq "samse" ) {
         if ( exists( $phCmdLineArgs->{'maxOcc'} ) ) {
             $sOptions .= "-n " . $phCmdLineArgs->{'maxOcc'};
@@ -242,28 +282,28 @@ sub AlignBwa {
         $sOptions .= " " . $phCmdLineArgs->{'bwa_params'};
     }
 
-	my $ref = $phCmdLineArgs->{'reference'};
-	$sCmd =
-	    $phCmdLineArgs->{'bwa_path'} . " "
-	    . $sAlgo . " "
-	    . $sOptions . " "
-	    . $ref . " "
-	    . $sFiles . " > "
-	    . $phCmdLineArgs->{'output_dir'} . "/"
-	    . $sOutFile;
-	printLogMsg( $DEBUG,
-	    "INFO : $sSubName :: Start aligning $sFiles to $ref.\nINFO : $sSubName :: Command : $sCmd"
-	);
-	$nExitCode = system($sCmd);
-	if ( $nExitCode != 0 ) {
-	    printLogMsg( $ERROR,
-	        "ERROR : $sSubName :: $sFiles alignment failed with error. Check the stderr"
-	    );
-	} else {
-	    printLogMsg( $DEBUG,
-	        "INFO : $sSubName :: $sFiles alignment to $ref succesfully completed in $phCmdLineArgs->{'output_dir'}"
-	    );
-	}
+    my $ref = $phCmdLineArgs->{'reference'};
+    $sCmd =
+        $phCmdLineArgs->{'bwa_path'} . " "
+      . $sAlgo . " "
+      . $sOptions . " "
+      . $ref . " "
+      . $sFiles . " > "
+      . $phCmdLineArgs->{'output_dir'} . "/"
+      . $sOutFile;
+    printLogMsg( $DEBUG,
+        "INFO : $sSubName :: Start aligning $sFiles to $ref.\nINFO : $sSubName :: Command : $sCmd"
+    );
+    $nExitCode = system($sCmd);
+    if ( $nExitCode != 0 ) {
+        printLogMsg( $ERROR,
+            "ERROR : $sSubName :: $sFiles alignment failed with error. Check the stderr"
+        );
+    } else {
+        printLogMsg( $DEBUG,
+            "INFO : $sSubName :: $sFiles alignment to $ref succesfully completed in $phCmdLineArgs->{'output_dir'}"
+        );
+    }
 }
 
 # Determine format of input file or files from input directory to be aligned
@@ -387,6 +427,49 @@ __END__
 
 =head1 OPTIONS
 
+B<--reference,-r>
+	Name of the fasta reference to align against
+
+B<--input_file, -i>
+	Fastq or BAM input file
+
+B<--input_dir,-I>
+	Input directory where either fastq files or BAM input files can be found
+
+B<--output_dir, -o>
+	Directory to store the output contents
+
+B<--bwa_params, -B>
+	Extra parameters for the "bwa" program
+
+B<--samtools_params, -S>
+	Extra parameters for the "samtools" program
+
+B<--bwa_path, -b>
+	Path to the "bwa" executable
+
+B<--samtools_path, -s>
+	Path to the "samtools" executable
+
+B<--use_mem, -m>
+	Set to 1 to indicate that the "bwa mem" algorithm should be used instead of "bwa aln"
+
+B<--bam_paired, -p>
+	If set to 1, this indicates the input BAM is from paired-end data
+
+B<--log, -l>
+	Path to writable log file
+
+B<--help, -h>
+	Prints this help doc
+
+
+### Still to write ###	
+    'misMsc|M=i',          'maxGapO|o=i',
+    'maxGapE|e=i',         'gapOsc|O=i',
+    'gapEsc|E=i',          'nThrds|t=i',
+    'maxOcc|n=i',          
+    'keep_sam|k=i',
 
 
 =head1 DESCRIPTION
