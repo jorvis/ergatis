@@ -116,7 +116,7 @@ sub add_pvalues {
         $subject_name =~ s/^lcl\|//;
         my $p_value;
         if (exists $p_values{$query_name}{$subject_name}){
-			next if $p_ident < $IDENTITY_CUTOFF || $p_sim < $SIMILARITY_CUTOFF;
+			#next if $p_ident < $IDENTITY_CUTOFF || $p_sim < $SIMILARITY_CUTOFF;
 			$p_value = $p_values{$query_name}{$subject_name};
 			print $out "$line\t$p_value\n";
 		} #else {
