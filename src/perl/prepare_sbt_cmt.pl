@@ -22,6 +22,9 @@ use Pod::Usage;
 # CONSTANTS #
 #############
 
+# This is the URI link to pass params to in order to generate a .sbt file
+my $SUBMISSION_TEMPLATE = 'https://submit.ncbi.nlm.nih.gov/genbank/template/submission/';
+
 
 ###########
 # GLOBALS #
@@ -140,7 +143,7 @@ sub prepareSbt {
 	}
 
 # Running NCBI template.cgi using cUrl
-	$sCmd = "curl -F 'first_name=$sCFirst' -F 'last_name=$sCLast' -F 'department=$contact_info{department}' -F 'institution=$contact_info{institution}' -F 'street=$contact_info{street}' -F 'city=$contact_info{city}' -F 'state=$contact_info{state}' -F 'zip=$contact_info{zip}' -F 'country=$contact_info{country}' -F 'phone=$contact_info{phone}' -F 'fax=$contact_info{fax}' -F 'email=$paMeta->[15]' $sAuthorForm -F 'cit_status_radio=unpublished' -F 'citation_title=$paMeta->[17]' -F 'cit_auth_radio=same' -F 'bioproject=$paMeta->[4]' -F 'biosample=$paMeta->[21]' -F 'submit=Create Template' http://www.ncbi.nlm.nih.gov/WebSub/template.cgi > $sSbtFile";
+	$sCmd = "curl -F 'first_name=$sCFirst' -F 'last_name=$sCLast' -F 'department=$contact_info{department}' -F 'institution=$contact_info{institution}' -F 'street=$contact_info{street}' -F 'city=$contact_info{city}' -F 'state=$contact_info{state}' -F 'zip=$contact_info{zip}' -F 'country=$contact_info{country}' -F 'phone=$contact_info{phone}' -F 'fax=$contact_info{fax}' -F 'email=$paMeta->[15]' $sAuthorForm -F 'cit_status_radio=unpublished' -F 'citation_title=$paMeta->[17]' -F 'cit_auth_radio=same' -F 'bioproject=$paMeta->[4]' -F 'biosample=$paMeta->[21]' -F 'submit=Create Template' $SUBMISSION_TEMPLATE > $sSbtFile";
 	$sCmd =~ s/\r|\n//ig;
 	system($sCmd);
 
