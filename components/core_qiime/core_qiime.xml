@@ -21,10 +21,10 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>pick_de_novo_otus</name>
+            <name>pick open-reference otus</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/pick_de_novo_otus</executable>
-            <arg> -i $;INPUT_FILE$; -p $;CUSTOM_PARAMETERS_FILE$; -f -o $;OUTPUT_DIRECTORY$;/results</arg>
+            <executable>$;BIN_DIR$;/pick_open_reference_otus</executable>
+            <arg> -i $;INPUT_FILE$; -p $;CUSTOM_PARAMETERS_FILE$; -f -o $;OUTPUT_DIRECTORY$;/results -r $;REFERENCE_FASTA$;</arg>
             <param>
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/$;COMPONENT_NAME$;.stderr</value>

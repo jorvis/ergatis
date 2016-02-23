@@ -44,8 +44,8 @@ case $i in
     mapf="$2"
     shift
     ;;
-    -f)
-    fasta="$2"
+    -i)
+    fastq="$2"
     shift
     ;;
     -o)
@@ -54,14 +54,6 @@ case $i in
     ;;
     -b)
     barcode="$2"
-    shift
-    ;;
-    -l)
-    min="$2"
-    shift
-    ;;
-    -L)
-    max="$2"
     shift
     ;;
     -H)
@@ -75,7 +67,7 @@ case $i in
 esac
 shift 
 done
-cmd="split_libraries.py -m $mapf -f $fasta -o $out -b $barcode -l $min -L $max -H $homo -a $ambig"
+cmd="split_libraries_fastq.py -m $mapf -i $fastq -o $out -b $barcode"
 if [ -s $qual ]
 then
      cmd="$cmd -q $qual"

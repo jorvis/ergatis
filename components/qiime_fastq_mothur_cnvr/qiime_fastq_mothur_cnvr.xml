@@ -31,7 +31,7 @@
             <name>split libraries for Qiime workflows</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/split_libraries_fastq</executable>
-            <arg>-m $;OUTPUT_DIRECTORY$;/Data.processed.map -f $;OUTPUT_DIRECTORY$;/Data.processed.fastq -q $;OUTPUT_DIRECTORY$;/Data.processed.qual -o $;OUTPUT_DIRECTORY$;/splitlibs/ -b $;BARCODES$; -l $;MIN_LENGTH$; -L $;MAX_LENGTH$; -H $;MAXIMUM_HOMOPOLYMER_LENGTH$; -a $;MAXAMBIGUOUS$; $;OTHEROPTS$;</arg>
+            <arg>-m $;OUTPUT_DIRECTORY$;/Data.processed.map -i $;OUTPUT_DIRECTORY$;/Data.processed.fastq -q $;OUTPUT_DIRECTORY$;/Data.processed.qual -o $;OUTPUT_DIRECTORY$;/splitlibs/ -b $;BARCODES$; $;OTHEROPTS$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
