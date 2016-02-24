@@ -24,7 +24,7 @@
             <name>pick open-reference otus</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/pick_open_reference_otus</executable>
-            <arg> -i $;INPUT_FILE$; -p $;CUSTOM_PARAMETERS_FILE$; -f -o $;OUTPUT_DIRECTORY$;/results -r $;REFERENCE_FASTA$;</arg>
+            <arg> -i $;INPUT_FILE$; -p $;CUSTOM_PARAMETERS_FILE$; -f -o $;OUTPUT_DIRECTORY$;/results/uclust_picked_otus -r $;REFERENCE_FASTA$;</arg>
             <param>
                 <key>stderr</key>
                 <value>$;TMP_DIR$;/$;COMPONENT_NAME$;.stderr</value>
@@ -45,7 +45,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*otu_table\.biom"</value>
+                <value>".*otu_table_mc2_w_tax_no_pynast_failures\.biom"</value>
             </param>
             <param>
                 <key>--output_list</key>
@@ -96,28 +96,28 @@
             <name>reformatting phyla assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L3.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/phylum</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_mc2_w_tax_no_pynast_failures_L3.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/phylum</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting classes assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L4.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/class</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_mc2_w_tax_no_pynast_failures_L4.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/class</arg>
         </command>        
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting orders assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L5.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/order</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_mc2_w_tax_no_pynast_failures_L5.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/order</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>reformatting families assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L6.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/family</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_mc2_w_tax_no_pynast_failures_L6.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/family</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -131,7 +131,7 @@
             <name>reformatting genera assignment matrix</name>
             <state>incomplete</state>
             <executable>perl $;BIN_DIR$;/Create_Qiime_tables.pl</executable>
-            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_L7.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/genus</arg>
+            <arg> -t $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/otu_table_mc2_w_tax_no_pynast_failures_L7.txt -m $;META_FILE$; -p $;OUTPUT_DIRECTORY$;/results/otu_summary_tables/genus</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
