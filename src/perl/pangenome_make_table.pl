@@ -435,7 +435,7 @@ sub do_analysis_with_sampling {
                     $seen_vec[ $reference_set[$ii] ] = 1;
                 }
 
-                unless ( $seen{$j}{"@seen_vec"} ) {
+                unless ( defined $seen{$j}{"@seen_vec"} ) {
 
                     my $dup_counts = {};
 
