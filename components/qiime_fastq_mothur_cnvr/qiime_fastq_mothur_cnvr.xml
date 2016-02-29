@@ -24,7 +24,7 @@
             <name>preprocess input data for split libraries</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/prep_MiSeq_for_qiime.sh</executable>
-            <arg>-m $;MAPPING_FILE$; -f $;INPUT_FILE_LIST$; -o $;OUTPUT_DIRECTORY$; -b $;BIN_DIR$;</arg>
+            <arg>-m `cat $;MAPPING_FILE$;` -f $;INPUT_FILE_LIST$; -o $;OUTPUT_DIRECTORY$; -b $;BIN_DIR$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
