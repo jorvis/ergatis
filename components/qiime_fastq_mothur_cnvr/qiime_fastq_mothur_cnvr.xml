@@ -23,22 +23,22 @@
             <type>RunUnixCommand</type>
             <name>preprocess input data for split libraries</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/dataprep_dual16S.pl</executable>
-            <arg>-m `cat $;MAPPING_FILE$;` -f $;INPUT_FILE_LIST$; -q " $;QUAL_FILE_LIST$; " -p $;OUTPUT_DIRECTORY$;/Data</arg>
+            <executable>$;BIN_DIR$;/prep_MiSeq_for_qiime.sh</executable>
+            <arg>-m $;MAPPING_FILE$; -f $;INPUT_FILE_LIST$; -o $;OUTPUT_DIRECTORY$; -b $;BIN_DIR$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>split libraries for Qiime workflows</name>
+            <name>split libraries for QIIME - FastQ</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/split_libraries_fastq</executable>
-            <arg>-m $;OUTPUT_DIRECTORY$;/Data.processed.map -i $;OUTPUT_DIRECTORY$;/Data.processed.fastq -q $;OUTPUT_DIRECTORY$;/Data.processed.qual -o $;OUTPUT_DIRECTORY$;/splitlibs/ -b $;BARCODES$; $;OTHEROPTS$;</arg>
+			<arg>-m $;OUTPUT_DIRECTORY$;/mapping.corrected.txt -i $;OUTPUT_DIRECTORY$;/R1N_PE.fq,$;OUTPUT_DIRECTORY$;/R3N_PE.fq -o $;OUTPUT_DIRECTORY$; -b $;OUTPUT_DIRECTORY/barcode.fq --barcode_type $;BARCODE_TYPE$; $;OTHEROPTS$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
             <name>create input files for mothur components</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/qiime_to_mothur_meta.pl</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/splitlibs/seqs.fq -m  $;OUTPUT_DIRECTORY$;/Data.processed.map -p $;MOTHUR_PREFIX$;</arg>
+            <arg>-f $;OUTPUT_DIRECTORY$;/splitlibs/seqs.fq -m  $;OUTPUT_DIRECTORY$;/mapping.corrected.txt -p $;MOTHUR_PREFIX$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -51,7 +51,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.processed.fasta"</value>
+                <value>".*_PE\.fq"</value>
             </param>
             <param>
                 <key>--output_list</key>
