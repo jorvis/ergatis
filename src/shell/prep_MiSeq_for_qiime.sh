@@ -63,26 +63,28 @@ if [ ! -d $prep_dir ]; then
 fi
 
 #trim barcode, form a new barcode file 
-echo "Extract barcodes from FASTQ input to create barcode FASTQ files..."
+echo "Extracting barcodes from reads from FASTQ input to create barcode FASTQ files..."
 fastx_trimmer -i $R1 -f 1 -l 12 -Q 33 -o $prep_dir/R1_barcode.fq
 fastx_trimmer -i $R2 -f 1 -l 12 -Q 33 -o $prep_dir/R2_barcode.fq
+echo "Creating tab-delimited files from the barcode FASTQ files..."
 cat $prep_dir/R1_barcode.fq | $BIN_DIR/fq_mergelines.pl > $prep_dir/R1_barcode_temp
 cat $prep_dir/R2_barcode.fq | $BIN_DIR/fq_mergelines.pl > $prep_dir/R2_barcode_temp
+echo "Merging barcodes of both paired-end files..."
 paste $prep_dir/R1_barcode_temp $prep_dir/R2_barcode_temp | awk -F"\t" '{print $5"\t"$2$6"\t"$3"\t"$4$8}' | $BIN_DIR/fq_splitlines.pl > $prep_dir/R1R2_barcode.fastq
 cat $prep_dir/R1R2_barcode.fastq | $BIN_DIR/fq_mergelines.pl > $prep_dir/R1R2_barcode_temp
 
 #trim sequences (12 bp of barcode) off the sequence
-echo "Running Seqtk to further trim barcodes..." 
+echo "Trimming off barcodes from FASTQ input..." 
 seqtk trimfq -b 12 $prep_dir/R1.fq > $prep_dir/R1_trimmed_seq.fastq
 seqtk trimfq -b 12 $prep_dir/R2.fq > $prep_dir/R2_trimmed_seq.fastq
 
 #trim off low quality bases 
-echo "Trim off low quality bases..."
+echo "Trimming off low quality bases (error threshold = 0.05)..."
 seqtk trimfq $prep_dir/R1_trimmed_seq.fastq | $BIN_DIR/fq_mergelines.pl > $prep_dir/R1_seqtk_trimmed_seq_temp  
 seqtk trimfq $prep_dir/R2_trimmed_seq.fastq | $BIN_DIR/fq_mergelines.pl > $prep_dir/R2_seqtk_trimmed_seq_temp 
 
 #create new fastq file to concatenate barcode (24bp) with sequences
-echo "Create new FASTQ inputs with modified barcodes..."
+echo "Creating new FASTQ inputs with concatenated barcodes and input sequences..."
 paste $prep_dir/R1R2_barcode_temp $prep_dir/R2_seqtk_trimmed_seq_temp | awk -F"\t" '{print $1"\t"$2$6"\t"$7"\t"$4$8}' | $BIN_DIR/fq_splitlines.pl | sed 's/2:N:0:/3:N:0:/' > $prep_dir/R3N.fq
 paste $prep_dir/R1R2_barcode_temp $prep_dir/R1_seqtk_trimmed_seq_temp | awk -F"\t" '{print $1"\t"$2$6"\t"$7"\t"$4$8}' | $BIN_DIR/fq_splitlines.pl | sed 's/2:N:0:/1:N:0:/' > $prep_dir/R1N.fq
 
@@ -92,8 +94,9 @@ echo "Running prinseq-lite to filter out bad reads..."
 prinseq-lite -fastq $prep_dir/R3N.fq -out_format 3 -out_good $prep_dir/R3N_${cutoffLength} -no_qual_header -line_width 0 -min_len $cutoffLength
 prinseq-lite -fastq $prep_dir/R1N.fq -out_format 3 -out_good $prep_dir/R1N_${cutoffLength} -no_qual_header -line_width 0 -min_len $cutoffLength
 
-###in this case, the total and total_filter files have no difference, only the barcode file will change. The purpose is to make the trimmed seq file and barcode file match.
-echo "Match the trimmed sequence file and the barcode file..."
+###in this case, the total and total_filter files have no difference, only the barcode file will change. The purpose is to make the trimmed seq file and barcode file match. 
+# Note - Requires BioPython v 1.51 or later
+echo "Creating paired-end and barcode FASTQ files"
 $BIN_DIR/fq_getPairAndOrphan1.8.py $prep_dir/R3N_${cutoffLength}.fastq $prep_dir/R1N_${cutoffLength}.fastq $OUTPUT_DIR/R3N_PE.fq $OUTPUT_DIR/R1N_PE.fq $prep_dir/orphan_temp.fq 
 $BIN_DIR/fq_getPairAndOrphan1.8.py $OUTPUT_DIR/R3N_PE.fq $prep_dir/R1R2_barcode.fastq $prep_dir/PE_temp.fq $OUTPUT_DIR/barcode.fq $prep_dir/orphan_temp.fq 
 
