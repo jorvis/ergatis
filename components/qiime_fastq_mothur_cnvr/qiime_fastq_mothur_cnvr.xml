@@ -24,7 +24,7 @@
             <name>preprocess input data for split libraries</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/prep_MiSeq_for_qiime.sh</executable>
-			<arg>-m `cat $;MAPPING_FILE$;` -f $;INPUT_FILE_LIST$; -o $;OUTPUT_DIRECTORY$; -b $;BIN_DIR$;</arg>
+			<arg>-f $;INPUT_FILE_LIST$; -o $;OUTPUT_DIRECTORY$; -b $;BIN_DIR$;</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/prep.stdout</value>
@@ -33,13 +33,24 @@
 				<key>stderr</key>
 				<value>$;OUTPUT_DIRECTORY$;/prep.stderr</value>
 			</param>
-        </command>
+		</command>
+		<command>
+			<type>RunUnixCommand</type>
+			<name>Validate input mapping file</name>
+			<state>incomplete</state>
+			<executable>$;BIN_DIR$;/validate_mapfile.sh</executable>
+			<arg>-m `cat $;MAPPING_FILE$;` -o $;OUTPUT_DIRECTORY$;</arg>
+			<param>
+				<key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/mapping_corrected.stderr</value>
+			</param>
+		</command>
         <command>
             <type>RunUnixCommand</type>
             <name>split libraries for QIIME - FastQ</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/split_libraries_fastq</executable>
-			<arg>-m $;OUTPUT_DIRECTORY$;/mapping.corrected.txt -i $;OUTPUT_DIRECTORY$;/R1N_PE.fq,$;OUTPUT_DIRECTORY$;/R3N_PE.fq -o $;OUTPUT_DIRECTORY$; -b $;OUTPUT_DIRECTORY/barcode.fq --barcode_type $;BARCODE_TYPE$; $;OTHEROPTS$;</arg>
+			<arg>-m $;OUTPUT_DIRECTORY$;/mapping_corrected.txt -i $;OUTPUT_DIRECTORY$;/R1N_PE.fq,$;OUTPUT_DIRECTORY$;/R3N_PE.fq -o $;OUTPUT_DIRECTORY$; -b $;OUTPUT_DIRECTORY$;/barcode.fq --barcode_type $;BARCODE_TYPE$; $;OTHEROPTS$;</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/split_libraries.stdout</value>
