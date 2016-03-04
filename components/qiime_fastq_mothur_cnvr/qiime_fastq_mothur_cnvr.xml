@@ -50,7 +50,7 @@
             <name>split libraries for QIIME - FastQ</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/split_libraries_fastq</executable>
-			<arg>-m $;OUTPUT_DIRECTORY$;/mapping_corrected.txt -i $;OUTPUT_DIRECTORY$;/R1N_PE.fq,$;OUTPUT_DIRECTORY$;/R3N_PE.fq -o $;OUTPUT_DIRECTORY$; -b $;OUTPUT_DIRECTORY$;/barcode.fq --barcode_type $;BARCODE_TYPE$; $;OTHEROPTS$;</arg>
+			<arg>-m $;OUTPUT_DIRECTORY$;/mapping_corrected.txt,$;OUTPUT_DIRECTORY$;/mapping_corrected.txt -i $;OUTPUT_DIRECTORY$;/R1N_PE.fq,$;OUTPUT_DIRECTORY$;/R3N_PE.fq -o $;OUTPUT_DIRECTORY$;/splitlibs/ -b $;OUTPUT_DIRECTORY$;/barcode.fq,$;OUTPUT_DIRECTORY$;/barcode.fq --barcode_type $;BARCODE_TYPE$; $;OTHEROPTS$;</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/split_libraries.stdout</value>
@@ -65,7 +65,7 @@
             <name>create input files for mothur components</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/qiime_to_mothur_meta.pl</executable>
-            <arg>-f $;OUTPUT_DIRECTORY$;/splitlibs/seqs.fq -m $;OUTPUT_DIRECTORY$;/mapping.corrected.txt -p $;MOTHUR_PREFIX$;</arg>
+            <arg>-f $;OUTPUT_DIRECTORY$;/splitlibs/seqs.fna -m $;OUTPUT_DIRECTORY$;/mapping_corrected.txt -p $;MOTHUR_PREFIX$;</arg>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/qiime2mothur.stdout</value>
