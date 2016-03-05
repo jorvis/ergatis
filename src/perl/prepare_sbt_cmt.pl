@@ -24,7 +24,7 @@ use Pod::Usage;
 
 # This is the URI link to pass params to in order to generate a .sbt file
 my $SUBMISSION_TEMPLATE = 'https://submit.ncbi.nlm.nih.gov/genbank/template/submission/';
-
+#my $SUBMISSION_TEMPLATE = 'http://www.ncbi.nlm.nih.gov/WebSub/template.cgi';
 
 ###########
 # GLOBALS #
@@ -93,7 +93,7 @@ sub prepareSbt {
 		$sFirst =~ s/^\s+|\s+$//;
 		$sMiddle =~ s/^\s+|\s+$// if(length($sMiddle) > 0);
 		$nCnt = $nI + 1;
-		$sAuthorForm .= " -F 'author_first_$nCnt=$sFirst' -F 'author_mi_$nCnt=$sMiddle' -F 'author_last_$nCnt=$sLast' -F 'author_suffix_$nCnt='";
+		$sAuthorForm .= " -F 'sequence_author-$nCnt-first_name=$sFirst' -F 'sequence_author-$nCnt-middle_initial=$sMiddle' -F 'sequence_author-$nCnt-last_name=$sLast' -F 'sequence_author-$nCnt-suffix='";
 	}
 
 # Contact information section
@@ -143,8 +143,9 @@ sub prepareSbt {
 	}
 
 # Running NCBI template.cgi using cUrl
-	$sCmd = "curl -F 'first_name=$sCFirst' -F 'last_name=$sCLast' -F 'department=$contact_info{department}' -F 'institution=$contact_info{institution}' -F 'street=$contact_info{street}' -F 'city=$contact_info{city}' -F 'state=$contact_info{state}' -F 'zip=$contact_info{zip}' -F 'country=$contact_info{country}' -F 'phone=$contact_info{phone}' -F 'fax=$contact_info{fax}' -F 'email=$paMeta->[15]' $sAuthorForm -F 'cit_status_radio=unpublished' -F 'citation_title=$paMeta->[17]' -F 'cit_auth_radio=same' -F 'bioproject=$paMeta->[4]' -F 'biosample=$paMeta->[21]' -F 'submit=Create Template' $SUBMISSION_TEMPLATE > $sSbtFile";
+	$sCmd = "curl -F 'first_name=$sCFirst' -F 'last_name=$sCLast' -F 'department=$contact_info{department}' -F 'institution=$contact_info{institution}' -F 'street=$contact_info{street}' -F 'city=$contact_info{city}' -F 'sub=$contact_info{state}' -F 'postal_code=$contact_info{zip}' -F 'country=$contact_info{country}' -F 'phone=$contact_info{phone}' -F 'fax=$contact_info{fax}' -F 'email=$paMeta->[15]' $sAuthorForm -F 'publication_status=unpublished' -F 'reference_title=$paMeta->[17]' -F 'same_reference_and_sequence_authors=yes' -F 'bioproject_id=$paMeta->[4]' -F 'biosample_id=$paMeta->[21]' -F 'submit=Create Template' $SUBMISSION_TEMPLATE > $sSbtFile";
 	$sCmd =~ s/\r|\n//ig;
+	printLogMsg($DEBUG, "Preparing to run - \n$sCmd\n");
 	system($sCmd);
 
 	if(-e $sSbtFile) {
