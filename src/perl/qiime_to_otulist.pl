@@ -2,34 +2,29 @@
 
 eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
     if 0; # not running under some shell
-
-eval 'exec /usr/bin/perl  -S $0 ${1+"$@"}'
-    if 0; # not running under some shell
 use strict;
 use warnings;
 use Data::Dumper;
 
+my $wc_l = `wc -l $ARGV[0] | cut -f1 -d' '`;	# number of lines = number of OTUs present
+
 open FILE, "$ARGV[0]"; # uclust picked otus seqs.screened_otus.txt 
 my @lines = <FILE>; 
 close FILE;
-my @A = split "\t", $lines[$#lines]; 
-my $l = $A[0];
-$l =~ s/denovo//;
-my $n = $l+1;
 
 open OUT, ">$ARGV[2]" or die; # qiime_to_otus.txt 
 open OUT2, ">$ARGV[2].list" or die; # list file
 print OUT2 "$ARGV[2]"; 
 close OUT2;
 
-print OUT "$ARGV[1]\t$n"; # OTU distance, numberOTUs 
+print OUT "$ARGV[1]\t$wc_l"; # OTU distance, numberOTUs 
 
 my %goodseqs = ();
 for my $i (0 .. $#lines){ 
   print OUT "\t"; 
   my @B = split "\t", $lines[$i]; 
   chomp($B[$#B]); 
-  print OUT "$B[1]"; 
+  print OUT "$B[1]";
   $goodseqs{$B[1]} = 1;
   
   if ($#B >= 2){
