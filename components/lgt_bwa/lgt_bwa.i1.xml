@@ -37,6 +37,10 @@
             	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</value>
             </param>
             <param>
+            	<key>--use_mem</key>
+            	<value>$;USE_MEM$;</value>
+            </param>
+            <param>
             	<key>--misMsc</key>
             	<value>$;MISMATCH_PENALTY$;</value>
             </param>

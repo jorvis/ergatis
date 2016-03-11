@@ -91,7 +91,7 @@ if ( $hCmdLineArgs{'use_mem'} ) {
             );
         }
     } else {
-        printLogMsg( $DEBUG, "Detected a single-end fastq or BAM sequence" );
+        printLogMsg( $DEBUG, "Detected a single-end fastq sequence" );
         if ( $nFileCnt == 1 && exists( $hType{'fastq'} ) ) {
             ( $sFbase, $sFdir, $sFext ) =
               fileparse( $hType{'fastq'}, qr/\.[^.]*/ );
@@ -421,7 +421,7 @@ __END__
 
 =head1 SYNOPSIS
 
-# USAGE : 
+# USAGE :
 
 	parameters in [] are optional
 
@@ -464,11 +464,11 @@ B<--help, -h>
 	Prints this help doc
 
 
-### Still to write ###	
+### Still to write ###
     'misMsc|M=i',          'maxGapO|o=i',
     'maxGapE|e=i',         'gapOsc|O=i',
     'gapEsc|E=i',          'nThrds|t=i',
-    'maxOcc|n=i',          
+    'maxOcc|n=i',
     'keep_sam|k=i',
 
 
