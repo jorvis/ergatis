@@ -14,7 +14,7 @@ my $out		=	*STDOUT;
 
 my $IDENTITY_CUTOFF = 0.5;
 my $SIMILARITY_CUTOFF = 0.5;
-my $MATCH_CUTOFF = 0.1;	// Match % isn't stored in btab... only in BER raw output
+my $MATCH_CUTOFF = 0.1;	# Match % isn't stored in btab... only in BER raw output
 
 &parse_options;
 &add_pvalues;
