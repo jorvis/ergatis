@@ -1,0 +1,63 @@
+#!/bin/sh
+if [ -z "$SCHEMA_DOCS_DIR" ]
+then
+    SCHEMA_DOCS_DIR=
+export SCHEMA_DOCS_DIR
+fi
+if [ -z "$WORKFLOW_WRAPPERS_DIR" ]
+then
+    WORKFLOW_WRAPPERS_DIR=/opt/ergatis/bin
+export WORKFLOW_WRAPPERS_DIR
+fi
+if [ -z "$WORKFLOW_DOCS_DIR" ]
+then
+    WORKFLOW_DOCS_DIR=
+export WORKFLOW_DOCS_DIR
+fi
+
+umask 0000
+unset LD_LIBRARY_PATH
+
+LANG=C
+export LANG
+LC_ALL=C
+export LC_ALL
+
+# Actual script code starts here
+
+while [[ $# > 1 ]]
+do
+i="$1"
+case $i in
+	--first)
+	first="$2"
+    shift
+    ;;
+    --second)
+    second="$2"
+    shift
+    ;;
+    --paired)
+    paired="$2"
+    shift
+    ;;
+    --output_dir)
+    out_dir="$2"
+    shift
+    ;;
+    --spades_bin)
+    spades_bin="$2"
+    shift
+    ;;
+esac
+shift 
+done
+cmd="${spades_bin}/spades.py --careful -o $out_dir"
+if [ $paired ]
+then
+	cmd="$cmd -1 $first -2 $second"
+else
+	cmd="$cmd -s $first"
+fi  
+$cmd
+
