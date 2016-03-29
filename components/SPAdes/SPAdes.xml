@@ -23,7 +23,7 @@
 			<type>RunUnixCommand</type>
 			<name>run SPAdes</name>
 			<state>incomplete</state>
-			<executable>$;SPADES_BIN$;/spades.py</executable>
+			<executable>$;BIN_DIR$;/run_spades</executable>
 			<param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/spades.stdout</value>
@@ -32,7 +32,26 @@
 				<key>stderr</key>
 				<value>$;OUTPUT_DIRECTORY$;/spades.stderr</value>
 			</param>
-			<arg>--careful -1 $;FIRST_FASTQ$; -2 $;SECOND_FASTQ$; -o $;OUTPUT_DIRECTORY$;</arg>
+			<param>
+				<key>--first</key>
+				<value>$;FIRST_FASTQ$;</value>
+			</param>
+			<param>
+				<key>--second</key>
+				<value>$;SECOND_FASTQ$;</value>
+			</param>
+			<param>
+				<key>--paired</key>
+				<value>$;PAIRED$;</value>
+			</param>
+			<param>
+				<key>--output_dir</key>
+				<value>$;OUTPUT_DIRECTORY$;</value>
+			</param>
+			<param>
+				<key>--spades_bin</key>
+				<value>$;SPADES_BIN$;</value>
+			</param>
 		</command>
         <command>
             <type>RunUnixCommand</type>

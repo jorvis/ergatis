@@ -99,9 +99,14 @@ if (( $? )) ; then echo "Failed at prinseq-lite.pl"; exit 1 ; fi
 ###in this case, the total and total_filter files have no difference, only the barcode file will change. The purpose is to make the trimmed seq file and barcode file match. 
 # Note - Requires BioPython v 1.51 or later
 echo "Creating paired-end and barcode FASTQ files"
-$BIN_DIR/fq_getPairAndOrphan1.8.py $prep_dir/R3N_${cutoffLength}.fastq $prep_dir/R1N_${cutoffLength}.fastq $OUTPUT_DIR/R3N_PE.fq $OUTPUT_DIR/R1N_PE.fq $prep_dir/orphan_temp.fq 
-$BIN_DIR/fq_getPairAndOrphan1.8.py $OUTPUT_DIR/R3N_PE.fq $prep_dir/R1R2_barcode.fastq $prep_dir/PE_temp.fq $OUTPUT_DIR/barcode.fq $prep_dir/orphan_temp.fq 
-if (( $? )) ; then echo "Failed at fq_getPairAndOrphan1.8.py"; exit 1 ; fi
+$BIN_DIR/fq_getPairAndOrphan.py $prep_dir/R3N_${cutoffLength}.fastq $prep_dir/R1N_${cutoffLength}.fastq $OUTPUT_DIR/R3N_PE.fq $OUTPUT_DIR/R1N_PE.fq $prep_dir/orphan_temp.fq 
+$BIN_DIR/fq_getPairAndOrphan.py $OUTPUT_DIR/R3N_PE.fq $prep_dir/R1R2_barcode.fastq $prep_dir/PE_temp.fq $OUTPUT_DIR/barcode.fq $prep_dir/orphan_temp.fq 
+if (( $? )) ; then echo "Failed at fq_getPairAndOrphan.py"; exit 1 ; fi
+
+# The files we want to pass into the QIIME (1.8) split_libraries_fastq.py script are
+# 1) R3N_PE.fq
+# 2) R1N_PE.fq
+# 3) barcode.fq
 
 echo "Removing temporary files..."
 rm $prep_dir/*_bad_*
