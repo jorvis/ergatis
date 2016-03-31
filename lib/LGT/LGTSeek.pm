@@ -1113,7 +1113,11 @@ sub bwaPostProcess {
     # Do we have both donor and host bams?
     if ( $config->{donor_bam} && $config->{host_bam} ) {
         $retval = $self->_bwaPostProcessDonorHostPaired($config);
-    }
+    } elsif ($config->{donor_bam}) {
+		$retval = $self->_bwaPostProcesDonorPaired($config);
+	} else {
+		confess "***ERROR*** Either both donor and host BAM files, or just a donor BAM file must be provided."
+	}
     if ( $self->{verbose} ) {
         print STDERR "======== &bwaPostProcess: Finished ========\n";
     }
@@ -1176,258 +1180,386 @@ sub _getPairedClass {
     };
 }
 
+sub _bwaPostProcessDonorPaired {
+     my ( $self, $config ) = @_;
+  
+     $self->{samtools_bin} =
+       $self->{samtools_bin} ? $self->{samtools_bin} : 'samtools';
+     my $samtools = $self->{samtools_bin};
+     my $output_dir =
+       $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
+  
+     my $classes_each = {
+         'MM' => 'paired',
+         'UM' => 'single',
+         'MU' => 'single',
+         'UU' => 'none'
+     };
+  
+     my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
+  
+     # Use case requires only the single mappings
+     my $class_to_file_name = {'single_map_donor' => "$output_dir/" . $prefix . ".single_map.bam";
+  
+     my $class_counts = {
+         'paired'  => undef,
+         'single'  => undef,
+         'none' => undef,
+     };
+  
+     # Here are a bunch of file handles we'll use later.
+     if ( $self->{verbose} ) {
+         print STDERR "$output_dir/" . $prefix . ".single_map.bam\n";
+     }
+     open(
+         my $single_map,
+         "| $samtools view -S -b -o $output_dir/" . $prefix . ".single_map.bam -"
+     ) or die "Unable to open LGT single map file for writing\n";
+  
+	 # Perhaps in the future I can change these file names to rely on extensions like the Donor/Host subroutine relies on _donor and _host for assigning to the right file - SAdkins
+     my $class_to_file = {
+         'single_map'  => $single_map
+     };
+  
+     my $donor_bam = $config->{donor_bam};
+     my $donor_fh;
+     my $donor_head;
+  
+     # Open all the donor files
+     if ( $self->{verbose} ) { print STDERR "Opening $donor_bam\n"; }
+     if ( $donor_bam =~ /.bam$/ ) {
+         $donor_head = `$samtools view -H $donor_bam`;
+         open( $donor_fh, "-|", "$samtools view $donor_bam" );
+     }
+     elsif ( $donor_bam =~ /.sam.gz$/ ) {
+         $donor_head = `zcat $donor_bam | $samtools view -H -S -`;
+         open( $donor_fh, "-|", "zcat $donor_bam | $samtools view -S -" );
+     }
+
+     # Prime the files with headers.
+     map {
+        my @donor_headers = split( /\n/, $donor_head );
+        print "Printing header to $_ donor file\n";
+        print { $class_to_file->{$_} }
+        join( "\n", grep( /^\@SQ/, @donor_headers ) );
+        print { $class_to_file->{$_} } "\n";
+        my @pg_headers = grep( /^\@PG|^\@CO/, @donor_headers );
+        my %pg_hash;
+        foreach my $pgs (@pg_headers) {
+            chomp($pgs);
+            $pg_hash{$pgs}++;
+        }
+        my $last_pg_id;
+        if ( $donor_headers[-1] =~ /^\@PG|^\@CO/ ) {
+            my $last_pg = $donor_headers[-1];
+            my $last_pg_id = ( split /\t/, $last_pg )[1];
+            $last_pg_id =~ s/ID\:/PP\:/;
+            $last_pg_id = "\t" . $last_pg_id;
+        }
+        foreach my $pgs ( keys %pg_hash ) {
+            print { $class_to_file->{$_} } "$pgs\n";
+        }
+        print { $class_to_file->{$_} } "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
+     } keys %$class_to_file;
+  
+     #   exit;
+     my $more_lines = 1;
+ 
+     my $line_num = 0;
+ 
+     while ($more_lines) {
+  
+         my @donor_lines;
+  
+         # Get the class of the donor mappings
+         $obj = $self->_getPairedClass( { fh => $donor_fh } );
+         my $dclass = $obj->{class};
+         $more_lines = $obj->{more_lines};
+         my $dr1_line = $obj->{r1_line};
+         my $dr2_line = $obj->{r2_line};
+  
+         if ($more_lines) {
+             my $paired_class = "$dclass";
+  
+  			 # print the single lines to the single_map file (if we are keeping this output file)
+             if ( $classes_each->{$paired_class} == "single" ) {
+                 print { $class_to_file->{"single_map"} } "$dr1_line\n$dr2_line\n";
+             }
+  
+             # Increment the count for this class
+             if ( $classes_each->{$paired_class} ) {
+                 $class_counts->{ $classes_each->{$paired_class} }++;
+             }
+  
+             # Increment the total count
+             $line_num++;
+         }
+     }
+  
+     # Close up the file handles
+     map {
+         if ( $_ =~ /_map$/ ) {
+             if ( $self->{verbose} ) { print STDERR "closing $_ file\n"; }
+             close $class_to_file->{$_};
+         }
+     } keys %$class_to_file;
+  
+     # Set the total
+     $class_counts->{total} = $line_num;
+  
+     # Return the files and the counts
+     return {
+         counts => $class_counts,
+ }       files  => $class_to_file_name
+    };
+}
+  
 sub _bwaPostProcessDonorHostPaired {
-    my ( $self, $config ) = @_;
-
-    $self->{samtools_bin} =
-      $self->{samtools_bin} ? $self->{samtools_bin} : 'samtools';
-    my $samtools = $self->{samtools_bin};
-    my $output_dir =
-      $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
-    my $classes_each = {
-        'MM' => 'paired',
-        'UM' => 'single',
-        'MU' => 'single',
-        'UU' => 'none'
-    };
-
-    # Classes have the donor on the left and the host on the right
-    my $classes_both = {
-        'UM_MU' => 'lgt',
-        'MU_UM' => 'lgt',
-        'UM_MM' => 'integration_site_host',
-        'MU_MM' => 'integration_site_host',
-        'UU_UM' => 'integration_site_host',
-        'UU_MU' => 'integration_site_host',
-        'MM_UM' => 'integration_site_donor',
-        'MM_MU' => 'integration_site_donor',
-        'MU_UU' => 'integration_site_donor',
-        'UM_UU' => 'integration_site_donor',
-        'MM_UU' => 'microbiome',
-        'UU_MM' => 'host',
-        'UU_UU' => 'no_map',
-        'MM_MM' => 'all_map',
-        'UM_UM' => 'single_map',
-        'MU_MU' => 'single_map'
-    };
-
-    my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
-    my $class_to_file_name = {
-        'lgt_donor' => "$output_dir/" . $prefix . ".lgt_donor.bam",
-        'lgt_host'  => "$output_dir/" . $prefix . ".lgt_host.bam",
-        'integration_site_donor_donor' => "$output_dir/"
-          . $prefix
-          . ".integration_site_donor_donor.bam",
-        'integration_site_donor_host' => "$output_dir/"
-          . $prefix
-          . ".integration_site_donor_host.bam",
-        'microbiome_donor' => "$output_dir/" . $prefix . ".microbiome.bam",
-    };
-
-    my $class_counts = {
-        'lgt'                    => undef,
-        'integration_site_host'  => undef,
-        'integration_site_donor' => undef,
-        'microbiome'             => undef,
-        'host'                   => undef,
-        'no_map'                 => undef,
-        'all_map'                => undef,
-        'single_map'             => undef
-    };
-
-    # Here are a bunch of file handles we'll use later.
-    if ( $self->{verbose} ) {
-        print STDERR "$output_dir/" . $prefix . ".lgt_donor.bam\n";
-    }
-    open(
-        my $lgtd,
-        "| $samtools view -S -b -o $output_dir/" . $prefix . ".lgt_donor.bam -"
-    ) or die "Unable to open LGT donor file for writing\n";
-    open( my $lgth,
-        "| $samtools view -S -b -o $output_dir/" . $prefix . ".lgt_host.bam -" )
-      or die "Unable to open LGT recipient file for writing\n";
-    open(
-        my $int_site_donor_d,
-        "| $samtools view -S -b -o $output_dir/"
-          . $prefix
-          . ".integration_site_donor_donor.bam -"
-    ) or die "Unable to open donor integration site file for writing\n";
-    open(
-        my $int_site_donor_h,
-        "| $samtools view -S -b -o $output_dir/"
-          . $prefix
-          . ".integration_site_donor_host.bam -"
-    ) or die "Unable to open recipient integration site file for writing\n";
-    open(
-        my $microbiome_donor,
-        "| $samtools view -S -b -o $output_dir/" . $prefix . ".microbiome.bam -"
-    ) or die "Unable to open donor microbiome file for writing\n";
-
-    my $class_to_file = {
-        'lgt_donor'                    => $lgtd,
-        'lgt_host'                     => $lgth,
-        'integration_site_donor_donor' => $int_site_donor_d,
-        'integration_site_donor_host'  => $int_site_donor_h,
-        'microbiome_donor'             => $microbiome_donor
-    };
-
-    my $donor_bam = $config->{donor_bam};
-    my $host_bam  = $config->{host_bam};
-    my $donor_fh;
-    my $host_fh;
-    my $donor_head;
-    my $host_head;
-
-    # Open all the donor files
-    if ( $self->{verbose} ) { print STDERR "Opening $donor_bam\n"; }
-    if ( $donor_bam =~ /.bam$/ ) {
-        $donor_head = `$samtools view -H $donor_bam`;
-        open( $donor_fh, "-|", "$samtools view $donor_bam" );
-    }
-    elsif ( $donor_bam =~ /.sam.gz$/ ) {
-        $donor_head = `zcat $donor_bam | $samtools view -H -S -`;
-        open( $donor_fh, "-|", "zcat $donor_bam | $samtools view -S -" );
-    }
-
+     my ( $self, $config ) = @_;
+  
+     $self->{samtools_bin} =
+       $self->{samtools_bin} ? $self->{samtools_bin} : 'samtools';
+     my $samtools = $self->{samtools_bin};
+     my $output_dir =
+       $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
+  
+     # Classes have the donor on the left and the host on the right
+     my $classes_both = {
+         'UM_MU' => 'lgt',
+         'MU_UM' => 'lgt',
+         'UM_MM' => 'integration_site_host',
+         'MU_MM' => 'integration_site_host',
+         'UU_UM' => 'integration_site_host',
+         'UU_MU' => 'integration_site_host',
+         'MM_UM' => 'integration_site_donor',
+         'MM_MU' => 'integration_site_donor',
+         'MU_UU' => 'integration_site_donor',
+         'UM_UU' => 'integration_site_donor',
+         'MM_UU' => 'microbiome',
+         'UU_MM' => 'host',
+         'UU_UU' => 'no_map',
+         'MM_MM' => 'all_map',
+         'UM_UM' => 'single_map',
+         'MU_MU' => 'single_map'
+     };
+  
+     my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
+     my $class_to_file_name = {
+         'lgt_donor' => "$output_dir/" . $prefix . ".lgt_donor.bam",
+         'lgt_host'  => "$output_dir/" . $prefix . ".lgt_host.bam",
+         'integration_site_donor_donor' => "$output_dir/"
+           . $prefix
+           . ".integration_site_donor_donor.bam",
+         'integration_site_donor_host' => "$output_dir/"
+           . $prefix
+           . ".integration_site_donor_host.bam",
+         'microbiome_donor' => "$output_dir/" . $prefix . ".microbiome.bam",
+     };
+  
+     my $class_counts = {
+         'lgt'                    => undef,
+         'integration_site_host'  => undef,
+         'integration_site_donor' => undef,
+         'microbiome'             => undef,
+         'host'                   => undef,
+         'no_map'                 => undef,
+         'all_map'                => undef,
+         'single_map'             => undef
+     };
+  
+     # Here are a bunch of file handles we'll use later.
+     if ( $self->{verbose} ) {
+         print STDERR "$output_dir/" . $prefix . ".lgt_donor.bam\n";
+     }
+     open(
+         my $lgtd,
+         "| $samtools view -S -b -o $output_dir/" . $prefix . ".lgt_donor.bam -"
+     ) or die "Unable to open LGT donor file for writing\n";
+     open( my $lgth,
+         "| $samtools view -S -b -o $output_dir/" . $prefix . ".lgt_host.bam -" )
+       or die "Unable to open LGT recipient file for writing\n";
+     open(
+         my $int_site_donor_d,
+         "| $samtools view -S -b -o $output_dir/"
+           . $prefix
+           . ".integration_site_donor_donor.bam -"
+     ) or die "Unable to open donor integration site file for writing\n";
+     open(
+         my $int_site_donor_h,
+         "| $samtools view -S -b -o $output_dir/"
+           . $prefix
+           . ".integration_site_donor_host.bam -"
+     ) or die "Unable to open recipient integration site file for writing\n";
+     open(
+         my $microbiome_donor,
+         "| $samtools view -S -b -o $output_dir/" . $prefix . ".microbiome.bam -"
+     ) or die "Unable to open donor microbiome file for writing\n";
+  
+     my $class_to_file = {
+         'lgt_donor'                    => $lgtd,
+         'lgt_host'                     => $lgth,
+         'integration_site_donor_donor' => $int_site_donor_d,
+         'integration_site_donor_host'  => $int_site_donor_h,
+         'microbiome_donor'             => $microbiome_donor
+     };
+  
+     my $donor_bam = $config->{donor_bam};
+     my $host_bam  = $config->{host_bam};
+     my $donor_fh;
+     my $host_fh;
+     my $donor_head;
+     my $host_head;
+  
+     # Open all the donor files
+     if ( $self->{verbose} ) { print STDERR "Opening $donor_bam\n"; }
+     if ( $donor_bam =~ /.bam$/ ) {
+         $donor_head = `$samtools view -H $donor_bam`;
+         open( $donor_fh, "-|", "$samtools view $donor_bam" );
+     }
+     elsif ( $donor_bam =~ /.sam.gz$/ ) {
+         $donor_head = `zcat $donor_bam | $samtools view -H -S -`;
+         open( $donor_fh, "-|", "zcat $donor_bam | $samtools view -S -" );
+     }
+  
     # Open all the host files
     if ( $self->{verbose} ) { print STDERR "Opening $_\n"; }
     if ( $host_bam =~ /.bam$/ ) {
-        $host_head = `$samtools view -H $host_bam`;
-        open( $host_fh, "-|", "$samtools view $host_bam" );
-    }
-    elsif ( $host_bam =~ /.sam.gz$/ ) {
-        $host_head = `zcat $host_bam | $samtools view -H -S -`;
-        open( $host_fh, "-|", "zcat $host_bam | $samtools view -S -" );
-    }
-
-    # Prime the files with headers.
-    map {
-        if ( $_ =~ /_donor$/ ) {
-            my @donor_headers = split( /\n/, $donor_head );
-            print "Printing header to $_ donor file\n";
-            print { $class_to_file->{$_} }
-              join( "\n", grep( /^\@SQ/, @donor_headers ) );
-            print { $class_to_file->{$_} } "\n";
-            my @pg_headers = grep( /^\@PG|^\@CO/, @donor_headers );
-            my %pg_hash;
-            foreach my $pgs (@pg_headers) {
-                chomp($pgs);
-                $pg_hash{$pgs}++;
-            }
-            my $last_pg_id;
-            if ( $donor_headers[-1] =~ /^\@PG|^\@CO/ ) {
-                my $last_pg = $donor_headers[-1];
-                my $last_pg_id = ( split /\t/, $last_pg )[1];
-                $last_pg_id =~ s/ID\:/PP\:/;
-                $last_pg_id = "\t" . $last_pg_id;
-            }
-            foreach my $pgs ( keys %pg_hash ) {
-                print { $class_to_file->{$_} } "$pgs\n";
-            }
-            print { $class_to_file->{$_} }
-              "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
-
-            #            close $class_to_file->{$_};
-        }
-        elsif ( $_ =~ /_host$/ ) {
-            my @host_headers = split( /\n/, $host_head );
-            print "Printing header to $_ host file\n";
-            print { $class_to_file->{$_} }
-              join( "\n", grep( /^\@SQ/, @host_headers ) );
-            print { $class_to_file->{$_} } "\n";
-            my @pg_headers = grep( /^\@PG|^\@CO/, @host_headers );
-            my %pg_hash;
-            foreach my $pgs (@pg_headers) {
-                chomp($pgs);
-                $pg_hash{$pgs}++;
-            }
-            my $last_pg_id;
-            if ( $host_headers[-1] =~ /^\@PG|^\@CO/ ) {
-                my $last_pg = $host_headers[-1];
-                my $last_pg_id = ( split /\t/, $last_pg )[1];
-                $last_pg_id =~ s/ID\:/PP\:/;
-                $last_pg_id = "\t" . $last_pg_id;
-            }
-            foreach my $pgs ( keys %pg_hash ) {
-                print { $class_to_file->{$_} } "$pgs\n";
-            }
-            print { $class_to_file->{$_} }
-              "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
-        }
-    } keys %$class_to_file;
-
-    #   exit;
-    my $more_lines = 1;
-
-    my $line_num = 0;
-
-    while ($more_lines) {
-
-        my @donor_lines;
-        my @host_lines;
-
-        # Get the class of the host mappings
-        my $obj = $self->_getPairedClass( { fh => $host_fh } );
-        my $hclass = $obj->{class};
-        $more_lines = $obj->{more_lines};
-        my $hr1_line = $obj->{r1_line};
-        my $hr2_line = $obj->{r2_line};
-
-        # Get the class of the donor mappings
-        $obj = $self->_getPairedClass( { fh => $donor_fh } );
-        my $dclass = $obj->{class};
-        $more_lines = $obj->{more_lines};
-        my $dr1_line = $obj->{r1_line};
-        my $dr2_line = $obj->{r2_line};
-
-        if ($more_lines) {
-            my $paired_class = "$dclass\_$hclass";
-
-  # print the donor lines to the donor file (if we are keeping this output file)
-            if ( $class_to_file->{ $classes_both->{$paired_class} . "_donor" } )
-            {
-                print {
-                    $class_to_file->{ $classes_both->{$paired_class}
-                          . "_donor" } } "$dr1_line\n$dr2_line\n";
-            }
-
-    # print the host lines to the host file (if we are keeping this output file)
-            if ( $class_to_file->{ $classes_both->{$paired_class} . "_host" } )
-            {
-                print {
-                    $class_to_file->{ $classes_both->{$paired_class} . "_host" }
-                } "$hr1_line\n$hr2_line\n";
-            }
-
-            # Increment the count for this class
-            if ( $classes_both->{$paired_class} ) {
-                $class_counts->{ $classes_both->{$paired_class} }++;
-            }
-
-            # Increment the total count
-            $line_num++;
-        }
+     	$host_head = `$samtools view -H $host_bam`;
+     	open( $host_fh, "-|", "$samtools view $host_bam" );
+    } elsif ( $host_bam =~ /.sam.gz$/ ) {
+     	$host_head = `zcat $host_bam | $samtools view -H -S -`;
+     	open( $host_fh, "-|", "zcat $host_bam | $samtools view -S -" );
     }
 
-    # Close up the file handles
-    map {
-        if ( $_ =~ /_donor$/ ) {
-            if ( $self->{verbose} ) { print STDERR "closing $_ donor file\n"; }
-            close $class_to_file->{$_};
-        }
-        elsif ( $_ =~ /_host$/ ) {
-            if ( $self->{verbose} ) { print STDERR "closing $_ host file\n"; }
-            close $class_to_file->{$_};
-        }
-    } keys %$class_to_file;
-
-    # Set the total
-    $class_counts->{total} = $line_num;
-
-    # Return the files and the counts
-    return {
-        counts => $class_counts,
-        files  => $class_to_file_name
+     # Prime the files with headers.
+     map {
+         if ( $_ =~ /_donor$/ ) {
+             my @donor_headers = split( /\n/, $donor_head );
+             print "Printing header to $_ donor file\n";
+             print { $class_to_file->{$_} }
+               join( "\n", grep( /^\@SQ/, @donor_headers ) );
+             print { $class_to_file->{$_} } "\n";
+             my @pg_headers = grep( /^\@PG|^\@CO/, @donor_headers );
+             my %pg_hash;
+             foreach my $pgs (@pg_headers) {
+                 chomp($pgs);
+                 $pg_hash{$pgs}++;
+             }
+             my $last_pg_id;
+             if ( $donor_headers[-1] =~ /^\@PG|^\@CO/ ) {
+                 my $last_pg = $donor_headers[-1];
+                 my $last_pg_id = ( split /\t/, $last_pg )[1];
+                 $last_pg_id =~ s/ID\:/PP\:/;
+                 $last_pg_id = "\t" . $last_pg_id;
+             }
+             foreach my $pgs ( keys %pg_hash ) {
+                 print { $class_to_file->{$_} } "$pgs\n";
+             }
+             print { $class_to_file->{$_} }
+               "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
+  
+             #            close $class_to_file->{$_};
+         }
+         elsif ( $_ =~ /_host$/) {
+     		# Host file does not exist when BWA is only aligned to donor
+             my @host_headers = split( /\n/, $host_head );
+             print "Printing header to $_ host file\n";
+             print { $class_to_file->{$_} }
+               join( "\n", grep( /^\@SQ/, @host_headers ) );
+             print { $class_to_file->{$_} } "\n";
+             my @pg_headers = grep( /^\@PG|^\@CO/, @host_headers );
+             my %pg_hash;
+             foreach my $pgs (@pg_headers) {
+                 chomp($pgs);
+                 $pg_hash{$pgs}++;
+             }
+             my $last_pg_id;
+             if ( $host_headers[-1] =~ /^\@PG|^\@CO/ ) {
+                 my $last_pg = $host_headers[-1];
+                 my $last_pg_id = ( split /\t/, $last_pg )[1];
+                 $last_pg_id =~ s/ID\:/PP\:/;
+                 $last_pg_id = "\t" . $last_pg_id;
+             }
+             foreach my $pgs ( keys %pg_hash ) {
+                 print { $class_to_file->{$_} } "$pgs\n";
+             }
+             print { $class_to_file->{$_} }
+               "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
+         }
+     } keys %$class_to_file;
+  
+     #   exit;
+     my $more_lines = 1;
+ 
+     my $line_num = 0;
+ 
+     while ($more_lines) {
+  
+         my @donor_lines;
+         my @host_lines;
+  
+         # Get the class of the host mappings
+         my $obj = $self->_getPairedClass( { fh => $host_fh } );
+         my $hclass = $obj->{class};
+         $more_lines = $obj->{more_lines};
+         my $hr1_line = $obj->{r1_line};
+         my $hr2_line = $obj->{r2_line};
+  
+         # Get the class of the donor mappings
+         $obj = $self->_getPairedClass( { fh => $donor_fh } );
+         my $dclass = $obj->{class};
+         $more_lines = $obj->{more_lines};
+         my $dr1_line = $obj->{r1_line};
+         my $dr2_line = $obj->{r2_line};
+  
+         if ($more_lines) {
+             my $paired_class = "$dclass\_$hclass";
+  
+   # print the donor lines to the donor file (if we are keeping this output file)
+             if ( $class_to_file->{ $classes_both->{$paired_class} . "_donor" } )
+             {
+                 print {
+                     $class_to_file->{ $classes_both->{$paired_class}
+                           . "_donor" } } "$dr1_line\n$dr2_line\n";
+             }
+  
+     # print the host lines to the host file (if we are keeping this output file)
+             if ( $class_to_file->{ $classes_both->{$paired_class} . "_host" } )
+             {
+                 print {
+                     $class_to_file->{ $classes_both->{$paired_class} . "_host" }
+                 } "$hr1_line\n$hr2_line\n";
+             }
+  
+             # Increment the count for this class
+             if ( $classes_both->{$paired_class} ) {
+                 $class_counts->{ $classes_both->{$paired_class} }++;
+             }
+  
+             # Increment the total count
+             $line_num++;
+         }
+     }
+  
+     # Close up the file handles
+     map {
+         if ( $_ =~ /_donor$/ ) {
+             if ( $self->{verbose} ) { print STDERR "closing $_ donor file\n"; }
+             close $class_to_file->{$_};
+         }
+         elsif ( $_ =~ /_host$/ ) {
+             if ( $self->{verbose} ) { print STDERR "closing $_ host file\n"; }
+             close $class_to_file->{$_};
+         }
+     } keys %$class_to_file;
+  
+     # Set the total
+     $class_counts->{total} = $line_num;
+  
+     # Return the files and the counts
+     return {
+         counts => $class_counts,
+ }       files  => $class_to_file_name
     };
 }
 

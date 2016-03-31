@@ -63,8 +63,8 @@ B<--help,-h>
 
     2) LGT_donor file
     3) LGT_recipient file
-    - Potential lateral gene transfer (LGT) is defined as pairs of reads where exactly one read maps to the donor (other is unmapped),
-        and the other maps to the recipient (first is unmapped).  Thus we output alignments for both the donor and recipient.
+    - Potential lateral gene transfer (LGT) is defined as pairs of reads where exactly one read maps to the donor (other is unmapped), and the other maps to the recipient (first is unmapped).  Thus we output alignments for both the donor and recipient.
+
 =head1  CONTACT
 
     Shaun Adkins
@@ -87,6 +87,7 @@ my $logfh;
 my $prefix;
 my @donor_files;
 my @recipient_files;
+my $donor_only = 0;
 my %LGT_groups;
 my $output_dir;
 my %options;
@@ -107,37 +108,63 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
-my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
-
 $prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_process";
-# Group reads from donor/recipient files for each mapping type
-foreach my $r (keys %$matching_files) {
-	$prefix .= "_" . $count_id++ . "." if (scalar keys %$matching_files > 1);
 
-	my $lgt_obj = LGT::LGTSeek->new( {
-			'samtools_bin' => $options{'samtools_path'},
-			'output_dir' => $options{'output_dir'},
-			'verbose' => 1
-		} );
-	
-	my $d = $matching_files->{$r};
-	# Returns a hash of group assignemt counts and the files, but not really necessary to bring out here.
-	my $pp_data = $lgt_obj->bwaPostProcess( {
-			'donor_bam'	=> $d,
-			'host_bam'	=> $r,
-			'output_prefix' => $prefix
-		} );
-	
-	my $counts_file = $output_dir . "/" . $prefix . ".post_processing.tab";
-	my (@header, @vals);
-    map {
-        push( @header, $_ );
-        my $foo = $pp_data->{counts}->{$_} ? $pp_data->{counts}->{$_} : 0;
-        push( @vals, $foo );
-    } ( 'total', 'host', 'no_map', 'all_map', 'single_map', 'integration_site_host', 'integration_site_donor', 'microbiome', 'lgt' );
-	LGT::LGTSeek->print_tab( $counts_file, \@header, \@vals );
+# Need to take a different approach depending on if we have a host file or not.
+if ($donor_only) {
+	foreach my $d_file (@donor_files){
+		$prefix .= "_" . $count_id++ . "." if (scalar @donor_files > 1);
+		my $lgt_obj = LGT::LGTSeek->new( {
+				'samtools_bin' => $options{'samtools_path'},
+				'output_dir' => $options{'output_dir'},
+				'verbose' => 1
+			} );
+		my $pp_data = $lgt_obj->bwaPostProcess( {
+				'donor_bam'	=> $d_file,
+				'output_prefix' => $prefix
+			} );
+		my $counts_file = $output_dir . "/" . $prefix . ".post_processing.tab";
+		my (@header, @vals);
+	    map {
+	        push( @header, $_ );
+	        my $foo = $pp_data->{counts}->{$_} ? $pp_data->{counts}->{$_} : 0;
+	        push( @vals, $foo );
+	    } ( 'total', 'paired', 'single', 'none' );
+		LGT::LGTSeek->print_tab( $counts_file, \@header, \@vals );
+	}
 
-};
+} else {
+	# Before doing post-processing, ensure donor and host file counts are equal, and match them up
+	my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
+	# Group reads from donor/recipient files for each mapping type
+	foreach my $r (keys %$matching_files) {
+		$prefix .= "_" . $count_id++ . "." if (scalar keys %$matching_files > 1);
+	
+		my $lgt_obj = LGT::LGTSeek->new( {
+				'samtools_bin' => $options{'samtools_path'},
+				'output_dir' => $options{'output_dir'},
+				'verbose' => 1
+			} );
+		
+		my $d = $matching_files->{$r};
+		# Returns a hash of group assignemt counts and the files, but not really necessary to bring out here.
+		my $pp_data = $lgt_obj->bwaPostProcess( {
+				'donor_bam'	=> $d,
+				'host_bam'	=> $r,
+				'output_prefix' => $prefix
+			} );
+		
+		# Take list of counts and write them to file
+		my $counts_file = $output_dir . "/" . $prefix . ".post_processing.tab";
+		my (@header, @vals);
+	    map {
+	        push( @header, $_ );
+	        my $foo = $pp_data->{counts}->{$_} ? $pp_data->{counts}->{$_} : 0;
+	        push( @vals, $foo );
+	    } ( 'total', 'host', 'no_map', 'all_map', 'single_map', 'integration_site_host', 'integration_site_donor', 'microbiome', 'lgt' );
+		LGT::LGTSeek->print_tab( $counts_file, \@header, \@vals );
+	};
+}
 
 exit(0);
 
@@ -190,15 +217,19 @@ sub check_options {
        @donor_files = `cat $opts->{donor_file_list}`;
    }
 
-   if($opts->{recipient_file}) {
+    if($opts->{recipient_file}) {
        push @recipient_files, $opts->{recipient_file};
-   } elsif($opts->{recipient_file_list}) {
+    } elsif($opts->{recipient_file_list}) {
        @recipient_files = `cat $opts->{recipient_file_list}`;
-   }
+    }
 
-   if (scalar @donor_files != scalar @recipient_files) {
-       &_log($ERROR, "ERROR : Number of donor files to recipient files is not equal.  Please check both lists. $!");
-   }
+    if (scalar @recipient_files == 0) {
+		print STDOUT "Assuming this is a donor-file only run.\n"	
+		$donor_only = 1;
+
+   	if (scalar @donor_files != scalar @recipient_files && !$donor_only) {
+       	&_log($ERROR, "ERROR : Number of donor files to recipient files is not equal.  Please check both lists. $!");
+	}
    $output_dir = $opts->{'output_dir'};
 }
 
