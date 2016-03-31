@@ -17,6 +17,7 @@ USEAGE: run_humann2.pl
        --identity_threshold=40
        --evalue=1.0
        --norm=relab
+       --force=no
        --humann_dir=/path/to/humann2/dir
        --output_dir=/path/to/output/dir
        --other_opts="other options"
@@ -41,10 +42,13 @@ B<--diamond, -d>
     Optional. Directory containing the diamond executable. [DEFAULT: $PATH]
 
 B<--nucleotide_database, -n>    
-    Required. directory containing the nucleotide database
+    Required.  nucleotide database to download
 
 B<--protein_database, -p>
-    Required. directory containing the protein database
+    Required. protein database to download
+
+B<--force, -f>
+    Optional. force-download database?
 
 B<--identity_threshold, -t>
     Optional. identity threshold for alignments. Default 40.0
@@ -98,6 +102,7 @@ my $metaphlan_options;
 my $identity_threshold;
 my $evalue;
 my $norm;
+my $force;
 my $humann_dir;
 my $output_dir;
 my $other_opts;
@@ -113,6 +118,7 @@ my $results = GetOptions (\%options,
                           'diamond|d:s',
                           'nucleotide_database|n=s',
                           'protein_database|p=s',
+			  'force|f:s',
                           'evalue|e:f',
                           'identity_threshold|t:f',
 			  'norm|r=s',
@@ -130,23 +136,41 @@ if (defined $options{log}) {
 }
 
 my $str = "";
+my $exit_code = 0;
 
-#Download database if it doesn't exist already
-if (-d $nucleotide_database) {
-	print "\nNucleotide database already exists: ".$nucleotide_database."\n";
+#Download database if it doesn't exist already or if user selects force-download
+if ((-d "/mnt/staging/data/chocophlan")&&($force eq "no")) {
+	print "\nNucleotide database already exists: /mnt/staging/data/chocophlan\n";
 }else{ 
-	system ("humann2_databases --download chocophlan full /mnt/staging/data");
-	print "\n Chocophlan downloaded.\n";
+	if (-d "/mnt/staging/data/chocophlan"){
+	   system ("rm -r /mnt/staging/data/chocophlan");
+	}
+	$str = "humann2_databases --download chocophlan $nucleotide_database /mnt/staging/data";
+	$exit_code = system($str);
+	if($exit_code!=0){
+  		print "Command \"$str\" failed with an exit code of $exit_code.\n";
+  		exit($exit_code >> 8);
+	}else{
+		print "\n Chocophlan downloaded.\n";
+	}
 }
-
-if (-d $protein_database) {
-        print "\nProtein database already exists: ".$protein_database."\n";
+if ((-d "/mnt/staging/data/uniref")&&($force eq "no")) {
+        print "\nProtein database already exists: /mnt/staging/data/uniref \n";
 }else{          
-        system ("humann2_databases --download uniref diamond /mnt/staging/data");
-	print "\n Uniref downloaded.\n";
+	if (-d "/mnt/staging/data/uniref"){
+           system ("rm -r /mnt/staging/data/uniref");
+        }
+	$str = "humann2_databases --download uniref $protein_database /mnt/staging/data";
+        $exit_code = system ($str);
+        if($exit_code!=0){
+                print "Command \"$str\" failed with an exit code of $exit_code.\n";
+                exit($exit_code >> 8);
+        }else{
+		print "\n Uniref downloaded.\n";
+	}
 }
 
-$str = "humann2 --input $input_file --output $output_dir --protein-database=$protein_database --nucleotide-database=$nucleotide_database";
+$str = "humann2 --input $input_file --output $output_dir --protein-database=/mnt/staging/data/uniref --nucleotide-database=/mnt/staging/data/chocophlan";
 if ($metaphlan ne "") {$str .= " --metaphlan $metaphlan";}
 if ($bowtie2 ne "") {$str .= " --bowtie2 $bowtie2";}
 if ($diamond ne "") {$str .= " --diamond $diamond";}
@@ -157,16 +181,37 @@ if ($other_opts ne "") {$str .= " $other_opts";}
 
 #run humann2
 print "\n\nRunning...\n$str\n\n";    
-system ("$str");
+$exit_code = system ("$str");
+if($exit_code!=0){
+	print "Command \"$str\" failed with an exit code of $exit_code.\n";
+        exit($exit_code >> 8);
+}else{
+        print "\n humann2 ran sucessfully.\n";
+}
 
 
 #normalize the abundance output files
 my ($sample,$dir,$ext) = fileparse($input_file,'\..*');
 $str = "humann2_renorm_table --input ".$output_dir."\/".$sample."_genefamilies.tsv --output ".$output_dir."\/".$sample."_genefamilies_norm.tsv -u ".$norm;
 print "\n\nNormalizing output files...\n$str\n\n";
-system ("$str");
+$exit_code = system ("$str");
+if($exit_code!=0){
+        print "Command \"$str\" failed with an exit code of $exit_code.\n";
+        exit($exit_code >> 8);
+}else{
+        print "\n Genefamilies sucessfully normalized.\n";
+}
+
 $str = "humann2_renorm_table --input ".$output_dir."\/".$sample."_pathabundance.tsv --output ".$output_dir."\/".$sample."_pathabundance_norm.tsv -u ".$norm;
-system ("$str");
+print "\n\nNormalizing output files...\n$str\n\n";
+$exit_code = system ("$str");
+if($exit_code!=0){
+        print "Command \"$str\" failed with an exit code of $exit_code.\n";
+        exit($exit_code >> 8);
+}else{
+        print "\n Pathabundance sucessfully normalized.\n";
+}
+
 
 
 exit(0);
@@ -184,20 +229,6 @@ sub check_options {
         pod2usage();
         exit(0);
     }
-
-#    if($opts->{'input_list'} && $opts->{'input_list'} ne "") {
-#        &_die("input_list [$opts->{'input_list'}] does not exist") unless( -e $opts->{'input_list'});
-#        open(IN, "< $opts->{'input_list'}") or &_die("Unable to open $opts->{'input_list'}");
-#        while(<IN>) {
-#            push(@files, $_);
-#        }
-#        close(IN);
-#    } elsif($opts->{'input_file'} && $opts->{'input_file'} ne "") {
-#        &_die("input_file [$opts->{'input_file'}] does not exist") unless( -e $opts->{'input_file'});
-#        push(@files,$opts->{'input_file'});
-#    } else {
-#        &_die("Either input_list or input_file must be provided");
-#    }
 
 
    if($opts->{'input_file'} && $opts->{'input_file'} ne "") {
@@ -227,6 +258,12 @@ sub check_options {
     }else{
 	$norm = "cpm";
     }    
+
+    if (exists( $opts-> {'force'})) {
+        $force = $opts-> {'force'};
+    }else{
+        $force = "no";
+    }
 
     if (exists($opts-> {'diamond'})) {
 	$diamond = $opts-> {'diamond'};
