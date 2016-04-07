@@ -25,38 +25,45 @@ export LC_ALL
 
 source /opt/opt-packages/qiime-1.8/activate.sh
 
-while [[ $# -ge 1 ]]
+while [[ $# > 1 ]]
 do
 i="$1"
-arg=$(echo $i | cut -f1 -d "=" )
-val=$(echo $i | cut -f2 -d "=" )
 case $i in
     -q)
-    qual="$val"
+    qual="$2"
+    shift
     ;;
     -m)
-    mapf="$val"
+    mapf="$2"
+    shift
     ;;
     -f)
-    fasta="$val"
+    fasta="$2"
+    shift
     ;;
     -o)
-    out="$val"
+    out="$2"
+    shift
     ;;
     -b)
-    barcode="$val"
+    barcode="$2"
+    shift
     ;;
     -l)
-    min="$val"
+    min="$2"
+    shift
     ;;
     -L)
-    max="$val"
+    max="$2"
+    shift
     ;;
     -H)
-    homo="$val"
+    homo="$2"
+    shift
     ;;
     -a)
-    ambig="$val"
+    ambig="$2"
+    shift
     ;;
 esac
 shift 
