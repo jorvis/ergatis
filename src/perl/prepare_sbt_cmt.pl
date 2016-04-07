@@ -3,11 +3,11 @@
 #########################################################################################
 #											#
 # Name	      : prepare_sbt_cmt.pl							#
-# Version     : 1.0									#
+# Version     : 2.0									#
 # Project     :	GenBank Submisison Pipeline						#
 # Description : Script to create .sbt and .cmt files required for GenBank submission	#
-# Author      : Sonia Agrawal								#
-# Date        : January 31, 2014							#
+# Author      : Shaun Adkins								#
+# Date        : April 5, 2016							#
 #											#
 #########################################################################################
 
@@ -17,6 +17,8 @@ use Getopt::Long qw(:config no_ignore_case no_auto_abbrev pass_through);
 # Prints usage message from embedded pod documentation
 use Pod::Usage;
 # Include packages here 
+use LWP::UserAgent;
+use Data::Dumper;
 
 #############
 # CONSTANTS #
@@ -24,7 +26,6 @@ use Pod::Usage;
 
 # This is the URI link to pass params to in order to generate a .sbt file
 my $SUBMISSION_TEMPLATE = 'https://submit.ncbi.nlm.nih.gov/genbank/template/submission/';
-#my $SUBMISSION_TEMPLATE = 'http://www.ncbi.nlm.nih.gov/WebSub/template.cgi';
 
 ###########
 # GLOBALS #
@@ -33,8 +34,9 @@ my %hCmdLineArgs = ();
 # Log file handle;
 my $logfh;
 my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
-my %hFTP = ();
 my @aMeta = ();
+# This is the form data to be sent as POST
+my %post_data = ();
 
 ################
 # MAIN PROGRAM #
@@ -69,18 +71,17 @@ prepareCmt(\@aMeta, $hCmdLineArgs{'output_dir'});
 # Modifications :
 
 sub prepareSbt {
-	my ($paMeta, $sOutDir) = @_;
+	my ($metadata, $sOutDir) = @_;
 	my $sSubName = (caller(0))[3];
 	my $nI;
 	my ($sCmd, $sSbtFile);
 	my $fhRead;
 
-	$sSbtFile = $sOutDir."/".$paMeta->[0].".sbt";
+	$sSbtFile = $sOutDir."/".$metadata->[0].".sbt";
 # Authors section
 	my @aAuthors = ();
 	my ($sLast, $sFirst, $sMiddle, $sAuthorForm) = "";
-	my $nCnt;
-	@aAuthors = split(/\,/, $paMeta->[16]);	
+	@aAuthors = split(/\,/, $metadata->[16]);	
 	for($nI=0; $nI < @aAuthors; $nI++) {
 		$sLast = "";
 		$sFirst = "";
@@ -92,21 +93,24 @@ sub prepareSbt {
 		$sLast =~ s/^\s+|\s+$//;
 		$sFirst =~ s/^\s+|\s+$//;
 		$sMiddle =~ s/^\s+|\s+$// if(length($sMiddle) > 0);
-		$nCnt = $nI + 1;
-		$sAuthorForm .= " -F 'sequence_author-$nCnt-first_name=$sFirst' -F 'sequence_author-$nCnt-middle_initial=$sMiddle' -F 'sequence_author-$nCnt-last_name=$sLast' -F 'sequence_author-$nCnt-suffix='";
+
+		$post_data{"sequence_author-$nI-first_name"}=$sFirst;
+		$post_data{"sequence_author-$nI-middle_initial"}=$sMiddle;
+		$post_data{"sequence_author-$nI-last_name"}=$sLast;
+		$post_data{"sequence_author-$nI-suffix"}='';
 	}
 
 # Contact information section
 	my ($sCLast, $sCFirst);
-	($sCLast, $sCFirst) = split(/\s+/, $paMeta->[14], 2);
+	($sCLast, $sCFirst) = split(/\s+/, $metadata->[14], 2);
 	
-	if (!$sCLast || !$sCFirst || !$paMeta->[15]) {
+	if (!$sCLast || !$sCFirst || !$metadata->[15]) {
 		printLogMsg($ERROR, "Author name (last, first) and author e-mail are required in metadata file: $!");
 	}
 
 	# Initializing hash of contact infomation with default values if user-provided information is not present
 	my %contact_info;
-	if (! $paMeta->[20] || ! -e $paMeta->[20]) {
+	if (! $metadata->[20] || ! -e $metadata->[20]) {
 		%contact_info = (
 		'city' => 'Baltimore',
 		'country' => 'USA',
@@ -114,16 +118,16 @@ sub prepareSbt {
 		'fax' => 'none',
 		'institution' => 'University of Maryland School of Medicine',
 		'phone' => '410-706-1401',
-		'state' => 'MD',
+		'sub' => 'MD',
 		'street' => 'BioPark II, 801 W. Baltimore St., Suite 619',
-		'zip' => '21201'
+		'postal_code' => '21201'
 		);
 	} else {
 		# Open the file of contacts, parse the entry for the author we need and write to hash
-		open(CONTACT, $paMeta->[20]) || printLogMsg($ERROR, "Could not open file $paMeta->[20] for reading: $!");
+		open(CONTACT, $metadata->[20]) || printLogMsg($ERROR, "Could not open file $metadata->[20] for reading: $!");
 		while (<CONTACT>) {
 			chomp;
-			next unless (/^$paMeta->[14]/);
+			next unless (/^$metadata->[14]/);
 			my @fields = split(/\t/);
 			for (my $f=0; $f <=$#fields; $f++){
 				# give any undefined fields a 'none' value
@@ -131,7 +135,7 @@ sub prepareSbt {
 			}
 			# Populate the contact hash by iterating through the fields array
 			my $field_index = 1;
-			foreach my $field qw(institution department city state country street fax phone zip) {
+			foreach my $field qw(institution department city sub country street fax phone postal_code) {
 				$contact_info{$field} = $fields[$field_index++];
 			}
 			foreach my $required qw(institution street city country phone) {
@@ -142,11 +146,34 @@ sub prepareSbt {
 		close CONTACT;
 	}
 
-# Running NCBI template.cgi using cUrl
-	$sCmd = "curl -F 'first_name=$sCFirst' -F 'last_name=$sCLast' -F 'department=$contact_info{department}' -F 'institution=$contact_info{institution}' -F 'street=$contact_info{street}' -F 'city=$contact_info{city}' -F 'sub=$contact_info{state}' -F 'postal_code=$contact_info{zip}' -F 'country=$contact_info{country}' -F 'phone=$contact_info{phone}' -F 'fax=$contact_info{fax}' -F 'email=$paMeta->[15]' $sAuthorForm -F 'publication_status=unpublished' -F 'reference_title=$paMeta->[17]' -F 'same_reference_and_sequence_authors=yes' -F 'bioproject_id=$paMeta->[4]' -F 'biosample_id=$paMeta->[21]' -F 'submit=Create Template' $SUBMISSION_TEMPLATE > $sSbtFile";
-	$sCmd =~ s/\r|\n//ig;
-	printLogMsg($DEBUG, "Preparing to run - \n$sCmd\n");
-	system($sCmd);
+	# copy contact info over to post data hash
+	foreach my $c (keys %contact_info){
+		$post_data{$c} = $contact_info{$c};
+	}
+
+    $post_data{'first_name'} = $sCFirst;
+	$post_data{'last_name'} = $sCLast;
+	$post_data{'email'} = $metadata->[15];
+	$post_data{'publication_status'} = 'unpublished';
+	$post_data{'reference_title'} = $metadata->[17];
+	$post_data{'same_reference_and_sequence_authors'} = 'yes';
+	$post_data{'bioproject_id'} = $metadata->[4];
+	$post_data{'biosample_id'} = $metadata->[21];
+	# Hidden form values
+	$post_data{'sequence_author-TOTAL_FORMS'} = scalar(@aAuthors);
+	$post_data{'sequence_author-INITIAL_FORMS'} = '0';
+	$post_data{'sequence_author-MAX_NUM_FORMS'} = '1000';
+	$post_data{'reference_author-TOTAL_FORMS'} = '1';
+	$post_data{'reference_author-INITIAL_FORMS'} = '0';
+	$post_data{'reference_author-MAX_NUM_FORMS'} = '1000';
+
+	printLogMsg($DEBUG, "INFO : Preparing to send POST data to $SUBMISSION_TEMPLATE");
+	my $response = send_request($SUBMISSION_TEMPLATE, \%post_data);
+	printLogMsg($DEBUG, "INFO : Now writing HTTP POST response to $sSbtFile");
+	open( SBT_OUT, ">$sSbtFile") or printLogMsg($ERROR, "Could not open file $sSbtFile for writing. Reason : $!");
+	print SBT_OUT $response;
+	close SBT_OUT;
+
 
 	if(-e $sSbtFile) {
 		open($fhRead, "< $sSbtFile") or printLogMsg($ERROR, "Could not open file $sSbtFile for reading. Reason : $!");
@@ -159,9 +186,26 @@ sub prepareSbt {
 			}
 			last;
 		}	
-	} else {
+		} else {
 		printLogMsg($ERROR, "ERROR : $sSbtFile file creation failed. Reason : $?");
 	}
+}
+
+###
+# send_request - Uses HTTP::Request to send a request to a URL and receive a response
+###
+#
+sub send_request {
+    my ($url, $post) = @_;
+    my $ua = LWP::UserAgent->new;
+	my $res = $ua->post( $url, Content => $post );
+	#print Dumper($post); die;
+    if (! $res->is_success) {
+		#print "POST", "\t", $res->status_line . "\n";
+		die $res->content, "\n";
+    }
+    return $res->content;
+
 }
 
 ####################################################################################################################################################
@@ -204,18 +248,18 @@ sub createDbDir {
 # Modifications :
 
 sub prepareCmt {
-	my ($paMeta, $sOutDir) = @_;
+	my ($metadata, $sOutDir) = @_;
 	my $sSubName = (caller(0))[3];
 	my $sCmtFile;
 	my $fhWrite;
 
-	$sCmtFile = $sOutDir."/".$paMeta->[0].".cmt";
+	$sCmtFile = $sOutDir."/".$metadata->[0].".cmt";
 	open($fhWrite, "> $sCmtFile") or printLogMsg($ERROR, "Could not open file $sCmtFile for writing. Reason : $!");
 	
 	print $fhWrite "StructuredCommentPrefix\t##Genome-Assembly-Data-START##\n";
-	print $fhWrite "Assembly Method\t$paMeta->[11]\n";
-	print $fhWrite "Genome Coverage\t$paMeta->[12]\n";
-	print $fhWrite "Sequencing Technology\t$paMeta->[13]\n";
+	print $fhWrite "Assembly Method\t$metadata->[11]\n";
+	print $fhWrite "Genome Coverage\t$metadata->[12]\n";
+	print $fhWrite "Sequencing Technology\t$metadata->[13]\n";
 	print $fhWrite "StructuredCommentSuffix\t##Genome-Assembly-Data-END##";
 	close($fhWrite);
 
@@ -235,7 +279,7 @@ sub prepareCmt {
 # Modifications :
 
 sub readInput {
-	my ($sFile, $paMeta) = @_;
+	my ($sFile, $metadata) = @_;
 	my $nI;
 	my $sLine;
 	my $fhRead;
@@ -246,7 +290,7 @@ sub readInput {
 		chomp($sLine);
 		next if($sLine =~ /^#/);
 		next if($sLine =~ /^\s+$/);
-		@{$paMeta} = split(/\t/, $sLine);
+		@{$metadata} = split(/\t/, $sLine);
 		# @meta : This script needs columns 0, 5-20, and either one (or both) of 4 and 21
 #		[0] = Db name
 #		[1] = NCBI locus tag
@@ -271,20 +315,20 @@ sub readInput {
 #		[20]= Path to contact person address info
 #		[21]= Biosample ID
 
-		if(!length($paMeta->[0])) {
+		if(!length($metadata->[0])) {
 			printLogMsg($ERROR, "ERROR : Database name missing for $sLine.");
 		}
 
 		for($nI = 5; $nI <= 19; $nI++) {
-			if(!length($paMeta->[$nI])) {
+			if(!length($metadata->[$nI])) {
 				printLogMsg($WARN, "WARNING : Missing meta data value for column ".($nI + 1)." field. Thus resulting files .sbt and .cmt would have missing information");
 			}	
 		}
-		if (!length($paMeta->[21]) && !length($paMeta->[4])) {
+		if (!length($metadata->[21]) && !length($metadata->[4])) {
 			printLogMsg($WARN, "WARNING : Neither Biosample ID nor Bioproject ID detected.  Highly recommended to have at least one for the .cmt and .sbt files");
 		}
 
-		if (!length($paMeta->[20]) ) {
+		if (!length($metadata->[20]) ) {
 			printLogMsg($WARN, "WARNING : Path for author contact info not supplied.  Will use default parameters");
 		}
 		
@@ -341,53 +385,31 @@ __END__
 
 =head1 NAME
 
-download_sra.pl - Script to download read files from NCBI SRA FTP site
+prepare_sbt_cmt.pl - Script to take precompiled tabular data and submit to the NCBI Genbank Submission Template
 
 =head1 SYNOPSIS
 
-# USAGE : perl download_sra.pl -r <SRA id> -f <FTP server> -o <path to output dir> [ -u <FTP server username> -p <FTP server password> -n <number of retries> -l <path to log file> ]
+# USAGE : 
 
 	parameters in [] are optional
 
 =head1 OPTIONS
 
-	-r <run_id>	:	NCBI SRA compatible 9-character id. Could be Study id (SRPXXXXXX), Experiment id (SRXXXXXXX), Run id (SRRXXXXXX) or Sample id (SRSXXXXXX). X stands for digit. Mandatory
-	
-	-f <ftp>	:	Name of the NCBI FTP server. Currently it is ftp-trace.ncbi.nih.gov. Mandatory
-
-	-o <output_dir>	:	Path to the output directory where the files will be downloaded. Mandatory
-
-[	
-	-u <username>	:	Username for the FTP server. Default: anonymous. Optional
-
-	-p <password>	:	Password for the FTP server. Default: anonymous. Optional
-
-	-n <num_retry>	:	Number of retries to download a file. wget default is 20. Optional
-
-	-l <log>	: 	Path to log file. Optional
-
-] 
-
 =head1 DESCRIPTION
-
 
 
 =head1 INPUT
 
-	NCBI SRA compatible valid 9-character ids, FTP server name and output directory where the files will be downloaded
-
 =head1 OUTPUT
-
-	Read files (.sra) from SRA
 
 =head1 AUTHOR
 
-	Sonia Agrawal
-	Senior Bioinformatics Software Engineer
+	Shaun Adkind
+	Bioinformatics Software Engineer
 	Institute for Genome Sciences
 	School of Medicine
 	University of Maryland
 	Baltimore, MD - 21201
-	sagrawal@som.umaryland.edu
+	sadkins@som.umaryland.edu
 
 ==cut
