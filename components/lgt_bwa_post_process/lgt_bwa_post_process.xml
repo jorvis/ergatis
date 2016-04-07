@@ -116,6 +116,6 @@
                 <key>--output_list</key>
                 <value>$;SINGLE_BAM_OUTPUT_LIST$;</value>
             </param>    
-		<command>
+		</command>
     </commandSet>
 </commandSetRoot>
