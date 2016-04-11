@@ -208,13 +208,13 @@ sub getGiTaxon {
 
 sub prinseqFilterBam {
     my ( $self, $config ) = @_;
-    if ( !$config->{input_bam} ) {
+	if ( !$config->{input_bam} ) {
         $self->fail(
             "*** Error *** Must pass &prinseqFilterBam an input_bam =>\n");
     }
     if ( $self->empty_chk( { input => $config->{input_bam} } ) == 1 ) {
         $self->fail(
-			"*** Error ***: &prinseqFilterBam input: $config->{input} is empty.\n");
+			"*** Error ***: &prinseqFilterBam input: $config->{input_bam} is empty.\n");
     }
     if ( $self->{verbose} ) {
         print STDERR "======== &prinseqFilterBam: Start ========\n";
@@ -2609,8 +2609,9 @@ sub empty_chk {
     my $file  = $config->{input};
     my $empty = 0;                  ## 0 = False, 1=True, file is empty.
     my $count;
+	$self->{samtools_bin} = '/usr/bin/samtools' unless (defined $self->{samtools_bin});
     if ( $file =~ /\.bam$/ ) {
-        $count = `samtools view $file | head | wc -l`;
+        $count = `$self->{samtools_bin} view $file | head | wc -l`;
     }
     elsif ( $file =~ /\.gz/ ) {
         $count = `zcat $file | head | wc -l`;
