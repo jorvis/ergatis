@@ -223,7 +223,7 @@ sub check_options {
        @recipient_files = `cat $opts->{recipient_file_list}`;
     }
     if (scalar @recipient_files == 0) {
-		print STDOUT "Assuming this is a donor-file only run.\n"	
+		print STDOUT "Assuming this is a donor-file only run.\n";
 		$donor_only = 1;
 
    	if (scalar @donor_files != scalar @recipient_files && !$donor_only) {
