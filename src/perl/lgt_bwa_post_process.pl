@@ -123,7 +123,7 @@ if ($donor_only) {
 				'donor_bam'	=> $d_file,
 				'output_prefix' => $prefix
 			} );
-		my $counts_file = $output_dir . "/" . $prefix . ".post_processing.tab";
+		my $counts_file = $output_dir . "/" . $prefix . ".counts";
 		my (@header, @vals);
 	    map {
 	        push( @header, $_ );
@@ -155,7 +155,7 @@ if ($donor_only) {
 			} );
 		
 		# Take list of counts and write them to file
-		my $counts_file = $output_dir . "/" . $prefix . ".post_processing.tab";
+		my $counts_file = $output_dir . "/" . $prefix . ".counts";
 		my (@header, @vals);
 	    map {
 	        push( @header, $_ );

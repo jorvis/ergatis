@@ -1112,11 +1112,13 @@ sub bwaPostProcess {
 
     # Do we have both donor and host bams?
     if ( $config->{donor_bam} && $config->{host_bam} ) {
+		print STDERR "--- Detected donor and host paired-end files.\n";
         $retval = $self->_bwaPostProcessDonorHostPaired($config);
     } elsif ($config->{donor_bam}) {
-		$retval = $self->_bwaPostProcesDonorPaired($config);
+		print STDERR "--- Detected donor paired-end file.\n";
+		$retval = $self->_bwaPostProcessDonorPaired($config);
 	} else {
-		confess "***ERROR*** Either both donor and host BAM files, or just a donor BAM file must be provided."
+		confess "***ERROR*** Either both donor and host BAM files, or just a donor BAM file must be provided.\n"
 	}
     if ( $self->{verbose} ) {
         print STDERR "======== &bwaPostProcess: Finished ========\n";
@@ -1199,7 +1201,7 @@ sub _bwaPostProcessDonorPaired {
      my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
   
      # Use case requires only the single mappings
-     my $class_to_file_name = {'single_map_donor' => "$output_dir/" . $prefix . ".single_map.bam";
+     my $class_to_file_name = {'single_map_donor' => "$output_dir/" . $prefix . ".single_map.bam"};
   
      my $class_counts = {
          'paired'  => undef,
@@ -1272,7 +1274,7 @@ sub _bwaPostProcessDonorPaired {
          my @donor_lines;
   
          # Get the class of the donor mappings
-         $obj = $self->_getPairedClass( { fh => $donor_fh } );
+         my $obj = $self->_getPairedClass( { fh => $donor_fh } );
          my $dclass = $obj->{class};
          $more_lines = $obj->{more_lines};
          my $dr1_line = $obj->{r1_line};
@@ -1310,7 +1312,7 @@ sub _bwaPostProcessDonorPaired {
      # Return the files and the counts
      return {
          counts => $class_counts,
- }       files  => $class_to_file_name
+         files  => $class_to_file_name
     };
 }
   
@@ -1559,7 +1561,7 @@ sub _bwaPostProcessDonorHostPaired {
      # Return the files and the counts
      return {
          counts => $class_counts,
- }       files  => $class_to_file_name
+         files  => $class_to_file_name
     };
 }
 
