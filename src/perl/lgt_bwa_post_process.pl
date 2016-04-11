@@ -225,6 +225,7 @@ sub check_options {
     if (scalar @recipient_files == 0) {
 		print STDOUT "Assuming this is a donor-file only run.\n";
 		$donor_only = 1;
+	}
 
    	if (scalar @donor_files != scalar @recipient_files && !$donor_only) {
        	&_log($ERROR, "ERROR : Number of donor files to recipient files is not equal.  Please check both lists. $!");
