@@ -64,7 +64,7 @@
             </param>
             <param>  
                 <key>--regex</key>
-                <value>".*contigs\.fsa"</value>
+                <value>".*contigs\.(fasta|fsa|fna|fa)"</value>
             </param>
             <param>  
                 <key>--output_list</key>
