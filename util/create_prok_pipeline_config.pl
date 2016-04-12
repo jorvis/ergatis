@@ -141,7 +141,7 @@ my $valid_gene_prediction_algorithms = {
     'prodigal'  => 1
 };
 my $multifasta_flag = 0;
-my $valid_assembly_methods = { '454' => 1, 'illumina' => 1 };
+my $valid_assembly_methods = { '454' => 1, 'illumina' => 1, 'spades' => 1 };
 my $assembly = 'none';							  
 my $gene_prediction = "glimmer";
 my $template_directory = "/local/projects/ergatis/package-latest/global_pipeline_templates";
@@ -152,6 +152,7 @@ my %included_subpipelines = ();
 my $pipelines = {
 				 '454' => 'Prokaryotic_Annotation_Pipeline_Celera_Assembly',
 				 'illumina' => 'Prokaryotic_Annotation_Pipeline_Velvet_Assembly',
+				 'spades' => 'Prokaryotic_Annotation_Pipeline_SPAdes_Assembly',
 				 'genecalls' => 'Prokaryotic_Annotation_Pipeline_Genecalls_Input',
 				 'pseudomolecule' => 'Prokaryotic_Annotation_Pipeline_Pseudomolecule_Generation',
 				 'input_processing' => 'Prokaryotic_Annotation_Pipeline_Input_Processing',
@@ -240,9 +241,11 @@ foreach my $sp ( keys %included_subpipelines ) {
   }
 }
 
+# Deal with how we pass assembly portions to the main pipeline
 if ( $included_subpipelines{'assembly'} ne 'none' ) {
   delete( $config{'global'}->{'$;INPUT_FASTA$;'} );
   
+  # Input is different if 'pseudomolecule' step is enabled or not
   if ( $included_subpipelines{'pseudomolecule'} ) {
 	delete( $config{'clean_fasta default'}->{'$;INPUT_FILE$;'} );
 	
@@ -252,6 +255,9 @@ if ( $included_subpipelines{'assembly'} ne 'none' ) {
 	} elsif ( $included_subpipelines{'assembly'} eq 'illumina' ) {
 	  $config{'clean_fasta default'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/velvet_optimiser'.
 		'/$;PIPELINEID$;_assembly/velvet_optimiser.fa.list';
+	} elsif ( $included_subpipelines{'assembly'} eq 'spades' ) {
+	  $config{'clean_fasta default'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/SPAdes'.
+		'/$;PIPELINEID$;_assembly/SPAdes.fsa.list';
 	}
 
   } else {
@@ -265,6 +271,9 @@ if ( $included_subpipelines{'assembly'} ne 'none' ) {
 		  } elsif( $included_subpipelines{'assembly'} eq 'illumina' ) {
 			$config{$section}->{$key} = '$;REPOSITORY_ROOT$;/output_repository/velvet_optimiser'.
 			  '/$;PIPELINEID$;_assembly/velvet_optimiser.fa.list';
+		  } elsif ( $included_subpipelines{'assembly'} eq 'spades' ) {
+			$config{$section}->{$key} = '$;REPOSITORY_ROOT$;/output_repository/SPAdes'.
+			  '/$;PIPELINEID$;_assembly/SPAdes.fsa.list';
 		  }
 		}
 		if ( $config{$section}->{$key} eq '$;INPUT_FSA_FILE$;' ) {
