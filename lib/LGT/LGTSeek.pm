@@ -1281,10 +1281,10 @@ sub _bwaPostProcessDonorPaired {
          my $dr2_line = $obj->{r2_line};
   
          if ($more_lines) {
-             my $paired_class = "$dclass";
-  
+             my $paired_class = $dclass;
+
   			 # print the single lines to the single_map file (if we are keeping this output file)
-             if ( $classes_each->{$paired_class} == "single" ) {
+             if ( $classes_each->{$paired_class} eq "single" ) {
                  print { $class_to_file->{"single_map"} } "$dr1_line\n$dr2_line\n";
              }
   
