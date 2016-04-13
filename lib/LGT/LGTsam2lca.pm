@@ -54,7 +54,7 @@ my $check_mates;
 my $CHUNK_SIZE = 10000;
 
 my $chunk   = [];
-my $counter = 0;
+my $unmapped_counts = 0;
 my $step    = 0;
 my $out2;
 my $samtools;
@@ -128,6 +128,7 @@ sub runSam2Lca {
             chomp;
             $self->process_file( { file => $_ } );
         }
+		print STDERR "There were $unmapped_counts reads that did not map to the reference genome\n";
         print STDERR
           "\nFinished looping through step $step. Now writing output\n";
         return $self->writeOutput();
@@ -165,7 +166,7 @@ sub writeOutput {
     open my $out, $outf or die "Couldn't open output\n";
     foreach my $key ( keys %{ $self->{reads_by_mate_id} } ) {
 		
-		# If mate has no LCA it was most likely part of the the pre-BWA BAM file but filtered out after
+		# If mate has no LCA it didn't map to the reference genome
         if ( !defined( $self->{reads_by_mate_id}->{$key} ) ) {
 			#print STDERR "Found no LCA for mate $key ... skipping\n";
 			#$self->{reads_by_mate_id}->{$key} = '';
@@ -294,7 +295,7 @@ sub process_sam_line {
 
 	# Here we determine LCA for each read ID (2 per mate pair) and for each mate ID
     # If the query is mapped..
-	#if ( !$flag->{qunmapped} ) {
+	if ( !$flag->{qunmapped} ) {
         my $tax = $self->{gi2tax}->getTaxon( $fields[2] );
 		#print STDERR "No lineage found for $fields[2]\n" if (! defined $tax->{lineage});
 
@@ -327,7 +328,10 @@ sub process_sam_line {
                 $self->{reads_by_mate_id}->{ $fields[0] } = $tax->{lineage};
             }
 		}
-	#}
+	} else {
+		#print STDERR "LGT::LGTsam2lca" . " --- Read $fields[0] has no mapping to reference file\n";
+		$unmapped_counts++;
+	}
 }
 
 sub process_file {
