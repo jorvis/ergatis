@@ -149,6 +149,7 @@ exit(0);
 sub build_and_load_new_molecule {
 # Get the assembly sequence from database
 	my ($seq, $feat_id) = $dbh->selectrow_array("SELECT residues,feature_id FROM feature WHERE name='$options{'asmbl'}'");
+	$logger->logdie("ERROR :: No sequence returned from query - SELECT residues,feature_id FROM feature WHERE name='$options{'asmbl'}") unless defined $seq;
 	my $seqlen = length($seq);
 
 	my $coord = $offset_coord;

@@ -26,6 +26,8 @@ use File::Basename;
 # CONSTANTS #
 #############
 
+my $EXT = "fsa";
+
 ###########
 # GLOBALS #
 ###########
@@ -58,7 +60,7 @@ if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
 		push @files, <FH>;
 		( $sFileBase, $sFileDir, $sFileExt ) =
 			  fileparse( $hCmdLineArgs{'reference'}, qr/\.[^.]*/ );
-		$sCmd = "ln -sf " . $hCmdLineArgs{'reference'} . " " . $hCmdLineArgs{'output_dir'} . "/" . $sFileBase . $sFileExt;
+		$sCmd = "ln -sf " . $hCmdLineArgs{'reference'} . " " . $hCmdLineArgs{'output_dir'} . "/" . $sFileBase . $EXT;
 	} else {
 		# Otherwise just copy the ref
 		push @files, $hCmdLineArgs{'reference'};
@@ -73,7 +75,7 @@ if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
 	      . $ref . " "
 	      . $hCmdLineArgs{'output_dir'} . "/"
 	      . $sFileBase
-	      . $sFileExt;
+	      . $EXT;
 	    printLogMsg( $DEBUG,
 	        "INFO : Creating symlink to reference file $ref in output directory $hCmdLineArgs{'output_dir'}.\nINFO : Command : $sCmd"
 	    );
@@ -93,21 +95,21 @@ if ( ( -e $hCmdLineArgs{'reference'} ) && ( -r $hCmdLineArgs{'reference'} ) ) {
 	          . " index -p "
 	          . $hCmdLineArgs{'output_dir'} . "/"
 	          . $sFileBase
-	          . $sFileExt . " "
+	          . $EXT . " "
 	          . $hCmdLineArgs{'output_dir'} . "/"
 	          . $sFileBase
-	          . $sFileExt;
+	          . $EXT;
 	    } else {
 	        $sCmd =
 	            $hCmdLineArgs{'bwa_path'}
 	          . " index -p "
 	          . $hCmdLineArgs{'output_dir'} . "/"
 	          . $sFileBase
-	          . $sFileExt . " -a "
+	          . $EXT . " -a "
 	          . $hCmdLineArgs{'algo'} . " "
 	          . $hCmdLineArgs{'output_dir'} . "/"
 	          . $sFileBase
-	          . $sFileExt;
+	          . $EXT;
 	    }
 	}
 } else {

@@ -54,7 +54,7 @@ my $check_mates;
 my $CHUNK_SIZE = 10000;
 
 my $chunk   = [];
-my $counter = 0;
+my $unmapped_counts = 0;
 my $step    = 0;
 my $out2;
 my $samtools;
@@ -165,7 +165,7 @@ sub writeOutput {
     open my $out, $outf or die "Couldn't open output\n";
     foreach my $key ( keys %{ $self->{reads_by_mate_id} } ) {
 		
-		# If mate has no LCA it was most likely part of the the pre-BWA BAM file but filtered out after
+		# If mate has no LCA it didn't map to the reference genome
         if ( !defined( $self->{reads_by_mate_id}->{$key} ) ) {
 			#print STDERR "Found no LCA for mate $key ... skipping\n";
 			#$self->{reads_by_mate_id}->{$key} = '';
@@ -262,19 +262,6 @@ sub prime_hash {
     print STDERR "LGT::LGTsam2lca --- Finished priming hash\n";
 }
 
-sub jump_to_line {
-    my $handle = shift;
-    my $count  = 0;
-    my $start  = $step * $CHUNK_SIZE;
-    while ( $count < $start ) {
-        my $line = <$handle>;
-        if ( $line !~ /^@/ ) {
-            $count++;
-        }
-    }
-    return $count;
-}
-
 sub process_sam_line {
     my ( $self, $l ) = @_;
     chomp $l;
@@ -292,42 +279,45 @@ sub process_sam_line {
         $read_name = "$fields[0]\_2";
     }
 
+    # Keep track of how many mate pairs had both mates unmapped
+	$unmapped_counts++ if ($flag->{qunmapped} && $flag->{munmapped} && $flag->{first});
+    
+	# If both mates fail to map to the reference don't add to hash
+	return if ($flag->{qunmapped} && $flag->{munmapped});
+
 	# Here we determine LCA for each read ID (2 per mate pair) and for each mate ID
-    # If the query is mapped..
-	#if ( !$flag->{qunmapped} ) {
-        my $tax = $self->{gi2tax}->getTaxon( $fields[2] );
-		#print STDERR "No lineage found for $fields[2]\n" if (! defined $tax->{lineage});
+    my $tax = $self->{gi2tax}->getTaxon( $fields[2] );
+	#print STDERR "No lineage found for $fields[2]\n" if (! defined $tax->{lineage});
+        
+	# Here we'll deal with keeping track of things by read
+    if ( $self->{reads_by_read_id}->{$read_name} ) {
+        my $lca = &find_lca(
+            [ $self->{reads_by_read_id}->{$read_name}, $tax->{lineage} ] );
+        $self->{reads_by_read_id}->{$read_name} = $lca;
+        #print "$read_name\t$tax->{lineage}\t$lca\n";
+    } else {
+        $self->{reads_by_read_id}->{$read_name} = $tax->{lineage};
+    }
 
-        # Here we'll deal with keeping track of things by read
-        if ( $self->{reads_by_read_id}->{$read_name} ) {
+    # If we aren't checking mates, or if the mate is mapped...
+    if (  !$self->{check_mates}
+        || ($self->{check_mates} && !$flag->{munmapped}) )
+    {
+        # Here we'll keep track of things by mate
+        if ( $self->{reads_by_mate_id}->{ $fields[0] } ) {
+            #print STDERR "$fields[0] are found\n";
             my $lca = &find_lca(
-                [ $self->{reads_by_read_id}->{$read_name}, $tax->{lineage} ] );
-            $self->{reads_by_read_id}->{$read_name} = $lca;
-            #print "$read_name\t$tax->{lineage}\t$lca\n";
+                [
+                    $self->{reads_by_mate_id}->{ $fields[0] },
+                    $tax->{lineage}
+                ]
+            );
+            $self->{reads_by_mate_id}->{ $fields[0] } = $lca;
         } else {
-            $self->{reads_by_read_id}->{$read_name} = $tax->{lineage};
+            #print STDERR "$fields[0] are not found\n";
+            $self->{reads_by_mate_id}->{ $fields[0] } = $tax->{lineage};
         }
-
-        # If we aren't checking mates, or if the mate is mapped...
-        if (  !$self->{check_mates}
-            || ($self->{check_mates} && !$flag->{munmapped}) )
-        {
-            # Here we'll keep track of things by mate
-            if ( $self->{reads_by_mate_id}->{ $fields[0] } ) {
-                #print STDERR "$fields[0] are found\n";
-                my $lca = &find_lca(
-                    [
-                        $self->{reads_by_mate_id}->{ $fields[0] },
-                        $tax->{lineage}
-                    ]
-                );
-                $self->{reads_by_mate_id}->{ $fields[0] } = $lca;
-            } else {
-                #print STDERR "$fields[0] are not found\n";
-                $self->{reads_by_mate_id}->{ $fields[0] } = $tax->{lineage};
-            }
-		}
-	#}
+	}
 }
 
 sub process_file {
@@ -365,6 +355,7 @@ sub process_file {
         $count++;
         $self->process_sam_line($l);
     }
+	print STDERR "There were $unmapped_counts reads that did not map to the reference genome\n";
 	print STDERR "LGT::LGTsam2lca --- finished processing BAM file\n";
 }
 
