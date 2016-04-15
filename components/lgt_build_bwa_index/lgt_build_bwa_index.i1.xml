@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>lgt build index iterator workflow</name>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>lgt_build_index</name>
+			<state>incomplete</state>
+            <executable>$;BIN_DIR$;/lgt_build_index</executable>            
+			<param>
+				<key>--reference</key>
+				<value>$;I_FILE_PATH$;</value>
+			</param>
+            <param>
+				<key>--bwa_path</key>
+				<value>$;BWA_EXEC$;</value>
+			</param>
+			<param>
+				<key>--algo</key>
+				<value>$;ALGORITHM$;</value>
+			</param>
+			<param>
+				<key>--output_dir</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+			</param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.build_index.stderr</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>
