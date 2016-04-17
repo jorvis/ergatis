@@ -68,7 +68,7 @@ determine_format( \%options, \%type );
 check_for_single_sample( \%type );
 
 # Create a list file to store all BAM output
-my $bam_list = $output_dir . "/bam.list";
+my $bam_list = $options{'output_dir'} . "/bam.list";
 open OUT_LIST, ">$bam_list" or print_log_msg($ERROR, "Cannot open $bam_list for writing: $!");
 
 $file_count = keys %type;
