@@ -67,6 +67,10 @@ determine_format( \%options, \%type );
 
 check_for_single_sample( \%type );
 
+# Create a list file to store all BAM output
+my $bam_list = $output_dir . "/bam.list";
+open OUT_LIST, ">$bam_list" or print_log_msg($ERROR, "Cannot open $bam_list for writing: $!");
+
 $file_count = keys %type;
 
 foreach my $ref (@ref_files) {
@@ -164,7 +168,7 @@ foreach my $ref (@ref_files) {
                   . $out2 . " "
                   . $type{'fastq_1'} . " "
                   . $type{'fastq_2'};
-                $out = $file_base . ".bwa.sam";
+                $out = $refname . "_" . $file_base . ".bwa.sam";
 
             } else {
                 print_log_msg( $ERROR,
@@ -202,6 +206,7 @@ foreach my $ref (@ref_files) {
     # Convert SAM file into a BAM file and remove SAM if specified to
     sam_to_bam( \%options, $out );
 }
+close OUT_LIST;
 
 if ( $options{'keep_sam'} == 0 ) {
     $cmd = "rm "
@@ -234,7 +239,9 @@ sub sam_to_bam {
     my $sub_name = ( caller(0) )[3];
     if ( exists( $cmd_line_args->{'samtools_params'} ) ) {
         $opts = $cmd_line_args->{'samtools_params'};
-    }
+    } else {
+		$opts = '';
+	}
     ( $file_base, $file_dir, $file_ext ) = fileparse( $file, qr/\.[^.]*/ );
     $out = $cmd_line_args->{'output_dir'} . "/" . $file_base . ".bam";
 
@@ -259,6 +266,9 @@ sub sam_to_bam {
             "INFO : $sub_name :: SAM to BAM conversion succesfully completed in $cmd_line_args->{'output_dir'}"
         );
     }
+
+	# Write the new BAM file to our list
+	print OUT_LIST $out . "\n";
 }
 
 sub align_BWA {

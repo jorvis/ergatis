@@ -29,6 +29,7 @@ use LGT::Common;
 # GLOBALS #
 ###########
 my %hCmdLineArgs = ();
+my @input_files = [];
 # Log file handle;
 my $fhLog;
 my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
@@ -42,17 +43,13 @@ my %hStatR2 = ();
 my $iSingletons = 0;
 my $num_null = 0;
 my $SC = 0;
-# MM, MU, and UU, keep count of mapped and unmapped mate pairs
-my $MM = 0;
-my $MU = 0;     # Also keeps track of UM
-my $UU = 0;
-#my $UNMAPPED = '0x4';	# Hex value for bit in flag representing unmapped alignments
 
 ################
 # MAIN PROGRAM #
 ################
 GetOptions(\%hCmdLineArgs,
 	   'input_file|i=s',
+	   'input_list|I=s',
 	   'output_dir|o=s',
 	   'samtools_path|s=s',
 	   'samtools_params|S=s',
@@ -66,7 +63,12 @@ pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDERR} ) if ($hCmdLineAr
 
 checkCmdLineArgs(\%hCmdLineArgs);
 
-($sFbase,$sFdir,$sFext) = fileparse($hCmdLineArgs{'input_file'}, qr/\.[^.]*/);
+foreach my $i_file (@input_files) {
+# MM, MU, and UU, keep count of mapped and unmapped mate pairs per BAM input
+my $MM = 0;
+my $MU = 0;     # Also keeps track of UM
+my $UU = 0;
+($sFbase,$sFdir,$sFext) = fileparse($i_file, qr/\.[^.]*/);
 my $sSortedFile = $sFbase.".name.sorted";
 SortBam(\%hCmdLineArgs, $sSortedFile);
 $sSortedFile = $sSortedFile . ".bam";	# Samtools appends .bam to the end of the file
@@ -155,7 +157,8 @@ while(my $sLine = <$fhFR>) {
     }
 }
 close $fhFW;
-printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results:\n\tBad Singletons : $iSingletons\n\tNull : $num_null\n\tSoft-clipped Reads : $SC\n\tMapped-Unmapped : $MU\n\tMapped-Mapped : $MM\n\tUnmapped-Unmapped : $UU\n");
+printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results for $sFbase:\n\tBad Singletons : $iSingletons\n\tNull : $num_null\n\tSoft-clipped Reads : $SC\n\tMapped-Unmapped : $MU\n\tMapped-Mapped : $MM\n\tUnmapped-Unmapped : $UU\n");
+}
 
 ###############
 # SUBROUTINES #
@@ -197,12 +200,20 @@ sub checkCmdLineArgs {
 	if(exists($phCmdLineArgs->{'log'})) {
 		open($fhLog, "> $phCmdLineArgs->{'log'}") or die "Could not open $phCmdLineArgs->{'log'} file for writing.Reason : $!\n"
 	}
-	my @aRequired = qw(input_file output_dir samtools_path);
+	my @aRequired = qw( output_dir samtools_path);
         foreach my $sOption(@aRequired) {
                 if(!defined($phCmdLineArgs->{$sOption})) {
                         printLogMsg($ERROR, "ERROR : $sSubName :: Required option $sOption not passed");
                 }
         }
+
+	if ($phCmdLineArgs->{'input_file'}) {
+		push @input_files, $phCmdLineArgs->{'input_file'};
+	} elsif ($phCmdLineArgs->{'input_list'}) {
+		@input_files = `cat $phCmdLineArgs->{'input_list'}`;
+	} else {
+		printLogMsg($ERROR, "ERROR : Either --input_file or --input_file_list must be passed");
+	}
 }
 
 ####################################################################################################################################################
