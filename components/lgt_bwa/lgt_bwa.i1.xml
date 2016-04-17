@@ -108,7 +108,11 @@
             <executable>$;BIN_DIR$;/lgt_filter_reads</executable>
             <param>
             	<key>--input_file</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa.bam</value>
+				<value></value>
+            </param>
+            <param>
+            	<key>--input_list</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/bam.list</value>
             </param>
             <param>
             	<key>--output_dir</key>
