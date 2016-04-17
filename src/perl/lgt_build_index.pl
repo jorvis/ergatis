@@ -26,7 +26,7 @@ use File::Basename;
 # CONSTANTS #
 #############
 
-my $EXT = "fsa";
+my $EXT = ".fsa";
 
 ###########
 # GLOBALS #
