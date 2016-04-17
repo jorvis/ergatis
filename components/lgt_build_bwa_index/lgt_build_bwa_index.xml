@@ -24,7 +24,7 @@
 	<!--Iterator Done-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create FSA file list</name>
+            <name>create BAM file list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
@@ -33,11 +33,11 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.fsa"</value>
+                <value>".*\.bam"</value>
             </param>
             <param>
                 <key>--output_list</key>
-                <value>$;FSA_OUTPUT_LIST$;</value>
+                <value>$;BAM_OUTPUT_LIST$;</value>
             </param>
         </command>
     </commandSet>
