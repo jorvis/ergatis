@@ -225,7 +225,7 @@ sub SortBam {
     $sCmd =
         $phCmdLineArgs->{'samtools_path'} . " sort"
       . $sOptions . " -n "
-      . $input_file . " -f "
+      . $input_file . " "
       . $sOut;
 
 #$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." ".$phCmdLineArgs->{'input_file'};
