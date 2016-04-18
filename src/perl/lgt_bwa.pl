@@ -244,6 +244,7 @@ sub sam_to_bam {
 	}
     ( $file_base, $file_dir, $file_ext ) = fileparse( $file, qr/\.[^.]*/ );
     $out = $cmd_line_args->{'output_dir'} . "/" . $file_base . ".bam";
+	$out =~ s/bwa\.prelim\.filtered\.//g;
 
     $cmd =
         $cmd_line_args->{'samtools_path'}
