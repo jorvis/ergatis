@@ -164,38 +164,40 @@ sub writeOutput {
 
     open my $out, $outf or die "Couldn't open output\n";
     foreach my $key ( keys %{ $self->{reads_by_mate_id} } ) {
-		
-		# If mate has no LCA it didn't map to the reference genome
-        if ( !defined( $self->{reads_by_mate_id}->{$key} ) ) {
-			#print STDERR "Found no LCA for mate $key ... skipping\n";
-			#$self->{reads_by_mate_id}->{$key} = '';
-			next;
-        }
-
         #print STDERR "Mate seen:$key processing with ...";
+		
+		# Printing out the independent LCA for each read
         #   print STDERR "\tindependent_lca ...";}
-		if (! defined( $self->{reads_by_read_id}->{"key\_1"} ) ) {
-			$self->{reads_by_read_id}->{"key\_1"} = '';
-			print STDERR "Found no LCA for read $key\_1\n";
-		}
-		if (! defined( $self->{reads_by_read_id}->{"key\_2"} ) ) {
-			$self->{reads_by_read_id}->{"key\_2"} = '';
-			print STDERR "Found no LCA for read $key\_2\n";
+		if ( !defined( $self->{reads_by_read_id}->{"$key\_1"} ) ) {
+			$self->{reads_by_read_id}->{"$key\_1"} = '';
 		}
         print OUT2
           join( "\t", ( "$key\_1", $self->{reads_by_read_id}->{"$key\_1"} ) );
         print OUT2 "\n";
+
+        if ( !defined( $self->{reads_by_read_id}->{"$key\_1"} ) ) {
+			$self->{reads_by_read_id}->{"$key\_1"} = '';
+		}
         print OUT2
           join( "\t", ( "$key\_2", $self->{reads_by_read_id}->{"$key\_2"} ) );
         print OUT2 "\n";
 
+		# If mate has no LCA it didn't map to the reference genome
+        if ( !defined( $self->{reads_by_mate_id}->{$key} ) ) {
+			#print STDERR "Found no LCA for mate $key ... skipping\n";
+			$self->{reads_by_mate_id}->{$key} = '';
+			#next;
+        }
+
+		# Determine the conservative single-end LCA and write to conservative outfile
         #      print STDERR "\tSingleEnd_lca ...";
-        my $new_conservative_se_lca = &find_lca(
+		my $new_conservative_se_lca = &find_lca(
             [
                 $self->{reads_by_read_id}->{"$key\_1"},
                 $self->{reads_by_read_id}->{"$key\_2"}
             ]
         );
+
         if ( $self->{reads_by_read_id}->{"$key\_1"} =~
                $self->{reads_by_read_id}->{"$key\_2"}
             || $self->{reads_by_read_id}->{"$key\_2"} =~
@@ -286,37 +288,41 @@ sub process_sam_line {
 	return if ($flag->{qunmapped} && $flag->{munmapped});
 
 	# Here we determine LCA for each read ID (2 per mate pair) and for each mate ID
-    my $tax = $self->{gi2tax}->getTaxon( $fields[2] );
-	#print STDERR "No lineage found for $fields[2]\n" if (! defined $tax->{lineage});
-        
-	# Here we'll deal with keeping track of things by read
-    if ( $self->{reads_by_read_id}->{$read_name} ) {
-        my $lca = &find_lca(
-            [ $self->{reads_by_read_id}->{$read_name}, $tax->{lineage} ] );
-        $self->{reads_by_read_id}->{$read_name} = $lca;
-        #print "$read_name\t$tax->{lineage}\t$lca\n";
-    } else {
-        $self->{reads_by_read_id}->{$read_name} = $tax->{lineage};
-    }
-
-    # If we aren't checking mates, or if the mate is mapped...
-    if (  !$self->{check_mates}
-        || ($self->{check_mates} && !$flag->{munmapped}) )
-    {
-        # Here we'll keep track of things by mate
-        if ( $self->{reads_by_mate_id}->{ $fields[0] } ) {
-            #print STDERR "$fields[0] are found\n";
-            my $lca = &find_lca(
-                [
-                    $self->{reads_by_mate_id}->{ $fields[0] },
-                    $tax->{lineage}
-                ]
-            );
-            $self->{reads_by_mate_id}->{ $fields[0] } = $lca;
-        } else {
-            #print STDERR "$fields[0] are not found\n";
-            $self->{reads_by_mate_id}->{ $fields[0] } = $tax->{lineage};
-        }
+	
+	# If the current read is mapped add to read_id hash
+    if(!$flag->{qunmapped}) {
+		my $tax = $self->{gi2tax}->getTaxon( $fields[2] );
+		#print STDERR "No lineage found for $fields[2]\n" if (! defined $tax->{lineage});
+	        
+		# Here we'll deal with keeping track of things by read
+	    if ( $self->{reads_by_read_id}->{$read_name} ) {
+	        my $lca = &find_lca(
+	            [ $self->{reads_by_read_id}->{$read_name}, $tax->{lineage} ] );
+	        $self->{reads_by_read_id}->{$read_name} = $lca;
+	        #print "$read_name\t$tax->{lineage}\t$lca\n";
+	    } else {
+	        $self->{reads_by_read_id}->{$read_name} = $tax->{lineage};
+	    }
+	
+	    # If we a) aren't checking mates or b) are and both mates map to reference... 
+	    if (  !$self->{check_mates}
+	        || ($self->{check_mates} && !$flag->{munmapped}) )
+	    {
+	        # Here we'll keep track of things by mate
+	        if ( $self->{reads_by_mate_id}->{ $fields[0] } ) {
+	            #print STDERR "$fields[0] are found\n";
+	            my $lca = &find_lca(
+	                [
+	                    $self->{reads_by_mate_id}->{ $fields[0] },
+	                    $tax->{lineage}
+	                ]
+	            );
+	            $self->{reads_by_mate_id}->{ $fields[0] } = $lca;
+	        } else {
+	            #print STDERR "$fields[0] are not found\n";
+	            $self->{reads_by_mate_id}->{ $fields[0] } = $tax->{lineage};
+	        }
+		}
 	}
 }
 
