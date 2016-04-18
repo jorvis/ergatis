@@ -70,7 +70,7 @@ my $MU = 0;     # Also keeps track of UM
 my $UU = 0;
 ($sFbase,$sFdir,$sFext) = fileparse($i_file, qr/\.[^.]*/);
 my $sSortedFile = $sFbase.".name.sorted";
-SortBam(\%hCmdLineArgs, $sSortedFile);
+SortBam(\%hCmdLineArgs, $sSortedFile, $i_file);
 $sSortedFile = $sSortedFile . ".bam";	# Samtools appends .bam to the end of the file
 
 # View the sorted BAM file, and only output the SAM headers
@@ -166,7 +166,7 @@ printLogMsg($DEBUG, "INFO : Main :: BAM Filtering results for $sFbase:\n\tBad Si
 
 # Sort BAM file by read names
 sub SortBam {
-	my ($phCmdLineArgs, $sFile) = @_;
+	my ($phCmdLineArgs, $sFile, $input_file) = @_;
 	my ($sCmd, $sOut);
 	my $nExitCode;
 	my $sOptions = "";
@@ -177,12 +177,12 @@ sub SortBam {
 	}
 	$sOut = $phCmdLineArgs->{'output_dir'}."/".$sFile;
 	# Shaun Adkins - Commented out other command because it is Samtools-1.2.  We are using Samtools-0.1
-	$sCmd = $phCmdLineArgs->{'samtools_path'}." sort". $sOptions . " -n " . $phCmdLineArgs->{'input_file'} . " " . $sOut;
+	$sCmd = $phCmdLineArgs->{'samtools_path'}." sort". $sOptions . " -n " . $input_file . " " . $sOut;
 	#$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." ".$phCmdLineArgs->{'input_file'};
-	printLogMsg($DEBUG, "INFO : $sSubName :: Start sorting file $phCmdLineArgs->{'input_file'} to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd");
+	printLogMsg($DEBUG, "INFO : $sSubName :: Start sorting file $input_file to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd");
 	$nExitCode = system($sCmd);
 	if($nExitCode != 0) {
-		printLogMsg($ERROR, "ERROR : $sSubName :: Sorting of BAM failed for $phCmdLineArgs->{'input_file'}/ with error. Check the stderr");
+		printLogMsg($ERROR, "ERROR : $sSubName :: Sorting of BAM failed for $input_file with error. Check the stderr");
 	} else {
 		printLogMsg($DEBUG, "INFO : $sSubName :: Sorting of BAM succesfully completed in $phCmdLineArgs->{'output_dir'}/".$sFile);
 	}
