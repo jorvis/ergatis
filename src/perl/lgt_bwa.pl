@@ -245,7 +245,6 @@ sub sam_to_bam {
 	}
     ( $file_base, $file_dir, $file_ext ) = fileparse( $file, qr/\.[^.]*/ );
     $out = $cmd_line_args->{'output_dir'} . "/" . $file_base . ".bam";
-	$out =~ s/bwa\.prelim\.filtered\.//g;
 
     $cmd =
         $cmd_line_args->{'samtools_path'}
@@ -354,6 +353,10 @@ sub determine_format {
 
 # Currently the script cannot process multiple samples.  Ideally the list file should just contain 1 sample, which is either 1 single-end fastq, 1 BAM, or 2 paired-end fastq files.  Also the .blank file originating from the sra2fastq component in Ergatis can exist in a list file
             foreach my $f (@list_files) {
+				chomp $f;
+				# Same files passed from lgt_bwa component to another lgt_bwa component may have .bwa.prelim.filtered.bam endings.  This doesn't break the script by having it but I would like to keep the name decently short - SAdkins 4/18/16
+				$f =~ s/bwa\.prelim\.filtered\.//g;
+
                 my ( $base, $dir_path, $ext ) = fileparse( $f, qr/\.[^.]*/ );
                 if ( $ext =~ /fastq$/ ) {
                     if ( $ext =~ /_1\./ ) {
