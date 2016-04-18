@@ -74,6 +74,7 @@ open OUT_LIST, ">$bam_list" or print_log_msg($ERROR, "Cannot open $bam_list for 
 $file_count = keys %type;
 
 foreach my $ref (@ref_files) {
+	chomp $ref;
     my $refname;
     if ( $ref =~ /.*\/([^\/]+)\.[^\.]+$/ ) {
         $refname = $1;
