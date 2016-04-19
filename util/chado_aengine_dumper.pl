@@ -487,7 +487,7 @@ for my $feature_id ( keys %$assemblies ) {
 						   -strand => $$row{strand} );
 
         my $cds = Bio::SeqFeature::Generic->new(
-						-seq_id => $$row{uniquename} || 'UNKN0WN',
+						-seq_id => $$row{uniquename} || 'UNKNOWN',
 						-primary => 'tRNA',
 						-location => $location,
 						);
@@ -498,7 +498,7 @@ for my $feature_id ( keys %$assemblies ) {
 						-strand => $$row{strand} );
 
         my $gene = Bio::SeqFeature::Generic->new(
-						 -seq_id => $$row{uniquename} || 'UNKN0WN',
+						 -seq_id => $$row{uniquename} || 'UNKNOWN',
 						 -primary => 'gene',
 						 -location => $location
 						 );
@@ -545,8 +545,8 @@ for my $feature_id ( keys %$assemblies ) {
             last;
         }
 
-        push @assembly_feats, $cds;
         push @assembly_feats, $gene;
+        push @assembly_feats, $cds;
     }
 
     ## now get all rRNAs
@@ -555,7 +555,7 @@ for my $feature_id ( keys %$assemblies ) {
 
     while( my $row = $feature_on_assembly_selector_nonfiltered->fetchrow_hashref ) {
         my $cds = Bio::SeqFeature::Generic->new(
-						-seq_id => $$row{uniquename} || 'UNKN0WN',
+						-seq_id => $$row{uniquename} || 'UNKNOWN',
 						-primary => 'rRNA',
 						-start => $$row{fmin} + 1,
 						-end => $$row{fmax},
@@ -563,7 +563,7 @@ for my $feature_id ( keys %$assemblies ) {
 						);
 
         my $gene = Bio::SeqFeature::Generic->new(
-						 -seq_id => $$row{uniquename} || 'UNKN0WN',
+						 -seq_id => $$row{uniquename} || 'UNKNOWN',
 						 -primary => 'gene',
 						 -start => $$row{fmin} + 1,
 						 -end => $$row{fmax},
