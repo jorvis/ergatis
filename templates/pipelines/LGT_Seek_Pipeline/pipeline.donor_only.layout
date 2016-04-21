@@ -62,11 +62,11 @@
 								<state>incomplete</state>
 								<name>blast2lca.lgt</name>
 							</commandSet>
+							<commandSet type="serial">
+								<state>incomplete</state>
+								<name>lgt_create_validated_bam.lgt</name>
+							</commandSet>
 						</commandSet>
-					</commandSet>
-					<commandSet type="serial">
-						<state>incomplete</state>
-						<name>lgt_create_validated_bam.lgt</name>
 					</commandSet>
 				</commandSet>
 			</commandSet>
