@@ -100,6 +100,7 @@ foreach my $ref (@ref_files) {
                   fileparse( $type{'fastq_1'}, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out1 = $refname . "_" . $file_base . ".bwa.sam";
+				$out1 =~ s/bwa\.prelim\.filtered\.//g;
                 my $concat_files = $type{'fastq_1'} . " " . $type{'fastq_2'};
                 align_BWA( \%options, "mem", $concat_files, "", $out1, $ref );
 
@@ -115,6 +116,7 @@ foreach my $ref (@ref_files) {
                   fileparse( $type{'fastq'}, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out = $refname . "_" . $file_base . ".bwa.sam";
+				$out =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "mem", $type{'fastq'}, "", $out, $ref );
             }
         }
@@ -129,9 +131,11 @@ foreach my $ref (@ref_files) {
                 ( $file_base, $file_dir, $file_ext ) =
                   fileparse( $type{'bam'}, qr/\.[^.]*/ );
                 $out1 = $refname . "_" . $file_base . ".aln1.sai";
+				$out1 =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'bam'}, "-b1", $out1, $ref );
 
                 $out2 = $refname . "_" . $file_base . ".aln2.sai";
+				$out2 =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'bam'}, "-b2", $out2, $ref );
 
                 $in =
@@ -141,7 +145,8 @@ foreach my $ref (@ref_files) {
                   . $out2 . " "
                   . $type{'bam'} . " "
                   . $type{'bam'};
-                $out = $file_base . ".bwa.sam";
+                $out = $refname . "_" . $file_base . ".bwa.sam";
+				$out =~ s/bwa\.prelim\.filtered\.//g;
 
             } elsif ( $file_count == 2
                 && exists( $type{'fastq_1'} )
@@ -151,6 +156,7 @@ foreach my $ref (@ref_files) {
                   fileparse( $type{'fastq_1'}, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out1 = $refname . "_" . $file_base . ".aln1.sai";
+				$out1 =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'fastq_1'}, "", $out1,
                     $ref );
 
@@ -158,6 +164,7 @@ foreach my $ref (@ref_files) {
                   fileparse( $type{'fastq_2'}, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out2 = $refname . "_" . $file_base . ".aln2.sai";
+				$out2 =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'fastq_2'}, "", $out2,
                     $ref );
 
@@ -170,6 +177,7 @@ foreach my $ref (@ref_files) {
                   . $type{'fastq_1'} . " "
                   . $type{'fastq_2'};
                 $out = $refname . "_" . $file_base . ".bwa.sam";
+				$out =~ s/bwa\.prelim\.filtered\.//g;
 
             } else {
                 print_log_msg( $ERROR,
@@ -185,20 +193,24 @@ foreach my $ref (@ref_files) {
                   fileparse( $type{'fastq'}, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out = $refname . "_" . $file_base . ".aln.sai";
+				$out =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'fastq'}, "", $out, $ref );
 
                 $in =
                   $options{'output_dir'} . "/" . $out . " " . $type{'fastq'};
                 $out = $refname . "_" . $file_base . ".bwa.sam";
+				$out =~ s/bwa\.prelim\.filtered\.//g;
 
             } elsif ( $file_count == 1 && exists( $type{'bam'} ) ) {
                 ( $file_base, $file_dir, $file_ext ) =
                   fileparse( $type{'bam'}, qr/\.[^.]*/ );
                 $out = $refname . "_" . $file_base . ".aln.sai";
+				$out =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'bam'}, "-b0", $out, $ref );
 
                 $in  = $options{'output_dir'} . "/" . $out . " " . $type{'bam'};
                 $out = $refname . "_" . $file_base . ".bwa.sam";
+				$out =~ s/bwa\.prelim\.filtered\.//g;
             }
             align_BWA( \%options, "samse", $in, "", $out, $ref );
         }
@@ -315,6 +327,9 @@ sub align_BWA {
         $opts .= " " . $cmd_line_args->{'bwa_params'};
     }
 
+	# Same files passed from lgt_bwa component to another lgt_bwa component may have .bwa.prelim.filtered.bam endings.  This doesn't break the script by having it but I would like to keep the name decently short - SAdkins 4/18/16
+	$outfile =~ s/bwa\.prelim\.filtered\.//g;
+
     $cmd =
         $cmd_line_args->{'bwa_path'} . " "
       . $algo . " "
@@ -354,8 +369,6 @@ sub determine_format {
 # Currently the script cannot process multiple samples.  Ideally the list file should just contain 1 sample, which is either 1 single-end fastq, 1 BAM, or 2 paired-end fastq files.  Also the .blank file originating from the sra2fastq component in Ergatis can exist in a list file
             foreach my $f (@list_files) {
 				chomp $f;
-				# Same files passed from lgt_bwa component to another lgt_bwa component may have .bwa.prelim.filtered.bam endings.  This doesn't break the script by having it but I would like to keep the name decently short - SAdkins 4/18/16
-				$f =~ s/bwa\.prelim\.filtered\.//g;
 
                 my ( $base, $dir_path, $ext ) = fileparse( $f, qr/\.[^.]*/ );
                 if ( $ext =~ /fastq$/ ) {

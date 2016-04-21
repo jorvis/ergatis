@@ -213,13 +213,13 @@ my $ec_num_selector = $dbh->prepare($qry);
 
 ## query to select all primary GO terms for a given feature id
 $qry = qq{
-    SELECT t.uniquename, db.name as db_name, cvt.name, go.accession
+    SELECT t.uniquename, cv.name as cv_name, cvt.name, go.accession
 	FROM feature t
 	JOIN feature_cvterm fc ON t.feature_id = fc.feature_id
 	JOIN cvterm cvt ON fc.cvterm_id = cvt.cvterm_id
 	JOIN dbxref go ON go.dbxref_id = cvt.dbxref_id
-	JOIN db ON db.db_id = go.db_id
-	WHERE db.name IN ('process', 'component', 'function', 'GO' )
+	JOIN cv ON cv.cv_id = cvt.cv_id
+	WHERE cv.name IN ('process', 'component', 'function', 'biological_process', 'molecular_function', 'cellular_component',  'GO' )
 	AND t.type_id = $cvterm{transcript}
     AND t.feature_id = ?
     };
@@ -459,8 +459,12 @@ for my $feature_id ( keys %$assemblies ) {
             next if( $$go_term_row{name} eq 'biological_process' ||
                      $$go_term_row{name} eq 'molecular_function' ||
                      $$go_term_row{name} eq 'cellular_component' );
-
-            push( @go_terms, [$$go_term_row{db_name}, $$go_term_row{accession}, $$go_term_row{name}] );
+			# only keep the second half of the cv_name
+			my $cv_name = $$go_term_row{cv_name};
+			$cv_name = 'process' if $cv_name =~ /process/;
+			$cv_name = 'function' if $cv_name =~ /function/;
+			$cv_name = 'component' if $cv_name =~ /component/;
+            push( @go_terms, [$cv_name, $$go_term_row{accession}, $$go_term_row{name}] );
 
         }
         my @values;
@@ -487,7 +491,7 @@ for my $feature_id ( keys %$assemblies ) {
 						   -strand => $$row{strand} );
 
         my $cds = Bio::SeqFeature::Generic->new(
-						-seq_id => $$row{uniquename} || 'UNKN0WN',
+						-seq_id => $$row{uniquename} || 'UNKNOWN',
 						-primary => 'tRNA',
 						-location => $location,
 						);
@@ -498,7 +502,7 @@ for my $feature_id ( keys %$assemblies ) {
 						-strand => $$row{strand} );
 
         my $gene = Bio::SeqFeature::Generic->new(
-						 -seq_id => $$row{uniquename} || 'UNKN0WN',
+						 -seq_id => $$row{uniquename} || 'UNKNOWN',
 						 -primary => 'gene',
 						 -location => $location
 						 );
@@ -545,8 +549,8 @@ for my $feature_id ( keys %$assemblies ) {
             last;
         }
 
-        push @assembly_feats, $cds;
         push @assembly_feats, $gene;
+        push @assembly_feats, $cds;
     }
 
     ## now get all rRNAs
@@ -555,7 +559,7 @@ for my $feature_id ( keys %$assemblies ) {
 
     while( my $row = $feature_on_assembly_selector_nonfiltered->fetchrow_hashref ) {
         my $cds = Bio::SeqFeature::Generic->new(
-						-seq_id => $$row{uniquename} || 'UNKN0WN',
+						-seq_id => $$row{uniquename} || 'UNKNOWN',
 						-primary => 'rRNA',
 						-start => $$row{fmin} + 1,
 						-end => $$row{fmax},
@@ -563,7 +567,7 @@ for my $feature_id ( keys %$assemblies ) {
 						);
 
         my $gene = Bio::SeqFeature::Generic->new(
-						 -seq_id => $$row{uniquename} || 'UNKN0WN',
+						 -seq_id => $$row{uniquename} || 'UNKNOWN',
 						 -primary => 'gene',
 						 -start => $$row{fmin} + 1,
 						 -end => $$row{fmax},
@@ -1165,7 +1169,6 @@ sub get_cvterm_id {
         die "ERROR: failed to retrieve cvterm_id for name $name\n";
     }
 }
-
 
 ## gets the numerical db id for a passed db.name.  returns undef if not found.
 sub get_db_id {
