@@ -20,21 +20,15 @@
             <arg>-p -m 777 $;TMP_DIR$;</arg>
 		</command>
         <!--Processing-->
-        <command>
-            <type>RunUnixCommand</type>
-            <name>merge BAM files</name>
-            <state>incomplete</state>
-            <executable>$;SAMTOOLS_BIN$;</executable>
-			<arg>merge -b $;INPUT_FILE_LIST$; -n $;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.bam</arg>
-			<param>
-				<key>stderr</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
-			</param>
-			<param>
-				<key>stderr</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
-			</param>
-		</command>
+    	<commandSet type="remote-serial">
+        	<state>incomplete</state>
+        	<name>samtools merge distributed work</name>
+        	<fileName>$;WORKFLOW_REPOSITORY$;/samtools_merge_distributed_work.xml.gz</fileName>
+        	<dceSpec type="sge">
+        	    <group>$;PROJECT_CODE$;</group>
+        	    <OS>linux</OS>
+        	</dceSpec>
+        </commandSet>
 		<!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
