@@ -459,8 +459,12 @@ for my $feature_id ( keys %$assemblies ) {
             next if( $$go_term_row{name} eq 'biological_process' ||
                      $$go_term_row{name} eq 'molecular_function' ||
                      $$go_term_row{name} eq 'cellular_component' );
-
-            push( @go_terms, [$$go_term_row{cv_name}, $$go_term_row{accession}, $$go_term_row{name}] );
+			# only keep the second half of the cv_name
+			my $cv_name = $$go_term_row{cv_name};
+			$cv_name = 'process' if $cv_name =~ /process/;
+			$cv_name = 'function' if $cv_name =~ /function/;
+			$cv_name = 'component' if $cv_name =~ /component/;
+            push( @go_terms, [$cv_name, $$go_term_row{accession}, $$go_term_row{name}] );
 
         }
         my @values;
