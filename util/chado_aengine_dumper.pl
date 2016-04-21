@@ -213,13 +213,13 @@ my $ec_num_selector = $dbh->prepare($qry);
 
 ## query to select all primary GO terms for a given feature id
 $qry = qq{
-    SELECT t.uniquename, db.name as db_name, cvt.name, go.accession
+    SELECT t.uniquename, cv.name as cv_name, cvt.name, go.accession
 	FROM feature t
 	JOIN feature_cvterm fc ON t.feature_id = fc.feature_id
 	JOIN cvterm cvt ON fc.cvterm_id = cvt.cvterm_id
 	JOIN dbxref go ON go.dbxref_id = cvt.dbxref_id
-	JOIN db ON db.db_id = go.db_id
-	WHERE db.name IN ('process', 'component', 'function', 'GO' )
+	JOIN cv ON cv.cv_id = cvt.cv_id
+	WHERE cv.name IN ('process', 'component', 'function', 'biological_process', 'molecular_function', 'cellular_component',  'GO' )
 	AND t.type_id = $cvterm{transcript}
     AND t.feature_id = ?
     };
@@ -460,7 +460,7 @@ for my $feature_id ( keys %$assemblies ) {
                      $$go_term_row{name} eq 'molecular_function' ||
                      $$go_term_row{name} eq 'cellular_component' );
 
-            push( @go_terms, [$$go_term_row{db_name}, $$go_term_row{accession}, $$go_term_row{name}] );
+            push( @go_terms, [$$go_term_row{cv_name}, $$go_term_row{accession}, $$go_term_row{name}] );
 
         }
         my @values;
@@ -1165,7 +1165,6 @@ sub get_cvterm_id {
         die "ERROR: failed to retrieve cvterm_id for name $name\n";
     }
 }
-
 
 ## gets the numerical db id for a passed db.name.  returns undef if not found.
 sub get_db_id {
