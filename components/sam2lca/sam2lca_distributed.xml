@@ -9,15 +9,7 @@
             <executable>$;BIN_DIR$;/sam2lca</executable>
             <param>
                 <key>--input_file</key>
-                <value>$;I_FILE_PATH$;</value>
-            </param>
-            <param>
-                <key>--original_bam</key>
-                <value>$;PRE_BWA_BAM_FILE$;</value>
-            </param>
-            <param>
-                <key>--original_bam_list</key>
-                <value>$;PRE_BWA_BAM_LIST$;</value>
+                <value>$;INPUT_FILE_LIST$;</value>
             </param>
             <param>
                 <key>--tax_id_file</key>
