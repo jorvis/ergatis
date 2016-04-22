@@ -119,8 +119,8 @@ B<--help,-h>
 
 =head1  CONTACT
 
-    Kevin Galens
-    kgalens@gmail.com
+    Shaun Adkins
+    sadkins@som.umaryland.edu
 
 =cut
 

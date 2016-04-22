@@ -1,5 +1,10 @@
 next
 ---
+-NEW - Aded CloVR 16S Miseq pipelines for Miseq fasta data (chimera and no chimera checking)
+-NEW - Added SPAdes assembly component to use in the ProkPipe and CloVR Microbe pipeline
+-CHANGE - Fixed some logic in the LGTSeek pipeline
+-FIX - Fixed chado_aengine_dumper to properly output tRNA/gene features correctly, and GO annotations in /note tag
+-NEW - Added use-case to LGT_Seek pipeline, for good donor but no good host
 -NEW - Adding infernal component to ProkPipe, replacing RNAmmer
 -CHANGE - Updated infernal component to use Infernal-1.1
 -NEW - Created the LGT-Seek pipeline template along with pertinent components

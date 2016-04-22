@@ -349,7 +349,7 @@ sub _prinseqFilterPaired {
             $self->_run_cmd(
 "$Picard MarkDuplicates I=$bam_file TMP_DIR=$tmp_dir OUTPUT=$tmp_dir/$name\_dedup.bam METRICS_FILE=$tmp_dir/$name\_dedup-metrics.txt REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT"
             );
-            open( my $BAM, "samtools view $tmp_dir/$name\_dedup.bam |" )
+            open( my $BAM, "$self->{samtools} view $tmp_dir/$name\_dedup.bam |" )
               or $self->fail(
 "*** Error *** &prinseqFilterBam unable to open the deduped bam: $tmp_dir/$name\_dedup.bam"
               );
