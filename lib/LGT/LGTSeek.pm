@@ -349,7 +349,7 @@ sub _prinseqFilterPaired {
             $self->_run_cmd(
 "$Picard MarkDuplicates I=$bam_file TMP_DIR=$tmp_dir OUTPUT=$tmp_dir/$name\_dedup.bam METRICS_FILE=$tmp_dir/$name\_dedup-metrics.txt REMOVE_DUPLICATES=false VALIDATION_STRINGENCY=SILENT"
             );
-            open( my $BAM, "$self->{samtools} view $tmp_dir/$name\_dedup.bam |" )
+            open( my $BAM, "$self->{samtools_bin} view $tmp_dir/$name\_dedup.bam |" )
               or $self->fail(
 "*** Error *** &prinseqFilterBam unable to open the deduped bam: $tmp_dir/$name\_dedup.bam"
               );
@@ -1180,7 +1180,7 @@ sub _bwaPostProcessDonorHostPaired {
     my ( $self, $config ) = @_;
 
     $self->{samtools_bin} =
-      $self->{samtools_bin} ? $self->{samtools_bin} : 'samtools';
+      $self->{samtools_bin} ? $self->{samtools_bin} : '/usr/local/bin/samtools';
     my $samtools = $self->{samtools_bin};
     my $output_dir =
       $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
@@ -1290,7 +1290,7 @@ sub _bwaPostProcessDonorHostPaired {
     }
 
     # Open all the host files
-    if ( $self->{verbose} ) { print STDERR "Opening $_\n"; }
+    if ( $self->{verbose} ) { print STDERR "Opening $host_bam\n"; }
     if ( $host_bam =~ /.bam$/ ) {
         $host_head = `$samtools view -H $host_bam`;
         open( $host_fh, "-|", "$samtools view $host_bam" );
