@@ -456,9 +456,9 @@ for my $feature_id ( keys %$assemblies ) {
         while ( my $go_term_row = $go_term_selector->fetchrow_hashref ) {
             #we don't want to include the most generic of go terms
             #(biological_process, molecular_function, cellular_component)
-            next if( $$go_term_row{name} eq 'biological_process' ||
-                     $$go_term_row{name} eq 'molecular_function' ||
-                     $$go_term_row{name} eq 'cellular_component' );
+			#next if( $$go_term_row{name} eq 'biological_process' ||
+			#         $$go_term_row{name} eq 'molecular_function' ||
+			#         $$go_term_row{name} eq 'cellular_component' );
 			# only keep the second half of the cv_name
 			my $cv_name = $$go_term_row{cv_name};
 			$cv_name = 'process' if $cv_name =~ /process/;
