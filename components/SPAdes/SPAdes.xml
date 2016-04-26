@@ -33,16 +33,8 @@
 				<value>$;OUTPUT_DIRECTORY$;/spades.stderr</value>
 			</param>
 			<param>
-				<key>--first</key>
-				<value>$;FIRST_FASTQ$;</value>
-			</param>
-			<param>
-				<key>--second</key>
-				<value>$;SECOND_FASTQ$;</value>
-			</param>
-			<param>
-				<key>--paired</key>
-				<value>$;PAIRED$;</value>
+				<key>--input_list</key>
+				<value>$;INPUT_FILE_LIST$;</value>
 			</param>
 			<param>
 				<key>--output_dir</key>

@@ -32,14 +32,8 @@ arg=$(echo $i | cut -f1 -d "=")
 val=$(echo $i | cut -f2 -d "=")
 
 case $arg in
-	--first)
-	first="$val"
-    ;;
-    --second)
-    second="$val"
-    ;;
-    --paired)
-    paired="$val"
+	--input_list)
+	input="$val"
     ;;
     --output_dir)
     out_dir="$val"
@@ -50,13 +44,22 @@ case $arg in
 esac
 shift 
 done
+
 cmd="${spades_bin}/spades.py --careful -o $out_dir"
-if [ $paired ]
-then
+
+line_count=$(wc -l $FASTQ_LIST | cut -f1 -d' ')
+if [ $line_count -eq 2 ]; then
+	first=`head -n 1 $FASTQ_LIST`
+	second=`tail -n 1 $FASTQ_LIST`
 	cmd="$cmd -1 $first -2 $second"
-else
+elif [ $line_count -eq 1 ]; then
 	cmd="$cmd -s $first"
-fi  
+else
+    echo "FASTQ list must have exactly 1 or 2 sequences.  This file had $line_count" >&2
+    exit 1
+fi
+
 echo "$cmd"
 $cmd
 
+exit 0
