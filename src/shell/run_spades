@@ -45,12 +45,17 @@ esac
 shift 
 done
 
+if [ ! -d "$spades_bin" ]; then
+	echo "Cannot find SPAdes directory at $spades_bin: Exiting" >&2
+	exit 1
+fi
+
 cmd="${spades_bin}/spades.py --careful -o $out_dir"
 
-line_count=$(wc -l $FASTQ_LIST | cut -f1 -d' ')
+line_count=$(wc -l $input | cut -f1 -d' ')
 if [ $line_count -eq 2 ]; then
-	first=`head -n 1 $FASTQ_LIST`
-	second=`tail -n 1 $FASTQ_LIST`
+	first=`head -n 1 $input`
+	second=`tail -n 1 $input`
 	cmd="$cmd -1 $first -2 $second"
 elif [ $line_count -eq 1 ]; then
 	cmd="$cmd -s $first"
