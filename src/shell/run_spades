@@ -58,7 +58,8 @@ if [ $line_count -eq 2 ]; then
 	second=`tail -n 1 $input`
 	cmd="$cmd -1 $first -2 $second"
 elif [ $line_count -eq 1 ]; then
-	cmd="$cmd -s $first"
+	file=`cat $input`
+	cmd="$cmd -s $file"
 else
     echo "FASTQ list must have exactly 1 or 2 sequences.  This file had $line_count" >&2
     exit 1
