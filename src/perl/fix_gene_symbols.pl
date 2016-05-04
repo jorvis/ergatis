@@ -153,7 +153,7 @@ sub fixGeneSymbolsInDb {
 
 # Remove all duplicate and upper case gene symbols and if rules file is provided then replce them too.
     foreach $sGeneSymb ( keys %hRules ) {
-        $hExistSyms{$sGeneSyms} = 0 if ( !exists $hExistSyms{$sGeneSyms} );
+        $hExistSyms{$sGeneSymb} = 0 if ( !exists $hExistSyms{$sGeneSymb} );
         printLogMsg( $DEBUG,
             "INFO : $sSubName :: Changing $sGeneSymb to $hRules{$sGeneSymb} in DB $paMeta->[0]. Its count in DB is $hExistSyms{$sGeneSymb}."
         );
