@@ -1,0 +1,53 @@
+#!/bin/sh
+
+if [ -z "$SCHEMA_DOCS_DIR" ]
+then
+    SCHEMA_DOCS_DIR=
+export SCHEMA_DOCS_DIR
+fi
+if [ -z "$WORKFLOW_WRAPPERS_DIR" ]
+then
+    WORKFLOW_WRAPPERS_DIR=/opt/ergatis/bin
+export WORKFLOW_WRAPPERS_DIR
+fi
+if [ -z "$WORKFLOW_DOCS_DIR" ]
+then
+    WORKFLOW_DOCS_DIR=
+export WORKFLOW_DOCS_DIR
+fi
+
+umask 0000
+unset LD_LIBRARY_PATH
+
+LANG=C
+export LANG
+LC_ALL=C
+export LC_ALL
+
+# This script will replace any of the nucleotide letters that can stand for multiple ACGT letters with an all-purpose 'N'
+# If a polypeptide sequence is passed in, then just ignore
+
+while [[ $# -ge 1 ]]
+do
+i="$1"
+arg=$(echo $i | cut -f1 -d "=")
+val=$(echo $i | cut -f2 -d "=")
+
+case $arg in
+    --output_list)
+    output_list="$val"
+    ;;
+    --class_filter)
+    class_filter="$val"
+    ;;
+esac
+shift
+done
+
+if [[ $class_filter -eq 'nucleotide' ]]; then
+	for F in `cat $output_list`; do 
+		/usr/bin/env perl -i -p -ne 'if($_ !~ /^>/) {$_ =~ s/[MRWSYKVHDB]/N/g;}' ${F}
+	done
+fi
+
+exit 0

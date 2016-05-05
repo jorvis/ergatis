@@ -91,9 +91,17 @@
         </command>
 	<command>
             <type>RunUnixCommand</type>
-            <name>Fix fasta</name>
+            <name>Fix fasta (nucleotide only)</name>
             <state>incomplete</state>
-            <executable>for F in `cat $;OUTPUT_LIST$;`;do perl -i -p -ne 'if($_ !~ /^>/) {$_ =~ s/[MRWSYKVHDB]/N/g;}' ${F};done;</executable>
+			<executable>$;BIN_DIR$;/fix_nuc_fasta</executable>
+            <param>
+                <key>--output_list</key>
+                <value>'$;OUTPUT_LIST$;'</value>
+            </param>
+            <param>
+                <key>--class_filter</key>
+                <value>'$;CLASS_FILTER$;'</value>
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>
