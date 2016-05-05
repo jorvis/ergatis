@@ -1,0 +1,22 @@
+Prokaryotic Annotation Pipeline Software Versions
+=================================================
+
+Note:  Software name and version number are tab-delimited.  When applicable, extra notes are also tab-delimited
+
+Structural Annotation
+---------------------
+tRNA-scanSE	1.23
+Infernal	1.1.1	(only in nightly)
+RNAmmer	1.2	(only in latest)
+Glimmer3	3.02
+
+Functional Annotation
+---------------------
+blastall	2.2.17
+RAPSearch2	2.23	(only in nightly)
+HMMer	3
+SignalP	4.0
+TMHMM	2.0c
+LipoP	1.0a
+Prosite	1.34
+
