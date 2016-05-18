@@ -216,8 +216,11 @@ foreach my $ref (@ref_files) {
         }
     }
 
+	# Determine if the newly created SAM file is truncated.  Fail if it is
+	is_saa_truncated(\%options, $out);
     # Convert SAM file into a BAM file and remove SAM if specified to
     sam_to_bam( \%options, $out );
+
 }
 close OUT_LIST;
 
@@ -282,6 +285,25 @@ sub sam_to_bam {
 
 	# Write the new BAM file to our list
 	print OUT_LIST $out . "\n";
+}
+
+sub is_sam_truncated {
+	my $cmd_line_args = shift;
+    my $sam = shift;
+    my $sub_name = ( caller(0) )[3];
+	$cmd = $cmd_line_args->{'samtools_path'} . " view " . $out;
+	print_log_msg($DEBUG, "INFO : $sub_name :: Checking to see if SAM file is truncated\nINFO : $sub_name :: Command : $cmd");
+    $exit_code = system($cmd);
+    if ( $exit_code != 0 ) {
+        print_log_msg( $ERROR,
+            "ERROR : $sub_name :: SAM file appears to be truncated.  Try to re-run with a higher memory requirement"
+        );
+    } else {
+        print_log_msg( $DEBUG,
+            "INFO : $sub_name :: SAM file seems file."
+        );
+    }
+	return;
 }
 
 sub align_BWA {

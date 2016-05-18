@@ -1148,8 +1148,10 @@ sub _getPairedClass {
     }
 
     # Should check if these ended at the same time?
+	# This means we are at the end of the file
     if ( !$r1 || !$r2 ) {
         $more_lines = 0;
+		print STDERR "Parsed to end of file\n";
         last;
     }
 
@@ -1261,7 +1263,13 @@ sub _bwaPostProcessDonorPaired {
         foreach my $pgs ( keys %pg_hash ) {
             print { $class_to_file->{$_} } "$pgs\n";
         }
-        print { $class_to_file->{$_} } "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
+        print { $class_to_file->{$_} } "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION";
+		# Sometimes there are no previous PG-ID's so check for that.
+		if (defined $last_pg_id) {
+			print {$class_to_file->{$_}} "$last_pg_id\n";
+		} else {
+			print {$class_to_file->{$_}} "\n";
+		}
      } keys %$class_to_file;
   
      #   exit;
@@ -1458,8 +1466,13 @@ sub _bwaPostProcessDonorHostPaired {
                  print { $class_to_file->{$_} } "$pgs\n";
              }
              print { $class_to_file->{$_} }
-               "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
-  
+               "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION";
+			# Sometimes there are no previous PG-ID's so check for that.
+			if (defined $last_pg_id) {
+				print {$class_to_file->{$_}} "$last_pg_id\n";
+			} else {
+				print {$class_to_file->{$_}} "\n";
+  			}
              #            close $class_to_file->{$_};
          }
          elsif ( $_ =~ /_host$/) {
@@ -1486,8 +1499,14 @@ sub _bwaPostProcessDonorHostPaired {
                  print { $class_to_file->{$_} } "$pgs\n";
              }
              print { $class_to_file->{$_} }
-               "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION$last_pg_id\n";
-         }
+               "\@CO\tID:PostProcess\tPN:LGTseek\tVN:$VERSION";
+			# Sometimes there are no previous PG-ID's so check for that.
+			if (defined $last_pg_id) {
+				print {$class_to_file->{$_}} "$last_pg_id\n";
+			} else {
+				print {$class_to_file->{$_}} "\n";
+         	}
+		}
      } keys %$class_to_file;
   
      #   exit;

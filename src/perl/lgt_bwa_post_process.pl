@@ -113,7 +113,7 @@ $prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_process";
 # Need to take a different approach depending on if we have a host file or not.
 if ($donor_only) {
 	foreach my $d_file (@donor_files){
-		$prefix .= "_" . $count_id++ . "." if (scalar @donor_files > 1);
+		my $curr_prefix = $prefix .  "_" . $count_id++ if (scalar @donor_files > 1);
 		my $lgt_obj = LGT::LGTSeek->new( {
 				'samtools_bin' => $options{'samtools_path'},
 				'output_dir' => $options{'output_dir'},
@@ -121,9 +121,9 @@ if ($donor_only) {
 			} );
 		my $pp_data = $lgt_obj->bwaPostProcess( {
 				'donor_bam'	=> $d_file,
-				'output_prefix' => $prefix
+				'output_prefix' => $curr_prefix
 			} );
-		my $counts_file = $output_dir . "/" . $prefix . ".counts";
+		my $counts_file = $output_dir . "/" . $curr_prefix . ".counts";
 		my (@header, @vals);
 	    map {
 	        push( @header, $_ );
@@ -138,7 +138,7 @@ if ($donor_only) {
 	my $matching_files = find_matching_files(\@donor_files, \@recipient_files);
 	# Group reads from donor/recipient files for each mapping type
 	foreach my $r (keys %$matching_files) {
-		$prefix .= "_" . $count_id++ . "." if (scalar keys %$matching_files > 1);
+		my $curr_prefix = $prefix . "_" . $count_id++ if (scalar keys %$matching_files > 1);
 	
 		my $lgt_obj = LGT::LGTSeek->new( {
 				'samtools_bin' => $options{'samtools_path'},
@@ -151,11 +151,11 @@ if ($donor_only) {
 		my $pp_data = $lgt_obj->bwaPostProcess( {
 				'donor_bam'	=> $d,
 				'host_bam'	=> $r,
-				'output_prefix' => $prefix
+				'output_prefix' => $curr_prefix
 			} );
 		
 		# Take list of counts and write them to file
-		my $counts_file = $output_dir . "/" . $prefix . ".counts";
+		my $counts_file = $output_dir . "/" . $curr_prefix . ".counts";
 		my (@header, @vals);
 	    map {
 	        push( @header, $_ );
