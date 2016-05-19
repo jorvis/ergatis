@@ -167,6 +167,8 @@ for my $group (sort {$a<=>$b} keys %accHash) {
 		system("$Bin/fetch_genbank --output_dir=$options{output_dir} --database=$options{database} --query=$accHash{$group} --format=$options{format}");		       
 		my @acc = split(/,/,$accHash{$group});
 		my $ref_file = $options{output_dir}."/reference_grp".$group.".".$options{format};
+		# SAdkins - 5/19/16 - Encountered bug where re-ran pipelines would append to existing reference group file from previous run
+		unlink $ref_file if (-e $ref_file);
 		foreach my $id (@acc) {
 			my $filename;
 			if ($id =~ /\/|\\/g) {
@@ -309,6 +311,8 @@ sub check_parameters {
 
 sub concat_contigs {
 	$orig_contig_file = $options{output_dir}."/".$options{strain}.".multi.fasta";
+	# SAdkins - 5/19/16 - Encountered bug where re-ran pipelines would append to existing contigs fasta file from previous run
+	unlink $orig_contig_file if (-e $orig_contig_file);
 	my @contig_files = &read_file($options{'contig_input'});
 	foreach my $path (@contig_files) {
 		chomp($path);
