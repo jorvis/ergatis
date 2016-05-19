@@ -217,7 +217,7 @@ foreach my $ref (@ref_files) {
     }
 
 	# Determine if the newly created SAM file is truncated.  Fail if it is
-	is_saa_truncated(\%options, $out);
+	is_sam_truncated(\%options, $out);
     # Convert SAM file into a BAM file and remove SAM if specified to
     sam_to_bam( \%options, $out );
 
