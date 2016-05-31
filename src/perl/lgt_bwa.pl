@@ -217,6 +217,7 @@ foreach my $ref (@ref_files) {
     }
 
 	# Determine if the newly created SAM file is truncated.  Fail if it is
+	# Note:  $out is just the basename.  Output_dir is added to command in subroutine
 	is_sam_truncated(\%options, $out);
     # Convert SAM file into a BAM file and remove SAM if specified to
     sam_to_bam( \%options, $out );
@@ -291,7 +292,7 @@ sub is_sam_truncated {
 	my $cmd_line_args = shift;
     my $sam = shift;
     my $sub_name = ( caller(0) )[3];
-	$cmd = $cmd_line_args->{'samtools_path'} . " view " . $out;
+	$cmd = $cmd_line_args->{'samtools_path'} . " view " . $cmd_line_args->{'output_dir'} . "/" . $out;
 	print_log_msg($DEBUG, "INFO : $sub_name :: Checking to see if SAM file is truncated\nINFO : $sub_name :: Command : $cmd");
     $exit_code = system($cmd);
     if ( $exit_code != 0 ) {
