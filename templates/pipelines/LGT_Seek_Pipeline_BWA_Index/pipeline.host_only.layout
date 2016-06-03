@@ -1,0 +1,17 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start</name>
+        <commandSet type="parallel">
+            <state>incomplete</state>
+            <commandSet type="serial">
+				<state>incomplete</state>
+            	<name>lgt_build_bwa_index.recipient</name>
+			</commandSet>
+			<commandSet type="serial">
+				<state>incomplete</state>
+				<name>lgt_build_bwa_index.refseq</name>
+			</commandSet>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>
