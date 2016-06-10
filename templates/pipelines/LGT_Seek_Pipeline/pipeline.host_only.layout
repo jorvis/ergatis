@@ -77,6 +77,22 @@
 						</commandSet>
 					</commandSet>
 				</commandSet>
+                <!-- Microbiome side -->
+                <commandSet type="serial">
+                    <state>incomplete</state>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>filter_dups_lc_seqs.mb</name>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>lgt_bwa.mb</name>
+                    </commandSet>
+                    <commandSet type="serial">
+                        <state>incomplete</state>
+                        <name>sam2lca.mb</name>
+                    </commandSet>
+                </commandSet>
 			</commandSet>
         </commandSet>
     </commandSet>

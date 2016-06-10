@@ -1114,11 +1114,11 @@ sub bwaPostProcess {
     if ( $config->{donor_bam} && $config->{host_bam} ) {
 		print STDERR "--- Detected donor and host paired-end files.\n";
         $retval = $self->_bwaPostProcessDonorHostPaired($config);
-    } elsif ($config->{donor_bam}) {
-		print STDERR "--- Detected donor paired-end file.\n";
-		$retval = $self->_bwaPostProcessDonorPaired($config);
+    } elsif ($config->{donor_bam} || $config->{host_bam}) {
+		print STDERR "--- Detected just a single paired-end file.\n";
+		$retval = $self->_bwaPostProcessSingle($config);
 	} else {
-		confess "***ERROR*** Either both donor and host BAM files, or just a donor BAM file must be provided.\n"
+		confess "***ERROR*** Detected no BAM files for either the donor or host!\n"
 	}
     if ( $self->{verbose} ) {
         print STDERR "======== &bwaPostProcess: Finished ========\n";
@@ -1184,7 +1184,7 @@ sub _getPairedClass {
     };
 }
 
-sub _bwaPostProcessDonorPaired {
+sub _bwaPostProcessSingle {
      my ( $self, $config ) = @_;
   
      $self->{samtools_bin} =
@@ -1202,8 +1202,11 @@ sub _bwaPostProcessDonorPaired {
   
      my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
   
-     # Use case requires only the single mappings
-     my $class_to_file_name = {'single_map_donor' => "$output_dir/" . $prefix . ".single_map.bam"};
+     # Use case requires only the single mappings and "none" mappings
+     my $class_to_file_name = {
+		 'single_map' => "$output_dir/" . $prefix . ".single_map.bam",
+		 'no_map'	=> "$output_dir/" . $prefix . ".no_map.bam"	
+	 };
   
      my $class_counts = {
          'paired'  => undef,
@@ -1214,48 +1217,57 @@ sub _bwaPostProcessDonorPaired {
      # Here are a bunch of file handles we'll use later.
      if ( $self->{verbose} ) {
          print STDERR "$output_dir/" . $prefix . ".single_map.bam\n";
+         print STDERR "$output_dir/" . $prefix . ".no_map.bam\n";
      }
      open(
          my $single_map,
          "| $samtools view -S -b -o $output_dir/" . $prefix . ".single_map.bam -"
      ) or die "Unable to open LGT single map file for writing\n";
   
+     open(
+         my $no_map,
+         "| $samtools view -S -b -o $output_dir/" . $prefix . ".no_map.bam -"
+     ) or die "Unable to open LGT 'no' map file for writing\n";
 	 # Perhaps in the future I can change these file names to rely on extensions like the Donor/Host subroutine relies on _donor and _host for assigning to the right file - SAdkins
      my $class_to_file = {
-         'single_map'  => $single_map
+         'single_map'  => $single_map,
+		 'no_map'	=> $no_map
      };
   
-     my $donor_bam = $config->{donor_bam};
-     my $donor_fh;
-     my $donor_head;
+     my $bam = defined $config->{donor_bam} ? $config->{donor_bam} : $config->{host_bam};
+	 if (! $bam) {
+		confess "***ERROR*** Passed config neither has a defined donor nor host BAM";
+	 }
+     my $fh;
+     my $head;
   
      # Open all the donor files
-     if ( $self->{verbose} ) { print STDERR "Opening $donor_bam\n"; }
-     if ( $donor_bam =~ /.bam$/ ) {
-         $donor_head = `$samtools view -H $donor_bam`;
-         open( $donor_fh, "-|", "$samtools view $donor_bam" );
+     if ( $self->{verbose} ) { print STDERR "Opening $bam\n"; }
+     if ( $bam =~ /.bam$/ ) {
+         $head = `$samtools view -H $bam`;
+         open( $fh, "-|", "$samtools view $bam" );
      }
-     elsif ( $donor_bam =~ /.sam.gz$/ ) {
-         $donor_head = `zcat $donor_bam | $samtools view -H -S -`;
-         open( $donor_fh, "-|", "zcat $donor_bam | $samtools view -S -" );
+     elsif ( $bam =~ /.sam.gz$/ ) {
+         $head = `zcat $bam | $samtools view -H -S -`;
+         open( $fh, "-|", "zcat $bam | $samtools view -S -" );
      }
 
      # Prime the files with headers.
      map {
-        my @donor_headers = split( /\n/, $donor_head );
+        my @headers = split( /\n/, $head );
         print "Printing header to $_ donor file\n";
         print { $class_to_file->{$_} }
-        join( "\n", grep( /^\@SQ/, @donor_headers ) );
+        join( "\n", grep( /^\@SQ/, @headers ) );
         print { $class_to_file->{$_} } "\n";
-        my @pg_headers = grep( /^\@PG|^\@CO/, @donor_headers );
+        my @pg_headers = grep( /^\@PG|^\@CO/, @headers );
         my %pg_hash;
         foreach my $pgs (@pg_headers) {
             chomp($pgs);
             $pg_hash{$pgs}++;
         }
         my $last_pg_id;
-        if ( $donor_headers[-1] =~ /^\@PG|^\@CO/ ) {
-            my $last_pg = $donor_headers[-1];
+        if ( $headers[-1] =~ /^\@PG|^\@CO/ ) {
+            my $last_pg = $headers[-1];
             my $last_pg_id = ( split /\t/, $last_pg )[1];
             $last_pg_id =~ s/ID\:/PP\:/;
             $last_pg_id = "\t" . $last_pg_id;
@@ -1279,21 +1291,25 @@ sub _bwaPostProcessDonorPaired {
  
      while ($more_lines) {
   
-         my @donor_lines;
+         my @lines;
   
          # Get the class of the donor mappings
-         my $obj = $self->_getPairedClass( { fh => $donor_fh } );
-         my $dclass = $obj->{class};
+         my $obj = $self->_getPairedClass( { fh => $fh } );
+         my $class = $obj->{class};
          $more_lines = $obj->{more_lines};
-         my $dr1_line = $obj->{r1_line};
-         my $dr2_line = $obj->{r2_line};
+         my $r1_line = $obj->{r1_line};
+         my $r2_line = $obj->{r2_line};
   
          if ($more_lines) {
-             my $paired_class = $dclass;
+             my $paired_class = $class;
 
   			 # print the single lines to the single_map file (if we are keeping this output file)
              if ( $classes_each->{$paired_class} eq "single" ) {
-                 print { $class_to_file->{"single_map"} } "$dr1_line\n$dr2_line\n";
+                 print { $class_to_file->{"single_map"} } "$r1_line\n$r2_line\n";
+             }
+
+             if ( $classes_each->{$paired_class} eq "none" ) {
+                 print { $class_to_file->{"no_map"} } "$dr1_line\n$dr2_line\n";
              }
   
              # Increment the count for this class

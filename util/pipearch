@@ -91,6 +91,9 @@ if( $options{'help'} ){
     pod2usage( {-exitval => 0, -verbose => 2, -output => \*STDOUT} );
 }
 
+my $LOCK_DIR = "/usr/local/scratch/sadkins_devel/arch_jobs/";
+my $PIPELINE_ARCH_DIR = "/local/scratch/pipearch/";
+
 my ($pipeline, $repository);
 ## make sure everything passed was peachy
 &check_parameters(\%options);
@@ -101,7 +104,17 @@ if (defined $options{log}) {
     open($logfh, ">$options{log}") || die "can't create log file: $!";
 }
 
-my $lock = "/usr/local/scratch/sadkins_devel/arch_jobs/" . $pipeline . ".arch.lock";
+# Create the directory to archive pipelines if it does not exist
+if (!-d $PIPELINE_ARCH_DIR) {
+	system("mkdir -m 777 -p $PIPELINE_ARCH_DIR");
+}
+
+# Create the directory to store the lock files if it does not exist
+if (!-d $LOCK_DIR) {
+	system("mkdir -m 777 -p $LOCK_DIR");
+}
+
+my $lock = $LOCK_DIR . $pipeline . ".arch.lock";
 _log("Creating lock file $lock...");
 
 if (-e $lock) {
@@ -188,7 +201,7 @@ sub arch {
 
 	my $temp;
 	if ($path =~ /$repository(.+)/) {	#gather all of the directory path after repo root
-	    $temp = '/local/scratch/pipearch/' . $pipeline . '/' . $1;
+	    $temp = $PIPELINE_ARCH_DIR . $pipeline . '/' . $1;
 	}
 
 	system ("mkdir -m 777 -p $temp");	# Make temp directory in scratch to archive to
@@ -219,7 +232,7 @@ sub arch {
 
 	if ( $success ) {
 	    system ("mv $temp.tar.gz $path.tar.gz");	# Move archived contents from scratch back to original area
-	    system ("rm -rf /local/scratch/pipearch/$pipeline ");	# remove temp directory
+	    system ("rm -rf $PIPELINE_ARCH_DIR/$pipeline ");	# remove temp directory
 	    system ("rm -rf $path");	# remove original (unarchived contents)
 	} else {
             print STDERR "ERROR ($success): the following command failed: $cmd\n";
