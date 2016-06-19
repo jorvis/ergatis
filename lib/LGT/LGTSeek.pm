@@ -1309,7 +1309,7 @@ sub _bwaPostProcessSingle {
              }
 
              if ( $classes_each->{$paired_class} eq "none" ) {
-                 print { $class_to_file->{"no_map"} } "$dr1_line\n$dr2_line\n";
+                 print { $class_to_file->{"no_map"} } "$r1_line\n$r2_line\n";
              }
   
              # Increment the count for this class
