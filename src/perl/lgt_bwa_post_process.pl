@@ -88,6 +88,7 @@ my $prefix;
 my @donor_files;
 my @recipient_files;
 my $donor_only = 0;
+my $host_only = 0;
 my %LGT_groups;
 my $output_dir;
 my %options;
@@ -111,19 +112,34 @@ my $results = GetOptions (\%options,
 $prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_process";
 
 # Need to take a different approach depending on if we have a host file or not.
-if ($donor_only) {
-	foreach my $d_file (@donor_files){
+if ($donor_only || $host_only) {
+	# First, lets give our input files a generic name to avoid being redundant with code
+	my @files = @donor_files if $donor_only;
+	@files = @recipient_files if $host_only;
+
+	foreach my $file (@files){
+		# Assign a number to the output file to make it unique
 		my $curr_prefix = $prefix;
-		$curr_prefix = $prefix .  "_" . $count_id++ if (scalar @donor_files > 1);
+		$curr_prefix = $prefix .  "_" . $count_id++ if (scalar @files > 1);
+
+		# Instatitate an LGTSeek object
 		my $lgt_obj = LGT::LGTSeek->new( {
 				'samtools_bin' => $options{'samtools_path'},
 				'output_dir' => $options{'output_dir'},
 				'verbose' => 1
 			} );
+
+		# Call bwaPostProcess using the right config, depending on donor-only or host-only
 		my $pp_data = $lgt_obj->bwaPostProcess( {
-				'donor_bam'	=> $d_file,
+				'donor_bam'	=> $file,
 				'output_prefix' => $curr_prefix
-			} );
+			} ) if $donor_only;
+		$pp_data = $lgt_obj->bwaPostProcess( {
+				'host_bam'	=> $file,
+				'output_prefix' => $curr_prefix
+			} ) if $host_only;
+
+		# Create the list of counts
 		my $counts_file = $output_dir . "/" . $curr_prefix . ".counts";
 		my (@header, @vals);
 	    map {
@@ -228,8 +244,11 @@ sub check_options {
 		print STDOUT "Assuming this is a donor-file only run.\n";
 		$donor_only = 1;
 	}
-
-   	if (scalar @donor_files != scalar @recipient_files && !$donor_only) {
+    if (scalar @donor_files == 0) {
+		print STDOUT "Assuming this is a host-file only run.\n";
+		$host_only = 1;
+	}
+   	if ( !($host_only || $donor_only) && scalar @donor_files != scalar @recipient_files) {
        	&_log($ERROR, "ERROR : Number of donor files to recipient files is not equal.  Please check both lists. $!");
 	}
    $output_dir = $opts->{'output_dir'};
