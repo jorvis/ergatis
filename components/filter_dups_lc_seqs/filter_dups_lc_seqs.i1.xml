@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>bwa Iterator workflow</name>
+        <!--Processing-->
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create output directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create temp directory</name>
+            <state>incomplete</state>
+            <executable>mkdir</executable>
+            <arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</arg>
+        </command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Filter duplicate and low complexity sequences</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/filter_dups_lc_seqs</executable>
+            <param>
+                <key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/filter.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/filter.stderr</value>
+            </param>
+            <param>
+                <key>--samtools_path</key>
+                <value>$;SAMTOOLS_EXEC$;</value>
+            </param>
+            <param>
+                <key>--prinseq_path</key>
+                <value>$;PRINSEQ_EXEC$;</value>
+            </param>
+            <param>
+                <key>--picard_path</key>
+                <value>$;PICARD_TOOLS$;</value>
+            </param>
+            <param>
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--tmp_dir</key>
+                <value>$;TMP_DIR$;</value>
+            </param>
+            <param>
+                <key>--rm_duplicates</key>
+                <value>$;RM_DUPLICATES$;</value>
+            </param>
+            <param>
+                <key>--rm_low_complexity</key>
+                <value>$;RM_LOW_COMPLEXITY$;</value>
+            </param>
+            <param>
+                <key>--lc_method</key>
+                <value>$;LC_METHOD$;</value>
+            </param>
+            <param>
+                <key>--lc_threshold</key>
+                <value>$;LC_THRESHOLD$;</value>
+            </param>
+            <param>
+                <key>--prefix</key>
+                <value>$;PREFIX$;</value>
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;/</value>
+            </param>
+        </command>
+    </commandSet>
+</commandSetRoot>

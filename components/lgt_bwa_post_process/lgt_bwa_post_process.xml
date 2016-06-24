@@ -65,7 +65,7 @@
 	<!--Iterator Done-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create LGT BAM file list</name>
+            <name>create LGT host BAM file list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>
@@ -74,12 +74,12 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*lgt_(donor|recipient|host)\.bam"</value>
-            </param>    
+                <value>".*lgt_(recipient|host)\.bam"</value>
+            </param>
             <param>
                 <key>--output_list</key>
-                <value>$;LGT_BAM_OUTPUT_LIST$;</value>
-            </param>    
+                <value>$;LGT_BAM_H_OUTPUT_LIST$;</value>
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -93,11 +93,11 @@
             <param>
                 <key>--regex</key>
                 <value>".*microbiome\.bam"</value>
-            </param>    
+            </param>
             <param>
                 <key>--output_list</key>
                 <value>$;MB_BAM_OUTPUT_LIST$;</value>
-            </param>    
+            </param>
         </command>
         <command>
             <type>RunUnixCommand</type>
@@ -111,11 +111,11 @@
             <param>
                 <key>--regex</key>
                 <value>".*single_map\.bam"</value>
-            </param>    
+            </param>
             <param>
                 <key>--output_list</key>
                 <value>$;SINGLE_BAM_OUTPUT_LIST$;</value>
-            </param>    
+            </param>
 		</command>
         <command>
             <type>RunUnixCommand</type>
@@ -129,11 +129,11 @@
             <param>
                 <key>--regex</key>
                 <value>".*no_map\.bam"</value>
-            </param>    
+            </param>
             <param>
                 <key>--output_list</key>
                 <value>$;NO_MAP_BAM_OUTPUT_LIST$;</value>
-            </param>    
+            </param>
 		</command>
     </commandSet>
 </commandSetRoot>
