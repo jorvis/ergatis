@@ -1141,19 +1141,20 @@ sub _getPairedClass {
     my $r1 = <$fh>;
     my $r2 = <$fh>;
 
-    if ( $config->{strip_xa} ) {
-        chomp $r1;
-        $r1 =~ s/\tXA:Z\S+$//;
-        chomp $r2;
-        $r2 =~ s/\tXA:Z\S+$//;
-    }
-
     # Should check if these ended at the same time?
 	# This means we are at the end of the file
     if ( !($r1 && $r2) ) {
         $more_lines = 0;
 		print STDERR "Parsed to end of file\n";
         last;
+    }
+
+	chomp $r1;
+	chomp $r2;
+
+    if ( $config->{strip_xa} ) {
+        $r1 =~ s/\tXA:Z\S+$//;
+        $r2 =~ s/\tXA:Z\S+$//;
     }
 
     my $r1_flag = parse_flag( ( split( /\t/, $r1 ) )[1] );
@@ -1284,12 +1285,10 @@ sub _bwaPostProcessSingle {
 			print {$class_to_file->{$_}} "\n";
 		}
      } keys %$class_to_file;
-  
-     #   exit;
+
      my $more_lines = 1;
- 
      my $line_num = 0;
- 
+
      while ($more_lines) {
          # Get the class of the donor mappings
          my $obj = $self->_getPairedClass( { fh => $fh } );
@@ -1297,13 +1296,13 @@ sub _bwaPostProcessSingle {
          $more_lines = $obj->{more_lines};
          my $r1_line = $obj->{r1_line};
          my $r2_line = $obj->{r2_line};
-  
+
          if ($more_lines) {
              my $paired_class = $class;
 
   			 # print the single lines to the single_map file (if we are keeping this output file)
              if ( $classes_each->{$paired_class} eq "single" ) {
-                 print { $class_to_file->{"single_map"} } "$r1_line\n$r2_line\n";
+				 print { $class_to_file->{"single_map"} } "$r1_line\n$r2_line\n";
              }
 
              if ( $classes_each->{$paired_class} eq "none" ) {
