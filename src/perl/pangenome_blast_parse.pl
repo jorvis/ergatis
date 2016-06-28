@@ -159,13 +159,13 @@ foreach my $org (keys %$dups_temp) {
     }
 }
 
-foreach my $q_genome (keys %good_hit_counts){
-	foreach my $q_gene (keys %{$good_hit_counts{$q_genome}}){
-		foreach my $s_genome (keys %{$good_hit_counts{$q_genome}{$q_gene}}){
-			print STDERR "$q_genome\t$q_gene\t$s_genome\t" . $good_hit_counts{$q_genome}{$q_gene}{$s_genome} . "\n";
-		}
-	}
-}
+#foreach my $q_genome (keys %good_hit_counts){
+#	foreach my $q_gene (keys %{$good_hit_counts{$q_genome}}){
+#		foreach my $s_genome (keys %{$good_hit_counts{$q_genome}{$q_gene}}){
+#			print STDERR "$q_genome\t$q_gene\t$s_genome\t" . $good_hit_counts{$q_genome}{$q_gene}{$s_genome} . "\n";
+#		}
+#	}
+#}
 
 nstore([\%hit_results,\%dups], $options{'output_path'}."/".$input_prefix.".blast.stored") || die "couldn't serialize results";
 
