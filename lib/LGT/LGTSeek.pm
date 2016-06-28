@@ -1140,6 +1140,7 @@ sub _getPairedClass {
     # Next establish the class of the donor read
     my $r1 = <$fh>;
     my $r2 = <$fh>;
+
     if ( $config->{strip_xa} ) {
         chomp $r1;
         $r1 =~ s/\tXA:Z\S+$//;
@@ -1241,7 +1242,7 @@ sub _bwaPostProcessSingle {
      my $fh;
      my $head;
   
-     # Open all the donor files
+     # Open the BAM file for reading
      if ( $self->{verbose} ) { print STDERR "Opening $bam\n"; }
      if ( $bam =~ /.bam$/ ) {
          $head = `$samtools view -H $bam`;
@@ -1255,7 +1256,7 @@ sub _bwaPostProcessSingle {
      # Prime the files with headers.
      map {
         my @headers = split( /\n/, $head );
-        print "Printing header to $_ donor file\n";
+        print STDERR "Printing header to $_ file\n";
         print { $class_to_file->{$_} }
         join( "\n", grep( /^\@SQ/, @headers ) );
         print { $class_to_file->{$_} } "\n";
@@ -1265,10 +1266,10 @@ sub _bwaPostProcessSingle {
             chomp($pgs);
             $pg_hash{$pgs}++;
         }
-        my $last_pg_id;
+		my $last_pg_id;
         if ( $headers[-1] =~ /^\@PG|^\@CO/ ) {
             my $last_pg = $headers[-1];
-            my $last_pg_id = ( split /\t/, $last_pg )[1];
+            $last_pg_id = ( split /\t/, $last_pg )[1];
             $last_pg_id =~ s/ID\:/PP\:/;
             $last_pg_id = "\t" . $last_pg_id;
         }
@@ -1290,7 +1291,6 @@ sub _bwaPostProcessSingle {
      my $line_num = 0;
  
      while ($more_lines) {
-  
          # Get the class of the donor mappings
          my $obj = $self->_getPairedClass( { fh => $fh } );
          my $class = $obj->{class};
@@ -1309,17 +1309,17 @@ sub _bwaPostProcessSingle {
              if ( $classes_each->{$paired_class} eq "none" ) {
                  print { $class_to_file->{"no_map"} } "$r1_line\n$r2_line\n";
              }
-  
+
              # Increment the count for this class
              if ( $classes_each->{$paired_class} ) {
                  $class_counts->{ $classes_each->{$paired_class} }++;
              }
-  
              # Increment the total count
              $line_num++;
          }
      }
-  
+
+
      # Close up the file handles
      map {
          if ( $_ =~ /_map$/ ) {
@@ -1459,7 +1459,7 @@ sub _bwaPostProcessDonorHostPaired {
      map {
          if ( $_ =~ /_donor$/ ) {
              my @donor_headers = split( /\n/, $donor_head );
-             print "Printing header to $_ donor file\n";
+             print STDERR "Printing header to $_ donor file\n";
              print { $class_to_file->{$_} }
                join( "\n", grep( /^\@SQ/, @donor_headers ) );
              print { $class_to_file->{$_} } "\n";
@@ -1469,10 +1469,10 @@ sub _bwaPostProcessDonorHostPaired {
                  chomp($pgs);
                  $pg_hash{$pgs}++;
              }
-             my $last_pg_id;
+			 my $last_pg_id;
              if ( $donor_headers[-1] =~ /^\@PG|^\@CO/ ) {
                  my $last_pg = $donor_headers[-1];
-                 my $last_pg_id = ( split /\t/, $last_pg )[1];
+                 $last_pg_id = ( split /\t/, $last_pg )[1];
                  $last_pg_id =~ s/ID\:/PP\:/;
                  $last_pg_id = "\t" . $last_pg_id;
              }
@@ -1487,12 +1487,11 @@ sub _bwaPostProcessDonorHostPaired {
 			} else {
 				print {$class_to_file->{$_}} "\n";
   			}
-             #            close $class_to_file->{$_};
          }
          elsif ( $_ =~ /_host$/) {
      		# Host file does not exist when BWA is only aligned to donor
              my @host_headers = split( /\n/, $host_head );
-             print "Printing header to $_ host file\n";
+             print STDERR "Printing header to $_ host file\n";
              print { $class_to_file->{$_} }
                join( "\n", grep( /^\@SQ/, @host_headers ) );
              print { $class_to_file->{$_} } "\n";
@@ -1505,7 +1504,7 @@ sub _bwaPostProcessDonorHostPaired {
              my $last_pg_id;
              if ( $host_headers[-1] =~ /^\@PG|^\@CO/ ) {
                  my $last_pg = $host_headers[-1];
-                 my $last_pg_id = ( split /\t/, $last_pg )[1];
+                 $last_pg_id = ( split /\t/, $last_pg )[1];
                  $last_pg_id =~ s/ID\:/PP\:/;
                  $last_pg_id = "\t" . $last_pg_id;
              }
