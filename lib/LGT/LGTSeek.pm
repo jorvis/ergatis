@@ -1149,7 +1149,7 @@ sub _getPairedClass {
 
     # Should check if these ended at the same time?
 	# This means we are at the end of the file
-    if ( !$r1 || !$r2 ) {
+    if ( !($r1 && $r2) ) {
         $more_lines = 0;
 		print STDERR "Parsed to end of file\n";
         last;
@@ -1290,8 +1290,6 @@ sub _bwaPostProcessSingle {
      my $line_num = 0;
  
      while ($more_lines) {
-  
-         my @lines;
   
          # Get the class of the donor mappings
          my $obj = $self->_getPairedClass( { fh => $fh } );
@@ -1531,9 +1529,6 @@ sub _bwaPostProcessDonorHostPaired {
      my $line_num = 0;
  
      while ($more_lines) {
-  
-         my @donor_lines;
-         my @host_lines;
   
          # Get the class of the host mappings
          my $obj = $self->_getPairedClass( { fh => $host_fh } );
