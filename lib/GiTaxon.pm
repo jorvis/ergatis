@@ -137,7 +137,6 @@ sub getTaxon {
     else {
         my $taxon_lookup =
           $self->{'gi2taxon'}->find_one( { 'gi' => "$gi" }, { 'taxon' => 1 } );
-
         if ($taxon_lookup) {
             $taxonid = $taxon_lookup->{'taxon'};
         }
@@ -162,7 +161,7 @@ sub getTaxon {
                     $self->{'gi2taxon'}->update(
                         { 'gi'     => "$gi" },
                         { 'gi'     => "$gi", 'taxon' => $taxonid },
-                        { 'upsert' => 1 }
+                        { 'upsert' => 1, 'safe' => 1 }
                     );
                     print STDERR
                       "*** GiTaxon-getTaxon: Added $gi\t$taxonid to the db\n";
@@ -195,7 +194,7 @@ sub getTaxon {
 			# We really should update BioPerl
             my $db = Bio::DB::Taxonomy->new( -source => 'entrez', -location => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/');
             my $taxon = $db->get_taxon( -taxonid => $taxonid );
-            if ( $taxon->isa('Bio::Taxon') ) {
+            if ( defined $taxon && $taxon->isa('Bio::Taxon') ) {
                 my $name    = $taxon->scientific_name;
                 my $c       = $taxon;
                 my @lineage = ($name);
