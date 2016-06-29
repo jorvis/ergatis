@@ -172,49 +172,32 @@ sub getTaxon {
         }
         ## NEW VVV 01.08.15 KBS v1.07
         ## I added this so that if the gi isn't in our DB we pull the data from NCBI
-        if ( my $taxon = $self->{'db'}->get_taxon( -taxonid => $taxonid ) ) {
-            if ( $taxon->isa('Bio::Taxon') ) {
-                my $name    = $taxon->scientific_name;
-                my $c       = $taxon;
-                my @lineage = ($name);
-                while ( my $parent = $self->{'db'}->ancestor($c) ) {
-                    unshift @lineage, $parent->scientific_name;
-                    $c = $parent;
-                }
-                $retval = {
-                    'gi'       => $gi,
-                    'acc'      => $acc,
-                    'taxon_id' => $taxonid,
-                    'name'     => $name,
-                    'lineage'  => join( ";", @lineage )
-                };
-            }
-        }
-        else {
+		my $taxon;
+        if ( $self->{'db'}->get_taxon( -taxonid => $taxonid ) ) {
+			$taxon = $self->{'db'}->get_taxon( -taxonid => $taxonid );
+		} else {
 			# SAdkins 1/13/16 - URL in Entrez module is obsolete and incorrect
 			# We really should update BioPerl
             my $db = Bio::DB::Taxonomy->new( -source => 'entrez', -location => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/');
-            my $taxon = $db->get_taxon( -taxonid => $taxonid );
-            if ( $taxon->isa('Bio::Taxon') ) {
-                my $name    = $taxon->scientific_name;
-                my $c       = $taxon;
-                my @lineage = ($name);
-                while ( my $parent = $db->ancestor($c) ) {
-                    unshift @lineage, $parent->scientific_name;
-                    $c = $parent;
-                }
-                $retval = {
-                    'gi'       => $gi,
-                    'acc'      => $acc,
-                    'taxon_id' => $taxonid,
-                    'name'     => $name,
-                    'lineage'  => join( ";", @lineage )
-                };
+            $taxon = $db->get_taxon( -taxonid => $taxonid );
+		}
+        if ( $taxon->isa('Bio::Taxon') ) {
+            my $name    = $taxon->scientific_name;
+            my $c       = $taxon;
+            my @lineage = ($name);
+            while ( my $parent = $self->{'db'}->ancestor($c) ) {
+                unshift @lineage, $parent->scientific_name;
+                $c = $parent;
             }
-            else {
-                print STDERR
-"**GiTaxon unable to find taxon for taxon_id: $taxonid & gi:$gi\n";
-            }
+            $retval = {
+                'gi'       => $gi,
+                'acc'      => $acc,
+                'taxon_id' => $taxonid,
+                'name'     => $name,
+                'lineage'  => join( ";", @lineage )
+            };
+        } else {
+            print STDERR "**GiTaxon unable to find taxon for taxon_id: $taxonid & gi:$gi\n";
         }
 
         ## NEW ^^^ 01.08.15 KBS v1.07
