@@ -345,7 +345,7 @@ sub process_file {
         die "Need to pass a valid file or a valid filehandle\n";
     }
 	
-	print STDERR "LGT::LGTsam2lca --- now processing BAM file\n";
+	print STDERR "LGT::LGTsam2lca --- now processing BAM file $file\n";
     # Loop till we're done.
     my $end   = $CHUNK_SIZE;
     my $count = 0;
@@ -362,7 +362,7 @@ sub process_file {
         $self->process_sam_line($l);
     }
 	print STDERR "There were $unmapped_counts reads that did not map to the reference genome\n";
-	print STDERR "LGT::LGTsam2lca --- finished processing BAM file\n";
+	print STDERR "LGT::LGTsam2lca --- finished processing BAM file $file\n";
 }
 
 1;

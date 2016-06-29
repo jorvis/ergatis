@@ -158,9 +158,9 @@ sub getTaxon {
                     print STDERR "Unable to find taxonid at NCBI\n";
                 }
                 else {
-                    $self->{'gi2taxon'}->update(
+                    my $res = $self->{'gi2taxon'}->update(
                         { 'gi'     => "$gi" },
-                        { 'gi'     => "$gi", 'taxon' => $taxonid },
+                        { '$set' => { 'gi'     => "$gi", 'taxon' => $taxonid } },
                         { 'upsert' => 1, 'safe' => 1 }
                     );
                     print STDERR
@@ -194,7 +194,7 @@ sub getTaxon {
 			# We really should update BioPerl
             my $db = Bio::DB::Taxonomy->new( -source => 'entrez', -location => 'http://eutils.ncbi.nlm.nih.gov/entrez/eutils/');
             my $taxon = $db->get_taxon( -taxonid => $taxonid );
-            if ( defined $taxon && $taxon->isa('Bio::Taxon') ) {
+            if (defined($taxon) && $taxon->isa('Bio::Taxon') ) {
                 my $name    = $taxon->scientific_name;
                 my $c       = $taxon;
                 my @lineage = ($name);
@@ -211,8 +211,7 @@ sub getTaxon {
                 };
             }
             else {
-                print STDERR
-"**GiTaxon unable to find taxon for taxon_id: $taxonid & gi:$gi\n";
+                print STDERR "**GiTaxon unable to find taxon for taxon_id: $taxonid & gi:$gi\n";
             }
         }
 
