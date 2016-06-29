@@ -53,7 +53,7 @@ sub find_lca {
     foreach my $l (@$lineages) {
         my $newlca = []; 
         my @lineage = split( ';', $l );
-        for ( my $i = 0; $i < @lineage; $i++ ) { 
+        for ( my $i = 0; $i < @lca; $i++ ) { 
             if ( $lca[$i] eq $lineage[$i] ) { 
                 push( @$newlca, $lineage[$i] );
             } else {
