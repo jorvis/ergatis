@@ -132,7 +132,7 @@ sub getTaxon {
     my $retval  = {};
     # First check the cache
     if ( $self->{cache}->{$gi} ) {
-        $retval = $self->{cache}->{$gi};
+        return $self->{cache}->{$gi};
     }
     else {
         my $taxon_lookup =
