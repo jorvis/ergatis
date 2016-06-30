@@ -28,7 +28,7 @@
             <type>RunUnixCommand</type>
             <name>make pangenome</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/pangenome_make_pangenome</executable>
+            <executable>$;BIN_DIR$;/pangenome_make_pangenome.sh</executable>
             <param>
                 <key>--profile</key>
                 <value>$;OUTPUT_DIRECTORY$;/pangenome.profile.txt</value>
@@ -44,6 +44,14 @@
             <param>
                 <key>--comparisons</key>
                 <value>$;COMPARISONS$;</value>
+            </param>
+            <param>
+                <key>--python_exec</key>
+                <value>$;PYTHON2_7_EXEC$;</value>
+            </param>
+            <param>
+                <key>--script_bin</key>
+                <value>$;BIN_DIR$;</value>
             </param>
         </command>
     </commandSet>
