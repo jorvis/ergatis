@@ -301,7 +301,7 @@ sub is_sam_truncated {
         );
     } else {
         print_log_msg( $DEBUG,
-            "INFO : $sub_name :: SAM file seems file."
+            "INFO : $sub_name :: SAM file seems fine."
         );
     }
 	return;
@@ -522,8 +522,12 @@ sub check_parameters {
 
     print_log_msg( $ERROR,
         "ERROR : $sub_name :: Either --input_file or --input_dir are required" )
-      if ( !defined $opts->{'input_dir'}
-        && !defined $opts->{'input_file'} );
+      if ( !(defined $opts->{'input_file'} || defined $opts->{'input_dir'}) );
+
+	# Check for empty file for input file
+	if (defined $opts->{'input_file'} && !-s $opts->{'input_file'}) {
+		print_log_msg( $ERROR, "ERROR : $sub_name :: Input file or list " . $opts->{'input_file'} . " appears to be empty" )
+	}
 
     # Delete SAM files once they are converted to BAM by default
     if ( !defined( $opts->{'keep_sam'} ) ) {
