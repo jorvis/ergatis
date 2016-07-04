@@ -78,7 +78,7 @@
             </param>
             <param>
                 <key>--output_list</key>
-                <value>$;LGT_BAM_H_OUTPUT_LIST$;</value>
+                <value>$;LGT_H_BAM_OUTPUT_LIST$;</value>
             </param>
         </command>
         <command>
