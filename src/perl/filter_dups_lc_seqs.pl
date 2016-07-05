@@ -119,6 +119,12 @@ my $results = GetOptions (\%options,
 
 &check_options(\%options);
 
+my $count = check_empty_file();
+if ($count == 0) {
+	print STDERR "Input file $options{'input_file'} has no alignments.  Exiting and not creating output.\n";
+	exit(0);
+}
+
 my $tmp_dir = (defined $options{'tmp_dir'}) ? $options{'tmp_dir'} : $options{'output_dir'} . "/tmp";
 
 my $lc_method = defined $options{'lc_method'} ? $options{'lc_method'} : $DEFAULT_LC_METHOD;
@@ -152,6 +158,12 @@ push( @vals,   $filtered_bam->{count} );
 
 LGT::LGTSeek->print_tab( $counts_file, \@header, \@vals );
 exit(0);
+
+# Check if input BAM file is empty and return if any output is in head
+# The chk_empty subroutine in LGT::LGTSeek works but we want to silently exit without making output
+sub check_empty_file {
+	return `$options{samtools_bin} view $options{'input_file'} | head | wc -l`;
+}
 
 sub check_options {
    my $opts = shift;
