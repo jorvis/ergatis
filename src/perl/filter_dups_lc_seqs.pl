@@ -162,7 +162,7 @@ exit(0);
 # Check if input BAM file is empty and return if any output is in head
 # The chk_empty subroutine in LGT::LGTSeek works but we want to silently exit without making output
 sub check_empty_file {
-	return `$options{samtools_bin} view $options{'input_file'} | head | wc -l`;
+	return `$options{samtools_path} view $options{'input_file'} | head | wc -l`;
 }
 
 sub check_options {
