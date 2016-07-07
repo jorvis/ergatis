@@ -389,6 +389,14 @@ sub determine_format {
         if ( $ext =~ /list/ ) {
             my @list_files = `cat $file`;
 
+# SAdkins - 7/7/16  the filter_dups_lc_seqs component will now output multiple BAM files since it is iterative. Because of this I need to merge the BAM files from the list into a single BAM file.
+            if ( scalar @list_files > 1 && $list_files[0] =~ /\.bam$/ ) {
+            	print_log_msg($DEBUG, "Found multiple BAM files in list.  Merging into single BAM input");
+                my $merged_bam = merge_bam_files($file);
+                @list_files = ();
+                push @list_files, $merged_bam;
+            }
+
 # Currently the script cannot process multiple samples.  Ideally the list file should just contain 1 sample, which is either 1 single-end fastq, 1 BAM, or 2 paired-end fastq files.  Also the .blank file originating from the sra2fastq component in Ergatis can exist in a list file
             foreach my $f (@list_files) {
 				chomp $f;
@@ -440,6 +448,8 @@ sub grab_files_from_dir {
       or print_log_msg( $ERROR,
         "ERROR : $sub_name :: Could not open directory $dir for reading.\nReason : $!"
       );
+
+      # TODO: write merged bam files subroutine for directory globbing
     while ( $file = readdir(DIR) ) {
         my $path = $dir . "/" . $file;
         if ( $file =~ /fastq$/ ) {
@@ -456,6 +466,27 @@ sub grab_files_from_dir {
             set_query_to_file_type( $file_type, 'bam', $path );
         }
     }
+}
+
+# This function accepts the input BAM list file and uses it as an argument for
+#   Samtools merge to merge all BAM files in the list into a single BAM file
+sub merge_bam_files {
+    my $list_file = shift;
+    my $merged_bam = $cmd_line_args->{'output_dir'} . "/merged.bam";
+    $cmd = $cmd_line_args->{'samtools_path'} . " merge -list " . $list_file . " -out " . $merged_bam;
+	print_log_msg($DEBUG, "INFO : $sub_name :: Command : $cmd");
+    $exit_code = system($cmd);
+    if ( $exit_code != 0 ) {
+        print_log_msg( $ERROR,
+            "ERROR : $sub_name :: Merging BAM files failed for $cmd_line_args->{'output_dir'}/$file with error. Check the stderr"
+        );
+    } else {
+        print_log_msg( $DEBUG,
+            "INFO : $sub_name :: BAM file merging succesfully completed in $cmd_line_args->{'output_dir'}"
+        );
+    }
+
+    return $merged_bam;
 }
 
 # This function checks to see if a file has already been associated with the given type.
@@ -604,7 +635,7 @@ B<--gapEsc>
 	(Optional) Gap extension penalty. Default is 4
 
 B<--nThrds, -t>
-	(Optional) Number of threads used in multi-threading mode.  Not necessary if calling via Ergatis. Default is 1 
+	(Optional) Number of threads used in multi-threading mode.  Not necessary if calling via Ergatis. Default is 1
 
 B<--bwa_params, -B>
 	Extra parameters for the "bwa" program
