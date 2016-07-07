@@ -392,7 +392,7 @@ sub determine_format {
 # SAdkins - 7/7/16  the filter_dups_lc_seqs component will now output multiple BAM files since it is iterative. Because of this I need to merge the BAM files from the list into a single BAM file.
             if ( scalar @list_files > 1 && $list_files[0] =~ /\.bam$/ ) {
             	print_log_msg($DEBUG, "Found multiple BAM files in list.  Merging into single BAM input");
-                my $merged_bam = merge_bam_files($file);
+                my $merged_bam = merge_bam_files($file, $opts);
                 @list_files = ();
                 push @list_files, $merged_bam;
             }
@@ -471,18 +471,20 @@ sub grab_files_from_dir {
 # This function accepts the input BAM list file and uses it as an argument for
 #   Samtools merge to merge all BAM files in the list into a single BAM file
 sub merge_bam_files {
+    my $sub_name = ( caller(0) )[3];
     my $list_file = shift;
+	my $cmd_line_args = shift;
     my $merged_bam = $cmd_line_args->{'output_dir'} . "/merged.bam";
-    $cmd = $cmd_line_args->{'samtools_path'} . " merge -list " . $list_file . " -out " . $merged_bam;
+    my $cmd = $cmd_line_args->{'samtools_path'} . " merge -b " . $list_file . " " . $merged_bam;
 	print_log_msg($DEBUG, "INFO : $sub_name :: Command : $cmd");
     $exit_code = system($cmd);
     if ( $exit_code != 0 ) {
         print_log_msg( $ERROR,
-            "ERROR : $sub_name :: Merging BAM files failed for $cmd_line_args->{'output_dir'}/$file with error. Check the stderr"
+            "ERROR : $sub_name :: Merging BAM files failed for $merged_bam with error. Check the stderr"
         );
     } else {
         print_log_msg( $DEBUG,
-            "INFO : $sub_name :: BAM file merging succesfully completed in $cmd_line_args->{'output_dir'}"
+            "INFO : $sub_name :: BAM file merging succesfully completed for $merged_bam"
         );
     }
 
