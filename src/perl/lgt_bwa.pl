@@ -474,7 +474,7 @@ sub merge_bam_files {
     my $sub_name = ( caller(0) )[3];
     my $list_file = shift;
 	my $cmd_line_args = shift;
-    my $merged_bam = $cmd_line_args->{'output_dir'} . "/merged.bam";
+    my $merged_bam = $cmd_line_args->{'output_dir'} . "/" . $$ ."_merged.bam";
     my $cmd = $cmd_line_args->{'samtools_path'} . " merge -b " . $list_file . " " . $merged_bam;
 	print_log_msg($DEBUG, "INFO : $sub_name :: Command : $cmd");
     $exit_code = system($cmd);
