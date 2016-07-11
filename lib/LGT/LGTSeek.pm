@@ -2728,12 +2728,12 @@ sub validated_bam {
         $out_dir = $bar;
     }
 	
- 	my $host_blast_otu = 
-		defined $config->{host_blast_otu} ? $config->{host_blast_otu} : $self->{host_blast_otu};    ## Example: Homo
- 	my $host_lin       = 
-		defined $config->{host_lineage}   ? $config->{host_lineage}   : $self->{host_lineage};    ## Example: Eukaryota
- 	my $donor_lin      = 
-		defined $config->{donor_lineage}  ? $config->{donor_lineage}  : $self->{donor_lineage};     ## Example: Bacteria
+	#my $host_blast_otu = 
+	#	defined $config->{host_blast_otu} ? $config->{host_blast_otu} : $self->{host_blast_otu};    ## Example: Homo
+	#my $host_lin       = 
+	#	defined $config->{host_lineage}   ? $config->{host_lineage}   : $self->{host_lineage};    ## Example: Eukaryota
+	#my $donor_lin      = 
+	#	defined $config->{donor_lineage}  ? $config->{donor_lineage}  : $self->{donor_lineage};     ## Example: Bacteria
 
     open( IN, "<", "$config->{by_clone}" )
       || $self->fail(
@@ -2747,10 +2747,12 @@ sub validated_bam {
     while (<IN>) {
         chomp;
         my ( $read, $otu1, $otu2, $lca1, $lca2 ) = ( split /\t/, $_ )[ 0, 1, 2, 6, 11 ];
-        next if ( $otu1 =~ /$host_blast_otu/ && $otu2 =~ /$host_blast_otu/ );    ## Example: /Homo/
-        next if ( $otu1 !~ /$host_blast_otu/ && $otu2 !~ /$host_blast_otu/ );
-        next if ( $lca1 =~ /$host_lin/       && $lca2 =~ /$host_lin/ );          ## Example: /Eukaryota/
-        next if ( $lca1 =~ /$donor_lin/      && $lca2 =~ /$donor_lin/ );        ## Example: /Bacteria/
+			next if ( $lca1 =~ /Eukaryota|Homo/ && $lca2 =~ /Eukaryota|Homo/ );
+		    next if ( $lca1 =~ /Bacteria/  && $lca2 =~ /Bacteria/ );
+		#next if ( $otu1 =~ /$host_blast_otu/ && $otu2 =~ /$host_blast_otu/ );    ## Example: /Homo/
+		#next if ( $otu1 !~ /$host_blast_otu/ && $otu2 !~ /$host_blast_otu/ );
+		#next if ( $lca1 =~ /$host_lin/       && $lca2 =~ /$host_lin/ );          ## Example: /Eukaryota/
+		#next if ( $lca1 =~ /$donor_lin/      && $lca2 =~ /$donor_lin/ );        ## Example: /Bacteria/
         print OUT "$read\n";
     }
     close IN
