@@ -50,16 +50,8 @@
        	 	</param>
     	</command>
         <!--Processing-->
-        <commandSet type="remote-serial">
-            <state>incomplete</state>
-            <name>sam2lca distributed</name>
-            <fileName>$;WORKFLOW_REPOSITORY$;/sam2lca_distributed.xml.gz</fileName>
-            <dceSpec type="sge">
-                <group>$;PROJECT_CODE$;</group>
-                <OS>linux</OS>
-            </dceSpec>
-        </commandSet>
-			<!--Postprocessing-->
+        <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
+		<!--Postprocessing-->
         <command>
             <type>RunUnixCommand</type>
             <name>create LCA output list</name>
@@ -77,6 +69,6 @@
                 <key>--output_list</key>
                 <value>$;OUTPUT_LIST$;</value>
             </param>
-        </command>			
+        </command>
 	</commandSet>
 </commandSetRoot>
