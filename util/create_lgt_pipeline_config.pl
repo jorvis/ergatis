@@ -205,6 +205,10 @@ sub main {
 	close($plfh);
 	close($pcfh);
 
+	my $mode = 0755;
+	chmod $mode, $pipeline_config;
+	chmod $mode, $pipeline_layout;
+
 	print "Wrote $pipeline_layout and $pipeline_config for LGT pipeline\n";
 }
 
@@ -316,10 +320,10 @@ sub check_options {
    	$included_subpipelines{indexing} = 1;
 
 	# If donor reference is not present, then we have a host-only run
-	$host_only = 1 unless ($opts->{'donor_reference'})
+	$host_only = 1 unless ($opts->{'donor_reference'});
 
 	# If host reference is not present, then we have a donor-only run
-	$donor_only = 1 unless ($opts->{'host_reference'})
+	$donor_only = 1 unless ($opts->{'host_reference'});
 
 	&_log($ERROR, "Cannot specify both 'donor_only' and 'host_only' options.  Choose either, or none") if ($donor_only && $host_only);
 
