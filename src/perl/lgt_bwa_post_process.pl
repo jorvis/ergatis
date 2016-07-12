@@ -157,13 +157,13 @@ if ($donor_only || $host_only) {
 	foreach my $r (keys %$matching_files) {
 		my $curr_prefix = $prefix;
 		$curr_prefix = $prefix . "_" . $count_id++ if (scalar keys %$matching_files > 1);
-	
+
 		my $lgt_obj = LGT::LGTSeek->new( {
 				'samtools_bin' => $options{'samtools_path'},
 				'output_dir' => $options{'output_dir'},
 				'verbose' => 1
 			} );
-		
+
 		my $d = $matching_files->{$r};
 		# Returns a hash of group assignemt counts and the files, but not really necessary to bring out here.
 		my $pp_data = $lgt_obj->bwaPostProcess( {
@@ -171,7 +171,7 @@ if ($donor_only || $host_only) {
 				'host_bam'	=> $r,
 				'output_prefix' => $curr_prefix
 			} );
-		
+
 		# Take list of counts and write them to file
 		my $counts_file = $output_dir . "/" . $curr_prefix . ".counts";
 		my (@header, @vals);
@@ -240,6 +240,11 @@ sub check_options {
     } elsif($opts->{recipient_file_list}) {
        @recipient_files = `cat $opts->{recipient_file_list}`;
     }
+
+    if (scalar @donor_files == 0 && scalar @recipient_files == 0 ) {
+        &_log($ERROR, "ERROR: No donor nor recipient files stored.  List file is empty or no input files were provided.");
+    }
+
     if (scalar @recipient_files == 0) {
 		print STDOUT "Assuming this is a donor-file only run.\n";
 		$donor_only = 1;
