@@ -19,36 +19,6 @@
             <executable>mkdir</executable>
             <arg>-p -m 777 $;TMP_DIR$;</arg>
 		</command>
-    	<command>
-    	    <type>RunUnixCommand</type>
-    	    <name>replace template keys</name>
-    	    <state>incomplete</state>
-    	    <executable>$;BIN_DIR$;/replace_template_keys</executable>
-    	    <param>
-    	    	<key>--template_xml</key>
-    	    	<value>$;DOCS_DIR$;/sam2lca_distributed.xml</value>
-    	    </param>
-    	    <param>
-    	    	<key>--component_conf</key>
-    	    	<value>$;COMPONENT_CONFIG$;</value>
-    	    </param>
-    	    <param>
-    	    	<key>--output_xml</key>
-    	    	<value>$;WORKFLOW_REPOSITORY$;/sam2lca_distributed.xml.gz</value>
-    	    </param>
-    	    <param>
-    	    	<key>--distribopts</key>
-    	    	<value>nodistrib=$;NODISTRIB$;</value>
-    	    </param>
-    	    <param>
-    	    	<key>stdout</key>
-    	    	<value>$;TMP_DIR$;/replace_template_keys.stdout</value>
-    	    </param>
-    	    <param>
-    	    	<key>stderr</key>
-    	    	<value>$;TMP_DIR$;/replace_template_keys.stderr</value>
-       	 	</param>
-    	</command>
         <!--Processing-->
         <INCLUDE file="$;DOCS_DIR$;/file_iterator_template.xml" keys="$;ITERATOR_NAME$;=ITERATOR1,$;ITERATOR_XML$;=ITERATOR1_XML">
 		<!--Postprocessing-->
