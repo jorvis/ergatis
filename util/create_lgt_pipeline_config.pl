@@ -236,6 +236,8 @@ sub main {
 			# Change the host reference for lgt_bwa
 			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE$;'} = '';
 			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
+			$config{'lgt_bwa validation'}->{'$;INPUT_FILE$;'} = '';
+			$config{'lgt_bwa validation'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
 		}
 	}
 
