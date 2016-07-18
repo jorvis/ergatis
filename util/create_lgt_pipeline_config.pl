@@ -18,9 +18,29 @@ create_lgt_pipeline_config.pl - Will create a pipeline.layout and pipeline.confi
 
 =head1 OPTIONS
 
-B<--input_file,-i>
+B<--sra_id,-s>
+	Valid ID from the Sequence Read Archive
 
-B<--output_file,-o>
+B<--donor_reference,-d>
+	Path to the donor reference fasta file, or list file (ends in .list).  If not provided, the script assumes this is a host-only LGTSeek run.  If the reference has already been indexed by BWA, the index files must be in the same directory as the reference(s).
+
+B<--host_reference,-h>
+	Path to the donor reference fasta file, or list file (ends in .list).  If not provided, the script assumes this is a donor-only LGTSeek run.If the reference has already been indexed by BWA, the index files must be in the same directory as the reference(s).
+
+B<--refseq_reference,-r>
+	Path to the RefSeq reference fasta file, or list file (ends in .list).  If the reference has already been indexed by BWA, the index files must be in the same directory as the reference(s).
+
+B<--build_indexes,-b>
+	If the flag is enabled, will build indexes using BWA in the pipeline.  If you are using pre-build indexes it is important they are compatible with the version of BWA running in the pipeline (0.7.12 for internal Ergatis, 0.7.15 for Docker Ergatis)
+
+B<--template_directory,-t>
+	Path of the template configuration and layout files used to create the pipeline config and layout files.
+
+B<--output_directory, -o>
+	Directory to write the pipeline.config and pipeline.layout files
+
+B<--no_pipeline_ids, -p>
+	If the flag is enabled, do not add process IDs to the pipeline config and layout file names and just use whatever lgt.config and lgt.layout.
 
 B<--log,-l>
     Logfile.
@@ -83,15 +103,15 @@ exit(0);
 
 sub main {
 	my $results = GetOptions (\%options,
-						  #"lgtseek|l=i",
 						  "sra_id|s=s",
 						  "host_reference|h=s",
 						  "donor_reference|d=s",
 						  "refseq_reference|r=s",
+						  "build_indexes|b",
                           "template_directory|t=s",
                           "output_directory|o=s",
 						  "no_pipeline_id|p",
-                          "log|L=s",
+                          "log|l=s",
                           "debug=i",
                           "help"
                           );
@@ -164,35 +184,59 @@ sub main {
 	# Default use case (good donor and good host), we just want two specific list files.  For donor and host-only cases, we want other specific list files
 	$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create single map BAM file list,create no map BAM file list';
 
-	unless ($donor_only) {
-	# Only add host-relevant info to config if we are aligning to a host
-		if ($options{host_reference} =~ /list$/) {
-			$config{"global"}->{'$;HOST_LIST$;'} = $options{host_reference};
-		} else {
-			$config{"global"}->{'$;HOST_REFERENCE$;'} = $options{host_reference};
-		}
-	} else {
+	if ($donor_only) {
 		# In donor-only alignment cases, we do not keep the 'MM' matches, so no microbiome run
 		$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		$config{"lgt_bwa_post_process default"}->{'$;RECIPIENT_FILE_LIST$;'} = '';
 		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT BAM file list,create microbiome BAM file list,create no map BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
+	} else {
+		# Only add host-relevant info to config if we are aligning to a host
+		if ($options{host_reference} =~ /list$/) {
+			$config{"global"}->{'$;HOST_LIST$;'} = $options{host_reference};
+		} else {
+			$config{"global"}->{'$;HOST_REFERENCE$;'} = $options{host_reference};
+		}
+		# The mpileup component needs the host reference to serve as a reference here too
+		$config{'lgt_mpileup lgt'}->{'FASTA_REFERENCE'} = $options{host_reference};
 	}
 
-	unless ($host_only) {
-	# Only add donor-relevant info to config if we are aligning to a donor
-		if ($options{donor_reference} =~/list$/) {
-			$config{"global"}->{'$;DONOR_LIST$;'} = $options{donor_reference};
-		} else {
-			$config{"global"}->{'$;DONOR_REFERENCE$;'} = $options{donor_reference};
-		}
-	} else {
+	if ($host_only) {
 		# In a host-only run, we do not keep the 'MM' matches, so no microbiome run
 		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		$config{"lgt_bwa_post_process default"}->{'$;DONOR_FILE_LIST$;'} = '';
 		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT BAM file list,create microbiome BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
 		$config{"filter_dups_lc_seqs mb"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.no_map.bam.list';
+	} else {
+		# Only add donor-relevant info to config if we are aligning to a donor
+		if ($options{donor_reference} =~/list$/) {
+			$config{"global"}->{'$;DONOR_LIST$;'} = $options{donor_reference};
+		} else {
+			$config{"global"}->{'$;DONOR_REFERENCE$;'} = $options{donor_reference};
+		}
+	}
+
+	# If we are indexing references in the pipeline, we need to change some config inputs
+	if ($included_subpipelines{'indexing'}) {
+		
+		# Change the Refseq reference for lgt_bwa
+		$config{'lgt_bwa lgt'}->{'$;INPUT_FILE$;'} = '';
+		$config{'lgt_bwa lgt'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_refseq/lgt_build_bwa_index.fsa.list';
+		unless ($donor_only) {
+			$config{'lgt_bwa mb'}->{'$;INPUT_FILE$;'} = '';
+			$config{'lgt_bwa mb'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_refseq/lgt_build_bwa_index.fsa.list';
+	
+			# Change the donor reference for lgt_bwa
+			$config{'lgt_bwa donor'}->{'$;INPUT_FILE$;'} = '';
+			$config{'lgt_bwa donor'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_donor/lgt_build_bwa_index.fsa.list';
+		}
+	
+		unless ($host_only) {
+			# Change the host reference for lgt_bwa
+			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE$;'} = '';
+			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
+		}
 	}
 
 	# open config file for writing
@@ -315,15 +359,16 @@ sub check_options {
    	$outdir = $opts->{'output_directory'} if( $opts->{'output_directory'} );
    	$template_directory = $opts->{'template_directory'} if( $opts->{'template_directory'} );
    	$included_subpipelines{lgtseek} = 1;	# LGTSeek is required... duh!
-   	# Currently these will be default until I make the pipeline more sophisticated in accepting fastq files in place of the SRA template and/or previously created BWA indexes in place of that template
    	$included_subpipelines{sra} = 1;
-   	$included_subpipelines{indexing} = 1;
 
 	# If donor reference is not present, then we have a host-only run
 	$host_only = 1 unless ($opts->{'donor_reference'});
 
 	# If host reference is not present, then we have a donor-only run
 	$donor_only = 1 unless ($opts->{'host_reference'});
+
+	# If we need to build BWA reference indexes, then set option
+	$included_subpipelines{indexing} = 1 if {$opts->{'build_indexes'}};
 
 	&_log($ERROR, "Cannot specify both 'donor_only' and 'host_only' options.  Choose either, or none") if ($donor_only && $host_only);
 

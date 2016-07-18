@@ -234,6 +234,12 @@ sub check_options {
    } elsif($opts->{donor_file_list}) {
        @donor_files = `cat $opts->{donor_file_list}`;
    }
+   # Gather files together
+   if($opts->{donor_file}) {
+       push @donor_files, $opts->{donor_file};
+   } elsif($opts->{donor_file_list}) {
+       @donor_files = `cat $opts->{donor_file_list}`;
+   }
 
     if($opts->{recipient_file}) {
        push @recipient_files, $opts->{recipient_file};

@@ -22,7 +22,7 @@ B<--input_file,-i>
 	A BAM file that has been filtered by Picard-tools and Prinseq
 
 B<--fasta_ref,-f>
-	A nucleotide fasta reference file
+	A nucleotide fasta reference file.  Can also accept a list of references (with a .list extension).
 
 B<--output_dir,-o>
 
@@ -68,6 +68,7 @@ my $logfh;
 my $output_dir;
 my %options;
 my $count_id = 0;
+my @ref_files;
 
 my $results = GetOptions (\%options,
 					 "input_file|i=s",
@@ -86,12 +87,15 @@ my $lgt_obj = LGT::LGTSeek->new( {
 		'verbose' => 1
 } );
 
-my $mpilup_output = $lgt_obj->mpileup( {
-	    'input'      => $options{input_file},
-        'output_dir' => $output_dir,
-        'ref'        => $options{fasta_ref},
-    }
-);
+foreach my $ref (@ref_files){
+	chomp $ref;
+	my $mpilup_output = $lgt_obj->mpileup( {
+		    'input'      => $options{input_file},
+	        'output_dir' => $output_dir,
+	        'ref'        => $ref
+	    }
+	);
+}
 
 exit(0);
 
@@ -110,6 +114,14 @@ sub check_options {
 
    foreach my $req ( qw(input_file fasta_ref samtools_path output_dir) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
+   }
+
+
+   # Gather reference files together
+   if($opts->{fasta_ref} =~ /\.list$/) {
+       @ref_files = `cat $opts->{fasta_ref}`;
+   } else {
+       push @ref_files, $opts->{fasta_ref};
    }
 
    $output_dir = $opts->{'output_dir'};
