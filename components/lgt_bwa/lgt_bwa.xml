@@ -24,24 +24,6 @@
 	<!--Iterator Done-->
         <command>
             <type>RunUnixCommand</type>
-            <name>create SAM file list</name>
-            <state>incomplete</state>
-            <executable>$;BIN_DIR$;/create_list_file</executable>
-            <param>
-                <key>--directory</key>
-                <value>$;OUTPUT_DIRECTORY$;</value>
-            </param>
-            <param>
-                <key>--regex</key>
-                <value>".*\.sam"</value>
-            </param>
-            <param>
-                <key>--output_list</key>
-                <value>$;SAM_OUTPUT_LIST$;</value>
-            </param>
-        </command>
-        <command>
-            <type>RunUnixCommand</type>
             <name>create filtered BAM file list</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>

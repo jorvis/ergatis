@@ -53,7 +53,7 @@ GetOptions(
     'maxGapE=i',           'gapOsc=i',
     'gapEsc=i',            'nThrds|t=i',
     'maxOcc=i',            'bwa_params|B=s',
-    'samtools_params|S=s', 'keep_sam|k=i',
+    'samtools_params|S=s',
     'log|l=s',             'help|h'
 ) or pod2usage();
 
@@ -145,9 +145,6 @@ foreach my $ref (@ref_files) {
                   . $out2 . " "
                   . $type{'bam'} . " "
                   . $type{'bam'};
-                $out = $refname . "_" . $file_base . ".bwa.sam";
-				$out =~ s/bwa\.prelim\.filtered\.//g;
-
             } elsif ( $file_count == 2
                 && exists( $type{'fastq_1'} )
                 && exists( $type{'fastq_2'} ) )
@@ -176,15 +173,14 @@ foreach my $ref (@ref_files) {
                   . $out2 . " "
                   . $type{'fastq_1'} . " "
                   . $type{'fastq_2'};
-                $out = $refname . "_" . $file_base . ".bwa.sam";
-				$out =~ s/bwa\.prelim\.filtered\.//g;
-
             } else {
                 print_log_msg( $ERROR,
                     "ERROR : Main :: Irregular number of files $file_count for alignment found in the input directory $options{'input_dir'}"
                 );
             }
-            align_BWA( \%options, "sampe", $in, "", $out, $ref );
+            $out = $refname . "_" . $file_base . ".bwa.bam";
+            $out =~ s/bwa\.prelim\.filtered\.//g;
+            align_then_BAM( \%options, "sampe", $in, "", $out, $ref );
         } else {
             print_log_msg( $DEBUG,
                 "Detected a single-end fastq or BAM sequence" );
@@ -196,11 +192,7 @@ foreach my $ref (@ref_files) {
 				$out =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'fastq'}, "", $out, $ref );
 
-                $in =
-                  $options{'output_dir'} . "/" . $out . " " . $type{'fastq'};
-                $out = $refname . "_" . $file_base . ".bwa.sam";
-				$out =~ s/bwa\.prelim\.filtered\.//g;
-
+                $in = $options{'output_dir'} . "/" . $out . " " . $type{'fastq'};
             } elsif ( $file_count == 1 && exists( $type{'bam'} ) ) {
                 ( $file_base, $file_dir, $file_ext ) =
                   fileparse( $type{'bam'}, qr/\.[^.]*/ );
@@ -209,99 +201,42 @@ foreach my $ref (@ref_files) {
                 align_BWA( \%options, "aln", $type{'bam'}, "-b0", $out, $ref );
 
                 $in  = $options{'output_dir'} . "/" . $out . " " . $type{'bam'};
-                $out = $refname . "_" . $file_base . ".bwa.sam";
-				$out =~ s/bwa\.prelim\.filtered\.//g;
             }
-            align_BWA( \%options, "samse", $in, "", $out, $ref );
+
+            $out = $refname . "_" . $file_base . ".bwa.bam";
+            $out =~ s/bwa\.prelim\.filtered\.//g;
+            align_then_BAM( \%options, "samse", $in, "", $out, $ref );
         }
     }
 
 	# Determine if the newly created SAM file is truncated.  Fail if it is
 	# Note:  $out is just the basename.  Output_dir is added to command in subroutine
-	is_sam_truncated(\%options, $out);
-    # Convert SAM file into a BAM file and remove SAM if specified to
-    sam_to_bam( \%options, $out );
+	is_bam_truncated(\%options, $out);
 
+    # Write the new BAM file to our list
+	print OUT_LIST $options{'output_dir'} . "/" . $out . "\n";
 }
 close OUT_LIST;
-
-if ( $options{'keep_sam'} == 0 ) {
-    $cmd = "rm "
-      . $options{'output_dir'}
-      . "/*.sam "
-      . $options{'output_dir'}
-      . "/*.sai";
-    $exit_code = system($cmd);
-    if ( $exit_code != 0 ) {
-        print_log_msg( $ERROR,
-            "ERROR : Main :: Cleanup of SAM and alignment files failed from $options{'output_dir'} with error. Check the stderr"
-        );
-    } else {
-        print_log_msg( $DEBUG,
-            "INFO : Main :: Cleanup of SAM and alignment files succesfully completed in $options{'output_dir'}"
-        );
-    }
-}
 
 ###############
 # SUBROUTINES #
 ###############
 
-# Convert a SAM-formatted file into a BAM-formatted one
-sub sam_to_bam {
-    my ( $cmd_line_args, $file ) = @_;
-    my ( $cmd, $opts, $file_base, $file_dir, $file_ext, $out );
-    my $exit_code;
-
-    my $sub_name = ( caller(0) )[3];
-    if ( exists( $cmd_line_args->{'samtools_params'} ) ) {
-        $opts = $cmd_line_args->{'samtools_params'};
-    } else {
-		$opts = '';
-	}
-    ( $file_base, $file_dir, $file_ext ) = fileparse( $file, qr/\.[^.]*/ );
-    $out = $cmd_line_args->{'output_dir'} . "/" . $file_base . ".bam";
-
-    $cmd =
-        $cmd_line_args->{'samtools_path'}
-      . " view "
-      . $opts
-      . " -bhS -o "
-      . $out . " "
-      . $cmd_line_args->{'output_dir'} . "/"
-      . $file;
-    print_log_msg( $DEBUG,
-        "INFO : $sub_name :: Start converting SAM file $cmd_line_args->{'output_dir'}/$file to BAM format $out.\nINFO : $sub_name :: Command : $cmd"
-    );
-    $exit_code = system($cmd);
-    if ( $exit_code != 0 ) {
-        print_log_msg( $ERROR,
-            "ERROR : $sub_name :: SAM to BAM conversion failed for $cmd_line_args->{'output_dir'}/$file with error. Check the stderr"
-        );
-    } else {
-        print_log_msg( $DEBUG,
-            "INFO : $sub_name :: SAM to BAM conversion succesfully completed in $cmd_line_args->{'output_dir'}"
-        );
-    }
-
-	# Write the new BAM file to our list
-	print OUT_LIST $out . "\n";
-}
-
-sub is_sam_truncated {
+sub is_bam_truncated {
 	my $cmd_line_args = shift;
     my $sam = shift;
     my $sub_name = ( caller(0) )[3];
-	$cmd = $cmd_line_args->{'samtools_path'} . " view " . $cmd_line_args->{'output_dir'} . "/" . $out;
-	print_log_msg($DEBUG, "INFO : $sub_name :: Checking to see if SAM file is truncated\nINFO : $sub_name :: Command : $cmd");
+	#$cmd = $cmd_line_args->{'samtools_path'} . " view " . $cmd_line_args->{'output_dir'} . "/" . $out;
+    $cmd = $cmd_line_args->{'samtools_path'} . " quickcheck " . $cmd_line_args->{'output_dir'} . "/" . $out;
+    print_log_msg($DEBUG, "INFO : $sub_name :: Checking to see if BAM file is truncated\nINFO : $sub_name :: Command : $cmd");
     $exit_code = system($cmd);
     if ( $exit_code != 0 ) {
         print_log_msg( $ERROR,
-            "ERROR : $sub_name :: SAM file appears to be truncated.  Try to re-run with a higher memory requirement"
+            "ERROR : $sub_name :: BAM file appears to be truncated.  Try to re-run with a higher memory requirement"
         );
     } else {
         print_log_msg( $DEBUG,
-            "INFO : $sub_name :: SAM file seems fine."
+            "INFO : $sub_name :: BAM file seems fine."
         );
     }
 	return;
@@ -335,10 +270,6 @@ sub align_BWA {
                 $opts .=
                   " -" . $params_hash{$param} . " " . $cmd_line_args->{$param};
             }
-        }
-    } elsif ( $algo eq "sampe" || $algo eq "samse" ) {
-        if ( exists( $cmd_line_args->{'maxOcc'} ) ) {
-            $opts .= "-n " . $cmd_line_args->{'maxOcc'};
         }
     } else {
         print_log_msg( $ERROR,
@@ -374,6 +305,56 @@ sub align_BWA {
             "INFO : $sub_name :: $files alignment to $ref succesfully completed in $cmd_line_args->{'output_dir'}"
         );
     }
+}
+
+# This subroutine will take .sai files from BWA 'aln' and run them through 'sampe' or 'samse'.  After this, the results are pipeline into 'samtools view' to output a BAM file.
+sub align_then_BAM {
+    my ( $cmd_line_args, $algo, $files, $opts, $outfile, $ref ) = @_;
+
+    my $sub_name = ( caller(0) )[3];
+
+    if ( $algo eq "sampe" || $algo eq "samse" ) {
+        if ( exists( $cmd_line_args->{'maxOcc'} ) ) {
+            $opts .= "-n " . $cmd_line_args->{'maxOcc'};
+        }
+    } else {
+        print_log_msg( $ERROR,
+            "ERROR : $sub_name :: $algo is not supported by this version of BWA component"
+        );
+    }
+
+    my $sam_opts = '';
+    if ( exists( $cmd_line_args->{'samtools_params'} ) ) {
+        $sam_opts = $cmd_line_args->{'samtools_params'};
+    }
+
+    $cmd =
+        $cmd_line_args->{'bwa_path'} . " "
+      . $algo . " "
+      . $opts . " "
+      . $ref . " "
+      . $files . " | "
+      . $cmd_line_args->{'samtools_path'} . " view "
+      . $sam_opts . " "
+      . " -bh -o "
+      . $cmd_line_args->{'output_dir'} . "/"
+      . $outfile
+      . " - ";
+
+    print_log_msg( $DEBUG,
+        "INFO : $sub_name :: Start aligning $files to $ref.\nINFO : $sub_name :: Command : $cmd"
+    );
+    $exit_code = system($cmd);
+    if ( $exit_code != 0 ) {
+        print_log_msg( $ERROR,
+            "ERROR : $sub_name :: $files alignment failed with error. Check the stderr"
+        );
+    } else {
+        print_log_msg( $DEBUG,
+            "INFO : $sub_name :: $files alignment to $ref succesfully completed in $cmd_line_args->{'output_dir'}"
+        );
+    }
+
 }
 
 # Determine format of input file or files from input directory to be aligned
@@ -650,9 +631,6 @@ B<--bwa_path, -b>
 
 B<--samtools_path, -s>
 	Path to the "samtools" executable
-
-B<--keep_sam, -k>
-	If set to 1, SAM files are kept after converting to BWA. Set to 0 and they are removed from the output directory
 
 B<--use_mem, -m>
 	Set to 1 to indicate that the "bwa mem" algorithm should be used instead of "bwa aln"
