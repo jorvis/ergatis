@@ -219,26 +219,30 @@ sub main {
 
 	# If we are indexing references in the pipeline, we need to change some config inputs
 	if ($included_subpipelines{'indexing'}) {
-		
+
 		# Change the Refseq reference for lgt_bwa
 		$config{'lgt_bwa lgt'}->{'$;INPUT_FILE$;'} = '';
 		$config{'lgt_bwa lgt'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_refseq/lgt_build_bwa_index.fsa.list';
 		unless ($donor_only) {
 			$config{'lgt_bwa mb'}->{'$;INPUT_FILE$;'} = '';
 			$config{'lgt_bwa mb'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_refseq/lgt_build_bwa_index.fsa.list';
-	
+
+			# Change the host reference for lgt_bwa
+			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE$;'} = '';
+			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
+
+			$config{'lgt_bwa validation'}->{'$;INPUT_FILE$;'} = '';
+			$config{'lgt_bwa validation'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
+		}
+
+		unless ($host_only) {
 			# Change the donor reference for lgt_bwa
 			$config{'lgt_bwa donor'}->{'$;INPUT_FILE$;'} = '';
 			$config{'lgt_bwa donor'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_donor/lgt_build_bwa_index.fsa.list';
 		}
-	
-		unless ($host_only) {
-			# Change the host reference for lgt_bwa
-			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE$;'} = '';
-			$config{'lgt_bwa recipient'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
-			$config{'lgt_bwa validation'}->{'$;INPUT_FILE$;'} = '';
-			$config{'lgt_bwa validation'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
-		}
+	} else {
+		# If not building indexes, delete reference to lgt_build_bwa_index config
+		delete $config{"lgt_build_bwa_index refseq"};
 	}
 
 	# open config file for writing
@@ -370,12 +374,13 @@ sub check_options {
 	$donor_only = 1 unless ($opts->{'host_reference'});
 
 	# If we need to build BWA reference indexes, then set option
-	$included_subpipelines{indexing} = 1 if {$opts->{'build_indexes'}};
+	$included_subpipelines{indexing} = 1 if ( $opts->{'build_indexes'} );
 
 	&_log($ERROR, "Cannot specify both 'donor_only' and 'host_only' options.  Choose either, or none") if ($donor_only && $host_only);
 
    print STDOUT "Perform alignments to the donor reference only.\n" if ($donor_only);
    print STDOUT "Perform alignments to the host reference only.\n" if ($host_only);
+   print STDOUT "Perform BWA reference indexing in pipeline.\n" if ($included_subpipelines{indexing});
 
 }
 
