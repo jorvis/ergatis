@@ -188,7 +188,7 @@ sub main {
 		# In donor-only alignment cases, we do not keep the 'MM' matches, so no microbiome run
 		$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		$config{"lgt_bwa_post_process default"}->{'$;RECIPIENT_FILE_LIST$;'} = '';
-		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT BAM file list,create microbiome BAM file list,create no-map BAM file list';
+		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT host BAM file list,create microbiome BAM file list,create no-map BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
 	} else {
 		# Only add host-relevant info to config if we are aligning to a host
@@ -198,14 +198,14 @@ sub main {
 			$config{"global"}->{'$;HOST_REFERENCE$;'} = $options{host_reference};
 		}
 		# The mpileup component needs the host reference to serve as a reference here too
-		$config{'lgt_mpileup lgt'}->{'FASTA_REFERENCE'} = $options{host_reference};
+		$config{'lgt_mpileup lgt'}->{'$;FASTA_REFERENCE$;'} = $options{host_reference};
 	}
 
 	if ($host_only) {
 		# In a host-only run, we do not keep the 'MM' matches, so no microbiome run
 		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		$config{"lgt_bwa_post_process default"}->{'$;DONOR_FILE_LIST$;'} = '';
-		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT BAM file list,create microbiome BAM file list';
+		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT host BAM file list,create microbiome BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
 		$config{"filter_dups_lc_seqs mb"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.no_map.bam.list';
 	} else {

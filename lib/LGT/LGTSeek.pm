@@ -12,7 +12,7 @@ Need to put something useful here
 A module to run computes and process the output of data for purposes
 of finding putative lateral gene transfer.
 
-=head1 AUTHOR - Shaun Adkins, David R. Riley & Karsten B. Sieber 
+=head1 AUTHOR - Shaun Adkins, David R. Riley & Karsten B. Sieber
 
 e-mail: sadkins@som.umaryland.edu
 
@@ -35,11 +35,11 @@ Internal methods are usually preceded with a _
         downloadEGA         : Download data from EGA
         prelim_filter       : Filter for potential LGT reads from human mapped bam
         runBWA              : Execute BWA aln mapping
-        bwaPostProcess      : Filter LGT reads from host and donor 
+        bwaPostProcess      : Filter LGT reads from host and donor
         prinseqFilterBam    : Make a new bam by removing low complexity and duplicate reads
         filter_bam_by_ids   : Make a new bam by filtering for read-ids
         sam2fasta           : Make fasta file from a bam
-        splitBam            : Split 1 bam into multiple bams  
+        splitBam            : Split 1 bam into multiple bams
         blast2lca           : Generate LCA using blast
         bestBlast2          : Run Blast keeping besthits only
         runLgtFinder        : Process blast results for LGT reads
@@ -195,14 +195,14 @@ sub getGiTaxon {
  Title   : prinseqFilterBam
  Usage   : my $filteredBam = $LGTSeek->prinseqFilterBam({'input_bam' => '/path/to/file.bam'...})
  Function: Prinseq filter a bam file.
- Returns : A Hash $ref->{bam} = path to the filtered bam. $ref->{count} = # of reads passing filtering. 
- Args    : 
+ Returns : A Hash $ref->{bam} = path to the filtered bam. $ref->{count} = # of reads passing filtering.
+ Args    :
         input_bam    => /path/to/file.bam
         output_dir   => /path/for/output.bam
-        overwrite    => <0|1> [0] 1= Overwrite output if it is found already. 
+        overwrite    => <0|1> [0] 1= Overwrite output if it is found already.
         prinseq_bin  =>
-        Picard_jar   => 
-        java_opts    => 
+        Picard_jar   =>
+        java_opts    =>
         samtools_bin =>
 =cut
 
@@ -340,7 +340,7 @@ sub _prinseqFilterPaired {
               )
             {
                 $self->_run_cmd(
-                    "$self->{samtools_bin} sort -n $bam_file $tmp_dir/$name");
+                    "$self->{samtools_bin} sort -n -o $tmp_dir/$name\.bam $bam_file");
                 $bam_file = "$tmp_dir/$name\.bam";
             }
             $self->_run_cmd(
@@ -433,7 +433,7 @@ sub _prinseqFilterPaired {
             $cmd = $cmd
               . " $tmp_dir/$name\_lc_1_bad_ids.out $tmp_dir/$name\_lc_2_bad_ids.out";
         }
-        $cmd = $cmd . " | sort -u > $tmp_dir/$name\_prinseq-bad-ids.out";
+        $cmd = $cmd . " | sort -u -o $tmp_dir/$name\_prinseq-bad-ids.out";
         $self->_run_cmd($cmd);
 
         # Finally, filter based on dedup & lc bad ids
@@ -536,7 +536,7 @@ sub _run_cmd {
  Usage   : $lgtseek->downloadSRA(({'experiment_id'} = 'SRX01234'})
  Function: Download sra files from the sequence read archive
  Returns : A list of the downloaded file paths
- Args    : 
+ Args    :
 
 =cut
 
@@ -744,17 +744,17 @@ sub dumpFastq {
 
  Title   : downloadCGHub
  Usage   : $lgtseek->downloadCGHub({
-        analysis_id     => '00007994-abeb-4b16-a6ad-7230300a29e9', 
+        analysis_id     => '00007994-abeb-4b16-a6ad-7230300a29e9',
         xml             => '/file/path/files_to_download.xml'
         output_dir      => '/file/path/for/output/dir/',
-        threads         => 
+        threads         =>
         rate_limit      =>
         cghub_key       => '/path/to/key.file'
 
         });
  Function: Download TCGA bam files from the CGHub
  Returns : A list of the downloaded file paths
- Args    : 
+ Args    :
 
 =cut
 
@@ -977,7 +977,7 @@ sub downloadCGHub {
               'input_base' => 'SRR01234',
               'reference' => '/path/to/references/hg19.fa'
            }
-         
+
            # For bam files and a list of references
            {
               'input_bam' => '/path/to/files/SRR01234.bam',
@@ -1087,7 +1087,7 @@ sub runBWA {
  Title   : bwaPostProcess
  Usage   : $lgtseek->bwaPostProcess(({'donor_bams' => \@donors,'host_bams' => \@hosts})
  Function: Classify the results of a short read mapping (UM, UU, MM, UM_UM etc.)
- Returns : An object with counts of the different classes as well as the path to bam files 
+ Returns : An object with counts of the different classes as well as the path to bam files
            containing these reads.
            $object->{files}->{           }
                             'lgt_donor'   => "$self->{output_dir}/".$prefix."lgt_donor.bam",
@@ -1188,34 +1188,34 @@ sub _getPairedClass {
 
 sub _bwaPostProcessSingle {
      my ( $self, $config ) = @_;
-  
+
      $self->{samtools_bin} =
        $self->{samtools_bin} ? $self->{samtools_bin} : '/usr/local/bin/samtools';
      my $samtools = $self->{samtools_bin};
      my $output_dir =
        $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
-  
+
      my $classes_each = {
          'MM' => 'paired',
          'UM' => 'single',
          'MU' => 'single',
          'UU' => 'none'
      };
-  
+
      my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
-  
+
      # Use case requires only the single mappings and "none" mappings
      my $class_to_file_name = {
 		 'single_map' => "$output_dir/" . $prefix . ".single_map.bam",
-		 'no_map'	=> "$output_dir/" . $prefix . ".no_map.bam"	
+		 'no_map'	=> "$output_dir/" . $prefix . ".no_map.bam"
 	 };
-  
+
      my $class_counts = {
          'paired'  => undef,
          'single'  => undef,
          'none' => undef,
      };
-  
+
      # Here are a bunch of file handles we'll use later.
      if ( $self->{verbose} ) {
          print STDERR "$output_dir/" . $prefix . ".single_map.bam\n";
@@ -1225,7 +1225,7 @@ sub _bwaPostProcessSingle {
          my $single_map,
          "| $samtools view -S -b -o $output_dir/" . $prefix . ".single_map.bam -"
      ) or die "Unable to open LGT single map file for writing\n";
-  
+
      open(
          my $no_map,
          "| $samtools view -S -b -o $output_dir/" . $prefix . ".no_map.bam -"
@@ -1235,14 +1235,14 @@ sub _bwaPostProcessSingle {
          'single_map'  => $single_map,
 		 'no_map'	=> $no_map
      };
-  
+
      my $bam = defined $config->{donor_bam} ? $config->{donor_bam} : $config->{host_bam};
 	 if (! $bam) {
 		confess "***ERROR*** Passed config neither has a defined donor nor host BAM";
 	 }
      my $fh;
      my $head;
-  
+
      # Open the BAM file for reading
      if ( $self->{verbose} ) { print STDERR "Opening $bam\n"; }
      if ( $bam =~ /.bam$/ ) {
@@ -1326,26 +1326,26 @@ sub _bwaPostProcessSingle {
              close $class_to_file->{$_};
          }
      } keys %$class_to_file;
-  
+
      # Set the total
      $class_counts->{total} = $line_num;
-  
+
      # Return the files and the counts
      return {
          counts => $class_counts,
          files  => $class_to_file_name
     };
 }
-  
+
 sub _bwaPostProcessDonorHostPaired {
      my ( $self, $config ) = @_;
-  
+
      $self->{samtools_bin} =
        $self->{samtools_bin} ? $self->{samtools_bin} : '/usr/local/bin/samtools';
      my $samtools = $self->{samtools_bin};
      my $output_dir =
        $config->{output_dir} ? $config->{output_dir} : $self->{output_dir};
-  
+
      # Classes have the donor on the left and the host on the right
      my $classes_both = {
          'UM_MU' => 'lgt',
@@ -1365,7 +1365,7 @@ sub _bwaPostProcessDonorHostPaired {
          'UM_UM' => 'single_map',
          'MU_MU' => 'single_map'
      };
-  
+
      my $prefix = $config->{output_prefix} ? $config->{output_prefix} : '';
      my $class_to_file_name = {
          'lgt_donor' => "$output_dir/" . $prefix . ".lgt_donor.bam",
@@ -1378,7 +1378,7 @@ sub _bwaPostProcessDonorHostPaired {
            . ".integration_site_donor_host.bam",
          'microbiome_donor' => "$output_dir/" . $prefix . ".microbiome.bam",
      };
-  
+
      my $class_counts = {
          'lgt'                    => undef,
          'integration_site_host'  => undef,
@@ -1389,7 +1389,7 @@ sub _bwaPostProcessDonorHostPaired {
          'all_map'                => undef,
          'single_map'             => undef
      };
-  
+
      # Here are a bunch of file handles we'll use later.
      if ( $self->{verbose} ) {
          print STDERR "$output_dir/" . $prefix . ".lgt_donor.bam\n";
@@ -1417,7 +1417,7 @@ sub _bwaPostProcessDonorHostPaired {
          my $microbiome_donor,
          "| $samtools view -S -b -o $output_dir/" . $prefix . ".microbiome.bam -"
      ) or die "Unable to open donor microbiome file for writing\n";
-  
+
      my $class_to_file = {
          'lgt_donor'                    => $lgtd,
          'lgt_host'                     => $lgth,
@@ -1425,14 +1425,14 @@ sub _bwaPostProcessDonorHostPaired {
          'integration_site_donor_host'  => $int_site_donor_h,
          'microbiome_donor'             => $microbiome_donor
      };
-  
+
      my $donor_bam = $config->{donor_bam};
      my $host_bam  = $config->{host_bam};
      my $donor_fh;
      my $host_fh;
      my $donor_head;
      my $host_head;
-  
+
      # Open all the donor files
      if ( $self->{verbose} ) { print STDERR "Opening $donor_bam\n"; }
      if ( $donor_bam =~ /.bam$/ ) {
@@ -1443,7 +1443,7 @@ sub _bwaPostProcessDonorHostPaired {
          $donor_head = `zcat $donor_bam | $samtools view -H -S -`;
          open( $donor_fh, "-|", "zcat $donor_bam | $samtools view -S -" );
      }
-  
+
     # Open all the host files
     if ( $self->{verbose} ) { print STDERR "Opening $host_bam\n"; }
     if ( $host_bam =~ /.bam$/ ) {
@@ -1520,31 +1520,31 @@ sub _bwaPostProcessDonorHostPaired {
          	}
 		}
      } keys %$class_to_file;
-  
+
      #   exit;
      my $more_lines = 1;
- 
+
      my $line_num = 0;
- 
+
      while ($more_lines) {
-  
+
          # Get the class of the host mappings
          my $obj = $self->_getPairedClass( { fh => $host_fh } );
          my $hclass = $obj->{class};
          $more_lines = $obj->{more_lines};
          my $hr1_line = $obj->{r1_line};
          my $hr2_line = $obj->{r2_line};
-  
+
          # Get the class of the donor mappings
          $obj = $self->_getPairedClass( { fh => $donor_fh } );
          my $dclass = $obj->{class};
          $more_lines = $obj->{more_lines};
          my $dr1_line = $obj->{r1_line};
          my $dr2_line = $obj->{r2_line};
-  
+
          if ($more_lines) {
              my $paired_class = "$dclass\_$hclass";
-  
+
    # print the donor lines to the donor file (if we are keeping this output file)
              if ( $class_to_file->{ $classes_both->{$paired_class} . "_donor" } )
              {
@@ -1552,7 +1552,7 @@ sub _bwaPostProcessDonorHostPaired {
                      $class_to_file->{ $classes_both->{$paired_class}
                            . "_donor" } } "$dr1_line\n$dr2_line\n";
              }
-  
+
      # print the host lines to the host file (if we are keeping this output file)
              if ( $class_to_file->{ $classes_both->{$paired_class} . "_host" } )
              {
@@ -1560,17 +1560,17 @@ sub _bwaPostProcessDonorHostPaired {
                      $class_to_file->{ $classes_both->{$paired_class} . "_host" }
                  } "$hr1_line\n$hr2_line\n";
              }
-  
+
              # Increment the count for this class
              if ( $classes_both->{$paired_class} ) {
                  $class_counts->{ $classes_both->{$paired_class} }++;
              }
-  
+
              # Increment the total count
              $line_num++;
          }
      }
-  
+
      # Close up the file handles
      map {
          if ( $_ =~ /_donor$/ ) {
@@ -1582,10 +1582,10 @@ sub _bwaPostProcessDonorHostPaired {
              close $class_to_file->{$_};
          }
      } keys %$class_to_file;
-  
+
      # Set the total
      $class_counts->{total} = $line_num;
-  
+
      # Return the files and the counts
      return {
          counts => $class_counts,
@@ -1598,11 +1598,11 @@ sub _bwaPostProcessDonorHostPaired {
  Title   : blast2lca
  Usage   : my $lca_file = $lgtseek->blast2lca({'blast' => 'path_to_blast-m8.txt','output_dir' => 'path_to_out_dir'})
  Function: Take a blast -m8 report and calculate the LCA'
- Returns : A object with the path to the output file(s) with LCA's.                             
-            $lca_file->{independent} = Path to the file with the LCA's for each unique ID. 
+ Returns : A object with the path to the output file(s) with LCA's.
+            $lca_file->{independent} = Path to the file with the LCA's for each unique ID.
             $lca_file->{PE_lca}      = Path to the file with the conservative and liberal LCA for combining mate information
- Args    : 
-            blast               => 
+ Args    :
+            blast               =>
             output_dir          =>
             evalue_cutoff       =>  ###  [1] Max evalue allowed for a hit. Example : 1e-5.
             best_hits_only      => <0|1> [0] 1= Parse the Blast file for only best hits.
@@ -1766,10 +1766,10 @@ sub blast2lca {
             out2file_file => $out2file
  Args    : An object with the input bame files and the reference database.
             fasta =>
-            bam => 
+            bam =>
             threads =>
             lineage1 =>
-            lineage2 => 
+            lineage2 =>
             db =>
             output_dir =>
 
@@ -1851,7 +1851,7 @@ sub runLgtFinder {
  Usage   : $lgtseek->splitBam(({'input' => $file})
  Function: Split a bam file into smaller chunks.
  Returns : A list of the bam files split up
- Args    : 
+ Args    :
             input = An object with the input bam files
             seqs_per_file = # of seqs per file for each split file
             output_dir = Directory for output
@@ -1976,9 +1976,9 @@ sub _create_flag {
 
  Title   : decrypt
  Usage   : my $decrypted_bam=$lgtseek->decrypt(({'input' => <file.bam.gpg>, 'key' => <Path to key>})
- Function: Decrypt a .bam.gpg input file. 
+ Function: Decrypt a .bam.gpg input file.
  Returns : An un-encrypted bam
- Args    : 
+ Args    :
     input       => encrypted bam for decryption
     url         => url to download the key from
     key         => path to key file
@@ -2026,9 +2026,9 @@ sub decrypt {
 
  Title   : mpileup
  Usage   : my $mpileup_file=$lgtseek->mpileup({'input' => <bam>})
- Function: Calculate samtools mpileup 
+ Function: Calculate samtools mpileup
  Returns : File path to mpileup output.
- Args    : 
+ Args    :
     input       => unsorted bam
     srtd_bam     => position sorted bam input
     ref         =>Reference (Optional)
@@ -2076,7 +2076,7 @@ sub mpileup {
     return $output;
 }
 
-=head2 &prelim_filter   
+=head2 &prelim_filter
 
  Title   : prelim_filter
  Usage   : my $potential_LGT_bam = $lgtseek->prelim_filter({input => <bam>})
@@ -2085,10 +2085,10 @@ sub mpileup {
  Args    : A hash containing potentially several config options:
         input_bam       => bam
         output_dir      => directory for output
-        keep_softclip   => <0|1> [0] 1= Keep the soft clipped M_M reads 
+        keep_softclip   => <0|1> [0] 1= Keep the soft clipped M_M reads
         overwrite       => <0|1> [1] 1= Overwrite the output if it already exists
         split_bam       => <0|1> [0] 1= Split by by #seqs_per_file
-        seqs_per_file   => [50000000] 
+        seqs_per_file   => [50000000]
         name_sort_input => <0|1> [0] 1= Resort input bam on names
 
     ## TODO: I should be able to implement the following samtools command to create a list of reads that pass prelim_filter criteria, then re-parse the input file for the reads and split the bams acocordingly. This may be significantly faster than the current implementation: "samtools view -F 3844 $input -u | view -f0x8 -" --> picard SamToFastQ
@@ -2184,7 +2184,7 @@ sub prelim_filter {
         if ( $self->{verbose} ) {
             print STDERR "======== &prelim_filter: Sort Start ========\n";
         }
-        my $cmd = "samtools sort -n $input $output_dir$fn\_name-sorted";
+        my $cmd = "samtools sort -n  -o $output_dir$fn\_name-sorted\.bam $input";
         if ( $self->{verbose} ) {
             print STDERR "======== &prelim_filter Sort: $cmd ===\n";
         }
@@ -2228,7 +2228,7 @@ sub prelim_filter {
 
         if ( $die_count >= 2 ) {
             die
-"*** Error *** This bam is missing atleast 2 proper-pairs in the first 10 reads. It is highly likely this bam isn't PE or name sorted properly. 
+"*** Error *** This bam is missing atleast 2 proper-pairs in the first 10 reads. It is highly likely this bam isn't PE or name sorted properly.
             Please manually inspect this bam: $sorted_bam . If the bam is correct, relaunch prelim_filter with --name_sort_check=0.\n";
         }
     }
@@ -2420,7 +2420,7 @@ sub prelim_filter {
            hash->{flag}         = converted flag
            hash->{sequence}
            hash->{cigar}
- Args    : 
+ Args    :
 =cut
 
 sub _read_bam_line {
@@ -2445,8 +2445,8 @@ sub _read_bam_line {
  Title   : _fix_flags
  Usage   : ($read1,$read2)=$self->_fix_flags($read1,$read2);
  Function: Fix reads with first & second flags
- Returns : 
- Args    : 
+ Returns :
+ Args    :
 =cut
 
 sub _fix_flags {
@@ -2487,7 +2487,7 @@ sub _fix_flags {
  Usage   : my $filtered_bam = $lgtseek->filter_bam_by_ids({input => <bam>, good_list=> <list of desired ids>})
            output = output_dir/prefix_suffix.bam
  Function: Filter bam by ids
- Returns : A hash{bam} = new filtered bam 
+ Returns : A hash{bam} = new filtered bam
            A hash{count} = # ids found
  Args    : A hash containing potentially several config options:
         input_bam           => bam for filtering
@@ -2495,7 +2495,7 @@ sub _fix_flags {
         output_prefix       => Prefix for output
         output_suffix       => Suffix for output
         header_comment      => "\@PG\tID:lgtseeq\tPG:filter-criteria\tVN:$VERSION"
-        output              => Full Path, prefix, name, and suffix for output. 
+        output              => Full Path, prefix, name, and suffix for output.
         good_list           => File path with list of desired reads
         bad_list            => File path with a list of reads to discard
 =cut
@@ -2595,7 +2595,7 @@ sub filter_bam_by_ids {
  Function: Create a hash of id's from a list file
  Returns : A hash of ids
  Args    : A hash containing potentially several config options:
-        list     => File with ids 
+        list     => File with ids
 =cut
 
 sub _read_ids {
@@ -2626,7 +2626,7 @@ sub _read_ids {
  Function: Check to make sure a file is not empty
  Returns : 1 = Empty; 0 = input is not empty
  Args    : A hash containing potentially several config options:
-        input     => Check if input is empty 
+        input     => Check if input is empty
 =cut
 
 sub empty_chk {
@@ -2675,7 +2675,7 @@ sub fail {
  Title   : validated_bam
  Usage   : my $validated_bam = lgtseek->validated_bam({by_clone=> <input> });
  Function: Creates a bam based on LGTFinder Results for reads with Human/Euk & Bacteria LGT
- Returns:  Hash->{count} && Hash->{file} bam based on LGTFinder output. 
+ Returns:  Hash->{count} && Hash->{file} bam based on LGTFinder output.
  Args    : A hash containing potentially several config options:
         input           =>  Input bam to parse LGT reads from
         by_clone        =>  LGTFinder Output
@@ -2727,12 +2727,12 @@ sub validated_bam {
           fileparse( $config->{output}, qr/\.[^\.]+/ );
         $out_dir = $bar;
     }
-	
-	#my $host_blast_otu = 
+
+	#my $host_blast_otu =
 	#	defined $config->{host_blast_otu} ? $config->{host_blast_otu} : $self->{host_blast_otu};    ## Example: Homo
-	#my $host_lin       = 
+	#my $host_lin       =
 	#	defined $config->{host_lineage}   ? $config->{host_lineage}   : $self->{host_lineage};    ## Example: Eukaryota
-	#my $donor_lin      = 
+	#my $donor_lin      =
 	#	defined $config->{donor_lineage}  ? $config->{donor_lineage}  : $self->{donor_lineage};     ## Example: Bacteria
 
     open( IN, "<", "$config->{by_clone}" )
@@ -2791,9 +2791,9 @@ sub validated_bam {
             });
  Function:  Download fastq files from EGA, decrypt, and map to human.
             ## This subroutine does NOT support BAM downloads yet##
- 
+
  Returns :  A bam file mapped at the human genome.
- Args    : 
+ Args    :
 
 =cut
 
