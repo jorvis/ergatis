@@ -491,10 +491,9 @@ use Ergatis::ConfigFile;
                 ## create a twig for the text we need to append and replace
                 ##  the template
                 my $component_twig = $self->_create_component_twig( $component_name, $token );
-                # SAdkins - 7/7/16 - Later versions of XML::Twig broke the 'replace' code, so we move the component twig to become first child of the parent and delete the last child.
-                #$component_twig->replace( $commandname_elt->parent );
-                $component_twig->move(first_child =>$commandname_elt->parent );
-                $commandname_elt->{parent}->last_child->delete;
+                # SAdkins - 7/7/16 - Later versions of XML::Twig broke the 'replace' code, so we have to cut first.
+                 $component_twig->cut();
+                 $component_twig->replace( $commandname_elt->parent );
             }
         }
         foreach my $commandname_elt ( $twig->getElementsByTagName('commandSet') ) {
@@ -505,9 +504,8 @@ use Ergatis::ConfigFile;
             elsif($commandname_elt->has_children("name")->text() eq 'start'){
                 my $name= XML::Twig::Elt->new('name'=>"start pipeline:$self->{pipeline_token}");
                 # SAdkins - 7/7/16 - Same as before with the 'replace' command
-                #$name->replace( $commandname_elt->has_children("name") );
-                $name->move(first_child => $commandname_elt->has_children("name") );
-                $commandname_elt->has_children("name")->{last_child}->delete;
+                $name->cut();
+                $name->replace( $commandname_elt->has_children("name") );
             }
         }
         
