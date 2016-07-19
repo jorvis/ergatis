@@ -182,13 +182,13 @@ sub main {
 
 	$config{"global"}->{'$;SRA_RUN_ID$;'} = $options{sra_id};
 	# Default use case (good donor and good host), we just want two specific list files.  For donor and host-only cases, we want other specific list files
-	$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create single map BAM file list,create no map BAM file list';
+	$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create single-map BAM file list,create no-map BAM file list';
 
 	if ($donor_only) {
 		# In donor-only alignment cases, we do not keep the 'MM' matches, so no microbiome run
 		$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		$config{"lgt_bwa_post_process default"}->{'$;RECIPIENT_FILE_LIST$;'} = '';
-		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT BAM file list,create microbiome BAM file list,create no map BAM file list';
+		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT BAM file list,create microbiome BAM file list,create no-map BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
 	} else {
 		# Only add host-relevant info to config if we are aligning to a host
