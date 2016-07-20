@@ -226,19 +226,20 @@ sub is_bam_truncated {
 	my $cmd_line_args = shift;
     my $sam = shift;
     my $sub_name = ( caller(0) )[3];
-	#$cmd = $cmd_line_args->{'samtools_path'} . " view " . $cmd_line_args->{'output_dir'} . "/" . $out;
     $cmd = $cmd_line_args->{'samtools_path'} . " quickcheck " . $cmd_line_args->{'output_dir'} . "/" . $out;
     print_log_msg($DEBUG, "INFO : $sub_name :: Checking to see if BAM file is truncated\nINFO : $sub_name :: Command : $cmd");
     $exit_code = system($cmd);
     if ( $exit_code != 0 ) {
-        print_log_msg( $ERROR,
-            "ERROR : $sub_name :: BAM file appears to be truncated.  Try to re-run with a higher memory requirement"
-        );
-    } else {
-        print_log_msg( $DEBUG,
-            "INFO : $sub_name :: BAM file seems fine."
-        );
+        $cmd = $cmd_line_args->{'samtools_path'} . " view " . $cmd_line_args->{'output_dir'} . "/" . $out;
+        print_log_msg($DEBUG, "INFO : $sub_name :: This version of Samtools does not have 'quickcheck' command.  Using alternate command\nINFO : $sub_name :: Command : $cmd");
+        $exit_code = system($cmd);
+        if ( $exit_code != 0 ) {
+            print_log_msg( $ERROR,
+                "ERROR : $sub_name :: BAM file appears to be truncated.  Try to re-run with a higher memory requirement"
+            );
+        }
     }
+    print_log_msg( $DEBUG, "INFO : $sub_name :: BAM file seems fine." );
 	return;
 }
 
