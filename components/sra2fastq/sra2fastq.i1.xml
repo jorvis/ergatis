@@ -33,6 +33,10 @@
             	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sra2fastq_exec.stderr</value>
             </param>
             <param>
+                <key>--data_dir</key>
+                <value>$;DATA_DIRECTORY$;</value>
+            </param>
+            <param>
             	<key>--sratoolkit</key>
             	<value>$;SRA_TOOLS_BIN$;</value>
 			</param>
