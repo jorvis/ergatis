@@ -45,6 +45,10 @@
                 <value>$;PICARD_TOOLS$;</value>
             </param>
             <param>
+                <key>--java_path</key>
+                <value>$;JAVA_EXEC$;</value>
+            </param>
+            <param>
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
             </param>

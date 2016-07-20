@@ -95,7 +95,7 @@ my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
 my $DEFAULT_LC_THRESHOLD = 7;
 my $DEFAULT_LC_METHOD = "dust";
-my $JAVA_PATH = "/usr/local/packages/java-jre-1.8.0/bin/java";	# Picard-2.0.1 needs Java 1.8
+my $JAVA_PATH = "/usr/bin/java";	# Picard-2.0.1 needs Java 1.8
 #my $JAVA_OPTS = '-Xmx2g';
 ####################################################
 
@@ -105,9 +105,10 @@ my $results = GetOptions (\%options,
                          "output_dir|o=s",
                          "tmp_dir|t=s",
 						 "prefix|p=s",
-						 "prinseq_path|P=s",
-						 "samtools_path|s=s",
-						 "picard_path|p=s",
+						 "prinseq_path=s",
+						 "samtools_path=s",
+						 "picard_path=s",
+                         "java_path=s",
 						 "rm_duplicates|d",
 						 "rm_low_complexity|c",
                          "lc_method|m=s",
@@ -130,11 +131,12 @@ my $tmp_dir = (defined $options{'tmp_dir'}) ? $options{'tmp_dir'} : $options{'ou
 my $lc_method = defined $options{'lc_method'} ? $options{'lc_method'} : $DEFAULT_LC_METHOD;
 my $lc_threshold = defined $options{'lc_threshold'} ? $options{'lc_threshold'} : $DEFAULT_LC_THRESHOLD;
 my $prefix = (defined $options{'prefix'}) ? $options{'prefix'} : "post_prinseq";
+my $java_path = (defined $options{'java_path'}) ? $options{'java_path'} : $JAVA_PATH;
 
 my $lgtseek = LGT::LGTSeek->new( {
 		'prinseq_bin'	=> $options{'prinseq_path'},
 		'Picard_jar'	=> $options{'picard_path'},
-		'java_bin'		=> $JAVA_PATH,
+		'java_bin'		=> $java_path,
 		'java_opts'		=> '',
 		'samtools_bin'	=> $options{'samtools_path'},
 		'paired_end'	=> 1,
