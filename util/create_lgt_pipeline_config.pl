@@ -110,6 +110,7 @@ sub main {
 						  "build_indexes|b",
                           "template_directory|t=s",
                           "output_directory|o=s",
+						  "data_directory|O=s",
 						  "no_pipeline_id|p",
                           "log|l=s",
                           "debug=i",
@@ -244,6 +245,13 @@ sub main {
 		# If not building indexes, delete reference to lgt_build_bwa_index config
 		delete $config{"lgt_build_bwa_index refseq"};
 	}
+
+# If we are passing a directory to store important output files, then change a few parameters
+if ($options{data_directory}){
+	if ($included_subpipelines{'sra'}){
+		$config{'global'}->{'$;DATA_DIR$;'} = $options{data_directory};
+	}
+}
 
 	# open config file for writing
 	open( my $pcfh, "> $pipeline_config") or &_log($ERROR, "Could not open $pipeline_config for writing: $!");
