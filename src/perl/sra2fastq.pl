@@ -100,18 +100,23 @@ sub ConvertSRS {
 
 	# If we need to symlink our contents over from the 'data directory', find the newly created fastq files and perform the symlink.  I'm having trouble figuring how how to best do this in an --exec so I'm writing in a script and executing that.
 	if ($data_dir_present) {
-		open SCRIPT, $phCmdLineArgs->{'output_dir'} . "ln_cmd.sh" || die "Cannot create script for symlinking: $!\n";
+		my $ln_script = $phCmdLineArgs->{'output_dir'} . '/ln_cmd.sh';
+
+		open SCRIPT, ">$ln_script" || printLogMsg($ERROR, "ERROR : $sSubName :: Cannot create script for symlinking.");
 		(my $script = <<"END_SCRIPT") =~ s/^ {8}//gm;
 
-		#!/usr/bin/bash
+        #!/usr/bin/bash
 
-		base=basename $1
-		ln -s $1 $phCmdLineArgs->{'output_dir'}\/${base}
+        base=basename \$1
+        ln -s \$1 $phCmdLineArgs->{'output_dir'}\/\${base}
 
 END_SCRIPT
 		print SCRIPT $script;
 		close SCRIPT;
-		my $symCmd = "find $output_dir --name ${base}*\.fastq --exec " . $phCmdLineArgs->{'output_dir'} . "/ln_cmd.sh {} \;";
+		chmod 0777, $ln_script;
+
+		my $symCmd = "find $output_dir -name ${base}*\.fastq -exec " . $phCmdLineArgs->{'output_dir'} . '/ln_cmd.sh {} \;';
+		print STDERR $symCmd . "\n";
 		$nExitCode = system($symCmd);
 		#fastq-dump returns 0 on success
 		if($nExitCode != 0) {
