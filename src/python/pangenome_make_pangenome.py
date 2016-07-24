@@ -2,7 +2,7 @@
 
 """
 pangenome_make_pangenome.py - Reads a pangenome profile and generates total genes in the pangenome
-By: Shaun Adkins (sadkins@som.umarylane.edu)
+By: Shaun Adkins (sadkins@som.umaryland.edu)
 
 """
 

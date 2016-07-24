@@ -104,7 +104,7 @@ sub new {
  Usage   : my $output_files = $lgtsam2lca->runSam2lca()
  Function: run sam2lca on the input sam/bam list
  Returns : An object with the output files in it
- Args    : 
+ Args    :
 =cut
 
 sub runSam2Lca {
@@ -143,7 +143,7 @@ sub runSam2Lca {
  Usage   : my $output_files = $lgtsam2lca->writeOutput()
  Function: Write the output of the currently compiled LCAs
  Returns : An object with the output files in it.
- Args    : 
+ Args    :
 =cut
 
 sub writeOutput {
@@ -165,7 +165,7 @@ sub writeOutput {
     open my $out, $outf or die "Couldn't open output\n";
     foreach my $key ( keys %{ $self->{reads_by_mate_id} } ) {
         #print STDERR "Mate seen:$key processing with ...";
-		
+
 		# Printing out the independent LCA for each read
         #   print STDERR "\tindependent_lca ...";}
 		if ( !defined( $self->{reads_by_read_id}->{"$key\_1"} ) ) {
@@ -175,8 +175,8 @@ sub writeOutput {
           join( "\t", ( "$key\_1", $self->{reads_by_read_id}->{"$key\_1"} ) );
         print OUT2 "\n";
 
-        if ( !defined( $self->{reads_by_read_id}->{"$key\_1"} ) ) {
-			$self->{reads_by_read_id}->{"$key\_1"} = '';
+        if ( !defined( $self->{reads_by_read_id}->{"$key\_2"} ) ) {
+			$self->{reads_by_read_id}->{"$key\_2"} = '';
 		}
         print OUT2
           join( "\t", ( "$key\_2", $self->{reads_by_read_id}->{"$key\_2"} ) );
@@ -283,17 +283,17 @@ sub process_sam_line {
 
     # Keep track of how many mate pairs had both mates unmapped
 	$unmapped_counts++ if ($flag->{qunmapped} && $flag->{munmapped} && $flag->{first});
-    
+
 	# If both mates fail to map to the reference don't add to hash
 	return if ($flag->{qunmapped} && $flag->{munmapped});
 
 	# Here we determine LCA for each read ID (2 per mate pair) and for each mate ID
-	
+
 	# If the current read is mapped add to read_id hash
     if(!$flag->{qunmapped}) {
 		my $tax = $self->{gi2tax}->getTaxon( $fields[2] );
 		#print STDERR "No lineage found for $fields[2]\n" if (! defined $tax->{lineage});
-	        
+
 		# Here we'll deal with keeping track of things by read
 	    if ( $self->{reads_by_read_id}->{$read_name} ) {
 	        my $lca = &find_lca(
@@ -303,8 +303,8 @@ sub process_sam_line {
 	    } else {
 	        $self->{reads_by_read_id}->{$read_name} = $tax->{lineage};
 	    }
-	
-	    # If we a) aren't checking mates or b) are and both mates map to reference... 
+
+	    # If we a) aren't checking mates or b) are and both mates map to reference...
 	    if (  !$self->{check_mates}
 	        || ($self->{check_mates} && !$flag->{munmapped}) )
 	    {
@@ -344,7 +344,7 @@ sub process_file {
     } else {
         die "Need to pass a valid file or a valid filehandle\n";
     }
-	
+
 	print STDERR "LGT::LGTsam2lca --- now processing BAM file $file\n";
     # Loop till we're done.
     my $end   = $CHUNK_SIZE;
