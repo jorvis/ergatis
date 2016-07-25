@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
+
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 #########################################################################################
 #											#
@@ -219,14 +222,7 @@ sub SortBam {
     }
     $sOut = $phCmdLineArgs->{'output_dir'} . "/" . $sFile;
 
-# Shaun Adkins - Commented out other command because it is Samtools-1.2.  We are using Samtools-0.1
-    $sCmd =
-        $phCmdLineArgs->{'samtools_path'} . " sort"
-      . $sOptions . " -n "
-      . $input_file . " "
-      . $sOut;
-
-#$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." ".$phCmdLineArgs->{'input_file'};
+$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." " . $input_file;
     printLogMsg( $DEBUG,
         "INFO : $sSubName :: Start sorting file $input_file to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd"
     );
