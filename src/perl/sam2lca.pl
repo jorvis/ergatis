@@ -8,7 +8,7 @@ sam2lca.pl - Wrapper script to generate Lowest Common Ancestors from a BAM/SAM f
  USAGE: sam2lca.pl
        --input_file=/path/to/some/input.bam
        --output_file=/path/to/transterm.txt
-	   --tmp_dir=/tmp 
+	   --tmp_dir=/tmp
 	   --tax_id_file=/path/to/tax_ids.txt
 	   --nodes_file=/path/to/nodes.txt
 	   --names_file\/path/to/names.txt
@@ -36,16 +36,14 @@ B<--output_file,-o>
 B<--tmp_dir,-t>
 	Directory to store temporary files
 
-B<--tax_id_file>
-
 B<--nodes_file>
-	Dump file containing information about NCBI Taxonomy ID nodes and their parent/children relationships
+	Dump file containing information about NCBI Taxonomy ID nodes and their parent/children relationships.  If not provided, the Entrez database will be used instead to determine taxonomy lineage
 
 B<--names_file>
-	Dump file containing information about organism names for given NCBI Taxonomy IDs
+	Dump file containing information about organism names for given NCBI Taxonomy IDs. If not provided, the Entrez database will be used instead to determine taxonomy lineage
 
 B<--tax_id_file>
-	Dump file mapping nucleotide GI accessions to NCBI Taxonomy IDs
+	Dump file mapping nucleotide GI accessions to NCBI Taxonomy IDs.  If not provided, then the MongoDB database will have to gradually built with an NCBI ESummary taxon lookup
 
 B<--host>
 	MongoDB host server
@@ -71,7 +69,7 @@ B<--help,-h>
 =head1  DESCRIPTION
 
  DESCRIPTION
- 
+
 =head1  INPUT
 
     Describe the input
@@ -98,6 +96,7 @@ use GiTaxon;
 my $debug = 1;
 my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
+my $no_flatfiles = 0;
 
 my $HOST = 'revan.igs.umaryland.edu:10001';
 my $DB = 'gi2taxon';
@@ -141,6 +140,7 @@ my $gi_tax_obj = GiTaxon->new({
 		'gi_db'			=> $options{db},
 		'gi_coll'		=> $options{collection},
 		'taxonomy_dir'	=> $options{tmp_dir},
+        'no_flatfiles'  => $no_flatfiles,
 		'verbose'		=> 1
 	});
 my $sam2lca_obj = LGT::LGTsam2lca->new({
@@ -173,10 +173,19 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(output_file nodes_file names_file tax_id_file) ) {
+   foreach my $req ( qw(output_file) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    }
 
+   if (!( -e $opts->{'names_file'} && -e $opts->{'nodes_file'} )){
+       &_log($DEBUG, "Both --names_file and --nodes_file were not provided or invalid.  Will use Entrez to determine taxonomy lineage instead.");
+       $no_flatfiles = 1;
+   }
+
+   if (!( $opts->{'tax_id_file'} && -e $opts->{'tax_id_file'} )) {
+       &_log($DEBUG, "The --tax_id_file option was not passed or invalid.  Will build MongoDB database with NCBI ESummary taxon lookup.");
+       $opts->{'tax_id_file'} = '';
+   }
 
    if ($opts->{input_file}) {
 		push @bam_files, $opts->{input_file};

@@ -8,7 +8,7 @@ filter_lgt_best_hit.pl - Wrapper script to find best blast result hit per query 
  USAGE: filter_lgt_best_hit.pl
        --input_file=/path/to/some/blast.m8
        --output_file=/path/to/transterm.txt
-	   --tmp_dir=/tmp 
+	   --tmp_dir=/tmp
 	   --donor_lineage="Wolbachia"
 	   --host_lineage="Drosophila"
 	   --tax_id_file=/path/to/tax_ids.txt
@@ -32,7 +32,7 @@ B<--input_file,-i>
 	A -m8 formatted BLASTN results file
 
 B<--output_dir,-o>
-	Path name to output directory. 
+	Path name to output directory.
 
 B<--tmp_dir,-T>
 	Directory to store temporary files
@@ -50,19 +50,19 @@ B<--filter_lineage,-f>
 	Optional. Lineage to filter out as bad (example would be 'vector', which would filter out anything that has a best hit to vector or where a hit overlaps vector by more than the filter_min_overlap).
 
 B<--filter_min_overlap,-m>
-	Optional.  Minimum overlap length between a trace/read hit and the filter_lineage. More than this and a clone/matepair will be filtered out. Only applicable if filter_lineage is set.  Default is 50 if unset but applicable	
+	Optional.  Minimum overlap length between a trace/read hit and the filter_lineage. More than this and a clone/matepair will be filtered out. Only applicable if filter_lineage is set.  Default is 50 if unset but applicable
 
 B<--tax_id_file>
 	Dump file mapping GI accessions to NCBI taxonomy hits
 
 B<--nodes_file>
-	Dump file containing information about NCBI Taxonomy ID nodes and their parent/children relationships
+	Dump file containing information about NCBI Taxonomy ID nodes and their parent/children relationships.  If not provided, the Entrez database will be used instead to determine taxonomy lineage
 
 B<--names_file>
-	Dump file containing information about organism names for given NCBI Taxonomy IDs
+	Dump file containing information about organism names for given NCBI Taxonomy IDs. If not provided, the Entrez database will be used instead to determine taxonomy lineage
 
 B<--tax_id_file>
-	Dump file mapping nucleotide GI accessions to NCBI Taxonomy IDs
+	Dump file mapping nucleotide GI accessions to NCBI Taxonomy IDs. If not provided, then the MongoDB database will have to gradually built with an NCBI ESummary taxon lookup
 
 B<--host>
 	Optional. MongoDB host server
@@ -85,7 +85,7 @@ B<--help>
 =head1  DESCRIPTION
 
  DESCRIPTION
- 
+
 =head1  INPUT
 
     BlastN results that have been formatted into the m8 format
@@ -116,6 +116,7 @@ use GiTaxon;
 my $debug = 1;
 my ($ERROR, $WARN, $DEBUG) = (1,2,3);
 my $logfh;
+my $no_flatfiles = 0;
 
 my $HOST = 'revan.igs.umaryland.edu:10001';
 my $DB = 'gi2taxon';
@@ -160,6 +161,7 @@ my $gi_tax_obj = GiTaxon->new({
 		'gi_db'			=> $options{db},
 		'gi_coll'		=> $options{collection},
 		'taxonomy_dir'	=> $options{tmp_dir},
+        'no_flatfiles'  => $no_flatfiles,
 		'verbose'		=> 1
 	});
 
@@ -188,8 +190,18 @@ sub check_options {
 
    $debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   foreach my $req ( qw(input_file output_dir nodes_file names_file tax_id_file ) ) {
+   foreach my $req ( qw(input_file output_dir) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
+   }
+
+   if (!( -e $opts->{'names_file'} && -e $opts->{'nodes_file'})){
+       &_log($DEBUG, "Both --names_file and --nodes_file were not provided or invalid.  Will use Entrez to determine taxonomy lineage instead.");
+       $no_flatfiles = 1;
+   }
+
+   if (!( -e $opts->{'tax_id_file'})) {
+       &_log($DEBUG, "The --tax_id_file option was not passed or invalid.  Will build MongoDB database with NCBI ESummary taxon lookup.");
+       $opts->{'tax_id_file'} = '';
    }
 }
 
