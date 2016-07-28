@@ -13,19 +13,19 @@ B<--input_list, -i>
 
 B<--output_dir, -o>
     Name of the output directory
-    
+
 B<--database, -d>
     Use a specified database instead of an input list
-    
+
 B<--host, -h>
     Host of the database if you are checking that
-    
+
 B<--user, -u>
     Username for the database
-    
+
 B<--pass, -p>
     Password for your username
-    
+
 B<--log,-l>
     Logfile.
 
@@ -36,10 +36,10 @@ B<--help>
 
     For checking BSML lists:
     error_detector.pl -i path/to/files.bmsl.list -o path/to/output/dir
-    
+
     For checking databases:
     prokpipe_consistency_checks.pl -d database -h host -u username -p password -o path/to/output/dir
-    
+
 =head1 CONTACT
     Shaun Adkins
     sadkins@som.umaryland.edu
@@ -120,7 +120,7 @@ sub run_checks($) {
     my $warn_flag = 0;	#currently have not decided what to do with this... may have separate one for warn and error
     my $error_flag = 0;	# Plan on killing component after running tests, to get all errors present
     my $length_flag = 0; # Flag is raised if the assembly length is less than the cutoff (1000 bp)
-    
+
 # Check for proper feature-type count in each file
 # If a file contains none of a particular type, the module will return an error
     foreach my $file (@{$paths}){
@@ -143,7 +143,7 @@ sub run_checks($) {
 
         $state = $type->count_exons($file);
         $logger->logdie("ERROR, No exons present in $file")if ($state == $ERROR);
-	
+
 	$type->count_tRNA($file);
 	$warn_flag = 1 if ($type->divide_by_3($file));
 #	$warn_flag = 1 if ($type->bad_gene_symbols($file));
@@ -157,12 +157,12 @@ sub run_checks($) {
 	print VF $type->return_counts();
 	$type->_reset();
     }
-    
+
     # Add more checks for the perl module to check as time passes
-    
+
     print "Looks like everything is A-ok for loading!\n";
 
-    print VF "The file $options{'input_list'} has no errors and is die for Chado loading\n";
+    print VF "The file $options{'input_list'} has no errors and is good for Chado loading\n";
     #This is more of a test output since every component has to have an output.
     #Once we know what checks we want to run, then the output will be adjusted accordingly
 }
@@ -172,7 +172,7 @@ sub run_checks_db() {
     print "TO BE IMPLEMENTED LATER\n";
 
     my $die = 0;
-    
+
     $die = $type->no_GO_evidence;
     $logger->logdie("ERROR, GO Role Links found with no evidence") if ($die == $ERROR);
     $die = $type->no_GS_EC;
@@ -208,7 +208,7 @@ sub check_parameters($) {
         	foreach my $bsml (@paths) {
         	    chomp($bsml);
                 next if ($bsml =~ /^\s*$/);	#ignore whitespace
-    	    next if ($bsml =~ /^#/);	#ignore 
+    	    next if ($bsml =~ /^#/);	#ignore
                 if ($bsml =~ /\//g) {           #Make sure the list contains paths to files
                 } else {
                     $logger->logdie("The $options{'input_list'} file is not a list file. Incorrect input");
