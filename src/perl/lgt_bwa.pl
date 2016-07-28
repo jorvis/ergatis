@@ -230,7 +230,11 @@ sub is_bam_truncated {
     print_log_msg($DEBUG, "INFO : $sub_name :: Checking to see if BAM file is truncated\nINFO : $sub_name :: Command : $cmd");
     $exit_code = system($cmd);
     if ( $exit_code != 0 ) {
-        $cmd = $cmd_line_args->{'samtools_path'} . " view " . $cmd_line_args->{'output_dir'} . "/" . $out;
+		my $args = '';
+		if ($cmd_line_args->{'nThrds'}){
+			$args .= "-@ " . ($cmd_line_args->{'nThrds'} -1) . " ";
+		}
+        $cmd = $cmd_line_args->{'samtools_path'} . " view " . $args . $cmd_line_args->{'output_dir'} . "/" . $out;
         print_log_msg($DEBUG, "INFO : $sub_name :: This version of Samtools does not have 'quickcheck' command.  Using alternate command\nINFO : $sub_name :: Command : $cmd");
         $exit_code = system($cmd);
         if ( $exit_code != 0 ) {

@@ -85,14 +85,14 @@ foreach my $asmbl_id ( keys %genes ) {
 
 # Now add RNAs to the intervalTree
 
-foreach my $rna ( @rnas ) {
-    my ($id, $start, $stop, $seq_id) = @{$rna};
-    $iTrees{$seq_id} = new IntervalTree if( !defined( $iTrees{$seq_id} ) );
-    $iTrees{$seq_id}->addInterval( $id, $start, $stop );
-}
+#foreach my $rna ( @rnas ) {
+#    my ($id, $start, $stop, $seq_id) = @{$rna};
+#    $iTrees{$seq_id} = new IntervalTree if( !defined( $iTrees{$seq_id} ) );
+#    $iTrees{$seq_id}->addInterval( $id, $start, $stop );
+#}
 
-print "Building Trees with RNA added\n";
-map { $iTrees{$_}->buildTree } keys %iTrees;
+#print "Building Trees with RNA added\n";
+#map { $iTrees{$_}->buildTree } keys %iTrees;
 
 #searching for RNA overlaps
 foreach my $rna ( @rnas ) {
