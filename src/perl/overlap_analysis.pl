@@ -32,7 +32,7 @@ my %genes = &get_genes( \@input_files );
 #get the relationships between feature types
 my $feature_rel_lookup = new BSML::FeatureRelationshipLookup( 'bsml' => \@input_files );
 
-#parse all the rnas 
+#parse all the rnas
 my @rnas;
 print "Parsing RNA files\n";
 foreach my $rna_file ( @rna_bsml ) {
@@ -80,6 +80,15 @@ foreach my $asmbl_id ( keys %genes ) {
                       "meet the maximum cutoff (cutoff: $cutoff)");
             }
         }
+    }
+}
+
+# Now add RNAs to the intervalTree
+
+foreach my $rna ( @rnas ) {
+    my ($id, $start, $stop, $seq_id) = @{$rna};
+        $iTrees{$seq_id} = new IntervalTree if( !defined( $iTrees{$seq_id} ) );
+        $iTrees{$seq_id}->addInterval( $id, $start, $stop );
     }
 }
 
@@ -142,7 +151,7 @@ my $twig = new XML::Twig( 'twig_roots' => {
         $att->set_atts( {'name' => 'algorithm',
                          'content' => 'overlap_analysis' } );
         $att->paste('first_child', $_[1] );
-                        
+
         $_[0]->flush;
     }
 },
@@ -152,10 +161,10 @@ my $twig = new XML::Twig( 'twig_roots' => {
 foreach my $input_file ( @input_files ) {
     my $in = open_file( $input_file, 'in' );
     my $basename;
-    
+
     ## Legacy naming style. Remove other application names from output file to prevent propagation.
     $basename = $1 if( $input_file =~ m|/([^/]+)\.glimmer3\.promote_gene_prediction\.bsml| );
-    
+
     ## Will use the id of the first $sequence_class sequence it finds as the filename
     $basename = &get_id_from_bsml( $input_file ) unless( defined( $basename ) );
 
@@ -188,7 +197,7 @@ sub get_id_from_bsml {
 
 sub handle_gene_overlap {
     my ($gene1, $gene2) = @_;
-    
+
     #does gene1 have evidence?
     my $ev1 = 0;
     my $ev2 = 0;
@@ -216,10 +225,10 @@ sub handle_gene_overlap {
 
 sub handle_rna_overlap {
     my ($rna, $gene) = @_;
-    
+
     #does the gene have evidence?
     my $gene_id = $gene->[2];
-    
+
     if( exists( $evidence{$gene_id} ) ) {
         &flag_overlap( $gene_id, 'gene', $gene->[0], $gene->[1], $rna->[0],
                        'rna', $rna->[1], $rna->[2] );
@@ -228,7 +237,7 @@ sub handle_rna_overlap {
         &_log("Marking $gene_id for deletion because it overlaps an RNA prediction and has no evidence ".
               "(RNA gene: $rna->[0]) ( $gene->[0] - $gene->[1] and $rna->[1] - $rna->[2] )");
     }
-    
+
 }
 
 sub mark_for_delete {
@@ -245,7 +254,7 @@ sub flag_overlap {
 sub parse_evidence_files {
     my ($files) = @_;
     my %retval;
-    
+
     foreach my $file (@{$files}) {
         my $in = open_file( $file, "in" );
 
@@ -268,7 +277,7 @@ sub parse_evidence_files {
 sub get_rnas {
     my ($file) = @_;
     my @retval;
-    
+
     my $twig = new XML::Twig( 'twig_roots' => {
         'Sequence[@class="'.$sequence_class.'"]' => sub {
             my $seq_id = $_[1]->att('id');
@@ -294,7 +303,7 @@ sub get_genes {
 
     foreach my $file ( @{$files} ) {
         my $in = open_file( $file, 'in' );
-        
+
         my $asmbl_id;
         my $feat_id;
         while( my $line = <$in> ) {
@@ -386,9 +395,9 @@ sub _log {
 }
 
 sub _pod {
-    pod2usage( { 
-        -exitval => 0, 
-        -verbose => 2, 
+    pod2usage( {
+        -exitval => 0,
+        -verbose => 2,
         -output => \*STDERR} );
 }
 =head1 NAME
@@ -427,7 +436,7 @@ B<--rna_bsml,-r>
 B<--evidence_bsml,-e>
     Bsml that holds alignment evidence (Blast/Ber and HMM)
 
-    Takes a comma separated list of bsml files or bsml lists. Will determine the 
+    Takes a comma separated list of bsml files or bsml lists. Will determine the
     format of the file based on the extension (.bsml or .list). Can be gzipped
     and therefore contain .gz extension.
 
@@ -458,7 +467,7 @@ B<--help,-h>
  2. If a gene overlaps an RNA (with any overlap)
    a. Remove gene if it has no evidence
    b. Print to flagged_overlaps_file if gene has evidence
- 
+
 =head1  INPUT
 
   --input_file:
@@ -472,7 +481,7 @@ B<--help,-h>
 
   --evidence_bsml:
      Bsml files describing sequence alignments from blast, ber, and hmm components
-       
+
 
 =head1 OUTPUT
 
@@ -482,7 +491,7 @@ B<--help,-h>
   The flagged_overlaps_file will contain information about unresolved overlaps in the
   following format:
 
-    feature_id1  type1  left1  right1  feature_id2  type2  left2  right2  
+    feature_id1  type1  left1  right1  feature_id2  type2  left2  right2
 
   Where type is either gene or RNA
 
