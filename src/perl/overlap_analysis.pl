@@ -50,7 +50,7 @@ foreach my $asmbl_id ( keys %genes ) {
     foreach my $gene_id ( keys %{$genes{$asmbl_id}} ) {
         my $seq_id = $genes{$asmbl_id}->{$gene_id}->{'parent_seq'};
         $iTrees{$seq_id} = new IntervalTree if( !defined( $iTrees{$seq_id} ) );
-        $iTrees{$seq_id}->addInterval( $gene_id, $genes{$gene_id}->{'left'}, $genes{$gene_id}->{'right'} );
+        $iTrees{$seq_id}->addInterval( $gene_id, $genes{$asmbl_id}->{$gene_id}->{'left'}, $genes{$asmbl_id}->{$gene_id}->{'right'} );
     }
 }
 
@@ -62,11 +62,11 @@ foreach my $asmbl_id ( keys %genes ) {
     foreach my $gene_id ( keys %{$genes{$asmbl_id}} ) {
         my $gene = $genes{$asmbl_id}->{$gene_id};
         my $seq = $gene->{'parent_seq'};
-        my @overlaps = $iTrees{$seq}->searchInterval( $gene->{'start'},
-                                                      $gene->{'stop'} );
-
+        my @overlaps = $iTrees{$seq}->searchInterval( $gene->{'left'},
+                                                      $gene->{'right'} );
         foreach my $ol ( @overlaps ) {
-
+            # Gene will always overlap with itself.  Just ignore.
+            next if $gene_id eq $ol->[2];
             #determine the amount of overlap
             my @ordered = sort ( $gene->{'left'}, $gene->{'right'}, $ol->[0], $ol->[1] );
             my $ol_amount = (( $gene->{'right'} - $gene->{'left'} ) + ( $ol->[1] - $ol->[0] )) -
@@ -77,29 +77,17 @@ foreach my $asmbl_id ( keys %genes ) {
                 &handle_gene_overlap( $ol, [ $gene->{'left'}, $gene->{'right'}, $gene_id ] );
             } else {
                 &_log("Overlap (size: $ol_amount) found between $gene_id and $ol->[2]. Skipping because it does not".
-                      "meet the maximum cutoff (cutoff: $cutoff)");
+                      " meet the maximum cutoff (cutoff: $cutoff)");
             }
         }
     }
 }
-
-# Now add RNAs to the intervalTree
-
-#foreach my $rna ( @rnas ) {
-#    my ($id, $start, $stop, $seq_id) = @{$rna};
-#    $iTrees{$seq_id} = new IntervalTree if( !defined( $iTrees{$seq_id} ) );
-#    $iTrees{$seq_id}->addInterval( $id, $start, $stop );
-#}
-
-#print "Building Trees with RNA added\n";
-#map { $iTrees{$_}->buildTree } keys %iTrees;
 
 #searching for RNA overlaps
 foreach my $rna ( @rnas ) {
     my ($id, $start, $stop, $seq) = @{$rna};
     next if( !exists( $iTrees{$seq} ) );
     my @overlaps = $iTrees{$seq}->searchInterval( $start, $stop );
-
     foreach my $ol ( @overlaps ) {
         &handle_rna_overlap( $rna, $ol );
     }

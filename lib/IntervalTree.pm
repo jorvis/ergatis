@@ -29,13 +29,14 @@ kgalens@tigr.org
 
 
 use strict;
+use warnings;
 use MLDBM 'DB_File';
 use Data::Dumper;
 
 sub new {
     my $class = shift;
 
-    my $self = { 
+    my $self = {
         'max' => 0,
         'min' => undef
              };
@@ -58,17 +59,17 @@ B<Returns:> Nothing
 
 sub addInterval {
     my ($self, $id, $start, $stop) = @_;
-    push(@{$self->{'intervals'}}, [$start,$stop,$id]);
+    push (@{$self->{'intervals'}}, [$start,$stop,$id]);
 
     my ($min, $max) = ($self->{'min'}, $self->{'max'});
-        
+
     if($stop > $max) {
         $self->{'max'} = $stop;
     }
     if(!defined($min) || $start < $min) {
         $self->{'min'} = $start;
     }
-  
+
 }
 
 =item $intervalTree->buildTree();
@@ -82,7 +83,7 @@ B<Returns:> 1 on success
 =cut
 sub buildTree {
     my $self = shift;
-    $self->{'root'} = 
+    $self->{'root'} =
         &_separateIntervals( $self->{'intervals'}, ($self->{'max'} - $self->{'min'})/2 + $self->{'min'});
 
     return 1;
@@ -110,9 +111,9 @@ sub treeToFile {
 #Recursive private function.
 #Takes a set of intervals and center point and returns a node of the tree
 #(which is actually a tree itself).
-sub _separateIntervals {    
+sub _separateIntervals {
     my ($intervals, $center) = @_;
-    
+
     #Maximum of those on the right, and those on the left of this center.
     my ($l_max, $l_min, $r_max, $r_min) = (0, undef, 0, undef);
 
@@ -120,7 +121,7 @@ sub _separateIntervals {
     my $node = {
         's_left'   => {},     #Node of intervals which are completely less than center
         's_right'  => {},     #Node of intervals which are completely higher than center
-        's_center' => [],     #Intervals that overlap the center. 
+        's_center' => [],     #Intervals that overlap the center.
         'point'    => $center #The center.
         };
 
@@ -137,17 +138,17 @@ sub _separateIntervals {
 
         #Left and right
         my ($left, $right) = @{$interval};
-        
+
         #If the right most point is less than the center (totally to the left (less than)).
         if($right < $center) {
 
             #Push it on the left list
-            push(@{$leftList}, $interval); 
+            push(@{$leftList}, $interval);
 
             #Check for new maximums or new minimums
             if($right > $l_max) {
                 $l_max = $right;
-            } 
+            }
             if( !defined($l_min) || $left < $l_min) {
                 $l_min = $left;
             }
@@ -161,7 +162,7 @@ sub _separateIntervals {
             #Check for new max/min
             if($right > $r_max) {
                 $r_max = $right;
-            } 
+            }
             if( !defined($r_min) || $left < $r_min ) {
                 $r_min = $left;
             }
@@ -176,7 +177,7 @@ sub _separateIntervals {
     my @sLeftTmp = sort { $a->[0] <=> $b->[0] } @{$node->{'s_center'}};
     $node->{'sort_left'} = \@sLeftTmp;
     my @sRightTmp= sort { $b->[1] <=> $a->[1] } @{$node->{'s_center'}};
-    $node->{'sort_right'}= \@sRightTmp;
+    $node->{'sort_right'} = \@sRightTmp;
 
 
     #These are the recurcsive calls
@@ -194,7 +195,7 @@ sub _separateIntervals {
     }
 
     #Return the node (which is actually a tree).
-    
+
 
     unless(defined($node->{'s_center'})) {
         print Dumper($node);
@@ -224,15 +225,13 @@ sub searchInterval {
     #Start the recursion.
     die("Self root is undef") unless($self->{'root'});
     push(@retval, &_searchNode($self->{'root'}, $s_left, $s_right));
-    
-    return(@retval);
-
+    return @retval;
 }
 
 sub _searchNode {
     my ($node, $s_left, $s_right) = @_;
     my @retval;
-   
+
     #If we overlap the center, we need to check both sides for overlaps.
     #Otherwise we only have to check one side.
     if($s_left < $node->{'point'} && $node->{'point'} < $s_right) {
@@ -243,7 +242,7 @@ sub _searchNode {
             if( scalar( keys %{$node->{'s_right'}} ) );
     } elsif($s_right < $node->{'point'} ) {
 
-        #Add all the intervals with the left most point less than passed in
+        #Add all the intervals with the left-most point less than passed in
         my $counter = -1;
         foreach my $num ( @{$node->{'sort_left'}} ) {
             last if($num->[0] > $s_right);
@@ -253,9 +252,9 @@ sub _searchNode {
 
         #Search now, to the left.
         push(@retval, &_searchNode($node->{'s_left'}, $s_left, $s_right)) if(scalar(keys %{$node->{'s_left'}}));
-    } elsif($s_left => $node->{'point'} ) {
+    } elsif($s_left >= $node->{'point'} ) {
 
-        #Add all the intervals with the left most point less than passed in
+        #Add all the intervals with the right-most point less than passed in
         my $counter = -1;
         foreach my $num ( @{$node->{'sort_right'}} ) {
             last if($num->[1] <= $s_left);
@@ -266,9 +265,9 @@ sub _searchNode {
         #Search now, to the right.
         push(@retval, &_searchNode($node->{'s_right'}, $s_left, $s_right)) if(scalar(keys %{$node->{'s_right'}}));
     }
-        
+
     return @retval;
-    
+
 }
 
 
