@@ -13,7 +13,7 @@ USAGE: pangenome_make_table.pl
 
 =head1 OPTIONS
 
-B<--input_list,-i>
+B<--blast_stored_file,-b>
     List of files containing serialized array of BLAST data.
 
 B<--output_path,-o>
@@ -27,6 +27,9 @@ B<--multiplicity,-m>
 
 B<--comparisons,-c>
     The number of comparisons to sample.
+
+B<--num_threads,-t>
+    Optional.  Enable multithreading, using the specified number of threads.
 
 B<--log,-d>
     optional. Will create a log file with summaries of all actions performed.
@@ -73,6 +76,12 @@ use strict;
 
 my $dups    = {};
 my %options = ();
+
+### Sampling analysis hashes
+my $comp_counter = {};
+my $dup_counts = {};
+my $genes_by_category = {};
+
 my $results = GetOptions(
     \%options,
 
@@ -84,6 +93,7 @@ my $results = GetOptions(
     'write_lists:i',
     'multiplicity|m:s',
     'comparisons|c:s',
+    'num_threads|t:s',
     'debug|d=s',
     'log|l=s',
     'help|h',
@@ -189,198 +199,25 @@ print STDERR "done.\n";
 if ( $options{'comparisons'} || $options{'multiplicity'} ) {
     &do_analysis_with_sampling();
 } else {
-
     # Will take a lot longer to finish due to doing all possible combinations
     &do_analysis_no_sampling();
 }
 
 exit(0);
 
-sub do_analysis_no_sampling {
-    my $comp_counter = {};
-    my $max          = scalar @genomes;
-
-    # Get combinations of reference genomes of size $i
-    for ( my $i = 1; $i < $max; $i++ ) {
-        my $combinat = Math::Combinatorics->new(
-            count => $i,
-            data  => [@genomes],
-        );
-
-        my $cnt = 1;
-
-        # For each combination of reference genomes...
-        while ( my @reference = $combinat->next_combination ) {
-            my $ref_string = "(" . join( ",", @reference ) . ")\n";
-
-            # Grab the genomes not in our reference set.
-            my @comparison_set = @{ array_diff( \@genomes, \@reference ) };
-
-            # Each comparison genome will be compared to the reference genomes
-            foreach my $comp_genome (@comparison_set) {
-                my $dup_counts = {};
-                $comp_counter->{$comp_genome}->{$i}++;
-                my $genes_by_category = {};
-
-                # Process each gene from the comparison genome
-              GENE: foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
-                    my $count = 0;
-
-         # Keep track of how many ref genomes had a hit for this particular gene
-                    foreach my $ref_genome (@reference) {
-                        ## if the hash value == 1
-                        if ( $genes->{$comp_genome}->{$gene}->{$ref_genome} ) {
-                            $count++;
-                            ## we have a hit
-                            $genes_by_category->{$comp_genome}->{'shared'}
-                              ->{$gene} = 1;
-                        }
-                    }
-                    ## if the number of genomes we have hits against is equal to the total
-                    if ( $count == scalar @reference ) {
-                        ## then this is a core gene
-                        $genes_by_category->{$comp_genome}->{'core'}->{$gene} =
-                          1;
-                    }
-                    ## if we didn't have any hits at all
-                    if ( $count == 0 ) {
-                        ## then this is a new (strain specific) gene
-                        $genes_by_category->{$comp_genome}->{'new'}->{$gene} =
-                          1;
-                    }
-                }
-
-           # This equals the number of references plus our one comparison genome
-                my $rgcount = ( scalar @reference ) + 1;
-
-                ## process lists to see how many duplicated genes are in each category
-                foreach my $cat ( ( 'core', 'shared', 'new' ) ) {
-                    $dup_counts->{$comp_genome}->{$cat} = 0;
-                    ## we'll look at each set of duplicates one at a time
-                    foreach my $dup_set ( keys( %{ $dups->{$comp_genome} } ) ) {
-                        my @dup_genes   = split( " ", $dup_set );
-                        my $dup_count   = scalar(@dup_genes);
-                        my $dup_counter = 0;
-                        ## for each gene of a duplicate set
-                        foreach my $dup (@dup_genes) {
-                            ## check if it's in the category
-                            if ( $genes_by_category->{$comp_genome}->{$cat}
-                                ->{$dup} )
-                            {
-                                $dup_counter++;
-                            }
-                        }
-                        ## check if all of the dups of a set weren't found in the same category
-                        if ( $dup_counter > 0 && $dup_count != $dup_counter ) {
-                            print STDERR
-                              "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem: Comp_genome $comp_genome\n";
-                            ## and if they are, then add the dup overcount to the total
-                        } elsif ( $dup_counter == $dup_count ) {
-                            $dup_counts->{$comp_genome}->{$cat} += $dup_count;
-                        }
-                    }
-                }
-
-                my $core_count =
-                  scalar(
-                    keys( %{ $genes_by_category->{$comp_genome}->{'core'} } ) );
-                my $shared_count =
-                  scalar(
-                    keys( %{ $genes_by_category->{$comp_genome}->{'shared'} } )
-                  );
-                my $new_count =
-                  scalar(
-                    keys( %{ $genes_by_category->{$comp_genome}->{'new'} } ) );
-                my $core_dup_count   = $dup_counts->{$comp_genome}->{'core'};
-                my $shared_dup_count = $dup_counts->{$comp_genome}->{'shared'};
-                my $new_dup_count    = $dup_counts->{$comp_genome}->{'new'};
-
-#print RESULT "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t$cnt\t$comp_genome\n";
-                print RESULT
-                  "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t"
-                  . $genome_index{$comp_genome}
-                  . "\t$comp_genome\n";
-
-                if ( $options{'write_lists'} ) {
-
-                    open( OUT,
-                            ">"
-                          . $output_path . "/"
-                          . $comp_genome
-                          . "_core_"
-                          . $rgcount . "_"
-                          . $comp_counter->{$comp_genome}->{$i} );
-                    print OUT "#" . $comp_genome . "\n";
-                    print OUT "#" . join( " ", @reference ) . "\n";
-                    foreach my $g (
-                        keys(
-                            %{ $genes_by_category->{$comp_genome}->{'core'} }
-                        )
-                      )
-                    {
-                        print OUT $g . "\n";
-                    }
-                    close OUT;
-                    open( OUT,
-                            ">"
-                          . $output_path . "/"
-                          . $comp_genome
-                          . "_shared_"
-                          . $rgcount . "_"
-                          . $comp_counter->{$comp_genome}->{$i} );
-                    print OUT "#" . $comp_genome . "\n";
-                    print OUT "#" . join( " ", @reference ) . "\n";
-                    foreach my $g (
-                        keys(
-                            %{
-                                $genes_by_category->{$comp_genome}->{'shared'}
-                            }
-                        )
-                      )
-                    {
-                        print OUT $g . "\n";
-                    }
-                    close OUT;
-                    open( OUT,
-                            ">"
-                          . $output_path . "/"
-                          . $comp_genome . "_new_"
-                          . $rgcount . "_"
-                          . $comp_counter->{$comp_genome}->{$i} );
-                    print OUT "#" . $comp_genome . "\n";
-                    print OUT "#" . join( " ", @reference ) . "\n";
-                    foreach my $g (
-                        keys(
-                            %{ $genes_by_category->{$comp_genome}->{'new'} }
-                        )
-                      )
-                    {
-                        print OUT $g . "\n";
-                    }
-                    close OUT;
-                }
-                $cnt++;
-            }
-
-        }
-    }
-}
-
 sub do_analysis_with_sampling {
     if ( $options{'comparisons'} ) {
         my ( $est_multiplicity, $t, $t2 ) =
           estimate_multiplicity( scalar(@genomes), $options{'comparisons'} );
-        print STDERR
-          "# of comparisons: $options{comparisons}\nest. multiplicity: $est_multiplicity\n";
+        print STDERR "# of comparisons: $options{comparisons}\nest. multiplicity: $est_multiplicity\n";
         $options{'multiplicity'} = $est_multiplicity;
     } else {
         my ( $est_comparisons, $t ) =
           estimate_comparisons( scalar(@genomes), $options{'multiplicity'} );
-        print STDERR
-          "multiplicity: $options{multiplicity}\nest. # comparisons: $est_comparisons\n";
+        print STDERR "multiplicity: $options{multiplicity}\nest. # comparisons: $est_comparisons\n";
     }
 
-    my $comp_counter = {};
+    $comp_counter = {};
 
     my $max = scalar @genomes;
 
@@ -409,7 +246,6 @@ sub do_analysis_with_sampling {
 
         # Iterate through each available genome
         for ( my $j = 0; $j < $max; $j++ ) {
-
             #Get comparison genome name and index number
             my $comp_genome = $genomes[$j];
 
@@ -436,192 +272,37 @@ sub do_analysis_with_sampling {
                 }
 
                 unless ( defined $seen{$j}{"@seen_vec"} ) {
-
-                    my $dup_counts = {};
-
-# Counter to track number of iterations of comparison genome in use per size-$i ref genomes
+                    $dup_counts = {};
+                    # Counter to track number of iterations of comparison genome in use per size-$i ref genomes
                     $comp_counter->{$comp_genome}->{$i}++;
-                    my $genes_by_category = {};
+                    $genes_by_category = {};
 
                     # Iterate through our query prot value
-                  GENE:
+                    GENE:
                     foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
                         my $count = 0;
 
                         # Iterate through our N reference genome indexes
                         foreach my $i_ref_genome (@reference_set) {
-
                             # grabbing the subject db name
                             my $ref_genome = $genomes[$i_ref_genome];
-                            ## if the hash value == 1
-                            if (
-                                $genes->{$comp_genome}->{$gene}->{$ref_genome} )
-                            {
-                                $count++;
-                                ## we have a hit
-                                $genes_by_category->{$comp_genome}->{'shared'}
-                                  ->{$gene} = 1;
-                            }
+                            my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
+                            $count = categorize_shared_gene($hit, $comp_genome, $gene, $count);
                         }
-                        ## if the number of genomes we have hits against is equal to the total
-                        if ( $count == scalar @reference_set ) {
-                            ## then this is a core gene
-                            $genes_by_category->{$comp_genome}->{'core'}
-                              ->{$gene} = 1;
-                        }
-                        ## if we didn't have any hits at all
-                        if ( $count == 0 ) {
-                            ## then this is a new (strain specific) gene
-                            $genes_by_category->{$comp_genome}->{'new'}->{$gene}
-                              = 1;
-                        }
-                    }
+                        categorize_core_gene($comp_genome, $gene) if $count == scalar @reference_set;
+                        categorize_new_gene($comp_genome, $gene) if $count == 0;
+                      } #/GENE
 
-           # This equals the number of references plus our one comparison genome
-                    my $rgcount = ( scalar @reference_set ) + 1;
-
-                    ## process lists to see how many duplicated genes are in each category
-                    foreach my $cat ( ( 'core', 'shared', 'new' ) ) {
-                        $dup_counts->{$comp_genome}->{$cat} = 0;
-                        ## we'll look at each set of duplicates one at a time
-                        foreach
-                          my $dup_set ( keys( %{ $dups->{$comp_genome} } ) )
-                        {
-                            my @dup_genes   = split( " ", $dup_set );
-                            my $dup_count   = scalar(@dup_genes);
-                            my $dup_counter = 0;
-                            ## for each gene of a duplicate set
-                            foreach my $dup (@dup_genes) {
-                                ## check if it's in the category
-                                if ( $genes_by_category->{$comp_genome}->{$cat}
-                                    ->{$dup} )
-                                {
-                                    $dup_counter++;
-                                }
-                            }
-                            ## check if all of the dups of a set weren't found in the same category
-                            if (   $dup_counter > 0
-                                && $dup_count != $dup_counter )
-                            {
-                                print STDERR
-                                  "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem: Comp_genome $comp_genome\n";
-                                ## and if they are, then add the dup overcount to the total
-                            } elsif ( $dup_counter == $dup_count ) {
-                                $dup_counts->{$comp_genome}->{$cat} +=
-                                  $dup_count;
-                            }
-                        }
-                    }
-
-                    my $core_count = scalar(
-                        keys(
-                            %{ $genes_by_category->{$comp_genome}->{'core'} }
-                        )
-                    );
-                    my $shared_count = scalar(
-                        keys(
-                            %{
-                                $genes_by_category->{$comp_genome}->{'shared'}
-                            }
-                        )
-                    );
-                    my $new_count = scalar(
-                        keys(
-                            %{ $genes_by_category->{$comp_genome}->{'new'} }
-                        )
-                    );
-                    my $core_dup_count = $dup_counts->{$comp_genome}->{'core'};
-                    my $shared_dup_count =
-                      $dup_counts->{$comp_genome}->{'shared'};
-                    my $new_dup_count = $dup_counts->{$comp_genome}->{'new'};
-
-                    print RESULT
-                      "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t"
-                      . $genome_index{$comp_genome}
-                      . "\t$comp_genome\n";
-
-                    if ( $options{'write_lists'} ) {
-
-                        open( OUT,
-                                ">"
-                              . $output_path . "/"
-                              . $comp_genome
-                              . "_core_"
-                              . $rgcount . "_"
-                              . $comp_counter->{$comp_genome}->{$i}
-                              . ".ids.txt" );
-                        print OUT "#" . $comp_genome . "\n";
-                        print OUT "#"
-                          . join( " ", subset( \@genomes, \@reference_set ) )
-                          . "\n";
-                        foreach my $g (
-                            keys(
-                                %{
-                                    $genes_by_category->{$comp_genome}->{'core'}
-                                }
-                            )
-                          )
-                        {
-                            print OUT $g . "\n";
-                        }
-                        close OUT;
-                        open( OUT,
-                                ">"
-                              . $output_path . "/"
-                              . $comp_genome
-                              . "_shared_"
-                              . $rgcount . "_"
-                              . $comp_counter->{$comp_genome}->{$i}
-                              . ".ids.txt" );
-                        print OUT "#" . $comp_genome . "\n";
-                        print OUT "#"
-                          . join( " ", subset( \@genomes, \@reference_set ) )
-                          . "\n";
-                        foreach my $g (
-                            keys(
-                                %{
-                                    $genes_by_category->{$comp_genome}
-                                      ->{'shared'}
-                                }
-                            )
-                          )
-                        {
-                            print OUT $g . "\n";
-                        }
-                        close OUT;
-                        open( OUT,
-                                ">"
-                              . $output_path . "/"
-                              . $comp_genome . "_new_"
-                              . $rgcount . "_"
-                              . $comp_counter->{$comp_genome}->{$i}
-                              . ".ids.txt" );
-                        print OUT "#" . $comp_genome . "\n";
-                        print OUT "#"
-                          . join( " ", subset( \@genomes, \@reference_set ) )
-                          . "\n";
-                        foreach my $g (
-                            keys(
-                                %{
-                                    $genes_by_category->{$comp_genome}->{'new'}
-                                }
-                            )
-                          )
-                        {
-                            print OUT $g . "\n";
-                        }
-                        close OUT;
-                    }
+                      count_dups($comp_genome);
+                      write_results($comp_genome, \@reference_set);
 
                     ## new
                     $seen{$j}{"@seen_vec"} = 1;
                     $point_count++;
 
-                }    ##end of foreach i_comp_genome
-
-            } ## end of unless
+                } ## end of unless
+            } ## end of for 'point_count'
         }
-
         # end timer
         my $end = new Benchmark;
 
@@ -629,6 +310,53 @@ sub do_analysis_with_sampling {
         my $diff = timediff( $end, $start );
 
         print "runtime: " . timestr( $diff, 'noc' ) . "\n";
+    }
+}
+
+sub do_analysis_no_sampling {
+    $comp_counter = {};
+    my $max          = scalar @genomes;
+
+    # Get combinations of reference genomes of size $i
+    for ( my $i = 1; $i < $max; $i++ ) {
+        my $combinat = Math::Combinatorics->new(
+            count => $i,
+            data  => [@genomes],
+        );
+
+        # For each combination of reference genomes...
+        while ( my @reference = $combinat->next_combination ) {
+            my $ref_string = "(" . join( ",", @reference ) . ")\n";
+
+            # Grab the genomes not in our reference set.
+            my @comparison_set = @{ array_diff( \@genomes, \@reference ) };
+
+            # Each comparison genome will be compared to the reference genomes
+            foreach my $comp_genome (@comparison_set) {
+                $dup_counts = {};
+                $comp_counter->{$comp_genome}->{$i}++;
+                $genes_by_category = {};
+
+                # Process each gene from the comparison genome
+                GENE:
+                foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
+                    my $count = 0;
+
+                # Keep track of how many ref genomes had a hit for this particular gene
+                    foreach my $ref_genome (@reference) {
+                        my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
+                        $count = categorize_shared_gene($hit, $comp_genome, $gene, $count);
+                    }
+                    categorize_core_gene($comp_genome, $gene) if $count == scalar @reference;
+                    categorize_new_gene($comp_genome, $gene) if $count == 0;
+
+                } # /GENE
+
+               count_dups($comp_genome);
+               write_results($comp_genome, \@reference);
+            }
+
+        }
     }
 }
 
@@ -646,7 +374,7 @@ sub array_diff {
     return \@diff_array;
 }
 
-no warnings;
+no warnings;    # Guards against 'deep recursion' warnings
 
 sub factorial {
     my $i = shift @_;
@@ -742,4 +470,152 @@ sub read_db_list {
     }
     close IN;
 
+}
+
+# Determine if the given gene is also present in another genome up to this point.
+sub categorize_shared_gene {
+    my ($hit, $comp_genome, $gene, $count) = @_;
+    ## if the hash value == 1
+    if ( $hit ) {
+        $count++;
+        ## we have a hit
+        $genes_by_category->{$comp_genome}->{'shared'}->{$gene} = 1;
+    }
+    return $count;
+}
+
+# Determine if the given gene is present in all other genomes up to this point.
+sub categorize_core_gene {
+    my ($comp_genome, $gene) = @_;
+    $genes_by_category->{$comp_genome}->{'core'}->{$gene} = 1;
+}
+
+# Determine if the given gene is present in no other genomes up to this point.
+sub categorize_new_gene {
+    my ($comp_genome, $gene) = @_;
+    $genes_by_category->{$comp_genome}->{'new'}->{$gene} = 1;
+}
+
+# Count numbers of core, shared, and new genes amongst duplicate hits
+sub count_dups {
+    my $comp_genome = shift;
+    ## process lists to see how many duplicated genes are in each category
+    foreach my $cat ( ( 'core', 'shared', 'new' ) ) {
+        $dup_counts->{$comp_genome}->{$cat} = 0;
+        ## we'll look at each set of duplicates one at a time
+        foreach
+          my $dup_set ( keys( %{ $dups->{$comp_genome} } ) )
+        {
+            my @dup_genes   = split( " ", $dup_set );
+            my $dup_count   = scalar(@dup_genes);
+            my $dup_counter = 0;
+
+            ## for each gene of a duplicate set
+            foreach my $dup (@dup_genes) {
+                ## check if it's in the category
+                if ( $genes_by_category->{$comp_genome}->{$cat}
+                    ->{$dup} )
+                {
+                    $dup_counter++;
+                }
+            }
+            ## check if all of the dups of a set weren't found in the same category
+            if (   $dup_counter > 0
+                && $dup_count != $dup_counter )
+            {
+                print STDERR
+                  "Only $dup_counter of the following dup set found:\n$dup_set\n***This could be a problem: Comp_genome $comp_genome\n";
+                ## and if they are, then add the dup overcount to the total
+            } elsif ( $dup_counter == $dup_count ) {
+                $dup_counts->{$comp_genome}->{$cat} +=
+                  $dup_count;
+            }
+        }
+    }
+}
+
+# Write the results to file
+sub write_results {
+    my $comp_genome = shift;
+    my $ref = shift;
+    my $core_count =
+      scalar(
+        keys( %{ $genes_by_category->{$comp_genome}->{'core'} } ) );
+    my $shared_count =
+      scalar(
+        keys( %{ $genes_by_category->{$comp_genome}->{'shared'} } )
+      );
+    my $new_count =
+      scalar(
+        keys( %{ $genes_by_category->{$comp_genome}->{'new'} } ) );
+    my $core_dup_count   = $dup_counts->{$comp_genome}->{'core'};
+    my $shared_dup_count = $dup_counts->{$comp_genome}->{'shared'};
+    my $new_dup_count    = $dup_counts->{$comp_genome}->{'new'};
+
+    # This equals the number of references plus our one comparison genome
+    my $rgcount = ( scalar @$ref ) + 1;
+
+    print RESULT
+      "$rgcount\t$core_count\t$shared_count\t$new_count\t$core_dup_count\t$shared_dup_count\t$new_dup_count\t"
+      . $genome_index{$comp_genome}
+      . "\t$comp_genome\n";
+
+# Would love to make this its own subroutine eventually but don't feel like dealing with all the extra variables
+      if ( $options{'write_lists'} ) {
+          open( OUT,
+                  ">"
+                . $output_path . "/"
+                . $comp_genome
+                . "_core_"
+                . $rgcount . "_"
+                . $comp_counter->{$comp_genome}->{$i} );
+          print OUT "#" . $comp_genome . "\n";
+          print OUT "#" . join( " ", @$ref ) . "\n";
+          foreach my $g (
+              keys(
+                  %{ $genes_by_category->{$comp_genome}->{'core'} }
+              )
+            )
+          {
+              print OUT $g . "\n";
+          }
+          close OUT;
+          open( OUT,
+                  ">"
+                . $output_path . "/"
+                . $comp_genome
+                . "_shared_"
+                . $rgcount . "_"
+                . $comp_counter->{$comp_genome}->{$i} );
+          print OUT "#" . $comp_genome . "\n";
+          print OUT "#" . join( " ", @$ref) . "\n";
+          foreach my $g (
+              keys(
+                  %{
+                      $genes_by_category->{$comp_genome}->{'shared'}
+                  }
+              )
+            )
+          {
+              print OUT $g . "\n";
+          }
+          close OUT;
+          open( OUT,
+                  ">"
+                . $output_path . "/"
+                . $comp_genome . "_new_"
+                . $rgcount . "_"
+                . $comp_counter->{$comp_genome}->{$i} );
+          print OUT "#" . $comp_genome . "\n";
+          print OUT "#" . join( " ", @$ref ) . "\n";
+          foreach my $g (
+              keys(
+                  %{ $genes_by_category->{$comp_genome}->{'new'} }
+              )
+            )
+          {
+              print OUT $g . "\n";
+          }
+          close OUT;
+      }
 }
