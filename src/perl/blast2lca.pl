@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 =head1 NAME
 
-blast2lca.pl - Wrapper script to generate Lowest Common Ancestors from a BAM/SAM file
+blast2lca.pl - Wrapper script to generate Lowest Common Ancestors from filtered blast results
 
 =head1 SYNOPSIS
 

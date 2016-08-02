@@ -48,6 +48,10 @@
                 <value>$;NUM_RETRIES$;</value>
             </param>
             <param>
+                <key>--fetch_metadata</key>
+                <value>$;FETCH_METADATA$;</value>
+            </param>
+            <param>
             	<key>stdout</key>
             	<value>$;OUTPUT_DIRECTORY$;/download_sra.stdout</value>
             </param>

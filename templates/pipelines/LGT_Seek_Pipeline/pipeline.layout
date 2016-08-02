@@ -56,7 +56,7 @@
 							</commandSet>
 							<commandSet type="serial">
 								<state>incomplete</state>
-								<name>concatenate_files.fasta</name>
+								<name>concatenate_files.blast</name>
 							</commandSet>
 							<commandSet type="serial">
 								<state>incomplete</state>

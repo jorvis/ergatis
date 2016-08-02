@@ -55,11 +55,11 @@
 			</param>
             <param>
                 <key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/lgt_sam2fasta.stdout</value>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/blast2lca.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/lgt_sam2fasta.stderr</value>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/blast2lca.stderr</value>
             </param>
         </command>
     </commandSet>

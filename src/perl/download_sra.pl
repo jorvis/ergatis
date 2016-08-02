@@ -1,4 +1,7 @@
-#!/usr/local/bin/perl -w
+#!/usr/bin/perl -w
+
+eval 'exec /usr/bin/perl -w -S $0 ${1+"$@"}'
+    if 0; # not running under some shell
 
 #########################################################################################
 #											#
@@ -33,6 +36,8 @@ my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
 my %hFTP = ();
 my $phFTPConf = {};
 
+my $fetch_metadata = 0;
+
 ################
 # MAIN PROGRAM #
 ################
@@ -42,6 +47,7 @@ GetOptions(\%hCmdLineArgs,
 	   'output_dir|o=s',
 	   'username|u=s',
 	   'password|p=s',
+       'fetch_metadata|m=i',
 	   'num_retry|n=i',
 	   'log|l=s',
 	   'help|h'
@@ -80,11 +86,12 @@ sub DownloadSRA {
     # ‘-N’ : Turn on time-stamping.
     # ‘-P prefix’ : Set directory prefix to prefix. The directory prefix is the directory where all other files and subdirectories will be saved to, i.e. the top of the retrieval tree.
     # ‘-t number’ :	Set number of retries to number. Specify 0 or ‘inf’ for infinite retrying. The default is to retry 20 times, with the exception of fatal errors like “connection refused” or “not found” (404), which are not retried.
+
+        $sCmd = "wget -r -nd -c -N ";
         if(defined($phCmdLineArgs->{'num_retry'})) {
-            $sCmd = "wget -r -nd -c -N -t $phCmdLineArgs->{'num_retry'} -P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
-        } else {
-            $sCmd = "wget -r -nd -c -N -P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
+            $sCmd .= "-t $phCmdLineArgs->{'num_retry'} ";
         }
+        $sCmd .= "-P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
 
         printLogMsg($DEBUG, "INFO : $sSubName :: Start downloading $phCmdLineArgs->{'run_id'} in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
         $nExitCode = system($sCmd);
@@ -93,6 +100,18 @@ sub DownloadSRA {
             printLogMsg($DEBUG, "INFO : $sSubName :: $run_id downloaded succesfully in $phCmdLineArgs->{'output_dir'}");
         } else {
             printLogMsg($ERROR, "ERROR : $sSubName :: $run_id download failed with exit code $nExitCode. For details check STDERR file");
+        }
+
+        if ($fetch_metadata){
+            $run_info_cmd = "wget -O $phCmdLineArgs->{'output_dir'} " . "/$phCmdLineArgs->{'run_id'}_info.csv http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term= $phCmdLineArgs->{'run_id'}";
+
+            $nExitCode = system($run_info_cmd);
+            # wget returns 0 on success
+            if($nExitCode == 0) {
+                printLogMsg($DEBUG, "INFO : $sSubName :: $run_id metadata downloaded succesfully in $phCmdLineArgs->{'output_dir'}");
+            } else {
+                printLogMsg($ERROR, "ERROR : $sSubName :: $run_id metadata download failed with exit code $nExitCode. For details check STDERR file");
+            }
         }
 	}
 }
@@ -159,6 +178,9 @@ sub checkCmdLineArgs {
 	if(!exists($phCmdLineArgs->{'password'})) {
 		$phCmdLineArgs->{'password'} = "anonymous";
 	}
+
+    # Change to fetch_metadata param value if passed in.  Otherwise it's 0
+    $fetch_metadata = $phCmdLineArgs->{'fetch_metadata'} if $phCmdLineArgs->{'fetch_metadata'};
 }
 
 ####################################################################################################################################################
@@ -209,6 +231,8 @@ download_sra.pl - Script to download read files from NCBI SRA FTP site
 	-p <password>	:	Password for the FTP server. Default: anonymous. Optional
 
 	-n <num_retry>	:	Number of retries to download a file. wget default is 20. Optional
+
+    -m <fetch_metadata> :   If set to 1, will download CSV file of the SRA run info.  Optional
 
 	-l <log>	: 	Path to log file. Optional
 
