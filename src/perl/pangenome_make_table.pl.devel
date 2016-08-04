@@ -592,14 +592,14 @@ sub write_results {
 
 # Would love to make this its own subroutine eventually but don't feel like dealing with all the extra variables
     if ( $options{'write_lists'} ) {
-        write_list("core", $size, $rgcount, $comp_genome);
-        write_list("new", $size, $rgcount, $comp_genome);
-        write_list("shared", $size, $rgcount, $comp_genome);
+        write_list("core", $size, $rgcount, $ref, $comp_genome);
+        write_list("new", $size, $rgcount, $ref, $comp_genome);
+        write_list("shared", $size, $rgcount, $ref, $comp_genome);
     }
 }
 
 sub write_list {
-    my ($group, $size, $rgcount, $comp_genome) = @_;
+    my ($group, $size, $rgcount, $ref, $comp_genome) = @_;
     open( OUT,
             ">"
           . $output_path . "/"
