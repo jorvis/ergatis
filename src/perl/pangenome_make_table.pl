@@ -71,11 +71,16 @@ use Benchmark;
 use bignum;
 #use DBM::Deep;
 
+use threads;    # SAdkins - 7/22/16 - Discouraged by Perl but let's try it!
+use Thread::Queue;
+use Thread::Semaphore;
+
 use warnings;
 use strict;
 
 my $dups    = {};
 my %options = ();
+my @threads;
 
 ### Sampling analysis hashes
 my $comp_counter = {};
@@ -102,6 +107,10 @@ my $results = GetOptions(
 my $comparisons;
 my $multiplicity;
 my $db_filter = undef;
+
+my $max_threads = $options{'num_threads'} ? $options{'num_threads'} : 1;
+print STDERR "Max number of threads used: $max_threads\n";
+#my @threads = init_threads($max_threads);
 
 if ( $options{'db_list'} ) {
     &read_db_list();
@@ -252,56 +261,59 @@ sub do_analysis_with_sampling {
             my @ref_genomes = @i_genomes;
             splice @ref_genomes, $j, 1;
 
-# Iterate until either the number of multiplicity rounds is reached, or all possible combinations of ref genomes is seen
-            for (
-                my $point_count = 0;
-                (
-                         $point_count < $true_max
-                      && $point_count < $options{'multiplicity'}
-                );
-              )
-            {
-                # Choose a random set of N reference genomes
-                my @reference_set =
-                  rand_set( set => \@ref_genomes, size => $i, shuffle => 0 );
+            # Allocated concurrent thread limit
+            my $sem = Thread::Semaphore->new($max_threads);
 
-                my @seen_vec = undef;
+            my $point_count = 0;
 
-                for ( my $ii = 0; $ii < scalar(@reference_set); $ii++ ) {
-                    $seen_vec[ $reference_set[$ii] ] = 1;
-                }
+            @threads = map { threads->create( sub {
+                $sem->down();   # Note resource is being used
+                # Iterate until either the number of multiplicity rounds is reached, or all possible combinations of ref genomes is seen
+                while ( $point_count++ < min($options{'multiplicity'}, $true_max) ) {
+                    # Choose a random set of N reference genomes
+                    my @reference_set =
+                      rand_set( set => \@ref_genomes, size => $i, shuffle => 0 );
 
-                unless ( defined $seen{$j}{"@seen_vec"} ) {
-                    $dup_counts = {};
-                    # Counter to track number of iterations of comparison genome in use per size-$i ref genomes
-                    $comp_counter->{$comp_genome}->{$i}++;
-                    $genes_by_category = {};
+                    my @seen_vec = undef;
 
-                    # Iterate through our query prot value
-                    GENE:
-                    foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
-                        my $count = 0;
+                    for ( my $ii = 0; $ii < scalar(@reference_set); $ii++ ) {
+                        $seen_vec[ $reference_set[$ii] ] = 1;
+                    }
 
-                        # Iterate through our N reference genome indexes
-                        foreach my $i_ref_genome (@reference_set) {
-                            # grabbing the subject db name
-                            my $ref_genome = $genomes[$i_ref_genome];
-                            my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
-                            $count = categorize_shared_gene($hit, $comp_genome, $gene, $count);
-                        }
-                        categorize_core_gene($comp_genome, $gene) if $count == scalar @reference_set;
-                        categorize_new_gene($comp_genome, $gene) if $count == 0;
-                      } #/GENE
+                    unless ( defined $seen{$j}{"@seen_vec"} ) {
+                        $dup_counts = {};
+                        # Counter to track number of iterations of comparison genome in use per size-$i ref genomes
+                        $comp_counter->{$comp_genome}->{$i}++;
+                        $genes_by_category = {};
 
-                      count_dups($comp_genome);
-                      write_results($comp_genome, \@reference_set);
+                        # Iterate through our query prot value
+                        GENE:
+                        foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
+                            my $count = 0;
 
-                    ## new
-                    $seen{$j}{"@seen_vec"} = 1;
-                    $point_count++;
+                            # Iterate through our N reference genome indexes
+                            foreach my $i_ref_genome (@reference_set) {
+                                # grabbing the subject db name
+                                my $ref_genome = $genomes[$i_ref_genome];
+                                my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
+                                $count = categorize_shared_gene($hit, $comp_genome, $gene, $count);
+                            }
+                            categorize_core_gene($comp_genome, $gene) if $count == scalar @reference_set;
+                            categorize_new_gene($comp_genome, $gene) if $count == 0;
+                          } #/GENE
 
-                } ## end of unless
-            } ## end of for 'point_count'
+                          count_dups($comp_genome);
+                          write_results($comp_genome, \@reference_set, $i);
+
+                          ## Ensure we don't use this set of genomes again
+                          $seen{$j}{"@seen_vec"} = 1;
+
+                    } ## end of unless
+                } ## end of while 'point_count'
+                $sem->up(); # Free up resource
+            }); ## end of thread->create sub
+            } ## end of threads
+            $_->join() for @threads;
         }
         # end timer
         my $end = new Benchmark;
@@ -319,6 +331,9 @@ sub do_analysis_no_sampling {
 
     # Get combinations of reference genomes of size $i
     for ( my $i = 1; $i < $max; $i++ ) {
+        # start timer
+        my $start = new Benchmark;
+
         my $combinat = Math::Combinatorics->new(
             count => $i,
             data  => [@genomes],
@@ -328,38 +343,58 @@ sub do_analysis_no_sampling {
         while ( my @reference = $combinat->next_combination ) {
             my $ref_string = "(" . join( ",", @reference ) . ")\n";
 
-            # Grab the genomes not in our reference set.
+            # Allocated concurrent thread limit
+            my $sem = Thread::Semaphore->new($max_threads);            # Grab the genomes not in our reference set.
             my @comparison_set = @{ array_diff( \@genomes, \@reference ) };
 
-            # Each comparison genome will be compared to the reference genomes
-            foreach my $comp_genome (@comparison_set) {
-                $dup_counts = {};
-                $comp_counter->{$comp_genome}->{$i}++;
-                $genes_by_category = {};
+            @threads = map { threads->create( sub {
+                $sem->down();   # Note resource is being used
+                # Each comparison genome will be compared to the reference genomes
+                foreach my $comp_genome (@comparison_set) {
+                    $dup_counts = {};
+                    $comp_counter->{$comp_genome}->{$i}++;
+                    $genes_by_category = {};
 
-                # Process each gene from the comparison genome
-                GENE:
-                foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
-                    my $count = 0;
+                    # Process each gene from the comparison genome
+                    GENE:
+                    foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
+                        my $count = 0;
 
-                # Keep track of how many ref genomes had a hit for this particular gene
-                    foreach my $ref_genome (@reference) {
-                        my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
-                        $count = categorize_shared_gene($hit, $comp_genome, $gene, $count);
-                    }
-                    categorize_core_gene($comp_genome, $gene) if $count == scalar @reference;
-                    categorize_new_gene($comp_genome, $gene) if $count == 0;
+                    # Keep track of how many ref genomes had a hit for this particular gene
+                        foreach my $ref_genome (@reference) {
+                            my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
+                            $count = categorize_shared_gene($hit, $comp_genome, $gene, $count);
+                        }
+                        categorize_core_gene($comp_genome, $gene) if $count == scalar @reference;
+                        categorize_new_gene($comp_genome, $gene) if $count == 0;
 
-                } # /GENE
+                    } # /GENE
 
-               count_dups($comp_genome);
-               write_results($comp_genome, \@reference);
+                   count_dups($comp_genome);
+                   write_results($comp_genome, \@reference, $i);
+                }
+                $sem->up(); # Free up resource
+            });
             }
-
+            $_->join() for @threads;
         }
+        # end timer
+        my $end = new Benchmark;
+
+        # calculate difference
+        my $diff = timediff( $end, $start );
+
+        print "runtime: " . timestr( $diff, 'noc' ) . "\n";
     }
 }
 
+# Return the minimum of the two values
+sub min {
+    my ($a, $b) = @_;
+    return $a < $b ? $a : $b;
+}
+
+# Return an array of elements present in array A but not in array B
 sub array_diff {
     my ( $superset_ref, $subset_ref ) = @_;
     my %index;
@@ -375,7 +410,6 @@ sub array_diff {
 }
 
 no warnings;    # Guards against 'deep recursion' warnings
-
 sub factorial {
     my $i = shift @_;
     if ( $i <= 1 ) {
@@ -385,18 +419,6 @@ sub factorial {
     }
 }
 use warnings;
-
-sub subset {
-    my ( $array_ref, $indices_array_ref ) = @_;
-
-    my @result;
-
-    foreach my $i ( @{$indices_array_ref} ) {
-        push( @result, $array_ref->[$i] );
-    }
-
-    return @result;
-}
 
 sub estimate_multiplicity {
     my ( $ngenomes, $req_comparisons ) = @_;
@@ -451,11 +473,7 @@ sub estimate_comparisons {
           ( factorial( $i - 1 ) * factorial( $ngenomes - $i ) );
         my $real = $multiplex * $ngenomes;
         $theor_comparisons += $theor;
-        if ( $theor < $real ) {
-            $tot_comparisons += $theor;
-        } else {
-            $tot_comparisons += $real;
-        }
+        $tot_comparisons += min($theor, $real);
     }
 
     return ( $tot_comparisons, $theor_comparisons );
@@ -470,6 +488,17 @@ sub read_db_list {
     }
     close IN;
 
+}
+
+# Subroutine to force a specific size for the max number of threads
+sub init_threads {
+    # An array to place our threads in
+    my $num_of_threads = shift;
+	my @initThreads;
+	for(my $i = 1;$i<=$num_of_threads;$i++){
+		push(@initThreads,$i);
+	}
+	return @initThreads;
 }
 
 # Determine if the given gene is also present in another genome up to this point.
@@ -538,6 +567,7 @@ sub count_dups {
 sub write_results {
     my $comp_genome = shift;
     my $ref = shift;
+    my $size = shift;
     my $core_count =
       scalar(
         keys( %{ $genes_by_category->{$comp_genome}->{'core'} } ) );
@@ -561,61 +591,25 @@ sub write_results {
       . "\t$comp_genome\n";
 
 # Would love to make this its own subroutine eventually but don't feel like dealing with all the extra variables
-      if ( $options{'write_lists'} ) {
-          open( OUT,
-                  ">"
-                . $output_path . "/"
-                . $comp_genome
-                . "_core_"
-                . $rgcount . "_"
-                . $comp_counter->{$comp_genome}->{$i} );
-          print OUT "#" . $comp_genome . "\n";
-          print OUT "#" . join( " ", @$ref ) . "\n";
-          foreach my $g (
-              keys(
-                  %{ $genes_by_category->{$comp_genome}->{'core'} }
-              )
-            )
-          {
-              print OUT $g . "\n";
-          }
-          close OUT;
-          open( OUT,
-                  ">"
-                . $output_path . "/"
-                . $comp_genome
-                . "_shared_"
-                . $rgcount . "_"
-                . $comp_counter->{$comp_genome}->{$i} );
-          print OUT "#" . $comp_genome . "\n";
-          print OUT "#" . join( " ", @$ref) . "\n";
-          foreach my $g (
-              keys(
-                  %{
-                      $genes_by_category->{$comp_genome}->{'shared'}
-                  }
-              )
-            )
-          {
-              print OUT $g . "\n";
-          }
-          close OUT;
-          open( OUT,
-                  ">"
-                . $output_path . "/"
-                . $comp_genome . "_new_"
-                . $rgcount . "_"
-                . $comp_counter->{$comp_genome}->{$i} );
-          print OUT "#" . $comp_genome . "\n";
-          print OUT "#" . join( " ", @$ref ) . "\n";
-          foreach my $g (
-              keys(
-                  %{ $genes_by_category->{$comp_genome}->{'new'} }
-              )
-            )
-          {
-              print OUT $g . "\n";
-          }
-          close OUT;
-      }
+    if ( $options{'write_lists'} ) {
+        write_list("core", $size, $rgcount, $ref, $comp_genome);
+        write_list("new", $size, $rgcount, $ref, $comp_genome);
+        write_list("shared", $size, $rgcount, $ref, $comp_genome);
+    }
+}
+
+sub write_list {
+    my ($group, $size, $rgcount, $ref, $comp_genome) = @_;
+    open( OUT,
+            ">"
+          . $output_path . "/"
+          . $comp_genome . "_${group}_"
+          . $rgcount . "_"
+          . $comp_counter->{$comp_genome}->{$size} );
+    print OUT "#" . $comp_genome . "\n";
+    print OUT "#" . join( " ", @$ref ) . "\n";
+    foreach my $g (keys(%{ $genes_by_category->{$comp_genome}->{$group} })){
+        print OUT $g . "\n";
+    }
+    close OUT;
 }
