@@ -599,7 +599,7 @@ sub write_results {
 }
 
 sub write_list {
-    my ($group, $size, $rgcount, $comp_genome) = @_
+    my ($group, $size, $rgcount, $comp_genome) = @_;
     open( OUT,
             ">"
           . $output_path . "/"
