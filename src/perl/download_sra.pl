@@ -103,7 +103,7 @@ sub DownloadSRA {
         }
 
         if ($fetch_metadata){
-            $run_info_cmd = "wget -O $phCmdLineArgs->{'output_dir'} " . "/$phCmdLineArgs->{'run_id'}_info.csv http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term= $phCmdLineArgs->{'run_id'}";
+            my $run_info_cmd = "wget -O $phCmdLineArgs->{'output_dir'} " . "/$phCmdLineArgs->{'run_id'}_info.csv http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term= $phCmdLineArgs->{'run_id'}";
 
             $nExitCode = system($run_info_cmd);
             # wget returns 0 on success
