@@ -105,6 +105,7 @@ sub DownloadSRA {
         if ($fetch_metadata){
             my $run_info_cmd = "wget -O $phCmdLineArgs->{'output_dir'}/$phCmdLineArgs->{'run_id'}_info.csv http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term= $phCmdLineArgs->{'run_id'}";
 
+            printLogMsg($DEBUG, "INFO : $sSubName :: Start downloading $phCmdLineArgs->{'run_id'} run information in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $run_info_cmd");
             $nExitCode = system($run_info_cmd);
             # wget returns 0 on success
             if($nExitCode == 0) {
