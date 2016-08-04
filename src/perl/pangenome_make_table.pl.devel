@@ -80,6 +80,7 @@ use strict;
 
 my $dups    = {};
 my %options = ();
+my @threads;
 
 ### Sampling analysis hashes
 my $comp_counter = {};
@@ -265,7 +266,7 @@ sub do_analysis_with_sampling {
 
             my $point_count == 0;
 
-            my @threads = map { threads->create( sub {
+            @threads = map { threads->create( sub {
                 $sem->down();   # Note resource is being used
                 # Iterate until either the number of multiplicity rounds is reached, or all possible combinations of ref genomes is seen
                 while ( $point_count++ < min($options{'multiplicity'}, $true_max) ) {
@@ -346,7 +347,7 @@ sub do_analysis_no_sampling {
             my $sem = Thread::Semaphore->new($max_threads);            # Grab the genomes not in our reference set.
             my @comparison_set = @{ array_diff( \@genomes, \@reference ) };
 
-            my @threads = map { threads->create( sub {
+            @threads = map { threads->create( sub {
                 $sem->down();   # Note resource is being used
                 # Each comparison genome will be compared to the reference genomes
                 foreach my $comp_genome (@comparison_set) {
