@@ -264,7 +264,7 @@ sub do_analysis_with_sampling {
             # Allocated concurrent thread limit
             my $sem = Thread::Semaphore->new($max_threads);
 
-            my $point_count == 0;
+            my $point_count = 0;
 
             @threads = map { threads->create( sub {
                 $sem->down();   # Note resource is being used
@@ -303,7 +303,7 @@ sub do_analysis_with_sampling {
                           } #/GENE
 
                           count_dups($comp_genome);
-                          write_results($comp_genome, \@reference_set);
+                          write_results($comp_genome, \@reference_set, $i);
 
                           ## Ensure we don't use this set of genomes again
                           $seen{$j}{"@seen_vec"} = 1;
@@ -371,7 +371,7 @@ sub do_analysis_no_sampling {
                     } # /GENE
 
                    count_dups($comp_genome);
-                   write_results($comp_genome, \@reference);
+                   write_results($comp_genome, \@reference, $i);
                 }
                 $sem->up(); # Free up resource
             });
@@ -567,6 +567,7 @@ sub count_dups {
 sub write_results {
     my $comp_genome = shift;
     my $ref = shift;
+    my $size = shift;
     my $core_count =
       scalar(
         keys( %{ $genes_by_category->{$comp_genome}->{'core'} } ) );
@@ -590,61 +591,25 @@ sub write_results {
       . "\t$comp_genome\n";
 
 # Would love to make this its own subroutine eventually but don't feel like dealing with all the extra variables
-      if ( $options{'write_lists'} ) {
-          open( OUT,
-                  ">"
-                . $output_path . "/"
-                . $comp_genome
-                . "_core_"
-                . $rgcount . "_"
-                . $comp_counter->{$comp_genome}->{$i} );
-          print OUT "#" . $comp_genome . "\n";
-          print OUT "#" . join( " ", @$ref ) . "\n";
-          foreach my $g (
-              keys(
-                  %{ $genes_by_category->{$comp_genome}->{'core'} }
-              )
-            )
-          {
-              print OUT $g . "\n";
-          }
-          close OUT;
-          open( OUT,
-                  ">"
-                . $output_path . "/"
-                . $comp_genome
-                . "_shared_"
-                . $rgcount . "_"
-                . $comp_counter->{$comp_genome}->{$i} );
-          print OUT "#" . $comp_genome . "\n";
-          print OUT "#" . join( " ", @$ref) . "\n";
-          foreach my $g (
-              keys(
-                  %{
-                      $genes_by_category->{$comp_genome}->{'shared'}
-                  }
-              )
-            )
-          {
-              print OUT $g . "\n";
-          }
-          close OUT;
-          open( OUT,
-                  ">"
-                . $output_path . "/"
-                . $comp_genome . "_new_"
-                . $rgcount . "_"
-                . $comp_counter->{$comp_genome}->{$i} );
-          print OUT "#" . $comp_genome . "\n";
-          print OUT "#" . join( " ", @$ref ) . "\n";
-          foreach my $g (
-              keys(
-                  %{ $genes_by_category->{$comp_genome}->{'new'} }
-              )
-            )
-          {
-              print OUT $g . "\n";
-          }
-          close OUT;
-      }
+    if ( $options{'write_lists'} ) {
+        write_list("core", $size, $rgcount, $comp_genome);
+        write_list("new", $size, $rgcount, $comp_genome);
+        write_list("shared", $size, $rgcount, $comp_genome);
+    }
+}
+
+sub write_list {
+    my ($group, $size, $rgcount, $comp_genome) = @_
+    open( OUT,
+            ">"
+          . $output_path . "/"
+          . $comp_genome . "_${group}_"
+          . $rgcount . "_"
+          . $comp_counter->{$comp_genome}->{$size} );
+    print OUT "#" . $comp_genome . "\n";
+    print OUT "#" . join( " ", @$ref ) . "\n";
+    foreach my $g (keys(%{ $genes_by_category->{$comp_genome}->{$group} })){
+        print OUT $g . "\n";
+    }
+    close OUT;
 }
