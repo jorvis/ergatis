@@ -28,6 +28,10 @@
                 <value>$;COMPARISONS$;</value>
             </param>
             <param>
+                <key>--num_threads</key>
+                <value>$;NUM_THREADS$;</value>
+            </param>
+            <param>
                 <key>--write_lists</key>
                 <value>$;WRITE_LISTS$;</value>
             </param>
