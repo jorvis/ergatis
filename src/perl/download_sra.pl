@@ -82,12 +82,13 @@ sub DownloadSRA {
     # wget options :
     # ‘-r’ : Turn on recursive retrieving of directories.
     # ‘-nd’: Do not create a hierarchy of directories when retrieving recursively. With this option turned on, all files will get saved to the current directory, without clobbering (if a name shows up more than once, the filenames will get extensions ‘.n’).
+    # '-nv' : Non-verbose. Only print basic infomation and error messages
     # ‘-c’ : Continue getting a partially-downloaded file.This is useful when you want to finish up a download started by a previous instance of Wget, incase a pipline is resumed.
     # ‘-N’ : Turn on time-stamping.
     # ‘-P prefix’ : Set directory prefix to prefix. The directory prefix is the directory where all other files and subdirectories will be saved to, i.e. the top of the retrieval tree.
     # ‘-t number’ :	Set number of retries to number. Specify 0 or ‘inf’ for infinite retrying. The default is to retry 20 times, with the exception of fatal errors like “connection refused” or “not found” (404), which are not retried.
 
-        $sCmd = "wget -r -nd -c -N ";
+        $sCmd = "wget -nv -r -nd -c -N ";
         if(defined($phCmdLineArgs->{'num_retry'})) {
             $sCmd .= "-t $phCmdLineArgs->{'num_retry'} ";
         }
@@ -103,7 +104,7 @@ sub DownloadSRA {
         }
 
         if ($fetch_metadata){
-            my $run_info_cmd = "wget -O $phCmdLineArgs->{'output_dir'}/$phCmdLineArgs->{'run_id'}_info.csv http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term= $phCmdLineArgs->{'run_id'}";
+            my $run_info_cmd = "wget -nv -O $phCmdLineArgs->{'output_dir'}/$phCmdLineArgs->{'run_id'}_info.csv 'http://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?save=efetch&db=sra&rettype=runinfo&term=$phCmdLineArgs->{'run_id'}'";
 
             printLogMsg($DEBUG, "INFO : $sSubName :: Start downloading $phCmdLineArgs->{'run_id'} run information in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $run_info_cmd");
             $nExitCode = system($run_info_cmd);
