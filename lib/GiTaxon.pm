@@ -38,8 +38,10 @@ sub new {
     my ( $class, $args ) = @_;
 
     # Get version of MongoDB being used
-    # Version is 'v#.#.#' so let's just get the first digit only.
-    $version = substr($MongoDB::VERSION, 1, 1);
+    # Version is 'v#.#.#' or '#.#' so let's just get the first digit only.
+    $version = $MongoDB::VERSION;
+    chop $version if $version =~ /^v/;
+    $version = substr($version, 0, 1);
 
     my $self = {};
     # If we choose to not provide any taxonomy flatfiles, enable this property
