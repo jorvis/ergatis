@@ -39,6 +39,14 @@
                 <key>--db_list</key>
                 <value>$;DB_FILTER_LIST$;</value>
             </param>
+            <param>
+                <key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stdout</value>
+            </param>
+            <param>
+                <key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.stderr</value>
+            </param>
         </command>
     </commandSet>
 </commandSetRoot>
