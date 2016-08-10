@@ -1,10 +1,10 @@
 #!/usr/bin/perl
 
-=head1  NAME 
+=head1  NAME
 
 deleteOverlappingGenes.pl - Parse RNA_CDS_OVERLAP errors from the tbl2asn discrepancy file and use the Manatee delete_gene.cgi script to delete the corresponding genes.
 
-=head1 SYNOPSIS 
+=head1 SYNOPSIS
 
 deleteOverlappingGenes.pl
          --db_mapping_file=/path/to/db_map.txt
@@ -22,12 +22,12 @@ deleteOverlappingGenes.pl
 
 B<--db_mapping_file,-d>
     File that maps databases to other various fields, Must be a comma or tab-delimited file and the first field must be the db name
-    
+
     Example:
     database1,id_prefix,/path/to/rules/txt
 
 B<--discrep_file,-f>
-    Path to a particular tbl2asn discrepancy file. 
+    Path to a particular tbl2asn discrepancy file.
 
 B<--user,-u>
     Manatee username.
@@ -40,14 +40,14 @@ B<--server,-s>
 
 B<--delete_url,-U>
     URL of the Manatee delete_gene.cgi script that can be used to delete the offending gene(s)
-    
+
 B<--log,-l>
     Optional. Path to a log file into which to write detailed (DEBUG-level) logging info.
 
 B<--no_deletes,-n>
     Optional.  Run without executing the delete commands.
 
-B<--help,-h> 
+B<--help,-h>
     Display the script documentation.
 
 B<--man,-m>
@@ -83,9 +83,9 @@ use Log::Log4perl qw(:easy);
 use LWP::UserAgent;
 
 ## globals
-my $TRANSCRIPT_ID_QUERY = 
+my $TRANSCRIPT_ID_QUERY =
    "SELECT t.uniquename " .
-   "FROM dbxref dbx, feature_dbxref fdbx, feature_relationship fr, feature t, cvterm cvt " . 
+   "FROM dbxref dbx, feature_dbxref fdbx, feature_relationship fr, feature t, cvterm cvt " .
    "WHERE dbx.accession = ? " .
    "AND dbx.version = 'public_locus' " .
    "AND dbx.dbxref_id = fdbx.dbxref_id " .
@@ -93,17 +93,17 @@ my $TRANSCRIPT_ID_QUERY =
    "AND t.feature_id = fr.subject_id " .
    "AND t.type_id = cvt.cvterm_id " .
    "AND cvt.name = 'transcript' ";
-   
-my $RNA_ID_QUERY = 
+
+my $RNA_ID_QUERY =
    "SELECT t.uniquename " .
-   "FROM dbxref dbx, feature_dbxref fdbx, feature_relationship fr, feature t, cvterm cvt " . 
+   "FROM dbxref dbx, feature_dbxref fdbx, feature_relationship fr, feature t, cvterm cvt " .
    "WHERE dbx.accession = ? " .
    "AND dbx.version = 'public_locus' " .
    "AND dbx.dbxref_id = fdbx.dbxref_id " .
    "AND fdbx.feature_id = fr.object_id " .
    "AND t.feature_id = fr.subject_id " .
    "AND t.type_id = cvt.cvterm_id " .
-   "AND cvt.name IN ('rRNA', 'tRNA') ";  
+   "AND cvt.name IN ('rRNA', 'tRNA') ";
 
 ## input
 my $options = {};
@@ -184,13 +184,17 @@ $cds_ids = {};
 $genes_to_delete = [];
 $rnas_to_delete = [];
 foreach my $gene (@$genes) {
-  	my($cds, $rna, $lines, $hyp) = map {$gene->{$_}} ('cds', 'rna', 'lines', 'hypo');
+  	my($cds, $rna, $name, $lines, $hyp) = map {$gene->{$_}} ('cds', 'rna', 'name', 'lines', 'hypo');
   	$logger->debug("CDS $cds overlaps with RNA $rna");
   	# duplicates should have been eliminated already:
   	if (defined($cds_ids->{$cds})) {
   		$logger->logdie("internal error: found duplicate gene $cds");
   	}
-  	if ($hyp) {
+    # Analyst will do manual review of 5S or 16S rRNA overlaps
+    next if $name =~ /5S|16S/;
+
+    if ($hyp or $name =~ /23S/) {
+        # If gene is hypothetical or rRNA is 23S, the delete the gene and keep RNA
   		my $transcript_id = &get_transcript_id($get_transcript_sth, $cds);
   		if (!defined($transcript_id)) {
     		$logger->logdie("unable to map cds id $cds to transcript_id");
@@ -206,12 +210,12 @@ foreach my $gene (@$genes) {
   		}
   		$logger->debug("mapped RNA $rna to $transcript_id");
   		$gene->{'transcript_id'} = $transcript_id;
-  		push(@$rnas_to_delete, $gene);  
+  		push(@$rnas_to_delete, $gene);
   		$logger->debug("DELETE RNA\t" . $gene->{'lines'}->[1]);
   	}
   	$cds_ids->{$cds} = 1;
 }
-	
+
 # TODO - do the deletes, unless --no_deletes in effect
 my $num_to_delete = scalar(@$genes_to_delete);
 my $num_deleted = 0;
@@ -248,7 +252,7 @@ exit(0);
 
 sub check_parameters {
   my $options = shift;
-    
+
   ## make sure required parameters were passed
   my @required = qw(discrep_file db_mapping_file user server delete_url);
   for my $option ( @required ) {
@@ -268,7 +272,7 @@ sub check_parameters {
     } else {
 	die("Neither a password or a password file were supplied.  Please supply one or the other");
     }
-    
+
   ## defaults
 
   ## additional parameter checking?
@@ -280,7 +284,7 @@ sub read_genes_to_delete {
   	my $start_index = undef;
   	my $num_expected = undef;
   	my $num_skipped = undef;
-  
+
   	# $pattern[0] = completely overlapping, $pattern[1] = partially overlapping
   	my $pattern = ['FATAL\:\sDiscRep_SUB:RNA_CDS_OVERLAP', 'DiscRep_SUB:RNA_CDS_OVERLAP'];
 
@@ -315,6 +319,7 @@ sub read_genes_to_delete {
           		++$lnum;
           		my $cds = undef;
           		my $rna = undef;
+                my $rna_name = undef;
           		my $hypo = 0;
 
           		# gecDEC10A:CDS	ybl206 protein	lcl|gecDEC10A.contig.0:c350798-350679	ECDEC10A_0352
@@ -334,6 +339,7 @@ sub read_genes_to_delete {
             		my($type, $name, $coords, $locus) = split(/\t/, $next_line);
             		die "failed to parse RNA id from $next_line" unless defined($locus);
             		$rna = $locus;
+                    $rna_name = $name;
           		} else {
            			$logger->logdie("failed to parse RNA id from second line of CDS/rRNA pair at line $lnum: $next_line");
           		}
@@ -342,7 +348,7 @@ sub read_genes_to_delete {
             		$logger->warn("ignoring duplicate gene $cds");
             		++$num_skipped;
           		} else {
-          			push(@$genes, {'cds' => $cds, 'rna' => $rna, 'lines' => [$line, $next_line], 'hypo' => $hypo});
+          			push(@$genes, {'cds' => $cds, 'rna' => $rna, 'name' => $rna_name, 'lines' => [$line, $next_line], 'hypo' => $hypo});
           			$cds_ids->{$cds} = 1;
           		}
       		}
@@ -361,7 +367,7 @@ sub get_transcript_id {
 
 sub delete_gene {
   my($delete_url, $user, $password, $transcript_id, $db) = @_;
-  my $post_data = 
+  my $post_data =
     {
      'user' => $user,
      'password' => $password,
@@ -389,10 +395,9 @@ sub delete_gene {
         return 1;
       }
     }
-  } 
+  }
 
   $logger->debug("delete status_line=" . $res->status_line());
   $logger->debug("delete response=" . $res->content());
   return 0;
 }
-
