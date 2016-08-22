@@ -8,7 +8,7 @@
             <name>RAPSearch2</name>
             <state>incomplete</state>
             <executable>$;RAPSEARCH_EXEC$;</executable>
-			<arg> -q $;I_FILE_PATH$; -d $;DATABASE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$; -s F -e $;EXPECT$; -b $;DATABASE_MATCHES$; -v $;DESCRIPTIONS$; $;OTHER_OPTS$;</arg>
+			<arg> -q $;I_FILE_PATH$; -d $;DATABASE_PATH$; -o $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$; -s F -e $;EXPECT$; -l $;MIN_ALN_LENGTH$; -b $;DATABASE_MATCHES$; -v $;DESCRIPTIONS$; $;OTHER_OPTS$;</arg>
         </command>
         <command>
             <type>RunUnixCommand</type>
