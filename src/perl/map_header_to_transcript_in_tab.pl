@@ -40,7 +40,7 @@ B<--help,-h>
 
 =head1  DESCRIPTION
 
-This program will take headers from the initial multifasta file of a pipeline and used them as substitutes for the transcript IDs in a given annotation tabfile.  In the gene calls pipeline, each sequence is processed in order of appearance in the multifasta file to create a pseudomolecule.  The coordinates for each sequence appear in the bsml2featurerelationships mapping file and since the order of the headers is known, it is easy to map the transcript ID from there.  To avoid any potential parsing issues in the tabfile, the header will be parsed up to the first space character (or newline if the header is space-free)
+This program will take headers from the initial multifasta file of a pipeline and used them as substitutes for the transcript IDs in a given annotation tabfile.  In the gene calls pipeline, each sequence in the multifasta file is sorted longest to shortest to create a pseudomolecule.  The coordinates for each sequence appear in the bsml2featurerelationships mapping file and since the order of the headers is known, it is easy to map the transcript ID from there.  To avoid any potential parsing issues in the tabfile, the header will be parsed up to the first space character (or newline if the header is space-free)
 
 =head1  INPUT
     Describe the input
