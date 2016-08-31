@@ -21,6 +21,9 @@ create_lgt_pipeline_config.pl - Will create a pipeline.layout and pipeline.confi
 B<--sra_id,-s>
 	Valid ID from the Sequence Read Archive
 
+B<--bam_input,-B>
+	Valid path to a BAM input file.  Either this or the SRA ID must be provided
+
 B<--donor_reference,-d>
 	Path to the donor reference fasta file, or list file (ends in .list).  If not provided, the script assumes this is a host-only LGTSeek run.  If the reference has already been indexed by BWA, the index files must be in the same directory as the reference(s).
 
@@ -30,7 +33,7 @@ B<--host_reference,-h>
 B<--refseq_reference,-r>
 	Path to the RefSeq reference fasta file, or list file (ends in .list).  If the reference has already been indexed by BWA, the index files must be in the same directory as the reference(s).
 
-B<--build_indexes,-b>
+B<--build_indexes,-B>
 	If the flag is enabled, will build indexes using BWA in the pipeline.  If you are using pre-build indexes it is important they are compatible with the version of BWA running in the pipeline (0.7.12 for internal Ergatis, 0.7.15 for Docker Ergatis)
 
 B<--template_directory,-t>
@@ -185,6 +188,7 @@ sub main {
 	# If the starting point is BAM input, then use that.
 	if ($options{bam_input}) {
 		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
+		$config{"lgt_bwa recipient"}->{'$;PAIRED;'} = 1;
 	} else {
 		$config{"global"}->{'$;SRA_RUN_ID$;'} = $options{sra_id};
 	}
@@ -195,6 +199,7 @@ sub main {
 		# In donor-only alignment cases, we do not keep the 'MM' matches, so no microbiome run
 		if ($options{bam_input}) {
 			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = $options{bam_input};
+			$config{"lgt_bwa donor"}->{'$;PAIRED;'} = 1;
 		} else {
 			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		}
@@ -217,6 +222,7 @@ sub main {
 
 		if ($options{bam_input}) {
 			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
+			$config{"lgt_bwa recipient"}->{'$;PAIRED;'} = 1;			
 		} else {
 			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		}	# I think this if/else block is not necessary.
