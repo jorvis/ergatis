@@ -107,15 +107,16 @@ sub main {
 						  "host_reference|h=s",
 						  "donor_reference|d=s",
 						  "refseq_reference|r=s",
-						  "build_indexes|b",
-                          "template_directory|t=s",
-                          "output_directory|o=s",
+						  "build_indexes|B",
+						  "bam_input|b",
+						  "template_directory|t=s",
+						  "output_directory|o=s",
 						  "data_directory|O=s",
 						  "no_pipeline_id|p",
-                          "log|l=s",
-                          "debug=i",
-                          "help"
-                          );
+						  "log|l=s",
+						  "debug=i",
+						  "help"
+					);
 
     &check_options(\%options);
 
@@ -181,13 +182,22 @@ sub main {
 		$config{"global"}->{'$;REFSEQ_REFERENCE$;'} = $options{refseq_reference};
 	}
 
-	$config{"global"}->{'$;SRA_RUN_ID$;'} = $options{sra_id};
+	# If the starting point is BAM input, then use that.
+	if ($options{bam_input}) {
+		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
+	} else {
+		$config{"global"}->{'$;SRA_RUN_ID$;'} = $options{sra_id};
+	}
 	# Default use case (good donor and good host), we just want two specific list files.  For donor and host-only cases, we want other specific list files
 	$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create single-map BAM file list,create no-map BAM file list';
 
 	if ($donor_only) {
 		# In donor-only alignment cases, we do not keep the 'MM' matches, so no microbiome run
-		$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
+		if ($options{bam_input}) {
+			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = $options{bam_input};
+		} else {
+			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
+		}
 		$config{"lgt_bwa_post_process default"}->{'$;RECIPIENT_FILE_LIST$;'} = '';
 		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT host BAM file list,create microbiome BAM file list,create no-map BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
@@ -204,7 +214,12 @@ sub main {
 
 	if ($host_only) {
 		# In a host-only run, we do not keep the 'MM' matches, so no microbiome run
-		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
+
+		if ($options{bam_input}) {
+			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
+		} else {
+			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
+		}	# I think this if/else block is not necessary.
 		$config{"lgt_bwa_post_process default"}->{'$;DONOR_FILE_LIST$;'} = '';
 		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT host BAM file list,create microbiome BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
@@ -373,7 +388,16 @@ sub check_options {
    	$outdir = $opts->{'output_directory'} if( $opts->{'output_directory'} );
    	$template_directory = $opts->{'template_directory'} if( $opts->{'template_directory'} );
    	$included_subpipelines{lgtseek} = 1;	# LGTSeek is required... duh!
-   	$included_subpipelines{sra} = 1;
+
+	&_log($ERROR, "ERROR - Cannot specify both an SRA ID and a BAM input file.  Choose one.") if ($opts->{sra_id} && $opts->{bam_id});
+	&_log($ERROR, "ERROR - Must specify either an SRA ID or a BAM input file.") if (!($opts->{sra_id} || $opts->{bam_id}));
+
+	if ($opts->{'sra_id'}) {
+   		$included_subpipelines{sra} = 1;
+	}
+	if ($opts->{'bam_input'}) {
+		$included_subpipelines{sra} = 0;
+	}
 
 	# If donor reference is not present, then we have a host-only run
 	$host_only = 1 unless ($opts->{'donor_reference'});
@@ -384,11 +408,13 @@ sub check_options {
 	# If we need to build BWA reference indexes, then set option
 	$included_subpipelines{indexing} = 1 if ( $opts->{'build_indexes'} );
 
-	&_log($ERROR, "Cannot specify both 'donor_only' and 'host_only' options.  Choose either, or none") if ($donor_only && $host_only);
+	&_log($ERROR, "ERROR - Need either a host_reference, a donor_reference or both provided") if ($donor_only && $host_only);
 
    print STDOUT "Perform alignments to the donor reference only.\n" if ($donor_only);
    print STDOUT "Perform alignments to the host reference only.\n" if ($host_only);
    print STDOUT "Perform BWA reference indexing in pipeline.\n" if ($included_subpipelines{indexing});
+   print STDOUT "Starting point is BAM input.\n" if $opts->{bam_input};
+   print STDOUT "Starting point is SRA ID. \n" if $opts->{sra_id};
 
 }
 
