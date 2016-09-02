@@ -222,7 +222,7 @@
         </command>
         <command>
             <type>RunUnixCommand</type>
-            <name>create file list of spit checkums.out</name>
+            <name>create file list of split checkums.out</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/create_list_file</executable>
             <param>  
@@ -238,6 +238,13 @@
                 <value>$;TMP_DIR$;/splitchecksumsoutfiles.list</value>
             </param>
         </command> 
+    	<command>
+        	<type>RunUnixCommand</type>
+        	<name>create sort_checksums temp directory</name>
+        	<state>incomplete</state>
+        	<executable>mkdir</executable>
+        	<arg>-p -m 777 $;TMP_DIR$;/$;ITERATOR8$;</arg>
+    	</command>
         <command>
          <type>RunUnixCommand</type>
          <name>create_file_iterator_list</name>
