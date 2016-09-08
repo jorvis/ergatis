@@ -96,7 +96,8 @@ my %options;
 my $pipelines = {
 	    'sra' => 'LGT_Seek_Pipeline_SRA',
 		'indexing' => 'LGT_Seek_Pipeline_BWA_Index',
-		'lgtseek' => 'LGT_Seek_Pipeline'
+		'lgtseek' => 'LGT_Seek_Pipeline',
+		'post' => 'LGT_Seek_Pipeline_Post_Analysis'
 };
 
 
@@ -154,6 +155,7 @@ sub main {
    			&write_include($writer, $pipelines->{'indexing'}) if( $included_subpipelines{'indexing'} );
    			&write_include($writer, $pipelines->{'lgtseek'}) if( $included_subpipelines{'lgtseek'} );
 		}
+		&write_include($writer, $pipelines->{'post'}) if( $included_subpipelines{'post'} );
 	});
 
 	# end the writer
@@ -222,7 +224,7 @@ sub main {
 
 		if ($options{bam_input}) {
 			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
-			$config{"lgt_bwa recipient"}->{'$;PAIRED;'} = 1;			
+			$config{"lgt_bwa recipient"}->{'$;PAIRED;'} = 1;
 		} else {
 			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		}	# I think this if/else block is not necessary.
@@ -268,10 +270,8 @@ sub main {
 	}
 
 # If we are passing a directory to store important output files, then change a few parameters
-if ($options{data_directory}){
-	if ($included_subpipelines{'sra'}){
-		$config{'global'}->{'$;DATA_DIR$;'} = $options{data_directory};
-	}
+if ($included_subpipelines{'post'}){
+	$config{'global'}->{'$;DATA_DIR$;'} = $options{data_directory};
 }
 
 	# open config file for writing
@@ -387,7 +387,7 @@ sub check_options {
 
    	$debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   	foreach my $req ( qw(sra_id refseq_reference) ) {
+   	foreach my $req ( qw(refseq_reference) ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    	}
 
@@ -396,10 +396,11 @@ sub check_options {
    	$included_subpipelines{lgtseek} = 1;	# LGTSeek is required... duh!
 
 	&_log($ERROR, "ERROR - Cannot specify both an SRA ID and a BAM input file.  Choose one.") if ($opts->{sra_id} && $opts->{bam_id});
-	&_log($ERROR, "ERROR - Must specify either an SRA ID or a BAM input file.") if (!($opts->{sra_id} || $opts->{bam_id}));
+	&_log($ERROR, "ERROR - Must specify either an SRA ID or a BAM input file.") if (!($opts->{sra_id} || $opts->{bam_input}));
 
 	if ($opts->{'sra_id'}) {
    		$included_subpipelines{sra} = 1;
+		$included_subpipelines{post} = 1 if $opts->{'data_directory'};
 	}
 	if ($opts->{'bam_input'}) {
 		$included_subpipelines{sra} = 0;
