@@ -112,7 +112,7 @@ sub main {
 						  "donor_reference|d=s",
 						  "refseq_reference|r=s",
 						  "build_indexes|B",
-						  "bam_input|b",
+						  "bam_input|b=s",
 						  "template_directory|t=s",
 						  "output_directory|o=s",
 						  "data_directory|O=s",
@@ -165,9 +165,7 @@ sub main {
 
 	# Write the pipeline config file
 	foreach my $sp ( keys %included_subpipelines ) {
-		if ($sp eq 'sra') {
-			&add_config( \%config, $pipelines->{ $sp } );
-		} else {
+		if ($sp eq 'lgtseek') {
 			if ($donor_only) {
 			    &add_config( \%config, $pipelines->{ $sp }, "pipeline.donor_only.config");
 			} elsif ($host_only) {
@@ -175,6 +173,17 @@ sub main {
 			} else {
 			    &add_config( \%config, $pipelines->{ $sp } );
 			}
+		} elsif ($sp eq 'indexing') {
+			if ($donor_only) {
+   				&add_config(\%config, $pipelines->{$sp}, "pipeline.donor_only.config");
+			} elsif ($host_only) {
+				&add_config(\%config, $pipelines->{$sp}, "pipeline.host_only.config");
+			} else {
+				&add_config(\%config, $pipelines->{$sp} );
+
+			}
+		} else {
+			&add_config( \%config, $pipelines->{ $sp }) if $included_subpipelines{$sp};
 		}
 	}
 
@@ -188,9 +197,10 @@ sub main {
 	}
 
 	# If the starting point is BAM input, then use that.
+	# Default is to point lgt_bwa.recipient to use the sra2fastq output list
 	if ($options{bam_input}) {
 		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
-		$config{"lgt_bwa recipient"}->{'$;PAIRED;'} = 1;
+		$config{"lgt_bwa recipient"}->{'$;PAIRED$;'} = 1;
 	} else {
 		$config{"global"}->{'$;SRA_RUN_ID$;'} = $options{sra_id};
 	}
@@ -199,11 +209,11 @@ sub main {
 
 	if ($donor_only) {
 		# In donor-only alignment cases, we do not keep the 'MM' matches, so no microbiome run
+
 		if ($options{bam_input}) {
+			# If starting from BAM instead of SRA, then change QUERY_FILE to use BAM input
 			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = $options{bam_input};
-			$config{"lgt_bwa donor"}->{'$;PAIRED;'} = 1;
-		} else {
-			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
+			$config{"lgt_bwa donor"}->{'$;PAIRED$;'} = 1;
 		}
 		$config{"lgt_bwa_post_process default"}->{'$;RECIPIENT_FILE_LIST$;'} = '';
 		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT host BAM file list,create microbiome BAM file list,create no-map BAM file list';
@@ -222,12 +232,6 @@ sub main {
 	if ($host_only) {
 		# In a host-only run, we do not keep the 'MM' matches, so no microbiome run
 
-		if ($options{bam_input}) {
-			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
-			$config{"lgt_bwa recipient"}->{'$;PAIRED;'} = 1;
-		} else {
-			$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
-		}	# I think this if/else block is not necessary.
 		$config{"lgt_bwa_post_process default"}->{'$;DONOR_FILE_LIST$;'} = '';
 		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT host BAM file list,create microbiome BAM file list';
 		$config{"filter_dups_lc_seqs lgt"}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_bwa_post_process/$;PIPELINEID$;_default/lgt_bwa_post_process.single_map.bam.list';
@@ -264,6 +268,7 @@ sub main {
 			$config{'lgt_bwa donor'}->{'$;INPUT_FILE$;'} = '';
 			$config{'lgt_bwa donor'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_donor/lgt_build_bwa_index.fsa.list';
 		}
+
 	} else {
 		# If not building indexes, delete reference to lgt_build_bwa_index config
 		delete $config{"lgt_build_bwa_index refseq"};
