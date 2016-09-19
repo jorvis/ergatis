@@ -78,14 +78,14 @@ use Thread::Semaphore;
 use warnings;
 use strict;
 
-my $dups    = {};
+my $dups    = ();
 my %options = ();
 my @threads;
 
 ### Sampling analysis hashes
-my $comp_counter = {};
-my $dup_counts = {};
-my $genes_by_category = {};
+my $comp_counter = ();
+my $dup_counts = ();
+my $genes_by_category = ();
 
 my $results = GetOptions(
     \%options,
@@ -158,7 +158,7 @@ print STDERR "done.\n";
 
 my %dbs;        #Keeps track of organism name entries
 my @genomes;    #Also keeps track of org entries
-my $genes = {}; # keeps track of query_db -> query_prot -> subject_db
+my $genes = (); # keeps track of query_db -> query_prot -> subject_db
 
 #my $genes = DBM::Deep->new( ".pangenome.temp.db" );
 
@@ -166,7 +166,7 @@ print STDERR "Processing results...";
 # Create profile hash structure from the binary input structure
 foreach my $qgenome (keys %$results_ref) {
     next if ($db_filter && !$db_filter->{$qgenome});    # skip genome if not in optional filter list
-    $genes->{$qgenome} = {};
+    $genes->{$qgenome} = ();
     $dbs{$qgenome} = 1;
     foreach my $qgene (keys %{$results_ref->{$qgenome}}) {
         $genes->{$qgenome}->{$qgene} = {};
@@ -226,7 +226,7 @@ sub do_analysis_with_sampling {
         print STDERR "multiplicity: $options{multiplicity}\nest. # comparisons: $est_comparisons\n";
     }
 
-    $comp_counter = {};
+    $comp_counter = ();
 
     my $max = scalar @genomes;
 
@@ -283,10 +283,10 @@ sub do_analysis_with_sampling {
 					my $sort_vec_string = join(':', @sorted_vec);
 
                     unless ( defined $seen{$j}{$sort_vec_string} ) {
-                        $dup_counts = {};
+                        $dup_counts = ();
                         # Counter to track number of iterations of comparison genome in use per size-$i ref genomes
                         $comp_counter->{$comp_genome}->{$i}++;
-                        $genes_by_category = {};
+                        $genes_by_category = ();
 
                         # Iterate through the genes in the query genome
                         GENE:
@@ -330,7 +330,7 @@ sub do_analysis_with_sampling {
 }
 
 sub do_analysis_no_sampling {
-    $comp_counter = {};
+    $comp_counter = ();
     my $max          = scalar @genomes;
 
     # Get combinations of reference genomes of size $i
@@ -355,9 +355,9 @@ sub do_analysis_no_sampling {
                 $sem->down();   # Note resource is being used
                 # Each comparison genome will be compared to the reference genomes
                 foreach my $comp_genome (@comparison_set) {
-                    $dup_counts = {};
+                    $dup_counts = ();
                     $comp_counter->{$comp_genome}->{$i}++;
-                    $genes_by_category = {};
+                    $genes_by_category = ();
 
                     # Process each gene from the comparison genome
                     GENE:
