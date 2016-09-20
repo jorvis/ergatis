@@ -38,7 +38,7 @@
             </param>
             <param>  
                 <key>--output_list</key>
-                <value>$;m8_OUTPUT_LIST$;</value>
+                <value>$;M8_OUTPUT_LIST$;</value>
             </param>
         </command>
         <command>
