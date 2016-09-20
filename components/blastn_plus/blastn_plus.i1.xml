@@ -7,16 +7,16 @@
             <type>RunUnixCommand</type>
             <name>run blastn+</name>
             <state>incomplete</state>
-            <executable>$;BLASTPLUS_BIN$;</executable>
-            <arg>blastn -task $;ALGORITHM$; -query $;I_FILE_PATH$; -db $;DATABASE_PATH$; -evalue $;EXPECT$; -dust '$;FILTER$;' -num_alignments $;DATABASE_MATCHES$; -num_descriptions $;DESCRIPTIONS$; -outfmt 11 -out $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn $;OTHER_OPTS$;</arg>
+			<executable>$;BLASTPLUS_BIN$;/blastn</executable>
+            <arg>-task $;ALGORITHM$; -query $;I_FILE_PATH$; -db $;DATABASE_PATH$; -evalue $;EXPECT$; -dust '$;FILTER$;' -num_alignments $;DATABASE_MATCHES$; -num_descriptions $;DESCRIPTIONS$; -outfmt 11 -out $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn $;OTHER_OPTS$;</arg>
 		</command>
 		<!-- This command is used in the LGTSeek pipeline -->
         <command>
             <type>RunUnixCommand</type>
             <name>format asn to m8</name>
             <state>incomplete</state>
-            <executable>$;BLASTPLUS_BIN$;</executable>
-            <arg>blast_formatter -archive $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn -outfmt 6 </arg>
+			<executable>$;BLASTPLUS_BIN$;/blast_formatter</executable>
+            <arg>-archive $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn -outfmt 6 </arg>
             <param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.m8</value>
@@ -27,8 +27,8 @@
             <type>RunUnixCommand</type>
             <name>format asn to pairwise</name>
             <state>incomplete</state>
-            <executable>$;BLASTPLUS_BIN$;</executable>
-            <arg>blast_formatter -archive $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn -outfmt 0 </arg>
+			<executable>$;BLASTPLUS_BIN$;/blast_formatter</executable>
+            <arg>-archive $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn -outfmt 0 </arg>
             <param>
 				<key>stdout</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
