@@ -8,7 +8,11 @@
             <name>run blastn+</name>
             <state>incomplete</state>
 			<executable>$;BLASTPLUS_BIN$;/blastn</executable>
-            <arg>-task $;ALGORITHM$; -query $;I_FILE_PATH$; -db $;DATABASE_PATH$; -evalue $;EXPECT$; -dust '$;FILTER$;' -num_alignments $;DATABASE_MATCHES$; -num_descriptions $;DESCRIPTIONS$; -outfmt 11 -out $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn $;OTHER_OPTS$;</arg>
+            <arg>-task $;ALGORITHM$; -query $;I_FILE_PATH$; -db $;DATABASE_PATH$; -evalue $;EXPECT$; -dust '$;FILTER$;' -num_alignments $;DATABASE_MATCHES$; -num_descriptions $;DESCRIPTIONS$; -outfmt 11 $;OTHER_OPTS$;</arg>
+            <param>
+				<key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn</value>
+			</param>  
 		</command>
 		<!-- This command is used in the LGTSeek pipeline -->
         <command>

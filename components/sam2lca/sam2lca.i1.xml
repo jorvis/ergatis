@@ -8,8 +8,8 @@
             <name>Get lowest common ancestor from SAM reads</name>
             <executable>$;BIN_DIR$;/sam2lca</executable>
             <param>
-                <key>--input_list</key>
-                <value>$;INPUT_FILE_LIST$;</value>
+                <key>--input_file</key>
+                <value>$;I_FILE_PATH$;</value>
             </param>
             <param>
                 <key>--tax_id_file</key>
@@ -25,7 +25,7 @@
             </param>
             <param>
                 <key>--output_file</key>
-                <value>$;OUTPUT_DIRECTORY$;/sam2lca.out</value>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sam2lca.out</value>
             </param>
             <param>
                 <key>--tmp_dir</key>
@@ -49,11 +49,11 @@
             </param>
             <param>
                 <key>stdout</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/lgt_sam2fasta.stdout</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sam2lca.stdout</value>
             </param>
             <param>
                 <key>stderr</key>
-                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/lgt_sam2fasta.stderr</value>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.sam2lca.stderr</value>
             </param>
         </command>
     </commandSet>
