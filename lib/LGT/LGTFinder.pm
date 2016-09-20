@@ -84,6 +84,8 @@ sub findLGT {
     open OUTCLONE, ">$output_dir/$filename\_by_clone.txt"
       or die
       "Couldn't open by_clone output: $output_dir/$filename\_by_clone.txt $!";
+    print OUTCLONE
+      "Clone\tDonor-genera\tHost-genera\td-read\td-eval\td-align-len\td-lineage\td-hit-filter\th-read\th-eval\th-align-len\th-lineage\th-hit-filter\n";
     open OUTTRACE, ">$output_dir/$filename\_by_trace.txt"
       or die
       "Couldn't open by_trace output: $output_dir/$filename\_by_trace.txt $!";
