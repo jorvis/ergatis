@@ -214,6 +214,8 @@ sub main {
 			# If starting from BAM instead of SRA, then change QUERY_FILE to use BAM input
 			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = $options{bam_input};
 			$config{"lgt_bwa donor"}->{'$;PAIRED$;'} = 1;
+		} else {
+            $config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		}
 		$config{"lgt_bwa_post_process default"}->{'$;RECIPIENT_FILE_LIST$;'} = '';
 		$config{"lgt_bwa_post_process default"}->{'$;SKIP_WF_COMMAND$;'} = 'create LGT host BAM file list,create microbiome BAM file list,create no-map BAM file list';
