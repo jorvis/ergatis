@@ -1,0 +1,125 @@
+#!/bin/sh
+if [ -z "$SCHEMA_DOCS_DIR" ]
+then
+    SCHEMA_DOCS_DIR=
+export SCHEMA_DOCS_DIR
+fi
+if [ -z "$WORKFLOW_WRAPPERS_DIR" ]
+then
+    WORKFLOW_WRAPPERS_DIR=/opt/ergatis/bin
+export WORKFLOW_WRAPPERS_DIR
+fi
+if [ -z "$WORKFLOW_DOCS_DIR" ]
+then
+    WORKFLOW_DOCS_DIR=
+export WORKFLOW_DOCS_DIR
+fi
+
+umask 0000
+unset LD_LIBRARY_PATH
+
+LANG=C
+export LANG
+LC_ALL=C
+export LC_ALL
+
+# Actual script code starts here
+
+### run_blast_plus.sh ###
+# Author: Shaun Adkins (sadkins@som.umaryland.edu)
+# This script is to configure and run BLAST+ on a given input file.
+# The script will
+#   a) Choose the correct BLAST output format depending on if --remote is used
+#   b) Format the output using 'blast_formatter' so that both pairwise and m8 formats are present
+
+while [[ $# -ge 1 ]]
+do
+i="$1"
+# splitting on "=" since Ergatis constructs args with --arg=val syntax
+arg=$(echo $i | cut -f1 -d "=")
+val=$(echo $i | cut -f2 -d "=")
+
+case $arg in
+    --blast_plus_bin)
+    blast_plus_bin="$val"
+    ;;
+    --blast_type)
+    blast_type="$val"
+    ;;
+    --db)
+    db="$val"
+    ;;
+    --dust)
+    dust="$val"
+    ;;
+    --evalue)
+    evalue="$val"
+    ;;
+    --max_target_seqs)
+    max_target_seqs="$val"
+    ;;
+    --out)
+    out="$val"
+    ;;
+    --other_opts)
+    other_opts="$val"
+    --query)
+    query="$val"
+    ;;
+    --task)
+    task="$val"
+    ;;
+esac
+shift
+done
+
+if [ ! -d "$blast_plus_bin" ]; then
+	echo "Cannot find BLAST+ directory at $blast_plus_bin: Exiting" >&2
+	exit 1
+fi
+
+# Determine if -remote was an option
+if [ $other_opts == *"remote"* ]; then
+    remote=true
+else
+    remote=false
+fi
+
+# Setup and run the BLAST+ command
+blast_plus_cmd="${blast_plus_bin}/$blast_type"
+blast_plus_cmd="$blast_plus_cmd -db $db -dust $dust -evalue $evalue -max_target_seqs $max_target_seqs -query $query -task $task $other_opts"
+
+# For remote searches, output needs to be pairwise.  Non-remote needs to be ASN
+if [ $remote ]; then
+    blast_plus_cmd="$blast_plus_cmd -outfmt 0 -out $out"
+else
+    blast_plus_cmd="$blast_plus_cmd -outfmt 11 -out $out.asn"
+fi
+
+echo "$blast_plus_cmd"
+$blast_plus_cmd
+
+# Time to run blast_formatter, either once or twice depending on -remote
+blast_fmtr_cmd="${blast_plus_bin}/blast_formatter"
+
+if [ $remote ]; then
+    RID=$(grep "RID" $out | cut -d' ' -f2)
+    if [ $RID ]; then
+        blast_m8_cmd="$blast_fmtr_cmd -rid $RID -outfmt 6 -out $out.m8"
+        echo "$blast_m8_cmd"
+        $blast_m8_cmd
+    else
+        echo "Cannot obtain RID from BLAST+ remote pairwise output $out: Exiting" >&2
+    	exit 1
+    fi
+
+else
+    blast_pairwise_cmd="$blast_fmtr_cmd -archive $out.asn -outfmt 0 -out $out"
+    blast_m8_cmd="$blast_fmtr_cmd -archive $out.asn -outfmt 6 -out $out.m8"
+    echo "$blast_pairwise_cmd"
+    $blast_pairwise_cmd
+    echo "$blast_m8_cmd"
+    $blast_m8_cmd
+fi
+
+exit 0

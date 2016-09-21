@@ -7,52 +7,59 @@
             <type>RunUnixCommand</type>
             <name>run blastn+</name>
             <state>incomplete</state>
-			<executable>$;BLASTPLUS_BIN$;/blastn</executable>
-            <arg>-task $;ALGORITHM$; -query $;I_FILE_PATH$; -db $;DATABASE_PATH$; -evalue $;EXPECT$; -dust '$;FILTER$;' -num_alignments $;DATABASE_MATCHES$; -num_descriptions $;DESCRIPTIONS$; -outfmt 11 $;OTHER_OPTS$;</arg>
+			<executable>$;BIN_DIR$;/run_blast_plus</executable>
             <param>
-				<key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn</value>
-			</param>  
+                <key>--blast_plus_bin</key>
+                <value>$;BLASTPLUS_BIN$;</value>
+            </param>
+            <param>
+                <key>--blast_plus_type</key>
+                <value>blastn</value>
+            </param>
+            <param>
+                <key>--task</key>
+                <value>$;ALGORITHM$;</value>
+            </param>
+            <param>
+                <key>--query</key>
+                <value>$;I_FILE_PATH$;</value>
+            </param>
+            <param>
+                <key>--db</key>
+                <value>$;DATABASE_PATH$;</value>
+            </param>
+            <param>
+                <key>--evalue</key>
+                <value>$;EXPECT$;</value>
+            </param>
+            <param>
+                <key>--dust</key>
+                <value>$;FILTER$;</value>
+            </param>
+            <param>
+                <key>--max_target_seqs</key>
+                <value>$;MAX_TARGET_SEQS$;</value>
+            </param>
+            <param>
+                <key>--other_opts</key>
+                <value>$;OTHER_OPTS$;</value>
+            </param>  
 		</command>
-		<!-- This command is used in the LGTSeek pipeline -->
-        <command>
-            <type>RunUnixCommand</type>
-            <name>format asn to m8</name>
-            <state>incomplete</state>
-			<executable>$;BLASTPLUS_BIN$;/blast_formatter</executable>
-            <arg>-archive $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn -outfmt 6 </arg>
-            <param>
-				<key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.m8</value>
-			</param>  
-        </command>
-		<!-- Following stuff deals with things used in the Prokaryotic Annotation Pipeline -->
-        <command>
-            <type>RunUnixCommand</type>
-            <name>format asn to pairwise</name>
-            <state>incomplete</state>
-			<executable>$;BLASTPLUS_BIN$;/blast_formatter</executable>
-            <arg>-archive $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.asn -outfmt 0 </arg>
-            <param>
-				<key>stdout</key>
-				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
-			</param>  
-        </command>
         <command>
             <type>RunUnixCommand</type>
             <name>convert raw to btab</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/blast2btab</executable>
-            <param>  
+            <param>
                 <key>--input</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>
-            <param>  
+            <param>
                 <key>--output</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.btab</value>
-	    </param>
-	    <param>
-	      <key>--split</key>
+           </param>
+           <param>
+              <key>--split</key>
               <value>$;SPLIT_BTAB$;</value>
             </param>
         </command>
@@ -103,27 +110,27 @@
             <name>store config params</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/analysis2bsml</executable>
-            <param>  
+            <param>
                 <key>--ergatis_control_file</key>
                 <value>$;ERGATIS_DIR$;.ini</value>
             </param>
-            <param>  
+            <param>
                 <key>--conf</key>
                 <value>$;COMPONENT_CONFIG$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--bsml_file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.bsml</value>
             </param>
-            <param>  
+            <param>
                 <key>--componenturl</key>
                 <value>$;WORKFLOW_REPOSITORY$;/component.xml</value>
             </param>
-            <param>  
+            <param>
                 <key>--pipelineurl</key>
                 <value>$;REPOSITORY_ROOT$;/workflow/runtime/pipeline/$;PIPELINEID$;/pipeline.xml</value>
             </param>
-            <param>  
+            <param>
                 <key>--analysis_id</key>
                 <value>$;COMPONENT_NAME$;_analysis</value>
             </param>
@@ -133,15 +140,15 @@
             <name>compress raw output</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/compress_file</executable>
-            <param>  
+            <param>
                 <key>--file</key>
                 <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>
-            <param>  
+            <param>
                 <key>--compress</key>
                 <value>$;COMPRESS_RAW_OUTPUT$;</value>
             </param>
-            <param>  
+            <param>
                 <key>--list_file</key>
                 <value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw.list</value>
             </param>
@@ -151,7 +158,7 @@
             <name>dtd validation</name>
             <state>incomplete</state>
             <executable>$;BIN_DIR$;/dtdValid.pl</executable>
-            <param>  
+            <param>
                 <key>-d</key>
                 <value>$;DOCS_DIR$;/bsml3_1.dtd</value>
             </param>
