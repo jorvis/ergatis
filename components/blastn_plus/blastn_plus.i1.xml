@@ -13,7 +13,7 @@
                 <value>$;BLASTPLUS_BIN$;</value>
             </param>
             <param>
-                <key>--blast_plus_type</key>
+                <key>--blast_type</key>
                 <value>blastn</value>
             </param>
             <param>
@@ -29,6 +29,10 @@
                 <value>$;DATABASE_PATH$;</value>
             </param>
             <param>
+                <key>--remote</key>
+                <value>$;REMOTE$;</value>
+            </param>
+            <param>
                 <key>--evalue</key>
                 <value>$;EXPECT$;</value>
             </param>
@@ -39,10 +43,22 @@
             <param>
                 <key>--max_target_seqs</key>
                 <value>$;MAX_TARGET_SEQS$;</value>
-            </param>
+			</param>
+            <param>
+                <key>--out</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
+            </param>  
             <param>
                 <key>--other_opts</key>
                 <value>$;OTHER_OPTS$;</value>
+            </param>  
+            <param>
+                <key>stdout</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stdout</value>
+            </param>  
+            <param>
+                <key>stderr</key>
+				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.stderr</value>
             </param>  
 		</command>
         <command>

@@ -63,9 +63,13 @@ case $arg in
     ;;
     --other_opts)
     other_opts="$val"
+	;;
     --query)
     query="$val"
     ;;
+	--remote)
+	remote="${val:-0}"
+	;;
     --task)
     task="$val"
     ;;
@@ -78,22 +82,17 @@ if [ ! -d "$blast_plus_bin" ]; then
 	exit 1
 fi
 
-# Determine if -remote was an option
-if [ $other_opts == *"remote"* ]; then
-    remote=true
-else
-    remote=false
-fi
-
 # Setup and run the BLAST+ command
 blast_plus_cmd="${blast_plus_bin}/$blast_type"
-blast_plus_cmd="$blast_plus_cmd -db $db -dust $dust -evalue $evalue -max_target_seqs $max_target_seqs -query $query -task $task $other_opts"
+blast_plus_cmd="$blast_plus_cmd -db $db -dust $dust -evalue $evalue -query $query -task $task $other_opts"
 
 # For remote searches, output needs to be pairwise.  Non-remote needs to be ASN
-if [ $remote ]; then
-    blast_plus_cmd="$blast_plus_cmd -outfmt 0 -out $out"
+if [ $remote -eq 0 ]; then
+	# Local version
+    blast_plus_cmd="$blast_plus_cmd -outfmt 11 -out $out.asn -max_target_seqs $max_target_seqs"
 else
-    blast_plus_cmd="$blast_plus_cmd -outfmt 11 -out $out.asn"
+	# Remote version
+    blast_plus_cmd="$blast_plus_cmd -outfmt 0 -out $out -num_descriptions $max_target_seqs -num_alignments $max_target_seqs -remote"
 fi
 
 echo "$blast_plus_cmd"
@@ -102,7 +101,16 @@ $blast_plus_cmd
 # Time to run blast_formatter, either once or twice depending on -remote
 blast_fmtr_cmd="${blast_plus_bin}/blast_formatter"
 
-if [ $remote ]; then
+if [ $remote -eq 0 ]; then
+	# Local
+    blast_pairwise_cmd="$blast_fmtr_cmd -archive $out.asn -outfmt 0 -out $out"
+    blast_m8_cmd="$blast_fmtr_cmd -archive $out.asn -outfmt 6 -out $out.m8"
+    echo "$blast_pairwise_cmd"
+    $blast_pairwise_cmd
+    echo "$blast_m8_cmd"
+    $blast_m8_cmd
+else
+	# Remote
     RID=$(grep "RID" $out | cut -d' ' -f2)
     if [ $RID ]; then
         blast_m8_cmd="$blast_fmtr_cmd -rid $RID -outfmt 6 -out $out.m8"
@@ -112,14 +120,6 @@ if [ $remote ]; then
         echo "Cannot obtain RID from BLAST+ remote pairwise output $out: Exiting" >&2
     	exit 1
     fi
-
-else
-    blast_pairwise_cmd="$blast_fmtr_cmd -archive $out.asn -outfmt 0 -out $out"
-    blast_m8_cmd="$blast_fmtr_cmd -archive $out.asn -outfmt 6 -out $out.m8"
-    echo "$blast_pairwise_cmd"
-    $blast_pairwise_cmd
-    echo "$blast_m8_cmd"
-    $blast_m8_cmd
 fi
 
 exit 0
