@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
 		<name>sam2lca compute</name>
@@ -9,7 +8,7 @@
             <executable>$;BIN_DIR$;/sam2lca</executable>
             <param>
                 <key>--input_list</key>
-                <value>$;INPUT_LIST$;</value>
+                <value>$;INPUT_FILE_LIST$;</value>
             </param>
             <param>
                 <key>--tax_id_file</key>
