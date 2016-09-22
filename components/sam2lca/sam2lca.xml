@@ -50,7 +50,7 @@
 		    </param>
 		</command>
 		<!-- using distributed-serial instead of remote-serial since that will allow it to run locally if need be (like in Docker) -->
-		<commandSet type="distributed-serial">
+		<commandSet type="remote-serial">
 			<state>incomplete</state>
 			<name>sam2lca distributed</name>
 			<fileName>$;WORKFLOW_REPOSITORY$;/sam2lca_distributed.xml.gz</fileName>
