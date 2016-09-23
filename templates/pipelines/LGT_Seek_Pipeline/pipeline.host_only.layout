@@ -48,7 +48,7 @@
 							</commandSet>
 							<commandSet type="serial">
 								<state>incomplete</state>
-								<name>ncbi-blastn.nt</name>
+								<name>blastn_plus.nt</name>
 							</commandSet>
 							<commandSet type="serial">
 								<state>incomplete</state>
