@@ -109,9 +109,11 @@ if [ $remote -eq 0 ]; then
     $blast_pairwise_cmd
     echo "$blast_m8_cmd"
     $blast_m8_cmd
+	echo "Now removing ASN file"
+	`rm $out.asn`
 else
 	# Remote
-    RID=$(grep "RID" $out | cut -d' ' -f2)
+    RID=$(grep "RID" $out | cut -d' ' -f2 | head -1)
     if [ $RID ]; then
         blast_m8_cmd="$blast_fmtr_cmd -rid $RID -outfmt 6 -out $out.m8"
         echo "$blast_m8_cmd"
