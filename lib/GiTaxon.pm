@@ -165,8 +165,7 @@ sub getTaxon {
             $taxonid = $taxon_lookup->{'taxon'};
         }
         else {
-            print STDERR
-"*** GiTaxon-getTaxon: Unable to find taxon for $gi, Checking NCBI\n";
+			#print STDERR "*** GiTaxon-getTaxon: Unable to find taxon for $gi, Checking NCBI\n";
             my $factory = Bio::DB::EUtilities->new(
                 -eutil => 'esummary',
                 -email => 'example@foo.bar',
@@ -187,8 +186,7 @@ sub getTaxon {
                         { '$set' => { 'gi'     => "$gi", 'taxon' => $taxonid } },
                         { 'upsert' => 1, 'safe' => 1 }
                     );
-                    print STDERR
-                      "*** GiTaxon-getTaxon: Added $gi\t$taxonid to the db\n";
+                    #print STDERR "*** GiTaxon-getTaxon: Added $gi\t$taxonid to the db\n";
                 }
             }
 
@@ -247,6 +245,7 @@ sub getTaxon {
     return $retval;
 }
 
+# Insert data from the data dump file into the MongoDB collection if the collection does not exist
 sub getgi2taxon {
     my ( $self, $data_file ) = @_;
 
@@ -256,13 +255,14 @@ sub getgi2taxon {
 	# If collection not found in database, update the db using the datafile
     if ($data_file) {
 	       if ( !$coll->find_one() ) {
-            print
+            print STDERR
 "Found nothing in database $self->{gi_db} collection $self->{gi_coll} on $self->{host}\n";
-            print "Getting the line count\n";
+            print "Getting the line count of the data file...\n";
             my $lc = `wc -l $data_file`;
             chomp $lc;
             $lc =~ s/\s.*//;
-            print "Got the line count\n";
+            print "Got the line count - Lines: $lc\n";
+			die;
             open IN, "<$data_file" or die "Unable to open $data_file\n";
             my $num_in_chunk = 0;
             my $total        = 0;
@@ -292,8 +292,8 @@ sub getgi2taxon {
 
             close IN;
             $coll->ensure_index( { 'gi' => 1 }, { 'safe' => 1 } );
-        }
-    }
+		}
+	}
     return $coll;
 }
 
