@@ -1636,7 +1636,7 @@ sub blast2lca {
     }    ## KBS
     print OUT "\n";
     my $hits_by_readname = {};
-    my $id;
+    my $id = '';
     my $evalue_cutoff = 1;
     my $best_evalue;
     my $worst_evalue;

@@ -228,7 +228,6 @@ sub _init_lineages {
 # Process the BLAST m8 output.
 sub _process_file {
     my $fh = shift;
-    use Data::Dumper;
     while (my $line = <$fh>) {
         chomp $line;
         my @new_fields = split( /\t/, $line );
@@ -286,9 +285,7 @@ sub _process_file {
 sub _append_hits {
     my $hits      = shift;
     my $list_name = shift;
-
     my $template_id = $hits->[0]->[12];
-
     my $clone = $clones_by_clone_id->{$template_id};
 
     map {
