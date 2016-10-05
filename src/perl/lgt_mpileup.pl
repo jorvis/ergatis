@@ -125,6 +125,7 @@ sub check_options {
    }
 
    $output_dir = $opts->{'output_dir'};
+
 }
 
 sub _log {

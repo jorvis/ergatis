@@ -2062,13 +2062,13 @@ sub mpileup {
 
     ## If BAM isn't sorted, do that first
     if ( $config->{input} ) {
-        $cmd .= " sort -m 5000000000 -o $config->{input} - | $samtools mpileup";
+        $cmd .= " sort -m 5000000000 -o - $config->{input} | $samtools mpileup";
         $srtd_bam = "-";
     } else {
         $cmd      .= " mpileup";
         $srtd_bam = $config->{srtd_bam};
     }
-    $cmd .= " -A $max_opt $ref_opt $srtd_bam > $output";
+    $cmd .= " -A -o $output $max_opt $ref_opt $srtd_bam";
     $self->_run_cmd($cmd);
     if ( $self->{verbose} ) {
         print STDERR "======== &mpileup: Finished ========\n";
