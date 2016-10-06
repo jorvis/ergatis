@@ -100,8 +100,8 @@ Generates two files in the directory specified by --output_dir:
 
 =head1  CONTACT
 
-    Kevin Galens
-    kgalens@gmail.com
+    Shaun Adkins
+    sadkins@som.umaryland.edu
 
 =cut
 
@@ -200,6 +200,8 @@ foreach my $database (keys %db){
                         'fmax' => $gene_row->[3] - $c->{'start'},
                         'strand' => $gene_row->[4],
                         'type' => $gene_row->[5],
+                        'fmin_partial' => $gene_row->[6],
+                        'fmax_partial' => $gene_row->[7],
                         'gpn' => $gpn
                     };
                     if( $tmp->{'fmin'} < 0 and $tmp->{'fmax'} < 0 ) {
@@ -228,6 +230,8 @@ foreach my $database (keys %db){
                         'fmax' => $gene_row->[3] - $c->{'start'},
                         'strand' => $gene_row->[4],
                         'type' => $gene_row->[5],
+                        'fmin_partial' => $gene_row->[6],
+                        'fmax_partial' => $gene_row->[7],
                         'gpn' => $gpn
                     };
 
@@ -272,9 +276,11 @@ exit(0);
 sub add_feature {
     my ($ofh, $g, $feature_type, $clength) = @_;
     my ($s, $e) = ($g->{'strand'} > 0) ? ($g->{'fmin'}+1,$g->{'fmax'}) : ($g->{'fmax'}, $g->{'fmin'}+1);    #determine start and end sites
+    my ($partial_5end, $partial_3end) = ($g->{'strand'} > 0) ? ($g->{'fmin_partial'}, $g->{'fmax_partial'}) : ($g->{'fmax_partial'}, $g->{'fmin_partial'}));
 
     my $codon_start;
-    if( $s < 1 ) {
+    # If the start coordinate is less than 1, or if it is 1, and the 5' partial flag is set in the db...
+    if( $s < 1 || $partial_5end ) {
         $s = "<1";
         my $m = $e%3;
         if( $m == 1 ) {
@@ -284,7 +290,7 @@ sub add_feature {
         } elsif( $m == 0 ) {
             $codon_start = 1;
         }
-    } elsif( $s > $clength ) {
+    } elsif( $s > $clength || $partial_5end ) {
         $s = "<$clength";
         my $delta = ($clength - $e) + 1;
         my $m = $delta%3;
@@ -297,9 +303,9 @@ sub add_feature {
         }
     }
 
-    if( $e < 1 ) {
+    if( $e < 1 || $partial_3end ) {
         $e = ">1";
-    } elsif( $e > $clength ) {
+    } elsif( $e > $clength || $partial_3end ) {
         $e = ">$clength";
     }
 
@@ -451,7 +457,7 @@ sub prepare_queries {
         "WHERE c.name = 'assembly' AND c.cvterm_id = f.type_id";
     $queries->{'get_assembly'} = $DBH->prepare($q);
 
-    $q = "SELECT f.feature_id, f.uniquename, fl.fmin, fl.fmax, fl.strand, c.name ".
+    $q = "SELECT f.feature_id, f.uniquename, fl.fmin, fl.fmax, fl.strand, c.name, fl.is_fmin_partial, fl.is_fmax_partial ".
         "FROM feature f, featureloc fl, cvterm c ".
         "WHERE f.feature_id = fl.feature_id ".
         "AND c.cvterm_id = f.type_id AND ".
@@ -475,7 +481,7 @@ sub prepare_queries {
         "AND fc.cvterm_id = c.cvterm_id AND fc.feature_id = ?";
     $queries->{'get_ec'} = $DBH->prepare( $q );
 
-    $q = "SELECT f.feature_id, f.uniquename, fl.fmin, fl.fmax, fl.strand ".
+    $q = "SELECT f.feature_id, f.uniquename, fl.fmin, fl.fmax, fl.strand, fl.is_fmin_partial, fl.is_fmax_partial ".
         "FROM feature f, featureloc fl, cvterm c ".
         "WHERE f.type_id = c.cvterm_id AND c.name IN ('tRNA', 'rRNA') ".
         "AND f.feature_id = fl.feature_id AND fl.srcfeature_id = ?";

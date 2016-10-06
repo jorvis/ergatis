@@ -753,6 +753,7 @@ for my $feature_id ( keys %$assemblies ) {
 
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
 
+            #NOTE: chado_aengine_dumper only looks at partials where the coordinates exceed the boundaries of (0, length[seq]).  For partial genes, where the chado database has "is_fmin_partial" or "is_fmax_partial" set to 1 from the featureloc table in the database, please use dump_table.pl
             my ($is_5_partial, $is_3_partial) = (0,0);
 
             ## strand: 1 = plus, strand 2 = minus
@@ -830,31 +831,33 @@ for my $feature_id ( keys %$assemblies ) {
 
                 ## we need to specify a codon_start if it's a partial gene
                 if ( $is_5_partial ) {
+                    my $codon_start = 1;
+                    # NOTE:  $feat->end is the 5' start site if the strand is minus.
+                    # SAdkins - 10/6/16 - Thinking this should rely on (3'coord%3) to determine codon_start site, just like dump_table.pl
                     if ( $feat->strand != 1 ) {
-
-                        my $offset = $assembly_length - $feat->end;
                         #print STDERR "INFO: exporting a different codon_start for reverse locus ($locus_tag) ($offset), offset calculated by: $assembly_length - (" . $feat->end . ")\n";
 
+                        my $offset = $assembly_length - $feat->end;
                         if ( $offset == -1 ) {
-                            print $tbl_fh "\t\t\tcodon_start\t3\n";  ## tested on gss1617_contigs.SD1617_0004
+                            $codon_start = 3;
                         } elsif ( $offset == -2 ) {
-                            print $tbl_fh "\t\t\tcodon_start\t2\n";
+                            $codon_start = 2;
                         } elsif ( $offset == -3 ) {
-                            #print $tbl_fh "\t\t\tcodon_start\t3\n";
+                            $codon_start = 1;
                         }
-
                     } else {
-
-                        print STDERR "INFO: exporting a different codon_start for forward locus ($locus_tag) ($min_coord)\n";
+                        #print STDERR "INFO: exporting a different codon_start for forward locus ($locus_tag) ($min_coord)\n";
 
                         if ( $min_coord == 0 ) {
-                            print $tbl_fh "\t\t\tcodon_start\t3\n";
+                            $codon_start = 3;
                         } elsif ( $min_coord == -1 ) {
-                            print $tbl_fh "\t\t\tcodon_start\t2\n";
+                            $codon_start = 2;
                         } elsif ( $min_coord == -2 ) {
-                            print $tbl_fh "\t\t\tcodon_start\t1\n";
+                            $codon_start = 1;
                         }
                     }
+
+                    print $tbl_fh "\t\t\tcodon_start\t$codon_start\n";  ## tested on gss1617_contigs.SD1617_0004
                 }
 
                 if ( $feat->has_tag('product') ) {
