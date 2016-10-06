@@ -166,14 +166,7 @@ foreach my $database (keys %db){
     $QUERIES{'get_assembly'}->execute();
     # get_assembly returns list of [feature uniquename, sequence, feature id]
     while( my $row = $QUERIES{'get_assembly'}->fetchrow_arrayref() ) {
-		## make contigs
-        #if ($fuzznuc_flag) {
-	    #print "Using fuzznuc search mapping list...\n";
-	#    next unless( exists( $mapping_files{$row->[0]} ) );
-	#    $contigs = &make_contigs_via_map($mapping_files{$row->[0]}, $row->[1], $database);
-        #} else {
 	    $contigs = &make_contigs( $LINKER, $row->[1], $database);
-        #}
 
         ## grab gene sequences
         $QUERIES{'get_transcripts'}->execute($row->[2]);    #execute based on feature_id of "get_assembly"
@@ -280,7 +273,7 @@ sub add_feature {
 
     my $codon_start;
     # If the start coordinate is less than 1, or if it is 1, and the 5' partial flag is set in the db...
-    if( $s < 1 || $partial_5end ) {
+    if( $s < 1 || ($partial_5end && $g->{'strand'} > 0) ) {
         $s = "<1";
         my $m = $e%3;
         if( $m == 1 ) {
@@ -290,7 +283,7 @@ sub add_feature {
         } elsif( $m == 0 ) {
             $codon_start = 1;
         }
-    } elsif( $s > $clength || $partial_5end ) {
+    } elsif( $s > $clength || ($partial_5end && $g->{'strand'} < 0) ) {
         $s = "<$clength";
         my $delta = ($clength - $e) + 1;
         my $m = $delta%3;
@@ -303,9 +296,9 @@ sub add_feature {
         }
     }
 
-    if( $e < 1 || $partial_3end ) {
+    if( $e < 1 || ($partial_3end && $g->{'strand'} < 0) ) {
         $e = ">1";
-    } elsif( $e > $clength || $partial_3end ) {
+    } elsif( $e > $clength || ($partial_3end && $g->{'strand'} > 0) ) {
         $e = ">$clength";
     }
 
