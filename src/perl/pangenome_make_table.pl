@@ -291,8 +291,6 @@ sub do_analysis_with_sampling {
                         # Iterate through the genes in the query genome
                         GENE:
                         foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
-                            $genes_by_category->{$comp_genome}->{'shared'}->{$gene} = 0;
-
                             # Iterate through our N reference genome indexes
                             foreach my $i_ref_genome (@reference_set) {
                                 # grabbing the subject db name
@@ -300,7 +298,8 @@ sub do_analysis_with_sampling {
                                 my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
                                 categorize_shared_gene($hit, $comp_genome, $gene);
                             }
-							my $count = $genes_by_category->{$comp_genome}->{'shared'}->{$gene};
+
+                            my $count = (defined $genes_by_category->{$comp_genome}->{'shared'}->{$gene}) ? $genes_by_category->{$comp_genome}->{'shared'}->{$gene} : 0;
                             categorize_core_gene($comp_genome, $gene) if $count == scalar @reference_set;
                             categorize_new_gene($comp_genome, $gene) if $count == 0;
                           } #/GENE
@@ -362,14 +361,12 @@ sub do_analysis_no_sampling {
                     # Process each gene from the comparison genome
                     GENE:
                     foreach my $gene ( keys( %{ $genes->{$comp_genome} } ) ) {
-                        $genes_by_category->{$comp_genome}->{'shared'}->{$gene} = 0;
-
                         # Keep track of how many ref genomes had a hit for this particular gene
                         foreach my $ref_genome (@reference) {
                             my $hit = $genes->{$comp_genome}->{$gene}->{$ref_genome};
                             categorize_shared_gene($hit, $comp_genome, $gene);
                         }
-                        my $count = $genes_by_category->{$comp_genome}->{'shared'}->{$gene};
+                        my $count = (defined $genes_by_category->{$comp_genome}->{'shared'}->{$gene}) ? $genes_by_category->{$comp_genome}->{'shared'}->{$gene} : 0;
                         categorize_core_gene($comp_genome, $gene) if $count == scalar @reference;
                         categorize_new_gene($comp_genome, $gene) if $count == 0;
 
