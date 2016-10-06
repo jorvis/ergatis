@@ -276,7 +276,7 @@ exit(0);
 sub add_feature {
     my ($ofh, $g, $feature_type, $clength) = @_;
     my ($s, $e) = ($g->{'strand'} > 0) ? ($g->{'fmin'}+1,$g->{'fmax'}) : ($g->{'fmax'}, $g->{'fmin'}+1);    #determine start and end sites
-    my ($partial_5end, $partial_3end) = ($g->{'strand'} > 0) ? ($g->{'fmin_partial'}, $g->{'fmax_partial'}) : ($g->{'fmax_partial'}, $g->{'fmin_partial'}));
+    my ($partial_5end, $partial_3end) = ($g->{'strand'} > 0) ? ($g->{'fmin_partial'}, $g->{'fmax_partial'}) : ($g->{'fmax_partial'}, $g->{'fmin_partial'});
 
     my $codon_start;
     # If the start coordinate is less than 1, or if it is 1, and the 5' partial flag is set in the db...
