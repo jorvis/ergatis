@@ -262,7 +262,6 @@ sub getgi2taxon {
             chomp $lc;
             $lc =~ s/\s.*//;
             print "Got the line count - Lines: $lc\n";
-			die;
             open IN, "<$data_file" or die "Unable to open $data_file\n";
             my $num_in_chunk = 0;
             my $total        = 0;
