@@ -1208,6 +1208,7 @@ sub _bwaPostProcessSingle {
      my $class_to_file_name = {
 		 'single_map' => "$output_dir/" . $prefix . ".single_map.bam",
 		 'no_map'	=> "$output_dir/" . $prefix . ".no_map.bam"
+		 'single_paired_map' => "$output_dir/" . $prefix . ".single_paired_map.bam",
 	 };
 
      my $class_counts = {
@@ -1220,6 +1221,7 @@ sub _bwaPostProcessSingle {
      if ( $self->{verbose} ) {
          print STDERR "$output_dir/" . $prefix . ".single_map.bam\n";
          print STDERR "$output_dir/" . $prefix . ".no_map.bam\n";
+         print STDERR "$output_dir/" . $prefix . ".single_paired_map.bam\n";
      }
      open(
          my $single_map,
@@ -1230,10 +1232,17 @@ sub _bwaPostProcessSingle {
          my $no_map,
          "| $samtools view -S -b -o $output_dir/" . $prefix . ".no_map.bam -"
      ) or die "Unable to open LGT 'no' map file for writing\n";
+
+     open(
+         my $single_paired_map,
+         "| $samtools view -S -b -o $output_dir/" . $prefix . ".single_paired_map.bam -"
+     ) or die "Unable to open LGT single/paired map file for writing\n";
+
 	 # Perhaps in the future I can change these file names to rely on extensions like the Donor/Host subroutine relies on _donor and _host for assigning to the right file - SAdkins
      my $class_to_file = {
          'single_map'  => $single_map,
-		 'no_map'	=> $no_map
+		 'no_map'	=> $no_map,
+		 'single_paired_map' => $single_paired_map
      };
 
      my $bam = defined $config->{donor_bam} ? $config->{donor_bam} : $config->{host_bam};
@@ -1303,10 +1312,15 @@ sub _bwaPostProcessSingle {
   			 # print the single lines to the single_map file (if we are keeping this output file)
              if ( $classes_each->{$paired_class} eq "single" ) {
 				 print { $class_to_file->{"single_map"} } "$r1_line\n$r2_line\n";
+				 print { $class_to_file->{"single_paired_map"} } "$r1_line\n$r2_line\n";
              }
 
              if ( $classes_each->{$paired_class} eq "none" ) {
                  print { $class_to_file->{"no_map"} } "$r1_line\n$r2_line\n";
+             }
+
+             if ( $classes_each->{$paired_class} eq "paired" ) {
+                 print { $class_to_file->{"single_paired_map"} } "$r1_line\n$r2_line\n";
              }
 
              # Increment the count for this class
