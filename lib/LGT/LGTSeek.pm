@@ -1207,7 +1207,7 @@ sub _bwaPostProcessSingle {
      # Use case requires only the single mappings and "none" mappings
      my $class_to_file_name = {
 		 'single_map' => "$output_dir/" . $prefix . ".single_map.bam",
-		 'no_map'	=> "$output_dir/" . $prefix . ".no_map.bam"
+		 'no_map'	=> "$output_dir/" . $prefix . ".no_map.bam",
 		 'single_paired_map' => "$output_dir/" . $prefix . ".single_paired_map.bam",
 	 };
 
