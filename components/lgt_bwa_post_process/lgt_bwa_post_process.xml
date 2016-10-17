@@ -131,7 +131,7 @@
                 <value>".*single_paired_map\.bam"</value>
             </param>
             <param>
-                <key>--output_lisat</key>
+                <key>--output_list</key>
                 <value>$;SINGLE_PAIRED_BAM_OUTPUT_LIST$;</value>
             </param>
 		</command>
