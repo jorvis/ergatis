@@ -132,7 +132,7 @@ my $output_file;
 if ( $options{'output_file'} ) {
     $output_file = $options{'output_file'};
 } else {
-    $output_file = 'pangenome.table.txt';
+    $output_file = 'core_shared_new.table.txt';
 }
 
 if ( !-e $options{'blast_stored_file'} ) {
