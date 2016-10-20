@@ -220,15 +220,21 @@ sub processSeqPairAlignment {
     	($qdb, $qprot) = ($2, $3);
 #    	print "QDB:\t$qdb\tQPROT:\t$qprot\n";
     }
-    elsif ($query_id =~ /^(([^\.]+)\..*)$/) {
-		($qdb, $qprot) = ($2, $1);
-    }
     # handle BSML sequences (for NC GenBank entries) created via genbank2bsml
     elsif ($query_id =~ /^ref\|(NC_\d+)\|(\S+)$/) {
     #elsif ($query_id =~ /^ref_(NC_\d+)_(\S+)$/) {
 		($qdb, $qprot) = ($2, $1);
     } else {
-	die "couldn't parse out db and sequence id from query\n$query_id\n";
+		# Handle situations where header is "name description"
+    	if ($query_id =~ /^(((NC_|NZ_)?[^\.]+)\..*)$/i ||
+			$query_id =~ /^(((NC_|NZ_)?[^_]+)_.*)$/i ) {
+			# Example - NC_016809.1 - QDB=NC_016809, QPROT=NC_016809.1
+			# Example - n93p6h1_33_pro_4 - QDB=N93P6H1, QPROT=N93P6H1_33_PRO_4
+			($qdb, $qprot) = (uc($2), uc($1));
+		}
+		else {
+			die "couldn't parse out db and sequence id from query\n$query_id\n";
+		}
     }
 
     # $sprot may be an assembly for TBLASTN, not a protein
@@ -238,15 +244,21 @@ sub processSeqPairAlignment {
     	($sdb, $sprot) = ($2, $3);
 #    	print "SDB:\t$sdb\tSPROT:\t$sprot\n";
     }
-    elsif ($subject_id =~ /^(([^\.]+)\..*)$/) {
-        ($sdb, $sprot) = ($2, $1);
-    }
     # handle BSML sequences (for NC GenBank entries) created via genbank2bsml
     elsif ($subject_id =~ /^ref\|(NC_\d+)\|(\S+)$/) {
     #elsif ($subject_id =~ /^ref_(NC_\d+)_(\S+)$/) {
 		($sdb, $sprot) = ($2, $1);
     } else {
-	die "couldn't parse out db and sequence id from subject\n$subject_id\n";
+		# Handle situations where header is "name description"
+    	if ($subject_id =~ /^(((NC_|NZ_)?[^\.]+)\..*)$/i ||
+			$subject_id =~ /^(((NC_|NZ_)?[^_]+)_.*)$/i ) {
+			# Example - NC_016809.1 - SDB=NC_016809, SPROT=NC_016809.1
+			# Example - n93p6h1_33_pro_4 - SDB=N93P6H1, SPROT=N93P6H1_33_PRO_4
+			($sdb, $sprot) = (uc($2), uc($1));
+		}
+		else {
+			die "couldn't parse out db and sequence id from subject\n$subject_id\n";
+		}
     }
 
     if(!$options{'db_list'} && !$options{'organism_to_db_mapping'}) {
