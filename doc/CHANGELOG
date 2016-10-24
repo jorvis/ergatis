@@ -1,10 +1,15 @@
 next
 ---
--NEW - Aded CloVR 16S Miseq pipelines for Miseq fasta data (chimera and no chimera checking)
+- NEW - Added block of code to Ergatis::Pipeline to optionally keep active until pipeline XML is not in 'running' state anymore.  Useful to monitor pipeline and capture end-state 
+- CHANGE - Will break off LGTSeek code to its own specific ergatis package in a new GitHub repo
+			- Located at https://github.com/adkinsrs/ergatis-pipelines
+-NEW - Added blastn_plus component which uses BLAST+ instead of the legacy blastall
+-NEW - Added CloVR 16S Miseq pipelines for Miseq fasta data (chimera and no chimera checking)
 -NEW - Added SPAdes assembly component to use in the ProkPipe and CloVR Microbe pipeline
 -CHANGE - Fixed some logic in the LGTSeek pipeline
 -FIX - Fixed chado_aengine_dumper to properly output tRNA/gene features correctly, and GO annotations in /note tag
 -NEW - Added use-case to LGT_Seek pipeline, for good donor but no good host
+-NEW - Added use-case to LGT_Seek pipeline, for good host but no good donor
 -NEW - Adding infernal component to ProkPipe, replacing RNAmmer
 -CHANGE - Updated infernal component to use Infernal-1.1
 -NEW - Created the LGT-Seek pipeline template along with pertinent components
