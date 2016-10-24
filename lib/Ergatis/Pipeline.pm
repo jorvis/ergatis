@@ -332,8 +332,12 @@ umask(0000);
             if ( $args{block} ) {
                 do {
                     $p_state = $self->pipeline_state;
+					sleep 60;
                 } while ( $p_state =~ /(running|pending|waiting)/i );
-                return $p_state;
+
+				# If end-state is complete, return 0.  Otherwise return 1
+				return 0 if ($p_state eq 'complete');
+                return 1;
             }
 
             exit;
