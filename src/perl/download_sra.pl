@@ -36,6 +36,8 @@ my ($ERROR, $WARN, $DEBUG) = (1, 2, 3);
 my %hFTP = ();
 my $phFTPConf = {};
 
+my $aspera = '/usr/local/bin';
+my $protected = 0;
 my $fetch_metadata = 0;
 
 ################
@@ -48,6 +50,8 @@ GetOptions(\%hCmdLineArgs,
 	   'username|u=s',
 	   'password|p=s',
        'fetch_metadata|m=i',
+	   'private_key|k=s',
+	   'aspera_bin|a=s',
 	   'num_retry|n=i',
 	   'log|l=s',
 	   'help|h'
@@ -79,24 +83,36 @@ sub DownloadSRA {
     foreach my $run_id ( split(/,\s*/, $phCmdLineArgs->{'run_id'}) ) {
         $sFile = CreateFilePath($run_id);
 
-    # wget options :
-    # ‘-r’ : Turn on recursive retrieving of directories.
-    # ‘-nd’: Do not create a hierarchy of directories when retrieving recursively. With this option turned on, all files will get saved to the current directory, without clobbering (if a name shows up more than once, the filenames will get extensions ‘.n’).
-    # '-nv' : Non-verbose. Only print basic infomation and error messages
-    # ‘-c’ : Continue getting a partially-downloaded file.This is useful when you want to finish up a download started by a previous instance of Wget, incase a pipline is resumed.
-    # ‘-N’ : Turn on time-stamping.
-    # ‘-P prefix’ : Set directory prefix to prefix. The directory prefix is the directory where all other files and subdirectories will be saved to, i.e. the top of the retrieval tree.
-    # ‘-t number’ :	Set number of retries to number. Specify 0 or ‘inf’ for infinite retrying. The default is to retry 20 times, with the exception of fatal errors like “connection refused” or “not found” (404), which are not retried.
+		if ($protected) {
+		# ascp options: 
+			# '-i' : Path to Aspera Key (openssh)
+			# '-k' : Resume criterion (number from 0-3)
+			# '-T' : Disable encryption
+			# '-l' : Max transfer rate
 
-        $sCmd = "wget -nv -r -nd -c -N ";
-        if(defined($phCmdLineArgs->{'num_retry'})) {
-            $sCmd .= "-t $phCmdLineArgs->{'num_retry'} ";
-        }
-        $sCmd .= "-P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
+			$sCmd = "$aspera/ascp -k 1 -T -l200m" . $phCmdLineArgs->{'username'}."@".$phCmdLineArgs->{'ftp'}."/$sFile ". $phCmdLineArgs->{'output_dir'};
+
+		} else {
+    	# wget options :
+    		# ‘-r’ : Turn on recursive retrieving of directories.
+    		# ‘-nd’: Do not create a hierarchy of directories when retrieving recursively. With this option turned on, all files will get saved to the current directory, without clobbering (if a name shows up more than once, the filenames will get extensions ‘.n’).
+    		# '-nv' : Non-verbose. Only print basic infomation and error messages
+    		# ‘-c’ : Continue getting a partially-downloaded file.This is useful when you want to finish up a download started by a previous instance of Wget, incase a pipline is resumed.
+    		# ‘-N’ : Turn on time-stamping.
+    		# ‘-P prefix’ : Set directory prefix to prefix. The directory prefix is the directory where all other files and subdirectories will be saved to, i.e. the top of the retrieval tree.
+    		# ‘-t number’ :	Set number of retries to number. Specify 0 or ‘inf’ for infinite retrying. The default is to retry 20 times, with the exception of fatal errors like “connection refused” or “not found” (404), which are not retried.
+
+        	$sCmd = "wget -nv -r -nd -c -N ";
+        	if(defined($phCmdLineArgs->{'num_retry'})) {
+        	    $sCmd .= "-t $phCmdLineArgs->{'num_retry'} ";
+        	}
+        	$sCmd .= "-P $phCmdLineArgs->{'output_dir'} ftp://".$phCmdLineArgs->{'username'}.":".$phCmdLineArgs->{'password'}."@".$phCmdLineArgs->{'ftp'}."/".$sFile;
+		}
 
         printLogMsg($DEBUG, "INFO : $sSubName :: Start downloading $phCmdLineArgs->{'run_id'} in $phCmdLineArgs->{'output_dir'}.\nINFO : $sSubName :: Command : $sCmd");
+
         $nExitCode = system($sCmd);
-    # wget returns 0 on success
+    	# wget returns 0 on success
         if($nExitCode == 0) {
             printLogMsg($DEBUG, "INFO : $sSubName :: $run_id downloaded succesfully in $phCmdLineArgs->{'output_dir'}");
         } else {
@@ -181,8 +197,25 @@ sub checkCmdLineArgs {
 		$phCmdLineArgs->{'password'} = "anonymous";
 	}
 
-    # Change to fetch_metadata param value if passed in.  Otherwise it's 0
+    # Change the path to the Aspera client if passed in.
+	$aspera = $phCmdLineArgs->{'aspera_bin'} if $phCmdLineArgs->{'aspera_bin'}
+
+    # Change the protected param value if passed in.  Otherwise it's 0
+	$protected = 1 if $phCmdLineArgs->{'private_key'}
+
+    # Change the fetch_metadata param value if passed in.  Otherwise it's 0
     $fetch_metadata = $phCmdLineArgs->{'fetch_metadata'} if $phCmdLineArgs->{'fetch_metadata'};
+
+	# Some alterations to options if Aspera Connect is being utilized to download protected data
+	if ($protected) {
+    	if($phCmdLineArgs->{'username'} == "anonymous") {
+    	    $phCmdLineArgs->{'username'} = "anonftp";
+    	}
+
+		if ($phCmdLineArgs->{'ftp'} == 'ftp-trace.ncbi.nih.gov'){
+			$phCmdLineArgs->{'ftp'} = 'ftp.ncbi.nlm.nih.gov';
+		}
+	}
 }
 
 ####################################################################################################################################################
@@ -214,7 +247,7 @@ download_sra.pl - Script to download read files from NCBI SRA FTP site
 
 =head1 SYNOPSIS
 
-# USAGE : perl download_sra.pl -r <SRA id> -f <FTP server> -o <path to output dir> [ -u <FTP server username> -p <FTP server password> -n <number of retries> -l <path to log file> ]
+# USAGE : perl download_sra.pl -r <SRA id> -f <FTP server> -o <path to output dir> [ -u <FTP server username> -p <FTP server password> -k <private_key> -a </path/to/aspera> -m <0/1> -n <number of retries> -l <path to log file> ]
 
 	parameters in [] are optional
 
@@ -224,13 +257,21 @@ download_sra.pl - Script to download read files from NCBI SRA FTP site
 	                Can separate multiple IDs with commas.
 
 	-f <ftp>	:	Name of the NCBI FTP server. Currently it is ftp-trace.ncbi.nih.gov. Mandatory
+					If using Aspera, it is defaulted to ftp.ncbi.nlm.nih.gov
 
 	-o <output_dir>	:	Path to the output directory where the files will be downloaded. Mandatory
 
 [
 	-u <username>	:	Username for the FTP server. Default: anonymous. Optional
+						If using Aspera Connect, the default is anonftp
 
 	-p <password>	:	Password for the FTP server. Default: anonymous. Optional
+						There is no password for Aspera Connect, Instead, a private key
+
+	-k <private_key>	:	If provided, key will be used to access protected SRA data	Optional.
+							Protected data will be accessed via Aspera Connect.
+
+	-a <aspera_bin>	: Path to the Aspera command-line client. Optional
 
 	-n <num_retry>	:	Number of retries to download a file. wget default is 20. Optional
 
