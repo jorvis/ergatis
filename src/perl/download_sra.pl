@@ -198,10 +198,10 @@ sub checkCmdLineArgs {
 	}
 
     # Change the path to the Aspera client if passed in.
-	$aspera = $phCmdLineArgs->{'aspera_bin'} if $phCmdLineArgs->{'aspera_bin'}
+	$aspera = $phCmdLineArgs->{'aspera_bin'} if $phCmdLineArgs->{'aspera_bin'};
 
     # Change the protected param value if passed in.  Otherwise it's 0
-	$protected = 1 if $phCmdLineArgs->{'private_key'}
+	$protected = 1 if $phCmdLineArgs->{'private_key'};
 
     # Change the fetch_metadata param value if passed in.  Otherwise it's 0
     $fetch_metadata = $phCmdLineArgs->{'fetch_metadata'} if $phCmdLineArgs->{'fetch_metadata'};

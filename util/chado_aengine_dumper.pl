@@ -736,8 +736,21 @@ for my $feature_id ( keys %$assemblies ) {
 
         foreach my $feat ( $$assemblies{$feature_id}{seq_obj}->get_SeqFeatures ) {
             # is this a partial?
-            $feat->location->start("<1") if ($feat->start <= 0);
-            $feat->location->end("$assembly_length>") if ($feat->end > $assembly_length);
+            if ($feat->start <= 0) {
+				if ($feat->strand == 1) {
+            		$feat->location->start("<1");
+				} else {
+					$feat->location->start("1<");
+				}
+			}
+
+			if ($feat->end > $assembly_length) {
+				if ($feat->strand == 1) {
+            		$feat->location->end("$assembly_length>");
+				} else {
+            		$feat->location->end(">$assembly_length");
+				}
+			}
         }
 
         $gbk->write_seq( $$assemblies{$feature_id}{seq_obj} );
