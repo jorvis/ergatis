@@ -91,7 +91,7 @@ sub ConvertSRS {
 		printLogMsg($DEBUG, "INFO : $sSubName :: $phCmdLineArgs->{'input_file'} SRA to FASTQ conversion succesfully completed in $output_dir");
 	}
 
-	# Creating a blank file using the SRA ID.
+	# Creating a blank .pair file using the SRA ID.
 	# Reason:  lgt_bwa component accepts an input_directory of fastq files, so iterating over
 	# 			a fastq list with paired-end fastq files results in two groups iterating over
 	# 			the same directory.  This ensures the directory is iterated over just once in
@@ -126,7 +126,8 @@ END_SCRIPT
 		}
 	}
 
-	my $blank_file = $phCmdLineArgs->{'output_dir'} . "/" . $base . ".blank";
+	# Create the empty .pair file
+	my $blank_file = $phCmdLineArgs->{'output_dir'} . "/" . $base . ".pair";
 	`touch $blank_file`;
 }
 
