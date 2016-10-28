@@ -21,8 +21,13 @@ create_lgt_pipeline_config.pl - Will create a pipeline.layout and pipeline.confi
 B<--sra_id,-s>
 	Valid ID from the Sequence Read Archive
 
-B<--bam_input,-B>
+B<--bam_input,-b>
 	Valid path to a BAM input file.  Either this or the SRA ID must be provided
+
+B<--fastq_input,-f>
+	Valid path to paired FASTQ input files.  If single-paired, provide full pathname.
+	For paired-end, make sure both reads have the same name prefix and reside in the same directory.
+	Provide full path, but replace the <R1/R2.fastq> parts with .pair as lgt_bwa.pl will recognize this as paired-end
 
 B<--donor_reference,-d>
 	Path to the donor reference fasta file, or list file (ends in .list).  If not provided, the script assumes this is a host-only LGTSeek run.  If the reference has already been indexed by BWA, the index files must be in the same directory as the reference(s).
@@ -108,11 +113,12 @@ exit(0);
 sub main {
 	my $results = GetOptions (\%options,
 						  "sra_id|s=s",
+						  "bam_input|b=s",
+						  "fastq_input|f=s",
 						  "host_reference|h=s",
 						  "donor_reference|d=s",
 						  "refseq_reference|r=s",
 						  "build_indexes|B",
-						  "bam_input|b=s",
 						  "template_directory|t=s",
 						  "output_directory|o=s",
 						  "data_directory|O=s",
@@ -201,6 +207,9 @@ sub main {
 	if ($options{bam_input}) {
 		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{bam_input};
 		$config{"lgt_bwa recipient"}->{'$;PAIRED$;'} = 1;
+	} elsif ($options{fastq_input}) { 
+		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{fastq_input};
+		$config{"lgt_bwa recipient"}->{'$;PAIRED$;'} = 1;
 	} else {
 		$config{"global"}->{'$;SRA_RUN_ID$;'} = $options{sra_id};
 	}
@@ -214,6 +223,9 @@ sub main {
 			# If starting from BAM instead of SRA, then change QUERY_FILE to use BAM input
 			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = $options{bam_input};
 			$config{"lgt_bwa donor"}->{'$;PAIRED$;'} = 1;
+		} elsif ($options{fastq_input}) {
+			# If starting from FASTQ then change QUERY_FILE to use FASTQ input
+			$config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = $options{fastq_input};
 		} else {
             $config{"lgt_bwa donor"}->{'$;QUERY_FILE$;'} = '$;REPOSITORY_ROOT$;/output_repository/sra2fastq/$;PIPELINEID$;_default/sra2fastq.list';
 		}
@@ -402,14 +414,18 @@ sub check_options {
    	$template_directory = $opts->{'template_directory'} if( $opts->{'template_directory'} );
    	$included_subpipelines{lgtseek} = 1;	# LGTSeek is required... duh!
 
-	&_log($ERROR, "ERROR - Cannot specify both an SRA ID and a BAM input file.  Choose one.") if ($opts->{sra_id} && $opts->{bam_id});
-	&_log($ERROR, "ERROR - Must specify either an SRA ID or a BAM input file.") if (!($opts->{sra_id} || $opts->{bam_input}));
+	my $num_inputs = 0;
+	foreach my $req ( qw(sra_id bam_input fastq_input) ) {
+		$num_inputs++ if ($opts->{$req});
+	}
+	&_log($ERROR, "ERROR - Choose only one from an SRA ID, FASTQ file, and a BAM input file.") if $num_inputs > 1;
+	&_log($ERROR, "ERROR - Must specify either an SRA ID, FASTQ file, or a BAM input file.") if $num_inputs < 1;
 
 	if ($opts->{'sra_id'}) {
    		$included_subpipelines{sra} = 1;
 		$included_subpipelines{post} = 1 if $opts->{'data_directory'};
 	}
-	if ($opts->{'bam_input'}) {
+	if ($opts->{'bam_input'} || $opts->{'fastq_input'}) {
 		$included_subpipelines{sra} = 0;
 	}
 
@@ -428,6 +444,7 @@ sub check_options {
    print STDOUT "Perform alignments to the host reference only.\n" if ($host_only);
    print STDOUT "Perform BWA reference indexing in pipeline.\n" if ($included_subpipelines{indexing});
    print STDOUT "Starting point is BAM input.\n" if $opts->{bam_input};
+   print STDOUT "Starting point is FASTQ input.\n" if $opts->{fastq_input};
    print STDOUT "Starting point is SRA ID. \n" if $opts->{sra_id};
 
 }
