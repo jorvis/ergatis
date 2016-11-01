@@ -209,7 +209,6 @@ sub main {
 		$config{"lgt_bwa recipient"}->{'$;PAIRED$;'} = 1;
 	} elsif ($options{fastq_input}) { 
 		$config{"lgt_bwa recipient"}->{'$;QUERY_FILE$;'} = $options{fastq_input};
-		$config{"lgt_bwa recipient"}->{'$;PAIRED$;'} = 1;
 	} else {
 		$config{"global"}->{'$;SRA_RUN_ID$;'} = $options{sra_id};
 	}

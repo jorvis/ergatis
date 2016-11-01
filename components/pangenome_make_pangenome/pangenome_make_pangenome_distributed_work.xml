@@ -47,7 +47,7 @@
             </param>
             <param>
                 <key>--python_exec</key>
-                <value>$;PYTHON2_7_EXEC$;</value>
+                <value>$;PYTHON_EXEC$;</value>
             </param>
             <param>
                 <key>--script_bin</key>
