@@ -223,11 +223,6 @@ def main():
     args = parser.parse_args()
     check_args(args, parser)
 
-	if not args.comparisons:
-		args.comparisons = 0
-	if not args.multiplicity:
-		args.multiplicity = 0
-
     # Instantiate a HitsProfile class
     hp = HitsProfile()
     hp.read_in_profile(args.profile)
@@ -237,11 +232,16 @@ def main():
 
 
 def check_args(args, parser):
-	""" Validate the passed arguments """
-	logger = configure_logger(args.log_file, args.debug)
-	if not (args.comparisons or args.multiplicity):
-		logger.error('Must either specify the "comparisons" or "multiplicity" options')
-		sys.exit(1)
+    """ Validate the passed arguments """
+    logger = configure_logger(args.log_file, args.debug)
+    if not (args.comparisons or args.multiplicity):
+        logger.error('Must either specify the "comparisons" or "multiplicity" options')
+        sys.exit(1)
+
+    if not args.comparisons:
+        args.comparisons = 0
+    if not args.multiplicity:
+        args.multiplicity = 0
 
 def configure_logger(filename, log_level):
     """ Creates a logger object with the appropriate level """

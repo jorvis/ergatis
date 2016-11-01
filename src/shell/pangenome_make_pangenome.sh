@@ -54,7 +54,7 @@ shift
 done
 
 # This script needs to run in Python 2.7 or later but I'd like to keep a default python path in case
-if [ ! "$python_exec" ]; then
+if [ -z "$python_exec" ]; then
 	python_exec="/usr/bin/python"
 fi
 
