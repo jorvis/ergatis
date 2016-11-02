@@ -34,7 +34,7 @@
             </param>
             <param>
                 <key>--regex</key>
-                <value>".*\.blank"</value>
+                <value>".*\.pair"</value>
             </param>    
             <param>
                 <key>--output_list</key>
