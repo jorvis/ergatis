@@ -545,7 +545,7 @@ sub check_parameters {
 
 	# Check for empty file for input file
 	if (defined $opts->{'input_file'} && !-s $opts->{'input_file'}) {
-		print_log_msg( $ERROR, "ERROR : $sub_name :: Input file or list " . $opts->{'input_file'} . " appears to be empty" )
+		print_log_msg( $ERROR, "ERROR : $sub_name :: Input file or list " . $opts->{'input_file'} . " appears to be empty" ) unless $opts->{'input_file'} =~ /\.pair$/;
 	}
 
     # Delete SAM files once they are converted to BAM by default
