@@ -412,10 +412,9 @@ sub determine_format {
             set_query_to_file_type( $file_type, 'fastq', $file );
             $fastq_paired = 0;
         } elsif ( $ext =~ /\.pair/ ) {
-
 # My way of grouping paired FASTQ files is to use the basename in a .pair file
 # .pair is just to indicate the 2 paired-end fastq files exist in that directory
-            grab_files_from_dir( $dir_path, $file_type );
+            grab_files_from_dir( $dir_path, $file_type, $base );
         }
     } else {
 
@@ -427,8 +426,7 @@ sub determine_format {
 
 # Read through a directory to grab relevant fastq or bam files
 sub grab_files_from_dir {
-    my ( $dir, $file_type ) = @_;
-    my $file;
+    my ( $dir, $file_type, $basename ) = @_;
     my $sub_name = ( caller(0) )[3];
     opendir( DIR, $dir )
       or print_log_msg( $ERROR,
@@ -436,8 +434,12 @@ sub grab_files_from_dir {
       );
 
       # TODO: write merged bam files subroutine for directory globbing
-    while ( $file = readdir(DIR) ) {
+    while ( my $file = readdir(DIR) ) {
         my $path = $dir . "/" . $file;
+		# If a basename was passed in, only consider files matching that basename
+		if (defined $basename) {
+			next unless $file =~ /$basename/;
+		}
         if ( $file =~ /fastq$/ ) {
             if ( $file =~ /_1\./ ) {
                 set_query_to_file_type( $file_type, 'fastq_1', $path );

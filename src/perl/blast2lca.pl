@@ -133,7 +133,7 @@ $options{host} = $HOST if (! $options{host});
 $options{db} = $DB if (! $options{db});
 $options{collection} = $COLL if (! $options{collection});
 $options{evalue_cutoff} = $EVAL_CUTOFF if (! $options{evalue_cutoff});
-$options{best_hits_flag} = $BEST_HITS_FLAG if (! $options{best_hits_flag});
+$options{best_hits_only} = $BEST_HITS_FLAG if (! $options{best_hits_only});
 
 my $gi_tax_obj = GiTaxon->new({
 		'nodes' 		=> $options{nodes_file},
