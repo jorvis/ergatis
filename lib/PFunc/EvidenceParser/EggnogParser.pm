@@ -2,6 +2,7 @@ package PFunc::EvidenceParser::EggnogParser;
 
 use strict;
 use warnings;
+use Carp;
 use XML::Twig;
 use Data::Dumper;
 use File::OpenFile qw( open_file );
@@ -44,16 +45,9 @@ sub _init_eggnog_parser {
     $self->{'_seq_ids'} = {};
     $self->{'_sequence_titles'} = {};
 
-    if ($args{'alias'} && $args{'fun'} && $args{'description'} && $args{'members'}) {
+	die ("Must provide path to eggNOG protein alias file") unless $args{'alias'};
+
 	$alias = $args{'alias'};
-	$fun = $args{'fun'};
-	$description = $args{'description'};
-	$members = $args{'members'};
-
-    } else {
-	die ("Must provide path to eggNOG protein alias file, NOG members file, and NOG description file");
-    }
-
     $self->_set_up_alias_hash($alias);
 }
 
@@ -66,58 +60,18 @@ sub _set_up_alias_hash {
     #create hash of protein_ids, with EC, gene symbol, COG/NOG IDs, and their gene product names
     my $a = open_file($alias, 'in');
     while (<$a>) {
-	chomp;
-	($prot, $info) = split(/[|]/);
-	$prot =~ s/\d+\.//;
-	if ($info =~ /^EC\s+(([\d\-]+\.){3}[\d\-]+)$/i) {
-	    $prot_alias{$prot}{'EC'} = $1;
+		chomp;
+		($prot, $info) = split(/[|]/);
+		if ($info =~ /^EC\s+(([\d\-]+\.){3}[\d\-]+)$/i) {
+		    $prot_alias{$prot}{'EC'} = $1;
+		}
+		if ($info =~ /^([a-z]{3}:\w*)$/ && !(defined $prot_alias{$prot}{'GS'}) && $info !~ /$prot/ ) {
+		    $prot_alias{$prot}{'GS'} = $1;
+		}
+		# This won't catch all gene products, but it should catch most
+		$prot_alias{$prot}{'gene_product'} = $info if ($info =~ /\S+\s+\S+/);
 	}
-	if ($info =~ /^([a-z]{3}\w*)$/ && !(defined $prot_alias{$prot}{'GS'}) && $info !~ /$prot/ ) {
-	    $prot_alias{$prot}{'GS'} = $1;
-	}
-    }
     close($a);
-
-#print "NOG members/descriptions\n";
-    my $nm = open_file($members, 'in');
-    my $nd = open_file($description, 'in');
-    while (<$nd>) {
-	chomp;
-	my ($id, $description) = split(/\t/);
-	$desc{$id} = $description if defined($description);	#hash with NOG_IDs and descriptions
-    }
-    close($nd);
-    while (<$nm>) {
-
-	chomp;
-	@line = split;
-	$line[1] =~ s/\d+\.//;	# protein alias ID
-	$prot_alias{$line[1]}{'NOG'} = $line[0];	#NOG_ID
-	$prot_alias{$line[1]}{'gene_product'} = $desc{$line[0]} if defined($desc{$line[0]});
-    }
-    close($nm);
-
-#print "COG members/descriptions\n";
-    $members =~ s/$nog/$cog/;	#switching to COG members now
-    $description =~ s/$nog/$cog/;
-
-    my $cm = open_file($members, 'in');
-    my $cd = open_file($description, 'in');
-    while (<$cd>) {
-	chomp;
-	my ($id, $description) = split(/\t/);
-	$desc{$id} = $description if defined($description);
-    }
-    close($cd);
-    while (<$cm>) {
-
-	chomp;
-	@line = split;
-	$prot = $line[1] =~ s/\d+\.//;
-	$info = $prot_alias{$line[1]}{'NOG'} = $line[0];
-	$prot_alias{$line[1]}{'gene_product'} = $desc{$line[0]} if defined($desc{$line[0]});
-    }
-    close($cm);
 }
 
 #Pre-parsing steps to idenitify initial attributes and definition names
@@ -286,6 +240,9 @@ sub _assign_annotation {
 sub _get_compseq_annotation {
     my ($self, $comp_id, $ref_id) = @_;
 
+	# Comp_id typically starts with an underscore, which won't allow for matches to the aliases hash
+	$comp_id =~ s/^.// if ($comp_id =~ /^_/);
+
 #print $comp_id, "\n";
     my $gp_name;
 # Instantiate each evidence type
@@ -296,13 +253,13 @@ sub _get_compseq_annotation {
 
 #Retrieves the EC, gene symbol, and gene product from the protein alias hash
     $assertions{'EC'} = $prot_alias{$comp_id}{'EC'};
-#print "FOUND EC\t $prot_alias{$comp_id}{'EC'}\n" if defined $assertions{'EC'};
+#$self->log("FOUND EC\t $prot_alias{$comp_id}{'EC'}\n") if defined $assertions{'EC'};
 
     $assertions{'gene_symbol'} = $prot_alias{$comp_id}{'GS'};
-#print "FOUND GENE SYMBOL $prot_alias{$comp_id}{'GS'}\n" if defined $assertions{'gene_symbol'};
+#$self->log("FOUND GENE SYMBOL $prot_alias{$comp_id}{'GS'}\n") if defined $assertions{'gene_symbol'};
 
     $assertions{'gene_product_name'} = $gp_name = $prot_alias{$comp_id}{'gene_product'};
-#print "FOUND GENE PRODUCT NAME $gp_name\n" if defined $assertions{'gene_product_name'};
+#$self->log("FOUND GENE PRODUCT NAME $gp_name\n") if defined $assertions{'gene_product_name'};
 
     ## If the match is not characterized and contains vague words ('putative', 'probable', etc.)
     ## then confidence level is set to eggNOG::ambiguous
