@@ -1029,6 +1029,7 @@ sub pre_parse_nog_results {
                 $pval = 1;
                 $ref = $1;
                 $nog = $1 if( $line =~ /compseq=\"([^\"]+)\"/ );
+				$nog =~ s/^.// if $nog =~ /^_/;
                 
             } elsif( $line =~ /\<Seq-pair-run.*runprob=\"([^\"]+)\"/ ) {
                 if( $1 < $pval ) {
@@ -1067,7 +1068,7 @@ sub pre_parse_nog_lookup {
     while (<$nm>) {
 	chomp;
 	my @line = split;
-	$line[1] =~ s/\d+\.//;	# protein alias ID
+	#$line[1] =~ s/\d+\.//;	# protein alias ID
 	my $alias = $line[1];
 	$nogId2desc{$alias} = $desc{$line[0]} if defined($desc{$line[0]});
     }
