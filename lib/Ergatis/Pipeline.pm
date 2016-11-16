@@ -335,8 +335,8 @@ umask(0000);
 					sleep 60;
                 } while ( $p_state =~ /(running|pending|waiting|incomplete)/i );
 
-				# If end-state is complete, return 1.  Otherwise return 0
-				return 1 if ($p_state eq 'complete');
+                # If end-state is complete, return 1.  Otherwise return 0
+                return 1 if ($p_state eq 'complete');
                 return 0;
             }
 
