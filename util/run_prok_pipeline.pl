@@ -8,12 +8,16 @@ use Ergatis::Pipeline;
 use Ergatis::SavedPipeline;
 use Ergatis::ConfigFile;
 
+# If set to 1, script will not exit until pipeline finishes
+my $sync = 0;
+
 my %options;
 my $results = GetOptions (\%options,
                           "layout|l=s",
                           "config|c=s",
                           "ergatis_config|e=s",
                           "repository_root|r=s",
+						  "sync|a=i",
                           );
 
 &check_options(\%options);
@@ -47,6 +51,22 @@ sub make_pipeline {
         my $xml = $repository_root."/workflow/runtime/pipeline/$pipeline_id/pipeline.xml";
         my $pipeline = new Ergatis::Pipeline( id => $pipeline_id,
                                               path => $xml );
+
+		if ($sync) {
+            print "Script is running synchronously\n";
+            print "pipeline_id => $pipeline_id\n";
+
+            # The 'block' term is used to make the pipeline invocation synchronous, so that
+            # we can determine success/failure by the return and use that to determine this
+            # script's exit value.
+            my $success = $pipeline->run( ergatis_cfg => $ergatis_config,
+                           block       => 1
+                         );
+
+            ## Determine the exit value based on the success of the pipeline.
+            my $exit_value = ($success) ? 0 : 1;
+			exit $exit_value;
+		}
         $pipeline->run( 'ergatis_cfg' => $ergatis_config );
     }
     return $pipeline_id;
@@ -83,5 +103,6 @@ sub check_options {
         die("Option $req is required") unless( exists( $opts->{$req} ) );
     }
 
+	$sync = 1 if $opts->{"sync"};
     
 }
