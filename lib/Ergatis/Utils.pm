@@ -38,6 +38,7 @@ sub process_root {
 sub process_child {
     my ( $e, $parent, $component ) = @_;
     my $name;
+	my $state;
     my $count = 1;
 
 # Used to indicate everything above this level will be 'parallel', 'serial', or 'start pipeline'
@@ -62,8 +63,13 @@ sub process_child {
                 && $name ne 'remote-serial' )
             {
 # component name is assigned... every child of component will pass cpu times to this key
+            
+			if ( $e->has_child('state') ) {
+                $state = $e->first_child_text('state');
+            }
                 $component = $name;
-                $component_list{$component}{'Order'} = $order++;
+                $component_list{$component}{'order'} = $order++;
+				$component_list{$component}{'state'} = $state;
             }
         }
     }
@@ -95,68 +101,55 @@ sub process_child {
     }
 }
 
+# Name: report_failure_info
+# Purpose: Gather information to help diagnose a failure in the pipeline.
+# Args: Pipeline XML file
+# Returns: An array reference with the following elements:
+###	1) Array reference of failed components
+### 2) Array reference of paths to stderr files
+### 3) Number of components that have completed running
+### 4) Total number of components in the pipeline
+
 sub report_failure_info {
     my ($pipeline_xml) = shift;
 
-     #my $twig =
-     #  XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
-     #$twig->parsefile($pipe_xml);
+	# Create twig XML to populate hash of component information
+    my $twig = XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
+    $twig->parsefile($pipeline_xml);
 
-	my ($total_complete, $total) = get_progress_rate($pipeline_xml);
-
-    my @failure_info = [ $failed_components, $stderr_msgs, $total_complete, $total ];
+	# Get progress rate information
+	my ($total_complete, $total) = get_progress_rate(%component_list);
+	my $failed_components = find_failed_components(\%component_list);
+	
+    my @failure_info = [ $failed_components, $stderr_files, $total_complete, $total ];
     return \@failure_info;
 }
 
 # Name: get_progress_rate
-# Purpose: Parse through the pipeline XML and return the number of completed components and total components
-# Args: Pipeline XML file
+# Purpose: Parse through hash of component information and return the number of completed components and total components
+# Args: hashref of component list information.  Can be created via XML::Twig from report_failure_info()
 # Returns: Two variables
 ###	1) Integer of total components with a 'complete' status
 ### 2) Integer of total components
 
 sub get_progress_rate {
-	my $xml = shift;
-
-    my $ifh;
-    if ( $xml =~ /\.gz/ ) {
-        open( $ifh, "<:gzip", "$xml" )
-          || die "can't read $xml: $!";
-    } else {
-        open( $ifh, "<$xml" ) || die "can't read $xml: $!";
-    }
-
-	my @components;
-
-    my $t = XML::Twig->new(
-        twig_roots => {
-            'commandSet' => sub {
-                my ( $t, $elt ) = @_;
-
-                if (   $elt->first_child('name')
-                    && $elt->first_child('name')->text() =~ /^(.+?)\.(.+)/ )
-                {
-                    push @components, { name => $1, token => $2 };
-                    if ( $elt->has_child('state') ) {
-                        $components[-1]{state} =
-                          $elt->first_child('state')->text;
-                    }
-                }
-            },
-        },
-    );
-    $t->parse($ifh);
+	my $component_href = shift;
 
 	# parse components array and count number of elements and 'complete' elements	
-	my $total = scalar @components;
-	my @complete = grep { $_{state} eq 'complete'} @components;
+	my $total = scalar keys %$component_href;
+	my @complete = grep { $component_href->{$_}->{'state'} eq 'complete'} keys %$component_href;
 	my $complete = scalar @complete;
 	return ($complete, $total);
-
 }
 
+# Name: find_failed_components
+# Purpose: Use a hash of component information and return all keys whose state is "error" or "failed"
+# Args: Hashref of component list information.  Can be created via XML::Twig from report_failure_info()
+# Returns: Array reference of failed components 
 sub find_failed_components {
-
+	my $component_href = shift;
+	my @failed_components = grep { $component_href->{$_}->{'state'} =~ /(failed|error)/ } keys %$component_href;
+	return \@failed_components
 }
 
 sub get_failed_stderr {
