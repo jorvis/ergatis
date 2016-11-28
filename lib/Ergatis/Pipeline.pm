@@ -402,10 +402,7 @@ umask(0000);
 
         chdir $run_dir
           || croak "Can't change to running directory $run_dir\n";
-        use POSIX qw(setsid);
-        setsid() or die "Can't start a new session: $!";
 
-        print $debugfh "got past the POSIX section\n" if $self->{debug};
         $self->_setup_environment( ergatis_cfg => $args{ergatis_cfg} );
         print $debugfh "got past ENV setup section\n" if $self->{debug};
 

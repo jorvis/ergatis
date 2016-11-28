@@ -8,6 +8,11 @@ use Ergatis::Monitor;
 my %component_list;
 my $order = 0;
 
+# Name: process_root
+# Purpose: Process the base pipeline XML using XML:Twig.
+# Args: XML Twig and Twig element objects.  Both are passed as args, when creating a subroutine for the 'twig_handlers' property of a new XML::Twig object
+# Returns: Nothing
+
 sub process_root {
     my ( $t, $e ) = @_;
     if ( $e->first_child_text('name') eq 'start pipeline:' ) {
@@ -34,6 +39,14 @@ sub process_root {
         }
     }
 }
+
+# Name: process_child
+# Purpose: Process a nested pipeline XML using XML:Twig.  Keeps track of the order of appearance for each component as well as the running status of that component
+# Args: Three arguments
+### 1 - Child <commandSet> element in an XML
+### 2 - Parent element to child element from first argument
+### 3 - Component name associated with parent element.  If arg is 'null', then it is assumed that the parent XML element was either a group iteration number or a Workflow command (i.e. serial or parallel)
+# Returns: Nothing
 
 sub process_child {
     my ( $e, $parent, $component ) = @_;
@@ -76,15 +89,11 @@ sub process_child {
 
 #This mostly mirrors command from process_root... only dealing more with component commandSets
     foreach my $child ( $e->children('commandSet') ) {
-        unless ( $child->first_child_text('name') ) {
-            $name = $count++;
-        } else {
-            $name = $child->first_child_text('name');
-        }
         process_child( $child, $e, $component );
+
+		# If there is an XML file, set the file handle for opening and process that
         my $file = $child->first_child_text('fileName');
         my $fh   = open_fh($file);
-
         if ( defined $fh ) {
             my $twig = XML::Twig->new(
                 'twig_handlers' => {
@@ -156,6 +165,10 @@ sub get_failed_stderr {
 
 }
 
+# Name: open_fh
+# Purpose: Open a file for reading.  If no file exists, just return an undefined file handle
+# Args: Path to a compressed or uncompressed file
+# Returns: The file handle
 sub open_fh {
     my $file = shift;
     my $fh;
