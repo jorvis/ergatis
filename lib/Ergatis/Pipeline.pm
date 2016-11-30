@@ -81,8 +81,8 @@ umask(0000);
 
         # If the 'block' argument was passed, run the code without the use of forking
         if ($args{block}) {
-            run_non_web($self, %args);
-            return;
+            my $success = run_non_web($self, %args);
+            return $success;
         }
 
         ## path must be defined and exist to run
