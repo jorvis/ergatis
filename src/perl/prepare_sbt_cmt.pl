@@ -138,7 +138,7 @@ sub prepareSbt {
 			foreach my $field qw(institution department city sub country street fax phone postal_code) {
 				$contact_info{$field} = $fields[$field_index++];
 			}
-			foreach my $required qw(institution street city country phone) {
+			foreach my $required qw(institution department street city country postal_code) {
 				printLogMsg($ERROR, "Field [$required] is required to have information in the contacts file: $!") if $contact_info{$required} eq 'none'; 
 			}
 			last;
