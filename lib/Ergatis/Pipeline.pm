@@ -572,7 +572,7 @@ umask(0000);
         my $p_state = '';
         do {
             $p_state = $self->pipeline_state;
-			sleep 60;
+			sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/i );
         } while ( $p_state =~ /(running|pending|waiting|incomplete)/i );
 
         # If end-state is complete, return 1.  Otherwise return 0

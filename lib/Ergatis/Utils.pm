@@ -8,6 +8,19 @@ use Ergatis::Monitor;
 my %component_list;
 my $order = 0;
 
+
+# Name: build_twig
+# Purpose: Start building the XML Twig for the pipeline
+# Args: path to a pipeline XML file
+# Returns: nothing
+
+sub build_twig {
+    my $pipeline_xml = shift;
+    # Create twig XML to populate hash of component information
+    my $twig = XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
+    $twig->parsefile($pipeline_xml);
+}
+
 # Name: process_root
 # Purpose: Process the base pipeline XML using XML:Twig.
 # Args: XML Twig and Twig element objects.  Both are passed as args, when creating a subroutine for the 'twig_handlers' property of a new XML::Twig object
@@ -15,13 +28,14 @@ my $order = 0;
 
 sub process_root {
     my ( $t, $e ) = @_;
-    if ( $e->first_child_text('name') eq 'start pipeline:' ) {
+    # The highest commandSet tag is the 'start pipeline' tag
+    if ( $e->first_child_text('name') =~ /start pipeline/ ) {
+        # This will process all XML under the element's 'commandSet' child tag.
         foreach my $child ( $e->children('commandSet') ) {
             process_child( $child, $e, 'null' );
 
+            #open XML file (regular or gzip) of commandSet if 'filename' tag exists
             my $file = $child->first_child_text('fileName');
-
-            #open XML file (regular or gzip) of commandSet
             my $fh = open_fh($file);
             if ( defined $fh ) {
                 my $twig = XML::Twig->new(
@@ -57,14 +71,15 @@ sub process_child {
 # Used to indicate everything above this level will be 'parallel', 'serial', or 'start pipeline'
     my $top = 0;
 
+    # Handle cases where the XML passed is not for a particular component
     if ( $component eq 'null' )
-    {    # want to establish the main pipeline components
+    {
         if (
             $parent->first_child_text('name') eq 'serial'
             ||    #components have one of these 3 parent names
             $parent->first_child_text('name') eq 'parallel'
             || $parent->first_child_text('name') eq 'remote-serial'
-            || $parent->first_child_text('name') eq 'start pipeline:'
+            || $parent->first_child_text('name') =~ /start pipeline/
           )
         {
             $name = $e->first_child_text('name');
@@ -76,7 +91,7 @@ sub process_child {
                 && $name ne 'remote-serial' )
             {
 # component name is assigned... every child of component will pass cpu times to this key
-            
+
 			if ( $e->has_child('state') ) {
                 $state = $e->first_child_text('state');
             }
@@ -121,32 +136,46 @@ sub process_child {
 
 sub report_failure_info {
     my ($pipeline_xml) = shift;
-
-	# Create twig XML to populate hash of component information
-    my $twig = XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
-    $twig->parsefile($pipeline_xml);
-
+    build_twig($pipeline_xml);
 	# Get progress rate information
-	my ($total_complete, $total) = get_progress_rate(%component_list);
+	my ($total_complete, $total) = get_progress_rate_from_href(\%component_list);
 	my $failed_components = find_failed_components(\%component_list);
-	
+
     my @failure_info = [ $failed_components, $stderr_files, $total_complete, $total ];
     return \@failure_info;
 }
 
-# Name: get_progress_rate
+# Name: get_progress_rate_from_href
 # Purpose: Parse through hash of component information and return the number of completed components and total components
 # Args: hashref of component list information.  Can be created via XML::Twig from report_failure_info()
 # Returns: Two variables
 ###	1) Integer of total components with a 'complete' status
 ### 2) Integer of total components
 
-sub get_progress_rate {
+sub get_progress_rate_from_href {
 	my $component_href = shift;
 
-	# parse components array and count number of elements and 'complete' elements	
+	# parse components array and count number of elements and 'complete' elements
 	my $total = scalar keys %$component_href;
 	my @complete = grep { $component_href->{$_}->{'state'} eq 'complete'} keys %$component_href;
+	my $complete = scalar @complete;
+	return ($complete, $total);
+}
+
+# Name: get_progress_rate_from_xml
+# Purpose: Parse pipeline XML and return the number of completed components and total components
+# Args: path to a pipeline XML file
+# Returns: Two variables
+###	1) Integer of total components with a 'complete' status
+### 2) Integer of total components
+
+sub get_progress_rate_from_xml {
+    my $pipeline_xml = shift;
+    build_twig($pipeline_xml);
+
+	# parse components array and count number of elements and 'complete' elements
+	my $total = scalar keys %component_list;
+	my @complete = grep { $component_list{$_}->{'state'} eq 'complete'} keys %component_list;
 	my $complete = scalar @complete;
 	return ($complete, $total);
 }
@@ -154,7 +183,7 @@ sub get_progress_rate {
 # Name: find_failed_components
 # Purpose: Use a hash of component information and return all keys whose state is "error" or "failed"
 # Args: Hashref of component list information.  Can be created via XML::Twig from report_failure_info()
-# Returns: Array reference of failed components 
+# Returns: Array reference of failed components
 sub find_failed_components {
 	my $component_href = shift;
 	my @failed_components = grep { $component_href->{$_}->{'state'} =~ /(failed|error)/ } keys %$component_href;
