@@ -38,6 +38,7 @@ Returns the ID of a given pipeline.
 =cut
 
 use strict;
+use warnings;
 use Carp;
 use Sys::Hostname;
 use IO::File;
@@ -572,11 +573,21 @@ umask(0000);
         # Create a progress bar to visually track progress
         my $p_bar = create_progress_bar($self->{path}, $self->{id}) if $args{show_progress};
 
-     # If 'block' is set to 1, wait for pipeline to return non-running state
+       # If 'block' is set to 1, wait for pipeline to return non-running state
         my $p_state = '';
+        my $running_components = ();
+        my $component_list = ();
         do {
             $p_state = $self->pipeline_state;
-			update_progress_bar($p_bar, $self->{path}) if $args{show_progress};
+            my $old_component_list = $component_list;   # First iteration will be undefined
+            $component_list = build_twig($self->{path});
+			update_progress_bar($p_bar, $component_list) if $args{show_progress};
+            if ($p_state == "running") {
+                if (defined $old_component_list) {
+                    handle_component_status_changes($component_list, $old_component_list);
+                }
+            }
+
             sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/i );
         } while ( $p_state =~ /(running|pending|waiting|incomplete)/i );
 

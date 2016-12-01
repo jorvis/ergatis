@@ -2,12 +2,14 @@ package Ergatis::Utils;
 
 use strict;
 use warnings;
+use Date::Format;
+use Date::Parse;
 use XML::Twig;
 use Term::ProgressBar;
 
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(create_progress_bar update_progress_bar);
+our @EXPORT_OK = qw(build_twig create_progress_bar update_progress_bar);
 
 my %component_list;
 my $order;
@@ -16,16 +18,17 @@ my $order;
 # Name: build_twig
 # Purpose: Start building the XML Twig for the pipeline
 # Args: path to a pipeline XML file
-# Returns: nothing
+# Returns: Hashref of the components and properties
 
 sub build_twig {
     my $pipeline_xml = shift;
-	# Reset the order and component list hashes
+	# Reset the order variable and component list hashes
 	$order = 0;
 	%component_list = ();
     # Create twig XML to populate hash of component information
     my $twig = XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
     $twig->parsefile($pipeline_xml);
+    return \%component_list;
 }
 
 # Name: process_root
@@ -75,9 +78,6 @@ sub process_child {
 	my $state;
     my $count = 1;
 
-# Used to indicate everything above this level will be 'parallel', 'serial', or 'start pipeline'
-    my $top = 0;
-
     # Handle cases where the XML passed is not for a particular component
     if ( $component eq 'null' )
     {
@@ -91,8 +91,6 @@ sub process_child {
         {
             $name = $e->first_child_text('name');
 
-            # Set to top for major pipeline component or serial/parallel name
-            $top = 1;
             if (   $name ne 'parallel'
                 && $name ne 'serial'
                 && $name ne 'remote-serial' )
@@ -103,6 +101,13 @@ sub process_child {
                 $state = $e->first_child_text('state');
             }
                 $component = $name;
+                # Start and End times are in ISO-8601 format
+                my $start   = $e->first_child_text('startTime') if $e->has_child('startTime');
+                my $end     = $e->first_child_text('endTime') if $e->has_child('endTime');
+                if (defined $start && defined $end) {
+                    my $elapsed_str = get_elapsed_time( $start, $end );
+                    my $components{$component}{'Wall'}  = $elapsed_str;
+                }
                 $component_list{$component}{'order'} = $order++;
 				$component_list{$component}{'state'} = $state;
             }
@@ -203,6 +208,35 @@ sub get_failed_stderr {
 
 }
 
+# Name: handle_component_status_changes
+# Purpose: Determine if any pipeline components have changed status since the last cycle, and handle accordingly
+### Print to STDOUT if the component has entered 'running' status
+### Print to STDOUT the elapsed time if a component has entered 'complete' status (may add failed statuses later)
+# Args: Hashref of component data, and a hashref of component data before the latest XML:Twig build
+# Returns: An arrayref of updated running components
+sub handle_component_status_changes {
+    my ($component_href, $old_component_href) = @_;
+
+    foreach my $component (keys %$old_component_href) {
+        my $old_state = $old_component_href->{$component}->{'state'};
+        my $new_state = $component_href->{$component}->{'state'}
+        next if ( $old_state =~ /complete/i ); # Complete components do not change
+        next if ( $old_state == $new_state ); # Skip unchanged components
+
+        # Capitalize latest state of component
+        my $printed;
+        ($printed = $new_state) =~ s/([\w']+)/\u\L$1/g;
+
+        # Handle the various updated component states
+        if $new_state =~ /running/i {
+            print STDOUT "== $printed: $component\n";
+        } elsif ($new_state =~ /(complete|error|failed)/i){
+            my $elapsed = $component_href->{$component}->{'Wall'};
+            print STDOUT "==== $printed: $elapsed\n\n";
+        }
+    }
+}
+
 # Name: create_progress_bar
 # Purpose: Create a progress bar to visually track the progress of the pipeline
 # Args: Path to pipeline xml, and ID of pipeline
@@ -223,12 +257,44 @@ sub create_progress_bar {
 # Args: A Term::ProgressBar object
 # Returns: Nothing
 sub update_progress_bar {
-    my ($p_bar, $pipeline_xml) = @_;
-    my ($complete, $total) = get_progress_rate_from_xml($pipeline_xml);
+    my ($p_bar, $component_href) = @_;
+    my ($complete, $total) = get_progress_rate_from_href($component_href;
     $p_bar->update($complete);
     $p_bar->message("$complete out of $total components have completed");
 }
 
+# Name: get_elapsed_time
+# Purpose: Get difference of two wall time periods using Date::Parse
+# Args: A start time value and end time value
+# Returns: String of hh:mm:dd for elapsed time
+sub get_elapsed_time {
+    my ( $start, $end ) = @_;
+    my ( $s, $e, $elapsed );
+    $s       = str2time($start);
+    $e       = str2time($end);
+    $elapsed = $e - $s;
+    my $elapsed_string = sec2string($elapsed);
+    #print "ELAPSED TIME IS: " . $elapsed_string, "\n";
+    return $elapsed_string;
+}
+
+# Name: sec2string
+# Purpose: Converts seconds to strings.  Taken from http://www.perlmonks.org/?node_id=30392 ('best' formula)
+# Args: Time values in seconds
+# Returns: String of time in hh:mm:ss
+sub sec2string {
+    my $s = shift;
+
+    return sprintf ":%02d", $s if $s < 60;
+
+    my $m = $s / 60; $s = $s % 60;
+    return sprintf "%02d:%02d", $m, $s if $m < 60;
+
+    my $h = $m /  60; $m %= 60;
+    return sprintf "%02d:%02d:%02d", $h, $m, $s if $h < 24;
+
+    # If the 'hours' slot overflows, your program is probably taking too long to run ;-)
+}
 
 # Name: open_fh
 # Purpose: Open a file for reading.  If no file exists, just return an undefined file handle
