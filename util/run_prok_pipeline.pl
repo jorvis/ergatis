@@ -18,7 +18,7 @@ my $results = GetOptions (\%options,
                           "config|c=s",
                           "ergatis_config|e=s",
                           "repository_root|r=s",
-						  "sync|a=i",
+						  "sync|s=i",
                           );
 
 &check_options(\%options);
@@ -61,7 +61,8 @@ sub make_pipeline {
             # we can determine success/failure by the return and use that to determine this
             # script's exit value.
             my $success = $pipeline->run( ergatis_cfg => $ergatis_config,
-                           block       => 1
+                           block       => 1,
+						   show_progress => 1
                          );
 
             ## Determine the exit value based on the success of the pipeline.

@@ -41,7 +41,7 @@ use strict;
 use Carp;
 use Sys::Hostname;
 use IO::File;
-use Ergatis::Utils;
+use Ergatis::Utils qw(create_progress_bar update_progress_bar);
 
 umask(0000);
 
@@ -576,7 +576,7 @@ umask(0000);
         my $p_state = '';
         do {
             $p_state = $self->pipeline_state;
-            update_progress_bar($p_bar) if $args{show_progress};
+			update_progress_bar($p_bar, $self->{path}) if $args{show_progress};
             sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/i );
         } while ( $p_state =~ /(running|pending|waiting|incomplete)/i );
 

@@ -5,8 +5,12 @@ use warnings;
 use XML::Twig;
 use Term::ProgressBar;
 
+use Exporter qw(import);
+
+our @EXPORT_OK = qw(create_progress_bar update_progress_bar);
+
 my %component_list;
-my $order = 0;
+my $order;
 
 
 # Name: build_twig
@@ -16,6 +20,9 @@ my $order = 0;
 
 sub build_twig {
     my $pipeline_xml = shift;
+	# Reset the order and component list hashes
+	$order = 0;
+	%component_list = ();
     # Create twig XML to populate hash of component information
     my $twig = XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
     $twig->parsefile($pipeline_xml);
@@ -96,7 +103,7 @@ sub process_child {
                 $state = $e->first_child_text('state');
             }
                 $component = $name;
-                $component_list{$component}{'order'} = $order++ if (! defined $component_list{$component}{'order'});
+                $component_list{$component}{'order'} = $order++;
 				$component_list{$component}{'state'} = $state;
             }
         }
@@ -205,7 +212,7 @@ sub create_progress_bar {
     my ($pipeline_xml, $id) = @_;
     my ($complete, $total) = get_progress_rate_from_xml($pipeline_xml);
     # Create the progress bar, but also remove from terminal when finished
-    my $p_bar = Term::ProgressBar->new ({name => 'Pipeline $id',
+    my $p_bar = Term::ProgressBar->new ({name => "Pipeline $id",
                                          count => $total,
                                          remove => 1});
     return $p_bar;
@@ -216,12 +223,10 @@ sub create_progress_bar {
 # Args: A Term::ProgressBar object
 # Returns: Nothing
 sub update_progress_bar {
-    my $p_bar = shift;
-    my ($complete, $total) = get_progress_rate_from_href($component_list);
+    my ($p_bar, $pipeline_xml) = @_;
+    my ($complete, $total) = get_progress_rate_from_xml($pipeline_xml);
     $p_bar->update($complete);
-    my $percent = ($complete / $total) * 100;
-    $percent = int($percent + 0.5);  # Round percentage to nearest integer
-    $p_bar->message("$complete out of $total ($percent%) components have completed");
+    $p_bar->message("$complete out of $total components have completed");
 }
 
 
