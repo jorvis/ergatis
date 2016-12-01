@@ -41,6 +41,7 @@ use strict;
 use Carp;
 use Sys::Hostname;
 use IO::File;
+use Ergatis::Utils;
 
 umask(0000);
 
@@ -568,11 +569,15 @@ umask(0000);
 
         close $debugfh if $self->{debug};
 
+        # Create a progress bar to visually track progress
+        my $p_bar = create_progress_bar($self->{path}, $self->{id}) if $args{show_progress};
+
      # If 'block' is set to 1, wait for pipeline to return non-running state
         my $p_state = '';
         do {
             $p_state = $self->pipeline_state;
-			sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/i );
+            update_progress_bar($p_bar) if $args{show_progress};
+            sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/i );
         } while ( $p_state =~ /(running|pending|waiting|incomplete)/i );
 
         # If end-state is complete, return 1.  Otherwise return 0

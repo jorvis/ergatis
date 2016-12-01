@@ -3,7 +3,7 @@ package Ergatis::Utils;
 use strict;
 use warnings;
 use XML::Twig;
-use Ergatis::Monitor;
+use Term::ProgressBar;
 
 my %component_list;
 my $order = 0;
@@ -96,7 +96,7 @@ sub process_child {
                 $state = $e->first_child_text('state');
             }
                 $component = $name;
-                $component_list{$component}{'order'} = $order++;
+                $component_list{$component}{'order'} = $order++ if (! defined $component_list{$component}{'order'});
 				$component_list{$component}{'state'} = $state;
             }
         }
@@ -193,6 +193,35 @@ sub find_failed_components {
 sub get_failed_stderr {
 
 }
+
+# Name: create_progress_bar
+# Purpose: Create a progress bar to visually track the progress of the pipeline
+# Args: Path to pipeline xml, and ID of pipeline
+# Returns: A Term::ProgressBar object
+
+sub create_progress_bar {
+    my ($pipeline_xml, $id) = @_;
+    my ($complete, $total) = get_progress_rate_from_xml($pipeline_xml);
+    # Create the progress bar, but also remove from terminal when finished
+    my $p_bar = Term::ProgressBar->new ({name => 'Pipeline $id',
+                                         count => $total,
+                                         remove => 1});
+    return $p_bar;
+}
+
+# Name: update_progress_bar
+# Purpose: Update an existing progress bar based on number of complete components
+# Args: A Term::ProgressBar object
+# Returns: Nothing
+sub update_progress_bar {
+    my $p_bar = shift;
+    my ($complete, $total) = get_progress_rate_from_xml($pipeline_xml);
+    $p_bar->update($complete);
+    my $percent = ($complete / $total) * 100;
+    $percent = int($percent + 0.5);  # Round percentage to nearest integer
+    $p_bar->message("$complete out of $total ($percent%) components have completed");
+}
+
 
 # Name: open_fh
 # Purpose: Open a file for reading.  If no file exists, just return an undefined file handle
