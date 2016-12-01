@@ -9,7 +9,7 @@ use Term::ProgressBar;
 
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(build_twig create_progress_bar update_progress_bar);
+our @EXPORT_OK = qw(build_twig create_progress_bar update_progress_bar handle_component_status_changes);
 
 my %component_list;
 my $order;
@@ -97,16 +97,16 @@ sub process_child {
             {
 # component name is assigned... every child of component will pass cpu times to this key
 
-			if ( $e->has_child('state') ) {
-                $state = $e->first_child_text('state');
-            }
+			    if ( $e->has_child('state') ) {
+                    $state = $e->first_child_text('state');
+                }
                 $component = $name;
                 # Start and End times are in ISO-8601 format
                 my $start   = $e->first_child_text('startTime') if $e->has_child('startTime');
                 my $end     = $e->first_child_text('endTime') if $e->has_child('endTime');
                 if (defined $start && defined $end) {
                     my $elapsed_str = get_elapsed_time( $start, $end );
-                    my $components{$component}{'Wall'}  = $elapsed_str;
+                    $component_list{$component}{'Wall'} = $elapsed_str;
                 }
                 $component_list{$component}{'order'} = $order++;
 				$component_list{$component}{'state'} = $state;
@@ -215,22 +215,22 @@ sub get_failed_stderr {
 # Args: Hashref of component data, and a hashref of component data before the latest XML:Twig build
 # Returns: An arrayref of updated running components
 sub handle_component_status_changes {
-    my ($component_href, $old_component_href) = @_;
+    my ($component_href, $prev_states) = @_;
 
-    foreach my $component (keys %$old_component_href) {
-        my $old_state = $old_component_href->{$component}->{'state'};
-        my $new_state = $component_href->{$component}->{'state'}
+    foreach my $component (keys %$prev_states) {
+        my $old_state = $prev_states->{$component};
+        my $new_state = $component_href->{$component}->{'state'};
         next if ( $old_state =~ /complete/i ); # Complete components do not change
-        next if ( $old_state == $new_state ); # Skip unchanged components
-
+        next if ( $old_state eq $new_state ); # Skip unchanged components
+print "FOUND CHANGED COMPONENT: $component\n";
         # Capitalize latest state of component
         my $printed;
         ($printed = $new_state) =~ s/([\w']+)/\u\L$1/g;
-
+print "OLD: $old_state NEW: $new_state\n";
         # Handle the various updated component states
-        if $new_state =~ /running/i {
+        if ($new_state =~ /running/i) {
             print STDOUT "== $printed: $component\n";
-        } elsif ($new_state =~ /(complete|error|failed)/i){
+        } elsif ($new_state =~ /(complete|error|failed)/i) {
             my $elapsed = $component_href->{$component}->{'Wall'};
             print STDOUT "==== $printed: $elapsed\n\n";
         }
@@ -258,7 +258,7 @@ sub create_progress_bar {
 # Returns: Nothing
 sub update_progress_bar {
     my ($p_bar, $component_href) = @_;
-    my ($complete, $total) = get_progress_rate_from_href($component_href;
+    my ($complete, $total) = get_progress_rate_from_href($component_href);
     $p_bar->update($complete);
     $p_bar->message("$complete out of $total components have completed");
 }
@@ -285,10 +285,10 @@ sub get_elapsed_time {
 sub sec2string {
     my $s = shift;
 
-    return sprintf ":%02d", $s if $s < 60;
+    return sprintf "00:00:%02d", $s if $s < 60;
 
     my $m = $s / 60; $s = $s % 60;
-    return sprintf "%02d:%02d", $m, $s if $m < 60;
+    return sprintf "00%02d:%02d", $m, $s if $m < 60;
 
     my $h = $m /  60; $m %= 60;
     return sprintf "%02d:%02d:%02d", $h, $m, $s if $h < 24;

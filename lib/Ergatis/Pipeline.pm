@@ -42,7 +42,7 @@ use warnings;
 use Carp;
 use Sys::Hostname;
 use IO::File;
-use Ergatis::Utils qw(create_progress_bar update_progress_bar);
+use Ergatis::Utils qw(build_twig create_progress_bar update_progress_bar handle_component_status_changes);
 
 umask(0000);
 
@@ -311,7 +311,8 @@ umask(0000);
                 my $rc = 0xffff & system($final_run_command);
 
                 printf $debugfh
-                  "system(%s) returned %#04x: $rc for command $final_run_command\n"
+                  "system() returned %#04x: $rc for command $final_run_command\n"
+                  #"system(%s) returned %#04x: $rc for command $final_run_command\n"
                   if $self->{debug};
                 if ( $rc == 0 ) {
                     print $debugfh "ran with normal exit\n" if $self->{debug};
@@ -545,7 +546,8 @@ umask(0000);
         my $rc = 0xffff & system($final_run_command);
 
         printf $debugfh
-          "system(%s) returned %#04x: $rc for command $final_run_command\n"
+          "system() returned %#04x: $rc for command $final_run_command\n"
+		  #"system(%s) returned %#04x: $rc for command $final_run_command\n"
           if $self->{debug};
         if ( $rc == 0 ) {
             print $debugfh "ran with normal exit\n" if $self->{debug};
@@ -577,14 +579,20 @@ umask(0000);
         my $p_state = '';
         my $running_components = ();
         my $component_list = ();
+		my %prev_component_states = ();
         do {
             $p_state = $self->pipeline_state;
-            my $old_component_list = $component_list;   # First iteration will be undefined
+   			# First iteration will be undefined... populate hash with previous states
+			if (defined $component_list) {
+                foreach my $component (keys %$component_list) {
+                    $prev_component_states{$component} = $component_list->{$component}->{'state'};
+                }
+			}
             $component_list = build_twig($self->{path});
 			update_progress_bar($p_bar, $component_list) if $args{show_progress};
-            if ($p_state == "running") {
-                if (defined $old_component_list) {
-                    handle_component_status_changes($component_list, $old_component_list);
+            if ($p_state =~ /running/i) {
+                if (%prev_component_states) {
+                    handle_component_status_changes($component_list, \%prev_component_states);
                 }
             }
 
@@ -658,11 +666,13 @@ umask(0000);
           '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg';
 
         ## for local data placement
-        $ENV{vappio_root} = $args{ergatis_cfg}->val( 'grid', 'vappio_root' );
-        $ENV{vappio_data_placement} =
-          $args{ergatis_cfg}->val( 'grid', 'vappio_data_placement' );
+		if (defined $args{ergatis_cfg}->val( 'grid', 'vappio_root' )){
+            $ENV{vappio_root} = $args{ergatis_cfg}->val( 'grid', 'vappio_root' );
+            $ENV{vappio_data_placement} =
+                $args{ergatis_cfg}->val( 'grid', 'vappio_data_placement' ); 
+		}
         $ENV{PERL5LIB} =
-          "/usr/local/packages/perllib/x86_64-linux-thread-multi:$ENV{PERL5LIB}";
+          "/usr/local/packages/perllib/x86_64-linux-thread-multi:$ENV{PERL5LIB}" if (defined $ENV{PERL5LIB});
 
         ## for overwriting SGEs default
         $ENV{TMPDIR} = "/tmp";

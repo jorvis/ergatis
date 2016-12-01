@@ -62,7 +62,7 @@ sub make_pipeline {
             # script's exit value.
             my $success = $pipeline->run( ergatis_cfg => $ergatis_config,
                            block       => 1,
-						   show_progress => 1
+						   #show_progress => 1
                          );
 
             ## Determine the exit value based on the success of the pipeline.
