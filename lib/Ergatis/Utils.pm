@@ -141,6 +141,8 @@ sub report_failure_info {
 	my ($total_complete, $total) = get_progress_rate_from_href(\%component_list);
 	my $failed_components = find_failed_components(\%component_list);
 
+    my $stderr_files = undef;   # Placeholder for now
+
     my @failure_info = [ $failed_components, $stderr_files, $total_complete, $total ];
     return \@failure_info;
 }
@@ -215,7 +217,7 @@ sub create_progress_bar {
 # Returns: Nothing
 sub update_progress_bar {
     my $p_bar = shift;
-    my ($complete, $total) = get_progress_rate_from_xml($pipeline_xml);
+    my ($complete, $total) = get_progress_rate_from_href($component_list);
     $p_bar->update($complete);
     my $percent = ($complete / $total) * 100;
     $percent = int($percent + 0.5);  # Round percentage to nearest integer
