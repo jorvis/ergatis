@@ -220,17 +220,15 @@ sub handle_component_status_changes {
     foreach my $component (keys %$prev_states) {
         my $old_state = $prev_states->{$component};
         my $new_state = $component_href->{$component}->{'state'};
-        next if ( $old_state =~ /complete/i ); # Complete components do not change
+        next if ( $old_state eq "complete" ); # Complete components do not change
         next if ( $old_state eq $new_state ); # Skip unchanged components
-print "FOUND CHANGED COMPONENT: $component\n";
         # Capitalize latest state of component
         my $printed;
         ($printed = $new_state) =~ s/([\w']+)/\u\L$1/g;
-print "OLD: $old_state NEW: $new_state\n";
         # Handle the various updated component states
-        if ($new_state =~ /running/i) {
+        if ($new_state eq "running") {
             print STDOUT "== $printed: $component\n";
-        } elsif ($new_state =~ /(complete|error|failed)/i) {
+        } elsif ($new_state =~ /^(complete|error|failed)/) {
             my $elapsed = $component_href->{$component}->{'Wall'};
             print STDOUT "==== $printed: $elapsed\n\n";
         }
@@ -288,7 +286,7 @@ sub sec2string {
     return sprintf "00:00:%02d", $s if $s < 60;
 
     my $m = $s / 60; $s = $s % 60;
-    return sprintf "00%02d:%02d", $m, $s if $m < 60;
+    return sprintf "00:%02d:%02d", $m, $s if $m < 60;
 
     my $h = $m /  60; $m %= 60;
     return sprintf "%02d:%02d:%02d", $h, $m, $s if $h < 24;

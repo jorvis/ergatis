@@ -590,14 +590,11 @@ umask(0000);
 			}
             $component_list = build_twig($self->{path});
 			update_progress_bar($p_bar, $component_list) if $args{show_progress};
-            if ($p_state =~ /running/i) {
-                if (%prev_component_states) {
-                    handle_component_status_changes($component_list, \%prev_component_states);
-                }
+			if ( %prev_component_states ) {
+                handle_component_status_changes($component_list, \%prev_component_states);
             }
-
-            sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/i );
-        } while ( $p_state =~ /(running|pending|waiting|incomplete)/i );
+            sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/ );
+        } while ( $p_state =~ /(running|pending|waiting|incomplete)/ );
 
         # If end-state is complete, return 1.  Otherwise return 0
         return 1 if ($p_state eq 'complete');
