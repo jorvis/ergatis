@@ -53,7 +53,7 @@ GetOptions(
     'maxGapE=i',           'gapOsc=i',
     'gapEsc=i',            'nThrds|t=i',
     'maxOcc=i',            'bwa_params|B=s',
-    'samtools_params|S=s',
+    'samtools_params|S=s', 'tmp_dir|T=s',
     'log|l=s',             'help|h'
 ) or pod2usage();
 
@@ -286,11 +286,17 @@ sub align_BWA {
         $opts .= " " . $cmd_line_args->{'bwa_params'};
     }
 
+	my $tmp_dir_env = '';
+    if ( exists( $cmd_line_args->{'tmp_dir'} ) ) {
+        $tmp_dir_env = 'TMP_DIR=' . $cmd_line_args->{'tmp_dir'} . ' ';
+	}
+
 	# Same files passed from lgt_bwa component to another lgt_bwa component may have .bwa.prelim.filtered.bam endings.  This doesn't break the script by having it but I would like to keep the name decently short - SAdkins 4/18/16
 	$outfile =~ s/bwa\.prelim\.filtered\.//g;
 
     $cmd =
-        $cmd_line_args->{'bwa_path'} . " "
+	    $tmp_dir_env
+      . $cmd_line_args->{'bwa_path'} . " "
       . $algo . " "
       . $opts . " "
       . $ref . " "
@@ -333,8 +339,14 @@ sub align_then_BAM {
         $sam_opts = $cmd_line_args->{'samtools_params'};
     }
 
+	my $tmp_dir_env = '';
+    if ( exists( $cmd_line_args->{'tmp_dir'} ) ) {
+        $tmp_dir_env = 'TMP_DIR=' . $cmd_line_args->{'tmp_dir'} . ' ';
+	}
+
     $cmd =
-        $cmd_line_args->{'bwa_path'} . " "
+	    $tmp_dir_env
+      . $cmd_line_args->{'bwa_path'} . " "
       . $algo . " "
       . $opts . " "
       . $ref . " "
@@ -644,6 +656,9 @@ B<--use_mem, -m>
 
 B<--bam_paired, -p>
 	If set to 1, this indicates the input BAM is from paired-end data
+
+B<--tmp_dir, -T>
+    If set, this will become the "TMP_DIR" environment variable value for the BWA aln/mem run
 
 B<--log, -l>
 	Path to writable log file
