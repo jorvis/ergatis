@@ -4,6 +4,7 @@ require ExtUtils::Manifest;
 use Term::ANSIColor;
 require "perl2wrapper_ergatis.pl";
 require "python2wrapper_ergatis.pl";
+require "julia2wrapper_ergatis.pl";
 use strict;
 
 $|++;
@@ -130,8 +131,9 @@ my $schemadocsdir = $workflowdocsdir;
 
 my($perl_scripts,$perl_wrapperstr) = &get_perl_bins();
 my($python_scripts,$python_wrapperstr) = &get_python_bins();
-my @script_array = (@$perl_scripts,@$python_scripts);
-my $wrapperstr = (join(' ',$perl_wrapperstr,$python_wrapperstr));
+my($julia_scripts,$julia_wrapperstr) = &get_julia_bins();
+my @script_array = (@$perl_scripts,@$python_scripts, @$julia_scripts);
+my $wrapperstr = (join(' ',$perl_wrapperstr,$python_wrapperstr,$julia_wrapperstr));
 my $scripts = \@script_array;
 
 print "Writing makefile to install directory $build_dir to $install_base\n";
@@ -187,7 +189,6 @@ c_apps	:
 r_scripts:
 	@echo "Installing R scripts to $(PREFIX)/bin"
 	find $(BUILD_DIR)/R -type f -exec install {} $(PREFIX)/bin \;
-
 
 END
 
