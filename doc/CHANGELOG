@@ -1,5 +1,8 @@
 next
 ---
+- NEW - lgt_bwa will now use scratch as the TMP_DIR env variable instead of /tmp
+- NEW - Added code in Ergatis::Pipeline to optionally run a pipeline synchronously
+- NEW - Added Ergatis::Utils module to assist with various Ergatis diagnostics and troubleshooting
 - NEW - Added block of code to Ergatis::Pipeline to optionally keep active until pipeline XML is not in 'running' state anymore.  Useful to monitor pipeline and capture end-state 
 - CHANGE - Will break off LGTSeek code to its own specific ergatis package in a new GitHub repo
 			- Located at https://github.com/adkinsrs/ergatis-pipelines
