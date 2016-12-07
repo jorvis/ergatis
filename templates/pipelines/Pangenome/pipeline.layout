@@ -37,6 +37,10 @@
                 <state>incomplete</state>
                 <name>pangenome_merge_results.default</name>
             </commandSet>
+            <commandSet type="serial">
+                <state>incomplete</state>
+				<name>pangenome_make_profile.default</name>
+            </commandSet>
 			<commandSet type="parallel">
 				<commandSet type="serial">
 					<commandSet type="serial">
