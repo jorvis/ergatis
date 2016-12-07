@@ -2,8 +2,8 @@ invisible(options(echo = TRUE))
 
 ## read in data
 pangenome <- read.table("###input_file###", header=FALSE)
-genome_count <- max(pangenome$V8)
-genomes <- (pangenome$V9[1:genome_count])
+genome_count <- max(pangenome$V5)
+genomes <- (pangenome$V6[1:genome_count])
 print(genomes)
 pangenome <- pangenome[ pangenome$V1 > 1, ]
 attach(pangenome)
@@ -26,7 +26,7 @@ row_count <- length(V1)
 source_colors <- rainbow(genome_count)
 p_color <- c()
 for ( ii in c(1:row_count) ) {
-    p_color[ii] <- source_colors[V8[ii]]
+    p_color[ii] <- source_colors[V5[ii]]
 #    points(temp_v1, temp_v4, pch=17, col=p_color)
 }
 ## end of color block
