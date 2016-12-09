@@ -5,7 +5,7 @@ sub get_julia_bins{
     my($instdir,$workflowdocsdir,$schemadocsdir);
     my(@binfiles);
     my($wrapper_str);
-    my $julia_path = $^X;  ## can be overwritten below
+    my $julia_path = `which julia`;  ## can be overwritten below
     
     foreach my $arg (@ARGV){
         if($arg =~ /INSTALL_BASE/){
