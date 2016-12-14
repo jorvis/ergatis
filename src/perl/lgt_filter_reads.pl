@@ -58,6 +58,7 @@ GetOptions(
     'input_list|I=s',    'output_dir|o=s',
     'samtools_path|s=s', 'samtools_params|S=s',
     'softclip_min|m=i',  'keep_mm_reads|mm=i',
+	'tmp_dir|T=s',
     'log|l=s',           'help|h'
 ) or pod2usage();
 
@@ -216,6 +217,12 @@ sub SortBam {
     my $nExitCode;
     my $sOptions = "";
 
+	my $tmp_dir_env = '';
+    if ( exists( $phCmdLineArgs->{'tmp_dir'} ) ) {
+        $tmp_dir_env = 'TMP_DIR=' . $phCmdLineArgs->{'tmp_dir'} . ' ';
+	}
+	$sCmd .= $tmp_dir_env; 
+
     my $sSubName = ( caller(0) )[3];
     if ( exists( $phCmdLineArgs->{'samtools_params'} ) ) {
         $sOptions = $phCmdLineArgs->{'samtools_params'};
@@ -226,6 +233,7 @@ $sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$s
     printLogMsg( $DEBUG,
         "INFO : $sSubName :: Start sorting file $input_file to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd"
     );
+
     $nExitCode = system($sCmd);
     if ( $nExitCode != 0 ) {
         printLogMsg( $ERROR,

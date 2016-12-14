@@ -130,6 +130,10 @@
 				<key>--keep_mm_reads</key>
 				<value>$;KEEP_MM$;</value>
 			</param>
+			<param>
+                <key>--tmp_dir</key>
+				<value>$;TMP_DIR$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;</value>
+			</param>
             <param>
             	<key>stdout</key>
             	<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.bwa_filter.stdout</value>
