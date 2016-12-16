@@ -3,7 +3,7 @@
 <commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
     <commandSet type="serial">
         <state>incomplete</state>
-        <name>wu-blastp workflow</name>
+        <name>pangenome_make_table workflow</name>
         <!--Preprocessing-->
         <command>
             <type>RunUnixCommand</type>
@@ -51,7 +51,7 @@
         </param>
     </command>
     <commandSet type="remote-serial">
-	<state>incomplete</state>
+	    <state>incomplete</state>
         <name>pangenome_make_table distributed work</name>
         <fileName>$;WORKFLOW_REPOSITORY$;/pangenome_make_table_distributed_work.xml.gz</fileName>
         <dceSpec type="sge">

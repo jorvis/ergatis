@@ -4,7 +4,6 @@
   <commandSet type="serial">
         <state>incomplete</state>
         <name>grouped sub flow</name>
-
 	 <!--Processing-->
          <command>
             <type>RunUnixCommand</type>
@@ -13,7 +12,7 @@
             <executable>$;BIN_DIR$;/pangenome_make_table</executable>
             <param>
                 <key>--profile</key>
-                <value>$;PANGENOME_PROFILE$;</value>
+                <value>$;INPUT_FILE$;</value>
             </param>
             <param>
                 <key>--output_dir</key>
