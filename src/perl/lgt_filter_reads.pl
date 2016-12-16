@@ -217,11 +217,10 @@ sub SortBam {
     my $nExitCode;
     my $sOptions = "";
 
-	my $tmp_dir_env = '';
+	my $tmp = "/tmp";
     if ( exists( $phCmdLineArgs->{'tmp_dir'} ) ) {
-        $tmp_dir_env = 'TMP_DIR=' . $phCmdLineArgs->{'tmp_dir'} . ' ';
+        $tmp = $phCmdLineArgs->{'tmp_dir'};
 	}
-	$sCmd .= $tmp_dir_env; 
 
     my $sSubName = ( caller(0) )[3];
     if ( exists( $phCmdLineArgs->{'samtools_params'} ) ) {
@@ -229,7 +228,7 @@ sub SortBam {
     }
     $sOut = $phCmdLineArgs->{'output_dir'} . "/" . $sFile;
 
-$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T /tmp/".$sFile." " . $input_file;
+$sCmd = $phCmdLineArgs->{'samtools_path'}." sort ".$sOptions." -O bam -n -o ".$sOut." -T $tmp/$sFile " . $input_file;
     printLogMsg( $DEBUG,
         "INFO : $sSubName :: Start sorting file $input_file to produce sorted BAM $sOut.\nINFO : $sSubName :: Command : $sCmd"
     );
