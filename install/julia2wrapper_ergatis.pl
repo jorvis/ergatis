@@ -6,7 +6,8 @@ sub get_julia_bins{
     my(@binfiles);
     my($wrapper_str);
     my $julia_path = `which julia`;  ## can be overwritten below
-    
+    chomp $julia_path; 
+
     foreach my $arg (@ARGV){
         if($arg =~ /INSTALL_BASE/){
             ($instdir) = ($arg =~ /INSTALL_BASE=(.*)/);
