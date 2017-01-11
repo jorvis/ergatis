@@ -247,7 +247,10 @@ end
 
 function parse_commandline()
     s = ArgParseSettings(description = "Reads a pangenome profile matrix and generates total genes in the pangenome",
-    prog = "pangenome_make_pangenome.jl")
+    prog = "pangenome_make_pangenome.jl",
+	version = "1.0",
+	add_version = true,
+	add_help = true)
 
     # The macro to add a table of arguments and options to the ArgParseSettings object
     @add_arg_table s begin
