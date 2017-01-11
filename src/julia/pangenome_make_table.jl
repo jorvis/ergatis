@@ -59,7 +59,7 @@ end
 ########
 
 function determine_sampling_rate( hp::HitsProfile, args)
-    if ! is(args["comparisons"], nothing)
+    if args["comparisons"] > 0
         return estimate_multiplicity(hp.num_genomes, args["comparisons"])
     else
         return args["multiplicity"]
@@ -77,8 +77,12 @@ function estimate_multiplicity( genomes::Integer, comparisons::Integer)
     ldiff = 0
     udiff = 0
 
+	# Bound limits for estimating multiplicity rate
+	lower_bounds = 5
+	upper_bounds = 5000
+
     # Establish multiplex bounds
-    for i = 5:5000
+    for i = lower_bounds:upper_bounds
         (est_comps, theor_comps) = estimate_comparisons(genomes, i)
         if est_comps < comparisons
             lower_mult = i
@@ -91,10 +95,10 @@ function estimate_multiplicity( genomes::Integer, comparisons::Integer)
             break
         end
     end
-    if upper_mult == 5
-        (est_comps, theor_comps) = estimate_comparisons(genomes, 5)
-    elseif lower_mult == 5000
-        return 5000
+    if upper_mult == lower_bounds
+        (est_comps, theor_comps) = estimate_comparisons(genomes, lower_bounds)
+    elseif lower_mult == upper_bounds
+        return upper_bounds
     else
         lower_diff = comparisons - lower_comp
         upper_diff = upper_comp - comparisons
@@ -258,12 +262,16 @@ function parse_commandline()
         "--comparisons", "-c"
             help = "The number of comparisons to make for any 1 value of N (sampling)"
             metavar = "100000"
+			default = 0
+			range_tester = (x->x>=0)
             arg_type = Int
         "--multiplicity", "-m"
             help = "Another option for sampling based on a multiplicity factor ((sum(m*n) for n=[2..n]) number of comparisons)"
             metavar = "20"
+			default = 0
+			range_tester = (x->x>=0)
             arg_type = Int
-            # Will not add log_file or debug options for now
+    # Will not add log_file or debug options for now
     end
 
     # Converts the ArgParseSettings object into key/value pairs
@@ -288,7 +296,7 @@ function main()
     ## genome_count  core    shared    new  root_genome
     write_single_genomes(hp, out_fh)
 
-    if is(args["comparisons"], nothing) && is(args["multiplicity"], nothing)
+    if args["comparisons"] == 0 && args["multiplicity"] == 0
         do_analysis_without_sampling()
     else
         do_analysis_with_sampling(args, hp, out_fh)
