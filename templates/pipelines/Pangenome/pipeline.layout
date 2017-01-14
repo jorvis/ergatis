@@ -41,10 +41,10 @@
 			<commandSet type="serial">
 				<state>incomplete</state>
 				<commandSet type="serial">
-				<commandSet type="serial">
 					<state>incomplete</state>
 					<name>pangenome_fix_headers.nuc</name>
 				</commandSet>
+				<commandSet type="serial">
 					<state>incomplete</state>
 					<name>formatdb.nuc</name>
 				</commandSet>
