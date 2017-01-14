@@ -12,13 +12,30 @@
 					<state>incomplete</state>
 					<name>genbank2bsml.default</name>
 				</commandSet>
-				<commandSet type="serial">
+				<commandSet type="parallel">
 					<state>incomplete</state>
-					<name>bsml2fasta.default</name>
-				</commandSet>
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>mugsyprep.default</name>
+					<commandSet type="serial">
+						<state>incomplete</state>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>bsml2fasta.assembly</name>
+						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>mugsyprep.assembly</name>
+						</commandSet>
+					</commandSet>
+					<commandSet type="serial">
+						<state>incomplete</state>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>bsml2fasta.polypeptide</name>
+						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>mugsyprep.polypeptide</name>
+						</commandSet>
+					</commandSet>
 				</commandSet>
 		</commandSet>
 		<commandSet type="parallel">
