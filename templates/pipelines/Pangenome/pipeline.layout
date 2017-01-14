@@ -2,10 +2,33 @@
 	<commandSet type="serial">
 		<state>incomplete</state>
 		<name>start pipeline:</name>
+		<commandSet type="serial">
+			<state>incomplete</state>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>create_map_file.default</name>
+				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>genbank2bsml.default</name>
+				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>bsml2fasta.default</name>
+				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>mugsyprep.default</name>
+				</commandSet>
+		</commandSet>
 		<commandSet type="parallel">
 			<state>incomplete</state>
 			<commandSet type="serial">
 				<state>incomplete</state>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>pangenome_fix_headers.prot</name>
+				</commandSet>
 				<commandSet type="serial">
 					<state>incomplete</state>
 					<name>formatdb.prot</name>
@@ -18,6 +41,10 @@
 			<commandSet type="serial">
 				<state>incomplete</state>
 				<commandSet type="serial">
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>pangenome_fix_headers.nuc</name>
+				</commandSet>
 					<state>incomplete</state>
 					<name>formatdb.nuc</name>
 				</commandSet>
