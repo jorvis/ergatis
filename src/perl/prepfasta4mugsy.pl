@@ -68,7 +68,7 @@ while(<IN2>) {
     chomp;
     my @fields = split(/\t/,$_);
 # SAdkins - 1/16/17 - Needed a use-case for polypeptides instead of assembly seq IDs
-	my $seq_id_field = ($options{use_polypeptides}) ? $field[5] : $field[1];
+	my $seq_id_field = ($options{use_polypeptides}) ? $fields[5] : $fields[1];
     if(!$org_id_to_seq_ids->{$fields[7]}) {
         $org_id_to_seq_ids->{$fields[7]} = {};
     }
