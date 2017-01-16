@@ -37,7 +37,7 @@
         </param>
         <param>
             <key>--output_list</key>
-            <value>$;OUTPUT_DIRECTORY$;/$;COMPONENT_NAME$;.fsa.list</value>
+            <value>$;FASTA_LIST$;</value>
         </param>
     </command>
     <!--Postprocessing-->
