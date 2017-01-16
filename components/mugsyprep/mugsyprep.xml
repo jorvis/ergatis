@@ -99,6 +99,10 @@
 		<value>$;OUTPUT_DIRECTORY$;/fasta</value>
 	    </param>
 	    <param>
+		<key>--use_polypeptides</key>
+		<value>$;USE_POLYPEPTIDES$;</value>
+	    </param>
+	    <param>
 		<key>stdout</key>
 		<value>$;WORKFLOW_REPOSITORY$;/prepfasta4mugsy.stdout</value>
 	    </param>

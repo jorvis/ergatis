@@ -23,8 +23,8 @@ def parse_map_file(mapping_in):
 		for line in mapping_fh:
 			vals = line.split("\t")
 			seq_id, gene = vals[0].split('|||')
-# Keeping gene name and the organism strain name
-			kept_vals = (seq_id, gene, vals[7])
+# Keeping sequence id, polypeptid id, gene name, and the organism strain name
+			kept_vals = (seq_id, vals[5], gene, vals[7])
 			lines.append(kept_vals)
 	return lines
 
@@ -33,13 +33,15 @@ def replace_fasta_headers(records, replace_vals):
 	for record in records:
 		header = record.id
 # Split on first space
-# NOTE: This is under the assumption that the bsml2fasta component has USE_SEQUENCE_IDS_IN_FASTA set to 1 in the config file
-		seq_id, rest = header.split(' ')
-# Search for seq_id amongst our kept vals
+# NOTE: This is under the assumption that the bsml2fasta component for assemblies has USE_SEQUENCE_IDS_IN_FASTA set to 1 in the config file.  The polypeptide version does not need this
+		seq_id, rest = header.split(' ', 1)
+# Search for seq_id amongst our kept mapping values
 		for line in replace_vals:
-			if seq_id === line[0]:
-				record.id = 'gnl|' + line[2] + '|' + line[1]
+# Handle the 'assembly' or 'polypeptide' cases
+			if seq_id === line[0] or seq_id === line[1]:
+				record.id = 'gnl|' + line[3] + '|' + line[2]
 				updated_records.append(record)
+				break
 	return updated_records
 
 def write_new_fasta(record_list, fasta_out):

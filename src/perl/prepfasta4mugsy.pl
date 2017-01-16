@@ -11,6 +11,7 @@ prepfasta4mugsy.pl - make organism specific fasta files for mugsy
 USAGE:  bsml2fasta.pl 
           --input_list
           --mugsy_map
+		  --use_polypeptides
           --output_dir
 =cut
 
@@ -28,6 +29,7 @@ my $results = GetOptions (\%options,
 			  'input_list|i=s',
               'mugsy_map|m=s',
 			  'output_dir|o=s',
+			  'use_polypeptides|p=i',
                           'checksum_orgs:s',
 			  'help|h') || pod2usage();
 
@@ -65,10 +67,12 @@ my $org_id_to_seq_ids;
 while(<IN2>) {
     chomp;
     my @fields = split(/\t/,$_);
+# SAdkins - 1/16/17 - Needed a use-case for polypeptides instead of assembly seq IDs
+	my $seq_id_field = ($options{use_polypeptides}) ? $field[5] : $field[1];
     if(!$org_id_to_seq_ids->{$fields[7]}) {
         $org_id_to_seq_ids->{$fields[7]} = {};
     }
-    $org_id_to_seq_ids->{$fields[7]}->{$fields[1]} =1;
+    $org_id_to_seq_ids->{$fields[7]}->{$seq_id_field} =1;
 }
 close IN2;
 

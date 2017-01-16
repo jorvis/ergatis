@@ -63,12 +63,12 @@ B<--log,-l>
 
 B<--use_feature_ids_in_fasta>
     Set this to nonzero to use the BSML id of the linked feature that corresponds to each sequence being written.  
-    The script will fail if any of the exported sequences are linked to multiple features. Also nNote that this 
+    The script will fail if any of the exported sequences are linked to multiple features. Also note that this 
     option will only work if --parse_element=sequence.
 
 B<--use_sequence_ids_in_fasta>
     Set this to nonzero to use the BSML id of the sequence element (rather than the identifier for the 
-    Seq-data/Seq-data-importfor each sequence being written. Also Note that this option will only work 
+    Seq-data/Seq-data-import for each sequence being written. Also note that this option will only work 
     if --parse_element=sequence.
 
 B<--output,-o> 

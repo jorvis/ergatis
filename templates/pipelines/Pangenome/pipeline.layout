@@ -24,6 +24,10 @@
 							<state>incomplete</state>
 							<name>mugsyprep.assembly</name>
 						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>pangenome_fix_headers.nuc</name>
+						</commandSet>
 					</commandSet>
 					<commandSet type="serial">
 						<state>incomplete</state>
@@ -35,6 +39,10 @@
 							<state>incomplete</state>
 							<name>mugsyprep.polypeptide</name>
 						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
+							<name>pangenome_fix_headers.prot</name>
+						</commandSet>
 					</commandSet>
 				</commandSet>
 		</commandSet>
@@ -44,8 +52,15 @@
 				<state>incomplete</state>
 				<commandSet type="serial">
 					<state>incomplete</state>
-					<name>pangenome_fix_headers.prot</name>
+					<name>formatdb.nuc</name>
 				</commandSet>
+				<commandSet type="serial">
+					<state>incomplete</state>
+					<name>ncbi-tblastn.default</name>
+				</commandSet>
+			</commandSet>
+			<commandSet type="serial">
+				<state>incomplete</state>
 				<commandSet type="serial">
 					<state>incomplete</state>
 					<name>formatdb.prot</name>
@@ -53,21 +68,6 @@
 				<commandSet type="serial">
 					<state>incomplete</state>
 					<name>ncbi-blastp.default</name>
-				</commandSet>
-			</commandSet>
-			<commandSet type="serial">
-				<state>incomplete</state>
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>pangenome_fix_headers.nuc</name>
-				</commandSet>
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>formatdb.nuc</name>
-				</commandSet>
-				<commandSet type="serial">
-					<state>incomplete</state>
-					<name>ncbi-tblastn.default</name>
 				</commandSet>
 			</commandSet>
 		</commandSet>
