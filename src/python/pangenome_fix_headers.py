@@ -53,13 +53,13 @@ def write_new_fasta(record_list, fasta_out):
 ########
 
 def main():
-    # Set up options parser and help statement
-    description = "Format pangenome headers so that genomes and genes are easily identifiable and parseable"
-    parser = ArgumentParser(description=description)
-    parser.add_argument("--mapping_file", "-m", help="Path to the mapping file created by mugsyprep.pl", metavar="/path/to/mugsymap_complete.txt", required=True)
-    parser.add_argument("--input_file", "-m", help="Path to a fasta file.  File should have information that can make it easy to map the genome and gene using the mugsymap file", metavar="/path/to/genome.fa", required=True)
-    parser.add_argument("--output_file", "-o", help="Path to write the output file", metavar="/path/to/output.txt", required=True)
-    args = parser.parse_args()
+# Set up options parser and help statement
+	description = "Format pangenome headers so that genomes and genes are easily identifiable and parseable"
+	parser = ArgumentParser(description=description)
+	parser.add_argument("--mapping_file", "-m", help="Path to the mapping file created by mugsyprep.pl", metavar="/path/to/mugsymap_complete.txt", required=True)
+	parser.add_argument("--input_file", "-m", help="Path to a fasta file.  File should have information that can make it easy to map the genome and gene using the mugsymap file", metavar="/path/to/genome.fa", required=True)
+	parser.add_argument("--output_file", "-o", help="Path to write the output file", metavar="/path/to/output.txt", required=True)
+	args = parser.parse_args()
 
 	replace_vals = parse_map_file(args.mapping_file)
 	records = read_in_fasta(args.input_file)
@@ -67,5 +67,5 @@ def main():
 	write_new_fasta(new_records, args.output_file)
 
 if __name__ == '__main__':
-    main()
+	main()
 	sys.exit(0)
