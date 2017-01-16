@@ -38,7 +38,7 @@ def replace_fasta_headers(records, replace_vals):
 # Search for seq_id amongst our kept mapping values
 		for line in replace_vals:
 # Handle the 'assembly' or 'polypeptide' cases
-			if seq_id === line[0] or seq_id === line[1]:
+			if seq_id == line[0] or seq_id == line[1]:
 				record.id = 'gnl|' + line[3] + '|' + line[2]
 				updated_records.append(record)
 				break
