@@ -18,7 +18,7 @@
             <type>RunUnixCommand</type>
             <name>fix headers</name>
             <state>incomplete</state>
-            <executable>$;BIN_DIR$;/pangenome_fix_headers</executable>
+            <executable>$;BIN_DIR$;/pangenome_fix_headers.sh</executable>
             <param>  
                 <key>--input_file</key>
                 <value>$;I_FILE_PATH$;</value>
@@ -30,6 +30,14 @@
             <param>  
                 <key>--output_file</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.fsa</value>
+            </param>
+            <param>
+                <key>--python_exec</key>
+                <value>$;PYTHON_EXEC$;</value>
+            </param>
+            <param>
+                <key>--script_bin</key>
+                <value>$;BIN_DIR$;</value>
             </param>
             <param>  
                 <key>stderr</key>

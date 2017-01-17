@@ -37,6 +37,10 @@
 						</commandSet>
 						<commandSet type="serial">
 							<state>incomplete</state>
+							<name>translate_sequence.polypeptide</name>
+						</commandSet>
+						<commandSet type="serial">
+							<state>incomplete</state>
 							<name>mugsyprep.polypeptide</name>
 						</commandSet>
 						<commandSet type="serial">
