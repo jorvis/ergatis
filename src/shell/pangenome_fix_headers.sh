@@ -40,7 +40,6 @@ case $arg in
     --mapping_file)
     mapping_file="$val"
     ;;
-    ;;
     --python_exec)
     python_exec="$val"
     ;;
