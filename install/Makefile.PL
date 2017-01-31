@@ -188,7 +188,6 @@ c_apps	:
 	${MAKE} -C $(C_BUILD_DIR)/selfsim
 	@install $(C_BUILD_DIR)/selfsim/selfsim $(PREFIX)/bin
 
-
 r_scripts:
 	@echo "Installing R scripts to $(PREFIX)/bin"
 	find $(BUILD_DIR)/R -type f -exec install {} $(PREFIX)/bin \;
