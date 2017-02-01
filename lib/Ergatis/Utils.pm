@@ -230,7 +230,7 @@ sub handle_component_status_changes {
             print STDOUT "== $printed: $component\n";
         } elsif ($new_state =~ /^(complete|error|failed)/) {
             my $elapsed = $component_href->{$component}->{'Wall'};
-            print STDOUT "==== $printed: $elapsed\n\n";
+            print STDOUT "==== $printed: $component $elapsed\n\n";
         }
     }
 }

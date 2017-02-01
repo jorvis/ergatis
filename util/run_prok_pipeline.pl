@@ -11,6 +11,8 @@ use Ergatis::ConfigFile;
 
 # If set to 1, script will not exit until pipeline finishes
 my $sync = 0;
+# If sync and p_bar are set to 1, progress bar will be shown instead of standard logging
+my $p_bar = 0;
 
 my %options;
 my $results = GetOptions (\%options,
@@ -19,6 +21,7 @@ my $results = GetOptions (\%options,
                           "ergatis_config|e=s",
                           "repository_root|r=s",
 						  "sync|s=i",
+						  "progress_bar|p=i"
                           );
 
 &check_options(\%options);
@@ -62,7 +65,7 @@ sub make_pipeline {
             # script's exit value.
             my $success = $pipeline->run( ergatis_cfg => $ergatis_config,
                            block       => 1,
-						   #show_progress => 1
+						   show_progress => $p_bar
                          );
 
             ## Determine the exit value based on the success of the pipeline.
@@ -106,5 +109,5 @@ sub check_options {
     }
 
 	$sync = 1 if $opts->{"sync"};
-    
+	$p_bar = 1 if ( $opts->{"sync"} && $opts->{"progress_bar"} );
 }

@@ -310,7 +310,7 @@ umask(0000);
 
                 my $rc = 0xffff & system($final_run_command);
 
-                printf $debugfh
+                print $debugfh
                   "system() returned %#04x: $rc for command $final_run_command\n"
                   #"system(%s) returned %#04x: $rc for command $final_run_command\n"
                   if $self->{debug};
@@ -545,7 +545,7 @@ umask(0000);
 
         my $rc = 0xffff & system($final_run_command);
 
-        printf $debugfh
+        print $debugfh
           "system() returned %#04x: $rc for command $final_run_command\n"
 		  #"system(%s) returned %#04x: $rc for command $final_run_command\n"
           if $self->{debug};
@@ -589,10 +589,13 @@ umask(0000);
                 }
 			}
             $component_list = build_twig($self->{path});
-			update_progress_bar($p_bar, $component_list) if $args{show_progress};
-			if ( %prev_component_states ) {
-                handle_component_status_changes($component_list, \%prev_component_states);
-            }
+			if ($args{show_progress}) {
+			    update_progress_bar($p_bar, $component_list);
+		    } else {
+				if ( %prev_component_states ) {
+                    handle_component_status_changes($component_list, \%prev_component_states);
+                }
+		    }
             sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/ );
         } while ( $p_state =~ /(running|pending|waiting|incomplete)/ );
 
