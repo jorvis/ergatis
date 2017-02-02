@@ -24,7 +24,7 @@ sub build_twig {
     my $pipeline_xml = shift;
 	# Reset the order variable and component list hashes
 	$order = 0;
-	%component_list = ();
+	%component_list = ();	# Will be filled in at process_child subroutine
     # Create twig XML to populate hash of component information
     my $twig = XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
     $twig->parsefile($pipeline_xml);
