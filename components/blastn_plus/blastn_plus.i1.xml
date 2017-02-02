@@ -45,6 +45,14 @@
                 <value>$;MAX_TARGET_SEQS$;</value>
 			</param>
             <param>
+                <key>--exclude_gi</key>
+                <value>$;EXCLUDE_GIS$;</value>
+            </param>
+            <param>
+                <key>--gi_file</key>
+                <value>$;GI_FILE$;</value>
+			</param>
+            <param>
                 <key>--out</key>
 				<value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.$;COMPONENT_NAME$;.raw</value>
             </param>  

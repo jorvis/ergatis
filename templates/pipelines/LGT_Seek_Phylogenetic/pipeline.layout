@@ -1,0 +1,24 @@
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="commandSet.xsd" type="instance">
+    <commandSet type="serial">
+        <state>incomplete</state>
+        <name>start pipeline:</name>
+        <commandSet type="serial">
+            <state>incomplete</state>
+            <commandSet type="serial">
+                <state>incomplete</state>
+                <name>SPAdes.assembly</name>
+            </commandSet>
+            <commandSet type="parallel">
+                <state>incomplete</state>
+            	<commandSet type="serial">
+                	<state>incomplete</state>
+                	<name>blastn_plus.only</name>
+            	</commandSet>
+            	<commandSet type="serial">
+                	<state>incomplete</state>
+                	<name>blastn_plus.exclude</name>
+            	</commandSet>
+            </commandSet>
+        </commandSet>
+    </commandSet>
+</commandSetRoot>

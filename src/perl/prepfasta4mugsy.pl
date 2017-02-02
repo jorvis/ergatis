@@ -83,6 +83,7 @@ foreach my $org_id (keys %$org_id_to_seq_ids) {
     my @files;
     map {
         if (!defined($seq_id_to_file->{$_})) {
+			print "ORGANISM $org_id SEQ $_\n";
             die "Unable to map $_ to a sequence file\n";
         }
         push(@files,$seq_id_to_file->{$_})
@@ -103,7 +104,7 @@ foreach my $org_id (keys %$org_id_to_seq_ids) {
     }
     foreach my $f (@files) {
 	my $cat = "cat $f >> $options{output_dir}/$org_id.fsa";
-    	print STDERR "$cat\n";
+	#print STDERR "$cat\n";
     	`$cat`;
     }
 #    my $cat = "cat ".join(" ",@files)." > $options{output_dir}/$org_id.fsa";
