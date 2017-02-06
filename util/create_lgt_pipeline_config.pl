@@ -38,6 +38,9 @@ B<--host_reference,-h>
 B<--refseq_reference,-r>
 	Path to the RefSeq reference fasta file, or list file (ends in .list).  If the reference has already been indexed by BWA, the index files must be in the same directory as the reference(s).
 
+B<--large_reference, -l>
+	Enable this flag if the recipient reference genome base count is large (> 2Gb).  In this case, the "bwtsw" algorithm will be used instead of the "is" algorithm.  This is only compatible with the "build_indexes" option and only applies to aligning to a recipient/host genome
+
 B<--build_indexes,-B>
 	If the flag is enabled, will build indexes using BWA in the pipeline.  If you are using pre-build indexes it is important they are compatible with the version of BWA running in the pipeline (0.7.12 for internal Ergatis, 0.7.15 for Docker Ergatis)
 
@@ -119,6 +122,7 @@ sub main {
 						  "donor_reference|d=s",
 						  "refseq_reference|r=s",
 						  "build_indexes|B",
+						  "large_reference|l",
 						  "template_directory|t=s",
 						  "output_directory|o=s",
 						  "data_directory|O=s",
@@ -274,6 +278,13 @@ sub main {
 
 			$config{'lgt_bwa validation'}->{'$;INPUT_FILE$;'} = '';
 			$config{'lgt_bwa validation'}->{'$;INPUT_FILE_LIST$;'} = '$;REPOSITORY_ROOT$;/output_repository/lgt_build_bwa_index/$;PIPELINEID$;_recipient/lgt_build_bwa_index.fsa.list';
+
+			# If a large host reference is used, change to "bwtsw" algorithm, otherwise use "is"
+			if ($options{'large_reference'}) {
+                $config{'lgt_build_bwa_index recipient'}->{'$;ALGORITHM$;'} = 'bwtsw';
+			} else {
+                $config{'lgt_build_bwa_index recipient'}->{'$;ALGORITHM$;'} = 'is';
+			}
 		}
 
 		unless ($host_only) {

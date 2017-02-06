@@ -96,8 +96,10 @@ foreach my $ref (@ref_files) {
                 && exists( $type{'fastq_2'} ) )
             {
          # Making the assumption that both FastQ files are in the same directory
+		 		# Ensure file_base variable does not have .gz extension
+				(my $f_no_gz = $type{'fastq_1'}) =~ s/\.gz//g;
                 my ( $file_base, $file_dir, $file_ext ) =
-                  fileparse( $type{'fastq_1'}, qr/\.[^.]*/ );
+                  fileparse( $f_no_gz, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out1 = $refname . "_" . $file_base . ".bwa.sam";
 				$out1 =~ s/bwa\.prelim\.filtered\.//g;
@@ -112,8 +114,10 @@ foreach my $ref (@ref_files) {
         } else {
             print_log_msg( $DEBUG, "Detected a single-end fastq sequence" );
             if ( $file_count == 1 && exists( $type{'fastq'} ) ) {
+		 		# Ensure file_base variable does not have .gz extension
+				(my $f_no_gz = $type{'fastq'}) =~ s/\.gz//g;
                 ( $file_base, $file_dir, $file_ext ) =
-                  fileparse( $type{'fastq'}, qr/\.[^.]*/ );
+                  fileparse( $f_no_gz, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out = $refname . "_" . $file_base . ".bwa.sam";
 				$out =~ s/bwa\.prelim\.filtered\.//g;
@@ -128,8 +132,10 @@ foreach my $ref (@ref_files) {
             print_log_msg( $DEBUG,
                 "Detected paired-end fastq or BAM sequences" );
             if ( $file_count == 1 && exists( $type{'bam'} ) ) {
+		 		# Ensure file_base variable does not have .gz extension
+				(my $f_no_gz = $type{'bam'}) =~ s/\.gz//g;
                 ( $file_base, $file_dir, $file_ext ) =
-                  fileparse( $type{'bam'}, qr/\.[^.]*/ );
+                  fileparse( $f_no_gz, qr/\.[^.]*/ );
                 $out1 = $refname . "_" . $file_base . ".aln1.sai";
 				$out1 =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'bam'}, "-b1", $out1, $ref );
@@ -149,16 +155,20 @@ foreach my $ref (@ref_files) {
                 && exists( $type{'fastq_1'} )
                 && exists( $type{'fastq_2'} ) )
             {
+		 		# Ensure file_base variable does not have .gz extension
+				(my $f_no_gz = $type{'fastq_1'}) =~ s/\.gz//g;
                 ( $file_base, $file_dir, $file_ext ) =
-                  fileparse( $type{'fastq_1'}, qr/\.[^.]*/ );
+                  fileparse( $f_no_gz, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out1 = $refname . "_" . $file_base . ".aln1.sai";
 				$out1 =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'fastq_1'}, "", $out1,
                     $ref );
 
+		 		# Ensure file_base variable does not have .gz extension
+				($f_no_gz = $type{'fastq_2'}) =~ s/\.gz//g;
                 ( $file_base, $file_dir, $file_ext ) =
-                  fileparse( $type{'fastq_2'}, qr/\.[^.]*/ );
+                  fileparse( $f_no_gz, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out2 = $refname . "_" . $file_base . ".aln2.sai";
 				$out2 =~ s/bwa\.prelim\.filtered\.//g;
@@ -185,8 +195,10 @@ foreach my $ref (@ref_files) {
             print_log_msg( $DEBUG,
                 "Detected a single-end fastq or BAM sequence" );
             if ( $file_count == 1 && exists( $type{'fastq'} ) ) {
+		 		# Ensure file_base variable does not have .gz extension
+				(my $f_no_gz = $type{'fastq'}) =~ s/\.gz//g;
                 ( $file_base, $file_dir, $file_ext ) =
-                  fileparse( $type{'fastq'}, qr/\.[^.]*/ );
+                  fileparse( $f_no_gz, qr/\.[^.]*/ );
                 $file_base =~ s/\.fastq$//;
                 $out = $refname . "_" . $file_base . ".aln.sai";
 				$out =~ s/bwa\.prelim\.filtered\.//g;
@@ -194,8 +206,12 @@ foreach my $ref (@ref_files) {
 
                 $in = $options{'output_dir'} . "/" . $out . " " . $type{'fastq'};
             } elsif ( $file_count == 1 && exists( $type{'bam'} ) ) {
+				# Check to ensure BAM file has reads, and exit if it does not.
+				check_for_empty_bam( $type{'bam'};
+		 		# Ensure file_base variable does not have .gz extension
+				(my $f_no_gz = $type{'bam'}) =~ s/\.gz//g;
                 ( $file_base, $file_dir, $file_ext ) =
-                  fileparse( $type{'bam'}, qr/\.[^.]*/ );
+                  fileparse( $f_no_gz, qr/\.[^.]*/ );
                 $out = $refname . "_" . $file_base . ".aln.sai";
 				$out =~ s/bwa\.prelim\.filtered\.//g;
                 align_BWA( \%options, "aln", $type{'bam'}, "-b0", $out, $ref );
@@ -381,7 +397,9 @@ sub determine_format {
 
     # Going to check and see if we have a inputted file first
     if ($file) {
-        my ( $base, $dir_path, $ext ) = fileparse( $file, qr/\.[^.]*/ );
+		# Ensure the extension does not include .gz so that the correct extensions are processed
+		(my $f_no_gz = $file) =~ s/\.gz//g;
+        my ( $base, $dir_path, $ext ) = fileparse( $f_no_gz, qr/\.[^.]*/ );
 
         # Depending on the extension, we handle it differently
         if ( $ext =~ /list/ ) {
@@ -398,29 +416,33 @@ sub determine_format {
 # Currently the script cannot process multiple samples.  Ideally the list file should just contain 1 sample, which is either 1 single-end fastq, 1 BAM, or 2 paired-end fastq files.  Also the .pair file originating from the sra2fastq component in Ergatis can exist in a list file
             foreach my $f (@list_files) {
 				chomp $f;
-
-                my ( $base, $dir_path, $ext ) = fileparse( $f, qr/\.[^.]*/ );
-                if ( $ext =~ /fastq$/ ) {
-                    if ( $ext =~ /_1\./ ) {
+				# Ensure the extension does not include .gz so that the correct extensions are processed
+				(my $file_no_gz = $f) =~ s/\.gz//g;
+                my ( $base, $dir_path, $ext ) = fileparse( $file_no_gz, qr/\.[^.]*/ );
+				#TODO: Eliminate some of the redundancy with the way patterns are handled
+                if ( $ext =~ /(fastq|fq)$/ ) {
+                    if ( $ext =~ /_R?1\./ ) {
                         set_query_to_file_type( $file_type, 'fastq_1', $f );
                         $fastq_paired = 1;
-                    } elsif ( $ext =~ /_2\./ ) {
+                    } elsif ( $ext =~ /_R?2\./ ) {
                         set_query_to_file_type( $file_type, 'fastq_2', $f );
+						$fastq_paired = 1;
                     } else {
                         set_query_to_file_type( $file_type, 'fastq', $f );
                         $fastq_paired = 0;
+						last;
                     }
                 } else {
-
           # For the BAM, or .pair extensions, we can just recycle current code.
                     my $temp_opts = {};
                     $temp_opts->{'input_file'} = $f;
                     determine_format( $temp_opts, $file_type );
+					last;
                 }
             }
         } elsif ( $ext =~ /bam/ ) {
             set_query_to_file_type( $file_type, 'bam', $file );
-        } elsif ( $ext =~ /fastq/ ) {    # Single-end FASTQ file
+        } elsif ( $ext =~ /(fastq|fq)/ ) {    # Single-end FASTQ file
             set_query_to_file_type( $file_type, 'fastq', $file );
             $fastq_paired = 0;
         } elsif ( $ext =~ /\.pair/ ) {
@@ -429,7 +451,6 @@ sub determine_format {
             grab_files_from_dir( $dir_path, $file_type, $base );
         }
     } else {
-
        # If an inputted file wasn't passed, then it has to be an input directory
         my $dir = $opts->{'input_dir'};
         grab_files_from_dir( $dir, $file_type );
@@ -437,6 +458,7 @@ sub determine_format {
 }
 
 # Read through a directory to grab relevant fastq or bam files
+# NOTE: Will only take the first file type encountered for fastq and BAM
 sub grab_files_from_dir {
     my ( $dir, $file_type, $basename ) = @_;
     my $sub_name = ( caller(0) )[3];
@@ -452,18 +474,23 @@ sub grab_files_from_dir {
 		if (defined $basename) {
 			next unless $file =~ /$basename/;
 		}
-        if ( $file =~ /fastq$/ ) {
-            if ( $file =~ /_1\./ ) {
+		# Ensure the filename is missing the .gz so that the extensions can be processed correctly
+		(my $file_no_gz = $file) =~ s/\.gz//g;
+        if ( $file_no_gz =~ /(fastq|fq)$/ ) {
+            if ( $file_no_gz =~ /_R?1\./ ) {
                 set_query_to_file_type( $file_type, 'fastq_1', $path );
                 $fastq_paired = 1;
-            } elsif ( $file =~ /_2\./ ) {
+            } elsif ( $file_no_gz =~ /_R?2\./ ) {
                 set_query_to_file_type( $file_type, 'fastq_2', $path );
+				$fastq_paired = 1;
             } else {
                 set_query_to_file_type( $file_type, 'fastq', $path );
                 $fastq_paired = 0;
+				last;
             }
-        } elsif ( $file =~ /bam$/ ) {
+        } elsif ( $file_no_gz =~ /bam$/ ) {
             set_query_to_file_type( $file_type, 'bam', $path );
+			last;
         }
     }
 }
@@ -522,6 +549,21 @@ sub check_for_single_sample {
             );
         }
     }
+}
+
+# Checks for empty BAM file.  Will immediately exit program if found empty.
+# NOTE: This is to help the LGT_Seek pipeline silently continue during later stages in cases where the upstream input BAM had no alignments found
+sub check_for_empty_bam {
+    my $sub_name = ( caller(0) )[3];
+	my $bam_file = shift;
+    $cmd = $cmd_line_args->{'samtools_path'} . " view $bam_file | wc -l";;
+	print_log_msg($DEBUG, "INFO : $sub_name - Running command '$cmd'");
+	my $lines = `cmd`;
+	chomp $lines;
+	return if ($lines > 0);
+	print_log_msg($DEBUG, "INFO - $sub_name - Input BAM $bam_file appears to be empty. Silently exiting script.");
+	exit(0)
+
 }
 
 # Description   : Used to check the correctness of the command line arguments passed to the script. The script exits if required arguments are missing.
