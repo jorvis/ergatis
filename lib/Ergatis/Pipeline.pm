@@ -543,32 +543,18 @@ umask(0000);
         print $debugfh "preparing to run $final_run_command\n"
           if $self->{debug};
 
-        my $rc = 0xffff & system($final_run_command);
+		system($final_run_command);
+		
+    	if ( $? == -1 ) {
+        	croak "failed to execute command ($final_run_command): $!\n";
+    	} elsif ( $? & 127 ) {
+         	my $out = sprintf "command ($final_run_command): child died with signal %d, %s coredump\n",
+                    ($? & 127),  ($? & 128) ? 'with' : 'without';
+        	croak ($out);
+    	}
 
-        print $debugfh
-          "system() returned %#04x: $rc for command $final_run_command\n"
-		  #"system(%s) returned %#04x: $rc for command $final_run_command\n"
-          if $self->{debug};
-        if ( $rc == 0 ) {
-            print $debugfh "ran with normal exit\n" if $self->{debug};
-        } elsif ( $rc == 0xff00 ) {
-            print $debugfh "command failed: $!\n" if $self->{debug};
-            croak
-              "Unable to run workflow command $final_run_command failed : $!\n";
-        } elsif ( ( $rc & 0xff ) == 0 ) {
-            $rc >>= 8;
-            print $debugfh "ran with non-zero exit status $rc\n"
-              if $self->{debug};
-            croak
-              "Unable to run workflow command $final_run_command failed : $!\n";
-        } else {
-            print $debugfh "ran with " if $self->{debug};
-            if ( $rc & 0x80 ) {
-                $rc &= ~0x80;
-                print $debugfh "coredump from " if $self->{debug};
-            }
-            print $debugfh "signal $rc\n" if $self->{debug};
-        }
+		# Program should have went through if $? = 0
+        print $debugfh "[$final_run_command] ran with normal exit\n" if $self->{debug};
 
         close $debugfh if $self->{debug};
 
