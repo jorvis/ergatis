@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<commandSetRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='commandSet.xsd'>
+    <commandSet type="serial">
+        <name>Transdecoder compute</name>
+		<command>
+            <type>RunUnixCommand</type>
+            <name>symlink input file</name>
+            <state>incomplete</state>
+			<executable>/bin/ln</executable>
+			<args>-s $;I_FILE_PATH$; $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/</args>
+		</command>
+        <command>
+            <type>RunUnixCommand</type>
+            <name>Run Transdecoder</name>
+            <state>incomplete</state>
+            <executable>$;TRANSDECODER_PATH$;/TransDecoder.LongOrfs</executable>
+			<args>-t $;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$; -m $;MIN_ORF_LENGTH$; $;OTHER_OPTS$;</args>
+			<param>
+				<key>stdout</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stdout</value>
+			</param>
+			<param>
+				<key>stderr</key>
+                <value>$;OUTPUT_DIRECTORY$;/$;ITERATOR_NAME$;/g$;GROUP_NUMBER$;/$;I_FILE_BASE$;.stderr</value>
+			</param>
+        </command>
+    </commandSet>
+</commandSetRoot>
