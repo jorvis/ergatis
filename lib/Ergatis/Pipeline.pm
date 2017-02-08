@@ -543,6 +543,8 @@ umask(0000);
         print $debugfh "preparing to run $final_run_command\n"
           if $self->{debug};
 
+		# Run in the background
+		$final_run_command .= " &";
 		system($final_run_command);
 		
     	if ( $? == -1 ) {
