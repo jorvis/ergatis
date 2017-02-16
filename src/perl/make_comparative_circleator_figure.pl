@@ -611,7 +611,7 @@ sub write_config_file {
 new ls1 load feat-file=${snp_file},feat-file-type=snp-table,snp-ref=$ref_strain
 # display SNPs unique to the reference
 # only display SNPs where all the other genomes differ from the reference:
-new us1 rectangle heightf=0.06,feat-type=SNP,color1=#ff00ff,feat-tag=SNP_num_diffs,feat-tag-value=$nsm1
+new us1 rectangle heightf=0.06,feat-type=SNP,color1=#4030ff,color2=#4030ff,feat-tag=SNP_num_diffs,feat-tag-value=$nsm1
 small-label label-text=unique&nbsp;SNPs
 SNP_BLOCK
   }
@@ -637,16 +637,16 @@ tiny-cgap
 new cds-rev rectangle 0.06 . . . CDS -1 #000000
 rRNAs-rev color2=#00ff00,stroke-width=1,innerf=same,outerf=same
 tRNAs-rev color2=#ff0000,stroke-width=1,innerf=same,outerf=same
-small-label label-text=genes,rRNAs(green),tRNAs(red)
+small-label label-text=genes&nbsp;and&nbsp;rRNAs(green)&nbsp;and&nbsp;tRNAs(red)
 small-cgap
 
 # core genes (conserved in all compared genomes)
-new cg1 rectangle 0.06 feat-type=gene,gene-cluster-genomes=$strain_str,gene-cluster-signature=$core_sig
+new cg1 rectangle 0.06 feat-type=gene,gene-cluster-genomes=$strain_str,gene-cluster-signature=$core_sig,color1=#d230ff,color2=#d230ff
 small-label label-text=core&nbsp;genes
 small-cgap
 
 # unique genes (conserved only in reference genome)
-new ug1 rectangle 0.06 feat-type=gene,gene-cluster-genomes=$strain_str,gene-cluster-signature=$unique_sig
+new ug1 rectangle 0.06 feat-type=gene,gene-cluster-genomes=$strain_str,gene-cluster-signature=$unique_sig,color1=#d2612a,color2=#d2612a
 small-label label-text=unique&nbsp;genes
 small-cgap
 
@@ -654,9 +654,11 @@ $snp_block
 
 medium-cgap
 
-%GCmin-max
+%GCmin-max color2=#ff0000
+small-label label-text=%GC
 tiny-cgap
-GCskew-min-max-df0
+GCskew-min-max-df0 color2=#00ff00
+small-label label-text=GC-skew
 
 # label only contigs that are at least 50kb
 medium-label heightf=0.04,feat-track=c1,label-function=primary_id,packer=none,label-type=spoke,innerf=1.1,feat-min-length=20000,feat-type=contig
