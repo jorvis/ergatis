@@ -28,6 +28,21 @@
             </param>
         </command>   
 
+        <command>
+            <type>RunUnixCommand</type>
+            <name>convert to VCF</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/clovr_snps_to_vcf</executable>
+            <param>
+                <key>--snp_file</key>
+                <value>$;OUTPUT_SNPS_FILE$;</value>              
+            </param>
+            <param>
+                <key>--output_dir</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+        </command>   
+
     </commandSet>
 </commandSetRoot>
 
