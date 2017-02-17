@@ -74,5 +74,23 @@
 		<OS>linux</OS>
 	    </dceSpec>
 	</commandSet>                              
+        <command>
+            <type>RunUnixCommand</type>
+            <name>create VCF list</name>
+            <state>incomplete</state>
+            <executable>$;BIN_DIR$;/create_list_file</executable>
+            <param>  
+                <key>--directory</key>
+                <value>$;OUTPUT_DIRECTORY$;</value>
+            </param>
+            <param>  
+                <key>--regex</key>
+                <value>".*\.vcf"</value>
+            </param>
+            <param>  
+                <key>--output_list</key>
+                <value>$;OUTPUT_VCF_LIST$;</value>
+            </param>
+        </command>
     </commandSet>    
 </commandSetRoot>                

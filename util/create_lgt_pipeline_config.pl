@@ -416,7 +416,7 @@ sub check_options {
 
    	$debug = $opts->{'debug'} if( $opts->{'debug'} );
 
-   	foreach my $req ( qw(refseq_reference) ) {
+   	foreach my $req ( qw() ) {
        &_log($ERROR, "Option $req is required") unless( $opts->{$req} );
    	}
 
