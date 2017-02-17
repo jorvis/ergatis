@@ -24,6 +24,7 @@ next
 -FIX - Modified validate_genbank to remove periods from LOCUS
 -FIX - Fixed command line parameter bug in bsml2interevidence_fasta.pl
 -CHANGE - Updated Circleator output in CloVR-Comparative pipeline: changed colors and added track labels.
+- NEW - mugsy_callsnps will now produce .vcf output in addition to a tab-delimited .snps file.
 
 ergatis-v2r19 (03-05-2015)
 ------------------------------
