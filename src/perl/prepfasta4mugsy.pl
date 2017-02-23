@@ -82,11 +82,13 @@ open(FW, "> $id_map") or die "Unable to open file $id_map for writing\n";
 foreach my $org_id (keys %$org_id_to_seq_ids) {
     my @files;
     map {
-		next if $_ eq "-";	# Found bug where empty polypeptide BSML features get passed as a dash
-        if (!defined($seq_id_to_file->{$_})) {
-            die "Unable to map $_ to a sequence file\n";
-        }
-        push(@files,$seq_id_to_file->{$_})
+		my $skip = 1 if $_ eq "-";	# Found bug where empty polypeptide BSML features get passed as a dash
+        unless ($skip) {
+			if(! defined($seq_id_to_file->{$_}) ) {
+    	        die "Unable to map $_ to a sequence file\n";
+    	    }
+    	    push(@files,$seq_id_to_file->{$_})
+		}
     } keys %{$org_id_to_seq_ids->{$org_id}};
     if(!$options{checksum_orgs}) {
         $org_id =~ s/[\/\.\+\:\;,-]//g;
