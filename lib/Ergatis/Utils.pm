@@ -218,7 +218,7 @@ sub handle_component_status_changes {
     my ($component_href, $prev_states) = @_;
 
     foreach my $component (
-		sort { $component_href->$a->{'order'} <=> $component_href->$b->{'order'} } keys $component_href
+		sort { $component_href->$a->{'order'} <=> $component_href->$b->{'order'} } keys %$component_href
 	) {
         my $old_state = $prev_states->{$component};
         my $new_state = $component_href->{$component}->{'state'};
