@@ -566,16 +566,15 @@ umask(0000);
        # If 'block' is set to 1, wait for pipeline to return non-running state
         my $p_state = '';
         my $running_components = ();
-        my $component_list = ();
+        my $component_list = build_twig($self->{path});
 		my %prev_component_states = ();
         do {
             $p_state = $self->pipeline_state;
-   			# First iteration will be undefined... populate hash with previous states
-			if (defined $component_list) {
-                foreach my $component (keys %$component_list) {
-                    $prev_component_states{$component} = $component_list->{$component}->{'state'};
-                }
-			}
+   			# Populate hash with previous states
+			# First iteration will have state 'incomplete' for each component
+            foreach my $component (keys %$component_list) {
+                $prev_component_states{$component} = $component_list->{$component}->{'state'};
+            }
             $component_list = build_twig($self->{path});
 			if ($args{show_progress}) {
 			    update_progress_bar($p_bar, $component_list);

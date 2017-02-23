@@ -228,6 +228,12 @@ sub handle_component_status_changes {
         my $printed;
         ($printed = $new_state) =~ s/([\w']+)/\u\L$1/g;
         # Handle the various updated component states
+
+		# First a special case, where the component started and finished before the next sleep cycle
+		if ($old_state eq "incomplete" && $new_state =~ /^(complete|error|failed)/) {
+            print STDOUT "== Running: $component\n";
+		}
+
         if ($new_state eq "running") {
             print STDOUT "== $printed: $component\n";
         } elsif ($new_state =~ /^(complete|error|failed)/) {
