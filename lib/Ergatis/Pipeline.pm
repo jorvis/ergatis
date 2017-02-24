@@ -589,7 +589,9 @@ umask(0000);
         # If end-state is complete, return 1.  Otherwise return 0
         return 1 if ($p_state eq 'complete');
         if ($p_state =~ /(failed|error)/ ) {
-            $self->{error_reporting} = report_failure_info($self->{path});
+            # Return a hash of useful diagnostics
+            $self->{diagnostics} = report_failure_info($self->{path});
+            print (join "\n", $self->{diagnostics}->{stderr_files});
         }
         return 0;
     }
