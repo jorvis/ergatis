@@ -9,7 +9,7 @@ use Term::ProgressBar;
 
 use Exporter qw(import);
 
-our @EXPORT_OK = qw(build_twig create_progress_bar update_progress_bar handle_component_status_changes);
+our @EXPORT_OK = qw(build_twig create_progress_bar update_progress_bar handle_component_status_changes report_failure_info);
 
 my %component_list;
 my $order;
