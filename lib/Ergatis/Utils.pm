@@ -232,7 +232,11 @@ sub find_failed_components {
 # Returns: Array reference of stderr file paths
 sub get_failed_stderr {
     my $component_href = shift;
-    my @stderr_files = grep { $component_href->{$_}->{'stderr_files'} } (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href);
+    my @stderr_files;
+    foreach my $component (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href) {
+        # Any STDERR files that are not null strings, push into array
+        push @stderr_files, $component_href->{$component}->{'stderr_files'} if length $component_href->{$component}->{'stderr_files'};
+    }
     return \@stderr_files;
 }
 
