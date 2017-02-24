@@ -22,9 +22,9 @@ my $order;
 
 sub build_twig {
     my $pipeline_xml = shift;
-	# Reset the order variable and component list hashes
-	$order = 0;
-	%component_list = ();	# Will be filled in at process_child subroutine
+    # Reset the order variable and component list hashes
+    $order = 0;
+    %component_list = ();	# Will be filled in at process_child subroutine
     # Create twig XML to populate hash of component information
     my $twig = XML::Twig->new( 'twig_handlers' => { 'commandSet' => \&process_root } );
     $twig->parsefile($pipeline_xml);
@@ -75,7 +75,7 @@ sub process_root {
 sub process_child {
     my ( $e, $parent, $component ) = @_;
     my $name;
-	my $state;
+    my $state;
     my $count = 1;
 
     # Handle cases where the XML passed is not for a particular component
@@ -97,7 +97,7 @@ sub process_child {
             {
 # component name is assigned... every child of component will pass cpu times to this key
 
-			    if ( $e->has_child('state') ) {
+                if ( $e->has_child('state') ) {
                     $state = $e->first_child_text('state');
                 }
                 $component = $name;
@@ -109,7 +109,7 @@ sub process_child {
                     $component_list{$component}{'wall'} = $elapsed_str;
                 }
                 $component_list{$component}{'order'} = $order++;
-				$component_list{$component}{'state'} = $state;
+                $component_list{$component}{'state'} = $state;
             }
         }
     }
@@ -118,7 +118,7 @@ sub process_child {
     foreach my $child ( $e->children('commandSet') ) {
         process_child( $child, $e, $component );
 
-		# If there is an XML file, set the file handle for opening and process that
+        # If there is an XML file, set the file handle for opening and process that
         my $file = $child->first_child_text('fileName');
         my $fh   = open_fh($file);
         if ( defined $fh ) {
@@ -141,7 +141,7 @@ sub process_child {
 # Purpose: Gather information to help diagnose a failure in the pipeline.
 # Args: Pipeline XML file
 # Returns: An array reference with the following elements:
-###	1) Array reference of failed components
+### 1) Array reference of failed components
 ### 2) Array reference of paths to stderr files
 ### 3) Number of components that have completed running
 ### 4) Total number of components in the pipeline
@@ -149,9 +149,9 @@ sub process_child {
 sub report_failure_info {
     my ($pipeline_xml) = shift;
     build_twig($pipeline_xml);
-	# Get progress rate information
-	my ($total_complete, $total) = get_progress_rate_from_href(\%component_list);
-	my $failed_components = find_failed_components(\%component_list);
+    # Get progress rate information
+    my ($total_complete, $total) = get_progress_rate_from_href(\%component_list);
+    my $failed_components = find_failed_components(\%component_list);
 
     my $stderr_files = undef;   # Placeholder for now
 
@@ -163,7 +163,7 @@ sub report_failure_info {
 # Purpose: Parse through hash of component information and return the number of completed components and total components
 # Args: hashref of component list information.  Can be created via XML::Twig from report_failure_info()
 # Returns: Two variables
-###	1) Integer of total components with a 'complete' status
+### 1) Integer of total components with a 'complete' status
 ### 2) Integer of total components
 
 sub get_progress_rate_from_href {
@@ -180,7 +180,7 @@ sub get_progress_rate_from_href {
 # Purpose: Parse pipeline XML and return the number of completed components and total components
 # Args: path to a pipeline XML file
 # Returns: Two variables
-###	1) Integer of total components with a 'complete' status
+### 1) Integer of total components with a 'complete' status
 ### 2) Integer of total components
 
 sub get_progress_rate_from_xml {
@@ -218,8 +218,8 @@ sub handle_component_status_changes {
     my ($component_href, $prev_states) = @_;
 
     foreach my $component (
-		sort { $component_href->$a->{'order'} <=> $component_href->$b->{'order'} } keys %$component_href
-	) {
+        sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href
+    ) {
         my $old_state = $prev_states->{$component};
         my $new_state = $component_href->{$component}->{'state'};
         next if ( $old_state eq "complete" ); # Complete components do not change
@@ -229,10 +229,10 @@ sub handle_component_status_changes {
         ($printed = $new_state) =~ s/([\w']+)/\u\L$1/g;
         # Handle the various updated component states
 
-		# First a special case, where the component started and finished before the next sleep cycle
-		if ($old_state eq "incomplete" && $new_state =~ /^(complete|error|failed)/) {
+        # First a special case, where the component started and finished before the next sleep cycle
+        if ($old_state eq "incomplete" && $new_state =~ /^(complete|error|failed)/) {
             print STDOUT "== Running: $component\n";
-		}
+        }
 
         if ($new_state eq "running") {
             print STDOUT "== $printed: $component\n";

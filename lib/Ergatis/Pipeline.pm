@@ -567,27 +567,30 @@ umask(0000);
         my $p_state = '';
         my $running_components = ();
         my $component_list = build_twig($self->{path});
-		my %prev_component_states = ();
+        my %prev_component_states = ();
         do {
             $p_state = $self->pipeline_state;
-   			# Populate hash with previous states
-			# First iteration will have state 'incomplete' for each component
+            # Populate hash with previous states
+            # First iteration will have state 'incomplete' for each component
             foreach my $component (keys %$component_list) {
                 $prev_component_states{$component} = $component_list->{$component}->{'state'};
             }
             $component_list = build_twig($self->{path});
-			if ($args{show_progress}) {
-			    update_progress_bar($p_bar, $component_list);
-		    } else {
-				if ( %prev_component_states ) {
+            if ($args{show_progress}) {
+                update_progress_bar($p_bar, $component_list);
+            } else {
+                if ( %prev_component_states ) {
                     handle_component_status_changes($component_list, \%prev_component_states);
                 }
-		    }
+            }
             sleep 60 if ( $p_state =~ /(running|pending|waiting|incomplete)/ );
         } while ( $p_state =~ /(running|pending|waiting|incomplete)/ );
 
         # If end-state is complete, return 1.  Otherwise return 0
         return 1 if ($p_state eq 'complete');
+        if ($p_state =~ /(failed|error)/ ) {
+            $self->{error_reporting} = report_failure_info($self->{path});
+        }
         return 0;
     }
 
@@ -653,11 +656,11 @@ umask(0000);
           '/usr/local/devel/ANNOTATION/EGC_utilities/WISE2/wise2.2.0/wisecfg';
 
         ## for local data placement
-		if (defined $args{ergatis_cfg}->val( 'grid', 'vappio_root' )){
+        if (defined $args{ergatis_cfg}->val( 'grid', 'vappio_root' )){
             $ENV{vappio_root} = $args{ergatis_cfg}->val( 'grid', 'vappio_root' );
             $ENV{vappio_data_placement} =
                 $args{ergatis_cfg}->val( 'grid', 'vappio_data_placement' ); 
-		}
+        }
         $ENV{PERL5LIB} =
           "/usr/local/packages/perllib/x86_64-linux-thread-multi:$ENV{PERL5LIB}" if (defined $ENV{PERL5LIB});
 

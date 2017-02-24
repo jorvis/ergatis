@@ -10,22 +10,22 @@ create_hmms.pl - Program to create Pfam and TIGRFAM HMM library and MLDB
 =head1 SYNOPSIS
 
 	create_hmm.pl --hmm_list <list_file> --tigrinfo_dir <TIGRFAMs_INFO> --tigrgo_link <TIGRFAMS_GO_LINK> --output_dir <output_dir> [--tigrrole_link <TIGRFAMS_ROLE_LINK> --log <log file> --debug <debug level> --help <usage>]
-	
+
 	parameters in [] are optional
     	do NOT type the carets when specifying options
 
 =head1 OPTIONS
-	
+
 	--hmm_list	= /path/to/hmm_list_file.list. This is a file containing a list of different hmm
 			  libraries to be merged. It contains the full paths of the untarred, ungzipped
-			  recently downloaded HMM files. 
+			  recently downloaded HMM files.
 
 	--tigrinfo_dir	= /path/to/TIGRFAMs_INFO. This is the most current untarred, ungzipped TIGRFAMs_INFO
-			  directory containing individual TIGRFAMs INFO files. [Latest : TIGRFAMs_10.1_INFO.tar.gz] 
- 	
+			  directory containing individual TIGRFAMs INFO files. [Latest : TIGRFAMs_10.1_INFO.tar.gz]
+
 	--tigrgo_link	= /path/to/TIGRFAMS_GO_LINK. This is the most current TIGRFAMS_GO_LINK file
 			  [Latest : 10.1_Release]
-	
+
 	--output_dir	= /path/to/output_dir. This is the output directory where created files will be stored.
 
       [ --tigrrole_link = /path/to/TIGRFAMS_ROLE_LINK. This is the most current TIGRFAMS_ROLE_LINK file
@@ -42,7 +42,7 @@ create_hmms.pl - Program to create Pfam and TIGRFAM HMM library and MLDB
 
 This program creates Pfam and TIGRFAM lilbrary as well as MLDBM to be searched by polypeptide sequences. The current library is HMMER3 compatible
 and uses HMMER3 suite for creating library files. Following steps are taken in library creation:
-1.Merge the HMM library files mentioned in the list file supplied as arguement using merge_hmm_libraries.pl. 
+1.Merge the HMM library files mentioned in the list file supplied as arguement using merge_hmm_libraries.pl.
   Duplicate HMMs are removed during the merge to create a single library of unique HMMs.
 2.Convert the merged single library file to a binary format using hmmconvert (HMMER3 utility).
 3.Create .h3f, .h3i, .h3m and .h3p files using hmmpress (HMMER3 utility) required by polypeptide sequences during search.
@@ -98,7 +98,7 @@ if (defined $logfile) {
 }
 
 ## Merged HMM library file
-$merged_lib = $options{'output_dir'}."/coding_hmm.lib"; 
+$merged_lib = $options{'output_dir'}."/coding_hmm.lib";
 
 ## Merged HMM library file in binary format
 $merged_lib_bin = $merged_lib.".bin";
@@ -167,7 +167,7 @@ close($logfh) if $logfh;
 
 # Subroutine to check the supplied paramaters are correct
 sub check_parameters {
-	
+
 	my @params = qw(hmm_list tigrinfo_dir tigrgo_link output_dir);
 	foreach my $param_opt (@params) {
 		## Check for all mandatory options
@@ -191,7 +191,7 @@ sub check_parameters {
 
 	if($options{'log'}) {
 		$logfile = $options{'log'};
-	} 
+	}
 }
 
 sub log_msg {
@@ -203,6 +203,6 @@ sub log_msg {
 	}
 	if ($action eq "die") {
 		die "";
-	} 
+	}
 }
-__END__		
+__END__
