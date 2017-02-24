@@ -115,7 +115,7 @@ sub process_child {
         }
     } else {
         # Perform actions on identified components
-        process_components_for_stderr($e, $component)
+        process_components_for_stderr($e, $component);
     }
 
 #This mostly mirrors command from process_root... only dealing more with component commandSets
@@ -146,12 +146,12 @@ sub process_child {
 # Args: XML Twig element, and the component to store stderr data for
 # Returns: Nothing 
 sub process_components_for_stderr {
-    my ($e, $component) = @_
+    my ($e, $component) = @_;
     if ($component_list{$component}{'state'} =~ /(failed|error)/){
-        foreach my $command_child ($e->children('command') ) {
-            if ($command_child->has_child{'state'} 
+        foreach my $command_child ( $e->children('command') ) {
+            if ($command_child->has_child('state') 
               && $command_child->first_child_text('state') =~ /(failed|error)/) {
-                foreach my $param_child ($child->children('param') {
+                foreach my $param_child ( $command_child->children('param') ) {
                     if ($param_child->first_child_text('key') eq 'stderr') {
                         $component_list{$component}{'stderr_files'} .= $param_child->first_child_text('value') . "\n";
                     }
@@ -171,7 +171,7 @@ sub process_components_for_stderr {
 ### Total number of components in the pipeline
 
 sub report_failure_info {
-    my ($pipeline_xml) = shift;
+    my $pipeline_xml = shift;
     build_twig($pipeline_xml);
     # Get progress rate information
     my ($total_complete, $total) = get_progress_rate_from_href(\%component_list);
@@ -179,10 +179,10 @@ sub report_failure_info {
 
     my $stderr_files = get_failed_stderr(\%component_list);
 
-    my %failure_info = {'components' => $failed_components, 
+    my %failure_info = ('components' => $failed_components, 
       'stderr_files' => $stderr_files, 
       'complete_components' => $total_complete, 
-      'total_components' => $total ];
+      'total_components' => $total );
     return \%failure_info;
 }
 
@@ -213,12 +213,7 @@ sub get_progress_rate_from_href {
 sub get_progress_rate_from_xml {
     my $pipeline_xml = shift;
     build_twig($pipeline_xml);
-
-	# parse components array and count number of elements and 'complete' elements
-	my $total = scalar keys %component_list;
-	my @complete = grep { $component_list{$_}->{'state'} eq 'complete'} keys %component_list;
-	my $complete = scalar @complete;
-	return ($complete, $total);
+    return get_progress_rate_from_href(\%component_list);
 }
 
 # Name: find_failed_components
@@ -237,7 +232,7 @@ sub find_failed_components {
 # Returns: Array reference of stderr file paths
 sub get_failed_stderr {
     my $component_href = shift;
-    my @stderr_files = grep { $component_href->{$_}->{'stderr_files'} (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href);
+    my @stderr_files = grep { $component_href->{$_}->{'stderr_files'} } (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href);
     return \@stderr_files;
 }
 
