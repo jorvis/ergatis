@@ -42,7 +42,7 @@ use warnings;
 use Carp;
 use Sys::Hostname;
 use IO::File;
-use Ergatis::Utils qw(build_twig create_progress_bar update_progress_bar handle_component_status_changes);
+use Ergatis::Utils qw(build_twig create_progress_bar update_progress_bar handle_component_status_changes report_failure_info);
 
 umask(0000);
 
