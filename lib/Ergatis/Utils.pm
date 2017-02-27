@@ -166,7 +166,7 @@ sub process_components_for_stderr {
 # Args: Pipeline XML file
 # Returns: An hash reference with the following elements:
 ### Array reference of failed components
-### Array reference of paths to stderr files, each element is for a different component
+### String of STDERR file paths, seperated by newline char per file
 ### Number of components that have completed running
 ### Total number of components in the pipeline
 
@@ -232,12 +232,12 @@ sub find_failed_components {
 # Returns: Array reference of stderr file paths
 sub get_failed_stderr {
     my $component_href = shift;
-    my @stderr_files;
+    my $stderr_files;
     foreach my $component (sort { $component_href->{$a}->{'order'} <=> $component_href->{$b}->{'order'} } keys %$component_href) {
-        # Any STDERR files that are not null strings, push into array
-        push @stderr_files, $component_href->{$component}->{'stderr_files'} if length $component_href->{$component}->{'stderr_files'};
+        # Any STDERR files that are not null strings, add to string
+        $stderr_files .= $component_href->{$component}->{'stderr_files'} . "\n" if length $component_href->{$component}->{'stderr_files'};
     }
-    return \@stderr_files;
+    return $stderr_files;
 }
 
 # Name: handle_component_status_changes
