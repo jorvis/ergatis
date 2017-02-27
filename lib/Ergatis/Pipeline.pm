@@ -591,7 +591,7 @@ umask(0000);
         if ($p_state =~ /(failed|error)/ ) {
             # Return a hash of useful diagnostics
             $self->{diagnostics} = report_failure_info($self->{path});
-            #print "files from STDERR " . join("\n", @{$self->{diagnostics}->{stderr_files}}) . "\n";
+            #print "files from STDERR " . $self->{diagnostics}->{stderr_files};
         }
         return 0;
     }
