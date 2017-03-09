@@ -56,7 +56,7 @@
 				</commandSet>
 				<commandSet type="serial">
 					<state>incomplete</state>
-					<name>ncbi-tblastn.default</name>
+					<name>tblastn_plus.default</name>
 				</commandSet>
 			</commandSet>
 			<commandSet type="serial">
@@ -67,7 +67,7 @@
 				</commandSet>
 				<commandSet type="serial">
 					<state>incomplete</state>
-					<name>ncbi-blastp.default</name>
+					<name>blastp_plus.default</name>
 				</commandSet>
 			</commandSet>
 		</commandSet>
